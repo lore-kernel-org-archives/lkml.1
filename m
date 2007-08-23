@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757026AbXHWCdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbXHWCjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757026AbXHWCdi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 22:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbXHWCd1
+	id S1756536AbXHWCjw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 22:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbXHWCjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 22:33:27 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39474 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751310AbXHWCd0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 22:33:26 -0400
-Date: Thu, 23 Aug 2007 12:33:06 +1000
-From: David Chinner <dgc@sgi.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Chris Mason <chris.mason@oracle.com>, Andrew Morton <akpm@osdl.org>,
-       Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0/6] writeback time order/delay fixes take 3
-Message-ID: <20070823023306.GM61154114@sgi.com>
-References: <386910467.21100@ustc.edu.cn> <20070821202314.335e86ec@think.oraclecorp.com> <20070822011841.GA8090@mail.ustc.edu.cn>
-Mime-Version: 1.0
+	Wed, 22 Aug 2007 22:39:44 -0400
+Received: from waste.org ([66.93.16.53]:38162 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870AbXHWCjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 22:39:43 -0400
+Date: Wed, 22 Aug 2007 21:40:37 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Andy Isaacson <adi@hexapodia.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Neil Horman <nhorman@tuxdriver.com>, Valdis.Kletnieks@vt.edu,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH]: proc: export a processes resource limits via proc/<pid>
+Message-ID: <20070823024036.GP11166@waste.org>
+References: <20070813140044.GB1960@hmsreliant.think-freely.org> <20070816123538.GA10430@hmsreliant.think-freely.org> <4379.1187338166@turing-police.cc.vt.edu> <20070817105918.GA13937@hmsreliant.think-freely.org> <20070817124547.5415a839.akpm@linux-foundation.org> <20070821185611.GA17822@hexapodia.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070822011841.GA8090@mail.ustc.edu.cn>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070821185611.GA17822@hexapodia.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 09:18:41AM +0800, Fengguang Wu wrote:
-> On Tue, Aug 21, 2007 at 08:23:14PM -0400, Chris Mason wrote:
-> Notes:
-> (1) I'm not sure inode number is correlated to disk location in
->     filesystems other than ext2/3/4. Or parent dir?
+On Tue, Aug 21, 2007 at 11:56:11AM -0700, Andy Isaacson wrote:
+> On Fri, Aug 17, 2007 at 12:45:47PM -0700, Andrew Morton wrote:
+> > On Fri, 17 Aug 2007 06:59:18 -0400
+> > Neil Horman <nhorman@tuxdriver.com> wrote:
+> > > Currently, there exists no method for a process to query the resource
+> > > limits of another process.  They can be inferred via some mechanisms
+> > > but they cannot be explicitly determined.  Given that this
+> > > information can be usefull to know during the debugging of an
+> > > application, I've written this patch which exports all of a
+> > > processes limits via /proc/<pid>/limits.
+> > 
+> > I'm struggling with this a bit.  Sure, it _might_ be handy on some
+> > occasions to be able to get at this information.  But I've never seen
+> > anyone ask for it before, and it _is_ determinable by other means, if only
+> > strace.
+> 
+> I've wanted this information on multiple occasions in the past and was
+> mystified that there was no way to determine it.  And no, I don't feel
+> that strace is an answer -- given a running process, how do I use strace
+> to find out what its current ulimits are?
 
-The correspond to the exact location on disk on XFS. But, XFS has it's
-own inode clustering (see xfs_iflush) and it can't be moved up
-into the generic layers because of locking and integration into
-the transaction subsystem.
+You stop it and force it to execute rlimit(2) in its context, of
+course! What could be simpler? 
 
-> (2) It duplicates some function of elevators. Why is it necessary?
+The reason we never see questions about this is because relatively few
+people are using limits. Instead we see weekly questions about fork
+bombs.
 
-The elevators have no clue as to how the filesystem might treat adjacent
-inodes. In XFS, inode clustering is a fundamental feature of the inode
-reading and writing and that is something no elevator can hope to
-acheive....
+Frankly, I'd rather see new syscalls to get and set limits on other
+processes in the same way we can set priorities, affinities, etc.. But
+there are a couple dragons lurking there..
 
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Mathematics is the supreme nostalgia of our time.
