@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbXHWDwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbXHWDyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759435AbXHWDwX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 23:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756100AbXHWDwP
+	id S1759477AbXHWDyz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 23:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbXHWDyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 23:52:15 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:47813 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755996AbXHWDwO (ORCPT
+	Wed, 22 Aug 2007 23:54:45 -0400
+Received: from smtp3.hushmail.com ([65.39.178.135]:63477 "EHLO
+	smtp3.hushmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756100AbXHWDyo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 23:52:14 -0400
-Date: Thu, 23 Aug 2007 09:22:27 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Takenori Nagano <t-nagano@ah.jp.nec.com>
-Cc: Keith Owens <kaos@ocs.com.au>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       k-miyoshi@cb.jp.nec.com, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Bernhard Walle <bwalle@suse.de>
-Subject: Re: [patch] add kdump_after_notifier
-Message-ID: <20070823035227.GA365@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070802112852.GA7054@in.ibm.com> <31687.1186113947@kao2.melbourne.sgi.com> <20070805110746.GA12540@in.ibm.com> <46C1691E.7090708@ah.jp.nec.com> <20070814083710.GA14538@suse.de> <20070814132454.GA8293@in.ibm.com> <46C4184B.5030303@ah.jp.nec.com> <20070817105630.GA18167@in.ibm.com> <46CA97FE.90505@ah.jp.nec.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46CA97FE.90505@ah.jp.nec.com>
-User-Agent: Mutt/1.5.11
+	Wed, 22 Aug 2007 23:54:44 -0400
+Date: Wed, 22 Aug 2007 23:54:41 -0400
+To: <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>
+Subject: Ideas on column length in kernel "problem"?
+Reply-to: postfail@hushmail.com
+From: "Scott Thompson" <postfail@hushmail.com>
+Content-type: text/plain; charset="UTF-8"
+Message-Id: <20070823035442.6FD0DDA81F@mailserver7.hushmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 04:45:02PM +0900, Takenori Nagano wrote:
-> Vivek Goyal wrote:
-> > On Thu, Aug 16, 2007 at 06:26:35PM +0900, Takenori Nagano wrote:
-> >> Vivek Goyal wrote:
-> >>  > So for the time being I think we can put RAS tools on die notifier list
-> >>> and if it runs into issues we can always think of creating a separate list.
-> >>>
-> >>> Few things come to mind.
-> >>>
-> >>> - Why there is a separate panic_notifier_list? Can't it be merged with
-> >>>   die_chain? die_val already got one of the event type as PANIC. If there
-> >>>   are no specific reasons then we should merge the two lists. Registering
-> >>>   RAS tools on a single list is easier.
-> >> I think it is difficult, because die_chain is defined by each architecture.
-> >>
-> > 
-> > I think die_chain is arch independent definition (kernel/die_notifier.c)? 
-> > But anyway, to begin with it can be done only for panic_notifier.
-> 
-> I think die_val (notify_die() argument) values are arch independent.
-> They are defined in include/asm-<arch>/kdebug.h.
-> 
-> Your idea is good, but I think it has very large impact. It is very hard to fix
-> them at the same time. So, how about putting off merging two lists?
-> 
+I haven't seen any recent solutions to this "problem"...
 
-I think that's fine. For the time being we can just export panic_notifier
-list. die_chain is not a problem as of today as die notifiers get invoked
-first and then if panic_on_oops is set, kdump is called. So all the RAS
-tools registered on die_chain will get executed first.
+Many free (and not-free) mail clients wordwrap.  Hushmail wraps at 
+68 (verified), Yahoo has options to wrap at a max of 99, and Gmail 
+was somewhere around 85-90 as I recall.  Not sure on other free / 
+inexpensive clients.  
 
-Thanks
-Vivek
+However, several code modules have code lines with column lengths 
+well over 80 (the worst I have seen was 211).  This prevents people 
+with "minimal function" email clients (I'm being generous) from 
+making changes in the area of these long code lines, or from even 
+submitting fixes for the line length problem in modules themselves.
+
+I don't have an easy solution short of finding volunteer(s) who can 
+submit patches to resolve this or peer-pressuring module owners 
+into resolving, so opening this issue up to the list for ideas 
+here.  In the meantime I'll run a quick review to assess just how 
+many changes this would be ...
+
+Note -- I am well aware that us 'poor users' could just 'get a real 
+email service', and if anyone knows of a free/inexpensive mail 
+client that will be able to handle the wordwrap requirements for 
+the current state of the linux tree please advise.
+
+---------------------------------------
+Scott Thompson / postfail@hushmail.com
+---------------------------------------
+
