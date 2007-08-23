@@ -1,118 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbXHWLFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbXHWLIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758077AbXHWLFk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 07:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbXHWLFc
+	id S1758817AbXHWLIh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 07:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbXHWLIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 07:05:32 -0400
-Received: from thunk.org ([69.25.196.29]:59379 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752168AbXHWLFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 07:05:32 -0400
-Date: Thu, 23 Aug 2007 07:05:21 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: James Morris <jmorris@namei.org>, Dave Jones <davej@redhat.com>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Tech-board-discuss] Re: Linux Foundation Technical Advisory Board Elections
-Message-ID: <20070823110521.GI7267@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	James Morris <jmorris@namei.org>, Dave Jones <davej@redhat.com>,
-	Tech Board Discuss <Tech-board-discuss@lists.linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <1187796179.3410.32.camel@localhost.localdomain> <20070822212202.GE17546@redhat.com> <1187819038.3410.114.camel@localhost.localdomain> <20070822215816.GG17546@redhat.com> <1187820866.3410.129.camel@localhost.localdomain> <20070823021204.GF7267@thunk.org> <Xine.LNX.4.64.0708221924070.14411@us.intercode.com.au> <1187840997.3410.160.camel@localhost.localdomain>
+	Thu, 23 Aug 2007 07:08:30 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:35611 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753032AbXHWLI3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 07:08:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=RbeahuZKxEHzOujiX2OHC1xB6EvZo4cwA7/1tHSRxHWZlk+fFZv7B+zPHpZF1ZV+niVtqPbLyWRyYPrqcwAnuputZ+Lelzu4yn+ssSe3sHyjGePGX0ildlfKS+HD69WcG91S4rSOeFeRtmBs6Lw+Oy/J9n8P7Tj5XvV+/jBTF8Q=
+Message-ID: <3c1737210708230408i7a8049a9m5db49e6c4d89ab62@mail.gmail.com>
+Date: Thu, 23 Aug 2007 13:08:27 +0200
+From: "Michael Smith" <msmith@xiph.org>
+To: linux-kernel@vger.kernel.org
+Subject: gettimeofday() jumping into the future
+Cc: "Andy Wingo" <wingo@fluendo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1187840997.3410.160.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+X-Google-Sender-Auth: 5a8749259c2cfd5e
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 10:49:57PM -0500, James Bottomley wrote:
-> Then you're misconstruing the interactions.  A representational role
-> would imply the ability to speak for the community and make promises on
-> its behalf.  That, as Ted has already said, can't happen.  Instead, the
-> value to the LF is that the TAB contains people experienced in community
-> interactions who can act as a sounding board for what may (or may not)
-> be well received.
+Hi,
 
-One thing that may be helpful for people to understand is that serving
-on the TAB is more a matter of service than anything else.  There are
-relatively few benefits of actually being on the TAB.  Sure, you may
-be more likely to get a free trip to Japan to talk about what's going
-on in kernel development and to help some of the Japanese developers
-being employed by the Japanese member comapnies become more effective
-contributors to Linux and the LKML.  But, the sort of people that
-serve on the TAB generally travel too much already, and there has
-already been talk about trying to get more people outside of the TAB
-who are interested in serving in this role to have a chance to go to
-the LF Japan Linux Symposium.
+We've been seeing some strange behaviour on some of our applications
+recently. I've tracked this down to gettimeofday() returning spurious
+values occasionally.
 
-And sure, the TAB members have a bit more direct ability to make
-suggestions about how various LF programs that directly benefit the
-Linux community will be managed --- but the flip side of that is there
-are monthly concalls and documents to review, and for the chair of the
-TAB (currently James), the responsibility to sit on day-long,
-face-to-face OSDL (and now Linux Foundation) board meetings.  This
-last is important, since many of the other members of the board are
-from companies that are contributing large sums of money to the LF,
-which means they are generally VP's and General Managers.  Those folks
-are generally not technical at all, and are so far removed from the
-kernel community that they have no idea how to help the kernel
-community or even if certain proposals or initiative that they might
-try out would be well received.
+Specifically, gettimeofday() will suddenly, for a single call, return
+a value about 4398 seconds (~1 hour 13 minutes) in the future. The
+following call goes back to a normal value.
 
-OSDL, to its credit (and those of you who know me know that I was
-often very critical of the OSDL, in part because its leadership and
-management was so badly disconnected from community concerns), FINALLY
-realized this was a problem in recent years, and so the TAB was the
-first attempt to try to solve this problem.
+This seems to be occurring when the clock source goes slightly
+backwards for a single call. In
+kernel/time/timekeeping.c:__get_nsec_offset(), we have this:
+ cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
 
-An SPI-like or Debian-like approach with pure democracy might look
-good on paper, but when you have companies donating hundreds of
-thousands of dollars and up to the organization, having a board which
-is elected by mobs of GPLv3 groupies would understandably scare them.
-So we need some way of selecting the kernel developers who are willing
-to invest the time to help the LF do the right thing with the
-resources that they have been given.  One way of doing this would be
-to have someone from the LF just pick the obvious candidates; the
-problem with that is that it would be rightly viewed as cronyism.
-Another way would be to have a membership committee that selected
-people who are considered true members of the kernel development
-community, and then let them vote.  But that's a rather heavyweight
-solution, and if could result in all sorts of hard feelings about who
-is and isn't allowed to vote.
+So a small decrease in time here will (this is all unsigned
+arithmetic) give us a very large cycle_delta. cyc2ns() then multiplies
+this by some value, then right shifts by 22. The resulting value (in
+nanoseconds) is approximately 4398 seconds; this gets added on to the
+xtime value, giving us our jump into the future. The next call to
+gettimeofday() returns to normal as we don't have this huge nanosecond
+offset.
 
-Having the election at the KS was basically a lightweight way of doing
-this, although I would have to admit that the pool of electors is a
-much smaller than my liking.  If the TAB was able to make promises on
-behalf of the community, or enter into deals that bound the
-community[1], or if it controlled a significant monetary budget, then
-we would probably need a much more heavyweight and rigorous election
-process.
+This system is a 2-socket core 2 quad machine (8 cpus), running 32 bit
+mode. It's a dell poweredge 1950. The kernel selects the TSC as the
+clock source, having determined that the tsc runs synchronously on
+this system. Switching the systems to use a different time source
+seems to make the problem go away (which is fine for us, but we'd like
+to get this fixed properly upstream).
 
-But, as other people have said, patches are welcome.  Feel free to
-suggest other ways in which this could be done, keeping in mind our
-design constraints.
+We've also seen this behaviour with a synthetic test program (which
+just runs 4 threads all calling gettimeofday() in a loop as fast as
+possible and testing that it doesn't jump) on an older machine, a dell
+poweredge SC1425 with two p4 hyperthreaded xeons.
 
-						- Ted
+Can anyone advise on what's going wrong here? I can't find much in the
+way of documentation on whether the TSC is guaranteed to be
+monotonically increasing on intel systems. Should the code choose not
+to use the TSC? Or should the TSC reading code ensure that the
+returned values are monotonic?
 
-[1] Which at one point the FSF was hoping they could do during the
-GPLv3 discussions.  We very quickly set them straight that while the
-TAB could talk about concerns that we as individuals had and talk
-about concerns that had been expressed on the LKML, there was no way
-that the TAB could negotiate any kind of quid pro quo on behalf of the
-community; and thus we could not represent the kernel community in
-that sense of the word.  The only way in which the TAB is
-"representational" is in the sense of the word "representative
-sample"; the LF leadership team can't talk to every single kernel
-developer, so it needs to find a what is hopefully a representative
-sample of kernel developers, who are also willing to put in the time
-and effort to help the LF succeed.
+Is there any more information that would be useful? I'll be on a plane
+for most of tomorrow, so might be a little slow responding.
+
+Thanks,
+
+Mike
