@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759663AbXHWA03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbXHWAaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759663AbXHWA03 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 20:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbXHWA0U
+	id S1757320AbXHWAaJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 20:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbXHWA35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 20:26:20 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:51877 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752565AbXHWA0T (ORCPT
+	Wed, 22 Aug 2007 20:29:57 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:50593 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750960AbXHWA34 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 20:26:19 -0400
-Date: Wed, 22 Aug 2007 18:26:18 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ksummit-2007-discuss@thunk.org
-Subject: Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
-Message-ID: <20070823002618.GO9163@parisc-linux.org>
-References: <1187796179.3410.32.camel@localhost.localdomain> <20070822224400.GA17255@srcf.ucam.org>
+	Wed, 22 Aug 2007 20:29:56 -0400
+Date: Wed, 22 Aug 2007 17:10:49 -0700
+From: Greg KH <greg@kroah.com>
+To: "Justin M. Forbes" <jmforbes@linuxtx.org>
+Cc: Greg KH <gregkh@suse.de>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/20] 2.6.22-stable review
+Message-ID: <20070823001049.GA5374@kroah.com>
+References: <20070821065210.GA5275@kroah.com> <20070821153320.GA22661@linuxtx.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070822224400.GA17255@srcf.ucam.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070821153320.GA22661@linuxtx.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 11:44:00PM +0100, Matthew Garrett wrote:
-> On Wed, Aug 22, 2007 at 10:22:59AM -0500, James Bottomley wrote:
-> > The elections for five of the ten members of the Linux Foundation
-> > Technical Advisory Board[TAB] are held every year, currently the
-> > election will be at the 2007 Kernel Summit in a BOF session.
+On Tue, Aug 21, 2007 at 10:33:20AM -0500, Justin M. Forbes wrote:
+> On Mon, Aug 20, 2007 at 11:52:10PM -0700, Greg KH wrote:
+> > This is the start of the stable review cycle for the 2.6.22.5 release.
 > 
-> The reasons for this may be obvious with more understanding of how the 
-> TAB came into existence, but given that the Linux Foundation isn't 
-> limited to kernel development (see the desktop architects stuff, for 
-> instance) it seems a bit odd for it to have a technical board that's 
-> determined at a kernel-only event. 
+> No roll up patch for this one?
 
-I was under the impression that the TAB elections were being held at
-Kernel Summit purely as a stop-gap; that this wasn't to be a regular
-event.
+Oops, I forgot it, sorry :(
 
--- 
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+greg k-h
