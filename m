@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764761AbXHWQIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765310AbXHWQIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764761AbXHWQIV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 12:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762439AbXHWQIJ
+	id S1765310AbXHWQIf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 12:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764252AbXHWQIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 12:08:09 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:20371 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760508AbXHWQIH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 12:08:07 -0400
-Date: Thu, 23 Aug 2007 09:06:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Adrian Bunk <bunk@kernel.org>, joern@wohnheim.fh-wedel.de,
-       linux-kernel@vger.kernel.org, Andre Haupt <andre@finow14.de>
-Subject: Re: [patch 1/1] fix a trivial typo in scripts/checkstack.pl
-Message-Id: <20070823090641.cbc0e70e.randy.dunlap@oracle.com>
-In-Reply-To: <20070823133529.GD24870@lazybastard.org>
-References: <20070823125227.294913273@finow14.de>
-	<20070823125540.GA19389@ahaupt-debian-vm.localdomain>
-	<20070823132639.GN30705@stusta.de>
-	<20070823133529.GD24870@lazybastard.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 23 Aug 2007 12:08:16 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41797 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764109AbXHWQIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 12:08:14 -0400
+Date: Thu, 23 Aug 2007 18:07:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [git pull request] scheduler updates
+Message-ID: <20070823160759.GA2728@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Aug 2007 15:35:29 +0200 Jörn Engel wrote:
 
-> On Thu, 23 August 2007 15:26:39 +0200, Adrian Bunk wrote:
-> > On Thu, Aug 23, 2007 at 02:55:40PM +0200, andre@finow14.de wrote:
-> > > Signed-off-by: Andre Haupt <andre@finow14.de>
-> > > ---
-> > > Index: linus/scripts/checkstack.pl
-> > > ===================================================================
-> > > --- linus.orig/scripts/checkstack.pl	2007-08-23 14:25:03.000000000 +0200
-> > > +++ linus/scripts/checkstack.pl	2007-08-23 14:42:13.000000000 +0200
-> > > @@ -14,7 +14,7 @@
-> > >  #	M68k port by Geert Uytterhoeven and Andreas Schwab
-> > >  #
-> > >  #	Usage:
-> > > -#	objdump -d vmlinux | stackcheck.pl [arch]
-> > > +#	objdump -d vmlinux | scripts/checkstack.pl [arch]
-> > >...
-> > 
-> > "make checkstack" ?
+Linus, please pull the latest scheduler git tree from:
 
-Yes, "make help" already lists this and the other check* scripts.
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
 
-> If you really care about this, send a patch.  An argument against it is
-> that some people seem to use the script independently of the linux
-> kernel.  Not sure if all of them copy the makefile logic as well.
-> 
-> Does it matter?
+It includes six fixes: an s390 task-accounting fix from Christian 
+Borntraeger, sysctl directory permission fixes from Eric W. Biederman, 
+an SMT/MC balancing fix from Suresh Siddha (we under-balanced) and 
+another fix from Suresh for debugging tweak side-effect. Plus there's a 
+sched_clock() quality fix for CPUs that stop the TSC in idle (acked by 
+Len Brown) and a reniced-tasks fixlet.
 
+the SMT/MC blancing fix has the highest risk - but since it causes 
+slightly more balancing (instead of less balancing, which is the more 
+risky action) it should be pretty safe. Key workloads still seem fine. 
+Tested on 32-bit and 64-bit x86 and it has passed 200+ make randconfig 
+build tests.
 
+	Ingo
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+---------------->
+Christian Borntraeger (1):
+      sched: accounting regression since rc1
+
+Eric W. Biederman (1):
+      sched: fix sysctl directory permissions
+
+Ingo Molnar (2):
+      sched: sched_clock_idle_[sleep|wakeup]_event()
+      sched: tweak the sched_runtime_limit tunable
+
+Suresh Siddha (2):
+      sched: fix broken SMT/MC optimizations
+      sched: skip updating rq's next_balance under null SD
+
+ arch/i386/kernel/tsc.c        |    1 
+ drivers/acpi/processor_idle.c |   32 +++++++++++++++----
+ fs/proc/array.c               |   44 +++++++++++++++++----------
+ include/linux/sched.h         |    5 +--
+ kernel/sched.c                |   68 +++++++++++++++++++++++++++++++-----------
+ kernel/sched_debug.c          |    3 +
+ 6 files changed, 110 insertions(+), 43 deletions(-)
