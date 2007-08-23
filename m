@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934667AbXHWWnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933677AbXHWWoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934667AbXHWWnk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 18:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934174AbXHWWj5
+	id S933677AbXHWWoO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 18:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933408AbXHWWnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 18:39:57 -0400
-Received: from smtp28.orange.fr ([80.12.242.100]:16967 "EHLO smtp28.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933603AbXHWWjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 18:39:55 -0400
-X-ME-UUID: 20070823223736107.1A459700008C@mwinf2817.orange.fr
-Message-ID: <46CE0A59.8050805@bachelot.org>
-Date: Fri, 24 Aug 2007 00:29:45 +0200
-From: Xavier Bachelot <xavier@bachelot.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 23 Aug 2007 18:43:51 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47077 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933864AbXHWWnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 18:43:49 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19O5VZPHoBOMQMbi2M8tJYxYwr0mxtpcKM2ruSwtV
+	rCx1xjouC8s/+l
+Date: Fri, 24 Aug 2007 00:43:47 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Greg KH <gregkh@suse.de>
+cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [GIT PATCH] USB fixes for 2.6.23-rc3
+In-Reply-To: <20070822220805.GB30603@kroah.com>
+Message-ID: <Pine.LNX.4.60.0708240036200.3246@poirot.grange>
+References: <20070822220805.GB30603@kroah.com>
 MIME-Version: 1.0
-To: airlied@linux.ie, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Add device id for P4M900 to via-agp module
-Content-Type: multipart/mixed;
- boundary="------------070204040704020802020406"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070204040704020802020406
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Greg,
 
-This is a new VIA chipset that works with the existing code. It only 
-needs the device id to be added for detection.
+sorry, this is a private egoistic request, so I took the liberty and 
+removed Linus and Andrew from CC: If this wouldn't make things more 
+difficult / worse for you and anyone else, could you perhaps post such 
+patch chains as a reply to the first message (patch 0/x) and not each 
+subsequent patch as a reply to the previous one? It would make it easier 
+to view for _me_ (remember egoistic?) because my mail agent (pine) 
+presents mail threads where every reply level produces a small right 
+offset in the subject line, so, starting from about reply number 20 the 
+subject is completely off-screen.
 
+Again, this is a minor trouble, and, perhaps, I am the only one suffering 
+from it, but if it doesn't matter either way for everyone else, I would 
+really appreciate it that way.
 
---------------070204040704020802020406
-Content-Type: text/x-patch;
- name="P4M900-agpgart.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="P4M900-agpgart.patch"
-
---- a/drivers/char/agp/via-agp.c	2007-08-23 23:41:56.000000000 +0200
-+++ b/drivers/char/agp/via-agp.c	2007-08-23 23:45:13.000000000 +0200
-@@ -399,6 +399,11 @@
- 		.device_id  = PCI_DEVICE_ID_VIA_P4M890,
- 		.chipset_name   = "P4M890",
- 	},
-+	/* P4M900 */
-+	{
-+		.device_id  = PCI_DEVICE_ID_VIA_VT3364,
-+		.chipset_name   = "P4M900",
-+	},
- 	{ }, /* dummy final entry, always present */
- };
- 
---- a/include/linux/pci_ids.h	2007-08-23 23:42:04.000000000 +0200
-+++ b/include/linux/pci_ids.h	2007-08-23 23:48:19.000000000 +0200
-@@ -1296,6 +1296,7 @@
- #define PCI_DEVICE_ID_VIA_VT3324	0x0324
- #define PCI_DEVICE_ID_VIA_VT3336	0x0336
- #define PCI_DEVICE_ID_VIA_VT3351	0x0351
-+#define PCI_DEVICE_ID_VIA_VT3364	0x0364
- #define PCI_DEVICE_ID_VIA_8371_0	0x0391
- #define PCI_DEVICE_ID_VIA_8501_0	0x0501
- #define PCI_DEVICE_ID_VIA_82C561	0x0561
-
---------------070204040704020802020406--
-
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
