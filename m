@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763221AbXHWUkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765289AbXHWUl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763221AbXHWUkr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 16:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbXHWUki
+	id S1765289AbXHWUl0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 16:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759388AbXHWUlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 16:40:38 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4217 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757211AbXHWUkh (ORCPT
+	Thu, 23 Aug 2007 16:41:17 -0400
+Received: from mga03.intel.com ([143.182.124.21]:19358 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757864AbXHWUlR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 16:40:37 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 11/23] make atomic_read() and atomic_set() behavior consistent on m32r
-Date: Thu, 23 Aug 2007 13:39:54 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKGEACGGAC.davids@webmaster.com>
+	Thu, 23 Aug 2007 16:41:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,301,1183359600"; 
+   d="scan'208";a="267204353"
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <alpine.LFD.0.999.0708231310430.30176@woody.linux-foundation.org>
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 23 Aug 2007 13:40:28 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 23 Aug 2007 13:40:30 -0700
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: "double" hpet clocksource && hard freeze [bisected]
+Date: Thu, 23 Aug 2007 13:41:11 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A023EB2E1@scsmsx411.amr.corp.intel.com>
+In-reply-to: <20070823222115.122a37ca@localhost>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: "double" hpet clocksource && hard freeze [bisected]
+Thread-Index: Acflw02FNzn6TdAhSq+X/PpK1KVzoAAAcYqg
+References: <20070823222115.122a37ca@localhost>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Paolo Ornati" <ornati@fastwebnet.it>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Bob Picco" <bob.picco@hp.com>, <johnstul@us.ibm.com>
+X-OriginalArrivalTime: 23 Aug 2007 20:41:12.0544 (UTC) FILETIME=[F171E600:01C7E5C5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I have a double "hpet" entry in "available_clocksource":
+>	$ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+>	tsc hpet hpet acpi_pm jiffies
 
-> On Thu, 23 Aug 2007, Segher Boessenkool wrote:
+Oops.  If seems that both drivers/char/hpet.c and arch/x86_64/kernel/hpet.c
+both register a clocksource named "hpet".  Probably a result of bringing
+back to life a long lost patch, and having someone else (John Stultz, according
+to git blame) make a similar change to a different file in the intervening
+time.
 
-> The combining, which I've mentioned *multiple*times* is
->
-> 	if (atomic_read(&x) <= 1)
->
-> and dammit, if that doesn't result in a *single* instruction, the code
-> generation is pure and utter crap.
->
-> It should result in
->
-> 	cmpl $1,offset(reg)
->
-> and nothing else. And there is no way in hell you are doing that with
-> "atomic_read()" being inline asm.
+Presumably the thing to do would be merge the x86_64 specific version
+into the drivers/char/hpet.c version?
 
-Sorry, Linus, I don't agree. The whole point of 'volatile' is to say to the
-compiler, "DO NOT OPTIMIZE THIS. What you think is harmless may break things
-you do not and should not understand." The combination of the read and the
-compare into a single operation is a compiler optimization.
-
-While it would not be unreasonable to still allow this optimization (since I
-cannot think of any situations in which it could be harmful), it is just as
-reasonable not to.
-
-DS
-
-
+-Tony
