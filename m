@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765036AbXHWU4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763585AbXHWVGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765036AbXHWU4Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 16:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757864AbXHWU4S
+	id S1763585AbXHWVGR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 17:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756950AbXHWVGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 16:56:18 -0400
-Received: from www.osadl.org ([213.239.205.134]:53252 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756049AbXHWU4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 16:56:17 -0400
-Subject: Re: x86_64-dynticks-disable-hpet_id_legsup-hpets.patch hangs the
-	system
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ego@in.ibm.com, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       johnstul@us.ibm.com
-In-Reply-To: <20070823134726.8f2c508a.akpm@linux-foundation.org>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	 <20070823112423.GA26084@in.ibm.com>
-	 <20070823134726.8f2c508a.akpm@linux-foundation.org>
+	Thu, 23 Aug 2007 17:06:06 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:52398 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755996AbXHWVGD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 17:06:03 -0400
+Subject: RE: "double" hpet clocksource && hard freeze [bisected]
+From: john stultz <johnstul@us.ibm.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Paolo Ornati <ornati@fastwebnet.it>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bob Picco <bob.picco@hp.com>
+In-Reply-To: <617E1C2C70743745A92448908E030B2A023EB2E1@scsmsx411.amr.corp.intel.com>
+References: <20070823222115.122a37ca@localhost>
+	 <617E1C2C70743745A92448908E030B2A023EB2E1@scsmsx411.amr.corp.intel.com>
 Content-Type: text/plain
-Date: Thu, 23 Aug 2007 22:56:14 +0200
-Message-Id: <1187902574.15576.10.camel@chaos>
+Date: Thu, 23 Aug 2007 14:05:35 -0700
+Message-Id: <1187903135.6024.18.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-23 at 13:47 -0700, Andrew Morton wrote:
-> > Any particular reason for this patch [There is no changelog :-)]? 
-> > Without this patch the mm-kernel seems to behave just fine for me.
+On Thu, 2007-08-23 at 13:41 -0700, Luck, Tony wrote:
+> > I have a double "hpet" entry in "available_clocksource":
+> >	$ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> >	tsc hpet hpet acpi_pm jiffies
 > 
-> Oh damn.  That patch is required to prevent a boot-time div-by-zero
-> on my old nocona machine.
+> Oops.  If seems that both drivers/char/hpet.c and arch/x86_64/kernel/hpet.c
+> both register a clocksource named "hpet".  Probably a result of bringing
+> back to life a long lost patch, and having someone else (John Stultz, according
+> to git blame) make a similar change to a different file in the intervening
+> time.
+> 
+> Presumably the thing to do would be merge the x86_64 specific version
+> into the drivers/char/hpet.c version?
 
-That patch was necessary due to a bug in the hpet code, which is
-resolved for quite a while (hopefully). It was not a divide by zero, it
-was some attempt to map stuff before the mm was initialized, IIRC.
+Ugh. Yea. i386 has an hpet clocksource as well. We should kill the
+duplication, but at the moment I'm not comfortable that the
+driver/char/hpet.c is ok to be used for i386/x86_64 (Bob: Do you know
+why the shift value is only 10?).
 
-> I have a new set of x86_64-dynticks patches from Thomas to look at
-> so I guess it's reset-and-start-again time on that front.
 
-Yep. I dropped that patch in the series.
+I'm a little surprised by this, as the clocksource code use to prevent
+duplicate named clocksources from being registered, so I'm not sure how
+that check got dropped.  Also I'm not quite sure I see where the hard
+freeze is coming from.
 
-	tglx
+My initial reaction would be to either ifdef ia64 implementation in
+drivers/char/hpet.c or move the code under the ia64 arch dir until it is
+really usable by all arches.
 
+Bob, your thoughts?
 
