@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbXHWAdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbXHWAgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758648AbXHWAdS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 20:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbXHWAdI
+	id S1757603AbXHWAgn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 20:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbXHWAgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 20:33:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38273 "EHLO mx1.redhat.com"
+	Wed, 22 Aug 2007 20:36:36 -0400
+Received: from waste.org ([66.93.16.53]:59893 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751264AbXHWAdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 20:33:07 -0400
+	id S1752138AbXHWAgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 20:36:35 -0400
+Date: Wed, 22 Aug 2007 19:37:48 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
+Message-ID: <20070823003748.GR30556@waste.org>
+References: <1187796179.3410.32.camel@localhost.localdomain> <20070822224400.GA17255@srcf.ucam.org> <20070823002618.GO9163@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andi Kleen <ak@suse.de>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3-mm1: cannot stat `vdso.so.dbg'
-In-Reply-To: Andi Kleen's message of  Thursday, 23 August 2007 01:57:48 +0200 <200708230157.48526.ak@suse.de>
-X-Zippy-Says: Yow!  I'm out of work...I could go into shock absorbers...or SCUBA GEAR!!
-Message-Id: <20070823003232.603F04D0418@magilla.localdomain>
-Date: Wed, 22 Aug 2007 17:32:32 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20070823002618.GO9163@parisc-linux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The problem is they're two patching consecutively patching the same
-> file with 100% identical subject/description.
+On Wed, Aug 22, 2007 at 06:26:18PM -0600, Matthew Wilcox wrote:
+> On Wed, Aug 22, 2007 at 11:44:00PM +0100, Matthew Garrett wrote:
+> > On Wed, Aug 22, 2007 at 10:22:59AM -0500, James Bottomley wrote:
+> > > The elections for five of the ten members of the Linux Foundation
+> > > Technical Advisory Board[TAB] are held every year, currently the
+> > > election will be at the 2007 Kernel Summit in a BOF session.
+> > 
+> > The reasons for this may be obvious with more understanding of how the 
+> > TAB came into existence, but given that the Linux Foundation isn't 
+> > limited to kernel development (see the desktop architects stuff, for 
+> > instance) it seems a bit odd for it to have a technical board that's 
+> > determined at a kernel-only event. 
 > 
-> So either: they should be merged together into one patch
-> or the second (or first) needs a new description/subject
+> I was under the impression that the TAB elections were being held at
+> Kernel Summit purely as a stop-gap; that this wasn't to be a regular
+> event.
 
-They do the same thing for the x86_64 ia32-compat and x86_64 native vDSOs,
-respectively. 
+And we're still looking for a better solution. Patches welcome.
 
-Subject: [PATCH 1/2] x86_64 ia32 vDSO: install unstripped copies on disk
-Subject: [PATCH 2/2] x86_64 vDSO: install unstripped copies on disk
-
-Andrew called them
-
-x86_64-ia32-vdso-install-unstripped-copies-on-disk
-x86_64-vdso-install-unstripped-copies-on-disk
-
-The names/subjects are not identical, but differ in having "ia32" or not.
-That is really the only difference between the two patches, too.
-
-> TBD this needs a proper changelog/subject from Roland. I have no idea what 
-> it does
-
-I don't now what is unclear about the log entry.  Yes, each log entry says
-the same thing after the first (Subject) line.  Each one relates to a
-different arch/x86_64/subdirectory/Makefile that creates vDSO images.
-Prepend "This applies to the x86_64/vdso native vDSO building." or
-"This applies to the x86_64/ia32 vDSO building." to the log if you prefer.
-
-
-Thanks,
-Roland
+-- 
+Mathematics is the supreme nostalgia of our time.
