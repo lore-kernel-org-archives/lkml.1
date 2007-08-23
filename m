@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbXHWF1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758589AbXHWF2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755699AbXHWF1Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 01:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbXHWF1O
+	id S1758589AbXHWF2K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 01:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbXHWF1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 01:27:14 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48123 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750815AbXHWF1O (ORCPT
+	Thu, 23 Aug 2007 01:27:54 -0400
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:59356 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756991AbXHWF1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 01:27:14 -0400
-Message-ID: <46CD1AAE.3020708@sgi.com>
-Date: Thu, 23 Aug 2007 15:27:10 +1000
-From: Tim Shimmin <tes@sgi.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       xfs-masters@oss.sgi.com
-Subject: Re: [BUG] fs/xfs/xfs_bmap_btree.c:2312: error: 'b' undeclared (first
- use in this function) (Was Re: 2.6.23-rc3-mm1)
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CC0BC2.7060400@googlemail.com> <46CC0F8A.7040604@googlemail.com>
-In-Reply-To: <46CC0F8A.7040604@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Aug 2007 01:27:30 -0400
+Subject: Re: [PATCH] ppc: remove unused amiga_request_irq and
+	mach_request_irq
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       galak@kernel.crashing.org
+In-Reply-To: <18124.1417.743332.974941@cargo.ozlabs.ibm.com>
+References: <1187767237.25624.11.camel@sebastian.kern.oss.ntt.co.jp>
+	 <18124.1417.743332.974941@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: NTT Open Source Software Center
+Date: Thu, 23 Aug 2007 14:27:27 +0900
+Message-Id: <1187846847.12759.38.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michal,
+On Wed, 2007-08-22 at 19:44 +1000, Paul Mackerras wrote: 
+> Fernando Luis Vázquez Cao writes:
+> 
+> > amiga_request_irq and mach_request_irq are never used, so delete them.
+> 
+> OK, but is there a particular reason you want to do this?
+Hi Paul,
 
-Thanks for the patch.
-This would be a problem for 32bit machines without large blocksize support
-(i.e. in our xfs tests: !XFS_BIG_BLKNOS => (BITS_PER_LONG == 32 && !defined(CONFIG_LBD))
-which we obviously didn't do a build test for.
+Thank you for your reply.
 
-I'll check it into our local tree and push to the master branch for Andrew.
+I am currently auditing all the interrupt handlers and related code
+(request_irq(), free_irq(), and others of that ilk) and, in the process,
+I found some dead code. Getting rid of this cruft would just make my
+life easier.
 
---Tim
+The final goal of this audit is to determine whether the Linux interrupt
+handlers are kdump-ready. With the advent of kdump it is now possible
+that device drivers have to handle pending interrupts generated in the
+context of a previous kernel. Any pending interrupts will come in as
+soon as the IRQ is allocated, but, unfortunately, not all the device
+drivers handle this situation properly.
 
-Michal Piotrowski wrote:
-> Michal Piotrowski pisze:
->> Andrew Morton pisze:
->>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
->>>
->> /home/devel/linux-mm/fs/xfs/xfs_bmap_btree.c: In function 'xfs_bmbt_set_allf':
->> /home/devel/linux-mm/fs/xfs/xfs_bmap_btree.c:2312: error: 'b' undeclared (first use in this function)
->> /home/devel/linux-mm/fs/xfs/xfs_bmap_btree.c:2312: error: (Each undeclared identifier is reported only once
->> /home/devel/linux-mm/fs/xfs/xfs_bmap_btree.c:2312: error: for each function it appears in.)
->> /home/devel/linux-mm/fs/xfs/xfs_bmap_btree.c: In function 'xfs_bmbt_disk_set_allf':
->> /home/devel/linux-mm/fs/xfs/xfs_bmap_btree.c:2372: error: 'b' undeclared (first use in this function)
->> make[3]: *** [fs/xfs/xfs_bmap_btree.o] Error 1
->> make[2]: *** [fs/xfs] Error 2
->> make[1]: *** [fs] Error 2
->> make: *** [_all] Error 2
->>
-> 
-> Build fix.
-> 
-> Regards,
-> Michal
-> 
-> --
-> LOG
-> http://www.stardust.webpages.pl/log/
-> 
-> Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-> 
-> --- linux-mm-clean/fs/xfs/xfs_bmap_btree.c	2007-08-22 12:20:35.000000000 +0200
-> +++ linux-mm/fs/xfs/xfs_bmap_btree.c	2007-08-22 12:15:52.000000000 +0200
-> @@ -2309,7 +2309,7 @@ xfs_bmbt_set_allf(
->  		((xfs_bmbt_rec_base_t)blockcount &
->  		(xfs_bmbt_rec_base_t)XFS_MASK64LO(21));
->  #else	/* !XFS_BIG_BLKNOS */
-> -	if (ISNULLSTARTBLOCK(b)) {
-> +	if (ISNULLSTARTBLOCK(startblock)) {
->  		r->l0 = ((xfs_bmbt_rec_base_t)extent_flag << 63) |
->  			((xfs_bmbt_rec_base_t)startoff << 9) |
->  			 (xfs_bmbt_rec_base_t)XFS_MASK64LO(9);
-> @@ -2369,7 +2369,7 @@ xfs_bmbt_disk_set_allf(
->  		 ((xfs_bmbt_rec_base_t)blockcount &
->  		  (xfs_bmbt_rec_base_t)XFS_MASK64LO(21)));
->  #else	/* !XFS_BIG_BLKNOS */
-> -	if (ISNULLSTARTBLOCK(b)) {
-> +	if (ISNULLSTARTBLOCK(startblock)) {
->  		r->l0 = cpu_to_be64(
->  			((xfs_bmbt_rec_base_t)extent_flag << 63) |
->  			 ((xfs_bmbt_rec_base_t)startoff << 9) |
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Besides, I am also trying to determine if applying this patch:
+http://lkml.org/lkml/2007/7/19/687
+is a sane thing to do.
+
+> The whole of arch/ppc is going away eventually, so I don't think we
+> need to remove it piece by piece.
+As Linas mentioned in his reply, cleaning things up first will probably
+make things easier for you too.
+
+Please consider merging the four patches I sent to the PPC mailing list.
+
+Fernando
 
