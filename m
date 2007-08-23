@@ -1,49 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762616AbXHWME6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762871AbXHWMF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762616AbXHWME6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 08:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbXHWMEv
+	id S1762871AbXHWMF2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 08:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760000AbXHWMFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 08:04:51 -0400
-Received: from gw.unix-scripts.info ([62.212.121.204]:59890 "EHLO
-	gw.unix-scripts.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756302AbXHWMEu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 08:04:50 -0400
-Message-ID: <46CD77DC.40807@unix-scripts.info>
-Date: Thu, 23 Aug 2007 14:04:44 +0200
-From: Laurent CARON <lcaron@unix-scripts.info>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
+	Thu, 23 Aug 2007 08:05:16 -0400
+Received: from ns1.suse.de ([195.135.220.2]:44217 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760449AbXHWMFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 08:05:15 -0400
+Date: Thu, 23 Aug 2007 14:05:09 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-mm@kvack.org, dkegel@google.com, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water
+	marks
+Message-ID: <20070823120506.GN13915@v2.random>
+References: <20070820215040.937296148@sgi.com> <1187692586.6114.211.camel@twins> <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com> <1187730812.5463.12.camel@lappy> <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com> <46CB5C89.2070807@redhat.com> <Pine.LNX.4.64.0708211521260.5728@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Frederik Deweerdt <deweerdt@free.fr>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: Server crashes unexpectedly
-References: <46CD6C40.7070403@unix-scripts.info> <20070823114908.GD31846@slug>
-In-Reply-To: <20070823114908.GD31846@slug>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708211521260.5728@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederik Deweerdt wrote:
-> On Thu, Aug 23, 2007 at 01:15:12PM +0200, Laurent CARON wrote:
->> Hi,
->>
->> One of my server crashes randomly.
->>
->> I suspect a filesystem corruption.
-> What makes you think so?  I'd check the memory with memtest.
+On Tue, Aug 21, 2007 at 03:32:25PM -0700, Christoph Lameter wrote:
+> 1. Like in the earlier patchset allow reentry to reclaim under 
+>    PF_MEMALLOC if we are out of all memory.
 
+Can you simply tweak on the may_writepage flag only to achieve the
+second pass? We're talking here about a totally non-performance case,
+almost impossible to hit in practice unless you do real weird things,
+and certainly very unlikely to happen. So I'm unsure what's all that
+complexity just to make a regular pass on the lru looking for clean
+pages, something may_writepage=0 already does.
 
-I suspect the filesystem, because it happened to me on 2 other servers
-in the past.
+Like Andi said at most one may_writepage=0 recursion should be
+allowed.
 
-A reiserfs3 corruption occured, making the server crash with the same
-kind of symptoms but that's only a guess).
+If the PF_MEMALLOC is found empty, I agree entering reclaim a second
+time with may_writepage=0 sounds theoretically a good idea (in
+practice it should never be necessary). printk must also be printed to
+warn the user he was risking to deadlock for real and he has to
+increase the min_free_kbytes.
 
-Checking with memtest asap.
+> 2. Do the laundry as here but do not write out laundry directly.
+>    Instead move laundry to a new lru style list in the zone structure.
+>    This will allow the recursive reclaim to also trigger writeout
+>    of pages (what this patchset was supposed to accomplish).
 
-Thanks
+A new lru for this sounds overkill to me, we're talking about deadlock
+avoidance, this has absolutely nothing to do with real life 99.9999%
+of runtime of all kernels out there.
 
-Laurent
+> 3. Perform writeback only from kswapd. Make other threads
+>    wait on kswapd if memory is low, we can wait and writeback still
+>    has to progress.
+
+What does buy you to think about other threads? The whole trouble is
+that PF_MEMALLOC is global, no matter which thread (pdflush like other
+email to Andi or kswapd here) still it'll deadlock the same way. If
+your intent is to limit the max number of in-flight writepage that
+could be achieved with a sempahore, not by context switching for no
+good reason. kswapd is needed for atomic allocations and to pipeline
+the VM so that the vm runs more likely asynchronous inside kswapd.
+
+> 4. Then allow reclaim of GFP_ATOMIC allocs (see
+>    http://marc.info/?l=linux-kernel&m=118710595617696&w=2). Atomic
+>    reclaim can then also put pages onto the zone laundry lists from where
+>    it is going to be picked up and written out by kswapd ASAP. This one
+>    may be tricky so maybe keep this separate.
+
+That sounds a bit risky, there are latency considerations here to
+make, GFP_ATOMIC will run with irq locally disabled and it may hang
+for indefinite amount of time (O(N)). So irq latency may break and it
+may be better to lose a packet once in a while than to hang
+interrupts. If you want to do this you'd probably need to add a new
+GFP_ATOMIC_RECLAIM or similar.
