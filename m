@@ -1,90 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764682AbXHWOzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764782AbXHWOzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764682AbXHWOzQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 10:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762332AbXHWOzF
+	id S1764782AbXHWOzi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 10:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763175AbXHWOzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 10:55:05 -0400
-Received: from smtp010.mail.ukl.yahoo.com ([217.12.11.79]:38309 "HELO
-	smtp010.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762313AbXHWOzD (ORCPT
+	Thu, 23 Aug 2007 10:55:09 -0400
+Received: from stinky.trash.net ([213.144.137.162]:56231 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762802AbXHWOzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 10:55:03 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=nAEdwPALM+74yJA0Ojc4MVTDvriofAgDEusLTvtr8QnObaBJBhcluG+dXxDo7JNNhpVqKlDcL763cmDsnXGYuQ/bNiBRntSTWCu+7jWzj/G1JG0MMqCiU5mq2eBZ0GoosHEpImHeFsGczUZXKcRuA0Wbn5lV/gnY3AgnipB382I=  ;
-X-YMail-OSG: batMASMVM1m1yfedH27njcMdrS2x0qc8jZRIglt4IQVx07_qrrrVdiN1M1y0GgYbJqmq6wB3hy_qGvIdVxwozOiV4C0Ra8Mv9VprxGYtuYSzrgZL
-From: Blaisorblade <blaisorblade@yahoo.it>
-To: user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [uml-devel] [PATCH 6/6] UML - Fix hostfs style
-Date: Thu, 23 Aug 2007 16:54:59 +0200
-User-Agent: KMail/1.9.7
-Cc: Satyam Sharma <satyam@infradead.org>, Jeff Dike <jdike@addtoit.com>,
-       Andrew Morton <akpm@osdl.org>, Joe Perches <joe@perches.com>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20070817194342.GA8759@c2.user-mode-linux.org> <alpine.LFD.0.999.0708181924020.29105@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0708181924020.29105@enigma.security.iitk.ac.in>
+	Thu, 23 Aug 2007 10:55:07 -0400
+Message-ID: <46CD9F68.2060902@trash.net>
+Date: Thu, 23 Aug 2007 16:53:28 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1313318.Pyyd6JArXv";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200708231655.00034.blaisorblade@yahoo.it>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>,
+       yasuyuki.kozakai@toshiba.co.jp,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: nf_conntrack_ipv4 must be loaded explicitly
+References: <Pine.LNX.4.64.0708021937140.9319@fbirervta.pbzchgretzou.qr> <46B22364.9060506@trash.net> <Pine.LNX.4.64.0708171242450.5492@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708171242450.5492@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: multipart/mixed;
+ boundary="------------010207060406080807010007"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1313318.Pyyd6JArXv
+This is a multi-part message in MIME format.
+--------------010207060406080807010007
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+Jan Engelhardt wrote:
+> On Aug 2 2007 20:33, Patrick McHardy wrote:
+> 
+>>>End result:
+>>>
+>>>After loading nf_conntrack_ipv4.ko, everything works again (also with the
+>>>"bad" ff09b7). But I have to load it explicitly, and I think that
+>>>unfortunately breaks a lot of setups (such as mine) which assume ipv4
+>>>connection tracking is always there.
+>>
+>>I already have a patch for this queued. I'll push it upstream once
+>>I get a new power supply for the box I keep that tree on, hopefully
+>>tommorrow.
+> 
+> 
+> What's that patch looking like?
+
+
+Upstream commit 591e6206. Doesn't it work for you?
+
+--------------010207060406080807010007
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
 
-On sabato 18 agosto 2007, Satyam Sharma wrote:
-> On Fri, 17 Aug 2007, Jeff Dike wrote:
-> > Style fixes in hostfs.
+[NETFILTER]: nf_nat: add symbolic dependency on IPv4 conntrack
 
-> > @@ -328,17 +326,17 @@ int hostfs_readdir(struct file *file, vo
-> > [...]
-> > -		if(error) break;
-> > +		if (error) break;
->
-> 		if (error)
-> 			break;
->
-> > @@ -522,28 +523,28 @@ static int init_inode(struct inode *inod
-> > [...]
-> >  	else type =3D OS_TYPE_DIR;
->
-> I wonder what's the generally accepted / followed coding style for this,
-> actually. Personally I'd prefer:
->
-> 	else
-> 		type =3D OS_TYPE_DIR;
+Loading nf_nat causes the conntrack core to be loaded, but we need IPv4 as
+well.
 
-I strongly agree with this style; beyond style itself, one strong reason is=
-=20
-that joining statements hinder singlestepping through function code (it's=20
-easy to run gdb on UML, and anyway kgdb exists).
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Bye
-=2D-=20
-"Doh!" (cit.), I've made another mistake!
-Paolo Giarrusso, aka Blaisorblade
-Linux registered user n. 292729
-http://www.user-mode-linux.org/~blaisorblade
+---
+commit 591e620693e71e24fb3450a4084217e44b7a60b6
+tree e651e7beaca45a99b89bd63d33419c5b97477a28
+parent ff4ca8273eafbba875a86d333e059e78f292107f
+author Patrick McHardy <kaber@trash.net> Tue, 07 Aug 2007 18:12:01 -0700
+committer David S. Miller <davem@davemloft.net> Tue, 07 Aug 2007 18:12:01 -0700
 
---nextPart1313318.Pyyd6JArXv
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+ include/net/netfilter/ipv4/nf_conntrack_ipv4.h |    2 ++
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    6 ++++++
+ net/ipv4/netfilter/nf_nat_standalone.c         |    2 +-
+ 3 files changed, 9 insertions(+), 1 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+diff --git a/include/net/netfilter/ipv4/nf_conntrack_ipv4.h b/include/net/netfilter/ipv4/nf_conntrack_ipv4.h
+index 7a67160..9bf0598 100644
+--- a/include/net/netfilter/ipv4/nf_conntrack_ipv4.h
++++ b/include/net/netfilter/ipv4/nf_conntrack_ipv4.h
+@@ -21,4 +21,6 @@ extern struct nf_conntrack_l4proto nf_conntrack_l4proto_icmp;
+ extern int nf_conntrack_ipv4_compat_init(void);
+ extern void nf_conntrack_ipv4_compat_fini(void);
+ 
++extern void need_ipv4_conntrack(void);
++
+ #endif /*_NF_CONNTRACK_IPV4_H*/
+diff --git a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+index 64552af..d9b5177 100644
+--- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
++++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+@@ -509,3 +509,9 @@ static void __exit nf_conntrack_l3proto_ipv4_fini(void)
+ 
+ module_init(nf_conntrack_l3proto_ipv4_init);
+ module_exit(nf_conntrack_l3proto_ipv4_fini);
++
++void need_ipv4_conntrack(void)
++{
++	return;
++}
++EXPORT_SYMBOL_GPL(need_ipv4_conntrack);
+diff --git a/net/ipv4/netfilter/nf_nat_standalone.c b/net/ipv4/netfilter/nf_nat_standalone.c
+index 332814d..46cc99d 100644
+--- a/net/ipv4/netfilter/nf_nat_standalone.c
++++ b/net/ipv4/netfilter/nf_nat_standalone.c
+@@ -328,7 +328,7 @@ static int __init nf_nat_standalone_init(void)
+ {
+ 	int ret = 0;
+ 
+-	need_conntrack();
++	need_ipv4_conntrack();
+ 
+ #ifdef CONFIG_XFRM
+ 	BUG_ON(ip_nat_decode_session != NULL);
 
-iD8DBQBGzZ/EqH9OHC+5NscRAu9LAJ9Kfap/sqi4QUvuyIhtj+DEnDHGdgCfbcq9
-eBLRrE2+pLPdltvMN+fcbec=
-=SRqk
------END PGP SIGNATURE-----
-
---nextPart1313318.Pyyd6JArXv--
+--------------010207060406080807010007--
