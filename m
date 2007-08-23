@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933421AbXHWXn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765447AbXHWXns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933421AbXHWXn3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 19:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765049AbXHWXnU
+	id S1765447AbXHWXns (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 19:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761276AbXHWXng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 19:43:20 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:55581 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762884AbXHWXnT (ORCPT
+	Thu, 23 Aug 2007 19:43:36 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:63441 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755387AbXHWXnf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 19:43:19 -0400
+	Thu, 23 Aug 2007 19:43:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:resent-from:resent-to:resent-date:resent-message-id:message-id:in-reply-to:references:from:date:subject:to:cc:mime-version:content-transfer-encoding:content-disposition;
-        b=dG8Xqa7GvBw+0XgQCFhimOxRqpO5GSpko2oSuQDv0XgU7CEQII1/yq/K0kLrnZVWwm4576M/6sFZZS9dkpkARmvPhDK4aTsKEVaEondDkk37xqZl6UhmWrxaUSRnRbHPWx3frbbTi4IjbkkBs5+Q8Y7u4ft8HeQMWREum0MiezA=
-Message-Id: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-In-Reply-To: <Message-Id: <200708240135.56833.jesper.juhl@gmail.com>>
-References: <Message-Id: <200708240135.56833.jesper.juhl@gmail.com>>
-From: Jesper Juhl <jesper.juhl@gmail.com>
-Date: Fri, 24 Aug 2007 01:40:26 +0200
-Subject: [PATCH 01/30] ia64: Remove unnecessary cast of allocation return value in sn_hwperf_enum_objects()
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Mark Goodwin <markgw@sgi.com>, Tony Luck <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, Jes Sorensen <jes@sgi.com>,
-       linux-altix@sgi.com, Jesper Juhl <jesper.juhl@gmail.com>
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Jhvssdw+fOSiD3HDWrYKfCE1hfoeO+cWE7P6IpujaahLEQsAPHY+swcoVywjbZIdIjwYANbdlUgg2vZ8hDDUqS5SozZpCYZWcMfdT2Mgh1iwiVoCK7hAv2zDDmJKzpq1c/ncFfn8etxjpK9FmZVx9H/CFi0QcMbqoDTaSOedn2E=
+Message-ID: <46CE1BA2.8070200@gmail.com>
+Date: Fri, 24 Aug 2007 01:43:30 +0200
+From: Luka Napotnik <luka.napotnik@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: division and cpu usage
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vmalloc() returns a void pointer - no need to cast it.
+Hello.
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
- arch/ia64/sn/kernel/sn2/sn_hwperf.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+I'm new to kernel development and have some questions.
 
-diff --git a/arch/ia64/sn/kernel/sn2/sn_hwperf.c b/arch/ia64/sn/kernel/sn2/sn_hwperf.c
-index df8d5be..1a8e496 100644
---- a/arch/ia64/sn/kernel/sn2/sn_hwperf.c
-+++ b/arch/ia64/sn/kernel/sn2/sn_hwperf.c
-@@ -66,7 +66,8 @@ static int sn_hwperf_enum_objects(int *nobj, struct sn_hwperf_object_info **ret)
- 	}
- 
- 	sz = sn_hwperf_obj_cnt * sizeof(struct sn_hwperf_object_info);
--	if ((objbuf = (struct sn_hwperf_object_info *) vmalloc(sz)) == NULL) {
-+	objbuf = vmalloc(sz);
-+	if (objbuf == NULL) {
- 		printk("sn_hwperf_enum_objects: vmalloc(%d) failed\n", (int)sz);
- 		e = -ENOMEM;
- 		goto out;
--- 
-1.5.2.2
+1. Why can't I divide with regular casting to double ((double)a /
+(double)b)? It gives me strange errors when compiling:
 
+WARNING: "__divdf3" [/root....] undefined!
+WARNING: "__addf3" [/root/...] undefined!
+WARNING: "__floatsidf" [/root/...] undefined!
+
+And if I compile with normal integers, I get zero as the result.
+
+2. I'm trying to get the percentage of CPU used for a certain
+task_struct and figured the following formula:
+
+(task->utime + task->stime) / jiffies
+
+Before calculating I convert all the variables to jiffies. Is this correct?
+
+Please help.
+
+Greets,
+Lukla
