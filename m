@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765310AbXHWQIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765003AbXHWQLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765310AbXHWQIf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 12:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764252AbXHWQIQ
+	id S1765003AbXHWQLf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 12:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764057AbXHWQL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 12:08:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41797 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764109AbXHWQIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 12:08:14 -0400
-Date: Thu, 23 Aug 2007 18:07:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [git pull request] scheduler updates
-Message-ID: <20070823160759.GA2728@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 23 Aug 2007 12:11:28 -0400
+Received: from alnrmhc12.comcast.net ([204.127.225.92]:61637 "EHLO
+	alnrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764053AbXHWQL1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 12:11:27 -0400
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Aug 2007 12:11:27 EDT
+Date: Thu, 23 Aug 2007 09:06:24 -0700
+From: Andrew Burgess <aab@cichlid.com>
+Message-Id: <200708231606.l7NG6OPX017001@cichlid.com>
+To: linux1394-devel@lists.sourceforge.net
+Subject: Firewire lockup on 2.6.22.3 in SMP but not UP, old drivers
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I can pull video via firewire from a set top box using
+test_mpeg2 for hours (97GB is my current record) if using a
+UP kernel. The machine locks hard after about 500MB using an
+SMP kernel. No messages, no altsysreq keys.  It seems to
+lock faster if I make the machine busy (disk and cpu). One
+time it locked up running firewire_tester and once when I
+switched cables between cable tv set top boxes (I think
+while test_mpeg2 was running)
 
-Linus, please pull the latest scheduler git tree from:
+kernel 2.6.22.3 x86_64. I enabled all the mutex debug stuff
+that I could find and turned on the NMI softlock detection
+stuff. Nada. I tried the driver debug stuff but that seems
+more for development (tracing).
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+I did not try a serial console to catch any messages that
+cannot make it through syslog.
 
-It includes six fixes: an s390 task-accounting fix from Christian 
-Borntraeger, sysctl directory permission fixes from Eric W. Biederman, 
-an SMT/MC balancing fix from Suresh Siddha (we under-balanced) and 
-another fix from Suresh for debugging tweak side-effect. Plus there's a 
-sched_clock() quality fix for CPUs that stop the TSC in idle (acked by 
-Len Brown) and a reniced-tasks fixlet.
+The hardware is ASUS A8V Deluxe:
 
-the SMT/MC blancing fix has the highest risk - but since it causes 
-slightly more balancing (instead of less balancing, which is the more 
-risky action) it should be pretty safe. Key workloads still seem fine. 
-Tested on 32-bit and 64-bit x86 and it has passed 200+ make randconfig 
-build tests.
+  00:07.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394 Host Controller (rev 80)
 
-	Ingo
+Google shows this to be common although there are two other
+chip versions out there.
 
----------------->
-Christian Borntraeger (1):
-      sched: accounting regression since rc1
+The PC is about two years old, runs alot of stuff (server,
+compiles, etc) and runs fine SMP until I touch firewire.
 
-Eric W. Biederman (1):
-      sched: fix sysctl directory permissions
+I have ordered a PCI firewire card to eliminate that part of
+the hardware. Its also a VIA chipset.
 
-Ingo Molnar (2):
-      sched: sched_clock_idle_[sleep|wakeup]_event()
-      sched: tweak the sched_runtime_limit tunable
+If that doesn't help, does that make it seem like a driver
+issue? (The UP vs SMP seems an odd symptom for hardware) If
+so, what's the best way to proceed? Debug old drivers or
+switch to new ones?  I have decades of C experience but know
+nothing of 1394.
 
-Suresh Siddha (2):
-      sched: fix broken SMT/MC optimizations
-      sched: skip updating rq's next_balance under null SD
+I want to use firewire with mythtv. Libs used by myth:
 
- arch/i386/kernel/tsc.c        |    1 
- drivers/acpi/processor_idle.c |   32 +++++++++++++++----
- fs/proc/array.c               |   44 +++++++++++++++++----------
- include/linux/sched.h         |    5 +--
- kernel/sched.c                |   68 +++++++++++++++++++++++++++++++-----------
- kernel/sched_debug.c          |    3 +
- 6 files changed, 110 insertions(+), 43 deletions(-)
+  athlon:aab > ldd /usr/bin/myth*|grep 1394|sort|uniq
+  libavc1394.so.0 => /usr/lib64/libavc1394.so.0 (0x0000003141200000)
+  libraw1394.so.8 => /usr/lib64/libraw1394.so.8 (0x000000313f600000)
+  librom1394.so.0 => /usr/lib64/librom1394.so.0 (0x0000003140600000)
+
+How close are these libraries to working with a set top box
+with the new drivers?
+
+Any quick hacks come to mind? Wrap the existing drivers in
+the big kernel lock just to see if that gets things to work?
+(that probably makes it obvious that I'm a kernel newbie :-)
+
+I'll cc lkml for any general debug hints.
+
+Thanks for any help
+Andrew
