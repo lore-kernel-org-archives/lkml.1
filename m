@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbXHWKyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbXHWK52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760147AbXHWKyF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 06:54:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbXHWKxz
+	id S1760255AbXHWK52 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 06:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbXHWK5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 06:53:55 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2974 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754892AbXHWKxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 06:53:54 -0400
-Date: Thu, 23 Aug 2007 06:53:14 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andy Isaacson <adi@hexapodia.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Valdis.Kletnieks@vt.edu,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH]: proc: export a processes resource limits via proc/<pid>
-Message-ID: <20070823105314.GA21034@hmsreliant.think-freely.org>
-References: <20070813140044.GB1960@hmsreliant.think-freely.org> <20070816123538.GA10430@hmsreliant.think-freely.org> <4379.1187338166@turing-police.cc.vt.edu> <20070817105918.GA13937@hmsreliant.think-freely.org> <20070817124547.5415a839.akpm@linux-foundation.org> <20070821185611.GA17822@hexapodia.org> <20070823024036.GP11166@waste.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070823024036.GP11166@waste.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Thu, 23 Aug 2007 06:57:21 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:7697 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753032AbXHWK5V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 06:57:21 -0400
+Subject: Re: [PATCH] s390 appldata_base: Remove module_exit function and
+	modular stuff
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.999.0708230746450.2049@enigma.security.iitk.ac.in>
+References: <alpine.LFD.0.999.0708230706570.2049@enigma.security.iitk.ac.in >
+	 <alpine.LFD.0.999.0708230746450.2049@enigma.security.iitk.ac.in>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 23 Aug 2007 13:01:06 +0200
+Message-Id: <1187866866.6599.6.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 09:40:37PM -0500, Matt Mackall wrote:
-> On Tue, Aug 21, 2007 at 11:56:11AM -0700, Andy Isaacson wrote:
-> > On Fri, Aug 17, 2007 at 12:45:47PM -0700, Andrew Morton wrote:
-> > > On Fri, 17 Aug 2007 06:59:18 -0400
-> > > Neil Horman <nhorman@tuxdriver.com> wrote:
-> > > > Currently, there exists no method for a process to query the resource
-> > > > limits of another process.  They can be inferred via some mechanisms
-> > > > but they cannot be explicitly determined.  Given that this
-> > > > information can be usefull to know during the debugging of an
-> > > > application, I've written this patch which exports all of a
-> > > > processes limits via /proc/<pid>/limits.
-> > > 
-> > > I'm struggling with this a bit.  Sure, it _might_ be handy on some
-> > > occasions to be able to get at this information.  But I've never seen
-> > > anyone ask for it before, and it _is_ determinable by other means, if only
-> > > strace.
-> > 
-> > I've wanted this information on multiple occasions in the past and was
-> > mystified that there was no way to determine it.  And no, I don't feel
-> > that strace is an answer -- given a running process, how do I use strace
-> > to find out what its current ulimits are?
+On Thu, 2007-08-23 at 07:51 +0530, Satyam Sharma wrote: 
+> > BTW the __exit module_exit function appldata_exit() of this driver
+> > fails to unregister_hotcpu_notifier() the notifier_block that was
+> > registered by appldata_init() during module startup. This will lead
+> > to oops if hotplug notification comes after module has been unloaded.
+> > Let's fix this by unregistering the notifier appropriately (before
+> > appldata_offline_cpu()'ing the CPUs).
 > 
-> You stop it and force it to execute rlimit(2) in its context, of
-> course! What could be simpler? 
-> 
-I would think reading a file in /proc would be simpler :), especially if you're
-in a position where attaching to the process through ptrace isnt feasible. For
-instance, if you were an application running as the result of a core dump when
-/proc/sys/kernel/core_pattern were a pipe, preforming your operation wouldn't be
-particularly possible.  Likewise, if your a sysadmin and you want to check what
-your processes limits were, you could follow your method, but I would think you
-would much rather avoid needing to send several ptrace commands to your
-commands, interrupting its work if you didn't have to.
+> Heh, no wonder we never saw this oops before. This code can never be
+> built as a module! :-) But why does it define and implement an __exit
+> marked module_exit(appldata_exit) function in that case ?!
 
-> The reason we never see questions about this is because relatively few
-> people are using limits. Instead we see weekly questions about fork
-> bombs.
-> 
-But we do see questions about this. I've had a few requests, and at least two
-more people have popped up on this thread supporting it.
-
-Regards
-Neil
+I has been a module once for debugging purposes That the module_exit
+function still exists is "historical". We can remove it since it is dead
+code.
 
 -- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
