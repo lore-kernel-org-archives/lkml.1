@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbXHWEcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbXHWFFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757211AbXHWEcJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 00:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbXHWEb4
+	id S1755703AbXHWFFk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 01:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXHWFFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 00:31:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38554
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751090AbXHWEbz (ORCPT
+	Thu, 23 Aug 2007 01:05:35 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47474 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbXHWFFf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 00:31:55 -0400
-Date: Wed, 22 Aug 2007 21:31:53 -0700 (PDT)
-Message-Id: <20070822.213153.94751711.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH]: Fix futex compat bug.
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Aug 2007 01:05:35 -0400
+Date: Thu, 23 Aug 2007 10:48:23 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Dave Hansen <haveblue@us.ibm.com>
+cc: greg@kroah.com, linux-kernel@vger.kernel.org,
+       michal.k.k.piotrowski@gmail.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] make kobject dynamic allocation check use
+ kallsyms_lookup()
+In-Reply-To: <20070822220341.7926F241@kernel>
+Message-ID: <alpine.LFD.0.999.0708231037040.2049@enigma.security.iitk.ac.in>
+References: <20070822220341.7926F241@kernel>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Dave,
 
-The futex list traversal on the compat side appears to have
-a bug.
 
-It's loop termination condition compares:
+On Wed, 22 Aug 2007, Dave Hansen wrote:
+> 
+> One of the top ten sysfs problems is that users use statically
+> allocated kobjects.  This patch reminds them that this is a
+> naughty thing.
 
-	while (compat_ptr(uentry) != &head->list)
+Hmm, I might've missed previous discussion regarding this, but I'm
+curious to know why using statically allocated kobjects is "naughty".
+The code / warnings / printk messages below indicate this is only a
+"silly/janitorial" issue?
 
-But that can't be right because "uentry" has the special
-"pi" indicator bit still potentially set at bit 0.  This
-is cleared by fetch_robust_entry() into the "entry"
-return value.
+The reason I ask is that if it is serious, there is no reason why this
+check cannot be done at build-time itself, instead of this runtime
+kludge in the kernel -- catching potential bugs at build-time is always
+desirable. Modpost or some such tool can be taught to detect kobjects
+allocated statically in vmlinux/modules -- or there can be other build-
+time solutions, possibly. Have you considered such an approach?
 
-What this seems to mean is that the list won't terminate
-when list iteration gets back to the the head.  And we'll
-also process the list head like a normal entry, which could
-cause all kinds of problems.
 
-So we should check for equality with "entry".  That pointer
-is of the non-compat type so we have to do a little casting
-to keep the compiler and sparse happy.
+Thanks,
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/kernel/futex_compat.c b/kernel/futex_compat.c
-index f792136..92af955 100644
---- a/kernel/futex_compat.c
-+++ b/kernel/futex_compat.c
-@@ -64,7 +64,7 @@ void compat_exit_robust_list(struct task_struct *curr)
- 	if (upending)
- 		handle_futex_death((void __user *)pending + futex_offset, curr, pip);
- 
--	while (compat_ptr(uentry) != &head->list) {
-+	while (entry != (struct robust_list *) &head->list) {
- 		/*
- 		 * A pending lock might already be on the list, so
- 		 * dont process it twice:
+Satyam
