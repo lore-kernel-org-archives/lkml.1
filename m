@@ -1,35 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933297AbXHWWa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933540AbXHWWbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933297AbXHWWa5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 18:30:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932621AbXHWW2V
+	id S933540AbXHWWbb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 18:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765360AbXHWW2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 18:28:21 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50690 "EHLO
+	Thu, 23 Aug 2007 18:28:23 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50700 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932519AbXHWW2R (ORCPT
+	with ESMTP id S932574AbXHWW2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 18:28:17 -0400
-Date: Thu, 23 Aug 2007 15:26:19 -0700
+	Thu, 23 Aug 2007 18:28:18 -0400
+Date: Thu, 23 Aug 2007 15:26:26 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, mtk-manpages@gmx.net,
-       benh@kernel.crashing.org, oleg@tv-sign.ru, tglx@linutronix.de,
-       davidel@xmailserver.org, mingo@elte.hu, roland@redhat.com
-Subject: [patch 06/28] signalfd: fix interaction with posix-timers
-Message-ID: <20070823222619.GG18559@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       Gerrit Renker <gerrit@erg.abdn.ac.uk>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 08/28] DCCP: Fix DCCP GFP_KERNEL allocation in atomic
+	context
+Message-ID: <20070823222626.GI18559@kroah.com>
 References: <20070823220656.101239233@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="signalfd-fix-interaction-with-posix-timers.patch"
+Content-Disposition: inline; filename="dccp-fix-dccp-gfp_kernel-allocation-in-atomic-context.patch"
 In-Reply-To: <20070823221811.GA18559@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,60 +40,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+From: Gerrit Renker <gerrit@erg.abdn.ac.uk>
 
-From: Oleg Nesterov <oleg@tv-sign.ru>
+This fixes the following bug reported in syslog:
 
-dequeue_signal:
+[ 4039.051658] BUG: sleeping function called from invalid context at /usr/src/davem-2.6/mm/slab.c:3032
+[ 4039.051668] in_atomic():1, irqs_disabled():0
+[ 4039.051670] INFO: lockdep is turned off.
+[ 4039.051674]  [<c0104c0f>] show_trace_log_lvl+0x1a/0x30
+[ 4039.051687]  [<c0104d4d>] show_trace+0x12/0x14
+[ 4039.051691]  [<c0104d65>] dump_stack+0x16/0x18
+[ 4039.051695]  [<c011371e>] __might_sleep+0xaf/0xbe
+[ 4039.051700]  [<c0157b66>] __kmalloc+0xb1/0xd0
+[ 4039.051706]  [<f090416f>] ccid2_hc_tx_alloc_seq+0x35/0xc3 [dccp_ccid2]
+[ 4039.051717]  [<f09048d6>] ccid2_hc_tx_packet_sent+0x27f/0x2d9 [dccp_ccid2]
+[ 4039.051723]  [<f085486b>] dccp_write_xmit+0x1eb/0x338 [dccp]
+[ 4039.051741]  [<f085603d>] dccp_sendmsg+0x113/0x18f [dccp]
+[ 4039.051750]  [<c03907fc>] inet_sendmsg+0x2e/0x4c
+[ 4039.051758]  [<c033a47d>] sock_aio_write+0xd5/0x107
+[ 4039.051766]  [<c015abc1>] do_sync_write+0xcd/0x11c
+[ 4039.051772]  [<c015b296>] vfs_write+0x118/0x11f
+[ 4039.051840]  [<c015b932>] sys_write+0x3d/0x64
+[ 4039.051845]  [<c0103e7c>] syscall_call+0x7/0xb
+[ 4039.051848]  =======================
 
-	if (__SI_TIMER) {
-		spin_unlock(&tsk->sighand->siglock);
-		do_schedule_next_timer(info);
-		spin_lock(&tsk->sighand->siglock);
-	}
+The problem was that GFP_KERNEL was used; fixed by using gfp_any().
 
-Unless tsk == curent, this is absolutely unsafe: nothing prevents tsk from
-exiting. If signalfd was passed to another process, do_schedule_next_timer()
-is just wrong.
-
-Add yet another "tsk == current" check into dequeue_signal().
-
-This patch fixes an oopsable bug, but breaks the scheduling of posix timers
-if the shared __SI_TIMER signal was fetched via signalfd attached to another
-sub-thread. Mostly fixed by the next patch.
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Michael Kerrisk <mtk-manpages@gmx.net>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Gerrit Renker <gerrit@erg.abdn.ac.uk>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/signal.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/dccp/ccids/ccid2.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -368,7 +368,7 @@ int dequeue_signal(struct task_struct *t
- 	/* We only dequeue private signals from ourselves, we don't let
- 	 * signalfd steal them
- 	 */
--	if (tsk == current)
-+	if (likely(tsk == current))
- 		signr = __dequeue_signal(&tsk->pending, mask, info);
- 	if (!signr) {
- 		signr = __dequeue_signal(&tsk->signal->shared_pending,
-@@ -415,7 +415,7 @@ int dequeue_signal(struct task_struct *t
- 		if (!(tsk->signal->flags & SIGNAL_GROUP_EXIT))
- 			tsk->signal->flags |= SIGNAL_STOP_DEQUEUED;
- 	}
--	if ( signr &&
-+	if (signr && likely(tsk == current) &&
- 	     ((info->si_code & __SI_MASK) == __SI_TIMER) &&
- 	     info->si_sys_private){
- 		/*
+--- a/net/dccp/ccids/ccid2.c
++++ b/net/dccp/ccids/ccid2.c
+@@ -298,7 +298,7 @@ static void ccid2_hc_tx_packet_sent(stru
+ 		int rc;
+ 
+ 		ccid2_pr_debug("allocating more space in history\n");
+-		rc = ccid2_hc_tx_alloc_seq(hctx, CCID2_SEQBUF_LEN, GFP_KERNEL);
++		rc = ccid2_hc_tx_alloc_seq(hctx, CCID2_SEQBUF_LEN, gfp_any());
+ 		BUG_ON(rc); /* XXX what do we do? */
+ 
+ 		next = hctx->ccid2hctx_seqh->ccid2s_next;
 
 -- 
