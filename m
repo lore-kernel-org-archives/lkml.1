@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761334AbXHWTkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761441AbXHWTpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761334AbXHWTkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 15:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbXHWTkG
+	id S1761441AbXHWTpj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 15:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbXHWTp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 15:40:06 -0400
-Received: from waste.org ([66.93.16.53]:45581 "EHLO waste.org"
+	Thu, 23 Aug 2007 15:45:28 -0400
+Received: from 1wt.eu ([62.212.114.60]:2287 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750922AbXHWTkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 15:40:05 -0400
-Date: Thu, 23 Aug 2007 14:40:37 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       josh@kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] Make rcutorture RNG use temporal entropy
-Message-ID: <20070823194037.GW30556@waste.org>
-References: <20070816024904.GA5312@linux.vnet.ibm.com> <20070817115356.cb201e42.akpm@linux-foundation.org> <20070817200022.GH8464@linux.vnet.ibm.com> <20070823180658.GQ11166@waste.org> <20070823185830.GC8371@linux.vnet.ibm.com>
-MIME-Version: 1.0
+	id S1752579AbXHWTp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 15:45:27 -0400
+Date: Thu, 23 Aug 2007 21:27:09 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Prakash Punnoor <prakash@punnoor.de>, Greg KH <gregkh@suse.de>,
+       stable@kernel.org, netdev@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>, linux-kernel@vger.kernel.org,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: [PATCH] fix realtek phy id in forcedeth
+Message-ID: <20070823192709.GA22729@1wt.eu>
+References: <20070822083844.%N@1wt.eu> <20070822204225.GD14132@1wt.eu> <20070822230526.GC32121@suse.de> <200708231750.45257.prakash@punnoor.de> <20070823165513.GA6341@kroah.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070823185830.GC8371@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070823165513.GA6341@kroah.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 11:58:31AM -0700, Paul E. McKenney wrote:
-> On Thu, Aug 23, 2007 at 01:06:58PM -0500, Matt Mackall wrote:
-> > On Fri, Aug 17, 2007 at 01:00:22PM -0700, Paul E. McKenney wrote:
-> > > On Fri, Aug 17, 2007 at 11:53:56AM -0700, Andrew Morton wrote:
-> > > > On Wed, 15 Aug 2007 19:49:04 -0700
-> > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > Repost of http://lkml.org/lkml/2007/8/10/472 made available by request.
-> > > > > 
-> > > > > The locking used by get_random_bytes() can conflict with the
-> > > > > preempt_disable() and synchronize_sched() form of RCU.  This patch changes
-> > > > > rcutorture's RNG to gather entropy from the new cpu_clock() interface
-> > > > > (relying on interrupts, preemption, daemons, and rcutorture's reader
-> > > > > thread's rock-bottom scheduling priority to provide useful entropy),
-> > > > > and also adds and EXPORT_SYMBOL_GPL() to make that interface available
-> > > > > to GPLed kernel modules such as rcutorture.
-> > > > > 
-> > > > > Passes several hours of rcutorture.
-> > > > 
-> > > > Please explain what "conflict with" means so that I can work out if
-> > > > this is a needed-in-2.6.23 change, thanks.
-> > > 
-> > > Not needed in 2.6.23.  This change falls into the "preparation for -rt"
-> > > category.  Also in the "don't unnecessarily eat entropy, leave some for
-> > > the people needing crypographically secure randomness" category.
-> > 
-> > We've had several calls for a more fast and loose version of
-> > get_random_bytes. Generalizing one of the cookie generation functions
-> > is probably a good way to go.
-> 
-> Are you thinking in terms of secure_tcp_syn_cookie(), or did you have
-> something else in mind?
+Hi Greg,
 
-Yes. Using a hash function rather than a trivial LFSR is preferable.
-But pulling the guts out and giving it an n-bytes interface like
-get_random_bytes().
+On Thu, Aug 23, 2007 at 09:55:13AM -0700, Greg KH wrote:
+> It might help if someone sends a real patch that can be applied :)
 
+This is getting really silly now :-) We're all wasting more time
+wondering who will send the patch than posting it. I've lost, I got
+fed up first, so here it is. Please apply to mainline then stable.
+
+Thanks,
+Willy
+
+--
+
+>From a0e2922b99eedd9863232368ea2afe072c52783e Mon Sep 17 00:00:00 2001
+From: Willy Tarreau <w@1wt.eu>
+Date: Thu, 23 Aug 2007 21:35:41 +0200
+Subject: [PATCH] fix realtek phy id in forcedeth
+
+As noticed by Chuck Ebbert, commit c5e3ae8823693b260ce1f217adca8add1bc0b3de
+introduced a copy-paste typo, as realtek phy is 0x732 and not 0x1c1. Obvious
+fix below suggested by Ayaz Abdulla.
+
+Signed-off-by: Willy Tarreau <w@1wt.eu>
+Cc: Ayaz Abdulla <aabdulla@nvidia.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+---
+ drivers/net/forcedeth.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+index 10f4e3b..1938d6d 100644
+--- a/drivers/net/forcedeth.c
++++ b/drivers/net/forcedeth.c
+@@ -552,7 +552,7 @@ union ring_type {
+ #define PHY_OUI_MARVELL	0x5043
+ #define PHY_OUI_CICADA	0x03f1
+ #define PHY_OUI_VITESSE	0x01c1
+-#define PHY_OUI_REALTEK	0x01c1
++#define PHY_OUI_REALTEK	0x0732
+ #define PHYID1_OUI_MASK	0x03ff
+ #define PHYID1_OUI_SHFT	6
+ #define PHYID2_OUI_MASK	0xfc00
 -- 
-Mathematics is the supreme nostalgia of our time.
+1.5.2.5
+
