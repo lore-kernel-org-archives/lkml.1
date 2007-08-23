@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933889AbXHWWdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933964AbXHWWe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933889AbXHWWdz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 18:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933118AbXHWW3A
+	id S933964AbXHWWe2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 18:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933125AbXHWW3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 18:29:00 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:49292 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933069AbXHWW27 convert rfc822-to-8bit (ORCPT
+	Thu, 23 Aug 2007 18:29:03 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50819 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933114AbXHWW3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 18:28:59 -0400
-Date: Thu, 23 Aug 2007 15:27:36 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>, andre@finow14.de,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [patch 1/1] fix a trivial typo in scripts/checkstack.pl
-Message-Id: <20070823152736.fea4ddf7.randy.dunlap@oracle.com>
-In-Reply-To: <20070823141116.87b10f84.akpm@linux-foundation.org>
-References: <20070823125227.294913273@finow14.de>
-	<20070823125540.GA19389@ahaupt-debian-vm.localdomain>
-	<20070823131302.GA24870@lazybastard.org>
-	<20070823141116.87b10f84.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 23 Aug 2007 18:29:00 -0400
+Date: Thu, 23 Aug 2007 15:26:58 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 13/28] SNAP: Fix SNAP protocol header accesses.
+Message-ID: <20070823222658.GN18559@kroah.com>
+References: <20070823220656.101239233@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="snap-fix-snap-protocol-header-accesses.patch"
+In-Reply-To: <20070823221811.GA18559@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Aug 2007 14:11:16 -0700 Andrew Morton wrote:
+-stable review patch.  If anyone has any objections, please let us know.
 
-> On Thu, 23 Aug 2007 15:13:02 +0200
-> Jörn Engel <joern@logfs.org> wrote:
-> 
-> > Trivial change in a comment.
-> > 
-> > Signed-off-by: Jörn Engel <joern@logfs.org>
-> > Signed-off-by: Andre Haupt <andre@finow14.de>
-> > ---
-> > Index: linus/scripts/checkstack.pl
-> > ===================================================================
-> > --- linus.orig/scripts/checkstack.pl	2007-08-23 14:25:03.000000000 +0200
-> > +++ linus/scripts/checkstack.pl	2007-08-23 14:42:13.000000000 +0200
-> > @@ -14,7 +14,7 @@
-> >  #	M68k port by Geert Uytterhoeven and Andreas Schwab
-> >  #
-> >  #	Usage:
-> > -#	objdump -d vmlinux | stackcheck.pl [arch]
-> > +#	objdump -d vmlinux | scripts/checkstack.pl [arch]
-> >  #
-> >  #	TODO :	Port to all architectures (one regex per arch)
-> 
-> Thanks, I forwarded this to Andy.  I prefer not to apply checkpatch
-> patches directly to -mm as it's still under a considerable amount of
-> development and anything which I apply would just get tangled up with
-> Andy's next update.
+------------------
 
-That's checkstack, not checkpatch...
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-The patch is correct, but most people use it (checkstack) via
-  make checkstack
-AFAIK.
+The snap_rcv code reads 5 bytes so we should make sure that
+we have 5 bytes in the head before proceeding.
 
+Based on diagnosis and fix by Evgeniy Polyakov, reported by
+Alan J. Wylie.
+
+Patch also kills the skb->sk assignment before kfree_skb
+since it's redundant.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+ net/802/psnap.c |   17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
+
+--- a/net/802/psnap.c
++++ b/net/802/psnap.c
+@@ -55,6 +55,9 @@ static int snap_rcv(struct sk_buff *skb,
+ 		.type = __constant_htons(ETH_P_SNAP),
+ 	};
+ 
++	if (unlikely(!pskb_may_pull(skb, 5)))
++		goto drop;
++
+ 	rcu_read_lock();
+ 	proto = find_snap_client(skb_transport_header(skb));
+ 	if (proto) {
+@@ -62,14 +65,18 @@ static int snap_rcv(struct sk_buff *skb,
+ 		skb->transport_header += 5;
+ 		skb_pull_rcsum(skb, 5);
+ 		rc = proto->rcvfunc(skb, dev, &snap_packet_type, orig_dev);
+-	} else {
+-		skb->sk = NULL;
+-		kfree_skb(skb);
+-		rc = 1;
+ 	}
+-
+ 	rcu_read_unlock();
++
++	if (unlikely(!proto))
++		goto drop;
++
++out:
+ 	return rc;
++
++drop:
++	kfree_skb(skb);
++	goto out;
+ }
+ 
+ /*
+
+-- 
