@@ -1,86 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763591AbXHWMfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762117AbXHWMp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763591AbXHWMfn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 08:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761334AbXHWMfH
+	id S1762117AbXHWMp6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 08:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759211AbXHWMpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 08:35:07 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:60180 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759352AbXHWMfE (ORCPT
+	Thu, 23 Aug 2007 08:45:50 -0400
+Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:2449 "EHLO
+	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756302AbXHWMpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 08:35:04 -0400
-Message-ID: <46CD7EF9.5000802@anagramm.de>
-Date: Thu, 23 Aug 2007 14:35:05 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 23 Aug 2007 08:45:49 -0400
+Message-ID: <46CD8173.1020606@superbug.co.uk>
+Date: Thu, 23 Aug 2007 13:45:39 +0100
+From: James Courtier-Dutton <James@superbug.co.uk>
+User-Agent: Thunderbird 2.0.0.4 (Windows/20070604)
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: shaneed cm <just4kernel@gmail.com>, linux-kernel@vger.kernel.org
-Subject: OT: Re: request for Linux kernel related project ideas
-References: <4bd3aab60708230110i65208672u89048fcc511ba0c5@mail.gmail.com> <46CD76D6.6070409@anagramm.de> <Pine.LNX.4.64.0708230757330.4181@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0708230757330.4181@localhost.localdomain>
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+CC: Jan Engelhardt <jengelh@computergmbh.de>,
+       Richard Ballantyne <richardballantyne@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: file system for solid state disks
+References: <6278d2220708230155j18248f2cr3cc697a7acbaa930@mail.gmail.com>
+In-Reply-To: <6278d2220708230155j18248f2cr3cc697a7acbaa930@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX1+7T/qDcTv6pNxxYOSUFzagMjbhEhBDrfamdKd
- vNybjxiE7YPLY9FZACy1yLFq6GCSWKElNAoJtwZ/OcYrfLiLfM
- Mad8Hnn/4xgKJWMHQ//0g==
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day schrieb:
-> On Thu, 23 Aug 2007, Clemens Koller wrote:
-> 
->> shaneed cm schrieb:
->>> Hi,
->>> This is a request for Linux kernel related project ideas.
->>>  I am Computer Science Engineering final year student.  We have to do
->>> a project of one year duration . I formed a group of two and we
->>> decided to do a project in Linux kernel. Our interests are in Virtual
->>> memory management, file system, process scheduling and load balancing
->>> in Linux clusters.  Last year we did a study of Linux's page
->>> replacement mechanism.  As I am not experienced as you people, please
->>> suggest me some ideas.
->> Just for an example:
->> Checkout what filesystem / caching / scheduling policy is most
->> suitable for Solid State PATA/SATA Flashdisks and write / modify
->> a kernel scheduler to support it.
-> 
-> i'm not sure that it's appropriate for LKML folks to be giving anyone
-> suggestions for projects.
+Daniel J Blueman wrote:
+> On 23 Aug, 07:00, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>   
+>> On Aug 23 2007 01:01, Richard Ballantyne wrote:
+>>     
+>>> What file system that is already in the linux kernel do people recommend
+>>> I use for my laptop that now contains a solid state disk?
+>>>       
+>> If I had to choose, the list of options seems to be:
+>>
+>> - logfs
+>>   [unmerged]
+>>
+>> - UBI layer with any fs you like
+>>   [just a guess]
+>>
+>> - UDF in Spared Flavor (mkudffs --media-type=cdrw --utf8)
+>>   [does not support ACLs/quotas]
+>>     
+>
+> Isn't it that with modern rotational wear-levelling, re-writing hot
+> blocks many times is not an issue, as they are internally moved around
+> anyway? So, using a journalled filesystem such as ext3 is still good
+> (robustness and maturity in mind). Due to lack of write buffering,
+> perhaps a wandering log (journal) filesystem would be more suitable
+> though? I use ext3 on my >35MB/s compact flash filesystem.
+>
+> I can see there being advantage in selecting a filesystem which is
+> lower complexity due to no additional spatial optimisation complexity,
+> but those advantages do buy other efficiency (eg the Orlov allocator
+> reducing fragmentation, thus less overhead), right?
+>
+> Also, it would be natural to employ 'elevator=none', but perhaps there
+> is a small advantage in holding a group of flash blocks 'ready' (like
+> SDRAM pages being selected on-chip for lower bus access latency) -
+> however this no longer holds when logical->physical remapping is
+> performed, so perhaps it's better without an elevator.
+>
+> Clearly, benchmarks speak...but perhaps it would make sense to have
+> libata disable the elevator for the (compact) flash block device?
+>
+> Daniel
+>   
 
-I don't care so much. The answer should have been a hint that
-just some minutes ago, we had a thread on this list about
-Solid State Flash disks... it could be interesting to
-spend some brain cells in that area - just for an example
-...and there are so many.
+Also, sector read ahead will actually have a performance impact on 
+Flash, instead of speed things up with a spinning disc.
+For example, a request might read 128 sectors instead of the one 
+requested at little or no extra performance impact for a spinning disc.
+For flash, reading 128 sectors instead of the one requested will have a 
+noticeable performance impact.
+Spinning discs have high seek latency, low serial sector read latency 
+and equal latency for read/write
+Flash has low seek latency, high serial sector read latency and longer 
+write than read times.
 
- >  the eventual choice of project should be
-> based on what *shaneed* wants, not what other people tell him he
-> should be doing.
+James
 
-Propably he doesn't know yet what he wants?
-
-> in addition, sometimes part of the work involved in a school project
-> involves doing enough research to just make the *choice*.  what
-> shaneed is asking is that others do that work for him.  IMHO, he
-> should be told politely but firmly that selecting a topic is *his*
-> problem.  that's just part of the academic process.
-
-Asking people with more experience what's needed is in my point
-of view also a reasonably academic process to make progress in the
-right direction. IMHO that's one of the main reasons why
-open projects work.
-
-Regards,
--- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
