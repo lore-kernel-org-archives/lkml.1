@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762935AbXHWNDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762981AbXHWNHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762935AbXHWNDv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 09:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760708AbXHWNDn
+	id S1762981AbXHWNHn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 09:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759398AbXHWNHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 09:03:43 -0400
-Received: from il.qumranet.com ([82.166.9.18]:35510 "EHLO il.qumranet.com"
+	Thu, 23 Aug 2007 09:07:35 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:58304 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758085AbXHWNDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 09:03:42 -0400
-Message-ID: <46CD85AC.7050805@argo.co.il>
-Date: Thu, 23 Aug 2007 16:03:40 +0300
-From: Avi Kivity <avi@argo.co.il>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S1757595AbXHWNHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 09:07:34 -0400
+Date: Thu, 23 Aug 2007 14:07:32 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org
+Subject: Re: [BUG] 2.6.23-rc3-mm1 kernel BUG at mm/page_alloc.c:2876!
+Message-ID: <20070823130732.GC18456@skynet.ie>
+References: <46CC9A7A.2030404@linux.vnet.ibm.com> <20070822134800.ce5a5a69.akpm@linux-foundation.org> <20070822135024.dde8ef5a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Gerald Britton <gbritton@doomcom.org>
-CC: Michael Smith <msmith@xiph.org>, linux-kernel@vger.kernel.org,
-       Andy Wingo <wingo@fluendo.com>
-Subject: Re: gettimeofday() jumping into the future
-References: <3c1737210708230408i7a8049a9m5db49e6c4d89ab62@mail.gmail.com> <20070823113648.GA5405@zante.sekrit.org>
-In-Reply-To: <20070823113648.GA5405@zante.sekrit.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070822135024.dde8ef5a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerald Britton wrote:
-> On Thu, Aug 23, 2007 at 01:08:27PM +0200, Michael Smith wrote:
->   
->> Hi,
->>
->> We've been seeing some strange behaviour on some of our applications
->> recently. I've tracked this down to gettimeofday() returning spurious
->> values occasionally.
->>
->> Specifically, gettimeofday() will suddenly, for a single call, return
->> a value about 4398 seconds (~1 hour 13 minutes) in the future. The
->> following call goes back to a normal value.
->>     
->
-> I have seen this as well (on a 2.6.20.4 kernel).  The value returned was
-> always identical each time the glitch occured (just a little over 4398
-> seconds).  I saw it watching packet receive timestamps and on the system in
-> question, it would generally hit this problem around once a minute.  When
-> moving forward to a 2.6.21 kernel, the problem seemed to go away (also back
-> to 2.6.17, unfortunately I didn't have any sample points inbetween).
-> I didn't have free time to spend bisecting attempting to find when the
-> behavior started or stopped.
->
->   
+On (22/08/07 13:50), Andrew Morton didst pronounce:
+> On Wed, 22 Aug 2007 13:48:00 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > This:
+> > 
+> > --- a/mm/page_alloc.c~a
+> > +++ a/mm/page_alloc.c
+> > @@ -2814,6 +2814,8 @@ static int __cpuinit process_zones(int c
+> >  	return 0;
+> >  bad:
+> >  	for_each_zone(dzone) {
+> > +		if (!populated_zone(zone))
+> > +			continue;		
+> >  		if (dzone == zone)
+> >  			break;
+> >  		kfree(zone_pcp(dzone, cpu));
+> > _
+> > 
+> > might help avoid the crash
+> 
+> err, make that
+> 
 
-That value, in nanoseconds, is 0x3fffd3a4c00.  The next second is 
-0x40038d51600.  Is the wraparound at (0x400 << 32) significant?
+We're already in the error path at this point and it's going to blow up.
+The real problem is kmalloc_node() returning NULL for whatever reason.
+
+> --- a/mm/page_alloc.c~a
+> +++ a/mm/page_alloc.c
+> @@ -2814,6 +2814,8 @@ static int __cpuinit process_zones(int c
+>  	return 0;
+>  bad:
+>  	for_each_zone(dzone) {
+> +		if (!populated_zone(dzone))
+> +			continue;
+>  		if (dzone == zone)
+>  			break;
+>  		kfree(zone_pcp(dzone, cpu));
+> _
+> 
+> 
 
 -- 
-error compiling committee.c: too many arguments to function
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
