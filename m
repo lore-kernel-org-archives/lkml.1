@@ -1,144 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762849AbXHWObm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763140AbXHWOiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762849AbXHWObm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 10:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759215AbXHWObd
+	id S1763140AbXHWOiY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 10:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761541AbXHWOiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 10:31:33 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:34874 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759066AbXHWObc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 10:31:32 -0400
-Date: Thu, 23 Aug 2007 16:31:31 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Martin Vogt <vogt@itwm.fraunhofer.de>
-cc: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: fs corruption by doing nothing
-In-Reply-To: <46CD92B6.5090900@itwm.fraunhofer.de>
-Message-ID: <Pine.LNX.4.64.0708231625360.32316@fbirervta.pbzchgretzou.qr>
-References: <46CD92B6.5090900@itwm.fraunhofer.de>
+	Thu, 23 Aug 2007 10:38:15 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:51903 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761522AbXHWOiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 10:38:14 -0400
+Date: Thu, 23 Aug 2007 09:37:45 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: moriai.satoshi@lab.ntt.co.jp, Andrew Morton <akpm@linux-foundation.org>,
+       ecryptfs-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Ecryptfs-devel] [PATCH] eCryptfs: fix possible fault in ecryptfs_sync_page
+Message-ID: <20070823143745.GM22689@halcrow.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+References: <200708230742.AA00247@paprika.lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708230742.AA00247@paprika.lab.ntt.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 23, 2007 at 04:42:59PM +0900, Ryusuke Konishi wrote:
+> This will avoid a possible fault in ecryptfs_sync_page().
 
-On Aug 23 2007 15:59, Martin Vogt wrote:
->
->Its unclear if this is a knoppix bug, but reiserfs
->simply tries to "correct something" which is wrong.
+Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
 
-I agree that this should not happen, especially not on RAID1
-if the RAID superblock is of version 0.90 or 1.0.
+Note that there are other outstanding issues with eCryptfs on NFS. For
+instance, prepare_write()/commit_write() have gone away in -mm,
+leading to an oops when eCryptfs tries to call them directly, which is
+well deserved, since eCryptfs really should not be doing that. Unionfs
+has just two places where it calls vfs_read() and vfs_write()
+respectively; eCryptfs is a bit more complex, with multiple write
+paths that end up writing encrypted data and updating metadata in the
+header. I am currently trying to find a way to convert everything over
+to vfs_read() and vfs_write() in eCryptfs, in a way that does not
+ultimately result in a kernel hang.
 
->>ReiserFS: sda2: found reiserfs format "3.6" with standard journal
->>ReiserFS: sda2: using ordered data mode
->>ReiserFS: sda2: warning: sh-461: journal_init: wrong transaction max size
->>(144767). Changed to 1024
->
->^^^^^^^^^^here
->
->>ReiserFS: sdb2: found reiserfs format "3.6" with standard journal
->>ReiserFS: sdb2: using ordered data mode
->>ReiserFS: sdb2: warning: sh-461: journal_init: wrong transaction max size
->>(144767). Changed to 1024
->
->^^^^^^^^^^here
-
->After that the filesystem is completely broken.
->
->The setup:
->
->The fileserver is a mirror raid, two drives:
->
->>DEVICE /dev/sda1 /dev/sdb1 /dev/sda2 /dev/sdb2
->>ARRAY /dev/md0 level=raid1 num-devices=2 devices=/dev/sda1,/dev/sdb1 name=0
->>UUID=bd639458:60844c49:38db9f1f:61e51054
->>ARRAY /dev/md1 level=raid1 num-devices=2 devices=/dev/sda2,/dev/sdb2 name=1
->>UUID=016fdb8b:4d1e2ba7:9734a5c9:f4e84a24
->
->
->So knoppix should _not_ identify the drives in the fstab
->(1. Error)
->fstab:
->># Added by KNOPPIX
->>/dev/sda1 /media/sda1 ext3 noauto,users,exec 0 0
->># Added by KNOPPIX
->>/dev/sda2 /media/sda2 reiserfs noauto,users,exec 0 0
->># Added by KNOPPIX
->>/dev/sdb1 /media/sdb1 ext3 noauto,users,exec 0 0
->># Added by KNOPPIX
->>/dev/sdb2 /media/sdb2 reiserfs noauto,users,exec 0 0
->
->And reiserfs should not try to correct something, without
->even issuing a mount command.
->(2. Error)
->>ReiserFS: sda2: warning: sh-461: journal_init: wrong transaction max size
->>(144767). Changed to 1024
->>ReiserFS: sdb2: warning: sh-461: journal_init: wrong transaction max size
->>(144767). Changed to 1024
-
-I suppose someone did issue a mount. That is what
-
-	mount -t auto /dev/foo /test
-
-will do - it tries all currently loaded filesystems. (And hence, an ext3 might
-get recognized as an ext2.) But at least, and thankfully, this will fail if the
-md device is already up.
-
->This is the history of what I typed:
->
->root@Knoppix:/# history
->    1  mdrun
->    2  modprobe raid1
->    3  mdrun
->    4  vgscan
->    5  vgchange -a y
->    6  mkdir /newroot
->    7  mount /dev/system3/slash /newroot/
-
-mdrun - what is that?
-
->1: failed because the raid1 driver was missing
->The other commands then bring up the root device,
->but a chroot to /newroot fails. (filesystem completely
->broken)
->
->Is this bug reproducible?
->No.
->
->
->I did the same procedure today for, I think 6 times or so,
->this did all work. (same machine, clean raid,lvm,reiserfs)
->I had this bug some weeks ago on another fileserver, with
->different hardware. I thought, well ok. But now its
->on this hardware the same, so there is really something
->broken.
->
->>Linux Knoppix 2.6.19 #7 SMP PREEMPT Sun Dec 17 22:01:07 CET 2006 i686
->>GNU/Linux
->
->I had on this machine software irq lockups, which were gone
->after a BIOS update and disable hyperthreading and L3 cache.
->So maybe its preempt related too?
-
-Does knoppix use PREEMPT_BKL?
-
->Even if knoppix should not be used as a rescue/live CD, then
->the reiserfs module should not try to correct something,
->this should be done by another tool.(fsck.reiserfs or a module option...)
->
->Well ok, the obvious workaround is not to use reiserfs
->in a setup md->lvm->reiserfs.
-
-Maybe 4kstacks related (although very unlikely)?
-
->Does XFS or ext3 has such problems?
->
->(dmesg as attachement)
->
->regards,
-
-	Jan
--- 
+> In the function, eCryptfs calls sync_page() method of a lower 
+> filesystem without checking its existence.  However, there 
+> are many filesystems that don't have this method including
+> network filesystems such as NFS, AFS, and so forth.
+> They may fail when an eCryptfs page is waiting for lock.
+> 
+> Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+> ---
+>  fs/ecryptfs/mmap.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/ecryptfs/mmap.c b/fs/ecryptfs/mmap.c
+> index e4ab7bc..fd3f94d 100644
+> --- a/fs/ecryptfs/mmap.c
+> +++ b/fs/ecryptfs/mmap.c
+> @@ -834,7 +834,8 @@ static void ecryptfs_sync_page(struct page *page)
+>  		ecryptfs_printk(KERN_DEBUG, "find_lock_page failed\n");
+>  		return;
+>  	}
+> -	lower_page->mapping->a_ops->sync_page(lower_page);
+> +	if (lower_page->mapping->a_ops->sync_page)
+> +		lower_page->mapping->a_ops->sync_page(lower_page);
+>  	ecryptfs_printk(KERN_DEBUG, "Unlocking page with index = [0x%.16x]\n",
+>  			lower_page->index);
+>  	unlock_page(lower_page);
+> 
+> -------------------------------------------------------------------------
+> This SF.net email is sponsored by: Splunk Inc.
+> Still grepping through log files to find problems?  Stop.
+> Now Search log events and configuration files using AJAX and a browser.
+> Download your FREE copy of Splunk now >>  http://get.splunk.com/
+> _______________________________________________
+> eCryptfs-devel mailing list
+> eCryptfs-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/ecryptfs-devel
