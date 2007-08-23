@@ -1,121 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763954AbXHWVll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933051AbXHWVmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763954AbXHWVll (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 17:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764205AbXHWViy
+	id S933051AbXHWVmJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 17:42:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763269AbXHWViz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 17:38:54 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:55582 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932390AbXHWViw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 17:38:52 -0400
-Date: Thu, 23 Aug 2007 17:38:09 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Antoine Martin <antoine@nagafix.co.uk>
-Subject: [PATCH 5/7] UML - Sysrq and mconsole fixes
-Message-ID: <20070823213809.GA9100@c2.user-mode-linux.org>
+	Thu, 23 Aug 2007 17:38:55 -0400
+Received: from mailhub.hp.com ([192.151.27.10]:60570 "EHLO mailhub.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763112AbXHWVix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 17:38:53 -0400
+From: "Bob Picco" <bob.picco@hp.com>
+Date: Thu, 23 Aug 2007 17:38:49 -0400
+To: john stultz <johnstul@us.ibm.com>
+Cc: "Luck, Tony" <tony.luck@intel.com>, Paolo Ornati <ornati@fastwebnet.it>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bob Picco <bob.picco@hp.com>
+Subject: Re: "double" hpet clocksource && hard freeze [bisected]
+Message-ID: <20070823213849.GA7617@localhost>
+References: <20070823222115.122a37ca@localhost> <617E1C2C70743745A92448908E030B2A023EB2E1@scsmsx411.amr.corp.intel.com> <1187903135.6024.18.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <1187903135.6024.18.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the passing of printk output back to the mconsole client.  The
-existing code was somewhat confused, accumulating output in a buffer,
-but writing it out entirely whenever a new chunk was added.  This is
-fixed.
+john stultz wrote:	[Thu Aug 23 2007, 05:05:35PM EDT]
+> On Thu, 2007-08-23 at 13:41 -0700, Luck, Tony wrote:
+> > > I have a double "hpet" entry in "available_clocksource":
+> > >	$ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> > >	tsc hpet hpet acpi_pm jiffies
+> > 
+> > Oops.  If seems that both drivers/char/hpet.c and arch/x86_64/kernel/hpet.c
+> > both register a clocksource named "hpet".  Probably a result of bringing
+> > back to life a long lost patch, and having someone else (John Stultz, according
+> > to git blame) make a similar change to a different file in the intervening
+> > time.
+> > 
+> > Presumably the thing to do would be merge the x86_64 specific version
+> > into the drivers/char/hpet.c version?
+> 
+> Ugh. Yea. i386 has an hpet clocksource as well. We should kill the
+> duplication, but at the moment I'm not comfortable that the
+> driver/char/hpet.c is ok to be used for i386/x86_64 (Bob: Do you know
+> why the shift value is only 10?).
+No I don't have a clue why Pete chose this value.
+> 
+> 
+> I'm a little surprised by this, as the clocksource code use to prevent
+> duplicate named clocksources from being registered, so I'm not sure how
+> that check got dropped.  Also I'm not quite sure I see where the hard
+> freeze is coming from.
+> 
+> My initial reaction would be to either ifdef ia64 implementation in
+> drivers/char/hpet.c or move the code under the ia64 arch dir until it is
+> really usable by all arches.
+> 
+> Bob, your thoughts?
+It appears the ACPI for this platform might work. We don't know because
+of a hpet driver probe error discussed below. I assume you're suggesting
+the driver is only required by ia64? I think that might not be true.
 
-The earlier include cleanups caused linux/sysrq.h to not be included -
-this is fixed by adding the include back, under CONFIG_MAGIC_SYSRQ.
-
-CONFIG_MAGIC_SYSRQ is also defaulted to on in defconfig.
-
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- arch/um/defconfig               |    2 +-
- arch/um/drivers/mconsole_kern.c |   23 +++++++++--------------
- 2 files changed, 10 insertions(+), 15 deletions(-)
-
-Index: linux-2.6.22/arch/um/drivers/mconsole_kern.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/mconsole_kern.c	2007-08-23 12:56:16.000000000 -0400
-+++ linux-2.6.22/arch/um/drivers/mconsole_kern.c	2007-08-23 13:10:11.000000000 -0400
-@@ -632,10 +632,9 @@ struct mconsole_output {
- static DEFINE_SPINLOCK(client_lock);
- static LIST_HEAD(clients);
- static char console_buf[MCONSOLE_MAX_DATA];
--static int console_index = 0;
- 
- static void console_write(struct console *console, const char *string,
--			  unsigned len)
-+			  unsigned int len)
- {
- 	struct list_head *ele;
- 	int n;
-@@ -643,24 +642,18 @@ static void console_write(struct console
- 	if (list_empty(&clients))
- 		return;
- 
--	while (1) {
--		n = min((size_t) len, ARRAY_SIZE(console_buf) - console_index);
--		strncpy(&console_buf[console_index], string, n);
--		console_index += n;
-+	while (len > 0) {
-+		n = min((size_t) len, ARRAY_SIZE(console_buf));
-+		strncpy(console_buf, string, n);
- 		string += n;
- 		len -= n;
--		if (len == 0)
--			return;
- 
- 		list_for_each(ele, &clients) {
- 			struct mconsole_output *entry;
- 
- 			entry = list_entry(ele, struct mconsole_output, list);
--			mconsole_reply_len(entry->req, console_buf,
--					   console_index, 0, 1);
-+			mconsole_reply_len(entry->req, console_buf, n, 0, 1);
- 		}
--
--		console_index = 0;
- 	}
- }
- 
-@@ -690,8 +683,7 @@ static void with_console(struct mc_reque
- 
- 	(*proc)(arg);
- 
--	mconsole_reply_len(req, console_buf, console_index, 0, 0);
--	console_index = 0;
-+	mconsole_reply_len(req, "", 0, 0, 0);
- 
- 	spin_lock_irqsave(&client_lock, flags);
- 	list_del(&entry.list);
-@@ -699,6 +691,9 @@ static void with_console(struct mc_reque
- }
- 
- #ifdef CONFIG_MAGIC_SYSRQ
-+
-+#include <linux/sysrq.h>
-+
- static void sysrq_proc(void *arg)
- {
- 	char *op = arg;
-Index: linux-2.6.22/arch/um/defconfig
-===================================================================
---- linux-2.6.22.orig/arch/um/defconfig	2007-08-23 12:56:15.000000000 -0400
-+++ linux-2.6.22/arch/um/defconfig	2007-08-23 14:28:40.000000000 -0400
-@@ -80,7 +80,7 @@ CONFIG_BINFMT_MISC=m
- # CONFIG_HOSTFS is not set
- # CONFIG_HPPFS is not set
- CONFIG_MCONSOLE=y
--# CONFIG_MAGIC_SYSRQ is not set
-+CONFIG_MAGIC_SYSRQ=y
- CONFIG_NEST_LEVEL=0
- # CONFIG_HIGHMEM is not set
- CONFIG_KERNEL_STACK_ORDER=0
+Well I'm slightly confused. The fs_initcall was first into hpet_alloc.
+It appears ACPI discovery failed during driver initialization because
+of:
+hpet_resources: 0xfed00000 is busy
+from dmesg. So why do we have a second hpet registered? Also hpet_alloc
+is suspose to check for redundant registration. I need to look more
+tomorrow.
+> 
+bob
