@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbXHWBZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbXHWB1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756766AbXHWBZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 21:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbXHWBZr
+	id S1757449AbXHWB1W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 21:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbXHWB1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 21:25:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43988 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752675AbXHWBZq (ORCPT
+	Wed, 22 Aug 2007 21:27:15 -0400
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:56621 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753813AbXHWB1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 21:25:46 -0400
-Date: Thu, 23 Aug 2007 07:08:38 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] s390 appldata_base: Misc cpuinit annotations and bugfix
-Message-ID: <alpine.LFD.0.999.0708230706570.2049@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 22 Aug 2007 21:27:14 -0400
+Subject: Re: [Tech-board-discuss] Re: Linux Foundation Technical Advisory
+	Board Elections
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: James Morris <jmorris@namei.org>
+Cc: Dave Jones <davej@redhat.com>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Xine.LNX.4.64.0708221636540.20861@us.intercode.com.au>
+References: <1187796179.3410.32.camel@localhost.localdomain>
+	 <20070822212202.GE17546@redhat.com>
+	 <1187819038.3410.114.camel@localhost.localdomain>
+	 <20070822215816.GG17546@redhat.com>
+	 <1187820866.3410.129.camel@localhost.localdomain>
+	 <Xine.LNX.4.64.0708221636540.20861@us.intercode.com.au>
+Content-Type: text/plain
+Date: Wed, 22 Aug 2007 20:27:11 -0500
+Message-Id: <1187832431.3410.136.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-08-22 at 16:47 -0700, James Morris wrote:
+> On Wed, 22 Aug 2007, James Bottomley wrote:
+> 
+> > The procedure is to read statements before the election in a BOF at the
+> > Kernel Summit, so the order is statements first then voting.
+> 
+> Just to clarify, are sponsor delegates and KS committee members entitled 
+> to vote?
 
-appldata_offline_cpu() is only called from __cpuinit-marked hotplug
-notifier callback and from the __exit-marked module_exit function,
-therefore candidate for __cpuexit.
+Anybody who turns up is eligible to vote.
 
-BTW the __exit module_exit function appldata_exit() of this driver
-fails to unregister_hotcpu_notifier() the notifier_block that was
-registered by appldata_init() during module startup. This will lead
-to oops if hotplug notification comes after module has been unloaded.
-Let's fix this by unregistering the notifier appropriately (before
-appldata_offline_cpu()'ing the CPUs).
+James
 
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
----
-
- arch/s390/appldata/appldata_base.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
-
-diff --git a/arch/s390/appldata/appldata_base.c b/arch/s390/appldata/appldata_base.c
-index 62391fb..a355d81 100644
---- a/arch/s390/appldata/appldata_base.c
-+++ b/arch/s390/appldata/appldata_base.c
-@@ -547,8 +547,7 @@ static void __cpuinit appldata_online_cpu(int cpu)
- 	spin_unlock(&appldata_timer_lock);
- }
- 
--static void
--appldata_offline_cpu(int cpu)
-+static void __cpuexit appldata_offline_cpu(int cpu)
- {
- 	del_virt_timer(&per_cpu(appldata_timer, cpu));
- 	if (atomic_dec_and_test(&appldata_expire_count)) {
-@@ -560,9 +559,9 @@ appldata_offline_cpu(int cpu)
- 	spin_unlock(&appldata_timer_lock);
- }
- 
--static int __cpuinit
--appldata_cpu_notify(struct notifier_block *self,
--		    unsigned long action, void *hcpu)
-+static int __cpuinit appldata_cpu_notify(struct notifier_block *self,
-+					 unsigned long action,
-+					 void *hcpu)
- {
- 	switch (action) {
- 	case CPU_ONLINE:
-@@ -646,6 +645,8 @@ static void __exit appldata_exit(void)
- 	}
- 	spin_unlock(&appldata_ops_lock);
- 
-+	unregister_hotcpu_notifier(&appldata_nb);
-+
- 	for_each_online_cpu(i)
- 		appldata_offline_cpu(i);
- 
