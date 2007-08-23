@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765706AbXHWWTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766009AbXHWW2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765706AbXHWWTo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 18:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761999AbXHWWTe
+	id S1766009AbXHWW2I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 18:28:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764904AbXHWW1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 18:19:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40768 "EHLO
+	Thu, 23 Aug 2007 18:27:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50622 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760304AbXHWWTd (ORCPT
+	with ESMTP id S1764928AbXHWW1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 18:19:33 -0400
-Date: Thu, 23 Aug 2007 15:18:11 -0700
+	Thu, 23 Aug 2007 18:27:53 -0400
+Date: Thu, 23 Aug 2007 15:25:52 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,30 +20,52 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/28] 2.6.22-stable review cycle again
-Message-ID: <20070823221811.GA18559@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Mark Fasheh <mark.fasheh@oracle.com>
+Subject: [patch 01/28] ocfs2: Fix bad source start calculation during
+	kernel writes
+Message-ID: <20070823222552.GB18559@kroah.com>
+References: <20070823220656.101239233@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="ocfs2-fix-bad-source-start-calculation-during-kernel-writes.patch"
+In-Reply-To: <20070823221811.GA18559@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.22.6 release.
-There are 28 patches in this series, all will be posted as a response
-to this one.  If anyone has any issues with these being applied, please
-let us know.  If anyone is a maintainer of the proper subsystem, and
-wants to add a Signed-off-by: line to the patch, please respond with it.
+-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
 
-Responses should be made by August 25 22:00:00 UTC 2007.  Anything
-received after that time might be too late.
+From: Mark Fasheh <mark.fasheh@oracle.com>
 
-thanks,
+[PATCH] ocfs2: Fix bad source start calculation during kernel writes
 
-greg k-h
+For in-kernel writes ocfs2_get_write_source() should be starting the buffer
+at a page boundary as the math in ocfs2_map_and_write_user_data() will pad
+it back out to the correct write offset. Instead, we were passing the raw
+offset, which caused ocfs2_map_and_write_user_data() start too far into the
+buffer, resulting in corruptions from nfs client writes.
+
+Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ fs/ocfs2/file.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -1353,7 +1353,7 @@ static struct page * ocfs2_get_write_sou
+ 		else
+ 			src_page = ERR_PTR(-EFAULT);
+ 	} else {
+-		bp->b_src_buf = buf;
++		bp->b_src_buf = (char *)((unsigned long)buf & PAGE_CACHE_MASK);
+ 	}
+ 
+ 	return src_page;
+
+-- 
