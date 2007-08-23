@@ -1,123 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762675AbXHWMQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763164AbXHWMRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762675AbXHWMQj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 08:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757168AbXHWMQb
+	id S1763164AbXHWMRH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 08:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762213AbXHWMQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 08:16:31 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:19272 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758092AbXHWMQa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 08:16:30 -0400
-Date: Thu, 23 Aug 2007 08:13:41 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Andrew Morton <akpm@osdl.org>,
-       Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0/6] writeback time order/delay fixes take 3
-Message-ID: <20070823081341.27807ad0@think.oraclecorp.com>
-In-Reply-To: <20070823024723.GN61154114@sgi.com>
-References: <386910467.21100@ustc.edu.cn>
-	<20070821202314.335e86ec@think.oraclecorp.com>
-	<387745522.02814@ustc.edu.cn>
-	<20070822084201.2c4eceb6@think.oraclecorp.com>
-	<20070823024723.GN61154114@sgi.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 23 Aug 2007 08:16:53 -0400
+Received: from ns2.suse.de ([195.135.220.15]:56058 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757168AbXHWMQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 08:16:52 -0400
+Date: Thu, 23 Aug 2007 14:16:48 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, riel <riel@redhat.com>
+Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water
+	marks
+Message-ID: <20070823121643.GP13915@v2.random>
+References: <20070820215040.937296148@sgi.com> <1187692586.6114.211.camel@twins> <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com> <1187730812.5463.12.camel@lappy> <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com> <1187734144.5463.35.camel@lappy> <Pine.LNX.4.64.0708211532560.5728@schroedinger.engr.sgi.com> <1187766156.6114.280.camel@twins> <Pine.LNX.4.64.0708221157180.13813@schroedinger.engr.sgi.com> <1187813025.5463.85.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1187813025.5463.85.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Aug 2007 12:47:23 +1000
-David Chinner <dgc@sgi.com> wrote:
+On Wed, Aug 22, 2007 at 10:03:45PM +0200, Peter Zijlstra wrote:
+> Its not extreme, not even rare, and its handled now. Its what
+> PF_MEMALLOC is for.
 
-> On Wed, Aug 22, 2007 at 08:42:01AM -0400, Chris Mason wrote:
-> > I think we should assume a full scan of s_dirty is impossible in the
-> > presence of concurrent writers.  We want to be able to pick a start
-> > time (right now) and find all the inodes older than that start time.
-> > New things will come in while we're scanning.  But perhaps that's
-> > what you're saying...
-> > 
-> > At any rate, we've got two types of lists now.  One keeps track of
-> > age and the other two keep track of what is currently being
-> > written.  I would try two things:
-> > 
-> > 1) s_dirty stays a list for FIFO.  s_io becomes a radix tree that
-> > indexes by inode number (or some arbitrary field the FS can set in
-> > the inode).  Radix tree tags are used to indicate which things in
-> > s_io are already in progress or are pending (hand waving because
-> > I'm not sure exactly).
-> > 
-> > inodes are pulled off s_dirty and the corresponding slot in s_io is
-> > tagged to indicate IO has started.  Any nearby inodes in s_io are
-> > also sent down.
-> 
-> the problem with this approach is that it only looks at inode
-> locality. Data locality is ignored completely here and the data for
-> all the inodes that are close together could be splattered all over
-> the drive. In that case, clustering by inode location is exactly the
-> wrong thing to do.
+Agreed. This is the whole point, either you limit the max amount of
+anon memory, slab, alloc_pages a driver can do or you reserve a
+pool. Guess what? In practice limiting the max ram a driver can eat in
+alloc_pages, at the same time while limting the max amount of pages
+that can be anon ram, etc..etc.. is called "reserving a pool of
+freepages for PF_MEMALLOC".
 
-Usually it won't be less wrong than clustering by time.
+Now in theory we could try a may_writepage=0 second reclaim pass
+before using the PF_MEMALLOC pool but would that make any difference
+other than being slower? We can argue what should be done first but
+the PF_MEMALLOC pool isn't likely to go away with this patch... only
+way to make it go away is to have every subsystem including tcp
+incoming to have mempools for everything which is too complicated to
+implement so we've to live the imperfect world that just works good
+enough.
 
-> 
-> For example, XFs changes allocation strategy at 1TB for 32bit inode
-> filesystems which makes the data get placed way away from the inodes.
-> i.e. inodes in AGs below 1TB, all data in AGs > 1TB. clustering
-> by inode number for data writeback is mostly useless in the >1TB
-> case.
-
-I agree we'll want a way to let the FS provide the clustering key.  But
-for the first cut on the patch, I would suggest keeping it simple.
-
-> 
-> The inode32 for <1Tb and inode64 allocators both try to keep data
-> close to the inode (i.e. in the same AG) so clustering by inode number
-> might work better here.
-> 
-> Also, it might be worthwhile allowing the filesystem to supply a
-> hint or mask for "closeness" for inode clustering. This would help
-> the gernic code only try to cluster inode writes to inodes that
-> fall into the same cluster as the first inode....
-
-Yes, also a good idea after things are working.
-
-> 
-> > > Notes:
-> > > (1) I'm not sure inode number is correlated to disk location in
-> > >     filesystems other than ext2/3/4. Or parent dir?
-> > 
-> > In general, it is a better assumption than sorting by time.  It may
-> > make sense to one day let the FS provide a clustering hint
-> > (corresponding to the first block in the file?), but for starters it
-> > makes sense to just go with the inode number.
-> 
-> Perhaps multiple hints are needed - one for data locality and one
-> for inode cluster locality.
-
-So, my feature creep idea would have been more data clustering.  I'm
-mainly trying to solve this graph:
-
-http://oss.oracle.com/~mason/compilebench/makej/compare-create-dirs-0.png
-
-Where background writing of the block device inode is making ext3 do
-seeky writes while directory trees.  My simple idea was to kick
-off a 'I've just written block X' call back to the FS, where it may
-decide to send down dirty chunks of the block device inode that also
-happen to be dirty.
-
-But, maintaining the kupdate max dirty time and congestion limits in
-the face of all this clustering gets tricky.  So, I wasn't going to
-suggest it until the basic machinery was working.
-
-Fengguang, this isn't a small project ;)  But, lots of people will be
-interested in the results.
-
--chris
+This logic of falling back in a may_writepage=0 pass will make things
+a bit more reliable but certainly not perfect and it doesn't obsolete
+the need of the current code IMHO.
