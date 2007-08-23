@@ -1,77 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764868AbXHWUtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765335AbXHWUxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764868AbXHWUtG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 16:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760304AbXHWUsy
+	id S1765335AbXHWUxl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 16:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760514AbXHWUxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 16:48:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33341 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757650AbXHWUsx (ORCPT
+	Thu, 23 Aug 2007 16:53:34 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48080 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759028AbXHWUxd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 16:48:53 -0400
-Date: Thu, 23 Aug 2007 13:47:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ego@in.ibm.com
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Ingo Molnar <mingo@elte.hu>, johnstul@us.ibm.com
-Subject: Re: x86_64-dynticks-disable-hpet_id_legsup-hpets.patch hangs the
- system
-Message-Id: <20070823134726.8f2c508a.akpm@linux-foundation.org>
-In-Reply-To: <20070823112423.GA26084@in.ibm.com>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	<20070823112423.GA26084@in.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Aug 2007 16:53:33 -0400
+Date: Thu, 23 Aug 2007 13:53:32 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: linux-kernel@vger.kernel.org
+cc: linux-mm@kvack.org, Andrea Arcangeli <andrea@suse.de>,
+       Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Nick Piggin <npiggin@suse.de>, ak@suse.de, akpm@linux-foundation.org
+Subject: [PATCH] Reclaim if PF_MEMALLOC and no memory available V1
+Message-ID: <Pine.LNX.4.64.0708231348030.18337@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Aug 2007 16:54:23 +0530
-Gautham R Shenoy <ego@in.ibm.com> wrote:
+If we exhaust the reserves in the page allocator when PF_MEMALLOC is set
+then no longer give up but call into reclaim with PF_MEMALLOC set.
 
-> 2.6.23-rc3-mm1 renders my machine unresponsive during bootup.
-> I've been observing this problem in 2.6.22-rc2-mm2 as well.
-> The boot log, the cpuinfo and .config have been appened at the
-> end
-> 
-> After embedding a few debug printk's in start_kernel, I noticed that
-> the last function to be executed was calibrate_delay()
-> 
-> Further, from the mm-bisect, the following patch turned out to be the
-> culprit:
-> 
-> x86_64-dynticks-disable-hpet_id_legsup-hpets.patch 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: john stultz <johnstul@us.ibm.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/i386/kernel/hpet.c |    2 +-
->  1 files changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff -puN arch/i386/kernel/hpet.c~x86_64-dynticks-disable-hpet_id_legsup-hpets arch/i386/kernel/hpet.c
-> --- a/arch/i386/kernel/hpet.c~x86_64-dynticks-disable-hpet_id_legsup-hpets
-> +++ a/arch/i386/kernel/hpet.c
-> @@ -336,7 +336,7 @@ int __init hpet_enable(void)
->  
->  	clocksource_register(&clocksource_hpet);
->  
-> -	if (id & HPET_ID_LEGSUP) {
-> +	if (0 && (id & HPET_ID_LEGSUP)) {
->  		hpet_enable_int();
->  		hpet_reserve_platform_timers(id);
->  		/*
-> 
-> Any particular reason for this patch [There is no changelog :-)]? 
-> Without this patch the mm-kernel seems to behave just fine for me.
+This is in essence a recursive call back into page reclaim with another
+page flag (__GFP_NOMEMALLOC) set. The recursion is bounded since potential
+allocations with __GFP_NOMEMALLOC set will not enter that branch again.
 
-Oh damn.  That patch is required to prevent a boot-time div-by-zero
-on my old nocona machine.
+Allocation under PF_MEMALLOC will no longer run out outmemory if there 
+memory that is reclaimable without additional memory
+allocations.
 
-I have a new set of x86_64-dynticks patches from Thomas to look at
-so I guess it's reset-and-start-again time on that front.
+In order to make allocation-less reclaim working we need to avoid writing
+pages out or swapping. So on entry to try_to_free_pages() we check for
+__GFP_NOMEMALLOC. If it is set then sc.may_writepage and sc.mayswap are
+switched off and we short circuit the writeout throttling.
+
+The types of pages that can be reclaimed by a call to try_to_free_pages()
+with the __GFP_NOMEMALLOC parameter are:
+
+- Unmapped clean page cache pages.
+- Mapped clean pages
+- slab shrinking
+
+We print a warning if we get into the special reclaim mode because
+this means that the reserves are too low.
+
+Changes
+RFC->v1
+- Allow slab shrinking in recursive reclaim (is protected by a
+  semaphore and already had to deal with allocs failing under
+  PF_MEMALLOC)
+- Add printk to show that recursive reclaim is being used.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ mm/vmscan.c |   25 ++++++++++++++++++++++---
+ 1 file changed, 22 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/mm/vmscan.c
+===================================================================
+--- linux-2.6.orig/mm/vmscan.c	2007-08-23 13:28:32.000000000 -0700
++++ linux-2.6/mm/vmscan.c	2007-08-23 13:32:42.000000000 -0700
+@@ -1106,7 +1106,8 @@ static unsigned long shrink_zone(int pri
+ 		}
+ 	}
+ 
+-	throttle_vm_writeout(sc->gfp_mask);
++	if (!(sc->gfp_mask & __GFP_NOMEMALLOC))
++		throttle_vm_writeout(sc->gfp_mask);
+ 
+ 	atomic_dec(&zone->reclaim_in_progress);
+ 	return nr_reclaimed;
+@@ -1168,6 +1169,9 @@ static unsigned long shrink_zones(int pr
+  * hope that some of these pages can be written.  But if the allocating task
+  * holds filesystem locks which prevent writeout this might not work, and the
+  * allocation attempt will fail.
++ *
++ * The __GFP_NOMEMALLOC flag has a special role. If it is set then no memory
++ * allocations or writeout will occur.
+  */
+ unsigned long try_to_free_pages(struct zone **zones, int order, gfp_t gfp_mask)
+ {
+@@ -1180,15 +1184,21 @@ unsigned long try_to_free_pages(struct z
+ 	int i;
+ 	struct scan_control sc = {
+ 		.gfp_mask = gfp_mask,
+-		.may_writepage = !laptop_mode,
+ 		.swap_cluster_max = SWAP_CLUSTER_MAX,
+-		.may_swap = 1,
+ 		.swappiness = vm_swappiness,
+ 		.order = order,
+ 	};
+ 
+ 	count_vm_event(ALLOCSTALL);
+ 
++	if (gfp_mask & __GFP_NOMEMALLOC) {
++		if (printk_ratelimited())
++			printk(KERN_WARNING "Entering recursive reclaim due "
++					"to depleted memory reserves\n");
++	} else {
++		sc.may_writepage = !laptop_mode;
++		sc.may_swap = 1;
++	}
+ 	for (i = 0; zones[i] != NULL; i++) {
+ 		struct zone *zone = zones[i];
+ 
+@@ -1215,6 +1225,9 @@ unsigned long try_to_free_pages(struct z
+ 			goto out;
+ 		}
+ 
++		if (!(gfp_mask & __GFP_NOMEMALLOC))
++			continue;
++
+ 		/*
+ 		 * Try to write back as many pages as we just scanned.  This
+ 		 * tends to cause slow streaming writers to write data to the
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c	2007-08-23 13:34:50.000000000 -0700
++++ linux-2.6/mm/page_alloc.c	2007-08-23 13:36:59.000000000 -0700
+@@ -1319,6 +1319,20 @@ nofail_alloc:
+ 				zonelist, ALLOC_NO_WATERMARKS);
+ 			if (page)
+ 				goto got_pg;
++			/*
++			 * No memory is available at all.
++			 *
++			 * However, if we are already in reclaim then the
++			 * reclaim_state etc is already setup. Simply call
++			 * try_to_get_free_pages() with PF_MEMALLOC which
++			 * will reclaim without the need to allocate more
++			 * memory.
++			 */
++			if (p->flags & PF_MEMALLOC && wait &&
++				try_to_free_pages(zonelist->zones, order,
++						gfp_mask | __GFP_NOMEMALLOC))
++				goto restart;
++
+ 			if (gfp_mask & __GFP_NOFAIL) {
+ 				congestion_wait(WRITE, HZ/50);
+ 				goto nofail_alloc;
