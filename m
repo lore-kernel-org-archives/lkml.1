@@ -1,53 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbXHWFFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbXHWFQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755703AbXHWFFk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 01:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXHWFFf
+	id S1756230AbXHWFQZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 01:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXHWFQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 01:05:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47474 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbXHWFFf (ORCPT
+	Thu, 23 Aug 2007 01:16:16 -0400
+Received: from fall-lakeland.atl.sa.earthlink.net ([207.69.195.103]:58793 "EHLO
+	fall-lakeland.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750990AbXHWFQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 01:05:35 -0400
-Date: Thu, 23 Aug 2007 10:48:23 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Dave Hansen <haveblue@us.ibm.com>
-cc: greg@kroah.com, linux-kernel@vger.kernel.org,
-       michal.k.k.piotrowski@gmail.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] make kobject dynamic allocation check use
- kallsyms_lookup()
-In-Reply-To: <20070822220341.7926F241@kernel>
-Message-ID: <alpine.LFD.0.999.0708231037040.2049@enigma.security.iitk.ac.in>
-References: <20070822220341.7926F241@kernel>
+	Thu, 23 Aug 2007 01:16:15 -0400
+Message-ID: <46CD14A6.4050605@gmail.com>
+Date: Thu, 23 Aug 2007 01:01:26 -0400
+From: Richard Ballantyne <richardballantyne@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070813)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: linux-kernel@vger.kernel.org
+Subject: file system for solid state disks
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+What file system that is already in the linux kernel do people recommend
+I use for my laptop that now contains a solid state disk?
 
+I appreciate your feedback.
 
-On Wed, 22 Aug 2007, Dave Hansen wrote:
-> 
-> One of the top ten sysfs problems is that users use statically
-> allocated kobjects.  This patch reminds them that this is a
-> naughty thing.
+Thank you,
+Richard Ballantyne
 
-Hmm, I might've missed previous discussion regarding this, but I'm
-curious to know why using statically allocated kobjects is "naughty".
-The code / warnings / printk messages below indicate this is only a
-"silly/janitorial" issue?
-
-The reason I ask is that if it is serious, there is no reason why this
-check cannot be done at build-time itself, instead of this runtime
-kludge in the kernel -- catching potential bugs at build-time is always
-desirable. Modpost or some such tool can be taught to detect kobjects
-allocated statically in vmlinux/modules -- or there can be other build-
-time solutions, possibly. Have you considered such an approach?
-
-
-Thanks,
-
-Satyam
