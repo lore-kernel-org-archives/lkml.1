@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762651AbXHWKKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761632AbXHWKMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762651AbXHWKKX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 06:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759594AbXHWKKM
+	id S1761632AbXHWKMn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 06:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757211AbXHWKMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 06:10:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40763 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759517AbXHWKKL (ORCPT
+	Thu, 23 Aug 2007 06:12:36 -0400
+Received: from mail.clusterfs.com ([74.0.229.162]:38373 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756115AbXHWKMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 06:10:11 -0400
-Date: Thu, 23 Aug 2007 03:04:02 -0700
-From: Greg KH <greg@kroah.com>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Console events and accessibility
-Message-ID: <20070823100402.GB6742@kroah.com>
-References: <20070821212939.GD3658@interface.famille.thibault.fr> <20070822054855.GB23336@kroah.com> <20070822085355.GB3359@implementation.labri.fr> <20070822130520.GE3359@implementation.labri.fr>
+	Thu, 23 Aug 2007 06:12:35 -0400
+From: Nikita Danilov <nikita@clusterfs.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070822130520.GE3359@implementation.labri.fr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18125.23918.550443.628936@gargle.gargle.HOWL>
+Date: Thu, 23 Aug 2007 14:11:58 +0400
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Nick Piggin <npiggin@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       Pavel Machek <pavel@ucw.cz>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dkegel@google.com, David Miller <davem@davemloft.net>
+Subject: Re: [RFC 2/9] Use NOMEMALLOC reclaim to allow reclaim if
+	PF_MEMALLOC is set
+In-Reply-To: <1187861208.6114.342.camel@twins>
+References: <20070814153021.446917377@sgi.com>
+	<20070814153501.305923060@sgi.com>
+	<20070818071035.GA4667@ucw.cz>
+	<Pine.LNX.4.64.0708201158270.28863@schroedinger.engr.sgi.com>
+	<1187641056.5337.32.camel@lappy>
+	<Pine.LNX.4.64.0708201323590.30053@schroedinger.engr.sgi.com>
+	<1187644449.5337.48.camel@lappy>
+	<20070821003922.GD8414@wotan.suse.de>
+	<1187705235.6114.247.camel@twins>
+	<20070823033826.GE18788@wotan.suse.de>
+	<1187861208.6114.342.camel@twins>
+X-Mailer: VM 7.17 under 21.5 (patch 28) "fuki" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 03:05:20PM +0200, Samuel Thibault wrote:
-> Samuel Thibault, le Wed 22 Aug 2007 10:53:55 +0200, a ?crit :
-> > Greg KH, le Tue 21 Aug 2007 22:48:55 -0700, a ?crit :
-> > > On Tue, Aug 21, 2007 at 11:29:39PM +0200, Samuel Thibault wrote:
-> > > > Some external modules like Speakup need to monitor console output.
-> > > > 
-> > > > This adds a VT notifier that such modules can use to get console output events:
-> > > > allocation, deallocation, writes, other updates (cursor position, switch, etc.)
-> > > > 
-> > > > Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-> > > 
-> > > Will speakup work with this kind of change?
-> > 
-> > Here are the last needed bits.
-> 
-> I mean: yes, with these three patches, speakup will work fine.
+Peter Zijlstra writes:
 
-3 patches?  I only saw 2.  Or do you mean the modifications of the 3
-files?
+[...]
 
-The patches look sane but you should change the global symbols to play
-nicer in the namespace.  Care to respin them together with this change?
+ > My idea is to extend kswapd, run cpus_per_node instances of kswapd per
+ > node for each of GFP_KERNEL, GFP_NOFS, GFP_NOIO. (basically 3 kswapds
+ > per cpu)
+ > 
+ > whenever we would hit direct reclaim, add ourselves to a special
+ > waitqueue corresponding to the type of GFP and kick all the
+ > corresponding kswapds.
 
-> The biggest change we'll have to do in speakup is the way it accesses
-> the serial port, which is really dirty for now, but that's an internal
-> matter.
+There are two standard objections to this:
 
-Yeah, that shouldn't be that tough to do.
+    - direct reclaim was introduced to reduce memory allocation latency,
+      and going to scheduler kills this. But more importantly,
 
-It doesn't look like these changes handle scrolling of the console, do
-they?  If so, don't you need to do more?  I had some old patches around
-here that had devices that wanted to know cursor positioning, which I
-don't think this hook can handle :(
+    - it might so happen that _all_ per-cpu kswapd instances are
+      blocked, e.g., waiting for IO on indirect blocks, or queue
+      congestion. In that case whole system stops waiting for IO to
+      complete. In the direct reclaim case, other threads can continue
+      zone scanning.
 
-thanks,
-
-greg k-h
+Nikita.
