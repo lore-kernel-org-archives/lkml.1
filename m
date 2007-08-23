@@ -1,148 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932138AbXHWOWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761672AbXHWOW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932138AbXHWOWl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 10:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762576AbXHWOWb
+	id S1761672AbXHWOW7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 10:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932220AbXHWOWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 10:22:31 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:39106 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763275AbXHWOWY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 10:22:24 -0400
-Date: Thu, 23 Aug 2007 19:52:11 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
-       tglx@linutronix.de
-Subject: Re: [PATCH RFC] Priority boosting for preemptible RCU
-Message-ID: <20070823142211.GC11258@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070822190254.GA1135@linux.vnet.ibm.com> <20070823042639.GA28026@in.ibm.com> <20070823085456.GA18627@linux.vnet.ibm.com> <20070823101444.GB11258@in.ibm.com> <20070823131501.GC18627@linux.vnet.ibm.com>
-MIME-Version: 1.0
+	Thu, 23 Aug 2007 10:22:46 -0400
+Received: from 1wt.eu ([62.212.114.60]:2278 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932184AbXHWOWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 10:22:43 -0400
+Date: Thu, 23 Aug 2007 16:08:19 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [2.6.20.17 review 00/58] 2.6.20.17 -stable review
+Message-ID: <20070823140819.GA20646@1wt.eu>
+References: <1187789765.1451.310.camel@moss-spartans.epoch.ncsc.mil> <1187790174.1451.315.camel@moss-spartans.epoch.ncsc.mil> <Xine.LNX.4.64.0708220707390.9414@us.intercode.com.au> <6bffcb0e0708220729j7b9afcf3v4edef68cc974c08d@mail.gmail.com> <Xine.LNX.4.64.0708220929370.4968@us.intercode.com.au> <6bffcb0e0708220946hc2943f5jdb33215cdfab08d1@mail.gmail.com> <6bffcb0e0708221050s68975158k7a3b27c7c30f455d@mail.gmail.com> <1187810114.1451.453.camel@moss-spartans.epoch.ncsc.mil> <20070822201634.GB14132@1wt.eu> <46CD6BF4.2080101@googlemail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070823131501.GC18627@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <46CD6BF4.2080101@googlemail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 06:15:01AM -0700, Paul E. McKenney wrote:
-> On Thu, Aug 23, 2007 at 03:44:44PM +0530, Gautham R Shenoy wrote:
-> > On Thu, Aug 23, 2007 at 01:54:56AM -0700, Paul E. McKenney wrote:
-> > > On Thu, Aug 23, 2007 at 09:56:39AM +0530, Gautham R Shenoy wrote:
-> > > > 
-> > > > I feel we should still be able to use for_each_online_cpu(cpu) instead
-> > > > of for_each_possible_cpu. Again, there's a good chance that I might
-> > > > be mistaken!
-> > > > 
-> > > > How about the following ?
-> > > > 
-> > > > 	preempt_disable(); /* We Dont want cpus going down here */
-> > > > 	for_each_online_cpu(cpu) 
-> > > > 		for (i = 0; i < RCU_BOOST_ELEMENTS; i++) {
-> > > > 			rbdp = per_cpu(rcu_boost_dat, cpu);
-> > > > 			sum.rbs_blocked += rbdp[i].rbs_blocked;
-> > > > 			sum.rbs_boost_attempt += rbdp[i].rbs_boost_attempt;
-> > > > 			sum.rbs_boost += rbdp[i].rbs_boost;
-> > > > 			sum.rbs_unlock += rbdp[i].rbs_unlock;
-> > > > 			sum.rbs_unboosted += rbdp[i].rbs_unboosted;
-> > > > 		}
-> > > > 	preempt_enable(); 
-> > > > 
-> > > > 
-> > > > 	static int rcu_boost_cpu_callback(struct notifier_bloack *nb, 
-> > > > 					unsigned long action, void *hcpu) 
-> > > > 	{
-> > > > 		int this_cpu, cpu;
-> > > > 		rcu_boost_data *rbdp, *this_rbdp;
-> > > > 
-> > > > 		switch (action) {
-> > > > 		case CPU_DEAD:
-> > > > 			this_cpu = get_cpu();
-> > > > 			cpu = (long)hcpu;
-> > > > 			this_cpu = smp_processor_id();
-> > > > 			rbdp = per_cpu(rcu_boost_dat, cpu);
-> > > > 			this_rbdp = per_cpu(rcu_boost_dat, cpu);
-> > > > 			/* 
-> > > > 			 *  Transfer all of rbdp's statistics to
-> > > > 			 *  this_rbdp here.
-> > > > 			 */	
-> > > > 			 put_cpu();
-> > > > 	
-> > > > 			return NOTIFY_OK;
-> > > > 		}
-> > > > 	}
-> > > > 
-> > > > 
-> > > > Won't this work in this case?
-> > > 
-> > > Hello, Gautham,
-> > > 
-> > > We could do something similar.  If there was a global rcu_boost_data
-> > > variable that held the sums of the fields of the rcu_boost_data
-> > > structures for all offline CPUs, and if we used a new lock to protect
-> > > that global rcu_boost data variable (both when reading and when
-> > > CPU hotplugging), then we could indeed scan only the online CPUs'
-> > > rcu_boost_data elements.
-> > > 
-> > > We would also have to maintain a cpumask_t for this purpose, and
-> > > we would need to add a CPU's contribution when it went offline and
-> > > subtract it when that CPU came back online.
+On Thu, Aug 23, 2007 at 01:13:56PM +0200, Michal Piotrowski wrote:
+> Willy Tarreau pisze:
+> > On Wed, Aug 22, 2007 at 03:15:14PM -0400, Stephen Smalley wrote:
+> >> On Wed, 2007-08-22 at 19:50 +0200, Michal Piotrowski wrote:
+> >>> On 22/08/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> >>>> On 22/08/07, James Morris <jmorris@namei.org> wrote:
+> >>> [snip]
+> >>>>> The previous problem is theoretically unrelated.  It arose via a separate
+> >>>>> mechanism which can't be used at the same as the one you're seeing now in
+> >>>>> the logs.
+> >>>>>
+> >>>>> So this either looks like a problem which has gone unnoticed and was
+> >>>>> inadvertently fixed at some point, or is unique to the 2.6.20 stable
+> >>>>> series.
+> >>>> Yup, it is very interesting why no one noticed it. Binary search in progress:
+> >>>> good - 2.6.20.4
+> >>>> bad - 2.6.20.8
+> >>> Ok, I narrowed the problem to 2.6.20.7. There are a few net changes
+> >>> http://eu.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.20.7
+> >>> any suggestions?
+> >>>
+> >>> I also have seen this avc on 2.6.20.6 during reboot
+> >>>
+> >>> [ 2333.905944] audit(1187803699.273:271): avc:  denied  { send } for
+> >>> saddr=192.168.1.70 src=48591 daddr=72.14.217.189 dest=80 netif=eth0
+> >>> scontext=user_u:system_r:unconfined_t:s0
+> >>> tcontext=system_u:system_r:kernel_t:s0 tclass=packet
+> >>> [ 2334.420598] audit(1187803699.789:272): avc:  denied  { send } for
+> >>> saddr=192.168.1.70 src=47248 daddr=66.249.91.18 dest=80 netif=eth0
+> >>> scontext=user_u:system_r:unconfined_t:s0
+> >>> tcontext=system_u:system_r:kernel_t:s0 tclass=packet
+> >>>
+> >>> so the roots of the problem may lie between 2.6.20.4 and 2.6.20.6
+> >>>
+> >>> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.20.17-rc1/console2.log
+> >> Might be related to this:
+> >> http://marc.info/?l=git-commits-head&m=118271540932264&w=2
 > > 
-> > The additional cpumask_t beats me though! Doesn't the cpu_online_map
-> > suffice here? 
-> > The addition and subtraction of a hotplugged cpu's
-> > contribution from the global rcu_boost_data could be done while
-> > handling the CPU_ONLINE and CPU_DEAD (or CPU_UP_PREPARE
-> > and CPU_DOWN_PREPARE, whichever suits better), in the cpu hotplug
-> > callback. 
+> > Interesting, this one was fixed in 2.6.22-rc6, but is neither in 2.6.20
+> > nor in 2.6.21. Michal, could you please try to apply the patch ? I include
+> > it here for your convenience. If it fixes your problem, I can queue it for
+> > next 2.6.20-stable, and forward it to the -stable team for 2.6.21 in case
+> > Greg and Chris plan to release another one.
 > > 
-> > Am I missing something ?
 > 
-> Don't we need to synchronize the manipulation of the hotplugged CPU's
-> contribution and the manipulation of cpu_online_map?  Otherwise, if
-> stats are called for just before (or just after, depending on the
-> ordering of hotplug operations) the invocation will get the wrong
-> statistics.
+> I confirm that this patch fixes the problem.
 
-Oh, yes we need to synchronize that :-)
+Perfect, thanks for your fast feedback, it is really appreciated !
+I'm queuing it for 2.6.20.18.
 
-Can't we use lock_cpu_hotplug/unlock_cpu_hotplug (or it's variant when 
-it is available) around any access to cpu_online_map ? With that, it's
-guaranteed that no cpu-hotplug operation will be permitted while you're
-iterating over the cpu_online_map, and hence you have a  
-consistent view of global rcu_boost_data.
+Regards,
+Willy
 
-Even if we use another cpumask_t, whenever a cpu goes down or comes up,
-that will be reflected in this map, no? So what's the additional
-advantage of using it?
-
-> 
-> > > The lock should not be a problem even on very large systems because
-> > > of the low frequency of statistics printing -- and of hotplug operations,
-> > > for that matter.
-> > 
-> > The lock is not a problem, so long as somebody else doesn't call
-> > the function taking the lock from their cpu-hotplug callback path :-)
-> > Though I don't see it happening here.
-> 
-> There are some ways to decrease its utilization if it should become
-> a problem in any case.
-
-Cool!
-
-> 
-> 						Thanx, Paul
-> 
-
-Thanks and Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
