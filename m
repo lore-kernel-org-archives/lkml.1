@@ -1,113 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758881AbXHWJIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbXHWJLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758881AbXHWJIq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 05:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbXHWJIg
+	id S1759609AbXHWJLs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 05:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbXHWJLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 05:08:36 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46972 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756115AbXHWJIf (ORCPT
+	Thu, 23 Aug 2007 05:11:40 -0400
+Received: from s200aog11.obsmtp.com ([207.126.144.125]:40852 "EHLO
+	s200aog11.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756766AbXHWJLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 05:08:35 -0400
-Date: Thu, 23 Aug 2007 14:38:45 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Konstantin Baydarov <kbaidarov@ru.mvista.com>
-Cc: RT <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] kexec: reenable HPET before kexec
-Message-ID: <20070823090845.GA13065@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070820205530.1ffd5876@windmill.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070820205530.1ffd5876@windmill.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.11
+	Thu, 23 Aug 2007 05:11:39 -0400
+X-Greylist: delayed 1444 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Aug 2007 05:11:39 EDT
+Message-ID: <46CD497F.8030207@st.com>
+Date: Thu, 23 Aug 2007 10:46:55 +0200
+From: Richard MUSIL <richard.musil@st.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, tpmdd-devel@lists.sourceforge.net
+Subject: [PATCH] - TPM device driver layer (tpm.c|h)
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 20, 2007 at 08:55:30PM +0400, Konstantin Baydarov wrote:
-> Hi, I've faced problem:
-> I have two x86_64 kernels with HPET enabled:
-> kernel 1 - with PM enabled,
-> kernel 2 - with PM disabled.
-> When I execute kernel 2 from kernel 1 on pentiumd based PC, kernel 2 hangs
-> during boot:
-> root@192.168.40.10:~#
-> root@192.168.40.10:~# ./kexec.sh ./ko_bzImage_x86_64_nopm
-> + kexec -l ././ko_bzImage_x86_64_nopm '--command-line=kdb=on kdb=early
-> apic=debug nmi_watchdog=0 console=ttyS0
-> ,115200 ip=bootp root=/dev/nfs rw'
-> + kexec -e
-> md: stopping all md devices.
-> sd 1:0:0:0: [sda] Synchronizing SCSI cache
-> ACPI: PCI interrupt for device 0000:01:00.0 disabled
-> Starting new kernel
-> Linux version 2.6.23-rc2 (root@pentiumdcge.dev.rtsoft.ru) (gcc version 4.2.0
-> (MontaVista 4.2.0-8.0.0.0703430 2
-> 007-06-22)) #3 SMP PREEMPT Mon Aug 20 20:26:17 MSD 2007
-> Command line: kdb=on kdb=early apic=debug nmi_watchdog=0 console=ttyS0,115200
-> ip=bootp root=/dev/nfs rw
-> BIOS-provided physical RAM map:
->  BIOS-e820: 0000000000000100 - 000000000009fc00 (usable)
->  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
->  BIOS-e820: 00000000000e4000 - 0000000000100000 (reserved)
->  BIOS-e820: 0000000000100000 - 000000001f790000 (usable)
->  BIOS-e820: 000000001f790000 - 000000001f79e000 (ACPI data)
->  BIOS-e820: 000000001f79e000 - 000000001f7e0000 (ACPI NVS)
->  BIOS-e820: 000000001f7e0000 - 000000001f800000 (reserved)
->  BIOS-e820: 00000000ffb80000 - 0000000100000000 (reserved)
-> end_pfn_map = 1048576
-> DMI 2.3 present.
-> Zone PFN ranges:
->   DMA             1 ->     4096
->   DMA32        4096 ->  1048576
->   Normal    1048576 ->  1048576
-> Movable zone start PFN for each node
-> early_node_map[2] active PFN ranges
->     0:        1 ->      159
->     0:      256 ->   128912
-> Intel MultiProcessor Specification v1.4
-> MPTABLE: OEM ID: INTEL    MPTABLE: Product ID:  MPTABLE: APIC at: 0xFEE00000
-> Processor #0 (Bootup-CPU)
-> Processor #1
-> I/O APIC #2 at 0xFEC00000.
-> Setting APIC routing to flat
-> Processors: 2
-> mapped APIC to ffffffffff5fb000 (        fee00000)
-> mapped IOAPIC to ffffffffff5fa000 (00000000fec00000)
-> Allocating PCI resources starting at 20000000 (gap: 1f800000:e0380000)
-> PERCPU: Allocating 31696 bytes of per cpu data
-> Built 1 zonelists in Zone order.  Total pages: 125250
-> Kernel command line: kdb=on kdb=early apic=debug nmi_watchdog=0
-> console=ttyS0,115200 ip=bootp root=/dev/nfs rw
-> Initializing CPU#0
-> PID hash table entries: 2048 (order: 11, 16384 bytes)
-> time.c: Detected 3000.006 MHz processor.
-> Console: colour VGA+ 80x25
-> console [ttyS0] enabled
-> Dentry cache hash table entries: 65536 (order: 7, 524288 bytes)
-> Inode-cache hash table entries: 32768 (order: 6, 262144 bytes)
-> Checking aperture...
-> Memory: 500048k/515648k available (4577k kernel code, 15136k reserved, 1755k
-> data, 280k init)
-> -------------------------------- kernel hangs here --------------------------
-> 
-> Root case:
-> When kernel 1 switches to Local APIC timer It disables HPET.
-> When kernel 1 executes kernel 2, HPET isn't reenabled early during boot, because
-> PM and ACPI is disabled and kernel 2 doesn't search for HPET in ACPI tables.
-> HPET is disabled, so kernel enables PIT timer, but it doesn't work on pentiumd
-> (don't know why).
+Dear all,
 
-Does your kernel 2 boot normally? I mean through BIOS and boot-loader?
-This explanation seems to be suggesting that because PM and ACPI is disabled,
-kernel 2 does not search for HPET. If this is the case, this kernel will
-not boot even through normal boot-loader and will try to use PIT instead?
+I am currently writing virtual TPM device driver. This driver exposes
+itself and behaves like regular TPM device (i.e. uses TPM layer which is
+already present in kernel), but instead of talking to hardware it talks
+to user space.
 
-If so, it is not an kexec issue at all.
+In my setup, I can create several virtual devices and delete them in
+runtime. During this I noticed that current implementation is prone to
+segfault when tpm_remove_hardware is called while the device is in its
+receiving routine.
 
-Thanks
-Vivek
+The problem is in tpm_remove_hardware which does all necessary steps to
+remove the device, but it does not wait for the device being actually
+removed and kfrees tpm_chip struct right away. If the device is at this
+time in its receiving routine (through read call, for example) it blocks
+the device removal until the call is completed. The call cannot be
+completed though because tpm_chip struct was already kfreed.
+
+Since there is significant timeout and it is possible to meet that
+timeout in normal operation this situation is quite easily reproducible.
+
+What I present below is rather quickfix with least impact on other TPM
+parts (drivers). The patch uses device->remove callback (of
+platform_device device) and reroutes this to itself. In this
+callback it eventually calls vendor callback and finally kfrees all
+memory resources allocated on its own.
+
+The correct solution for this I believe would require removing TPM
+hardware (as it is done by tpm_remove_hardware right now) in two steps
+both called by vendor driver. In the first one vendor driver will just
+"unregister" the hardware. In the second step vendor driver will call
+tpm_release_resources routine which kfrees all resources allocated by
+tpm.c. In order to be able to call tpm_release_resources, vendor driver
+will have to register as platform driver and handle
+platform_driver.probe and platform_driver.remove.
+
+This will however require some changes in all drivers, which I cannot
+test (but I could eventually write the patch). Also I see some "issues"
+in tpm_tis which will have to be clarified.
+
+--
+Richard
+
+
+>From bd80b63ca2e1edb761a3ffcf87bd86c30a44ca5f Mon Sep 17 00:00:00 2001
+From: Richard Musil <richard.musil@st.com>
+Date: Tue, 21 Aug 2007 16:46:06 +0200
+Subject: [PATCH] Change in TPM module:
+
+The clean up procedure now uses platform device "release" callback to
+handle memory clean up. For this purpose "release" function callback was
+added to struct tpm_vendor_specific, so hw device driver provider can get
+called when it is safe to remove all allocated resources.
+
+This is supposed to fix a bug in device removal, where device while in
+receive function (waiting on timeout) was prone to segfault, if the
+tpm_chip struct was unallocated before the timeout expired (in
+tpm_remove_hardware).
+---
+ drivers/char/tpm/tpm.c |   46 +++++++++++++++++++++++++++++-----------------
+ drivers/char/tpm/tpm.h |    2 ++
+ 2 files changed, 31 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
+index 9bb5429..41eba7e 100644
+--- a/drivers/char/tpm/tpm.c
++++ b/drivers/char/tpm/tpm.c
+@@ -1031,18 +1031,13 @@ void tpm_remove_hardware(struct device *dev)
+ 
+ 	spin_unlock(&driver_lock);
+ 
+-	dev_set_drvdata(dev, NULL);
+ 	misc_deregister(&chip->vendor.miscdev);
+-	kfree(chip->vendor.miscdev.name);
+ 
+ 	sysfs_remove_group(&dev->kobj, chip->vendor.attr_group);
+ 	tpm_bios_log_teardown(chip->bios_dir);
+ 
+-	clear_bit(chip->dev_num, dev_mask);
+-
+-	kfree(chip);
+-
+-	put_device(dev);
++	/* write it this way to be explicit (chip->dev == dev) */
++	put_device(chip->dev);
+ }
+ EXPORT_SYMBOL_GPL(tpm_remove_hardware);
+ 
+@@ -1083,6 +1078,28 @@ int tpm_pm_resume(struct device *dev)
+ EXPORT_SYMBOL_GPL(tpm_pm_resume);
+ 
+ /*
++ * Once all references to platform device are down to 0,
++ * release all allocated structures.
++ * In case vendor provided release function,
++ * call it too.
++ */
++static void tpm_dev_release(struct device *dev)
++{
++	struct tpm_chip *chip = dev_get_drvdata(dev);
++	/* call vendor release, if defined */
++	if (chip->vendor.release)
++		chip->vendor.release(dev);
++
++	/* it *should* be: chip->release != NULL */
++	if (likely(chip->release))
++		chip->release(dev);
++
++	clear_bit(chip->dev_num, dev_mask);
++	kfree(chip->vendor.miscdev.name);
++	kfree(chip);
++}
++
++/*
+  * Called from tpm_<specific>.c probe function only for devices 
+  * the driver has determined it should claim.  Prior to calling
+  * this function the specific probe function has called pci_enable_device
+@@ -1136,23 +1153,21 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
+ 
+ 	chip->vendor.miscdev.parent = dev;
+ 	chip->dev = get_device(dev);
++	chip->release = dev->release;
++	dev->release = tpm_dev_release;
++	dev_set_drvdata(dev, chip);
+ 
+ 	if (misc_register(&chip->vendor.miscdev)) {
+ 		dev_err(chip->dev,
+ 			"unable to misc_register %s, minor %d\n",
+ 			chip->vendor.miscdev.name,
+ 			chip->vendor.miscdev.minor);
+-		put_device(dev);
+-		clear_bit(chip->dev_num, dev_mask);
+-		kfree(chip);
+-		kfree(devname);
++		put_device(chip->dev);
+ 		return NULL;
+ 	}
+ 
+ 	spin_lock(&driver_lock);
+ 
+-	dev_set_drvdata(dev, chip);
+-
+ 	list_add(&chip->list, &tpm_chip_list);
+ 
+ 	spin_unlock(&driver_lock);
+@@ -1160,10 +1175,7 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
+ 	if (sysfs_create_group(&dev->kobj, chip->vendor.attr_group)) {
+ 		list_del(&chip->list);
+ 		misc_deregister(&chip->vendor.miscdev);
+-		put_device(dev);
+-		clear_bit(chip->dev_num, dev_mask);
+-		kfree(chip);
+-		kfree(devname);
++		put_device(chip->dev);
+ 		return NULL;
+ 	}
+ 
+diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
+index b2e2b00..f1c265e 100644
+--- a/drivers/char/tpm/tpm.h
++++ b/drivers/char/tpm/tpm.h
+@@ -74,6 +74,7 @@ struct tpm_vendor_specific {
+ 	int (*send) (struct tpm_chip *, u8 *, size_t);
+ 	void (*cancel) (struct tpm_chip *);
+ 	u8 (*status) (struct tpm_chip *);
++	void (*release) (struct device *);
+ 	struct miscdevice miscdev;
+ 	struct attribute_group *attr_group;
+ 	struct list_head list;
+@@ -106,6 +107,7 @@ struct tpm_chip {
+ 	struct dentry **bios_dir;
+ 
+ 	struct list_head list;
++	void (*release) (struct device *);
+ };
+ 
+ #define to_tpm_chip(n) container_of(n, struct tpm_chip, vendor)
+-- 
+1.5.3.rc5
+
+
