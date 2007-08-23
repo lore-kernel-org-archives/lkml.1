@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758366AbXHWFvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbXHWFwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758366AbXHWFvA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 01:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbXHWFux
+	id S1758852AbXHWFwz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 01:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbXHWFws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 01:50:53 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51928 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751AbXHWFuw (ORCPT
+	Thu, 23 Aug 2007 01:52:48 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:44312 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbXHWFwr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 01:50:52 -0400
-Date: Thu, 23 Aug 2007 11:33:43 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: WANG Cong <xiyou.wangcong@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, perex@suse.cz,
-       liam.girdwood@wolfsonmicro.com, trivial@kernel.org
-Subject: Re: [Git Patch] sound/isa/wavefront/wavefront_synth.c: Remove a lot
- of unnecessary stuffs
-In-Reply-To: <20070822071422.GA8215@hacking>
-Message-ID: <alpine.LFD.0.999.0708231125120.2049@enigma.security.iitk.ac.in>
-References: <20070822071422.GA8215@hacking>
+	Thu, 23 Aug 2007 01:52:47 -0400
+Date: Thu, 23 Aug 2007 07:52:46 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Richard Ballantyne <richardballantyne@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: file system for solid state disks
+In-Reply-To: <46CD14A6.4050605@gmail.com>
+Message-ID: <Pine.LNX.4.64.0708230746140.12788@fbirervta.pbzchgretzou.qr>
+References: <46CD14A6.4050605@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Aug 23 2007 01:01, Richard Ballantyne wrote:
+>
+>What file system that is already in the linux kernel do people recommend
+>I use for my laptop that now contains a solid state disk?
 
-On Wed, 22 Aug 2007, WANG Cong wrote:
-> 
-> Remove unnecessary white spaces, tabs, white lines, wrap lines, parenthesises,
-> braces, semicolons etc.
+If I had to choose, the list of options seems to be:
 
-:-)
+- logfs
+  [unmerged]
 
-The file clearly had a lot of codingstyle problems, but so does your
-patch, sadly.
+- UBI layer with any fs you like
+  [just a guess]
 
-> @@ -134,8 +134,8 @@ MODULE_PARM_DESC(osrun_time, "how many s
->  #define STAT_CAN_WRITE		0x20
->  #define STAT_INTR_WRITE		0x40
->  
-> -static int wavefront_delete_sample (snd_wavefront_t *, int sampnum);
-> -static int wavefront_find_free_sample (snd_wavefront_t *);
-> +static int wavefront_delete_sample(snd_wavefront_t *, int sampnum);
-                                                       ^
-> +static int wavefront_find_free_sample(snd_wavefront_t *);
-                                                          ^
-IMHO you should specify identifiers for the arg-list of a function
-prototype even though they aren't technically required. The kernel
-favours that style overwhelmingly for good reason -- helps identify
-_what_ that argument is with just one look at the prototype.
+- UDF in Spared Flavor (mkudffs --media-type=cdrw --utf8)
+  [does not support ACLs/quotas]
 
 
-> @@ -229,14 +229,12 @@ static struct wavefront_command wavefron
->  
->  static const char *
->  wavefront_errorstr (int errnum)
-                     ^
 
-Whitespace should go ... ditto in zillion other places in this file.
-
-Also, you could combine the above two lines into a single line -- that's
-the general style followed by most of the kernel, and I've noticed tools
-such as cscope / ctags getting confused otherwise (though this is really
-a bug in those tools). That'll further reduce LOC, allowing more code to
-be displayed per-screenful, which is always good.
+	Jan
+-- 
