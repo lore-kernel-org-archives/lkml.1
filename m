@@ -1,115 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758384AbXHWDCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758620AbXHWDHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758384AbXHWDCs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 23:02:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbXHWDCl
+	id S1758620AbXHWDHY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 23:07:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbXHWDHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 23:02:41 -0400
-Received: from ns.suse.de ([195.135.220.2]:40145 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752762AbXHWDCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 23:02:40 -0400
-Date: Thu, 23 Aug 2007 05:02:38 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dkegel@google.com, David Miller <davem@davemloft.net>,
-       Daniel Phillips <phillips@google.com>
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-Message-ID: <20070823030238.GD18788@wotan.suse.de>
-References: <20070814142103.204771292@sgi.com> <20070815122253.GA15268@wotan.suse.de> <1187183526.6114.45.camel@twins> <20070816032921.GA32197@wotan.suse.de> <1187581894.6114.169.camel@twins> <20070821002830.GB8414@wotan.suse.de> <1187710167.6114.258.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187710167.6114.258.camel@twins>
-User-Agent: Mutt/1.5.9i
+	Wed, 22 Aug 2007 23:07:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51053 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754998AbXHWDHN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 23:07:13 -0400
+Date: Thu, 23 Aug 2007 08:50:02 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Zou Nan hai <nanhai.zou@intel.com>
+cc: Dave Jones <davej@codemonkey.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cpufreq_stats: Misc cpuinit section annotations
+Message-ID: <alpine.LFD.0.999.0708230841060.2049@enigma.security.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 21, 2007 at 05:29:27PM +0200, Peter Zijlstra wrote:
-> [ now with CCs ]
-> 
-> On Tue, 2007-08-21 at 02:28 +0200, Nick Piggin wrote:
-> 
-> > I do of course. There is one thing to have a real lock deadlock
-> > in some core path, and another to have this memory deadlock in a
-> > known-to-be-dodgy configuration (Linus said last year that he didn't
-> > want to go out of our way to support this, right?)... But if you can
-> > solve it without impacting fastpaths etc. then I don't see any
-> > objection to it.
-> 
-> That has been my intention, getting the problem solved without touching
-> fast paths and with minimal changes to how things are currently done.
-> 
-> > I don't mean for correctness, but for throughput. If you're doing a
-> > lot of network operations right near the memory limit, then it could
-> > be possible that these deadlock paths get triggered relatively often.
-> > With Christoph's patches, I think it would tend to be less.
-> 
-> Christoph's patches all rely on file backed memory being predominant.
-> [ and to a certain degree fully ignore anonymous memory loads :-( ]
 
-Yes. 
+* Stop referencing the callback directly from the __init and __exit
+  functions of this driver, and instead explicitly call
+  cpufreq_update_policy() et al. This enables the callback function
+  to be marked as __cpuinit (and the notifier_block __cpuinitdata),
+  thereby saving space when HOTPLUG_CPU=n. This also enables us to
+  use other tricks to replace __cpuinit{data} in future.
 
+* cpufreq_stats_free_table() is only called from __cpuinit or __exit
+  marked functions, making it an ideal candidate for __cpuexit.
 
-> Whereas quite a few realistic loads strive to minimise these - I'll
-> again fall back to my MPI cluster example, they would want to use so
-> much anonymous memory to preform their calculations that everything
-> except the hot paths of code are present in memory. In these scenarios 1
-> MB of text would already be a lot.
+* Undo some 80-column extremism which was leading to the description
+  of this module to being incorrectly printed with /sbin/modinfo :-(
 
-OK, I don't know exactly about MPI workloads. But I mean a few basic
-things like the C and MPI libraries could already be quite big before
-you even consider the application text (OK it won't be all paged in).
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
-Maybe it won't be enough, but I think some form of recurive reclaim
-will be better than our current scheme. Even assuming your patches are
-in the kernel, don't you think it is a good idea to _not_ have potentially
-complex writeout from reclaim just default to using up memory reserves?
+---
 
+ drivers/cpufreq/cpufreq_stats.c |   19 ++++++++-----------
+ 1 files changed, 8 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 917b9ba..ed08157 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -164,8 +164,7 @@ freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
+ 	return -1;
+ }
  
-> > > > How are your deadlock patches going anyway? AFAIK they are mostly a network
-> > > > issue and I haven't been keeping up with them for a while. 
-> > > 
-> > > They really do rely on some VM interaction too, network does not have
-> > > enough information to break out of the deadlock on its own.
-> > 
-> > The thing I don't much like about your patches is the addition of more
-> > of these global reserve type things in the allocators. They kind of
-> > suck (not your code, just the concept of them in general -- ie. including
-> > the PF_MEMALLOC reserve). I'd like to eventually reach a model where
-> > reclaimable memory from a given subsystem is always backed by enough
-> > resources to be able to reclaim it. What stopped you from going that
-> > route with the network subsystem? (too much churn, or something
-> > fundamental?)
-> 
-> I'm wanting to keep the patches as non-intrusive as possible, exactly
-> because some people consider this a fringe functionality. Doing as you
-> say does sound like a noble goal, but would require massive overhauls.
-
-But the code would end up better, wouldn't it? And it could be done
-incrementally?
-
+-static void
+-cpufreq_stats_free_table (unsigned int cpu)
++static void __cpuexit cpufreq_stats_free_table(unsigned int cpu)
+ {
+ 	struct cpufreq_stats *stat = cpufreq_stats_table[cpu];
+ 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+@@ -305,8 +304,9 @@ cpufreq_stat_notifier_trans (struct notifier_block *nb, unsigned long val,
+ 	return 0;
+ }
  
-> Also, I'm not quite sure how this would apply to networking. It
-> generally doesn't have much reclaimable memory sitting around, and it
-> heavily relies on kmalloc so an alloc/free cycle accounting system would
-> quickly involve a lot of the things I'm already doing.
-
-It wouldn't use reclaimable memory as such, but would have some small
-amounts of reserve memory for allocating all those things required to
-get a response from critical sockets. NBD for example would also then
-be sure to reserve enough memory to at least clean one page etc. That's
-the way the block layer has gone, which seems to be pretty good and I
-think much better than having it in the buddy allocator.
-
-> (also one advantage of keeping it all in the buddy allocator is that it
-> can more easily form larger order pages)
-
-I don't know if that is a really good advantage. The amount of memory
-involved should just be pretty small. I mean it is an advantage, but
-there are other disadvantages (imagine the mess if other subsystems used
-their own global reserves in the allocator rather than mempools etc). I
-don't see why networking is fundamentally more deserving of its own pools
-in the allocator than anybody else.
+-static int cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+-					unsigned long action, void *hcpu)
++static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
++					       unsigned long action,
++					       void *hcpu)
+ {
+ 	unsigned int cpu = (unsigned long)hcpu;
+ 
+@@ -323,7 +323,7 @@ static int cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+ 	return NOTIFY_OK;
+ }
+ 
+-static struct notifier_block cpufreq_stat_cpu_notifier =
++static struct notifier_block cpufreq_stat_cpu_notifier __cpuinitdata =
+ {
+ 	.notifier_call = cpufreq_stat_cpu_callback,
+ };
+@@ -356,8 +356,7 @@ __init cpufreq_stats_init(void)
+ 
+ 	register_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
+ 	for_each_online_cpu(cpu) {
+-		cpufreq_stat_cpu_callback(&cpufreq_stat_cpu_notifier,
+-				CPU_ONLINE, (void *)(long)cpu);
++		cpufreq_update_policy(cpu);
+ 	}
+ 	return 0;
+ }
+@@ -372,14 +371,12 @@ __exit cpufreq_stats_exit(void)
+ 			CPUFREQ_TRANSITION_NOTIFIER);
+ 	unregister_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
+ 	for_each_online_cpu(cpu) {
+-		cpufreq_stat_cpu_callback(&cpufreq_stat_cpu_notifier,
+-						CPU_DEAD, (void *)(long)cpu);
++		cpufreq_stats_free_table(cpu);
+ 	}
+ }
+ 
+ MODULE_AUTHOR ("Zou Nan hai <nanhai.zou@intel.com>");
+-MODULE_DESCRIPTION ("'cpufreq_stats' - A driver to export cpufreq stats"
+-				"through sysfs filesystem");
++MODULE_DESCRIPTION ("'cpufreq_stats' - A driver to export cpufreq stats through sysfs filesystem");
+ MODULE_LICENSE ("GPL");
+ 
+ module_init(cpufreq_stats_init);
