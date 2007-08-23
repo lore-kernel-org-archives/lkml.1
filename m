@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764835AbXHWPyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765035AbXHWPzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764835AbXHWPyv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 11:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759587AbXHWPyo
+	id S1765035AbXHWPzU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 11:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764702AbXHWPzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 11:54:44 -0400
-Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:4185 "EHLO
-	anchor-post-34.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759279AbXHWPyn (ORCPT
+	Thu, 23 Aug 2007 11:55:06 -0400
+Received: from spirit.analogic.com ([204.178.40.4]:3960 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764259AbXHWPzE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 11:54:43 -0400
-Subject: Re: 2.6.23-rc2-mm2
-From: richard kennedy <richard@rsk.demon.co.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070821163614.ad85a341.akpm@linux-foundation.org>
-References: <20070809224254.11f42716.akpm@linux-foundation.org>
-	 <fa9p6n$kvh$1@sea.gmane.org>
-	 <20070821163614.ad85a341.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 23 Aug 2007 16:54:40 +0100
-Message-Id: <1187884480.3153.8.camel@castor.rsk.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Aug 2007 11:55:04 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 23 Aug 2007 15:54:57.0312 (UTC) FILETIME=[F4357A00:01C7E59D]
+Content-class: urn:content-classes:message
+Subject: Re: request for Linux kernel related project ideas
+Date: Thu, 23 Aug 2007 11:55:00 -0400
+Message-ID: <Pine.LNX.4.61.0708231147340.5012@chaos.analogic.com>
+In-Reply-To: <Pine.LNX.4.64.0708230757330.4181@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: request for Linux kernel related project ideas
+Thread-Index: AcflnfQ/zWKHk0L8SD6A7RM6uYLotg==
+References: <4bd3aab60708230110i65208672u89048fcc511ba0c5@mail.gmail.com> <46CD76D6.6070409@anagramm.de> <Pine.LNX.4.64.0708230757330.4181@localhost.localdomain>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: "Clemens Koller" <clemens.koller@anagramm.de>,
+       "shaneed cm" <just4kernel@gmail.com>, <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 16:36 -0700, Andrew Morton wrote:
-> On Sun, 19 Aug 2007 15:56:07 +0000 (UTC)
-> richard kennedy <richard@rsk.demon.co.uk> wrote:
-> 
-> > On Thu, 09 Aug 2007 22:42:54 -0700, Andrew Morton wrote:
-> > 
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-
-> > rc2/2.6.23-rc2-mm2/
-> > > 
-> > > - Various problems from 2.6.23-rc2-mm1 were fixed
-> > > 
-> > > 
-> > > 
-> > > Boilerplate:
-> > > 
-> > > - See the `hot-fixes' directory for any important updates to this
-> > > patchset.
-> > > 
-> > > - To fetch an -mm tree using git, use (for example)
-> > > 
-> > >   git-fetch
-> > >   git://git.kernel.org/pub/scm/linux/kernel/git/smurf/linux-trees.git
-> > >   tag v2.6.16-rc2-mm1 git-checkout -b local-v2.6.16-rc2-mm1 v2.6.16-rc2-mm1
-> > > 
-> > Hi Andrew,
-> 
-> Please always do reply-to-all.  Otherwise you end up thinking that you're
-> being ignored ;)
-> 
-> > the git tree you mentioned in the boilerplate doesn't seem to have been 
-> > updated in about 7 weeks.
-> > 2.6.22-rc6-mm1 is the last tag I can see on the summary page. Is 
-> > something broken ?
-> 
-> Yes, the software which auto-imports -mm into git appears to have broken
-> a few weeks ago.  Matthias has been informed, but I guess he is busy.
 
-Sorry about not replying all, I'm using the gmane newsgroup interface
-and I hoped it would do the right thing. I guess I'll just have to
-subscribe to the lkml fire-hose instead ;)
-Richard  
+On Thu, 23 Aug 2007, Robert P. J. Day wrote:
 
+> On Thu, 23 Aug 2007, Clemens Koller wrote:
+>
+>> shaneed cm schrieb:
+>>> Hi,
+>>> This is a request for Linux kernel related project ideas.
+>>>  I am Computer Science Engineering final year student.  We have to do
+>>> a project of one year duration . I formed a group of two and we
+>>> decided to do a project in Linux kernel. Our interests are in Virtual
+>>> memory management, file system, process scheduling and load balancing
+>>> in Linux clusters.  Last year we did a study of Linux's page
+>>> replacement mechanism.  As I am not experienced as you people, please
+>>> suggest me some ideas.
+>>
+>> Just for an example:
+>> Checkout what filesystem / caching / scheduling policy is most
+>> suitable for Solid State PATA/SATA Flashdisks and write / modify
+>> a kernel scheduler to support it.
+>
+> i'm not sure that it's appropriate for LKML folks to be giving anyone
+> suggestions for projects.  the eventual choice of project should be
+> based on what *shaneed* wants, not what other people tell him he
+> should be doing.
+>
+> in addition, sometimes part of the work involved in a school project
+> involves doing enough research to just make the *choice*.  what
+> shaneed is asking is that others do that work for him.  IMHO, he
+> should be told politely but firmly that selecting a topic is *his*
+> problem.  that's just part of the academic process.
+>
+> rday
+> -- 
+> ========================================================================
+> Robert P. J. Day
+> Linux Consulting, Training and Annoying Kernel Pedantry
+> Waterloo, Ontario, CANADA
+
+Of course it is appropriate. Day's response is very strange
+indeed. As part of a student's research, he should ask questions
+of people who are likely to know some answers about his query.
+
+In fact, if students for which I am an adviser didn't ask such
+questions, and simply selected a project, I would question
+the validity of the project. Projects are not selected in
+a vacuum. Just like "real world" industry, there must be
+a need (read market) for the project (read product).
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
