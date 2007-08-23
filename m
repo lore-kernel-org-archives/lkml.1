@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761851AbXHWNy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762718AbXHWN5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761851AbXHWNy3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 09:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbXHWNyV
+	id S1762718AbXHWN5z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 09:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757462AbXHWN5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 09:54:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40654 "EHLO mx2.mail.elte.hu"
+	Thu, 23 Aug 2007 09:57:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39314 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754871AbXHWNyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 09:54:21 -0400
-Date: Thu, 23 Aug 2007 15:53:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Shrink task_struct if CONFIG_FUTEX=n
-Message-ID: <20070823135347.GA15224@elte.hu>
-References: <20070823132735.GE31289@localhost.sw.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070823132735.GE31289@localhost.sw.ru>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4624]
+	id S1757527AbXHWN5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 09:57:47 -0400
+Date: Thu, 23 Aug 2007 09:57:38 -0400
+From: Prarit Bhargava <prarit@redhat.com>
+To: linux-kernel@vger.kernel.org, mingo@redhat.com, akpm@linux-foundation.org,
+       gbeshers@sgi.com
+Cc: Prarit Bhargava <prarit@redhat.com>
+Message-Id: <20070823135738.17726.76343.sendpatchset@prarit.boston.redhat.com>
+Subject: [PATCH]: i386 Stop bogus nmi & softlockup warnings in show_mem
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When dumping memory via sysrq-m it is possible to take a bogus NMI watchdog
+or softlockup watchdog because the dump can take a long time on big memory
+systems.
 
-* Alexey Dobriyan <adobriyan@sw.ru> wrote:
+Occasionally tickle the watchdog when doing the dump.
 
-> robust_list, compat_robust_list, pi_state_list, pi_state_cache are 
-> really used if futexes are on.
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 
-looks good to me.
-
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+diff --git a/arch/i386/mm/pgtable.c b/arch/i386/mm/pgtable.c
+index 01437c4..9754cb5 100644
+--- a/arch/i386/mm/pgtable.c
++++ b/arch/i386/mm/pgtable.c
+@@ -6,6 +6,7 @@
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+ #include <linux/mm.h>
++#include <linux/nmi.h>
+ #include <linux/swap.h>
+ #include <linux/smp.h>
+ #include <linux/highmem.h>
+@@ -39,6 +40,8 @@ void show_mem(void)
+ 	for_each_online_pgdat(pgdat) {
+ 		pgdat_resize_lock(pgdat, &flags);
+ 		for (i = 0; i < pgdat->node_spanned_pages; ++i) {
++			if (unlikely(i % MAX_ORDER_NR_PAGES == 0))
++				touch_nmi_watchdog();
+ 			page = pgdat_page_nr(pgdat, i);
+ 			total++;
+ 			if (PageHighMem(page))
