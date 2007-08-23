@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765544AbXHWRta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765473AbXHWRvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765544AbXHWRta (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 13:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759388AbXHWRtW
+	id S1765473AbXHWRvw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 13:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760572AbXHWRvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 13:49:22 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:58555 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752128AbXHWRtV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 13:49:21 -0400
-Date: Thu, 23 Aug 2007 18:49:17 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: [PCI]
-Message-ID: <20070823174917.GA19000@linux-mips.org>
+	Thu, 23 Aug 2007 13:51:45 -0400
+Received: from iona.labri.fr ([147.210.8.143]:40949 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755563AbXHWRvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 13:51:44 -0400
+Date: Thu, 23 Aug 2007 19:51:40 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Console events and accessibility
+Message-ID: <20070823175140.GC3721@interface.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20070821212939.GD3658@interface.famille.thibault.fr> <20070822054855.GB23336@kroah.com> <20070822085355.GB3359@implementation.labri.fr> <20070822130520.GE3359@implementation.labri.fr> <20070823100402.GB6742@kroah.com> <20070823113035.GD3287@implementation.labri.fr> <20070823163318.GB5528@kroah.com> <20070823170845.GA3721@interface.famille.thibault.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070823170845.GA3721@interface.famille.thibault.fr>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On MIPS with PCI && !HOTPLUG, I'm currently getting the following modpost
-warning:
+Samuel Thibault, le Thu 23 Aug 2007 19:08:45 +0200, a écrit :
+> > If you need help in this area, I can see about doing a bit as I did a
+> > lot of cleanup of this codebase a few years ago.  I also know of a few
+> > users who are willing to help test this stuff out.
+> 
+> Oh, great!  Maybe Kirk should be contacted so he gives access to the git
+> tree of speakup.
 
-  MODPOST vmlinux.o
-WARNING: vmlinux.o(.text+0x1ce128): Section mismatch: reference to .init.text:pci_read_bridge_bases (between 'pcibios_fixup_bus' and 'pcibios_enable_device')
+There's a public repos on 
+http://linux-speakup.org/speakup.git
 
-On MIPS I have the call chains pci_scan_child_bus -> pcibios_fixup_bus ->
-pci_read_bridge_bases.  pci_scan_child_bus can't be __devinit because it
-it is an exported symbol, thus pcibios_fixup_bus and pci_read_bridge_bases
-can't be either.
-
-For some reason I don't see this issue on x86; I blame compiler differences.
-
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 34b8dae..1c8087f 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -285,7 +285,7 @@ static void pci_read_bases(struct pci_dev *dev, unsigned int howmany, int rom)
- 	}
- }
- 
--void __devinit pci_read_bridge_bases(struct pci_bus *child)
-+void pci_read_bridge_bases(struct pci_bus *child)
- {
- 	struct pci_dev *dev = child->self;
- 	u8 io_base_lo, io_limit_lo;
+Samuel
