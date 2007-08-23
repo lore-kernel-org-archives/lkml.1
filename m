@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763790AbXHWP5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765427AbXHWP5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763790AbXHWP5X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 11:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763242AbXHWP5P
+	id S1765427AbXHWP5q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 11:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763242AbXHWP5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 11:57:15 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48066 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763167AbXHWP5O (ORCPT
+	Thu, 23 Aug 2007 11:57:35 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:34109 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765003AbXHWP5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 11:57:14 -0400
-Date: Thu, 23 Aug 2007 08:51:17 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [Announce] Unified x86 architecture, arch/x86 - V2
-Message-ID: <20070823085117.368c8bdb@laptopd505.fenrus.org>
-In-Reply-To: <1187819782.3316.8.camel@chaos>
-References: <1187819782.3316.8.camel@chaos>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+	Thu, 23 Aug 2007 11:57:34 -0400
+Date: Thu, 23 Aug 2007 08:56:40 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "yunfeng zhang" <zyf.zeroos@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, hugh@veritas.com,
+       riel@redhat.com
+Subject: Re: [PATCH 2.6.20-rc5 1/1] MM: enhance Linux swap subsystem
+Message-Id: <20070823085640.f6b43ab3.randy.dunlap@oracle.com>
+In-Reply-To: <4df04b840708230247l69d03112lc5b66ff3359eac2@mail.gmail.com>
+References: <4df04b840701212309l2a283357jbdaa88794e5208a7@mail.gmail.com>
+	<4df04b840701301852i41687edfl1462c4ca3344431c@mail.gmail.com>
+	<Pine.LNX.4.64.0701312022340.26857@blonde.wat.veritas.com>
+	<4df04b840702122152o64b2d59cy53afcd43bb24cb7a@mail.gmail.com>
+	<4df04b840702200106q670ff944k118d218fed17b884@mail.gmail.com>
+	<4df04b840702211758t1906083x78fb53b6283349ca@mail.gmail.com>
+	<45DCFDBE.50209@redhat.com>
+	<4df04b840702221831x76626de1rfa70cb653b12f495@mail.gmail.com>
+	<45DE6080.6030904@redhat.com>
+	<4df04b840702241747ne903699w636d37b40351b752@mail.gmail.com>
+	<4df04b840708230247l69d03112lc5b66ff3359eac2@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Aug 2007 23:56:22 +0200
-Thomas Gleixner <tglx@linutronix.de> wrote:
+On Thu, 23 Aug 2007 17:47:44 +0800 yunfeng zhang wrote:
 
-> We are pleased to announce v2 of the unified arch/x86 project we are 
-> working on.
+> Signed-off-by: Yunfeng Zhang <zyf.zeroos@gmail.com>
 > 
-> To recap: the core idea behind our project is simple to describe: we 
-> introduce a new arch/x86/ and include/asm-x86/ file hierarchy that 
-> includes all the existing 32-bit and 64-bit x86 code and allows the 
-> building of either a 32-bit (i386) kernel or a 64-bit (x86_64)
-> kernel. No code is lost and almost no code is modified. We want the
-> window for regressions and tree incompatibilities to be zero. (The
-> full initial announcement can be found at
-> http://lkml.org/lkml/2007/7/20/447)
+> The mayor change is
+> 1) Using nail arithmetic to maximum SwapDevice performance.
+> 2) Add PG_pps bit to sign every pps page.
+> 3) Some discussion about NUMA.
+> See vm_pps.txt
 > 
+> Index: linux-2.6.22/Documentation/vm_pps.txt
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6.22/Documentation/vm_pps.txt	2007-08-23 17:04:12.051837322 +0800
+> @@ -0,0 +1,365 @@
+> +
+> +                         Pure Private Page System (pps)
+> +                              zyf.zeroos@gmail.com
+> +                              December 24-26, 2006
+> +                            Revised on Aug 23, 2007
+> +
+> +// Purpose <([{
+> +The file is used to document the idea which is published firstly at
+> +http://www.ussg.iu.edu/hypermail/linux/kernel/0607.2/0451.html, as a part of my
+> +OS -- main page http://blog.chinaunix.net/u/21764/index.php. In brief, the
+> +patch of the document is for enchancing the performance of Linux swap
+> +subsystem. You can find the overview of the idea in section <How to Reclaim
+> +Pages more Efficiently> and how I patch it into Linux 2.6.21 in section
+> +<Pure Private Page System -- pps>.
+> +// }])>
 
-as said before I like this a lot ;)
+Hi,
+What (text) format/markup language is the vm_pps.txt file in?
 
-there's still some low hanging fruit left:
-
-[arjan@laptopd505 x86]$ for i in */*_32.c */*/*_32.c ; do perl same_function.pl $i ; done 
-Identical function: crypto/aes_32.c - aes_fini 
-Identical function: crypto/aes_32.c - aes_encrypt
-Identical function: crypto/aes_32.c - aes_init    
-Identical function: crypto/aes_32.c - aes_decrypt
-Identical function: kernel/apic_32.c - init_lapic_sysfs
-Identical function: kernel/hpet_32.c - read_hpet 
-Identical function: kernel/io_apic_32.c - io_apic_base
-Identical function: kernel/io_apic_32.c - irq_polarity 
-Identical function: kernel/io_apic_32.c - ioapic_read_entry
-Identical function: kernel/io_apic_32.c - ioapic_init_sysfs
-Identical function: kernel/io_apic_32.c - irq_trigger 
-Identical function: kernel/io_apic_32.c - ioapic_mask_entry
-Identical function: kernel/io_apic_32.c - find_irq_entry    
-Identical function: kernel/io_apic_32.c - io_apic_write  
-Identical function: kernel/io_apic_32.c - io_apic_read  
-Identical function: kernel/io_apic_32.c - startup_ioapic_irq
-Identical function: kernel/io_apic_32.c - ioapic_write_entry 
-Identical function: kernel/kprobes_32.c - arch_disarm_kprobe 
-Identical function: kernel/kprobes_32.c - arch_arm_kprobe   
-Identical function: kernel/ldt_32.c - read_ldt 
-Identical function: kernel/ldt_32.c - copy_ldt 
-Identical function: kernel/ldt_32.c - flush_ldt
-Identical function: kernel/mpparse_32.c - mpf_checksum
-Identical function: kernel/nmi_32.c - lapic_nmi_resume 
-Identical function: kernel/nmi_32.c - lapic_nmi_suspend 
-Identical function: kernel/nmi_32.c - __acpi_nmi_disable
-Identical function: kernel/pci-dma_32.c - via_no_dac    
-Identical function: kernel/process_32.c - play_dead  
-Identical function: kernel/setup_32.c - copy_edd      
-Identical function: mm/fault_32.c - notify_page_fault
-Identical function: mm/pageattr_32.c - flush_map 
-Identical function: boot/compressed/misc_32.c - putstr
-Identical function: boot/compressed/misc_32.c - scroll
-Identical function: boot/compressed/misc_32.c - memcpy 
-Identical function: boot/compressed/misc_32.c - free   
-Identical function: boot/compressed/misc_32.c - memset 
-Identical function: boot/compressed/misc_32.c - error  
-Identical function: boot/compressed/misc_32.c - flush_window
-Identical function: boot/compressed/misc_32.c - fill_inbuf  
-Identical function: boot/compressed/misc_32.c - gzip_mark    
-Identical function: kernel/acpi/sleep_32.c - acpi_sleep_setup
-
-
-I'll get someone in my team to investigate merging these in the next few days and send patches to you for them.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
