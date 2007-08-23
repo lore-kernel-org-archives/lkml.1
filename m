@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932754AbXHWWgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934132AbXHWWgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932754AbXHWWgO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 18:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765584AbXHWW3N
+	id S934132AbXHWWgo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 18:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765970AbXHWW3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 18:29:13 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33157 "EHLO
+	Thu, 23 Aug 2007 18:29:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33165 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933114AbXHWW3K (ORCPT
+	with ESMTP id S1765866AbXHWW3O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 18:29:10 -0400
-Date: Thu, 23 Aug 2007 15:27:13 -0700
+	Thu, 23 Aug 2007 18:29:14 -0400
+Date: Thu, 23 Aug 2007 15:27:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,13 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       Ilpo J?rvinen <ilpo.jarvinen@helsinki.fi>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 16/28] SPARC64: Fix sparc64 PCI config accesses on sun4u
-Message-ID: <20070823222713.GQ18559@kroah.com>
+Subject: [patch 18/28] TCP: Fix TCP rate-halving on bidirectional flows.
+Message-ID: <20070823222723.GR18559@kroah.com>
 References: <20070823220656.101239233@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sparc64-fix-sparc64-pci-config-accesses-on-sun4u.patch"
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: inline; filename="tcp-fix-tcp-rate-halving-on-bidirectional-flows.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20070823221811.GA18559@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -37,216 +39,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 
-From: David Miller <davem@davemloft.net>
+Actually, the ratehalving seems to work too well, as cwnd is
+reduced on every second ACK even though the packets in flight
+remains unchanged. Recoveries in a bidirectional flows suffer
+quite badly because of this, both NewReno and SACK are affected.
 
-[SPARC64]: Fix sun4u PCI config space accesses on sun4u.
+After this patch, rate halving is performed for ACK only if
+packets in flight was supposedly changed too.
 
-Don't provide fake PCI config space for sun4u.
-
-Also, put back the funny host controller space handling that
-at least Sabre needs.  You have to read PCI host controller
-registers at their nature size otherwise you get zeros instead
-of correct values.
-
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc64/kernel/pci.c        |   15 +++-
- arch/sparc64/kernel/pci_common.c |  123 ++++++++++++++++++++++++++++++++++++---
- 2 files changed, 126 insertions(+), 12 deletions(-)
+ net/ipv4/tcp_input.c |   21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
 
---- a/arch/sparc64/kernel/pci.c
-+++ b/arch/sparc64/kernel/pci.c
-@@ -422,10 +422,15 @@ struct pci_dev *of_create_pci_dev(struct
- 	dev->multifunction = 0;		/* maybe a lie? */
- 
- 	if (host_controller) {
--		dev->vendor = 0x108e;
--		dev->device = 0x8000;
--		dev->subsystem_vendor = 0x0000;
--		dev->subsystem_device = 0x0000;
-+		if (tlb_type != hypervisor) {
-+			pci_read_config_word(dev, PCI_VENDOR_ID,
-+					     &dev->vendor);
-+			pci_read_config_word(dev, PCI_DEVICE_ID,
-+					     &dev->device);
-+		} else {
-+			dev->vendor = PCI_VENDOR_ID_SUN;
-+			dev->device = 0x80f0;
-+		}
- 		dev->cfg_size = 256;
- 		dev->class = PCI_CLASS_BRIDGE_HOST << 8;
- 		sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
-@@ -817,7 +822,7 @@ int pci_host_bridge_read_pci_cfg(struct 
- {
- 	static u8 fake_pci_config[] = {
- 		0x8e, 0x10, /* Vendor: 0x108e (Sun) */
--		0x00, 0x80, /* Device: 0x8000 (PBM) */
-+		0xf0, 0x80, /* Device: 0x80f0 (Fire) */
- 		0x46, 0x01, /* Command: 0x0146 (SERR, PARITY, MASTER, MEM) */
- 		0xa0, 0x22, /* Status: 0x02a0 (DEVSEL_MED, FB2B, 66MHZ) */
- 		0x00, 0x00, 0x00, 0x06, /* Class: 0x06000000 host bridge */
---- a/arch/sparc64/kernel/pci_common.c
-+++ b/arch/sparc64/kernel/pci_common.c
-@@ -44,6 +44,67 @@ static void *sun4u_config_mkaddr(struct 
- 	return (void *)	(pbm->config_space | bus | devfn | reg);
+--- a/net/ipv4/tcp_input.c
++++ b/net/ipv4/tcp_input.c
+@@ -1851,19 +1851,22 @@ static inline u32 tcp_cwnd_min(const str
  }
  
-+/* At least on Sabre, it is necessary to access all PCI host controller
-+ * registers at their natural size, otherwise zeros are returned.
-+ * Strange but true, and I see no language in the UltraSPARC-IIi
-+ * programmer's manual that mentions this even indirectly.
-+ */
-+static int sun4u_read_pci_cfg_host(struct pci_pbm_info *pbm,
-+				   unsigned char bus, unsigned int devfn,
-+				   int where, int size, u32 *value)
-+{
-+	u32 tmp32, *addr;
-+	u16 tmp16;
-+	u8 tmp8;
-+
-+	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
-+	if (!addr)
-+		return PCIBIOS_SUCCESSFUL;
-+
-+	switch (size) {
-+	case 1:
-+		if (where < 8) {
-+			unsigned long align = (unsigned long) addr;
-+
-+			align &= ~1;
-+			pci_config_read16((u16 *)align, &tmp16);
-+			if (where & 1)
-+				*value = tmp16 >> 8;
-+			else
-+				*value = tmp16 & 0xff;
-+		} else {
-+			pci_config_read8((u8 *)addr, &tmp8);
-+			*value = (u32) tmp8;
-+		}
-+		break;
-+
-+	case 2:
-+		if (where < 8) {
-+			pci_config_read16((u16 *)addr, &tmp16);
-+			*value = (u32) tmp16;
-+		} else {
-+			pci_config_read8((u8 *)addr, &tmp8);
-+			*value = (u32) tmp8;
-+			pci_config_read8(((u8 *)addr) + 1, &tmp8);
-+			*value |= ((u32) tmp8) << 8;
-+		}
-+		break;
-+
-+	case 4:
-+		tmp32 = 0xffffffff;
-+		sun4u_read_pci_cfg_host(pbm, bus, devfn,
-+					where, 2, &tmp32);
-+		*value = tmp32;
-+
-+		tmp32 = 0xffffffff;
-+		sun4u_read_pci_cfg_host(pbm, bus, devfn,
-+					where + 2, 2, &tmp32);
-+		*value |= tmp32 << 16;
-+		break;
-+	}
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+
- static int sun4u_read_pci_cfg(struct pci_bus *bus_dev, unsigned int devfn,
- 			      int where, int size, u32 *value)
+ /* Decrease cwnd each second ack. */
+-static void tcp_cwnd_down(struct sock *sk)
++static void tcp_cwnd_down(struct sock *sk, int flag)
  {
-@@ -53,10 +114,6 @@ static int sun4u_read_pci_cfg(struct pci
- 	u16 tmp16;
- 	u8 tmp8;
+ 	struct tcp_sock *tp = tcp_sk(sk);
+ 	int decr = tp->snd_cwnd_cnt + 1;
  
--	if (bus_dev == pbm->pci_bus && devfn == 0x00)
--		return pci_host_bridge_read_pci_cfg(bus_dev, devfn, where,
--						    size, value);
--
- 	switch (size) {
- 	case 1:
- 		*value = 0xff;
-@@ -69,6 +126,10 @@ static int sun4u_read_pci_cfg(struct pci
- 		break;
+-	tp->snd_cwnd_cnt = decr&1;
+-	decr >>= 1;
++	if ((flag&FLAG_FORWARD_PROGRESS) ||
++	    (IsReno(tp) && !(flag&FLAG_NOT_DUP))) {
++		tp->snd_cwnd_cnt = decr&1;
++		decr >>= 1;
+ 
+-	if (decr && tp->snd_cwnd > tcp_cwnd_min(sk))
+-		tp->snd_cwnd -= decr;
++		if (decr && tp->snd_cwnd > tcp_cwnd_min(sk))
++			tp->snd_cwnd -= decr;
+ 
+-	tp->snd_cwnd = min(tp->snd_cwnd, tcp_packets_in_flight(tp)+1);
+-	tp->snd_cwnd_stamp = tcp_time_stamp;
++		tp->snd_cwnd = min(tp->snd_cwnd, tcp_packets_in_flight(tp)+1);
++		tp->snd_cwnd_stamp = tcp_time_stamp;
++	}
+ }
+ 
+ /* Nothing was retransmitted or returned timestamp is less
+@@ -2060,7 +2063,7 @@ static void tcp_try_to_open(struct sock 
+ 		}
+ 		tcp_moderate_cwnd(tp);
+ 	} else {
+-		tcp_cwnd_down(sk);
++		tcp_cwnd_down(sk, flag);
  	}
- 
-+	if (!bus_dev->number && !PCI_SLOT(devfn))
-+		return sun4u_read_pci_cfg_host(pbm, bus, devfn, where,
-+					       size, value);
-+
- 	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
- 	if (!addr)
- 		return PCIBIOS_SUCCESSFUL;
-@@ -101,6 +162,53 @@ static int sun4u_read_pci_cfg(struct pci
- 	return PCIBIOS_SUCCESSFUL;
  }
  
-+static int sun4u_write_pci_cfg_host(struct pci_pbm_info *pbm,
-+				    unsigned char bus, unsigned int devfn,
-+				    int where, int size, u32 value)
-+{
-+	u32 *addr;
-+
-+	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
-+	if (!addr)
-+		return PCIBIOS_SUCCESSFUL;
-+
-+	switch (size) {
-+	case 1:
-+		if (where < 8) {
-+			unsigned long align = (unsigned long) addr;
-+			u16 tmp16;
-+
-+			align &= ~1;
-+			pci_config_read16((u16 *)align, &tmp16);
-+			if (where & 1) {
-+				tmp16 &= 0x00ff;
-+				tmp16 |= value << 8;
-+			} else {
-+				tmp16 &= 0xff00;
-+				tmp16 |= value;
-+			}
-+			pci_config_write16((u16 *)align, tmp16);
-+		} else
-+			pci_config_write8((u8 *)addr, value);
-+		break;
-+	case 2:
-+		if (where < 8) {
-+			pci_config_write16((u16 *)addr, value);
-+		} else {
-+			pci_config_write8((u8 *)addr, value & 0xff);
-+			pci_config_write8(((u8 *)addr) + 1, value >> 8);
-+		}
-+		break;
-+	case 4:
-+		sun4u_write_pci_cfg_host(pbm, bus, devfn,
-+					 where, 2, value & 0xffff);
-+		sun4u_write_pci_cfg_host(pbm, bus, devfn,
-+					 where + 2, 2, value >> 16);
-+		break;
-+	}
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+
- static int sun4u_write_pci_cfg(struct pci_bus *bus_dev, unsigned int devfn,
- 			       int where, int size, u32 value)
- {
-@@ -108,9 +216,10 @@ static int sun4u_write_pci_cfg(struct pc
- 	unsigned char bus = bus_dev->number;
- 	u32 *addr;
+@@ -2260,7 +2263,7 @@ tcp_fastretrans_alert(struct sock *sk, u
  
--	if (bus_dev == pbm->pci_bus && devfn == 0x00)
--		return pci_host_bridge_write_pci_cfg(bus_dev, devfn, where,
--						     size, value);
-+	if (!bus_dev->number && !PCI_SLOT(devfn))
-+		return sun4u_write_pci_cfg_host(pbm, bus, devfn, where,
-+						size, value);
-+
- 	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
- 	if (!addr)
- 		return PCIBIOS_SUCCESSFUL;
+ 	if (is_dupack || tcp_head_timedout(sk))
+ 		tcp_update_scoreboard(sk);
+-	tcp_cwnd_down(sk);
++	tcp_cwnd_down(sk, flag);
+ 	tcp_xmit_retransmit_queue(sk);
+ }
+ 
 
 -- 
