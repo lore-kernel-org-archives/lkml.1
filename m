@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933366AbXHWWfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932754AbXHWWgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933366AbXHWWfp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 18:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932567AbXHWW3I
+	id S932754AbXHWWgO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 18:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765584AbXHWW3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 18:29:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33135 "EHLO
+	Thu, 23 Aug 2007 18:29:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33157 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933114AbXHWW3G (ORCPT
+	with ESMTP id S933114AbXHWW3K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 18:29:06 -0400
-Date: Thu, 23 Aug 2007 15:27:06 -0700
+	Thu, 23 Aug 2007 18:29:10 -0400
+Date: Thu, 23 Aug 2007 15:27:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,91 +22,231 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 15/28] SPARC64: Fix sparc64 task stack traces.
-Message-ID: <20070823222706.GP18559@kroah.com>
+Subject: [patch 16/28] SPARC64: Fix sparc64 PCI config accesses on sun4u
+Message-ID: <20070823222713.GQ18559@kroah.com>
 References: <20070823220656.101239233@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sparc64-fix-sparc64-task-stack-traces.patch"
+Content-Disposition: inline; filename="sparc64-fix-sparc64-pci-config-accesses-on-sun4u.patch"
 In-Reply-To: <20070823221811.GA18559@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+
 From: David Miller <davem@davemloft.net>
 
-It didn't handle that case at all, and now dump_stack()
-can be implemented directly as show_stack(current, NULL)
+[SPARC64]: Fix sun4u PCI config space accesses on sun4u.
+
+Don't provide fake PCI config space for sun4u.
+
+Also, put back the funny host controller space handling that
+at least Sabre needs.  You have to read PCI host controller
+registers at their nature size otherwise you get zeros instead
+of correct values.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc64/kernel/traps.c |   18 +++++++++++-------
- arch/sparc64/mm/fault.c     |    5 +----
- 2 files changed, 12 insertions(+), 11 deletions(-)
+ arch/sparc64/kernel/pci.c        |   15 +++-
+ arch/sparc64/kernel/pci_common.c |  123 ++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 126 insertions(+), 12 deletions(-)
 
---- a/arch/sparc64/kernel/traps.c
-+++ b/arch/sparc64/kernel/traps.c
-@@ -2134,12 +2134,20 @@ static void user_instruction_dump (unsig
- void show_stack(struct task_struct *tsk, unsigned long *_ksp)
- {
- 	unsigned long pc, fp, thread_base, ksp;
--	void *tp = task_stack_page(tsk);
-+	struct thread_info *tp;
- 	struct reg_window *rw;
- 	int count = 0;
+--- a/arch/sparc64/kernel/pci.c
++++ b/arch/sparc64/kernel/pci.c
+@@ -422,10 +422,15 @@ struct pci_dev *of_create_pci_dev(struct
+ 	dev->multifunction = 0;		/* maybe a lie? */
  
- 	ksp = (unsigned long) _ksp;
--
-+	if (!tsk)
-+		tsk = current;
-+	tp = task_thread_info(tsk);
-+	if (ksp == 0UL) {
-+		if (tsk == current)
-+			asm("mov %%fp, %0" : "=r" (ksp));
-+		else
-+			ksp = tp->ksp;
+ 	if (host_controller) {
+-		dev->vendor = 0x108e;
+-		dev->device = 0x8000;
+-		dev->subsystem_vendor = 0x0000;
+-		dev->subsystem_device = 0x0000;
++		if (tlb_type != hypervisor) {
++			pci_read_config_word(dev, PCI_VENDOR_ID,
++					     &dev->vendor);
++			pci_read_config_word(dev, PCI_DEVICE_ID,
++					     &dev->device);
++		} else {
++			dev->vendor = PCI_VENDOR_ID_SUN;
++			dev->device = 0x80f0;
++		}
+ 		dev->cfg_size = 256;
+ 		dev->class = PCI_CLASS_BRIDGE_HOST << 8;
+ 		sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+@@ -817,7 +822,7 @@ int pci_host_bridge_read_pci_cfg(struct 
+ {
+ 	static u8 fake_pci_config[] = {
+ 		0x8e, 0x10, /* Vendor: 0x108e (Sun) */
+-		0x00, 0x80, /* Device: 0x8000 (PBM) */
++		0xf0, 0x80, /* Device: 0x80f0 (Fire) */
+ 		0x46, 0x01, /* Command: 0x0146 (SERR, PARITY, MASTER, MEM) */
+ 		0xa0, 0x22, /* Status: 0x02a0 (DEVSEL_MED, FB2B, 66MHZ) */
+ 		0x00, 0x00, 0x00, 0x06, /* Class: 0x06000000 host bridge */
+--- a/arch/sparc64/kernel/pci_common.c
++++ b/arch/sparc64/kernel/pci_common.c
+@@ -44,6 +44,67 @@ static void *sun4u_config_mkaddr(struct 
+ 	return (void *)	(pbm->config_space | bus | devfn | reg);
+ }
+ 
++/* At least on Sabre, it is necessary to access all PCI host controller
++ * registers at their natural size, otherwise zeros are returned.
++ * Strange but true, and I see no language in the UltraSPARC-IIi
++ * programmer's manual that mentions this even indirectly.
++ */
++static int sun4u_read_pci_cfg_host(struct pci_pbm_info *pbm,
++				   unsigned char bus, unsigned int devfn,
++				   int where, int size, u32 *value)
++{
++	u32 tmp32, *addr;
++	u16 tmp16;
++	u8 tmp8;
++
++	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
++	if (!addr)
++		return PCIBIOS_SUCCESSFUL;
++
++	switch (size) {
++	case 1:
++		if (where < 8) {
++			unsigned long align = (unsigned long) addr;
++
++			align &= ~1;
++			pci_config_read16((u16 *)align, &tmp16);
++			if (where & 1)
++				*value = tmp16 >> 8;
++			else
++				*value = tmp16 & 0xff;
++		} else {
++			pci_config_read8((u8 *)addr, &tmp8);
++			*value = (u32) tmp8;
++		}
++		break;
++
++	case 2:
++		if (where < 8) {
++			pci_config_read16((u16 *)addr, &tmp16);
++			*value = (u32) tmp16;
++		} else {
++			pci_config_read8((u8 *)addr, &tmp8);
++			*value = (u32) tmp8;
++			pci_config_read8(((u8 *)addr) + 1, &tmp8);
++			*value |= ((u32) tmp8) << 8;
++		}
++		break;
++
++	case 4:
++		tmp32 = 0xffffffff;
++		sun4u_read_pci_cfg_host(pbm, bus, devfn,
++					where, 2, &tmp32);
++		*value = tmp32;
++
++		tmp32 = 0xffffffff;
++		sun4u_read_pci_cfg_host(pbm, bus, devfn,
++					where + 2, 2, &tmp32);
++		*value |= tmp32 << 16;
++		break;
 +	}
- 	if (tp == current_thread_info())
- 		flushw_all();
- 
-@@ -2168,11 +2176,7 @@ void show_stack(struct task_struct *tsk,
- 
- void dump_stack(void)
++	return PCIBIOS_SUCCESSFUL;
++}
++
+ static int sun4u_read_pci_cfg(struct pci_bus *bus_dev, unsigned int devfn,
+ 			      int where, int size, u32 *value)
  {
--	unsigned long *ksp;
+@@ -53,10 +114,6 @@ static int sun4u_read_pci_cfg(struct pci
+ 	u16 tmp16;
+ 	u8 tmp8;
+ 
+-	if (bus_dev == pbm->pci_bus && devfn == 0x00)
+-		return pci_host_bridge_read_pci_cfg(bus_dev, devfn, where,
+-						    size, value);
 -
--	__asm__ __volatile__("mov	%%fp, %0"
--			     : "=r" (ksp));
--	show_stack(current, ksp);
-+	show_stack(current, NULL);
+ 	switch (size) {
+ 	case 1:
+ 		*value = 0xff;
+@@ -69,6 +126,10 @@ static int sun4u_read_pci_cfg(struct pci
+ 		break;
+ 	}
+ 
++	if (!bus_dev->number && !PCI_SLOT(devfn))
++		return sun4u_read_pci_cfg_host(pbm, bus, devfn, where,
++					       size, value);
++
+ 	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
+ 	if (!addr)
+ 		return PCIBIOS_SUCCESSFUL;
+@@ -101,6 +162,53 @@ static int sun4u_read_pci_cfg(struct pci
+ 	return PCIBIOS_SUCCESSFUL;
  }
  
- EXPORT_SYMBOL(dump_stack);
---- a/arch/sparc64/mm/fault.c
-+++ b/arch/sparc64/mm/fault.c
-@@ -112,15 +112,12 @@ static void __kprobes unhandled_fault(un
- 
- static void bad_kernel_pc(struct pt_regs *regs, unsigned long vaddr)
++static int sun4u_write_pci_cfg_host(struct pci_pbm_info *pbm,
++				    unsigned char bus, unsigned int devfn,
++				    int where, int size, u32 value)
++{
++	u32 *addr;
++
++	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
++	if (!addr)
++		return PCIBIOS_SUCCESSFUL;
++
++	switch (size) {
++	case 1:
++		if (where < 8) {
++			unsigned long align = (unsigned long) addr;
++			u16 tmp16;
++
++			align &= ~1;
++			pci_config_read16((u16 *)align, &tmp16);
++			if (where & 1) {
++				tmp16 &= 0x00ff;
++				tmp16 |= value << 8;
++			} else {
++				tmp16 &= 0xff00;
++				tmp16 |= value;
++			}
++			pci_config_write16((u16 *)align, tmp16);
++		} else
++			pci_config_write8((u8 *)addr, value);
++		break;
++	case 2:
++		if (where < 8) {
++			pci_config_write16((u16 *)addr, value);
++		} else {
++			pci_config_write8((u8 *)addr, value & 0xff);
++			pci_config_write8(((u8 *)addr) + 1, value >> 8);
++		}
++		break;
++	case 4:
++		sun4u_write_pci_cfg_host(pbm, bus, devfn,
++					 where, 2, value & 0xffff);
++		sun4u_write_pci_cfg_host(pbm, bus, devfn,
++					 where + 2, 2, value >> 16);
++		break;
++	}
++	return PCIBIOS_SUCCESSFUL;
++}
++
+ static int sun4u_write_pci_cfg(struct pci_bus *bus_dev, unsigned int devfn,
+ 			       int where, int size, u32 value)
  {
--	unsigned long *ksp;
--
- 	printk(KERN_CRIT "OOPS: Bogus kernel PC [%016lx] in fault handler\n",
- 	       regs->tpc);
- 	printk(KERN_CRIT "OOPS: RPC [%016lx]\n", regs->u_regs[15]);
- 	print_symbol("RPC: <%s>\n", regs->u_regs[15]);
- 	printk(KERN_CRIT "OOPS: Fault was to vaddr[%lx]\n", vaddr);
--	__asm__("mov %%sp, %0" : "=r" (ksp));
--	show_stack(current, ksp);
-+	dump_stack();
- 	unhandled_fault(regs->tpc, current, regs);
- }
+@@ -108,9 +216,10 @@ static int sun4u_write_pci_cfg(struct pc
+ 	unsigned char bus = bus_dev->number;
+ 	u32 *addr;
  
+-	if (bus_dev == pbm->pci_bus && devfn == 0x00)
+-		return pci_host_bridge_write_pci_cfg(bus_dev, devfn, where,
+-						     size, value);
++	if (!bus_dev->number && !PCI_SLOT(devfn))
++		return sun4u_write_pci_cfg_host(pbm, bus, devfn, where,
++						size, value);
++
+ 	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
+ 	if (!addr)
+ 		return PCIBIOS_SUCCESSFUL;
 
 -- 
