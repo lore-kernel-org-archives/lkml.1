@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765018AbXHWP7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764761AbXHWQIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765018AbXHWP7k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 11:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762254AbXHWP7d
+	id S1764761AbXHWQIV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 12:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762439AbXHWQIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 11:59:33 -0400
-Received: from web32614.mail.mud.yahoo.com ([68.142.207.241]:23454 "HELO
-	web32614.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755727AbXHWP7c (ORCPT
+	Thu, 23 Aug 2007 12:08:09 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:20371 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760508AbXHWQIH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 11:59:32 -0400
-X-YMail-OSG: BuL9ue8VM1nbDTqIrRjC2lEc1fokHGOAGncRJIrERj7mpWVuhtVjNh0944o3lfXmR3jQO5lBUgjYJSCpdY5ECPlbTQ--
-X-RocketYMMF: knobi.rm
-Date: Thu, 23 Aug 2007 08:59:30 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Reply-To: spamtrap@knobisoft.de
-Subject: RE: [PATCH 00/23] per device dirty throttling -v9
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1187268920.6114.84.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <137637.20782.qm@web32614.mail.mud.yahoo.com>
+	Thu, 23 Aug 2007 12:08:07 -0400
+Date: Thu, 23 Aug 2007 09:06:41 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Adrian Bunk <bunk@kernel.org>, joern@wohnheim.fh-wedel.de,
+       linux-kernel@vger.kernel.org, Andre Haupt <andre@finow14.de>
+Subject: Re: [patch 1/1] fix a trivial typo in scripts/checkstack.pl
+Message-Id: <20070823090641.cbc0e70e.randy.dunlap@oracle.com>
+In-Reply-To: <20070823133529.GD24870@lazybastard.org>
+References: <20070823125227.294913273@finow14.de>
+	<20070823125540.GA19389@ahaupt-debian-vm.localdomain>
+	<20070823132639.GN30705@stusta.de>
+	<20070823133529.GD24870@lazybastard.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 23 Aug 2007 15:35:29 +0200 Jörn Engel wrote:
 
---- Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Thu, 2007-08-16 at 05:49 -0700, Martin Knoblauch wrote:
-> 
-> > Peter,
+> On Thu, 23 August 2007 15:26:39 +0200, Adrian Bunk wrote:
+> > On Thu, Aug 23, 2007 at 02:55:40PM +0200, andre@finow14.de wrote:
+> > > Signed-off-by: Andre Haupt <andre@finow14.de>
+> > > ---
+> > > Index: linus/scripts/checkstack.pl
+> > > ===================================================================
+> > > --- linus.orig/scripts/checkstack.pl	2007-08-23 14:25:03.000000000 +0200
+> > > +++ linus/scripts/checkstack.pl	2007-08-23 14:42:13.000000000 +0200
+> > > @@ -14,7 +14,7 @@
+> > >  #	M68k port by Geert Uytterhoeven and Andreas Schwab
+> > >  #
+> > >  #	Usage:
+> > > -#	objdump -d vmlinux | stackcheck.pl [arch]
+> > > +#	objdump -d vmlinux | scripts/checkstack.pl [arch]
+> > >...
 > > 
-> >  any chance to get a rollup against 2.6.22-stable?
-> > 
-> >  The 2.6.23 series may not be usable for me due to the
-> > nosharedcache changes for NFS (the new default will massively
-> > disturb the user-space automounter).
+> > "make checkstack" ?
+
+Yes, "make help" already lists this and the other check* scripts.
+
+> If you really care about this, send a patch.  An argument against it is
+> that some people seem to use the script independently of the linux
+> kernel.  Not sure if all of them copy the makefile logic as well.
 > 
-> I'll see what I can do, bit busy with other stuff atm, hopefully
-> after
-> the weekend.
-> 
-Hi Peter,
+> Does it matter?
 
- any progress on a version against 2.6.22.5? I have seen the very
-positive report from Jeffrey W. Baker and would really love to test
-your patch. But as I said, anything newer than 2.6.22.x might not be an
-option due to the NFS changes.
 
-Kind regards
-Martin
 
-------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
