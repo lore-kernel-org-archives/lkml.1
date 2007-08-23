@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932958AbXHWXxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933803AbXHWXxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932958AbXHWXxW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 19:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbXHWXxO
+	id S933803AbXHWXxm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 19:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933589AbXHWXxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 19:53:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41640 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758824AbXHWXxO (ORCPT
+	Thu, 23 Aug 2007 19:53:30 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:62584 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933592AbXHWXx3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 19:53:14 -0400
-Date: Thu, 23 Aug 2007 16:52:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Zan Lynx <zlynx@acm.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       Jakub Jelinek <jakub@redhat.com>
-Subject: Re: 2.6.23-rc3-mm1 - memory layout change?  - lost support for
- MAP_32BIT? - mono crashes
-Message-Id: <20070823165201.717ed62d.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0708231126380.2460@twin.jikos.cz>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	<1187834905.190825.16.camel@localhost>
-	<Pine.LNX.4.64.0708231126380.2460@twin.jikos.cz>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 23 Aug 2007 19:53:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:resent-from:resent-to:resent-date:resent-message-id:message-id:in-reply-to:references:from:date:subject:to:cc:mime-version:content-transfer-encoding:content-disposition;
+        b=BVUnKFyIC77qyR+0WhAjHnRnBoc59lALB+U4pAB4gILvsKeSE6SvgTUh0C1X/mDJUbzdv9QsKUk6Zzv3wXgE1Oyx2p177xFj48xOwgOnPkeLkNbnVrN/u6HtOlSqNUUJnNccf1JOighymTVTqtIBG6L7TNYe32k69Bj76PX2qvM=
+Message-Id: <7ce3fff85ac7859141ad1035c6c037dffeec9b66.1187912217.git.jesper.juhl@gmail.com>
+In-Reply-To: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
+References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
+From: Jesper Juhl <jesper.juhl@gmail.com>
+Date: Fri, 24 Aug 2007 01:50:33 +0200
+Subject: [PATCH 07/30] mtd: Get rid of pointless cast of kzalloc() return value in AT26xxx driver
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
+       Hans J Koch <hjk@linutronix.de>, Jesper Juhl <jesper.juhl@gmail.com>
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Aug 2007 11:28:25 +0200 (CEST)
-Jiri Kosina <jkosina@suse.cz> wrote:
+kzalloc() returns a void pointer - no need to cast it in
+ drivers/mtd/devices/at91_dataflash26.c::add_dataflash()
 
-> Handle MAP_32BIT flags properly in x86_64 flexmmap
-> 
-> We need to handle MAP_32BIT flags of mmap() properly for 64bit 
-> applications with filexible mmap layout.
-> 
-> This patch introduces x86_64-specific version of 
-> arch_get_unmapped_area_topdown() which differs from the generic one in 
-> handling of the MAP_32BIT flag -- when this flag is passed to mmap(), we 
-> stick back to the legacy layout for this particular mmap, which gives 
-> proper 32bit range.
-> 
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+ drivers/mtd/devices/at91_dataflash26.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
- arch/x86_64/kernel/sys_x86_64.c |   98 ++++++++++++++++++++++++++++++++++++++++
- include/asm-x86_64/pgtable.h    |    1 
+diff --git a/drivers/mtd/devices/at91_dataflash26.c b/drivers/mtd/devices/at91_dataflash26.c
+index 64ce37f..9c4aac4 100644
+--- a/drivers/mtd/devices/at91_dataflash26.c
++++ b/drivers/mtd/devices/at91_dataflash26.c
+@@ -360,8 +360,7 @@ static int __init add_dataflash(int channel, char *name, int nr_pages,
+ 	device->read = at91_dataflash26_read;
+ 	device->write = at91_dataflash26_write;
+ 
+-	priv = (struct dataflash_local *)kzalloc(sizeof(struct dataflash_local),
+-		GFP_KERNEL);
++	priv = kzalloc(sizeof(struct dataflash_local), GFP_KERNEL);
+ 	if (!priv) {
+ 		kfree(device);
+ 		return -ENOMEM;
+-- 
+1.5.2.2
 
-well that's another hunk of code for us to maintain and to slow all our
-computers down.
-
-It is quite unobvious to me that the whole pie-randomization thing is
-worth merging.  Why shouldn't we just drop the lot?
-
-
-<looks at the changelog>
-
-  This patch is using mmap()'s randomization functionality in such a way
-  that it maps the main executable of (specially compiled/linked
-  -pie/-fpie) ET_DYN binaries onto a random address (in cases in which
-  mmap() is allowed to perform a randomization).
-
-  The code has been extraced from Ingo's exec-shield patch
-  http://people.redhat.com/mingo/exec-shield/
-
-that certainly doesn't tell anyone why we should merge this code into Linux.
