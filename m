@@ -1,83 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764263AbXHWPm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764183AbXHWPsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764263AbXHWPm5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 11:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762148AbXHWPms
+	id S1764183AbXHWPsH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 11:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbXHWPr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 11:42:48 -0400
-Received: from armagnac.ifi.unizh.ch ([130.60.75.72]:36064 "EHLO
-	albatross.madduck.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759208AbXHWPmr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 11:42:47 -0400
-Date: Thu, 23 Aug 2007 17:42:44 +0200
-From: martin f krafft <madduck@madduck.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: what does this mean: "kernel: 7.0.0.1:53 L=79 S=0x00 I=39869
-	F=0x4000 T=64"
-Message-ID: <20070823154244.GA15919@piper.oerlikon.madduck.net>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20070823100045.GA18793@piper.oerlikon.madduck.net> <46CDA81C.4060705@ums.usu.ru>
+	Thu, 23 Aug 2007 11:47:56 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:41971 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751723AbXHWPrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 11:47:55 -0400
+Message-ID: <46CDAB17.4040105@openvz.org>
+Date: Thu, 23 Aug 2007 19:43:19 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+HP7ph2BbKc20aGI"
-Content-Disposition: inline
-In-Reply-To: <46CDA81C.4060705@ums.usu.ru>
-X-Motto: Keep the good times rollin'
-X-OS: Debian GNU/Linux lenny/sid kernel 2.6.22-1-amd64 x86_64
-X-Spamtrap: madduck.bogus@madduck.net
-X-Subliminal-Message: debian/rules!
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Andrew Morton <akpm@osdl.org>
+CC: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Remove unused variables from fs/proc/base.c
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When removing the explicit task_struct->pid usage I found that
+proc_readfd_common() and proc_pident_readdir() get this field,
+but do not use it at all. So this cleanup is a cheap help with
+the task_struct->pid isolation.
 
---+HP7ph2BbKc20aGI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-also sprach Alexander E. Patrakov <patrakov@ums.usu.ru> [2007.08.23.1730 +0=
-200]:
->> I am staring at this log message:
->>   kernel: 7.0.0.1:53 L=3D79 S=3D0x00 I=3D39869 F=3D0x4000 T=3D64
->> and I cannot figure out what it's trying to tell me. Could someone
->> please enlighten me?
->
-> Looks like some DNS packet got logged by your firewall rules.
+---
 
-But my firewall rules certainly do not log DNS packets, and if they
-did, it would look very differently, no? I always prefix my iptables
-LOG messages anyway.
+ fs/proc/base.c |    5 +----
+ 1 files changed, 1 insertion(+), 4 deletions(-)
 
-This is a Xen client, if it makes a difference.
-
-Now looking at it, it looks as if the log got garbled and 7.0.0.1:53
-is really part of 127.0.0.1:53 (the machine does run a recursor).
-
-Can stuff like this happen that data is lost in this way before
-syslog can dump it?
-
---=20
-martin;              (greetings from the heart of the sun.)
-  \____ echo mailto: !#^."<*>"|tr "<*> mailto:" net@madduck
-=20
-"convictions are more dangerous enemies of truth than lies."
-                                                 - friedrich nietzsche
-=20
-spamtraps: madduck.bogus@madduck.net
-
---+HP7ph2BbKc20aGI
-Content-Type: application/pgp-signature; name="digital_signature_gpg.asc"
-Content-Description: Digital signature (see http://martin-krafft.net/gpg/)
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGzar0IgvIgzMMSnURAkrFAJ9OMb/PpV4J8PmqeGhc1aL9uXr4OgCdGiJK
-yVSDsNa12iSWesCM4kojdno=
-=saqp
------END PGP SIGNATURE-----
-
---+HP7ph2BbKc20aGI--
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 2fb3dfc..79e1918 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -1434,7 +1434,7 @@ static int proc_readfd_common(struct fil
+ 	struct dentry *dentry = filp->f_path.dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	struct task_struct *p = get_proc_task(inode);
+-	unsigned int fd, tid, ino;
++	unsigned int fd, ino;
+ 	int retval;
+ 	struct files_struct * files;
+ 	struct fdtable *fdt;
+@@ -1443,7 +1443,6 @@ static int proc_readfd_common(struct fil
+ 	if (!p)
+ 		goto out_no_task;
+ 	retval = 0;
+-	tid = p->pid;
+ 
+ 	fd = filp->f_pos;
+ 	switch (fd) {
+@@ -1678,7 +1677,6 @@ static int proc_pident_readdir(struct fi
+ 		const struct pid_entry *ents, unsigned int nents)
+ {
+ 	int i;
+-	int pid;
+ 	struct dentry *dentry = filp->f_path.dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	struct task_struct *task = get_proc_task(inode);
+@@ -1691,7 +1689,6 @@ static int proc_pident_readdir(struct fi
+ 		goto out_no_task;
+ 
+ 	ret = 0;
+-	pid = task->pid;
+ 	i = filp->f_pos;
+ 	switch (i) {
+ 	case 0:
