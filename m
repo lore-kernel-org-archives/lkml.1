@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760076AbXHWLaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761390AbXHWLbO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760076AbXHWLaq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 07:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbXHWLai
+	id S1761390AbXHWLbO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 07:31:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758721AbXHWLa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 07:30:38 -0400
-Received: from iona.labri.fr ([147.210.8.143]:33070 "EHLO iona.labri.fr"
+	Thu, 23 Aug 2007 07:30:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36837 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752631AbXHWLah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 07:30:37 -0400
-Date: Thu, 23 Aug 2007 13:30:35 +0200
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Console events and accessibility
-Message-ID: <20070823113035.GD3287@implementation.labri.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20070821212939.GD3658@interface.famille.thibault.fr> <20070822054855.GB23336@kroah.com> <20070822085355.GB3359@implementation.labri.fr> <20070822130520.GE3359@implementation.labri.fr> <20070823100402.GB6742@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	id S1757709AbXHWLa4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 07:30:56 -0400
+Date: Thu, 23 Aug 2007 13:30:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       Andreas Schwab <schwab@suse.de>, Alan Modra <alan@linuxcare.com.au>,
+       David Mosberger-Tang <davidm@hpl.hp.com>
+Subject: Re: sched.c: why -fno-omit-frame-pointer?
+Message-ID: <20070823113036.GA29740@elte.hu>
+References: <20070819141732.GD32595@stusta.de> <p73r6lz1666.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070823100402.GB6742@kroah.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <p73r6lz1666.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4106]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH, le Thu 23 Aug 2007 03:04:02 -0700, a écrit :
-> > I mean: yes, with these three patches, speakup will work fine.
+
+* Andi Kleen <andi@firstfloor.org> wrote:
+
+> Adrian Bunk <bunk@kernel.org> writes:
+> > 
+> > Is the -fno-omit-frame-pointer still required for some reason, or is 
+> > this a relict that could be removed?
 > 
-> 3 patches?  I only saw 2.  Or do you mean the modifications of the 3
-> files?
+> It's needed so that the WCHAN /proc display can backtrace one level up 
+> out of schedule()
 
-Maybe you missed the keyboard notification patch which is already in
--mm.
+it's not just one level - we'll back out until we are in scheduler 
+functions (up to 16 levels). So it will back out of io_schedule() and 
+other functions as well.
 
-> The patches look sane but you should change the global symbols to play
-> nicer in the namespace.  Care to respin them together with this change?
-
-You mean inverse_translate and screen_glyph?
-
-> > The biggest change we'll have to do in speakup is the way it accesses
-> > the serial port, which is really dirty for now, but that's an internal
-> > matter.
-> 
-> Yeah, that shouldn't be that tough to do.
-
-Well, the biggest problem is that we'd like to output on serial _before_
-/dev gets mounted.
-
-> It doesn't look like these changes handle scrolling of the console, do
-> they?
-
-Ah, indeed, speakup doesn't seem to handle it, that's why I forgot it in
-the patch.  I'll see what needs to be done.
-
-Thanks,
-Samuel
+	Ingo
