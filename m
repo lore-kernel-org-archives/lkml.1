@@ -1,107 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764889AbXHWUWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765497AbXHWUXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764889AbXHWUWW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 16:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbXHWUWQ
+	id S1765497AbXHWUXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 16:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757926AbXHWUXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 16:22:16 -0400
-Received: from aa014msr.fastwebnet.it ([85.18.95.74]:55304 "EHLO
-	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755568AbXHWUWP (ORCPT
+	Thu, 23 Aug 2007 16:23:04 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46676 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758771AbXHWUXB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 16:22:15 -0400
-Date: Thu, 23 Aug 2007 22:21:15 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Tony Luck <tony.luck@intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Bob Picco <bob.picco@hp.com>
-Subject: "double" hpet clocksource && hard freeze [bisected]
-Message-ID: <20070823222115.122a37ca@localhost>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Aug 2007 16:23:01 -0400
+Date: Thu, 23 Aug 2007 13:23:00 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@suse.de>
+cc: Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-mm@kvack.org, dkegel@google.com, akpm@linux-foundation.org,
+       Nick Piggin <npiggin@suse.de>, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
+In-Reply-To: <20070823120506.GN13915@v2.random>
+Message-ID: <Pine.LNX.4.64.0708231318100.14720@schroedinger.engr.sgi.com>
+References: <20070820215040.937296148@sgi.com> <1187692586.6114.211.camel@twins>
+ <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com>
+ <1187730812.5463.12.camel@lappy> <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>
+ <46CB5C89.2070807@redhat.com> <Pine.LNX.4.64.0708211521260.5728@schroedinger.engr.sgi.com>
+ <20070823120506.GN13915@v2.random>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 23 Aug 2007, Andrea Arcangeli wrote:
 
-	since commit:
+> On Tue, Aug 21, 2007 at 03:32:25PM -0700, Christoph Lameter wrote:
+> > 1. Like in the earlier patchset allow reentry to reclaim under 
+> >    PF_MEMALLOC if we are out of all memory.
+> 
+> Can you simply tweak on the may_writepage flag only to achieve the
+> second pass? We're talking here about a totally non-performance case,
+> almost impossible to hit in practice unless you do real weird things,
+> and certainly very unlikely to happen. So I'm unsure what's all that
+> complexity just to make a regular pass on the lru looking for clean
+> pages, something may_writepage=0 already does.
+> 
 
-commit 0aa366f351d044703e25c8425e508170e80d83b1
-Author: Tony Luck <tony.luck@intel.com>
-Date:   Fri Jul 20 11:22:30 2007 -0700
+Yes that is what the PF_MEMALLOC patch that I posted before does. This 
+discussion gets me more and more to thinking that the recursive reclaim on 
+PF_MEMALLOC is all that is needed for emergency situations (to get out of 
+the "tight spot").
 
-    [IA64] Convert to generic timekeeping/clocksource
+See
+http://marc.info/?l=linux-kernel&m=118710219116624&w=2
 
-    This is a merge of Peter Keilty's initial patch (which was
-    revived by Bob Picco) for this with Hidetoshi Seto's fixes
-    and scaling improvements.
+> If the PF_MEMALLOC is found empty, I agree entering reclaim a second
+> time with may_writepage=0 sounds theoretically a good idea (in
+> practice it should never be necessary). printk must also be printed to
+> warn the user he was risking to deadlock for real and he has to
+> increase the min_free_kbytes.
 
+Ok. I can add a printk to that one.
 
-I have a double "hpet" entry in "available_clocksource":
-	$ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-	tsc hpet hpet acpi_pm jiffies
+> That sounds a bit risky, there are latency considerations here to
+> make, GFP_ATOMIC will run with irq locally disabled and it may hang
+> for indefinite amount of time (O(N)). So irq latency may break and it
+> may be better to lose a packet once in a while than to hang
+> interrupts. If you want to do this you'd probably need to add a new
+> GFP_ATOMIC_RECLAIM or similar.
 
-
-And, more interesting, if I select hpet as clocksource (tsc is used by
-default here) I get an hard freeze some time later (few minutes)...
-SysRQ don't work ;)
-
-
-config & dmesg attached
-
-
-Motherboard is a Intel DG965SS
-
-CPU:
-
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 15
-model name	: Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz
-stepping	: 6
-cpu MHz		: 1864.804
-cache size	: 2048 KB
-physical id	: 0
-siblings	: 2
-core id		: 0
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
-bogomips	: 3731.75
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
-
-processor	: 1
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 15
-model name	: Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz
-stepping	: 6
-cpu MHz		: 1864.804
-cache size	: 2048 KB
-physical id	: 0
-siblings	: 2
-core id		: 1
-cpu cores	: 2
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
-bogomips	: 3729.63
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
-
--- 
-	Paolo Ornati
-	Linux 2.6.22-g5bae7ac9 on x86_64
+Well we could do the same as for PF_MEMALLOC: print a warning and then 
+reclaim nevertheless if we cannot fail (We already have a GFP_NOFAIL 
+flag). It is better to generate a latency than the system failing 
+altogether. However the GFP_ATOMIC reclaim patchset is a 
+bit more invasive (http://marc.info/?l=linux-mm&m=118710584014150&w=2). 
+Maybe this is too much churn for the rare need of such a reclaim.
+ 
