@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764434AbXHWQrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760824AbXHWREs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764434AbXHWQrj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 12:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757276AbXHWQrc
+	id S1760824AbXHWREs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 13:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbXHWREj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 12:47:32 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:51423 "EHLO relay4.usu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757365AbXHWQrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 12:47:31 -0400
-Message-ID: <46CDBA3D.7040402@ums.usu.ru>
-Date: Thu, 23 Aug 2007 22:47:57 +0600
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru-RU; rv:1.8.0.13pre) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.10~pre070720-0etch3+lenny1) Mnenhy/0.7.5.666
+	Thu, 23 Aug 2007 13:04:39 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:51805 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbXHWREi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 13:04:38 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: kou.ishizaki@toshiba.co.jp
+Subject: Re: [Cbe-oss-dev] [patch 1/5] spu_manage: use newer physical-id
+Date: Thu, 23 Aug 2007 18:12:19 +0200
+User-Agent: KMail/1.9.6
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       jk@ozlabs.org, cbe-oss-dev@ozlabs.org
+References: <20070823.180152.-1300528381.kouish@swc.toshiba.co.jp>
+In-Reply-To: <20070823.180152.-1300528381.kouish@swc.toshiba.co.jp>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?iso-8859-15?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?iso-8859-15?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!D?=
+ =?iso-8859-15?q?xZ=0A=098MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?iso-8859-15?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ?=
+ =?iso-8859-15?q?=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?iso-8859-15?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: madduck@madduck.net
-Subject: Re: what does this mean: "kernel: 7.0.0.1:53 L=79 S=0x00 I=39869
-   F=0x4000 T=64"
-References: <20070823100045.GA18793@piper.oerlikon.madduck.net> <46CDA81C.4060705@ums.usu.ru> <20070823154244.GA15919@piper.oerlikon.madduck.net>
-In-Reply-To: <20070823154244.GA15919@piper.oerlikon.madduck.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200708231812.20493.arnd@arndb.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
+X-Provags-ID: V01U2FsdGVkX19rXis/mifT3Vi5hS2RNBHnwb4fxiXpjXNNs7l
+ JnMvaPkzJC9m5SOMD7m0fEw9M7i/Z2Oh0aYKtJtEx+KAHffzhA
+ /WPC0iMueFF7NAjDj1U5A==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-martin f krafft wrote:
-> also sprach Alexander E. Patrakov <patrakov@ums.usu.ru> [2007.08.23.1730 +0200]:
->>> I am staring at this log message:
->>>   kernel: 7.0.0.1:53 L=79 S=0x00 I=39869 F=0x4000 T=64
->>> and I cannot figure out what it's trying to tell me. Could someone
->>> please enlighten me?
->> Looks like some DNS packet got logged by your firewall rules.
-> 
-> But my firewall rules certainly do not log DNS packets, and if they
-> did, it would look very differently, no? I always prefix my iptables
-> LOG messages anyway.
+On Thursday 23 August 2007, kou.ishizaki@toshiba.co.jp wrote:
+> Please check "unit-id" if "physical-id" doesn't exist. Because Celleb
+> uses "unit-id" to provide spe_id.
 
-Sorry. Indeed, it differs very much from the normal packet log and 
-cannot be obtained by truncation:
+Ok, I need to discuss this with Christian then, to make sure we get to
+a version that works everywhere. Paul, please ignore this patch for now.
 
-Aug 20 13:25:39 dsa kernel: packet trace: IN=eth0 OUT=eth2 
-SRC=192.168.0.96 DST=192.36.143.150 LEN=76 TOS=0x00 PREC=0x00 TTL=63 
-ID=0 DF PROTO=UDP SPT=123 DPT=123 LEN=56
+I've update the git repository to only have the other four patches.
 
-> This is a Xen client, if it makes a difference.
-
-None of the results of grep -r 'L=%' linux-2.6.22.1 match your string. 
-So this must indeed be something out-of-tree - but Xen-3.1.0 or 3.0.4 
-doesn't match either. Or function that produced this message in the log 
-doesn't use printf-like functions for formatting numbers.
-
-However, the style does look similar to a message in ipw2100.c:
-
-IPW_DEBUG_TX("TX%d V=%p P=%04X T=%04X L=%d\n", i,
-              &txq->drv[i],
-              (u32) (txq->nic + i * sizeof(struct ipw2100_bd)),
-              txq->drv[i].host_addr, txq->drv[i].buf_length);
-
--- 
-Alexander E. Patrakov
+	Arnd <><
