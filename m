@@ -1,110 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbXHWInk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759006AbXHWIpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760037AbXHWInk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 04:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbXHWIn3
+	id S1759006AbXHWIpV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 04:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755711AbXHWIpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 04:43:29 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:58777 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751039AbXHWInZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 04:43:25 -0400
-Date: Thu, 23 Aug 2007 10:44:30 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, netdev@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, David Woodhouse <dwmw2@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH (take 2)] request_irq fix DEBUG_SHIRQ handling Re: 2.6.23-rc2-mm1: rtl8139 inconsistent lock state
-Message-ID: <20070823084430.GB1980@ff.dom.local>
-Mime-Version: 1.0
+	Thu, 23 Aug 2007 04:45:09 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:61472 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751078AbXHWIpI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 04:45:08 -0400
+Date: Thu, 23 Aug 2007 13:48:17 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: jens.axboe@oracle.com
+Cc: Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Corrections in Documentation/block/ioprio.txt
+Message-ID: <20070823081817.GA27439@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708100149.14446.m.kozlowski@tuxland.pl>
-User-Agent: Mutt/1.4.2.2i
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton pointed out that my changelog was unusable. Sorry!
-Here is a second try with the changelog and kernel version changed.
+Hi Jens,
 
-Regards,
-Jarek P.
+The newer glibc does not allow system calls to be made via _syscallN()
+wrapper. They have to be made through syscall(). The ionice code used
+the older interface. Correcting it to use syscall.
 
------------->(take 2)
+Signed-of-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 
-Subject: request_irq() - fix DEBUG_SHIRQ handling
 
-Mariusz Kozlowski reported lockdep's warning:
-
-> =================================
-> [ INFO: inconsistent lock state ]
-> 2.6.23-rc2-mm1 #7
-> ---------------------------------
-> inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-> ifconfig/5492 [HC0[0]:SC0[0]:HE1:SE1] takes:
->  (&tp->lock){+...}, at: [<de8706e0>] rtl8139_interrupt+0x27/0x46b [8139too]
-> {in-hardirq-W} state was registered at:
->   [<c0138eeb>] __lock_acquire+0x949/0x11ac
->   [<c01397e7>] lock_acquire+0x99/0xb2
->   [<c0452ff3>] _spin_lock+0x35/0x42
->   [<de8706e0>] rtl8139_interrupt+0x27/0x46b [8139too]
->   [<c0147a5d>] handle_IRQ_event+0x28/0x59
->   [<c01493ca>] handle_level_irq+0xad/0x10b
->   [<c0105a13>] do_IRQ+0x93/0xd0
->   [<c010441e>] common_interrupt+0x2e/0x34
-...
-> other info that might help us debug this:
-> 1 lock held by ifconfig/5492:
->  #0:  (rtnl_mutex){--..}, at: [<c0451778>] mutex_lock+0x1c/0x1f
-> 
-> stack backtrace:
-...
->  [<c0452ff3>] _spin_lock+0x35/0x42
->  [<de8706e0>] rtl8139_interrupt+0x27/0x46b [8139too]
->  [<c01480fd>] free_irq+0x11b/0x146
->  [<de871d59>] rtl8139_close+0x8a/0x14a [8139too]
->  [<c03bde63>] dev_close+0x57/0x74
-...
-
-This shows that a driver's irq handler was running both in hard interrupt
-and process contexts with irqs enabled. The latter was done during
-free_irq() call and was possible only with CONFIG_DEBUG_SHIRQ enabled.
-This was fixed by another patch.
-
-But similar problem is possible with request_irq(): any locks taken from
-irq handler could be vulnerable - especially with soft interrupts. This
-patch fixes it by disabling local interrupts during handler's run. (It
-seems, disabling softirqs should be enough, but it needs more checking
-on possible races or other special cases).
-
-This patch is recommended to all stable versions since 2.6.21, too.
-
-Reported-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-
----
-
-diff -Nurp 2.6.23-rc3-git6-/kernel/irq/manage.c 2.6.23-rc3-git6/kernel/irq/manage.c
---- 2.6.23-rc3-git6-/kernel/irq/manage.c	2007-08-23 10:11:35.000000000 +0200
-+++ 2.6.23-rc3-git6/kernel/irq/manage.c	2007-08-23 10:16:29.000000000 +0200
-@@ -555,14 +555,11 @@ int request_irq(unsigned int irq, irq_ha
- 		 * We do this before actually registering it, to make sure that
- 		 * a 'real' IRQ doesn't run in parallel with our fake
- 		 */
--		if (irqflags & IRQF_DISABLED) {
--			unsigned long flags;
-+		unsigned long flags;
- 
--			local_irq_save(flags);
--			handler(irq, dev_id);
--			local_irq_restore(flags);
--		} else
--			handler(irq, dev_id);
-+		local_irq_save(flags);
-+		handler(irq, dev_id);
-+		local_irq_restore(flags);
- 	}
+Index: linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt
+===================================================================
+--- linux-2.6.23-rc3-mm1.orig/Documentation/block/ioprio.txt	2007-07-09 05:02:17.000000000 +0530
++++ linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt	2007-08-23 13:23:28.000000000 +0530
+@@ -86,8 +86,9 @@ extern int sys_ioprio_get(int, int);
+ #error "Unsupported arch"
  #endif
  
+-_syscall3(int, ioprio_set, int, which, int, who, int, ioprio);
+-_syscall2(int, ioprio_get, int, which, int, who);
++#define ioprio_set(which, who, ioprio)  syscall(__NR_ioprio_set, which,\
++							who, ioprio)
++#define ioprio_get(which, who)	syscall(__NR_ioprio_get, which, who)
+ 
+ enum {
+ 	IOPRIO_CLASS_NONE,
+
+-- 
+regards,
+Dhaval
+
+I would like to change the world but they don't give me the source code!
