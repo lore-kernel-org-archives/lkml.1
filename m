@@ -1,56 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757066AbXHWBka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756313AbXHWBsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757066AbXHWBka (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 21:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbXHWBkR
+	id S1756313AbXHWBsd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 21:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbXHWBsY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 21:40:17 -0400
-Received: from mail.suse.de ([195.135.220.2]:36403 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbXHWBkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 21:40:15 -0400
-Date: Thu, 23 Aug 2007 04:34:04 +0200
-From: Andi Kleen <ak@suse.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>,
-       James Courtier-Dutton <James@superbug.demon.co.uk>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
-Message-ID: <20070823023404.GL8058@bingen.suse.de>
-References: <46CBC842.4070100@vmware.com> <46CCB088.8070606@goop.org> <46CCB56F.8090308@superbug.co.uk> <20070822222036.GD3672@sequoia.sous-sol.org> <46CCB8BA.6060007@superbug.demon.co.uk> <46CCC361.6020600@goop.org> <20070823004700.GR2642@bingen.suse.de> <46CCD707.1090009@goop.org>
+	Wed, 22 Aug 2007 21:48:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50634 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751392AbXHWBsX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 21:48:23 -0400
+Date: Thu, 23 Aug 2007 07:31:12 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Andi Kleen <ak@suse.de>
+cc: Jacob Shin <jacob.shin@amd.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86_64 mce{_amd}: Fix section mismatch warnings
+Message-ID: <alpine.LFD.0.999.0708230729070.2049@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46CCD707.1090009@goop.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 05:38:31PM -0700, Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
-> > On Wed, Aug 22, 2007 at 04:14:41PM -0700, Jeremy Fitzhardinge wrote:
-> >   
-> >> (which would also have VT, since
-> >> all new processors do).
-> >>     
-> >
-> > Not true unfortunately. The Intel low end parts like Celerons (which 
-> > are actually shipped in very large numbers) don't. Also Intel
-> > is still shipping some CPUs that don't support it at all, like
-> > the ULV Centrinos which are based on an older core.
-> >   
-> 
-> Likely to be missing VT-d too, right?
 
-VT-d is chipset functionality. So it depends on the chipset.
+* mce.c:
 
-At least initially the non Intel chipsets and lowend chips are unlikely
-to get IOMMUs I guess.
+mce_create_device() is marked __cpuinit and hence goes into .init.text
+when HOTPLUG_CPU=n. However, the hotplug notifier callback function
+mce_cpu_callback() is not marked __cpuinit therefore goes into .text
+section unconditionally. This causes reference to .init.text from .text
+which would cause modpost to warn (bogusly, because a CPU hotplug event
+can never happen anyway if HOTPLUG_CPU=n). Anyway, let's fix this by
+marking callback as __cpuinit and the notifier_block as __cpuinitdata.
+Having done that, mce_remove_device() is only ever called from __cpuinit
+marked functions so can be marked __cpuinit itself.
 
-There might be some exceptions. e.g. the GPU vendors seem
-to want to to their own IOMMUs, so perhaps graphic devices
-might have them anyways.
+* mce_amd.c:
 
--Andi
+Has an exactly similar section mismatch as that discussed in previous
+case. Solve it similarly by marking notifier callback as __cpuinit and
+notifier_block as __cpuinitdata. This causes a viral effect and allows
+us to mark a bunch of other functions as __cpuinit also.
+
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
+
+---
+
+[ I don't have x86_64 toolchain, but it's still obvious enough to me
+  that the existing code would cause said section mismatch warnings. ]
+
+ arch/x86_64/kernel/mce.c     |    6 +++---
+ arch/x86_64/kernel/mce_amd.c |   10 +++++-----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/arch/x86_64/kernel/mce.c b/arch/x86_64/kernel/mce.c
+index a66d607..5c0c4ee 100644
+--- a/arch/x86_64/kernel/mce.c
++++ b/arch/x86_64/kernel/mce.c
+@@ -820,7 +820,7 @@ static __cpuinit int mce_create_device(unsigned int cpu)
+ 	return err;
+ }
+ 
+-static void mce_remove_device(unsigned int cpu)
++static void __cpuinit mce_remove_device(unsigned int cpu)
+ {
+ 	int i;
+ 
+@@ -832,7 +832,7 @@ static void mce_remove_device(unsigned int cpu)
+ }
+ 
+ /* Get notified when a cpu comes on/off. Be hotplug friendly. */
+-static int
++static int __cpuinit
+ mce_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ {
+ 	unsigned int cpu = (unsigned long)hcpu;
+@@ -850,7 +850,7 @@ mce_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 	return NOTIFY_OK;
+ }
+ 
+-static struct notifier_block mce_cpu_notifier = {
++static struct notifier_block mce_cpu_notifier __cpuinitdata = {
+ 	.notifier_call = mce_cpu_callback,
+ };
+ 
+diff --git a/arch/x86_64/kernel/mce_amd.c b/arch/x86_64/kernel/mce_amd.c
+index 2f8a7f1..364c80b 100644
+--- a/arch/x86_64/kernel/mce_amd.c
++++ b/arch/x86_64/kernel/mce_amd.c
+@@ -569,7 +569,7 @@ out:
+  *   of shared sysfs dir/files, and rest of the cores will be symlinked to it.
+  */
+ 
+-static void deallocate_threshold_block(unsigned int cpu,
++static void __cpuinit deallocate_threshold_block(unsigned int cpu,
+ 						 unsigned int bank)
+ {
+ 	struct threshold_block *pos = NULL;
+@@ -589,7 +589,7 @@ static void deallocate_threshold_block(unsigned int cpu,
+ 	per_cpu(threshold_banks, cpu)[bank]->blocks = NULL;
+ }
+ 
+-static void threshold_remove_bank(unsigned int cpu, int bank)
++static void __cpuinit threshold_remove_bank(unsigned int cpu, int bank)
+ {
+ 	int i = 0;
+ 	struct threshold_bank *b;
+@@ -631,7 +631,7 @@ free_out:
+ 	per_cpu(threshold_banks, cpu)[bank] = NULL;
+ }
+ 
+-static void threshold_remove_device(unsigned int cpu)
++static void __cpuinit threshold_remove_device(unsigned int cpu)
+ {
+ 	unsigned int bank;
+ 
+@@ -643,7 +643,7 @@ static void threshold_remove_device(unsigned int cpu)
+ }
+ 
+ /* get notified when a cpu comes on/off */
+-static int threshold_cpu_callback(struct notifier_block *nfb,
++static int __cpuinit threshold_cpu_callback(struct notifier_block *nfb,
+ 					    unsigned long action, void *hcpu)
+ {
+ 	/* cpu was unsigned int to begin with */
+@@ -668,7 +668,7 @@ static int threshold_cpu_callback(struct notifier_block *nfb,
+ 	return NOTIFY_OK;
+ }
+ 
+-static struct notifier_block threshold_cpu_notifier = {
++static struct notifier_block threshold_cpu_notifier __cpuinitdata = {
+ 	.notifier_call = threshold_cpu_callback,
+ };
+ 
