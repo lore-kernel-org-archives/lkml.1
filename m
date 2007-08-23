@@ -1,73 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759835AbXHWT0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760661AbXHWT3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759835AbXHWT0t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 15:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbXHWT0l
+	id S1760661AbXHWT3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 15:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbXHWT3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 15:26:41 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:22261 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754748AbXHWT0k (ORCPT
+	Thu, 23 Aug 2007 15:29:06 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:11135 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752892AbXHWT3E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 15:26:40 -0400
-Message-Id: <200708232126.36475.borntraeger@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 23 Aug 2007 21:26:36 +0200
+	Thu, 23 Aug 2007 15:29:04 -0400
 From: Christian Borntraeger <borntraeger@de.ibm.com>
 To: Ingo Molnar <mingo@elte.hu>
+Subject: [patch 1/2] virtual sched_clock() for s390
+Date: Thu, 23 Aug 2007 21:28:28 +0200
+User-Agent: KMail/1.9.7
 Cc: Jan Glauber <jan.glauber@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>,
        linux-kernel@vger.kernel.org
-Subject: [patch 0/2] s390 related scheduler patches and questions
+References: <200708232126.36475.borntraeger@de.ibm.com>
+In-Reply-To: <200708232126.36475.borntraeger@de.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200708232128.28194.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
+virtual sched_clock() for s390
 
-Thanks you for applying the accouting fix.
+From: Jan Glauber <jan.glauber@de.ibm.com> 
+From: Christian Borntraeger <borntraeger@de.ibm.com> 
 
-I looked into Jans sched_clock prototype, and 
-here is an update for sched_clock on s390. This patch applies on
-current git, but should not go in before 2.6.23 as this change
-is not trivial. The patch itself is independent from other patches
-and survived my tests. The current approach is to have a
-monotonic timer, that is only increased if the cpu is backed by
-a real cpu. If idle, the sched_clock does not increase. The last
-discussion did not result in a statement, if that is ok for you.
+This patch introduces a cpu time clock for s390 (only ticking if
+the virtual cpu is running) and bases the s390 implementation of
+sched_clock() on it. The patch is a revamped version of an earlier
+patch from Jan Glauber.
 
-I tried to make the accouting work without the array.c patch I posted
-recently. Therefore, I added a second patch that removes a sanity
-checkin the scheduler (already seen). The patch is probably nothing for 
-upstream but with this patch the accouting for s390 seems to work
-regarding steal time, even without CONFIG_VIRT_CPU_TIME (as long as 
-CONFIG_VIRT_TIMER is set). You wrote this part is necessary for broken
-TSCs on x86.
-Unfortunately, we currently call scheduler tick using the
-tod clock and not the virtual clock and a change would take some time.
-Removing this specific check seems to help. Will it break anything?
+The time slice length on a virtual cpu can be anything between the
+calculated time slice and zero. In reality this doesn't seem to be
+problem, since the scheduler is fair enough to not let a single
+process starve but the current implementation can lead to inefficient
+short time slices.
 
-Would you accept a patch, that removes checks and let architecture code 
-sanitize broken hardware values? That would allow non-broken timers to 
-directly report to the scheduler.
-
-Another question:
-
-nanosecond resolution seems not ideal for 64bit values, at least
-if an architecture has to do calculations. For example our cpu timer
-is signed 64bit and bit 51 (63=LSB) steps by one each microsecond.
-To create a nanosecond based timer we need: nsecs= clock*125/512 or
-nsecs = clock/512*125. The first variant overflows in a time frame
-that is  still reasonable to be seen in practice (about 2 years if I
-made no errors), the second variant introduces a stepping rate of 125ns.
-Of course we could use nsec = (((((((clock/8)*5)/4)*5)/4)*5)/4), to have
-a long overflow period and a 1.25ns stepping rate but this looks
-quite ugly.
-Are you going to stick with nanosecond resolution? If yes, do you think
-a stepping rate of 125ns is ok? Any chance to change the scheduler 
-resolution to microseconds? ;-)
+By providing a 'virtual' sched_clock() we improve the scheduler
+fairness, regardless of scheduling decisions from the hypervisor.
+We also lay a foundation to base process accouting on virtual cpu
+time without CONFIG_VIRT_CPU_ACCOUNTING.
 
 
-Christian
+Changes since the last posted version:
+o rename cpu_clock to s390_cpu_clock to avoid conflict with sched.c 
+o remove local_irq_disable after local_irq_save
+o fix calculation of read_timer if multiple timers are present
+o change the registration of idle notifier: The s390 nohz and
+  virtual timer infrastructure both register at the
+  idle notifier. If a cpu returns from idle, start_cpu_timer and 
+  start_hz_timer are called. start_hz_timer calls account_ticks,
+  which calls account_system_vtime, which calls scheduler_tick, which
+  calls sched_clock. A virtual timer based sched_clock implementation
+  requires that the virtual timers are active. Thats means: on return
+  from idle start_cpu_timer must be called before start_hz_timer.
+  Solution is to reverse the notifier_call_chain initialization.
+o Change hw clock to ns calculation. 
+  old: minimal stepping 1ns,  early overflow
+  new: minimal stepping 125ns, late overflow
+
+Patch applies against current 2.6.23-rc3-git.
+
+Signed-off-by: Jan Glauber <jan.glauber@de.ibm.com>
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+CC: Martin Schwidefsky <schwidefsky@de.ibm.com>
+
+---
+ arch/s390/kernel/time.c  |   30 +++++++++++++++++----------
+ arch/s390/kernel/vtime.c |   52 
+++++++++++++++++++++++++++++++++++++++++++++---
+ include/asm-s390/timer.h |    2 +
+ 3 files changed, 70 insertions(+), 14 deletions(-)
+
+Index: linux-2.6/arch/s390/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/time.c
++++ linux-2.6/arch/s390/kernel/time.c
+@@ -62,21 +62,27 @@ static u64 jiffies_timer_cc;
+ static u64 xtime_cc;
+ 
+ /*
+- * Scheduler clock - returns current time in nanosec units.
++ * Monotonic_clock - returns # of nanoseconds passed since time_init()
+  */
+-unsigned long long sched_clock(void)
++unsigned long long monotonic_clock(void)
+ {
+-	return ((get_clock() - jiffies_timer_cc) * 125) >> 9;
++	return ((get_clock() - jiffies_timer_cc) >> 9) * 125;
+ }
++EXPORT_SYMBOL(monotonic_clock);
+ 
+ /*
+- * Monotonic_clock - returns # of nanoseconds passed since time_init()
++ * Scheduler clock - returns current time in nanosec units.
++ * Now based on virtual cpu time to only account time the guest
++ * was actually running.
+  */
+-unsigned long long monotonic_clock(void)
++unsigned long long sched_clock(void)
+ {
+-	return sched_clock();
++#ifdef CONFIG_VIRT_TIMER
++	return s390_cpu_clock();
++#else
++	return monotonic_clock();
++#endif
+ }
+-EXPORT_SYMBOL(monotonic_clock);
+ 
+ void tod_to_timeval(__u64 todval, struct timespec *xtime)
+ {
+@@ -348,13 +354,15 @@ void __init time_init(void)
+ 	/* Enable TOD clock interrupts on the boot cpu. */
+ 	init_cpu_timer();
+ 
+-#ifdef CONFIG_NO_IDLE_HZ
+-	nohz_init();
+-#endif
+-
++	/* The virtual timer must be ready on the first tick, therefore,
++	   The vtime notifier callback must be registered first */
+ #ifdef CONFIG_VIRT_TIMER
+ 	vtime_init();
+ #endif
++
++#ifdef CONFIG_NO_IDLE_HZ
++	nohz_init();
++#endif
+ }
+ 
+ /*
+Index: linux-2.6/arch/s390/kernel/vtime.c
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/vtime.c
++++ linux-2.6/arch/s390/kernel/vtime.c
+@@ -3,8 +3,9 @@
+  *    Virtual cpu timer based timer functions.
+  *
+  *  S390 version
+- *    Copyright (C) 2004 IBM Deutschland Entwicklung GmbH, IBM Corporation
++ *    Copyright 2004,2007 IBM Corp.
+  *    Author(s): Jan Glauber <jan.glauber@de.ibm.com>
++ *               Christian Borntraeger <borntraeger@de.ibm.com>
+  */
+ 
+ #include <linux/module.h>
+@@ -26,6 +27,44 @@
+ 
+ static ext_int_info_t ext_int_info_timer;
+ static DEFINE_PER_CPU(struct vtimer_queue, virt_cpu_timer);
++static DEFINE_PER_CPU(struct vtimer_list, cpu_clock_timer);
++
++/*
++ * read the remaining time of a virtual timer running on the current cpu
++ */
++static unsigned long long read_cpu_timer(struct vtimer_list *timer)
++{
++	struct vtimer_queue *vt_list;
++	unsigned long flags;
++	__u64 done;
++
++	local_irq_save(flags);
++
++	BUG_ON(timer->cpu != smp_processor_id());
++
++	vt_list = &per_cpu(virt_cpu_timer, timer->cpu);
++	asm volatile ("STPT %0" : "=m" (done));
++
++	done = timer->expires - vt_list->offset - (vt_list->to_expire - done);
++	local_irq_restore(flags);
++	return done;
++}
++
++/*
++ * Cpu clock, returns cpu time in nanosec units.
++ * Must be called with preemption disabled.
++ */
++unsigned long long s390_cpu_clock(void)
++{
++	__u64 remaining = read_cpu_timer(&__get_cpu_var(cpu_clock_timer));
++	return ((VTIMER_MAX_SLICE - remaining) >> 9) * 125;
++}
++
++/* expire after 142 years ... */
++static void cpu_clock_timer_callback(unsigned long data)
++{
++	BUG();
++}
+ 
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING
+ /*
+@@ -148,7 +187,7 @@ static void start_cpu_timer(void)
+ 	vt_list = &__get_cpu_var(virt_cpu_timer);
+ 
+ 	/* CPU timer interrupt is pending, don't reprogramm it */
+-	if (vt_list->idle & 1LL<<63)
++	if ((s64) vt_list->idle < 0)
+ 		return;
+ 
+ 	if (!list_empty(&vt_list->list))
+@@ -174,7 +213,7 @@ static void stop_cpu_timer(void)
+ 	 * If the CPU timer is negative we don't reprogramm
+ 	 * it because we will get instantly an interrupt.
+ 	 */
+-	if (vt_list->idle & 1LL<<63)
++	if ((s64) vt_list->idle < 0)
+ 		return;
+ 
+ 	vt_list->offset += vt_list->to_expire - vt_list->idle;
+@@ -522,6 +561,7 @@ EXPORT_SYMBOL(del_virt_timer);
+ void init_cpu_vtimer(void)
+ {
+ 	struct vtimer_queue *vt_list;
++	struct vtimer_list *timer;
+ 
+ 	/* kick the virtual timer */
+ 	S390_lowcore.exit_timer = VTIMER_MAX_SLICE;
+@@ -539,6 +579,12 @@ void init_cpu_vtimer(void)
+ 	vt_list->offset = 0;
+ 	vt_list->idle = 0;
+ 
++	/* add dummy timers needed for cpu_clock */
++	timer = &__get_cpu_var(cpu_clock_timer);
++	init_virt_timer(timer);
++	timer->expires = VTIMER_MAX_SLICE;
++	timer->function = cpu_clock_timer_callback;
++	add_virt_timer(timer);
+ }
+ 
+ static int vtimer_idle_notify(struct notifier_block *self,
+Index: linux-2.6/include/asm-s390/timer.h
+===================================================================
+--- linux-2.6.orig/include/asm-s390/timer.h
++++ linux-2.6/include/asm-s390/timer.h
+@@ -48,6 +48,8 @@ extern int del_virt_timer(struct vtimer_
+ extern void init_cpu_vtimer(void);
+ extern void vtime_init(void);
+ 
++extern unsigned long long s390_cpu_clock(void);
++
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _ASM_S390_TIMER_H */
+
+ 
+
