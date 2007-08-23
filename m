@@ -1,106 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbXHWIfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758963AbXHWImT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759339AbXHWIfv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 04:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbXHWIfo
+	id S1758963AbXHWImT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 04:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbXHWImI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 04:35:44 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:45310 "EHLO
+	Thu, 23 Aug 2007 04:42:08 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:46909 "EHLO
 	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755552AbXHWIfn (ORCPT
+	with ESMTP id S1750814AbXHWImF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 04:35:43 -0400
-Date: Thu, 23 Aug 2007 13:58:36 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Corrections in Documentation/block/ioprio.txt
-Message-ID: <20070823082836.GB27439@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20070823081817.GA27439@linux.vnet.ibm.com> <20070823082929.GI23758@kernel.dk>
+	Thu, 23 Aug 2007 04:42:05 -0400
+Message-ID: <46CD478D.5060603@linux.vnet.ibm.com>
+Date: Thu, 23 Aug 2007 14:08:37 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070823082929.GI23758@kernel.dk>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Containers <containers@lists.osdl.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric W Biederman <ebiederm@xmission.com>
+Subject: Re: [PATCH] Memory controller Add Documentation
+References: <20070822130612.18981.58696.sendpatchset@balbir-laptop> <20070823173621.4539b376.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070823173621.4539b376.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 10:29:30AM +0200, Jens Axboe wrote:
-> On Thu, Aug 23 2007, Dhaval Giani wrote:
-> > Hi Jens,
-> > 
-> > The newer glibc does not allow system calls to be made via _syscallN()
-> > wrapper. They have to be made through syscall(). The ionice code used
-> > the older interface. Correcting it to use syscall.
-> > 
-> > Signed-of-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > 
-> > 
-> > Index: linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt
-> > ===================================================================
-> > --- linux-2.6.23-rc3-mm1.orig/Documentation/block/ioprio.txt	2007-07-09 05:02:17.000000000 +0530
-> > +++ linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt	2007-08-23 13:23:28.000000000 +0530
-> > @@ -86,8 +86,9 @@ extern int sys_ioprio_get(int, int);
-> >  #error "Unsupported arch"
-> >  #endif
-> >  
-> > -_syscall3(int, ioprio_set, int, which, int, who, int, ioprio);
-> > -_syscall2(int, ioprio_get, int, which, int, who);
-> > +#define ioprio_set(which, who, ioprio)  syscall(__NR_ioprio_set, which,\
-> > +							who, ioprio)
-> > +#define ioprio_get(which, who)	syscall(__NR_ioprio_get, which, who)
+KAMEZAWA Hiroyuki wrote:
+> Thank you for documentaion. How about adding following topics ?
 > 
-> Agree, it fails as-of recent distros. But I prefer a function instead,
-> can you resend with something ala:
+> - Benefit and Purpose. When this function help a user.
+> - What is accounted as RSS.
+> - What is accounted as page-cache.
+> - What are not accoutned now.
+> - When a page is accounted (charged.)
+> - about mem_control_type
+> - When a user can remove memory controller with no tasks (by rmdir)
+>   and What happens if a user does.
+> - What happens when a user migrates a task to other container.
 > 
-> static inline int ioprio_set(int which, int who, int ioprio)
-> {
->         return syscall(__NR_ioprio_set, which, who, ioprio);
-> }
+
+Thanks for your input. I'll try and incorporate your comments into
+the documentation (I think it will help developers and users alike).
+
+> Writing all above may be too much :)
 > 
-> and ditto for ioprio_get()?
+> I'm sorry if I say something pointless.
 > 
-> -- 
-> Jens Axboe
 
-Done..
+No.. not at all! Thank you for reading the documentation and commenting
+on it.
 
-----------------------
-
-The newer glibc does not allow system calls to be made via _syscallN()
-wrapper. They have to be made through syscall(). The ionice code used
-the older interface. Correcting it to use syscall.
- 
-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> Thanks,
+> -Kame
+> 
+> 
 
 
-Index: linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt
-===================================================================
---- linux-2.6.23-rc3-mm1.orig/Documentation/block/ioprio.txt	2007-07-09 05:02:17.000000000 +0530
-+++ linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt	2007-08-23 13:46:08.000000000 +0530
-@@ -86,8 +86,15 @@ extern int sys_ioprio_get(int, int);
- #error "Unsupported arch"
- #endif
- 
--_syscall3(int, ioprio_set, int, which, int, who, int, ioprio);
--_syscall2(int, ioprio_get, int, which, int, who);
-+static inline int ioprio_set(int which, int who, int ioprio)
-+{
-+	return syscall(__NR_ioprio_set, which, who, ioprio);
-+}
-+
-+static inline int ioprio_get(int which, int who)
-+{
-+	return syscall(__NR_ioprio_get, which, who);
-+}
- 
- enum {
- 	IOPRIO_CLASS_NONE,
 -- 
-regards,
-Dhaval
-
-I would like to change the world but they don't give me the source code!
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
