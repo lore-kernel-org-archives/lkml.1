@@ -1,50 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763164AbXHWMRH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbXHWMVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763164AbXHWMRH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 08:17:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762213AbXHWMQx
+	id S1762213AbXHWMVQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 08:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbXHWMVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 08:16:53 -0400
-Received: from ns2.suse.de ([195.135.220.15]:56058 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757168AbXHWMQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 08:16:52 -0400
-Date: Thu, 23 Aug 2007 14:16:48 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, riel <riel@redhat.com>
-Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water
-	marks
-Message-ID: <20070823121643.GP13915@v2.random>
-References: <20070820215040.937296148@sgi.com> <1187692586.6114.211.camel@twins> <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com> <1187730812.5463.12.camel@lappy> <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com> <1187734144.5463.35.camel@lappy> <Pine.LNX.4.64.0708211532560.5728@schroedinger.engr.sgi.com> <1187766156.6114.280.camel@twins> <Pine.LNX.4.64.0708221157180.13813@schroedinger.engr.sgi.com> <1187813025.5463.85.camel@lappy>
+	Thu, 23 Aug 2007 08:21:03 -0400
+Received: from el-out-1112.google.com ([209.85.162.182]:26601 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757344AbXHWMVB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 08:21:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=ApOmkBPcDh7uQj7C/beG/oIpVyqFxw/76SLlTtmL+cRbinBfIKTzOk3Rip6xXSmVoaLB5ywiSHkiCQqGdj7akpMa1irbUOGdtAZ9M7yTp0OvoGDWC8isR+QZRPbejpwP6CaqvSZA4NVxk0jdO6LCGcny0WRHhKn6wLDHEn3fOGM=
+Message-ID: <3c1737210708230520l7dee896crc614f7fc60ac7a1a@mail.gmail.com>
+Date: Thu, 23 Aug 2007 14:20:58 +0200
+From: "Michael Smith" <msmith@xiph.org>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: gettimeofday() jumping into the future
+Cc: linux-kernel@vger.kernel.org, "Andy Wingo" <wingo@fluendo.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "john stultz" <johnstul@us.ibm.com>
+In-Reply-To: <1187869632.6114.368.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1187813025.5463.85.camel@lappy>
+References: <3c1737210708230408i7a8049a9m5db49e6c4d89ab62@mail.gmail.com>
+	 <1187869632.6114.368.camel@twins>
+X-Google-Sender-Auth: fead0d56b2638179
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 10:03:45PM +0200, Peter Zijlstra wrote:
-> Its not extreme, not even rare, and its handled now. Its what
-> PF_MEMALLOC is for.
+On 8/23/07, Peter Zijlstra <peterz@infradead.org> wrote:
+> [ CCs added ]
+>
+> On Thu, 2007-08-23 at 13:08 +0200, Michael Smith wrote:
+> > Hi,
+> >
+> > We've been seeing some strange behaviour on some of our applications
+> > recently. I've tracked this down to gettimeofday() returning spurious
+> > values occasionally.
+> >
+> > Specifically, gettimeofday() will suddenly, for a single call, return
+> > a value about 4398 seconds (~1 hour 13 minutes) in the future. The
+> > following call goes back to a normal value.
+> >
+> > This seems to be occurring when the clock source goes slightly
+> > backwards for a single call. In
+> > kernel/time/timekeeping.c:__get_nsec_offset(), we have this:
+> >  cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
+> >
+> > So a small decrease in time here will (this is all unsigned
+> > arithmetic) give us a very large cycle_delta. cyc2ns() then multiplies
+> > this by some value, then right shifts by 22. The resulting value (in
+> > nanoseconds) is approximately 4398 seconds; this gets added on to the
+> > xtime value, giving us our jump into the future. The next call to
+> > gettimeofday() returns to normal as we don't have this huge nanosecond
+> > offset.
+> >
+> > This system is a 2-socket core 2 quad machine (8 cpus), running 32 bit
+> > mode. It's a dell poweredge 1950. The kernel selects the TSC as the
+> > clock source, having determined that the tsc runs synchronously on
+> > this system. Switching the systems to use a different time source
+> > seems to make the problem go away (which is fine for us, but we'd like
+> > to get this fixed properly upstream).
+> >
+> > We've also seen this behaviour with a synthetic test program (which
+> > just runs 4 threads all calling gettimeofday() in a loop as fast as
+> > possible and testing that it doesn't jump) on an older machine, a dell
+> > poweredge SC1425 with two p4 hyperthreaded xeons.
+> >
+> > Can anyone advise on what's going wrong here? I can't find much in the
+> > way of documentation on whether the TSC is guaranteed to be
+> > monotonically increasing on intel systems. Should the code choose not
+> > to use the TSC? Or should the TSC reading code ensure that the
+> > returned values are monotonic?
+> >
+> > Is there any more information that would be useful? I'll be on a plane
+> > for most of tomorrow, so might be a little slow responding.
+>
+> The exact version of the kernel you're using might be good thing to
+> start with :-)
 
-Agreed. This is the whole point, either you limit the max amount of
-anon memory, slab, alloc_pages a driver can do or you reserve a
-pool. Guess what? In practice limiting the max ram a driver can eat in
-alloc_pages, at the same time while limting the max amount of pages
-that can be anon ram, etc..etc.. is called "reserving a pool of
-freepages for PF_MEMALLOC".
+My apologies. It's always the obvious things one forgets to put in...
 
-Now in theory we could try a may_writepage=0 second reclaim pass
-before using the PF_MEMALLOC pool but would that make any difference
-other than being slower? We can argue what should be done first but
-the PF_MEMALLOC pool isn't likely to go away with this patch... only
-way to make it go away is to have every subsystem including tcp
-incoming to have mempools for everything which is too complicated to
-implement so we've to live the imperfect world that just works good
-enough.
+This was originally seen on an FC5 system running:
+  2.6.18-1.2257.fc5smp
 
-This logic of falling back in a may_writepage=0 pass will make things
-a bit more reliable but certainly not perfect and it doesn't obsolete
-the need of the current code IMHO.
+We've reproduced it on the same system with a kernel built from
+linus's git tree yesterday: 2.6.23-rc3.
+
+Mike
