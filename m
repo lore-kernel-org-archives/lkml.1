@@ -1,89 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764119AbXHWRcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764859AbXHWReq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764119AbXHWRcw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 13:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbXHWRcn
+	id S1764859AbXHWReq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 13:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbXHWRej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 13:32:43 -0400
-Received: from threatwall.zlynx.org ([199.45.143.218]:33027 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754089AbXHWRcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 13:32:42 -0400
-Subject: Re: 2.6.23-rc3-mm1 - memory layout change?  - lost support for
-	MAP_32BIT? - mono crashes
-From: Zan Lynx <zlynx@acm.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708231126380.2460@twin.jikos.cz>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	 <1187834905.190825.16.camel@localhost>
-	 <Pine.LNX.4.64.0708231126380.2460@twin.jikos.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-DzqioQHIhYweFV+q8YuF"
-Date: Thu, 23 Aug 2007 11:32:33 -0600
-Message-Id: <1187890353.8684.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20070823/1IOGXr-0006Zq-Ew-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
+	Thu, 23 Aug 2007 13:34:39 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59475 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752128AbXHWRei (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 13:34:38 -0400
+Message-ID: <46CDC51D.5070206@sgi.com>
+Date: Thu, 23 Aug 2007 10:34:21 -0700
+From: Jay Lan <jlan@sgi.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060725)
+MIME-Version: 1.0
+To: vgoyal@in.ibm.com
+CC: k-miyoshi@cb.jp.nec.com, Bernhard Walle <bwalle@suse.de>,
+       kexec@lists.infradead.org, Takenori Nagano <t-nagano@ah.jp.nec.com>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Keith Owens <kaos@ocs.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] add kdump_after_notifier
+References: <20070802112852.GA7054@in.ibm.com>	<31687.1186113947@kao2.melbourne.sgi.com>	<20070805110746.GA12540@in.ibm.com>	<46C1691E.7090708@ah.jp.nec.com> <20070814083710.GA14538@suse.de>	<20070814132454.GA8293@in.ibm.com> <46C4184B.5030303@ah.jp.nec.com>	<20070817105630.GA18167@in.ibm.com> <46CAE627.7070908@sgi.com> <20070823035629.GB365@in.ibm.com>
+In-Reply-To: <20070823035629.GB365@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Vivek Goyal wrote:
+> On Tue, Aug 21, 2007 at 06:18:31AM -0700, Jay Lan wrote:
+> [..]
+>>>>> Now user will be able to view all the die_chain users through sysfs and
+>>>>> be able to modify the order in which these should run by modifying their
+>>>>> priority. Hence all the RAS tools can co-exist.
+>>>> This is my image of your proposal.
+>>>>
+>>>> - Print current order
+>>>>
+>>>> # cat /sys/class/misc/debug/panic_notifier_list
+>>>> priority   name
+>>>> 1          IPMI
+>>>> 2          watchdog
+>>>> 3          Kdb
+>>>> 4          Kdump
+>>>>
+>>> I think Bernhard's suggestion looks better here. I noticed that 
+>>> /sys/kernel/debug is already present. So how about following.
+>>>
+>>> /sys/kernel/debug/kdump/priority
+>>> /sys/kernel/debug/kdb/priority
+>>> /sys/kernel/debug/IPMI/priority
+>> Why separate priority files is better than a central file?
+>> At least i think you get a grand picture of priority being
+>> defined for all parties with a central file?
+>>
+> 
+> I thought of couple of reasons.
+> - A very different syntax to modify the priority.
+> - Separate directories allow easy future extensions in terms of more
+>   files. For example, putting a small "description" file in each dir
+>   where each registered user can specify what does it do.
 
---=-DzqioQHIhYweFV+q8YuF
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+The first can be easily resolved by providing a comment section in the
+file with real examples. Users can simply uncomment a line to activate.
+But future expansion is certainly is a good reason for this layout.
 
-On Thu, 2007-08-23 at 11:28 +0200, Jiri Kosina wrote:
-> On Wed, 22 Aug 2007, Zan Lynx wrote:
->=20
-> > After installing this new wonder kernel on my AMD-64 laptop, I=20
-> > discovered that Beagle wouldn't start.  While enjoying how fast my=20
-> > system felt ( :) ) I also discovered that Evolution wouldn't start=20
-> > because it was built with mono integration.
-> [...]
-> > Mono claims to mmap with the MAP_32BIT option.
-> > In -rc3-mm1 strace shows mono's mmap like this:
-> > mmap(NULL, 65536, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANONY=
-MOUS|MAP_32BIT, -1, 0) =3D 0x7fa21f5cb000
->=20
-> Hi Zan,
->=20
-> thanks for an excellent bugreport. Rather than throwing the whole=20
-> pie-randomization and flexmmap support away, could you please test the=20
-> patch below and let me know whether it fixes all your issues? Thanks.
->=20
->=20
-> From: Jiri Kosina <jkosina@suse.cz>
->=20
-> Handle MAP_32BIT flags properly in x86_64 flexmmap
->=20
-> We need to handle MAP_32BIT flags of mmap() properly for 64bit=20
-> applications with filexible mmap layout.
->=20
-> This patch introduces x86_64-specific version of=20
-> arch_get_unmapped_area_topdown() which differs from the generic one in=20
-> handling of the MAP_32BIT flag -- when this flag is passed to mmap(), we=20
-> stick back to the legacy layout for this particular mmap, which gives=20
-> proper 32bit range.
->=20
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-[snip patch]
+> 
+> But I agree that a single file is good for consolidated view. As bernhard
+> suggested, may be we should also implement a read only file where one
+> will get a consolidated view.
 
-This does fix the mono problem.  Thank you.
---=20
-Zan Lynx <zlynx@acm.org>
+Yep, this will help!
 
---=-DzqioQHIhYweFV+q8YuF
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> 
+>> What do we decide priority if more than one component has
+>> the same priority value?
+>>
+> 
+> I think first come first serve would be appropriate in this case instead of
+> returning -EINVAL.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.6 (GNU/Linux)
+How does the kernel process the configuration files? By alphabetic order
+of the filename? Either way, i think a clear failure/warning dmesg is
+very important.
 
-iD8DBQBGzcSxG8fHaOLTWwgRAg+xAJ4oLYgmjTAy+8NiC5+julu9klA7ZgCeKVe7
-oCPIO2KcnmH0AANSlO/BIEY=
-=BGq8
------END PGP SIGNATURE-----
+Thanks,
+ - jay
 
---=-DzqioQHIhYweFV+q8YuF--
+> 
+> Thanks
+> Vivek
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
 
