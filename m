@@ -1,101 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764859AbXHWReq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765011AbXHWRgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764859AbXHWReq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 13:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbXHWRej
+	id S1765011AbXHWRgs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 13:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759222AbXHWRgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 13:34:39 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59475 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752128AbXHWRei (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 13:34:38 -0400
-Message-ID: <46CDC51D.5070206@sgi.com>
-Date: Thu, 23 Aug 2007 10:34:21 -0700
-From: Jay Lan <jlan@sgi.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060725)
+	Thu, 23 Aug 2007 13:36:41 -0400
+Received: from iucha.net ([209.98.146.184]:43669 "EHLO mail.iucha.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750922AbXHWRgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 13:36:40 -0400
+Date: Thu, 23 Aug 2007 12:36:37 -0500
+From: Florin Iucha <florin@iucha.net>
+To: Bret Towe <magnade@gmail.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: NFS woes again Was: [linux-usb-devel] USB-related oops in
+	sysfs with linux v2.6.23-rc3-50-g28e8351
+Message-ID: <20070823173637.GS10422@iucha.net>
+References: <Pine.LNX.4.64.0708151656070.2460@twin.jikos.cz> <20070821115115.GD10422@iucha.net> <20070821125718.GH10422@iucha.net> <Pine.LNX.4.64.0708211502330.2460@twin.jikos.cz> <20070821131759.GI10422@iucha.net> <20070821132704.GJ10422@iucha.net> <Pine.LNX.4.64.0708211536560.2460@twin.jikos.cz> <20070822132200.GO10422@iucha.net> <20070823125210.GQ10422@iucha.net> <dda83e780708231014x66093dafj83263a2a1c8203bb@mail.gmail.com>
 MIME-Version: 1.0
-To: vgoyal@in.ibm.com
-CC: k-miyoshi@cb.jp.nec.com, Bernhard Walle <bwalle@suse.de>,
-       kexec@lists.infradead.org, Takenori Nagano <t-nagano@ah.jp.nec.com>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Keith Owens <kaos@ocs.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] add kdump_after_notifier
-References: <20070802112852.GA7054@in.ibm.com>	<31687.1186113947@kao2.melbourne.sgi.com>	<20070805110746.GA12540@in.ibm.com>	<46C1691E.7090708@ah.jp.nec.com> <20070814083710.GA14538@suse.de>	<20070814132454.GA8293@in.ibm.com> <46C4184B.5030303@ah.jp.nec.com>	<20070817105630.GA18167@in.ibm.com> <46CAE627.7070908@sgi.com> <20070823035629.GB365@in.ibm.com>
-In-Reply-To: <20070823035629.GB365@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="8HhMLSHvAouSipEr"
+Content-Disposition: inline
+In-Reply-To: <dda83e780708231014x66093dafj83263a2a1c8203bb@mail.gmail.com>
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Tue, Aug 21, 2007 at 06:18:31AM -0700, Jay Lan wrote:
-> [..]
->>>>> Now user will be able to view all the die_chain users through sysfs and
->>>>> be able to modify the order in which these should run by modifying their
->>>>> priority. Hence all the RAS tools can co-exist.
->>>> This is my image of your proposal.
->>>>
->>>> - Print current order
->>>>
->>>> # cat /sys/class/misc/debug/panic_notifier_list
->>>> priority   name
->>>> 1          IPMI
->>>> 2          watchdog
->>>> 3          Kdb
->>>> 4          Kdump
->>>>
->>> I think Bernhard's suggestion looks better here. I noticed that 
->>> /sys/kernel/debug is already present. So how about following.
->>>
->>> /sys/kernel/debug/kdump/priority
->>> /sys/kernel/debug/kdb/priority
->>> /sys/kernel/debug/IPMI/priority
->> Why separate priority files is better than a central file?
->> At least i think you get a grand picture of priority being
->> defined for all parties with a central file?
->>
-> 
-> I thought of couple of reasons.
-> - A very different syntax to modify the priority.
-> - Separate directories allow easy future extensions in terms of more
->   files. For example, putting a small "description" file in each dir
->   where each registered user can specify what does it do.
 
-The first can be easily resolved by providing a comment section in the
-file with real examples. Users can simply uncomment a line to activate.
-But future expansion is certainly is a good reason for this layout.
+--8HhMLSHvAouSipEr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> But I agree that a single file is good for consolidated view. As bernhard
-> suggested, may be we should also implement a read only file where one
-> will get a consolidated view.
+On Thu, Aug 23, 2007 at 10:14:38AM -0700, Bret Towe wrote:
+> this sounds alot like the post i did yesterday titled 'nfs4 hang regressi=
+on'
+> i tracked it down to commit 3d39c691ff486142dd9aaeac12f553f4476b7a6
 
-Yep, this will help!
+Yes, it certainly does -- all the symptoms match!
 
-> 
->> What do we decide priority if more than one component has
->> the same priority value?
->>
-> 
-> I think first come first serve would be appropriate in this case instead of
-> returning -EINVAL.
+I'm not [alone in] seeing dead keyboards!
 
-How does the kernel process the configuration files? By alphabetic order
-of the filename? Either way, i think a clear failure/warning dmesg is
-very important.
+Now, if only somebody could clarify to me the connection between
+the bad NFS4 shooting the keyboard but not the mouse, that would
+be wonderful.
 
-Thanks,
- - jay
+florin
 
-> 
-> Thanks
-> Vivek
-> 
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
 
+--8HhMLSHvAouSipEr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGzcWlND0rFCN2b1sRAi/kAKCZBWEIvNu/VVCGeo5dwoTNBByAPACeIL3B
+qyOxlXpjUbH/R/QmvOgoZgw=
+=kzAK
+-----END PGP SIGNATURE-----
+
+--8HhMLSHvAouSipEr--
