@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764328AbXHWTay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764637AbXHWTbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764328AbXHWTay (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 15:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757665AbXHWTaS
+	id S1764637AbXHWTbg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 15:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758648AbXHWTb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 15:30:18 -0400
-Received: from gate.crashing.org ([63.228.1.57]:54517 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756302AbXHWTaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 15:30:15 -0400
-In-Reply-To: <alpine.LFD.0.999.0708221116310.30176@woody.linux-foundation.org>
-References: <46C03885.7000109@redhat.com> <20070813112452.GK24018@shell.boston.redhat.com> <swfhcmswcux.wl%takata.hirokazu@renesas.com> <swfejhww4cs.wl%takata.hirokazu@renesas.com> <46CC42EF.3030602@redhat.com> <8fc86c23579e12b012891d6e69b1b107@kernel.crashing.org> <alpine.LFD.0.999.0708221116310.30176@woody.linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e8b5ee6194ed619c245eb884c5ae6b11@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: Hirokazu Takata <takata@linux-m32r.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, "Luck, Tony" <tony.luck@intel.com>,
-       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       Chris Snook <csnook@redhat.com>, Chris Friesen <cfriesen@nortel.com>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 11/23] make atomic_read() and atomic_set() behavior consistent on m32r
-Date: Thu, 23 Aug 2007 21:29:41 +0200
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Mailer: Apple Mail (2.623)
+	Thu, 23 Aug 2007 15:31:26 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52011 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756302AbXHWTb0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 15:31:26 -0400
+Date: Thu, 23 Aug 2007 20:31:21 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Renumber AUDIT_TTY_[GS]ET
+Message-ID: <20070823193121.GM21089@ftp.linux.org.uk>
+References: <20070823091953.GK21089@ftp.linux.org.uk> <20070823073241.2c470cb5@laptopd505.fenrus.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070823073241.2c470cb5@laptopd505.fenrus.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The inline asm version has the EXACT SAME PROBLEM as the "volatile"
-> version has: it means that the compiler is unable to combine trivial
-> instructions.
+On Thu, Aug 23, 2007 at 07:32:41AM -0700, Arjan van de Ven wrote:
+> On Thu, 23 Aug 2007 10:19:53 +0100
+> Al Viro <viro@ftp.linux.org.uk> wrote:
+> 
+> > From: Miloslav Trmac <mitr@redhat.com>
+> > 
+> > Renumber AUDIT_TTY_[GS]ET to avoid a conflict with netlink message
+> > types already used in the wild.
+> 
+> which are these? Were they in mainline or -mm before?
+> 
+> also, if this is so sensitive, at least add something that says to never ever use 1014/1015...
 
-This simply isn't true.  The compiler *can* combine asm stuff:
+AUDIT_TTY_*ET went into mainline directly and I'd missed the conflict with
+the numbers already in use by audit-subtree patches.  I *had* noticed when
+pushing audit-subtree to -mm, swore at myself and renumbered those.  Alas,
+there's userland to deal with.
+	* auditctl has subtree support merged
+	* auditctl still doesn't have tty... support merged
+	* it's built with numbers matching the original patchset (1014/1015)
+and binaries are released
+	* audit-subtree patchset is in RH beta kernel, also released
 
+Vote of auditctl maintainer had been "renumber tty_...* until it's too late,
+since that's the one userland doesn't support yet".  The author of tty patches
+agrees (see above) and I also think that this is the best way out of that mess.
 
-typedef struct { int counter; } atomic_t;
-
-static inline __attribute__((pure)) int atomic_read(const atomic_t *v)
-{
-         int x;
-         asm("ld %0,@%1" : "=r"(x) : "r"(&v->counter), "m"(v->counter));
-         return x;
-}
-
-int f(atomic_t *x)
-{
-         return atomic_read(x) + atomic_read(x);
-}
-
-int g(atomic_t *x)
-{
-         return 0 * atomic_read(x);
-}
-
-
-generates
-
-
-f:
-         ld r0,@r0
-         slli r0,#1
-         jmp lr
-
-g:
-         ldi r0,#0
-         jmp lr
-
-
-> So why the *hell* you'd expect the asm version to be smaller, I can't
-> imagine.
-
-I expect it to be smaller than the current code, which uses the
-"big hammer" volatile version.  We're talking about m32r here,
-not x86.  Even when using "volatile asm" it shouldn't generate
-much bigger code.
-
-Anyhow, I answered my own question: on m32r, you cannot use "m"
-with ld/st insns, since autoincrement modes don't work there (the
-assembler complains, at least). So you have to force the address
-into a reg instead, and _that_ causes the size increase.
-
-> If the code needs barriers, the code should damn well add them.
-
-Sure.  I'm not suggesting otherwise.
-
-
-Segher
-
+Again, it's largely my fault - I'd missed the conflict in the first place and
+hadn't reacted immediately.
