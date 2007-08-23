@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764686AbXHWQ0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764800AbXHWQek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764686AbXHWQ0I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 12:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXHWQZ4
+	id S1764800AbXHWQek (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 12:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763612AbXHWQec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 12:25:56 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:60374 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752319AbXHWQZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 12:25:55 -0400
-Date: Thu, 23 Aug 2007 17:25:53 +0100
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: 2.6.23-rc3-mm1
-Message-ID: <20070823162553.GB30504@skynet.ie>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CC6FB2.1010801@csn.ul.ie> <20070822111029.46db0ab7.akpm@linux-foundation.org> <20070823120742.GR8058@bingen.suse.de>
+	Thu, 23 Aug 2007 12:34:32 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:35475 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763422AbXHWQeb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 12:34:31 -0400
+Date: Thu, 23 Aug 2007 09:33:18 -0700
+From: Greg KH <greg@kroah.com>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Console events and accessibility
+Message-ID: <20070823163318.GB5528@kroah.com>
+References: <20070821212939.GD3658@interface.famille.thibault.fr> <20070822054855.GB23336@kroah.com> <20070822085355.GB3359@implementation.labri.fr> <20070822130520.GE3359@implementation.labri.fr> <20070823100402.GB6742@kroah.com> <20070823113035.GD3287@implementation.labri.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070823120742.GR8058@bingen.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+In-Reply-To: <20070823113035.GD3287@implementation.labri.fr>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (23/08/07 14:07), Andi Kleen didst pronounce:
-> On Wed, Aug 22, 2007 at 11:10:29AM -0700, Andrew Morton wrote:
-> > x86_64-mm-less-stack-alignment.patch has
+On Thu, Aug 23, 2007 at 01:30:35PM +0200, Samuel Thibault wrote:
+> Greg KH, le Thu 23 Aug 2007 03:04:02 -0700, a ?crit :
+> > > I mean: yes, with these three patches, speakup will work fine.
 > > 
-> > cflags-y += $(call cc-option,-mpreferred-stack-boundary=3)
+> > 3 patches?  I only saw 2.  Or do you mean the modifications of the 3
+> > files?
+> 
+> Maybe you missed the keyboard notification patch which is already in
+> -mm.
+
+Yes I did, sorry.  Do you have a pointer for it, all I see is these
+patches in -mm:
+	console-keyboard-events-and-accessibility.patch
+	console-keyboard-events-and-accessibility-fix.patch
+	console-keyboard-events-and-accessibility-fix-2.patch
+
+> > The patches look sane but you should change the global symbols to play
+> > nicer in the namespace.  Care to respin them together with this change?
+> 
+> You mean inverse_translate and screen_glyph?
+
+Yes.  Also, things like "register_keyboard_notifier" should be
+"keyboard_register_notifer", trying to keep everything in the
+"keyboard*" namespace to make things a bit easier overall[1].
+
+> > > The biggest change we'll have to do in speakup is the way it accesses
+> > > the serial port, which is really dirty for now, but that's an internal
+> > > matter.
 > > 
-> > So we _should_ have detected that gcc didn't like =3, so it
-> > should not have been used.
+> > Yeah, that shouldn't be that tough to do.
 > 
-> The flag actually needs a recent gcc 4.3 snapshot (it's
-> a new feature the gcc developers added especially for the
-> kernel :), so if this didn't work it would fail on the vast 
-> majority of systems.
-> 
-> Somehow it doesn't? At least here it compiles fine.
-> 
-> I notice the final comma is missing, Mel does it work
-> when you change the line to 
-> 
-> cflags-y += $(call cc-option,-mpreferred-stack-boundary=3,)  
-> 
+> Well, the biggest problem is that we'd like to output on serial _before_
+> /dev gets mounted.
 
-No but that is hardly a suprise as it's looking like -m64 is the way
-forward.
+As we can do this today with the console layer (think boot consoles over
+serial and network and even USB), it should not be that tough.  Just be
+an early console yourself also.
 
-> If not please run
-> gcc -O2 -mpreferred-stack-boundary=2 -S -xc /dev/null -o x.o 
-> echo $?
+> > It doesn't look like these changes handle scrolling of the console, do
+> > they?
 > 
-> What does the echo output?
-> 
+> Ah, indeed, speakup doesn't seem to handle it, that's why I forgot it in
+> the patch.  I'll see what needs to be done.
 
-Repeating really but;
+Does speakup need to handle it?  I know it's the most popular reader
+package out there, but other people seem to have other screen readers
+too, but I am in no position to evaluate if their hacks/patches are
+really something that is needed here.
 
-elm3b6:~# gcc -O2 -mpreferred-stack-boundary=2 -S -xc /dev/null -o x.o ; echo $?
-0
-elm3b6:~# gcc -m64 -O2 -mpreferred-stack-boundary=2 -S -xc /dev/null -o x.o ; echo $?
-/dev/null:1: error: -mpreferred-stack-boundary=2 is not between 4 and 12
-1
+Also, we really would like to see the users of these hooks (meaning the
+speakup drivers) go into the tree at the same time the hooks do, as we
+don't like hooks with no users in the kernel.
 
+I know the speakup code needs a lot of work to bring it up to
+kernel-acceptance level.  Has this work been done, or is it happening?
+If you need help in this area, I can see about doing a bit as I did a
+lot of cleanup of this codebase a few years ago.  I also know of a few
+users who are willing to help test this stuff out.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Anyway, thanks a lot for working to get this code into the main tree,
+it's very useful to an important group of users.
+
+thanks,
+
+greg k-h
