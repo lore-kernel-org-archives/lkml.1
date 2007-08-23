@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765388AbXHWUKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932108AbXHWUN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765388AbXHWUKV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 16:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758830AbXHWUKI
+	id S932108AbXHWUN2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 16:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758648AbXHWUNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 16:10:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38487 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758771AbXHWUKF (ORCPT
+	Thu, 23 Aug 2007 16:13:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50451 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757719AbXHWUNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 16:10:05 -0400
-Message-ID: <46CDE981.9030506@zytor.com>
-Date: Thu, 23 Aug 2007 13:09:37 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 23 Aug 2007 16:13:17 -0400
+Date: Thu, 23 Aug 2007 13:12:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+cc: Hirokazu Takata <takata@linux-m32r.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, "Luck, Tony" <tony.luck@intel.com>,
+       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       Chris Snook <csnook@redhat.com>, Chris Friesen <cfriesen@nortel.com>
+Subject: Re: [PATCH 11/23] make atomic_read() and atomic_set() behavior
+ consistent on m32r
+In-Reply-To: <e8b5ee6194ed619c245eb884c5ae6b11@kernel.crashing.org>
+Message-ID: <alpine.LFD.0.999.0708231310430.30176@woody.linux-foundation.org>
+References: <46C03885.7000109@redhat.com> <20070813112452.GK24018@shell.boston.redhat.com>
+ <swfhcmswcux.wl%takata.hirokazu@renesas.com> <swfejhww4cs.wl%takata.hirokazu@renesas.com>
+ <46CC42EF.3030602@redhat.com> <8fc86c23579e12b012891d6e69b1b107@kernel.crashing.org>
+ <alpine.LFD.0.999.0708221116310.30176@woody.linux-foundation.org>
+ <e8b5ee6194ed619c245eb884c5ae6b11@kernel.crashing.org>
 MIME-Version: 1.0
-To: Avi Kivity <avi@argo.co.il>
-CC: Gerald Britton <gbritton@doomcom.org>, Michael Smith <msmith@xiph.org>,
-       linux-kernel@vger.kernel.org, Andy Wingo <wingo@fluendo.com>
-Subject: Re: gettimeofday() jumping into the future
-References: <3c1737210708230408i7a8049a9m5db49e6c4d89ab62@mail.gmail.com> <20070823113648.GA5405@zante.sekrit.org> <46CD85AC.7050805@argo.co.il>
-In-Reply-To: <46CD85AC.7050805@argo.co.il>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Gerald Britton wrote:
->> On Thu, Aug 23, 2007 at 01:08:27PM +0200, Michael Smith wrote:
->>  
->>> Hi,
->>>
->>> We've been seeing some strange behaviour on some of our applications
->>> recently. I've tracked this down to gettimeofday() returning spurious
->>> values occasionally.
->>>
->>> Specifically, gettimeofday() will suddenly, for a single call, return
->>> a value about 4398 seconds (~1 hour 13 minutes) in the future. The
->>> following call goes back to a normal value.
->>>     
->>
->> I have seen this as well (on a 2.6.20.4 kernel).  The value returned was
->> always identical each time the glitch occured (just a little over 4398
->> seconds).  I saw it watching packet receive timestamps and on the
->> system in
->> question, it would generally hit this problem around once a minute.  When
->> moving forward to a 2.6.21 kernel, the problem seemed to go away (also
->> back
->> to 2.6.17, unfortunately I didn't have any sample points inbetween).
->> I didn't have free time to spend bisecting attempting to find when the
->> behavior started or stopped.
+
+
+On Thu, 23 Aug 2007, Segher Boessenkool wrote:
 > 
-> That value, in nanoseconds, is 0x3fffd3a4c00.  The next second is
-> 0x40038d51600.  Is the wraparound at (0x400 << 32) significant?
-> 
+> This simply isn't true.  The compiler *can* combine asm stuff:
 
-This would be consistent with an off-by-2^32 error.  In particular, if
-either a CPU bug or a code bug could at some point produce 0x400fxxxxxxx
-in between then that would produce exactly the observed characteristics.
+Please Segher, just shut up.
 
-	-hpa
+The combining, which I've mentioned *multiple*times* is
 
+	if (atomic_read(&x) <= 1)
+
+and dammit, if that doesn't result in a *single* instruction, the code 
+generation is pure and utter crap.
+
+It should result in
+
+	cmpl $1,offset(reg)
+
+and nothing else. And there is no way in hell you are doing that with 
+"atomic_read()" being inline asm.
+
+So can you now just go away?
+
+		Linus
