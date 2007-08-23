@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763297AbXHWOsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764125AbXHWOuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763297AbXHWOsH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 10:48:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760318AbXHWOry
+	id S1764125AbXHWOuF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 10:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761994AbXHWOt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 10:47:54 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:53626 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758648AbXHWOry (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 10:47:54 -0400
-Message-ID: <46CD9E13.6020006@fr.ibm.com>
-Date: Thu, 23 Aug 2007 16:47:47 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 23 Aug 2007 10:49:56 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43427 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761890AbXHWOtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 10:49:55 -0400
+Date: Thu, 23 Aug 2007 15:49:53 +0100
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.23-rc3-mm1 kernel BUG at mm/page_alloc.c:2876!
+Message-ID: <20070823144953.GA30504@skynet.ie>
+References: <46CC9A7A.2030404@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@sw.ru>
-CC: akpm@osdl.org, devel@openvz.org, linux-kernel@vger.kernel.org,
-       serue@us.ibm.com
-Subject: Re: [PATCH] userns: don't leak root user
-References: <20070823092259.GB31289@localhost.sw.ru>
-In-Reply-To: <20070823092259.GB31289@localhost.sw.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <46CC9A7A.2030404@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
-> ---
+On (23/08/07 01:50), Kamalesh Babulal didst pronounce:
+> Hi Andrew,
 > 
->  kernel/user_namespace.c |    1 +
->  1 file changed, 1 insertion(+)
+> I see call trace followed by the kernel bug with the 2.6.23-rc3-mm1
+> kernel and have attached the boot log and config file.
 > 
-> --- a/kernel/user_namespace.c
-> +++ b/kernel/user_namespace.c
-> @@ -81,6 +81,7 @@ void free_user_ns(struct kref *kref)
->  	struct user_namespace *ns;
-> 
->  	ns = container_of(kref, struct user_namespace, kref);
-> +	free_uid(ns->root_user);
->  	kfree(ns);
->  }
 
-Indeed ... 
+For this one in the boot log;
 
-Thanks !
+Built 2 zonelists in Node order, mobility grouping off.  Total pages: 0
 
-C.
+The lack of pages might explain allocation failures :/ . Not super-clear
+why it failed to find any memory yet.
+
+-- 
+Mel Gorman
