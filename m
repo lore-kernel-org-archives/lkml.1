@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbXHWF7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbXHWGeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758225AbXHWF7R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 01:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbXHWF7A
+	id S1755730AbXHWGeR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 02:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbXHWGeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 01:59:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49884 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752186AbXHWF67 (ORCPT
+	Thu, 23 Aug 2007 02:34:06 -0400
+Received: from smtp5.actcom.co.il ([192.114.47.67]:40862 "EHLO
+	smtp5.actcom.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbXHWGeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 01:58:59 -0400
-Date: Wed, 22 Aug 2007 22:58:56 -0700
-From: Jeremy Higdon <jeremy@sgi.com>
-To: Jes Sorensen <jes@sgi.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, akepner@sgi.com,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
-Message-ID: <20070823055856.GN89849@sgi.com>
-References: <20070818002746.GU1813@sgi.com> <46C94FD5.6000006@sgi.com> <20070821193522.GD5592@sgi.com> <20070821130515.6e745b17.randy.dunlap@oracle.com> <1187729729.18410.48.camel@localhost.localdomain> <20070822003450.GM5592@sgi.com> <1187745249.18410.67.camel@localhost.localdomain> <46CBE838.4000302@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46CBE838.4000302@sgi.com>
-User-Agent: Mutt/1.4.1i
+	Thu, 23 Aug 2007 02:34:05 -0400
+Message-ID: <46CD290C.3020203@compulab.co.il>
+Date: Thu, 23 Aug 2007 09:28:28 +0300
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070822)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Raphael Assenat <raph@8d.com>, Alessandro Zummo <a.zummo@towertech.it>
+Subject: [PATCH] RTC v3020 fixes
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 09:39:36AM +0200, Jes Sorensen wrote:
-> James Bottomley wrote:
-> >On Tue, 2007-08-21 at 17:34 -0700, akepner@sgi.com wrote:
-> >>The term "posted DMA" is used to describe this behavior in the Altix 
-> >>Device Driver Writer's Guide, but it may be confusing things here. 
-> >>Maybe a better term will suggest itself if I can clarify....
-> >
-> >OK, but posted DMA has a pretty specific meaning in terms of PCI, hence
-> >the confusion.
-> 
-> Maybe it would be more better to refer to this as 'out of order DMA'?
-> 
-> >>On Altix, DMA from a device isn't guaranteed to arrive in host memory 
-> >>in the order it was sent from the device. This reordering can happen 
-> >>in the NUMA interconnect (it's specifically not a PCI reordering.)
-> >
-> >This is mmiowb and read_relaxed() again, isn't it?
-> 
-> I believe it's the same problem, except this time it's when exposing
-> structures to userland.
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+Acked-by: Raphael Assenat <raph@8d.com>
 
-Actually, it's a different problem, but with a similar cause.
+diff --git a/drivers/char/emv3020.c b/drivers/char/emv3020.c
+index df7f1a4..1d93269 100644
+--- a/drivers/char/emv3020.c
++++ b/drivers/char/emv3020.c
+@@ -48,12 +48,16 @@ static void emv3020_set_reg(unsigned char address, unsigned char data)
+ {
+ 	int i;
 
-mmiowb() is for the case PIO (or MMIO) write order from two different CPUs
-can invert somewhere in the NL fabric.
+-	for ( i = 0; i < 4; i++ )
++	for ( i = 0; i < 4; i++ ) {
+ 		writel((address << (16-i)), EMV3020_VA_RTC);
++		udelay(1);
++	}
 
-read_relaxed() is a performance optimization to avoid the flush that's
-necessary to avoid inversion in order between a PIO (or MMIO) read and
-a DMA write.
+ 	if ( address < 0xe)
+-		for ( i = 0; i < 8; i++)
++		for ( i = 0; i < 8; i++) {
+ 			writel((data << (16-i)), EMV3020_VA_RTC);
++			udelay(1);
++		}
+ }
 
-What Arthur's trying to do here is avoid inversion in the order of two
-DMA writes.
+ static unsigned char emv3020_get_reg(unsigned char address)
+@@ -61,12 +65,16 @@ static unsigned char emv3020_get_reg(unsigned char address)
+ 	unsigned int data=0;
+ 	int i, tmp;
 
-jeremy
+-	for ( i = 0; i < 4; i++ )
++	for ( i = 0; i < 4; i++ ) {
+ 		writel((address << (16-i)), EMV3020_VA_RTC);
++		udelay(1);
++	}
++
+
+ 	for ( i = 0; i < 8; i++ ) {
+ 		tmp = readl(EMV3020_VA_RTC);
+ 		data |= ((tmp & 0x10000) >> (16 - i));
++		udelay(1);
+ 	}
+
+ 	return data;
+@@ -108,7 +116,7 @@ static int emv3020_rtc_gettime(struct rtc_time *dt)
+ 	BCD_TO_BIN(dt->tm_min);
+ 	BCD_TO_BIN(dt->tm_hour);
+ 	BCD_TO_BIN(dt->tm_mday);
+-	BCD_TO_BIN(dt->tm_mon);
++	BCD_TO_BIN(dt->tm_mon - 1);
+ 	BCD_TO_BIN(dt->tm_wday);
+ 	BCD_TO_BIN(dt->tm_year);
+ 	dt->tm_year += 100;
+@@ -148,7 +156,7 @@ static int emv3020_rtc_settime(struct rtc_time *dt)
+ 	emv3020_set_reg(0x03, dt->tm_min);
+ 	emv3020_set_reg(0x04, dt->tm_hour);
+ 	emv3020_set_reg(0x05, dt->tm_mday);
+-	emv3020_set_reg(0x06, dt->tm_mon);
++	emv3020_set_reg(0x06, dt->tm_mon + 1);
+ 	emv3020_set_reg(0x08, dt->tm_wday);
+ 	emv3020_set_reg(0x07, dt->tm_year);
+
+
