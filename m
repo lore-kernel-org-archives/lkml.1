@@ -1,64 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbXHWC6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758384AbXHWDCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756839AbXHWC6b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 22:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbXHWC6V
+	id S1758384AbXHWDCs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 23:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbXHWDCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 22:58:21 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:5258 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751978AbXHWC6U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 22:58:20 -0400
-X-IronPort-AV: i="4.19,297,1183348800"; 
-   d="scan'208"; a="37784762:sNHT23716084"
-Subject: Re: [PATCH take #2] MAINTAINTERS: use our mail list as Blackfin
-	arch maintainters.
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Joe Perches <joe@perches.com>
-Cc: bryan.wu@analog.com, Mike Frysinger <vapier.adi@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, yi.li@analog.com,
-       vivi.li@analog.com, torvalds@linux-foundation.org,
-       sonic.zhang@analog.com, roy.huang@analog.com, robin.getz@analog.com,
-       michael.hennerich@analog.com, michael.frysinger@analog.com,
-       marc.hoffman@analog.com, linux-kernel@vger.kernel.org,
-       jie.zhang@analog.com, grace.pan@analog.com, bernd.schmidt@analog.com,
-       akpm@linux-foundation.org
-In-Reply-To: <1187820748.24819.43.camel@localhost>
-References: <46bff904.ANPWrqncsP8VpmBH%joe@perches.com>
-	 <1187777706.24914.2.camel@roc-desktop>
-	 <6bffcb0e0708220323w5592df25n9c21c7e3aca1dbfb@mail.gmail.com>
-	 <8bd0f97a0708220345g26c35288g5e96b6f1f8491f0e@mail.gmail.com>
-	 <1187794511.6805.3.camel@roc-laptop>  <1187820748.24819.43.camel@localhost>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Thu, 23 Aug 2007 10:56:13 +0800
-Message-Id: <1187837773.6725.0.camel@roc-desktop>
+	Wed, 22 Aug 2007 23:02:41 -0400
+Received: from ns.suse.de ([195.135.220.2]:40145 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752762AbXHWDCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 23:02:40 -0400
+Date: Thu, 23 Aug 2007 05:02:38 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dkegel@google.com, David Miller <davem@davemloft.net>,
+       Daniel Phillips <phillips@google.com>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+Message-ID: <20070823030238.GD18788@wotan.suse.de>
+References: <20070814142103.204771292@sgi.com> <20070815122253.GA15268@wotan.suse.de> <1187183526.6114.45.camel@twins> <20070816032921.GA32197@wotan.suse.de> <1187581894.6114.169.camel@twins> <20070821002830.GB8414@wotan.suse.de> <1187710167.6114.258.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 23 Aug 2007 02:58:19.0226 (UTC) FILETIME=[7595D3A0:01C7E531]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1187710167.6114.258.camel@twins>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 15:12 -0700, Joe Perches wrote:
-> On Wed, 2007-08-22 at 22:55 +0800, Bryan Wu wrote:
-> > Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+On Tue, Aug 21, 2007 at 05:29:27PM +0200, Peter Zijlstra wrote:
+> [ now with CCs ]
 > 
-> Perhaps this is better?
+> On Tue, 2007-08-21 at 02:28 +0200, Nick Piggin wrote:
 > 
-> BLACKFIN ARCHITECTURE
-> P:	Blackfin Architecture Team
-> M:	uclinux-dist-devel@blackfin.uclinux.org
-> L:	uclinux-dist-devel@blackfin.uclinux.org
-> W:	http://blackfin.uclinux.org
-> S:	Supported
-> F:	arch/blackfin/
-> F:	include/asm-blackfin/
+> > I do of course. There is one thing to have a real lock deadlock
+> > in some core path, and another to have this memory deadlock in a
+> > known-to-be-dodgy configuration (Linus said last year that he didn't
+> > want to go out of our way to support this, right?)... But if you can
+> > solve it without impacting fastpaths etc. then I don't see any
+> > objection to it.
 > 
+> That has been my intention, getting the problem solved without touching
+> fast paths and with minimal changes to how things are currently done.
 > 
+> > I don't mean for correctness, but for throughput. If you're doing a
+> > lot of network operations right near the memory limit, then it could
+> > be possible that these deadlock paths get triggered relatively often.
+> > With Christoph's patches, I think it would tend to be less.
+> 
+> Christoph's patches all rely on file backed memory being predominant.
+> [ and to a certain degree fully ignore anonymous memory loads :-( ]
 
-Thanks, it is ok
+Yes. 
 
-Acked-by: Bryan Wu <bryan.wu@analog.com>
+
+> Whereas quite a few realistic loads strive to minimise these - I'll
+> again fall back to my MPI cluster example, they would want to use so
+> much anonymous memory to preform their calculations that everything
+> except the hot paths of code are present in memory. In these scenarios 1
+> MB of text would already be a lot.
+
+OK, I don't know exactly about MPI workloads. But I mean a few basic
+things like the C and MPI libraries could already be quite big before
+you even consider the application text (OK it won't be all paged in).
+
+Maybe it won't be enough, but I think some form of recurive reclaim
+will be better than our current scheme. Even assuming your patches are
+in the kernel, don't you think it is a good idea to _not_ have potentially
+complex writeout from reclaim just default to using up memory reserves?
+
+ 
+> > > > How are your deadlock patches going anyway? AFAIK they are mostly a network
+> > > > issue and I haven't been keeping up with them for a while. 
+> > > 
+> > > They really do rely on some VM interaction too, network does not have
+> > > enough information to break out of the deadlock on its own.
+> > 
+> > The thing I don't much like about your patches is the addition of more
+> > of these global reserve type things in the allocators. They kind of
+> > suck (not your code, just the concept of them in general -- ie. including
+> > the PF_MEMALLOC reserve). I'd like to eventually reach a model where
+> > reclaimable memory from a given subsystem is always backed by enough
+> > resources to be able to reclaim it. What stopped you from going that
+> > route with the network subsystem? (too much churn, or something
+> > fundamental?)
+> 
+> I'm wanting to keep the patches as non-intrusive as possible, exactly
+> because some people consider this a fringe functionality. Doing as you
+> say does sound like a noble goal, but would require massive overhauls.
+
+But the code would end up better, wouldn't it? And it could be done
+incrementally?
+
+ 
+> Also, I'm not quite sure how this would apply to networking. It
+> generally doesn't have much reclaimable memory sitting around, and it
+> heavily relies on kmalloc so an alloc/free cycle accounting system would
+> quickly involve a lot of the things I'm already doing.
+
+It wouldn't use reclaimable memory as such, but would have some small
+amounts of reserve memory for allocating all those things required to
+get a response from critical sockets. NBD for example would also then
+be sure to reserve enough memory to at least clean one page etc. That's
+the way the block layer has gone, which seems to be pretty good and I
+think much better than having it in the buddy allocator.
+
+> (also one advantage of keeping it all in the buddy allocator is that it
+> can more easily form larger order pages)
+
+I don't know if that is a really good advantage. The amount of memory
+involved should just be pretty small. I mean it is an advantage, but
+there are other disadvantages (imagine the mess if other subsystems used
+their own global reserves in the allocator rather than mempools etc). I
+don't see why networking is fundamentally more deserving of its own pools
+in the allocator than anybody else.
