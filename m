@@ -1,105 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbXHWIpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760323AbXHWIrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757051AbXHWIpi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 04:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759885AbXHWIpZ
+	id S1760323AbXHWIrX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 04:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbXHWIrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 04:45:25 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:1775 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759227AbXHWIpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 04:45:23 -0400
-Date: Thu, 23 Aug 2007 10:45:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Corrections in Documentation/block/ioprio.txt
-Message-ID: <20070823084519.GJ23758@kernel.dk>
-References: <20070823081817.GA27439@linux.vnet.ibm.com> <20070823082929.GI23758@kernel.dk> <20070823082836.GB27439@linux.vnet.ibm.com>
+	Thu, 23 Aug 2007 04:47:14 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56704 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751050AbXHWIrN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 04:47:13 -0400
+Message-ID: <46CD4927.2080505@sgi.com>
+Date: Thu, 23 Aug 2007 10:45:27 +0200
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070823082836.GB27439@linux.vnet.ibm.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, akepner@sgi.com,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, rdreier@cisco.com,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: Re: [PATCH 2/3] dma: override "dma_flags_set_dmaflush" for sn-ia64
+References: <20070818002746.GU1813@sgi.com>	 <200708220903.23702.jbarnes@virtuousgeek.org>	 <1187801095.3410.49.camel@localhost.localdomain>	 <200708220951.05101.jbarnes@virtuousgeek.org>	 <1187802272.3410.58.camel@localhost.localdomain> <46CC6C4B.1030202@sgi.com> <1187806205.3410.66.camel@localhost.localdomain>
+In-Reply-To: <1187806205.3410.66.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23 2007, Dhaval Giani wrote:
-> On Thu, Aug 23, 2007 at 10:29:30AM +0200, Jens Axboe wrote:
-> > On Thu, Aug 23 2007, Dhaval Giani wrote:
-> > > Hi Jens,
-> > > 
-> > > The newer glibc does not allow system calls to be made via _syscallN()
-> > > wrapper. They have to be made through syscall(). The ionice code used
-> > > the older interface. Correcting it to use syscall.
-> > > 
-> > > Signed-of-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > > 
-> > > 
-> > > Index: linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt
-> > > ===================================================================
-> > > --- linux-2.6.23-rc3-mm1.orig/Documentation/block/ioprio.txt	2007-07-09 05:02:17.000000000 +0530
-> > > +++ linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt	2007-08-23 13:23:28.000000000 +0530
-> > > @@ -86,8 +86,9 @@ extern int sys_ioprio_get(int, int);
-> > >  #error "Unsupported arch"
-> > >  #endif
-> > >  
-> > > -_syscall3(int, ioprio_set, int, which, int, who, int, ioprio);
-> > > -_syscall2(int, ioprio_get, int, which, int, who);
-> > > +#define ioprio_set(which, who, ioprio)  syscall(__NR_ioprio_set, which,\
-> > > +							who, ioprio)
-> > > +#define ioprio_get(which, who)	syscall(__NR_ioprio_get, which, who)
-> > 
-> > Agree, it fails as-of recent distros. But I prefer a function instead,
-> > can you resend with something ala:
-> > 
-> > static inline int ioprio_set(int which, int who, int ioprio)
-> > {
-> >         return syscall(__NR_ioprio_set, which, who, ioprio);
-> > }
-> > 
-> > and ditto for ioprio_get()?
-> > 
-> > -- 
-> > Jens Axboe
-> 
-> Done..
-> 
-> ----------------------
-> 
-> The newer glibc does not allow system calls to be made via _syscallN()
-> wrapper. They have to be made through syscall(). The ionice code used
-> the older interface. Correcting it to use syscall.
->  
-> Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> 
-> 
-> Index: linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt
-> ===================================================================
-> --- linux-2.6.23-rc3-mm1.orig/Documentation/block/ioprio.txt	2007-07-09 05:02:17.000000000 +0530
-> +++ linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt	2007-08-23 13:46:08.000000000 +0530
-> @@ -86,8 +86,15 @@ extern int sys_ioprio_get(int, int);
->  #error "Unsupported arch"
->  #endif
->  
-> -_syscall3(int, ioprio_set, int, which, int, who, int, ioprio);
-> -_syscall2(int, ioprio_get, int, which, int, who);
-> +static inline int ioprio_set(int which, int who, int ioprio)
-> +{
-> +	return syscall(__NR_ioprio_set, which, who, ioprio);
-> +}
-> +
-> +static inline int ioprio_get(int which, int who)
-> +{
-> +	return syscall(__NR_ioprio_get, which, who);
-> +}
->  
->  enum {
->  	IOPRIO_CLASS_NONE,
+James Bottomley wrote:
+> Hmm, didn't see the email ... but I'm probably not cc'd on all the
+> thread.  However ... it isn't that you couldn't do it ... it's that you
+> don't want to do it because it's faster to violate the spec ... like all
+> those nice ATA devices that lie about having a cache and then let you
+> power down with uncommitted data still in it ... they work much faster
+> for HDIO tests ... and who ever switches their box off?
 
-Thanks, applied!
+James,
 
--- 
-Jens Axboe
+I didn't do it, I don't know who did it, but sure we can try and track
+them down and line them up outside .....
 
+Point is that this is how the chips were done and they are out there in
+numbers. It makes things a *lot* faster to violate the spec in such a
+system, yes it sucks, but thats how things are. It wouldn't be the first
+time someone violated the PCI spec in their implementation and I am
+pretty sure it won't be the last.
+
+Cheers,
+Jes
