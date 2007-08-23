@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760946AbXHWLZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760076AbXHWLaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760946AbXHWLZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 07:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbXHWLZO
+	id S1760076AbXHWLaq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 07:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbXHWLai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 07:25:14 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:25207 "EHLO kernel.dk"
+	Thu, 23 Aug 2007 07:30:38 -0400
+Received: from iona.labri.fr ([147.210.8.143]:33070 "EHLO iona.labri.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756524AbXHWLZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 07:25:12 -0400
-Date: Thu, 23 Aug 2007 13:25:08 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Theodore Tso <tytso@mit.edu>, Jan Engelhardt <jengelh@computergmbh.de>,
-       Richard Ballantyne <richardballantyne@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: file system for solid state disks
-Message-ID: <20070823112507.GL23758@kernel.dk>
-References: <46CD14A6.4050605@gmail.com> <Pine.LNX.4.64.0708230746140.12788@fbirervta.pbzchgretzou.qr> <20070823102630.GH7267@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752631AbXHWLah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 07:30:37 -0400
+Date: Thu, 23 Aug 2007 13:30:35 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Console events and accessibility
+Message-ID: <20070823113035.GD3287@implementation.labri.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20070821212939.GD3658@interface.famille.thibault.fr> <20070822054855.GB23336@kroah.com> <20070822085355.GB3359@implementation.labri.fr> <20070822130520.GE3359@implementation.labri.fr> <20070823100402.GB6742@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070823102630.GH7267@thunk.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070823100402.GB6742@kroah.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23 2007, Theodore Tso wrote:
-> On Thu, Aug 23, 2007 at 07:52:46AM +0200, Jan Engelhardt wrote:
-> > 
-> > On Aug 23 2007 01:01, Richard Ballantyne wrote:
-> > >
-> > >What file system that is already in the linux kernel do people recommend
-> > >I use for my laptop that now contains a solid state disk?
-> > 
-> > If I had to choose, the list of options seems to be:
-> > 
-> > - logfs
-> >   [unmerged]
-> > 
-> > - UBI layer with any fs you like
-> >   [just a guess]
+Greg KH, le Thu 23 Aug 2007 03:04:02 -0700, a écrit :
+> > I mean: yes, with these three patches, speakup will work fine.
 > 
-> The question is whether the solid state disk gives you access to the
-> raw flash, or whether you have to go through the flash translation
-> layer because it's trying to look (exclusively) like a PATA or SATA
-> drive.  There are some SSD's that have a form factor and interfaces
-> that make them a drop-in replacement for a laptop hard drive, and a
-> number of the newer laptops that are supporting SSD's seem to be these
-> because (a) they don't have to radically change their design, (b) so
-> they can be compatible with Windows, and (c) so that users can
-> purchase the laptop either with a traditional hard drive or a SSD's as
-> an option, since at the moment SSD's are far more expensive than
-> disks.
+> 3 patches?  I only saw 2.  Or do you mean the modifications of the 3
+> files?
+
+Maybe you missed the keyboard notification patch which is already in
+-mm.
+
+> The patches look sane but you should change the global symbols to play
+> nicer in the namespace.  Care to respin them together with this change?
+
+You mean inverse_translate and screen_glyph?
+
+> > The biggest change we'll have to do in speakup is the way it accesses
+> > the serial port, which is really dirty for now, but that's an internal
+> > matter.
 > 
-> So if you can't get access to the raw flash layer, then what you're
-> probably going to be looking at is a traditional block-oriented
-> filesystem, such as ext3, although there are clearly some things that
-> could be done such as disabling the elevator.   
+> Yeah, that shouldn't be that tough to do.
 
-It's more complicated than that, I'd say. If the job of the elevator was
-purely to sort request based on sector criteria, then I'd agree that
-noop was the best way to go. But the elevator also abritrates access to
-the disk for processes. Even if you don't pay a seek penalty, you still
-would rather like to get your sync reads in without having to wait for
-that huge writer that just queued hundreds of megabytes of io in front
-of you (and will have done so behind your read, making you wait again
-for a subsequent read).
+Well, the biggest problem is that we'd like to output on serial _before_
+/dev gets mounted.
 
-My plan in this area is to add a simple storage profile and attach it to
-the queue. Just start simple, allow a device driver to inform the block
-layer that this device has no seek penalty. Then the io scheduler can
-make more informed decisions on what to do - eg for ssd, sector
-proximity may not have much meaning, so we should not take that into
-account.
+> It doesn't look like these changes handle scrolling of the console, do
+> they?
 
--- 
-Jens Axboe
+Ah, indeed, speakup doesn't seem to handle it, that's why I forgot it in
+the patch.  I'll see what needs to be done.
 
+Thanks,
+Samuel
