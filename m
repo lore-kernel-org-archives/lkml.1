@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765652AbXHWS6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765895AbXHWS7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765652AbXHWS6o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 14:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764869AbXHWS6f
+	id S1765895AbXHWS7b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 14:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764698AbXHWS7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 14:58:35 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:35197 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764685AbXHWS6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 14:58:35 -0400
-Date: Thu, 23 Aug 2007 11:58:31 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       josh@kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] Make rcutorture RNG use temporal entropy
-Message-ID: <20070823185830.GC8371@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070816024904.GA5312@linux.vnet.ibm.com> <20070817115356.cb201e42.akpm@linux-foundation.org> <20070817200022.GH8464@linux.vnet.ibm.com> <20070823180658.GQ11166@waste.org>
+	Thu, 23 Aug 2007 14:59:24 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:52411 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764647AbXHWS7X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 14:59:23 -0400
+Message-ID: <46CDD904.3050607@linux.vnet.ibm.com>
+Date: Fri, 24 Aug 2007 00:29:16 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070823180658.GQ11166@waste.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: Re: [BUG] 2.6.23-rc3-mm1 - kernel BUG at net/core/skbuff.c:95!
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CC33EC.1040803@linux.vnet.ibm.com> <20070822085002.8a116f72.akpm@linux-foundation.org> <1187805493.5303.11.camel@lov.localdomain> <46CC88B3.6080000@linux.vnet.ibm.com> <1187816149.5303.44.camel@lov.localdomain>
+In-Reply-To: <1187816149.5303.44.camel@lov.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 01:06:58PM -0500, Matt Mackall wrote:
-> On Fri, Aug 17, 2007 at 01:00:22PM -0700, Paul E. McKenney wrote:
-> > On Fri, Aug 17, 2007 at 11:53:56AM -0700, Andrew Morton wrote:
-> > > On Wed, 15 Aug 2007 19:49:04 -0700
-> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > Repost of http://lkml.org/lkml/2007/8/10/472 made available by request.
-> > > > 
-> > > > The locking used by get_random_bytes() can conflict with the
-> > > > preempt_disable() and synchronize_sched() form of RCU.  This patch changes
-> > > > rcutorture's RNG to gather entropy from the new cpu_clock() interface
-> > > > (relying on interrupts, preemption, daemons, and rcutorture's reader
-> > > > thread's rock-bottom scheduling priority to provide useful entropy),
-> > > > and also adds and EXPORT_SYMBOL_GPL() to make that interface available
-> > > > to GPLed kernel modules such as rcutorture.
-> > > > 
-> > > > Passes several hours of rcutorture.
-> > > 
-> > > Please explain what "conflict with" means so that I can work out if
-> > > this is a needed-in-2.6.23 change, thanks.
-> > 
-> > Not needed in 2.6.23.  This change falls into the "preparation for -rt"
-> > category.  Also in the "don't unnecessarily eat entropy, leave some for
-> > the people needing crypographically secure randomness" category.
+Kay Sievers wrote:
+> On Thu, 2007-08-23 at 00:34 +0530, Balbir Singh wrote:
+>> Kay Sievers wrote:
+>>>> gargh, sorry, that's probably due to my screwed up attempt to fix Kay's
+>>>> screwed up
+>>>> gregkh-driver-driver-core-change-add_uevent_var-to-use-a-struct.patch.
+>>>>
+>>>> Kay sent an update patch but it didn't arrive in time.
+>>>>
+>>>> Greg, if you haven't yet merged that, please do so asap?
+>>>>
+>>>> So what _should_ this:
+>>>>
+>>>> --- a/arch/powerpc/kernel/vio.c~fix-4-gregkh-driver-driver-core-change-add_uevent_var-to-use-a-struct
+>>>> +++ a/arch/powerpc/kernel/vio.c
+>>>> @@ -373,7 +373,7 @@ static int vio_hotplug(struct device *de
+>>>>  	dn = dev->archdata.of_node;
+>>>>  	if (!dn)
+>>>>  		return -ENODEV;
+>>>> -	cp = of_get_property(dn, "compatible", &length);
+>>>> +	cp = of_get_property(dn, "compatible", &env->buflen);
+>>>>  	if (!cp)
+>>>>  		return -ENODEV;
+>>>>  
+>>>> _
+>>>>
+>>>> have done?
+>>> Does replacing "&length" with "NULL" work? That's what's in the updated
+>>> patch.
 > 
-> We've had several calls for a more fast and loose version of
-> get_random_bytes. Generalizing one of the cookie generation functions
-> is probably a good way to go.
+>> replacing &length with NULL does not work for me. I get a message saying that
+>> init terminated with signal 7.
+> 
+> Hi Balbir,
+> ugh, I can't see what's going wrong here.
+> 
+> Care to just "return 0" for the whole function, and try again? Just to
+> rule out that this is the cause of the problem.
+> 
 
-Are you thinking in terms of secure_tcp_syn_cookie(), or did you have
-something else in mind?
+Hi, Kay,
 
-						Thanx, Paul
+I just confirmed, your NULL fix looks correct. The init got signal 7
+problem occurs even if uevent_add_var() is commented out. I suspect that
+we are seeing a machine exception, I'll debug that part now.
+
+> Thanks,
+> Kay
+> 
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
