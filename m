@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762981AbXHWMWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762661AbXHWMZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762981AbXHWMWY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 08:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757730AbXHWMWR
+	id S1762661AbXHWMZk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 08:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757359AbXHWMZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 08:22:17 -0400
-Received: from ns1.suse.de ([195.135.220.2]:45315 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757359AbXHWMWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 08:22:16 -0400
-Date: Thu, 23 Aug 2007 14:22:15 +0200
-From: Andi Kleen <ak@suse.de>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.23-rc3-mm1
-Message-ID: <20070823122215.GS8058@bingen.suse.de>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CC6FB2.1010801@csn.ul.ie> <20070822111029.46db0ab7.akpm@linux-foundation.org> <20070823120318.GA7506@shadowen.org>
+	Thu, 23 Aug 2007 08:25:33 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4560 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760029AbXHWMZc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 08:25:32 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: RE: [patch] CFS scheduler, -v20, for v2.6.22.5, v2.6.21.7,v2.6.20.16
+Date: Thu, 23 Aug 2007 05:24:41 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKMENNGFAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070823120318.GA7506@shadowen.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <20070823102523.GA5430@elte.hu>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Thu, 23 Aug 2007 05:25:20 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Thu, 23 Aug 2007 05:25:20 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 01:03:18PM +0100, Andy Whitcroft wrote:
-> It seems that this is a problem caused by the way we check for
-> compiler options in x86_64.  Each compiler flag is checked for
-> individually and if available added to cflags-y, later that is
-> added to CFLAGS.  However, this means that each flag is checked
-> in total isolation.  On x86_64 (on this compiler at least) the
-> -mpreferred-stack-boundary and -m{32,64} flags are actually mutually
-> dependant, the alignment constraints vary based on the word size.
-> This leads to the compile failure:
+
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
->     # gcc -mpreferred-stack-boundary=3 -S -xc /dev/null  -o FOO
->     # echo $?
->     0
->     # gcc -m64 -mpreferred-stack-boundary=3 -S -xc /dev/null  -o FOO
->     /dev/null:1: error: -mpreferred-stack-boundary=3 is not between 4 and 12
->     # echo $?
->     1
+> > By popular demand, here is release -v20 of the CFS scheduler. It is a 
+> > full backport of the latest & greatest v2.6.23-rc3 CFS code to 
+> > v2.6.22.5, v2.6.21.7 and v2.6.20.16. The patches can be downloaded 
+> > from the usual place:
 > 
-> In the main Makefile we always add each flag directly to CFLAGS
-> which means we check them all in combination, perhaps this is
-> prudent here also?  Either way I suspect that changing the -m64
-> check to add itself directly to CFLAGS will fix this us.
+> update: i missed a small SMP balancing fix so i've updated the patches 
+> to -v20.1.
+> 
+> 	Ingo
 
-Ok that makes sense. Most people don't see it because they don't
-need -m64. 
+$ diff sched-cfs-v2.6.23-v20.patch sched-cfs-v2.6.23-v20.1.patch 
+$ 
 
-I fixed it up with 
-ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/cflags-probe
-and then
-ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/less-stack-alignment
-(replacement for the mm patch)
+It's not funny unless you change something, IMO.
 
-Can you test?
+DS
 
--Andi
 
