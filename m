@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758986AbXHWHCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbXHWHJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758986AbXHWHCc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 03:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbXHWHCV
+	id S1756770AbXHWHJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 03:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbXHWHJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 03:02:21 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37860 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751150AbXHWHCU (ORCPT
+	Thu, 23 Aug 2007 03:09:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44106 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752050AbXHWHJQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 03:02:20 -0400
-Date: Thu, 23 Aug 2007 08:02:16 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Divy Le Ray <divy@chelsio.com>
-Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Steve Wise <swise@opengridcomputing.com>
-Subject: Re: [PATCH 0/3] cxgb3 driver update
-Message-ID: <20070823070216.GI21089@ftp.linux.org.uk>
-References: <46CD2AA8.9070507@chelsio.com>
+	Thu, 23 Aug 2007 03:09:16 -0400
+Date: Thu, 23 Aug 2007 00:07:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Michael Buesch <mb@bu3sch.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org,
+       Broadcom Linux <bcm43xx-dev@lists.berlios.de>
+Subject: Re: 2.6.23-rc3-mm1: fix b43 compilation
+Message-Id: <20070823000737.cbf85d70.akpm@linux-foundation.org>
+In-Reply-To: <20070823025614.GA4855@tuxdriver.com>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<200708221833.59375.rjw@sisk.pl>
+	<200708222356.44088.mb@bu3sch.de>
+	<20070823025614.GA4855@tuxdriver.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46CD2AA8.9070507@chelsio.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 11:35:20PM -0700, Divy Le Ray wrote:
-> Hi Jeff,
+On Wed, 22 Aug 2007 22:56:15 -0400 "John W. Linville" <linville@tuxdriver.com> wrote:
+
+> On Wed, Aug 22, 2007 at 11:56:43PM +0200, Michael Buesch wrote:
+> > On Wednesday 22 August 2007 18:33:58 Rafael J. Wysocki wrote:
+> > > On Wednesday, 22 August 2007 11:06, Andrew Morton wrote:
+> > > > 
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
+> > > > 
+> > > > - git-ixgbe.patch got dropped - git-net.patch destroyed it
+> > > > 
+> > > > - then git-net got dropped as it doesn't work
+> > > 
+> > > Apparently, the b43 driver is expecting another version of mac80211.
+> > > 
+> > > This patch fixes the compilation, but I'm not sure what about the
+> > > functionality. ;-)
+> > 
+> > There seems to be a screwup somehow.
+> > These mac80211 API functions were recently changed to include
+> > the additional parameter. So it seems you carry an old version of mac80211.
 > 
-> I'm submitting three more patches for inclusion in netdev#upstream.
-> These patches are built over the series I resent yesterday night.
-> The patch numbering reflects the stacking.
-> 
-> Here is a brief description:
-> -   avoid false positives in the xgmac hang workaround
-> -   Properly set the CQ_ERR bit in RDMA CQ contexts.
-> -   Update CQ context operations time out values
+> I think what happened is because Andrew dropped Dave M.'s net tree.
+> Since mac80211 has been getting merged through Dave M., crucial bits
+> are missing which then break the bits from wireless-dev.
 
-Speaking of cxgb3, could you explain what the hell is
-static int do_term(struct t3cdev *dev, struct sk_buff *skb)
-{
-        unsigned int hwtid = ntohl(skb->priority) >> 8 & 0xfffff;
-doing?  AFAIK, skb->priority is not net-endian...
+argh, I didn't know that.  I wonder why all my compile testing passed.
 
-Another odd place is
-int t3_seeprom_write(struct adapter *adapter, u32 addr, u32 data)
-{   
-        u16 val;
-        int attempts = EEPROM_MAX_POLL;
-        unsigned int base = adapter->params.pci.vpd_cap_addr;
+> Andrew, if you find that you need to drop git-net again then I'll be
+> happy to provide you with a wireless-dev patch that does not depend on
+> Dave's tree.  The mm-master branch in wireless-dev has dropped those
+> patches which have gone to Dave M. in the hopes of avoiding conflicts.
+> Dependencies are another matter... :-)
 
-        if ((addr >= EEPROMSIZE && addr != EEPROM_STAT_ADDR) || (addr & 3))   
-                return -EINVAL;
+Hopefully git-net is less wrecked than it was yesterday.  If things still
+play up I'll have a go at bodging it up a bit, perhaps by disabling
+netconsole.  (Although now I think about it, the netconsole bug was mainly
+an ill-advised BUG_ON, fixable by using WARN_ON instead).
 
-        pci_write_config_dword(adapter->pdev, base + PCI_VPD_DATA,
-                               cpu_to_le32(data));
-with callers like
-int t3_seeprom_wp(struct adapter *adapter, int enable)
-{
-        return t3_seeprom_write(adapter, EEPROM_STAT_ADDR, enable ? 0xc : 0);
 
-IOW, you really get little-endian values passed to pci_write_config_dword()
-and it expects a host-endian as the last argument...
+
