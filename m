@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933611AbXHWXlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933421AbXHWXn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933611AbXHWXlf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 19:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765653AbXHWXlY
+	id S933421AbXHWXn3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 19:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765049AbXHWXnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 19:41:24 -0400
-Received: from ozlabs.org ([203.10.76.45]:54567 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764210AbXHWXlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 19:41:24 -0400
+	Thu, 23 Aug 2007 19:43:20 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:55581 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762884AbXHWXnT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 19:43:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:resent-from:resent-to:resent-date:resent-message-id:message-id:in-reply-to:references:from:date:subject:to:cc:mime-version:content-transfer-encoding:content-disposition;
+        b=dG8Xqa7GvBw+0XgQCFhimOxRqpO5GSpko2oSuQDv0XgU7CEQII1/yq/K0kLrnZVWwm4576M/6sFZZS9dkpkARmvPhDK4aTsKEVaEondDkk37xqZl6UhmWrxaUSRnRbHPWx3frbbTi4IjbkkBs5+Q8Y7u4ft8HeQMWREum0MiezA=
+Message-Id: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
+In-Reply-To: <Message-Id: <200708240135.56833.jesper.juhl@gmail.com>>
+References: <Message-Id: <200708240135.56833.jesper.juhl@gmail.com>>
+From: Jesper Juhl <jesper.juhl@gmail.com>
+Date: Fri, 24 Aug 2007 01:40:26 +0200
+Subject: [PATCH 01/30] ia64: Remove unnecessary cast of allocation return value in sn_hwperf_enum_objects()
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Mark Goodwin <markgw@sgi.com>, Tony Luck <tony.luck@intel.com>,
+       linux-ia64@vger.kernel.org, Jes Sorensen <jes@sgi.com>,
+       linux-altix@sgi.com, Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18126.6941.186345.839232@cargo.ozlabs.ibm.com>
-Date: Fri, 24 Aug 2007 09:41:17 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [BUG] 2.6.23-rc3-mm1 Oops: Machine check, sig: 7 [#1]
-In-Reply-To: <20070822090858.b8f62539.akpm@linux-foundation.org>
-References: <46CC387D.4000605@linux.vnet.ibm.com>
-	<20070822090858.b8f62539.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton writes:
+vmalloc() returns a void pointer - no need to cast it.
 
-> Dunno, it beats me.  powerpc booted OK for me.  Ben, have you been playing
-> around in powerpc mmap code?  How come the oops claims it died at
-> kernel_execve+0x8/0x14 but the call trace points up into the vma management
-> code?
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+ arch/ia64/sn/kernel/sn2/sn_hwperf.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-The exception c01 in kernel_execve is just the system call entry.  The
-real problem is the machine check that happened in rb_insert_color,
-called from __vma_link_rb.
+diff --git a/arch/ia64/sn/kernel/sn2/sn_hwperf.c b/arch/ia64/sn/kernel/sn2/sn_hwperf.c
+index df8d5be..1a8e496 100644
+--- a/arch/ia64/sn/kernel/sn2/sn_hwperf.c
++++ b/arch/ia64/sn/kernel/sn2/sn_hwperf.c
+@@ -66,7 +66,8 @@ static int sn_hwperf_enum_objects(int *nobj, struct sn_hwperf_object_info **ret)
+ 	}
+ 
+ 	sz = sn_hwperf_obj_cnt * sizeof(struct sn_hwperf_object_info);
+-	if ((objbuf = (struct sn_hwperf_object_info *) vmalloc(sz)) == NULL) {
++	objbuf = vmalloc(sz);
++	if (objbuf == NULL) {
+ 		printk("sn_hwperf_enum_objects: vmalloc(%d) failed\n", (int)sz);
+ 		e = -ENOMEM;
+ 		goto out;
+-- 
+1.5.2.2
 
-However, a machine check is an imprecise exception, so whatever caused
-the problem may have happened a little earlier than that.  Most likely
-it is due to an attempt to access a physical address where nothing
-exists.
-
-Paul.
