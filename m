@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765043AbXHWRsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765544AbXHWRta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765043AbXHWRsn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 13:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758812AbXHWRsf
+	id S1765544AbXHWRta (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 13:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759388AbXHWRtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 13:48:35 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:31410 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757434AbXHWRse (ORCPT
+	Thu, 23 Aug 2007 13:49:22 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:58555 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbXHWRtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 13:48:34 -0400
-Subject: Re: [patch] sched: fix broken smt/mc optimizations with CFS
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, nickpiggin@yahoo.com.au,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20070823121341.GA5775@elte.hu>
-References: <20070816010150.GG10033@linux-os.sc.intel.com>
-	 <20070823115416.GA31027@elte.hu>  <20070823121341.GA5775@elte.hu>
-Content-Type: text/plain
-Date: Thu, 23 Aug 2007 10:42:46 -0700
-Message-Id: <1187890966.2435.81.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Aug 2007 13:49:21 -0400
+Date: Thu, 23 Aug 2007 18:49:17 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       gregkh@suse.de, linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [PCI]
+Message-ID: <20070823174917.GA19000@linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-23 at 14:13 +0200, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > [...] So how about the patch below instead?
-> 
-> the right patch attached.
-> 
-> -------------------------------->
-> Subject: sched: fix broken SMT/MC optimizations
-> From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-> 
-> On a four package system with HT - HT load balancing optimizations were
-> broken.  For example, if two tasks end up running on two logical threads
-> of one of the packages, scheduler is not able to pull one of the tasks
-> to a completely idle package.
-> 
-> In this scenario, for nice-0 tasks, imbalance calculated by scheduler
-> will be 512 and find_busiest_queue() will return 0 (as each cpu's load
-> is 1024 > imbalance and has only one task running).
+On MIPS with PCI && !HOTPLUG, I'm currently getting the following modpost
+warning:
 
-Is there an upper bound on the number of tasks that can migrate during a
-new idle balance? The reason that I'm asking is because I've been seeing
-some large latency in the new idle path into load_balance().. I'm not
-sure if lots of tasks are getting migrated or if it's just the iteration
-over tasks in the rb-tree ..
+  MODPOST vmlinux.o
+WARNING: vmlinux.o(.text+0x1ce128): Section mismatch: reference to .init.text:pci_read_bridge_bases (between 'pcibios_fixup_bus' and 'pcibios_enable_device')
 
-Daniel
+On MIPS I have the call chains pci_scan_child_bus -> pcibios_fixup_bus ->
+pci_read_bridge_bases.  pci_scan_child_bus can't be __devinit because it
+it is an exported symbol, thus pcibios_fixup_bus and pci_read_bridge_bases
+can't be either.
 
+For some reason I don't see this issue on x86; I blame compiler differences.
+
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 34b8dae..1c8087f 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -285,7 +285,7 @@ static void pci_read_bases(struct pci_dev *dev, unsigned int howmany, int rom)
+ 	}
+ }
+ 
+-void __devinit pci_read_bridge_bases(struct pci_bus *child)
++void pci_read_bridge_bases(struct pci_bus *child)
+ {
+ 	struct pci_dev *dev = child->self;
+ 	u8 io_base_lo, io_limit_lo;
