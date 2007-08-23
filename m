@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762313AbXHWNZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762977AbXHWN1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762313AbXHWNZt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 09:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760315AbXHWNZj
+	id S1762977AbXHWN1y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 09:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761020AbXHWN1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 09:25:39 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:28703 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751560AbXHWNZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 09:25:39 -0400
-Date: Thu, 23 Aug 2007 17:25:14 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: rusty@rustcorp.com.au
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] lguest should depend on CONFIG_FUTEX
-Message-ID: <20070823132514.GD31289@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 23 Aug 2007 09:27:47 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39431 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760532AbXHWN1q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 09:27:46 -0400
+Date: Thu, 23 Aug 2007 15:26:39 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: joern@wohnheim.fh-wedel.de, linux-kernel@vger.kernel.org,
+       Andre Haupt <andre@finow14.de>
+Subject: Re: [patch 1/1] fix a trivial typo in scripts/checkstack.pl
+Message-ID: <20070823132639.GN30705@stusta.de>
+References: <20070823125227.294913273@finow14.de> <20070823125540.GA19389@ahaupt-debian-vm.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070823125540.GA19389@ahaupt-debian-vm.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It uses get_futex_key().
+On Thu, Aug 23, 2007 at 02:55:40PM +0200, andre@finow14.de wrote:
+> Signed-off-by: Andre Haupt <andre@finow14.de>
+> ---
+> Index: linus/scripts/checkstack.pl
+> ===================================================================
+> --- linus.orig/scripts/checkstack.pl	2007-08-23 14:25:03.000000000 +0200
+> +++ linus/scripts/checkstack.pl	2007-08-23 14:42:13.000000000 +0200
+> @@ -14,7 +14,7 @@
+>  #	M68k port by Geert Uytterhoeven and Andreas Schwab
+>  #
+>  #	Usage:
+> -#	objdump -d vmlinux | stackcheck.pl [arch]
+> +#	objdump -d vmlinux | scripts/checkstack.pl [arch]
+>...
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
+"make checkstack" ?
 
- drivers/lguest/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+cu
+Adrian
 
---- a/drivers/lguest/Kconfig
-+++ b/drivers/lguest/Kconfig
-@@ -1,6 +1,6 @@
- config LGUEST
- 	tristate "Linux hypervisor example code"
--	depends on X86 && PARAVIRT && EXPERIMENTAL && !X86_PAE
-+	depends on X86 && PARAVIRT && EXPERIMENTAL && !X86_PAE && FUTEX
- 	select LGUEST_GUEST
- 	select HVC_DRIVER
- 	---help---
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
