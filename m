@@ -1,161 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757679AbXHWDUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbXHWDZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757679AbXHWDUh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 23:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbXHWDU2
+	id S1758161AbXHWDZq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 23:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbXHWDZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 23:20:28 -0400
-Received: from n7a.bullet.mail.re3.yahoo.com ([68.142.236.45]:48051 "HELO
-	n7a.bullet.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752762AbXHWDU1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 23:20:27 -0400
-X-Yahoo-Newman-Property: ymail-5
-X-Yahoo-Newman-Id: 89946.20981.bm@rrr4.mail.re1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=BSC9H7an255haVyONMY9qGRxr+FJrJVlsqN0j036L+onxkczSDhtdQagl29zN1ZyQq/mQelvFJc5lcgDCqesOGHCU+A+JiD6egD4ZD4//4YDHhwvZZemph3UW43ca5pP2tTUecOeAwGuKnXo9E+ImWUxq0xymIaRdDcwz6JN8nY=;
-Date: Wed, 22 Aug 2007 20:20:25 -0700 (PDT)
-From: Scott Thompson <postfailathushmaildotcom@yahoo.com>
-Reply-To: postfail@hushmail.com
-Subject: [PATCH 2 of 5 resend ] /drivers/char/agp ioremap balancing/ returncode check
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+	Wed, 22 Aug 2007 23:25:38 -0400
+Received: from mail.windriver.com ([147.11.1.11]:64118 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752168AbXHWDZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 23:25:38 -0400
+Message-ID: <46CCFE2C.4050306@windriver.com>
+Date: Wed, 22 Aug 2007 22:25:32 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <416748.85586.qm@web44901.mail.sp1.yahoo.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>	<200708222104.29432.m.kozlowski@tuxland.pl>	<20070822124743.fc316963.akpm@linux-foundation.org>	<46CCBC3C.7010307@windriver.com> <20070822165318.b82da13c.akpm@linux-foundation.org>
+In-Reply-To: <20070822165318.b82da13c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Aug 2007 03:25:13.0804 (UTC) FILETIME=[37F2E0C0:01C7E535]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-patchset against 2.6.23-rc3.  
-corrects missing ioremap return checks and balancing on iounmap calls, integrated changes per list
-recommendations on the original set of patches..
+Andrew Morton wrote:
+> On Wed, 22 Aug 2007 17:44:12 -0500
+> Jason Wessel <jason.wessel@windriver.com> wrote:
+>
+>   
+>> +	while (!atomic_read(&debugger_active));
+>>     
+>
+> eek.  We're in the process of hunting down and eliminating exactly this
+> construct.  There have been cases where the compiler cached the
+> atomic_read() result in a register, turning the above into an infinite
+> loop.
+>
+> Plus we should never add power-burners like that into the kernel anyway. 
+> That loop should have a cpu_relax() in it.  Which will also fix the
+> compiler problem described above.
+>
+>   
+Agreed, and fixed with a cpu_relax.
 
-Warning -- cleanup handler here may miss additional required cleanup as has occurred on other
-portions of ioremap audit.
+> Thirdly, please always add a newline when coding statements like that:
+>
+> 	while (expr())
+> 		;
+>   
 
-This patch had been submitted previously but hushmail client caused wordwrap issues, resending
-with different mail client.
+The other instances I found of the same problem in the kgdb core are 
+fixed too.
 
-Signed-off-by: Scott Thompson <postfail <at> hushmail.com>
-----------------------------------------------------------
-diff --git a/drivers/char/agp/amd-k7-agp.c b/drivers/char/agp/amd-k7-agp.c
-index df0ddf1..ad946fd 100644
---- a/drivers/char/agp/amd-k7-agp.c
-+++ b/drivers/char/agp/amd-k7-agp.c
-@@ -223,7 +223,9 @@ static int amd_irongate_configure(void)
- 	pci_read_config_dword(agp_bridge->dev, AMD_MMBASE, &temp);
- 	temp = (temp & PCI_BASE_ADDRESS_MEM_MASK);
- 	amd_irongate_private.registers = (volatile u8 __iomem *) ioremap(temp, 4096);
--
-+	if (!amd_irongate_private.registers) 
-+		return -ENOMEM;
-+	
- 	/* Write out the address of the gatt table */
- 	writel(agp_bridge->gatt_bus_addr, amd_irongate_private.registers+AMD_ATTBASE);
- 	readl(amd_irongate_private.registers+AMD_ATTBASE);	/* PCI Posting. */
-diff --git a/drivers/char/agp/ati-agp.c b/drivers/char/agp/ati-agp.c
-index da7513d..95200f8 100644
---- a/drivers/char/agp/ati-agp.c
-+++ b/drivers/char/agp/ati-agp.c
-@@ -213,6 +213,9 @@ static int ati_configure(void)
- 	temp = (temp & 0xfffff000);
- 	ati_generic_private.registers = (volatile u8 __iomem *) ioremap(temp, 4096);
- 
-+	if (!ati_generic_private.registers) 
-+		return -ENOMEM;
-+
- 	if (is_r200())
- 		pci_write_config_dword(agp_bridge->dev, ATI_RS100_IG_AGPMODE, 0x20000);
- 	else
-diff --git a/drivers/char/agp/hp-agp.c b/drivers/char/agp/hp-agp.c
-index bcdb149..313a133 100644
---- a/drivers/char/agp/hp-agp.c
-+++ b/drivers/char/agp/hp-agp.c
-@@ -221,6 +221,7 @@ hp_zx1_lba_init (u64 hpa)
- 	if (cap != PCI_CAP_ID_AGP) {
- 		printk(KERN_ERR PFX "Invalid capability ID 0x%02x at 0x%x\n",
- 		       cap, hp->lba_cap_offset);
-+		iounmap(hp->lba_regs);
- 		return -ENODEV;
- 	}
- 
-diff --git a/drivers/char/agp/i460-agp.c b/drivers/char/agp/i460-agp.c
-index 53354bf..75d2aca 100644
---- a/drivers/char/agp/i460-agp.c
-+++ b/drivers/char/agp/i460-agp.c
-@@ -249,6 +249,10 @@ static int i460_create_gatt_table (struct agp_bridge_data *bridge)
- 	num_entries = A_SIZE_8(temp)->num_entries;
- 
- 	i460.gatt = ioremap(INTEL_I460_ATTBASE, PAGE_SIZE << page_order);
-+	if (!i460.gatt) {
-+		printk(KERN_ERR PFX "ioremap failed\n");
-+		return -ENOMEM;
-+	}
- 
- 	/* These are no good, the should be removed from the agp_bridge strucure... */
- 	agp_bridge->gatt_table_real = NULL;
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index 294cdbf..2c9ca2c 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -930,8 +930,10 @@ static int intel_i915_create_gatt_table(struct agp_bridge_data *bridge)
- 	temp &= 0xfff80000;
- 
- 	intel_private.registers = ioremap(temp,128 * 4096);
--	if (!intel_private.registers)
-+	if (!intel_private.registers) {
-+		iounmap(intel_private.gtt);
- 		return -ENOMEM;
-+	}
- 
- 	temp = readl(intel_private.registers+I810_PGETBL_CTL) & 0xfffff000;
- 	global_cache_flush();	/* FIXME: ? */
-@@ -985,13 +987,15 @@ static int intel_i965_create_gatt_table(struct agp_bridge_data
-        temp &= 0xfff00000;
-        intel_private.gtt = ioremap((temp + (512 * 1024)) , 512 * 1024);
- 
--       if (!intel_private.gtt)
--               return -ENOMEM;
-+	if (!intel_private.gtt)
-+		return -ENOMEM;
- 
- 
-        intel_private.registers = ioremap(temp,128 * 4096);
--       if (!intel_private.registers)
--               return -ENOMEM;
-+       if (!intel_private.registers) {
-+		iounmap(intel_private.gtt);
-+		return -ENOMEM;
-+	}
- 
-        temp = readl(intel_private.registers+I810_PGETBL_CTL) & 0xfffff000;
-        global_cache_flush();   /* FIXME: ? */
-diff --git a/drivers/char/agp/nvidia-agp.c b/drivers/char/agp/nvidia-agp.c
-index 6cd7373..225ed2a 100644
---- a/drivers/char/agp/nvidia-agp.c
-+++ b/drivers/char/agp/nvidia-agp.c
-@@ -157,6 +157,9 @@ static int nvidia_configure(void)
- 	nvidia_private.aperture =
- 		(volatile u32 __iomem *) ioremap(apbase, 33 * PAGE_SIZE);
- 
-+	if (!nvidia_private.aperture)
-+		return -ENOMEM;
-+
- 	return 0;
- }
- 
+I merged all the changes into the for_mm branch in the kgdb git tree.
 
-
-       
-____________________________________________________________________________________
-Sick sense of humor? Visit Yahoo! TV's 
-Comedy with an Edge to see what's on, when. 
-http://tv.yahoo.com/collections/222
-
-
-      ____________________________________________________________________________________
-Park yourself in front of a world of choices in alternative vehicles. Visit the Yahoo! Auto Green Center.
-http://autos.yahoo.com/green_center/ 
-
+Thanks,
+Jason.
