@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757727AbXHWF3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbXHWFfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757727AbXHWF3a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 01:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbXHWF3W
+	id S1757836AbXHWFfU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 01:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbXHWFfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 01:29:22 -0400
-Received: from ns.oss.ntt.co.jp ([222.151.198.98]:59366 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750815AbXHWF3V (ORCPT
+	Thu, 23 Aug 2007 01:35:07 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:55927 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750990AbXHWFfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 01:29:21 -0400
-Subject: Re: [PATCH] ppc: remove unused amiga_request_irq and
-	mach_request_irq
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Linas Vepstas <linas@austin.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070822182859.GX4261@austin.ibm.com>
-References: <1187767237.25624.11.camel@sebastian.kern.oss.ntt.co.jp>
-	 <18124.1417.743332.974941@cargo.ozlabs.ibm.com>
-	 <20070822182859.GX4261@austin.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: NTT Open Source Software Center
-Date: Thu, 23 Aug 2007 14:29:19 +0900
-Message-Id: <1187846959.12759.41.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 8bit
+	Thu, 23 Aug 2007 01:35:03 -0400
+Date: Wed, 22 Aug 2007 22:34:58 -0700
+From: Brandon Philips <brandon@ifup.org>
+To: postfail@hushmail.com
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH resubmit] /drivers/ata ioremap returncode check
+Message-ID: <20070823053458.GA4418@ifup.org>
+References: <20070823023328.19E6CDA82B@mailserver7.hushmail.com> <159327.52462.qm@web44910.mail.sp1.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <159327.52462.qm@web44910.mail.sp1.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-22 at 13:28 -0500, Linas Vepstas wrote: 
-> On Wed, Aug 22, 2007 at 07:44:41PM +1000, Paul Mackerras wrote:
-> > Fernando Luis Vázquez Cao writes:
-> > 
-> > > amiga_request_irq and mach_request_irq are never used, so delete them.
-> > 
-> > OK, but is there a particular reason you want to do this?
-> > 
-> > The whole of arch/ppc is going away eventually, so I don't think we
-> > need to remove it piece by piece.
+On 19:47 Wed 22 Aug 2007, Scott Thompson wrote:
+> Patchset against 2.6.23-rc3.  corrects missing ioremap return 
+> checks, resending after making changes suggested....
 > 
-> Its often easier to port/move stuff if you clean it up first.
-Agreed. It would make things easier for me too.
+> Signed-off-by: Scott Thompson <postfail <at> hushmail.com>
+> ------------------------------------------------------------
+> diff --git a/drivers/ata/pata_ixp4xx_cf.c b/drivers/ata/pata_ixp4xx_cf.c
+> index 4ca7fd6..8dc7c3b 100644
+> --- a/drivers/ata/pata_ixp4xx_cf.c
+> +++ b/drivers/ata/pata_ixp4xx_cf.c
+> @@ -189,6 +189,10 @@ static __devinit int ixp4xx_pata_probe(struct platform_device *pdev)
+>  	data->cs0 = devm_ioremap(&pdev->dev, cs0->start, 0x1000);
+>  	data->cs1 = devm_ioremap(&pdev->dev, cs1->start, 0x1000);
+>  
+> +	if (!data->cs0 || !data->cs1) {
+> +		return -ENOMEM;
+> +	}
+> +
 
-Fernando
+You aren't following the Kernel CodingStyle there.  
 
+See Documentation/CodingStyle:
+
+"Do not unnecessarily use braces where a single statement will do."
+
++	if (!data->cs0 || !data->cs1)
++		return -ENOMEM;
+
+Thanks,
+
+	Brandon
