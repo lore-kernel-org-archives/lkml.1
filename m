@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbXHWCr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758398AbXHWCrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757624AbXHWCr0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 22:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbXHWCrR
+	id S1758398AbXHWCrr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 22:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbXHWCre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 22:47:17 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55815 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186AbXHWCrQ (ORCPT
+	Wed, 22 Aug 2007 22:47:34 -0400
+Received: from n5.bullet.mail.re4.yahoo.com ([206.190.56.24]:45509 "HELO
+	n5.bullet.mail.re4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751186AbXHWCrd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 22:47:16 -0400
-Message-ID: <46CCF523.2090403@zytor.com>
-Date: Wed, 22 Aug 2007 19:46:59 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 22 Aug 2007 22:47:33 -0400
+X-Yahoo-Newman-Property: ymail-5
+X-Yahoo-Newman-Id: 88971.90102.bm@rrr1.mail.re1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Received:Date:From:Reply-To:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=H3TkPYYpafjQha9p6xO0hXgKkwm6QuWedl49/qd3HSiYlBCZTrPD1rMk9MSefWJZNAsoJcQuAWr064z3q0iNX9vqRbKkP/eaPH4NCQJBG07ZIgq4f//nSNX87KVyt2tSyKtf2OTvdjDhzcakhiqsmjsrJ+KA2a5sG0LXpYevIrc=;
+Date: Wed, 22 Aug 2007 19:47:16 -0700 (PDT)
+From: Scott Thompson <postfailathushmaildotcom@yahoo.com>
+Reply-To: postfail@hushmail.com
+Subject: [PATCH resubmit] /drivers/ata ioremap returncode check
+To: brandon@ifup.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-ide@vger.kernel.org
+In-Reply-To: <20070823023328.19E6CDA82B@mailserver7.hushmail.com>
 MIME-Version: 1.0
-To: "Huang, Ying" <ying.huang@intel.com>
-CC: huang ying <huang.ying.caritas@gmail.com>, Andi Kleen <ak@suse.de>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org, Aaron Durbin <adurbin@google.com>
-Subject: Re: [PATCH 0/3] x86_64 EFI runtime service support
-References: <1187313920.28497.1.camel@caritas-dev.intel.com>	 <1187580031.27947.67.camel@caritas-dev.intel.com>	 <46C9CB89.7020603@zytor.com> <20070821113310.GF32640@bingen.suse.de>	 <46CAC168.7090102@zytor.com> <20070821114548.GI32640@bingen.suse.de>	 <86802c440708211658j1fb2a8caj41e1bb8bffa4baf4@mail.gmail.com>	 <20070822012216.GN32640@bingen.suse.de>	 <86802c440708212343x3b1438d3m4bbbfbd04db1f1ef@mail.gmail.com>	 <20070822111155.GP32640@bingen.suse.de>	 <851fc09e0708220723v5fcb2fc5n4993c6f859c28b83@mail.gmail.com>	 <46CC6420.2030506@zytor.com> <1187835680.3247.14.camel@caritas-dev.intel.com>
-In-Reply-To: <1187835680.3247.14.camel@caritas-dev.intel.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <159327.52462.qm@web44910.mail.sp1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang, Ying wrote:
-> 
-> My intention is that we have 3 possible schemes for kernel to use boot
-> information.
-> 
+Patchset against 2.6.23-rc3.  corrects missing ioremap return 
+checks, resending after making changes suggested....
 
-That's not an intention, it's an observation.
+Signed-off-by: Scott Thompson <postfail <at> hushmail.com>
+------------------------------------------------------------
+diff --git a/drivers/ata/pata_ixp4xx_cf.c b/drivers/ata/pata_ixp4xx_cf.c
+index 4ca7fd6..8dc7c3b 100644
+--- a/drivers/ata/pata_ixp4xx_cf.c
++++ b/drivers/ata/pata_ixp4xx_cf.c
+@@ -189,6 +189,10 @@ static __devinit int ixp4xx_pata_probe(struct platform_device *pdev)
+ 	data->cs0 = devm_ioremap(&pdev->dev, cs0->start, 0x1000);
+ 	data->cs1 = devm_ioremap(&pdev->dev, cs1->start, 0x1000);
+ 
++	if (!data->cs0 || !data->cs1) {
++		return -ENOMEM;
++	}
++
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq)
+ 		set_irq_type(irq, IRQT_RISING);
 
-> 1. Use "linked list" only. Then if booted with old bootloader which uses
-> "zero page" protocol, the "zero page" information provided by bootloader
-> should be converted to "linked list" for other part of kernel to use.
+> ----- Forwarded message from Brandon Philips <brandon@ifup.org> ----
+> -
+> The iounmap calls are unnecessary since devm_ioremap will un-
+> allocate the space if you return an error from probe.  See
+> Documentation/driver-model/devres.txt
 > 
-> 2. Use "zero page" only. Then if booted with new bootloader which
-> provides "linked list" but not "zero page", the "linked list"
-> information provided by bootloader should be converted to "zero page"
-> for other part of kernel to use.
+> But, something like this is needed.
 > 
-> 3. Use "zero page" + "linked list". Then if booted with old bootloader,
-> the "linked list" is empty. If booted with new bootloader, both the
-> "zero page" and "linked list" are used.
+> +	if (!data->cs0 || !data->cs1)
+> +		return -ENOMEM;
 > 
-> We need to choose one from schemes above.
-> 
-> - The scheme 1 appears the most clean one.
-> - The scheme 2 has 4k "zero page" constraint, so it is not good.
-> - The scheme 3 is easiest to be implemented.
-> 
-> Personally, I prefer the scheme 1. But the scheme 3 is OK too.
+> Thanks,	Brandon
 
-Scheme 3 is the only realistic way to move away from the current
-situation (scheme 2).  Scheme 1 just means unnecessary divergences
-between codepaths.  If it wasn't for LunacyBIOS and (to a smaller
-extent) kexec, we would probably be OK, but that's not the real world.
 
-	-hpa
+
+
+       
+____________________________________________________________________________________
+Pinpoint customers who are looking for what you sell. 
+http://searchmarketing.yahoo.com/
+
+
+       
+____________________________________________________________________________________
+Building a website is a piece of cake. Yahoo! Small Business gives you all the tools to get online.
+http://smallbusiness.yahoo.com/webhosting 
 
