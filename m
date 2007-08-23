@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759074AbXHWAZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759663AbXHWA03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759074AbXHWAZt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Aug 2007 20:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbXHWAZi
+	id S1759663AbXHWA03 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Aug 2007 20:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbXHWA0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Aug 2007 20:25:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36511 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751461AbXHWAZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Aug 2007 20:25:37 -0400
-Date: Wed, 22 Aug 2007 20:25:23 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk,
-       frank@harenberg.ch
-Subject: Re: [Bugme-new] [Bug 8924] New: module speedstep-centrino does not
-	load
-Message-ID: <20070823002523.GE18739@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-	linux-kernel@vger.kernel.org, cpufreq@www.linux.org.uk,
-	frank@harenberg.ch
-References: <bug-8924-10286@http.bugzilla.kernel.org/> <20070822164451.1481d745.akpm@linux-foundation.org>
+	Wed, 22 Aug 2007 20:26:20 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:51877 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752565AbXHWA0T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Aug 2007 20:26:19 -0400
+Date: Wed, 22 Aug 2007 18:26:18 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
+Message-ID: <20070823002618.GO9163@parisc-linux.org>
+References: <1187796179.3410.32.camel@localhost.localdomain> <20070822224400.GA17255@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070822164451.1481d745.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070822224400.GA17255@srcf.ucam.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 04:44:51PM -0700, Andrew Morton wrote:
- > On Wed, 22 Aug 2007 15:12:09 -0700 (PDT)
- > bugme-daemon@bugzilla.kernel.org wrote:
- > 
- > > http://bugzilla.kernel.org/show_bug.cgi?id=8924
- > > 
- > >            Summary: module speedstep-centrino does not load
- > >            Product: Drivers
- > >            Version: 2.5
- > >      KernelVersion: 2.6.23-rc3
- > >           Platform: All
- > >         OS/Version: Linux
- > >               Tree: Mainline
- > >             Status: NEW
- > >           Severity: normal
- > >           Priority: P1
- > >          Component: Other
- > >         AssignedTo: drivers_other@kernel-bugs.osdl.org
- > >         ReportedBy: frank@harenberg.ch
- > > 
- > > 
- > > Most recent kernel where this bug did not occur:2.6.22
- > > Distribution:gentoo
- > > Hardware Environment: Intel Centrino Duo, cpu family 6, model 14, Model Name
- > > T2300 In a Dell Inspiron 9400.
- > > Software Environment: i386
- > > Problem Description: modprobe speedstep-centrino quits with error "no such
- > > device"
- > > same module loads successfully with older versions on the same computer.
- > > Steps to reproduce:
- > > modprobe speedstep-centrino
- > > 
- > 
- > I'd have thought that a lot of people would be seeing this?
- > 
- > Oh well.  Michal, can we please track this as a post-2.6.22 regression?
+On Wed, Aug 22, 2007 at 11:44:00PM +0100, Matthew Garrett wrote:
+> On Wed, Aug 22, 2007 at 10:22:59AM -0500, James Bottomley wrote:
+> > The elections for five of the ten members of the Linux Foundation
+> > Technical Advisory Board[TAB] are held every year, currently the
+> > election will be at the 2007 Kernel Summit in a BOF session.
+> 
+> The reasons for this may be obvious with more understanding of how the 
+> TAB came into existence, but given that the Linux Foundation isn't 
+> limited to kernel development (see the desktop architects stuff, for 
+> instance) it seems a bit odd for it to have a technical board that's 
+> determined at a kernel-only event. 
 
-As mentioned in the now-closed bz, NOTABUG.
-
-	Dave
+I was under the impression that the TAB elections were being held at
+Kernel Summit purely as a stop-gap; that this wasn't to be a regular
+event.
 
 -- 
-http://www.codemonkey.org.uk
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
