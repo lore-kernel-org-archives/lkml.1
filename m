@@ -1,75 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762981AbXHWNHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761969AbXHWNPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762981AbXHWNHn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 09:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759398AbXHWNHf
+	id S1761969AbXHWNPT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 09:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757730AbXHWNPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 09:07:35 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:58304 "EHLO gir.skynet.ie"
+	Thu, 23 Aug 2007 09:15:07 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:57134 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757595AbXHWNHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 09:07:34 -0400
-Date: Thu, 23 Aug 2007 14:07:32 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org
-Subject: Re: [BUG] 2.6.23-rc3-mm1 kernel BUG at mm/page_alloc.c:2876!
-Message-ID: <20070823130732.GC18456@skynet.ie>
-References: <46CC9A7A.2030404@linux.vnet.ibm.com> <20070822134800.ce5a5a69.akpm@linux-foundation.org> <20070822135024.dde8ef5a.akpm@linux-foundation.org>
+	id S1757168AbXHWNPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 09:15:05 -0400
+Date: Thu, 23 Aug 2007 06:15:01 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, tytso@us.ibm.com, dvhltc@us.ibm.com,
+       tglx@linutronix.de
+Subject: Re: [PATCH RFC] Priority boosting for preemptible RCU
+Message-ID: <20070823131501.GC18627@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070822190254.GA1135@linux.vnet.ibm.com> <20070823042639.GA28026@in.ibm.com> <20070823085456.GA18627@linux.vnet.ibm.com> <20070823101444.GB11258@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070822135024.dde8ef5a.akpm@linux-foundation.org>
+In-Reply-To: <20070823101444.GB11258@in.ibm.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (22/08/07 13:50), Andrew Morton didst pronounce:
-> On Wed, 22 Aug 2007 13:48:00 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > This:
+On Thu, Aug 23, 2007 at 03:44:44PM +0530, Gautham R Shenoy wrote:
+> On Thu, Aug 23, 2007 at 01:54:56AM -0700, Paul E. McKenney wrote:
+> > On Thu, Aug 23, 2007 at 09:56:39AM +0530, Gautham R Shenoy wrote:
+> > > 
+> > > I feel we should still be able to use for_each_online_cpu(cpu) instead
+> > > of for_each_possible_cpu. Again, there's a good chance that I might
+> > > be mistaken!
+> > > 
+> > > How about the following ?
+> > > 
+> > > 	preempt_disable(); /* We Dont want cpus going down here */
+> > > 	for_each_online_cpu(cpu) 
+> > > 		for (i = 0; i < RCU_BOOST_ELEMENTS; i++) {
+> > > 			rbdp = per_cpu(rcu_boost_dat, cpu);
+> > > 			sum.rbs_blocked += rbdp[i].rbs_blocked;
+> > > 			sum.rbs_boost_attempt += rbdp[i].rbs_boost_attempt;
+> > > 			sum.rbs_boost += rbdp[i].rbs_boost;
+> > > 			sum.rbs_unlock += rbdp[i].rbs_unlock;
+> > > 			sum.rbs_unboosted += rbdp[i].rbs_unboosted;
+> > > 		}
+> > > 	preempt_enable(); 
+> > > 
+> > > 
+> > > 	static int rcu_boost_cpu_callback(struct notifier_bloack *nb, 
+> > > 					unsigned long action, void *hcpu) 
+> > > 	{
+> > > 		int this_cpu, cpu;
+> > > 		rcu_boost_data *rbdp, *this_rbdp;
+> > > 
+> > > 		switch (action) {
+> > > 		case CPU_DEAD:
+> > > 			this_cpu = get_cpu();
+> > > 			cpu = (long)hcpu;
+> > > 			this_cpu = smp_processor_id();
+> > > 			rbdp = per_cpu(rcu_boost_dat, cpu);
+> > > 			this_rbdp = per_cpu(rcu_boost_dat, cpu);
+> > > 			/* 
+> > > 			 *  Transfer all of rbdp's statistics to
+> > > 			 *  this_rbdp here.
+> > > 			 */	
+> > > 			 put_cpu();
+> > > 	
+> > > 			return NOTIFY_OK;
+> > > 		}
+> > > 	}
+> > > 
+> > > 
+> > > Won't this work in this case?
 > > 
-> > --- a/mm/page_alloc.c~a
-> > +++ a/mm/page_alloc.c
-> > @@ -2814,6 +2814,8 @@ static int __cpuinit process_zones(int c
-> >  	return 0;
-> >  bad:
-> >  	for_each_zone(dzone) {
-> > +		if (!populated_zone(zone))
-> > +			continue;		
-> >  		if (dzone == zone)
-> >  			break;
-> >  		kfree(zone_pcp(dzone, cpu));
-> > _
+> > Hello, Gautham,
 > > 
-> > might help avoid the crash
+> > We could do something similar.  If there was a global rcu_boost_data
+> > variable that held the sums of the fields of the rcu_boost_data
+> > structures for all offline CPUs, and if we used a new lock to protect
+> > that global rcu_boost data variable (both when reading and when
+> > CPU hotplugging), then we could indeed scan only the online CPUs'
+> > rcu_boost_data elements.
+> > 
+> > We would also have to maintain a cpumask_t for this purpose, and
+> > we would need to add a CPU's contribution when it went offline and
+> > subtract it when that CPU came back online.
 > 
-> err, make that
+> The additional cpumask_t beats me though! Doesn't the cpu_online_map
+> suffice here? 
+> The addition and subtraction of a hotplugged cpu's
+> contribution from the global rcu_boost_data could be done while
+> handling the CPU_ONLINE and CPU_DEAD (or CPU_UP_PREPARE
+> and CPU_DOWN_PREPARE, whichever suits better), in the cpu hotplug
+> callback. 
 > 
+> Am I missing something ?
 
-We're already in the error path at this point and it's going to blow up.
-The real problem is kmalloc_node() returning NULL for whatever reason.
+Don't we need to synchronize the manipulation of the hotplugged CPU's
+contribution and the manipulation of cpu_online_map?  Otherwise, if
+stats are called for just before (or just after, depending on the
+ordering of hotplug operations) the invocation will get the wrong
+statistics.
 
-> --- a/mm/page_alloc.c~a
-> +++ a/mm/page_alloc.c
-> @@ -2814,6 +2814,8 @@ static int __cpuinit process_zones(int c
->  	return 0;
->  bad:
->  	for_each_zone(dzone) {
-> +		if (!populated_zone(dzone))
-> +			continue;
->  		if (dzone == zone)
->  			break;
->  		kfree(zone_pcp(dzone, cpu));
-> _
+> > The lock should not be a problem even on very large systems because
+> > of the low frequency of statistics printing -- and of hotplug operations,
+> > for that matter.
 > 
-> 
+> The lock is not a problem, so long as somebody else doesn't call
+> the function taking the lock from their cpu-hotplug callback path :-)
+> Though I don't see it happening here.
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+There are some ways to decrease its utilization if it should become
+a problem in any case.
+
+						Thanx, Paul
+
+> Thanks and Regards
+> gautham.
+> -- 
+> Gautham R Shenoy
+> Linux Technology Center
+> IBM India.
+> "Freedom comes with a price tag of responsibility, which is still a bargain,
+> because Freedom is priceless!"
