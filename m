@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbXHWPSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764414AbXHWPZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932203AbXHWPSN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 11:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763170AbXHWPR5
+	id S1764414AbXHWPZf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 11:25:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763336AbXHWPZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 11:17:57 -0400
-Received: from main.gmane.org ([80.91.229.2]:45311 "EHLO ciao.gmane.org"
+	Thu, 23 Aug 2007 11:25:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49141 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762155AbXHWPR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 11:17:57 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
-Subject: Re: TV card detected wrongly by the kernel. Any chance to get this
-   fixed?
-Date: Thu, 23 Aug 2007 17:23:03 +0200
-Message-ID: <fak8ei$jg1$1@sea.gmane.org>
-References: <fai89b$ms1$1@sea.gmane.org>  <20070822215148.GL30705@stusta.de> <1187823357.7104.25.camel@gaivota>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1763311AbXHWPZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 11:25:24 -0400
+Message-ID: <46CDA6DE.6010102@redhat.com>
+Date: Thu, 23 Aug 2007 11:25:18 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: christian.mandery@sap.com, amy.griffis@hp.com
+Subject: Race in the inotify debug code
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: p4fd4c35e.dip0.t-ipconnect.de
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.6) Gecko/20070809 SeaMonkey/1.1.4
-In-Reply-To: <1187823357.7104.25.camel@gaivota>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> If your board have an unique PCI ID, we may add it to the driver,
-> avoiding this need. For this, we will need the results of the following
-> command:
-> 
-> lspci -vv -nn
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=248355
 
-I'm using card=65 to use my card. I never tried the tuner (don't need 
-it) but the composite-in works for displaying the input of my sattelite 
-receiver and I'm able to read videotext, too. Without "card=65", I only 
-got black/white output...
+Description of problem:
+Warnings in the kernel log (dmesg):
+BUG: warning at fs/inotify.c:172/set_dentry_child_flags() (Not tainted)
+ [<c0497a37>] set_dentry_child_flags+0x67/0x13d
+ [<c0497c27>] remove_watch_no_event+0x2f/0x3b
+ [<c0497d15>] inotify_remove_watch_locked+0x12/0x3e
+ [<c0600c17>] mutex_lock+0x1a/0x29
+ [<c0497fdd>] inotify_rm_wd+0x6d/0x8a
+ [<c04983b1>] sys_inotify_rm_watch+0x38/0x4f
+ [<c0404f70>] syscall_call+0x7/0xb
 
-Here are the values of the lspci -vv -nn command. I reduced the output 
-to the two entries, belonging to the card.
+Appears randomly, about every second/third day.
 
-00:10.0 Multimedia video controller [0400]: Brooktree Corporation Bt878 
-Video Capture [109e:036e] (rev 11)
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-	Latency: 32 (4000ns min, 10000ns max)
-	Interrupt: pin A routed to IRQ 10
-	Region 0: Memory at e7004000 (32-bit, prefetchable) [size=4K]
-	Capabilities: [44] Vital Product Data
-	Capabilities: [4c] Power Management version 2
-		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+Still happening in kernel 2.6.22.
 
-00:10.1 Multimedia controller [0480]: Brooktree Corporation Bt878 Audio 
-Capture [109e:0878] (rev 11)
-	Control: I/O- Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-	Interrupt: pin A routed to IRQ 10
-	Region 0: Memory at e7005000 (32-bit, prefetchable) [size=4K]
-	Capabilities: [44] Vital Product Data
-	Capabilities: [4c] Power Management version 2
-		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
-Thanks in advance for your answer.
+static void set_dentry_child_flags(struct inode *inode, int watched)
+...
+        spin_lock(&dcache_lock);
+        list_for_each_entry(alias, &inode->i_dentry, d_alias) {
+                struct dentry *child;
 
-CU
+                list_for_each_entry(child, &alias->d_subdirs, d_u.d_child) {
+                        if (!child->d_inode) {
+                                WARN_ON(child->d_flags & DCACHE_INOTIFY_PARENT_WATCHED);
+                                continue;
+                        }
 
-Manuel
+But in dcache.c, the locks are dropped before this flag is cleared, leaving
+a race window:
 
+void d_delete(struct dentry * dentry)
+...
+        spin_lock(&dcache_lock);
+        spin_lock(&dentry->d_lock);
+        isdir = S_ISDIR(dentry->d_inode->i_mode);
+        if (atomic_read(&dentry->d_count) == 1) {
+                dentry_iput(dentry);  <================ drops dcache_lock and dentry->d_lock
+                fsnotify_nameremove(dentry, isdir);
+
+                /* remove this and other inotify debug checks after 2.6.18 */
+                dentry->d_flags &= ~DCACHE_INOTIFY_PARENT_WATCHED;
+                return;
+        }
+
+(The comment is nice, it says the debug code should have been removed long ago.)
