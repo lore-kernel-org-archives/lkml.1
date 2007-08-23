@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933233AbXHWWHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933171AbXHWWIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933233AbXHWWHB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 18:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbXHWWGw
+	id S933171AbXHWWIu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 18:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764752AbXHWWIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 18:06:52 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:45579 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933067AbXHWWGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 18:06:51 -0400
-Date: Fri, 24 Aug 2007 02:05:28 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Katz <jeremy.katz@windriver.com>, taoyue <yue.tao@windriver.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH] sigqueue_free: fix the race with collect_signal()
-Message-ID: <20070823220528.GA308@tv-sign.ru>
-References: <20070823134538.GA1358@tv-sign.ru> <46CDFDD2.4010600@us.ibm.com>
+	Thu, 23 Aug 2007 18:08:42 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:53290 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763078AbXHWWIl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 18:08:41 -0400
+Subject: Re: [patch 09/14] Convert from class_device to device for SPI
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Tony Jones <tonyj@suse.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <200708231403.52846.david-b@pacbell.net>
+References: <20070820224806.154198000@suse.de>
+	 <200708211128.28552.david-b@pacbell.net> <20070822030515.GA32136@suse.de>
+	 <200708231403.52846.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Fri, 24 Aug 2007 00:12:52 +0200
+Message-Id: <1187907172.3632.43.camel@lov.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46CDFDD2.4010600@us.ibm.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.11.6.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+nRUoTqqB2UVhsTRiHH2L4AIP6gQ7ziUaTHeT
+ BfvEAE/ExFY5wM9fbdw4616TjppNu9SIa/675tlf4+SXsiKlKc
+ U3PBWcIcfvEiy5J9ekKhIX67ZLaYoat
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/23, Sukadev Bhattiprolu wrote:
->
-> Oleg Nesterov wrote:
-> >Spotted by taoyue <yue.tao@windriver.com> and Jeremy Katz 
-> ><jeremy.katz@windriver.com>.
-> >
-> >collect_signal:				sigqueue_free:
-> >
-> >	list_del_init(&first->list);
-> >						if (!list_empty(&q->list)) {
-> >							// not taken
-> >						}
-> >						q->flags &= 
-> >						~SIGQUEUE_PREALLOC;
-> >
-> >	__sigqueue_free(first);			__sigqueue_free(q);
-> >
-> >Now, __sigqueue_free() is called twice on the same "struct sigqueue" with 
-> >the
-> >obviously bad implications.
-> >
-> >--- t/kernel/signal.c~SQFREE	2007-08-22 20:06:31.000000000 +0400
-> >+++ t/kernel/signal.c	2007-08-23 16:02:57.000000000 +0400
-> >@@ -1297,20 +1297,19 @@ struct sigqueue *sigqueue_alloc(void)
-> > void sigqueue_free(struct sigqueue *q)
-> > {
-> > 	unsigned long flags;
-> >+	spinlock_t *lock = &current->sighand->siglock;
-> >+
-> > 	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
-> > 	/*
-> > 	 * If the signal is still pending remove it from the
-> >-	 * pending queue.
-> >+	 * pending queue. We must hold ->siglock while testing
-> >+	 * q->list to serialize with collect_signal().
-> > 	 */
-> >-	if (unlikely(!list_empty(&q->list))) {
-> >-		spinlock_t *lock = &current->sighand->siglock;
-> >-		read_lock(&tasklist_lock);
-> >-		spin_lock_irqsave(lock, flags);
-> >  
-> Hmm, but the existing code _does_ take the siglock here. Is that not 
-> sufficient ?
+On Thu, 2007-08-23 at 14:03 -0700, David Brownell wrote:
+> On Tuesday 21 August 2007, Tony Jones wrote:
+> > I believe this is the necessary documentation changes.
+> 
+> Thanks.  I have an update, plus updates for the mmc_spi
+> driver (now in MM) which you didn't update.
+> 
+> By the way, it's worth noting an incompatibility introduced
+> through these conversions and CONFIG_SYSFS_DEPRECATED=n:
+> 
+>  - previously .../controller/spi_master:spi2 would be a
+>    symlink to /sys/class/spi_master/spi2
 
-Yes, it does, and this is sufficient, so the patch removes tasklist_lock.
+These "find the class device which has me as the parent"-symlinks are
+removed with CONFIG_SYSFS_DEPRECATED=n, because these devices are direct
+child directories now below the bus device and there is no need for such
+links.
 
-> Isn't the first list_empty() check without lock only an optimization for 
-> the common
-> case ?
+>  - now, /sys/class/spi_master/spi2 is a symlink to
+>    .../controller/spi_master (with DEPRECATED=n).
 
-Yes, this is optimization, but I strongly believe it is wrong. Please look
-at the race description above.
+Ugh! Are you sure, that is doesn't point to:
+  .../controller/spi_master/spi2/ ?
 
-!list_empty(&q->list) does _not_ necessary mean that q is not used and we can
-free it. It is possible that collect_signal() just removed this sigqueue from
-list (list_empty(&q->list) becomes true) and going to free it.
+> The symlink direction is just noise ... the issue is that with
+> this approach it's no longer possible to have one controller
+> handle multiple SPI busses!  A fix would involve maintaining
+> the original "spi_master:spi2" name.
 
-The whole point is: we can't check list_empty() without ->siglock, this is
-racy, and leads to double-free.
+Sounds like a bug if that's what happened. Can you paste the output of
+"tree" for the relevant parts here?
 
-Oleg.
+Thanks,
+Kay
+
 
