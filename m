@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762110AbXHWKEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762323AbXHWKFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762110AbXHWKEv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 06:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758926AbXHWKEo
+	id S1762323AbXHWKFy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 06:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757591AbXHWKFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 06:04:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:53490 "EHLO
+	Thu, 23 Aug 2007 06:05:46 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53505 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757795AbXHWKEn (ORCPT
+	with ESMTP id S1758926AbXHWKFp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 06:04:43 -0400
-Subject: Re: [RFC]  : mm : / Patch / Suggestion : Add 1 order or
-	agressiveness to wakeup_kswapd() : 1 line / 1 arg change
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mitchell Erblich <erblichs@earthlink.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "\"Ingo Molnar\"" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <000501c7e569$023fa240$6501a8c0@earthlink.net>
-References: <000501c7e569$023fa240$6501a8c0@earthlink.net>
-Content-Type: text/plain
-Date: Thu, 23 Aug 2007 12:04:38 +0200
-Message-Id: <1187863478.6114.364.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Aug 2007 06:05:45 -0400
+Date: Thu, 23 Aug 2007 02:59:33 -0700
+From: Greg KH <greg@kroah.com>
+To: Joel Fuster <j@fuster.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sysfs_dir_cache growing out of control
+Message-ID: <20070823095933.GA6742@kroah.com>
+References: <46CCD3DF.4080303@fuster.org> <46CD057C.3080106@fuster.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46CD057C.3080106@fuster.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-23 at 02:35 -0700, Mitchell Erblich wrote:
-> Group,
-> 
->     On the infrequent condition of failing to recieve a page from the
->     freelists, one of the things you do is call wakeup_kswapd()(exception of
->     NUMA or GFP_THISNODE).
-> 
->     Asuming that wakeup_kswapd() does what we want, this call is
->     such a high overhead call that you want to make sure that the
->     call is infrequent.
+On Wed, Aug 22, 2007 at 11:56:44PM -0400, Joel Fuster wrote:
+> Joel Fuster wrote:
+>> Hi,
+>> I am running 2.6.22.3.  For reasons that escape me, over time (days) the 
+>> sysfs_dir_cache, dentry, and inode_cache SLUB entries grow until they 
+>> consume all the memory on my system, requiring a reboot.
 
-It just wakes up a thread, it doesn't actually wait for anything.
-So the function is actually rather cheap.
+Hm, those items should consume all the memory, but it should be freed if
+you have memory pressure from other places.  Does it cause the machine
+to lock up, or you just got scared when seeing them?
 
->     My initial guess is that it REALLY needs to re-populate the
->     freelists just before they/it is used up. However, the simple change
->     is being suggested NOW.
+Oh, and does the same thing happen if you do not use SLUB, but rather
+the older SLAB?
 
-kswapd will only stop once it has reached the high watermarks
+>> Although I did not record objective evidence of this at the time, I 
+>> suspect I had the same problem with 2.6.18 and 2.6.20...I certainly had 
+>> the same symptoms.
+>
+> An update to this...it seems to be related to "scanbuttond" which is an app 
+> that uses libusb to poll a scanner for button presses on the scanner 
+> itself.  The number of objects in sysfs_dir_cache stops growing when I kill 
+> the scanbuttond process.
+>
+> An strace of one poll loop for scanbuttond follows:
+>
+>
+> nanosleep({0, 333000000}, NULL)         = 0
+> open("/dev/bus/usb", O_RDONLY|O_NONBLOCK|O_DIRECTORY) = 1
+> fstat(1, {st_mode=S_IFDIR|0755, st_size=80, ...}) = 0
+> fcntl(1, F_SETFD, FD_CLOEXEC)           = 0
+> getdents(1, /* 4 entries */, 4096)      = 96
+> getdents(1, /* 0 entries */, 4096)      = 0
+> close(1)                                = 0
+> open("/dev/bus/usb/002", O_RDONLY|O_NONBLOCK|O_DIRECTORY) = 1
+> fstat(1, {st_mode=S_IFDIR|0755, st_size=60, ...}) = 0
+> fcntl(1, F_SETFD, FD_CLOEXEC)           = 0
+> getdents(1, /* 3 entries */, 4096)      = 72
+> open("/dev/bus/usb/002/001", O_RDWR)    = -1 EACCES (Permission denied)
+> open("/dev/bus/usb/002/001", O_RDONLY)  = 2
+> ioctl(2, USBDEVFS_CONNECTINFO, 0x7fffb3a08420) = -1 EPERM (Operation not 
+> permitted)
 
->     Assuming that on avg that the order value will be used, you should
->     increase the order to cover two allocs of that same level of order,
->     thus the +1. If on the chance that later page_alloc() calls need
->     fewer pages (smaller order) then the extra pages will be available
->     for more page_allocs(). If later calls have larger orders, hopefully
->     the latency between the calls is great enough that other parts of
->     the system will respond to the low memory / on the freelist(s).
+<snip>
 
-by virtue of kswapd only stopping reclaim when it reaches the high
-watermark you already have that it will free more than one page (its
-started when we're below the low watermark, so it'll free at least
-high-min pages).
+I don't see any sysfs accesses there, only usbfs accesses.
 
-Changing the order has quite a different impact, esp now that we have
-lumpy reclaim.
+And it looks like a very dumb program, iterating over all usb devices
+all the time?  You would think that it would not do that, otherwise your
+power consumption is going to be very high, and the odds that a new usb
+device is going to show up that quickly is pretty low.
 
->     Line 1265 within function __alloc_pages(), mm/page_alloc.c
-> 
-> wakeup_kswapd(*z, order);
->       to
-> wakeup_kswapd(*z, order + 1);
-> 
-> In addition, isn't a call needed to determine that the
-> freelist(s) are almost empty, but are still returning a page?
+thanks,
 
-didn't we just do that by finding out that ALLOC_WMARK_LOW fails to
-return a page?
-
-
+greg k-h
