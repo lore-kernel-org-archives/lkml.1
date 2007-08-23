@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762102AbXHWK0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761347AbXHWKi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762102AbXHWK0n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 06:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759922AbXHWK0f
+	id S1761347AbXHWKi4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 06:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759272AbXHWKiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 06:26:35 -0400
-Received: from thunk.org ([69.25.196.29]:53352 "EHLO thunker.thunk.org"
+	Thu, 23 Aug 2007 06:38:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43598 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759830AbXHWK0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 06:26:34 -0400
-Date: Thu, 23 Aug 2007 06:26:30 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Richard Ballantyne <richardballantyne@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: file system for solid state disks
-Message-ID: <20070823102630.GH7267@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	Richard Ballantyne <richardballantyne@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <46CD14A6.4050605@gmail.com> <Pine.LNX.4.64.0708230746140.12788@fbirervta.pbzchgretzou.qr>
+	id S1758815AbXHWKin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 06:38:43 -0400
+Date: Thu, 23 Aug 2007 12:38:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [patch] sched: fix broken smt/mc optimizations with CFS
+Message-ID: <20070823103835.GA10435@elte.hu>
+References: <20070816010150.GG10033@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708230746140.12788@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20070816010150.GG10033@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 07:52:46AM +0200, Jan Engelhardt wrote:
-> 
-> On Aug 23 2007 01:01, Richard Ballantyne wrote:
-> >
-> >What file system that is already in the linux kernel do people recommend
-> >I use for my laptop that now contains a solid state disk?
-> 
-> If I had to choose, the list of options seems to be:
-> 
-> - logfs
->   [unmerged]
-> 
-> - UBI layer with any fs you like
->   [just a guess]
 
-The question is whether the solid state disk gives you access to the
-raw flash, or whether you have to go through the flash translation
-layer because it's trying to look (exclusively) like a PATA or SATA
-drive.  There are some SSD's that have a form factor and interfaces
-that make them a drop-in replacement for a laptop hard drive, and a
-number of the newer laptops that are supporting SSD's seem to be these
-because (a) they don't have to radically change their design, (b) so
-they can be compatible with Windows, and (c) so that users can
-purchase the laptop either with a traditional hard drive or a SSD's as
-an option, since at the moment SSD's are far more expensive than
-disks.
+* Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
 
-So if you can't get access to the raw flash layer, then what you're
-probably going to be looking at is a traditional block-oriented
-filesystem, such as ext3, although there are clearly some things that
-could be done such as disabling the elevator.   
-      
-						- Ted
+> Ingo, let me know if there any side effects of this change. Thanks.
+> ---
+> 
+> On a four package system with HT - HT load balancing optimizations 
+> were broken. For example, if two tasks end up running on two logical 
+> threads of one of the packages, scheduler is not able to pull one of 
+> the tasks to a completely idle package.
+
+thanks, i've applied your fix to my queue.
+
+	Ingo
