@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765628AbXHWRxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764928AbXHWSHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765628AbXHWRxz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 13:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760246AbXHWRxq
+	id S1764928AbXHWSHk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 14:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760583AbXHWSH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 13:53:46 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:42300 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752678AbXHWRxq (ORCPT
+	Thu, 23 Aug 2007 14:07:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54503 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759923AbXHWSH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 13:53:46 -0400
-Date: Thu, 23 Aug 2007 10:53:40 -0700
-From: Brandon Philips <brandon@ifup.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: postfail@hushmail.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH resubmit] /drivers/ata ioremap returncode check
-Message-ID: <20070823175340.GA6848@ifup.org>
-References: <20070823023328.19E6CDA82B@mailserver7.hushmail.com> <159327.52462.qm@web44910.mail.sp1.yahoo.com> <20070823053458.GA4418@ifup.org> <20070823174204.GB1818@martell.zuzino.mipt.ru>
+	Thu, 23 Aug 2007 14:07:28 -0400
+Date: Thu, 23 Aug 2007 09:55:13 -0700
+From: Greg KH <greg@kroah.com>
+To: Prakash Punnoor <prakash@punnoor.de>
+Cc: Greg KH <gregkh@suse.de>, stable@kernel.org, netdev@vger.kernel.org,
+       Willy Tarreau <w@1wt.eu>, Ayaz Abdulla <aabdulla@nvidia.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [stable] [2.6.20.17 review 35/58] forcedeth bug fix: realtek
+	phy
+Message-ID: <20070823165513.GA6341@kroah.com>
+References: <20070822083844.%N@1wt.eu> <20070822204225.GD14132@1wt.eu> <20070822230526.GC32121@suse.de> <200708231750.45257.prakash@punnoor.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070823174204.GB1818@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <200708231750.45257.prakash@punnoor.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21:42 Thu 23 Aug 2007, Alexey Dobriyan wrote:
-> On Wed, Aug 22, 2007 at 10:34:58PM -0700, Brandon Philips wrote:
-> > On 19:47 Wed 22 Aug 2007, Scott Thompson wrote:
-> > > Patchset against 2.6.23-rc3.  corrects missing ioremap return 
-> > > checks, resending after making changes suggested....
-> > > 
-> > > Signed-off-by: Scott Thompson <postfail <at> hushmail.com>
-> > > ------------------------------------------------------------
-> > > diff --git a/drivers/ata/pata_ixp4xx_cf.c b/drivers/ata/pata_ixp4xx_cf.c
-> > > index 4ca7fd6..8dc7c3b 100644
-> > > --- a/drivers/ata/pata_ixp4xx_cf.c
-> > > +++ b/drivers/ata/pata_ixp4xx_cf.c
-> > > @@ -189,6 +189,10 @@ static __devinit int ixp4xx_pata_probe(struct platform_device *pdev)
-> > >  	data->cs0 = devm_ioremap(&pdev->dev, cs0->start, 0x1000);
-> > >  	data->cs1 = devm_ioremap(&pdev->dev, cs1->start, 0x1000);
-> > >  
-> > > +	if (!data->cs0 || !data->cs1) {
-> > > +		return -ENOMEM;
-> > > +	}
-> > > +
-> > 
-> > You aren't following the Kernel CodingStyle there.  
-> > 
-> > See Documentation/CodingStyle:
-> > 
-> > "Do not unnecessarily use braces where a single statement will do."
-> > 
-> > +	if (!data->cs0 || !data->cs1)
-> > +		return -ENOMEM;
+On Thu, Aug 23, 2007 at 05:50:41PM +0200, Prakash Punnoor wrote:
+> On the day of Thursday 23 August 2007 Greg KH hast written:
+> > On Wed, Aug 22, 2007 at 10:42:25PM +0200, Willy Tarreau wrote:
+> > > On Wed, Aug 22, 2007 at 08:15:03PM +0200, Prakash Punnoor wrote:
+> > > > Hi,
+> > > >
+> > > > even if Greg is waiting for some special invitation
+> > > > (http://lkml.org/lkml/2007/8/14/229), I suggest putting this patch by
+> > > > Ayaz on top:
+> > > >
+> > > > http://lkml.org/lkml/2007/8/10/296
+> > >
+> > > That's what I prepare first, but then noticed it's not in mainline.
+> > >
+> > > > Perhaps Ayaz wants to give Greg the clarification he needs... :sigh:
+> > >
+> > > He should, as the fix is not in mainline either :-(
+> > > I don't think Greg asks for specific clarification, just a plain patch
+> > > with a short commit log on its own which does not include remains of
+> > > older mails.
+> >
+> > Exactly, that is what I am waiting for.
+> >
+> > And also I need the change to go into mainline first, as we can not
+> > diverge with the -stable releases.
 > 
-> This and nice printk message absence. :)
+> Can we get that into mainline then? I haven't seen forcedeth in MAINTAINERS, 
+> so I added netdev to the cc list.
 
-Huh?  What do you mean?
+It might help if someone sends a real patch that can be applied :)
 
-Thanks,
+thanks,
 
-	Brandon
+greg k-h
