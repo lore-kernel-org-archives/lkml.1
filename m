@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbXHWI3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbXHWIeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbXHWI3m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 04:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbXHWI3e
+	id S1758250AbXHWIeR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 04:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbXHWIeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 04:29:34 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:23271 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751078AbXHWI3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 04:29:33 -0400
-Date: Thu, 23 Aug 2007 10:29:30 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Corrections in Documentation/block/ioprio.txt
-Message-ID: <20070823082929.GI23758@kernel.dk>
-References: <20070823081817.GA27439@linux.vnet.ibm.com>
+	Thu, 23 Aug 2007 04:34:03 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50093 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750819AbXHWIeB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 04:34:01 -0400
+Date: Thu, 23 Aug 2007 01:21:14 -0700
+From: Greg KH <greg@kroah.com>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       michal.k.k.piotrowski@gmail.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] make kobject dynamic allocation check use
+	kallsyms_lookup()
+Message-ID: <20070823082114.GA7945@kroah.com>
+References: <20070822220341.7926F241@kernel> <alpine.LFD.0.999.0708231037040.2049@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070823081817.GA27439@linux.vnet.ibm.com>
+In-Reply-To: <alpine.LFD.0.999.0708231037040.2049@enigma.security.iitk.ac.in>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23 2007, Dhaval Giani wrote:
-> Hi Jens,
-> 
-> The newer glibc does not allow system calls to be made via _syscallN()
-> wrapper. They have to be made through syscall(). The ionice code used
-> the older interface. Correcting it to use syscall.
-> 
-> Signed-of-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+On Thu, Aug 23, 2007 at 10:48:23AM +0530, Satyam Sharma wrote:
+> Hi Dave,
 > 
 > 
-> Index: linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt
-> ===================================================================
-> --- linux-2.6.23-rc3-mm1.orig/Documentation/block/ioprio.txt	2007-07-09 05:02:17.000000000 +0530
-> +++ linux-2.6.23-rc3-mm1/Documentation/block/ioprio.txt	2007-08-23 13:23:28.000000000 +0530
-> @@ -86,8 +86,9 @@ extern int sys_ioprio_get(int, int);
->  #error "Unsupported arch"
->  #endif
->  
-> -_syscall3(int, ioprio_set, int, which, int, who, int, ioprio);
-> -_syscall2(int, ioprio_get, int, which, int, who);
-> +#define ioprio_set(which, who, ioprio)  syscall(__NR_ioprio_set, which,\
-> +							who, ioprio)
-> +#define ioprio_get(which, who)	syscall(__NR_ioprio_get, which, who)
+> On Wed, 22 Aug 2007, Dave Hansen wrote:
+> > 
+> > One of the top ten sysfs problems is that users use statically
+> > allocated kobjects.  This patch reminds them that this is a
+> > naughty thing.
+> 
+> Hmm, I might've missed previous discussion regarding this, but I'm
+> curious to know why using statically allocated kobjects is "naughty".
+> The code / warnings / printk messages below indicate this is only a
+> "silly/janitorial" issue?
+> 
+> The reason I ask is that if it is serious, there is no reason why this
+> check cannot be done at build-time itself, instead of this runtime
+> kludge in the kernel -- catching potential bugs at build-time is always
+> desirable. Modpost or some such tool can be taught to detect kobjects
+> allocated statically in vmlinux/modules -- or there can be other build-
+> time solutions, possibly. Have you considered such an approach?
 
-Agree, it fails as-of recent distros. But I prefer a function instead,
-can you resend with something ala:
+If you have a patch to do so, I would appreciate it.
 
-static inline int ioprio_set(int which, int who, int ioprio)
-{
-        return syscall(__NR_ioprio_set, which, who, ioprio);
-}
+But the main reason I don't push such a change into Linus's tree is that
+there are still a lot of statically allocated kobjects today, like all
+driver definitions :(
 
-and ditto for ioprio_get()?
+Converting them to be dynamic is on my list of things to do, it's just a
+ways down there.
 
--- 
-Jens Axboe
+thanks,
 
+greg k-h
