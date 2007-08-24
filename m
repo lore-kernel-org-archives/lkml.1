@@ -1,55 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933618AbXHXSNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932899AbXHXSST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933618AbXHXSNh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 14:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760749AbXHXSN3
+	id S932899AbXHXSST (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 14:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbXHXSSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 14:13:29 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:17998 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760184AbXHXSN2 (ORCPT
+	Fri, 24 Aug 2007 14:18:03 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:51141 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753402AbXHXSSB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 14:13:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Op41/jSgv7LOejrMdMO2tihHvp75H0nI5oykMVIojBTyetQzwLalbHOj1tCXP+94UsOBETG1j/moAsLT3jqURnnwSQCAnmItRsdSDz6V6/Lwnh51QPMStIPy88IJv+Tx7pVJdBkRVz1y/pATtkWWXeiAAo4fXSth0kpDRZoBXyM=
-Message-ID: <170fa0d20708241113y31d2ba95xf30c83c7c4c98cd2@mail.gmail.com>
-Date: Fri, 24 Aug 2007 14:13:27 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Paul Clements" <paul.clements@steeleye.com>
-Subject: Re: [PATCH 2/2] NBD: allow hung network I/O to be cancelled
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       david@dgreaves.com, "Wouter Verhelst" <w@uter.be>,
-       "Corey Minyard" <cminyard@mvista.com>,
-       nbd-general@lists.sourceforge.net
-In-Reply-To: <46CF1826.9050101@steeleye.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 24 Aug 2007 14:18:01 -0400
+Subject: Re: "double" hpet clocksource && hard freeze [bisected]
+From: john stultz <johnstul@us.ibm.com>
+To: Bob Picco <bob.picco@hp.com>
+Cc: "Luck, Tony" <tony.luck@intel.com>, Paolo Ornati <ornati@fastwebnet.it>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070824124631.GF10594@localhost>
+References: <20070823222115.122a37ca@localhost>
+	 <617E1C2C70743745A92448908E030B2A023EB2E1@scsmsx411.amr.corp.intel.com>
+	 <1187903135.6024.18.camel@localhost.localdomain>
+	 <1187905306.6024.24.camel@localhost.localdomain>
+	 <20070824124631.GF10594@localhost>
+Content-Type: text/plain
+Date: Fri, 24 Aug 2007 11:17:34 -0700
+Message-Id: <1187979454.6163.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46CF101F.4050603@steeleye.com> <46CF1826.9050101@steeleye.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/24/07, Paul Clements <paul.clements@steeleye.com> wrote:
-> This patch allows NBD I/O to be cancelled when a network outage occurs.
-> Previously, I/O would just hang, and if enough I/O was hung in nbd, the
-> system (at least user-level) would completely hang until a TCP timeout
-> (default, 15 minutes) occurred.
->
-> The patch introduces a new ioctl NBD_SET_TIMEOUT that allows a transmit
-> timeout value (in seconds) to be specified. Any network send that
-> exceeds the timeout will be cancelled and the nbd connection will be
-> shut down. I've tested with various timeout values and 6 seconds seems
-> to be a good choice for the timeout. If the NBD_SET_TIMEOUT ioctl is not
-> called, you get the old (I/O hang) behavior.
+On Fri, 2007-08-24 at 08:46 -0400, Bob Picco wrote:
+> john stultz wrote:	[Thu Aug 23 2007, 05:41:45PM EDT]
+> > On Thu, 2007-08-23 at 14:05 -0700, john stultz wrote:
+> > > On Thu, 2007-08-23 at 13:41 -0700, Luck, Tony wrote:
+> > > > > I have a double "hpet" entry in "available_clocksource":
+> > > > >	$ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> > > > >	tsc hpet hpet acpi_pm jiffies
+> > > > 
+> > > > Oops.  If seems that both drivers/char/hpet.c and arch/x86_64/kernel/hpet.c
+> > > > both register a clocksource named "hpet".  Probably a result of bringing
+> > > > back to life a long lost patch, and having someone else (John Stultz, according
+> > > > to git blame) make a similar change to a different file in the intervening
+> > > > time.
+> > > > 
+> > > > Presumably the thing to do would be merge the x86_64 specific version
+> > > > into the drivers/char/hpet.c version?
+> > > 
+> > > Ugh. Yea. i386 has an hpet clocksource as well. We should kill the
+> > > duplication, but at the moment I'm not comfortable that the
+> > > driver/char/hpet.c is ok to be used for i386/x86_64 (Bob: Do you know
+> > > why the shift value is only 10?).
+> > > 
+> > > 
+> > > I'm a little surprised by this, as the clocksource code use to prevent
+> > > duplicate named clocksources from being registered, so I'm not sure how
+> > > that check got dropped.  Also I'm not quite sure I see where the hard
+> > > freeze is coming from.
+> > > 
+> > > My initial reaction would be to either ifdef ia64 implementation in
+> > > drivers/char/hpet.c or move the code under the ia64 arch dir until it is
+> > > really usable by all arches.
+> > 
+> > Here is a possible quick fix. I'm open to other approaches, but I also
+> > want to avoid too much churn before 2.6.23 goes out.
+> > 
+> > Paolo, could you verify this fixes the issue for you?
+> > 
+> > thanks
+> > -john
+> > 
+> [snip]
+> 
+> I saw what was missed by me in my brief examination of this last night.
+> The platform registers the hpet clocksource too.
+> 
+> Instead of adding the config flag to hpet driver, how about the patch
+> below? Since you already check for duplication by address then adding
+> a check for by name too seems okay to me.
+> 
+> bob
+> 
+> 
+> Prevent duplicate names being registered with clocksource. This also
+> eliminates the duplication of hpet clock registration when the arch
+> uses the hpet timer and the hpet driver does too. The patch was
+> compile and link tested.
 
-Hi Paul,
+Yea. While I'm still not completely comfortable leaving this up to boot
+order alone (the ia64 hpet clocksource is clearly causing issues on
+x86_64), I think this patch is something we need as well.
 
-Thanks for implementing this!  Do you happen to have an associated
-nbd-client patch for userspace?  If not I'd be happy to coordinate
-with you and Wouter on a patch.
+> 
+> Signed-off-by: Bob Picco <bob.picco@hp.com>
 
-regards,
-Mike
+Acked-by: John Stultz <johnstul@us.ibm.com>
+
+>  kernel/time/clocksource.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.23-rc3/kernel/time/clocksource.c
+> ===================================================================
+> --- linux-2.6.23-rc3.orig/kernel/time/clocksource.c	2007-08-23 16:44:03.000000000 -0400
+> +++ linux-2.6.23-rc3/kernel/time/clocksource.c	2007-08-24 08:36:41.000000000 -0400
+> @@ -281,7 +281,7 @@ static int clocksource_enqueue(struct cl
+>  		struct clocksource *cs;
+> 
+>  		cs = list_entry(tmp, struct clocksource, list);
+> -		if (cs == c)
+> +		if (cs == c || !strcmp(cs->name, c->name))
+>  			return -EBUSY;
+>  		/* Keep track of the place, where to insert */
+>  		if (cs->rating >= c->rating)
+
