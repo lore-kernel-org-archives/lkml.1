@@ -1,67 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932849AbXHXGJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933966AbXHXGJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932849AbXHXGJl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 02:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbXHXGJb
+	id S933966AbXHXGJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 02:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbXHXGJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 02:09:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53410 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750872AbXHXGJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 02:09:30 -0400
-Date: Fri, 24 Aug 2007 08:09:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bruce Ashfield <bruce.ashfield@windriver.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v20, for v2.6.22.5, v2.6.21.7,
-	v2.6.20.16
-Message-ID: <20070824060926.GA29166@elte.hu>
-References: <20070823094346.GA26281@elte.hu> <3bd6b93c0708231843m1e94e192i6a806ce18c266f69@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3bd6b93c0708231843m1e94e192i6a806ce18c266f69@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4804]
+	Fri, 24 Aug 2007 02:09:44 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:64363 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932999AbXHXGJn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 02:09:43 -0400
+Date: Thu, 23 Aug 2007 23:08:11 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Shannon Nelson <shannon.nelson@intel.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: [PATCH v2 -mm 4/7] I/OAT: Split PCI startup from DMA handling
+ code
+Message-Id: <20070823230811.f9a0c5e8.randy.dunlap@oracle.com>
+In-Reply-To: <20070824001512.16997.29302.stgit@localhost.localdomain>
+References: <20070824001335.16997.79665.stgit@localhost.localdomain>
+	<20070824001512.16997.29302.stgit@localhost.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 23 Aug 2007 17:15:12 -0700 Shannon Nelson wrote:
 
-* Bruce Ashfield <bruce.ashfield@windriver.com> wrote:
+> Split the general PCI startup from the DMA handling code in order to
+> prepare for adding support for DCA services and future versions of the
+> ioatdma device.
+> 
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Acked-by: David S. Miller <davem@davemloft.net>
+> ---
+> 
+>  drivers/dma/Makefile     |    2 
+>  drivers/dma/ioat.c       |  186 ++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/dma/ioat_dma.c   |  196 +++++++++++-----------------------------------
+>  drivers/dma/ioatdma.h    |   16 +++-
+>  drivers/dma/ioatdma_hw.h |    2 
+>  5 files changed, 245 insertions(+), 157 deletions(-)
 
-> On 8/23/07, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > By popular demand, here is release -v20 of the CFS scheduler. It is a
-> > full backport of the latest & greatest v2.6.23-rc3 CFS code to
-> > v2.6.22.5, v2.6.21.7 and v2.6.20.16. The patches can be downloaded from
-> > the usual place:
-> 
-> Ingo,
-> 
-> Great to see the older kernels updated, thanks for the patches. I've 
-> got a bit of a modified 2.6.21.7, but when I built with 
-> CONFIG_FAIR_GROUP_SCHED=y, I need the following change to make things 
-> right (On a quick glance, my change matches the 2.6.23-rc3 code). Then 
-> again, I may just be doing something stupid.
-> 
-> My apologies in advance if gmail decides to mangle the patch.
-> 
-> --- a/kernel/sched_fair.c.orig	2007-08-23 21:25:08.000000000 -0400
-> +++ a/kernel/sched_fair.c	2007-08-23 21:25:18.000000000 -0400
-> @@ -1057,7 +1057,7 @@ static void task_new_fair(struct rq *rq,
+> diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+> index 9a4d154..9012176 100644
+> --- a/drivers/dma/ioat_dma.c
+> +++ b/drivers/dma/ioat_dma.c
+
+> -	printk(KERN_INFO " "
+> -		"ioatdma: Intel(R) I/OAT DMA Engine initialization failed\n");
+> -
+> -	return err;
+> +	iounmap(iobase);
+> +	printk(KERN_ERR " "
+> +	       "ioatdma: Intel(R) I/OAT DMA Engine initialization failed\n");
+
+Drop the " " after KERN_ERR...
+
+> +	return NULL;
+>  }
+
+> diff --git a/drivers/dma/ioatdma.h b/drivers/dma/ioatdma.h
+> index bf4dad7..26aff08 100644
+> --- a/drivers/dma/ioatdma.h
+> +++ b/drivers/dma/ioatdma.h
+> @@ -31,7 +31,7 @@
+>  #define IOAT_LOW_COMPLETION_MASK	0xffffffc0
+>  
+>  /**
+> - * struct ioat_device - internal representation of a IOAT device
+> + * struct ioatdma_device - internal representation of a IOAT device
+>   * @pdev: PCI-Express device
+>   * @reg_base: MMIO register space base address
+>   * @dma_pool: for allocating DMA descriptors
+> @@ -39,14 +39,14 @@
+>   * @msi: Message Signaled Interrupt number
 >   */
->  static void set_curr_task_fair(struct rq *rq)
->  {
-> -	struct sched_entity *se = &rq->curr.se;
-> +	struct sched_entity *se = &rq->curr->se;
+>  
+> -struct ioat_device {
+> +struct ioatdma_device {
+>  	struct pci_dev *pdev;
+>  	void __iomem *reg_base;
+>  	struct pci_pool *dma_pool;
+>  	struct pci_pool *completion_pool;
+>  
+>  	struct dma_device common;
+> -	u8 msi;
+> +	u8 version;
 
-thanks, applied.
+This field name change needs a corresponding change in the
+struct's kernel-doc above here.
 
-	Ingo
+>  };
+>  
+>  /**
+
+> @@ -117,4 +117,12 @@ struct ioat_desc_sw {
+>  	struct dma_async_tx_descriptor async_tx;
+>  };
+>  
+> +#if defined(CONFIG_INTEL_IOATDMA) || defined(CONFIG_INTEL_IOATDMA_MODULE)
+> +struct ioatdma_device *ioat_dma_probe(struct pci_dev *, void __iomem *);
+
+Please use parameter variable names in function prototypes (above;
+most places already have them).
+
+> +void ioat_dma_remove(struct ioatdma_device *device);
+> +#else
+> +#define ioat_dma_probe(pdev, io)                NULL
+> +#define ioat_dma_remove(dev)            do { } while (0)
+> +#endif
+> +
+>  #endif /* IOATDMA_H */
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
