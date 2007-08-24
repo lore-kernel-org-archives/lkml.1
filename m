@@ -1,33 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761919AbXHXVEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761994AbXHXVGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761919AbXHXVEb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 17:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbXHXVEX
+	id S1761994AbXHXVGT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 17:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbXHXVGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 17:04:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38237 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751888AbXHXVEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 17:04:23 -0400
-Message-ID: <46CF468E.1080607@ncsu.edu>
-Date: Fri, 24 Aug 2007 16:58:54 -0400
-From: Casey Dahlin <cjdahlin@ncsu.edu>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
+	Fri, 24 Aug 2007 17:06:10 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60118 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754505AbXHXVGJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 17:06:09 -0400
+Date: Fri, 24 Aug 2007 23:04:51 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>, Ram Pai <linuxram@us.ibm.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] fix export_report.pl
+Message-ID: <20070824210451.GE30705@stusta.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: USB Key light on/off state depending on mount
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Most USB keys nowadays have a small LED somewhere inside of them that 
-lights up when they are plugged in. On a windows box, the key is lit up 
-whenever it is mounted, and as soon as it is unmounted it turns off, 
-giving a handy physical indicator that the key is safe to remove. On 
-linux, the light is simply on whenever the key is plugged in.
+This patch fixes an annoying bug of export_report.pl missing the usages 
+of some exports.
 
-Should linux toggle the light depending on mount state? Is it as trivial 
-as it seems or does this reflect some larger issue?
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
--Casey Dahlin
+---
+
+This patch has been sent on:
+- 14 Aug 2007
+
+--- a/scripts/export_report.pl
++++ b/scripts/export_report.pl
+@@ -112,7 +112,7 @@ foreach my $thismod (@allcfiles) {
+ 			next;
+ 		}
+ 		if ($state eq 2) {
+-			if ( $_ !~ /0x[0-9a-f]{7,8},/ ) {
++			if ( $_ !~ /0x[0-9a-f]+,/ ) {
+ 				next;
+ 			}
+ 			my $sym = (split /([,"])/,)[4];
+
