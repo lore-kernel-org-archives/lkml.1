@@ -1,165 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbXHXMmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761685AbXHXMnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbXHXMmX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 08:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758994AbXHXMmG
+	id S1761685AbXHXMnS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 08:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbXHXMnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 08:42:06 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:55856 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757987AbXHXMmE (ORCPT
+	Fri, 24 Aug 2007 08:43:01 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:59408 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759357AbXHXMnA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 08:42:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=HYauVvjzE2JiNhx8TWDVTXeaGcdBDB0rvRi+OJaBt806J1MrB3dbuwrCoDzkPgm3oObEoRKatSuu4MObDoD3BNzaIfiG0V3Yo5L3KI4RBfGBJXqNJu2oCBzOybV/SNTphhjFoYieSoZYQq9AyIgqxQVIdzBG++IHWe5jcMnmjfU=
-Message-ID: <46CED214.6050505@gmail.com>
-Date: Fri, 24 Aug 2007 21:41:56 +0900
-From: Kentaro Takeda <k.takeda26@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 24 Aug 2007 08:43:00 -0400
+Message-ID: <46CED24F.1020400@onlinehome.de>
+Date: Fri, 24 Aug 2007 14:42:55 +0200
+From: Felix Homann <fexpop@onlinehome.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       chrisw@sous-sol.org
-Subject: [TOMOYO 00/15] TOMOYO Linux - MAC based on process invocation histroy
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel@vger.kernel.org
+Subject: Regressions w.r.t. suspend behaviour in recent kernel versions
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+R28swbXsHa9Sc1vtaUD0VGnyGP8pJAyw0xBZ
+ Rp5riDWzVKHGd0f1Ztcd/yGAcM6E/M2p9vx3dyRiy3nX3TMPrv
+ p1dv7bIV/ptYhlSvYH4wdANuNmYcPoM
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"TOMOYO Linux" is our work in the field of security enhanced Linux.
-This is the second proposal of TOMOYO Linux.
+Hi,
 
-When we posted our first proposal to LKML, TOMOYO Linux's MAC was
-limited to file access control. Now TOMOYO Linux has access control
-functionality not only for files but also for networking, signal
-transmission and namespace manipulation and we got the source code
-cleaned-up.
+I've been experiencing several problems with s2ram/s2disk with recent 
+kernels (mostly starting with 2.6.19):
 
-Patches consist of three types.
-    * [TOMOYO 01/15]:    Mandatory modifications against standard kernel.
-    * [TOMOYO 02-14/15]: LSM implementation of TOMOYO Linux.
-    * [TOMOYO 15/15]:    Optional modifications against standard kernel.
+1. s2disk won't work without the nolapic kernel option.
 
+I didn't have to use that option with kernels < 2.6.19. I only found out 
+that I need this option with the kind help from Rafael Wysocki. 
+Unfortunately, using the nolapic option raises new problems as I'm 
+getting these warnings at boot time (with kernel 2.6.23-rc2):
 
-<<What you can do with TOMOYO Linux.>>
+++++++++++++++++++++++++++++++++++++
 
-The fundamental concept of TOMOYO Linux is "tracking process
-invocation history".
+Aug  9 00:22:13 jawaka kernel: EXT3-fs: mounted filesystem with ordered
+data mode.
+Aug  9 00:22:13 jawaka kernel: WARNING: at kernel/irq/resend.c:70
+check_irq_resend()
+Aug  9 00:22:13 jawaka kernel:  [<c014afab>] check_irq_resend+0xab/0xc0
+Aug  9 00:22:13 jawaka kernel:  [<c014ab99>] enable_irq+0xc9/0xd0
+Aug  9 00:22:13 jawaka kernel:  [<c026ab54>]
+ide_config_drive_speed+0x164/0x380
+Aug  9 00:22:13 jawaka kernel:  [<c0266162>] piix_tune_chipset+0x1f2/0x3d0
+Aug  9 00:22:13 jawaka kernel:  [<c0270bfb>] ide_tune_dma+0x3b/0x50
+Aug  9 00:22:13 jawaka kernel:  [<c0265eec>]
+piix_config_drive_xfer_rate+0xc/0x40
+Aug  9 00:22:13 jawaka kernel:  [<c026fbfe>] ide_set_dma+0xe/0x40
+Aug  9 00:22:13 jawaka kernel:  [<c0266c2d>] set_using_dma+0x8d/0xe0
+Aug  9 00:22:13 jawaka kernel:  [<c0266ba0>] set_using_dma+0x0/0xe0
+Aug  9 00:22:13 jawaka kernel:  [<c026797c>] generic_ide_ioctl+0xdc/0x430
+Aug  9 00:22:13 jawaka kernel:  [<c0273722>] idedisk_ioctl+0xf2/0x120
+Aug  9 00:22:13 jawaka kernel:  [<c01eb900>] blk_end_sync_rq+0x0/0x30
+Aug  9 00:22:13 jawaka kernel:  [<c0273672>] idedisk_ioctl+0x42/0x120
+Aug  9 00:22:13 jawaka kernel:  [<c0273630>] idedisk_ioctl+0x0/0x120
+Aug  9 00:22:13 jawaka kernel:  [<c01ee194>] blkdev_driver_ioctl+0x54/0x60
+Aug  9 00:22:13 jawaka kernel:  [<c01ee538>] blkdev_ioctl+0x358/0x7b0
+Aug  9 00:22:13 jawaka kernel:  [<c02faefb>] _read_unlock_irq+0x1b/0x20
+Aug  9 00:22:13 jawaka kernel:  [<c0157e7f>] __do_fault+0x15f/0x340
+Aug  9 00:22:13 jawaka kernel:  [<c0157e23>] __do_fault+0x103/0x340
+Aug  9 00:22:13 jawaka kernel:  [<c0157e88>] __do_fault+0x168/0x340
+Aug  9 00:22:13 jawaka kernel:  [<c01160bb>] do_page_fault+0x18b/0x6b0
+Aug  9 00:22:13 jawaka kernel:  [<c0115ff7>] do_page_fault+0xc7/0x6b0
+Aug  9 00:22:13 jawaka kernel:  [<c0134384>] up_read+0x14/0x30
+Aug  9 00:22:13 jawaka kernel:  [<c0190388>] block_ioctl+0x18/0x20
+Aug  9 00:22:13 jawaka kernel:  [<c0190370>] block_ioctl+0x0/0x20
+Aug  9 00:22:13 jawaka kernel:  [<c0176e8f>] do_ioctl+0x1f/0x70
+Aug  9 00:22:13 jawaka kernel:  [<c0176f3c>] vfs_ioctl+0x5c/0x260
+Aug  9 00:22:13 jawaka kernel:  [<c01771b2>] sys_ioctl+0x72/0x90
+Aug  9 00:22:13 jawaka kernel:  [<c01040de>] syscall_call+0x7/0xb
+Aug  9 00:22:13 jawaka kernel:  =======================
+Aug  9 00:22:13 jawaka kernel: Linux agpgart interface v0.102
 
-The "struct task_struct"->security member holds a pointer to the
-"process invocation history". Thus, every process (the kernel,
-/sbin/init process and any children/descendant of /sbin/init) knows
-its "process invocation history" (or ancestors). Since every process
-knows its ancestors, TOMOYO Linux can enforce access control over all
-processes.
++++++++++++++++++++++++++++++++++
 
-TOMOYO Linux splits domains using "process invocation history" and the
-process transits to a different domain whenever execution of a program
-(i.e. do_execve()) is requested. By transiting to a different domain
-whenever execution of a program is requested, each domain will have
-the minimal permissions that are essential for processes in that
-domain to do their roles.
+Without the nolapic option the kernel will panic when trying to suspend 
+to disk. Here are the last lines of the kernel output:
 
-You don't need to define domains beforehand. TOMOYO Linux kernel will
-automatically define new domains whenever execution of a program is
-requested, and the process will automatically transit to the new
-domain. (If the process's domain is in enforcing mode, TOMOYO Linux
-kernel will not define new domains to avoid memory consumption attack.)
+EIP: [<c01127fd> lapic_nmi_suspend+0x1d/0x30 ss:ESP 0068:c1ae3ec8
+Kernel panic - not syncing: Attempted to kill init!
 
-TOMOYO Linux can restrict the following requests on a per-a-domain basis:
+Rafael advised me to post directly to the LKML on this issue and so I do.
 
-    * opening files
-    * communicating via PF_INET sockets
-    * sending signals
+You can follow the whole discussion with Rafael here:
 
-TOMOYO Linux can also restrict the following namespace manipulation requests.
+http://sourceforge.net/mailarchive/forum.php?thread_name=46A9A9A8.2070209%40onlinehome.de&forum_name=suspend-devel
+http://sourceforge.net/mailarchive/forum.php?thread_name=200708062038.41452.rjw%40sisk.pl&forum_name=suspend-devel
 
-    * mounting filesystems
-    * unmounting filesystems
-    * using pivot_root
+2. s2ram won't work with kernels > 2.6.18 if the fglrx module is loaded.
 
+Please, don't stone me for using the fglrx driver, without it I couldn't 
+  suspend at all. Unfortunately, I'm stuck to kernel 2.6.18 at the 
+moment since it's the last kernel that would suspend to ram with the 
+fglrx module loaded. With more recent kernels the system will hang with 
+"Suspending console(s)".
 
-<<Example>>
+3. Even with the 2.6.18 kernel sound won't work after suspending to ram. 
+I don't know when this started, but I know that this has not been an 
+issue in the past.
 
-The tree below shows a part of domain transitions generated using
-Debian Etch. The domain a process is in is determined based on the
-process's "process invocation history". Each domain has permissions
-(or ACL), and the behavior (or requests shown above) of a process is
-restricted by the ACL of the domain that the process is in.
+Please, let me know what additional information you might need.
 
-    <kernel>
-      + /sbin/init
-          + /etc/init.d/rc
-              + /etc/init.d/apache2
-                  + /usr/bin/env
-                      + /usr/sbin/apache2ctl
-                          + /usr/sbin/apache2
+Kind regards,
 
-You can assign different access control modes (or profiles) on a
-per-a-domain basis. Thus, you can enforce access control partially or
-entirely. Also, by assigning "learning mode" to a domain, ACL that are
-requested by processes in that domain are automatically (i.e. in
-real-time) accumulated. The following ACL are an excerpt from
-/usr/sbin/apache2 domain generated using "learning mode".
+Felix
 
-    4 /etc/apache2/apache2.conf
-    4 /var/www/apache2-default/index.html
-    allow_create /var/run/apache2.pid
-    allow_unlink /var/run/apache2.pid
-    allow_network TCP bind 192.168.1.135 80
-    allow_network TCP listen 192.168.1.135 80
-    allow_network TCP accept 192.168.1.1 2389
-
-The above ACL allows Apache to do the following behavior.
-
-    * Opening /etc/apache2/apache2.conf and
-      /var/www/apache2-default/index.html for reading.
-    * Creating and deleting /var/run/apache2.pid .
-    * Binding to local address (IP = 192.168.1.135, port = 80).
-    * Listening at local address (IP = 192.168.1.135, port = 80).
-    * Accepting from remote address (IP = 192.168.1.1, port = 2389).
-
-You may use wildcards for pathnames, ranges for IP addresses and port
-numbers, groups of pathnames and IP addresses for flexible definition.
-
-
-<<Features of TOMOYO Linux.>>
-
-TOMOYO Linux is an implementation of MAC, but you can use TOMOYO Linux
-not only for MAC, but also to analyze a system's behavior, since
-TOMOYO Linux can accumulate access requests raised by applications
-sorted by each "process invocation history".
-
-TOMOYO Linux and AppArmor are alike from the point of view of pathname
-based access control, but TOMOYO Linux has differences in the
-following points:
-
-    * TOMOYO Linux can apply access control over the whole process
-      (from the execution of /sbin/init at the startup procedure,
-      till the power failure at the shutdown procedure).
-    * TOMOYO Linux can apply access control not only over files but
-      also over networking, signals, namespace manipulations.
-    * TOMOYO Linux can accumulate ACL in real-time using
-      "learning mode".
-
-    * TOMOYO Linux allows the administrator to switch the access
-      control mode on a per-domain and per-functionality basis.
-    * TOMOYO Linux allows the administrator to judge (grant/reject)
-      requests which that violated ACL manually while operating in
-      "enforcing mode" without once rejecting these requests.
-    * TOMOYO Linux supports conditional ACL (e.g. owner of
-      process/files etc.).
-
-Documents about installing and experiencing TOMOYO Linux are available
-at http://tomoyo.sourceforge.jp/en/2.1.x/ . Please try TOMOYO Linux.
-Feedbacks are most welcome.
-
-
-<<Related links>>
-
-OLS BoF material: http://sourceforge.jp/projects/tomoyo/document/ols2007-tomoyo-20070629.pdf
-Previous submission: http://lkml.org/lkml/2007/6/13/58 , http://lkml.org/lkml/2007/6/14/55
-
-Kentaro Takeda
-NTT DATA CORPORATION
