@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764668AbXHXSwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765291AbXHXS4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764668AbXHXSwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 14:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbXHXSwK
+	id S1765291AbXHXS4J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 14:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759759AbXHXSzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 14:52:10 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:60416 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756487AbXHXSwG (ORCPT
+	Fri, 24 Aug 2007 14:55:55 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:57967 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758742AbXHXSzy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 14:52:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=lCmKkIMY10STArNdrvi4QXCj4wuRI/vgl2tcOQ+KbD0naUv/mNQ71O95Et8oRsr9NVXi/iPQMAKA6xz2RTI/KXPYXs2quyXsWxJBuIzBN+w/aCza9s+TB23RGTZ9++I6F0zckOHlQkJB2Ek6M9lzjvzfJRO+dJ5d7s+bVrZIies=
-Message-ID: <46CF2849.2090008@gmail.com>
-Date: Fri, 24 Aug 2007 14:49:45 -0400
-From: Scott Thompson <postfailathushmail@gmail.com>
-Reply-To: postfail@hushmail.com
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Fri, 24 Aug 2007 14:55:54 -0400
+Date: Fri, 24 Aug 2007 14:55:53 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Oliver Neukum <oliver@neukum.org>, Matt Colyer <matt@colyer.name>,
+       <linux-kernel@vger.kernel.org>, <jeffm@suse.de>,
+       <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [RFC] USB: driver for iphone charging
+In-Reply-To: <20070824183548.GA14879@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0708241449520.22079-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       jirislaby@gmail.com
-Subject: [PATCH] /drivers/char sx.c ioremap -> pci_ioremap api
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 24 Aug 2007, Greg KH wrote:
 
-patchset against 2.6.23-rc3.
+> Can someone with a iphone test this out?  If you look at how the
+> berry_charge driver does it, the set_config stuff happens after the
+> magic command.  As I don't have an iphone, nor have I ever seen any
+> dumps of the command streams, I don't really know if the set_config
+> message really is necessary or not.
 
-moves the iomap/iounmap call to pci 'flavor'.  this was a
-recommendation from a previously submitted patch that handles
-the unchecked iomap (or, now, pci_iomap) return code.
+You know, now that I think back on it, it may be that the Set-Config
+really does have to come after the magic command.  Perhaps it triggers
+the changeover.  In which case the subroutine should look like this:
 
-Signed-off-by: Scott Thompson <postfail <at> hushmail.com>
-----------------------------------------------------------
+static int iphone_probe(struct usb_interface *intf,
+			const struct usb_device_id *id)
+{
+	struct usb_device *udev = interface_to_usbdev(intf);
+	int rc;
 
-diff --git a/drivers/char/sx.c b/drivers/char/sx.c
-index 85a2328..481334f 100644
---- a/drivers/char/sx.c
-+++ b/drivers/char/sx.c
-@@ -2626,14 +2626,14 @@ static void __devinit fix_sx_pci(struct pci_dev *pdev, struct sx_board *board)
+	if (udev->actconfig->desc.bConfigurationValue != 3) {
+		dbg(&udev->dev, "Sending magic comand\n");
+		rc = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+				0x40, (USB_DIR_OUT | USB_TYPE_VENDOR |
+					USB_RECIP_DEVICE),
+				0x6400, 0, NULL, 0, 1000);
+		if (rc)
+			dev_err(&udev->dev, "Command failed: %d\n", rc);
+		else {
+			dbg(&udev->dev, "Calling set_configuration\n");
+			rc = usb_driver_set_configuration(udev, 3);
+			if (rc)
+				dev_err(&udev->dev, "Set-Config failed: %d\n",
+						rc);
+		}
+	}
 
-  	pci_read_config_dword(pdev, PCI_BASE_ADDRESS_0, &hwbase);
-  	hwbase &= PCI_BASE_ADDRESS_MEM_MASK;
--	rebase = ioremap(hwbase, 0x80);
-+	rebase = pci_iomap(pdev, 0, 0x80);
-  	t = readl(rebase + CNTRL_REG_OFFSET);
-  	if (t != CNTRL_REG_GOODVALUE) {
-  		printk(KERN_DEBUG "sx: performing cntrl reg fix: %08x -> "
-  			"%08x\n", t, CNTRL_REG_GOODVALUE);
-  		writel(CNTRL_REG_GOODVALUE, rebase + CNTRL_REG_OFFSET);
-  	}
--	iounmap(rebase);
-+	pci_iounmap(pdev, rebase);
-  }
-  #endif
+	/* we don't really want to bind to the device, userspace programs can
+	 * handle the syncing just fine, so get outta here. */
+	return -ENODEV;
+}
+
+However Oliver's point is well taken.  This simple sort of manipulation
+could easily be done by a user program, started up by udev.
+
+Alan Stern
+
