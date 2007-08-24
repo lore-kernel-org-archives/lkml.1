@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758315AbXHXKqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbXHXKrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758315AbXHXKqK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 06:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbXHXKp5
+	id S1758933AbXHXKrV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 06:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbXHXKrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 06:45:57 -0400
-Received: from thunk.org ([69.25.196.29]:48767 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752654AbXHXKp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 06:45:56 -0400
-Date: Fri, 24 Aug 2007 06:45:38 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Matt Mackall <mpm@selenic.com>, Josh Boyer <jwboyer@gmail.com>,
-       Andy Isaacson <adi@hexapodia.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ksummit-2007-discuss@thunk.org
-Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
-Message-ID: <20070824104538.GA31344@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Matthew Wilcox <matthew@wil.cx>, Matt Mackall <mpm@selenic.com>,
-	Josh Boyer <jwboyer@gmail.com>, Andy Isaacson <adi@hexapodia.org>,
-	James Bottomley <James.Bottomley@hansenpartnership.com>,
-	Matthew Garrett <mjg59@srcf.ucam.org>,
-	Tech Board Discuss <Tech-board-discuss@lists.linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	ksummit-2007-discuss@thunk.org
-References: <20070822224400.GA17255@srcf.ucam.org> <20070823002618.GO9163@parisc-linux.org> <20070823003748.GR30556@waste.org> <20070823004209.GP9163@parisc-linux.org> <20070823011953.GS30556@waste.org> <1187832907.3410.141.camel@localhost.localdomain> <20070824012730.GA1243@hexapodia.org> <625fc13d0708231934q5b369b4fh1a5c83def0e56a0d@mail.gmail.com> <20070824025254.GH21720@waste.org> <20070824025504.GT9163@parisc-linux.org>
+	Fri, 24 Aug 2007 06:47:07 -0400
+Received: from web32613.mail.mud.yahoo.com ([68.142.207.240]:37615 "HELO
+	web32613.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754375AbXHXKrG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 06:47:06 -0400
+X-YMail-OSG: HlGCtOAVM1ks3wX4w5Zd0v36f1bpG3VGG17nJWDTNm7FMnnkCE54iMignq.A835KYWb9LlCpn7JB8l2iVD_zgYjZyw--
+X-RocketYMMF: knobi.rm
+Date: Fri, 24 Aug 2007 03:47:03 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Reply-To: spamtrap@knobisoft.de
+Subject: RE: [PATCH 00/23] per device dirty throttling -v9
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1187890919.6114.411.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070824025504.GT9163@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <681242.83596.qm@web32613.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 08:55:04PM -0600, Matthew Wilcox wrote:
-> On Thu, Aug 23, 2007 at 09:52:54PM -0500, Matt Mackall wrote:
-> > The other part of the puzzle is including the wider Linux community.
+
+--- Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> On Thu, 2007-08-23 at 08:59 -0700, Martin Knoblauch wrote:
+> > --- Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > 
+> > > On Thu, 2007-08-16 at 05:49 -0700, Martin Knoblauch wrote:
+> > > 
+> > > > Peter,
+> > > > 
+> > > >  any chance to get a rollup against 2.6.22-stable?
+> > > > 
+> > > >  The 2.6.23 series may not be usable for me due to the
+> > > > nosharedcache changes for NFS (the new default will massively
+> > > > disturb the user-space automounter).
+> > > 
+> > > I'll see what I can do, bit busy with other stuff atm, hopefully
+> > > after
+> > > the weekend.
+> > > 
+> > Hi Peter,
+> > 
+> >  any progress on a version against 2.6.22.5? I have seen the very
+> > positive report from Jeffrey W. Baker and would really love to test
+> > your patch. But as I said, anything newer than 2.6.22.x might not
+> be an
+> > option due to the NFS changes.
 > 
-> As I said; what's wrong with just using SPI membership?  It's not like
-> it is remotely hard for kernel hackers to gain membership in SPI.  And
-> somebody else takes care of the bureaucracy for you.
+> mindless port, seems to compile and boot on my test box ymmv.
+> 
+> I think .5 should not present anything other than trivial rejects if
+> anything. But I'm not keeping -stable in my git remotes so I can't
+> say
+> for sure.
 
-Given the huge overlap between SPI membership and Debian membership,
-and then taking a look at the craziness that takes place on various
-Debian mailing lists, such as but not limited to debian-legal, I'm
-quite convinced that this would be a baaaaaad idea.
+Hi Peter,
 
-						- Ted
+ thanks a lot. It applies to 2.6.22.5 almost cleanly, with just one
+8-line offset in readahead.c.
+
+ I will report testing-results separately.
+
+Thanks
+Martin
+
+------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
