@@ -1,52 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764670AbXHXSFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932604AbXHXSGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764670AbXHXSFm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 14:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932580AbXHXSFW
+	id S932604AbXHXSGD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 14:06:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764754AbXHXSFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 14:05:22 -0400
-Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:3244 "EHLO
-	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932391AbXHXSFU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 14:05:20 -0400
-Message-ID: <46CF1DDE.7070302@xs4all.nl>
-Date: Fri, 24 Aug 2007 20:05:18 +0200
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 24 Aug 2007 14:05:40 -0400
+Received: from ns.suse.de ([195.135.220.2]:38576 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932695AbXHXSFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 14:05:39 -0400
+Date: Fri, 24 Aug 2007 11:04:23 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Oliver Neukum <oneukum@suse.de>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [stable] [patch 25/28] USB: cdc-acm: fix sysfs attribute
+	registration bug
+Message-ID: <20070824180423.GA5458@suse.de>
+References: <20070824154906.GA19239@kroah.com> <Pine.LNX.4.44L0.0708241349240.3862-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Benoit Boissinot <bboissin@gmail.com>
-Subject: Re: possible BUG while doing gpg --gen-key
-References: <46CF079C.7010304@xs4all.nl> <40f323d00708241057k6549f22fl6abf802f14c03e44@mail.gmail.com>
-In-Reply-To: <40f323d00708241057k6549f22fl6abf802f14c03e44@mail.gmail.com>
-X-Enigmail-Version: 0.95.3
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0708241349240.3862-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benoit Boissinot wrote:
-> On 8/24/07, Udo van den Heuvel <udovdh@xs4all.nl> wrote:
->> While doing gpg --gen-key I can reproduce quite well some sort of
->> crash/bug/etc:
->> # gpg --gen-key
+On Fri, Aug 24, 2007 at 01:59:55PM -0400, Alan Stern wrote:
+> On Fri, 24 Aug 2007, Greg KH wrote:
 > 
-> [snip]
+> > > Odd.  This doesn't include the entire patch; the second hunk is
+> > > missing.  It should go on to say:
+> > > 
+> > > @@ -1109,10 +1113,12 @@ static void acm_disconnect(struct usb_interface *intf)
+> > >  		return;
+> > >  	}
+> > >  	if (acm->country_codes){
+> > > -		device_remove_file(&intf->dev, &dev_attr_wCountryCodes);
+> > > -		device_remove_file(&intf->dev, &dev_attr_iCountryCodeRelDate);
+> > > +		device_remove_file(&acm->control->dev,
+> > > +				&dev_attr_wCountryCodes);
+> > > +		device_remove_file(&acm->control->dev,
+> > > +				&dev_attr_iCountryCodeRelDate);
+> > >  	}
+> > > -	device_remove_file(&intf->dev, &dev_attr_bmCapabilities);
+> > > +	device_remove_file(&acm->control->dev, &dev_attr_bmCapabilities);
+> > 
+> > 
+> > I thought so too, untill you look at the 2.6.22.5 release, which already
+> > has that change in it for some reason.
+> > 
+> > So that part of the patch drops out, it turns out you just reverted
+> > things back to the way things used to be here :)
 > 
-> iirg gpg-keygen uses a lot of cpu time during that phase, you probably
-> should verify your ram and cpu. This kind of problem is often due to
-> faulty hardware.
+> I don't understand.  The history for stable/linux-2.6.22.y.git at
+> http://git.kernel.org shows that the commit for my patch, labelled
+> 
+> 	6b30a4e1c357410a78d7bcb831743b0e99bab4ad,
+> 
+> includes both hunks.  And patch-2.6.22.5.bz2 includes both as well.  
+> Something's fishy.
 
-The box runs stable for days on end.
-Only when running gpg --gen-key I get this issue.
-Other gpg operations, run by a user, are without issue.
-There is 512MB of RAM and the hardware is `refreshed` regularly when an
-interesting VIA board comes out. Case stays closed otherwise. I am ESD
-certified. (or how to put that in the english language)
-memtest86 shows no problems. Kernel compiles etc run without issue.
-F7 upgraded installation. Updated regularly. gnupg rpm is Red Hat-stock.
- My own compiles of gnupg show the same error.
+Ah crap, I see it now, this was already applied, I tried to apply it
+again, it went with some fuzz for one chunk, which I ignored.
 
-So what is next?
+I'm starting to really appreciate Linus's hate for patch-fuzz :)
+
+I'll drop this from the queue as it's already in the -stable series.
+Thanks for pointing out my mistake, I appreciate it.
+
+greg k-h
