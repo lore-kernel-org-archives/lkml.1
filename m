@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765590AbXHXItS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765996AbXHXItd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765590AbXHXItS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 04:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760211AbXHXItA
+	id S1765996AbXHXItd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 04:49:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765533AbXHXItM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 04:49:00 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:28234 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752132AbXHXIs7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 04:48:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aqD1nSQhWDiQQr58p3cfElFYEkI/TL+ZNG+yVdjjyxPF5saHO+r0Sj8y6pbh9U6WDi1UNQ7q+NVKg6MsPjYCSVRp+Dw/tKWnG5Qu/ikDlKAomVU28tYCLpAxNjGH3tbEDn8aqcqJBKZWiyuAZg3LoYYpe6+dQHhmHn9yN/cFJFs=
-Message-ID: <9a8748490708240148oa2431i815e634d8fe6412a@mail.gmail.com>
-Date: Fri, 24 Aug 2007 10:48:58 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Dave Kleikamp" <shaggy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 28/30] jfs: avoid pointless casts of kmalloc() return val
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       jfs-discussion@lists.sourceforge.net
-In-Reply-To: <1187929189.6406.2.camel@norville.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Aug 2007 04:49:12 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:34502 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765505AbXHXItK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 04:49:10 -0400
+Date: Fri, 24 Aug 2007 10:50:18 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc2-mm1: irq lock inversion dependency detected
+Message-ID: <20070824085018.GA2778@ff.dom.local>
+References: <200708100906.07111.m.kozlowski@tuxland.pl> <20070824082725.GA2203@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-	 <18983edfb06c7b133f699e34194112ca6a53b14d.1187912217.git.jesper.juhl@gmail.com>
-	 <1187929189.6406.2.camel@norville.austin.ibm.com>
+In-Reply-To: <20070824082725.GA2203@ff.dom.local>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 24/08/07, Dave Kleikamp <shaggy@linux.vnet.ibm.com> wrote:
-> Thanks, but Jack Stone submitted the same patch a few weeks ago.  It's
-> already in the jfs git tree and the -mm kernel.
->
-Ok, I wasn't aware of that, but that's perfect.
-Sorry for the noise.
+On Fri, Aug 24, 2007 at 10:27:25AM +0200, Jarek Poplawski wrote:
+> On 10-08-2007 09:06, Mariusz Kozlowski wrote:
+...
+> > =========================================================
+> > [ INFO: possible irq lock inversion dependency detected ]
+> > 2.6.23-rc2-mm1 #7
+> > ---------------------------------------------------------
+> > runscript.sh/5843 just changed the state of lock:
+> >  (_xmit_ETHER){-+..}, at: [<c03cbe79>] dev_watchdog+0x17/0xcc
+> > but this lock took another, soft-irq-unsafe lock in the past:
+> >  (&tp->lock){--..}
+> > 
+> > and interrupts could create inverse lock ordering between them.
+> ...
+> > Really no idea who to CC here ;)
+> 
+> IMHO, this should be fixed by last changes to free_irq & request_irq.
+> (Seems to be possible only with CONFIG_DEBUG_SHIRQ?) Otherwise I can
+> be CC-ed - my pleasure!
 
+OOPS! But, since it's about inversion - not state - there should be no
+connection... Anyway if this returns currently (and if _SHIRQ only) I'm
+interested.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Jarek P.
