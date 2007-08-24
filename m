@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933352AbXHXKDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933161AbXHXKJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933352AbXHXKDt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 06:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbXHXKDj
+	id S933161AbXHXKJc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 06:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764827AbXHXKJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 06:03:39 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:39011 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763946AbXHXKDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 06:03:37 -0400
-Date: Fri, 24 Aug 2007 19:02:17 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: what is the value of the macro "__setup_param"?
-Message-ID: <20070824100217.GA32109@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0708240516080.14019@localhost.localdomain> <20070824095058.GA32013@linux-sh.org> <Pine.LNX.4.64.0708240548220.15507@localhost.localdomain>
+	Fri, 24 Aug 2007 06:09:23 -0400
+Received: from [77.60.199.90] ([77.60.199.90]:60125 "HELO nl.ultrawaves.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1764753AbXHXKJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 06:09:23 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Aug 2007 06:09:22 EDT
+Message-ID: <46CEACC0.5000908@lammerts.org>
+Date: Fri, 24 Aug 2007 12:02:40 +0200
+From: Eric Lammerts <eric@lammerts.org>
+User-Agent: Mozilla Thunderbird 1.0.2 (X11/20050317)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708240548220.15507@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+CC: p.hardwick@option.com, greg@kroah.com, akpm@linux-foundation.org
+Subject: [PATCH] nozomi DTR/RTS
+Content-Type: multipart/mixed;
+ boundary="------------010709070201030800000200"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 05:49:42AM -0400, Robert P. J. Day wrote:
-> On Fri, 24 Aug 2007, Paul Mundt wrote:
-> 
-> > On Fri, Aug 24, 2007 at 05:19:29AM -0400, Robert P. J. Day wrote:
-> > >
-> > >   perhaps i'm missing it, but it seems that the macro __setup_param is
-> > > entirely superfluous:
-> > >
-> > > $ grep -rw __setup_param *
-> > > include/linux/init.h:#define __setup_param(str, unique_id, fn, early)      \
-> > > include/linux/init.h:   __setup_param(str, unique_id, NULL, 0)
-> > > include/linux/init.h:   __setup_param(str, fn, fn, 0)
-> > > include/linux/init.h:   __setup_param(str, fn, fn, 1)
-> > > include/linux/init.h:#define __setup_param(str, unique_id, fn)  /* nothing */
-> > > $
-> > >
-> > > or am i must misreading something badly?
-> 
-> > Superfluous how? It does different things depending on whether
-> > MODULE is defined or not. It's a good indicator of how often people
-> > use __setup_param() from module context though, given the complete
-> > mismatch of parameters. It's probably worth fixing that up at least.
-> 
-> never mind, i've already clued in.  up too long, and trying to do too
-> many things at once.  more sleep or more coffee -- time to make a
-> decision.  sorry for the noise.
-> 
-That's great, but you've ignored the second part of my mail. I'll
-summarize:
+This is a multi-part message in MIME format.
+--------------010709070201030800000200
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> > > include/linux/init.h:#define __setup_param(str, unique_id, fn, early)      \
-> > > include/linux/init.h:#define __setup_param(str, unique_id, fn)  /* nothing */
+Hi,
+I noticed that DTR toggling doesn't work with the nozomi driver 
+(TIOCMBIS/TIOCMBIC ioctls have no effect). This is a nuisance because 
+that makes it hard to get the modem back in command mode.
 
-Notice the problem now? :-)
+Attached patch adds a tty_ops->tiocmset function that makes it work.
+
+Should we also rip out the TIOCMBIS/TIOCMBIC handling in ntty_ioctl()? 
+It doesn't seem to be used anyway.
+
+Patch is against 2.6.23-rc3-mm1, but not tested with that. I tested it 
+with 2.6.18.4 and the pharscape.org driver.
+
+Eric
+
+--------------010709070201030800000200
+Content-Type: text/plain;
+ name="nozomi-dtr-patch-2.6.23-rc3-mm1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="nozomi-dtr-patch-2.6.23-rc3-mm1"
+
+--- linux-2.6.23-rc3-mm1/drivers/char/nozomi.c.orig	2007-08-24 05:39:06.000000000 -0400
++++ linux-2.6.23-rc3-mm1/drivers/char/nozomi.c	2007-08-24 05:41:07.000000000 -0400
+@@ -1930,12 +1930,16 @@
+ }
+ 
+ /* Sets io controls parameters */
+-static int ntty_tiocmset(struct tty_struct *tty, struct file *file, u32 arg)
++static int ntty_tiocmset(struct tty_struct *tty, struct file *file,
++	unsigned int set, unsigned int clear)
+ {
+ 	struct port *port = (struct port *)tty->driver_data;
+ 
+-	set_rts(port->tty_index, (arg & TIOCM_RTS) ? 1 : 0);
+-	set_dtr(port->tty_index, (arg & TIOCM_DTR) ? 1 : 0);
++	if(set & TIOCM_RTS) set_rts(port->tty_index, 1);
++	else if(clear & TIOCM_RTS) set_rts(port->tty_index, 0);
++	
++	if(set & TIOCM_DTR) set_dtr(port->tty_index, 1);
++	else if(clear & TIOCM_DTR) set_dtr(port->tty_index, 0);
+ 
+ 	return 0;
+ }
+@@ -2039,7 +2043,7 @@
+ 		spin_unlock_irqrestore(&dc->spin_mutex, flags);
+ 		break;
+ 	case TIOCMSET:
+-		rval = ntty_tiocmset(tty, file, arg);
++		rval = ntty_tiocmset(tty, file, arg, ~arg);
+ 		break;
+ 	case TIOCMBIC:
+ 		if (get_user(mask, (unsigned long __user *)arg))
+@@ -2152,6 +2156,7 @@
+ 	.set_termios = ntty_set_termios,
+ 	.chars_in_buffer = ntty_chars_in_buffer,
+ 	.put_char = ntty_put_char,
++	.tiocmset = ntty_tiocmset,
+ };
+ 
+ /* Initializes the tty */
+
+--------------010709070201030800000200--
