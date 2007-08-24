@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765989AbXHXTHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbXHXTJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765989AbXHXTHr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 15:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761720AbXHXTHj
+	id S932951AbXHXTJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 15:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762030AbXHXTJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 15:07:39 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49022 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757610AbXHXTHi (ORCPT
+	Fri, 24 Aug 2007 15:09:18 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:33917 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758382AbXHXTJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 15:07:38 -0400
-Date: Fri, 24 Aug 2007 20:15:30 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Cc: postfail@hushmail.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] /drivers/char sx.c ioremap -> pci_ioremap api
-Message-ID: <20070824201530.5d741b37@the-village.bc.nu>
-In-Reply-To: <4af2d03a0708241159v56b46299h46df9777a98590e5@mail.gmail.com>
-References: <46CF2849.2090008@gmail.com>
-	<4af2d03a0708241159v56b46299h46df9777a98590e5@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 24 Aug 2007 15:09:18 -0400
+Message-ID: <46CF2CDD.5000802@steeleye.com>
+Date: Fri, 24 Aug 2007 15:09:17 -0400
+From: Paul Clements <paul.clements@steeleye.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Mike Snitzer <snitzer@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       david@dgreaves.com, Wouter Verhelst <w@uter.be>,
+       Corey Minyard <cminyard@mvista.com>, nbd-general@lists.sourceforge.net
+Subject: Re: [PATCH 2/2] NBD: allow hung network I/O to be cancelled
+References: <46CF101F.4050603@steeleye.com> <46CF1826.9050101@steeleye.com> <170fa0d20708241113y31d2ba95xf30c83c7c4c98cd2@mail.gmail.com>
+In-Reply-To: <170fa0d20708241113y31d2ba95xf30c83c7c4c98cd2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ase, 0x80);
+Mike Snitzer wrote:
+> On 8/24/07, Paul Clements <paul.clements@steeleye.com> wrote:
+>> This patch allows NBD I/O to be cancelled when a network outage occurs.
+>> Previously, I/O would just hang, and if enough I/O was hung in nbd, the
+>> system (at least user-level) would completely hang until a TCP timeout
+>> (default, 15 minutes) occurred.
+>>
+>> The patch introduces a new ioctl NBD_SET_TIMEOUT that allows a transmit
+>> timeout value (in seconds) to be specified. Any network send that
+>> exceeds the timeout will be cancelled and the nbd connection will be
+>> shut down. I've tested with various timeout values and 6 seconds seems
+>> to be a good choice for the timeout. If the NBD_SET_TIMEOUT ioctl is not
+>> called, you get the old (I/O hang) behavior.
 > 
-> remove also the hwbase var.
+> Hi Paul,
 > 
-> > +	rebase = pci_iomap(pdev, 0, 0x80);
-> >   	t = readl(rebase + CNTRL_REG_OFFSET);
+> Thanks for implementing this!  Do you happen to have an associated
+> nbd-client patch for userspace?  If not I'd be happy to coordinate
+> with you and Wouter on a patch.
 
-Switch to ioread* if you are using the iomap interface. Its not a trivial
-conversion and its slower and bulkier - the original ioremap was much
-better
+No, I don't. I just basically hardcoded my nbd-client to do a 6 second 
+timeout by default, but Wouter will probably want to do something a 
+little less hackish for the official nbd-client.
 
-NAK this change therefore
+--
+Paul
