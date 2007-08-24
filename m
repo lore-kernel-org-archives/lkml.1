@@ -1,40 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbXHXURl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbXHXUVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbXHXURl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 16:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbXHXURc
+	id S1758721AbXHXUVr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 16:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbXHXUVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 16:17:32 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:50762
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752047AbXHXURc (ORCPT
+	Fri, 24 Aug 2007 16:21:35 -0400
+Received: from hu-out-0506.google.com ([72.14.214.230]:27892 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751410AbXHXUVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 16:17:32 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: linux-kernel@vger.kernel.org
-Subject: What's up with CONFIG_BLK_DEV?
-Date: Fri, 24 Aug 2007 15:17:28 -0500
-User-Agent: KMail/1.9.6
+	Fri, 24 Aug 2007 16:21:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Ht2zp7mr7Y56im0BFspWPboA9XfbswcBBaB007FtYDYsBZSED3S8YB2sMHTK7gX4KFDlthoC6ARKMe//0BckuUyhJZSaykCixiuMUinWZqo9JvW+oX5raju+PnrjfP4NClw0H40MsCh0UVHAY1XRb+O3XwG0LtqwAuIKB39HqGY=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Fri, 24 Aug 2007 21:21:21 +0100
+User-Agent: KMail/1.9.1
+Cc: Paul Mackerras <paulus@samba.org>, Satyam Sharma <satyam@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com, segher@kernel.crashing.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+References: <20070809131423.GA9927@shell.boston.redhat.com> <200708241350.45061.vda.linux@googlemail.com> <Pine.LNX.4.64.0708241009120.20501@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0708241009120.20501@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708241517.28475.rob@landley.net>
+Message-Id: <200708242121.22534.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_BLOCK disables the block layer.
-CONFIG_BLK_DEV disables the block devices.
+On Friday 24 August 2007 18:15, Christoph Lameter wrote:
+> On Fri, 24 Aug 2007, Denys Vlasenko wrote:
+> > On Thursday 16 August 2007 00:22, Paul Mackerras wrote:
+> > > Satyam Sharma writes:
+> > > In the kernel we use atomic variables in precisely those situations
+> > > where a variable is potentially accessed concurrently by multiple
+> > > CPUs, and where each CPU needs to see updates done by other CPUs in a
+> > > timely fashion.  That is what they are for.  Therefore the compiler
+> > > must not cache values of atomic variables in registers; each
+> > > atomic_read must result in a load and each atomic_set must result in a
+> > > store.  Anything else will just lead to subtle bugs.
+> >
+> > Amen.
+>
+> A "timely" fashion? One cannot rely on something like that when coding.
+> The visibility of updates is insured by barriers and not by some fuzzy
+> notion of "timeliness".
 
-Is there _ever_ a time you want the block layer but no block devices?
+But here you do have some notion of time:
 
-(I ask because this is the first time I've had to add a symbol to my User Mode 
-Linux miniconfig since 2.6.12, and I can't figure out what the actual purpose 
-of this symbol is.)
+	while (atomic_read(&x))
+		continue;
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+"continue when other CPU(s) decrement it down to zero".
+If "read" includes an insn which accesses RAM, you will
+see "new" value sometime after other CPU decrements it.
+"Sometime after" is on the order of nanoseconds here.
+It is a valid concept of time, right?
+
+The whole confusion is about whether atomic_read implies
+"read from RAM" or not. I am in a camp which thinks it does.
+You are in an opposite one.
+
+We just need a less ambiguous name.
+
+What about this:
+
+/**
+ * atomic_read - read atomic variable
+ * @v: pointer of type atomic_t
+ *
+ * Atomically reads the value of @v.
+ * No compiler barrier implied.
+ */
+#define atomic_read(v)          ((v)->counter)
+
++/**
++ * atomic_read_uncached - read atomic variable from memory
++ * @v: pointer of type atomic_t
++ *
++ * Atomically reads the value of @v. This is guaranteed to emit an insn
++ * which accesses memory, atomically. No ordering guarantees!
++ */
++#define atomic_read_uncached(v)  asm_or_volatile_ptr_magic(v)
+
+I was thinking of s/atomic_read/atomic_get/ too, but it implies "taking"
+atomic a-la get_cpu()...
+--
+vda
