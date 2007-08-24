@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764096AbXHXRjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764379AbXHXRje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764096AbXHXRjP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 13:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763505AbXHXRik
+	id S1764379AbXHXRje (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 13:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763822AbXHXRis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 13:38:40 -0400
+	Fri, 24 Aug 2007 13:38:48 -0400
 Received: from fk-out-0910.google.com ([209.85.128.185]:8533 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762998AbXHXRif (ORCPT
+	with ESMTP id S1763209AbXHXRip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 13:38:35 -0400
+	Fri, 24 Aug 2007 13:38:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=losCdjEVllEL0sNjEMVEt0jYTA48kvTuCpNh/3/QQ9CBJzN+dpYA6Ig1gA9Vt1nQqgGId4PLvUrhEw2/RtwuHRhu50uA6080VMmAXIKDMgmoXLyQfl2/67gu43u9SjAWjEafFNqgFEbgU0wlSJrX1Tyq6q40PF7tWhZf9nm8hRw=
-Message-ID: <46CF178C.4060506@googlemail.com>
-Date: Fri, 24 Aug 2007 19:38:20 +0200
+        b=awYRh641PKAdnTrLcTZuoWCCW+Ngx2iaGdDapAYXoiN+3lMtkNS93EC2PIG/Den05B2E+XzOTrTC9JJqMAEOmn0PcN2nEtIpDAPAGu7N/gKDPonuCmdoXGg68mDKUjOgxlEZ1C2iDonoJQBSWr4xEJ80mwdiocYPYL69ZTwqCz0=
+Message-ID: <46CF1796.1020004@googlemail.com>
+Date: Fri, 24 Aug 2007 19:38:30 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       linux-acpi@vger.kernel.org, Plamen Petrov <plamen.petrov@tk.ru.acad.bg>,
-       Michael Sedkowski <sedmich@gmail.com>, dth <dth@dth.net>,
-       linux-fsdevel@vger.kernel.org, nfs@lists.sourceforge.net,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Andrew Clayton <andrew@digital-domain.net>,
-       Florin Iucha <florin@iucha.net>, Bret Towe <magnade@gmail.com>
-Subject: Re: [2/4] 2.6.23-rc3: known regressions v3
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Stephen Hemminger <shemminger@osdl.org>, Thomas Meyer <thomas@m3y3r.de>,
+       Shish <shish@shishnet.org>, Karl Meyer <adhocrocker@gmail.com>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Thomas Voegtle <tv@lio96.de>
+Subject: Re: [3/4] 2.6.23-rc3: known regressions v3
 References: <46CF0DEF.5040107@googlemail.com>
 In-Reply-To: <46CF0DEF.5040107@googlemail.com>
 X-Enigmail-Version: 0.95.3
@@ -59,62 +59,52 @@ Tejun Heo                              3
 
 
 
-ACPI
+Networking
 
-Subject         : MCFG bug on hp nx6310
-References      : http://lkml.org/lkml/2007/8/8/252
+Subject         : NETDEV WATCHDOG: eth0: transmit timed out
+References      : http://lkml.org/lkml/2007/8/13/737
 Last known good : ?
-Submitter       : Michael Sedkowski <sedmich@gmail.com>
+Submitter       : Karl Meyer <adhocrocker@gmail.com>
+Caused-By       : ?
+Handled-By      : Francois Romieu <romieu@fr.zoreil.com>
+Status          : problem is being debugged
+
+Subject         : Weird network problems with 2.6.23-rc2
+References      : http://lkml.org/lkml/2007/8/11/40
+Last known good : ?
+Submitter       : Shish <shish@shishnet.org>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : 2.6.23-rc1-git10 hangs on boot - needs "acpi=off"
-References      : http://lkml.org/lkml/2007/8/2/24
+Subject         : New wake ups from sky2
+References      : http://lkml.org/lkml/2007/7/20/386
 Last known good : ?
-Submitter       : Plamen Petrov <plamen.petrov@tk.ru.acad.bg>
-Caused-By       : ?
-Handled-By      : Len Brown <len.brown@intel.com>
-Status          : problem is being debugged
-
-
-
-CPUFREQ
-
-Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-References      : http://lkml.org/lkml/2007/7/27/298
-                  http://lkml.org/lkml/2007/7/29/371
-Last known good : ?
-Submitter       : dth <dth@dth.net>
-Caused-By       : Len Brown <lenb@kernel.org>
-                  commit f79e3185dd0f8650022518d7624c876d8929061b
-Handled-By      : Len Brown <lenb@kernel.org>
-Status          : problem is being debugged
-
-
-
-FS
-
-Subject         : nfs4 hang/NFS woes again
-                  (was USB-related oops in sysfs with linux v2.6.23-rc3-50-g28e8351)
-References      : http://lkml.org/lkml/2007/8/15/144
-                  http://lkml.org/lkml/2007/8/22/484
-                  http://lkml.org/lkml/2007/8/23/134
-Last known good : ?
-Submitter       : Florin Iucha <florin@iucha.net>
-                  Bret Towe <magnade@gmail.com>
-Caused-By       : Trond Myklebust <Trond.Myklebust@netapp.com>
-                  commit 3d39c691ff486142dd9aaeac12f553f4476b7a62
-Handled-By      : ?
-Status          : problem is being debugged
-
-Subject         : [NFSD OOPS] 2.6.23-rc1-git10
-References      : http://lkml.org/lkml/2007/8/2/462
-Last known good : ?
-Submitter       : Andrew Clayton <andrew@digital-domain.net>
-Caused-By       : ?
-Handled-By      : ?
+Submitter       : Thomas Meyer <thomas@m3y3r.de>
+Caused-By       : Stephen Hemminger <shemminger@osdl.org>
+                  commit eb35cf60e462491249166182e3e755d3d5d91a28
+Handled-By      : Stephen Hemminger <shemminger@osdl.org>
 Status          : unknown
+
+
+
+Power management
+
+Subject         : 2.6.23-rc2 swsusp, suddenly increased uptime
+References      : http://lkml.org/lkml/2007/8/12/249
+Last known good : ?
+Submitter       : Thomas Voegtle <tv@lio96.de>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : problem is being debugged
+
+Subject         : resume from ram much slower
+References      : http://lkml.org/lkml/2007/8/10/275
+Last known good : 2.6.23-rc1 ?
+Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : problem is being debugged
 
 
 
