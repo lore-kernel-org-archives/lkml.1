@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbXHXUC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbXHXUE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755923AbXHXUC6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 16:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbXHXUCs
+	id S1757272AbXHXUE4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 16:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbXHXUEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 16:02:48 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:5089 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750877AbXHXUCr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 16:02:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=PihYzsJpB51DFwn3137weNIkOvpIXT0sCxzyRW7H2O5UPcqwP6h6LgbNOPPiMNefPNdhMatFGUaeIFwb85eRa89a/BBWh1E78cxOpAsvGYtgyvD8WD1n6B6U4M8D8w6SMfI5KJ3g9GLb23EhlUuD1wTDm2HfXBmiFpO3BJa1S7Q=
-Message-ID: <46CF399E.3010808@gmail.com>
-Date: Fri, 24 Aug 2007 22:03:42 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 24 Aug 2007 16:04:47 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47977 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750877AbXHXUEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 16:04:46 -0400
+Message-ID: <46CF3988.1020408@us.ibm.com>
+Date: Fri, 24 Aug 2007 13:03:20 -0700
+From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Jiri Slaby <jirislaby@gmail.com>, postfail@hushmail.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] /drivers/char sx.c ioremap -> pci_ioremap api
-References: <46CF2849.2090008@gmail.com>	<4af2d03a0708241159v56b46299h46df9777a98590e5@mail.gmail.com> <20070824201530.5d741b37@the-village.bc.nu>
-In-Reply-To: <20070824201530.5d741b37@the-village.bc.nu>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: taoyue <yue.tao@windriver.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH] sigqueue_free: fix the race with collect_signal()
+References: <20070823134538.GA1358@tv-sign.ru> <46CEEA94.2070902@windriver.com> <20070824074558.GA86@tv-sign.ru> <46CF4DCB.6030304@windriver.com> <20070824110836.GA74@tv-sign.ru>
+In-Reply-To: <20070824110836.GA74@tv-sign.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox napsal(a):
-> ase, 0x80);
->> remove also the hwbase var.
->>
->>> +	rebase = pci_iomap(pdev, 0, 0x80);
->>>   	t = readl(rebase + CNTRL_REG_OFFSET);
-> 
-> Switch to ioread* if you are using the iomap interface. Its not a trivial
+Oleg Nesterov wrote:
+> On 08/24, taoyue wrote:
+>   
+>> Oleg Nesterov wrote:
+>>     
+>>>> collect_signal:				sigqueue_free:
+>>>>
+>>>> 	list_del_init(&first->list);
+>>>>                                       spin_lock_irqsave(lock, flags);
+>>>>    
+>>>>         
+>>>                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>>>  
+>>>       
+>>>>                                       if (!list_empty(&q->list))
+>>>>                                             list_del_init(&q->list);
+>>>>                                       spin_unlock_irqrestore(lock, 
+>>>>                                       flags);
+>>>>                                       q->flags &= ~SIGQUEUE_PREALLOC;
+>>>>
+>>>>       __sigqueue_free(first);		__sigqueue_free(q);
+>>>>    
+>>>>         
+>>> collect_signal() is always called under ->siglock which is also taken by
+>>> sigqueue_free(), so this is not possible.
+>>>
+>>> Basically, this patch is the same one-liner I sent you before
+>>>
+>>> 	http://marc.info/?l=linux-kernel&m=118772206603453&w=2
+>>>
+>>> (Thanks for the additional testing and report, btw).
+>>>
+>>> P.S. It would be nice to know if this patch solves the problems reported
+>>> by Jeremy, but his email is disabled.
+>>>
+>>> Oleg.
+>>>
+>>>  
+>>>       
+>> I know, using current->sighand->siglock to prevent one sigqueue
+>> is free twice. I want to know whether it is possible that the two
+>> function is called in different thread. If that, the spin_lock is useless.
+>>     
+>
+> Not sure I understand. Yes, it is possible they are called by 2 different
+> threads, that is why we had a race. But all threads in the same thread
+> group have the same ->sighand, and thus the same ->sighand->siglock.
+>   
 
-Why, if you know it's surely a mem region (and thus you rely on it and do
-ioremap)? There are many places in the kernel, where this approach is used, e.g.
-libata piix.
+Oleg, if one thread can be in collect_signal() and another in 
+sigqueue_free() and both operate on the exact same sigqueue object, its 
+not clear how we prevent two calls to __sigqueue_free() to
+the same object. In that case the lock (or some lock) should be around 
+__sigqueue_free() - no ?
 
-> conversion and its slower and bulkier - the original ioremap was much
-> better
+ i.e if we enter sigqueue_free(), we will call __sigqueue_free() 
+regardless of the state.
 
-at least get rid of the reading the hwbase address from pci conf space, use
-pci_resource_start instead.
+> Oleg.
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>   
 
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+
