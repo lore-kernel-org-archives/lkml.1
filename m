@@ -1,214 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932693AbXHXTmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbXHXUC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932693AbXHXTmR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 15:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXHXTmF
+	id S1755923AbXHXUC6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 16:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbXHXUCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 15:42:05 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:37387 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbXHXTmE (ORCPT
+	Fri, 24 Aug 2007 16:02:48 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:5089 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbXHXUCr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 15:42:04 -0400
-Date: Fri, 24 Aug 2007 21:42:01 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] fix undefined reference to device_power_up/resume
-Message-ID: <20070824194201.GA8737@aepfle.de>
+	Fri, 24 Aug 2007 16:02:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=PihYzsJpB51DFwn3137weNIkOvpIXT0sCxzyRW7H2O5UPcqwP6h6LgbNOPPiMNefPNdhMatFGUaeIFwb85eRa89a/BBWh1E78cxOpAsvGYtgyvD8WD1n6B6U4M8D8w6SMfI5KJ3g9GLb23EhlUuD1wTDm2HfXBmiFpO3BJa1S7Q=
+Message-ID: <46CF399E.3010808@gmail.com>
+Date: Fri, 24 Aug 2007 22:03:42 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Jiri Slaby <jirislaby@gmail.com>, postfail@hushmail.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] /drivers/char sx.c ioremap -> pci_ioremap api
+References: <46CF2849.2090008@gmail.com>	<4af2d03a0708241159v56b46299h46df9777a98590e5@mail.gmail.com> <20070824201530.5d741b37@the-village.bc.nu>
+In-Reply-To: <20070824201530.5d741b37@the-village.bc.nu>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox napsal(a):
+> ase, 0x80);
+>> remove also the hwbase var.
+>>
+>>> +	rebase = pci_iomap(pdev, 0, 0x80);
+>>>   	t = readl(rebase + CNTRL_REG_OFFSET);
+> 
+> Switch to ioread* if you are using the iomap interface. Its not a trivial
 
-Current Linus tree fails to link on pmac32:
+Why, if you know it's surely a mem region (and thus you rely on it and do
+ioremap)? There are many places in the kernel, where this approach is used, e.g.
+libata piix.
 
-drivers/built-in.o: In function `pmac_wakeup_devices':
-via-pmu.c:(.text+0x5bab4): undefined reference to `device_power_up'
-via-pmu.c:(.text+0x5bb08): undefined reference to `device_resume'
-drivers/built-in.o: In function `pmac_suspend_devices':
-via-pmu.c:(.text+0x5c260): undefined reference to `device_power_down'
-via-pmu.c:(.text+0x5c27c): undefined reference to `device_resume'
-make[1]: *** [.tmp_vmlinux1] Error 1
+> conversion and its slower and bulkier - the original ioremap was much
+> better
 
-changing CONFIG_PM > CONFIG_PM_SLEEP leads to:
+at least get rid of the reading the hwbase address from pci conf space, use
+pci_resource_start instead.
 
-drivers/built-in.o: In function `pmu_led_set':
-via-pmu-led.c:(.text+0x5cdca): undefined reference to `pmu_sys_suspended'
-via-pmu-led.c:(.text+0x5cdce): undefined reference to `pmu_sys_suspended'
-drivers/built-in.o: In function `pmu_req_done':
-via-pmu-led.c:(.text+0x5ce3e): undefined reference to `pmu_sys_suspended'
-via-pmu-led.c:(.text+0x5ce42): undefined reference to `pmu_sys_suspended'
-drivers/built-in.o: In function `adb_init':
-(.init.text+0x4c5c): undefined reference to `pmu_register_sleep_notifier'
-make[1]: *** [.tmp_vmlinux1] Error 1
-
-So change even more places from PM to PM_SLEEP to allow linking.
-
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-
----
- drivers/macintosh/adb.c     |    4 ++--
- drivers/macintosh/via-pmu.c |   34 +++++++++++++++++-----------------
- include/linux/pmu.h         |    2 +-
- 3 files changed, 20 insertions(+), 20 deletions(-)
-
---- a/drivers/macintosh/adb.c
-+++ b/drivers/macintosh/adb.c
-@@ -89,7 +89,7 @@ static int sleepy_trackpad;
- static int autopoll_devs;
- int __adb_probe_sync;
- 
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- static void adb_notify_sleep(struct pmu_sleep_notifier *self, int when);
- static struct pmu_sleep_notifier adb_sleep_notifier = {
- 	adb_notify_sleep,
-@@ -313,7 +313,7 @@ int __init adb_init(void)
- 		printk(KERN_WARNING "Warning: no ADB interface detected\n");
- 		adb_controller = NULL;
- 	} else {
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- 		pmu_register_sleep_notifier(&adb_sleep_notifier);
- #endif /* CONFIG_PM */
- #ifdef CONFIG_PPC
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -152,10 +152,10 @@ static spinlock_t pmu_lock;
- static u8 pmu_intr_mask;
- static int pmu_version;
- static int drop_interrupts;
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- static int option_lid_wakeup = 1;
--#endif /* CONFIG_PM && CONFIG_PPC32 */
--#if (defined(CONFIG_PM)&&defined(CONFIG_PPC32))||defined(CONFIG_PMAC_BACKLIGHT_LEGACY)
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
-+#if (defined(CONFIG_PM_SLEEP)&&defined(CONFIG_PPC32))||defined(CONFIG_PMAC_BACKLIGHT_LEGACY)
- static int sleep_in_progress;
- #endif
- static unsigned long async_req_locks;
-@@ -875,7 +875,7 @@ proc_read_options(char *page, char **sta
- {
- 	char *p = page;
- 
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 	if (pmu_kind == PMU_KEYLARGO_BASED &&
- 	    pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) >= 0)
- 		p += sprintf(p, "lid_wakeup=%d\n", option_lid_wakeup);
-@@ -916,7 +916,7 @@ proc_write_options(struct file *file, co
- 	*(val++) = 0;
- 	while(*val == ' ')
- 		val++;
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 	if (pmu_kind == PMU_KEYLARGO_BASED &&
- 	    pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) >= 0)
- 		if (!strcmp(label, "lid_wakeup"))
-@@ -1738,7 +1738,7 @@ pmu_present(void)
- 	return via != 0;
- }
- 
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_SLEEP
- 
- static LIST_HEAD(sleep_notifiers);
- 
-@@ -1769,9 +1769,9 @@ pmu_unregister_sleep_notifier(struct pmu
- 	return 0;
- }
- EXPORT_SYMBOL(pmu_unregister_sleep_notifier);
--#endif /* CONFIG_PM */
-+#endif /* CONFIG_PM_SLEEP */
- 
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 
- /* Sleep is broadcast last-to-first */
- static void broadcast_sleep(int when)
-@@ -2390,7 +2390,7 @@ powerbook_sleep_3400(void)
- 	return 0;
- }
- 
--#endif /* CONFIG_PM && CONFIG_PPC32 */
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
- 
- /*
-  * Support for /dev/pmu device
-@@ -2573,7 +2573,7 @@ pmu_ioctl(struct inode * inode, struct f
- 	int error = -EINVAL;
- 
- 	switch (cmd) {
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 	case PMU_IOC_SLEEP:
- 		if (!capable(CAP_SYS_ADMIN))
- 			return -EACCES;
-@@ -2601,7 +2601,7 @@ pmu_ioctl(struct inode * inode, struct f
- 			return put_user(0, argp);
- 		else
- 			return put_user(1, argp);
--#endif /* CONFIG_PM && CONFIG_PPC32 */
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
- 
- #ifdef CONFIG_PMAC_BACKLIGHT_LEGACY
- 	/* Compatibility ioctl's for backlight */
-@@ -2757,7 +2757,7 @@ pmu_polled_request(struct adb_request *r
-  * to do suspend-to-disk.
-  */
- 
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 
- int pmu_sys_suspended;
- 
-@@ -2792,7 +2792,7 @@ static int pmu_sys_resume(struct sys_dev
- 	return 0;
- }
- 
--#endif /* CONFIG_PM && CONFIG_PPC32 */
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
- 
- static struct sysdev_class pmu_sysclass = {
- 	set_kset_name("pmu"),
-@@ -2803,10 +2803,10 @@ static struct sys_device device_pmu = {
- };
- 
- static struct sysdev_driver driver_pmu = {
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- 	.suspend	= &pmu_sys_suspend,
- 	.resume		= &pmu_sys_resume,
--#endif /* CONFIG_PM && CONFIG_PPC32 */
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
- };
- 
- static int __init init_pmu_sysfs(void)
-@@ -2841,10 +2841,10 @@ EXPORT_SYMBOL(pmu_wait_complete);
- EXPORT_SYMBOL(pmu_suspend);
- EXPORT_SYMBOL(pmu_resume);
- EXPORT_SYMBOL(pmu_unlock);
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- EXPORT_SYMBOL(pmu_enable_irled);
- EXPORT_SYMBOL(pmu_battery_count);
- EXPORT_SYMBOL(pmu_batteries);
- EXPORT_SYMBOL(pmu_power_flags);
--#endif /* CONFIG_PM && CONFIG_PPC32 */
-+#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
- 
---- a/include/linux/pmu.h
-+++ b/include/linux/pmu.h
-@@ -226,7 +226,7 @@ extern unsigned int pmu_power_flags;
- extern void pmu_backlight_init(void);
- 
- /* some code needs to know if the PMU was suspended for hibernation */
--#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
- extern int pmu_sys_suspended;
- #else
- /* if power management is not configured it can't be suspended */
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
