@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbXHXKxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbXHXK6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbXHXKxg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 06:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbXHXKx2
+	id S1758093AbXHXK6i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 06:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755923AbXHXK6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 06:53:28 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:60665 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754357AbXHXKx2 (ORCPT
+	Fri, 24 Aug 2007 06:58:30 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:42337 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755533AbXHXK6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 06:53:28 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 24 Aug 2007 06:43:33 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Denys Vlasenko <vda.linux@googlemail.com>
-cc: Jesper Juhl <jesper.juhl@gmail.com>, linux-mtd@lists.infradead.org,
-       David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 09/30] mtd: Don't cast kmalloc() return value in
- drivers/mtd/maps/pmcmsp-flash.c
-In-Reply-To: <200708241141.06358.vda.linux@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0708240642500.18301@localhost.localdomain>
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
- <5ebfb93eca0dd43cf17876e643079cbcfeb3111c.1187912217.git.jesper.juhl@gmail.com>
- <200708241141.06358.vda.linux@googlemail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.367, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	SARE_SUB_6CONS_WORD 0.36, TW_FC 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Fri, 24 Aug 2007 06:58:30 -0400
+Subject: Re: [linux-pm] [PATCH -mm 2/2] Hibernation: Arbitrary boot kernel 
+	support on x86_64
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200708241211.55319.rjw@sisk.pl>
+References: <200708241206.57178.rjw@sisk.pl>
+	 <200708241211.55319.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-dPLh9Uy8HyaLOELVxw5z"
+Date: Fri, 24 Aug 2007 12:59:02 +0200
+Message-Id: <1187953143.24933.17.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007, Denys Vlasenko wrote:
 
-> On Friday 24 August 2007 00:52, Jesper Juhl wrote:
-> > kmalloc() returns a void pointer.
-> > No need to cast it.
->
-> > -	msp_flash = (struct mtd_info **)kmalloc(
-> > -			fcnt * sizeof(struct map_info *), GFP_KERNEL);
-> > -	msp_parts = (struct mtd_partition **)kmalloc(
-> > -			fcnt * sizeof(struct mtd_partition *), GFP_KERNEL);
-> > -	msp_maps = (struct map_info *)kmalloc(
-> > -			fcnt * sizeof(struct mtd_info), GFP_KERNEL);
-> > +	msp_flash = kmalloc(fcnt * sizeof(struct map_info *), GFP_KERNEL);
-> > +	msp_parts = kmalloc(fcnt * sizeof(struct mtd_partition *), GFP_KERNEL);
-> > +	msp_maps = kmalloc(fcnt * sizeof(struct mtd_info), GFP_KERNEL);
-> >  	memset(msp_maps, 0, fcnt * sizeof(struct mtd_info));
->
-> This one wants kzalloc.
->
-> > -		msp_parts[i] = (struct mtd_partition *)kmalloc(
-> > -			pcnt * sizeof(struct mtd_partition), GFP_KERNEL);
-> > +		msp_parts[i] = kmalloc(pcnt * sizeof(struct mtd_partition),
-> > +			GFP_KERNEL);
-> >  		memset(msp_parts[i], 0, pcnt * sizeof(struct mtd_partition));
-> >
-> >  		/* now initialize the devices proper */
->
-> Same
+--=-dPLh9Uy8HyaLOELVxw5z
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-actually, i would think kcalloc would be more appropriate here, no?
+On Fri, 2007-08-24 at 12:11 +0200, Rafael J. Wysocki wrote:
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+> The idea is  [...]
 
-http://crashcourse.ca
-========================================================================
+Shouldn't that actually be added into some generic (non-x86-64) doc
+file?
+
+johannes
+
+--=-dPLh9Uy8HyaLOELVxw5z
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGzrn2/ETPhpq3jKURApqjAKCGA6qE6X6x1kNZJ7JiViP/UOFmRgCglkKJ
+sOOtJhKmIQ5Y8Svs9cPVgoI=
+=QFu8
+-----END PGP SIGNATURE-----
+
+--=-dPLh9Uy8HyaLOELVxw5z--
+
