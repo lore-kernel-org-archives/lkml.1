@@ -1,161 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933302AbXHXSJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765612AbXHXSKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933302AbXHXSJi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 14:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932567AbXHXSIi
+	id S1765612AbXHXSKM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 14:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762267AbXHXSJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 14:08:38 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52928 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765198AbXHXSIf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 14:08:35 -0400
-From: akepner@sgi.com
-Date: Fri, 24 Aug 2007 11:07:34 -0700
-To: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Cc: gregkh@suse.de, James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       David Miller <davem@davemloft.net>
-Subject: [PATCH 2/3] pci: redefine pci_dma_flags_set_dmaflush() for sn-ia64
-Message-ID: <20070824180734.GR5592@sgi.com>
-Mime-Version: 1.0
+	Fri, 24 Aug 2007 14:09:47 -0400
+Received: from ns2.suse.de ([195.135.220.15]:59445 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933339AbXHXSJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 14:09:46 -0400
+Date: Fri, 24 Aug 2007 11:08:33 -0700
+From: Greg KH <gregkh@suse.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [4/4] 2.6.23-rc3: known regressions v3
+Message-ID: <20070824180833.GA14415@suse.de>
+References: <46CF0DEF.5040107@googlemail.com> <46CF17A0.2060503@googlemail.com> <20070824175608.GA5333@suse.de> <20070824180120.GA13916@dose.home.local>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070824180120.GA13916@dose.home.local>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 24, 2007 at 08:01:20PM +0200, Tino Keitel wrote:
+> On Fri, Aug 24, 2007 at 10:56:08 -0700, Greg KH wrote:
+> > On Fri, Aug 24, 2007 at 07:38:40PM +0200, Michal Piotrowski wrote:
+> > > Hi all,
+> > > 
+> > > Here is a list of some known regressions in 2.6.23-rc3.
+> > 
+> > First off, thanks so much for tracking these, it can't be an easy job,
+> > but one that is really needed.  Keep up the great work.
+> > 
+> > > USB
+> > > 
+> > > Subject         : 2.6.23-rc1: USB hard disk broken
+> > > References      : http://lkml.org/lkml/2007/7/25/62
+> > > Last known good : ?
+> > > Submitter       : Tino Keitel <tino.keitel@gmx.de>
+> > > Caused-By       : ?
+> > > Handled-By      : Oliver Neukum <oliver@neukum.org>
+> > > Status          : unknown
+> > 
+> > Last I heard was that Tino was going to try to do further testing, but
+> > as he hasn't responded in a few weeks, I'd mark this one down to,
+> > "unknown and unreproducable".  Unless someone else knows more?
+> 
+> I was at least able to reproduce it with 2.6.23-rc2. And I tried it
+> hard with 2.6.22 but it didn't happen.
 
-define pci_dma_flags_set_dmaflush() for sn-ia64 - it "borrows" 
-bits from the direction argument (renamed "flags") to the 
-dma_map_* routines to pass an additional "dmaflush" attribute. 
-Also define routines to retrieve the original direction and 
-attribute from "flags".
+Ick, I didn't realize this.
 
+Oliver and Alan, any follow-up on this that I need to look into?
 
-Signed-off-by: Arthur Kepner <akepner@sgi.com>
---
- arch/ia64/sn/pci/pci_dma.c |   33 ++++++++++++++++++++++++---------
- include/asm-ia64/sn/io.h   |   22 ++++++++++++++++++++++
- 2 files changed, 46 insertions(+), 9 deletions(-)
+thanks,
 
-diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
-index d79ddac..285f819 100644
---- a/arch/ia64/sn/pci/pci_dma.c
-+++ b/arch/ia64/sn/pci/pci_dma.c
-@@ -153,7 +153,7 @@ EXPORT_SYMBOL(sn_dma_free_coherent);
-  * @dev: device to map for
-  * @cpu_addr: kernel virtual address of the region to map
-  * @size: size of the region
-- * @direction: DMA direction
-+ * @flags: DMA direction, and arch-specific attributes
-  *
-  * Map the region pointed to by @cpu_addr for DMA and return the
-  * DMA address.
-@@ -167,17 +167,23 @@ EXPORT_SYMBOL(sn_dma_free_coherent);
-  *       figure out how to save dmamap handle so can use two step.
-  */
- dma_addr_t sn_dma_map_single(struct device *dev, void *cpu_addr, size_t size,
--			     int direction)
-+			     int flags)
- {
- 	dma_addr_t dma_addr;
- 	unsigned long phys_addr;
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
-+	int dmaflush = pci_dma_flags_get_dmaflush(flags);
- 
- 	BUG_ON(dev->bus != &pci_bus_type);
- 
- 	phys_addr = __pa(cpu_addr);
--	dma_addr = provider->dma_map(pdev, phys_addr, size, SN_DMA_ADDR_PHYS);
-+	if (dmaflush)
-+		dma_addr = provider->dma_map_consistent(pdev, phys_addr, size,
-+							SN_DMA_ADDR_PHYS);
-+	else
-+		dma_addr = provider->dma_map(pdev, phys_addr, size, 
-+					     SN_DMA_ADDR_PHYS);
- 	if (!dma_addr) {
- 		printk(KERN_ERR "%s: out of ATEs\n", __FUNCTION__);
- 		return 0;
-@@ -240,18 +246,20 @@ EXPORT_SYMBOL(sn_dma_unmap_sg);
-  * @dev: device to map for
-  * @sg: scatterlist to map
-  * @nhwentries: number of entries
-- * @direction: direction of the DMA transaction
-+ * @flags: direction of the DMA transaction, and arch-specific attributes
-  *
-  * Maps each entry of @sg for DMA.
-  */
- int sn_dma_map_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
--		  int direction)
-+		  int flags)
- {
- 	unsigned long phys_addr;
- 	struct scatterlist *saved_sg = sg;
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct sn_pcibus_provider *provider = SN_PCIDEV_BUSPROVIDER(pdev);
- 	int i;
-+	int dmaflush = pci_dma_flags_get_dmaflush(flags);
-+	int direction = pci_dma_flags_get_direction(flags);
- 
- 	BUG_ON(dev->bus != &pci_bus_type);
- 
-@@ -259,12 +267,19 @@ int sn_dma_map_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
- 	 * Setup a DMA address for each entry in the scatterlist.
- 	 */
- 	for (i = 0; i < nhwentries; i++, sg++) {
-+		dma_addr_t dma_addr;
- 		phys_addr = SG_ENT_PHYS_ADDRESS(sg);
--		sg->dma_address = provider->dma_map(pdev,
--						    phys_addr, sg->length,
--						    SN_DMA_ADDR_PHYS);
-+		if (dmaflush)
-+			dma_addr = provider->dma_map_consistent(pdev,
-+								phys_addr,
-+								sg->length,
-+								SN_DMA_ADDR_PHYS);
-+		else
-+			dma_addr = provider->dma_map(pdev,
-+						     phys_addr, sg->length,
-+						     SN_DMA_ADDR_PHYS);
- 
--		if (!sg->dma_address) {
-+		if (!(sg->dma_address = dma_addr)) {
- 			printk(KERN_ERR "%s: out of ATEs\n", __FUNCTION__);
- 
- 			/*
-diff --git a/include/asm-ia64/sn/io.h b/include/asm-ia64/sn/io.h
-index 41c73a7..23e9074 100644
---- a/include/asm-ia64/sn/io.h
-+++ b/include/asm-ia64/sn/io.h
-@@ -271,4 +271,26 @@ sn_pci_set_vchan(struct pci_dev *pci_dev, unsigned long *addr, int vchan)
- 	return 0;
- }
- 
-+#define ARCH_CAN_REORDER_DMA
-+/* here we steal some upper bits from the "direction" argument to the
-+ * dma_map_* routines */
-+#define DMA_ATTR_SHIFT 8
-+/* bottom 8 bits for direction, remaining bits for additional "attributes" */
-+#define DMA_FLUSH_ATTR 0x1
-+/* For now the only attribute is "flush in-flight dma when writing to
-+ * this DMA mapped memory" */
-+#define DMA_DIR_MASK   ((1 << DMA_ATTR_SHIFT) - 1)
-+#define DMA_ATTR_MASK  ~DMA_DIR_MASK
-+
-+static inline int pci_dma_flags_set_dmaflush(int dir) {
-+	return (dir | (DMA_FLUSH_ATTR<< DMA_ATTR_SHIFT));
-+}
-+
-+static inline int pci_dma_flags_get_direction(int dir) {
-+	return (dir & DMA_DIR_MASK);
-+}
-+
-+static inline int pci_dma_flags_get_dmaflush(int dir) {
-+	return (((dir & DMA_ATTR_MASK) >> DMA_ATTR_SHIFT) & DMA_FLUSH_ATTR);
-+}
- #endif	/* _ASM_SN_IO_H */
--- 
-Arthur
+greg k-h
