@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762739AbXHXR53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765453AbXHXR5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762739AbXHXR53 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 13:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758733AbXHXR5W
+	id S1765453AbXHXR5s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 13:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764089AbXHXR5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 13:57:22 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:1588 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755689AbXHXR5V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 13:57:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d99Ot4Js9JT0YNXgsbtuSUS2OcsvxhW3N2IfowKgj+VMVKVg1kgzzvldalvWH2RyOoBv4/PqXzsMxgS8etE07W3q6lbt9SqGIR8L70mGkT67T/rQpcBOXBouy3uu+/88ZHAewh+25bQRVOcskeBP+uUVJFl267DQ9G2+yFoKm3A=
-Message-ID: <40f323d00708241057k6549f22fl6abf802f14c03e44@mail.gmail.com>
-Date: Fri, 24 Aug 2007 19:57:20 +0200
-From: "Benoit Boissinot" <bboissin@gmail.com>
-To: "Udo van den Heuvel" <udovdh@xs4all.nl>
-Subject: Re: possible BUG while doing gpg --gen-key
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <46CF079C.7010304@xs4all.nl>
+	Fri, 24 Aug 2007 13:57:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57803 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763990AbXHXR5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 13:57:33 -0400
+Date: Fri, 24 Aug 2007 10:56:08 -0700
+From: Greg KH <gregkh@suse.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>, Tino Keitel <tino.keitel@gmx.de>,
+       Parag Warudkar <parag.warudkar@gmail.com>,
+       Zachary Amsden <zach@vmware.com>, linux-alpha@vger.kernel.org,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Oliver Falk <oliver@linux-kernel.at>
+Subject: Re: [4/4] 2.6.23-rc3: known regressions v3
+Message-ID: <20070824175608.GA5333@suse.de>
+References: <46CF0DEF.5040107@googlemail.com> <46CF17A0.2060503@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46CF079C.7010304@xs4all.nl>
+In-Reply-To: <46CF17A0.2060503@googlemail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/24/07, Udo van den Heuvel <udovdh@xs4all.nl> wrote:
-> While doing gpg --gen-key I can reproduce quite well some sort of
-> crash/bug/etc:
-> # gpg --gen-key
+On Fri, Aug 24, 2007 at 07:38:40PM +0200, Michal Piotrowski wrote:
+> Hi all,
+> 
+> Here is a list of some known regressions in 2.6.23-rc3.
 
-[snip]
+First off, thanks so much for tracking these, it can't be an easy job,
+but one that is really needed.  Keep up the great work.
 
-> We need to generate a lot of random bytes. It is a good idea to perform
-> some other action (type on the keyboard, move the mouse, utilize the
-> disks) during the prime generation; this gives the random number
-> generator a better chance to gain enough entropy.
->
-[snip]
-> Segmentation fault
-> (...)
-> Call Trace:
->  [<c0103b75>] show_trace_log_lvl+0x1a/0x2f
->  [<c0103c27>] show_stack_log_lvl+0x9d/0xa5
->  [<c0103dfc>] show_registers+0x1cd/0x2e3
->  [<c0104010>] die+0xfe/0x200
->  [<c010fb77>] do_page_fault+0x43c/0x511
->  [<c030220a>] error_code+0x6a/0x70
+> USB
+> 
+> Subject         : 2.6.23-rc1: USB hard disk broken
+> References      : http://lkml.org/lkml/2007/7/25/62
+> Last known good : ?
+> Submitter       : Tino Keitel <tino.keitel@gmx.de>
+> Caused-By       : ?
+> Handled-By      : Oliver Neukum <oliver@neukum.org>
+> Status          : unknown
 
-iirg gpg-keygen uses a lot of cpu time during that phase, you probably
-should verify your ram and cpu. This kind of problem is often due to
-faulty hardware.
+Last I heard was that Tino was going to try to do further testing, but
+as he hasn't responded in a few weeks, I'd mark this one down to,
+"unknown and unreproducable".  Unless someone else knows more?
 
-regards,
+thanks,
 
-Benoit
+greg k-h
