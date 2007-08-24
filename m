@@ -1,35 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762749AbXHXV5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762280AbXHXWBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762749AbXHXV5m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 17:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbXHXV5e
+	id S1762280AbXHXWBi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 18:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757733AbXHXWBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 17:57:34 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1442 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751891AbXHXV5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 17:57:34 -0400
-Subject: TUN/TAP driver - MAINTAINERS - bad mailing list entry?
-From: Joe Perches <joe@perches.com>
-To: Maxim Krasnyansky <maxk@qualcomm.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 24 Aug 2007 14:52:10 -0700
-Message-Id: <1187992330.32738.160.camel@localhost>
+	Fri, 24 Aug 2007 18:01:31 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:55041 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757035AbXHXWBa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 18:01:30 -0400
+Date: Fri, 24 Aug 2007 15:00:21 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: sekharan@us.ibm.com
+Cc: Martin Michlmayr <tbm@cyrius.com>, Mike Christie <michaelc@cs.wisc.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: DM_MULTIPATH_RDAC: "scsi_normalize_sense" undefined
+Message-Id: <20070824150021.a7fdc9f6.randy.dunlap@oracle.com>
+In-Reply-To: <1187991182.17399.336.camel@linuxchandra>
+References: <20070824160834.GA7029@deprecation.cyrius.com>
+	<1187991182.17399.336.camel@linuxchandra>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MAINTAINERS curently has:
+On Fri, 24 Aug 2007 14:33:02 -0700 Chandra Seetharaman wrote:
 
-TUN/TAP driver
-P:      Maxim Krasnyansky
-M:      maxk@qualcomm.com
-L:      vtun@office.satix.net
+> It does, but "rdac" _is_ for a SCSI device.
 
-vtun@office.satix.net doesn't seem to be a valid email address.
+It does __what__ ?  depend on SCSI?
+I don't see that in drivers/md/Kconfig.
+Sounds like Martin is correct, SCSI needs to be added, like below.
 
-Should it be removed or modified?
 
+> What device are you using it with ?
+> 
+> On Fri, 2007-08-24 at 18:08 +0200, Martin Michlmayr wrote:
+> > I just got:
+> > 
+> >   Building modules, stage 2.
+> >   MODPOST 414 modules
+> > ERROR: "scsi_normalize_sense" [drivers/md/dm-rdac.ko] undefined!
+> > make[1]: *** [__modpost] Error 1
+> > 
+> > Presumably DM_MULTIPATH_RDAC needs to depend on SCSI (not enabled
+> > here) since it uses scsi_normalize_sense.
+
+---
+
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+DM_MULTIPATH_RDAC uses SCSI API(s) and is for a SCSI device,
+so add SCSI to its depends on to prevent build errors.
+
+Not tested.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/md/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.23-rc3-git6.orig/drivers/md/Kconfig
++++ linux-2.6.23-rc3-git6/drivers/md/Kconfig
+@@ -263,7 +263,7 @@ config DM_MULTIPATH_EMC
+ 
+ config DM_MULTIPATH_RDAC
+ 	tristate "LSI/Engenio RDAC multipath support (EXPERIMENTAL)"
+-	depends on DM_MULTIPATH && BLK_DEV_DM && EXPERIMENTAL
++	depends on DM_MULTIPATH && BLK_DEV_DM && SCSI && EXPERIMENTAL
+ 	---help---
+ 	  Multipath support for LSI/Engenio RDAC.
+ 
