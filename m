@@ -1,81 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762280AbXHXWBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763908AbXHXWHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762280AbXHXWBi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 18:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757733AbXHXWBb
+	id S1763908AbXHXWHe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 18:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760296AbXHXWHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 18:01:31 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:55041 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757035AbXHXWBa (ORCPT
+	Fri, 24 Aug 2007 18:07:24 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48629 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760015AbXHXWHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 18:01:30 -0400
-Date: Fri, 24 Aug 2007 15:00:21 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: sekharan@us.ibm.com
-Cc: Martin Michlmayr <tbm@cyrius.com>, Mike Christie <michaelc@cs.wisc.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: DM_MULTIPATH_RDAC: "scsi_normalize_sense" undefined
-Message-Id: <20070824150021.a7fdc9f6.randy.dunlap@oracle.com>
-In-Reply-To: <1187991182.17399.336.camel@linuxchandra>
-References: <20070824160834.GA7029@deprecation.cyrius.com>
-	<1187991182.17399.336.camel@linuxchandra>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 24 Aug 2007 18:07:23 -0400
+From: akepner@sgi.com
+Date: Fri, 24 Aug 2007 15:06:20 -0700
+To: David Miller <davem@davemloft.net>
+Cc: jchapman@katalix.com, shemminger@linux-foundation.org, ossthema@de.ibm.com,
+       netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
+       tklein@de.ibm.com, stefan.roscher@de.ibm.com
+Subject: Re: RFC: issues concerning the next NAPI interface
+Message-ID: <20070824220620.GU5592@sgi.com>
+References: <200708241747.16592.ossthema@de.ibm.com> <20070824085203.42f4305c@freepuppy.rosehill.hemminger.net> <46CF127D.1090609@katalix.com> <20070824.144711.18301866.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070824.144711.18301866.davem@davemloft.net>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007 14:33:02 -0700 Chandra Seetharaman wrote:
+On Fri, Aug 24, 2007 at 02:47:11PM -0700, David Miller wrote:
 
-> It does, but "rdac" _is_ for a SCSI device.
+> ....
+> Someone should reference that thread _now_ before this discussion goes
+> too far and we repeat a lot of information ......
 
-It does __what__ ?  depend on SCSI?
-I don't see that in drivers/md/Kconfig.
-Sounds like Martin is correct, SCSI needs to be added, like below.
+Here's part of the thread:
+http://marc.info/?t=111595306000001&r=1&w=2
 
+Also, Jamal's paper may be of interest - Google for ""when napi comes 
+to town".
 
-> What device are you using it with ?
-> 
-> On Fri, 2007-08-24 at 18:08 +0200, Martin Michlmayr wrote:
-> > I just got:
-> > 
-> >   Building modules, stage 2.
-> >   MODPOST 414 modules
-> > ERROR: "scsi_normalize_sense" [drivers/md/dm-rdac.ko] undefined!
-> > make[1]: *** [__modpost] Error 1
-> > 
-> > Presumably DM_MULTIPATH_RDAC needs to depend on SCSI (not enabled
-> > here) since it uses scsi_normalize_sense.
+-- 
+Arthur
 
----
-
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-DM_MULTIPATH_RDAC uses SCSI API(s) and is for a SCSI device,
-so add SCSI to its depends on to prevent build errors.
-
-Not tested.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/md/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.23-rc3-git6.orig/drivers/md/Kconfig
-+++ linux-2.6.23-rc3-git6/drivers/md/Kconfig
-@@ -263,7 +263,7 @@ config DM_MULTIPATH_EMC
- 
- config DM_MULTIPATH_RDAC
- 	tristate "LSI/Engenio RDAC multipath support (EXPERIMENTAL)"
--	depends on DM_MULTIPATH && BLK_DEV_DM && EXPERIMENTAL
-+	depends on DM_MULTIPATH && BLK_DEV_DM && SCSI && EXPERIMENTAL
- 	---help---
- 	  Multipath support for LSI/Engenio RDAC.
- 
