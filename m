@@ -1,46 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932683AbXHXCSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934174AbXHXCbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932683AbXHXCSg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 22:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765613AbXHXCS0
+	id S934174AbXHXCbg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 22:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932669AbXHXCb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 22:18:26 -0400
-Received: from waste.org ([66.93.16.53]:56856 "EHLO waste.org"
+	Thu, 23 Aug 2007 22:31:27 -0400
+Received: from mail.windriver.com ([147.11.1.11]:58902 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756181AbXHXCSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 22:18:25 -0400
-Date: Thu, 23 Aug 2007 21:19:53 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, lode leroy <lode_leroy@hotmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] memchr (trivial) optimization
-Message-ID: <20070824021953.GG21720@waste.org>
-References: <BAY105-F323FF3DC8E6C544A2BBE98FFD50@phx.gbl> <200708230213.21332.ioe-lkml@rameria.de> <20070824001351.GA20266@waste.org> <46CE2E61.9010408@goop.org>
+	id S932621AbXHXCb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 22:31:26 -0400
+Message-ID: <46CEEA94.2070902@windriver.com>
+Date: Fri, 24 Aug 2007 10:26:28 -0400
+From: taoyue <yue.tao@windriver.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46CE2E61.9010408@goop.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Katz <jeremy.katz@windriver.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH] sigqueue_free: fix the race with collect_signal()
+References: <20070823134538.GA1358@tv-sign.ru>
+In-Reply-To: <20070823134538.GA1358@tv-sign.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 24 Aug 2007 02:29:41.0868 (UTC) FILETIME=[A05F8AC0:01C7E5F6]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 06:03:29PM -0700, Jeremy Fitzhardinge wrote:
-> Matt Mackall wrote:
-> >   6e:   38 08                   cmp    %cl,(%eax)
-> >   70:   74 07                   je     79 <memchr3+0x1b>
-> >   72:   40                      inc    %eax
-> >   
-> It's a bit gross that the compiler is using inc here rather than lea or
-> add, but still...
-> 
-> Er, something's spending 30% of its time in memchr?  This is not the
-> code to fix.
+Oleg Nesterov wrote:
+> Spotted by taoyue <yue.tao@windriver.com> and Jeremy Katz <jeremy.katz@windriver.com>.
+>
+> collect_signal:				sigqueue_free:
+>
+> 	list_del_init(&first->list);
+> 						if (!list_empty(&q->list)) {
+> 							// not taken
+> 						}
+> 						q->flags &= ~SIGQUEUE_PREALLOC;
+>
+> 	__sigqueue_free(first);			__sigqueue_free(q);
+>
+> Now, __sigqueue_free() is called twice on the same "struct sigqueue" with the
+> obviously bad implications.
+>
+> In particular, this double free breaks the array_cache->avail logic, so the
+> same sigqueue could be "allocated" twice, and the bug can manifest itself via
+> the "impossible" BUG_ON(!SIGQUEUE_PREALLOC) in sigqueue_free/send_sigqueue.
+>
+> Hopefully this can explain these mysterious bug-reports, see
+>
+> 	http://marc.info/?t=118766926500003
+> 	http://marc.info/?t=118466273000005
+>
+> Alexey Dobriyan reports this patch makes the difference for the testcase, but
+> nobody has an access to the application which opened the problems originally.
+>
+> Also, this patch removes tasklist lock/unlock, ->siglock is enough.
+>
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+>
+> --- t/kernel/signal.c~SQFREE	2007-08-22 20:06:31.000000000 +0400
+> +++ t/kernel/signal.c	2007-08-23 16:02:57.000000000 +0400
+> @@ -1297,20 +1297,19 @@ struct sigqueue *sigqueue_alloc(void)
+>  void sigqueue_free(struct sigqueue *q)
+>  {
+>  	unsigned long flags;
+> +	spinlock_t *lock = &current->sighand->siglock;
+> +
+>  	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
+>  	/*
+>  	 * If the signal is still pending remove it from the
+> -	 * pending queue.
+> +	 * pending queue. We must hold ->siglock while testing
+> +	 * q->list to serialize with collect_signal().
+>  	 */
+> -	if (unlikely(!list_empty(&q->list))) {
+> -		spinlock_t *lock = &current->sighand->siglock;
+> -		read_lock(&tasklist_lock);
+> -		spin_lock_irqsave(lock, flags);
+> -		if (!list_empty(&q->list))
+> -			list_del_init(&q->list);
+> -		spin_unlock_irqrestore(lock, flags);
+> -		read_unlock(&tasklist_lock);
+> -	}
+> +	spin_lock_irqsave(lock, flags);
+> +	if (!list_empty(&q->list))
+> +		list_del_init(&q->list);
+> +	spin_unlock_irqrestore(lock, flags);
+> +
+>  	q->flags &= ~SIGQUEUE_PREALLOC;
+>  	__sigqueue_free(q);
+>  }
+>
+>
+>   
+    Applying previous patch，it seems likely that the __sigqueue_free() is also called twice.
 
-Indeed. I'm just pointing out the general optimization of walking
-one counter instead of two.
+collect_signal:				sigqueue_free:
 
-Hmm, perhaps the culprit is validate_nla?
+	list_del_init(&first->list);
+                                        spin_lock_irqsave(lock, flags);
+                                        if (!list_empty(&q->list))
+                                              list_del_init(&q->list);
+                                        spin_unlock_irqrestore(lock, flags);
+                                        q->flags &= ~SIGQUEUE_PREALLOC;
 
--- 
-Mathematics is the supreme nostalgia of our time.
+        __sigqueue_free(first);		__sigqueue_free(q);
+
+
+
+yue.tao
