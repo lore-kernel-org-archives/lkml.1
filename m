@@ -1,109 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbXHXQwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763346AbXHXQxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762298AbXHXQwe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 12:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbXHXQwY
+	id S1763346AbXHXQxS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 12:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758489AbXHXQxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 12:52:24 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:27798 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755592AbXHXQwW (ORCPT
+	Fri, 24 Aug 2007 12:53:06 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2836 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756416AbXHXQxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 12:52:22 -0400
-Date: Fri, 24 Aug 2007 09:51:03 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: postfail@hushmail.com
-Cc: <alan@lxorguk.ukuu.org.uk>, <jesper.juhl@gmail.com>,
-       <lists-receive@programmierforen.de>, <linux-kernel@vger.kernel.org>,
-       <kernel-janitors@vger.kernel.org>
-Subject: Re: Ideas on column length in kernel "problem"?
-Message-Id: <20070824095103.55556e1f.randy.dunlap@oracle.com>
-In-Reply-To: <20070824163149.B7636C381C@mailserver10.hushmail.com>
-References: <20070824163149.B7636C381C@mailserver10.hushmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 24 Aug 2007 12:53:04 -0400
+Message-ID: <46CF0CCF.7010702@shadowen.org>
+Date: Fri, 24 Aug 2007 17:52:31 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Mel Gorman <mel@skynet.ie>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 Boot NUMA kernels on non-NUMA hardware with DISCONTIG
+ memory model
+References: <20070824162814.GD26374@skynet.ie> <20070824163521.GA16227@bingen.suse.de>
+In-Reply-To: <20070824163521.GA16227@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007 12:31:43 -0400 Scott Thompson wrote:
+Andi Kleen wrote:
+>> This reserved portion of the KVA must be PMD aligned. 
+> 
+> Why do they need to be PMD aligned?  
 
-> On Fri, 24 Aug 2007 07:07:54 -0400 Jesper Juhl 
-> <jesper.juhl@gmail.com> wrote:
-> >On 24/08/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> >> > I think this is also a matter of conding style. 
-> >Documentation/CodingStyle says:
-> >> >
-> >> > "The limit on the length of lines is 80 columns and this is a 
-> >hard limit."
-> >>
-> >> As has repeatedly been stated this is a bug in 
-> >Documentation/CodingStyle and bears no resemblence to reality.
-> >>
-> 
-> Quite the hornet's nest I've stirred up -- I'm not trying to rock 
-> the boat, just trying to row.
-> 
-> Meanwhile, I ran a couple programs against the 2.6.22.1 source to 
-> get some statistics on the source in the linux kernel tree to 
-> understand what 'reality' is:
-> 
-> Number of files -- 23742
-> Number of lines > 80 columns:  247057
-> Number of lines > 90 columns:  127016
-> Number of lines > 100 columns: 21
-> 
-> The *winner* at 482 columns is a commented out line in
-> 
-> /linux-2.6.22.1/drivers/pci/hotplug/ibmphp_ebda.c 440 //		debug 
-> ("rio_node_id: %x\nbbar: %x\nrio_type: %x\nowner_id: 
-> %x\nport0_node: %x\nport0_port: %x\nport1_node: %x\nport1_port: 
-> %x\nfirst_slot_num: %x\nstatus: %x\n", rio_detail_ptr->rio_node_id, 
-> rio_detail_ptr->bbar, rio_detail_ptr->rio_type, rio_detail_ptr-
-> >owner_id, rio_detail_ptr->port0_node_connect, rio_detail_ptr-
-> >port0_port_connect, rio_detail_ptr->port1_node_connect, 
-> rio_detail_ptr->port1_port_connect, rio_detail_ptr->first_slot_num, 
-> rio_detail_ptr->status);
-> 
-> So I think updating the text in coding style one way or another is 
-> a good thing since there are ~248k exceptions to the style rule...
+That comes from the fact that the KVA in x86 has traditionally been
+mapped with huge pages where at all possible, for performance reasons.
+The purpose of the remap itself always has been performance based, we
+are remapping node-local memory into KVA to hold the memmap in part to
+exploit locality of process to its memory, and to in part to distribute
+the load on the NUMA memory infrastructure by "striping" the storage.
+As a result it makes sense to map these remapped areas with huge pages
+also.  As is evidenced by the fact this bug is only coming to light now,
+it is somewhat rare for the end of a NODE to be miss-aligned below the
+huge page level (2/4MB).
 
-We could update CodingStyle, but it's still just a guideline,
-not a strict requirement, so how would that fix anything?
-
-> I can make the bins + scripts I used to gather this and output of 
-> this run available if anyone is interested.
-> 
-> However, this isn't the whole story.. one of the side effects of 
-> the patch system through email clients are that the function name 
-> in the 'git diff' (or comparable) output can tack on 20-25 columns 
-> of header and further cause wordwrap strife and bring more patches 
-> into this problem.  It *appears* that many maintainers are pretty 
-> good at recognizing this and purging portions of the function names 
-> when forwarding them around, but it's still a bigger and common 
-> 'problem' for the wordwrapping clients.
-
-diff -p output is preferred for diffs (for review).
-I'm not aware of people purging that info.
-
-> Example: 
-> @@ -189,6 +189,9 @@ static __devinit int ixp4xx_pata_probe(struct 
-> platform_device *pdev)
-> 
-> Common advice appears to be to get smtp working on gmail, and I 
-> thank the list for their suggestions.  If I get one/two ways 
-> working that are compliant for patch submittal w/o wordwrap (et al) 
-> I'll start a 'howto' from my notes on yahoo and gmail/smtp setup 
-> and post that up on the interweb.
-
-Thanks.
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-apw
