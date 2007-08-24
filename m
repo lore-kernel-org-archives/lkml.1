@@ -1,86 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762498AbXHXOwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763231AbXHXO5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762498AbXHXOwt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 10:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbXHXOwj
+	id S1763231AbXHXO5Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 10:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbXHXO5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 10:52:39 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:47284 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754182AbXHXOwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 10:52:38 -0400
-Date: Fri, 24 Aug 2007 15:52:34 +0100
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       "Luck, Tony" <tony.luck@intel.com>, Jeremy Higdon <jeremy@sgi.com>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-ia64@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org
-Subject: Re: [PATCH] Fix find_next_best_node (Re: [BUG] 2.6.23-rc3-mm1 Kernel panic - not syncing: DMA: Memory would be corrupted)
-Message-ID: <20070824145233.GA26374@skynet.ie>
-References: <617E1C2C70743745A92448908E030B2A023EB020@scsmsx411.amr.corp.intel.com> <20070823142133.9359a1ce.akpm@linux-foundation.org> <20070824153945.3C75.Y-GOTO@jp.fujitsu.com>
+	Fri, 24 Aug 2007 10:57:03 -0400
+Received: from 85-18-251-172.ip.fastwebnet.it ([85.18.251.172]:46440 "EHLO
+	memento.home.lan" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751252AbXHXO5C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 10:57:02 -0400
+From: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+Subject: [PATCH] Script to check for undefined Kconfig symbols - v2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+Date: Fri, 24 Aug 2007 16:56:49 +0200
+Message-ID: <20070824145649.18124.33973.stgit@americanbeauty.home.lan>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070824153945.3C75.Y-GOTO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (24/08/07 15:53), Yasunori Goto didst pronounce:
-> 
-> I found find_next_best_node() was wrong.
-> I confirmed boot up by the following patch.
-> Mel-san, Kamalesh-san, could you try this?
-> 
+In this version, I've updated the scripts to search for "\<$symb_bare\>" instead
+of $symb_bare in Kconfig files. Please ignore my previous message.
 
-This boots the IA-64 successful and gets rid of that DMA corrupts
-memory message. As a bonus, it fixes up the memoryless nodes (the bug
-where Total pages == 0 and there is a BUG in page_alloc.c) by building
-zonelists properly. The machine still fails to boot with the more familiar
-net/core/skbuff.c:95 but that is a separate problem.
+To avoid to look manually for used but undefined Kconfig variables, I've
+written a script which tries do this efficiently, in case all other attention
+fail. It accounts for _MODULE suffix and for UML_ prefixes to Kconfig variable,
+but otherwise looks for exact matches (i.e. \<CONFIG_; this is done to exclude
+macros like MMCONFIG_).
 
-Well spotted Yasunori-san.
+Undefined Kconfig variables should be not be removed without care, but for
+instance arch/i386/boot/ uses a bunch of undefined Kconfig vars:
 
-Andrew, this fixes a real problem and should be considered a fix to
-memoryless-nodes-fixup-uses-of-node_online_map-in-generic-code.patch unless
-Christoph Lameter objects.
+$ scripts/checkunknowndefines.sh arch/i386/boot/
+arch/i386/boot/video.h uses undefined symbol VIDEO_400_HACK
+arch/i386/boot/video-vga.c uses undefined symbol VIDEO_400_HACK
+arch/i386/boot/video.c uses undefined symbol VIDEO_RETAIN
+arch/i386/boot/video.h uses undefined symbol VIDEO_RETAIN
+arch/i386/boot/video.h uses undefined symbol VIDEO_SVGA
+arch/i386/boot/video.h uses undefined symbol VIDEO_VESA
+arch/i386/boot/video-vesa.c uses undefined symbol VIDEO_VESA
 
-> Bye.
-> ---
-> 
-> Fix decision of memoryless node in find_next_best_node().
-> This can be cause of SW-IOMMU's allocation failure.
-> 
-> This patch is for 2.6.23-rc3-mm1.
-> 
-> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-> 
+Hope you can merge this in -mm and use it frequently (probably, a script to look for
+regressions in its output is useful). It should also be mentioned in
+SubmittingPatches if you agree.
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
+---
 
-> ---
->  mm/page_alloc.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: current/mm/page_alloc.c
-> ===================================================================
-> --- current.orig/mm/page_alloc.c	2007-08-24 16:03:17.000000000 +0900
-> +++ current/mm/page_alloc.c	2007-08-24 16:04:06.000000000 +0900
-> @@ -2136,7 +2136,7 @@ static int find_next_best_node(int node,
->  		 * Note:  N_HIGH_MEMORY state not guaranteed to be
->  		 *        populated yet.
->  		 */
-> -		if (pgdat->node_present_pages)
-> +		if (!pgdat->node_present_pages)
->  			continue;
->  
->  		/* Don't want a node to appear more than once */
-> 
+ scripts/checkunknowndefines.sh |   59 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 59 insertions(+), 0 deletions(-)
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+diff --git a/scripts/checkunknowndefines.sh b/scripts/checkunknowndefines.sh
+new file mode 100755
+index 0000000..dbb5cef
+--- /dev/null
++++ b/scripts/checkunknowndefines.sh
+@@ -0,0 +1,59 @@
++#!/bin/sh
++# Find Kconfig variables used in source code but never defined in Kconfig
++# Copyright (C) 2007, Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
++
++# Tested with dash.
++paths="$@"
++[ -z "$paths" ] && paths=.
++
++# Doing this once at the beginning saves a lot of time, on a cache-hot tree.
++Kconfigs="`find . -name 'Kconfig' -o -name 'Kconfig*[^~]'`"
++
++echo "File list \tundefined symbol used"
++find $paths -name '*.[chS]' -o -name 'Makefile' -o -name 'Makefile*[^~]'| while read i
++do
++	# Output the bare Kconfig variable and the filename; the _MODULE part at
++	# the end is not removed here (would need perl an not-hungry regexp for that).
++	sed -ne 's!^.*\<\(UML_\)\?CONFIG_\([0-9A-Z_]\+\).*!\2 '$i'!p' < $i
++done | \
++# Smart "sort|uniq" implemented in awk and tuned to collect the names of all
++# files which use a given symbol
++awk '{map[$1, count[$1]++] = $2; }
++END {
++	for (combIdx in map) {
++		split(combIdx, separate, SUBSEP);
++		# The value may have been removed.
++		if (! ( (separate[1], separate[2]) in map ) )
++			continue;
++		symb=separate[1];
++		printf "%s ", symb;
++		#Use gawk extension to delete the names vector
++		delete names;
++		#Portably delete the names vector
++		#split("", names);
++		for (i=0; i < count[symb]; i++) {
++			names[map[symb, i]] = 1;
++			# Unfortunately, we may still encounter symb, i in the
++			# outside iteration.
++			delete map[symb, i];
++		}
++		i=0;
++		for (name in names) {
++			if (i > 0)
++				printf ", %s", name;
++			else
++				printf "%s", name;
++			i++;
++		}
++		printf "\n";
++	}
++}' |
++while read symb files; do
++	# Remove the _MODULE suffix when checking the variable name. This should
++	# be done only on tristate symbols, actually, but Kconfig parsing is
++	# beyond the purpose of this script.
++	symb_bare=`echo $symb | sed -e 's/_MODULE//'`
++	if ! grep -q "\<$symb_bare\>" $Kconfigs; then
++		echo "$files: \t$symb"
++	fi
++done|sort
+
