@@ -1,110 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932737AbXHXJfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765925AbXHXJi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932737AbXHXJfk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 05:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762606AbXHXJfM
+	id S1765925AbXHXJi7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 05:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761749AbXHXJiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 05:35:12 -0400
-Received: from mail.windriver.com ([147.11.1.11]:64748 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762073AbXHXJfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 05:35:10 -0400
-Message-ID: <46CF4DCB.6030304@windriver.com>
-Date: Fri, 24 Aug 2007 17:29:47 -0400
-From: taoyue <yue.tao@windriver.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Fri, 24 Aug 2007 05:38:51 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43487 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761357AbXHXJiv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 05:38:51 -0400
+Date: Fri, 24 Aug 2007 11:37:38 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: what is the value of the macro "__setup_param"?
+Message-ID: <20070824093738.GA30705@stusta.de>
+References: <Pine.LNX.4.64.0708240516080.14019@localhost.localdomain>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH] sigqueue_free: fix the race with collect_signal()
-References: <20070823134538.GA1358@tv-sign.ru> <46CEEA94.2070902@windriver.com> <20070824074558.GA86@tv-sign.ru>
-In-Reply-To: <20070824074558.GA86@tv-sign.ru>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Aug 2007 09:33:02.0393 (UTC) FILETIME=[C4441290:01C7E631]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708240516080.14019@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 08/24, taoyue wrote:
->   
->> Oleg Nesterov wrote:
->>     
->>> --- t/kernel/signal.c~SQFREE	2007-08-22 20:06:31.000000000 +0400
->>> +++ t/kernel/signal.c	2007-08-23 16:02:57.000000000 +0400
->>> @@ -1297,20 +1297,19 @@ struct sigqueue *sigqueue_alloc(void)
->>> void sigqueue_free(struct sigqueue *q)
->>> {
->>> 	unsigned long flags;
->>> +	spinlock_t *lock = &current->sighand->siglock;
->>> +
->>> 	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
->>> 	/*
->>> 	 * If the signal is still pending remove it from the
->>> -	 * pending queue.
->>> +	 * pending queue. We must hold ->siglock while testing
->>> +	 * q->list to serialize with collect_signal().
->>> 	 */
->>> -	if (unlikely(!list_empty(&q->list))) {
->>> -		spinlock_t *lock = &current->sighand->siglock;
->>> -		read_lock(&tasklist_lock);
->>> -		spin_lock_irqsave(lock, flags);
->>> -		if (!list_empty(&q->list))
->>> -			list_del_init(&q->list);
->>> -		spin_unlock_irqrestore(lock, flags);
->>> -		read_unlock(&tasklist_lock);
->>> -	}
->>> +	spin_lock_irqsave(lock, flags);
->>> +	if (!list_empty(&q->list))
->>> +		list_del_init(&q->list);
->>> +	spin_unlock_irqrestore(lock, flags);
->>> +
->>> 	q->flags &= ~SIGQUEUE_PREALLOC;
->>> 	__sigqueue_free(q);
->>> }
->>>
->>>
->>>  
->>>       
->>    Applying previous patch???it seems likely that the __sigqueue_free() is 
->>    also called twice.
->>
->> collect_signal:				sigqueue_free:
->>
->> 	list_del_init(&first->list);
->>                                        spin_lock_irqsave(lock, flags);
->>     
->                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->   
->>                                        if (!list_empty(&q->list))
->>                                              list_del_init(&q->list);
->>                                        spin_unlock_irqrestore(lock, flags);
->>                                        q->flags &= ~SIGQUEUE_PREALLOC;
->>
->>        __sigqueue_free(first);		__sigqueue_free(q);
->>     
->
-> collect_signal() is always called under ->siglock which is also taken by
-> sigqueue_free(), so this is not possible.
->
-> Basically, this patch is the same one-liner I sent you before
->
-> 	http://marc.info/?l=linux-kernel&m=118772206603453&w=2
->
-> (Thanks for the additional testing and report, btw).
->
-> P.S. It would be nice to know if this patch solves the problems reported
-> by Jeremy, but his email is disabled.
->
-> Oleg.
->
->   
-I know, using current->sighand->siglock to prevent one sigqueue
-is free twice. I want to know whether it is possible that the two
-function is called in different thread. If that, the spin_lock is useless.
+On Fri, Aug 24, 2007 at 05:19:29AM -0400, Robert P. J. Day wrote:
+> 
+>   perhaps i'm missing it, but it seems that the macro __setup_param is
+> entirely superfluous:
+> 
+> $ grep -rw __setup_param *
+> include/linux/init.h:#define __setup_param(str, unique_id, fn, early)      \
+> include/linux/init.h:   __setup_param(str, unique_id, NULL, 0)
+> include/linux/init.h:   __setup_param(str, fn, fn, 0)
+> include/linux/init.h:   __setup_param(str, fn, fn, 1)
+> include/linux/init.h:#define __setup_param(str, unique_id, fn)  /* nothing */
+> $
+> 
+> or am i must misreading something badly?
 
-yue.tao
+You miss that the inner 3 lines of your grep result are the usages...
+
+> rday
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
