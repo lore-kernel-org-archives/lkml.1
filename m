@@ -1,99 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763179AbXHXNp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764805AbXHXNqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763179AbXHXNp2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 09:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbXHXNpV
+	id S1764805AbXHXNqm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 09:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759149AbXHXNqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 09:45:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39948 "EHLO mx3.mail.elte.hu"
+	Fri, 24 Aug 2007 09:46:35 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:53535 "EHLO smtp2.it.da.ut.ee"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753015AbXHXNpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 09:45:20 -0400
-Date: Fri, 24 Aug 2007 15:45:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Al Boldi <a1426z@gawab.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-Message-ID: <20070824134510.GA21382@elte.hu>
-References: <200708111344.42934.a1426z@gawab.com> <200708122243.05191.a1426z@gawab.com> <20070821105858.GC26598@elte.hu> <200708220127.30698.a1426z@gawab.com>
+	id S1753172AbXHXNqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 09:46:34 -0400
+Date: Fri, 24 Aug 2007 16:46:33 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: isapnp & module autoload (udev?)
+In-Reply-To: <3ae72650708240540qcf05809j609e0fbb05f221b3@mail.gmail.com>
+Message-ID: <Pine.SOC.4.64.0708241642540.27738@math.ut.ee>
+References: <Pine.SOC.4.64.0708241434440.27738@math.ut.ee>
+ <3ae72650708240540qcf05809j609e0fbb05f221b3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708220127.30698.a1426z@gawab.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> What's in the module? What does:
+>   /sbin/modinfo <kernel module name> | grep alias
+> print?
 
-* Al Boldi <a1426z@gawab.com> wrote:
+filename:       /lib/modules/2.6.23-rc3/kernel/sound/isa/sb/snd-sb16.ko
+description:    Sound Blaster 16
+license:        GPL
+author:         Jaroslav Kysela <perex@suse.cz>
+alias:          pnp:ctBA03b0dPNPb003*
+alias:          pnp:cCTL00f0dCTL0043*
+alias:          pnp:cCTL0086dCTL0041*
+alias:          pnp:cCTL0080dCTL0041*
+alias:          pnp:cCTL0070dCTL0001*
+alias:          pnp:cCTL0051dCTL0001*
+alias:          pnp:cCTL002cdCTL0031*
+alias:          pnp:cCTL002bdCTL0031*
+alias:          pnp:cCTL002adCTL0031*
+alias:          pnp:cCTL0029dCTL0031*
+alias:          pnp:cCTL0028dCTL0031*
+alias:          pnp:cCTL0027dCTL0031*
+alias:          pnp:cCTL0026dCTL0031*
+alias:          pnp:cCTL0025dCTL0031*
+alias:          pnp:cCTL0024dCTL0031*
+depends:        snd-sb-common,snd-opl3-lib,snd-mpu401-uart,snd-sb16-dsp,snd-pcm,snd,snd-sb16-csp
+vermagic:       2.6.23-rc3 SMP mod_unload PENTIUMII 4KSTACKS
+parm:           index:Index value for SoundBlaster 16 soundcard. (array of int)
+parm:           id:ID string for SoundBlaster 16 soundcard. (array of charp)
+parm:           enable:Enable SoundBlaster 16 soundcard. (array of bool)
+parm:           isapnp:PnP detection for specified soundcard. (array of bool)
+parm:           port:Port # for SB16 driver. (array of long)
+parm:           mpu_port:MPU-401 port # for SB16 driver. (array of long)
+parm:           fm_port:FM port # for SB16 PnP driver. (array of long)
+parm:           irq:IRQ # for SB16 driver. (array of int)
+parm:           dma8:8-bit DMA # for SB16 driver. (array of int)
+parm:           dma16:16-bit DMA # for SB16 driver. (array of int)
+parm:           mic_agc:Mic Auto-Gain-Control switch. (array of int)
+parm:           csp:ASP/CSP chip support. (array of int)
 
-> > > The problem is that consecutive runs don't give consistent results 
-> > > and sometimes stalls.  You may want to try that.
-> >
-> > well, there's a natural saturation point after a few hundred tasks 
-> > (depending on your CPU's speed), at which point there's no idle time 
-> > left. From that point on things get slower progressively (and the 
-> > ability of the shell to start new ping tasks is impacted as well), 
-> > but that's expected on an overloaded system, isnt it?
-> 
-> Of course, things should get slower with higher load, but it should be 
-> consistent without stalls.
-> 
-> To see this problem, make sure you boot into /bin/sh with the normal 
-> VGA console (ie. not fb-console).  Then try each loop a few times to 
-> show different behaviour; loops like:
-> 
-> # for ((i=0; i<3333; i++)); do ping 10.1 -A > /dev/null & done
-> 
-> # for ((i=0; i<3333; i++)); do nice -99 ping 10.1 -A > /dev/null & done
-> 
-> # { for ((i=0; i<3333; i++)); do
->         ping 10.1 -A > /dev/null &
->     done } > /dev/null 2>&1
-> 
-> Especially the last one sometimes causes a complete console lock-up, 
-> while the other two sometimes stall then surge periodically.
-
-ok. I think i might finally have found the bug causing this. Could you 
-try the fix below, does your webserver thread-startup test work any 
-better?
-
-	Ingo
-
---------------------------->
-Subject: sched: fix startup penalty calculation
-From: Ingo Molnar <mingo@elte.hu>
-
-fix task startup penalty miscalculation: sysctl_sched_granularity is
-unsigned int and wait_runtime is long so we first have to convert it
-to long before turning it negative ...
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched_fair.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux/kernel/sched_fair.c
-===================================================================
---- linux.orig/kernel/sched_fair.c
-+++ linux/kernel/sched_fair.c
-@@ -1048,7 +1048,7 @@ static void task_new_fair(struct rq *rq,
- 	 * -granularity/2, so initialize the task with that:
- 	 */
- 	if (sysctl_sched_features & SCHED_FEAT_START_DEBIT)
--		p->se.wait_runtime = -(sysctl_sched_granularity / 2);
-+		p->se.wait_runtime = -((long)sysctl_sched_granularity / 2);
  
- 	__enqueue_entity(cfs_rq, se);
- }
+> And what does the hardware say? What does:
+>   grep . /sys/bus/pnp/devices/*/id
+> print?
+
+/sys/bus/pnp/devices/00:00/id:PNP0c01
+/sys/bus/pnp/devices/00:01/id:PNP0000
+/sys/bus/pnp/devices/00:02/id:PNP0200
+/sys/bus/pnp/devices/00:03/id:PNP0100
+/sys/bus/pnp/devices/00:04/id:PNP0b00
+/sys/bus/pnp/devices/00:05/id:PNP0303
+/sys/bus/pnp/devices/00:06/id:PNP0800
+/sys/bus/pnp/devices/00:07/id:PNP0c04
+/sys/bus/pnp/devices/00:08/id:PNP0c02
+/sys/bus/pnp/devices/00:09/id:PNP0c02
+/sys/bus/pnp/devices/00:0a/id:PNP0501
+/sys/bus/pnp/devices/00:0b/id:PNP0501
+/sys/bus/pnp/devices/00:0c/id:PNP0401
+/sys/bus/pnp/devices/00:0d/id:PNP0700
+/sys/bus/pnp/devices/00:0e/id:PNP0a03
+/sys/bus/pnp/devices/01:01.00/id:CTL0001
+/sys/bus/pnp/devices/01:01.01/id:CTL7001
+/sys/bus/pnp/devices/01:01.01/id:PNPb02f
+
+CTL0001 seems to be present in both but it occurs with CTL0070 or 
+CTL0051.
+
+-- 
+Meelis Roos (mroos@linux.ee)
