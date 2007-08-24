@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764627AbXHXGEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764059AbXHXGHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764627AbXHXGEY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 02:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbXHXGEQ
+	id S1764059AbXHXGHF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 02:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbXHXGG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 02:04:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34831 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752721AbXHXGEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 02:04:15 -0400
-Date: Fri, 24 Aug 2007 08:04:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Nick Piggin <npiggin@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: Reduce overhead in balance_tasks()
-Message-ID: <20070824060403.GB24742@elte.hu>
-References: <46C2842E.3010806@bigpond.net.au>
+	Fri, 24 Aug 2007 02:06:56 -0400
+Received: from armagnac.ifi.unizh.ch ([130.60.75.72]:39042 "EHLO
+	albatross.madduck.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750815AbXHXGGz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 02:06:55 -0400
+Date: Fri, 24 Aug 2007 08:06:45 +0200
+From: martin f krafft <madduck@madduck.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: what does this mean: "kernel: 7.0.0.1:53 L=79 S=0x00 I=39869
+	F=0x4000 T=64"
+Message-ID: <20070824060645.GB18166@piper.oerlikon.madduck.net>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <20070823100045.GA18793@piper.oerlikon.madduck.net> <46CDA81C.4060705@ums.usu.ru> <20070823154244.GA15919@piper.oerlikon.madduck.net> <46CDBA3D.7040402@ums.usu.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="lEGEL1/lMxI0MVQ2"
 Content-Disposition: inline
-In-Reply-To: <46C2842E.3010806@bigpond.net.au>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <46CDBA3D.7040402@ums.usu.ru>
+X-Motto: Keep the good times rollin'
+X-OS: Debian GNU/Linux lenny/sid kernel 2.6.22-1-amd64 x86_64
+X-Spamtrap: madduck.bogus@madduck.net
+X-Subliminal-Message: debian/rules!
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Williams <pwil3058@bigpond.net.au> wrote:
+--lEGEL1/lMxI0MVQ2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> At the moment, balance_tasks() provides low level functionality for 
-> both
->  move_tasks() and move_one_task() (indirectly) via the load_balance() 
-> function (in the sched_class interface) which also provides dual 
-> functionality.  This dual functionality complicates the interfaces and 
-> internal mechanisms and makes the run time overhead of operations that 
-> are called with two run queue locks held.
-> 
-> This patch addresses this issue and reduces the overhead of these 
-> operations.
+also sprach Alexander E. Patrakov <patrakov@ums.usu.ru> [2007.08.23.1847 +0=
+200]:
+> However, the style does look similar to a message in ipw2100.c:
+>
+> IPW_DEBUG_TX("TX%d V=3D%p P=3D%04X T=3D%04X L=3D%d\n", i,
+>              &txq->drv[i],
+>              (u32) (txq->nic + i * sizeof(struct ipw2100_bd)),
+>              txq->drv[i].host_addr, txq->drv[i].buf_length);
 
-hm, i like it, and added it to my queue (probably .24 material though), 
-but note that it increases .text and .data overhead:
+This is not being used on the machine.
 
-   text    data     bss     dec     hex filename
-  41028   37794    2168   80990   13c5e sched.o.before
-  41349   37826    2168   81343   13dbf sched.o.after
+--=20
+martin;              (greetings from the heart of the sun.)
+  \____ echo mailto: !#^."<*>"|tr "<*> mailto:" net@madduck
+=20
+"never attribute to malice what can be
+ adequately explained by incompetence."=20
+                                                       -- mark twain
+=20
+spamtraps: madduck.bogus@madduck.net
 
-is that expected?
+--lEGEL1/lMxI0MVQ2
+Content-Type: application/pgp-signature; name="digital_signature_gpg.asc"
+Content-Description: Digital signature (see http://martin-krafft.net/gpg/)
+Content-Disposition: inline
 
-	Ingo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGznV1IgvIgzMMSnURApfcAJkBI2nT5FgCQhatlJ/+20slcBMRmACfR+oH
+91ALnOv/cFwxId203yEV7FM=
+=h6jP
+-----END PGP SIGNATURE-----
+
+--lEGEL1/lMxI0MVQ2--
