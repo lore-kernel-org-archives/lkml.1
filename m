@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763981AbXHXGwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933311AbXHXGxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763981AbXHXGwy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 02:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbXHXGwr
+	id S933311AbXHXGxf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 02:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757671AbXHXGx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 02:52:47 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:22452 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750815AbXHXGwq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 02:52:46 -0400
-Date: Thu, 23 Aug 2007 23:50:43 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Joe Perches <joe@perches.com>, torvalds <torvalds@linux-foundation.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH v2] MAINTTAINERS: update DCO info
-Message-Id: <20070823235043.ff1c5484.randy.dunlap@oracle.com>
-In-Reply-To: <46CCC010.8070207@oracle.com>
-References: <20070822082421.5c20b3da.randy.dunlap@oracle.com>
-	<1187823476.24819.52.camel@localhost>
-	<46CCC010.8070207@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 24 Aug 2007 02:53:26 -0400
+Received: from gw.goop.org ([64.81.55.164]:42063 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751540AbXHXGx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 02:53:26 -0400
+Message-ID: <46CE8069.9070404@goop.org>
+Date: Thu, 23 Aug 2007 23:53:29 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Chris Wright <chrisw@sous-sol.org>,
+       stable@kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] Fix preemptible lazy mode bug
+References: <46CE70C8.2030005@vmware.com>
+In-Reply-To: <46CE70C8.2030005@vmware.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Zachary Amsden wrote:
+> I recently sent off a fix for lazy vmalloc faults which can happen
+> under paravirt when lazy mode is enabled.  Unfortunately, I jumped the
+> gun a bit on fixing this.  I neglected to notice that since the new
+> call to flush the MMU update queue is called from the page fault
+> handler, it can be pre-empted.  Both VMI and Xen use per-cpu variables
+> to track lazy mode state, as all previous calls to set, disable, or
+> flush lazy mode happened from a non-preemptable state.
 
-Drop the URL for DCO (URL is invalid).
-Also, point to SubmittingPatches for the current DCO.
+Hm.  Doing any kind of lazy-state operation with preemption enabled is
+fundamentally meaningless.  How does it get into a preemptable state
+with a lazy mode enabled now?  If a sequence of code with preempt
+disabled touches a missing vmalloc mapping, it gets a fault to fix up
+the mapping, and the fault handler can end up preempting the thread? 
+That sounds like a larger bug than just paravirt lazy mode problems.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- MAINTAINERS |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
---- linux-2.6.23-rc3-git6.orig/MAINTAINERS
-+++ linux-2.6.23-rc3-git6/MAINTAINERS
-@@ -44,9 +44,10 @@ trivial patch so apply some common sense
- 	or does something very odd once a month document it.
- 
- 	PLEASE remember that submissions must be made under the terms
--	of the OSDL certificate of contribution
--	(http://www.osdl.org/newsroom/press_releases/2004/2004_05_24_dco.html)
--	and should include a Signed-off-by: line.
-+	of the OSDL certificate of contribution and should include a
-+	Signed-off-by: line.  The current version of this "Developer's
-+	Certificate of Origin" (DCO) is listed in the file
-+	Documentation/SubmittingPatches.
- 
- 6.	Make sure you have the right to send any changes you make. If you
- 	do changes at work you may find your employer owns the patch
+    J
