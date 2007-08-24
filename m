@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934350AbXHXCem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934551AbXHXCe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934350AbXHXCem (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 22:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932484AbXHXCed
+	id S934551AbXHXCe5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 22:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934029AbXHXCei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 22:34:33 -0400
-Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:63436 "EHLO
-	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932095AbXHXCec (ORCPT
+	Thu, 23 Aug 2007 22:34:38 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:21369 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933878AbXHXCeg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 22:34:32 -0400
-Message-Id: <200708240233.AA00248@paprika.lab.ntt.co.jp>
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Date: Fri, 24 Aug 2007 11:33:41 +0900
-To: Michael Halcrow <mhalcrow@us.ibm.com>
-Cc: moriai.satoshi@lab.ntt.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       ecryptfs-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Ecryptfs-devel] [PATCH] eCryptfs: fix possible fault in ecryptfs_sync_page
-In-Reply-To: <20070823143745.GM22689@halcrow.austin.ibm.com>
-References: <20070823143745.GM22689@halcrow.austin.ibm.com>
+	Thu, 23 Aug 2007 22:34:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jEWwxviggV07HNIceb2EAqkVmJJUc/3qDOOGu9dZmujst0jt26+PHkBc0Ek2r2YMX3wBdr6DIst+S0i4gRGXaKAA3d1c/5J0X6OmLXg0ahqnc+n5IHtOj1UZg4//Ni2lQ7U0UkfFwFp1yCJE4Q4l6jvBx+zScE0gmQMS430Vc2I=
+Message-ID: <625fc13d0708231934q5b369b4fh1a5c83def0e56a0d@mail.gmail.com>
+Date: Thu, 23 Aug 2007 21:34:34 -0500
+From: "Josh Boyer" <jwboyer@gmail.com>
+To: "Andy Isaacson" <adi@hexapodia.org>
+Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
+Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Matt Mackall" <mpm@selenic.com>, "Matthew Wilcox" <matthew@wil.cx>,
+       "Matthew Garrett" <mjg59@srcf.ucam.org>,
+       "Tech Board Discuss" <Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ksummit-2007-discuss@thunk.org
+In-Reply-To: <20070824012730.GA1243@hexapodia.org>
 MIME-Version: 1.0
-X-Mailer: AL-Mail32 Version 1.13
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1187796179.3410.32.camel@localhost.localdomain>
+	 <20070822224400.GA17255@srcf.ucam.org>
+	 <20070823002618.GO9163@parisc-linux.org>
+	 <20070823003748.GR30556@waste.org>
+	 <20070823004209.GP9163@parisc-linux.org>
+	 <20070823011953.GS30556@waste.org>
+	 <1187832907.3410.141.camel@localhost.localdomain>
+	 <20070824012730.GA1243@hexapodia.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Aug 2007, Michael Halcrow write:
->Note that there are other outstanding issues with eCryptfs on NFS. For
->instance, prepare_write()/commit_write() have gone away in -mm,
->leading to an oops when eCryptfs tries to call them directly
+On 8/23/07, Andy Isaacson <adi@hexapodia.org> wrote:
+> On Wed, Aug 22, 2007 at 08:35:07PM -0500, James Bottomley wrote:
+> > > While I think that's laudable, we definitely don't have the resources
+> > > for that, as everyone on the TAB already has a full workload. And it
+> > > hardly seems worth the trouble for a once-a-year election.
+> >
+> > Exactly ... we want a process that's simple and transparent.  We chose
+> > voting at the KS because almost all the attendees satisfy the "made
+> > significant contributions to Linux" requirement without us having to do
+> > anything or make any controversial determinations.  Like Matt said,
+> > better suggestions are welcome.
+>
+> This is a dumb suggestion, but...
+>
+> How about one vote per git commit merged to linus' tree?
+>
+> Might be worthwhile to allocate votes for Acked-By and so on, as well.
 
-Yes, I certainly encountered the problem during testing eCryptfs on -mm,
-and found Nick Piggin's new aops patchset lacks changes for eCryptfs.
+Because git only goes back to 2.6.12.
 
->which is 
->well deserved, since eCryptfs really should not be doing that. Unionfs
->has just two places where it calls vfs_read() and vfs_write()
->respectively; eCryptfs is a bit more complex, with multiple write
->paths that end up writing encrypted data and updating metadata in the
->header. I am currently trying to find a way to convert everything over
->to vfs_read() and vfs_write() in eCryptfs, in a way that does not
->ultimately result in a kernel hang.
-
-OK, I understand the reason and your plan.  Thanks for letting me know!
-As you say, I honestly felt that it's a difficult task to write
-stackable filesystems using low level operations.
-It's good idea to replace them with the vfs functions.
-
-So, how long does it take for the conversion, do you think?
-Though I'm currenty focussing on eCryptfs in mainline,
-I'd like to shift my focus to the new one if it's preferable.
-
-Regards,
-Ryusuke Konishi
+josh
