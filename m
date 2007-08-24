@@ -1,91 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765468AbXHXO0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765696AbXHXOiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765468AbXHXO0S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 10:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760169AbXHXO0D
+	id S1765696AbXHXOiG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 10:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbXHXOgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 10:26:03 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:59691 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252AbXHXOZ6 (ORCPT
+	Fri, 24 Aug 2007 10:36:48 -0400
+Received: from 85-18-251-172.ip.fastwebnet.it ([85.18.251.172]:56129 "EHLO
+	memento.home.lan" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752534AbXHXOgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 10:25:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=uCkLa5mOaULcI0evkOonf2m65PCTy7vLoKAk72MkSBF7kjViGtH56GEgiW+Z+CsBO42FtWVb5jl1cgNTdzi5g17HNfQLub0jYhSuDIv/mw1TwC0vgxb6qBS+wnOVrbY+z2gmoglaRZ6zFeb1dwuZIFHRRY+tiIezcwczQL+4IUA=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: "Kenn Humborg" <kenn@bluetree.ie>
-Subject: Re: [PATCH] i386: Fix a couple busy loops in mach_wakecpu.h:wait_for_init_deassert()
-Date: Fri, 24 Aug 2007 15:25:50 +0100
-User-Agent: KMail/1.9.1
-Cc: "Satyam Sharma" <satyam@infradead.org>,
-       "Heiko Carstens" <heiko.carstens@de.ibm.com>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       "Chris Snook" <csnook@redhat.com>, clameter@sgi.com,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       netdev@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       ak@suse.de, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org
-References: <NBBBIGEGHIGMPCNKHCECAEPEELAA.kenn@bluetree.ie>
-In-Reply-To: <NBBBIGEGHIGMPCNKHCECAEPEELAA.kenn@bluetree.ie>
+	Fri, 24 Aug 2007 10:36:45 -0400
+From: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+Subject: [PATCH 2/2] Script to check for undefined Kconfig symbols
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
+Date: Fri, 24 Aug 2007 13:29:02 +0200
+Message-ID: <20070824112902.9607.88495.stgit@americanbeauty.home.lan>
+In-Reply-To: <20070824112857.9607.22924.stgit@americanbeauty.home.lan>
+References: <20070824112857.9607.22924.stgit@americanbeauty.home.lan>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708241525.51049.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 August 2007 13:12, Kenn Humborg wrote:
-> > On Thursday 16 August 2007 01:39, Satyam Sharma wrote:
-> > >  static inline void wait_for_init_deassert(atomic_t *deassert)
-> > >  {
-> > > -	while (!atomic_read(deassert));
-> > > +	while (!atomic_read(deassert))
-> > > +		cpu_relax();
-> > >  	return;
-> > >  }
-> >
-> > For less-than-briliant people like me, it's totally non-obvious that
-> > cpu_relax() is needed for correctness here, not just to make P4 happy.
-> >
-> > IOW: "atomic_read" name quite unambiguously means "I will read
-> > this variable from main memory". Which is not true and creates
-> > potential for confusion and bugs.
->
-> To me, "atomic_read" means a read which is synchronized with other
-> changes to the variable (using the atomic_XXX functions) in such
-> a way that I will always only see the "before" or "after"
-> state of the variable - never an intermediate state while a
-> modification is happening.  It doesn't imply that I have to
-> see the "after" state immediately after another thread modifies
-> it.
+To avoid to look manually for used but undefined Kconfig variables, I've
+written a script which tries do this efficiently, in case all other attention
+fail. It accounts for _MODULE suffix and for UML_ prefixes to Kconfig variable,
+but otherwise looks for exact matches (i.e. \<CONFIG_; this is done to exclude
+macros like MMCONFIG_).
 
-So you are ok with compiler propagating n1 to n2 here:
+Undefined Kconfig variables should be not be removed without care, but for
+instance arch/i386/boot/ uses a bunch of undefined Kconfig vars:
 
-n1 += atomic_read(x);
-other_variable++;
-n2 += atomic_read(x);
+$ scripts/checkunknowndefines.sh arch/i386/boot/
+arch/i386/boot/video.h uses undefined symbol VIDEO_400_HACK
+arch/i386/boot/video-vga.c uses undefined symbol VIDEO_400_HACK
+arch/i386/boot/video.c uses undefined symbol VIDEO_RETAIN
+arch/i386/boot/video.h uses undefined symbol VIDEO_RETAIN
+arch/i386/boot/video.h uses undefined symbol VIDEO_SVGA
+arch/i386/boot/video.h uses undefined symbol VIDEO_VESA
+arch/i386/boot/video-vesa.c uses undefined symbol VIDEO_VESA
 
-without accessing x second time. What's the point? Any sane coder
-will say that explicitly anyway:
+Hope you can merge this in -mm and use it frequently (probably, a script to look for
+regressions in its output is useful). It should also be mentioned in
+SubmittingPatches if you agree.
 
-tmp = atomic_read(x);
-n1 += tmp;
-other_variable++;
-n2 += tmp;
+Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
+---
 
-if only for the sake of code readability. Because first code
-is definitely hinting that it reads RAM twice, and it's actively *bad*
-for code readability when in fact it's not the case!
+ scripts/checkunknowndefines.sh |   59 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 59 insertions(+), 0 deletions(-)
 
-Locking, compiler and CPU barriers are complicated enough already,
-please don't make them even harder to understand.
---
-vda
+diff --git a/scripts/checkunknowndefines.sh b/scripts/checkunknowndefines.sh
+new file mode 100755
+index 0000000..d15950e
+--- /dev/null
++++ b/scripts/checkunknowndefines.sh
+@@ -0,0 +1,59 @@
++#!/bin/sh
++# Find Kconfig variables used in source code but never defined in Kconfig
++# Copyright (C) 2007, Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
++
++# Tested with dash.
++paths="$@"
++[ -z "$paths" ] && paths=.
++
++# Doing this once at the beginning saves a lot of time, on a cache-hot tree.
++Kconfigs="`find . -name 'Kconfig' -o -name 'Kconfig*[^~]'`"
++
++echo "File list \tundefined symbol used"
++find $paths -name '*.[chS]' -o -name 'Makefile' -o -name 'Makefile*[^~]'| while read i
++do
++	# Output the bare Kconfig variable and the filename; the _MODULE part at
++	# the end is not removed here (would need perl an not-hungry regexp for that).
++	sed -ne 's!^.*\<\(UML_\)\?CONFIG_\([0-9A-Z_]\+\).*!\2 '$i'!p' < $i
++done | \
++# Smart "sort|uniq" implemented in awk and tuned to collect the names of all
++# files which use a given symbol
++awk '{map[$1, count[$1]++] = $2; }
++END {
++	for (combIdx in map) {
++		split(combIdx, separate, SUBSEP);
++		# The value may have been removed.
++		if (! ( (separate[1], separate[2]) in map ) )
++			continue;
++		symb=separate[1];
++		printf "%s ", symb;
++		#Use gawk extension to delete the names vector
++		delete names;
++		#Portably delete the names vector
++		#split("", names);
++		for (i=0; i < count[symb]; i++) {
++			names[map[symb, i]] = 1;
++			# Unfortunately, we may still encounter symb, i in the
++			# outside iteration.
++			delete map[symb, i];
++		}
++		i=0;
++		for (name in names) {
++			if (i > 0)
++				printf ", %s", name;
++			else
++				printf "%s", name;
++			i++;
++		}
++		printf "\n";
++	}
++}' |
++while read symb files; do
++	# Remove the _MODULE suffix when checking the variable name. This should
++	# be done only on tristate symbols, actually, but Kconfig parsing is
++	# beyond the purpose of this script.
++	symb_bare=`echo $symb | sed -e 's/_MODULE//'`
++	if ! grep -q $symb_bare $Kconfigs; then
++		echo "$files: \t$symb"
++	fi
++done|sort
+
