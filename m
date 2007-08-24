@@ -1,55 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933795AbXHXTL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764709AbXHXTRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933795AbXHXTL5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 15:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbXHXTLs
+	id S1764709AbXHXTRl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 15:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbXHXTRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 15:11:48 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52242 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750797AbXHXTLs (ORCPT
+	Fri, 24 Aug 2007 15:17:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52818 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbXHXTRa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 15:11:48 -0400
-Date: Fri, 24 Aug 2007 20:20:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Dermot Bradley" <dermot.bradley@sla-mobile.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: "exception Emask: 0x42" errors with 2.6.22.x and SATA drives
-Message-ID: <20070824202002.4d11525c@the-village.bc.nu>
-In-Reply-To: <94439DDF32D7464A916B5068EFF76B3B0225E6AD@bart.tisolutions.biz>
-References: <94439DDF32D7464A916B5068EFF76B3B0225E6AD@bart.tisolutions.biz>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Aug 2007 15:17:30 -0400
+Date: Sat, 25 Aug 2007 01:00:23 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86_64 mce{_amd}: __cpuinit{data} section annotations
+Message-ID: <alpine.LFD.0.999.0708250054060.19678@enigma.security.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007 14:39:10 +0100
-"Dermot Bradley" <dermot.bradley@sla-mobile.com> wrote:
+Hi Andrew,
 
-> I've just built a new machine using a ASUS M2A-VM boardboard (ATI SB600
-> chipset), AMD X2 3800+ processor, and 2 Western Digital 2.5" 80Gb drives
-> running in RAID-1 using MD. I've had these problems with both 2.6.22.1
-> and now 2.6.22.5 kernels.
-> 
-> I'm getting the following errors on occasion:
-> 
-> Aug 24 13:19:22 playpbx kernel: APIC error on CPU0: 00(40)
-> Aug 24 13:19:33 playpbx kernel: APIC error on CPU0: 40(40)
+With the "redefine register_hotcpu_notifier() stub as static inline
+function" patch gone, I can no longer reproduce the section mismatches
+mentioned in: x86_64-mce_amd-fix-section-mismatch-warnings.patch
+[ The section annotations of that patch still stand, just the changelog
+  is no longer completely accurate. ]
 
-This is not good.
+If we care enough about this, I'm resubmitting that patch with updated
+patch name and changelog here -- the content is same.
 
-> Aug 24 13:55:31 playpbx kernel: ata3.00: exception Emask 0x42 SAct
-> 0x7fc77 SErr0x800 action 0x6 frozen
-> Aug 24 13:55:31 playpbx kernel: ata3.00: (spurious completions during
-> NCQ issue=0x0 SAct=0x7fc77 FIS=004040a1:00000008)
+Satyam
 
-Probably not connected - your drive seems to be talking rubbish
 
-Neither are good, the latter is probably a drive firmware problem and the
-kernel will give up using NCQ with it if it keeps doing that, which
-should be just fine.
+[PATCH] x86_64 mce{_amd}: __cpuinit{data} section annotations
+
+* mce.c:
+
+CPU hotplug notifier callback function mce_cpu_callback() is not marked
+__cpuinit and may thus go to the .text section unconditionally, but it
+references mce_create_device() that is marked __cpuinit and may be
+emitted into the .init.text section when HOTPLUG_CPU=n. This may cause
+modpost to warn about this mismatch (in practice, though, the compiler
+may elide the unreferenced callback function completely when
+HOTPLUG_CPU=n therefore modpost may never warn).
+
+Let us fix this by marking the callback as __cpuinit and corresponding
+notifier_block as __cpuinitdata. Having done that, mce_remove_device()
+is only ever called from __cpuinit marked functions so can be marked
+__cpuinit itself.
+
+* mce_amd.c:
+
+Has an exactly similar issue as that discussed in previous case. Solve
+it similarly by marking callback as __cpuinit and notifier_block as
+__cpuinitdata. This causes a viral effect and allows us to mark a bunch
+of other functions as __cpuinit also.
+
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
+
+---
+
+ arch/x86_64/kernel/mce.c     |    6 +++---
+ arch/x86_64/kernel/mce_amd.c |   10 +++++-----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/arch/x86_64/kernel/mce.c b/arch/x86_64/kernel/mce.c
+index a66d607..5c0c4ee 100644
+--- a/arch/x86_64/kernel/mce.c
++++ b/arch/x86_64/kernel/mce.c
+@@ -820,7 +820,7 @@ static __cpuinit int mce_create_device(unsigned int cpu)
+ 	return err;
+ }
+ 
+-static void mce_remove_device(unsigned int cpu)
++static void __cpuinit mce_remove_device(unsigned int cpu)
+ {
+ 	int i;
+ 
+@@ -832,7 +832,7 @@ static void mce_remove_device(unsigned int cpu)
+ }
+ 
+ /* Get notified when a cpu comes on/off. Be hotplug friendly. */
+-static int
++static int __cpuinit
+ mce_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ {
+ 	unsigned int cpu = (unsigned long)hcpu;
+@@ -850,7 +850,7 @@ mce_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 	return NOTIFY_OK;
+ }
+ 
+-static struct notifier_block mce_cpu_notifier = {
++static struct notifier_block mce_cpu_notifier __cpuinitdata = {
+ 	.notifier_call = mce_cpu_callback,
+ };
+ 
+diff --git a/arch/x86_64/kernel/mce_amd.c b/arch/x86_64/kernel/mce_amd.c
+index 2f8a7f1..364c80b 100644
+--- a/arch/x86_64/kernel/mce_amd.c
++++ b/arch/x86_64/kernel/mce_amd.c
+@@ -569,7 +569,7 @@ out:
+  *   of shared sysfs dir/files, and rest of the cores will be symlinked to it.
+  */
+ 
+-static void deallocate_threshold_block(unsigned int cpu,
++static void __cpuinit deallocate_threshold_block(unsigned int cpu,
+ 						 unsigned int bank)
+ {
+ 	struct threshold_block *pos = NULL;
+@@ -589,7 +589,7 @@ static void deallocate_threshold_block(unsigned int cpu,
+ 	per_cpu(threshold_banks, cpu)[bank]->blocks = NULL;
+ }
+ 
+-static void threshold_remove_bank(unsigned int cpu, int bank)
++static void __cpuinit threshold_remove_bank(unsigned int cpu, int bank)
+ {
+ 	int i = 0;
+ 	struct threshold_bank *b;
+@@ -631,7 +631,7 @@ free_out:
+ 	per_cpu(threshold_banks, cpu)[bank] = NULL;
+ }
+ 
+-static void threshold_remove_device(unsigned int cpu)
++static void __cpuinit threshold_remove_device(unsigned int cpu)
+ {
+ 	unsigned int bank;
+ 
+@@ -643,7 +643,7 @@ static void threshold_remove_device(unsigned int cpu)
+ }
+ 
+ /* get notified when a cpu comes on/off */
+-static int threshold_cpu_callback(struct notifier_block *nfb,
++static int __cpuinit threshold_cpu_callback(struct notifier_block *nfb,
+ 					    unsigned long action, void *hcpu)
+ {
+ 	/* cpu was unsigned int to begin with */
+@@ -668,7 +668,7 @@ static int threshold_cpu_callback(struct notifier_block *nfb,
+ 	return NOTIFY_OK;
+ }
+ 
+-static struct notifier_block threshold_cpu_notifier = {
++static struct notifier_block threshold_cpu_notifier __cpuinitdata = {
+ 	.notifier_call = threshold_cpu_callback,
+ };
+ 
