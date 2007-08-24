@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765759AbXHXR7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbXHXSAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765759AbXHXR7I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 13:59:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765216AbXHXR61
+	id S932067AbXHXSAL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 14:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbXHXR75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 13:58:27 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:51675 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765705AbXHXR6Z (ORCPT
+	Fri, 24 Aug 2007 13:59:57 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:39457 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1760559AbXHXR75 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 13:58:25 -0400
-Subject: [PATCH RT 3/3] fix get_monotonic_cycles for latency tracer
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Content-Type: text/plain
-Date: Fri, 24 Aug 2007 13:57:16 -0400
-Message-Id: <1187978236.2941.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Aug 2007 13:59:57 -0400
+Date: Fri, 24 Aug 2007 13:59:55 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Greg KH <gregkh@suse.de>, Oliver Neukum <oneukum@suse.de>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       <torvalds@linux-foundation.org>, Justin Forbes <jmforbes@linuxtx.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chuck Wolber <chuckw@quantumlinux.com>, <stable@kernel.org>,
+       <alan@lxorguk.ukuu.org.uk>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [stable] [patch 25/28] USB: cdc-acm: fix sysfs attribute
+ registration bug
+In-Reply-To: <20070824154906.GA19239@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0708241349240.3862-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latency tracer on SMP was given crazy results. It was found that the
-get_monotonic_cycles that it uses was not returning a monotonic counter.
-The cause of this was that clock->cycles_raw and clock->cycles_last can
-be updated on another CPU and make the cycles_now variable out-of-date.
-So the delta that was calculated from cycles_now - cycles_last was
-incorrect.
+On Fri, 24 Aug 2007, Greg KH wrote:
 
-This patch adds a loop to make sure that the cycles_raw and cycles_last
-are consistent through out the calculation (otherwise it performs the
-loop again).
+> > Odd.  This doesn't include the entire patch; the second hunk is
+> > missing.  It should go on to say:
+> > 
+> > @@ -1109,10 +1113,12 @@ static void acm_disconnect(struct usb_interface *intf)
+> >  		return;
+> >  	}
+> >  	if (acm->country_codes){
+> > -		device_remove_file(&intf->dev, &dev_attr_wCountryCodes);
+> > -		device_remove_file(&intf->dev, &dev_attr_iCountryCodeRelDate);
+> > +		device_remove_file(&acm->control->dev,
+> > +				&dev_attr_wCountryCodes);
+> > +		device_remove_file(&acm->control->dev,
+> > +				&dev_attr_iCountryCodeRelDate);
+> >  	}
+> > -	device_remove_file(&intf->dev, &dev_attr_bmCapabilities);
+> > +	device_remove_file(&acm->control->dev, &dev_attr_bmCapabilities);
+> 
+> 
+> I thought so too, untill you look at the 2.6.22.5 release, which already
+> has that change in it for some reason.
+> 
+> So that part of the patch drops out, it turns out you just reverted
+> things back to the way things used to be here :)
 
-With this patch the latency_tracer can produce normal results again.
+I don't understand.  The history for stable/linux-2.6.22.y.git at
+http://git.kernel.org shows that the commit for my patch, labelled
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+	6b30a4e1c357410a78d7bcb831743b0e99bab4ad,
 
-Index: linux-2.6-rt/kernel/time/timekeeping.c
-===================================================================
---- linux-2.6-rt.orig/kernel/time/timekeeping.c	2007-08-24 11:41:04.000000000 -0400
-+++ linux-2.6-rt/kernel/time/timekeeping.c	2007-08-24 11:47:01.000000000 -0400
-@@ -75,15 +75,30 @@ s64 __get_nsec_offset(void)
- 
- cycle_t notrace get_monotonic_cycles(void)
- {
--	cycle_t cycle_now, cycle_delta;
-+	cycle_t cycle_now, cycle_delta, cycle_raw, cycle_last;
- 
--	/* read clocksource: */
--	cycle_now = clocksource_read(clock);
-+	do {
-+		/*
-+		 * cycle_raw and cycle_last can change on
-+		 * another CPU and we need the delta calculation
-+		 * of cycle_now and cycle_last happen atomic, as well
-+		 * as the adding to cycle_raw. We don't need to grab
-+		 * any locks, we just keep trying until get all the
-+		 * calculations together in one state.
-+		 */
-+		cycle_raw = clock->cycle_raw;
-+		cycle_last = clock->cycle_last;
-+
-+		/* read clocksource: */
-+		cycle_now = clocksource_read(clock);
-+
-+		/* calculate the delta since the last update_wall_time: */
-+		cycle_delta = (cycle_now - cycle_last) & clock->mask;
- 
--	/* calculate the delta since the last update_wall_time: */
--	cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-+	} while (cycle_raw != clock->cycle_raw ||
-+		 cycle_last != clock->cycle_last);
- 
--	return clock->cycle_raw + cycle_delta;
-+	return cycle_raw + cycle_delta;
- }
- 
- unsigned long notrace cycles_to_usecs(cycle_t cycles)
+includes both hunks.  And patch-2.6.22.5.bz2 includes both as well.  
+Something's fishy.
 
+Alan Stern
 
