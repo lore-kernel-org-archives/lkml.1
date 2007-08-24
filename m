@@ -1,92 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764805AbXHXNqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763954AbXHXNub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764805AbXHXNqm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 09:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759149AbXHXNqf
+	id S1763954AbXHXNub (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 09:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbXHXNuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 09:46:35 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:53535 "EHLO smtp2.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753172AbXHXNqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 09:46:34 -0400
-Date: Fri, 24 Aug 2007 16:46:33 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: isapnp & module autoload (udev?)
-In-Reply-To: <3ae72650708240540qcf05809j609e0fbb05f221b3@mail.gmail.com>
-Message-ID: <Pine.SOC.4.64.0708241642540.27738@math.ut.ee>
-References: <Pine.SOC.4.64.0708241434440.27738@math.ut.ee>
- <3ae72650708240540qcf05809j609e0fbb05f221b3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 24 Aug 2007 09:50:23 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43166 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751109AbXHXNuW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 09:50:22 -0400
+Date: Fri, 24 Aug 2007 14:57:19 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andy Isaacson <adi@hexapodia.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matt Mackall <mpm@selenic.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux
+ Foundation Technical Advisory Board Elections
+Message-ID: <20070824145719.0e184c58@the-village.bc.nu>
+In-Reply-To: <20070824134223.GY9163@parisc-linux.org>
+References: <1187796179.3410.32.camel@localhost.localdomain>
+	<20070822224400.GA17255@srcf.ucam.org>
+	<20070823002618.GO9163@parisc-linux.org>
+	<20070823003748.GR30556@waste.org>
+	<20070823004209.GP9163@parisc-linux.org>
+	<20070823011953.GS30556@waste.org>
+	<1187832907.3410.141.camel@localhost.localdomain>
+	<20070824012730.GA1243@hexapodia.org>
+	<20070824114107.05b57909@the-village.bc.nu>
+	<20070824134223.GY9163@parisc-linux.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What's in the module? What does:
->   /sbin/modinfo <kernel module name> | grep alias
-> print?
+On Fri, 24 Aug 2007 07:42:24 -0600
+Matthew Wilcox <matthew@wil.cx> wrote:
 
-filename:       /lib/modules/2.6.23-rc3/kernel/sound/isa/sb/snd-sb16.ko
-description:    Sound Blaster 16
-license:        GPL
-author:         Jaroslav Kysela <perex@suse.cz>
-alias:          pnp:ctBA03b0dPNPb003*
-alias:          pnp:cCTL00f0dCTL0043*
-alias:          pnp:cCTL0086dCTL0041*
-alias:          pnp:cCTL0080dCTL0041*
-alias:          pnp:cCTL0070dCTL0001*
-alias:          pnp:cCTL0051dCTL0001*
-alias:          pnp:cCTL002cdCTL0031*
-alias:          pnp:cCTL002bdCTL0031*
-alias:          pnp:cCTL002adCTL0031*
-alias:          pnp:cCTL0029dCTL0031*
-alias:          pnp:cCTL0028dCTL0031*
-alias:          pnp:cCTL0027dCTL0031*
-alias:          pnp:cCTL0026dCTL0031*
-alias:          pnp:cCTL0025dCTL0031*
-alias:          pnp:cCTL0024dCTL0031*
-depends:        snd-sb-common,snd-opl3-lib,snd-mpu401-uart,snd-sb16-dsp,snd-pcm,snd,snd-sb16-csp
-vermagic:       2.6.23-rc3 SMP mod_unload PENTIUMII 4KSTACKS
-parm:           index:Index value for SoundBlaster 16 soundcard. (array of int)
-parm:           id:ID string for SoundBlaster 16 soundcard. (array of charp)
-parm:           enable:Enable SoundBlaster 16 soundcard. (array of bool)
-parm:           isapnp:PnP detection for specified soundcard. (array of bool)
-parm:           port:Port # for SB16 driver. (array of long)
-parm:           mpu_port:MPU-401 port # for SB16 driver. (array of long)
-parm:           fm_port:FM port # for SB16 PnP driver. (array of long)
-parm:           irq:IRQ # for SB16 driver. (array of int)
-parm:           dma8:8-bit DMA # for SB16 driver. (array of int)
-parm:           dma16:16-bit DMA # for SB16 driver. (array of int)
-parm:           mic_agc:Mic Auto-Gain-Control switch. (array of int)
-parm:           csp:ASP/CSP chip support. (array of int)
+> On Fri, Aug 24, 2007 at 11:41:07AM +0100, Alan Cox wrote:
+> > And very gameable of course. James proposal at least has the advantage of
+> > simplicity, of drawing from a rough set of relevant people (far from
+> > perfectly) and a certain amount of random changeover according to the KS
+> > of the year
+> > 
+> > I would make only one change personally - extend an email vote to the
+> > people on the final invite list who can't for various reasons make it.
+> 
+> That's not what you said last year ...
+> http://thunk.org/pipermail/ksummit-2006-discuss/2006-July/000665.html
 
- 
-> And what does the hardware say? What does:
->   grep . /sys/bus/pnp/devices/*/id
-> print?
+And if you follow the further discussion both online and off (ok that bit
+might be trickier), James explained what he was trying to achieve, why he
+thought it was the right way to do it, and persuaded me he was right.
 
-/sys/bus/pnp/devices/00:00/id:PNP0c01
-/sys/bus/pnp/devices/00:01/id:PNP0000
-/sys/bus/pnp/devices/00:02/id:PNP0200
-/sys/bus/pnp/devices/00:03/id:PNP0100
-/sys/bus/pnp/devices/00:04/id:PNP0b00
-/sys/bus/pnp/devices/00:05/id:PNP0303
-/sys/bus/pnp/devices/00:06/id:PNP0800
-/sys/bus/pnp/devices/00:07/id:PNP0c04
-/sys/bus/pnp/devices/00:08/id:PNP0c02
-/sys/bus/pnp/devices/00:09/id:PNP0c02
-/sys/bus/pnp/devices/00:0a/id:PNP0501
-/sys/bus/pnp/devices/00:0b/id:PNP0501
-/sys/bus/pnp/devices/00:0c/id:PNP0401
-/sys/bus/pnp/devices/00:0d/id:PNP0700
-/sys/bus/pnp/devices/00:0e/id:PNP0a03
-/sys/bus/pnp/devices/01:01.00/id:CTL0001
-/sys/bus/pnp/devices/01:01.01/id:CTL7001
-/sys/bus/pnp/devices/01:01.01/id:PNPb02f
-
-CTL0001 seems to be present in both but it occurs with CTL0070 or 
-CTL0051.
-
--- 
-Meelis Roos (mroos@linux.ee)
+Alan
