@@ -1,49 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763223AbXHXOmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762498AbXHXOwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763223AbXHXOmB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 10:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbXHXOly
+	id S1762498AbXHXOwt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 10:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbXHXOwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 10:41:54 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:39447 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752750AbXHXOlx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 10:41:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=D62nCCnslJwgbNT+JbKqcNRfer/HnsEWT8oEO4VGEqSYK69zqR1vZwkZHEVN4ZKzB+UlBf4KY2+ahRym/Uydi+5KmwCD0vew1q7kZupfpX9THvc+Je1XE6pCOgzFND9CqeogdhIWeymSRCpmbwLvxiE7+2bUTTGLS6MGjpH3oU8=
-Message-ID: <443c85430708240741s67fb978cmdcdcbe6dac7ef1a6@mail.gmail.com>
-Date: Fri, 24 Aug 2007 10:41:51 -0400
-From: TheOneKEA <theonekea@gmail.com>
-To: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
-Subject: Re: Possible problems reading a DVD-RAM disc
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070824135812.GH9412@csclub.uwaterloo.ca>
+	Fri, 24 Aug 2007 10:52:39 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:47284 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754182AbXHXOwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 10:52:38 -0400
+Date: Fri, 24 Aug 2007 15:52:34 +0100
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       "Luck, Tony" <tony.luck@intel.com>, Jeremy Higdon <jeremy@sgi.com>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-ia64@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org
+Subject: Re: [PATCH] Fix find_next_best_node (Re: [BUG] 2.6.23-rc3-mm1 Kernel panic - not syncing: DMA: Memory would be corrupted)
+Message-ID: <20070824145233.GA26374@skynet.ie>
+References: <617E1C2C70743745A92448908E030B2A023EB020@scsmsx411.amr.corp.intel.com> <20070823142133.9359a1ce.akpm@linux-foundation.org> <20070824153945.3C75.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-References: <443c85430708231944s102dff82u366a93824f7c2222@mail.gmail.com>
-	 <20070824135812.GH9412@csclub.uwaterloo.ca>
+In-Reply-To: <20070824153945.3C75.Y-GOTO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/24/07, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
-> On Thu, Aug 23, 2007 at 10:44:55PM -0400, TheOneKEA wrote:
-> > While doing a long mega-copy from one side of a DVD-RAM disc formatted
-> > with the vfat filesystem to an smbfs network share, I got lots and
-> > lots of these in the dmesg:
->
-> No idea about the error, but isn't vfat torture of a dvd-ram?  Don't
-> they come preformated with UDF since it does wear leveling while vfat
-> would very very quickly trash the part of the disk storing the FAT.
+On (24/08/07 15:53), Yasunori Goto didst pronounce:
+> 
+> I found find_next_best_node() was wrong.
+> I confirmed boot up by the following patch.
+> Mel-san, Kamalesh-san, could you try this?
+> 
 
-I wouldn't know - someone else gave the media to me and wanted to try
-to rescue the data on it. I certainly didn't out vfat on it on
-purpose. As soon as I can fix the dmesg errors and get a clean read of
-the disk, I intend to clean it off and put UDF on both sides.
+This boots the IA-64 successful and gets rid of that DMA corrupts
+memory message. As a bonus, it fixes up the memoryless nodes (the bug
+where Total pages == 0 and there is a BUG in page_alloc.c) by building
+zonelists properly. The machine still fails to boot with the more familiar
+net/core/skbuff.c:95 but that is a separate problem.
+
+Well spotted Yasunori-san.
+
+Andrew, this fixes a real problem and should be considered a fix to
+memoryless-nodes-fixup-uses-of-node_online_map-in-generic-code.patch unless
+Christoph Lameter objects.
+
+> Bye.
+> ---
+> 
+> Fix decision of memoryless node in find_next_best_node().
+> This can be cause of SW-IOMMU's allocation failure.
+> 
+> This patch is for 2.6.23-rc3-mm1.
+> 
+> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+> 
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+
+> ---
+>  mm/page_alloc.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: current/mm/page_alloc.c
+> ===================================================================
+> --- current.orig/mm/page_alloc.c	2007-08-24 16:03:17.000000000 +0900
+> +++ current/mm/page_alloc.c	2007-08-24 16:04:06.000000000 +0900
+> @@ -2136,7 +2136,7 @@ static int find_next_best_node(int node,
+>  		 * Note:  N_HIGH_MEMORY state not guaranteed to be
+>  		 *        populated yet.
+>  		 */
+> -		if (pgdat->node_present_pages)
+> +		if (!pgdat->node_present_pages)
+>  			continue;
+>  
+>  		/* Don't want a node to appear more than once */
+> 
 
 -- 
-SCREW THE ADS! http://adblock.mozdev.org/
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
