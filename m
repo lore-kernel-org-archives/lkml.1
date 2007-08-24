@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933861AbXHXB2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933594AbXHXBmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933861AbXHXB2q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 21:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765521AbXHXB2g
+	id S933594AbXHXBmY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 21:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764823AbXHXBmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 21:28:36 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:55035 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765446AbXHXB2f (ORCPT
+	Thu, 23 Aug 2007 21:42:15 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:40903 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764697AbXHXBmO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 21:28:35 -0400
+	Thu, 23 Aug 2007 21:42:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=s6BslxY1HHV91Vb2afqAkzGpuXk+a9sp/MFkDADy/iph1H66b/6E5y86zwO0A2hD1ColW8HUF91Wfbek9Gz8hVJYqIRwrmc1oyMczKonvM46G+EJWxgeQYCS14JlCoRIyRXVB+2xgRqxREVW51HY9Jjg6t+X7WwYdHW6YcOAD+c=
-Message-ID: <46CE33DA.9010501@googlemail.com>
-Date: Fri, 24 Aug 2007 03:26:50 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Zab7o9m15IFci/JoPjCeEdn7UbwGKd8LRU8NwMgTO3owXHhVGLzr+E7fu40/SaVl41lFI1QJHZay/bQMWH78qekVtF34QOshoM1kGsxf6a1Cc7mm2LuwaTUNgZApUPUbbmkJsTxjaoxzNQSOaiwvOOxSMy2ya289xGmUjsBRjZM=
+Message-ID: <524f69650708231842p2d8fab64u7021e9d68cda072e@mail.gmail.com>
+Date: Thu, 23 Aug 2007 20:42:13 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [PATCH] CIFS: fix unbalanced calls to Get/FreeXid
+Cc: "Steve French" <sfrench@samba.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070823163917.GB7222@cvg>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Joel Fuster <j@fuster.org>, linux-kernel@vger.kernel.org
-Subject: Re: sysfs_dir_cache growing out of control
-References: <46CCD3DF.4080303@fuster.org> <46CD057C.3080106@fuster.org> <20070823095933.GA6742@kroah.com> <46CE29DA.60409@fuster.org> <20070824005429.GA32265@kroah.com>
-In-Reply-To: <20070824005429.GA32265@kroah.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070823163917.GB7222@cvg>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Aug 23, 2007 at 08:44:10PM -0400, Joel Fuster wrote:
->> Greg KH wrote:
->>> On Wed, Aug 22, 2007 at 11:56:44PM -0400, Joel Fuster wrote:
->>>> Joel Fuster wrote:
->>>>> Hi,
->>>>> I am running 2.6.22.3.  For reasons that escape me, over time (days) the 
->>>>> sysfs_dir_cache, dentry, and inode_cache SLUB entries grow until they 
->>>>> consume all the memory on my system, requiring a reboot.
->>> Hm, those items should consume all the memory, but it should be freed if
->>> you have memory pressure from other places.  Does it cause the machine
->>> to lock up, or you just got scared when seeing them?
->> Right.  The problem is that the memory never seems to get freed no matter 
->> what I do.  I've tried setting /proc/sys/vm/vfs_cache_pressure to 10000, 
->> but after a few days all my programs are running out of swap and I have to 
->> reboot to get things back to a usable state.
->>
->>> Oh, and does the same thing happen if you do not use SLUB, but rather
->>> the older SLAB?
->> OK I just rebuilt 2.6.22.3 with SLAB and I seem to be getting the same 
->> result..obviously I haven't waited several days, but 
->> sysfs_dir_cache/dentry/inode_cache grow continuously when scanbuttond is 
->> running, and stop growing when it isn't.
-> 
-> Do you have a pointer to the scanbuttond source code?  I'll try to take
-> a look at this tomorrow.
-> 
+merged into cifs-2.6.git tree
 
-I guess this one :
-
-https://sourceforge.net/projects/scanbuttond/
-
-> thanks,
-> 
-> greg k-h
-> -
+On 8/23/07, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> This patch fixes unbalanced calls to GetXid/FreeXid.
+>
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
+>
+>  fs/cifs/cifsfs.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+> index cabb6a5..2493cc4 100644
+> --- a/fs/cifs/cifsfs.c
+> +++ b/fs/cifs/cifsfs.c
+> @@ -346,7 +346,7 @@ int cifs_xquota_set(struct super_block *sb, int quota_type, qid_t qid,
+>         if (pTcon) {
+>                 cFYI(1, ("set type: 0x%x id: %d", quota_type, qid));
+>         } else {
+> -               return -EIO;
+> +               rc = -EIO;
+>         }
+>
+>         FreeXid(xid);
+>
 
 
-Gabriel
+-- 
+Thanks,
+
+Steve
