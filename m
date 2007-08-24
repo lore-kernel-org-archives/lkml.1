@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765612AbXHXSKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932650AbXHXSKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765612AbXHXSKM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 14:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762267AbXHXSJr
+	id S932650AbXHXSKq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 14:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933179AbXHXSJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 14:09:47 -0400
-Received: from ns2.suse.de ([195.135.220.15]:59445 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933339AbXHXSJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 14:09:46 -0400
-Date: Fri, 24 Aug 2007 11:08:33 -0700
-From: Greg KH <gregkh@suse.de>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [4/4] 2.6.23-rc3: known regressions v3
-Message-ID: <20070824180833.GA14415@suse.de>
-References: <46CF0DEF.5040107@googlemail.com> <46CF17A0.2060503@googlemail.com> <20070824175608.GA5333@suse.de> <20070824180120.GA13916@dose.home.local>
-MIME-Version: 1.0
+	Fri, 24 Aug 2007 14:09:52 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53056 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932853AbXHXSJu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 14:09:50 -0400
+From: akepner@sgi.com
+Date: Fri, 24 Aug 2007 11:08:49 -0700
+To: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+Cc: gregkh@suse.de, James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       David Miller <davem@davemloft.net>
+Subject: [PATCH 3/3] pci: document pci_dma_flags_set_dmaflush()
+Message-ID: <20070824180849.GS5592@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070824180120.GA13916@dose.home.local>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 08:01:20PM +0200, Tino Keitel wrote:
-> On Fri, Aug 24, 2007 at 10:56:08 -0700, Greg KH wrote:
-> > On Fri, Aug 24, 2007 at 07:38:40PM +0200, Michal Piotrowski wrote:
-> > > Hi all,
-> > > 
-> > > Here is a list of some known regressions in 2.6.23-rc3.
-> > 
-> > First off, thanks so much for tracking these, it can't be an easy job,
-> > but one that is really needed.  Keep up the great work.
-> > 
-> > > USB
-> > > 
-> > > Subject         : 2.6.23-rc1: USB hard disk broken
-> > > References      : http://lkml.org/lkml/2007/7/25/62
-> > > Last known good : ?
-> > > Submitter       : Tino Keitel <tino.keitel@gmx.de>
-> > > Caused-By       : ?
-> > > Handled-By      : Oliver Neukum <oliver@neukum.org>
-> > > Status          : unknown
-> > 
-> > Last I heard was that Tino was going to try to do further testing, but
-> > as he hasn't responded in a few weeks, I'd mark this one down to,
-> > "unknown and unreproducable".  Unless someone else knows more?
-> 
-> I was at least able to reproduce it with 2.6.23-rc2. And I tried it
-> hard with 2.6.22 but it didn't happen.
 
-Ick, I didn't realize this.
+Document pci_dma_flags_set_dmaflush().
 
-Oliver and Alan, any follow-up on this that I need to look into?
+Signed-off-by: Arthur Kepner <akepner@sgi.com>
+--
+ DMA-mapping.txt |   25 ++++++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
+ 
+diff --git a/Documentation/DMA-mapping.txt b/Documentation/DMA-mapping.txt
+index e07f253..32f88e5 100644
+--- a/Documentation/DMA-mapping.txt
++++ b/Documentation/DMA-mapping.txt
+@@ -745,7 +745,30 @@ to "Closing".
+    2.5., page+offset is always used, and the "address" field has been
+    deleted.
+ 
+-2) More to come...
++2) Platforms that permit DMA reordering
++
++   At least one platform (SGI SN2) allows DMA to be reordered between
++   device and host memory. This reordering can happen in the NUMA
++   interconnect, and it usually results in correct operation and improved
++   performance. In some situations it may be necessary to explicitly
++   synchronize DMA from the device. For example, if the device does a DMA
++   write to indicate that data is ready, the DMA of the "completion
++   indication" can race with DMA of data. In this situation,
++   pci_dma_flags_set_dmaflush() can be used to associate a "dmaflush"
++   attribute with a memory region. The dmaflush attribute will cause in-
++   flight DMA from the device to be flushed to host memory when the
++   associated memory region is written. (On platforms that don't permit
++   DMA reordering, this is a no-op.)
++
++   For example, you might map the memory region used for completion
++   indications as follows:
++
++	int count, flags = pci_dma_flags_set_dmaflush(DMA_BIDIRECTIONAL);
++	.....
++	count = dma_map_sg(dev, sglist, nents, flags);
++
++
++3) More to come...
+ 
+ 			Handling Errors
+ 
 
-thanks,
+-- 
+Arthur
 
-greg k-h
