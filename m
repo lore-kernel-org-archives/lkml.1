@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbXHXAOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933690AbXHXAP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964868AbXHXAOP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 20:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932105AbXHXAN6
+	id S933690AbXHXAP0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 20:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933001AbXHXAPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 20:13:58 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:34562 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932482AbXHXAN5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 20:13:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:resent-from:resent-to:resent-date:resent-message-id:message-id:in-reply-to:references:from:date:subject:to:cc:mime-version:content-transfer-encoding:content-disposition;
-        b=GtJ64ul4SCI7IS4z+ZlRVfYsxSy0GpTP7NbogSxRRZ/kpx35VY46FpQsLX3n4AVV+YeeLnfDmYVJQz1DXIlfcyTd/qKrmA3lLV747bPM4QQCKwQ8QQ9V5h/GYP5iKiMhWH+v2HuIVXHaa8otESNKiRuzbTAoUK/w3WAhXP6TV/U=
-Message-Id: <faf86e8b389bbc43ea531a1eadcda5ce4694ac0a.1187912217.git.jesper.juhl@gmail.com>
-In-Reply-To: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-From: Jesper Juhl <jesper.juhl@gmail.com>
-Date: Fri, 24 Aug 2007 02:11:03 +0200
-Subject: [PATCH 18/30] isdn: eicon - get rid of a pointless vmalloc() return value cast
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Karsten Keil <kkeil@suse.de>, Kai Germaschewski <kai.germaschewski@gmx.de>,
-       isdn4linux@listserv.isdn4linux.de, Armin Schindler <mac@melware.de>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Thu, 23 Aug 2007 20:15:11 -0400
+Received: from mga11.intel.com ([192.55.52.93]:59386 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932219AbXHXAPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 20:15:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,302,1183359600"; 
+   d="scan'208";a="287288775"
+From: Shannon Nelson <shannon.nelson@intel.com>
+Subject: [PATCH v2 -mm 0/7] I/OAT: Add support for DCA - Direct Cache Access
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: davem@davemloft.net, shannon.nelson@intel.com
+Date: Thu, 23 Aug 2007 17:14:50 -0700
+Message-ID: <20070824001335.16997.79665.stgit@localhost.localdomain>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vmalloc() returns void*.
-No need to cast in drivers/isdn/hardware/eicon/platform.h::diva_os_malloc()
+Andrew,
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
- drivers/isdn/hardware/eicon/platform.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Here's a new rev of the IOAT DCA patches that are currently in -mm.  These
+patches include updates based on feedback on the first set, as well as a
+couple of other fixes we found internally.  These were originally posted
+on 20-Jul-2007 - see http://marc.info/?l=linux-kernel&m=118489237427303&w=2
 
-diff --git a/drivers/isdn/hardware/eicon/platform.h b/drivers/isdn/hardware/eicon/platform.h
-index 15d4942..8756ef1 100644
---- a/drivers/isdn/hardware/eicon/platform.h
-+++ b/drivers/isdn/hardware/eicon/platform.h
-@@ -167,7 +167,7 @@ static __inline__ void* diva_os_malloc (unsigned long flags, unsigned long size)
- 	void *ret = NULL;
- 
- 	if (size) {
--		ret = (void *) vmalloc((unsigned int) size);
-+		ret = vmalloc((unsigned int)size);
- 	}
- 	return (ret);
- }
+The following series implements support for providers and clients of
+Direct Cache Access (DCA), a method for warming the cache in the correct
+CPU before needing data.
+
+ioat-new-device-ids.patch
+	- add devices id's for newer Intel chipsets which support DMA and DCA
+ioat-rename-source-file.patch
+	- prepare for adding new functionality
+ioat-dma-cleanups.patch
+	- cleanup some code ugliness
+ioat-split-startup-code.patch
+	- split the DMA support code from the PCI startup
+ioat-add-msi-msix-support.patch
+	- add support for various interrupt handling schemes
+ioat-add-dca-support.patch
+	- add the dca driver
+ioat-add-ioat-dca.patch
+	- add DCA services to the ioatdma driver
+
+
+ b/drivers/Kconfig                 |    2 
+ b/drivers/Makefile                |    1 
+ b/drivers/dca/Kconfig             |    8 
+ b/drivers/dca/Makefile            |    2 
+ b/drivers/dca/dca-core.c          |  168 ++++++
+ b/drivers/dca/dca-sysfs.c         |   88 +++
+ b/drivers/dma/Kconfig             |   60 +-
+ b/drivers/dma/Makefile            |    1 
+ b/drivers/dma/ioat.c              |  196 +++++++
+ b/drivers/dma/ioat_dca.c          |  267 ++++++++++
+ b/drivers/dma/ioat_dma.c          |  967 ++++++++++++++++++++++++++++++++++++++
+ b/drivers/dma/ioatdma.h           |   30 +
+ b/drivers/dma/ioatdma_hw.h        |    2 
+ b/drivers/dma/ioatdma_registers.h |    6 
+ b/include/linux/dca.h             |   47 +
+ b/include/linux/pci_ids.h         |    2 
+ drivers/dma/ioatdma.c             |  827 --------------------------------
+ 17 files changed, 1816 insertions(+), 858 deletions(-)
+
+
+Thanks,
+sln
+
 -- 
-1.5.2.2
-
+======================================================================
+Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
+Shannon.Nelson@intel.com                I don't speak for Intel
+(503) 712-7659                    Parents can't afford to be squeamish. 
