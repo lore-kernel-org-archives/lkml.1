@@ -1,158 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765846AbXHXI7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932580AbXHXI7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765846AbXHXI7A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 04:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760816AbXHXI6v
+	id S932580AbXHXI7d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 04:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761775AbXHXI7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 04:58:51 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:42308 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755902AbXHXI6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 04:58:49 -0400
-Date: Fri, 24 Aug 2007 09:58:47 +0100
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org
-Subject: Re: [BUG] 2.6.23-rc3-mm1 kernel BUG at mm/page_alloc.c:2876!
-Message-ID: <20070824085846.GA30592@skynet.ie>
-References: <46CC9A7A.2030404@linux.vnet.ibm.com> <20070822134800.ce5a5a69.akpm@linux-foundation.org> <20070822135024.dde8ef5a.akpm@linux-foundation.org> <20070823130732.GC18456@skynet.ie> <46CDC11E.2010008@linux.vnet.ibm.com> <Pine.LNX.4.64.0708231303050.14720@schroedinger.engr.sgi.com> <46CE776D.2010408@linux.vnet.ibm.com>
+	Fri, 24 Aug 2007 04:59:18 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:48184 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761306AbXHXI7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 04:59:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=pQvc22P+AQto+pe/as9uSbuQQLUbvf3QhcWuioSLlPd+8/xE2OABpekuoanISHC19fwOlUcsdzn9ipArPXvJkWLJVYXAelaArHk6Clffvdv2SI8LhvD2CkS0JifB6VaZr35ZvqJHU5DHEx82YtobAE2hYWzqTZiSIfDSMyRML3A=
+Message-ID: <46CE9DC2.8070407@gmail.com>
+Date: Fri, 24 Aug 2007 16:58:42 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <46CE776D.2010408@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [Question] the precondition of calling alloc_skb()/kfree_skb()?
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (24/08/07 11:45), Kamalesh Babulal didst pronounce:
-> Christoph Lameter wrote:
-> >On Thu, 23 Aug 2007, Kamalesh Babulal wrote:
-> >
-> >  
-> >>After applying the patch, the call trace is gone but the kernel bug
-> >>is still hit
-> >>    
-> >
-> >Yes that is what we expected. We need more information to figure out why 
-> >the kmalloc_node fails there. It should walk through all nodes to find 
-> >memory.
-> >
-> >I see that you have 4 cpus and 16 nodes. How are the cpus assigned to 
-> >nodes? If a cpu would be assigned to a nonexisting node then this could be 
-> >the result.
-> >
-> >Could you post the full boot log?
-> >
-> >  
-> boot log with the andrew patch applied
-> 
-> Welcome to yaboot version 1.3.13
-> Enter "help" to get some basic usage information
-> boot: autobench
-> Please wait, loading kernel...
-> Elf64 kernel loaded...
-> Loading ramdisk...
-> ramdisk loaded at 02400000, size: 1191 Kbytes
-> OF stdout device is: /vdevice/vty@30000000
-> Hypertas detected, assuming LPAR !
-> command line: ro console=hvc0 autobench_args: root=/dev/sda6 
-> ABAT:1187885681
-> memory layout at init:
-> alloc_bottom : 000000000252a000
-> alloc_top : 0000000008000000
-> alloc_top_hi : 0000000100000000
-> rmo_top : 0000000008000000
-> ram_top : 0000000100000000
-> Looking for displays
-> instantiating rtas at 0x00000000077d9000 ... done
-> 0000000000000000 : boot cpu 0000000000000000
-> 0000000000000002 : starting cpu hw idx 0000000000000002... done
-> copying OF device tree ...
-> Building dt strings...
-> Building dt structure...
-> Device tree strings 0x000000000262b000 -> 0x000000000262c1d3
-> Device tree struct 0x000000000262d000 -> 0x0000000002635000
-> Calling quiesce ...
-> returning from prom_init
-> Partition configured for 4 cpus.
-> 
-> 
-> Starting Linux PPC64 #1 SMP Thu Aug 23 11:54:44 EDT 2007
-> -----------------------------------------------------
-> ppc64_pft_size = 0x1a
-> physicalMemorySize = 0x100000000
-> ppc64_caches.dcache_line_size = 0x80
-> ppc64_caches.icache_line_size = 0x80
-> htab_address = 0x0000000000000000
-> htab_hash_mask = 0x7ffff
-> -----------------------------------------------------
-> Linux version 2.6.23-rc3-mm1-autokern1 
-> (root@gekko-lp3.ltc.austin.ibm.com) (gcc version 3.4.6 20060404 (Red Hat 
-> 3.4.6-3)) #1 SMP Thu Aug 23 11:54:44 EDT 2007
-> [boot]0012 Setup Arch
-> vmemmap cf00000000000000 allocated at c000000001000000, physical 
-> 0000000001000000.
-> vmemmap cf00000001000000 allocated at c000000004000000, physical 
-> 0000000004000000.
-> vmemmap cf00000002000000 allocated at c000000005000000, physical 
-> 0000000005000000.
-> vmemmap cf00000003000000 allocated at c000000006000000, physical 
-> 0000000006000000.
-> EEH: PCI Enhanced I/O Error Handling Enabled
-> PPC64 nvram contains 7168 bytes
-> Zone PFN ranges:
-> DMA 0 -> 1048576
-> Normal 1048576 -> 1048576
-> Movable zone start PFN for each node
-> early_node_map[1] active PFN ranges
-> 2: 0 -> 1048576
-> Could not find start_pfn for node 0
-> [boot]0015 Setup Done
-> Built 2 zonelists in Node order, mobility grouping off. Total pages: 0
+Hi, all:
 
-This indicates to me that the zonelists are trashed. All memory is on
-zone 2 according to early_node_map[] and the CPU is most likely part of
-node 0 that doesn't have a proper fallback list
+I encountered a problem of using sk_buff.
 
-> Policy zone: DMA
-> Kernel command line: ro console=hvc0 autobench_args: root=/dev/sda6 
-> ABAT:1187885681
-> [boot]0020 XICS Init
-> [boot]0021 XICS Done
-> PID hash table entries: 4096 (order: 12, 32768 bytes)
-> Console: colour dummy device 80x25
-> console handover: boot [udbg0] -> real [hvc0]
-> Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
-> Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
-> freeing bootmem node 2
-> Memory: 4105840k/4194304k available (4964k kernel code, 88464k reserved, 
-> 948k data, 571k bss, 264k init)
-> SLUB: Genslabs=12, HWalign=128, Order=0-1, MinObjects=4, CPUs=4, Nodes=16
-> ------------[ cut here ]------------
-> kernel BUG at mm/page_alloc.c:2878!
-> cpu 0x0: Vector: 700 (Program Check) at [c0000000005cbbe0]
-> pc: c0000000004b5160: .setup_per_cpu_pageset+0x24/0x48
-> lr: c0000000004b5160: .setup_per_cpu_pageset+0x24/0x48
-> sp: c0000000005cbe60
-> msr: 8000000000029032
-> current = 0xc0000000004fd1b0
-> paca = 0xc0000000004fdd80
-> pid = 0, comm = swapper
-> kernel BUG at mm/page_alloc.c:2878!
-> enter ? for help
-> [c0000000005cbee0] c0000000004978d8 .start_kernel+0x304/0x3f4
-> [c0000000005cbf90] c0000000003bef1c .start_here_common+0x54/0x58
-> 
-> -
-> Kamalesh Babulal.
-> 
-> 
-> 
+I used 2.4.20 kernel, when burst traffic come, the kernel will complain
+a bug report at skbuff.c:316 later:
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+311 void __kfree_skb(struct sk_buff *skb)
+312 {
+313 if (skb->list) {
+314 printk(KERN_WARNING "Warning: kfree_skb passed an skb still "
+315 "on a list (from %p).\n", NET_CALLER(skb));
+316 BUG(); /* HERE!!! */
+317 }
+/* snip some code here */
+332 }
+
+
+I saw the dev_kfree_skb_irq() and dev_kfree_skb_irq(), and how to use
+them. even, in fact, we work in pure poll I/O model, so the NIC can not
+issue any interrupt.
+
+And, I searched google, there are many similar reports like above, but
+almost of them have no reply. I think there may have some unknown thing
+while sk_buff API.
+
+Well, I hope know, are there some preconditions of calling alloc_skb()
+or *_kfree_skb_*() ? Thank in advanced.
+
+Good luck.
+
+- Yu Li
+
