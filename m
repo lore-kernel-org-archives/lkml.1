@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933964AbXHXBFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932972AbXHXB1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933964AbXHXBFI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 21:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762389AbXHXBE6
+	id S932972AbXHXB1l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 21:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763673AbXHXB1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 21:04:58 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4768 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764058AbXHXBE5 (ORCPT
+	Thu, 23 Aug 2007 21:27:32 -0400
+Received: from straum.hexapodia.org ([64.81.70.185]:42731 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761276AbXHXB1b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 21:04:57 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: RE: division and cpu usage
-Date: Thu, 23 Aug 2007 18:04:49 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKEEBMGGAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-2"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-In-Reply-To: <46CE1BA2.8070200@gmail.com>
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Thu, 23 Aug 2007 18:05:20 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Thu, 23 Aug 2007 18:05:21 -0700
+	Thu, 23 Aug 2007 21:27:31 -0400
+Date: Thu, 23 Aug 2007 18:27:30 -0700
+From: Andy Isaacson <adi@hexapodia.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Matt Mackall <mpm@selenic.com>, Matthew Wilcox <matthew@wil.cx>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
+Message-ID: <20070824012730.GA1243@hexapodia.org>
+References: <1187796179.3410.32.camel@localhost.localdomain> <20070822224400.GA17255@srcf.ucam.org> <20070823002618.GO9163@parisc-linux.org> <20070823003748.GR30556@waste.org> <20070823004209.GP9163@parisc-linux.org> <20070823011953.GS30556@waste.org> <1187832907.3410.141.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1187832907.3410.141.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
+X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
+X-Domestic-Surveillance: money launder bomb tax evasion
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 22, 2007 at 08:35:07PM -0500, James Bottomley wrote:
+> > While I think that's laudable, we definitely don't have the resources
+> > for that, as everyone on the TAB already has a full workload. And it
+> > hardly seems worth the trouble for a once-a-year election.
+> 
+> Exactly ... we want a process that's simple and transparent.  We chose
+> voting at the KS because almost all the attendees satisfy the "made
+> significant contributions to Linux" requirement without us having to do
+> anything or make any controversial determinations.  Like Matt said,
+> better suggestions are welcome.
 
-> Hello.
->
-> I'm new to kernel development and have some questions.
->
-> 1. Why can't I divide with regular casting to double ((double)a /
-> (double)b)? It gives me strange errors when compiling:
->
-> WARNING: "__divdf3" [/root....] undefined!
-> WARNING: "__addf3" [/root/...] undefined!
-> WARNING: "__floatsidf" [/root/...] undefined!
->
-> And if I compile with normal integers, I get zero as the result.
+This is a dumb suggestion, but...
 
-As the HOWTO says:
+How about one vote per git commit merged to linus' tree?
 
-"The kernel is written using GNU C and the GNU toolchain.  While it
-adheres to the ISO C89 standard, it uses a number of extensions that are
-not featured in the standard.  The kernel is a freestanding C
-environment, with no reliance on the standard C library, so some
-portions of the C standard are not supported.  Arbitrary long long
-divisions and floating point are not allowed.  It can sometimes be
-difficult to understand the assumptions the kernel has on the toolchain
-and the extensions that it uses, and unfortunately there is no
-definitive reference for them.  Please check the gcc info pages (`info
-gcc`) for some information on them."
+Might be worthwhile to allocate votes for Acked-By and so on, as well.
 
-The short version is simply that it's very expensive to allow this, adding
-overhead even in cases where it isn't used, and there is very little
-benefit. For almost every imaginable case where you would want floating
-point in the kernel, fixed point works as well or better.
-
-Just scale your numbers by shifting them.
-
-DS
-
-
+-andy
