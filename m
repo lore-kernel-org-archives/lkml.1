@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965062AbXHXAQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934156AbXHXARL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965062AbXHXAQn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 20:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933800AbXHXAP2
+	id S934156AbXHXARL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 20:17:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964932AbXHXAPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 20:15:28 -0400
-Received: from mga11.intel.com ([192.55.52.93]:18993 "EHLO mga11.intel.com"
+	Thu, 23 Aug 2007 20:15:32 -0400
+Received: from mga02.intel.com ([134.134.136.20]:50272 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964901AbXHXAPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 20:15:24 -0400
+	id S964921AbXHXAPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 20:15:30 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.19,302,1183359600"; 
-   d="scan'208";a="287288918"
+   d="scan'208";a="283108412"
 From: Shannon Nelson <shannon.nelson@intel.com>
-Subject: [PATCH v2 -mm 3/7] I/OAT: code cleanup from checkpatch output
+Subject: [PATCH v2 -mm 4/7] I/OAT: Split PCI startup from DMA handling code
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: davem@davemloft.net, shannon.nelson@intel.com
-Date: Thu, 23 Aug 2007 17:15:06 -0700
-Message-ID: <20070824001506.16997.43452.stgit@localhost.localdomain>
+Date: Thu, 23 Aug 2007 17:15:12 -0700
+Message-ID: <20070824001512.16997.29302.stgit@localhost.localdomain>
 In-Reply-To: <20070824001335.16997.79665.stgit@localhost.localdomain>
 References: <20070824001335.16997.79665.stgit@localhost.localdomain>
 User-Agent: StGIT/0.12.1
@@ -27,516 +27,635 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Take care of a bunch of little code nits in ioatdma files
+Split the general PCI startup from the DMA handling code in order to
+prepare for adding support for DCA services and future versions of the
+ioatdma device.
 
 Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
 Acked-by: David S. Miller <davem@davemloft.net>
 ---
 
- drivers/dma/ioat_dma.c |  200 +++++++++++++++++++++++++++---------------------
- 1 files changed, 111 insertions(+), 89 deletions(-)
+ drivers/dma/Makefile     |    2 
+ drivers/dma/ioat.c       |  186 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/dma/ioat_dma.c   |  196 +++++++++++-----------------------------------
+ drivers/dma/ioatdma.h    |   16 +++-
+ drivers/dma/ioatdma_hw.h |    2 
+ 5 files changed, 245 insertions(+), 157 deletions(-)
 
-diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
-index 55227d4..9a4d154 100644
---- a/drivers/dma/ioat_dma.c
-+++ b/drivers/dma/ioat_dma.c
-@@ -1,10 +1,10 @@
- /*
-- * Copyright(c) 2004 - 2006 Intel Corporation. All rights reserved.
+diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
+index 77bee99..cec0c9c 100644
+--- a/drivers/dma/Makefile
++++ b/drivers/dma/Makefile
+@@ -1,5 +1,5 @@
+ obj-$(CONFIG_DMA_ENGINE) += dmaengine.o
+ obj-$(CONFIG_NET_DMA) += iovlock.o
+ obj-$(CONFIG_INTEL_IOATDMA) += ioatdma.o
+-ioatdma-objs := ioat_dma.o
++ioatdma-objs := ioat.o ioat_dma.o
+ obj-$(CONFIG_INTEL_IOP_ADMA) += iop-adma.o
+diff --git a/drivers/dma/ioat.c b/drivers/dma/ioat.c
+new file mode 100644
+index 0000000..9d9f672
+--- /dev/null
++++ b/drivers/dma/ioat.c
+@@ -0,0 +1,186 @@
++/*
 + * Intel I/OAT DMA Linux driver
 + * Copyright(c) 2004 - 2007 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-- * under the terms of the GNU General Public License as published by the Free
-- * Software Foundation; either version 2 of the License, or (at your option)
-- * any later version.
++ *
++ * This program is free software; you can redistribute it and/or modify it
 + * under the terms and conditions of the GNU General Public License,
 + * version 2, as published by the Free Software Foundation.
-  *
-  * This program is distributed in the hope that it will be useful, but WITHOUT
-  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-@@ -12,11 +12,12 @@
-  * more details.
-  *
-  * You should have received a copy of the GNU General Public License along with
-- * this program; if not, write to the Free Software Foundation, Inc., 59
-- * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
 + * this program; if not, write to the Free Software Foundation, Inc.,
 + * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
 + *
 + * The full GNU General Public License is included in this distribution in
 + * the file called "COPYING".
-  *
-- * The full GNU General Public License is included in this distribution in the
-- * file called COPYING.
-  */
- 
- /*
-@@ -35,17 +36,22 @@
- #include "ioatdma_registers.h"
- #include "ioatdma_hw.h"
- 
-+#define INITIAL_IOAT_DESC_COUNT 128
++ *
++ */
 +
++/*
++ * This driver supports an Intel I/OAT DMA engine, which does asynchronous
++ * copy operations.
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/interrupt.h>
++#include "ioatdma.h"
++#include "ioatdma_registers.h"
++#include "ioatdma_hw.h"
++
++MODULE_VERSION("1.24");
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Intel Corporation");
++
++static struct pci_device_id ioat_pci_tbl[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB)  },
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_SCNB) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_UNISYS, PCI_DEVICE_ID_UNISYS_DMA_DIRECTOR) },
++	{ 0, }
++};
++
++struct ioat_device {
++	struct pci_dev		*pdev;
++	void __iomem		*iobase;
++	struct ioatdma_device	*dma;
++};
++
++static int __devinit ioat_probe(struct pci_dev *pdev,
++				const struct pci_device_id *id);
++static void __devexit ioat_remove(struct pci_dev *pdev);
++
++static int ioat_setup_functionality(struct pci_dev *pdev, void __iomem *iobase)
++{
++	struct ioat_device *device = pci_get_drvdata(pdev);
++	u8 version;
++	int err = 0;
++
++	version = readb(iobase + IOAT_VER_OFFSET);
++	switch (version) {
++	case IOAT_VER_1_2:
++		device->dma = ioat_dma_probe(pdev, iobase);
++		break;
++	default:
++		err = -ENODEV;
++		break;
++	}
++	return err;
++}
++
++static void ioat_shutdown_functionality(struct pci_dev *pdev)
++{
++	struct ioat_device *device = pci_get_drvdata(pdev);
++
++	if (device->dma) {
++		ioat_dma_remove(device->dma);
++		device->dma = NULL;
++	}
++}
++
++static struct pci_driver ioat_pci_drv = {
++	.name		= "ioatdma",
++	.id_table	= ioat_pci_tbl,
++	.probe		= ioat_probe,
++	.shutdown	= ioat_shutdown_functionality,
++	.remove		= __devexit_p(ioat_remove),
++};
++
++static int __devinit ioat_probe(struct pci_dev *pdev,
++				const struct pci_device_id *id)
++{
++	void __iomem *iobase;
++	struct ioat_device *device;
++	unsigned long mmio_start, mmio_len;
++	int err;
++
++	err = pci_enable_device(pdev);
++	if (err)
++		goto err_enable_device;
++
++	err = pci_request_regions(pdev, ioat_pci_drv.name);
++	if (err)
++		goto err_request_regions;
++
++	err = pci_set_dma_mask(pdev, DMA_64BIT_MASK);
++	if (err)
++		err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
++	if (err)
++		goto err_set_dma_mask;
++
++	err = pci_set_consistent_dma_mask(pdev, DMA_64BIT_MASK);
++	if (err)
++		err = pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK);
++	if (err)
++		goto err_set_dma_mask;
++
++	mmio_start = pci_resource_start(pdev, 0);
++	mmio_len = pci_resource_len(pdev, 0);
++	iobase = ioremap(mmio_start, mmio_len);
++	if (!iobase) {
++		err = -ENOMEM;
++		goto err_ioremap;
++	}
++
++	device = kzalloc(sizeof(*device), GFP_KERNEL);
++	if (!device) {
++		err = -ENOMEM;
++		goto err_kzalloc;
++	}
++	device->pdev = pdev;
++	pci_set_drvdata(pdev, device);
++	device->iobase = iobase;
++
++	pci_set_master(pdev);
++
++	err = ioat_setup_functionality(pdev, iobase);
++	if (err)
++		goto err_version;
++
++	return 0;
++
++err_version:
++	kfree(device);
++err_kzalloc:
++	iounmap(iobase);
++err_ioremap:
++err_set_dma_mask:
++	pci_release_regions(pdev);
++	pci_disable_device(pdev);
++err_request_regions:
++err_enable_device:
++	return err;
++}
++
++static void __devexit ioat_remove(struct pci_dev *pdev)
++{
++	struct ioat_device *device = pci_get_drvdata(pdev);
++
++	ioat_shutdown_functionality(pdev);
++
++	kfree(device);
++
++	iounmap(device->iobase);
++	pci_release_regions(pdev);
++	pci_disable_device(pdev);
++}
++
++static int __init ioat_init_module(void)
++{
++	/* it's currently unsafe to unload this module */
++	/* if forced, worst case is that rmmod hangs */
++	__unsafe(THIS_MODULE);
++	return pci_register_driver(&ioat_pci_drv);
++}
++module_init(ioat_init_module);
++
++static void __exit ioat_exit_module(void)
++{
++	pci_unregister_driver(&ioat_pci_drv);
++}
++module_exit(ioat_exit_module);
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index 9a4d154..9012176 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -39,19 +39,15 @@
+ #define INITIAL_IOAT_DESC_COUNT 128
+ 
  #define to_ioat_chan(chan) container_of(chan, struct ioat_dma_chan, common)
- #define to_ioat_device(dev) container_of(dev, struct ioat_device, common)
+-#define to_ioat_device(dev) container_of(dev, struct ioat_device, common)
++#define to_ioatdma_device(dev) container_of(dev, struct ioatdma_device, common)
  #define to_ioat_desc(lh) container_of(lh, struct ioat_desc_sw, node)
  #define tx_to_ioat_desc(tx) container_of(tx, struct ioat_desc_sw, async_tx)
  
  /* internal functions */
--static int __devinit ioat_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
-+static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan);
-+static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *ioat_chan);
-+static int __devinit ioat_probe(struct pci_dev *pdev,
-+				const struct pci_device_id *ent);
- static void ioat_shutdown(struct pci_dev *pdev);
- static void __devexit ioat_remove(struct pci_dev *pdev);
+ static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan);
+ static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *ioat_chan);
+-static int __devinit ioat_probe(struct pci_dev *pdev,
+-				const struct pci_device_id *ent);
+-static void ioat_shutdown(struct pci_dev *pdev);
+-static void __devexit ioat_remove(struct pci_dev *pdev);
  
--static int enumerate_dma_channels(struct ioat_device *device)
-+static int ioat_dma_enumerate_channels(struct ioat_device *device)
+-static int ioat_dma_enumerate_channels(struct ioat_device *device)
++static int ioat_dma_enumerate_channels(struct ioatdma_device *device)
  {
  	u8 xfercap_scale;
  	u32 xfercap;
-@@ -73,13 +79,14 @@ static int enumerate_dma_channels(struct ioat_device *device)
- 		/* This should be made common somewhere in dmaengine.c */
- 		ioat_chan->common.device = &device->common;
- 		list_add_tail(&ioat_chan->common.device_node,
--		              &device->common.channels);
-+			      &device->common.channels);
- 	}
- 	return device->common.chancnt;
- }
- 
--static void
--ioat_set_src(dma_addr_t addr, struct dma_async_tx_descriptor *tx, int index)
-+static void ioat_set_src(dma_addr_t addr,
-+			 struct dma_async_tx_descriptor *tx,
-+			 int index)
- {
- 	struct ioat_desc_sw *iter, *desc = tx_to_ioat_desc(tx);
- 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(tx->chan);
-@@ -93,8 +100,9 @@ ioat_set_src(dma_addr_t addr, struct dma_async_tx_descriptor *tx, int index)
- 
- }
- 
--static void
--ioat_set_dest(dma_addr_t addr, struct dma_async_tx_descriptor *tx, int index)
-+static void ioat_set_dest(dma_addr_t addr,
-+			  struct dma_async_tx_descriptor *tx,
-+			  int index)
- {
- 	struct ioat_desc_sw *iter, *desc = tx_to_ioat_desc(tx);
- 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(tx->chan);
-@@ -107,8 +115,7 @@ ioat_set_dest(dma_addr_t addr, struct dma_async_tx_descriptor *tx, int index)
- 	}
- }
- 
--static dma_cookie_t
--ioat_tx_submit(struct dma_async_tx_descriptor *tx)
-+static dma_cookie_t ioat_tx_submit(struct dma_async_tx_descriptor *tx)
- {
- 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(tx->chan);
- 	struct ioat_desc_sw *desc = tx_to_ioat_desc(tx);
-@@ -141,13 +148,13 @@ ioat_tx_submit(struct dma_async_tx_descriptor *tx)
- 	if (append)
- 		writeb(IOAT_CHANCMD_APPEND,
- 			ioat_chan->reg_base + IOAT_CHANCMD_OFFSET);
--	
-+
- 	return cookie;
- }
- 
- static struct ioat_desc_sw *ioat_dma_alloc_descriptor(
--	struct ioat_dma_chan *ioat_chan,
--	gfp_t flags)
-+					struct ioat_dma_chan *ioat_chan,
-+					gfp_t flags)
+@@ -158,17 +154,17 @@ static struct ioat_desc_sw *ioat_dma_alloc_descriptor(
  {
  	struct ioat_dma_descriptor *desc;
  	struct ioat_desc_sw *desc_sw;
-@@ -177,10 +184,6 @@ static struct ioat_desc_sw *ioat_dma_alloc_descriptor(
- 	return desc_sw;
- }
+-	struct ioat_device *ioat_device;
++	struct ioatdma_device *ioatdma_device;
+ 	dma_addr_t phys;
  
--#define INITIAL_IOAT_DESC_COUNT 128
--
--static void ioat_start_null_desc(struct ioat_dma_chan *ioat_chan);
--
- /* returns the actual number of allocated descriptors */
- static int ioat_dma_alloc_chan_resources(struct dma_chan *chan)
- {
-@@ -199,16 +202,17 @@ static int ioat_dma_alloc_chan_resources(struct dma_chan *chan)
- 	if (chanctrl & IOAT_CHANCTRL_CHANNEL_IN_USE)
- 		return -EBUSY;
+-	ioat_device = to_ioat_device(ioat_chan->common.device);
+-	desc = pci_pool_alloc(ioat_device->dma_pool, flags, &phys);
++	ioatdma_device = to_ioatdma_device(ioat_chan->common.device);
++	desc = pci_pool_alloc(ioatdma_device->dma_pool, flags, &phys);
+ 	if (unlikely(!desc))
+ 		return NULL;
  
--        /* Setup register to interrupt and write completion status on error */
-+	/* Setup register to interrupt and write completion status on error */
- 	chanctrl = IOAT_CHANCTRL_CHANNEL_IN_USE |
- 		IOAT_CHANCTRL_ERR_INT_EN |
- 		IOAT_CHANCTRL_ANY_ERR_ABORT_EN |
- 		IOAT_CHANCTRL_ERR_COMPLETION_EN;
--        writew(chanctrl, ioat_chan->reg_base + IOAT_CHANCTRL_OFFSET);
-+	writew(chanctrl, ioat_chan->reg_base + IOAT_CHANCTRL_OFFSET);
- 
- 	chanerr = readl(ioat_chan->reg_base + IOAT_CHANERR_OFFSET);
- 	if (chanerr) {
--		printk("IOAT: CHANERR = %x, clearing\n", chanerr);
-+		dev_err(&ioat_chan->device->pdev->dev,
-+			"ioatdma: CHANERR = %x, clearing\n", chanerr);
- 		writel(chanerr, ioat_chan->reg_base + IOAT_CHANERR_OFFSET);
+ 	desc_sw = kzalloc(sizeof(*desc_sw), flags);
+ 	if (unlikely(!desc_sw)) {
+-		pci_pool_free(ioat_device->dma_pool, desc, phys);
++		pci_pool_free(ioatdma_device->dma_pool, desc, phys);
+ 		return NULL;
  	}
  
-@@ -216,7 +220,8 @@ static int ioat_dma_alloc_chan_resources(struct dma_chan *chan)
- 	for (i = 0; i < INITIAL_IOAT_DESC_COUNT; i++) {
- 		desc = ioat_dma_alloc_descriptor(ioat_chan, GFP_KERNEL);
- 		if (!desc) {
--			printk(KERN_ERR "IOAT: Only %d initial descriptors\n", i);
-+			dev_err(&ioat_chan->device->pdev->dev,
-+				"ioatdma: Only %d initial descriptors\n", i);
- 			break;
- 		}
- 		list_add_tail(&desc->node, &tmp_list);
-@@ -229,8 +234,8 @@ static int ioat_dma_alloc_chan_resources(struct dma_chan *chan)
- 	/* doing 2 32bit writes to mmio since 1 64b write doesn't work */
- 	ioat_chan->completion_virt =
- 		pci_pool_alloc(ioat_chan->device->completion_pool,
--		               GFP_KERNEL,
--		               &ioat_chan->completion_addr);
-+			       GFP_KERNEL,
-+			       &ioat_chan->completion_addr);
- 	memset(ioat_chan->completion_virt, 0,
- 	       sizeof(*ioat_chan->completion_virt));
- 	writel(((u64) ioat_chan->completion_addr) & 0x00000000FFFFFFFF,
-@@ -238,12 +243,10 @@ static int ioat_dma_alloc_chan_resources(struct dma_chan *chan)
- 	writel(((u64) ioat_chan->completion_addr) >> 32,
- 	       ioat_chan->reg_base + IOAT_CHANCMP_OFFSET_HIGH);
+@@ -194,17 +190,12 @@ static int ioat_dma_alloc_chan_resources(struct dma_chan *chan)
+ 	int i;
+ 	LIST_HEAD(tmp_list);
  
--	ioat_start_null_desc(ioat_chan);
-+	ioat_dma_start_null_desc(ioat_chan);
- 	return i;
- }
+-	/*
+-	 * In-use bit automatically set by reading chanctrl
+-	 * If 0, we got it, if 1, someone else did
+-	 */
+-	chanctrl = readw(ioat_chan->reg_base + IOAT_CHANCTRL_OFFSET);
+-	if (chanctrl & IOAT_CHANCTRL_CHANNEL_IN_USE)
++	/* have we already been set up? */
++	if (ioat_chan->free_desc.next != &ioat_chan->free_desc)
+ 		return -EBUSY;
  
--static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *ioat_chan);
--
+ 	/* Setup register to interrupt and write completion status on error */
+-	chanctrl = IOAT_CHANCTRL_CHANNEL_IN_USE |
+-		IOAT_CHANCTRL_ERR_INT_EN |
++	chanctrl = IOAT_CHANCTRL_ERR_INT_EN |
+ 		IOAT_CHANCTRL_ANY_ERR_ABORT_EN |
+ 		IOAT_CHANCTRL_ERR_COMPLETION_EN;
+ 	writew(chanctrl, ioat_chan->reg_base + IOAT_CHANCTRL_OFFSET);
+@@ -250,9 +241,8 @@ static int ioat_dma_alloc_chan_resources(struct dma_chan *chan)
  static void ioat_dma_free_chan_resources(struct dma_chan *chan)
  {
  	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
-@@ -273,12 +276,13 @@ static void ioat_dma_free_chan_resources(struct dma_chan *chan)
+-	struct ioat_device *ioat_device = to_ioat_device(chan->device);
++	struct ioatdma_device *ioatdma_device = to_ioatdma_device(chan->device);
+ 	struct ioat_desc_sw *desc, *_desc;
+-	u16 chanctrl;
+ 	int in_use_descs = 0;
+ 
+ 	ioat_dma_memcpy_cleanup(ioat_chan);
+@@ -263,19 +253,19 @@ static void ioat_dma_free_chan_resources(struct dma_chan *chan)
+ 	list_for_each_entry_safe(desc, _desc, &ioat_chan->used_desc, node) {
+ 		in_use_descs++;
+ 		list_del(&desc->node);
+-		pci_pool_free(ioat_device->dma_pool, desc->hw,
++		pci_pool_free(ioatdma_device->dma_pool, desc->hw,
+ 			      desc->async_tx.phys);
+ 		kfree(desc);
+ 	}
+ 	list_for_each_entry_safe(desc, _desc, &ioat_chan->free_desc, node) {
+ 		list_del(&desc->node);
+-		pci_pool_free(ioat_device->dma_pool, desc->hw,
++		pci_pool_free(ioatdma_device->dma_pool, desc->hw,
+ 			      desc->async_tx.phys);
+ 		kfree(desc);
+ 	}
  	spin_unlock_bh(&ioat_chan->desc_lock);
  
- 	pci_pool_free(ioat_device->completion_pool,
--	              ioat_chan->completion_virt,
--	              ioat_chan->completion_addr);
-+		      ioat_chan->completion_virt,
-+		      ioat_chan->completion_addr);
+-	pci_pool_free(ioat_device->completion_pool,
++	pci_pool_free(ioatdma_device->completion_pool,
+ 		      ioat_chan->completion_virt,
+ 		      ioat_chan->completion_addr);
  
- 	/* one is ok since we left it on there on purpose */
- 	if (in_use_descs > 1)
--		printk(KERN_ERR "IOAT: Freeing %d in use descriptors!\n",
-+		dev_err(&ioat_chan->device->pdev->dev,
-+			"ioatdma: Freeing %d in use descriptors!\n",
+@@ -286,11 +276,6 @@ static void ioat_dma_free_chan_resources(struct dma_chan *chan)
  			in_use_descs - 1);
  
  	ioat_chan->last_completion = ioat_chan->completion_addr = 0;
-@@ -289,8 +293,10 @@ static void ioat_dma_free_chan_resources(struct dma_chan *chan)
- 	writew(chanctrl, ioat_chan->reg_base + IOAT_CHANCTRL_OFFSET);
- }
- 
--static struct dma_async_tx_descriptor *
--ioat_dma_prep_memcpy(struct dma_chan *chan, size_t len, int int_en)
-+static struct dma_async_tx_descriptor *ioat_dma_prep_memcpy(
-+						struct dma_chan *chan,
-+						size_t len,
-+						int int_en)
- {
- 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
- 	struct ioat_desc_sw *first, *prev, *new;
-@@ -353,12 +359,11 @@ ioat_dma_prep_memcpy(struct dma_chan *chan, size_t len, int int_en)
- 	return new ? &new->async_tx : NULL;
- }
- 
 -
- /**
-- * ioat_dma_memcpy_issue_pending - push potentially unrecognized appended descriptors to hw
-+ * ioat_dma_memcpy_issue_pending - push potentially unrecognized appended
-+ *                                 descriptors to hw
-  * @chan: DMA channel handle
+-	/* Tell hw the chan is free */
+-	chanctrl = readw(ioat_chan->reg_base + IOAT_CHANCTRL_OFFSET);
+-	chanctrl &= ~IOAT_CHANCTRL_CHANNEL_IN_USE;
+-	writew(chanctrl, ioat_chan->reg_base + IOAT_CHANCTRL_OFFSET);
+ }
+ 
+ static struct dma_async_tx_descriptor *ioat_dma_prep_memcpy(
+@@ -524,25 +509,9 @@ static enum dma_status ioat_dma_is_complete(struct dma_chan *chan,
+ 
+ /* PCI API */
+ 
+-static struct pci_device_id ioat_pci_tbl[] = {
+-	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT) },
+-	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB)  },
+-	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_SCNB) },
+-	{ PCI_DEVICE(PCI_VENDOR_ID_UNISYS, PCI_DEVICE_ID_UNISYS_DMA_DIRECTOR) },
+-	{ 0, }
+-};
+-
+-static struct pci_driver ioat_pci_driver = {
+-	.name 	= "ioatdma",
+-	.id_table = ioat_pci_tbl,
+-	.probe	= ioat_probe,
+-	.shutdown = ioat_shutdown,
+-	.remove	= __devexit_p(ioat_remove),
+-};
+-
+ static irqreturn_t ioat_do_interrupt(int irq, void *data)
+ {
+-	struct ioat_device *instance = data;
++	struct ioatdma_device *instance = data;
+ 	unsigned long attnstatus;
+ 	u8 intrctrl;
+ 
+@@ -602,7 +571,7 @@ static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan)
   */
--
- static void ioat_dma_memcpy_issue_pending(struct dma_chan *chan)
+ #define IOAT_TEST_SIZE 2000
+ 
+-static int ioat_self_test(struct ioat_device *device)
++static int ioat_self_test(struct ioatdma_device *device)
  {
- 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
-@@ -370,15 +375,15 @@ static void ioat_dma_memcpy_issue_pending(struct dma_chan *chan)
- 	}
+ 	int i;
+ 	u8 *src;
+@@ -670,46 +639,25 @@ out:
+ 	return err;
  }
  
--static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *chan)
-+static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *ioat_chan)
- {
- 	unsigned long phys_complete;
- 	struct ioat_desc_sw *desc, *_desc;
- 	dma_cookie_t cookie = 0;
- 
--	prefetch(chan->completion_virt);
-+	prefetch(ioat_chan->completion_virt);
- 
--	if (!spin_trylock(&chan->cleanup_lock))
-+	if (!spin_trylock(&ioat_chan->cleanup_lock))
- 		return;
- 
- 	/* The completion writeback can happen at any time,
-@@ -388,26 +393,27 @@ static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *chan)
- 
- #if (BITS_PER_LONG == 64)
- 	phys_complete =
--	chan->completion_virt->full & IOAT_CHANSTS_COMPLETED_DESCRIPTOR_ADDR;
-+	ioat_chan->completion_virt->full & IOAT_CHANSTS_COMPLETED_DESCRIPTOR_ADDR;
- #else
--	phys_complete = chan->completion_virt->low & IOAT_LOW_COMPLETION_MASK;
-+	phys_complete = ioat_chan->completion_virt->low & IOAT_LOW_COMPLETION_MASK;
- #endif
- 
--	if ((chan->completion_virt->full & IOAT_CHANSTS_DMA_TRANSFER_STATUS) ==
--		IOAT_CHANSTS_DMA_TRANSFER_STATUS_HALTED) {
--		printk("IOAT: Channel halted, chanerr = %x\n",
--			readl(chan->reg_base + IOAT_CHANERR_OFFSET));
-+	if ((ioat_chan->completion_virt->full & IOAT_CHANSTS_DMA_TRANSFER_STATUS) ==
-+				IOAT_CHANSTS_DMA_TRANSFER_STATUS_HALTED) {
-+		dev_err(&ioat_chan->device->pdev->dev,
-+			"ioatdma: Channel halted, chanerr = %x\n",
-+			readl(ioat_chan->reg_base + IOAT_CHANERR_OFFSET));
- 
- 		/* TODO do something to salvage the situation */
- 	}
- 
--	if (phys_complete == chan->last_completion) {
--		spin_unlock(&chan->cleanup_lock);
-+	if (phys_complete == ioat_chan->last_completion) {
-+		spin_unlock(&ioat_chan->cleanup_lock);
- 		return;
- 	}
- 
--	spin_lock_bh(&chan->desc_lock);
--	list_for_each_entry_safe(desc, _desc, &chan->used_desc, node) {
-+	spin_lock_bh(&ioat_chan->desc_lock);
-+	list_for_each_entry_safe(desc, _desc, &ioat_chan->used_desc, node) {
- 
- 		/*
- 		 * Incoming DMA requests may use multiple descriptors, due to
-@@ -417,31 +423,36 @@ static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *chan)
- 		if (desc->async_tx.cookie) {
- 			cookie = desc->async_tx.cookie;
- 
--			/* yes we are unmapping both _page and _single alloc'd
--			   regions with unmap_page. Is this *really* that bad?
--			*/
--			pci_unmap_page(chan->device->pdev,
-+			/*
-+			 * yes we are unmapping both _page and _single alloc'd
-+			 * regions with unmap_page. Is this *really* that bad?
-+			 */
-+			pci_unmap_page(ioat_chan->device->pdev,
- 					pci_unmap_addr(desc, dst),
- 					pci_unmap_len(desc, len),
- 					PCI_DMA_FROMDEVICE);
--			pci_unmap_page(chan->device->pdev,
-+			pci_unmap_page(ioat_chan->device->pdev,
- 					pci_unmap_addr(desc, src),
- 					pci_unmap_len(desc, len),
- 					PCI_DMA_TODEVICE);
- 		}
- 
- 		if (desc->async_tx.phys != phys_complete) {
--			/* a completed entry, but not the last, so cleanup
-+			/*
-+			 * a completed entry, but not the last, so cleanup
- 			 * if the client is done with the descriptor
- 			 */
- 			if (desc->async_tx.ack) {
- 				list_del(&desc->node);
--				list_add_tail(&desc->node, &chan->free_desc);
-+				list_add_tail(&desc->node,
-+					      &ioat_chan->free_desc);
- 			} else
- 				desc->async_tx.cookie = 0;
- 		} else {
--			/* last used desc. Do not remove, so we can append from
--			   it, but don't look at it next time, either */
-+			/*
-+			 * last used desc. Do not remove, so we can append from
-+			 * it, but don't look at it next time, either
-+			 */
- 			desc->async_tx.cookie = 0;
- 
- 			/* TODO check status bits? */
-@@ -449,13 +460,13 @@ static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *chan)
- 		}
- 	}
- 
--	spin_unlock_bh(&chan->desc_lock);
-+	spin_unlock_bh(&ioat_chan->desc_lock);
- 
--	chan->last_completion = phys_complete;
-+	ioat_chan->last_completion = phys_complete;
- 	if (cookie != 0)
--		chan->completed_cookie = cookie;
-+		ioat_chan->completed_cookie = cookie;
- 
--	spin_unlock(&chan->cleanup_lock);
-+	spin_unlock(&ioat_chan->cleanup_lock);
- }
- 
- static void ioat_dma_dependency_added(struct dma_chan *chan)
-@@ -476,11 +487,10 @@ static void ioat_dma_dependency_added(struct dma_chan *chan)
-  * @done: if not %NULL, updated with last completed transaction
-  * @used: if not %NULL, updated with last used transaction
-  */
--
- static enum dma_status ioat_dma_is_complete(struct dma_chan *chan,
--                                            dma_cookie_t cookie,
--                                            dma_cookie_t *done,
--                                            dma_cookie_t *used)
-+					    dma_cookie_t cookie,
-+					    dma_cookie_t *done,
-+					    dma_cookie_t *used)
- {
- 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
- 	dma_cookie_t last_used;
-@@ -491,7 +501,7 @@ static enum dma_status ioat_dma_is_complete(struct dma_chan *chan,
- 	last_complete = ioat_chan->completed_cookie;
- 
- 	if (done)
--		*done= last_complete;
-+		*done = last_complete;
- 	if (used)
- 		*used = last_used;
- 
-@@ -505,7 +515,7 @@ static enum dma_status ioat_dma_is_complete(struct dma_chan *chan,
- 	last_complete = ioat_chan->completed_cookie;
- 
- 	if (done)
--		*done= last_complete;
-+		*done = last_complete;
- 	if (used)
- 		*used = last_used;
- 
-@@ -548,13 +558,13 @@ static irqreturn_t ioat_do_interrupt(int irq, void *data)
- 
- 	attnstatus = readl(instance->reg_base + IOAT_ATTNSTATUS_OFFSET);
- 
--	printk(KERN_ERR "ioatdma error: interrupt! status %lx\n", attnstatus);
-+	printk(KERN_ERR "ioatdma: interrupt! status %lx\n", attnstatus);
- 
- 	writeb(intrctrl, instance->reg_base + IOAT_INTRCTRL_OFFSET);
- 	return IRQ_HANDLED;
- }
- 
--static void ioat_start_null_desc(struct ioat_dma_chan *ioat_chan)
-+static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan)
- {
- 	struct ioat_desc_sw *desc;
- 
-@@ -618,9 +628,11 @@ static int ioat_self_test(struct ioat_device *device)
- 
- 	/* Start copy, using first DMA channel */
- 	dma_chan = container_of(device->common.channels.next,
--	                        struct dma_chan,
--	                        device_node);
-+				struct dma_chan,
-+				device_node);
- 	if (ioat_dma_alloc_chan_resources(dma_chan) < 1) {
-+		dev_err(&device->pdev->dev,
-+			"selftest cannot allocate chan resource\n");
- 		err = -ENODEV;
- 		goto out;
- 	}
-@@ -638,12 +650,14 @@ static int ioat_self_test(struct ioat_device *device)
- 	msleep(1);
- 
- 	if (ioat_dma_is_complete(dma_chan, cookie, NULL, NULL) != DMA_SUCCESS) {
--		printk(KERN_ERR "ioatdma: Self-test copy timed out, disabling\n");
-+		dev_err(&device->pdev->dev,
-+			"ioatdma: Self-test copy timed out, disabling\n");
- 		err = -ENODEV;
- 		goto free_resources;
- 	}
- 	if (memcmp(src, dest, IOAT_TEST_SIZE)) {
--		printk(KERN_ERR "ioatdma: Self-test copy failed compare, disabling\n");
-+		dev_err(&device->pdev->dev,
-+			"ioatdma: Self-test copy failed compare, disabling\n");
- 		err = -ENODEV;
- 		goto free_resources;
- 	}
-@@ -657,7 +671,7 @@ out:
- }
- 
- static int __devinit ioat_probe(struct pci_dev *pdev,
--                                const struct pci_device_id *ent)
-+				const struct pci_device_id *ent)
+-static int __devinit ioat_probe(struct pci_dev *pdev,
+-				const struct pci_device_id *ent)
++struct ioatdma_device *ioat_dma_probe(struct pci_dev *pdev,
++				      void __iomem *iobase)
  {
  	int err;
- 	unsigned long mmio_start, mmio_len;
-@@ -701,7 +715,9 @@ static int __devinit ioat_probe(struct pci_dev *pdev,
+-	unsigned long mmio_start, mmio_len;
+-	void __iomem *reg_base;
+-	struct ioat_device *device;
+-
+-	err = pci_enable_device(pdev);
+-	if (err)
+-		goto err_enable_device;
+-
+-	err = pci_set_dma_mask(pdev, DMA_64BIT_MASK);
+-	if (err)
+-		err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+-	if (err)
+-		goto err_set_dma_mask;
+-
+-	err = pci_request_regions(pdev, ioat_pci_driver.name);
+-	if (err)
+-		goto err_request_regions;
+-
+-	mmio_start = pci_resource_start(pdev, 0);
+-	mmio_len = pci_resource_len(pdev, 0);
+-
+-	reg_base = ioremap(mmio_start, mmio_len);
+-	if (!reg_base) {
+-		err = -ENOMEM;
+-		goto err_ioremap;
+-	}
++	struct ioatdma_device *device;
+ 
+ 	device = kzalloc(sizeof(*device), GFP_KERNEL);
+ 	if (!device) {
+ 		err = -ENOMEM;
+ 		goto err_kzalloc;
+ 	}
++	device->pdev = pdev;
++	device->reg_base = iobase;
++	device->version = readb(device->reg_base + IOAT_VER_OFFSET);
+ 
+ 	/* DMA coherent memory pool for DMA descriptor allocations */
+ 	device->dma_pool = pci_pool_create("dma_desc_pool", pdev,
+-		sizeof(struct ioat_dma_descriptor), 64, 0);
++					   sizeof(struct ioat_dma_descriptor),
++					   64, 0);
+ 	if (!device->dma_pool) {
+ 		err = -ENOMEM;
  		goto err_dma_pool;
+@@ -723,26 +671,6 @@ static int __devinit ioat_probe(struct pci_dev *pdev,
+ 		goto err_completion_pool;
  	}
  
--	device->completion_pool = pci_pool_create("completion_pool", pdev, sizeof(u64), SMP_CACHE_BYTES, SMP_CACHE_BYTES);
-+	device->completion_pool = pci_pool_create("completion_pool", pdev,
-+						  sizeof(u64), SMP_CACHE_BYTES,
-+						  SMP_CACHE_BYTES);
- 	if (!device->completion_pool) {
- 		err = -ENOMEM;
- 		goto err_completion_pool;
-@@ -723,22 +739,26 @@ static int __devinit ioat_probe(struct pci_dev *pdev,
- 
- 	device->reg_base = reg_base;
- 
--	writeb(IOAT_INTRCTRL_MASTER_INT_EN, device->reg_base + IOAT_INTRCTRL_OFFSET);
-+	writeb(IOAT_INTRCTRL_MASTER_INT_EN,
-+	       device->reg_base + IOAT_INTRCTRL_OFFSET);
- 	pci_set_master(pdev);
- 
+-	device->pdev = pdev;
+-	pci_set_drvdata(pdev, device);
+-#ifdef CONFIG_PCI_MSI
+-	if (pci_enable_msi(pdev) == 0) {
+-		device->msi = 1;
+-	} else {
+-		device->msi = 0;
+-	}
+-#endif
+-	err = request_irq(pdev->irq, &ioat_do_interrupt, IRQF_SHARED, "ioat",
+-		device);
+-	if (err)
+-		goto err_irq;
+-
+-	device->reg_base = reg_base;
+-
+-	writeb(IOAT_INTRCTRL_MASTER_INT_EN,
+-	       device->reg_base + IOAT_INTRCTRL_OFFSET);
+-	pci_set_master(pdev);
+-
  	INIT_LIST_HEAD(&device->common.channels);
--	enumerate_dma_channels(device);
-+	ioat_dma_enumerate_channels(device);
+ 	ioat_dma_enumerate_channels(device);
  
- 	dma_cap_set(DMA_MEMCPY, device->common.cap_mask);
--	device->common.device_alloc_chan_resources = ioat_dma_alloc_chan_resources;
--	device->common.device_free_chan_resources = ioat_dma_free_chan_resources;
-+	device->common.device_alloc_chan_resources =
-+						ioat_dma_alloc_chan_resources;
-+	device->common.device_free_chan_resources =
-+						ioat_dma_free_chan_resources;
- 	device->common.device_prep_dma_memcpy = ioat_dma_prep_memcpy;
- 	device->common.device_is_tx_complete = ioat_dma_is_complete;
+@@ -756,9 +684,19 @@ static int __devinit ioat_probe(struct pci_dev *pdev,
  	device->common.device_issue_pending = ioat_dma_memcpy_issue_pending;
  	device->common.device_dependency_added = ioat_dma_dependency_added;
  	device->common.dev = &pdev->dev;
--	printk(KERN_INFO "Intel(R) I/OAT DMA Engine found, %d channels\n",
--		device->common.chancnt);
-+	printk(KERN_INFO " "
-+		 "ioatdma: Intel(R) I/OAT DMA Engine found, %d channels\n",
-+		 device->common.chancnt);
+-	printk(KERN_INFO " "
+-		 "ioatdma: Intel(R) I/OAT DMA Engine found, %d channels\n",
+-		 device->common.chancnt);
++	printk(KERN_INFO "ioatdma: Intel(R) I/OAT DMA Engine found,"
++	       " %d channels, device version 0x%02x\n",
++	       device->common.chancnt, device->version);
++
++	pci_set_drvdata(pdev, device);
++	err = request_irq(pdev->irq, &ioat_do_interrupt, IRQF_SHARED, "ioat",
++		device);
++	if (err)
++		goto err_irq;
++
++	writeb(IOAT_INTRCTRL_MASTER_INT_EN,
++	       device->reg_base + IOAT_INTRCTRL_OFFSET);
++	pci_set_master(pdev);
  
  	err = ioat_self_test(device);
  	if (err)
-@@ -764,7 +784,8 @@ err_set_dma_mask:
- 	pci_disable_device(pdev);
- err_enable_device:
+@@ -766,9 +704,10 @@ static int __devinit ioat_probe(struct pci_dev *pdev,
  
--	printk(KERN_ERR "Intel(R) I/OAT DMA Engine initialization failed\n");
-+	printk(KERN_INFO " "
-+		"ioatdma: Intel(R) I/OAT DMA Engine initialization failed\n");
+ 	dma_async_device_register(&device->common);
  
- 	return err;
+-	return 0;
++	return device;
+ 
+ err_self_test:
++	free_irq(device->pdev->irq, device);
+ err_irq:
+ 	pci_pool_destroy(device->completion_pool);
+ err_completion_pool:
+@@ -776,47 +715,24 @@ err_completion_pool:
+ err_dma_pool:
+ 	kfree(device);
+ err_kzalloc:
+-	iounmap(reg_base);
+-err_ioremap:
+-	pci_release_regions(pdev);
+-err_request_regions:
+-err_set_dma_mask:
+-	pci_disable_device(pdev);
+-err_enable_device:
+-
+-	printk(KERN_INFO " "
+-		"ioatdma: Intel(R) I/OAT DMA Engine initialization failed\n");
+-
+-	return err;
++	iounmap(iobase);
++	printk(KERN_ERR " "
++	       "ioatdma: Intel(R) I/OAT DMA Engine initialization failed\n");
++	return NULL;
  }
-@@ -796,7 +817,8 @@ static void __devexit ioat_remove(struct pci_dev *pdev)
- 	iounmap(device->reg_base);
- 	pci_release_regions(pdev);
- 	pci_disable_device(pdev);
--	list_for_each_entry_safe(chan, _chan, &device->common.channels, device_node) {
-+	list_for_each_entry_safe(chan, _chan,
-+				 &device->common.channels, device_node) {
+ 
+-static void ioat_shutdown(struct pci_dev *pdev)
++void ioat_dma_remove(struct ioatdma_device *device)
+ {
+-	struct ioat_device *device;
+-	device = pci_get_drvdata(pdev);
+-
+-	dma_async_device_unregister(&device->common);
+-}
+-
+-static void __devexit ioat_remove(struct pci_dev *pdev)
+-{
+-	struct ioat_device *device;
+ 	struct dma_chan *chan, *_chan;
+ 	struct ioat_dma_chan *ioat_chan;
+ 
+-	device = pci_get_drvdata(pdev);
+ 	dma_async_device_unregister(&device->common);
+ 
+ 	free_irq(device->pdev->irq, device);
+-#ifdef CONFIG_PCI_MSI
+-	if (device->msi)
+-		pci_disable_msi(device->pdev);
+-#endif
++
+ 	pci_pool_destroy(device->dma_pool);
+ 	pci_pool_destroy(device->completion_pool);
+-	iounmap(device->reg_base);
+-	pci_release_regions(pdev);
+-	pci_disable_device(pdev);
++
+ 	list_for_each_entry_safe(chan, _chan,
+ 				 &device->common.channels, device_node) {
  		ioat_chan = to_ioat_chan(chan);
- 		list_del(&chan->device_node);
- 		kfree(ioat_chan);
+@@ -826,25 +742,3 @@ static void __devexit ioat_remove(struct pci_dev *pdev)
+ 	kfree(device);
+ }
+ 
+-/* MODULE API */
+-MODULE_VERSION("1.9");
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Intel Corporation");
+-
+-static int __init ioat_init_module(void)
+-{
+-	/* it's currently unsafe to unload this module */
+-	/* if forced, worst case is that rmmod hangs */
+-	__unsafe(THIS_MODULE);
+-
+-	return pci_register_driver(&ioat_pci_driver);
+-}
+-
+-module_init(ioat_init_module);
+-
+-static void __exit ioat_exit_module(void)
+-{
+-	pci_unregister_driver(&ioat_pci_driver);
+-}
+-
+-module_exit(ioat_exit_module);
+diff --git a/drivers/dma/ioatdma.h b/drivers/dma/ioatdma.h
+index bf4dad7..26aff08 100644
+--- a/drivers/dma/ioatdma.h
++++ b/drivers/dma/ioatdma.h
+@@ -31,7 +31,7 @@
+ #define IOAT_LOW_COMPLETION_MASK	0xffffffc0
+ 
+ /**
+- * struct ioat_device - internal representation of a IOAT device
++ * struct ioatdma_device - internal representation of a IOAT device
+  * @pdev: PCI-Express device
+  * @reg_base: MMIO register space base address
+  * @dma_pool: for allocating DMA descriptors
+@@ -39,14 +39,14 @@
+  * @msi: Message Signaled Interrupt number
+  */
+ 
+-struct ioat_device {
++struct ioatdma_device {
+ 	struct pci_dev *pdev;
+ 	void __iomem *reg_base;
+ 	struct pci_pool *dma_pool;
+ 	struct pci_pool *completion_pool;
+ 
+ 	struct dma_device common;
+-	u8 msi;
++	u8 version;
+ };
+ 
+ /**
+@@ -84,7 +84,7 @@ struct ioat_dma_chan {
+ 
+ 	int pending;
+ 
+-	struct ioat_device *device;
++	struct ioatdma_device *device;
+ 	struct dma_chan common;
+ 
+ 	dma_addr_t completion_addr;
+@@ -117,4 +117,12 @@ struct ioat_desc_sw {
+ 	struct dma_async_tx_descriptor async_tx;
+ };
+ 
++#if defined(CONFIG_INTEL_IOATDMA) || defined(CONFIG_INTEL_IOATDMA_MODULE)
++struct ioatdma_device *ioat_dma_probe(struct pci_dev *, void __iomem *);
++void ioat_dma_remove(struct ioatdma_device *device);
++#else
++#define ioat_dma_probe(pdev, io)                NULL
++#define ioat_dma_remove(dev)            do { } while (0)
++#endif
++
+ #endif /* IOATDMA_H */
+diff --git a/drivers/dma/ioatdma_hw.h b/drivers/dma/ioatdma_hw.h
+index 4d7a128..9e7434e 100644
+--- a/drivers/dma/ioatdma_hw.h
++++ b/drivers/dma/ioatdma_hw.h
+@@ -27,7 +27,7 @@
+ #define IOAT_PCI_RID			0x00
+ #define IOAT_PCI_SVID			0x8086
+ #define IOAT_PCI_SID			0x8086
+-#define IOAT_VER			0x12	/* Version 1.2 */
++#define IOAT_VER_1_2			0x12	/* Version 1.2 */
+ 
+ struct ioat_dma_descriptor {
+ 	uint32_t	size;
