@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765125AbXHXJOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765505AbXHXJPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765125AbXHXJOi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 05:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbXHXJO2
+	id S1765505AbXHXJPp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 05:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbXHXJPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 05:14:28 -0400
-Received: from rwcrmhc12.comcast.net ([204.127.192.82]:52186 "EHLO
-	rwcrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252AbXHXJO1 (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 05:14:27 -0400
-Subject: [PATCH RT] - rebalance_domains incorrect parameter
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: Ingo Molnar <mingo@elte.hu>
+	Fri, 24 Aug 2007 05:15:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48048 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755415AbXHXJPf (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 05:15:35 -0400
+Date: Fri, 24 Aug 2007 11:15:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
 Cc: RT Users List <linux-rt-users@vger.kernel.org>,
        LKML <Linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: The Big Corporation
-Date: Fri, 24 Aug 2007 02:09:22 -0700
-Message-Id: <1187946562.16573.47.camel@sx.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Subject: Re: [PATCH RT] - rebalance_domains incorrect parameter
+Message-ID: <20070824091533.GA31142@elte.hu>
+References: <1187946562.16573.47.camel@sx.thebigcorporation.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1187946562.16573.47.camel@sx.thebigcorporation.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Ingo,
+* Sven-Thorsten Dietrich <sven@thebigcorporation.com> wrote:
 
-the RT patches for .22 and .23 are passing an incorrect parameter to
-rebalance_domains.
+> Same issue has been fixed in mainline by: 
+> 
+> diff-tree de0cf899bbf06b6f64a5dce9c59d74c41b6b4232 (from
+> 5d2b3d3695a841231b65b55
+> Author: Oleg Nesterov <oleg@tv-sign.ru>
+> Date:   Sun Aug 12 18:08:19 2007 +0200
 
-I had this queued up for a few days - its still wrong in .22 and .23 RT
-patches.
+> signed-off-by: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
 
-Same issue has been fixed in mainline by: 
+ah, you mean we should pick up an upstream fix for -rt? We'll do that 
+and we'll pick up much more: all the other ~100 CFS commits that 
+happened meanwhile. (Btw., there's no need to sign off on patch 
+forwarding or backport requests - the signoff made me first believe this 
+is some new patch.)
 
-diff-tree de0cf899bbf06b6f64a5dce9c59d74c41b6b4232 (from
-5d2b3d3695a841231b65b55
-Author: Oleg Nesterov <oleg@tv-sign.ru>
-Date:   Sun Aug 12 18:08:19 2007 +0200
-
-    sched: run_rebalance_domains: s/SCHED_IDLE/CPU_IDLE/
-    
-    rebalance_domains(SCHED_IDLE) looks strange (typo), change it to
-CPU_IDLE.
-    
-    the effect of this bug was slightly more agressive idle-balancing on
-    SMP than intended.
-    
-    Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
-Thanks,
-
-Sven
-
-
-
-This parameter was missed when SCHED_IDLE was replaced by CPU_IDLE.
-
-Fixed in mainline by:
-commit de0cf899bbf06b6f64a5dce9c59d74c41b6b4232
-Author: Oleg Nesterov <oleg@tv-sign.ru>
-Date:   Sun Aug 12 18:08:19 2007 +0200
-
-
-signed-off-by: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-
-
-Index: linux-2.6.22.1-rt9-broken-out/kernel/sched.c
-===================================================================
---- linux-2.6.22.1-rt9-broken-out.orig/kernel/sched.c
-+++ linux-2.6.22.1-rt9-broken-out/kernel/sched.c
-@@ -3479,7 +3479,7 @@ static void run_rebalance_domains(struct
- 			if (need_resched())
- 				break;
- 
--			rebalance_domains(balance_cpu, SCHED_IDLE);
-+			rebalance_domains(balance_cpu, CPU_IDLE);
- 
- 			rq = cpu_rq(balance_cpu);
- 			if (time_after(this_rq->next_balance, rq->next_balance))
-
+	Ingo
