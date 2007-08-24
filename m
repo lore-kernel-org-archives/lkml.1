@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932369AbXHXOig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763223AbXHXOmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932369AbXHXOig (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 10:38:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932081AbXHXOiN
+	id S1763223AbXHXOmB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 10:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbXHXOly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 10:38:13 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:10497 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753898AbXHXOiK (ORCPT
+	Fri, 24 Aug 2007 10:41:54 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:39447 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752750AbXHXOlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 10:38:10 -0400
-Date: Fri, 24 Aug 2007 10:36:58 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Andrew Morton <akpm@osdl.org>, Ken Chen <kenchen@google.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0/6] writeback time order/delay fixes take 3
-Message-ID: <20070824103658.239cb132@think.oraclecorp.com>
-In-Reply-To: <387961898.15210@ustc.edu.cn>
-References: <386910467.21100@ustc.edu.cn>
-	<20070821202314.335e86ec@think.oraclecorp.com>
-	<387745522.02814@ustc.edu.cn>
-	<20070822084201.2c4eceb6@think.oraclecorp.com>
-	<387961898.15210@ustc.edu.cn>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 24 Aug 2007 10:41:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=D62nCCnslJwgbNT+JbKqcNRfer/HnsEWT8oEO4VGEqSYK69zqR1vZwkZHEVN4ZKzB+UlBf4KY2+ahRym/Uydi+5KmwCD0vew1q7kZupfpX9THvc+Je1XE6pCOgzFND9CqeogdhIWeymSRCpmbwLvxiE7+2bUTTGLS6MGjpH3oU8=
+Message-ID: <443c85430708240741s67fb978cmdcdcbe6dac7ef1a6@mail.gmail.com>
+Date: Fri, 24 Aug 2007 10:41:51 -0400
+From: TheOneKEA <theonekea@gmail.com>
+To: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
+Subject: Re: Possible problems reading a DVD-RAM disc
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070824135812.GH9412@csclub.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <443c85430708231944s102dff82u366a93824f7c2222@mail.gmail.com>
+	 <20070824135812.GH9412@csclub.uwaterloo.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007 21:24:58 +0800
-Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
- 
-> > 2) s_dirty and s_io both become radix trees.  s_dirty is indexed by
-> > a sequence number that corresponds to age.  It is treated as a big
-> > circular indexed list that can wrap around over time.  Radix tree
-> > tags are used both on s_dirty and s_io to flag which inodes are in
-> > progress.
-> 
-> It's meaningless to convert s_io to radix tree. Because inodes on s_io
-> will normally be sent to block layer elevators at the same time.
+On 8/24/07, Lennart Sorensen <lsorense@csclub.uwaterloo.ca> wrote:
+> On Thu, Aug 23, 2007 at 10:44:55PM -0400, TheOneKEA wrote:
+> > While doing a long mega-copy from one side of a DVD-RAM disc formatted
+> > with the vfat filesystem to an smbfs network share, I got lots and
+> > lots of these in the dmesg:
+>
+> No idea about the error, but isn't vfat torture of a dvd-ram?  Don't
+> they come preformated with UDF since it does wear leveling while vfat
+> would very very quickly trash the part of the disk storing the FAT.
 
-Not entirely, using a radix tree instead lets you tag things instead of
-doing the current backflips across three lists.
+I wouldn't know - someone else gave the media to me and wanted to try
+to rescue the data on it. I certainly didn't out vfat on it on
+purpose. As soon as I can fix the dmesg errors and get a clean read of
+the disk, I intend to clean it off and put UDF on both sides.
 
-> 
-> Also s_dirty holds 30 seconds of inodes, while s_io only 5 seconds.
-> The more inodes, the more chances of good clustering. That's the
-> general rule.
-> 
-> s_dirty is the right place to do address-clustering.
-> As for the dirty_expire_interval parameter on dirty age,
-> we can apply a simple rule: do one full scan/sweep over the
-> fs-address-space in every 30s, syncing all inodes encountered,
-> and sparing those newly dirtied in less than 5s. With that rule,
-> any inode will get synced after being dirtied for 5-35 seconds.
-
-This gives you an O(inodes dirty) behavior instead of the current O(old
-inodes).  It might not matter, but walking the radix tree is more
-expensive than walking a list.
-
-But, I look forward to your patches, we can tune from there.
-
--chris
+-- 
+SCREW THE ADS! http://adblock.mozdev.org/
