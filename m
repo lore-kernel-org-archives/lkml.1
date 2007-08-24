@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762294AbXHXReR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761489AbXHXRi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762294AbXHXReR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 13:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbXHXReI
+	id S1761489AbXHXRi2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 13:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750817AbXHXRiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 13:34:08 -0400
-Received: from dspnet.fr.eu.org ([213.186.44.138]:2111 "EHLO dspnet.fr.eu.org"
+	Fri, 24 Aug 2007 13:38:18 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35704 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752485AbXHXReH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 13:34:07 -0400
-X-Greylist: delayed 678 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Aug 2007 13:34:07 EDT
-Date: Fri, 24 Aug 2007 19:22:46 +0200
-From: Olivier Galibert <galibert@pobox.com>
-To: SL Baur <steve@xemacs.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: false positive in checkpatch.pl (complex macro values)
-Message-ID: <20070824172246.GA64648@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	SL Baur <steve@xemacs.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <8bd0f97a0708240051w7fc00b01w8dc1b39fe606bfe4@mail.gmail.com> <46CEC3D4.40805@shadowen.org> <ed10ee420708240543r27db83e9l25300c2799c7c2cd@mail.gmail.com>
-Mime-Version: 1.0
+	id S1751031AbXHXRiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 13:38:18 -0400
+Date: Fri, 24 Aug 2007 19:38:16 +0200
+From: Andi Kleen <ak@suse.de>
+To: Mel Gorman <mel@skynet.ie>
+Cc: Andi Kleen <ak@suse.de>, Andy Whitcroft <apw@shadowen.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 Boot NUMA kernels on non-NUMA hardware with DISCONTIG memory model
+Message-ID: <20070824173816.GC16227@bingen.suse.de>
+References: <20070824162814.GD26374@skynet.ie> <20070824163521.GA16227@bingen.suse.de> <46CF0CCF.7010702@shadowen.org> <20070824170744.GB16227@bingen.suse.de> <20070824172626.GE26374@skynet.ie>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ed10ee420708240543r27db83e9l25300c2799c7c2cd@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20070824172626.GE26374@skynet.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 05:43:47AM -0700, SL Baur wrote:
-> Who uses code like this, by the way?
+> Other than the fact that the memmap must be PMD aligned to use hugepage
+> entries for the memmap. 
 
-People who think Posix is an example to follow maybe?  Not sure if it
-would go past the maintainers though :-)
+Why is that so?  mem_map should be just part of lowmem anyways.
 
-# define PTHREAD_MUTEX_INITIALIZER \
-  { { 0, 0, 0, 0, 0, { 0 } } }
-# ifdef __USE_GNU
-#  define PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP \
-  { { 0, 0, 0, PTHREAD_MUTEX_RECURSIVE_NP, 0, { 0 } } }
-#  define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP \
-  { { 0, 0, 0, PTHREAD_MUTEX_ERRORCHECK_NP, 0, { 0 } } }
-#  define PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP \
-  { { 0, 0, 0, PTHREAD_MUTEX_ADAPTIVE_NP, 0, { 0 } } }
-# endif
+> It could be mapped with small pages in corner cases
+> but the complexity worth it?
 
-  OG.
+You don't need to map it with small pages in the normal case,
+the only requirement is that c_p_a() is aware of it so it can
+split it if needed.
 
+> I can't see this type of lifting being done any time soon. As SPARSEMEM works
+> and there is hope with the vmemmap work that DISCONTIG will finally go away,
+> it may not be the best investment of time.
+
+It's a trivial change, probably less code than your original patch.
+
+-Andi
