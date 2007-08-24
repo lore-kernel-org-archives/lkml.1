@@ -1,91 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbXHXPZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbXHXPgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759358AbXHXPZj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 11:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758231AbXHXPXt
+	id S1756653AbXHXPgk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 11:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXHXPga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 11:23:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48443 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758701AbXHXPXr (ORCPT
+	Fri, 24 Aug 2007 11:36:30 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50092 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbXHXPga (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 11:23:47 -0400
-Date: Fri, 24 Aug 2007 21:06:40 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH] Remove superfluous definition of __setup_null_param()
- macro.
-In-Reply-To: <Pine.LNX.4.64.0708240608090.16678@localhost.localdomain>
-Message-ID: <alpine.LFD.0.999.0708242100480.20322@enigma.security.iitk.ac.in>
-References: <Pine.LNX.4.64.0708240608090.16678@localhost.localdomain>
+	Fri, 24 Aug 2007 11:36:30 -0400
+Message-ID: <46CEFB03.5040302@bull.net>
+Date: Fri, 24 Aug 2007 17:36:35 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Avi Kivity <avi@qumranet.com>
+Subject: [PATCH] export i386 smp_call_function_mask() to modules
+X-Enigmail-Version: 0.94.0.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 24/08/2007 17:41:48,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 24/08/2007 17:41:49,
+	Serialize complete at 24/08/2007 17:41:49
+Content-Type: multipart/mixed;
+ boundary="------------010301080004060803080204"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------010301080004060803080204
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 
+This patch export i386 smp_call_function_mask() with EXPORT_SYMBOL().
 
-On Fri, 24 Aug 2007, Robert P. J. Day wrote:
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> 
-> ---
-> 
->   since i apparently removed the final remaining reference to this
-> macro in commit f4895925976977aaeda26ee2a603a99f17db500b (thanks,
-> adrian), there seems to be little value in keeping this definition
-> around.
+This function is needed by KVM to call a function on a set of CPUs.
 
-How about ...
+ arch/i386/kernel/smp.c |    7 +++++++
+ include/asm-i386/smp.h |    9 +++------
+ 2 files changed, 10 insertions(+), 6 deletions(-)
 
+Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
 
-[PATCH] Remove superfluous definition of __setup_null_param() macro and broken (for MODULE) __setup_param()
+--------------010301080004060803080204
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+ name="smp_call_function_mask-i386"
+Content-Disposition: inline;
+ filename="smp_call_function_mask-i386"
 
-From: Robert P. J. Day <rpjday@mindspring.com>
-
-Remove superfluous definition of __setup_null_param() macro, as nobody
-uses it anymore.
-
-Also kill the #ifdef-MODULE-case (empty) definition for __setup_param.
-It is only required for the !MODULE case, as __setup() is empty for
-the MODULE case already. Also, no user outside init.h must use
-__setup_null_param directly anyway (and nobody does), so it's not
-something whose empty definition we necessarily need to make available
-to rest of the kernel. Moreover, this MODULE case of __setup_param has
-been broken for more than two years now -- as far back as git history
-takes us. Let's get rid of it.
-
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
-
----
-
- include/linux/init.h |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
-
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 74b1f43..93b2ca5 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -165,9 +165,6 @@ struct obs_kernel_param {
- 		__attribute__((aligned((sizeof(long)))))	\
- 		= { __setup_str_##unique_id, fn, early }
+Index: kvm/arch/i386/kernel/smp.c
+===================================================================
+--- kvm.orig/arch/i386/kernel/smp.c	2007-08-24 17:09:46.000000000 +0200
++++ kvm/arch/i386/kernel/smp.c	2007-08-24 17:09:48.000000000 +0200
+@@ -705,3 +705,10 @@ struct smp_ops smp_ops = {
+ 	.smp_send_reschedule = native_smp_send_reschedule,
+ 	.smp_call_function_mask = native_smp_call_function_mask,
+ };
++
++int smp_call_function_mask(cpumask_t mask, void (*func) (void *info),
++			   void *info, int wait)
++{
++	return smp_ops.smp_call_function_mask(mask, func, info, wait);
++}
++EXPORT_SYMBOL(smp_call_function_mask);
+Index: kvm/include/asm-i386/smp.h
+===================================================================
+--- kvm.orig/include/asm-i386/smp.h	2007-08-24 17:09:46.000000000 +0200
++++ kvm/include/asm-i386/smp.h	2007-08-24 17:10:34.000000000 +0200
+@@ -92,12 +92,9 @@ static inline void smp_send_reschedule(i
+ {
+ 	smp_ops.smp_send_reschedule(cpu);
+ }
+-static inline int smp_call_function_mask(cpumask_t mask,
+-					 void (*func) (void *info), void *info,
+-					 int wait)
+-{
+-	return smp_ops.smp_call_function_mask(mask, func, info, wait);
+-}
++extern int smp_call_function_mask(cpumask_t mask,
++				  void (*func) (void *info), void *info,
++				  int wait);
  
--#define __setup_null_param(str, unique_id)			\
--	__setup_param(str, unique_id, NULL, 0)
--
- #define __setup(str, fn)					\
- 	__setup_param(str, fn, fn, 0)
- 
-@@ -233,8 +230,6 @@ void __init parse_early_param(void);
- 	{ return exitfn; }					\
- 	void cleanup_module(void) __attribute__((alias(#exitfn)));
- 
--#define __setup_param(str, unique_id, fn)	/* nothing */
--#define __setup_null_param(str, unique_id) 	/* nothing */
- #define __setup(str, func) 			/* nothing */
- #endif
- 
+ void native_smp_prepare_boot_cpu(void);
+ void native_smp_prepare_cpus(unsigned int max_cpus);
+
+--------------010301080004060803080204--
