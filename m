@@ -1,182 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760025AbXHXQ1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761582AbXHXQ2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760025AbXHXQ1P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 12:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbXHXQ1A
+	id S1761582AbXHXQ2Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 12:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbXHXQ2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 12:27:00 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:56366 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754948AbXHXQ06 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 12:26:58 -0400
-Date: Fri, 24 Aug 2007 12:26:56 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent Code
-Message-ID: <20070824162656.GC21226@Krystal>
-References: <20070820202704.927923667@polymtl.ca> <20070820202758.850703563@polymtl.ca> <1187656987.19435.163.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Aug 2007 12:28:18 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:48782 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751219AbXHXQ2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 12:28:17 -0400
+Date: Fri, 24 Aug 2007 17:28:15 +0100
+To: ak@suse.de
+Cc: linux-kernel@vger.kernel.org, apw@shadowen.org
+Subject: [PATCH] x86 Boot NUMA kernels on non-NUMA hardware with DISCONTIG memory model
+Message-ID: <20070824162814.GD26374@skynet.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1187656987.19435.163.camel@localhost.localdomain>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:59:02 up 25 days, 16:17,  6 users,  load average: 0.54, 0.56, 0.59
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rusty Russell (rusty@rustcorp.com.au) wrote:
-> On Mon, 2007-08-20 at 16:27 -0400, Mathieu Desnoyers wrote:
-> > The marker activation functions sits in kernel/marker.c. A hash table is used
-> > to keep track of the registered probes and armed markers, so the markers within
-> > a newly loaded module that should be active can be activated at module load
-> > time.
-> 
-> Hi Mathieu!
-> 
-> 	Just reading through this patch, a couple of comments:
-> 
+Currently NUMA kernels generally do not boot on non-NUMA machines in some
+situations. This patch addresses one such boot problem on x86 machines
+running a NUMA kernel with the DISCONTIG memory model.
 
-Hi Rusty,
+On 32-bit NUMA, the memmap representing struct pages on each node is allocated
+from node-local memory. As only node-0 has memory from ZONE_NORMAL, the memmap
+must be mapped into low memory. This is done by reserving space in the Kernel
+Virtual Area (KVA) for the memmap belonging to other nodes by taking pages
+from the end of ZONE_NORMAL and remapping the other nodes memmap into those
+virtual addresses. The node boundaries are then adjusted so that the region
+of pages is not used and it is marked as reserved in the bootmem allocator.
 
-> > +/* To be used for string format validity checking with gcc */
-> > +static inline void __mark_check_format(const char *fmt, ...)
-> > +		__attribute__ ((format (printf, 1, 2)));
-> > +static inline void __mark_check_format(const char *fmt, ...) { }
-> 
-> If you place the __attribute__() before the function name, you can do
-> this in the definition.
-> 
+This reserved portion of the KVA must be PMD aligned. The problem is that
+when aligned, there may be a portion of ZONE_NORMAL at the end that is not
+used for memmap and does not have an initialised memmap nor is it marked
+reserved in the bootmem allocator. Later in the boot process, these pages
+are freed and a storm of Bad page state messages result.
 
-Ok, will fix.
+This patch marks these pages reserved that are wasted due to alignment
+in the bootmem allocator so they are not accidently freed. It is worth
+noting that memory from node-0 is wasted where it could have been put into
+ZONE_HIGHMEM on NUMA machines. Worse, the KVA is always reserved from the
+location of real memory even when there is plenty of spare virtual address
+space. It's likely not worth fixing this up as SPARSEMEM will hopefully
+replace DISCONTIG some time in the future.
 
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/kernel/module.c	2007-08-10 19:44:18.000000000 -0400
-> > +++ linux-2.6-lttng/kernel/module.c	2007-08-10 23:54:38.000000000 -0400
-> > @@ -1980,6 +1986,10 @@ static struct module *load_module(void _
-> >  			sechdrs[immediateindex].sh_size / sizeof(*mod->immediate);
-> >  	}
-> >  #endif
-> > +	if (markersindex)
-> > +		sechdrs[markersindex].sh_flags |= SHF_ALLOC;
-> > +	if (markersstringsindex)
-> > +		sechdrs[markersstringsindex].sh_flags |= SHF_ALLOC;
-> >  
-> 
-> Perhaps I'm missing something, but I don't see why these sections
-> wouldn't be SHF_ALLOC already.
-> 
+This patch also makes sure that reserve_bootmem() is not called with a
+0-length size in numa_kva_reserve().  When this happens, it usually means
+that a kernel built for Summit is being booted on a normal machine. The
+resulting BUG_ON() is misleading so it's caught here.
 
-Declaring variables with __attribute__((section("__markers_strings")))
-will likely put them in an allocated section, you are right. Will fix.
+This patch allows the following NUMA configuration to boot on normal hardware
+and qemu;
 
-The same applies to immediate values with .section __immediate, \"a\",
-@progbits, which is explicitely allocated.
+Processor type: Generic architecture (Summit, bigsmp, ES7000, default)
+Memory model:   DISCONTIG
+High memory:    64GB
+NUMA support:   on
 
-> >  	mod->unused_syms = (void *)sechdrs[unusedindex].sh_addr;
-> >  	if (unusedcrcindex)
-> > @@ -2021,6 +2031,13 @@ static struct module *load_module(void _
-> >  		if (err < 0)
-> >  			goto cleanup;
-> >  	}
-> > +#ifdef CONFIG_MARKERS
-> > +	if (markersindex) {
-> > +		mod->markers = (void *)sechdrs[markersindex].sh_addr;
-> > +		mod->num_markers =
-> > +			sechdrs[markersindex].sh_size / sizeof(*mod->markers);
-> > +	}
-> > +#endif
-> 
-> Because of the wonders of ELF, section 0 has sh_addr and sh_size 0.  So
-> the if (markersindex) is unnecessary here.
-> 
+SPARSEMEM memory model is already working.
 
-Ok. Will apply to immediate values too.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 
-> > +/*
-> > + * Get marker if the marker is present in the marker hash table.
-> > + * Must be called with markers_mutex held.
-> > + * Returns NULL if not present.
-> > + */
-> > +static struct marker_entry *_get_marker(const char *name)
-> 
-> You seem to really enjoy underscores, yet I'm having trouble
-> understanding why this would have an underscore in it.
-> 
+--- 
+ discontig.c |   23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-Just they are internal functiona meant to be called with markers_mutex
-held. But I guess having a static prefix and not being exported is
-enough. Will remove. I'll just keep
-_marker_update_probes/marker_update_probes to differentiate between
-locked/non-locked version.
-
-> > +{
-> > +	struct hlist_head *head;
-> > +	struct hlist_node *node;
-> > +	struct marker_entry *e;
-> > +	size_t len = strlen(name) + 1;
-> > +	u32 hash = jhash(name, len-1, 0);
-> > +
-> > +	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
-> > +	hlist_for_each_entry(e, node, head, hlist) {
-> > +		if (!strcmp(name, e->name))
-> > +			return e;
-> > +	}
-> > +	return NULL;
-> > +}
-> 
-> OK, don't understand the strlen, len, len-1 dance here?
-> 
-
-Let's say we have abc\0 for marker name as name input.
-
-len = 3 + 1 = 4 (including \0)
-hash is done only on the 3 first chars, excluding the \0 (therefore the
-                                                          len-1 there)
-
-Actually, it's like this only for a matter of consistency between
-add_marker and remove_marker, which are quite similar, but add_marker
-needs name_len to include the \0 value. It would be odd to change the
-logic between the two functions to one including the \0 and the other
-excluding it.
-
-> > +/*
-> > + * Updates the probe callback corresponding to a range of markers.
-> > + * Must be called with markers_mutex held.
-> > + */
-> > +static void _marker_update_probe_range(
-> 
-> And yet:
-> 
-> > +void module_marker_update(struct module *mod)
-> > +{
-> > +	if (!mod->taints)
-> > +		_marker_update_probe_range(mod->markers,
-> > +			mod->markers+mod->num_markers, NULL, NULL);
-> > +}
-> 
-> This doesn't hold the markers_mutex.
-> 
-
-Since this function is only meant to be called upon module load, before
-the module is added to the module list, this marker range cannot be seen
-by other calls to marker_update_probe_range. But you are right. It also
-protects the hash table, so I should take the mutex there.  Fixing.
-
-Thanks for the review,
-
-Mathieu
-
-> Cheers,
-> Rusty.
-> 
-
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc3-mm1-clean/arch/i386/mm/discontig.c linux-2.6.23-rc3-mm1-numaboot/arch/i386/mm/discontig.c
+--- linux-2.6.23-rc3-mm1-clean/arch/i386/mm/discontig.c	2007-08-22 11:32:10.000000000 +0100
++++ linux-2.6.23-rc3-mm1-numaboot/arch/i386/mm/discontig.c	2007-08-24 17:00:54.000000000 +0100
+@@ -198,11 +198,12 @@ void __init remap_numa_kva(void)
+ 	}
+ }
+ 
+-static unsigned long calculate_numa_remap_pages(void)
++static unsigned long calculate_numa_remap_pages(unsigned long *wasted_pages)
+ {
+ 	int nid;
+ 	unsigned long size, reserve_pages = 0;
+ 	unsigned long pfn;
++	*wasted_pages = 0;
+ 
+ 	for_each_online_node(nid) {
+ 		unsigned old_end_pfn = node_end_pfn[nid];
+@@ -252,6 +253,15 @@ static unsigned long calculate_numa_rema
+ 			printk("Shrinking node %d further by %ld pages for proper alignment\n",
+ 				nid, node_end_pfn[nid] & (PTRS_PER_PTE-1));
+ 			size +=  node_end_pfn[nid] & (PTRS_PER_PTE-1);
++
++			/*
++			 * We are going to end up wasting pages past
++			 * the KVA for no good reason other than how
++			 * the KVA is located. This is bad.
++			 */
++			if (nid == 0)
++				*wasted_pages = node_end_pfn[nid] &
++							(PTRS_PER_PTE - 1);
+ 		}
+ 
+ 		node_end_pfn[nid] -= size;
+@@ -268,6 +278,7 @@ unsigned long __init setup_memory(void)
+ {
+ 	int nid;
+ 	unsigned long system_start_pfn, system_max_low_pfn;
++	unsigned long wasted_pages;
+ 
+ 	/*
+ 	 * When mapping a NUMA machine we allocate the node_mem_map arrays
+@@ -279,7 +290,7 @@ unsigned long __init setup_memory(void)
+ 	find_max_pfn();
+ 	get_memcfg_numa();
+ 
+-	kva_pages = calculate_numa_remap_pages();
++	kva_pages = calculate_numa_remap_pages(&wasted_pages);
+ 
+ 	/* partially used pages are not usable - thus round upwards */
+ 	system_start_pfn = min_low_pfn = PFN_UP(init_pg_tables_end);
+@@ -340,12 +351,18 @@ unsigned long __init setup_memory(void)
+ 	memset(NODE_DATA(0), 0, sizeof(struct pglist_data));
+ 	NODE_DATA(0)->bdata = &node0_bdata;
+ 	setup_bootmem_allocator();
++
++	if (wasted_pages)
++		reserve_bootmem(
++			PFN_PHYS(node_remap_start_pfn[0] + node_remap_size[0]),
++			PFN_PHYS(wasted_pages));
+ 	return max_low_pfn;
+ }
+ 
+ void __init numa_kva_reserve(void)
+ {
+-	reserve_bootmem(PFN_PHYS(kva_start_pfn),PFN_PHYS(kva_pages));
++	if (kva_pages)
++		reserve_bootmem(PFN_PHYS(kva_start_pfn), PFN_PHYS(kva_pages));
+ }
+ 
+ void __init zone_sizes_init(void)
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
