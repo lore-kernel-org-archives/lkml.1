@@ -1,95 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932214AbXHXTDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765343AbXHXTF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932214AbXHXTDw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 15:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757610AbXHXTDo
+	id S1765343AbXHXTF3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 15:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758964AbXHXTFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 15:03:44 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:35989 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756831AbXHXTDn (ORCPT
+	Fri, 24 Aug 2007 15:05:16 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:50877 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758335AbXHXTFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 15:03:43 -0400
-Subject: [PATCH RT 3/3 - take two ] fix get_monotonic_cycles for latency
-	tracer
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-In-Reply-To: <1187978236.2941.19.camel@localhost.localdomain>
-References: <1187978236.2941.19.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 24 Aug 2007 15:02:29 -0400
-Message-Id: <1187982149.4574.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Aug 2007 15:05:14 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: RFC: issues concerning the next NAPI interface
+To: Linas Vepstas <linas@austin.ibm.com>,
+       Jan-Bernd Themann <ossthema@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>,
+       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Reply-To: 7eggert@gmx.de
+Date: Fri, 24 Aug 2007 21:04:56 +0200
+References: <8VHRR-45R-17@gated-at.bofh.it> <8VKwj-8ke-27@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1IOeSm-0000bm-Jo@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1+2cGwZ8ftRb/GDtvIhEamL8FSRlmWcMnhLBkZ
+ xx4GmSIcf1xuFKzKCvCXkd/ke/YHP6wxq6UT4VJ2mojSOZ43Rp
+ 266al3AVib3nY3/cUxLQw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Added comment about not being able to take the xtime lock in  
- get_monotonic_cycles - suggested by John Stultz]
+Linas Vepstas <linas@austin.ibm.com> wrote:
+> On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
 
-The latency tracer on SMP was given crazy results. It was found that the
-get_monotonic_cycles that it uses was not returning a monotonic counter.
-The cause of this was that clock->cycles_raw and clock->cycles_last can
-be updated on another CPU and make the cycles_now variable out-of-date.
-So the delta that was calculated from cycles_now - cycles_last was
-incorrect.
+>> 3) On modern systems the incoming packets are processed very fast. Especially
+>> on SMP systems when we use multiple queues we process only a few packets
+>> per napi poll cycle. So NAPI does not work very well here and the interrupt
+>> rate is still high.
+> 
+> I saw this too, on a system that is "modern" but not terribly fast, and
+> only slightly (2-way) smp. (the spidernet)
+> 
+> I experimented wih various solutions, none were terribly exciting.  The
+> thing that killed all of them was a crazy test case that someone sprung on
+> me:  They had written a worst-case network ping-pong app: send one
+> packet, wait for reply, send one packet, etc.
+> 
+> If I waited (indefinitely) for a second packet to show up, the test case
+> completely stalled (since no second packet would ever arrive).  And if I
+> introduced a timer to wait for a second packet, then I just increased
+> the latency in the response to the first packet, and this was noticed,
+> and folks complained.
 
-This patch adds a loop to make sure that the cycles_raw and cycles_last
-are consistent through out the calculation (otherwise it performs the
-loop again).
+Possible solution / possible brainfart:
 
-With this patch the latency_tracer can produce normal results again.
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-Index: linux-2.6-rt/kernel/time/timekeeping.c
-===================================================================
---- linux-2.6-rt.orig/kernel/time/timekeeping.c	2007-08-24 13:41:28.000000000 -0400
-+++ linux-2.6-rt/kernel/time/timekeeping.c	2007-08-24 14:58:02.000000000 -0400
-@@ -75,15 +75,35 @@ s64 __get_nsec_offset(void)
- 
- cycle_t notrace get_monotonic_cycles(void)
- {
--	cycle_t cycle_now, cycle_delta;
-+	cycle_t cycle_now, cycle_delta, cycle_raw, cycle_last;
- 
--	/* read clocksource: */
--	cycle_now = clocksource_read(clock);
-+	do {
-+		/*
-+		 * cycle_raw and cycle_last can change on
-+		 * another CPU and we need the delta calculation
-+		 * of cycle_now and cycle_last happen atomic, as well
-+		 * as the adding to cycle_raw. We don't need to grab
-+		 * any locks, we just keep trying until get all the
-+		 * calculations together in one state.
-+		 *
-+		 * In fact, we __cant__ grab any locks. This
-+		 * function is called from the latency_tracer which can
-+		 * be called anywhere. To grab any locks (including
-+		 * seq_locks) we risk putting ourselves into a deadlock.
-+		 */
-+		cycle_raw = clock->cycle_raw;
-+		cycle_last = clock->cycle_last;
-+
-+		/* read clocksource: */
-+		cycle_now = clocksource_read(clock);
-+
-+		/* calculate the delta since the last update_wall_time: */
-+		cycle_delta = (cycle_now - cycle_last) & clock->mask;
- 
--	/* calculate the delta since the last update_wall_time: */
--	cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-+	} while (cycle_raw != clock->cycle_raw ||
-+		 cycle_last != clock->cycle_last);
- 
--	return clock->cycle_raw + cycle_delta;
-+	return cycle_raw + cycle_delta;
- }
- 
- unsigned long notrace cycles_to_usecs(cycle_t cycles)
-
-
+Introduce a timer, but don't start to use it to combine packets unless you
+receive n packets within the timeframe. If you receive less than m packets
+within one timeframe, stop using the timer. The system should now have a
+decent response time when the network is idle, and when the network is
+busy, nobody will complain about the latency.-)
+-- 
+Funny quotes:
+22. When everything's going your way, you're in the wrong lane and and going
+    the wrong way.
+Friﬂ, Spammer: rsRxhvmk@CaR.7eggert.dyndns.org m@z3T.7eggert.dyndns.org
