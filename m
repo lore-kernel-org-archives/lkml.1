@@ -1,56 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762236AbXHXHeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762844AbXHXHpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762236AbXHXHeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 03:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbXHXHeM
+	id S1762844AbXHXHpX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 03:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbXHXHpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 03:34:12 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:24469 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbXHXHeL (ORCPT
+	Fri, 24 Aug 2007 03:45:10 -0400
+Received: from tama5.ecl.ntt.co.jp ([129.60.39.102]:52377 "EHLO
+	tama5.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752683AbXHXHpI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 03:34:11 -0400
-Subject: Re: [PATCH] s390 appldata_base: Remove module_exit function and
-	modular stuff
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.999.0708240419120.14807@enigma.security.iitk.ac.in>
-References: <alpine.LFD.0.999.0708230706570.2049@enigma.security.iitk.ac.in >
-	 <alpine.LFD.0.999.0708230746450.2049@enigma.security.iitk.ac.in>
-	 <1187866866.6599.6.camel@localhost>
-	 <alpine.LFD.0.999.0708240419120.14807@enigma.security.iitk.ac.in>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 24 Aug 2007 09:37:55 +0200
-Message-Id: <1187941075.13076.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Aug 2007 03:45:08 -0400
+Message-Id: <200708240743.AA00249@paprika.lab.ntt.co.jp>
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Date: Fri, 24 Aug 2007 16:43:46 +0900
+To: trond.myklebust@fys.uio.no
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [BUG] problem with nfs_invaildate_page
+MIME-Version: 1.0
+X-Mailer: AL-Mail32 Version 1.13
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-24 at 04:21 +0530, Satyam Sharma wrote:
-> > I has been a module once for debugging purposes That the module_exit
-> > function still exists is "historical". We can remove it since it is dead
-> > code.
-> 
-> Thanks, fair enough. Does this mean you're acking them -- I'd prefer both
-> the patches to be applied separately. Rationale: we should still fix the
-> appldata_exit() related oops _before_ removing it so that in future if
-> this needs to be made modular for debugging purpose again, just the
-> removal patch can be reverted, but the oops would still be fixed in the
-> commit before it.
+Hi,
 
-ACK, the patches are fine.
+I got the following BUG in nfs_inode_add_request() when I was using
+eCryptfs on NFS. (Don't ask me why I was doing that)
 
--- 
-blue skies,
-  Martin.
+------------[ cut here ]------------
+kernel BUG at fs/nfs/write.c:387!
+invalid opcode: 0000 [#1]
+PREEMPT SMP
+Modules linked in: cbc md5 aes ecb blkcipher cryptomgr crypto_algapi ecryptfs
+nfs iscsi_tcp libiscsi scsi_transport_iscsi nfsd exportfs lockd nfs_acl sunrpc
+nbd md_mod dm_snapshot dm_mirror dm_mod video output
+CPU:    5
+EIP:    0060:[<f90113e2>]    Not tainted VLI
+EFLAGS: 00010246   (2.6.23-rc3 #5)
+EIP is at nfs_writepage_setup+0xc8/0x305 [nfs]
+eax: ffffffef   ebx: ffffffef   ecx: 00000000   edx: f776a6c8
+esi: f776a700   edi: f3392680   ebp: f6489c04   esp: f6489bc4
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process dd (pid: 4260, ti=f6488000 task=f5719500 task.ti=f6488000)
+Stack: 00000000 00001000 dd751a4f 730e4905 00000000 c404e0c0 f5a86a80 f33927e4
+       f3392774 00000000 f6489bf4 c029e298 00000000 f6812780 00000000 c404e0c0
+       f6489c44 f9011b8c 00001000 00001000 00000010 fff2b000 f6489d08 00000246
+Call Trace:
+ [<c01082d6>] show_trace_log_lvl+0x1a/0x2f
+ [<c0108388>] show_stack_log_lvl+0x9d/0xa5
+ [<c0108581>] show_registers+0x1f1/0x332
+ [<c01087dd>] die+0x11b/0x250
+ [<c0480cd0>] do_trap+0x8a/0xa3
+ [<c0108bd1>] do_invalid_op+0x88/0x92
+ [<c0480a9a>] error_code+0x72/0x78
+ [<f9011b8c>] nfs_updatepage+0x14d/0x1b3 [nfs]
+ [<f9008f93>] nfs_commit_write+0x29/0x39 [nfs]
+ [<f8fe0ae5>] ecryptfs_commit_lower_page+0x26/0x6b [ecryptfs]
+ [<f8fe2675>] ecryptfs_write_out_page+0x28/0x73 [ecryptfs]
+ [<f8fe32ac>] ecryptfs_encrypt_page+0x3a4/0x419 [ecryptfs]
+ [<f8fe12e0>] ecryptfs_commit_write+0x1ba/0x31f [ecryptfs]
+ [<c015c1ab>] generic_file_buffered_write+0x3a6/0x54e
+ [<c015c793>] __generic_file_aio_write_nolock+0x440/0x493
+ [<c015c83c>] generic_file_aio_write+0x56/0xb4
+ [<c0178a7c>] do_sync_write+0xc5/0x102
+ [<c017923e>] vfs_write+0xaf/0x138
+ [<c0179806>] sys_write+0x3d/0x61
+ [<c010719a>] syscall_call+0x7/0xb
+ =======================
+Code: 00 00 00 f0 0f ba 6e 28 00 19 c0 8b 7d e0 81 ef f4 00 00 00 8b 56
+14 8b 45 e0 83 e8 1c 89 f1 e8 50 db 29 c7 89 c3 83 f8 ef 75 04 <0f> 0b
+eb fe 85 c0 75 4e 83 bf e8 00 00 00 00 75 10 8b 45 e0 e8
+EIP: [<f90113e2>] nfs_writepage_setup+0xc8/0x305 [nfs] SS:ESP 0068:f6489bc4
 
-"Reality continues to ruin my life." - Calvin.
+As you may have guessed, the BUG shows a collision of nfs_page in a nfs
+page tree.  That is, there is a case that nfs_page remains even if 
+the requested page is removed from page cache.
 
+static int nfs_inode_add_request(struct inode *inode, struct nfs_page *req)
+{
+        struct nfs_inode *nfsi = NFS_I(inode);
+        int error;
 
+        error = radix_tree_insert(&nfsi->nfs_page_tree, req->wb_index, req);
+        BUG_ON(error == -EEXIST);
+        ...
+}
+
+By some tests, it turned out to be a discordance between 
+nfs_invalidate_page() and truncate_inode_pages() in recent kernels.
+
+In kernel 2.6.20, truncate_complete_page() was changed to clear dirty flag
+from the removing page just before calling a_ops->invalidatepage().
+As a result, nfs_wb_page_priority(), which is called from nfs_invalidate_page(),
+get to skip nfs_writepage_locked() that starts to write dirty pages.
+
+int nfs_wb_page_priority(struct inode *inode, struct page *page, int how)
+{
+	...
+	if (clear_page_dirty_for_io(page)) {
+		ret = nfs_writepage_locked(page, &wbc);
+		if (ret < 0)
+			goto out;
+	}
+	if (!PagePrivate(page))
+		return 0;
+	ret = nfs_sync_mapping_wait(page->mapping, &wbc, how);
+ 	...
+}
+
+Since nfs_sync_mapping_wait() does not care for non-dirty, unwritten,
+and uncommitted pages, their nfs_page get into orphans.
+It seems to need some sort of change to handle unwritten non-dirty
+pages.
+
+For reference, I will show the way to reproduce the BUG using
+eCryptfs below.  I tried other way, but I couldn't find simpler
+way not requiring eCryptfs so far.
+
+ # mount -t nfs server:/pub /nfs
+ # mount -t ecryptfs -o cipher=aes,ecryptfs_key_bytes=16 /nfs /secret
+ # dd if=/dev/zero of=/secret/aaa bs=4096 count=1
+ # dd if=/dev/zero of=/secret/aaa bs=4096 count=1
+
+These procedures do truncate an unwritten NFS page.
+Note that overwritting without use of eCryptfs doesn't reproduce 
+the problem because it calls nfs_setattr() and forces the pages 
+to be written back.
+
+Cheers,
+Ryusuke Konishi
