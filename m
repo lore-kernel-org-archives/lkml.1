@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932295AbXHXAM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934094AbXHXAMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932295AbXHXAM2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 20:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932514AbXHXAMT
+	id S934094AbXHXAMp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 20:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964817AbXHXAM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 20:12:19 -0400
-Received: from waste.org ([66.93.16.53]:48728 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753677AbXHXAMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 20:12:18 -0400
-Date: Thu, 23 Aug 2007 19:13:51 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: lode leroy <lode_leroy@hotmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] memchr (trivial) optimization
-Message-ID: <20070824001351.GA20266@waste.org>
-References: <BAY105-F323FF3DC8E6C544A2BBE98FFD50@phx.gbl> <200708230213.21332.ioe-lkml@rameria.de>
+	Thu, 23 Aug 2007 20:12:26 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:9849 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964800AbXHXAMZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 20:12:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:resent-from:resent-to:resent-date:resent-message-id:message-id:in-reply-to:references:from:date:subject:to:cc:mime-version:content-transfer-encoding:content-disposition;
+        b=owSaILWYoenyjTlVHMGcTVAd/2K7Bk1nOxrffsJHYFuM9kvKB3ONWAKOqi7Q2S3vFx8uca/JK9MffX2sEu6tziuCyI7W9zqJdI63VeG9m9F0bKC+U975dM/bGtBLjX81QLdYcIrvQCcFa85zTwsEqqtdyRV24KgDDXzu07B8uKs=
+Message-Id: <85cd9d8df6b94f6dbf4842a4b2aabe05737a3b46.1187912217.git.jesper.juhl@gmail.com>
+In-Reply-To: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
+References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
+From: Jesper Juhl <jesper.juhl@gmail.com>
+Date: Fri, 24 Aug 2007 02:09:34 +0200
+Subject: [PATCH 17/30] isdn: Get rid of some pointless allocation casts in common and bsd comp.
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Karsten Keil <kkeil@suse.de>, Kai Germaschewski <kai.germaschewski@gmx.de>,
+       isdn4linux@listserv.isdn4linux.de,
+       Michael Hipp <Michael.Hipp@student.uni-tuebingen.de>,
+       Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200708230213.21332.ioe-lkml@rameria.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 02:13:20AM +0200, Ingo Oeser wrote:
-> On Wednesday 22 August 2007, lode leroy wrote:
-> > While profiling something completely unrelated, I noticed
-> > that on the workloads I used memchr for, I saw a 30%-40% improvement
-> > in performance, with the following trivial changes...
-> > (basically, it saves 3 operations for each call)
-> 
-> Yes, but then you could be a bit more explicit to the compiler
-> on what you are doing here:
->  
-> void *memchr(const void *s, int c, size_t n)
-> {
-> 	const unsigned char *p = s;
-> 
-> 	for (; n != 0; n--, p++) {
->                if ((unsigned char)c == *p) {
->                        return (void *)p;
-> 	}
-> 	return NULL;
-> }
-> 
-> Now the compiler should see the loop more clearly.
+vmalloc() returns a void pointer - no need to cast the return value.
 
-And you can do even better with this:
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+ drivers/isdn/i4l/isdn_bsdcomp.c |    5 ++---
+ drivers/isdn/i4l/isdn_common.c  |    2 +-
+ 2 files changed, 3 insertions(+), 4 deletions(-)
 
-void *memchr(const void *s, int c, size_t n)
-{
-       const unsigned char *p = s, *e = s + n;
-       const unsigned char *e = p + n;
-
-       for (; p < e ; p++)
-                if ((unsigned char)c == *p)
-                        return (void *)p;
-
-       return NULL;
-}
-
-which changes the inner loop from:
-
-  50:   38 08                   cmp    %cl,(%eax)
-  52:   74 08                   je     5c <memchr2+0x1a>
-  54:   4a                      dec    %edx
-  55:   40                      inc    %eax
-  56:   85 d2                   test   %edx,%edx
-  58:   75 f6                   jne    50 <memchr2+0xe>
-
-to:
-
-  6e:   38 08                   cmp    %cl,(%eax)
-  70:   74 07                   je     79 <memchr3+0x1b>
-  72:   40                      inc    %eax
-  73:   39 d0                   cmp    %edx,%eax
-  75:   72 f7                   jb     6e <memchr3+0x10>
-
-
+diff --git a/drivers/isdn/i4l/isdn_bsdcomp.c b/drivers/isdn/i4l/isdn_bsdcomp.c
+index 90a2379..02d9918 100644
+--- a/drivers/isdn/i4l/isdn_bsdcomp.c
++++ b/drivers/isdn/i4l/isdn_bsdcomp.c
+@@ -341,7 +341,7 @@ static void *bsd_alloc (struct isdn_ppp_comp_data *data)
+ 	 * Allocate space for the dictionary. This may be more than one page in
+ 	 * length.
+ 	 */
+-	db->dict = (struct bsd_dict *) vmalloc (hsize * sizeof (struct bsd_dict));
++	db->dict = vmalloc(hsize * sizeof(struct bsd_dict));
+ 	if (!db->dict) {
+ 		bsd_free (db);
+ 		return NULL;
+@@ -354,8 +354,7 @@ static void *bsd_alloc (struct isdn_ppp_comp_data *data)
+ 	if (!decomp)
+ 		db->lens = NULL;
+ 	else {
+-		db->lens = (unsigned short *) vmalloc ((maxmaxcode + 1) *
+-			sizeof (db->lens[0]));
++		db->lens = vmalloc((maxmaxcode + 1) * sizeof(db->lens[0]));
+ 		if (!db->lens) {
+ 			bsd_free (db);
+ 			return (NULL);
+diff --git a/drivers/isdn/i4l/isdn_common.c b/drivers/isdn/i4l/isdn_common.c
+index c97330b..ec5f404 100644
+--- a/drivers/isdn/i4l/isdn_common.c
++++ b/drivers/isdn/i4l/isdn_common.c
+@@ -2291,7 +2291,7 @@ static int __init isdn_init(void)
+ 	int i;
+ 	char tmprev[50];
+ 
+-	if (!(dev = (isdn_dev *) vmalloc(sizeof(isdn_dev)))) {
++	if (!(dev = vmalloc(sizeof(isdn_dev)))) {
+ 		printk(KERN_WARNING "isdn: Could not allocate device-struct.\n");
+ 		return -EIO;
+ 	}
 -- 
-Mathematics is the supreme nostalgia of our time.
+1.5.2.2
+
