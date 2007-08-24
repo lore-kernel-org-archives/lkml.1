@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933663AbXHXM6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934232AbXHXM65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933663AbXHXM6h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 08:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765948AbXHXM5w
+	id S934232AbXHXM65 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 08:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934089AbXHXM6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 08:57:52 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:15683 "EHLO
+	Fri, 24 Aug 2007 08:58:36 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:15329 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933850AbXHXM5r (ORCPT
+	with ESMTP id S933546AbXHXM6d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 08:57:47 -0400
+	Fri, 24 Aug 2007 08:58:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=SiTQe0fttsmVneC+XhTOlSCSmHkGBo/8ZQibmF8y21ypgiOQL03vpnqu8WUUlHWwPZxSTxbqTgP/p6r34eKZFYAM2Z245myRo1tPaxEjRdbXTgmYprsQ0Tcskgd+pOC3RhihpDEgTA4tSj1IE7fXrKUlSzAUt1nrBlUFHzC/w64=
-Message-ID: <46CED5C6.8050501@gmail.com>
-Date: Fri, 24 Aug 2007 21:57:42 +0900
+        b=AcrzxVDSGGsK6s743ogbSoydPzQYP+cb3MKAcpwJAwL/tuHmloD53tsyRAt3F4hb1gotsiGj9ErB8meVP8wcuzPjSLaE2ep0Ksvb+x8M1n+IpmUxWeuLGVvVA/tjEeYH1zNnMnA6TttM5makBENCSEllOmHtI9XrWi+vA/oeIiQ=
+Message-ID: <46CED5F4.3030204@gmail.com>
+Date: Fri, 24 Aug 2007 21:58:28 +0900
 From: Kentaro Takeda <k.takeda26@gmail.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        chrisw@sous-sol.org
-Subject: [TOMOYO 14/15] Conditional permission support.
+Subject: [TOMOYO 15/15] LSM expansion for TOMOYO Linux.
 References: <46CED214.6050505@gmail.com>
 In-Reply-To: <46CED214.6050505@gmail.com>
 Content-Type: text/plain; charset=us-ascii
@@ -29,697 +29,368 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows administrators use conditional permission.
-TOMOYO Linux supports conditional permission based on
-process's UID,GID etc. and/or requested pathname's UID/GID.
+LSM expansion for TOMOYO Linux.
+
+LSM hooks for sending signal:
+   * task_kill_unlocked is added in sys_kill
+   * task_tkill_unlocked is added in sys_tkill
+   * task_tgkill_unlocked is added in sys_tgkill
+LSM hooks for network accept and recv:
+   * socket_post_accept is modified to return int.
+   * post_recv_datagram is added in skb_recv_datagram.
+
+You can try TOMOYO Linux without this patch, but in that case, you
+can't use access control functionality for restricting signal
+transmission and incoming network data.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/condition.c |  680 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 680 insertions(+)
+ include/linux/security.h |   91 +++++++++++++++++++++++++++++++++++++++++++----
+ kernel/signal.c          |   17 ++++++++
+ net/core/datagram.c      |    7 +++
+ net/socket.c             |    7 ++-
+ security/dummy.c         |   32 ++++++++++++++--
+ 5 files changed, 142 insertions(+), 12 deletions(-)
 
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/security/tomoyo/condition.c	2007-08-24 15:51:39.000000000 +0900
-@@ -0,0 +1,680 @@
-+/*
-+ * security/tomoyo/condition.c
-+ *
-+ * Functions to support conditional access control for TOMOYO Linux.
-+ */
-+
-+#include "tomoyo.h"
-+#include "realpath.h"
-+
-+/**
-+ * tmy_find_condition_part - check whether a line contains condition part.
-+ * @data: a line to check.
-+ *
-+ * Returns pointer to condition part if found.
-+ * Returns NULL if not found.
-+ *
-+ * Since the trailing spaces are removed by tmy_normalize_line(),
-+ * the last "\040if\040" sequence corresponds to condition part.
-+ */
-+char *tmy_find_condition_part(char *data)
+--- linux-2.6.orig/include/linux/security.h	2007-08-23 21:25:04.000000000 +0900
++++ linux-2.6/include/linux/security.h	2007-08-24 15:51:39.000000000 +0900
+@@ -628,6 +628,22 @@ struct request_sock;
+  *	@sig contains the signal value.
+  *	@secid contains the sid of the process where the signal originated
+  *	Return 0 if permission is granted.
++ * @task_kill_unlocked:
++ *	Check permission before sending signal @sig to the process of @pid
++ *	with sys_kill.
++ *	@pid contains the pid of target process.
++ *	@sig contains the signal value.
++ * @task_tkill_unlocked:
++ *	Check permission before sending signal @sig to the process of @pid
++ *	with sys_tkill.
++ *	@pid contains the pid of target process.
++ *	@sig contains the signal value.
++ * @task_tgkill_unlocked:
++ *	Check permission before sending signal @sig to the process of @pid
++ *	with sys_tgkill.
++ *	@tgid contains the thread group id.
++ *	@pid contains the pid of target process.
++ *	@sig contains the signal value.
+  * @task_wait:
+  *	Check permission before allowing a process to reap a child process @p
+  *	and collect its status information.
+@@ -749,8 +765,12 @@ struct request_sock;
+  * @socket_post_accept:
+  *	This hook allows a security module to copy security
+  *	information into the newly created socket's inode.
++ *	This hook also allows a security module to filter connections
++ *	from unwanted peers.
++ *	The connection will be aborted if this hook returns nonzero.
+  *	@sock contains the listening socket structure.
+  *	@newsock contains the newly created server socket for connection.
++ *	Return 0 if permission is granted.
+  * @socket_sendmsg:
+  *	Check permission before transmitting a message to another socket.
+  *	@sock contains the socket structure.
+@@ -764,6 +784,11 @@ struct request_sock;
+  *	@size contains the size of message structure.
+  *	@flags contains the operational flags.
+  *	Return 0 if permission is granted.  
++ * @post_recv_datagram:
++ *	Check permission after receiving a datagram.
++ *	@sk contains the socket.
++ *	@skb contains the socket buffer (may be NULL).
++ *	@flags contains the operational flags.
+  * @socket_getsockname:
+  *	Check permission before the local address (name) of the socket object
+  *	@sock is retrieved.
+@@ -1279,6 +1304,9 @@ struct security_operations {
+ 	int (*task_movememory) (struct task_struct * p);
+ 	int (*task_kill) (struct task_struct * p,
+ 			  struct siginfo * info, int sig, u32 secid);
++	int (*task_kill_unlocked) (int pid, int sig);
++	int (*task_tkill_unlocked) (int pid, int sig);
++	int (*task_tgkill_unlocked) (int tgid, int pid, int sig);
+ 	int (*task_wait) (struct task_struct * p);
+ 	int (*task_prctl) (int option, unsigned long arg2,
+ 			   unsigned long arg3, unsigned long arg4,
+@@ -1346,12 +1374,16 @@ struct security_operations {
+ 			       struct sockaddr * address, int addrlen);
+ 	int (*socket_listen) (struct socket * sock, int backlog);
+ 	int (*socket_accept) (struct socket * sock, struct socket * newsock);
+-	void (*socket_post_accept) (struct socket * sock,
+-				    struct socket * newsock);
++#define TMY_LSM_EXPANSION
++	int (*socket_post_accept) (struct socket *sock,
++				   struct socket *newsock);
+ 	int (*socket_sendmsg) (struct socket * sock,
+ 			       struct msghdr * msg, int size);
+ 	int (*socket_recvmsg) (struct socket * sock,
+ 			       struct msghdr * msg, int size, int flags);
++	int (*post_recv_datagram) (struct sock *sk,
++				   struct sk_buff *skb,
++				   unsigned int flags);
+ 	int (*socket_getsockname) (struct socket * sock);
+ 	int (*socket_getpeername) (struct socket * sock);
+ 	int (*socket_getsockopt) (struct socket * sock, int level, int optname);
+@@ -1967,6 +1999,21 @@ static inline int security_task_kill (st
+ 	return security_ops->task_kill (p, info, sig, secid);
+ }
+ 
++static inline int security_task_kill_unlocked(int pid, int sig)
 +{
-+	char *cp = strstr(data, " if ");
-+	if (cp) {
-+		char *cp2;
-+		while ((cp2 = strstr(cp + 3, " if ")) != NULL)
-+			cp = cp2;
-+		*cp++ = '\0';
-+	}
-+	return cp;
++	return security_ops->task_kill_unlocked(pid, sig);
 +}
 +
-+#define VALUE_TYPE_DECIMAL     1 /* 01 */
-+#define VALUE_TYPE_OCTAL       2 /* 10 */
-+#define VALUE_TYPE_HEXADECIMAL 3 /* 11 */
-+
-+static int tmy_parse_ulong(unsigned long *result, const char **str)
++static inline int security_task_tkill_unlocked(int pid, int sig)
 +{
-+	const char *cp = *str;
-+	char *ep;
-+	int base = 10;
-+	if (*cp == '0') {
-+		char c = * (cp + 1);
-+		if (c == 'x' || c == 'X') {
-+			base = 16; cp += 2;
-+		} else if (c >= '0' && c <= '7') {
-+			base = 8; cp++;
-+		}
-+	}
-+	*result = simple_strtoul(cp, &ep, base);
-+	if (cp == ep) return 0; /* 00 */
-+	*str = ep;
-+	return (base == 16 ? VALUE_TYPE_HEXADECIMAL :
-+		(base == 8 ? VALUE_TYPE_OCTAL : VALUE_TYPE_DECIMAL));
++	return security_ops->task_tkill_unlocked(pid, sig);
 +}
 +
-+static void tmy_print_ulong(char *buffer, const int buffer_len,
-+			const unsigned long value, const int type)
++static inline int security_task_tgkill_unlocked(int tgid, int pid, int sig)
 +{
-+	if (type == VALUE_TYPE_DECIMAL)
-+		snprintf(buffer, buffer_len, "%lu", value);
-+	else if (type == VALUE_TYPE_OCTAL)
-+		snprintf(buffer, buffer_len, "0%lo", value);
-+	else
-+		snprintf(buffer, buffer_len, "0x%lX", value);
++	return security_ops->task_tgkill_unlocked(tgid, pid, sig);
 +}
 +
-+/* List of conditins. */
-+static struct condition_list {
-+	struct condition_list *next;
-+	int length;
-+	/* "unsigned long condition[length]" comes here.*/
-+} head;
-+
-+#define TASK_UID          0
-+#define TASK_EUID         1
-+#define TASK_SUID         2
-+#define TASK_FSUID        3
-+#define TASK_GID          4
-+#define TASK_EGID         5
-+#define TASK_SGID         6
-+#define TASK_FSGID        7
-+#define TASK_PID          8
-+#define TASK_PPID         9
-+#define PATH1_UID        10
-+#define PATH1_GID        11
-+#define PATH1_INO        12
-+#define PATH1_PARENT_UID 13
-+#define PATH1_PARENT_GID 14
-+#define PATH1_PARENT_INO 15
-+#define PATH2_PARENT_UID 16
-+#define PATH2_PARENT_GID 17
-+#define PATH2_PARENT_INO 18
-+#define MAX_KEYWORD      19
-+
-+static struct {
-+	const char *keyword;
-+	const int keyword_len; /* strlen(keyword) */
-+} cc_keyword[MAX_KEYWORD] = {
-+	[TASK_UID]         = { "task.uid",           8 },
-+	[TASK_EUID]        = { "task.euid",          9 },
-+	[TASK_SUID]        = { "task.suid",          9 },
-+	[TASK_FSUID]       = { "task.fsuid",        10 },
-+	[TASK_GID]         = { "task.gid",           8 },
-+	[TASK_EGID]        = { "task.egid",          9 },
-+	[TASK_SGID]        = { "task.sgid",          9 },
-+	[TASK_FSGID]       = { "task.fsgid",        10 },
-+	[TASK_PID]         = { "task.pid",           8 },
-+	[TASK_PPID]        = { "task.ppid",          9 },
-+	[PATH1_UID]        = { "path1.uid",          9 },
-+	[PATH1_GID]        = { "path1.gid",          9 },
-+	[PATH1_INO]        = { "path1.ino",          9 },
-+	[PATH1_PARENT_UID] = { "path1.parent.uid",  16 },
-+	[PATH1_PARENT_GID] = { "path1.parent.gid",  16 },
-+	[PATH1_PARENT_INO] = { "path1.parent.ino",  16 },
-+	[PATH2_PARENT_UID] = { "path2.parent.uid",  16 },
-+	[PATH2_PARENT_GID] = { "path2.parent.gid",  16 },
-+	[PATH2_PARENT_INO] = { "path2.parent.ino",  16 }
-+};
-+
-+/**
-+ * tmy_assign_condition - create condition part.
-+ * @condition: pointer to condition part.
-+ *
-+ * Returns pointer to "struct condition_list" on success.
-+ * Returns NULL on failure.
-+ */
-+const struct condition_list *tmy_assign_condition(const char *condition)
+ static inline int security_task_wait (struct task_struct *p)
+ {
+ 	return security_ops->task_wait (p);
+@@ -2645,6 +2692,21 @@ static inline int security_task_kill (st
+ 	return 0;
+ }
+ 
++static inline int security_task_kill_unlocked(int pid, int sig)
 +{
-+	const char *start;
-+	struct condition_list *ptr;
-+	struct condition_list *new_ptr;
-+	unsigned long *ptr2;
-+	int counter = 0;
-+	int size;
-+	int left;
-+	int right;
-+	unsigned long left_min = 0;
-+	unsigned long left_max = 0;
-+	unsigned long right_min = 0;
-+	unsigned long right_max = 0;
-+	if (strncmp(condition, "if ", 3))
-+		return NULL;
-+	condition += 3;
-+	start = condition;
-+	while (*condition) {
-+		if (*condition == ' ')
-+			condition++;
-+		for (left = 0; left < MAX_KEYWORD; left++) {
-+			if (strncmp(condition, cc_keyword[left].keyword,
-+				    cc_keyword[left].keyword_len))
-+				continue;
-+			condition += cc_keyword[left].keyword_len;
-+			break;
-+		}
-+		if (left == MAX_KEYWORD) {
-+			if (!tmy_parse_ulong(&left_min, &condition))
-+				goto out;
-+			counter++; /* body */
-+			if (*condition != '-')
-+				goto not_range1;
-+			condition++;
-+			if (!tmy_parse_ulong(&left_max, &condition)
-+			    || left_min > left_max)
-+				goto out;
-+			counter++; /* body */
-+not_range1: ;
-+		}
-+		if (strncmp(condition, "!=", 2) == 0)
-+			condition += 2;
-+		else if (*condition == '=')
-+			condition++;
-+		else
-+			goto out;
-+		counter++; /* header */
-+		for (right = 0; right < MAX_KEYWORD; right++) {
-+			if (strncmp(condition, cc_keyword[right].keyword,
-+				    cc_keyword[right].keyword_len))
-+				continue;
-+			condition += cc_keyword[right].keyword_len;
-+			break;
-+		}
-+		if (right == MAX_KEYWORD) {
-+			if (!tmy_parse_ulong(&right_min, &condition))
-+				goto out;
-+			counter++; /* body */
-+			if (*condition != '-')
-+				goto not_range2;
-+			condition++;
-+			if (!tmy_parse_ulong(&right_max, &condition)
-+			    || right_min > right_max)
-+				goto out;
-+			counter++; /* body */
-+not_range2: ;
-+		}
-+	}
-+	size = sizeof(*new_ptr) + counter * sizeof(unsigned long);
-+	new_ptr = tmy_alloc(size);
-+	if (!new_ptr)
-+		return NULL;
-+	new_ptr->length = counter;
-+	ptr2 = (unsigned long *) (((u8 *) new_ptr) + sizeof(*new_ptr));
-+	condition = start;
-+	while (*condition) {
-+		unsigned int match = 0;
-+		if (*condition == ' ')
-+			condition++;
-+		for (left = 0; left < MAX_KEYWORD; left++) {
-+			if (strncmp(condition, cc_keyword[left].keyword,
-+			    cc_keyword[left].keyword_len))
-+				continue;
-+			condition += cc_keyword[left].keyword_len;
-+			break;
-+		}
-+		if (left == MAX_KEYWORD) {
-+			match |= tmy_parse_ulong(&left_min, &condition) << 2;
-+			counter--; /* body */
-+			if (*condition != '-')
-+				goto not_range3;
-+			condition++;
-+			match |= tmy_parse_ulong(&left_max, &condition) << 4;
-+			counter--; /* body */
-+			left++;
-+not_range3: ;
-+		}
-+		if (strncmp(condition, "!=", 2) == 0)
-+			condition += 2;
-+		else if (*condition == '=') {
-+			match |= 1; condition++;
-+		} else
-+			goto out2;
-+		counter--; /* header */
-+		for (right = 0; right < MAX_KEYWORD; right++) {
-+			if (strncmp(condition, cc_keyword[right].keyword,
-+			    cc_keyword[right].keyword_len))
-+				continue;
-+			condition += cc_keyword[right].keyword_len;
-+			break;
-+		}
-+		if (right == MAX_KEYWORD) {
-+			match |= tmy_parse_ulong(&right_min, &condition) << 6;
-+			counter--; /* body */
-+			if (*condition != '-')
-+				goto not_range4;
-+			condition++;
-+			match |= tmy_parse_ulong(&right_max, &condition) << 8;
-+			counter--; /* body */
-+			right++;
-+not_range4: ;
-+		}
-+		if (counter < 0)
-+			goto out2;
-+		*ptr2++ = (match << 16) | (left << 8) | right;
-+		if (left >= MAX_KEYWORD)
-+			*ptr2++ = left_min;
-+		if (left == MAX_KEYWORD + 1)
-+			*ptr2++ = left_max;
-+		if (right >= MAX_KEYWORD)
-+			*ptr2++ = right_min;
-+		if (right == MAX_KEYWORD + 1)
-+			*ptr2++ = right_max;
-+	}
-+	{
-+		static DECLARE_MUTEX(lock);
-+		struct condition_list *prev = NULL;
-+		down(&lock);
-+		for (ptr = &head; ptr; prev = ptr, ptr = ptr->next) {
-+			/* Don't compare if size differs. */
-+			if (ptr->length != new_ptr->length)
-+				continue;
-+			/*
-+			 * Compare ptr and new_ptr
-+			 * except ptr->next and new_ptr->next .
-+			 */
-+			if (memcmp(((u8 *) ptr) + sizeof(ptr->next),
-+				   ((u8 *) new_ptr) + sizeof(new_ptr->next),
-+				   size - sizeof(ptr->next)))
-+				continue;
-+			/* Same entry found. Share this entry. */
-+			tmy_free(new_ptr);
-+			new_ptr = ptr;
-+			goto ok;
-+		}
-+		/* Same entry not found. Save this entry. */
-+		ptr = tmy_alloc_element(size);
-+		if (ptr)
-+			memmove(ptr, new_ptr, size);
-+		tmy_free(new_ptr);
-+		new_ptr = ptr;
-+		/* Append to chain. */
-+		prev->next = new_ptr;
-+ok: ;
-+		up(&lock);
-+	}
-+	return new_ptr;
-+out2: ;
-+	tmy_free(new_ptr);
-+out: ;
-+	return NULL;
-+}
-+
-+/* Get inode's attribute information. */
-+static void tmy_get_attributes(struct obj_info *obj)
-+{
-+	struct vfsmount *mnt;
-+	struct dentry *dentry;
-+	struct inode *inode;
-+	struct kstat stat;
-+
-+	mnt = obj->path1_vfsmnt;
-+	dentry = obj->path1_dentry;
-+	inode = dentry->d_inode;
-+	if (inode) {
-+		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
-+			/* Nothing to do. */
-+		} else {
-+			obj->path1_stat.uid = stat.uid;
-+			obj->path1_stat.gid = stat.gid;
-+			obj->path1_stat.ino = stat.ino;
-+			obj->path1_valid = 1;
-+		}
-+	}
-+
-+	dentry = dget_parent(obj->path1_dentry);
-+	inode = dentry->d_inode;
-+	if (inode) {
-+		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
-+			/* Nothing to do. */
-+		} else {
-+			obj->path1_parent_stat.uid = stat.uid;
-+			obj->path1_parent_stat.gid = stat.gid;
-+			obj->path1_parent_stat.ino = stat.ino;
-+			obj->path1_parent_valid = 1;
-+		}
-+	}
-+	dput(dentry);
-+
-+	mnt = obj->path2_vfsmnt;
-+	if (mnt) {
-+		dentry = dget_parent(obj->path2_dentry);
-+		inode = dentry->d_inode;
-+		if (inode) {
-+			if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
-+				/* Nothing to do. */
-+			} else {
-+				obj->path2_parent_stat.uid = stat.uid;
-+				obj->path2_parent_stat.gid = stat.gid;
-+				obj->path2_parent_stat.ino = stat.ino;
-+				obj->path2_parent_valid = 1;
-+			}
-+		}
-+		dput(dentry);
-+	}
-+}
-+
-+/**
-+ * tmy_check_condition - check condition part.
-+ * @ptr: pointer to "struct condition_list".
-+ * @obj: pointer to "struct obj_info". May be NULL.
-+ *
-+ * Returns zero on success.
-+ * Returns nonzero on failure.
-+ */
-+int tmy_check_condition(const struct condition_list *ptr, struct obj_info *obj)
-+{
-+	struct task_struct *task = current;
-+	int i;
-+	unsigned long left_min = 0;
-+	unsigned long left_max = 0;
-+	unsigned long right_min = 0;
-+	unsigned long right_max = 0;
-+	const unsigned long *ptr2;
-+	if (!ptr)
-+		return 0;
-+	ptr2 = (unsigned long *) (((u8 *) ptr) + sizeof(*ptr));
-+	for (i = 0; i < ptr->length; i++) {
-+		const u8 match = ((*ptr2) >> 16) & 1;
-+		const u8 left = (*ptr2) >> 8;
-+		const u8 right = *ptr2;
-+		ptr2++;
-+		if ((left >= PATH1_UID && left < MAX_KEYWORD)
-+		    || (right >= PATH1_UID && right < MAX_KEYWORD)) {
-+			if (!obj)
-+				goto out;
-+			if (!obj->validate_done) {
-+				tmy_get_attributes(obj);
-+				obj->validate_done = 1;
-+			}
-+		}
-+		switch (left) {
-+		case TASK_UID:
-+			left_min = task->uid;
-+			left_max = left_min;
-+			break;
-+		case TASK_EUID:
-+			left_min = task->euid;
-+			left_max = left_min;
-+			break;
-+		case TASK_SUID:
-+			left_min = task->suid;
-+			left_max = left_min;
-+			break;
-+		case TASK_FSUID:
-+			left_min = task->fsuid;
-+			left_max = left_min;
-+			break;
-+		case TASK_GID:
-+			left_min = task->gid;
-+			left_max = left_min;
-+			break;
-+		case TASK_EGID:
-+			left_min = task->egid;
-+			left_max = left_min;
-+			break;
-+		case TASK_SGID:
-+			left_min = task->sgid;
-+			left_max = left_min;
-+			break;
-+		case TASK_FSGID:
-+			left_min = task->fsgid;
-+			left_max = left_min;
-+			break;
-+		case TASK_PID:
-+			left_min = task->pid;
-+			left_max = left_min;
-+			break;
-+		case TASK_PPID:
-+			left_min = sys_getppid();
-+			left_max = left_min;
-+			break;
-+		case PATH1_UID:
-+			if (!obj->path1_valid)
-+				goto out;
-+			left_min = obj->path1_stat.uid;
-+			left_max = left_min;
-+			break;
-+		case PATH1_GID:
-+			if (!obj->path1_valid)
-+				goto out;
-+			left_min = obj->path1_stat.gid;
-+			left_max = left_min;
-+			break;
-+		case PATH1_INO:
-+			if (!obj->path1_valid)
-+				goto out;
-+			left_min = obj->path1_stat.ino;
-+			left_max = left_min;
-+			break;
-+		case PATH1_PARENT_UID:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			left_min = obj->path1_parent_stat.uid;
-+			left_max = left_min;
-+			break;
-+		case PATH1_PARENT_GID:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			left_min = obj->path1_parent_stat.gid;
-+			left_max = left_min;
-+			break;
-+		case PATH1_PARENT_INO:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			left_min = obj->path1_parent_stat.ino;
-+			left_max = left_min;
-+			break;
-+		case PATH2_PARENT_UID:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			left_min = obj->path2_parent_stat.uid;
-+			left_max = left_min;
-+			break;
-+		case PATH2_PARENT_GID:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			left_min = obj->path2_parent_stat.gid;
-+			left_max = left_min;
-+			break;
-+		case PATH2_PARENT_INO:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			left_min = obj->path2_parent_stat.ino;
-+			left_max = left_min;
-+			break;
-+		case MAX_KEYWORD:
-+			left_min = *ptr2++;
-+			left_max = left_min;
-+			i++;
-+			break;
-+		case MAX_KEYWORD + 1:
-+			left_min = *ptr2++;
-+			left_max = *ptr2++;
-+			i += 2;
-+			break;
-+		}
-+		switch (right) {
-+		case TASK_UID:
-+			right_min = task->uid;
-+			right_max = right_min;
-+			break;
-+		case TASK_EUID:
-+			right_min = task->euid;
-+			right_max = right_min;
-+			break;
-+		case TASK_SUID:
-+			right_min = task->suid;
-+			right_max = right_min;
-+			break;
-+		case TASK_FSUID:
-+			right_min = task->fsuid;
-+			right_max = right_min;
-+			break;
-+		case TASK_GID:
-+			right_min = task->gid;
-+			right_max = right_min;
-+			break;
-+		case TASK_EGID:
-+			right_min = task->egid;
-+			right_max = right_min;
-+			break;
-+		case TASK_SGID:
-+			right_min = task->sgid;
-+			right_max = right_min;
-+			break;
-+		case TASK_FSGID:
-+			right_min = task->fsgid;
-+			right_max = right_min;
-+			break;
-+		case TASK_PID:
-+			right_min = task->pid;
-+			right_max = right_min;
-+			break;
-+		case TASK_PPID:
-+			right_min = sys_getppid();
-+			right_max = right_min;
-+			break;
-+		case PATH1_UID:
-+			if (!obj->path1_valid)
-+				goto out;
-+			right_min = obj->path1_stat.uid;
-+			right_max = right_min;
-+			break;
-+		case PATH1_GID:
-+			if (!obj->path1_valid)
-+				goto out;
-+			right_min = obj->path1_stat.gid;
-+			right_max = right_min;
-+			break;
-+		case PATH1_INO:
-+			if (!obj->path1_valid)
-+				goto out;
-+			right_min = obj->path1_stat.ino;
-+			right_max = right_min;
-+			break;
-+		case PATH1_PARENT_UID:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			right_min = obj->path1_parent_stat.uid;
-+			right_max = right_min;
-+			break;
-+		case PATH1_PARENT_GID:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			right_min = obj->path1_parent_stat.gid;
-+			right_max = right_min;
-+			break;
-+		case PATH1_PARENT_INO:
-+			if (!obj->path1_parent_valid)
-+				goto out;
-+			right_min = obj->path1_parent_stat.ino;
-+			right_max = right_min;
-+			break;
-+		case PATH2_PARENT_UID:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			right_min = obj->path2_parent_stat.uid;
-+			right_max = right_min;
-+			break;
-+		case PATH2_PARENT_GID:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			right_min = obj->path2_parent_stat.gid;
-+			right_max = right_min;
-+			break;
-+		case PATH2_PARENT_INO:
-+			if (!obj->path2_parent_valid)
-+				goto out;
-+			right_min = obj->path2_parent_stat.ino;
-+			right_max = right_min;
-+			break;
-+		case MAX_KEYWORD:
-+			right_min = *ptr2++;
-+			right_max = right_min;
-+			i++;
-+			break;
-+		case MAX_KEYWORD + 1:
-+			right_min = *ptr2++;
-+			right_max = *ptr2++;
-+			i += 2;
-+			break;
-+		}
-+		if (match) {
-+			if (left_min <= right_max && left_max >= right_min)
-+				continue;
-+		} else {
-+			if (left_min > right_max || left_max < right_min)
-+				continue;
-+		}
-+out: ;
-+		return -EPERM;
-+	}
 +	return 0;
 +}
 +
-+/**
-+ * tmy_dump_condition - dump condition part.
-+ * @head: pointer to "struct io_buffer".
-+ * @ptr:  pointer to "struct condition_list". May be NULL.
-+ *
-+ * Returns nonzero if reading incomplete.
-+ * Returns zero otherwise.
-+ */
-+int tmy_dump_condition(struct io_buffer *head, const struct condition_list *ptr)
++static inline int security_task_tkill_unlocked(int pid, int sig)
 +{
-+	int i;
-+	const unsigned long *ptr2;
-+	char buffer[32];
-+	if (!ptr)
-+		goto last;
-+	ptr2 = (unsigned long *) (((u8 *) ptr) + sizeof(*ptr));
-+	memset(buffer, 0, sizeof(buffer));
-+	for (i = 0; i < ptr->length; i++) {
-+		const u16 match = (*ptr2) >> 16;
-+		const u8 left = (*ptr2) >> 8;
-+		const u8 right = *ptr2;
-+		ptr2++;
-+		if (tmy_io_printf(head, "%s", i ? " " : " if "))
-+			break;
-+		if (left < MAX_KEYWORD) {
-+			if (tmy_io_printf(head, "%s", cc_keyword[left].keyword))
-+				break;
-+		} else {
-+			tmy_print_ulong(buffer, sizeof(buffer) - 1, *ptr2++,
-+					(match >> 2) & 3);
-+			if (tmy_io_printf(head, "%s", buffer))
-+				break;
-+			i++;
-+			if (left == MAX_KEYWORD + 1) {
-+				tmy_print_ulong(buffer, sizeof(buffer) - 1,
-+						*ptr2++, (match >> 4) & 3);
-+				if (tmy_io_printf(head, "-%s", buffer))
-+					break;
-+				i++;
-+			}
-+		}
-+		if (tmy_io_printf(head, "%s", (match & 1) ? "=" : "!="))
-+			break;
-+		if (right < MAX_KEYWORD) {
-+			if (tmy_io_printf(head, "%s",
-+					  cc_keyword[right].keyword))
-+				break;
-+		} else {
-+			tmy_print_ulong(buffer, sizeof(buffer) - 1, *ptr2++,
-+					(match >> 6) & 3);
-+			if (tmy_io_printf(head, "%s", buffer))
-+				break;
-+			i++;
-+			if (right == MAX_KEYWORD + 1) {
-+				tmy_print_ulong(buffer, sizeof(buffer) - 1,
-+						*ptr2++, (match >> 8) & 3);
-+				if (tmy_io_printf(head, "-%s", buffer))
-+					break;
-+				i++;
-+			}
-+		}
-+	}
-+	if (i < ptr->length)
-+		return -ENOMEM;
-+last: ;
-+	return tmy_io_printf(head, "\n") ? -ENOMEM : 0;
++	return 0;
 +}
++
++static inline int security_task_tgkill_unlocked(int tgid, int pid, int sig)
++{
++	return 0;
++}
++
+ static inline int security_task_wait (struct task_struct *p)
+ {
+ 	return 0;
+@@ -2870,10 +2932,10 @@ static inline int security_socket_accept
+ 	return security_ops->socket_accept(sock, newsock);
+ }
+ 
+-static inline void security_socket_post_accept(struct socket * sock, 
+-					       struct socket * newsock)
++static inline int security_socket_post_accept(struct socket *sock,
++					      struct socket *newsock)
+ {
+-	security_ops->socket_post_accept(sock, newsock);
++	return security_ops->socket_post_accept(sock, newsock);
+ }
+ 
+ static inline int security_socket_sendmsg(struct socket * sock, 
+@@ -2889,6 +2951,13 @@ static inline int security_socket_recvms
+ 	return security_ops->socket_recvmsg(sock, msg, size, flags);
+ }
+ 
++static inline int security_post_recv_datagram(struct sock *sk,
++					      struct sk_buff *skb,
++					      unsigned int flags)
++{
++	return security_ops->post_recv_datagram(sk, skb, flags);
++}
++
+ static inline int security_socket_getsockname(struct socket * sock)
+ {
+ 	return security_ops->socket_getsockname(sock);
+@@ -3033,9 +3102,10 @@ static inline int security_socket_accept
+ 	return 0;
+ }
+ 
+-static inline void security_socket_post_accept(struct socket * sock, 
+-					       struct socket * newsock)
++static inline int security_socket_post_accept(struct socket *sock,
++					      struct socket *newsock)
+ {
++	return 0;
+ }
+ 
+ static inline int security_socket_sendmsg(struct socket * sock, 
+@@ -3051,6 +3121,13 @@ static inline int security_socket_recvms
+ 	return 0;
+ }
+ 
++static inline int security_post_recv_datagram(struct sock *sk,
++					      struct sk_buff *skb,
++					      unsigned int flags);
++{
++	return 0;
++}
++
+ static inline int security_socket_getsockname(struct socket * sock)
+ {
+ 	return 0;
+--- linux-2.6.orig/kernel/signal.c	2007-08-23 21:25:04.000000000 +0900
++++ linux-2.6/kernel/signal.c	2007-08-24 15:51:39.000000000 +0900
+@@ -2199,6 +2199,11 @@ asmlinkage long
+ sys_kill(int pid, int sig)
+ {
+ 	struct siginfo info;
++	int ret;
++
++	ret = security_task_kill_unlocked(pid, sig);
++	if (ret)
++		return ret;
+ 
+ 	info.si_signo = sig;
+ 	info.si_errno = 0;
+@@ -2254,10 +2259,16 @@ static int do_tkill(int tgid, int pid, i
+  */
+ asmlinkage long sys_tgkill(int tgid, int pid, int sig)
+ {
++	int ret;
++
+ 	/* This is only valid for single tasks */
+ 	if (pid <= 0 || tgid <= 0)
+ 		return -EINVAL;
+ 
++	ret = security_task_tgkill_unlocked(tgid, pid, sig);
++	if (ret)
++		return ret;
++
+ 	return do_tkill(tgid, pid, sig);
+ }
+ 
+@@ -2267,10 +2278,16 @@ asmlinkage long sys_tgkill(int tgid, int
+ asmlinkage long
+ sys_tkill(int pid, int sig)
+ {
++	int ret;
++
+ 	/* This is only valid for single tasks */
+ 	if (pid <= 0)
+ 		return -EINVAL;
+ 
++	ret = security_task_tkill_unlocked(pid, sig);
++	if (ret)
++		return ret;
++
+ 	return do_tkill(0, pid, sig);
+ }
+ 
+--- linux-2.6.orig/net/socket.c	2007-08-23 21:25:04.000000000 +0900
++++ linux-2.6/net/socket.c	2007-08-24 15:51:39.000000000 +0900
+@@ -1437,13 +1437,16 @@ asmlinkage long sys_accept(int fd, struc
+ 			goto out_fd;
+ 	}
+ 
++	/* Filter connections from unwanted peers like TCP Wrapper. */
++	err = security_socket_post_accept(sock, newsock);
++	if (err)
++		goto out_fd;
++
+ 	/* File flags are not inherited via accept() unlike another OSes. */
+ 
+ 	fd_install(newfd, newfile);
+ 	err = newfd;
+ 
+-	security_socket_post_accept(sock, newsock);
+-
+ out_put:
+ 	fput_light(sock->file, fput_needed);
+ out:
+--- linux-2.6.orig/security/dummy.c	2007-08-23 21:25:04.000000000 +0900
++++ linux-2.6/security/dummy.c	2007-08-24 15:51:39.000000000 +0900
+@@ -564,6 +564,21 @@ static int dummy_task_kill (struct task_
+ 	return 0;
+ }
+ 
++static int dummy_task_kill_unlocked(int pid, int sig)
++{
++	return 0;
++}
++
++static int dummy_task_tkill_unlocked(int pid, int sig)
++{
++	return 0;
++}
++
++static int dummy_task_tgkill_unlocked(int tgid, int pid, int sig)
++{
++	return 0;
++}
++
+ static int dummy_task_prctl (int option, unsigned long arg2, unsigned long arg3,
+ 			     unsigned long arg4, unsigned long arg5)
+ {
+@@ -741,10 +756,10 @@ static int dummy_socket_accept (struct s
+ 	return 0;
+ }
+ 
+-static void dummy_socket_post_accept (struct socket *sock, 
+-				      struct socket *newsock)
++static int dummy_socket_post_accept(struct socket *sock,
++				    struct socket *newsock)
+ {
+-	return;
++	return 0;
+ }
+ 
+ static int dummy_socket_sendmsg (struct socket *sock, struct msghdr *msg,
+@@ -759,6 +774,13 @@ static int dummy_socket_recvmsg (struct 
+ 	return 0;
+ }
+ 
++static int dummy_post_recv_datagram(struct sock *sk,
++				    struct sk_buff *skb,
++				    unsigned int flags)
++{
++	return 0;
++}
++
+ static int dummy_socket_getsockname (struct socket *sock)
+ {
+ 	return 0;
+@@ -1053,6 +1075,9 @@ void security_fixup_ops (struct security
+ 	set_to_dummy_if_null(ops, task_movememory);
+ 	set_to_dummy_if_null(ops, task_wait);
+ 	set_to_dummy_if_null(ops, task_kill);
++	set_to_dummy_if_null(ops, task_kill_unlocked);
++	set_to_dummy_if_null(ops, task_tkill_unlocked);
++	set_to_dummy_if_null(ops, task_tgkill_unlocked);
+ 	set_to_dummy_if_null(ops, task_prctl);
+ 	set_to_dummy_if_null(ops, task_reparent_to_init);
+  	set_to_dummy_if_null(ops, task_to_inode);
+@@ -1096,6 +1121,7 @@ void security_fixup_ops (struct security
+ 	set_to_dummy_if_null(ops, socket_post_accept);
+ 	set_to_dummy_if_null(ops, socket_sendmsg);
+ 	set_to_dummy_if_null(ops, socket_recvmsg);
++	set_to_dummy_if_null(ops, post_recv_datagram);
+ 	set_to_dummy_if_null(ops, socket_getsockname);
+ 	set_to_dummy_if_null(ops, socket_getpeername);
+ 	set_to_dummy_if_null(ops, socket_setsockopt);
+--- linux-2.6.orig/net/core/datagram.c	2007-08-23 21:25:04.000000000 +0900
++++ linux-2.6/net/core/datagram.c	2007-08-24 15:51:39.000000000 +0900
+@@ -55,6 +55,7 @@
+ #include <net/checksum.h>
+ #include <net/sock.h>
+ #include <net/tcp_states.h>
++#include <linux/security.h>
+ 
+ /*
+  *	Is a socket 'connection oriented' ?
+@@ -178,6 +179,12 @@ struct sk_buff *skb_recv_datagram(struct
+ 		} else
+ 			skb = skb_dequeue(&sk->sk_receive_queue);
+ 
++		error = security_post_recv_datagram(sk, skb, flags);
++		if (error) {
++			skb_free_datagram(sk, skb);
++			goto no_packet;
++		}
++
+ 		if (skb)
+ 			return skb;
+ 
 
