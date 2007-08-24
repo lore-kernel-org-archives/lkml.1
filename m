@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762798AbXHXQun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763169AbXHXQvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762798AbXHXQun (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 12:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762203AbXHXQuf
+	id S1763169AbXHXQvX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 12:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756910AbXHXQvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 12:50:35 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:41966 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753940AbXHXQue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 12:50:34 -0400
-Date: Fri, 24 Aug 2007 20:53:15 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>, Cliff Wickman <cpw@sgi.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] migration_call(CPU_DEAD): use spin_lock_irq() instead of task_rq_lock()
-Message-ID: <20070824165315.GA1785@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Fri, 24 Aug 2007 12:51:06 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:34339 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756857AbXHXQvE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 12:51:04 -0400
+In-Reply-To: <20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: akepner@sgi.com, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>, netdev-owner@vger.kernel.org,
+       Jan-Bernd Themann <ossthema@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>
+MIME-Version: 1.0
+Subject: Re: RFC: issues concerning the next NAPI interface
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF0002C3DB.2E4C4A38-ON88257341.005B1253-88257341.005C7C2A@us.ibm.com>
+From: David Stevens <dlstevens@us.ibm.com>
+Date: Fri, 24 Aug 2007 09:50:58 -0700
+X-MIMETrack: Serialize by Router on D03NM121/03/M/IBM(Release 7.0.2FP2HF51 | June 19, 2007) at
+ 08/24/2007 10:51:00,
+	Serialize complete at 08/24/2007 10:51:00
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change migration_call(CPU_DEAD) to use direct spin_lock_irq() instead of
-task_rq_lock(rq->idle), rq->idle can't change its task_rq().
+Stephen Hemminger <shemminger@linux-foundation.org> wrote on 08/24/2007 
+08:52:03 AM:
 
-This makes the code a bit more symmetrical with migrate_dead_tasks()'s
-path which uses spin_lock_irq/spin_unlock_irq.
+> 
+> You need hardware support for deferred interrupts. Most devices have it 
+> (e1000, sky2, tg3)
+> and it interacts well with NAPI. It is not a generic thing you want done 
+by the stack,
+> you want the hardware to hold off interrupts until X packets or Y usecs 
+have expired.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+        For generic hardware that doesn't support it, couldn't you use an 
+estimater
+and adjust the timer dynamicly in software based on sampled values? Switch 
+to per-packet
+interrupts when the receive rate is low...
+        Actually, that's how I thought NAPI worked before I found out 
+otherwise (ie,
+before I looked :-)).
 
---- t/kernel/sched.c~2_RQ_LOCK	2007-08-24 20:31:03.000000000 +0400
-+++ t/kernel/sched.c	2007-08-24 20:37:17.000000000 +0400
-@@ -5381,13 +5381,13 @@ migration_call(struct notifier_block *nf
- 		kthread_stop(rq->migration_thread);
- 		rq->migration_thread = NULL;
- 		/* Idle task back to normal (off runqueue, low prio) */
--		rq = task_rq_lock(rq->idle, &flags);
-+		spin_lock_irq(&rq->lock);
- 		deactivate_task(rq, rq->idle, 0);
- 		rq->idle->static_prio = MAX_PRIO;
- 		__setscheduler(rq, rq->idle, SCHED_NORMAL, 0);
- 		rq->idle->sched_class = &idle_sched_class;
- 		migrate_dead_tasks(cpu);
--		task_rq_unlock(rq, &flags);
-+		spin_unlock_irq(&rq->lock);
- 		migrate_nr_uninterruptible(rq);
- 		BUG_ON(rq->nr_running != 0);
- 
+        The hardware-accelerated one is essentially siloing as done by 
+ancient serial
+devices on UNIX systems. If you had a tunable for a target count, and an 
+estimator
+for the time interval, then switch to per-packet when the estimator 
+exceeds a tunable
+max threshold (and also, I suppose, if you near overflowing the ring on 
+the min
+timer granularity), you get almost all of it, right?
+        Problem is if it increases rapidly, you may drop packets before 
+you notice
+that the ring is full in the current estimated interval.
+
+ +-DLS
+
 
