@@ -1,124 +1,791 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933074AbXHXM53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933533AbXHXM6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933074AbXHXM53 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 08:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765827AbXHXM4s
+	id S933533AbXHXM6H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 08:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933475AbXHXM5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 08:56:48 -0400
-Received: from smtp.ustc.edu.cn ([202.38.64.16]:51754 "HELO ustc.edu.cn"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S933679AbXHXM4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 08:56:46 -0400
-Message-ID: <387960203.03917@ustc.edu.cn>
-X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
-Date: Fri, 24 Aug 2007 20:56:43 +0800
-From: Fengguang Wu <wfg@mail.ustc.edu.cn>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@osdl.org>,
-       Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0/6] writeback time order/delay fixes take 3
-Message-ID: <20070824125643.GB7933@mail.ustc.edu.cn>
-References: <386910467.21100@ustc.edu.cn> <20070821202314.335e86ec@think.oraclecorp.com> <387745522.02814@ustc.edu.cn> <20070822084201.2c4eceb6@think.oraclecorp.com> <20070823024723.GN61154114@sgi.com> <20070823081341.27807ad0@think.oraclecorp.com>
+	Fri, 24 Aug 2007 08:57:10 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:12845 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933800AbXHXM5E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 08:57:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=FCpEBgpOHgKB1kbzrvEVv0lpW6/Suj5SztXRIS9k47xy1wb814YibaCCrIn9APp8GPkWyC8QK1mIoZKnsPNr9VlNDF0iuR5yZ8mQmnsdq/bs1x7t5RlhLiFgj2iPgJUOet5L+Ceek2OpShovFqvhnMGrF6B+AfCTl5wyiUHFC7I=
+Message-ID: <46CED598.8020304@gmail.com>
+Date: Fri, 24 Aug 2007 21:56:56 +0900
+From: Kentaro Takeda <k.takeda26@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       chrisw@sous-sol.org
+Subject: [TOMOYO 13/15] LSM adapter for TOMOYO.
+References: <46CED214.6050505@gmail.com>
+In-Reply-To: <46CED214.6050505@gmail.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070823081341.27807ad0@think.oraclecorp.com>
-X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 08:13:41AM -0400, Chris Mason wrote:
-> On Thu, 23 Aug 2007 12:47:23 +1000
-> David Chinner <dgc@sgi.com> wrote:
-> 
-> > On Wed, Aug 22, 2007 at 08:42:01AM -0400, Chris Mason wrote:
-> > > I think we should assume a full scan of s_dirty is impossible in the
-> > > presence of concurrent writers.  We want to be able to pick a start
-> > > time (right now) and find all the inodes older than that start time.
-> > > New things will come in while we're scanning.  But perhaps that's
-> > > what you're saying...
-> > > 
-> > > At any rate, we've got two types of lists now.  One keeps track of
-> > > age and the other two keep track of what is currently being
-> > > written.  I would try two things:
-> > > 
-> > > 1) s_dirty stays a list for FIFO.  s_io becomes a radix tree that
-> > > indexes by inode number (or some arbitrary field the FS can set in
-> > > the inode).  Radix tree tags are used to indicate which things in
-> > > s_io are already in progress or are pending (hand waving because
-> > > I'm not sure exactly).
-> > > 
-> > > inodes are pulled off s_dirty and the corresponding slot in s_io is
-> > > tagged to indicate IO has started.  Any nearby inodes in s_io are
-> > > also sent down.
-> > 
-> > the problem with this approach is that it only looks at inode
-> > locality. Data locality is ignored completely here and the data for
-> > all the inodes that are close together could be splattered all over
-> > the drive. In that case, clustering by inode location is exactly the
-> > wrong thing to do.
-> 
-> Usually it won't be less wrong than clustering by time.
-> 
-> > 
-> > For example, XFs changes allocation strategy at 1TB for 32bit inode
-> > filesystems which makes the data get placed way away from the inodes.
-> > i.e. inodes in AGs below 1TB, all data in AGs > 1TB. clustering
-> > by inode number for data writeback is mostly useless in the >1TB
-> > case.
-> 
-> I agree we'll want a way to let the FS provide the clustering key.  But
-> for the first cut on the patch, I would suggest keeping it simple.
-> 
-> > 
-> > The inode32 for <1Tb and inode64 allocators both try to keep data
-> > close to the inode (i.e. in the same AG) so clustering by inode number
-> > might work better here.
-> > 
-> > Also, it might be worthwhile allowing the filesystem to supply a
-> > hint or mask for "closeness" for inode clustering. This would help
-> > the gernic code only try to cluster inode writes to inodes that
-> > fall into the same cluster as the first inode....
-> 
-> Yes, also a good idea after things are working.
-> 
-> > 
-> > > > Notes:
-> > > > (1) I'm not sure inode number is correlated to disk location in
-> > > >     filesystems other than ext2/3/4. Or parent dir?
-> > > 
-> > > In general, it is a better assumption than sorting by time.  It may
-> > > make sense to one day let the FS provide a clustering hint
-> > > (corresponding to the first block in the file?), but for starters it
-> > > makes sense to just go with the inode number.
-> > 
-> > Perhaps multiple hints are needed - one for data locality and one
-> > for inode cluster locality.
-> 
-> So, my feature creep idea would have been more data clustering.  I'm
-> mainly trying to solve this graph:
-> 
-> http://oss.oracle.com/~mason/compilebench/makej/compare-create-dirs-0.png
-> 
-> Where background writing of the block device inode is making ext3 do
-> seeky writes while directory trees.  My simple idea was to kick
-> off a 'I've just written block X' call back to the FS, where it may
-> decide to send down dirty chunks of the block device inode that also
-> happen to be dirty.
-> 
-> But, maintaining the kupdate max dirty time and congestion limits in
-> the face of all this clustering gets tricky.  So, I wasn't going to
-> suggest it until the basic machinery was working.
-> 
-> Fengguang, this isn't a small project ;)  But, lots of people will be
-> interested in the results.
+LSM wrapper functions for TOMOYO Linux access control.
+If bind mounts are used, TOMOYO requires all permissions for
+all possible pathnames (whereas AppArmor requires one of possible pathnames).
+If "struct vfsmount" is passed to LSM hooks as AppArmor proposes,
+this file will become more simpler and "namespace_sem" can remain "static".
 
-Exactly, the current writeback logics are unsatisfactory in many ways.
-As for writeback clustering, inode/data localities can be different.
-But I'll follow your suggestion to start simple first and give the
-idea a spin on ext3.
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ security/tomoyo/tomoyo.c |  745 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 745 insertions(+)
 
--fengguang
-
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/security/tomoyo/tomoyo.c	2007-08-24 15:51:38.000000000 +0900
+@@ -0,0 +1,745 @@
++/*
++ * security/tomoyo/tomoyo.c
++ *
++ * LSM hooks for TOMOYO Linux.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/security.h>
++#include <linux/highmem.h>
++#include <linux/namei.h>
++#include <linux/mnt_namespace.h>
++#include <linux/sysctl.h>
++#include <linux/proc_fs.h>
++#include <linux/sched.h>
++#include <linux/uaccess.h>
++#include <net/ip.h>
++#include <net/ipv6.h>
++
++#include "tomoyo.h"
++#include "realpath.h"
++#define MAX_SOCK_ADDR 128 /* net/socket.c */
++
++/* The initial domain. */
++struct domain_info KERNEL_DOMAIN = { NULL, NULL, NULL, 0, 0, 0 };
++
++static struct kmem_cache *tmy_cachep;
++
++static int tmy_task_alloc_security(struct task_struct *p)
++{
++	struct tmy_security *ptr = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
++
++	if (!ptr)
++		return -ENOMEM;
++	memcpy(ptr, TMY_SECURITY, sizeof(*ptr));
++	p->security = ptr;
++	return 0;
++}
++
++static void tmy_task_free_security(struct task_struct *p)
++{
++	kmem_cache_free(tmy_cachep, p->security);
++}
++
++static int tmy_bprm_alloc_security(struct linux_binprm *bprm)
++{
++	TMY_SECURITY->prev_domain = TMY_SECURITY->domain;
++	return 0;
++}
++
++static int tmy_bprm_check_security(struct linux_binprm *bprm)
++{
++	struct domain_info *next_domain = NULL;
++	int retval = 0;
++
++	tmy_load_policy(bprm->filename);
++
++	/*
++	 * TMY_CHECK_READ_FOR_OPEN_EXEC bit indicates whether this function is
++	 * called by do_execve() or not.
++	 * If called by do_execve(), I do domain transition.
++	 */
++	if (!(TMY_SECURITY->flags
++	      & TMY_CHECK_READ_FOR_OPEN_EXEC)) {
++		retval = tmy_find_next_domain(bprm, &next_domain);
++		if (retval == 0) {
++			TMY_SECURITY->domain = next_domain;
++			TMY_SECURITY->flags |=
++				TMY_CHECK_READ_FOR_OPEN_EXEC;
++		}
++	}
++
++	return retval;
++}
++
++static void tmy_bprm_post_apply_creds(struct linux_binprm *bprm)
++{
++	TMY_SECURITY->prev_domain = TMY_SECURITY->domain;
++}
++
++static void tmy_bprm_free_security(struct linux_binprm *bprm)
++{
++	TMY_SECURITY->domain = TMY_SECURITY->prev_domain;
++	TMY_SECURITY->flags &= ~TMY_CHECK_READ_FOR_OPEN_EXEC;
++}
++
++static int tmy_sysctl(struct ctl_table *table, int op)
++{
++	int error;
++	char *name;
++
++	if ((op & 6) == 0)
++		return 0;
++
++	name = sysctlpath_from_table(table);
++	if (!name)
++		return -ENOMEM;
++
++	error = tmy_file_perm(name, op & 6, "sysctl");
++	tmy_free(name);
++
++	return error;
++}
++
++static int tmy_inode_permission(struct inode *inode,
++				int mask,
++				struct nameidata *nd)
++{
++	int flag = 0;
++
++	if (S_ISDIR(inode->i_mode)) /* ignore because inode is directory */
++		return 0;
++	if (!nd || !nd->dentry || !nd->mnt)
++		return 0;
++	/*
++	 * If called by other than do_execve(), I check for read permission of
++	 * interpreter.
++	 * Unlike DAC, I don't check for read permission of pathname passed to
++	 * do_execve().
++	 * TOMOYO Linux checks for program's execute permission and
++	 * interpreter's read permission.
++	 */
++	if ((mask == MAY_EXEC) &&
++	    (TMY_SECURITY->flags & TMY_CHECK_READ_FOR_OPEN_EXEC))
++		mask = MAY_READ;
++	if ((mask == MAY_EXEC) || (mask == 0))
++		return 0;
++
++	if (mask == (MAY_READ | MAY_EXEC))
++		flag |= O_RDONLY + 1;
++	else {
++		if (mask & MAY_READ)
++			flag |= O_RDONLY + 1;
++		if (mask & MAY_WRITE)
++			flag |= O_WRONLY + 1;
++		if ((mask & MAY_APPEND))
++			flag |= O_APPEND;
++	}
++
++	return tmy_open_perm(nd->dentry, nd->mnt, flag);
++}
++
++static int tmy_do_single_write_perm(int operation, struct dentry *dentry)
++{
++	struct mnt_namespace *namespace = current->nsproxy->mnt_ns;
++	struct list_head *p;
++	int ret = 0;
++	int error = 0;
++	int index = 0;
++	int index2 = 0;
++
++	if (!dentry || !namespace)
++		return 0;
++
++start: ;
++	index2 = 0;
++
++	/* lock namespace */
++	down_read(&namespace_sem);
++
++	list_for_each(p, &namespace->list) {
++		struct vfsmount *mnt = list_entry(p, struct vfsmount, mnt_list);
++
++		if (mnt->mnt_root->d_sb != dentry->d_sb)
++			continue;
++		if (index2++ < index)
++			continue;
++
++		/* unlock namespace */
++		up_read(&namespace_sem);
++		error = tmy_single_write_perm(operation, dentry, mnt);
++
++		if (error != 0)
++			ret = error;
++
++		index++;
++
++		goto start;
++	}
++
++	/* unlock namespace */
++	up_read(&namespace_sem);
++
++	return ret;
++}
++
++static int tmy_inode_setattr(struct dentry *dentry, struct iattr *iattr)
++{
++	if (iattr->ia_valid & ATTR_SIZE)
++		return tmy_do_single_write_perm(TMY_TYPE_TRUNCATE_ACL, dentry);
++	return 0;
++}
++
++static int tmy_inode_create(struct inode *dir, struct dentry *dentry, int mode)
++{
++	return tmy_do_single_write_perm(TMY_TYPE_CREATE_ACL, dentry);
++}
++
++static int tmy_inode_unlink(struct inode *dir, struct dentry *dentry)
++{
++	return tmy_do_single_write_perm(TMY_TYPE_UNLINK_ACL, dentry);
++}
++
++static int tmy_inode_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++{
++	return tmy_do_single_write_perm(TMY_TYPE_MKDIR_ACL, dentry);
++}
++
++static int tmy_inode_rmdir(struct inode *dir, struct dentry *dentry)
++{
++	return tmy_do_single_write_perm(TMY_TYPE_RMDIR_ACL, dentry);
++}
++
++static int tmy_inode_symlink(struct inode *dir,
++			     struct dentry *dentry,
++			     const char *old_name)
++{
++	return tmy_do_single_write_perm(TMY_TYPE_SYMLINK_ACL, dentry);
++}
++
++static int tmy_inode_mknod(struct inode *inode,
++			   struct dentry *dentry,
++			   int mode,
++			   dev_t dev)
++{
++	if (S_ISCHR(mode))
++		return tmy_do_single_write_perm(TMY_TYPE_MKCHAR_ACL, dentry);
++	if (S_ISBLK(mode))
++		return tmy_do_single_write_perm(TMY_TYPE_MKBLOCK_ACL, dentry);
++	if (S_ISFIFO(mode))
++		return tmy_do_single_write_perm(TMY_TYPE_MKFIFO_ACL, dentry);
++	if (S_ISSOCK(mode))
++		return tmy_do_single_write_perm(TMY_TYPE_MKSOCK_ACL, dentry);
++
++	return 0;
++}
++
++static int tmy_do_double_write_perm(int operation,
++				    struct dentry *old_dentry,
++				    struct dentry *new_dentry)
++{
++	struct mnt_namespace *namespace = current->nsproxy->mnt_ns;
++	struct list_head *p;
++	int ret = 0;
++	int error = 0;
++	int index = 0;
++	int index2 = 0;
++
++	if (!old_dentry || !new_dentry)
++		return 0;
++start: ;
++	index2 = 0;
++
++	/* lock namespace */
++	down_read(&namespace_sem);
++
++	list_for_each(p, &namespace->list) {
++		struct vfsmount *mnt = list_entry(p, struct vfsmount, mnt_list);
++
++		if (mnt->mnt_root->d_sb != old_dentry->d_sb)
++			continue;
++		if (index2++ < index)
++			continue;
++		/* unlock namespace */
++		up_read(&namespace_sem);
++		error = tmy_double_write_perm(operation, old_dentry, mnt,
++					      new_dentry, mnt);
++		if (error != 0)
++			ret = error;
++		index++;
++		goto start;
++	}
++
++	/* unlock namespace */
++	up_read(&namespace_sem);
++
++	return ret;
++}
++
++static int tmy_inode_link(struct dentry *old_dentry,
++			  struct inode *inode,
++			  struct dentry *new_dentry)
++{
++	return tmy_do_double_write_perm(TMY_TYPE_LINK_ACL,
++					old_dentry, new_dentry);
++}
++
++static int tmy_inode_rename(struct inode *old_inode,
++			    struct dentry *old_dentry,
++			    struct inode *new_inode,
++			    struct dentry *new_dentry)
++{
++	return tmy_do_double_write_perm(TMY_TYPE_RENAME_ACL,
++					old_dentry,
++					new_dentry);
++}
++
++static int tmy_file_fcntl(struct file *file,
++			  unsigned int cmd,
++			  unsigned long arg)
++{
++	if (!(arg & O_APPEND))
++		return tmy_rewrite_perm(file);
++	return 0;
++}
++
++static int tmy_socket_listen(struct socket *sock, int backlog)
++{
++	char addr[MAX_SOCK_ADDR];
++	int addr_len;
++	int error = 0;
++
++	/* I don't check if called by kernel process. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++
++	if (sock->type != SOCK_STREAM)
++		return error;
++	if (sock->sk->sk_family != PF_INET && sock->sk->sk_family != PF_INET6)
++		return error;
++
++	if (sock->ops->getname(sock, (struct sockaddr *) addr, &addr_len, 0))
++		return -EPERM;
++
++	switch (((struct sockaddr *) addr)->sa_family) {
++		struct sockaddr_in6 *in6;
++		struct sockaddr_in *in;
++
++	case AF_INET6:
++		in6 = (struct sockaddr_in6 *) addr;
++		error = tmy_network_listen_acl(1, in6->sin6_addr.s6_addr,
++					       in6->sin6_port);
++		break;
++	case AF_INET:
++		in = (struct sockaddr_in *) addr;
++		error = tmy_network_listen_acl(0, (u8 *) &in->sin_addr,
++					       in->sin_port);
++		break;
++	}
++
++	return error;
++}
++
++static int tmy_socket_connect(struct socket *sock,
++			      struct sockaddr *addr,
++			      int addr_len0)
++{
++	unsigned int addr_len = (unsigned int) addr_len0;
++	int error = 0;
++	const unsigned int type = sock->type;
++
++	/* I don't check if called by kernel process. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++
++	if (type != SOCK_STREAM && type != SOCK_DGRAM && type != SOCK_RAW)
++		return error;
++
++	switch (addr->sa_family) {
++		struct sockaddr_in6 *in6;
++		struct sockaddr_in *in;
++
++	case AF_INET6:
++		if (addr_len < SIN6_LEN_RFC2133)
++			break;
++
++		in6 = (struct sockaddr_in6 *) addr;
++		if (type != SOCK_RAW)
++			error = tmy_network_connect_acl(1, type,
++							in6->sin6_addr.s6_addr,
++							in6->sin6_port);
++		else {
++			const u16 port = htons(sock->sk->sk_protocol);
++
++			error = tmy_network_connect_acl(1, SOCK_RAW,
++							in6->sin6_addr.s6_addr,
++							port);
++		}
++		break;
++
++	case AF_INET:
++		if (addr_len < sizeof(struct sockaddr_in))
++			break;
++
++		in = (struct sockaddr_in *) addr;
++		if (type != SOCK_RAW)
++			error = tmy_network_connect_acl(0, type,
++							(u8 *) &in->sin_addr,
++							in->sin_port);
++		else {
++			const u16 port = htons(sock->sk->sk_protocol);
++
++			error = tmy_network_connect_acl(0, SOCK_RAW,
++							(u8 *) &in->sin_addr,
++							port);
++		}
++		break;
++	}
++
++	return error;
++}
++
++static int tmy_socket_bind(struct socket *sock,
++			   struct sockaddr *addr,
++			   int addr_len0)
++{
++	unsigned int addr_len = (unsigned int) addr_len0;
++	int error = 0;
++	const unsigned int type = sock->type;
++
++	/* I don't check if called by kernel process. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++
++	if (type != SOCK_STREAM && type != SOCK_DGRAM && type != SOCK_RAW)
++		return error;
++
++	switch (addr->sa_family) {
++		struct sockaddr_in6 *in6;
++		struct sockaddr_in *in;
++
++	case AF_INET6:
++		if (addr_len < SIN6_LEN_RFC2133)
++			break;
++
++		in6 = ((struct sockaddr_in6 *) addr);
++		if (type != SOCK_RAW)
++			error = tmy_network_bind_acl(1, type,
++						     in6->sin6_addr.s6_addr,
++						     in6->sin6_port);
++		else {
++			const u16 port = htons(sock->sk->sk_protocol);
++
++			error = tmy_network_bind_acl(1, SOCK_RAW,
++						     in6->sin6_addr.s6_addr,
++						     port);
++		}
++		break;
++
++	case AF_INET:
++		if (addr_len < sizeof(struct sockaddr_in))
++			break;
++
++		in = (struct sockaddr_in *) addr;
++		if (type != SOCK_RAW)
++			error = tmy_network_bind_acl(0, type,
++						     (u8 *) &in->sin_addr,
++						     in->sin_port);
++		else {
++			const u16 port = htons(sock->sk->sk_protocol);
++
++			error = tmy_network_bind_acl(0, SOCK_RAW,
++						     (u8 *) &in->sin_addr,
++						     port);
++		}
++		break;
++	}
++
++	return error;
++}
++
++static int tmy_socket_sendmsg(struct socket *sock, struct msghdr *msg, int size)
++{
++	int error = 0;
++	const int type = sock->type;
++	struct sockaddr *addr = (struct sockaddr *) msg->msg_name;
++	const unsigned int addr_len = msg->msg_namelen;
++
++	/* I don't check if called by kernel process. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++
++	if (!addr || (type != SOCK_DGRAM && type != SOCK_RAW))
++		return error;
++
++	switch (addr->sa_family) {
++		struct sockaddr_in6 *in6;
++		struct sockaddr_in *in;
++		u16 port;
++
++	case AF_INET6:
++		if (addr_len < SIN6_LEN_RFC2133)
++			break;
++
++		in6 = (struct sockaddr_in6 *) addr;
++		port = htons(sock->sk->sk_protocol);
++		error = tmy_network_sendmsg_acl(1, type, in6->sin6_addr.s6_addr,
++						type == SOCK_DGRAM ?
++						in6->sin6_port : port);
++		break;
++
++	case AF_INET:
++		if (addr_len < sizeof(struct sockaddr_in))
++			break;
++
++		in = (struct sockaddr_in *) addr;
++		port = htons(sock->sk->sk_protocol);
++		error = tmy_network_sendmsg_acl(0, type, (u8 *) &in->sin_addr,
++						type == SOCK_DGRAM ?
++						in->sin_port : port);
++		break;
++	}
++
++	return error;
++}
++
++static int tmy_socket_post_accept(struct socket *sock, struct socket *newsock)
++{
++	int error = 0;
++	int addr_len;
++	char addr[MAX_SOCK_ADDR];
++	struct sockaddr *sockaddr = (struct sockaddr *) addr;
++
++	/* I don't check if called by kernel process. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++
++	if ((newsock->sk->sk_family != PF_INET) &&
++	    (newsock->sk->sk_family != PF_INET6))
++		return error;
++
++	if (newsock->ops->getname(newsock, sockaddr, &addr_len, 2) == 0) {
++		switch (sockaddr->sa_family) {
++			struct sockaddr_in6 *in6;
++			struct sockaddr_in *in;
++
++		case AF_INET6:
++			in6 = (struct sockaddr_in6 *) addr;
++			error = tmy_network_accept_acl(1,
++						       in6->sin6_addr.s6_addr,
++						       in6->sin6_port);
++			break;
++
++		case AF_INET:
++			in = (struct sockaddr_in *) addr;
++			error = tmy_network_accept_acl(0, (u8 *) &in->sin_addr,
++						       in->sin_port);
++			break;
++		}
++	} else
++		error = -EPERM;
++
++	if (error)
++		return -ECONNABORTED;
++	return error;
++}
++
++static int tmy_post_recv_datagram(struct sock *sk,
++				  struct sk_buff *skb,
++				  unsigned int flags)
++{
++	int error = 0;
++	const unsigned int type = sk->sk_type;
++
++	/* skb_recv_datagram() didn't dequeue. */
++	if (!skb)
++		return 0;
++
++	/* skb_recv_datagram() can be called from interrupt context. */
++	if (in_interrupt())
++		return 0;
++	/* I don't check if called by kernel process. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++
++	if (type != SOCK_DGRAM && type != SOCK_RAW)
++		return 0;
++
++	switch (sk->sk_family) {
++		struct sockaddr_in6 sin6;
++		struct sockaddr_in sin;
++		u16 port;
++
++	case AF_INET6:
++
++		if (type == SOCK_DGRAM) {
++			/* UDP IPv6 */
++			sin6.sin6_family = AF_INET6;
++			sin6.sin6_port = udp_hdr(skb)->source;
++
++			if (skb->protocol == htons(ETH_P_IP))
++				ipv6_addr_set(&sin6.sin6_addr, 0, 0,
++					      htonl(0xffff),
++					      ip_hdr(skb)->saddr);
++			else
++				ipv6_addr_copy(&sin6.sin6_addr,
++					       &ipv6_hdr(skb)->saddr);
++
++			port = sin6.sin6_port;
++		} else {
++			/* RAW IPv6 */
++			sin6.sin6_family = AF_INET6;
++			sin6.sin6_port = 0;
++			ipv6_addr_copy(&sin6.sin6_addr, &ipv6_hdr(skb)->saddr);
++
++			port = htons(sk->sk_protocol);
++		}
++
++		error = tmy_network_recvmsg_acl(1, type,
++						sin6.sin6_addr.s6_addr,	port);
++
++		break;
++
++	case AF_INET:
++
++		if (type == SOCK_DGRAM) {
++			/* UDP IPv4 */
++			sin.sin_family = AF_INET;
++			sin.sin_port = udp_hdr(skb)->source;
++			sin.sin_addr.s_addr = ip_hdr(skb)->saddr;
++
++			port = sin.sin_port;
++		} else {
++			/* RAW IPv4 */
++			sin.sin_family = AF_INET;
++			sin.sin_addr.s_addr = ip_hdr(skb)->saddr;
++			sin.sin_port = 0;
++
++			port = htons(sk->sk_protocol);
++		}
++
++		error = tmy_network_recvmsg_acl(0, type,
++						(u8 *) &sin.sin_addr, port);
++
++		break;
++
++	}
++
++	if (error)
++		error = -EAGAIN;
++	return error;
++}
++
++static int tmy_sb_mount(char *dev_name,
++			struct nameidata *nd,
++			char *type,
++			unsigned long flags,
++			void *data)
++{
++	char *buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
++	char *dir_name;
++	int error;
++
++	if (!buf)
++		return -ENOMEM;
++
++	dir_name = d_path(nd->dentry, nd->mnt, buf, PAGE_SIZE);
++
++	if (IS_ERR(dir_name))
++		error = PTR_ERR(dir_name);
++	else
++		error = tmy_mount_perm(dev_name, dir_name, type, flags);
++
++	if (!error && (flags & MS_REMOUNT) == 0)
++		error = tmy_conceal_mount(nd);
++
++	kfree(buf);
++	return error;
++}
++
++static int tmy_sb_umount(struct vfsmount *mnt, int flags)
++{
++	return tmy_umount_perm(mnt);
++}
++
++static int tmy_sb_pivotroot(struct nameidata *old_nd, struct nameidata *new_nd)
++{
++	return tmy_pivot_root_perm(old_nd, new_nd);
++}
++
++static int tmy_task_kill_unlocked(int pid, int sig)
++{
++	return tmy_signal_acl(sig, pid);
++}
++
++static int tmy_task_tkill_unlocked(int pid, int sig)
++{
++	return tmy_signal_acl(sig, pid);
++}
++
++static int tmy_task_tgkill_unlocked(int tgid, int pid, int sig)
++{
++	return tmy_signal_acl(sig, pid);
++}
++
++static struct security_operations tomoyo_security_ops = {
++	.task_alloc_security   = tmy_task_alloc_security,
++	.task_free_security    = tmy_task_free_security,
++	.bprm_alloc_security   = tmy_bprm_alloc_security,
++	.bprm_check_security   = tmy_bprm_check_security,
++	.bprm_post_apply_creds = tmy_bprm_post_apply_creds,
++	.bprm_free_security    = tmy_bprm_free_security,
++	.sysctl                = tmy_sysctl,
++	.inode_permission      = tmy_inode_permission,
++	.inode_setattr         = tmy_inode_setattr,
++	.inode_create          = tmy_inode_create,
++	.inode_unlink          = tmy_inode_unlink,
++	.inode_mkdir           = tmy_inode_mkdir,
++	.inode_rmdir           = tmy_inode_rmdir,
++	.inode_symlink         = tmy_inode_symlink,
++	.inode_mknod           = tmy_inode_mknod,
++	.inode_link            = tmy_inode_link,
++	.inode_rename          = tmy_inode_rename,
++	.file_fcntl            = tmy_file_fcntl,
++	.socket_listen 	       = tmy_socket_listen,
++	.socket_connect        = tmy_socket_connect,
++	.socket_bind 	       = tmy_socket_bind,
++	.socket_sendmsg        = tmy_socket_sendmsg,
++	.sb_mount              = tmy_sb_mount,
++	.sb_umount             = tmy_sb_umount,
++	.sb_pivotroot          = tmy_sb_pivotroot,
++#ifdef TMY_LSM_EXPANSION
++	.socket_post_accept    = tmy_socket_post_accept,
++	.post_recv_datagram    = tmy_post_recv_datagram,
++	.task_kill_unlocked    = tmy_task_kill_unlocked,
++	.task_tkill_unlocked   = tmy_task_tkill_unlocked,
++	.task_tgkill_unlocked  = tmy_task_tgkill_unlocked,
++#endif
++};
++
++static int __init tmy_init(void)
++{
++
++	/* register ourselves with the security framework */
++	if (register_security(&tomoyo_security_ops))
++		panic("Failure registering TOMOYO Linux");
++
++	printk(KERN_INFO "TOMOYO Linux initialized\n");
++
++	tmy_proc_init();
++
++	tmy_cachep = kmem_cache_create("tomoyo_security",
++				       sizeof(struct tmy_security),
++				       0, SLAB_PANIC, NULL);
++
++	init_task.security = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
++	((struct tmy_security *) init_task.security)->domain = &KERNEL_DOMAIN;
++	((struct tmy_security *) init_task.security)->prev_domain = NULL;
++	((struct tmy_security *) init_task.security)->flags = 0;
++
++	return 0;
++}
++
++security_initcall(tmy_init);
