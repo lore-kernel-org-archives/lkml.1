@@ -1,56 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933703AbXHXSig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933352AbXHXSme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933703AbXHXSig (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 14:38:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762965AbXHXSiO
+	id S933352AbXHXSme (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 14:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762070AbXHXSm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 14:38:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60564 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762682AbXHXSiN (ORCPT
+	Fri, 24 Aug 2007 14:42:27 -0400
+Received: from el-out-1112.google.com ([209.85.162.178]:18652 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757144AbXHXSm0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 14:38:13 -0400
-Date: Fri, 24 Aug 2007 11:36:53 -0700
-From: Greg KH <greg@kroah.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Matt Colyer <matt@colyer.name>,
-       linux-kernel@vger.kernel.org, jeffm@suse.de,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [RFC] USB: driver for iphone charging
-Message-ID: <20070824183653.GB14879@kroah.com>
-References: <Pine.LNX.4.44L0.0708241006440.3862-100000@iolanthe.rowland.org> <200708241623.13887.oliver@neukum.org>
+	Fri, 24 Aug 2007 14:42:26 -0400
+Message-ID: <3db1ec7f0708241142g30c53633s68987379d1953455@mail.gmail.com>
+Date: Fri, 24 Aug 2007 21:42:24 +0300
+From: "Ivan N. Zlatev" <contact@i-nz.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [1/4] 2.6.23-rc3: known regressions v3
+Cc: alsa-devel@alsa-project.org, "Takashi Iwai" <tiwai@suse.de>,
+       "Thomas Meyer" <thomas@m3y3r.de>
+In-Reply-To: <46CF177B.4090608@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708241623.13887.oliver@neukum.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_38059_18953169.1187980944201"
+References: <46CF177B.4090608@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 04:23:13PM +0200, Oliver Neukum wrote:
-> Am Freitag 24 August 2007 schrieb Alan Stern:
-> > On Fri, 24 Aug 2007, Oliver Neukum wrote:
-> > 
-> > > This schedules the change via a workqueue, so you'll be reprobed. If you
-> > > fire of the first vendor command you are doing so before the configuration
-> > > is changed. How is this supposed to work?
-> > 
-> > I would do it like this:
-> 
-> That makes sense. However, Greg's version might work by putting
-> out a magic init sequence and then changing the configuration.
-> Then it would just be coded in an obscure way.
+------=_Part_38059_18953169.1187980944201
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Without any docs, this is all obscure :)
+On 8/24/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> ALSA
+>
+> Subject         : Master volume control broken
+> References      : http://lkml.org/lkml/2007/8/18/46
+> Last known good : ?
+> Submitter       : Thomas Meyer <thomas@m3y3r.de>
+> Caused-By       : Ivan N. Zlatev <contact@i-nz.net>
+>                   commit 5d5d3bc3eddf2ad97b2cb090b92580e7fed6cee1
+> Handled-By      : ?
+> Status          : unknown
+>
 
-> However, does this really belong into kernel space? We have been
-> knowing that user space infrastructure for configuration selection
-> is necessary and this seems like a fine starting point.
+Thomas Meyer,
 
-The berry_charge driver is also one that might be done in userspace, but
-it turns out that people update their kernel much more than they do
-userspace packages...
+The commit just adds the pinconfigs which Mac OS X and win32 use for
+the Intel Macs (intel hda audio with the Sigmatel STAC9221 codec).
 
-thanks,
+For me "Master" works fine with the speakers/headphones plugged in.
+The volume of the internal speakers is bound to "Front" in the mixer
+(can also be controled by "PCM"), but does not react to the "Master".
+I've just thought this is by design - one can maintain two volume sets
+for the internal speakers and the external speakers. I am probably
+wrong.
 
-greg k-h
+In the meanwhile if you want to use your "fancy multimedia control
+keys" as a workaround you could try to bind your multimedia keys to
+execute:
+volume up: amixer -q set PCM 10%+
+volume down: amixer -q set PCM 10%-
+
+I have attached codec info and amixer output for Tiwai.
+
+Regards,
+-- 
+Ivan N. Zlatev
+
+Web: http://www.i-nZ.net
+"It's all some kind of whacked out conspiracy."
+
+------=_Part_38059_18953169.1187980944201
+Content-Type: application/octet-stream; name=codec-info
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f5r0wqrb
+Content-Disposition: attachment; filename="codec-info"
+
+Q29kZWM6IFNpZ21hVGVsIFNUQUM5MjIxIEExCkFkZHJlc3M6IDAKVmVuZG9yIElkOiAweDgzODQ3
+NjgwClN1YnN5c3RlbSBJZDogMHgxMDZiMTcwMApSZXZpc2lvbiBJZDogMHgxMDM0MDEKRGVmYXVs
+dCBQQ006CiAgICByYXRlcyBbMHg3ZTBdOiA0NDEwMCA0ODAwMCA4ODIwMCA5NjAwMCAxNzY0MDAg
+MTkyMDAwCiAgICBiaXRzIFsweGVdOiAxNiAyMCAyNAogICAgZm9ybWF0cyBbMHgxXTogUENNCkRl
+ZmF1bHQgQW1wLUluIGNhcHM6IG9mcz0weDAwLCBuc3RlcHM9MHgwZSwgc3RlcHNpemU9MHgwNSwg
+bXV0ZT0xCkRlZmF1bHQgQW1wLU91dCBjYXBzOiBvZnM9MHg3ZiwgbnN0ZXBzPTB4N2YsIHN0ZXBz
+aXplPTB4MDIsIG11dGU9MQpOb2RlIDB4MDIgW0F1ZGlvIE91dHB1dF0gd2NhcHMgMHhkMGMwNTog
+U3RlcmVvIEFtcC1PdXQKICBBbXAtT3V0IGNhcHM6IE4vQQogIEFtcC1PdXQgdmFsczogIFsweDdm
+IDB4N2ZdCiAgUG93ZXI6IDB4MApOb2RlIDB4MDMgW0F1ZGlvIE91dHB1dF0gd2NhcHMgMHhkMGMw
+NTogU3RlcmVvIEFtcC1PdXQKICBBbXAtT3V0IGNhcHM6IE4vQQogIEFtcC1PdXQgdmFsczogIFsw
+eDdmIDB4N2ZdCiAgUG93ZXI6IDB4MApOb2RlIDB4MDQgW0F1ZGlvIE91dHB1dF0gd2NhcHMgMHhk
+MGMwNTogU3RlcmVvIEFtcC1PdXQKICBBbXAtT3V0IGNhcHM6IE4vQQogIEFtcC1PdXQgdmFsczog
+IFsweDdmIDB4N2ZdCiAgUG93ZXI6IDB4MApOb2RlIDB4MDUgW0F1ZGlvIE91dHB1dF0gd2NhcHMg
+MHhkMGMwNTogU3RlcmVvIEFtcC1PdXQKICBBbXAtT3V0IGNhcHM6IE4vQQogIEFtcC1PdXQgdmFs
+czogIFsweDdmIDB4N2ZdCiAgUG93ZXI6IDB4MApOb2RlIDB4MDYgW0F1ZGlvIElucHV0XSB3Y2Fw
+cyAweDFkMDU0MTogU3RlcmVvCiAgUG93ZXI6IDB4MAogIENvbm5lY3Rpb246IDEKICAgICAweDE3
+Ck5vZGUgMHgwNyBbQXVkaW8gSW5wdXRdIHdjYXBzIDB4MWQwNTQxOiBTdGVyZW8KICBQb3dlcjog
+MHgwCiAgQ29ubmVjdGlvbjogMQogICAgIDB4MTgKTm9kZSAweDA4IFtBdWRpbyBPdXRwdXRdIHdj
+YXBzIDB4NDAyMTE6IFN0ZXJlbyBEaWdpdGFsCiAgUENNOgogICAgcmF0ZXMgWzB4N2UwXTogNDQx
+MDAgNDgwMDAgODgyMDAgOTYwMDAgMTc2NDAwIDE5MjAwMAogICAgYml0cyBbMHhlXTogMTYgMjAg
+MjQKICAgIGZvcm1hdHMgWzB4NV06IFBDTSBBQzMKTm9kZSAweDA5IFtBdWRpbyBJbnB1dF0gd2Nh
+cHMgMHgxNDAzMTE6IFN0ZXJlbyBEaWdpdGFsCiAgUENNOgogICAgcmF0ZXMgWzB4MTYwXTogNDQx
+MDAgNDgwMDAgOTYwMDAKICAgIGJpdHMgWzB4ZV06IDE2IDIwIDI0CiAgICBmb3JtYXRzIFsweDVd
+OiBQQ00gQUMzCiAgQ29ubmVjdGlvbjogMQogICAgIDB4MTEKTm9kZSAweDBhIFtQaW4gQ29tcGxl
+eF0gd2NhcHMgMHg0MDAxODE6IFN0ZXJlbwogIFBpbmNhcCAweDA4MTczZjogSU4gT1VUIEhQIERl
+dGVjdAogIFBpbiBEZWZhdWx0IDB4MDEyMWUyMWY6IFtKYWNrXSBIUCBPdXQgYXQgRXh0IFJlYXIK
+ICAgIENvbm4gPSAxLzgsIENvbG9yID0gV2hpdGUKICBQaW4tY3RsczogMHhjMDogT1VUIEhQCiAg
+Q29ubmVjdGlvbjogMQogICAgIDB4MDIKTm9kZSAweDBiIFtQaW4gQ29tcGxleF0gd2NhcHMgMHg0
+MDAxODE6IFN0ZXJlbwogIFBpbmNhcCAweDA4MTczNzogSU4gT1VUIERldGVjdAogIFBpbiBEZWZh
+dWx0IDB4OTBhNzAxMmU6IFtGaXhlZF0gTWljIGF0IEludCBOL0EKICAgIENvbm4gPSBBbmFsb2cs
+IENvbG9yID0gVW5rbm93bgogIFBpbi1jdGxzOiAweDI0OiBJTgogIENvbm5lY3Rpb246IDEKICAg
+ICAweDA0Ck5vZGUgMHgwYyBbUGluIENvbXBsZXhdIHdjYXBzIDB4NDAwMTgxOiBTdGVyZW8KICBQ
+aW5jYXAgMHgwODE3Mzc6IElOIE9VVCBEZXRlY3QKICBQaW4gRGVmYXVsdCAweDkwMTdlMTEwOiBb
+Rml4ZWRdIFNwZWFrZXIgYXQgSW50IE4vQQogICAgQ29ubiA9IEFuYWxvZywgQ29sb3IgPSBXaGl0
+ZQogIFBpbi1jdGxzOiAweDQwOiBPVVQKICBDb25uZWN0aW9uOiAxCiAgICAgMHgwMwpOb2RlIDB4
+MGQgW1BpbiBDb21wbGV4XSB3Y2FwcyAweDQwMDE4MTogU3RlcmVvCiAgUGluY2FwIDB4MDgxNzNm
+OiBJTiBPVVQgSFAgRGV0ZWN0CiAgUGluIERlZmF1bHQgMHg0MDAwMDBmZDogW04vQV0gTGluZSBP
+dXQgYXQgRXh0IE4vQQogICAgQ29ubiA9IFVua25vd24sIENvbG9yID0gVW5rbm93bgogIFBpbi1j
+dGxzOiAweDQwOiBPVVQKICBDb25uZWN0aW9uOiAxCiAgICAgMHgwMgpOb2RlIDB4MGUgW1BpbiBD
+b21wbGV4XSB3Y2FwcyAweDQwMDA4MTogU3RlcmVvCiAgUGluY2FwIDB4MDgyNDogSU4gRGV0ZWN0
+CiAgUGluIERlZmF1bHQgMHg0MDAwMDBmZTogW04vQV0gTGluZSBPdXQgYXQgRXh0IE4vQQogICAg
+Q29ubiA9IFVua25vd24sIENvbG9yID0gVW5rbm93bgogIFBpbi1jdGxzOiAweDIwOiBJTgpOb2Rl
+IDB4MGYgW1BpbiBDb21wbGV4XSB3Y2FwcyAweDQwMDE4MTogU3RlcmVvCiAgUGluY2FwIDB4MDgz
+NzogSU4gT1VUIERldGVjdAogIFBpbiBEZWZhdWx0IDB4MDE4MWUwMjA6IFtKYWNrXSBMaW5lIElu
+IGF0IEV4dCBSZWFyCiAgICBDb25uID0gMS84LCBDb2xvciA9IFdoaXRlCiAgUGluLWN0bHM6IDB4
+MjA6IElOCiAgQ29ubmVjdGlvbjogMQogICAgIDB4MDUKTm9kZSAweDEwIFtQaW4gQ29tcGxleF0g
+d2NhcHMgMHg0MDAzMDE6IFN0ZXJlbyBEaWdpdGFsCiAgUGluY2FwIDB4MDgxMDogT1VUCiAgUGlu
+IERlZmF1bHQgMHgxMTQ1ZTIzMDogW0phY2tdIFNQRElGIE91dCBhdCBJbnQgUmVhcgogICAgQ29u
+biA9IE9wdGljYWwsIENvbG9yID0gV2hpdGUKICBQaW4tY3RsczogMHg0MDogT1VUCiAgQ29ubmVj
+dGlvbjogMwogICAgIDB4MDgqIDB4MTcgMHgxOQpOb2RlIDB4MTEgW1BpbiBDb21wbGV4XSB3Y2Fw
+cyAweDQzMDY4MTogU3RlcmVvIERpZ2l0YWwKICBQaW5jYXAgMHgwODEwMDI0OiBJTiBFQVBEIERl
+dGVjdAogIFBpbiBEZWZhdWx0IDB4MTFjNWUyNDA6IFtKYWNrXSBTUERJRiBJbiBhdCBJbnQgUmVh
+cgogICAgQ29ubiA9IE9wdGljYWwsIENvbG9yID0gV2hpdGUKICBQaW4tY3RsczogMHgyMDogSU4K
+ICBQb3dlcjogMHgwCk5vZGUgMHgxMiBbQXVkaW8gU2VsZWN0b3JdIHdjYXBzIDB4MzAwMTBkOiBT
+dGVyZW8gQW1wLU91dAogIEFtcC1PdXQgY2Fwczogb2ZzPTB4MDAsIG5zdGVwcz0weDA0LCBzdGVw
+c2l6ZT0weDI3LCBtdXRlPTAKICBBbXAtT3V0IHZhbHM6ICBbMHgwMiAweDAyXQogIENvbm5lY3Rp
+b246IDcKICAgICAweDBlIDB4MTUgMHgwZiAweDBiKiAweDBjIDB4MGQgMHgwYQpOb2RlIDB4MTMg
+W0F1ZGlvIFNlbGVjdG9yXSB3Y2FwcyAweDMwMDEwZDogU3RlcmVvIEFtcC1PdXQKICBBbXAtT3V0
+IGNhcHM6IG9mcz0weDAwLCBuc3RlcHM9MHgwNCwgc3RlcHNpemU9MHgyNywgbXV0ZT0wCiAgQW1w
+LU91dCB2YWxzOiAgWzB4MDAgMHgwMF0KICBDb25uZWN0aW9uOiA3CiAgICAgMHgwZSAweDE1IDB4
+MGYgMHgwYiogMHgwYyAweDBkIDB4MGEKTm9kZSAweDE0IFtCZWVwIEdlbmVyYXRvciBXaWRnZXRd
+IHdjYXBzIDB4NzAwMDBjOiBNb25vIEFtcC1PdXQKICBBbXAtT3V0IGNhcHM6IG9mcz0weDAzLCBu
+c3RlcHM9MHgwMywgc3RlcHNpemU9MHgxNywgbXV0ZT0wCiAgQW1wLU91dCB2YWxzOiAgWzB4MDBd
+Ck5vZGUgMHgxNSBbUGluIENvbXBsZXhdIHdjYXBzIDB4NDAwMDAxOiBTdGVyZW8KICBQaW5jYXAg
+MHgwODIwOiBJTgogIFBpbiBEZWZhdWx0IDB4NDAwMDAwZmM6IFtOL0FdIExpbmUgT3V0IGF0IEV4
+dCBOL0EKICAgIENvbm4gPSBVbmtub3duLCBDb2xvciA9IFVua25vd24KICBQaW4tY3RsczogMHgw
+MDoKTm9kZSAweDE2IFtWb2x1bWUgS25vYiBXaWRnZXRdIHdjYXBzIDB4NjAwMDAwOiBNb25vCk5v
+ZGUgMHgxNyBbQXVkaW8gU2VsZWN0b3JdIHdjYXBzIDB4MzAwOTAzOiBTdGVyZW8gQW1wLUluCiAg
+QW1wLUluIGNhcHM6IE4vQQogIEFtcC1JbiB2YWxzOiAgWzB4OGUgMHg4ZV0KICBDb25uZWN0aW9u
+OiAxCiAgICAgMHgxMgpOb2RlIDB4MTggW0F1ZGlvIFNlbGVjdG9yXSB3Y2FwcyAweDMwMDkwMzog
+U3RlcmVvIEFtcC1JbgogIEFtcC1JbiBjYXBzOiBOL0EKICBBbXAtSW4gdmFsczogIFsweDgwIDB4
+ODBdCiAgQ29ubmVjdGlvbjogMQogICAgIDB4MTMKTm9kZSAweDE5IFtWZW5kb3IgRGVmaW5lZCBX
+aWRnZXRdIHdjYXBzIDB4ZjMwMjAxOiBTdGVyZW8gRGlnaXRhbApOb2RlIDB4MWEgW0F1ZGlvIE91
+dHB1dF0gd2NhcHMgMHgzMDIwMTogU3RlcmVvIERpZ2l0YWwKTm9kZSAweDFiIFtQaW4gQ29tcGxl
+eF0gd2NhcHMgMHg0MDAzMDE6IFN0ZXJlbyBEaWdpdGFsCiAgUGluY2FwIDB4MDgxMDogT1VUCiAg
+UGluIERlZmF1bHQgMHg0MDAwMDBmYjogW04vQV0gTGluZSBPdXQgYXQgRXh0IE4vQQogICAgQ29u
+biA9IFVua25vd24sIENvbG9yID0gVW5rbm93bgogIFBpbi1jdGxzOiAweDAwOgogIENvbm5lY3Rp
+b246IDEKICAgICAweDFhCg==
+------=_Part_38059_18953169.1187980944201
+Content-Type: application/octet-stream; name=amixer-output
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f5r0wrmn
+Content-Disposition: attachment; filename="amixer-output"
+
+U2ltcGxlIG1peGVyIGNvbnRyb2wgJ01hc3RlcicsMAogIENhcGFiaWxpdGllczogcHZvbHVtZSBw
+c3dpdGNoCiAgUGxheWJhY2sgY2hhbm5lbHM6IEZyb250IExlZnQgLSBGcm9udCBSaWdodAogIExp
+bWl0czogUGxheWJhY2sgMCAtIDEyNwogIE1vbm86CiAgRnJvbnQgTGVmdDogUGxheWJhY2sgMTI3
+IFsxMDAlXSBbMC4wMGRCXSBbb25dCiAgRnJvbnQgUmlnaHQ6IFBsYXliYWNrIDEyNyBbMTAwJV0g
+WzAuMDBkQl0gW29uXQpTaW1wbGUgbWl4ZXIgY29udHJvbCAnUENNJywwCiAgQ2FwYWJpbGl0aWVz
+OiBwdm9sdW1lCiAgUGxheWJhY2sgY2hhbm5lbHM6IEZyb250IExlZnQgLSBGcm9udCBSaWdodAog
+IExpbWl0czogUGxheWJhY2sgMCAtIDI1NQogIE1vbm86CiAgRnJvbnQgTGVmdDogUGxheWJhY2sg
+MTgwIFs3MSVdIFstMTUuMDBkQl0KICBGcm9udCBSaWdodDogUGxheWJhY2sgMTgwIFs3MSVdIFst
+MTUuMDBkQl0KU2ltcGxlIG1peGVyIGNvbnRyb2wgJ0Zyb250JywwCiAgQ2FwYWJpbGl0aWVzOiBw
+dm9sdW1lIHBzd2l0Y2gKICBQbGF5YmFjayBjaGFubmVsczogRnJvbnQgTGVmdCAtIEZyb250IFJp
+Z2h0CiAgTGltaXRzOiBQbGF5YmFjayAwIC0gMTI3CiAgTW9ubzoKICBGcm9udCBMZWZ0OiBQbGF5
+YmFjayAxMjcgWzEwMCVdIFswLjAwZEJdIFtvbl0KICBGcm9udCBSaWdodDogUGxheWJhY2sgMTI3
+IFsxMDAlXSBbMC4wMGRCXSBbb25dClNpbXBsZSBtaXhlciBjb250cm9sICdTdXJyb3VuZCcsMAog
+IENhcGFiaWxpdGllczogcHZvbHVtZSBwc3dpdGNoCiAgUGxheWJhY2sgY2hhbm5lbHM6IEZyb250
+IExlZnQgLSBGcm9udCBSaWdodAogIExpbWl0czogUGxheWJhY2sgMCAtIDEyNwogIE1vbm86CiAg
+RnJvbnQgTGVmdDogUGxheWJhY2sgMTI3IFsxMDAlXSBbMC4wMGRCXSBbb25dCiAgRnJvbnQgUmln
+aHQ6IFBsYXliYWNrIDEyNyBbMTAwJV0gWzAuMDBkQl0gW29uXQpTaW1wbGUgbWl4ZXIgY29udHJv
+bCAnQ2VudGVyJywwCiAgQ2FwYWJpbGl0aWVzOiBwdm9sdW1lIHB2b2x1bWUtam9pbmVkIHBzd2l0
+Y2ggcHN3aXRjaC1qb2luZWQKICBQbGF5YmFjayBjaGFubmVsczogTW9ubwogIExpbWl0czogUGxh
+eWJhY2sgMCAtIDEyNwogIE1vbm86IFBsYXliYWNrIDEyNyBbMTAwJV0gWzAuMDBkQl0gW29uXQpT
+aW1wbGUgbWl4ZXIgY29udHJvbCAnTEZFJywwCiAgQ2FwYWJpbGl0aWVzOiBwdm9sdW1lIHB2b2x1
+bWUtam9pbmVkIHBzd2l0Y2ggcHN3aXRjaC1qb2luZWQKICBQbGF5YmFjayBjaGFubmVsczogTW9u
+bwogIExpbWl0czogUGxheWJhY2sgMCAtIDEyNwogIE1vbm86IFBsYXliYWNrIDEyNyBbMTAwJV0g
+WzAuMDBkQl0gW29uXQpTaW1wbGUgbWl4ZXIgY29udHJvbCAnTGluZSBJbiBhcyBPdXRwdXQnLDAK
+ICBDYXBhYmlsaXRpZXM6IHBzd2l0Y2ggcHN3aXRjaC1qb2luZWQKICBQbGF5YmFjayBjaGFubmVs
+czogTW9ubwogIE1vbm86IFBsYXliYWNrIFtvZmZdClNpbXBsZSBtaXhlciBjb250cm9sICdNaWMg
+YXMgT3V0cHV0JywwCiAgQ2FwYWJpbGl0aWVzOiBwc3dpdGNoIHBzd2l0Y2gtam9pbmVkCiAgUGxh
+eWJhY2sgY2hhbm5lbHM6IE1vbm8KICBNb25vOiBQbGF5YmFjayBbb2ZmXQpTaW1wbGUgbWl4ZXIg
+Y29udHJvbCAnSUVDOTU4JywwCiAgQ2FwYWJpbGl0aWVzOiBwc3dpdGNoIHBzd2l0Y2gtam9pbmVk
+IGNzd2l0Y2ggY3N3aXRjaC1qb2luZWQKICBQbGF5YmFjayBjaGFubmVsczogTW9ubwogIENhcHR1
+cmUgY2hhbm5lbHM6IE1vbm8KICBNb25vOiBQbGF5YmFjayBbb2ZmXSBDYXB0dXJlIFtvZmZdClNp
+bXBsZSBtaXhlciBjb250cm9sICdDYXB0dXJlJywwCiAgQ2FwYWJpbGl0aWVzOiBjdm9sdW1lIGNz
+d2l0Y2gKICBDYXB0dXJlIGNoYW5uZWxzOiBGcm9udCBMZWZ0IC0gRnJvbnQgUmlnaHQKICBMaW1p
+dHM6IENhcHR1cmUgMCAtIDE0CiAgRnJvbnQgTGVmdDogQ2FwdHVyZSAxNCBbMTAwJV0gWzIxLjAw
+ZEJdIFtvZmZdCiAgRnJvbnQgUmlnaHQ6IENhcHR1cmUgMTQgWzEwMCVdIFsyMS4wMGRCXSBbb2Zm
+XQpTaW1wbGUgbWl4ZXIgY29udHJvbCAnRGlnaXRhbCcsMAogIENhcGFiaWxpdGllczogY3ZvbHVt
+ZQogIENhcHR1cmUgY2hhbm5lbHM6IEZyb250IExlZnQgLSBGcm9udCBSaWdodAogIExpbWl0czog
+Q2FwdHVyZSAwIC0gMTIwCiAgRnJvbnQgTGVmdDogQ2FwdHVyZSA2MCBbNTAlXSBbMC4wMGRCXQog
+IEZyb250IFJpZ2h0OiBDYXB0dXJlIDYwIFs1MCVdIFswLjAwZEJdClNpbXBsZSBtaXhlciBjb250
+cm9sICdJbnB1dCBTb3VyY2UnLDAKICBDYXBhYmlsaXRpZXM6IGVudW0KICBJdGVtczogJ01pYycg
+J0xpbmUnCiAgSXRlbTA6ICdNaWMnClNpbXBsZSBtaXhlciBjb250cm9sICdNdXgnLDAKICBDYXBh
+YmlsaXRpZXM6IGN2b2x1bWUKICBDYXB0dXJlIGNoYW5uZWxzOiBGcm9udCBMZWZ0IC0gRnJvbnQg
+UmlnaHQKICBMaW1pdHM6IENhcHR1cmUgMCAtIDIKICBGcm9udCBMZWZ0OiBDYXB0dXJlIDIgWzEw
+MCVdIFsyMC4wMGRCXQogIEZyb250IFJpZ2h0OiBDYXB0dXJlIDIgWzEwMCVdIFsyMC4wMGRCXQo=
+
+------=_Part_38059_18953169.1187980944201--
