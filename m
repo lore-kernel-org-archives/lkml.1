@@ -1,58 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932863AbXHXMw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765633AbXHXMwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932863AbXHXMw1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 08:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764894AbXHXMvo
+	id S1765633AbXHXMwu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 08:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765401AbXHXMwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 08:51:44 -0400
-Received: from hu-out-0506.google.com ([72.14.214.237]:58537 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763606AbXHXMvl (ORCPT
+	Fri, 24 Aug 2007 08:52:05 -0400
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:33866 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762032AbXHXMwD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 08:51:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=JOnonU7WDM90YP/k0Gljcdu0T9WWdXacJfoeEStyQ7Yqm0UfIyfQOcoj0m02gTKEnPTviuVD8s847GABJrtjDSDl4mRPn2rZfBgzEOPj3yt19Xz5GxWevg2o5IRJ1v/0igZJ7vivXyHV+3vYHnGgECJpSd2vMqqsqRqj+6z6PKk=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Fri, 24 Aug 2007 13:50:44 +0100
-User-Agent: KMail/1.9.1
-Cc: Satyam Sharma <satyam@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Christoph Lameter <clameter@sgi.com>, Chris Snook <csnook@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com, segher@kernel.crashing.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-References: <20070809131423.GA9927@shell.boston.redhat.com> <alpine.LFD.0.999.0708151713080.16414@enigma.security.iitk.ac.in> <18115.35524.56393.347841@cargo.ozlabs.ibm.com>
-In-Reply-To: <18115.35524.56393.347841@cargo.ozlabs.ibm.com>
+	Fri, 24 Aug 2007 08:52:03 -0400
+Message-ID: <1159.172.50.1.28.1187959920.squirrel@172.19.0.2>
+In-Reply-To: <20070824093355.GZ30705@stusta.de>
+References: <1187947647.2570.11.camel@sebastian.kern.oss.ntt.co.jp>
+    <20070824093355.GZ30705@stusta.de>
+Date: Fri, 24 Aug 2007 21:52:00 +0900 (JST)
+Subject: Re: [PATCH] isdn/sc: remove unused REQUEST_IRQ and unnecessary 
+     header file
+From: fernando@oss.ntt.co.jp
+To: "Adrian Bunk" <bunk@kernel.org>
+Cc: fernando@oss.ntt.co.jp, linux-kernel@vger.kernel.org, kkeil@suse.de
+User-Agent: SquirrelMail/1.4.8-2.el4
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708241350.45061.vda.linux@googlemail.com>
+Content-Type: multipart/mixed;boundary="----=_20070824215200_57250"
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 16 August 2007 00:22, Paul Mackerras wrote:
-> Satyam Sharma writes:
-> In the kernel we use atomic variables in precisely those situations
-> where a variable is potentially accessed concurrently by multiple
-> CPUs, and where each CPU needs to see updates done by other CPUs in a
-> timely fashion.  That is what they are for.  Therefore the compiler
-> must not cache values of atomic variables in registers; each
-> atomic_read must result in a load and each atomic_set must result in a
-> store.  Anything else will just lead to subtle bugs.
+------=_20070824215200_57250
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-Amen.
---
-vda
+On Fri, August 24, 2007 6:33 pm, Adrian Bunk wrote:
+> On Fri, Aug 24, 2007 at 06:27:27PM +0900, Fernando Luis Vazquez Cao
+> wrote:
+>
+>> REQUEST_IRQ is never used, so delete it. In the process get rid of the
+>> macro FREE_IRQ which makes the code unnecessarily difficult to read.
+>
+> The header you remove get's #include'd somewhere - and this #include
+> must be removed or your patch creates a compile error.
+Bummer. Thank you for the catch Adrian. Attaching compile-tested patch.
+
+Fernando
+
+------=_20070824215200_57250
+Content-Type: text/plain; name="remove-REQUEST_IRQ.patch"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment; filename="remove-REQUEST_IRQ.patch"
+
+[PATCH] isdn/sc: remove unused REQUEST_IRQ and unnecessary
+
+REQUEST_IRQ is never used, so delete it. In the process get rid of the
+macro FREE_IRQ which makes the code unnecessarily difficult to read.
+
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
+
+diff -urNp linux-2.6.23-rc3-orig/drivers/isdn/sc/debug.h linux-2.6.23-rc3/drivers/isdn/sc/debug.h
+--- linux-2.6.23-rc3-orig/drivers/isdn/sc/debug.h	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.23-rc3/drivers/isdn/sc/debug.h	1970-01-01 09:00:00.000000000 +0900
+@@ -1,19 +0,0 @@
+-/* $Id: debug.h,v 1.2.8.1 2001/09/23 22:24:59 kai Exp $
+- *
+- * Copyright (C) 1996  SpellCaster Telecommunications Inc.
+- *
+- * This software may be used and distributed according to the terms
+- * of the GNU General Public License, incorporated herein by reference.
+- *
+- * For more information, please contact gpl-info@spellcast.com or write:
+- *
+- *     SpellCaster Telecommunications Inc.
+- *     5621 Finch Avenue East, Unit #3
+- *     Scarborough, Ontario  Canada
+- *     M1B 2T9
+- *     +1 (416) 297-8565
+- *     +1 (416) 297-6433 Facsimile
+- */
+-
+-#define REQUEST_IRQ(a,b,c,d,e) request_irq(a,b,c,d,e)
+-#define FREE_IRQ(a,b) free_irq(a,b)
+diff -urNp linux-2.6.23-rc3-orig/drivers/isdn/sc/includes.h linux-2.6.23-rc3/drivers/isdn/sc/includes.h
+--- linux-2.6.23-rc3-orig/drivers/isdn/sc/includes.h	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.23-rc3/drivers/isdn/sc/includes.h	2007-08-24 20:55:45.000000000 +0900
+@@ -14,4 +14,3 @@
+ #include <linux/timer.h>
+ #include <linux/wait.h>
+ #include <linux/isdnif.h>
+-#include "debug.h"
+diff -urNp linux-2.6.23-rc3-orig/drivers/isdn/sc/init.c linux-2.6.23-rc3/drivers/isdn/sc/init.c
+--- linux-2.6.23-rc3-orig/drivers/isdn/sc/init.c	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.23-rc3/drivers/isdn/sc/init.c	2007-08-24 20:31:58.000000000 +0900
+@@ -404,7 +404,7 @@ static void __exit sc_exit(void)
+ 		/*
+ 		 * Release the IRQ
+ 		 */
+-		FREE_IRQ(sc_adapter[i]->interrupt, NULL);
++		free_irq(sc_adapter[i]->interrupt, NULL);
+ 
+ 		/*
+ 		 * Reset for a clean start
+------=_20070824215200_57250--
+
+
