@@ -1,39 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765962AbXHXWr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765421AbXHXWts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765962AbXHXWr6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 18:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764524AbXHXWrX
+	id S1765421AbXHXWts (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 18:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760532AbXHXWtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 18:47:23 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:33062 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762440AbXHXWrS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 18:47:18 -0400
-Date: Fri, 24 Aug 2007 18:46:51 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Rob Landley <rob@landley.net>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] include linux/pagemap.h in asm-generic/tlb.h
-Message-ID: <20070824224651.GA11512@c2.user-mode-linux.org>
-References: <20070824184616.GA9442@c2.user-mode-linux.org> <200708241551.41628.rob@landley.net>
+	Fri, 24 Aug 2007 18:49:40 -0400
+Received: from host-66-43-248-10 ([67.55.143.10]:46926 "EHLO albrecht.rdi1.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758908AbXHXWtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 18:49:40 -0400
+X-Greylist: delayed 5527 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Aug 2007 18:49:40 EDT
+Subject: coldplug zd1211rw wireless driver results in firefox segfault
+From: Paul Albrecht <albrecht@rdi1.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 24 Aug 2007 16:21:42 -0400
+Message-Id: <1187986902.24891.12.camel@albrecht.rdi1.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708241551.41628.rob@landley.net>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.2.2 (2.2.2-5) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 03:51:41PM -0500, Rob Landley wrote:
-> It may be non-urgent to you, but it still broke my build. :)
-> 
-> Acked-by: Rob Landley <rob@landley.net>
+Hi,
 
-Heh, it doesn't seem like -stable material to me, but if there aren't
-any screams while it sits in -mm, maybe it's 2.6.23 material.
+I'm trying to use a hawking hwu54g with the zd1211rw driver in the
+2.6.20 linux kernel. It works ok when I hotplug the device, but causes
+firefox to segfault when I coldplug the device.
 
-				Jeff
+As I get the segfault whether or not I bring the device up, I'm
+wondering if there's a problem with the usb subsystem initialization.
 
--- 
-Work email - jdike at linux dot intel dot com
+Any ideas? Please cc me because I don't usually subscribe to the lkml.
+
+Paul Albrecht
