@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965010AbXHXCj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934268AbXHXCpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965010AbXHXCj1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 22:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933664AbXHXCjQ
+	id S934268AbXHXCpJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 22:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933421AbXHXCo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 22:39:16 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:64464 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933503AbXHXCjP (ORCPT
+	Thu, 23 Aug 2007 22:44:57 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:5531 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932475AbXHXCo4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 22:39:15 -0400
-Message-ID: <46CE43FC.9040104@student.ltu.se>
-Date: Fri, 24 Aug 2007 04:35:40 +0200
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 23 Aug 2007 22:44:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Ivv9+f+MRk8yanGO16MiaFUAo/LZaXlciP974s5HjlXC04FCWXCh9FqzmELMUWuGJeCcaqxVhxSUWrj47G4AB1aVBwNPMulD16xpqXkI4VcZCXyu2Ucf7QTnFw47eMJEU+iziC1XeuAkV0EZq2TGcdJWPzThIJ/32mt9negUskU=
+Message-ID: <443c85430708231944s102dff82u366a93824f7c2222@mail.gmail.com>
+Date: Thu, 23 Aug 2007 22:44:55 -0400
+From: TheOneKEA <theonekea@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Possible problems reading a DVD-RAM disc
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ram.vepa@neterion.com, santosh.rastapur@neterion.com,
-       sivakumar.subramani@neterion.com, sreenivasa.honnur@neterion.com,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 4/9] s2io, rename BIT macro
-References: <27692164102679012429@wsc.cz>
-In-Reply-To: <27692164102679012429@wsc.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> s2io, rename BIT macro
->
-> BIT macro will be global definiton of (1<<x)
->
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
->
-> ---
->   
-[snip]
->  			cnt++;
->  			if (cnt == 5)
-> diff --git a/drivers/net/s2io.h b/drivers/net/s2io.h
-> index 92983ee..448f899 100644
-> --- a/drivers/net/s2io.h
-> +++ b/drivers/net/s2io.h
-> @@ -14,7 +14,7 @@
->  #define _S2IO_H
->  
->  #define TBD 0
-> -#define BIT(loc)		(0x8000000000000000ULL >> (loc))
-> +#define s2BIT(loc)		(0x8000000000000000ULL >> (loc))
->  #define vBIT(val, loc, sz)	(((u64)val) << (64-loc-sz))
->  #define INV(d)  ((d&0xff)<<24) | (((d>>8)&0xff)<<16) | (((d>>16)&0xff)<<8)| ((d>>24)&0xff)
->  
->   
-Sorry for the late response, but would it not be better/easier to use 
-BIT() instead (or a global #define LLBIT(nr)  (1ULL << (nr))) and just 
-recalculate the values?
+While doing a long mega-copy from one side of a DVD-RAM disc formatted
+with the vfat filesystem to an smbfs network share, I got lots and
+lots of these in the dmesg:
 
-Richard Knutsson
+Buffer I/O error on device sr0, logical block 4396
+lost page write due to I/O error on sr0
+sr 6:0:0:0: [sr0] Result: hostbyte=0x00 driverbyte=0x08
+sr 6:0:0:0: [sr0] Sense Key : 0x7 [current]
+sr 6:0:0:0: [sr0] <<vendor>> ASC=0x92 ASCQ=0x0ASC=0x92 ASCQ=0x0
+end_request: I/O error, dev sr0, sector 17584
+Buffer I/O error on device sr0, logical block 4396
+lost page write due to I/O error on sr0
 
+The DVD-RAM is detected like so (my system is an nVidia nForce 590
+SLI, with kernel 2.6.22.1 and the new SCSI-using PATA/SATA drivers in
+use):
+
+pata_amd 0000:00:0c.0: version 0.3.8
+PCI: Setting latency timer of device 0000:00:0c.0 to 64
+scsi6 : pata_amd
+scsi7 : pata_amd
+ata7: PATA max UDMA/133 cmd 0x00000000000101f0 ctl 0x00000000000103f6
+bmdma 0x000000000001f400 irq 14
+ata8: PATA max UDMA/133 cmd 0x0000000000010170 ctl 0x0000000000010376
+bmdma 0x000000000001f408 irq 15
+ata7.00: ATAPI: MATSHITADVD-RAM LF-D310, A123, max UDMA/33
+ata7.00: configured for UDMA/33
+ata8: port disabled. ignoring.
+scsi 6:0:0:0: CD-ROM            MATSHITA DVD-RAM LF-D310  A123 PQ: 0 ANSI: 5
+sr0: scsi3-mmc drive: 0x/0x dvd-ram cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 6:0:0:0: Attached scsi CD-ROM sr0
+
+Are the above errors related to media flaws, drive flaws, driver
+flaws, or usage flaws (i.e. "I copied $LARGE_AMOUNT from a DVD-RAM
+disc to a network share", "Don't do that.")?
+
+-- 
+SCREW THE ADS! http://adblock.mozdev.org/
