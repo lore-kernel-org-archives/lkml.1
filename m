@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbXHXE4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbXHXFD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757102AbXHXE4T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 00:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbXHXE4G
+	id S1756142AbXHXFD6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 01:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXHXFDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 00:56:06 -0400
-Received: from waste.org ([66.93.16.53]:58005 "EHLO waste.org"
+	Fri, 24 Aug 2007 01:03:49 -0400
+Received: from gate.crashing.org ([63.228.1.57]:49287 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752223AbXHXE4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 00:56:05 -0400
-Date: Thu, 23 Aug 2007 23:56:35 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Bryan Wu <bryan.wu@analog.com>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, joe@perches.com,
-       yi.li@analog.com, vivi.li@analog.com, torvalds@linux-foundation.org,
-       sonic.zhang@analog.com, roy.huang@analog.com, robin.getz@analog.com,
-       michael.hennerich@analog.com, michael.frysinger@analog.com,
-       marc.hoffman@analog.com, linux-kernel@vger.kernel.org,
-       jie.zhang@analog.com, grace.pan@analog.com, bernd.schmidt@analog.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH take #2] MAINTAINTERS: use our mail list as Blackfin arch maintainters.
-Message-ID: <20070824045635.GK21720@waste.org>
-References: <46bff904.ANPWrqncsP8VpmBH%joe@perches.com> <1187777706.24914.2.camel@roc-desktop> <6bffcb0e0708220323w5592df25n9c21c7e3aca1dbfb@mail.gmail.com> <8bd0f97a0708220345g26c35288g5e96b6f1f8491f0e@mail.gmail.com> <1187794511.6805.3.camel@roc-laptop> <20070824002413.GB20266@waste.org> <1187928287.5949.2.camel@roc-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187928287.5949.2.camel@roc-desktop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1752050AbXHXFDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 01:03:49 -0400
+Subject: Re: [patch 04/14] Convert from class_device to device for
+	drivers/macintosh
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: tonyj@suse.de
+Cc: linux-kernel@vger.kernel.org, funaho@jurai.org, kay.sievers@vrfy.org
+In-Reply-To: <20070820225101.782694000@suse.de>
+References: <20070820224806.154198000@suse.de>
+	 <20070820225101.782694000@suse.de>
+Content-Type: text/plain
+Date: Fri, 24 Aug 2007 07:04:22 +0200
+Message-Id: <1187931862.5972.27.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 12:04:47PM +0800, Bryan Wu wrote:
-> On Thu, 2007-08-23 at 19:24 -0500, Matt Mackall wrote:
-> > On Wed, Aug 22, 2007 at 10:55:11PM +0800, Bryan Wu wrote:
-> > > -L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
-> > > +L:	uclinux-dist-devel@blackfin.uclinux.org
-> > 
-> > Does your list generate a complaint message back to the sender if a
-> > non-subscriber posts to it? If so, it qualifies as a subscribers-only
-> > list.
-> > 
+On Mon, 2007-08-20 at 15:48 -0700, tonyj@suse.de wrote:
+> -- 
+> Content-Disposition: inline; filename=macintosh.patch
 > 
-> As Mike said, "it is moderated which means you do not need to subscribe,
-> we will
-> forward any relevant messages"
+> Convert from class_device to device for macintosh.  This is part of the
+> work to eliminate struct class_device.
 
-And as I said, "does your list generate a complaint message back to
-the sender?" It's the moderation message that's the problem.
+Good. That stuff shouldn't have been a class in the first place. ADB is
+a bus type, not a class.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Ben.
+
+> ---
+>  drivers/macintosh/adb.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- a/drivers/macintosh/adb.c
+> +++ b/drivers/macintosh/adb.c
+> @@ -875,5 +875,5 @@ adbdev_init(void)
+>  	adb_dev_class = class_create(THIS_MODULE, "adb");
+>  	if (IS_ERR(adb_dev_class))
+>  		return;
+> -	class_device_create(adb_dev_class, NULL, MKDEV(ADB_MAJOR, 0), NULL, "adb");
+> +	device_create(adb_dev_class, NULL, MKDEV(ADB_MAJOR, 0), "adb");
+>  }
+> 
+
