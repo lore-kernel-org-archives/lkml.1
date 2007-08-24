@@ -1,176 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763587AbXHXWST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764415AbXHXWUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763587AbXHXWST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 18:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757555AbXHXWSJ
+	id S1764415AbXHXWUc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 18:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757555AbXHXWUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 18:18:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48975 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751891AbXHXWSI (ORCPT
+	Fri, 24 Aug 2007 18:20:22 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54143 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760818AbXHXWUV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 18:18:08 -0400
-Date: Fri, 24 Aug 2007 17:18:06 -0500
-From: Cliff Wickman <cpw@sgi.com>
-To: akpm@linux-foundation.org, ego@in.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
-       oleg@tv-sign.ru, pj@sgi.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
-Message-ID: <20070824221806.GA3602@sgi.com>
+	Fri, 24 Aug 2007 18:20:21 -0400
+Date: Fri, 24 Aug 2007 15:20:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Jan Beulich <jbeulich@novell.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Martin Michlmayr <tbm@cyrius.com>
+Subject: Re: [PATCH][resend] fix IDE legacy mode resources
+Message-Id: <20070824152005.45167160.akpm@linux-foundation.org>
+In-Reply-To: <20070824115559.06250ec0.yoichi_yuasa@tripeaks.co.jp>
+References: <20070824115559.06250ec0.yoichi_yuasa@tripeaks.co.jp>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 24 Aug 2007 11:55:59 +0900
+Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp> wrote:
 
-When a cpu is disabled, move_task_off_dead_cpu() is called for tasks
-that have been running on that cpu.
+> Hi,
+> 
+> I got the following error on MIPS Cobalt.
+> 
+> PCI: Unable to reserve I/O region #1:8@f00001f0 for device 0000:00:09.1
+> pata_via 0000:00:09.1: failed to request/iomap BARs for port 0 (errno=-16)
+> PCI: Unable to reserve I/O region #3:8@f0000170 for device 0000:00:09.1
+> pata_via 0000:00:09.1: failed to request/iomap BARs for port 1 (errno=-16)
+> pata_via 0000:00:09.1: no available native port
+> 
+> The legacy mode IDE resources set the following order. 
+> 
+> pci_setup_device()
+>     Legacy mode ATA controllers have fixed addresses.
+>     IDE resources: 0x1F0-0x1F7, 0x3F6, 0x170-0x177, 0x376
+>     |
+>     V
+> pcibios_fixup_bus()
+>     MIPS Cobalt PCI bus regions have the -0x10000000 offset from PCI resources.
+>     pcibios_fixup_bus() fix PCI bus regions.
+>     0x1F0 - 0x10000000 = 0xF00001F0
+>     |
+>     V
+> ata_pci_init_one()
+>     PCI: Unable to reserve I/O region #1:8@f00001f0 for device 0000:00:09.1
+> 
+> In some architectures, PCI bus regions have the offset from PCI resources.
+> For this reason, pci_setup_device() should set PCI bus regions to dev->resource[]. 
+> 
+> Yoichi
+> 
+> ---
+> 
+> Fix legacy mode IDE resources 
+> 
+> Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+> 
+> diff -pruN -X generic/Documentation/dontdiff generic-orig/drivers/pci/probe.c generic/drivers/pci/probe.c
+> --- generic-orig/drivers/pci/probe.c	2007-07-26 17:07:44.151670750 +0900
+> +++ generic/drivers/pci/probe.c	2007-07-26 17:25:42.227046250 +0900
+> @@ -744,22 +744,40 @@ static int pci_setup_device(struct pci_d
+>  		 */
+>  		if (class == PCI_CLASS_STORAGE_IDE) {
+>  			u8 progif;
+> +			struct pci_bus_region region;
+> +			struct resource resource;
+>  			pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
+>  			if ((progif & 1) == 0) {
+> -				dev->resource[0].start = 0x1F0;
+> -				dev->resource[0].end = 0x1F7;
+> -				dev->resource[0].flags = LEGACY_IO_RESOURCE;
+> -				dev->resource[1].start = 0x3F6;
+> -				dev->resource[1].end = 0x3F6;
+> -				dev->resource[1].flags = LEGACY_IO_RESOURCE;
+> +				resource.start = 0x1F0;
+> +				resource.end = 0x1F7;
+> +				resource.flags = LEGACY_IO_RESOURCE;
+> +				pcibios_resource_to_bus(dev, &region, &resource);
+> +				dev->resource[0].start = region.start;
+> +				dev->resource[0].end = region.end;
+> +				dev->resource[0].flags = resource.flags;
+> +				resource.start = 0x3F6;
+> +				resource.end = 0x3F6;
+> +				resource.flags = LEGACY_IO_RESOURCE;
+> +				pcibios_resource_to_bus(dev, &region, &resource);
+> +				dev->resource[1].start = region.start;
+> +				dev->resource[1].end = region.end;
+> +				dev->resource[1].flags = resource.flags;
+>  			}
+>  			if ((progif & 4) == 0) {
+> -				dev->resource[2].start = 0x170;
+> -				dev->resource[2].end = 0x177;
+> -				dev->resource[2].flags = LEGACY_IO_RESOURCE;
+> -				dev->resource[3].start = 0x376;
+> -				dev->resource[3].end = 0x376;
+> -				dev->resource[3].flags = LEGACY_IO_RESOURCE;
+> +				resource.start = 0x170;
+> +				resource.end = 0x177;
+> +				resource.flags = LEGACY_IO_RESOURCE;
+> +				pcibios_resource_to_bus(dev, &region, &resource);
+> +				dev->resource[2].start = region.start;
+> +				dev->resource[2].end = region.end;
+> +				dev->resource[2].flags = resource.flags;
+> +				resource.start = 0x376;
+> +				resource.end = 0x376;
+> +				resource.flags = LEGACY_IO_RESOURCE;
+> +				pcibios_resource_to_bus(dev, &region, &resource);
+> +				dev->resource[3].start = region.start;
+> +				dev->resource[3].end = region.end;
+> +				dev->resource[3].flags = resource.flags;
+>  			}
+>  		}
+>  		break;
 
-Currently, such a task is migrated:
- 1) to any cpu on the same node as the disabled cpu, which is both online
-    and among that task's cpus_allowed
- 2) to any cpu which is both online and among that task's cpus_allowed
+ho hum.
 
-It is typical of a multithreaded application running on a large NUMA system
-to have its tasks confined to a cpuset so as to cluster them near the
-memory that they share. Furthermore, it is typical to explicitly place such
-a task on a specific cpu in that cpuset.  And in that case the task's
-cpus_allowed includes only a single cpu.
+Below is the patch from Jan (which I'll now need to drop) which we are, in
+a rather haphazard manner, trying to get into some sort of working shape.
 
-This patch would insert a preference to migrate such a task to some cpu within
-its cpuset (and set its cpus_allowed to its entire cpuset).
+Please discuss.
 
-With this patch, migrate the task to:
- 1) to any cpu on the same node as the disabled cpu, which is both online
-    and among that task's cpus_allowed
- 2) to any online cpu within the task's cpuset
- 3) to any cpu which is both online and among that task's cpus_allowed
+From: Jan Beulich <jbeulich@novell.com>
 
+Fix http://bugzilla.kernel.org/show_bug.cgi?id=8187
 
-In order to do this, move_task_off_dead_cpu() must make a call to
-cpuset_cpus_allowed_lock(), a new variant of cpuset_cpus_allowed() that
-will not block.
-Calls are made to cpuset_lock() and cpuset_unlock() in migration_call()
-to set the cpuset mutex during the whole migrate_live_tasks() and
-migrate_dead_tasks() procedure.
+The change to force legacy mode IDE channels' resources to fixed non-zero
+values confuses (at least some versions of) X, because the values reported by
+the kernel and those readable from PCI config space aren't consistent anymore.
+ Therefore, this patch arranges for the respective BARs to also get updated if
+possible.
 
-This patch depends on 2 patches from Oleg Nesterov:
-  [PATCH 1/2] do CPU_DEAD migrating under read_lock(tasklist) instead of write_lock_irq(tasklist)
-  [PATCH 2/2] migration_call(CPU_DEAD): use spin_lock_irq() instead of task_rq_lock()
-
-Diffed against 2.6.23-rc3
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-
+[akpm@linux-foundation.org: <alan>Just remove that chunk</aman>]
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: Kristofer T. Karas" <ktk@enterprise.bidmc.harvard.edu>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Natalie Protasevich <protasnb@gmail.com>
+Cc: Greg KH <greg@kroah.com>
+Cc: Gabriel C <nix.or.die@googlemail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- include/linux/cpuset.h |    5 +++++
- kernel/cpuset.c        |   19 +++++++++++++++++++
- kernel/sched.c         |   14 ++++++++++++++
- 3 files changed, 38 insertions(+)
 
-Index: linus.070821/kernel/sched.c
-===================================================================
---- linus.070821.orig/kernel/sched.c
-+++ linus.070821/kernel/sched.c
-@@ -61,6 +61,7 @@
- #include <linux/delayacct.h>
- #include <linux/reciprocal_div.h>
- #include <linux/unistd.h>
-+#include <linux/cpuset.h>
+ drivers/pci/probe.c |   40 +++++++++++++++++++++++++++-------------
+ 1 files changed, 27 insertions(+), 13 deletions(-)
+
+diff -puN drivers/pci/probe.c~pci-align-bar-settings-for-legacy-mode-ide drivers/pci/probe.c
+--- a/drivers/pci/probe.c~pci-align-bar-settings-for-legacy-mode-ide
++++ a/drivers/pci/probe.c
+@@ -741,7 +741,29 @@ static void pci_read_irq(struct pci_dev 
+ 	dev->irq = irq;
+ }
  
- #include <asm/tlb.h>
- 
-@@ -5091,6 +5092,17 @@ restart:
- 	if (dest_cpu == NR_CPUS)
- 		dest_cpu = any_online_cpu(p->cpus_allowed);
- 
-+	/* try to stay on the same cpuset */
-+	if (dest_cpu == NR_CPUS) {
-+		/*
-+		 * The cpuset_cpus_allowed_lock() variant of
-+		 * cpuset_cpus_allowed() will not block
-+		 * It must be called within calls to cpuset_lock/cpuset_unlock.
-+		 */
-+		p->cpus_allowed = cpuset_cpus_allowed_lock(p);
-+		dest_cpu = any_online_cpu(p->cpus_allowed);
+-#define LEGACY_IO_RESOURCE	(IORESOURCE_IO | IORESOURCE_PCI_FIXED)
++static void change_legacy_io_resource(struct pci_dev * dev, unsigned index,
++				resource_size_t start, resource_size_t end)
++{
++	resource_size_t base = start & PCI_BASE_ADDRESS_IO_MASK;
++	resource_size_t len = (end | ~PCI_BASE_ADDRESS_IO_MASK) - base + 1;
++
++	if (pci_resource_len(dev, index) != len) {
++		printk(KERN_WARNING "%s: cannot adjust BAR%u (size %Lx)\n",
++			pci_name(dev), index,
++			(unsigned long long)pci_resource_len(dev, index));
++	} else {
++		printk(KERN_INFO "%s: trying to change BAR%u from %Lx to %Lx\n",
++			pci_name(dev), index,
++			(unsigned long long)pci_resource_start(dev, index),
++			(unsigned long long)base);
++		pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + index * 4,
++					base);
 +	}
-+
- 	/* No more Mr. Nice Guy. */
- 	if (dest_cpu == NR_CPUS) {
- 		rq = task_rq_lock(p, &flags);
-@@ -5412,6 +5424,7 @@ migration_call(struct notifier_block *nf
- 
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
-+		cpuset_lock(); /* around calls to cpuset_cpus_allowed_lock() */
- 		migrate_live_tasks(cpu);
- 		rq = cpu_rq(cpu);
- 		kthread_stop(rq->migration_thread);
-@@ -5425,6 +5438,7 @@ migration_call(struct notifier_block *nf
- 		rq->idle->sched_class = &idle_sched_class;
- 		migrate_dead_tasks(cpu);
- 		spin_unlock_irq(&rq->lock);
-+		cpuset_unlock();
- 		migrate_nr_uninterruptible(rq);
- 		BUG_ON(rq->nr_running != 0);
- 
-Index: linus.070821/include/linux/cpuset.h
-===================================================================
---- linus.070821.orig/include/linux/cpuset.h
-+++ linus.070821/include/linux/cpuset.h
-@@ -22,6 +22,7 @@ extern void cpuset_init_smp(void);
- extern void cpuset_fork(struct task_struct *p);
- extern void cpuset_exit(struct task_struct *p);
- extern cpumask_t cpuset_cpus_allowed(struct task_struct *p);
-+extern cpumask_t cpuset_cpus_allowed_lock(struct task_struct *p);
- extern nodemask_t cpuset_mems_allowed(struct task_struct *p);
- #define cpuset_current_mems_allowed (current->mems_allowed)
- void cpuset_init_current_mems_allowed(void);
-@@ -87,6 +88,10 @@ static inline cpumask_t cpuset_cpus_allo
- {
- 	return cpu_possible_map;
- }
-+static inline cpumask_t cpuset_cpus_allowed_lock(struct task_struct *p)
-+{
-+	return cpu_possible_map;
++	pci_resource_start(dev, index) = start;
++	pci_resource_end(dev, index) = end;
++	pci_resource_flags(dev, index) = IORESOURCE_IO|IORESOURCE_PCI_FIXED|
++					PCI_BASE_ADDRESS_SPACE_IO;
 +}
  
- static inline nodemask_t cpuset_mems_allowed(struct task_struct *p)
- {
-Index: linus.070821/kernel/cpuset.c
-===================================================================
---- linus.070821.orig/kernel/cpuset.c
-+++ linus.070821/kernel/cpuset.c
-@@ -2333,6 +2333,25 @@ cpumask_t cpuset_cpus_allowed(struct tas
- 	return mask;
- }
- 
-+/**
-+ * cpuset_cpus_allowed_lock - return cpus_allowed mask from a tasks cpuset.
-+ * @tsk: pointer to task_struct from which to obtain cpuset->cpus_allowed.
-+ *
-+ * Description: Same as cpuset_cpus_allowed, but called with callback_mutex
-+ * already held.
-+ **/
-+
-+cpumask_t cpuset_cpus_allowed_lock(struct task_struct *tsk)
-+{
-+	cpumask_t mask;
-+
-+	task_lock(tsk);
-+	guarantee_online_cpus(tsk->cpuset, &mask);
-+	task_unlock(tsk);
-+
-+	return mask;
-+}
-+
- void cpuset_init_current_mems_allowed(void)
- {
- 	current->mems_allowed = NODE_MASK_ALL;
--- 
-Cliff Wickman
-Silicon Graphics, Inc.
-cpw@sgi.com
-(651) 683-3824
+ /**
+  * pci_setup_device - fill in class and map information of a device
+@@ -795,20 +817,12 @@ static int pci_setup_device(struct pci_d
+ 			u8 progif;
+ 			pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
+ 			if ((progif & 1) == 0) {
+-				dev->resource[0].start = 0x1F0;
+-				dev->resource[0].end = 0x1F7;
+-				dev->resource[0].flags = LEGACY_IO_RESOURCE;
+-				dev->resource[1].start = 0x3F6;
+-				dev->resource[1].end = 0x3F6;
+-				dev->resource[1].flags = LEGACY_IO_RESOURCE;
++				change_legacy_io_resource(dev, 0, 0x1F0, 0x1F7);
++				change_legacy_io_resource(dev, 1, 0x3F6, 0x3F6);
+ 			}
+ 			if ((progif & 4) == 0) {
+-				dev->resource[2].start = 0x170;
+-				dev->resource[2].end = 0x177;
+-				dev->resource[2].flags = LEGACY_IO_RESOURCE;
+-				dev->resource[3].start = 0x376;
+-				dev->resource[3].end = 0x376;
+-				dev->resource[3].flags = LEGACY_IO_RESOURCE;
++				change_legacy_io_resource(dev, 2, 0x170, 0x177);
++				change_legacy_io_resource(dev, 3, 0x376, 0x376);
+ 			}
+ 		}
+ 		break;
+_
+
