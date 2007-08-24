@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764931AbXHXOGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765985AbXHXOIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764931AbXHXOGL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 10:06:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbXHXOGA
+	id S1765985AbXHXOIz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 10:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbXHXOIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 10:06:00 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:37357 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752485AbXHXOF7 (ORCPT
+	Fri, 24 Aug 2007 10:08:48 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:42642 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751109AbXHXOIr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 10:05:59 -0400
-Message-ID: <46CEE455.1080504@linux.vnet.ibm.com>
-Date: Fri, 24 Aug 2007 19:29:49 +0530
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
+	Fri, 24 Aug 2007 10:08:47 -0400
+Date: Fri, 24 Aug 2007 10:08:46 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Greg KH <greg@kroah.com>, Matt Colyer <matt@colyer.name>,
+       <linux-kernel@vger.kernel.org>, <jeffm@suse.de>,
+       <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [RFC] USB: driver for iphone charging
+In-Reply-To: <200708240920.46397.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0708241006440.3862-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: ltp-announce@lists.sourceforge.net, ltp-list@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-CC: Sivakumar Chinnaiah <Sivakumar.C@in.ibm.com>, svaidyan@in.ibm.com,
-       LTC System x team <ltc-system-x@pdl.linux.ibm.com>,
-       ltc-interlock@lists.linux.ibm.com, linux-audit@redhat.com,
-       selinux@tycho.nsa.gov, redhat-lspp@redhat.com
-Subject: [ANNOUNCE] NUMA Testcases has been integrated to LTP
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Fri, 24 Aug 2007, Oliver Neukum wrote:
 
-Support for NUMA has been there in Linux Kernel from years. Here comes 
-the initial set (long delayed) of NUMA Test-cases from LTP and written 
-by sivakumar.c@in.ibm.com. You can download a copy of LTP Suite 
-containing NUMA-testcases from:
-http://prdownloads.sourceforge.net/ltp/ltp-nightly-snapshot_numa.tgz?download
-We request you to comment on the effectiveness/coverage of these 
-testcases and help us contribute to the same.
-Your suggestions/corrections are extremely valuable and immensely welcome.
+> This schedules the change via a workqueue, so you'll be reprobed. If you
+> fire of the first vendor command you are doing so before the configuration
+> is changed. How is this supposed to work?
 
-Regards & Thanks--
-Subrata Modak
+I would do it like this:
+
+static int iphone_probe(struct usb_interface *intf,
+			const struct usb_device_id *id)
+{
+	struct usb_device *udev = interface_to_usbdev(intf);
+	int rc;
+
+	if (udev->actconfig->desc.bConfigurationValue != 3) {
+		dbg(&udev->dev, "Calling set_configuration\n");
+		rc = usb_driver_set_configuration(udev, 3);
+	} else {
+		dbg(&udev->dev, "Configuration set, sending magic comand\n");
+		rc = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
+				0x40, (USB_DIR_OUT | USB_TYPE_VENDOR |
+					USB_RECIP_DEVICE),
+				0x6400, 0, NULL, 0, 1000);
+	}
+	if (rc)
+		dev_err(&udev->dev, "Command failed: %d\n", rc);
+
+	/* we don't really want to bind to the device, userspace programs can
+	 * handle the syncing just fine, so get outta here. */
+	return -ENODEV;
+}
+
+Alan Stern
 
