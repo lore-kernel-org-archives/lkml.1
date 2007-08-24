@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761488AbXHXIYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762658AbXHXI00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761488AbXHXIYZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 04:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbXHXIYS
+	id S1762658AbXHXI00 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 04:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757527AbXHXI0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 04:24:18 -0400
-Received: from alnrmhc16.comcast.net ([206.18.177.56]:52800 "EHLO
-	alnrmhc16.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754045AbXHXIYQ (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 04:24:16 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Aug 2007 04:24:16 EDT
-Subject: [PATCH RT] - trivial branch in scheduler.
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: RT Users List <linux-rt-users@vger.kernel.org>,
-       LKML <Linux-kernel@vger.kernel.org>,
-       Peter Williams <pwil3058@bigpond.net.au>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: The Big Corporation
-Date: Fri, 24 Aug 2007 01:19:08 -0700
-Message-Id: <1187943548.16573.10.camel@sx.thebigcorporation.com>
+	Fri, 24 Aug 2007 04:26:19 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:56613 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756963AbXHXI0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 04:26:18 -0400
+Date: Fri, 24 Aug 2007 10:27:25 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc2-mm1: irq lock inversion dependency detected
+Message-ID: <20070824082725.GA2203@ff.dom.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708100906.07111.m.kozlowski@tuxland.pl>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10-08-2007 09:06, Mariusz Kozlowski wrote:
+> Hello,
+> 
+> 	And the winner of today is ...
+> 
+> 
+> 
+> =========================================================
+> [ INFO: possible irq lock inversion dependency detected ]
+> 2.6.23-rc2-mm1 #7
+> ---------------------------------------------------------
+> runscript.sh/5843 just changed the state of lock:
+>  (_xmit_ETHER){-+..}, at: [<c03cbe79>] dev_watchdog+0x17/0xcc
+> but this lock took another, soft-irq-unsafe lock in the past:
+>  (&tp->lock){--..}
+> 
+> and interrupts could create inverse lock ordering between them.
+...
+> Really no idea who to CC here ;)
 
-Hi Ingo,
+IMHO, this should be fixed by last changes to free_irq & request_irq.
+(Seems to be possible only with CONFIG_DEBUG_SHIRQ?) Otherwise I can
+be CC-ed - my pleasure!
 
-the trivial code is in various RT patches as well as in 2.6.23-rc git's
-scheduler.
-
-Thanks
-
-Sven
-
-Remove trivial conditional branch in Linux RT CFS 
-scheduler's can_migrate_task function.
-
-signed-off-by: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-
-Index: linux-2.6.22/kernel/sched.c
-===================================================================
---- linux-2.6.22.orig/kernel/sched.c
-+++ linux-2.6.22/kernel/sched.c
-@@ -2603,12 +2603,6 @@ int can_migrate_task(struct task_struct 
- 	if (task_running(rq, p))
- 		return 0;
- 
--	/*
--	 * Aggressive migration if too many balance attempts have failed:
--	 */
--	if (sd->nr_balance_failed > sd->cache_nice_tries)
--		return 1;
--
- 	return 1;
- }
- 
-
+Cheers,
+Jarek P.
