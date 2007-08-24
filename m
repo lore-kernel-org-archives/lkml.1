@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbXHXPzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbXHXP4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760570AbXHXPzc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 11:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXHXPzT
+	id S1761190AbXHXP4Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 11:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbXHXP4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 11:55:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40639 "EHLO mx1.redhat.com"
+	Fri, 24 Aug 2007 11:56:15 -0400
+Received: from waste.org ([66.93.16.53]:44976 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751245AbXHXPzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 11:55:17 -0400
-Subject: Re: [PATCH 14/30] net: Kill some unneeded allocation return value
-	casts in libertas
-From: Dan Williams <dcbw@redhat.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <2ac91f5f0eed967cf1709cfbe476b351e536c299.1187912217.git.jesper.juhl@gmail.com>
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-	 <2ac91f5f0eed967cf1709cfbe476b351e536c299.1187912217.git.jesper.juhl@gmail.com>
-Content-Type: text/plain
-Date: Fri, 24 Aug 2007 11:50:24 -0400
-Message-Id: <1187970624.20110.0.camel@xo-13-A4-25.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	id S1753029AbXHXP4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 11:56:15 -0400
+Date: Fri, 24 Aug 2007 10:57:13 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Ingo Oeser <ioe-lkml@rameria.de>, lode leroy <lode_leroy@hotmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] memchr (trivial) optimization
+Message-ID: <20070824155713.GL21720@waste.org>
+References: <BAY105-F323FF3DC8E6C544A2BBE98FFD50@phx.gbl> <200708230213.21332.ioe-lkml@rameria.de> <20070824001351.GA20266@waste.org> <Pine.LNX.4.64.0708241447560.28540@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708241447560.28540@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-24 at 02:03 +0200, Jesper Juhl wrote:
-> kmalloc() and friends return void*, no need to cast it.
-
-Applied to libertas-2.6 'for-linville' branch, thanks.
-
-Dan
-
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> ---
->  drivers/net/wireless/libertas/debugfs.c |    2 +-
->  drivers/net/wireless/libertas/ethtool.c |    3 +--
->  2 files changed, 2 insertions(+), 3 deletions(-)
+On Fri, Aug 24, 2007 at 02:54:48PM +0200, Jan Engelhardt wrote:
 > 
-> diff --git a/drivers/net/wireless/libertas/debugfs.c b/drivers/net/wireless/libertas/debugfs.c
-> index 715cbda..6ade63e 100644
-> --- a/drivers/net/wireless/libertas/debugfs.c
-> +++ b/drivers/net/wireless/libertas/debugfs.c
-> @@ -1839,7 +1839,7 @@ static ssize_t wlan_debugfs_write(struct file *f, const char __user *buf,
->  	char *p2;
->  	struct debug_data *d = (struct debug_data *)f->private_data;
->  
-> -	pdata = (char *)kmalloc(cnt, GFP_KERNEL);
-> +	pdata = kmalloc(cnt, GFP_KERNEL);
->  	if (pdata == NULL)
->  		return 0;
->  
-> diff --git a/drivers/net/wireless/libertas/ethtool.c b/drivers/net/wireless/libertas/ethtool.c
-> index 96f1974..7dad493 100644
-> --- a/drivers/net/wireless/libertas/ethtool.c
-> +++ b/drivers/net/wireless/libertas/ethtool.c
-> @@ -60,8 +60,7 @@ static int libertas_ethtool_get_eeprom(struct net_device *dev,
->  
->  //      mutex_lock(&priv->mutex);
->  
-> -	adapter->prdeeprom =
-> -		    (char *)kmalloc(eeprom->len+sizeof(regctrl), GFP_KERNEL);
-> +	adapter->prdeeprom = kmalloc(eeprom->len+sizeof(regctrl), GFP_KERNEL);
->  	if (!adapter->prdeeprom)
->  		return -ENOMEM;
->  	memcpy(adapter->prdeeprom, &regctrl, sizeof(regctrl));
+> On Aug 23 2007 19:13, Matt Mackall wrote:
+> >
+> >And you can do even better with this:
+> >
+> >void *memchr(const void *s, int c, size_t n)
+> >{
+> >       const unsigned char *p = s, *e = s + n;
+> >       const unsigned char *e = p + n;
+> 
+> Uhm, you have two "e"s in there.
 
+Yep, that's what I get for editing in email.
+
+> Or do it glibc-style
+> 
+> void *memchr(const void *s, unsigned char c, size_t n)
+> {
+> 	...
+> 	for (; p + 3 < e; p += 4) {
+> 		if (c == p[0])
+> 			return (void *)&p[0];
+> 		if (c == p[1])
+> 			return (void *)&p[1];
+> 		if (c == p[2])
+> 			return (void *)&p[2];
+> 		if (c == p[3])
+> 			return (void *)&p[3];
+> 	}
+> 	... /* check the rest */
+> }
+
+Yes, very funny.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
