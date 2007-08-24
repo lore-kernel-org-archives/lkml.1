@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbXHXPDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbXHXPUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757189AbXHXPDE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 11:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbXHXPCz
+	id S1754801AbXHXPUJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 11:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbXHXPT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 11:02:55 -0400
-Received: from webmailfront01.ispgateway.de ([80.67.16.111]:44587 "EHLO
-	webmailfront01.ispgateway.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752072AbXHXPCy (ORCPT
+	Fri, 24 Aug 2007 11:19:58 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:56585 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbXHXPT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 11:02:54 -0400
-Message-ID: <20070824170226.hu6yyhyy8oocs4c0@webmail.df.eu>
-Date: Fri, 24 Aug 2007 17:02:26 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-To: David Griffith <dgriffi@cs.csubak.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: MOTU Fastlane USB MIDI interface
-References: <Pine.GSO.4.55.0708100242000.25856@helios.cs.csubak.edu>
-	<20070816093703.sndy0gg44gk0o0ko@webmail.df.eu>
-	<Pine.GSO.4.55.0708160308450.24052@helios.cs.csubak.edu>
-	<20070816174510.6o8cray64g8kosos@webmail.df.eu>
-	<Pine.GSO.4.55.0708161417270.9354@helios.cs.csubak.edu>
-	<1187331453.13767.1205847147@webmail.messagingengine.com>
-	<Pine.GSO.4.55.0708170202270.26403@helios.cs.csubak.edu>
-	<1187591842.11769.1206227263@webmail.messagingengine.com>
-	<Pine.GSO.4.55.0708200042470.26684@helios.cs.csubak.edu>
-In-Reply-To: <Pine.GSO.4.55.0708200042470.26684@helios.cs.csubak.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: domainFACTORY
-X-Originating-IP: 213.238.46.206
+	Fri, 24 Aug 2007 11:19:57 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Containers <containers@lists.osdl.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric W Biederman <ebiederm@xmission.com>
+Date: Fri, 24 Aug 2007 20:49:48 +0530
+Message-Id: <20070824151948.16582.34424.sendpatchset@balbir-laptop>
+Subject: [-mm PATCH 0/10] Memory controller introduction (v7)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Griffith wrote:
-> On Mon, 20 Aug 2007, Clemens Ladisch wrote:
->> David Griffith wrote:
->> > $ aplaymidi -p 20:0 casablan.mid
->> >
->> > Nothing is written to the Fastlane.  No lights.  Nothing.
->>
->> Please run "amidi -d -p virtual" and then play to the virtual port
->> created by amidi, to see if MIDI playback works even without hardware.
->
-> $ aplaymidi -p 128:0 casablan.mid
->
-> At this point, MIDI data flew by in the xterm in which amidi was running.
+Hi, Andrew,
 
-Hmmm, it's either the driver or device.
+Here's version 7 of the memory controller (against 2.6.23-rc2-mm2). I was
+told "7" is a lucky number, so I am hopeful this version of the patchset will
+get merged ;)
 
-Please uncomment the "#define DUMP_PACKETS" in line 58 of sound/usb/usbmidi.c
-and recompile the driver.  All MIDI data should then be visible in the system
-log.
+The salient features of the patches are
 
+a. Provides *zero overhead* for non memory controller users
+b. Enable control of both RSS (mapped) and Page Cache (unmapped) pages
+c. The infrastructure allows easy addition of other types of memory to control
+d. Provides a double LRU: global memory pressure causes reclaim from the
+   global LRU; a container on hitting a limit, reclaims from the per
+   container LRU
 
-Regards,
-Clemens
+The documentation accompanying this patch has more details on the design
+and usage.
 
+Changelog since version 6
+
+1. Port to 2.6.23-rc3-mm1
+2. Add new documentation
+
+Tested the patches (with config disabled) and kernbench, lmbench on an
+x86_64 box.
+
+For more detailed test results, comments on usage and detailed changelog
+please see version 6 of the patches
+
+	http://lwn.net/Articles/246140/
+
+series
+
+mem-control-res-counters-infrastructure
+mem-control-setup
+mem-control-accounting-setup
+mem-control-accounting
+mem-control-task-migration
+mem-control-lru-and-reclaim
+mem-control-out-of-memory
+mem-control-choose-rss-vs-rss-and-pagecache
+mem-control-per-container-page-referenced
+mem-control-documentation
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
