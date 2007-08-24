@@ -1,134 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762319AbXHXF5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764627AbXHXGEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762319AbXHXF5n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 01:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbXHXF5f
+	id S1764627AbXHXGEY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 02:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbXHXGEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 01:57:35 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:36556 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751117AbXHXF5f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 01:57:35 -0400
-Date: Thu, 23 Aug 2007 22:55:45 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Shannon Nelson <shannon.nelson@intel.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       davem@davemloft.net
-Subject: Re: [PATCH v2 -mm 6/7] DCA: Add Direct Cache Access driver
-Message-Id: <20070823225545.743ee1bf.randy.dunlap@oracle.com>
-In-Reply-To: <20070824001522.16997.57613.stgit@localhost.localdomain>
-References: <20070824001335.16997.79665.stgit@localhost.localdomain>
-	<20070824001522.16997.57613.stgit@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 24 Aug 2007 02:04:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34831 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752721AbXHXGEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 02:04:15 -0400
+Date: Fri, 24 Aug 2007 08:04:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: Nick Piggin <npiggin@suse.de>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: Reduce overhead in balance_tasks()
+Message-ID: <20070824060403.GB24742@elte.hu>
+References: <46C2842E.3010806@bigpond.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C2842E.3010806@bigpond.net.au>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Aug 2007 17:15:22 -0700 Shannon Nelson wrote:
 
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Acked-by: David S. Miller <davem@davemloft.net>
-> ---
+* Peter Williams <pwil3058@bigpond.net.au> wrote:
+
+> At the moment, balance_tasks() provides low level functionality for 
+> both
+>  move_tasks() and move_one_task() (indirectly) via the load_balance() 
+> function (in the sched_class interface) which also provides dual 
+> functionality.  This dual functionality complicates the interfaces and 
+> internal mechanisms and makes the run time overhead of operations that 
+> are called with two run queue locks held.
 > 
->  drivers/Kconfig         |    2 +
->  drivers/Makefile        |    1 
->  drivers/dca/Kconfig     |   11 +++
->  drivers/dca/Makefile    |    2 +
->  drivers/dca/dca-core.c  |  168 +++++++++++++++++++++++++++++++++++++++++++++++
->  drivers/dca/dca-sysfs.c |   88 +++++++++++++++++++++++++
->  include/linux/dca.h     |   47 +++++++++++++
->  7 files changed, 319 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/dca/Kconfig b/drivers/dca/Kconfig
-> new file mode 100644
-> index 0000000..d901615
-> --- /dev/null
-> +++ b/drivers/dca/Kconfig
-> @@ -0,0 +1,11 @@
-> +#
-> +# DCA server configuration
-> +#
-> +
-> +config DCA
-> +	tristate "DCA support for clients and providers"
-> +	---help---
-> +          This is a server to help modules that want to use Direct Cache
-> +	  Access to find DCA providers that will supply correct CPU tags.
-> +	default m
+> This patch addresses this issue and reduces the overhead of these 
+> operations.
 
-We conventionally put help text last in each config entry.
-& Help text should be indented by 1 tab + 2 spaces.
+hm, i like it, and added it to my queue (probably .24 material though), 
+but note that it increases .text and .data overhead:
 
-> diff --git a/drivers/dca/dca-core.c b/drivers/dca/dca-core.c
-> new file mode 100644
-> index 0000000..c0ff9bd
-> --- /dev/null
-> +++ b/drivers/dca/dca-core.c
-> @@ -0,0 +1,168 @@
-> +/*
-> + * Copyright(c) 2007 Intel Corporation. All rights reserved.
-> + *
-> +/*
-> + * This driver supports an interface for DCA clients and providers to meet.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/notifier.h>
-> +#include <linux/device.h>
-> +#include <linux/dca.h>
-> +
-> +MODULE_LICENSE("GPL");
-> +
-> +/* For now we're assuming a single, global, DCA provider for the system. */
-> +
-> +static DEFINE_SPINLOCK(dca_lock);
-> +
-> +struct dca_provider *global_dca = NULL;
+   text    data     bss     dec     hex filename
+  41028   37794    2168   80990   13c5e sched.o.before
+  41349   37826    2168   81343   13dbf sched.o.after
 
-Can global_dca be static, or is it used in other source files?
+is that expected?
 
-It would be good to have all of these global/exported interfaces
-documented somewhere.  Did I miss it in another file?
-If not, you could use kernel-doc to add inline function docs.
-See Documentation/kernel-doc-nano-HOWTO.txt.
-
-> +u8 dca_get_tag(int cpu)
-> +{
-> +	if (!global_dca)
-> +		return -ENODEV;
-> +	return global_dca->ops->get_tag(global_dca, cpu);
-> +}
-> +EXPORT_SYMBOL(dca_get_tag);
-> +
-
-> +
-> +static BLOCKING_NOTIFIER_HEAD(dca_provider_chain);
-> +
-> +
-> +static int __init dca_init(void)
-> +{
-> +	int err;
-> +
-> +	err = dca_sysfs_init();
-> +	if (err)
-> +		return err;
-> +	return 0;
-
-or just (in all cases):
-
-	return err;
-
-> +}
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+	Ingo
