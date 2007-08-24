@@ -1,89 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764333AbXHXI6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765846AbXHXI7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764333AbXHXI6M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 04:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbXHXI6B
+	id S1765846AbXHXI7A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 04:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760816AbXHXI6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 04:58:01 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:7572 "EHLO relay.sw.ru"
+	Fri, 24 Aug 2007 04:58:51 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:42308 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751352AbXHXI6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 04:58:00 -0400
-Message-ID: <46CE9B23.9000500@openvz.org>
-Date: Fri, 24 Aug 2007 12:47:31 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1755902AbXHXI6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 04:58:49 -0400
+Date: Fri, 24 Aug 2007 09:58:47 +0100
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org
+Subject: Re: [BUG] 2.6.23-rc3-mm1 kernel BUG at mm/page_alloc.c:2876!
+Message-ID: <20070824085846.GA30592@skynet.ie>
+References: <46CC9A7A.2030404@linux.vnet.ibm.com> <20070822134800.ce5a5a69.akpm@linux-foundation.org> <20070822135024.dde8ef5a.akpm@linux-foundation.org> <20070823130732.GC18456@skynet.ie> <46CDC11E.2010008@linux.vnet.ibm.com> <Pine.LNX.4.64.0708231303050.14720@schroedinger.engr.sgi.com> <46CE776D.2010408@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Alexey Dobriyan <adobriyan@openvz.org>
-Subject: [PATCH] Fix the sys_setpgrp() to work between namespaces
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <46CE776D.2010408@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The check if (task_pgrp_nr(p) != pgid) is almost always true,
-because pgid is a "virtual" pid and it is most often much 
-smaller than the "real" pgrp id of any task (because pids are 
-generated sequentially most of the time). This leads to the 
-task's pgrp  is  always reset, even if it is not needed.
+On (24/08/07 11:45), Kamalesh Babulal didst pronounce:
+> Christoph Lameter wrote:
+> >On Thu, 23 Aug 2007, Kamalesh Babulal wrote:
+> >
+> >  
+> >>After applying the patch, the call trace is gone but the kernel bug
+> >>is still hit
+> >>    
+> >
+> >Yes that is what we expected. We need more information to figure out why 
+> >the kmalloc_node fails there. It should walk through all nodes to find 
+> >memory.
+> >
+> >I see that you have 4 cpus and 16 nodes. How are the cpus assigned to 
+> >nodes? If a cpu would be assigned to a nonexisting node then this could be 
+> >the result.
+> >
+> >Could you post the full boot log?
+> >
+> >  
+> boot log with the andrew patch applied
+> 
+> Welcome to yaboot version 1.3.13
+> Enter "help" to get some basic usage information
+> boot: autobench
+> Please wait, loading kernel...
+> Elf64 kernel loaded...
+> Loading ramdisk...
+> ramdisk loaded at 02400000, size: 1191 Kbytes
+> OF stdout device is: /vdevice/vty@30000000
+> Hypertas detected, assuming LPAR !
+> command line: ro console=hvc0 autobench_args: root=/dev/sda6 
+> ABAT:1187885681
+> memory layout at init:
+> alloc_bottom : 000000000252a000
+> alloc_top : 0000000008000000
+> alloc_top_hi : 0000000100000000
+> rmo_top : 0000000008000000
+> ram_top : 0000000100000000
+> Looking for displays
+> instantiating rtas at 0x00000000077d9000 ... done
+> 0000000000000000 : boot cpu 0000000000000000
+> 0000000000000002 : starting cpu hw idx 0000000000000002... done
+> copying OF device tree ...
+> Building dt strings...
+> Building dt structure...
+> Device tree strings 0x000000000262b000 -> 0x000000000262c1d3
+> Device tree struct 0x000000000262d000 -> 0x0000000002635000
+> Calling quiesce ...
+> returning from prom_init
+> Partition configured for 4 cpus.
+> 
+> 
+> Starting Linux PPC64 #1 SMP Thu Aug 23 11:54:44 EDT 2007
+> -----------------------------------------------------
+> ppc64_pft_size = 0x1a
+> physicalMemorySize = 0x100000000
+> ppc64_caches.dcache_line_size = 0x80
+> ppc64_caches.icache_line_size = 0x80
+> htab_address = 0x0000000000000000
+> htab_hash_mask = 0x7ffff
+> -----------------------------------------------------
+> Linux version 2.6.23-rc3-mm1-autokern1 
+> (root@gekko-lp3.ltc.austin.ibm.com) (gcc version 3.4.6 20060404 (Red Hat 
+> 3.4.6-3)) #1 SMP Thu Aug 23 11:54:44 EDT 2007
+> [boot]0012 Setup Arch
+> vmemmap cf00000000000000 allocated at c000000001000000, physical 
+> 0000000001000000.
+> vmemmap cf00000001000000 allocated at c000000004000000, physical 
+> 0000000004000000.
+> vmemmap cf00000002000000 allocated at c000000005000000, physical 
+> 0000000005000000.
+> vmemmap cf00000003000000 allocated at c000000006000000, physical 
+> 0000000006000000.
+> EEH: PCI Enhanced I/O Error Handling Enabled
+> PPC64 nvram contains 7168 bytes
+> Zone PFN ranges:
+> DMA 0 -> 1048576
+> Normal 1048576 -> 1048576
+> Movable zone start PFN for each node
+> early_node_map[1] active PFN ranges
+> 2: 0 -> 1048576
+> Could not find start_pfn for node 0
+> [boot]0015 Setup Done
+> Built 2 zonelists in Node order, mobility grouping off. Total pages: 0
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+This indicates to me that the zonelists are trashed. All memory is on
+zone 2 according to early_node_map[] and the CPU is most likely part of
+node 0 that doesn't have a proper fallback list
 
----
+> Policy zone: DMA
+> Kernel command line: ro console=hvc0 autobench_args: root=/dev/sda6 
+> ABAT:1187885681
+> [boot]0020 XICS Init
+> [boot]0021 XICS Done
+> PID hash table entries: 4096 (order: 12, 32768 bytes)
+> Console: colour dummy device 80x25
+> console handover: boot [udbg0] -> real [hvc0]
+> Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
+> Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
+> freeing bootmem node 2
+> Memory: 4105840k/4194304k available (4964k kernel code, 88464k reserved, 
+> 948k data, 571k bss, 264k init)
+> SLUB: Genslabs=12, HWalign=128, Order=0-1, MinObjects=4, CPUs=4, Nodes=16
+> ------------[ cut here ]------------
+> kernel BUG at mm/page_alloc.c:2878!
+> cpu 0x0: Vector: 700 (Program Check) at [c0000000005cbbe0]
+> pc: c0000000004b5160: .setup_per_cpu_pageset+0x24/0x48
+> lr: c0000000004b5160: .setup_per_cpu_pageset+0x24/0x48
+> sp: c0000000005cbe60
+> msr: 8000000000029032
+> current = 0xc0000000004fd1b0
+> paca = 0xc0000000004fdd80
+> pid = 0, comm = swapper
+> kernel BUG at mm/page_alloc.c:2878!
+> enter ? for help
+> [c0000000005cbee0] c0000000004978d8 .start_kernel+0x304/0x3f4
+> [c0000000005cbf90] c0000000003bef1c .start_here_common+0x54/0x58
+> 
+> -
+> Kamalesh Babulal.
+> 
+> 
+> 
 
- kernel/sys.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/sys.c b/kernel/sys.c
-index c7c4fa4..c827186 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -918,6 +918,7 @@ asmlinkage long sys_setpgid(pid_t pid, p
- 	struct task_struct *p;
- 	struct task_struct *group_leader = current->group_leader;
- 	int err = -EINVAL;
-+	struct pid_namespace *ns;
- 
- 	if (!pid)
- 		pid = task_pid_vnr(group_leader);
-@@ -929,10 +930,12 @@ asmlinkage long sys_setpgid(pid_t pid, p
- 	/* From this point forward we keep holding onto the tasklist lock
- 	 * so that our parent does not change from under us. -DaveM
- 	 */
-+	ns = current->nsproxy->pid_ns;
-+
- 	write_lock_irq(&tasklist_lock);
- 
- 	err = -ESRCH;
--	p = find_task_by_pid_ns(pid, current->nsproxy->pid_ns);
-+	p = find_task_by_pid_ns(pid, ns);
- 	if (!p)
- 		goto out;
- 
-@@ -958,10 +961,9 @@ asmlinkage long sys_setpgid(pid_t pid, p
- 		goto out;
- 
- 	if (pgid != pid) {
--		struct task_struct *g =
--			find_task_by_pid_type_ns(PIDTYPE_PGID, pgid,
--					current->nsproxy->pid_ns);
-+		struct task_struct *g;
- 
-+		g = find_task_by_pid_type_ns(PIDTYPE_PGID, pgid, ns);
- 		if (!g || task_session(g) != task_session(group_leader))
- 			goto out;
- 	}
-@@ -970,7 +972,7 @@ asmlinkage long sys_setpgid(pid_t pid, p
- 	if (err)
- 		goto out;
- 
--	if (task_pgrp_nr(p) != pgid) {
-+	if (task_pgrp_nr_ns(p, ns) != pgid) {
- 		struct pid *pid;
- 
- 		detach_pid(p, PIDTYPE_PGID);
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
