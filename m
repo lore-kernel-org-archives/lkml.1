@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933533AbXHXM6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933663AbXHXM6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933533AbXHXM6H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 08:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933475AbXHXM5K
+	id S933663AbXHXM6h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 08:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765948AbXHXM5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 08:57:10 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:12845 "EHLO
+	Fri, 24 Aug 2007 08:57:52 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:15683 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933800AbXHXM5E (ORCPT
+	with ESMTP id S933850AbXHXM5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 08:57:04 -0400
+	Fri, 24 Aug 2007 08:57:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=FCpEBgpOHgKB1kbzrvEVv0lpW6/Suj5SztXRIS9k47xy1wb814YibaCCrIn9APp8GPkWyC8QK1mIoZKnsPNr9VlNDF0iuR5yZ8mQmnsdq/bs1x7t5RlhLiFgj2iPgJUOet5L+Ceek2OpShovFqvhnMGrF6B+AfCTl5wyiUHFC7I=
-Message-ID: <46CED598.8020304@gmail.com>
-Date: Fri, 24 Aug 2007 21:56:56 +0900
+        b=SiTQe0fttsmVneC+XhTOlSCSmHkGBo/8ZQibmF8y21ypgiOQL03vpnqu8WUUlHWwPZxSTxbqTgP/p6r34eKZFYAM2Z245myRo1tPaxEjRdbXTgmYprsQ0Tcskgd+pOC3RhihpDEgTA4tSj1IE7fXrKUlSzAUt1nrBlUFHzC/w64=
+Message-ID: <46CED5C6.8050501@gmail.com>
+Date: Fri, 24 Aug 2007 21:57:42 +0900
 From: Kentaro Takeda <k.takeda26@gmail.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        chrisw@sous-sol.org
-Subject: [TOMOYO 13/15] LSM adapter for TOMOYO.
+Subject: [TOMOYO 14/15] Conditional permission support.
 References: <46CED214.6050505@gmail.com>
 In-Reply-To: <46CED214.6050505@gmail.com>
 Content-Type: text/plain; charset=us-ascii
@@ -29,763 +29,697 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LSM wrapper functions for TOMOYO Linux access control.
-If bind mounts are used, TOMOYO requires all permissions for
-all possible pathnames (whereas AppArmor requires one of possible pathnames).
-If "struct vfsmount" is passed to LSM hooks as AppArmor proposes,
-this file will become more simpler and "namespace_sem" can remain "static".
+This patch allows administrators use conditional permission.
+TOMOYO Linux supports conditional permission based on
+process's UID,GID etc. and/or requested pathname's UID/GID.
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/tomoyo.c |  745 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 745 insertions(+)
+ security/tomoyo/condition.c |  680 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 680 insertions(+)
 
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/security/tomoyo/tomoyo.c	2007-08-24 15:51:38.000000000 +0900
-@@ -0,0 +1,745 @@
++++ linux-2.6/security/tomoyo/condition.c	2007-08-24 15:51:39.000000000 +0900
+@@ -0,0 +1,680 @@
 +/*
-+ * security/tomoyo/tomoyo.c
++ * security/tomoyo/condition.c
 + *
-+ * LSM hooks for TOMOYO Linux.
++ * Functions to support conditional access control for TOMOYO Linux.
 + */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/security.h>
-+#include <linux/highmem.h>
-+#include <linux/namei.h>
-+#include <linux/mnt_namespace.h>
-+#include <linux/sysctl.h>
-+#include <linux/proc_fs.h>
-+#include <linux/sched.h>
-+#include <linux/uaccess.h>
-+#include <net/ip.h>
-+#include <net/ipv6.h>
 +
 +#include "tomoyo.h"
 +#include "realpath.h"
-+#define MAX_SOCK_ADDR 128 /* net/socket.c */
 +
-+/* The initial domain. */
-+struct domain_info KERNEL_DOMAIN = { NULL, NULL, NULL, 0, 0, 0 };
-+
-+static struct kmem_cache *tmy_cachep;
-+
-+static int tmy_task_alloc_security(struct task_struct *p)
++/**
++ * tmy_find_condition_part - check whether a line contains condition part.
++ * @data: a line to check.
++ *
++ * Returns pointer to condition part if found.
++ * Returns NULL if not found.
++ *
++ * Since the trailing spaces are removed by tmy_normalize_line(),
++ * the last "\040if\040" sequence corresponds to condition part.
++ */
++char *tmy_find_condition_part(char *data)
 +{
-+	struct tmy_security *ptr = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
-+
-+	if (!ptr)
-+		return -ENOMEM;
-+	memcpy(ptr, TMY_SECURITY, sizeof(*ptr));
-+	p->security = ptr;
-+	return 0;
++	char *cp = strstr(data, " if ");
++	if (cp) {
++		char *cp2;
++		while ((cp2 = strstr(cp + 3, " if ")) != NULL)
++			cp = cp2;
++		*cp++ = '\0';
++	}
++	return cp;
 +}
 +
-+static void tmy_task_free_security(struct task_struct *p)
++#define VALUE_TYPE_DECIMAL     1 /* 01 */
++#define VALUE_TYPE_OCTAL       2 /* 10 */
++#define VALUE_TYPE_HEXADECIMAL 3 /* 11 */
++
++static int tmy_parse_ulong(unsigned long *result, const char **str)
 +{
-+	kmem_cache_free(tmy_cachep, p->security);
-+}
-+
-+static int tmy_bprm_alloc_security(struct linux_binprm *bprm)
-+{
-+	TMY_SECURITY->prev_domain = TMY_SECURITY->domain;
-+	return 0;
-+}
-+
-+static int tmy_bprm_check_security(struct linux_binprm *bprm)
-+{
-+	struct domain_info *next_domain = NULL;
-+	int retval = 0;
-+
-+	tmy_load_policy(bprm->filename);
-+
-+	/*
-+	 * TMY_CHECK_READ_FOR_OPEN_EXEC bit indicates whether this function is
-+	 * called by do_execve() or not.
-+	 * If called by do_execve(), I do domain transition.
-+	 */
-+	if (!(TMY_SECURITY->flags
-+	      & TMY_CHECK_READ_FOR_OPEN_EXEC)) {
-+		retval = tmy_find_next_domain(bprm, &next_domain);
-+		if (retval == 0) {
-+			TMY_SECURITY->domain = next_domain;
-+			TMY_SECURITY->flags |=
-+				TMY_CHECK_READ_FOR_OPEN_EXEC;
++	const char *cp = *str;
++	char *ep;
++	int base = 10;
++	if (*cp == '0') {
++		char c = * (cp + 1);
++		if (c == 'x' || c == 'X') {
++			base = 16; cp += 2;
++		} else if (c >= '0' && c <= '7') {
++			base = 8; cp++;
 +		}
 +	}
-+
-+	return retval;
++	*result = simple_strtoul(cp, &ep, base);
++	if (cp == ep) return 0; /* 00 */
++	*str = ep;
++	return (base == 16 ? VALUE_TYPE_HEXADECIMAL :
++		(base == 8 ? VALUE_TYPE_OCTAL : VALUE_TYPE_DECIMAL));
 +}
 +
-+static void tmy_bprm_post_apply_creds(struct linux_binprm *bprm)
++static void tmy_print_ulong(char *buffer, const int buffer_len,
++			const unsigned long value, const int type)
 +{
-+	TMY_SECURITY->prev_domain = TMY_SECURITY->domain;
-+}
-+
-+static void tmy_bprm_free_security(struct linux_binprm *bprm)
-+{
-+	TMY_SECURITY->domain = TMY_SECURITY->prev_domain;
-+	TMY_SECURITY->flags &= ~TMY_CHECK_READ_FOR_OPEN_EXEC;
-+}
-+
-+static int tmy_sysctl(struct ctl_table *table, int op)
-+{
-+	int error;
-+	char *name;
-+
-+	if ((op & 6) == 0)
-+		return 0;
-+
-+	name = sysctlpath_from_table(table);
-+	if (!name)
-+		return -ENOMEM;
-+
-+	error = tmy_file_perm(name, op & 6, "sysctl");
-+	tmy_free(name);
-+
-+	return error;
-+}
-+
-+static int tmy_inode_permission(struct inode *inode,
-+				int mask,
-+				struct nameidata *nd)
-+{
-+	int flag = 0;
-+
-+	if (S_ISDIR(inode->i_mode)) /* ignore because inode is directory */
-+		return 0;
-+	if (!nd || !nd->dentry || !nd->mnt)
-+		return 0;
-+	/*
-+	 * If called by other than do_execve(), I check for read permission of
-+	 * interpreter.
-+	 * Unlike DAC, I don't check for read permission of pathname passed to
-+	 * do_execve().
-+	 * TOMOYO Linux checks for program's execute permission and
-+	 * interpreter's read permission.
-+	 */
-+	if ((mask == MAY_EXEC) &&
-+	    (TMY_SECURITY->flags & TMY_CHECK_READ_FOR_OPEN_EXEC))
-+		mask = MAY_READ;
-+	if ((mask == MAY_EXEC) || (mask == 0))
-+		return 0;
-+
-+	if (mask == (MAY_READ | MAY_EXEC))
-+		flag |= O_RDONLY + 1;
-+	else {
-+		if (mask & MAY_READ)
-+			flag |= O_RDONLY + 1;
-+		if (mask & MAY_WRITE)
-+			flag |= O_WRONLY + 1;
-+		if ((mask & MAY_APPEND))
-+			flag |= O_APPEND;
-+	}
-+
-+	return tmy_open_perm(nd->dentry, nd->mnt, flag);
-+}
-+
-+static int tmy_do_single_write_perm(int operation, struct dentry *dentry)
-+{
-+	struct mnt_namespace *namespace = current->nsproxy->mnt_ns;
-+	struct list_head *p;
-+	int ret = 0;
-+	int error = 0;
-+	int index = 0;
-+	int index2 = 0;
-+
-+	if (!dentry || !namespace)
-+		return 0;
-+
-+start: ;
-+	index2 = 0;
-+
-+	/* lock namespace */
-+	down_read(&namespace_sem);
-+
-+	list_for_each(p, &namespace->list) {
-+		struct vfsmount *mnt = list_entry(p, struct vfsmount, mnt_list);
-+
-+		if (mnt->mnt_root->d_sb != dentry->d_sb)
-+			continue;
-+		if (index2++ < index)
-+			continue;
-+
-+		/* unlock namespace */
-+		up_read(&namespace_sem);
-+		error = tmy_single_write_perm(operation, dentry, mnt);
-+
-+		if (error != 0)
-+			ret = error;
-+
-+		index++;
-+
-+		goto start;
-+	}
-+
-+	/* unlock namespace */
-+	up_read(&namespace_sem);
-+
-+	return ret;
-+}
-+
-+static int tmy_inode_setattr(struct dentry *dentry, struct iattr *iattr)
-+{
-+	if (iattr->ia_valid & ATTR_SIZE)
-+		return tmy_do_single_write_perm(TMY_TYPE_TRUNCATE_ACL, dentry);
-+	return 0;
-+}
-+
-+static int tmy_inode_create(struct inode *dir, struct dentry *dentry, int mode)
-+{
-+	return tmy_do_single_write_perm(TMY_TYPE_CREATE_ACL, dentry);
-+}
-+
-+static int tmy_inode_unlink(struct inode *dir, struct dentry *dentry)
-+{
-+	return tmy_do_single_write_perm(TMY_TYPE_UNLINK_ACL, dentry);
-+}
-+
-+static int tmy_inode_mkdir(struct inode *dir, struct dentry *dentry, int mode)
-+{
-+	return tmy_do_single_write_perm(TMY_TYPE_MKDIR_ACL, dentry);
-+}
-+
-+static int tmy_inode_rmdir(struct inode *dir, struct dentry *dentry)
-+{
-+	return tmy_do_single_write_perm(TMY_TYPE_RMDIR_ACL, dentry);
-+}
-+
-+static int tmy_inode_symlink(struct inode *dir,
-+			     struct dentry *dentry,
-+			     const char *old_name)
-+{
-+	return tmy_do_single_write_perm(TMY_TYPE_SYMLINK_ACL, dentry);
-+}
-+
-+static int tmy_inode_mknod(struct inode *inode,
-+			   struct dentry *dentry,
-+			   int mode,
-+			   dev_t dev)
-+{
-+	if (S_ISCHR(mode))
-+		return tmy_do_single_write_perm(TMY_TYPE_MKCHAR_ACL, dentry);
-+	if (S_ISBLK(mode))
-+		return tmy_do_single_write_perm(TMY_TYPE_MKBLOCK_ACL, dentry);
-+	if (S_ISFIFO(mode))
-+		return tmy_do_single_write_perm(TMY_TYPE_MKFIFO_ACL, dentry);
-+	if (S_ISSOCK(mode))
-+		return tmy_do_single_write_perm(TMY_TYPE_MKSOCK_ACL, dentry);
-+
-+	return 0;
-+}
-+
-+static int tmy_do_double_write_perm(int operation,
-+				    struct dentry *old_dentry,
-+				    struct dentry *new_dentry)
-+{
-+	struct mnt_namespace *namespace = current->nsproxy->mnt_ns;
-+	struct list_head *p;
-+	int ret = 0;
-+	int error = 0;
-+	int index = 0;
-+	int index2 = 0;
-+
-+	if (!old_dentry || !new_dentry)
-+		return 0;
-+start: ;
-+	index2 = 0;
-+
-+	/* lock namespace */
-+	down_read(&namespace_sem);
-+
-+	list_for_each(p, &namespace->list) {
-+		struct vfsmount *mnt = list_entry(p, struct vfsmount, mnt_list);
-+
-+		if (mnt->mnt_root->d_sb != old_dentry->d_sb)
-+			continue;
-+		if (index2++ < index)
-+			continue;
-+		/* unlock namespace */
-+		up_read(&namespace_sem);
-+		error = tmy_double_write_perm(operation, old_dentry, mnt,
-+					      new_dentry, mnt);
-+		if (error != 0)
-+			ret = error;
-+		index++;
-+		goto start;
-+	}
-+
-+	/* unlock namespace */
-+	up_read(&namespace_sem);
-+
-+	return ret;
-+}
-+
-+static int tmy_inode_link(struct dentry *old_dentry,
-+			  struct inode *inode,
-+			  struct dentry *new_dentry)
-+{
-+	return tmy_do_double_write_perm(TMY_TYPE_LINK_ACL,
-+					old_dentry, new_dentry);
-+}
-+
-+static int tmy_inode_rename(struct inode *old_inode,
-+			    struct dentry *old_dentry,
-+			    struct inode *new_inode,
-+			    struct dentry *new_dentry)
-+{
-+	return tmy_do_double_write_perm(TMY_TYPE_RENAME_ACL,
-+					old_dentry,
-+					new_dentry);
-+}
-+
-+static int tmy_file_fcntl(struct file *file,
-+			  unsigned int cmd,
-+			  unsigned long arg)
-+{
-+	if (!(arg & O_APPEND))
-+		return tmy_rewrite_perm(file);
-+	return 0;
-+}
-+
-+static int tmy_socket_listen(struct socket *sock, int backlog)
-+{
-+	char addr[MAX_SOCK_ADDR];
-+	int addr_len;
-+	int error = 0;
-+
-+	/* I don't check if called by kernel process. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+
-+	if (sock->type != SOCK_STREAM)
-+		return error;
-+	if (sock->sk->sk_family != PF_INET && sock->sk->sk_family != PF_INET6)
-+		return error;
-+
-+	if (sock->ops->getname(sock, (struct sockaddr *) addr, &addr_len, 0))
-+		return -EPERM;
-+
-+	switch (((struct sockaddr *) addr)->sa_family) {
-+		struct sockaddr_in6 *in6;
-+		struct sockaddr_in *in;
-+
-+	case AF_INET6:
-+		in6 = (struct sockaddr_in6 *) addr;
-+		error = tmy_network_listen_acl(1, in6->sin6_addr.s6_addr,
-+					       in6->sin6_port);
-+		break;
-+	case AF_INET:
-+		in = (struct sockaddr_in *) addr;
-+		error = tmy_network_listen_acl(0, (u8 *) &in->sin_addr,
-+					       in->sin_port);
-+		break;
-+	}
-+
-+	return error;
-+}
-+
-+static int tmy_socket_connect(struct socket *sock,
-+			      struct sockaddr *addr,
-+			      int addr_len0)
-+{
-+	unsigned int addr_len = (unsigned int) addr_len0;
-+	int error = 0;
-+	const unsigned int type = sock->type;
-+
-+	/* I don't check if called by kernel process. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+
-+	if (type != SOCK_STREAM && type != SOCK_DGRAM && type != SOCK_RAW)
-+		return error;
-+
-+	switch (addr->sa_family) {
-+		struct sockaddr_in6 *in6;
-+		struct sockaddr_in *in;
-+
-+	case AF_INET6:
-+		if (addr_len < SIN6_LEN_RFC2133)
-+			break;
-+
-+		in6 = (struct sockaddr_in6 *) addr;
-+		if (type != SOCK_RAW)
-+			error = tmy_network_connect_acl(1, type,
-+							in6->sin6_addr.s6_addr,
-+							in6->sin6_port);
-+		else {
-+			const u16 port = htons(sock->sk->sk_protocol);
-+
-+			error = tmy_network_connect_acl(1, SOCK_RAW,
-+							in6->sin6_addr.s6_addr,
-+							port);
-+		}
-+		break;
-+
-+	case AF_INET:
-+		if (addr_len < sizeof(struct sockaddr_in))
-+			break;
-+
-+		in = (struct sockaddr_in *) addr;
-+		if (type != SOCK_RAW)
-+			error = tmy_network_connect_acl(0, type,
-+							(u8 *) &in->sin_addr,
-+							in->sin_port);
-+		else {
-+			const u16 port = htons(sock->sk->sk_protocol);
-+
-+			error = tmy_network_connect_acl(0, SOCK_RAW,
-+							(u8 *) &in->sin_addr,
-+							port);
-+		}
-+		break;
-+	}
-+
-+	return error;
-+}
-+
-+static int tmy_socket_bind(struct socket *sock,
-+			   struct sockaddr *addr,
-+			   int addr_len0)
-+{
-+	unsigned int addr_len = (unsigned int) addr_len0;
-+	int error = 0;
-+	const unsigned int type = sock->type;
-+
-+	/* I don't check if called by kernel process. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+
-+	if (type != SOCK_STREAM && type != SOCK_DGRAM && type != SOCK_RAW)
-+		return error;
-+
-+	switch (addr->sa_family) {
-+		struct sockaddr_in6 *in6;
-+		struct sockaddr_in *in;
-+
-+	case AF_INET6:
-+		if (addr_len < SIN6_LEN_RFC2133)
-+			break;
-+
-+		in6 = ((struct sockaddr_in6 *) addr);
-+		if (type != SOCK_RAW)
-+			error = tmy_network_bind_acl(1, type,
-+						     in6->sin6_addr.s6_addr,
-+						     in6->sin6_port);
-+		else {
-+			const u16 port = htons(sock->sk->sk_protocol);
-+
-+			error = tmy_network_bind_acl(1, SOCK_RAW,
-+						     in6->sin6_addr.s6_addr,
-+						     port);
-+		}
-+		break;
-+
-+	case AF_INET:
-+		if (addr_len < sizeof(struct sockaddr_in))
-+			break;
-+
-+		in = (struct sockaddr_in *) addr;
-+		if (type != SOCK_RAW)
-+			error = tmy_network_bind_acl(0, type,
-+						     (u8 *) &in->sin_addr,
-+						     in->sin_port);
-+		else {
-+			const u16 port = htons(sock->sk->sk_protocol);
-+
-+			error = tmy_network_bind_acl(0, SOCK_RAW,
-+						     (u8 *) &in->sin_addr,
-+						     port);
-+		}
-+		break;
-+	}
-+
-+	return error;
-+}
-+
-+static int tmy_socket_sendmsg(struct socket *sock, struct msghdr *msg, int size)
-+{
-+	int error = 0;
-+	const int type = sock->type;
-+	struct sockaddr *addr = (struct sockaddr *) msg->msg_name;
-+	const unsigned int addr_len = msg->msg_namelen;
-+
-+	/* I don't check if called by kernel process. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+
-+	if (!addr || (type != SOCK_DGRAM && type != SOCK_RAW))
-+		return error;
-+
-+	switch (addr->sa_family) {
-+		struct sockaddr_in6 *in6;
-+		struct sockaddr_in *in;
-+		u16 port;
-+
-+	case AF_INET6:
-+		if (addr_len < SIN6_LEN_RFC2133)
-+			break;
-+
-+		in6 = (struct sockaddr_in6 *) addr;
-+		port = htons(sock->sk->sk_protocol);
-+		error = tmy_network_sendmsg_acl(1, type, in6->sin6_addr.s6_addr,
-+						type == SOCK_DGRAM ?
-+						in6->sin6_port : port);
-+		break;
-+
-+	case AF_INET:
-+		if (addr_len < sizeof(struct sockaddr_in))
-+			break;
-+
-+		in = (struct sockaddr_in *) addr;
-+		port = htons(sock->sk->sk_protocol);
-+		error = tmy_network_sendmsg_acl(0, type, (u8 *) &in->sin_addr,
-+						type == SOCK_DGRAM ?
-+						in->sin_port : port);
-+		break;
-+	}
-+
-+	return error;
-+}
-+
-+static int tmy_socket_post_accept(struct socket *sock, struct socket *newsock)
-+{
-+	int error = 0;
-+	int addr_len;
-+	char addr[MAX_SOCK_ADDR];
-+	struct sockaddr *sockaddr = (struct sockaddr *) addr;
-+
-+	/* I don't check if called by kernel process. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+
-+	if ((newsock->sk->sk_family != PF_INET) &&
-+	    (newsock->sk->sk_family != PF_INET6))
-+		return error;
-+
-+	if (newsock->ops->getname(newsock, sockaddr, &addr_len, 2) == 0) {
-+		switch (sockaddr->sa_family) {
-+			struct sockaddr_in6 *in6;
-+			struct sockaddr_in *in;
-+
-+		case AF_INET6:
-+			in6 = (struct sockaddr_in6 *) addr;
-+			error = tmy_network_accept_acl(1,
-+						       in6->sin6_addr.s6_addr,
-+						       in6->sin6_port);
-+			break;
-+
-+		case AF_INET:
-+			in = (struct sockaddr_in *) addr;
-+			error = tmy_network_accept_acl(0, (u8 *) &in->sin_addr,
-+						       in->sin_port);
-+			break;
-+		}
-+	} else
-+		error = -EPERM;
-+
-+	if (error)
-+		return -ECONNABORTED;
-+	return error;
-+}
-+
-+static int tmy_post_recv_datagram(struct sock *sk,
-+				  struct sk_buff *skb,
-+				  unsigned int flags)
-+{
-+	int error = 0;
-+	const unsigned int type = sk->sk_type;
-+
-+	/* skb_recv_datagram() didn't dequeue. */
-+	if (!skb)
-+		return 0;
-+
-+	/* skb_recv_datagram() can be called from interrupt context. */
-+	if (in_interrupt())
-+		return 0;
-+	/* I don't check if called by kernel process. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+
-+	if (type != SOCK_DGRAM && type != SOCK_RAW)
-+		return 0;
-+
-+	switch (sk->sk_family) {
-+		struct sockaddr_in6 sin6;
-+		struct sockaddr_in sin;
-+		u16 port;
-+
-+	case AF_INET6:
-+
-+		if (type == SOCK_DGRAM) {
-+			/* UDP IPv6 */
-+			sin6.sin6_family = AF_INET6;
-+			sin6.sin6_port = udp_hdr(skb)->source;
-+
-+			if (skb->protocol == htons(ETH_P_IP))
-+				ipv6_addr_set(&sin6.sin6_addr, 0, 0,
-+					      htonl(0xffff),
-+					      ip_hdr(skb)->saddr);
-+			else
-+				ipv6_addr_copy(&sin6.sin6_addr,
-+					       &ipv6_hdr(skb)->saddr);
-+
-+			port = sin6.sin6_port;
-+		} else {
-+			/* RAW IPv6 */
-+			sin6.sin6_family = AF_INET6;
-+			sin6.sin6_port = 0;
-+			ipv6_addr_copy(&sin6.sin6_addr, &ipv6_hdr(skb)->saddr);
-+
-+			port = htons(sk->sk_protocol);
-+		}
-+
-+		error = tmy_network_recvmsg_acl(1, type,
-+						sin6.sin6_addr.s6_addr,	port);
-+
-+		break;
-+
-+	case AF_INET:
-+
-+		if (type == SOCK_DGRAM) {
-+			/* UDP IPv4 */
-+			sin.sin_family = AF_INET;
-+			sin.sin_port = udp_hdr(skb)->source;
-+			sin.sin_addr.s_addr = ip_hdr(skb)->saddr;
-+
-+			port = sin.sin_port;
-+		} else {
-+			/* RAW IPv4 */
-+			sin.sin_family = AF_INET;
-+			sin.sin_addr.s_addr = ip_hdr(skb)->saddr;
-+			sin.sin_port = 0;
-+
-+			port = htons(sk->sk_protocol);
-+		}
-+
-+		error = tmy_network_recvmsg_acl(0, type,
-+						(u8 *) &sin.sin_addr, port);
-+
-+		break;
-+
-+	}
-+
-+	if (error)
-+		error = -EAGAIN;
-+	return error;
-+}
-+
-+static int tmy_sb_mount(char *dev_name,
-+			struct nameidata *nd,
-+			char *type,
-+			unsigned long flags,
-+			void *data)
-+{
-+	char *buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-+	char *dir_name;
-+	int error;
-+
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	dir_name = d_path(nd->dentry, nd->mnt, buf, PAGE_SIZE);
-+
-+	if (IS_ERR(dir_name))
-+		error = PTR_ERR(dir_name);
++	if (type == VALUE_TYPE_DECIMAL)
++		snprintf(buffer, buffer_len, "%lu", value);
++	else if (type == VALUE_TYPE_OCTAL)
++		snprintf(buffer, buffer_len, "0%lo", value);
 +	else
-+		error = tmy_mount_perm(dev_name, dir_name, type, flags);
-+
-+	if (!error && (flags & MS_REMOUNT) == 0)
-+		error = tmy_conceal_mount(nd);
-+
-+	kfree(buf);
-+	return error;
++		snprintf(buffer, buffer_len, "0x%lX", value);
 +}
 +
-+static int tmy_sb_umount(struct vfsmount *mnt, int flags)
-+{
-+	return tmy_umount_perm(mnt);
-+}
++/* List of conditins. */
++static struct condition_list {
++	struct condition_list *next;
++	int length;
++	/* "unsigned long condition[length]" comes here.*/
++} head;
 +
-+static int tmy_sb_pivotroot(struct nameidata *old_nd, struct nameidata *new_nd)
-+{
-+	return tmy_pivot_root_perm(old_nd, new_nd);
-+}
++#define TASK_UID          0
++#define TASK_EUID         1
++#define TASK_SUID         2
++#define TASK_FSUID        3
++#define TASK_GID          4
++#define TASK_EGID         5
++#define TASK_SGID         6
++#define TASK_FSGID        7
++#define TASK_PID          8
++#define TASK_PPID         9
++#define PATH1_UID        10
++#define PATH1_GID        11
++#define PATH1_INO        12
++#define PATH1_PARENT_UID 13
++#define PATH1_PARENT_GID 14
++#define PATH1_PARENT_INO 15
++#define PATH2_PARENT_UID 16
++#define PATH2_PARENT_GID 17
++#define PATH2_PARENT_INO 18
++#define MAX_KEYWORD      19
 +
-+static int tmy_task_kill_unlocked(int pid, int sig)
-+{
-+	return tmy_signal_acl(sig, pid);
-+}
-+
-+static int tmy_task_tkill_unlocked(int pid, int sig)
-+{
-+	return tmy_signal_acl(sig, pid);
-+}
-+
-+static int tmy_task_tgkill_unlocked(int tgid, int pid, int sig)
-+{
-+	return tmy_signal_acl(sig, pid);
-+}
-+
-+static struct security_operations tomoyo_security_ops = {
-+	.task_alloc_security   = tmy_task_alloc_security,
-+	.task_free_security    = tmy_task_free_security,
-+	.bprm_alloc_security   = tmy_bprm_alloc_security,
-+	.bprm_check_security   = tmy_bprm_check_security,
-+	.bprm_post_apply_creds = tmy_bprm_post_apply_creds,
-+	.bprm_free_security    = tmy_bprm_free_security,
-+	.sysctl                = tmy_sysctl,
-+	.inode_permission      = tmy_inode_permission,
-+	.inode_setattr         = tmy_inode_setattr,
-+	.inode_create          = tmy_inode_create,
-+	.inode_unlink          = tmy_inode_unlink,
-+	.inode_mkdir           = tmy_inode_mkdir,
-+	.inode_rmdir           = tmy_inode_rmdir,
-+	.inode_symlink         = tmy_inode_symlink,
-+	.inode_mknod           = tmy_inode_mknod,
-+	.inode_link            = tmy_inode_link,
-+	.inode_rename          = tmy_inode_rename,
-+	.file_fcntl            = tmy_file_fcntl,
-+	.socket_listen 	       = tmy_socket_listen,
-+	.socket_connect        = tmy_socket_connect,
-+	.socket_bind 	       = tmy_socket_bind,
-+	.socket_sendmsg        = tmy_socket_sendmsg,
-+	.sb_mount              = tmy_sb_mount,
-+	.sb_umount             = tmy_sb_umount,
-+	.sb_pivotroot          = tmy_sb_pivotroot,
-+#ifdef TMY_LSM_EXPANSION
-+	.socket_post_accept    = tmy_socket_post_accept,
-+	.post_recv_datagram    = tmy_post_recv_datagram,
-+	.task_kill_unlocked    = tmy_task_kill_unlocked,
-+	.task_tkill_unlocked   = tmy_task_tkill_unlocked,
-+	.task_tgkill_unlocked  = tmy_task_tgkill_unlocked,
-+#endif
++static struct {
++	const char *keyword;
++	const int keyword_len; /* strlen(keyword) */
++} cc_keyword[MAX_KEYWORD] = {
++	[TASK_UID]         = { "task.uid",           8 },
++	[TASK_EUID]        = { "task.euid",          9 },
++	[TASK_SUID]        = { "task.suid",          9 },
++	[TASK_FSUID]       = { "task.fsuid",        10 },
++	[TASK_GID]         = { "task.gid",           8 },
++	[TASK_EGID]        = { "task.egid",          9 },
++	[TASK_SGID]        = { "task.sgid",          9 },
++	[TASK_FSGID]       = { "task.fsgid",        10 },
++	[TASK_PID]         = { "task.pid",           8 },
++	[TASK_PPID]        = { "task.ppid",          9 },
++	[PATH1_UID]        = { "path1.uid",          9 },
++	[PATH1_GID]        = { "path1.gid",          9 },
++	[PATH1_INO]        = { "path1.ino",          9 },
++	[PATH1_PARENT_UID] = { "path1.parent.uid",  16 },
++	[PATH1_PARENT_GID] = { "path1.parent.gid",  16 },
++	[PATH1_PARENT_INO] = { "path1.parent.ino",  16 },
++	[PATH2_PARENT_UID] = { "path2.parent.uid",  16 },
++	[PATH2_PARENT_GID] = { "path2.parent.gid",  16 },
++	[PATH2_PARENT_INO] = { "path2.parent.ino",  16 }
 +};
 +
-+static int __init tmy_init(void)
++/**
++ * tmy_assign_condition - create condition part.
++ * @condition: pointer to condition part.
++ *
++ * Returns pointer to "struct condition_list" on success.
++ * Returns NULL on failure.
++ */
++const struct condition_list *tmy_assign_condition(const char *condition)
 +{
++	const char *start;
++	struct condition_list *ptr;
++	struct condition_list *new_ptr;
++	unsigned long *ptr2;
++	int counter = 0;
++	int size;
++	int left;
++	int right;
++	unsigned long left_min = 0;
++	unsigned long left_max = 0;
++	unsigned long right_min = 0;
++	unsigned long right_max = 0;
++	if (strncmp(condition, "if ", 3))
++		return NULL;
++	condition += 3;
++	start = condition;
++	while (*condition) {
++		if (*condition == ' ')
++			condition++;
++		for (left = 0; left < MAX_KEYWORD; left++) {
++			if (strncmp(condition, cc_keyword[left].keyword,
++				    cc_keyword[left].keyword_len))
++				continue;
++			condition += cc_keyword[left].keyword_len;
++			break;
++		}
++		if (left == MAX_KEYWORD) {
++			if (!tmy_parse_ulong(&left_min, &condition))
++				goto out;
++			counter++; /* body */
++			if (*condition != '-')
++				goto not_range1;
++			condition++;
++			if (!tmy_parse_ulong(&left_max, &condition)
++			    || left_min > left_max)
++				goto out;
++			counter++; /* body */
++not_range1: ;
++		}
++		if (strncmp(condition, "!=", 2) == 0)
++			condition += 2;
++		else if (*condition == '=')
++			condition++;
++		else
++			goto out;
++		counter++; /* header */
++		for (right = 0; right < MAX_KEYWORD; right++) {
++			if (strncmp(condition, cc_keyword[right].keyword,
++				    cc_keyword[right].keyword_len))
++				continue;
++			condition += cc_keyword[right].keyword_len;
++			break;
++		}
++		if (right == MAX_KEYWORD) {
++			if (!tmy_parse_ulong(&right_min, &condition))
++				goto out;
++			counter++; /* body */
++			if (*condition != '-')
++				goto not_range2;
++			condition++;
++			if (!tmy_parse_ulong(&right_max, &condition)
++			    || right_min > right_max)
++				goto out;
++			counter++; /* body */
++not_range2: ;
++		}
++	}
++	size = sizeof(*new_ptr) + counter * sizeof(unsigned long);
++	new_ptr = tmy_alloc(size);
++	if (!new_ptr)
++		return NULL;
++	new_ptr->length = counter;
++	ptr2 = (unsigned long *) (((u8 *) new_ptr) + sizeof(*new_ptr));
++	condition = start;
++	while (*condition) {
++		unsigned int match = 0;
++		if (*condition == ' ')
++			condition++;
++		for (left = 0; left < MAX_KEYWORD; left++) {
++			if (strncmp(condition, cc_keyword[left].keyword,
++			    cc_keyword[left].keyword_len))
++				continue;
++			condition += cc_keyword[left].keyword_len;
++			break;
++		}
++		if (left == MAX_KEYWORD) {
++			match |= tmy_parse_ulong(&left_min, &condition) << 2;
++			counter--; /* body */
++			if (*condition != '-')
++				goto not_range3;
++			condition++;
++			match |= tmy_parse_ulong(&left_max, &condition) << 4;
++			counter--; /* body */
++			left++;
++not_range3: ;
++		}
++		if (strncmp(condition, "!=", 2) == 0)
++			condition += 2;
++		else if (*condition == '=') {
++			match |= 1; condition++;
++		} else
++			goto out2;
++		counter--; /* header */
++		for (right = 0; right < MAX_KEYWORD; right++) {
++			if (strncmp(condition, cc_keyword[right].keyword,
++			    cc_keyword[right].keyword_len))
++				continue;
++			condition += cc_keyword[right].keyword_len;
++			break;
++		}
++		if (right == MAX_KEYWORD) {
++			match |= tmy_parse_ulong(&right_min, &condition) << 6;
++			counter--; /* body */
++			if (*condition != '-')
++				goto not_range4;
++			condition++;
++			match |= tmy_parse_ulong(&right_max, &condition) << 8;
++			counter--; /* body */
++			right++;
++not_range4: ;
++		}
++		if (counter < 0)
++			goto out2;
++		*ptr2++ = (match << 16) | (left << 8) | right;
++		if (left >= MAX_KEYWORD)
++			*ptr2++ = left_min;
++		if (left == MAX_KEYWORD + 1)
++			*ptr2++ = left_max;
++		if (right >= MAX_KEYWORD)
++			*ptr2++ = right_min;
++		if (right == MAX_KEYWORD + 1)
++			*ptr2++ = right_max;
++	}
++	{
++		static DECLARE_MUTEX(lock);
++		struct condition_list *prev = NULL;
++		down(&lock);
++		for (ptr = &head; ptr; prev = ptr, ptr = ptr->next) {
++			/* Don't compare if size differs. */
++			if (ptr->length != new_ptr->length)
++				continue;
++			/*
++			 * Compare ptr and new_ptr
++			 * except ptr->next and new_ptr->next .
++			 */
++			if (memcmp(((u8 *) ptr) + sizeof(ptr->next),
++				   ((u8 *) new_ptr) + sizeof(new_ptr->next),
++				   size - sizeof(ptr->next)))
++				continue;
++			/* Same entry found. Share this entry. */
++			tmy_free(new_ptr);
++			new_ptr = ptr;
++			goto ok;
++		}
++		/* Same entry not found. Save this entry. */
++		ptr = tmy_alloc_element(size);
++		if (ptr)
++			memmove(ptr, new_ptr, size);
++		tmy_free(new_ptr);
++		new_ptr = ptr;
++		/* Append to chain. */
++		prev->next = new_ptr;
++ok: ;
++		up(&lock);
++	}
++	return new_ptr;
++out2: ;
++	tmy_free(new_ptr);
++out: ;
++	return NULL;
++}
 +
-+	/* register ourselves with the security framework */
-+	if (register_security(&tomoyo_security_ops))
-+		panic("Failure registering TOMOYO Linux");
++/* Get inode's attribute information. */
++static void tmy_get_attributes(struct obj_info *obj)
++{
++	struct vfsmount *mnt;
++	struct dentry *dentry;
++	struct inode *inode;
++	struct kstat stat;
 +
-+	printk(KERN_INFO "TOMOYO Linux initialized\n");
++	mnt = obj->path1_vfsmnt;
++	dentry = obj->path1_dentry;
++	inode = dentry->d_inode;
++	if (inode) {
++		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
++			/* Nothing to do. */
++		} else {
++			obj->path1_stat.uid = stat.uid;
++			obj->path1_stat.gid = stat.gid;
++			obj->path1_stat.ino = stat.ino;
++			obj->path1_valid = 1;
++		}
++	}
 +
-+	tmy_proc_init();
++	dentry = dget_parent(obj->path1_dentry);
++	inode = dentry->d_inode;
++	if (inode) {
++		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
++			/* Nothing to do. */
++		} else {
++			obj->path1_parent_stat.uid = stat.uid;
++			obj->path1_parent_stat.gid = stat.gid;
++			obj->path1_parent_stat.ino = stat.ino;
++			obj->path1_parent_valid = 1;
++		}
++	}
++	dput(dentry);
 +
-+	tmy_cachep = kmem_cache_create("tomoyo_security",
-+				       sizeof(struct tmy_security),
-+				       0, SLAB_PANIC, NULL);
++	mnt = obj->path2_vfsmnt;
++	if (mnt) {
++		dentry = dget_parent(obj->path2_dentry);
++		inode = dentry->d_inode;
++		if (inode) {
++			if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
++				/* Nothing to do. */
++			} else {
++				obj->path2_parent_stat.uid = stat.uid;
++				obj->path2_parent_stat.gid = stat.gid;
++				obj->path2_parent_stat.ino = stat.ino;
++				obj->path2_parent_valid = 1;
++			}
++		}
++		dput(dentry);
++	}
++}
 +
-+	init_task.security = kmem_cache_alloc(tmy_cachep, GFP_KERNEL);
-+	((struct tmy_security *) init_task.security)->domain = &KERNEL_DOMAIN;
-+	((struct tmy_security *) init_task.security)->prev_domain = NULL;
-+	((struct tmy_security *) init_task.security)->flags = 0;
-+
++/**
++ * tmy_check_condition - check condition part.
++ * @ptr: pointer to "struct condition_list".
++ * @obj: pointer to "struct obj_info". May be NULL.
++ *
++ * Returns zero on success.
++ * Returns nonzero on failure.
++ */
++int tmy_check_condition(const struct condition_list *ptr, struct obj_info *obj)
++{
++	struct task_struct *task = current;
++	int i;
++	unsigned long left_min = 0;
++	unsigned long left_max = 0;
++	unsigned long right_min = 0;
++	unsigned long right_max = 0;
++	const unsigned long *ptr2;
++	if (!ptr)
++		return 0;
++	ptr2 = (unsigned long *) (((u8 *) ptr) + sizeof(*ptr));
++	for (i = 0; i < ptr->length; i++) {
++		const u8 match = ((*ptr2) >> 16) & 1;
++		const u8 left = (*ptr2) >> 8;
++		const u8 right = *ptr2;
++		ptr2++;
++		if ((left >= PATH1_UID && left < MAX_KEYWORD)
++		    || (right >= PATH1_UID && right < MAX_KEYWORD)) {
++			if (!obj)
++				goto out;
++			if (!obj->validate_done) {
++				tmy_get_attributes(obj);
++				obj->validate_done = 1;
++			}
++		}
++		switch (left) {
++		case TASK_UID:
++			left_min = task->uid;
++			left_max = left_min;
++			break;
++		case TASK_EUID:
++			left_min = task->euid;
++			left_max = left_min;
++			break;
++		case TASK_SUID:
++			left_min = task->suid;
++			left_max = left_min;
++			break;
++		case TASK_FSUID:
++			left_min = task->fsuid;
++			left_max = left_min;
++			break;
++		case TASK_GID:
++			left_min = task->gid;
++			left_max = left_min;
++			break;
++		case TASK_EGID:
++			left_min = task->egid;
++			left_max = left_min;
++			break;
++		case TASK_SGID:
++			left_min = task->sgid;
++			left_max = left_min;
++			break;
++		case TASK_FSGID:
++			left_min = task->fsgid;
++			left_max = left_min;
++			break;
++		case TASK_PID:
++			left_min = task->pid;
++			left_max = left_min;
++			break;
++		case TASK_PPID:
++			left_min = sys_getppid();
++			left_max = left_min;
++			break;
++		case PATH1_UID:
++			if (!obj->path1_valid)
++				goto out;
++			left_min = obj->path1_stat.uid;
++			left_max = left_min;
++			break;
++		case PATH1_GID:
++			if (!obj->path1_valid)
++				goto out;
++			left_min = obj->path1_stat.gid;
++			left_max = left_min;
++			break;
++		case PATH1_INO:
++			if (!obj->path1_valid)
++				goto out;
++			left_min = obj->path1_stat.ino;
++			left_max = left_min;
++			break;
++		case PATH1_PARENT_UID:
++			if (!obj->path1_parent_valid)
++				goto out;
++			left_min = obj->path1_parent_stat.uid;
++			left_max = left_min;
++			break;
++		case PATH1_PARENT_GID:
++			if (!obj->path1_parent_valid)
++				goto out;
++			left_min = obj->path1_parent_stat.gid;
++			left_max = left_min;
++			break;
++		case PATH1_PARENT_INO:
++			if (!obj->path1_parent_valid)
++				goto out;
++			left_min = obj->path1_parent_stat.ino;
++			left_max = left_min;
++			break;
++		case PATH2_PARENT_UID:
++			if (!obj->path2_parent_valid)
++				goto out;
++			left_min = obj->path2_parent_stat.uid;
++			left_max = left_min;
++			break;
++		case PATH2_PARENT_GID:
++			if (!obj->path2_parent_valid)
++				goto out;
++			left_min = obj->path2_parent_stat.gid;
++			left_max = left_min;
++			break;
++		case PATH2_PARENT_INO:
++			if (!obj->path2_parent_valid)
++				goto out;
++			left_min = obj->path2_parent_stat.ino;
++			left_max = left_min;
++			break;
++		case MAX_KEYWORD:
++			left_min = *ptr2++;
++			left_max = left_min;
++			i++;
++			break;
++		case MAX_KEYWORD + 1:
++			left_min = *ptr2++;
++			left_max = *ptr2++;
++			i += 2;
++			break;
++		}
++		switch (right) {
++		case TASK_UID:
++			right_min = task->uid;
++			right_max = right_min;
++			break;
++		case TASK_EUID:
++			right_min = task->euid;
++			right_max = right_min;
++			break;
++		case TASK_SUID:
++			right_min = task->suid;
++			right_max = right_min;
++			break;
++		case TASK_FSUID:
++			right_min = task->fsuid;
++			right_max = right_min;
++			break;
++		case TASK_GID:
++			right_min = task->gid;
++			right_max = right_min;
++			break;
++		case TASK_EGID:
++			right_min = task->egid;
++			right_max = right_min;
++			break;
++		case TASK_SGID:
++			right_min = task->sgid;
++			right_max = right_min;
++			break;
++		case TASK_FSGID:
++			right_min = task->fsgid;
++			right_max = right_min;
++			break;
++		case TASK_PID:
++			right_min = task->pid;
++			right_max = right_min;
++			break;
++		case TASK_PPID:
++			right_min = sys_getppid();
++			right_max = right_min;
++			break;
++		case PATH1_UID:
++			if (!obj->path1_valid)
++				goto out;
++			right_min = obj->path1_stat.uid;
++			right_max = right_min;
++			break;
++		case PATH1_GID:
++			if (!obj->path1_valid)
++				goto out;
++			right_min = obj->path1_stat.gid;
++			right_max = right_min;
++			break;
++		case PATH1_INO:
++			if (!obj->path1_valid)
++				goto out;
++			right_min = obj->path1_stat.ino;
++			right_max = right_min;
++			break;
++		case PATH1_PARENT_UID:
++			if (!obj->path1_parent_valid)
++				goto out;
++			right_min = obj->path1_parent_stat.uid;
++			right_max = right_min;
++			break;
++		case PATH1_PARENT_GID:
++			if (!obj->path1_parent_valid)
++				goto out;
++			right_min = obj->path1_parent_stat.gid;
++			right_max = right_min;
++			break;
++		case PATH1_PARENT_INO:
++			if (!obj->path1_parent_valid)
++				goto out;
++			right_min = obj->path1_parent_stat.ino;
++			right_max = right_min;
++			break;
++		case PATH2_PARENT_UID:
++			if (!obj->path2_parent_valid)
++				goto out;
++			right_min = obj->path2_parent_stat.uid;
++			right_max = right_min;
++			break;
++		case PATH2_PARENT_GID:
++			if (!obj->path2_parent_valid)
++				goto out;
++			right_min = obj->path2_parent_stat.gid;
++			right_max = right_min;
++			break;
++		case PATH2_PARENT_INO:
++			if (!obj->path2_parent_valid)
++				goto out;
++			right_min = obj->path2_parent_stat.ino;
++			right_max = right_min;
++			break;
++		case MAX_KEYWORD:
++			right_min = *ptr2++;
++			right_max = right_min;
++			i++;
++			break;
++		case MAX_KEYWORD + 1:
++			right_min = *ptr2++;
++			right_max = *ptr2++;
++			i += 2;
++			break;
++		}
++		if (match) {
++			if (left_min <= right_max && left_max >= right_min)
++				continue;
++		} else {
++			if (left_min > right_max || left_max < right_min)
++				continue;
++		}
++out: ;
++		return -EPERM;
++	}
 +	return 0;
 +}
 +
-+security_initcall(tmy_init);
++/**
++ * tmy_dump_condition - dump condition part.
++ * @head: pointer to "struct io_buffer".
++ * @ptr:  pointer to "struct condition_list". May be NULL.
++ *
++ * Returns nonzero if reading incomplete.
++ * Returns zero otherwise.
++ */
++int tmy_dump_condition(struct io_buffer *head, const struct condition_list *ptr)
++{
++	int i;
++	const unsigned long *ptr2;
++	char buffer[32];
++	if (!ptr)
++		goto last;
++	ptr2 = (unsigned long *) (((u8 *) ptr) + sizeof(*ptr));
++	memset(buffer, 0, sizeof(buffer));
++	for (i = 0; i < ptr->length; i++) {
++		const u16 match = (*ptr2) >> 16;
++		const u8 left = (*ptr2) >> 8;
++		const u8 right = *ptr2;
++		ptr2++;
++		if (tmy_io_printf(head, "%s", i ? " " : " if "))
++			break;
++		if (left < MAX_KEYWORD) {
++			if (tmy_io_printf(head, "%s", cc_keyword[left].keyword))
++				break;
++		} else {
++			tmy_print_ulong(buffer, sizeof(buffer) - 1, *ptr2++,
++					(match >> 2) & 3);
++			if (tmy_io_printf(head, "%s", buffer))
++				break;
++			i++;
++			if (left == MAX_KEYWORD + 1) {
++				tmy_print_ulong(buffer, sizeof(buffer) - 1,
++						*ptr2++, (match >> 4) & 3);
++				if (tmy_io_printf(head, "-%s", buffer))
++					break;
++				i++;
++			}
++		}
++		if (tmy_io_printf(head, "%s", (match & 1) ? "=" : "!="))
++			break;
++		if (right < MAX_KEYWORD) {
++			if (tmy_io_printf(head, "%s",
++					  cc_keyword[right].keyword))
++				break;
++		} else {
++			tmy_print_ulong(buffer, sizeof(buffer) - 1, *ptr2++,
++					(match >> 6) & 3);
++			if (tmy_io_printf(head, "%s", buffer))
++				break;
++			i++;
++			if (right == MAX_KEYWORD + 1) {
++				tmy_print_ulong(buffer, sizeof(buffer) - 1,
++						*ptr2++, (match >> 8) & 3);
++				if (tmy_io_printf(head, "-%s", buffer))
++					break;
++				i++;
++			}
++		}
++	}
++	if (i < ptr->length)
++		return -ENOMEM;
++last: ;
++	return tmy_io_printf(head, "\n") ? -ENOMEM : 0;
++}
+
