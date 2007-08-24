@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761389AbXHXQUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758930AbXHXQYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761389AbXHXQUF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 12:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756946AbXHXQTw
+	id S1758930AbXHXQYA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 12:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbXHXQXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 12:19:52 -0400
-Received: from mga02.intel.com ([134.134.136.20]:7467 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756646AbXHXQTu convert rfc822-to-8bit (ORCPT
+	Fri, 24 Aug 2007 12:23:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40710 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939AbXHXQXw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 12:19:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,305,1183359600"; 
-   d="scan'208";a="283429047"
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
+	Fri, 24 Aug 2007 12:23:52 -0400
+Date: Fri, 24 Aug 2007 09:17:20 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Zan Lynx <zlynx@acm.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
+       Kees Cook <kees@outflux.net>
+Subject: Re: 2.6.23-rc3-mm1 - memory layout change?  - lost support for
+ MAP_32BIT? - mono crashes
+Message-ID: <20070824091720.4c6f4227@laptopd505.fenrus.org>
+In-Reply-To: <Pine.LNX.4.64.0708240157430.5402@jikos.suse.cz>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<1187834905.190825.16.camel@localhost>
+	<Pine.LNX.4.64.0708231126380.2460@twin.jikos.cz>
+	<20070823165201.717ed62d.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0708240157430.5402@jikos.suse.cz>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [PATCH] i386: Fix a couple busy loops in mach_wakecpu.h:wait_for_init_deassert()
-Date: Fri, 24 Aug 2007 09:19:47 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A023EB8FB@scsmsx411.amr.corp.intel.com>
-In-reply-to: <200708241259.33659.vda.linux@googlemail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] i386: Fix a couple busy loops in mach_wakecpu.h:wait_for_init_deassert()
-Thread-Index: AcfmRlb48uQPXHOXSlajn+/gvFRV/gAIveXw
-References: <46C2350A.1010807@redhat.com> <20070815081841.GA16551@osiris.boeblingen.de.ibm.com> <alpine.LFD.0.999.0708160606580.24380@enigma.security.iitk.ac.in> <200708241259.33659.vda.linux@googlemail.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Denys Vlasenko" <vda.linux@googlemail.com>,
-       "Satyam Sharma" <satyam@infradead.org>
-Cc: "Heiko Carstens" <heiko.carstens@de.ibm.com>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>,
-       "Chris Snook" <csnook@redhat.com>, <clameter@sgi.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <linux-arch@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       <netdev@vger.kernel.org>, "Andrew Morton" <akpm@linux-foundation.org>,
-       <ak@suse.de>, <davem@davemloft.net>, <schwidefsky@de.ibm.com>,
-       <wensong@linux-vs.org>, <horms@verge.net.au>, <wjiang@resilience.com>,
-       <cfriesen@nortel.com>, <zlynx@acm.org>, <rpjday@mindspring.com>,
-       <jesper.juhl@gmail.com>, <segher@kernel.crashing.org>
-X-OriginalArrivalTime: 24 Aug 2007 16:19:48.0201 (UTC) FILETIME=[9742D590:01C7E66A]
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>  static inline void wait_for_init_deassert(atomic_t *deassert)
->>  {
->> -	while (!atomic_read(deassert));
->> +	while (!atomic_read(deassert))
->> +		cpu_relax();
->>  	return;
->>  }
->
-> For less-than-briliant people like me, it's totally non-obvious that
-> cpu_relax() is needed for correctness here, not just to make P4 happy.
+On Fri, 24 Aug 2007 02:09:59 +0200 (CEST)
+Jiri Kosina <jkosina@suse.cz> wrote:
 
-Not just P4 ... there are other threaded cpus where it is useful to
-let the core know that this is a busy loop so it would be a good thing
-to let other threads have priority.
+> (some more CCs added)
+> 
+> On Thu, 23 Aug 2007, Andrew Morton wrote:
+> 
+> > It is quite unobvious to me that the whole pie-randomization thing
+> > is worth merging.  Why shouldn't we just drop the lot?
+> 
+> Hi Andrew,
+> 
+> well, whenever it comes to address space layout randomization, there 
+> usually follows a huge debate whether it is needed or not, some
+> people think it's useful and powerful security protection against
+> 0day attacks, other people think that it's just fighting the bugs in
+> userspace software in a wrong way.
 
-Even on a non-threaded cpu the cpu_relax() could be useful in the
-future to hint to the cpu that it could drop into a lower power
-hogging state.
+randomizing PIE's is as a whole worth getting right and in mainline.
+That means that ONLY the PIE text should be randomized, not that mmap
+should break ;)
 
-But I agree with your main point that the loop without the cpu_relax()
-looks like it ought to work because atomic_read() ought to actually
-go out and read memory each time around the loop.
-
--Tony
+Randomizing address space is very widely recognized as being part of a
+whole set of things (and there's a lot of discussion about what that
+whole set should be, each vendor will say their solution should be part
+of that and that all others suck) that you need to do to make it a LOT
+harder to get a general purpose exploit working. (It's not fool proof;
+it's more comparable than a 4 tumble number lock than it is to a iris
+scan; yet even a tumble number lock makes it harder to break into your
+gym locker)
