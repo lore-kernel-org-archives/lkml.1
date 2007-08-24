@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759607AbXHXUnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbXHXUt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759607AbXHXUnP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 16:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbXHXUm5
+	id S1760205AbXHXUt7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 16:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbXHXUtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 16:42:57 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:49144 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751888AbXHXUmz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 16:42:55 -0400
-Date: Fri, 24 Aug 2007 15:42:44 -0500
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Jan-Bernd Themann <ossthema@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>,
-       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: RFC: issues concerning the next NAPI interface
-Message-ID: <20070824204243.GI4282@austin.ibm.com>
-References: <8VHRR-45R-17@gated-at.bofh.it> <8VKwj-8ke-27@gated-at.bofh.it> <E1IOeSm-0000bm-Jo@be1.lrz>
+	Fri, 24 Aug 2007 16:49:51 -0400
+Received: from tisolutions.biz ([62.253.227.66]:1454 "EHLO
+	sideshow-bob.tisolutions.biz" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752589AbXHXUtu convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 16:49:50 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6487.1
+content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1IOeSm-0000bm-Jo@be1.lrz>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: "exception Emask: 0x42" errors with 2.6.22.x and SATA drives
+Date: Fri, 24 Aug 2007 21:49:45 +0100
+Message-ID: <94439DDF32D7464A916B5068EFF76B3B0225E6D5@bart.tisolutions.biz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: "exception Emask: 0x42" errors with 2.6.22.x and SATA drives
+Thread-Index: Acfmgp6kQFsFRSxYTNy7ZGo/yAJ8WgABUP8Q
+From: "Dermot Bradley" <dermot.bradley@sla-mobile.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 09:04:56PM +0200, Bodo Eggert wrote:
-> Linas Vepstas <linas@austin.ibm.com> wrote:
-> > On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
-> >> 3) On modern systems the incoming packets are processed very fast. Especially
-> >> on SMP systems when we use multiple queues we process only a few packets
-> >> per napi poll cycle. So NAPI does not work very well here and the interrupt
-> >> rate is still high.
-> > 
-> > worst-case network ping-pong app: send one
-> > packet, wait for reply, send one packet, etc.
-> 
-> Possible solution / possible brainfart:
-> 
-> Introduce a timer, but don't start to use it to combine packets unless you
-> receive n packets within the timeframe. If you receive less than m packets
-> within one timeframe, stop using the timer. The system should now have a
-> decent response time when the network is idle, and when the network is
-> busy, nobody will complain about the latency.-)
+Alan Cox wrote:
 
-Ohh, that was inspirational. Let me free-associate some wild ideas.
+> > I'm getting the following errors on occasion:
+> >
+> > Aug 24 13:19:22 playpbx kernel: APIC error on CPU0: 00(40)
+> > Aug 24 13:19:33 playpbx kernel: APIC error on CPU0: 40(40)
+>
+> This is not good.
 
-Suppose we keep a running average of the recent packet arrival rate,
-Lets say its 10 per millisecond ("typical" for a gigabit eth runnning
-flat-out).  If we could poll the driver at a rate of 10-20 per
-millisecond (i.e. letting the OS do other useful work for 0.05 millisec),
-then we could potentially service the card without ever having to enable 
-interrupts on the card, and without hurting latency.
+I've two things in mind to try:
 
-If the packet arrival rate becomes slow enough, we go back to an
-interrupt-driven scheme (to keep latency down).
+(1) there is 1 newer official BIOS release and 2 beta BIOSes out for
+this motherboard. The recent official BIOS (0901) does mention Linux:
 
-The main problem here is that, even for HZ=1000 machines, this amounts 
-to 10-20 polls per jiffy.  Which, if implemented in kernel, requires 
-using the high-resolution timers. And, umm, don't the HR timers require
-a cpu timer interrupt to make them go? So its not clear that this is much
-of a win.
+   "Fixed Red Hat Enterprise Linux 4 installation failed"
 
-The eHEA is a 10 gigabit device, so it can expect 80-100 packets per
-millisecond for large packets, and even more, say 1K packets per
-millisec, for small packets. (Even the spec for my 1Gb spidernet card
-claims its internal rate is 1M packets/sec.) 
+So maybe a BIOS update will fix things.
 
-Another possiblity is to set HZ to 5000 or 20000 or something humongous
-... after all cpu's are now faster! But, since this might be wasteful,
-maybe we could make HZ be dynamically variable: have high HZ rates when
-there's lots of network/disk activity, and low HZ rates when not. That
-means a non-constant jiffy.
+(2) I will try booting with the "noapic" kernel option to see what
+difference that makes.
 
-If all drivers used interrupt mitigation, then the variable-high
-frequency jiffy could take thier place, and be more "fair" to everyone.
-Most drivers would be polled most of the time when they're busy, and 
-only use interrupts when they're not.
- 
---linas
+> Neither are good, the latter is probably a drive firmware problem and
+> the kernel will give up using NCQ with it if it keeps doing that,
+> which should be just fine.
+
+So I guess these drives should be added to the ata_blacklist_entry in
+libata-core.c with ATA_HORKAGE_NONCQ?
+
+
+
+
+Stirk, Lamont & Associates Ltd.
+Registered Address: Thomas Andrews House, Queens Road, Belfast,  BT3 9DU
+Registered in Northern Ireland, Number: NI 47983. VAT Number: 832 2778 22
+
