@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbXHXO7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbXHXPDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757903AbXHXO7r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 10:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbXHXO7k
+	id S1757189AbXHXPDE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 11:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbXHXPCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 10:59:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54648 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751748AbXHXO7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 10:59:39 -0400
-Date: Fri, 24 Aug 2007 16:59:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Schwartz <davids@webmaster.com>
+	Fri, 24 Aug 2007 11:02:55 -0400
+Received: from webmailfront01.ispgateway.de ([80.67.16.111]:44587 "EHLO
+	webmailfront01.ispgateway.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752072AbXHXPCy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 11:02:54 -0400
+Message-ID: <20070824170226.hu6yyhyy8oocs4c0@webmail.df.eu>
+Date: Fri, 24 Aug 2007 17:02:26 +0200
+From: Clemens Ladisch <clemens@ladisch.de>
+To: David Griffith <dgriffi@cs.csubak.edu>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v20, for v2.6.22.5,
-	v2.6.21.7,v2.6.20.16
-Message-ID: <20070824145936.GB24701@elte.hu>
-References: <20070823102523.GA5430@elte.hu> <MDEHLPKNGKAHNMBLJOLKMENNGFAC.davids@webmaster.com>
+Subject: Re: MOTU Fastlane USB MIDI interface
+References: <Pine.GSO.4.55.0708100242000.25856@helios.cs.csubak.edu>
+	<20070816093703.sndy0gg44gk0o0ko@webmail.df.eu>
+	<Pine.GSO.4.55.0708160308450.24052@helios.cs.csubak.edu>
+	<20070816174510.6o8cray64g8kosos@webmail.df.eu>
+	<Pine.GSO.4.55.0708161417270.9354@helios.cs.csubak.edu>
+	<1187331453.13767.1205847147@webmail.messagingengine.com>
+	<Pine.GSO.4.55.0708170202270.26403@helios.cs.csubak.edu>
+	<1187591842.11769.1206227263@webmail.messagingengine.com>
+	<Pine.GSO.4.55.0708200042470.26684@helios.cs.csubak.edu>
+In-Reply-To: <Pine.GSO.4.55.0708200042470.26684@helios.cs.csubak.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKMENNGFAC.davids@webmaster.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0066]
+Content-Transfer-Encoding: 7bit
+User-Agent: domainFACTORY
+X-Originating-IP: 213.238.46.206
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Griffith wrote:
+> On Mon, 20 Aug 2007, Clemens Ladisch wrote:
+>> David Griffith wrote:
+>> > $ aplaymidi -p 20:0 casablan.mid
+>> >
+>> > Nothing is written to the Fastlane.  No lights.  Nothing.
+>>
+>> Please run "amidi -d -p virtual" and then play to the virtual port
+>> created by amidi, to see if MIDI playback works even without hardware.
+>
+> $ aplaymidi -p 128:0 casablan.mid
+>
+> At this point, MIDI data flew by in the xterm in which amidi was running.
 
-* David Schwartz <davids@webmaster.com> wrote:
+Hmmm, it's either the driver or device.
 
-> $ diff sched-cfs-v2.6.23-v20.patch sched-cfs-v2.6.23-v20.1.patch 
-> $ 
-> 
-> It's not funny unless you change something, IMO.
+Please uncomment the "#define DUMP_PACKETS" in line 58 of sound/usb/usbmidi.c
+and recompile the driver.  All MIDI data should then be visible in the system
+log.
 
-look at the contents and you'll see why :-)
 
-	Ingo
+Regards,
+Clemens
+
