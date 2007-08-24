@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759806AbXHXPiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbXHXPid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759806AbXHXPiA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 11:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbXHXPht
+	id S1760003AbXHXPid (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 11:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757282AbXHXPiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 11:37:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45538 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757282AbXHXPhs (ORCPT
+	Fri, 24 Aug 2007 11:38:11 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43712 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758721AbXHXPiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 11:37:48 -0400
-Subject: Re: TV card detected wrongly by the kernel. Any chance to get this
-	fixed?
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <fak8ei$jg1$1@sea.gmane.org>
-References: <fai89b$ms1$1@sea.gmane.org> <20070822215148.GL30705@stusta.de>
-	 <1187823357.7104.25.camel@gaivota> <fak8ei$jg1$1@sea.gmane.org>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 24 Aug 2007 12:37:42 -0300
-Message-Id: <1187969862.6621.85.camel@gaivota>
+	Fri, 24 Aug 2007 11:38:09 -0400
+From: akepner@sgi.com
+Date: Fri, 24 Aug 2007 08:37:03 -0700
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: RFC: issues concerning the next NAPI interface
+Message-ID: <20070824153703.GN5592@sgi.com>
+References: <200708241559.17055.ossthema@de.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.11.90-1mdv2008.0 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <200708241559.17055.ossthema@de.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Em Qui, 2007-08-23 Ã s 17:23 +0200, Manuel Reimer escreveu:
-> Mauro Carvalho Chehab wrote:
-> > If your board have an unique PCI ID, we may add it to the driver,
-> > avoiding this need. For this, we will need the results of the following
-> > command:
-> > 
-> > lspci -vv -nn
+On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
+> .......
+> 3) On modern systems the incoming packets are processed very fast. Especially
+>    on SMP systems when we use multiple queues we process only a few packets
+>    per napi poll cycle. So NAPI does not work very well here and the interrupt 
+>    rate is still high. What we need would be some sort of timer polling mode 
+>    which will schedule a device after a certain amount of time for high load 
+>    situations. With high precision timers this could work well. Current
+>    usual timers are too slow. A finer granularity would be needed to keep the
+>    latency down (and queue length moderate).
 > 
-> I'm using card=65 to use my card. I never tried the tuner (don't need 
-> it) but the composite-in works for displaying the input of my sattelite 
-> receiver and I'm able to read videotext, too. Without "card=65", I only 
-> got black/white output...
 
-> 00:10.0 Multimedia video controller [0400]: Brooktree Corporation Bt878 
-> Video Capture [109e:036e] (rev 11)
-
-I can't see and subsystem ID. Since it is not on the few range of boards
-where we know other ways for detecting the board internals, there's no
-known way for auto-detecting your board.
-
-The solution for you is to add:
-	options bttv card=65
-into /etc/modprobe.conf (or /etc/modules.conf, or /etc/modules -
-depending on your distro).
-
-This way, every time the driver is loaded, the card=65 option will
-automatically be used by the bttv driver.
+We found the same on ia64-sn systems with tg3 a couple of years 
+ago. Using simple interrupt coalescing ("don't interrupt until 
+you've received N packets or M usecs have elapsed") worked 
+reasonably well in practice. If your h/w supports that (and I'd 
+guess it does, since it's such a simple thing), you might try 
+it.
 
 -- 
-Cheers,
-Mauro
+Arthur
 
