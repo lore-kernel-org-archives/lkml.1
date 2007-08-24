@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764567AbXHXRr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbXHXRsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764567AbXHXRr3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 13:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758274AbXHXRrU
+	id S932190AbXHXRsx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 13:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761198AbXHXRsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 13:47:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43867 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754029AbXHXRrT (ORCPT
+	Fri, 24 Aug 2007 13:48:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59744 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761031AbXHXRsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 13:47:19 -0400
-Date: Fri, 24 Aug 2007 10:46:01 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Thomas Meyer <thomas@m3y3r.de>, Shish <shish@shishnet.org>,
-       Karl Meyer <adhocrocker@gmail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Thomas Voegtle <tv@lio96.de>
-Subject: Re: [3/4] 2.6.23-rc3: known regressions v3
-Message-ID: <20070824104601.04a6b529@localhost>
-In-Reply-To: <46CF1796.1020004@googlemail.com>
-References: <46CF0DEF.5040107@googlemail.com>
-	<46CF1796.1020004@googlemail.com>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+	Fri, 24 Aug 2007 13:48:43 -0400
+Date: Fri, 24 Aug 2007 10:42:42 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [PATCH] export i386 smp_call_function_mask() to modules
+Message-ID: <20070824104242.2f20e2c9@laptopd505.fenrus.org>
+In-Reply-To: <46CEFB03.5040302@bull.net>
+References: <46CEFB03.5040302@bull.net>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O
-> Subject         : New wake ups from sky2
-> References      : http://lkml.org/lkml/2007/7/20/386
-> Last known good : ?
-> Submitter       : Thomas Meyer <thomas@m3y3r.de>
-> Caused-By       : Stephen Hemminger <shemminger@osdl.org>
->                   commit eb35cf60e462491249166182e3e755d3d5d91a28
-> Handled-By      : Stephen Hemminger <shemminger@osdl.org>
-> Status          : unknown
-> 
->
+On Fri, 24 Aug 2007 17:36:35 +0200
+Laurent Vivier <Laurent.Vivier@bull.net> wrote:
 
-Fix posted to netdev (sky2 1.17 series), but Jeff hasn't 
-applied it.
+> This patch export i386 smp_call_function_mask() with EXPORT_SYMBOL().
+> 
+> This function is needed by KVM to call a function on a set of CPUs.
+> 
+>  arch/i386/kernel/smp.c |    7 +++++++
+>  include/asm-i386/smp.h |    9 +++------
+>  2 files changed, 10 insertions(+), 6 deletions(-)
+> 
+> Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+
+hmm isn't it being an inline also making it available for KVM to use?
+If so... isn't your patch description entirely not matching what the
+code does?
