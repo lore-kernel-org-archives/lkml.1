@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbXHXP4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760838AbXHXP7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761190AbXHXP4Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 11:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbXHXP4P
+	id S1760838AbXHXP7J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 11:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbXHXP65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 11:56:15 -0400
-Received: from waste.org ([66.93.16.53]:44976 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753029AbXHXP4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 11:56:15 -0400
-Date: Fri, 24 Aug 2007 10:57:13 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, lode leroy <lode_leroy@hotmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] memchr (trivial) optimization
-Message-ID: <20070824155713.GL21720@waste.org>
-References: <BAY105-F323FF3DC8E6C544A2BBE98FFD50@phx.gbl> <200708230213.21332.ioe-lkml@rameria.de> <20070824001351.GA20266@waste.org> <Pine.LNX.4.64.0708241447560.28540@fbirervta.pbzchgretzou.qr>
+	Fri, 24 Aug 2007 11:58:57 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:39073 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753280AbXHXP64 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 11:58:56 -0400
+Date: Fri, 24 Aug 2007 08:57:35 -0700
+From: Greg KH <greg@kroah.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Josh Boyer <jwboyer@gmail.com>,
+       Andy Isaacson <adi@hexapodia.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux
+	Foundation Technical Advisory Board Elections
+Message-ID: <20070824155735.GA14978@kroah.com>
+References: <20070823002618.GO9163@parisc-linux.org> <20070823003748.GR30556@waste.org> <20070823004209.GP9163@parisc-linux.org> <20070823011953.GS30556@waste.org> <1187832907.3410.141.camel@localhost.localdomain> <20070824012730.GA1243@hexapodia.org> <625fc13d0708231934q5b369b4fh1a5c83def0e56a0d@mail.gmail.com> <20070824025254.GH21720@waste.org> <20070824025504.GT9163@parisc-linux.org> <20070824032228.GJ21720@waste.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708241447560.28540@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070824032228.GJ21720@waste.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 02:54:48PM +0200, Jan Engelhardt wrote:
+On Thu, Aug 23, 2007 at 10:22:28PM -0500, Matt Mackall wrote:
+> On Thu, Aug 23, 2007 at 08:55:04PM -0600, Matthew Wilcox wrote:
+> > On Thu, Aug 23, 2007 at 09:52:54PM -0500, Matt Mackall wrote:
+> > > The other part of the puzzle is including the wider Linux community.
+> > 
+> > As I said; what's wrong with just using SPI membership?  It's not like
+> > it is remotely hard for kernel hackers to gain membership in SPI.  And
+> > somebody else takes care of the bureaucracy for you.
 > 
-> On Aug 23 2007 19:13, Matt Mackall wrote:
-> >
-> >And you can do even better with this:
-> >
-> >void *memchr(const void *s, int c, size_t n)
-> >{
-> >       const unsigned char *p = s, *e = s + n;
-> >       const unsigned char *e = p + n;
-> 
-> Uhm, you have two "e"s in there.
+> Ahh, I didn't realize you were suggesting making -them- do the work
+> instead of just stealing their model. I suppose that could work,
+> provided no one finds being an SPI member objectionable and they'd
+> provide us with their member list.
 
-Yep, that's what I get for editing in email.
+I currently object to becoming an SPI member due to a number of personal
+reasons at this point in time.
 
-> Or do it glibc-style
-> 
-> void *memchr(const void *s, unsigned char c, size_t n)
-> {
-> 	...
-> 	for (; p + 3 < e; p += 4) {
-> 		if (c == p[0])
-> 			return (void *)&p[0];
-> 		if (c == p[1])
-> 			return (void *)&p[1];
-> 		if (c == p[2])
-> 			return (void *)&p[2];
-> 		if (c == p[3])
-> 			return (void *)&p[3];
-> 	}
-> 	... /* check the rest */
-> }
+thanks,
 
-Yes, very funny.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+greg k-h
