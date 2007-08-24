@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758308AbXHXU1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbXHXU1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758308AbXHXU1K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 16:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbXHXU05
+	id S1760247AbXHXU1b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 16:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759096AbXHXU1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 16:26:57 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:60041 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751570AbXHXU04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 16:26:56 -0400
-Date: Fri, 24 Aug 2007 21:34:39 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, postfail@hushmail.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] /drivers/char sx.c ioremap -> pci_ioremap api
-Message-ID: <20070824213439.0007e653@the-village.bc.nu>
-In-Reply-To: <46CF399E.3010808@gmail.com>
-References: <46CF2849.2090008@gmail.com>
-	<4af2d03a0708241159v56b46299h46df9777a98590e5@mail.gmail.com>
-	<20070824201530.5d741b37@the-village.bc.nu>
-	<46CF399E.3010808@gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 24 Aug 2007 16:27:13 -0400
+Received: from hu-out-0506.google.com ([72.14.214.230]:30463 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756724AbXHXU1H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 16:27:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=YBsbhn+2PUIbjn2vRjCBQo/FLUXAY/usR9dA39QFQLWYRtahXGKD4IvqEscQOUDZcX1PSO/nyRPBHz8boP3iGlzqu66K8SRvZ6V7p2kGEYMElZ/ElIu818vSBlTkywjSTVZyTI9NUxBkVmqHVF1luAYaaUpRgaHGo3rwg1WBvTU=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] i386: Fix a couple busy loops in mach_wakecpu.h:wait_for_init_deassert()
+Date: Fri, 24 Aug 2007 21:26:57 +0100
+User-Agent: KMail/1.9.1
+Cc: Satyam Sharma <satyam@infradead.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Chris Snook <csnook@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org, Nick Piggin <nickpiggin@yahoo.com.au>
+References: <46C2350A.1010807@redhat.com> <alpine.LFD.0.999.0708241812110.20322@enigma.security.iitk.ac.in> <Pine.LNX.4.64.0708241005360.20501@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0708241005360.20501@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708242126.58305.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007 22:03:42 +0200
-Jiri Slaby <jirislaby@gmail.com> wrote:
+On Friday 24 August 2007 18:06, Christoph Lameter wrote:
+> On Fri, 24 Aug 2007, Satyam Sharma wrote:
+> > But if people do seem to have a mixed / confused notion of atomicity
+> > and barriers, and if there's consensus, then as I'd said earlier, I
+> > have no issues in going with the consensus (eg. having API variants).
+> > Linus would be more difficult to convince, however, I suspect :-)
+>
+> The confusion may be the result of us having barrier semantics in
+> atomic_read. If we take that out then we may avoid future confusions.
 
-> Alan Cox napsal(a):
-> > ase, 0x80);
-> >> remove also the hwbase var.
-> >>
-> >>> +	rebase = pci_iomap(pdev, 0, 0x80);
-> >>>   	t = readl(rebase + CNTRL_REG_OFFSET);
-> > 
-> > Switch to ioread* if you are using the iomap interface. Its not a trivial
-> 
-> Why, if you know it's surely a mem region (and thus you rely on it and do
-> ioremap)? There are many places in the kernel, where this approach is used, e.g.
-> libata piix.
+I think better name may help. Nuke atomic_read() altogether.
 
-Every single one of them is wrong. The encoding of iomap values is
-platform dependant. Fixed in my tree.
-> 
-> > conversion and its slower and bulkier - the original ioremap was much
-> > better
-> 
-> at least get rid of the reading the hwbase address from pci conf space, use
-> pci_resource_start instead.
+n = atomic_value(x);	// doesnt hint as strongly at reading as "atomic_read"
+n = atomic_fetch(x);	// yes, we _do_ touch RAM
+n = atomic_read_uncached(x); // or this
 
-Agreed entirely
+How does that sound?
+--
+vda
