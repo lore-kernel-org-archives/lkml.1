@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbXHXKb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757030AbXHXKfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756416AbXHXKb5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 06:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbXHXKbs
+	id S1757030AbXHXKfG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 06:35:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbXHXKe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 06:31:48 -0400
-Received: from server001.webpack.hosteurope.de ([80.237.130.9]:55745 "EHLO
-	server001.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753015AbXHXKbr (ORCPT
+	Fri, 24 Aug 2007 06:34:56 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:32788 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752654AbXHXKez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 06:31:47 -0400
-From: Andi Drebes <lists-receive@programmierforen.de>
-To: postfail@hushmail.com
-Subject: Re: Ideas on column length in kernel "problem"?
-Date: Fri, 24 Aug 2007 12:31:52 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-References: <20070823035442.6FD0DDA81F@mailserver7.hushmail.com>
-In-Reply-To: <20070823035442.6FD0DDA81F@mailserver7.hushmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 24 Aug 2007 06:34:55 -0400
+Date: Fri, 24 Aug 2007 11:41:07 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andy Isaacson <adi@hexapodia.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Matt Mackall <mpm@selenic.com>, Matthew Wilcox <matthew@wil.cx>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux
+ Foundation Technical Advisory Board Elections
+Message-ID: <20070824114107.05b57909@the-village.bc.nu>
+In-Reply-To: <20070824012730.GA1243@hexapodia.org>
+References: <1187796179.3410.32.camel@localhost.localdomain>
+	<20070822224400.GA17255@srcf.ucam.org>
+	<20070823002618.GO9163@parisc-linux.org>
+	<20070823003748.GR30556@waste.org>
+	<20070823004209.GP9163@parisc-linux.org>
+	<20070823011953.GS30556@waste.org>
+	<1187832907.3410.141.camel@localhost.localdomain>
+	<20070824012730.GA1243@hexapodia.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708241231.52767.lists-receive@programmierforen.de>
-X-bounce-key: webpack.hosteurope.de;lists-receive@programmierforen.de;1187951507;327ae45b;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Many free (and not-free) mail clients wordwrap.  Hushmail wraps at 
-> 68 (verified), Yahoo has options to wrap at a max of 99, and Gmail 
-> was somewhere around 85-90 as I recall.  Not sure on other free / 
-> inexpensive clients.  
-It happens so often that people send mangled patches that it might be useful 
-to create a wiki page or something with the most common email clients and a 
-sample configuration that prevents them from mangling patches. Maybe somebody 
-feels like doing so in his / her spare time.
- 
-> However, several code modules have code lines with column lengths 
-> well over 80 (the worst I have seen was 211).  This prevents people 
-> with "minimal function" email clients (I'm being generous) from 
-> making changes in the area of these long code lines, or from even 
-> submitting fixes for the line length problem in modules themselves.
-I think this is also a matter of conding style. Documentation/CodingStyle 
-says:
+> How about one vote per git commit merged to linus' tree?
 
-"The limit on the length of lines is 80 columns and this is a hard limit."
+So you think people who send hundreds of small typo fixes are worth more
+than say someone who spends 3 months writing a new driver and gets it in
+with one commit ?
 
-So actually there shouldn't be any line longer than that. Perhaps it would be 
-nice to create a patches that shorten the lines and to send them to the 
-kernel-janitors ml.
+Curious....
 
-<snip>
-> Note -- I am well aware that us 'poor users' could just 'get a real 
-> email service', and if anyone knows of a free/inexpensive mail 
-> client that will be able to handle the wordwrap requirements for 
-> the current state of the linux tree please advise.
-see above.
+And very gameable of course. James proposal at least has the advantage of
+simplicity, of drawing from a rough set of relevant people (far from
+perfectly) and a certain amount of random changeover according to the KS
+of the year
 
-	Cheers,
-		Andi
+I would make only one change personally - extend an email vote to the
+people on the final invite list who can't for various reasons make it.
