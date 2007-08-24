@@ -1,111 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764677AbXHXTiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932693AbXHXTmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764677AbXHXTiN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 15:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbXHXTh7
+	id S932693AbXHXTmR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 15:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXHXTmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 15:37:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41131 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753803AbXHXTh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 15:37:59 -0400
-Date: Fri, 24 Aug 2007 21:37:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [git pull request] scheduler updates
-Message-ID: <20070824193758.GA6440@elte.hu>
-References: <20070824141215.GA24403@elte.hu> <alpine.LFD.0.999.0708241105410.25853@woody.linux-foundation.org>
+	Fri, 24 Aug 2007 15:42:05 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:37387 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbXHXTmE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 15:42:04 -0400
+Date: Fri, 24 Aug 2007 21:42:01 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] fix undefined reference to device_power_up/resume
+Message-ID: <20070824194201.GA8737@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708241105410.25853@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Current Linus tree fails to link on pmac32:
 
-> On Fri, 24 Aug 2007, Ingo Molnar wrote:
-> > 
-> > Then there's also a change/tweak that increases the default 
-> > granularity: it's still well below human perception so should not be 
-> > noticeable, but servers win a bit from less preemption of CPU-bound 
-> > tasks. (this is also the first step towards eliminating HZ from the 
-> > granularity default calculation.)
-> 
-> Your explanation makes NO sense.
-> 
-> It doesn't eliminate HZ at all. It's still there, and it's still 
-> totally bogus.
+drivers/built-in.o: In function `pmac_wakeup_devices':
+via-pmu.c:(.text+0x5bab4): undefined reference to `device_power_up'
+via-pmu.c:(.text+0x5bb08): undefined reference to `device_resume'
+drivers/built-in.o: In function `pmac_suspend_devices':
+via-pmu.c:(.text+0x5c260): undefined reference to `device_power_down'
+via-pmu.c:(.text+0x5c27c): undefined reference to `device_resume'
+make[1]: *** [.tmp_vmlinux1] Error 1
 
-fair enough, and i fixed that.
+changing CONFIG_PM > CONFIG_PM_SLEEP leads to:
 
-( i called the previous patch the "first step" because i was too chicken
-  to pick a single granularity default :-/ )
+drivers/built-in.o: In function `pmu_led_set':
+via-pmu-led.c:(.text+0x5cdca): undefined reference to `pmu_sys_suspended'
+via-pmu-led.c:(.text+0x5cdce): undefined reference to `pmu_sys_suspended'
+drivers/built-in.o: In function `pmu_req_done':
+via-pmu-led.c:(.text+0x5ce3e): undefined reference to `pmu_sys_suspended'
+via-pmu-led.c:(.text+0x5ce42): undefined reference to `pmu_sys_suspended'
+drivers/built-in.o: In function `adb_init':
+(.init.text+0x4c5c): undefined reference to `pmu_register_sleep_notifier'
+make[1]: *** [.tmp_vmlinux1] Error 1
 
-for the current queue i went for settings close to that of HZ=250 - 
-that's the most common HZ variant that was tested previously. That means 
-10 msec on a 1-way box, 20 msec on a 2-way box, 30 msec on a 4-way box, 
-etc. (up to a 100 msecs ceiling.)
+So change even more places from PM to PM_SLEEP to allow linking.
 
-> Please just *remove* that thing. It has no possible value! You claim 
-> that the preemption granularity is in "ns", and that it defaults to "3 
-> msec", but it does no such thing at all, even with your patch. It 
-> does:
-> 
-> 	unsigned int sysctl_sched_granularity __read_mostly = 3000000000ULL/HZ;
-> 
-> which is just total and utter CRAP!
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-ok, i've removed that and all the other HZ hacks too. I've uploaded a 
-new queue with that fixed (and all other patches unchanged):
+---
+ drivers/macintosh/adb.c     |    4 ++--
+ drivers/macintosh/via-pmu.c |   34 +++++++++++++++++-----------------
+ include/linux/pmu.h         |    2 +-
+ 3 files changed, 20 insertions(+), 20 deletions(-)
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
-
-booted it on a number of boxes (32-bit and 64-bit). The question will be 
-desktop behavior. I typically run my test-desktops with HZ=100 to make 
-sure that desktop workloads are fine with large granularity values and 
-coarse timers too, so i'm reasonably positive about this default.
-
-We'll see - people can still readily tweak these values under 
-CONFIG_SCHED_DEBUG=y and give us feedback, and if there's enough demand 
-for very-finegrained scheduling (throughput be damned), we could 
-introduce yet another config option or enable the runtime tunable 
-unconditionally. (Or maybe the best option is Peter Zijlstra's adaptive 
-granularity idea, that gives the best of both worlds.)
-
-	Ingo
-
------------------->
-Bruce Ashfield (1):
-      sched: CONFIG_SCHED_GROUP_FAIR=y fixlet
-
-Dmitry Adamushko (1):
-      sched: optimize task_tick_rt() a bit
-
-Ingo Molnar (3):
-      sched: remove HZ dependency from the granularity default
-      sched: tidy up and simplify the bonus balance
-      sched: fix startup penalty calculation
-
-Peter Zijlstra (2):
-      sched: simplify bonus calculation #1
-      sched: simplify bonus calculation #2
-
-Sven-Thorsten Dietrich (1):
-      sched: simplify can_migrate_task()
-
- sched.c      |    8 +-------
- sched_fair.c |   35 +++++++++++++++++++----------------
- sched_rt.c   |   11 ++++++++---
- 3 files changed, 28 insertions(+), 26 deletions(-)
+--- a/drivers/macintosh/adb.c
++++ b/drivers/macintosh/adb.c
+@@ -89,7 +89,7 @@ static int sleepy_trackpad;
+ static int autopoll_devs;
+ int __adb_probe_sync;
+ 
+-#ifdef CONFIG_PM
++#ifdef CONFIG_PM_SLEEP
+ static void adb_notify_sleep(struct pmu_sleep_notifier *self, int when);
+ static struct pmu_sleep_notifier adb_sleep_notifier = {
+ 	adb_notify_sleep,
+@@ -313,7 +313,7 @@ int __init adb_init(void)
+ 		printk(KERN_WARNING "Warning: no ADB interface detected\n");
+ 		adb_controller = NULL;
+ 	} else {
+-#ifdef CONFIG_PM
++#ifdef CONFIG_PM_SLEEP
+ 		pmu_register_sleep_notifier(&adb_sleep_notifier);
+ #endif /* CONFIG_PM */
+ #ifdef CONFIG_PPC
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -152,10 +152,10 @@ static spinlock_t pmu_lock;
+ static u8 pmu_intr_mask;
+ static int pmu_version;
+ static int drop_interrupts;
+-#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
+ static int option_lid_wakeup = 1;
+-#endif /* CONFIG_PM && CONFIG_PPC32 */
+-#if (defined(CONFIG_PM)&&defined(CONFIG_PPC32))||defined(CONFIG_PMAC_BACKLIGHT_LEGACY)
++#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
++#if (defined(CONFIG_PM_SLEEP)&&defined(CONFIG_PPC32))||defined(CONFIG_PMAC_BACKLIGHT_LEGACY)
+ static int sleep_in_progress;
+ #endif
+ static unsigned long async_req_locks;
+@@ -875,7 +875,7 @@ proc_read_options(char *page, char **sta
+ {
+ 	char *p = page;
+ 
+-#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
+ 	if (pmu_kind == PMU_KEYLARGO_BASED &&
+ 	    pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) >= 0)
+ 		p += sprintf(p, "lid_wakeup=%d\n", option_lid_wakeup);
+@@ -916,7 +916,7 @@ proc_write_options(struct file *file, co
+ 	*(val++) = 0;
+ 	while(*val == ' ')
+ 		val++;
+-#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
+ 	if (pmu_kind == PMU_KEYLARGO_BASED &&
+ 	    pmac_call_feature(PMAC_FTR_SLEEP_STATE,NULL,0,-1) >= 0)
+ 		if (!strcmp(label, "lid_wakeup"))
+@@ -1738,7 +1738,7 @@ pmu_present(void)
+ 	return via != 0;
+ }
+ 
+-#ifdef CONFIG_PM
++#ifdef CONFIG_PM_SLEEP
+ 
+ static LIST_HEAD(sleep_notifiers);
+ 
+@@ -1769,9 +1769,9 @@ pmu_unregister_sleep_notifier(struct pmu
+ 	return 0;
+ }
+ EXPORT_SYMBOL(pmu_unregister_sleep_notifier);
+-#endif /* CONFIG_PM */
++#endif /* CONFIG_PM_SLEEP */
+ 
+-#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
+ 
+ /* Sleep is broadcast last-to-first */
+ static void broadcast_sleep(int when)
+@@ -2390,7 +2390,7 @@ powerbook_sleep_3400(void)
+ 	return 0;
+ }
+ 
+-#endif /* CONFIG_PM && CONFIG_PPC32 */
++#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
+ 
+ /*
+  * Support for /dev/pmu device
+@@ -2573,7 +2573,7 @@ pmu_ioctl(struct inode * inode, struct f
+ 	int error = -EINVAL;
+ 
+ 	switch (cmd) {
+-#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
+ 	case PMU_IOC_SLEEP:
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EACCES;
+@@ -2601,7 +2601,7 @@ pmu_ioctl(struct inode * inode, struct f
+ 			return put_user(0, argp);
+ 		else
+ 			return put_user(1, argp);
+-#endif /* CONFIG_PM && CONFIG_PPC32 */
++#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
+ 
+ #ifdef CONFIG_PMAC_BACKLIGHT_LEGACY
+ 	/* Compatibility ioctl's for backlight */
+@@ -2757,7 +2757,7 @@ pmu_polled_request(struct adb_request *r
+  * to do suspend-to-disk.
+  */
+ 
+-#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
+ 
+ int pmu_sys_suspended;
+ 
+@@ -2792,7 +2792,7 @@ static int pmu_sys_resume(struct sys_dev
+ 	return 0;
+ }
+ 
+-#endif /* CONFIG_PM && CONFIG_PPC32 */
++#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
+ 
+ static struct sysdev_class pmu_sysclass = {
+ 	set_kset_name("pmu"),
+@@ -2803,10 +2803,10 @@ static struct sys_device device_pmu = {
+ };
+ 
+ static struct sysdev_driver driver_pmu = {
+-#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
+ 	.suspend	= &pmu_sys_suspend,
+ 	.resume		= &pmu_sys_resume,
+-#endif /* CONFIG_PM && CONFIG_PPC32 */
++#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
+ };
+ 
+ static int __init init_pmu_sysfs(void)
+@@ -2841,10 +2841,10 @@ EXPORT_SYMBOL(pmu_wait_complete);
+ EXPORT_SYMBOL(pmu_suspend);
+ EXPORT_SYMBOL(pmu_resume);
+ EXPORT_SYMBOL(pmu_unlock);
+-#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
+ EXPORT_SYMBOL(pmu_enable_irled);
+ EXPORT_SYMBOL(pmu_battery_count);
+ EXPORT_SYMBOL(pmu_batteries);
+ EXPORT_SYMBOL(pmu_power_flags);
+-#endif /* CONFIG_PM && CONFIG_PPC32 */
++#endif /* CONFIG_PM_SLEEP && CONFIG_PPC32 */
+ 
+--- a/include/linux/pmu.h
++++ b/include/linux/pmu.h
+@@ -226,7 +226,7 @@ extern unsigned int pmu_power_flags;
+ extern void pmu_backlight_init(void);
+ 
+ /* some code needs to know if the PMU was suspended for hibernation */
+-#if defined(CONFIG_PM) && defined(CONFIG_PPC32)
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PPC32)
+ extern int pmu_sys_suspended;
+ #else
+ /* if power management is not configured it can't be suspended */
