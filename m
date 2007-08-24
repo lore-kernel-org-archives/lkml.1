@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbXHXTJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933547AbXHXTJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932951AbXHXTJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 15:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762030AbXHXTJS
+	id S933547AbXHXTJy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 15:09:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762030AbXHXTJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 15:09:18 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:33917 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758382AbXHXTJS (ORCPT
+	Fri, 24 Aug 2007 15:09:39 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:42592 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755225AbXHXTJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 15:09:18 -0400
-Message-ID: <46CF2CDD.5000802@steeleye.com>
-Date: Fri, 24 Aug 2007 15:09:17 -0400
-From: Paul Clements <paul.clements@steeleye.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Fri, 24 Aug 2007 15:09:38 -0400
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Avi Kivity <avi@qumranet.com>, Laurent Vivier <Laurent.Vivier@bull.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+From: laurent.vivier@bull.net
+Subject: =?iso-8859-1?Q?R=E9f=2E_=3A_Re=3A_[PATCH]_export_i386_smp=5Fcall?=
+ =?us-ascii?Q?=5Ffunction?= =?us-ascii?Q?=5Fmask?= =?us-ascii?Q?=28=29_?=
+ =?us-ascii?Q?to?= modules
+Date: Fri, 24 Aug 2007 21:14:57 +0200
+Message-ID: <OFA7B0E6E4.F9F637CF-ONC1257341.0069BD11-C1257341.0069BD5D@frec.bull.fr>
+X-MIMETrack: Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 24/08/2007 21:14:59
 MIME-Version: 1.0
-To: Mike Snitzer <snitzer@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       david@dgreaves.com, Wouter Verhelst <w@uter.be>,
-       Corey Minyard <cminyard@mvista.com>, nbd-general@lists.sourceforge.net
-Subject: Re: [PATCH 2/2] NBD: allow hung network I/O to be cancelled
-References: <46CF101F.4050603@steeleye.com> <46CF1826.9050101@steeleye.com> <170fa0d20708241113y31d2ba95xf30c83c7c4c98cd2@mail.gmail.com>
-In-Reply-To: <170fa0d20708241113y31d2ba95xf30c83c7c4c98cd2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Snitzer wrote:
-> On 8/24/07, Paul Clements <paul.clements@steeleye.com> wrote:
->> This patch allows NBD I/O to be cancelled when a network outage occurs.
->> Previously, I/O would just hang, and if enough I/O was hung in nbd, the
->> system (at least user-level) would completely hang until a TCP timeout
->> (default, 15 minutes) occurred.
->>
->> The patch introduces a new ioctl NBD_SET_TIMEOUT that allows a transmit
->> timeout value (in seconds) to be specified. Any network send that
->> exceeds the timeout will be cancelled and the nbd connection will be
->> shut down. I've tested with various timeout values and 6 seconds seems
->> to be a good choice for the timeout. If the NBD_SET_TIMEOUT ioctl is not
->> called, you get the old (I/O hang) behavior.
-> 
-> Hi Paul,
-> 
-> Thanks for implementing this!  Do you happen to have an associated
-> nbd-client patch for userspace?  If not I'd be happy to coordinate
-> with you and Wouter on a patch.
 
-No, I don't. I just basically hardcoded my nbd-client to do a 6 second 
-timeout by default, but Wouter will probably want to do something a 
-little less hackish for the official nbd-client.
+> On Fri, 24 Aug 2007 17:36:35 +0200
+> Laurent Vivier <Laurent.Vivier@bull.net> wrote:
+>
+> > This patch export i386 smp_call_function_mask() with EXPORT_SYMBOL().
+> >
+> > This function is needed by KVM to call a function on a set of CPUs.
+> >
+> >  arch/i386/kernel/smp.c |    7 +++++++
+> >  include/asm-i386/smp.h |    9 +++------
+> >  2 files changed, 10 insertions(+), 6 deletions(-)
+> >
+> > Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+>
+> hmm isn't it being an inline also making it available for KVM to use?
+> If so... isn't your patch description entirely not matching what the
+> code does?
 
---
-Paul
+It is available for KVM compilation, not for KVM use.
+
+In fact smp_ops is not available for KVM use, so as
+smp_call_function_mask() is smp_ops.smp_call_function_mask() we can say it
+is not available...
+
+My first reflex was to export smp_ops, but as it seems it is an internal
+and hidden variable, it appears I should export smp_call_function_mask()
+instead.
+
+Laurent
+
+
