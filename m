@@ -1,80 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbXHXKYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbXHXKY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755592AbXHXKYU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 06:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXHXKYL
+	id S1757304AbXHXKY4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 06:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbXHXKYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 06:24:11 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:59762 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbXHXKYJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 06:24:09 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 24 Aug 2007 06:14:33 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] Remove superfluous definition of __setup_null_param() macro.
-Message-ID: <Pine.LNX.4.64.0708240608090.16678@localhost.localdomain>
+	Fri, 24 Aug 2007 06:24:45 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:16930 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756110AbXHXKYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 06:24:35 -0400
+Date: Fri, 24 Aug 2007 12:24:31 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       james.bottomley@steeleye.com, hch@infradead.org, steve.cameron@hp.com
+Subject: Re: [PATCH 1/1] cciss: fix error reporting for SG_IO
+Message-ID: <20070824102431.GD23758@kernel.dk>
+References: <20070814195338.GA10828@beardog.cca.cpqcorp.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070814195338.GA10828@beardog.cca.cpqcorp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 14 2007, Mike Miller (OS Dev) wrote:
+> Patch 1/1
+> Steve has been trying to send this out but it doesn't seem to be getting
+> anywhere. Please review this patch for accuracy. There's a couple of things
+> not clear to us.
+> 
+> Thanks,
+> mikem
+> 
+> --------------------------------------------------------------------------------
+> We found a problem with the way cciss was filling out rq->errors.
+> Previously, it just put a 1 or a 0 in there and used the negation
+> of this as the uptodate parameter to one of the functions in the
+> block layer, being a block device.
+> 
+> For the SG_IO support, this is not sufficient, and we noticed
+> that for example, sg_turs from sg3_utils does not correctly
+> detect problems due to cciss filling out rq->errors incorrectly.
+> 
+> So, below is my attempt at fixing this, but I'm not completely
+> sure I did it all right.  It is better than before, in that
+> now sg_turs seems to detect when things go wrong (e.g.:
+> when a disk is inaccessible due to cables being yanked, it
+> notices.)
+> 
+> There is some stuff in scsi.h:
+> 
+> > /*
+> >  *  Use these to separate status msg and our bytes
+> >  *
+> >  *  These are set by:
+> >  *
+> >  *      status byte = set from target device
+> >  *      msg_byte    = return status from host adapter itself.
+> >  *      host_byte   = set by low-level driver to indicate status.
+> >  *      driver_byte = set by mid-level.
+> >  */
+> > #define status_byte(result) (((result) >> 1) & 0x7f)
+> > #define msg_byte(result)    (((result) >> 8) & 0xff)
+> > #define host_byte(result)   (((result) >> 16) & 0xff)
+> > #define driver_byte(result) (((result) >> 24) & 0xff)
+> 
+> I'm unsure about the msg_byte (sg_turs appears not to 
+> look at it.)  I used a device specific code (cciss 
+> notion of CommandStatus) here.  Not sure if that's correct, 
+> but not sure what else I would use.  Any clarification on 
+> that would be helpful.  And of course, let me know if you 
+> notice anything else I might have screwed up.
+> 
+> -- steve
+> 
+> Signed-off-by: Stephen M. Cameron <steve.cameron@hp.com>
+> 
+> ---
+> 
+>  drivers/block/cciss.c |   81 ++++++++++++++++++++++++++++++++++++++------------
+>  1 files changed, 63 insertions(+), 18 deletions(-)
+> 
+> diff -puN drivers/block/cciss.c~sg_io_fix_error_reporting drivers/block/cciss.c
+> --- linux-2.6.23-rc2/drivers/block/cciss.c~sg_io_fix_error_reporting	2007-08-13 09:44:58.000000000 -0500
+> +++ linux-2.6.23-rc2-scameron/drivers/block/cciss.c	2007-08-13 09:44:58.000000000 -0500
+> @@ -2366,30 +2366,57 @@ static inline void resend_cciss_cmd(ctlr
+>  	start_io(h);
+>  }
+>  
+> +/* inverse of macros in scsi.h */
+> +
+> +#define shift_status_byte(x) ((x) & 0xff)
+> +#define shift_msg_byte(x) (((x) & 0xff) << 8)
+> +#define shift_host_byte(x) (((x) & 0xff) << 16)
+> +#define shift_driver_byte(x) (((x) & 0xff) << 24)
+> +
+> +#define make_status_bytes(s, m, h, d) \
+> +	shift_status_byte((s)) |\
+> +	shift_msg_byte((m)) |\
+> +	shift_host_byte((h)) |\
+> +	 shift_driver_byte((d))
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Please don't make that a macro, make it a function. Otherwise it looks
+ok, care to fix that up and resubmit?
 
----
+-- 
+Jens Axboe
 
-  since i apparently removed the final remaining reference to this
-macro in commit f4895925976977aaeda26ee2a603a99f17db500b (thanks,
-adrian), there seems to be little value in keeping this definition
-around.
-
-$ grep -rw __setup_null_param *
-include/linux/init.h:#define __setup_null_param(str, unique_id)  \
-include/linux/init.h:#define __setup_null_param(str, unique_id)  /* nothing */
-$
-
-
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 74b1f43..2e4d3e0 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -165,9 +165,6 @@ struct obs_kernel_param {
- 		__attribute__((aligned((sizeof(long)))))	\
- 		= { __setup_str_##unique_id, fn, early }
-
--#define __setup_null_param(str, unique_id)			\
--	__setup_param(str, unique_id, NULL, 0)
--
- #define __setup(str, fn)					\
- 	__setup_param(str, fn, fn, 0)
-
-@@ -234,7 +231,6 @@ void __init parse_early_param(void);
- 	void cleanup_module(void) __attribute__((alias(#exitfn)));
-
- #define __setup_param(str, unique_id, fn)	/* nothing */
--#define __setup_null_param(str, unique_id) 	/* nothing */
- #define __setup(str, func) 			/* nothing */
- #endif
-
-
-
- --
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
