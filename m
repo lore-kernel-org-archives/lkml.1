@@ -1,72 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbXHXVBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762699AbXHXVB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762079AbXHXVBK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 17:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbXHXVAy
+	id S1762699AbXHXVB1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 17:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761963AbXHXVBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 17:00:54 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46190 "EHLO amd.ucw.cz"
+	Fri, 24 Aug 2007 17:01:01 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46208 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757361AbXHXVAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 17:00:52 -0400
-Date: Fri, 24 Aug 2007 11:02:20 +0200
+	id S1760864AbXHXVA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 17:00:59 -0400
+Date: Fri, 24 Aug 2007 10:31:01 +0200
 From: Pavel Machek <pavel@ucw.cz>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Re: [RFC][PATCH -mm 3/4] Hibernation: Pass CR3 in the image header on x86_64
-Message-ID: <20070824090220.GA2412@elf.ucw.cz>
-References: <200708221015.16493.rjw@sisk.pl> <20070822082825.GC2479@elf.ucw.cz> <200708221817.51334.rjw@sisk.pl> <200708222249.51616.rjw@sisk.pl>
+Cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [RFC][PATCH -mm 4/4] Hibernation: Use temporary page tables for kernel text mapping on x86_64
+Message-ID: <20070824083101.GC2175@elf.ucw.cz>
+References: <200708221015.16493.rjw@sisk.pl> <200708221021.28877.rjw@sisk.pl> <20070822082948.GD2479@elf.ucw.cz> <200708221816.05846.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708222249.51616.rjw@sisk.pl>
+In-Reply-To: <200708221816.05846.rjw@sisk.pl>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > No, I do not think I like that. I believe both -> control and -> crc
-> > > is just useless paranoia. Bitflip in this area is not going to be any
-> > > worse than bitflip anywhere else, we should not pretend this is
-> > > somehow "more important".
+On Wed 2007-08-22 18:16:05, Rafael J. Wysocki wrote:
+> On Wednesday, 22 August 2007 10:29, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > Use temporary page tables for the kernel text mapping during hibernation restore
+> > > on x86_64.
 > > > 
-> > > -> control should really be "protocol version"... probably should
-> > > contain some field that is easy to increment.
+> > > Without the patch, the original boot kernel's page tables that represent the
+> > > kernel text mapping are used while the core of the image kernel is being
+> > > restored.  However, in principle, if the boot kernel is not identical to the
+> > > image kernel, the location of these page tables in the image kernel need not be
+> > > the same, so we should create a safe copy of the kernel text mapping prior to
+> > > restoring the core of the image kernel.
 > > 
-> > OK
 > > 
-> > Perhaps I'll just remove the crc field.
+> > > @@ -190,25 +190,42 @@ static int res_phys_pud_init(pud_t *pud,
+> > >  	return 0;
+> > >  }
+> > >  
+> > > +static int res_kernel_text_pud_init(pud_t *pud, unsigned long start)
+> > > +{
+> > > +	pmd_t *pmd;
+> > > +	unsigned long paddr;
+> > > +
+> > > +	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
+> > > +	if (!pmd)
+> > > +		return -ENOMEM;
+> > > +	set_pud(pud + pud_index(start), __pud(__pa(pmd) | _KERNPG_TABLE));
+> > > +	for (paddr = 0; paddr < KERNEL_TEXT_SIZE; pmd++, paddr += PMD_SIZE) {
+> > > +		unsigned long pe;
+> > > +
+> > > +		pe = __PAGE_KERNEL_LARGE_EXEC | _PAGE_GLOBAL | paddr;
+> > > +		pe &= __supported_pte_mask;
+> > > +		set_pmd(pmd, __pmd(pe));
+> > > +	}
+> > > +
+> > > +	return 0;
+> > > +}
+> > > +
+> > >  static int set_up_temporary_mappings(void)
+> > >  {
+> > >  	unsigned long start, end, next;
+> > > +	pud_t *pud;
+> > >  	int error;
+> > >  
+> > >  	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
+> > >  	if (!temp_level4_pgt)
+> > >  		return -ENOMEM;
+> > >  
+> > > -	/* It is safe to reuse the original kernel mapping */
+> > > -	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
+> > > -		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
+> > > -
+> > >  	/* Set up the direct mapping from scratch */
+> > >  	start = (unsigned long)pfn_to_kaddr(0);
+> > >  	end = (unsigned long)pfn_to_kaddr(end_pfn);
+> > >  
+> > >  	for (; start < end; start = next) {
+> > > -		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> > > +		pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> > >  		if (!pud)
+> > >  			return -ENOMEM;
+> > 
+> > I believe we leak temp_level4_pgt here.
+> > 
+> > > +	/* Set up the kernel text mapping from scratch */
+> > > +	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> > > +	if (!pud)
+> > > +		return -ENOMEM;
+> > 
+> > ...and some more memory here :-(. 
 > 
-> Like in the patch below.
-
-Yep, thanks.
-
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+> No, these pages will be freed by swsusp_free(), thanks to the get_safe_page().
 > 
-> Since we already pass the address of restore_registers() in the image header,
-> we can also pass the value of the CR3 register from before the hibernation in
-> the same way.  This will allow us to avoid using init_level4_pgt page tables
-> during the restore.
+> I'm not _that_ careless. ;-)
 
-ACK.
-
-> @@ -9,6 +9,7 @@
->  
->  #include <linux/smp.h>
->  #include <linux/suspend.h>
-> +#include <linux/crc32.h>
->  #include <asm/proto.h>
->  #include <asm/page.h>
->  #include <asm/pgtable.h>
-
-This one is no longer neccessary.
+Ok, ACK.
 
 
-									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
