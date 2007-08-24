@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932463AbXHXMz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933457AbXHXM4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932463AbXHXMz3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 08:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765811AbXHXMyp
+	id S933457AbXHXM4A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 08:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765781AbXHXMyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 08:54:45 -0400
-Received: from attila.bofh.it ([213.92.8.2]:54304 "EHLO attila.bofh.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765124AbXHXMyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 08:54:40 -0400
-X-Greylist: delayed 1747 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Aug 2007 08:54:40 EDT
-Date: Fri, 24 Aug 2007 13:56:29 +0200
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: isapnp & module autoload (udev?)
-Message-ID: <20070824115629.GA6417@bongo.bofh.it>
-References: <Pine.SOC.4.64.0708241434440.27738@math.ut.ee>
+	Fri, 24 Aug 2007 08:54:50 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:44161 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765126AbXHXMys (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 08:54:48 -0400
+Date: Fri, 24 Aug 2007 14:54:48 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Matt Mackall <mpm@selenic.com>
+cc: Ingo Oeser <ioe-lkml@rameria.de>, lode leroy <lode_leroy@hotmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] memchr (trivial) optimization
+In-Reply-To: <20070824001351.GA20266@waste.org>
+Message-ID: <Pine.LNX.4.64.0708241447560.28540@fbirervta.pbzchgretzou.qr>
+References: <BAY105-F323FF3DC8E6C544A2BBE98FFD50@phx.gbl>
+ <200708230213.21332.ioe-lkml@rameria.de> <20070824001351.GA20266@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.SOC.4.64.0708241434440.27738@math.ut.ee>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: md@Linux.IT (Marco d'Itri)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 24, Meelis Roos <mroos@linux.ee> wrote:
 
-> I tested 2.6.23-rc3 along with Debian unstable on a older pentium2-era 
-> PC that has a ISA bus sound card that isapnp finds. snd-sb finds it too 
-> using isapnp. However, there seems to be no module autoloading 
-> happening.
-> 
-> So, the question is: should isapnp moudle autoloading work with current 
-> kernel + current udev?
-Only for some devices, others do not provide in sysfs everything needed
-to build the MODALIAS string.
+On Aug 23 2007 19:13, Matt Mackall wrote:
+>
+>And you can do even better with this:
+>
+>void *memchr(const void *s, int c, size_t n)
+>{
+>       const unsigned char *p = s, *e = s + n;
+>       const unsigned char *e = p + n;
 
+Uhm, you have two "e"s in there.
+
+>       for (; p < e ; p++)
+>                if ((unsigned char)c == *p)
+>                        return (void *)p;
+>
+>       return NULL;
+>}
+
+Or do it glibc-style
+
+void *memchr(const void *s, unsigned char c, size_t n)
+{
+	...
+	for (; p + 3 < e; p += 4) {
+		if (c == p[0])
+			return (void *)&p[0];
+		if (c == p[1])
+			return (void *)&p[1];
+		if (c == p[2])
+			return (void *)&p[2];
+		if (c == p[3])
+			return (void *)&p[3];
+	}
+	... /* check the rest */
+}
+
+
+	Jan
 -- 
-ciao,
-Marco
