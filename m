@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934551AbXHXCe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965010AbXHXCj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934551AbXHXCe5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 22:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934029AbXHXCei
+	id S965010AbXHXCj1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 22:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933664AbXHXCjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 22:34:38 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:21369 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933878AbXHXCeg (ORCPT
+	Thu, 23 Aug 2007 22:39:16 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:64464 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933503AbXHXCjP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 22:34:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jEWwxviggV07HNIceb2EAqkVmJJUc/3qDOOGu9dZmujst0jt26+PHkBc0Ek2r2YMX3wBdr6DIst+S0i4gRGXaKAA3d1c/5J0X6OmLXg0ahqnc+n5IHtOj1UZg4//Ni2lQ7U0UkfFwFp1yCJE4Q4l6jvBx+zScE0gmQMS430Vc2I=
-Message-ID: <625fc13d0708231934q5b369b4fh1a5c83def0e56a0d@mail.gmail.com>
-Date: Thu, 23 Aug 2007 21:34:34 -0500
-From: "Josh Boyer" <jwboyer@gmail.com>
-To: "Andy Isaacson" <adi@hexapodia.org>
-Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
-Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Matt Mackall" <mpm@selenic.com>, "Matthew Wilcox" <matthew@wil.cx>,
-       "Matthew Garrett" <mjg59@srcf.ucam.org>,
-       "Tech Board Discuss" <Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ksummit-2007-discuss@thunk.org
-In-Reply-To: <20070824012730.GA1243@hexapodia.org>
+	Thu, 23 Aug 2007 22:39:15 -0400
+Message-ID: <46CE43FC.9040104@student.ltu.se>
+Date: Fri, 24 Aug 2007 04:35:40 +0200
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       ram.vepa@neterion.com, santosh.rastapur@neterion.com,
+       sivakumar.subramani@neterion.com, sreenivasa.honnur@neterion.com,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 4/9] s2io, rename BIT macro
+References: <27692164102679012429@wsc.cz>
+In-Reply-To: <27692164102679012429@wsc.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1187796179.3410.32.camel@localhost.localdomain>
-	 <20070822224400.GA17255@srcf.ucam.org>
-	 <20070823002618.GO9163@parisc-linux.org>
-	 <20070823003748.GR30556@waste.org>
-	 <20070823004209.GP9163@parisc-linux.org>
-	 <20070823011953.GS30556@waste.org>
-	 <1187832907.3410.141.camel@localhost.localdomain>
-	 <20070824012730.GA1243@hexapodia.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/23/07, Andy Isaacson <adi@hexapodia.org> wrote:
-> On Wed, Aug 22, 2007 at 08:35:07PM -0500, James Bottomley wrote:
-> > > While I think that's laudable, we definitely don't have the resources
-> > > for that, as everyone on the TAB already has a full workload. And it
-> > > hardly seems worth the trouble for a once-a-year election.
-> >
-> > Exactly ... we want a process that's simple and transparent.  We chose
-> > voting at the KS because almost all the attendees satisfy the "made
-> > significant contributions to Linux" requirement without us having to do
-> > anything or make any controversial determinations.  Like Matt said,
-> > better suggestions are welcome.
+Jiri Slaby wrote:
+> s2io, rename BIT macro
 >
-> This is a dumb suggestion, but...
+> BIT macro will be global definiton of (1<<x)
 >
-> How about one vote per git commit merged to linus' tree?
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 >
-> Might be worthwhile to allocate votes for Acked-By and so on, as well.
+> ---
+>   
+[snip]
+>  			cnt++;
+>  			if (cnt == 5)
+> diff --git a/drivers/net/s2io.h b/drivers/net/s2io.h
+> index 92983ee..448f899 100644
+> --- a/drivers/net/s2io.h
+> +++ b/drivers/net/s2io.h
+> @@ -14,7 +14,7 @@
+>  #define _S2IO_H
+>  
+>  #define TBD 0
+> -#define BIT(loc)		(0x8000000000000000ULL >> (loc))
+> +#define s2BIT(loc)		(0x8000000000000000ULL >> (loc))
+>  #define vBIT(val, loc, sz)	(((u64)val) << (64-loc-sz))
+>  #define INV(d)  ((d&0xff)<<24) | (((d>>8)&0xff)<<16) | (((d>>16)&0xff)<<8)| ((d>>24)&0xff)
+>  
+>   
+Sorry for the late response, but would it not be better/easier to use 
+BIT() instead (or a global #define LLBIT(nr)  (1ULL << (nr))) and just 
+recalculate the values?
 
-Because git only goes back to 2.6.12.
+Richard Knutsson
 
-josh
