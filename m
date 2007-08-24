@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764106AbXHXRpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764567AbXHXRr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764106AbXHXRpf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 13:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759023AbXHXRpY
+	id S1764567AbXHXRr3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 13:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758274AbXHXRrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 13:45:24 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:60696 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752485AbXHXRpW (ORCPT
+	Fri, 24 Aug 2007 13:47:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43867 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754029AbXHXRrT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 13:45:22 -0400
-In-Reply-To: <20070824165110.GH4282@austin.ibm.com>
-To: linas@austin.ibm.com (Linas Vepstas)
-Cc: akepner@sgi.com, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus@ozlabs.org,
-       Eder <meder@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-       netdev-owner@vger.kernel.org, Jan-Bernd Themann <ossthema@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>
-MIME-Version: 1.0
-Subject: Re: RFC: issues concerning the next NAPI interface
-X-Mailer: Lotus Notes Release 7.0 HF144 February 01, 2006
-Message-ID: <OFB48299BB.9D9BCE91-ON87257341.006139E9-88257341.00614EB7@us.ibm.com>
-From: Shirley Ma <xma@us.ibm.com>
-Date: Fri, 24 Aug 2007 10:45:17 -0700
-X-MIMETrack: Serialize by Router on D03MC012/03/M/IBM(Release 7.0.2HF32 | October 17, 2006) at
- 08/24/2007 11:45:20,
-	Serialize complete at 08/24/2007 11:45:20
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 24 Aug 2007 13:47:19 -0400
+Date: Fri, 24 Aug 2007 10:46:01 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Thomas Meyer <thomas@m3y3r.de>, Shish <shish@shishnet.org>,
+       Karl Meyer <adhocrocker@gmail.com>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Thomas Voegtle <tv@lio96.de>
+Subject: Re: [3/4] 2.6.23-rc3: known regressions v3
+Message-ID: <20070824104601.04a6b529@localhost>
+In-Reply-To: <46CF1796.1020004@googlemail.com>
+References: <46CF0DEF.5040107@googlemail.com>
+	<46CF1796.1020004@googlemail.com>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Just to be clear, in the previous email I posted on this thread, I
-> described a worst-case network ping-pong test case (send a packet, wait
-> for reply), and found out that a deffered interrupt scheme just damaged
-> the performance of the test case. 
+O
+> Subject         : New wake ups from sky2
+> References      : http://lkml.org/lkml/2007/7/20/386
+> Last known good : ?
+> Submitter       : Thomas Meyer <thomas@m3y3r.de>
+> Caused-By       : Stephen Hemminger <shemminger@osdl.org>
+>                   commit eb35cf60e462491249166182e3e755d3d5d91a28
+> Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+> Status          : unknown
+> 
+>
 
-When splitting rx and tx handler, I found some performance gain by 
-deffering interrupt scheme in tx not rx in IPoIB driver.
-
-Shirley
+Fix posted to netdev (sky2 1.17 series), but Jeff hasn't 
+applied it.
