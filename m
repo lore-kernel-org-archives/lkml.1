@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932580AbXHXI7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbXHXJAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932580AbXHXI7d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 04:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761775AbXHXI7S
+	id S932265AbXHXJAz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 05:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761337AbXHXJAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 04:59:18 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:48184 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761306AbXHXI7Q (ORCPT
+	Fri, 24 Aug 2007 05:00:46 -0400
+Received: from ag-out-0708.google.com ([72.14.246.242]:51088 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761334AbXHXJAp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 04:59:16 -0400
+	Fri, 24 Aug 2007 05:00:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=pQvc22P+AQto+pe/as9uSbuQQLUbvf3QhcWuioSLlPd+8/xE2OABpekuoanISHC19fwOlUcsdzn9ipArPXvJkWLJVYXAelaArHk6Clffvdv2SI8LhvD2CkS0JifB6VaZr35ZvqJHU5DHEx82YtobAE2hYWzqTZiSIfDSMyRML3A=
-Message-ID: <46CE9DC2.8070407@gmail.com>
-Date: Fri, 24 Aug 2007 16:58:42 +0800
-From: Li Yu <raise.sail@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rsSjb0WQ7oa/Qaiv7aoDoGmx+kHOZ3phi+ub+zqAEEYVhGGNaj0zM72ulAnUGNOKz3utBhQWQssNMrd9OK8RcvVFS/piltKng6AYB0vDFQE9nYKp3PlhcubhkzA3fVBjnzRKuKB5DXrzErekugwWCp0kkWQoM1wjl5Xl2ACfAKw=
+Message-ID: <9a8748490708240200w3df4756fpd32e5b84dcb7f18a@mail.gmail.com>
+Date: Fri, 24 Aug 2007 11:00:43 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Matthew Wilcox" <matthew@wil.cx>
+Subject: Re: [PATCH 20/30] scsi: In the Advansys driver, do not cast allocation function return values
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org,
+       "James Bottomley" <James.Bottomley@steeleye.com>, linux@connectcom.net
+In-Reply-To: <20070824020349.GS9163@parisc-linux.org>
 MIME-Version: 1.0
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [Question] the precondition of calling alloc_skb()/kfree_skb()?
-Content-Type: text/plain; charset=GB2312
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
+	 <82de4728edd63551c2c8a2fff0350f0917ed73a5.1187912217.git.jesper.juhl@gmail.com>
+	 <20070824020349.GS9163@parisc-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, all:
+On 24/08/07, Matthew Wilcox <matthew@wil.cx> wrote:
+> On Fri, Aug 24, 2007 at 02:16:12AM +0200, Jesper Juhl wrote:
+> > There's no reason to cast void pointers returned by the generic
+> > memory allocation functions.
+>
+> I think I fixed all these already; please check scsi-misc.
+>
+I just checked out the latest scsi-misc-2.6 tree and it does indeed
+look like these have already been dealt with.
+Sorry about the noise.
 
-I encountered a problem of using sk_buff.
-
-I used 2.4.20 kernel, when burst traffic come, the kernel will complain
-a bug report at skbuff.c:316 later:
-
-311 void __kfree_skb(struct sk_buff *skb)
-312 {
-313 if (skb->list) {
-314 printk(KERN_WARNING "Warning: kfree_skb passed an skb still "
-315 "on a list (from %p).\n", NET_CALLER(skb));
-316 BUG(); /* HERE!!! */
-317 }
-/* snip some code here */
-332 }
-
-
-I saw the dev_kfree_skb_irq() and dev_kfree_skb_irq(), and how to use
-them. even, in fact, we work in pure poll I/O model, so the NIC can not
-issue any interrupt.
-
-And, I searched google, there are many similar reports like above, but
-almost of them have no reply. I think there may have some unknown thing
-while sk_buff API.
-
-Well, I hope know, are there some preconditions of calling alloc_skb()
-or *_kfree_skb_*() ? Thank in advanced.
-
-Good luck.
-
-- Yu Li
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
