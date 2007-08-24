@@ -1,107 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760209AbXHXPw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbXHXPxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760209AbXHXPw3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 11:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbXHXPwW
+	id S1760713AbXHXPxA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 11:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbXHXPwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 11:52:22 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:59759 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755321AbXHXPwV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 11:52:21 -0400
-Date: Fri, 24 Aug 2007 08:49:06 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <gregkh@suse.de>, Oliver Neukum <oneukum@suse.de>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [stable] [patch 25/28] USB: cdc-acm: fix sysfs attribute
-	registration bug
-Message-ID: <20070824154906.GA19239@kroah.com>
-References: <20070823222750.GY18559@kroah.com> <Pine.LNX.4.44L0.0708240956570.3862-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0708240956570.3862-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 24 Aug 2007 11:52:50 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60099 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753894AbXHXPws convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 11:52:48 -0400
+Date: Fri, 24 Aug 2007 08:52:03 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: akepner@sgi.com, netdev <netdev@vger.kernel.org>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: RFC: issues concerning the next NAPI interface
+Message-ID: <20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>
+In-Reply-To: <200708241747.16592.ossthema@de.ibm.com>
+References: <200708241559.17055.ossthema@de.ibm.com>
+	<20070824153703.GN5592@sgi.com>
+	<200708241747.16592.ossthema@de.ibm.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 09:59:49AM -0400, Alan Stern wrote:
-> On Thu, 23 Aug 2007, Greg KH wrote:
+On Fri, 24 Aug 2007 17:47:15 +0200
+Jan-Bernd Themann <ossthema@de.ibm.com> wrote:
+
+> Hi,
 > 
-> > -stable review patch.  If anyone has any objections, please let us know.
+> On Friday 24 August 2007 17:37, akepner@sgi.com wrote:
+> > On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
+> > > .......
+> > > 3) On modern systems the incoming packets are processed very fast. Especially
+> > >    on SMP systems when we use multiple queues we process only a few packets
+> > >    per napi poll cycle. So NAPI does not work very well here and the interrupt 
+> > >    rate is still high. What we need would be some sort of timer polling mode 
+> > >    which will schedule a device after a certain amount of time for high load 
+> > >    situations. With high precision timers this could work well. Current
+> > >    usual timers are too slow. A finer granularity would be needed to keep the
+> > >    latency down (and queue length moderate).
+> > > 
 > > 
-> > ------------------
-> > 
-> > From: Alan Stern <stern@rowland.harvard.edu>
-> > 
-> > This patch (as950) fixes a bug in the cdc-acm driver.  It doesn't keep
-> > track of which interface (control or data) the sysfs attributes get
-> > registered for, and as a result, during disconnect it will sometimes
-> > attempt to remove the attributes from the wrong interface.  The
-> > left-over attributes can cause a crash later on, particularly if the driver
-> > module has been unloaded.
-> > 
-> > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> > Acked-by: Oliver Neukum <oneukum@suse.de>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > ---
-> >  drivers/usb/class/cdc-acm.c |    4 ++++
-> >  1 file changed, 4 insertions(+)
-> > 
-> > --- a/drivers/usb/class/cdc-acm.c
-> > +++ b/drivers/usb/class/cdc-acm.c
-> > @@ -900,6 +900,10 @@ next_desc:
-> >  			return -ENODEV;
-> >  		}
-> >  	}
-> > +
-> > +	/* Accept probe requests only for the control interface */
-> > +	if (intf != control_interface)
-> > +		return -ENODEV;
-> >  	
-> >  	if (data_interface_num != call_interface_num)
-> >  		dev_dbg(&intf->dev,"Seperate call control interface. That is not fully supported.");
+> > We found the same on ia64-sn systems with tg3 a couple of years 
+> > ago. Using simple interrupt coalescing ("don't interrupt until 
+> > you've received N packets or M usecs have elapsed") worked 
+> > reasonably well in practice. If your h/w supports that (and I'd 
+> > guess it does, since it's such a simple thing), you might try 
+> > it.
 > > 
 > 
-> Odd.  This doesn't include the entire patch; the second hunk is
-> missing.  It should go on to say:
+> I don't see how this should work. Our latest machines are fast enough that they
+> simply empty the queue during the first poll iteration (in most cases).
+> Even if you wait until X packets have been received, it does not help for
+> the next poll cycle. The average number of packets we process per poll queue
+> is low. So a timer would be preferable that periodically polls the 
+> queue, without the need of generating a HW interrupt. This would allow us
+> to wait until a reasonable amount of packets have been received in the meantime
+> to keep the poll overhead low. This would also be useful in combination
+> with LRO.
 > 
-> @@ -1109,10 +1113,12 @@ static void acm_disconnect(struct usb_interface *intf)
->  		return;
->  	}
->  	if (acm->country_codes){
-> -		device_remove_file(&intf->dev, &dev_attr_wCountryCodes);
-> -		device_remove_file(&intf->dev, &dev_attr_iCountryCodeRelDate);
-> +		device_remove_file(&acm->control->dev,
-> +				&dev_attr_wCountryCodes);
-> +		device_remove_file(&acm->control->dev,
-> +				&dev_attr_iCountryCodeRelDate);
->  	}
-> -	device_remove_file(&intf->dev, &dev_attr_bmCapabilities);
-> +	device_remove_file(&acm->control->dev, &dev_attr_bmCapabilities);
 
+You need hardware support for deferred interrupts. Most devices have it (e1000, sky2, tg3)
+and it interacts well with NAPI. It is not a generic thing you want done by the stack,
+you want the hardware to hold off interrupts until X packets or Y usecs have expired.
 
-I thought so too, untill you look at the 2.6.22.5 release, which already
-has that change in it for some reason.
+The parameters for controlling it are already in ethtool, the issue is finding a good
+default set of values for a wide range of applications and architectures. Maybe some
+heuristic based on processor speed would be a good starting point. The dynamic irq
+moderation stuff is not widely used because it is too hard to get right.
 
-So that part of the patch drops out, it turns out you just reverted
-things back to the way things used to be here :)
-
-thanks,
-
-greg k-h
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
