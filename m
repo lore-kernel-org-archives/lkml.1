@@ -1,67 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964839AbXHXBnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933497AbXHXCED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964839AbXHXBnb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 21:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765420AbXHXBnX
+	id S933497AbXHXCED (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 22:04:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761276AbXHXCDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 21:43:23 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:41309 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765241AbXHXBnV (ORCPT
+	Thu, 23 Aug 2007 22:03:52 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:44505 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756181AbXHXCDv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 21:43:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=OG+DsMlL+SApNdRiyBdZQoHU/nvc1RZSNrleBGVxb7p/MFxLgQRTmseV9lK6u8ymtmpWii2vo2b7LdShAoagwXKoJboJhxhSb89xDQIjrQOEGhf/Hlm0R1O/imK7KdRx+3nckAaIKxtPmrl6rL9/+0W1CVE3CKHhXWZ8b/KJDlE=
-Message-ID: <3bd6b93c0708231843m1e94e192i6a806ce18c266f69@mail.gmail.com>
-Date: Thu, 23 Aug 2007 21:43:20 -0400
-From: "Bruce Ashfield" <bruce.ashfield@windriver.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v20, for v2.6.22.5, v2.6.21.7, v2.6.20.16
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070823094346.GA26281@elte.hu>
+	Thu, 23 Aug 2007 22:03:51 -0400
+Date: Thu, 23 Aug 2007 20:03:49 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@steeleye.com>, linux@connectcom.net
+Subject: Re: [PATCH 20/30] scsi: In the Advansys driver, do not cast allocation function return values
+Message-ID: <20070824020349.GS9163@parisc-linux.org>
+References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com> <82de4728edd63551c2c8a2fff0350f0917ed73a5.1187912217.git.jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070823094346.GA26281@elte.hu>
-X-Google-Sender-Auth: 4371d14059d23d99
+In-Reply-To: <82de4728edd63551c2c8a2fff0350f0917ed73a5.1187912217.git.jesper.juhl@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/23/07, Ingo Molnar <mingo@elte.hu> wrote:
->
-> By popular demand, here is release -v20 of the CFS scheduler. It is a
-> full backport of the latest & greatest v2.6.23-rc3 CFS code to
-> v2.6.22.5, v2.6.21.7 and v2.6.20.16. The patches can be downloaded from
-> the usual place:
+On Fri, Aug 24, 2007 at 02:16:12AM +0200, Jesper Juhl wrote:
+> There's no reason to cast void pointers returned by the generic
+> memory allocation functions.
 
-Ingo,
-
-Great to see the older kernels updated, thanks for the patches.
-I've got a bit of a modified 2.6.21.7, but when I built with
-CONFIG_FAIR_GROUP_SCHED=y, I need the following change
-to make things right (On a quick glance, my change matches the
-2.6.23-rc3 code). Then again, I may just be doing something
-stupid.
-
-My apologies in advance if gmail decides to mangle the patch.
-
---- a/kernel/sched_fair.c.orig	2007-08-23 21:25:08.000000000 -0400
-+++ a/kernel/sched_fair.c	2007-08-23 21:25:18.000000000 -0400
-@@ -1057,7 +1057,7 @@ static void task_new_fair(struct rq *rq,
-  */
- static void set_curr_task_fair(struct rq *rq)
- {
--	struct sched_entity *se = &rq->curr.se;
-+	struct sched_entity *se = &rq->curr->se;
-
- 	for_each_sched_entity(se)
- 		set_next_entity(cfs_rq_of(se), se);
-
-
+I think I fixed all these already; please check scsi-misc.
 
 -- 
-"Thou shalt not follow the NULL pointer, for chaos and madness await
-thee at its end"
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
