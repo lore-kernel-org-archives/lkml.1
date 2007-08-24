@@ -1,153 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932535AbXHXWch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932354AbXHXWdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932535AbXHXWch (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 18:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764820AbXHXWae
+	id S932354AbXHXWdh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 18:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760858AbXHXWd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 18:30:34 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49279 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761103AbXHXW3t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 18:29:49 -0400
-Message-Id: <20070824222949.107703000@sgi.com>
-References: <20070824222654.687510000@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 24 Aug 2007 15:26:59 -0700
-From: travis@sgi.com
-To: Andi Kleen <ak@suse.de>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+	Fri, 24 Aug 2007 18:33:28 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42448 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759892AbXHXWd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 18:33:27 -0400
+Subject: [2.6 patch] fix export_report.pl on top of adrian's fix
+From: Ram Pai <linuxram@us.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: [PATCH 5/6] x86: Convert cpu_llc_id to be a per cpu variable (v2)
-Content-Disposition: inline; filename=convert-cpu_llc_id-to-per_cpu_data
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070824214743.GH30705@stusta.de>
+References: <20070824210451.GE30705@stusta.de>
+	 <Pine.LNX.4.64.0708242331490.28540@fbirervta.pbzchgretzou.qr>
+	 <20070824214743.GH30705@stusta.de>
+Content-Type: text/plain
+Date: Fri, 24 Aug 2007 15:32:22 -0700
+Message-Id: <1187994742.2910.29.camel@ram.us.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert cpu_llc_id from a static array sized by NR_CPUS to a
-per_cpu variable.  This saves sizeof(cpu_llc_id) * NR unused
-cpus.  Access is mostly from startup and CPU HOTPLUG functions.
+Fixes some subtle perl coding bug observed 
+by Jan Engelhardt <jengelh@computergmbh.de>
+This patch applies on top of Adrian's fix.
 
-Note there's an addtional change of the type of cpu_llc_id
-from int to u8 for ARCH i386 to correspond with the same
-type in ARCH x86_64.
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 
-Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/i386/kernel/cpu/intel_cacheinfo.c |    4 ++--
- arch/i386/kernel/smpboot.c             |    6 +++---
- arch/x86_64/kernel/smpboot.c           |    6 +++---
- include/asm-i386/processor.h           |    6 +++++-
- include/asm-x86_64/smp.h               |    9 ++++-----
- 5 files changed, 17 insertions(+), 14 deletions(-)
+ scripts/export_report.pl |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/arch/i386/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/i386/kernel/cpu/intel_cacheinfo.c
-@@ -417,14 +417,14 @@
- 	if (new_l2) {
- 		l2 = new_l2;
- #ifdef CONFIG_X86_HT
--		cpu_llc_id[cpu] = l2_id;
-+		per_cpu(cpu_llc_id, cpu) = l2_id;
- #endif
- 	}
- 
- 	if (new_l3) {
- 		l3 = new_l3;
- #ifdef CONFIG_X86_HT
--		cpu_llc_id[cpu] = l3_id;
-+		per_cpu(cpu_llc_id, cpu) = l3_id;
- #endif
- 	}
- 
---- a/arch/i386/kernel/smpboot.c
-+++ b/arch/i386/kernel/smpboot.c
-@@ -67,7 +67,7 @@
- EXPORT_SYMBOL(smp_num_siblings);
- 
- /* Last level cache ID of each logical CPU */
--int cpu_llc_id[NR_CPUS] __cpuinitdata = {[0 ... NR_CPUS-1] = BAD_APICID};
-+DEFINE_PER_CPU(u8, cpu_llc_id) = BAD_APICID;
- 
- /* representing HT siblings of each logical CPU */
- DEFINE_PER_CPU(cpumask_t, cpu_sibling_map);
-@@ -348,8 +348,8 @@
- 	}
- 
- 	for_each_cpu_mask(i, cpu_sibling_setup_map) {
--		if (cpu_llc_id[cpu] != BAD_APICID &&
--		    cpu_llc_id[cpu] == cpu_llc_id[i]) {
-+		if (per_cpu(cpu_llc_id, cpu) != BAD_APICID &&
-+		    per_cpu(cpu_llc_id, cpu) == per_cpu(cpu_llc_id, i)) {
- 			cpu_set(i, c[cpu].llc_shared_map);
- 			cpu_set(cpu, c[i].llc_shared_map);
+Index: linux-2.6.21.5/scripts/export_report.pl
+===================================================================
+--- linux-2.6.21.5.orig/scripts/export_report.pl
++++ linux-2.6.21.5/scripts/export_report.pl
+@@ -103,15 +103,15 @@ foreach my $thismod (@allcfiles) {
+ 	my $state=0;
+ 	while ( <MODULE_MODULE> ) {
+ 		chomp;
+-		if ($state eq 0) {
++		if ($state == 0) {
+ 			$state = 1 if ($_ =~ /static const struct modversion_info/);
+ 			next;
  		}
---- a/arch/x86_64/kernel/smpboot.c
-+++ b/arch/x86_64/kernel/smpboot.c
-@@ -65,7 +65,7 @@
- EXPORT_SYMBOL(smp_num_siblings);
- 
- /* Last level cache ID of each logical CPU */
--u8 cpu_llc_id[NR_CPUS] __cpuinitdata  = {[0 ... NR_CPUS-1] = BAD_APICID};
-+DEFINE_PER_CPU(u8, cpu_llc_id) = BAD_APICID;
- 
- /* Bitmask of currently online CPUs */
- cpumask_t cpu_online_map __read_mostly;
-@@ -285,8 +285,8 @@
- 	}
- 
- 	for_each_cpu_mask(i, cpu_sibling_setup_map) {
--		if (cpu_llc_id[cpu] != BAD_APICID &&
--		    cpu_llc_id[cpu] == cpu_llc_id[i]) {
-+		if (per_cpu(cpu_llc_id, cpu) != BAD_APICID &&
-+		    per_cpu(cpu_llc_id, cpu) == per_cpu(cpu_llc_id, i)) {
- 			cpu_set(i, c[cpu].llc_shared_map);
- 			cpu_set(cpu, c[i].llc_shared_map);
+-		if ($state eq 1) {
++		if ($state == 1) {
+ 			$state = 2 if ($_ =~ /__attribute__\(\(section\("__versions"\)\)\)/);
+ 			next;
  		}
---- a/include/asm-i386/processor.h
-+++ b/include/asm-i386/processor.h
-@@ -110,7 +110,11 @@
- #define current_cpu_data boot_cpu_data
- #endif
- 
--extern	int cpu_llc_id[NR_CPUS];
-+/*
-+ * the following now lives in the per cpu area:
-+ * extern	int cpu_llc_id[NR_CPUS];
-+ */
-+DECLARE_PER_CPU(u8, cpu_llc_id);
- extern char ignore_fpu_irq;
- 
- void __init cpu_detect(struct cpuinfo_x86 *c);
---- a/include/asm-x86_64/smp.h
-+++ b/include/asm-x86_64/smp.h
-@@ -39,16 +39,14 @@
- extern void smp_send_reschedule(int cpu);
- 
- /*
-- * cpu_sibling_map and cpu_core_map now live
-- * in the per cpu area
-- *
-+ * the following now live in the per cpu area:
-  * extern cpumask_t cpu_sibling_map[NR_CPUS];
-  * extern cpumask_t cpu_core_map[NR_CPUS];
-+ * extern u8 cpu_llc_id[NR_CPUS];
-  */
- DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
- DECLARE_PER_CPU(cpumask_t, cpu_core_map);
--
--extern u8 cpu_llc_id[NR_CPUS];
-+DECLARE_PER_CPU(u8, cpu_llc_id);
- 
- #define SMP_TRAMPOLINE_BASE 0x6000
- 
-@@ -120,6 +118,7 @@
- #ifdef CONFIG_SMP
- #define cpu_physical_id(cpu)		per_cpu(x86_cpu_to_apicid, cpu)
- #else
-+extern unsigned int boot_cpu_id;
- #define cpu_physical_id(cpu)		boot_cpu_id
- #endif /* !CONFIG_SMP */
- #endif
+-		if ($state eq 2) {
++		if ($state == 2) {
+ 			if ( $_ !~ /0x[0-9a-f]+,/ ) {
+ 				next;
+ 			}
+@@ -121,7 +121,7 @@ foreach my $thismod (@allcfiles) {
+ 			push(@{$MODULE{$thismod}} , $sym);
+ 		}
+ 	}
+-	if ($state ne 2) {
++	if ($state != 2) {
+ 		print "WARNING:$thismod is not built with CONFIG_MODVERSION enabled\n";
+ 	}
+ 	close(MODULE_MODULE);
 
--- 
+
