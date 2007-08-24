@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933654AbXHXBAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932683AbXHXBDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933654AbXHXBAL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 21:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764058AbXHXA76
+	id S932683AbXHXBDj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 21:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764958AbXHXBDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 20:59:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39843 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763170AbXHXA76 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 20:59:58 -0400
-Date: Thu, 23 Aug 2007 17:54:29 -0700
-From: Greg KH <greg@kroah.com>
-To: Joel Fuster <j@fuster.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sysfs_dir_cache growing out of control
-Message-ID: <20070824005429.GA32265@kroah.com>
-References: <46CCD3DF.4080303@fuster.org> <46CD057C.3080106@fuster.org> <20070823095933.GA6742@kroah.com> <46CE29DA.60409@fuster.org>
+	Thu, 23 Aug 2007 21:03:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:56435 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764243AbXHXBDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 21:03:31 -0400
+Message-ID: <46CE2E61.9010408@goop.org>
+Date: Thu, 23 Aug 2007 18:03:29 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46CE29DA.60409@fuster.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Matt Mackall <mpm@selenic.com>
+CC: Ingo Oeser <ioe-lkml@rameria.de>, lode leroy <lode_leroy@hotmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] memchr (trivial) optimization
+References: <BAY105-F323FF3DC8E6C544A2BBE98FFD50@phx.gbl> <200708230213.21332.ioe-lkml@rameria.de> <20070824001351.GA20266@waste.org>
+In-Reply-To: <20070824001351.GA20266@waste.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 08:44:10PM -0400, Joel Fuster wrote:
-> Greg KH wrote:
->> On Wed, Aug 22, 2007 at 11:56:44PM -0400, Joel Fuster wrote:
->>> Joel Fuster wrote:
->>>> Hi,
->>>> I am running 2.6.22.3.  For reasons that escape me, over time (days) the 
->>>> sysfs_dir_cache, dentry, and inode_cache SLUB entries grow until they 
->>>> consume all the memory on my system, requiring a reboot.
->> Hm, those items should consume all the memory, but it should be freed if
->> you have memory pressure from other places.  Does it cause the machine
->> to lock up, or you just got scared when seeing them?
-> Right.  The problem is that the memory never seems to get freed no matter 
-> what I do.  I've tried setting /proc/sys/vm/vfs_cache_pressure to 10000, 
-> but after a few days all my programs are running out of swap and I have to 
-> reboot to get things back to a usable state.
->
->> Oh, and does the same thing happen if you do not use SLUB, but rather
->> the older SLAB?
->
-> OK I just rebuilt 2.6.22.3 with SLAB and I seem to be getting the same 
-> result..obviously I haven't waited several days, but 
-> sysfs_dir_cache/dentry/inode_cache grow continuously when scanbuttond is 
-> running, and stop growing when it isn't.
+Matt Mackall wrote:
+>   6e:   38 08                   cmp    %cl,(%eax)
+>   70:   74 07                   je     79 <memchr3+0x1b>
+>   72:   40                      inc    %eax
+>   
+It's a bit gross that the compiler is using inc here rather than lea or
+add, but still...
 
-Do you have a pointer to the scanbuttond source code?  I'll try to take
-a look at this tomorrow.
+Er, something's spending 30% of its time in memchr?  This is not the
+code to fix.
 
-thanks,
-
-greg k-h
+    J
