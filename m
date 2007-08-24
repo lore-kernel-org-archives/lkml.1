@@ -1,70 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbXHXGzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932739AbXHXHD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763666AbXHXGzS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 02:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758843AbXHXGzF
+	id S932739AbXHXHD5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 03:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758780AbXHXHDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 02:55:05 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42502 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759174AbXHXGzB (ORCPT
+	Fri, 24 Aug 2007 03:03:48 -0400
+Received: from aa012msr.fastwebnet.it ([85.18.95.72]:38884 "EHLO
+	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbXHXHDr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 02:55:01 -0400
-Date: Fri, 24 Aug 2007 15:53:25 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>, "Mel Gorman" <mel@skynet.ie>,
-       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
-Subject: [PATCH] Fix find_next_best_node (Re: [BUG] 2.6.23-rc3-mm1 Kernel panic - not syncing: DMA: Memory would be corrupted)
-Cc: "Luck, Tony" <tony.luck@intel.com>, "Jeremy Higdon" <jeremy@sgi.com>,
-       "Andi Kleen" <ak@suse.de>, <linux-kernel@vger.kernel.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       <linux-ia64@vger.kernel.org>, Christoph Lameter <clameter@sgi.com>,
-       linux-mm@kvack.org
-In-Reply-To: <20070823142133.9359a1ce.akpm@linux-foundation.org>
-References: <617E1C2C70743745A92448908E030B2A023EB020@scsmsx411.amr.corp.intel.com> <20070823142133.9359a1ce.akpm@linux-foundation.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20070824153945.3C75.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 24 Aug 2007 03:03:47 -0400
+Date: Fri, 24 Aug 2007 09:03:21 +0200
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: "Bob Picco" <bob.picco@hp.com>
+Cc: john stultz <johnstul@us.ibm.com>, "Luck, Tony" <tony.luck@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bob Picco <bob.picco@hp.com>
+Subject: Re: "double" hpet clocksource && hard freeze [bisected]
+Message-ID: <20070824090321.40eb913d@localhost>
+In-Reply-To: <20070823213849.GA7617@localhost>
+References: <20070823222115.122a37ca@localhost>
+	<617E1C2C70743745A92448908E030B2A023EB2E1@scsmsx411.amr.corp.intel.com>
+	<1187903135.6024.18.camel@localhost.localdomain>
+	<20070823213849.GA7617@localhost>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 23 Aug 2007 17:38:49 -0400
+"Bob Picco" <bob.picco@hp.com> wrote:
 
-I found find_next_best_node() was wrong.
-I confirmed boot up by the following patch.
-Mel-san, Kamalesh-san, could you try this?
+> It appears ACPI discovery failed during driver initialization because
+> of:
+> hpet_resources: 0xfed00000 is busy
 
-Bye.
----
-
-Fix decision of memoryless node in find_next_best_node().
-This can be cause of SW-IOMMU's allocation failure.
-
-This patch is for 2.6.23-rc3-mm1.
-
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-
----
- mm/page_alloc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: current/mm/page_alloc.c
-===================================================================
---- current.orig/mm/page_alloc.c	2007-08-24 16:03:17.000000000 +0900
-+++ current/mm/page_alloc.c	2007-08-24 16:04:06.000000000 +0900
-@@ -2136,7 +2136,7 @@ static int find_next_best_node(int node,
- 		 * Note:  N_HIGH_MEMORY state not guaranteed to be
- 		 *        populated yet.
- 		 */
--		if (pgdat->node_present_pages)
-+		if (!pgdat->node_present_pages)
- 			continue;
- 
- 		/* Don't want a node to appear more than once */
+Note: this was always there as far as I can remember.
 
 -- 
-Yasunori Goto 
-
-
+	Paolo Ornati
+	Linux 2.6.23-rc3-g1a8f4610-dirty on x86_64
