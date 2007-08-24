@@ -1,33 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764379AbXHXRje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760539AbXHXRjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764379AbXHXRje (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 13:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763822AbXHXRis
+	id S1760539AbXHXRjv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 13:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763272AbXHXRjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 13:38:48 -0400
+	Fri, 24 Aug 2007 13:39:08 -0400
 Received: from fk-out-0910.google.com ([209.85.128.185]:8533 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763209AbXHXRip (ORCPT
+	with ESMTP id S1764018AbXHXRjG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 13:38:45 -0400
+	Fri, 24 Aug 2007 13:39:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=awYRh641PKAdnTrLcTZuoWCCW+Ngx2iaGdDapAYXoiN+3lMtkNS93EC2PIG/Den05B2E+XzOTrTC9JJqMAEOmn0PcN2nEtIpDAPAGu7N/gKDPonuCmdoXGg68mDKUjOgxlEZ1C2iDonoJQBSWr4xEJ80mwdiocYPYL69ZTwqCz0=
-Message-ID: <46CF1796.1020004@googlemail.com>
-Date: Fri, 24 Aug 2007 19:38:30 +0200
+        b=EfngkIiR/CM2C0qnIGCoYm+8uxafx8iIA+BkCtAClmSDudf0fdbEuIjfwyN7+QjiDsNPgrrGXI2BAUFNt3S+9fyQHEG3y4EzKru+4sZJ/cDDSIbr8vwCC6kgn6H6rU9qHverjwTgMtQe3A/EXmQ/+Z1A0Ylm0XTH8/QZW+0S13w=
+Message-ID: <46CF17A0.2060503@googlemail.com>
+Date: Fri, 24 Aug 2007 19:38:40 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Stephen Hemminger <shemminger@osdl.org>, Thomas Meyer <thomas@m3y3r.de>,
-       Shish <shish@shishnet.org>, Karl Meyer <adhocrocker@gmail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Thomas Voegtle <tv@lio96.de>
-Subject: Re: [3/4] 2.6.23-rc3: known regressions v3
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>, Tino Keitel <tino.keitel@gmx.de>,
+       Parag Warudkar <parag.warudkar@gmail.com>,
+       Zachary Amsden <zach@vmware.com>, linux-alpha@vger.kernel.org,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Oliver Falk <oliver@linux-kernel.at>
+Subject: Re: [4/4] 2.6.23-rc3: known regressions v3
 References: <46CF0DEF.5040107@googlemail.com>
 In-Reply-To: <46CF0DEF.5040107@googlemail.com>
 X-Enigmail-Version: 0.95.3
@@ -59,52 +61,39 @@ Tejun Heo                              3
 
 
 
-Networking
+USB
 
-Subject         : NETDEV WATCHDOG: eth0: transmit timed out
-References      : http://lkml.org/lkml/2007/8/13/737
+Subject         : 2.6.23-rc1: USB hard disk broken
+References      : http://lkml.org/lkml/2007/7/25/62
 Last known good : ?
-Submitter       : Karl Meyer <adhocrocker@gmail.com>
+Submitter       : Tino Keitel <tino.keitel@gmx.de>
 Caused-By       : ?
-Handled-By      : Francois Romieu <romieu@fr.zoreil.com>
+Handled-By      : Oliver Neukum <oliver@neukum.org>
+Status          : unknown
+
+
+
+Virtualization
+
+Subject         : CONFIG_VMI broken
+References      : http://lkml.org/lkml/2007/8/14/203
+Last known good : ?
+Submitter       : Parag Warudkar <parag.warudkar@gmail.com>
+Caused-By       : ?
+Handled-By      : Zachary Amsden <zach@vmware.com>
 Status          : problem is being debugged
 
-Subject         : Weird network problems with 2.6.23-rc2
-References      : http://lkml.org/lkml/2007/8/11/40
+
+
+Alpha
+
+Subject         : -Werror compilation problem - make[1]: *** [arch/alpha/kernel/sys_titan.o] Error 1
+References      : http://lkml.org/lkml/2007/8/6/137
 Last known good : ?
-Submitter       : Shish <shish@shishnet.org>
+Submitter       : Oliver Falk <oliver@linux-kernel.at>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
-
-Subject         : New wake ups from sky2
-References      : http://lkml.org/lkml/2007/7/20/386
-Last known good : ?
-Submitter       : Thomas Meyer <thomas@m3y3r.de>
-Caused-By       : Stephen Hemminger <shemminger@osdl.org>
-                  commit eb35cf60e462491249166182e3e755d3d5d91a28
-Handled-By      : Stephen Hemminger <shemminger@osdl.org>
-Status          : unknown
-
-
-
-Power management
-
-Subject         : 2.6.23-rc2 swsusp, suddenly increased uptime
-References      : http://lkml.org/lkml/2007/8/12/249
-Last known good : ?
-Submitter       : Thomas Voegtle <tv@lio96.de>
-Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : problem is being debugged
-
-Subject         : resume from ram much slower
-References      : http://lkml.org/lkml/2007/8/10/275
-Last known good : 2.6.23-rc1 ?
-Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
-Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : problem is being debugged
 
 
 
