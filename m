@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933547AbXHXTJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933778AbXHXTKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933547AbXHXTJy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 15:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762030AbXHXTJj
+	id S933778AbXHXTKZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 15:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXHXTJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 15:09:39 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:42592 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755225AbXHXTJi (ORCPT
+	Fri, 24 Aug 2007 15:09:46 -0400
+Received: from smtp3.hushmail.com ([65.39.178.135]:63545 "EHLO
+	smtp3.hushmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933291AbXHXTJo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 15:09:38 -0400
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Avi Kivity <avi@qumranet.com>, Laurent Vivier <Laurent.Vivier@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-From: laurent.vivier@bull.net
-Subject: =?iso-8859-1?Q?R=E9f=2E_=3A_Re=3A_[PATCH]_export_i386_smp=5Fcall?=
- =?us-ascii?Q?=5Ffunction?= =?us-ascii?Q?=5Fmask?= =?us-ascii?Q?=28=29_?=
- =?us-ascii?Q?to?= modules
-Date: Fri, 24 Aug 2007 21:14:57 +0200
-Message-ID: <OFA7B0E6E4.F9F637CF-ONC1257341.0069BD11-C1257341.0069BD5D@frec.bull.fr>
-X-MIMETrack: Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 24/08/2007 21:14:59
-MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+	Fri, 24 Aug 2007 15:09:44 -0400
+Date: Fri, 24 Aug 2007 15:09:35 -0400
+To: <jesper.juhl@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>
+Subject: Re: Ideas on column length in kernel "problem"?
+Reply-to: postfail@hushmail.com
+From: "Scott Thompson" <postfail@hushmail.com>
+Content-type: text/plain; charset="UTF-8"
+Message-Id: <20070824190941.144A6C381C@mailserver10.hushmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> On Fri, 24 Aug 2007 17:36:35 +0200
-> Laurent Vivier <Laurent.Vivier@bull.net> wrote:
+
+On Thu, 23 Aug 2007 08:27:09 -0400 Jesper Juhl 
+<jesper.juhl@gmail.com> wrote:
 >
-> > This patch export i386 smp_call_function_mask() with EXPORT_SYMBOL().
-> >
-> > This function is needed by KVM to call a function on a set of CPUs.
-> >
-> >  arch/i386/kernel/smp.c |    7 +++++++
-> >  include/asm-i386/smp.h |    9 +++------
-> >  2 files changed, 10 insertions(+), 6 deletions(-)
-> >
-> > Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
->
-> hmm isn't it being an inline also making it available for KVM to use?
-> If so... isn't your patch description entirely not matching what the
-> code does?
+>At least for gmail the wrap problem only exists if you try and use 
+>the
+>web interface for sending your patches. If you use a real mail 
+>client
+>like pine, kmail etc to send your patches through gmail (and 
+>remember
+>to use their read/insert file functionality instead of 
+>cut'n'paste)
+>then there is no problem.
 
-It is available for KVM compilation, not for KVM use.
+I submitted a patch via gmail/smtp after setting the following up 
+and all looked well...
 
-In fact smp_ops is not available for KVM use, so as
-smp_call_function_mask() is smp_ops.smp_call_function_mask() we can say it
-is not available...
+gmail --> settings --> forwarding and pop --> enable pop.
 
-My first reflex was to export smp_ops, but as it seems it is an internal
-and hidden variable, it appears I should export smp_call_function_mask()
-instead.
+directions for setting up thunderbird:
+Thunderbird 1.5
+http://mail.google.com/support/bin/answer.py?answer=38343
 
-Laurent
+configuring Thunderbird for wordwrap:
+Edit -> Preferences -> Composition
+Wrap Plain Text Messages at: 99999
 
+.... and that's it...
+
+I'm gathering up a list of free email clients + settings and will 
+post a link once a copy is up on the interweb.
+
+---------------------------------------
+Scott Thompson / postfail@hushmail.com
+---------------------------------------
 
