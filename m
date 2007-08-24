@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933311AbXHXGxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbXHXGzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933311AbXHXGxf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 02:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757671AbXHXGx0
+	id S1763666AbXHXGzS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 02:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758843AbXHXGzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 02:53:26 -0400
-Received: from gw.goop.org ([64.81.55.164]:42063 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751540AbXHXGx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 02:53:26 -0400
-Message-ID: <46CE8069.9070404@goop.org>
-Date: Thu, 23 Aug 2007 23:53:29 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Fri, 24 Aug 2007 02:55:05 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42502 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759174AbXHXGzB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 02:55:01 -0400
+Date: Fri, 24 Aug 2007 15:53:25 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>, "Mel Gorman" <mel@skynet.ie>,
+       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
+Subject: [PATCH] Fix find_next_best_node (Re: [BUG] 2.6.23-rc3-mm1 Kernel panic - not syncing: DMA: Memory would be corrupted)
+Cc: "Luck, Tony" <tony.luck@intel.com>, "Jeremy Higdon" <jeremy@sgi.com>,
+       "Andi Kleen" <ak@suse.de>, <linux-kernel@vger.kernel.org>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       <linux-ia64@vger.kernel.org>, Christoph Lameter <clameter@sgi.com>,
+       linux-mm@kvack.org
+In-Reply-To: <20070823142133.9359a1ce.akpm@linux-foundation.org>
+References: <617E1C2C70743745A92448908E030B2A023EB020@scsmsx411.amr.corp.intel.com> <20070823142133.9359a1ce.akpm@linux-foundation.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070824153945.3C75.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Zachary Amsden <zach@vmware.com>
-CC: Linus Torvalds <torvalds@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Chris Wright <chrisw@sous-sol.org>,
-       stable@kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH] Fix preemptible lazy mode bug
-References: <46CE70C8.2030005@vmware.com>
-In-Reply-To: <46CE70C8.2030005@vmware.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden wrote:
-> I recently sent off a fix for lazy vmalloc faults which can happen
-> under paravirt when lazy mode is enabled.  Unfortunately, I jumped the
-> gun a bit on fixing this.  I neglected to notice that since the new
-> call to flush the MMU update queue is called from the page fault
-> handler, it can be pre-empted.  Both VMI and Xen use per-cpu variables
-> to track lazy mode state, as all previous calls to set, disable, or
-> flush lazy mode happened from a non-preemptable state.
 
-Hm.  Doing any kind of lazy-state operation with preemption enabled is
-fundamentally meaningless.  How does it get into a preemptable state
-with a lazy mode enabled now?  If a sequence of code with preempt
-disabled touches a missing vmalloc mapping, it gets a fault to fix up
-the mapping, and the fault handler can end up preempting the thread? 
-That sounds like a larger bug than just paravirt lazy mode problems.
+I found find_next_best_node() was wrong.
+I confirmed boot up by the following patch.
+Mel-san, Kamalesh-san, could you try this?
 
-    J
+Bye.
+---
+
+Fix decision of memoryless node in find_next_best_node().
+This can be cause of SW-IOMMU's allocation failure.
+
+This patch is for 2.6.23-rc3-mm1.
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+---
+ mm/page_alloc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: current/mm/page_alloc.c
+===================================================================
+--- current.orig/mm/page_alloc.c	2007-08-24 16:03:17.000000000 +0900
++++ current/mm/page_alloc.c	2007-08-24 16:04:06.000000000 +0900
+@@ -2136,7 +2136,7 @@ static int find_next_best_node(int node,
+ 		 * Note:  N_HIGH_MEMORY state not guaranteed to be
+ 		 *        populated yet.
+ 		 */
+-		if (pgdat->node_present_pages)
++		if (!pgdat->node_present_pages)
+ 			continue;
+ 
+ 		/* Don't want a node to appear more than once */
+
+-- 
+Yasunori Goto 
+
+
