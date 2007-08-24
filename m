@@ -1,108 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764580AbXHXVMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764407AbXHXVNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764580AbXHXVMw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 17:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbXHXVMl
+	id S1764407AbXHXVNd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 17:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756350AbXHXVNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 17:12:41 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:65112 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753248AbXHXVMj (ORCPT
+	Fri, 24 Aug 2007 17:13:24 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:9994 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753764AbXHXVNX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 17:12:39 -0400
-Message-ID: <46CF499C.60009@de.ibm.com>
-Date: Fri, 24 Aug 2007 23:11:56 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-User-Agent: Thunderbird 1.5.0.7 (Windows/20060909)
+	Fri, 24 Aug 2007 17:13:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mAS8JsTFsVr7KTcMzm3QA+ey+frEkpyXOL+PK2/AeB2WpZjEZ0ezvesuXg4MJFGD5l6eiqevhqLwDh+4AbKssvLZmuJTCwozU8tUcU0TmMjng9BcbcBvcKArabamopdmqiAzQ6OJ2t4oDcjUobalt+B3AN3n7JmurjNAkBt44kc=
+Message-ID: <625fc13d0708241413s1086527id377b49e7adacc5e@mail.gmail.com>
+Date: Fri, 24 Aug 2007 16:13:21 -0500
+From: "Josh Boyer" <jwboyer@gmail.com>
+To: "Casey Dahlin" <cjdahlin@ncsu.edu>
+Subject: Re: USB Key light on/off state depending on mount
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46CF468E.1080607@ncsu.edu>
 MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
-CC: Bodo Eggert <7eggert@gmx.de>, netdev <netdev@vger.kernel.org>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>,
-       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: RFC: issues concerning the next NAPI interface
-References: <8VHRR-45R-17@gated-at.bofh.it> <8VKwj-8ke-27@gated-at.bofh.it> <E1IOeSm-0000bm-Jo@be1.lrz> <20070824204243.GI4282@austin.ibm.com>
-In-Reply-To: <20070824204243.GI4282@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46CF468E.1080607@ncsu.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linas Vepstas schrieb:
-> On Fri, Aug 24, 2007 at 09:04:56PM +0200, Bodo Eggert wrote:
->   
->> Linas Vepstas <linas@austin.ibm.com> wrote:
->>     
->>> On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
->>>       
->>>> 3) On modern systems the incoming packets are processed very fast. Especially
->>>> on SMP systems when we use multiple queues we process only a few packets
->>>> per napi poll cycle. So NAPI does not work very well here and the interrupt
->>>> rate is still high.
->>>>         
->>> worst-case network ping-pong app: send one
->>> packet, wait for reply, send one packet, etc.
->>>       
->> Possible solution / possible brainfart:
->>
->> Introduce a timer, but don't start to use it to combine packets unless you
->> receive n packets within the timeframe. If you receive less than m packets
->> within one timeframe, stop using the timer. The system should now have a
->> decent response time when the network is idle, and when the network is
->> busy, nobody will complain about the latency.-)
->>     
+On 8/24/07, Casey Dahlin <cjdahlin@ncsu.edu> wrote:
+> Most USB keys nowadays have a small LED somewhere inside of them that
+> lights up when they are plugged in. On a windows box, the key is lit up
+> whenever it is mounted, and as soon as it is unmounted it turns off,
+> giving a handy physical indicator that the key is safe to remove. On
+> linux, the light is simply on whenever the key is plugged in.
 >
-> Ohh, that was inspirational. Let me free-associate some wild ideas.
->
-> Suppose we keep a running average of the recent packet arrival rate,
-> Lets say its 10 per millisecond ("typical" for a gigabit eth runnning
-> flat-out).  If we could poll the driver at a rate of 10-20 per
-> millisecond (i.e. letting the OS do other useful work for 0.05 millisec),
-> then we could potentially service the card without ever having to enable 
-> interrupts on the card, and without hurting latency.
->
-> If the packet arrival rate becomes slow enough, we go back to an
-> interrupt-driven scheme (to keep latency down).
->
-> The main problem here is that, even for HZ=1000 machines, this amounts 
-> to 10-20 polls per jiffy.  Which, if implemented in kernel, requires 
-> using the high-resolution timers. And, umm, don't the HR timers require
-> a cpu timer interrupt to make them go? So its not clear that this is much
-> of a win.
->   
-That is indeed a good question. At least for 10G eHEA we see
-that the average number of packets/poll cycle is very low.
-With high precision timers we could control the poll interval
-better and thus make sure we get enough packets on the queue in
-high load situations to benefit from LRO while keeping the
-latency moderate. When the traffic load is low we could just
-stick to plain NAPI. I don't know how expensive hp timers are,
-we probably just have to test it (when they are available for
-POWER in our case). However, having more packets
-per poll run would make LRO more efficient and thus the total
-CPU utilization would decrease.
+> Should linux toggle the light depending on mount state? Is it as trivial
+> as it seems or does this reflect some larger issue?
 
-I guess on most systems there are not many different network
-cards working in parallel. So if the driver could set the poll
-interval for its devices, it could be well optimized depending
-on the NICs characteristics.
+I think that depends on the key.  My Corsair keys have the light
+flicker whenever I/O is on-going.
 
-Maybe it would be good enough to have a timer that schedules
-the device for NAPI (and thus triggers SoftIRQs, which will
-trigger NAPI). Whether this timer would be used via a generic
-interface or would be implemented as a proprietary solution
-would depend on whether other drivers want / need this feature
-as well. Drivers / NICs that work fine with plain NAPI don't
-have to use timer :-)
-
-I tried to implement something with "normal" timers, but the result
-was everything but great. The timers seem to be far too slow.
-I'm not sure if it helps to increase it from 1000HZ to 2500HZ
-or more.
-
-Regards,
-Jan-Bernd
-
+josh
