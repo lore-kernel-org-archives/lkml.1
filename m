@@ -1,67 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764236AbXHXVL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764580AbXHXVMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764236AbXHXVL5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 17:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbXHXVLt
+	id S1764580AbXHXVMw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 17:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbXHXVMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 17:11:49 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:62868 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755845AbXHXVLs (ORCPT
+	Fri, 24 Aug 2007 17:12:41 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:65112 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753248AbXHXVMj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 17:11:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=p0ql0RP1UUkrNQM4C5t6DlVcJodHX1MLoNV0TZ4SjlLDis+SSBl4pLaZmO/oeUb1+yOQtQNid4rHc9cpAYM/J5GRhBlfuA4lTpGJTV2QrK/Pt97Oa21GB+0d2wL1N2dW0M9Hzek2+a9icvq/SGJU4DMAUKlkVUVsXa+9nuTP1Gc=
-Message-ID: <8bd0f97a0708241411n50725f94y9cf1c27a58634319@mail.gmail.com>
-Date: Fri, 24 Aug 2007 17:11:47 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Matt Mackall" <mpm@selenic.com>
-Subject: Re: [PATCH take #2] MAINTAINTERS: use our mail list as Blackfin arch maintainters.
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Bryan Wu" <bryan.wu@analog.com>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>, joe@perches.com,
-       yi.li@analog.com, vivi.li@analog.com, torvalds@linux-foundation.org,
-       sonic.zhang@analog.com, roy.huang@analog.com, robin.getz@analog.com,
-       michael.hennerich@analog.com, michael.frysinger@analog.com,
-       marc.hoffman@analog.com, linux-kernel@vger.kernel.org,
-       jie.zhang@analog.com, grace.pan@analog.com, bernd.schmidt@analog.com,
-       akpm@linux-foundation.org
-In-Reply-To: <20070824161451.GM21720@waste.org>
+	Fri, 24 Aug 2007 17:12:39 -0400
+Message-ID: <46CF499C.60009@de.ibm.com>
+Date: Fri, 24 Aug 2007 23:11:56 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+User-Agent: Thunderbird 1.5.0.7 (Windows/20060909)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linas Vepstas <linas@austin.ibm.com>
+CC: Bodo Eggert <7eggert@gmx.de>, netdev <netdev@vger.kernel.org>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>,
+       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: RFC: issues concerning the next NAPI interface
+References: <8VHRR-45R-17@gated-at.bofh.it> <8VKwj-8ke-27@gated-at.bofh.it> <E1IOeSm-0000bm-Jo@be1.lrz> <20070824204243.GI4282@austin.ibm.com>
+In-Reply-To: <20070824204243.GI4282@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46bff904.ANPWrqncsP8VpmBH%joe@perches.com>
-	 <1187777706.24914.2.camel@roc-desktop>
-	 <6bffcb0e0708220323w5592df25n9c21c7e3aca1dbfb@mail.gmail.com>
-	 <8bd0f97a0708220345g26c35288g5e96b6f1f8491f0e@mail.gmail.com>
-	 <1187794511.6805.3.camel@roc-laptop>
-	 <20070824002413.GB20266@waste.org>
-	 <1187928287.5949.2.camel@roc-desktop>
-	 <20070824045635.GK21720@waste.org>
-	 <20070824100943.4e81932a@the-village.bc.nu>
-	 <20070824161451.GM21720@waste.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/24/07, Matt Mackall <mpm@selenic.com> wrote:
-> My observation is actually from the other side, Alan. I run a list
-> that used to send exactly such messages and got complaints from people
-> in this community about running a subscribers-only list. My natural
-> conclusion was that the messages were considered to be a problem.
-> Given that the moderation messages from Mailman actually mention
-> "subscribers-only", I can't blame non-subscribers for feeling
-> thwarted, frustrated, annoyed, or inconvenienced when they receive it.
+Linas Vepstas schrieb:
+> On Fri, Aug 24, 2007 at 09:04:56PM +0200, Bodo Eggert wrote:
+>   
+>> Linas Vepstas <linas@austin.ibm.com> wrote:
+>>     
+>>> On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
+>>>       
+>>>> 3) On modern systems the incoming packets are processed very fast. Especially
+>>>> on SMP systems when we use multiple queues we process only a few packets
+>>>> per napi poll cycle. So NAPI does not work very well here and the interrupt
+>>>> rate is still high.
+>>>>         
+>>> worst-case network ping-pong app: send one
+>>> packet, wait for reply, send one packet, etc.
+>>>       
+>> Possible solution / possible brainfart:
+>>
+>> Introduce a timer, but don't start to use it to combine packets unless you
+>> receive n packets within the timeframe. If you receive less than m packets
+>> within one timeframe, stop using the timer. The system should now have a
+>> decent response time when the network is idle, and when the network is
+>> busy, nobody will complain about the latency.-)
+>>     
+>
+> Ohh, that was inspirational. Let me free-associate some wild ideas.
+>
+> Suppose we keep a running average of the recent packet arrival rate,
+> Lets say its 10 per millisecond ("typical" for a gigabit eth runnning
+> flat-out).  If we could poll the driver at a rate of 10-20 per
+> millisecond (i.e. letting the OS do other useful work for 0.05 millisec),
+> then we could potentially service the card without ever having to enable 
+> interrupts on the card, and without hurting latency.
+>
+> If the packet arrival rate becomes slow enough, we go back to an
+> interrupt-driven scheme (to keep latency down).
+>
+> The main problem here is that, even for HZ=1000 machines, this amounts 
+> to 10-20 polls per jiffy.  Which, if implemented in kernel, requires 
+> using the high-resolution timers. And, umm, don't the HR timers require
+> a cpu timer interrupt to make them go? So its not clear that this is much
+> of a win.
+>   
+That is indeed a good question. At least for 10G eHEA we see
+that the average number of packets/poll cycle is very low.
+With high precision timers we could control the poll interval
+better and thus make sure we get enough packets on the queue in
+high load situations to benefit from LRO while keeping the
+latency moderate. When the traffic load is low we could just
+stick to plain NAPI. I don't know how expensive hp timers are,
+we probably just have to test it (when they are available for
+POWER in our case). However, having more packets
+per poll run would make LRO more efficient and thus the total
+CPU utilization would decrease.
 
-there's a difference between getting a response that says it's being
-held pending a moderator approving it and a response that says it's
-been flat out rejected until you subscribe
+I guess on most systems there are not many different network
+cards working in parallel. So if the driver could set the poll
+interval for its devices, it could be well optimized depending
+on the NICs characteristics.
 
-> Since I was already whitelisting legitimate posters, I simply turned
-> off the moderation messages back to the poster. Now the fact that the
-> list is moderated is completely transparent and no one gets any rude
-> automated messages.
+Maybe it would be good enough to have a timer that schedules
+the device for NAPI (and thus triggers SoftIRQs, which will
+trigger NAPI). Whether this timer would be used via a generic
+interface or would be implemented as a proprietary solution
+would depend on whether other drivers want / need this feature
+as well. Drivers / NICs that work fine with plain NAPI don't
+have to use timer :-)
 
-that's easy enough to do
--mike
+I tried to implement something with "normal" timers, but the result
+was everything but great. The timers seem to be far too slow.
+I'm not sure if it helps to increase it from 1000HZ to 2500HZ
+or more.
+
+Regards,
+Jan-Bernd
+
