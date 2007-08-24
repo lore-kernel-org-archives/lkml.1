@@ -1,49 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762089AbXHXNme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763179AbXHXNp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762089AbXHXNme (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 09:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbXHXNmZ
+	id S1763179AbXHXNp2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 09:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbXHXNpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 09:42:25 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:47802 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752956AbXHXNmZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 09:42:25 -0400
-Date: Fri, 24 Aug 2007 07:42:24 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andy Isaacson <adi@hexapodia.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Matt Mackall <mpm@selenic.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ksummit-2007-discuss@thunk.org
-Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
-Message-ID: <20070824134223.GY9163@parisc-linux.org>
-References: <1187796179.3410.32.camel@localhost.localdomain> <20070822224400.GA17255@srcf.ucam.org> <20070823002618.GO9163@parisc-linux.org> <20070823003748.GR30556@waste.org> <20070823004209.GP9163@parisc-linux.org> <20070823011953.GS30556@waste.org> <1187832907.3410.141.camel@localhost.localdomain> <20070824012730.GA1243@hexapodia.org> <20070824114107.05b57909@the-village.bc.nu>
+	Fri, 24 Aug 2007 09:45:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39948 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753015AbXHXNpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 09:45:20 -0400
+Date: Fri, 24 Aug 2007 15:45:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+Message-ID: <20070824134510.GA21382@elte.hu>
+References: <200708111344.42934.a1426z@gawab.com> <200708122243.05191.a1426z@gawab.com> <20070821105858.GC26598@elte.hu> <200708220127.30698.a1426z@gawab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070824114107.05b57909@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200708220127.30698.a1426z@gawab.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 11:41:07AM +0100, Alan Cox wrote:
-> And very gameable of course. James proposal at least has the advantage of
-> simplicity, of drawing from a rough set of relevant people (far from
-> perfectly) and a certain amount of random changeover according to the KS
-> of the year
+
+* Al Boldi <a1426z@gawab.com> wrote:
+
+> > > The problem is that consecutive runs don't give consistent results 
+> > > and sometimes stalls.  You may want to try that.
+> >
+> > well, there's a natural saturation point after a few hundred tasks 
+> > (depending on your CPU's speed), at which point there's no idle time 
+> > left. From that point on things get slower progressively (and the 
+> > ability of the shell to start new ping tasks is impacted as well), 
+> > but that's expected on an overloaded system, isnt it?
 > 
-> I would make only one change personally - extend an email vote to the
-> people on the final invite list who can't for various reasons make it.
+> Of course, things should get slower with higher load, but it should be 
+> consistent without stalls.
+> 
+> To see this problem, make sure you boot into /bin/sh with the normal 
+> VGA console (ie. not fb-console).  Then try each loop a few times to 
+> show different behaviour; loops like:
+> 
+> # for ((i=0; i<3333; i++)); do ping 10.1 -A > /dev/null & done
+> 
+> # for ((i=0; i<3333; i++)); do nice -99 ping 10.1 -A > /dev/null & done
+> 
+> # { for ((i=0; i<3333; i++)); do
+>         ping 10.1 -A > /dev/null &
+>     done } > /dev/null 2>&1
+> 
+> Especially the last one sometimes causes a complete console lock-up, 
+> while the other two sometimes stall then surge periodically.
 
-That's not what you said last year ...
-http://thunk.org/pipermail/ksummit-2006-discuss/2006-July/000665.html
+ok. I think i might finally have found the bug causing this. Could you 
+try the fix below, does your webserver thread-startup test work any 
+better?
 
--- 
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	Ingo
+
+--------------------------->
+Subject: sched: fix startup penalty calculation
+From: Ingo Molnar <mingo@elte.hu>
+
+fix task startup penalty miscalculation: sysctl_sched_granularity is
+unsigned int and wait_runtime is long so we first have to convert it
+to long before turning it negative ...
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched_fair.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux/kernel/sched_fair.c
+===================================================================
+--- linux.orig/kernel/sched_fair.c
++++ linux/kernel/sched_fair.c
+@@ -1048,7 +1048,7 @@ static void task_new_fair(struct rq *rq,
+ 	 * -granularity/2, so initialize the task with that:
+ 	 */
+ 	if (sysctl_sched_features & SCHED_FEAT_START_DEBIT)
+-		p->se.wait_runtime = -(sysctl_sched_granularity / 2);
++		p->se.wait_runtime = -((long)sysctl_sched_granularity / 2);
+ 
+ 	__enqueue_entity(cfs_rq, se);
+ }
