@@ -1,69 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763484AbXHXRxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765219AbXHXRy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763484AbXHXRxr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 13:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760421AbXHXRxk
+	id S1765219AbXHXRy0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 13:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759183AbXHXRyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 13:53:40 -0400
-Received: from ns1.suse.de ([195.135.220.2]:37283 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760356AbXHXRxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 13:53:40 -0400
-Date: Fri, 24 Aug 2007 19:53:39 +0200
-From: Andi Kleen <ak@suse.de>
-To: Mel Gorman <mel@skynet.ie>
-Cc: Andi Kleen <ak@suse.de>, Andy Whitcroft <apw@shadowen.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86 Boot NUMA kernels on non-NUMA hardware with DISCONTIG memory model
-Message-ID: <20070824175339.GD16227@bingen.suse.de>
-References: <20070824162814.GD26374@skynet.ie> <20070824163521.GA16227@bingen.suse.de> <46CF0CCF.7010702@shadowen.org> <20070824170744.GB16227@bingen.suse.de> <20070824172626.GE26374@skynet.ie> <20070824173816.GC16227@bingen.suse.de> <20070824174438.GG26374@skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070824174438.GG26374@skynet.ie>
+	Fri, 24 Aug 2007 13:54:17 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:59370 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758369AbXHXRyQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 13:54:16 -0400
+Date: Fri, 24 Aug 2007 10:48:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Shannon Nelson <shannon.nelson@intel.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: [PATCH v2 -mm 5/7] I/OAT: Add support for MSI and MSI-X
+Message-Id: <20070824104837.341fbc12.randy.dunlap@oracle.com>
+In-Reply-To: <20070824001517.16997.72496.stgit@localhost.localdomain>
+References: <20070824001335.16997.79665.stgit@localhost.localdomain>
+	<20070824001517.16997.72496.stgit@localhost.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 06:44:38PM +0100, Mel Gorman wrote:
-> On (24/08/07 19:38), Andi Kleen didst pronounce:
-> > > Other than the fact that the memmap must be PMD aligned to use hugepage
-> > > entries for the memmap. 
-> > 
-> > Why is that so?  mem_map should be just part of lowmem anyways.
-> > 
+On Thu, 23 Aug 2007 17:15:17 -0700 Shannon Nelson wrote:
+
+> Add support for MSI and MSI-X interrupt handling, including the ability
+> to choose the desired interrupt method.
 > 
-> Not in this case. memmap is allocated node local and mapped in the virtual
-> memory area normally occupied by the end of low memory. The objective was
-> to have memmap for the struct pages node-local. Hence, portions of
-> memmap are really in highmem.
-
-Ok, but that still doesn't mean it has to be PMD aligned, 
-as long as illegal virtual aliases are prevent in the overlap
-(which is not very hard) 
-
-> > > It could be mapped with small pages in corner cases
-> > > but the complexity worth it?
-> > 
-> > You don't need to map it with small pages in the normal case,
-> > the only requirement is that c_p_a() is aware of it so it can
-> > split it if needed.
-> > 
-> > > I can't see this type of lifting being done any time soon. As SPARSEMEM works
-> > > and there is hope with the vmemmap work that DISCONTIG will finally go away,
-> > > it may not be the best investment of time.
-> > 
-> > It's a trivial change, probably less code than your original patch.
-> > 
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Acked-by: David S. Miller <davem@davemloft.net>
+> ---
 > 
-> I'll have to take your word for it because I haven't looked closely
-> enough. I'll try and find time to look at it but the earliest I'll get around
-> to it is post kernel-summit. In the meantime, SPARSEMEM works.
+>  drivers/dma/ioat_dma.c          |  353 ++++++++++++++++++++++++++++++++-------
+>  drivers/dma/ioatdma.h           |   12 +
+>  drivers/dma/ioatdma_registers.h |    6 +
+>  3 files changed, 305 insertions(+), 66 deletions(-)
+> 
+> diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+> index 9012176..0909fee 100644
+> --- a/drivers/dma/ioat_dma.c
+> +++ b/drivers/dma/ioat_dma.c
+> @@ -47,6 +47,71 @@
+>  static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan);
+>  static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *ioat_chan);
+>  
+> +#define for_each_bit(bit, addr, size) \
+> +	for ((bit) = find_first_bit((addr), (size)); \
+> +	     (bit) < (size); \
+> +	     (bit) = find_next_bit((addr), (size), (bit) + 1))
 
-Ok, so we disable DISCONTIG i386 NUMA because there's nobody willing
-to maintain it?
+Any reason that this macro shouldn't be added to
+include/linux/bitops.h instead of here?  I'd prefer/expect such
+general-purpose macros to live somewhere else.
 
-I'll take your word SPARSEMEM works, although I was told DISCONTIG NUMA
-works too and then my testing told a quite different story.
 
--Andi
+> @@ -276,6 +352,34 @@ static void ioat_dma_free_chan_resources(struct dma_chan *chan)
+>  			in_use_descs - 1);
+>  
+>  	ioat_chan->last_completion = ioat_chan->completion_addr = 0;
+> +	ioat_chan->pending = 0;
+> +}
+> +/**
+> + * ioat_dma_get_next_descriptor - return the next available descriptor from
+> + *				  the chain
 
+Unfortunately, function name + short description in kernel-doc must be
+on one line (only).  If you want to add more text/description, put it
+after the parameters (like you have done :).
+
+> + * @ioat_chan: IOAT DMA channel handle
+
+We normally use one
+ *
+line between the parameters and following text.
+
+> + * Gets the next descriptor from the chain, and must be called with the
+> + * channel's desc_lock held.  Allocates more descriptors if the channel
+> + * has run out.
+> + */
+> +static struct ioat_desc_sw *ioat_dma_get_next_descriptor(
+> +						struct ioat_dma_chan *ioat_chan)
+> +{
+> +	struct ioat_desc_sw *new = NULL;
+> +
+> +	if (!list_empty(&ioat_chan->free_desc)) {
+> +		new = to_ioat_desc(ioat_chan->free_desc.next);
+> +		list_del(&new->node);
+> +	} else {
+> +		/* try to get another desc */
+> +		new = ioat_dma_alloc_descriptor(ioat_chan, GFP_ATOMIC);
+> +		/* will this ever happen? */
+> +		/* TODO add upper limit on these */
+> +		BUG_ON(!new);
+> +	}
+> +
+> +	prefetch(new->hw);
+> +	return new;
+>  }
+>  
+>  static struct dma_async_tx_descriptor *ioat_dma_prep_memcpy(
+> @@ -639,6 +711,162 @@ out:
+>  	return err;
+>  }
+>  
+> +static char ioat_interrupt_style[32] = "msix";
+> +module_param_string(ioat_interrupt_style, ioat_interrupt_style,
+> +		    sizeof(ioat_interrupt_style), 0644);
+> +MODULE_PARM_DESC(ioat_interrupt_style,
+> +		 "set ioat interrupt style: msix (default), "
+> +		 "msix-single-vector, msi, intx)");
+> +
+> +/**
+> + * ioat_dma_setup_interrupts - setup interrupt handler, choosing btwn msix,
+> + *                             msi, and legacy
+
+Same one-line nit.  legacy == intx, I suppose.
+
+
+> + * @device: ioat device
+> + */
+> +int ioat_dma_setup_interrupts(struct ioatdma_device *device)
+> +{
+> +	struct ioat_dma_chan *ioat_chan;
+> +	int err, i, j, msixcnt;
+> +	u8 intrctrl = 0;
+> +
+> +	if (!strcmp(ioat_interrupt_style, "msix"))
+> +		goto msix;
+> +	else if (!strcmp(ioat_interrupt_style, "msix-single-vector"))
+> +		goto msix_single_vector;
+> +	else if (!strcmp(ioat_interrupt_style, "msi"))
+> +		goto msi;
+> +	else if (!strcmp(ioat_interrupt_style, "intx"))
+> +		goto intx;
+
+The "else"s aren't needed.
+
+> +
+> +msix:
+
+...
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
