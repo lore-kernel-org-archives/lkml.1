@@ -1,108 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762308AbXHXRRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762647AbXHXRSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762308AbXHXRRP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 13:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbXHXRQ6
+	id S1762647AbXHXRSt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 13:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbXHXRSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 13:16:58 -0400
-Received: from s36.avahost.net ([74.53.95.194]:40698 "EHLO s36.avahost.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751031AbXHXRQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 13:16:57 -0400
-Message-ID: <46CF127D.1090609@katalix.com>
-Date: Fri, 24 Aug 2007 18:16:45 +0100
-From: James Chapman <jchapman@katalix.com>
-Organization: Katalix Systems Ltd
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 24 Aug 2007 13:18:42 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:40150 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755689AbXHXRSl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 13:18:41 -0400
+Message-ID: <46CF12BF.7000705@oracle.com>
+Date: Fri, 24 Aug 2007 10:17:51 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-CC: Jan-Bernd Themann <ossthema@de.ibm.com>, akepner@sgi.com,
-       netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: RFC: issues concerning the next NAPI interface
-References: <200708241559.17055.ossthema@de.ibm.com>	<20070824153703.GN5592@sgi.com>	<200708241747.16592.ossthema@de.ibm.com> <20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>
-In-Reply-To: <20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>
+To: Paolo Giarrusso <blaisorblade@yahoo.it>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rpjday@mindspring.com
+Subject: Re: [PATCH] Script to check for undefined Kconfig symbols - v2
+References: <538193.69286.qm@web25220.mail.ukl.yahoo.com>
+In-Reply-To: <538193.69286.qm@web25220.mail.ukl.yahoo.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - s36.avahost.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - katalix.com
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
-> On Fri, 24 Aug 2007 17:47:15 +0200
-> Jan-Bernd Themann <ossthema@de.ibm.com> wrote:
-> 
->> Hi,
+Paolo Giarrusso wrote:
+> On Fri, 24 Aug 2007 Randy Dunlap wrote:
+>> On Fri, 24 Aug 2007 16:56:49 +0200 Paolo 'Blaisorblade' Giarrusso wrote:
 >>
->> On Friday 24 August 2007 17:37, akepner@sgi.com wrote:
->>> On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
->>>> .......
->>>> 3) On modern systems the incoming packets are processed very fast. Especially
->>>>    on SMP systems when we use multiple queues we process only a few packets
->>>>    per napi poll cycle. So NAPI does not work very well here and the interrupt 
->>>>    rate is still high. What we need would be some sort of timer polling mode 
->>>>    which will schedule a device after a certain amount of time for high load 
->>>>    situations. With high precision timers this could work well. Current
->>>>    usual timers are too slow. A finer granularity would be needed to keep the
->>>>    latency down (and queue length moderate).
->>>>
->>> We found the same on ia64-sn systems with tg3 a couple of years 
->>> ago. Using simple interrupt coalescing ("don't interrupt until 
->>> you've received N packets or M usecs have elapsed") worked 
->>> reasonably well in practice. If your h/w supports that (and I'd 
->>> guess it does, since it's such a simple thing), you might try 
->>> it.
+>>> In this version, I've updated the scripts to search for "\<$symb_bare\>" instead
+>>> of $symb_bare in Kconfig files. Please ignore my previous message.
 >>>
->> I don't see how this should work. Our latest machines are fast enough that they
->> simply empty the queue during the first poll iteration (in most cases).
->> Even if you wait until X packets have been received, it does not help for
->> the next poll cycle. The average number of packets we process per poll queue
->> is low. So a timer would be preferable that periodically polls the 
->> queue, without the need of generating a HW interrupt. This would allow us
->> to wait until a reasonable amount of packets have been received in the meantime
->> to keep the poll overhead low. This would also be useful in combination
->> with LRO.
->>
+>>> To avoid to look manually for used but undefined Kconfig variables, I've
+>>> written a script which tries do this efficiently, in case all other attention
+>>> fail. It accounts for _MODULE suffix and for UML_ prefixes to Kconfig variable,
+>>> but otherwise looks for exact matches (i.e. \<CONFIG_; this is done to exclude
+>>> macros like MMCONFIG_).
+>>>
+>>> Undefined Kconfig variables should be not be removed without care, but for
+>>> instance arch/i386/boot/ uses a bunch of undefined Kconfig vars:
+>>>
+>>> $ scripts/checkunknowndefines.sh arch/i386/boot/
+>>> arch/i386/boot/video.h uses undefined symbol VIDEO_400_HACK
+>>> arch/i386/boot/video-vga.c uses undefined symbol VIDEO_400_HACK
+>>> arch/i386/boot/video.c uses undefined symbol VIDEO_RETAIN
+>>> arch/i386/boot/video.h uses undefined symbol VIDEO_RETAIN
+>>> arch/i386/boot/video.h uses undefined symbol VIDEO_SVGA
+>>> arch/i386/boot/video.h uses undefined symbol VIDEO_VESA
+>>> arch/i386/boot/video-vesa.c uses undefined symbol VIDEO_VESA
+>>>
+>>> Hope you can merge this in -mm and use it frequently (probably, a script to look for
+>>> regressions in its output is useful). It should also be mentioned in
+>>> SubmittingPatches if you agree.
+>> or added to Documentation/SubmitChecklist.
 > 
-> You need hardware support for deferred interrupts. Most devices have it (e1000, sky2, tg3)
-> and it interacts well with NAPI. It is not a generic thing you want done by the stack,
-> you want the hardware to hold off interrupts until X packets or Y usecs have expired.
+> Indeed - that's what I should have written, but I had forgot the exact file name.
+> 
+>> How does this script compare to
+>> http://www.fsdev.net/wiki/index.php?title=Misspelled_CONFIG_variables
+>> and
+>> http://www.fsdev.net/wiki/index.php?title=Dead_CONFIG_variables
+>> ?
+> 
+> They are the same, but they do not identify the files containing the dead var.
+> It may be worth to just "grep back" in kernel sources for the dead symbol to
+> readd this feature, but it may be slower that way.
+> 
+> The difference is that since I find symbols together with file name, I cannot
+> use uniq but I must use that awk script.
+> 
+> Anyway, do we agree that a script for this should be probably
+> merged in kernel sources?
+> 
+> Thanks for your answer.
 
-Does hardware interrupt mitigation really interact well with NAPI? In my 
-experience, holding off interrupts for X packets or Y usecs does more 
-harm than good; such hardware features are useful only when the OS has 
-no NAPI-like mechanism.
-
-When tuning NAPI drivers for packets/sec performance (which is a good 
-indicator of driver performance), I make sure that the driver stays in 
-NAPI polled mode while it has any rx or tx work to do. If the CPU is 
-fast enough that all work is always completed on each poll, I have the 
-driver stay in polled mode until dev->poll() is called N times with no 
-work being done. This keeps interrupts disabled for reasonable traffic 
-levels, while minimizing packet processing latency. No need for hardware 
-interrupt mitigation.
-
-> The parameters for controlling it are already in ethtool, the issue is finding a good
-> default set of values for a wide range of applications and architectures. Maybe some
-> heuristic based on processor speed would be a good starting point. The dynamic irq
-> moderation stuff is not widely used because it is too hard to get right.
-
-I agree. It would be nice to find a way for the typical user to derive 
-best values for these knobs for his/her particular system. Perhaps a 
-tool using pktgen and network device phy internal loopback could be 
-developed?
+Yes, I agree that it's useful and more convenient to be in
+linux/scripts/.
 
 -- 
-James Chapman
-Katalix Systems Ltd
-http://www.katalix.com
-Catalysts for your Embedded Linux software development
-
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
