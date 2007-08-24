@@ -1,151 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764709AbXHXTRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbXHXTR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764709AbXHXTRl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 15:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbXHXTRb
+	id S1758703AbXHXTR7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 15:17:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764333AbXHXTRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 15:17:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52818 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbXHXTRa (ORCPT
+	Fri, 24 Aug 2007 15:17:40 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:43525 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763829AbXHXTRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 15:17:30 -0400
-Date: Sat, 25 Aug 2007 01:00:23 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86_64 mce{_amd}: __cpuinit{data} section annotations
-Message-ID: <alpine.LFD.0.999.0708250054060.19678@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 24 Aug 2007 15:17:38 -0400
+Date: Fri, 24 Aug 2007 12:12:17 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Shannon Nelson <shannon.nelson@intel.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: [PATCH v2 -mm 7/7] I/OAT: Add DCA services
+Message-Id: <20070824121217.3048147c.randy.dunlap@oracle.com>
+In-Reply-To: <20070824001527.16997.2238.stgit@localhost.localdomain>
+References: <20070824001335.16997.79665.stgit@localhost.localdomain>
+	<20070824001527.16997.2238.stgit@localhost.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Thu, 23 Aug 2007 17:15:27 -0700 Shannon Nelson wrote:
 
-With the "redefine register_hotcpu_notifier() stub as static inline
-function" patch gone, I can no longer reproduce the section mismatches
-mentioned in: x86_64-mce_amd-fix-section-mismatch-warnings.patch
-[ The section annotations of that patch still stand, just the changelog
-  is no longer completely accurate. ]
+> Add code to connect to the DCA driver and provide cpu tags for use by
+> drivers that would like to use Direct Cache Access hints.
+> 
+>     [Adrian Bunk]                Several Kconfig cleanup items
+>     [Andrew Morten, Chris Leech] fix for using cpu_physical_id() even when
+> 			         built for uni-processor
+> 
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Acked-by: David S. Miller <davem@davemloft.net>
+> ---
+> 
+>  drivers/dca/Kconfig    |    7 -
+>  drivers/dma/Kconfig    |   60 ++++++-----
+>  drivers/dma/Makefile   |    2 
+>  drivers/dma/ioat.c     |   12 ++
+>  drivers/dma/ioat_dca.c |  267 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/dma/ioatdma.h  |    2 
+>  6 files changed, 318 insertions(+), 32 deletions(-)
+> 
+> diff --git a/drivers/dma/ioat_dca.c b/drivers/dma/ioat_dca.c
+> new file mode 100644
+> index 0000000..03c993a
+> --- /dev/null
+> +++ b/drivers/dma/ioat_dca.c
+> @@ -0,0 +1,267 @@
 
-If we care enough about this, I'm resubmitting that patch with updated
-patch name and changelog here -- the content is same.
+> +
+> +/* either a kernel change is needed, or we need something like this in kernel */
+> +#ifndef CONFIG_SMP
+> +#include <asm/smp.h>
+> +#undef cpu_physical_id
+> +#define cpu_physical_id(cpu) (cpuid_ebx(1) >> 24)
+> +#endif
+> +
+> +#include "ioatdma.h"
+> +#include "ioatdma_registers.h"
+> +
+> +/* THIS STUFF NEEDS TO LIVE SOMEWHERE ELSE */
+> +#define X86_FEATURE_DCA	(4*32+18) /* Direct Cache Access */
+> +/* / THIS STUFF NEEDS TO LIVE SOMEWHERE ELSE */
 
-Satyam
+Yes, feature bits need to be integrated with the other CPU-specific
+feature bits.
+
+> +/* pack PCI B/D/F into a u16 */
+> +static inline u16 dcaid_from_pcidev(struct pci_dev *pci)
+> +{
+> +	return (pci->bus->number << 8) | pci->devfn;
+> +}
+
+Could any other PCI users use this in include/linux/pci.h ?
 
 
-[PATCH] x86_64 mce{_amd}: __cpuinit{data} section annotations
+> diff --git a/drivers/dma/ioatdma.h b/drivers/dma/ioatdma.h
+> index 5931e56..d59c90b 100644
+> --- a/drivers/dma/ioatdma.h
+> +++ b/drivers/dma/ioatdma.h
+> @@ -132,9 +132,11 @@ struct ioat_desc_sw {
+>  #if defined(CONFIG_INTEL_IOATDMA) || defined(CONFIG_INTEL_IOATDMA_MODULE)
+>  struct ioatdma_device *ioat_dma_probe(struct pci_dev *, void __iomem *);
+>  void ioat_dma_remove(struct ioatdma_device *device);
+> +struct dca_provider *ioat_dca_init(struct pci_dev *, void __iomem *);
 
-* mce.c:
+Parameter (variable) names in prototypes, please.
 
-CPU hotplug notifier callback function mce_cpu_callback() is not marked
-__cpuinit and may thus go to the .text section unconditionally, but it
-references mce_create_device() that is marked __cpuinit and may be
-emitted into the .init.text section when HOTPLUG_CPU=n. This may cause
-modpost to warn about this mismatch (in practice, though, the compiler
-may elide the unreferenced callback function completely when
-HOTPLUG_CPU=n therefore modpost may never warn).
+>  #else
+>  #define ioat_dma_probe(pdev, io)                NULL
+>  #define ioat_dma_remove(dev)            do { } while (0)
+> +#define ioat_dca_init(pdev, io)			NULL
+>  #endif
+>  
+>  #endif /* IOATDMA_H */
 
-Let us fix this by marking the callback as __cpuinit and corresponding
-notifier_block as __cpuinitdata. Having done that, mce_remove_device()
-is only ever called from __cpuinit marked functions so can be marked
-__cpuinit itself.
-
-* mce_amd.c:
-
-Has an exactly similar issue as that discussed in previous case. Solve
-it similarly by marking callback as __cpuinit and notifier_block as
-__cpuinitdata. This causes a viral effect and allows us to mark a bunch
-of other functions as __cpuinit also.
-
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
 ---
-
- arch/x86_64/kernel/mce.c     |    6 +++---
- arch/x86_64/kernel/mce_amd.c |   10 +++++-----
- 2 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/arch/x86_64/kernel/mce.c b/arch/x86_64/kernel/mce.c
-index a66d607..5c0c4ee 100644
---- a/arch/x86_64/kernel/mce.c
-+++ b/arch/x86_64/kernel/mce.c
-@@ -820,7 +820,7 @@ static __cpuinit int mce_create_device(unsigned int cpu)
- 	return err;
- }
- 
--static void mce_remove_device(unsigned int cpu)
-+static void __cpuinit mce_remove_device(unsigned int cpu)
- {
- 	int i;
- 
-@@ -832,7 +832,7 @@ static void mce_remove_device(unsigned int cpu)
- }
- 
- /* Get notified when a cpu comes on/off. Be hotplug friendly. */
--static int
-+static int __cpuinit
- mce_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
- {
- 	unsigned int cpu = (unsigned long)hcpu;
-@@ -850,7 +850,7 @@ mce_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 	return NOTIFY_OK;
- }
- 
--static struct notifier_block mce_cpu_notifier = {
-+static struct notifier_block mce_cpu_notifier __cpuinitdata = {
- 	.notifier_call = mce_cpu_callback,
- };
- 
-diff --git a/arch/x86_64/kernel/mce_amd.c b/arch/x86_64/kernel/mce_amd.c
-index 2f8a7f1..364c80b 100644
---- a/arch/x86_64/kernel/mce_amd.c
-+++ b/arch/x86_64/kernel/mce_amd.c
-@@ -569,7 +569,7 @@ out:
-  *   of shared sysfs dir/files, and rest of the cores will be symlinked to it.
-  */
- 
--static void deallocate_threshold_block(unsigned int cpu,
-+static void __cpuinit deallocate_threshold_block(unsigned int cpu,
- 						 unsigned int bank)
- {
- 	struct threshold_block *pos = NULL;
-@@ -589,7 +589,7 @@ static void deallocate_threshold_block(unsigned int cpu,
- 	per_cpu(threshold_banks, cpu)[bank]->blocks = NULL;
- }
- 
--static void threshold_remove_bank(unsigned int cpu, int bank)
-+static void __cpuinit threshold_remove_bank(unsigned int cpu, int bank)
- {
- 	int i = 0;
- 	struct threshold_bank *b;
-@@ -631,7 +631,7 @@ free_out:
- 	per_cpu(threshold_banks, cpu)[bank] = NULL;
- }
- 
--static void threshold_remove_device(unsigned int cpu)
-+static void __cpuinit threshold_remove_device(unsigned int cpu)
- {
- 	unsigned int bank;
- 
-@@ -643,7 +643,7 @@ static void threshold_remove_device(unsigned int cpu)
- }
- 
- /* get notified when a cpu comes on/off */
--static int threshold_cpu_callback(struct notifier_block *nfb,
-+static int __cpuinit threshold_cpu_callback(struct notifier_block *nfb,
- 					    unsigned long action, void *hcpu)
- {
- 	/* cpu was unsigned int to begin with */
-@@ -668,7 +668,7 @@ static int threshold_cpu_callback(struct notifier_block *nfb,
- 	return NOTIFY_OK;
- }
- 
--static struct notifier_block threshold_cpu_notifier = {
-+static struct notifier_block threshold_cpu_notifier __cpuinitdata = {
- 	.notifier_call = threshold_cpu_callback,
- };
- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
