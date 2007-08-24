@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760928AbXHXPxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbXHXPzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760928AbXHXPxg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 11:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbXHXPxZ
+	id S1760570AbXHXPzc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 11:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXHXPzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 11:53:25 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:37852 "EHLO fieldses.org"
+	Fri, 24 Aug 2007 11:55:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40639 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753280AbXHXPxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 11:53:24 -0400
-Date: Fri, 24 Aug 2007 11:53:17 -0400
-To: Ric Wheeler <ric@emc.com>
-Cc: John Stoffel <john@stoffel.org>, Peter Staubach <staubach@redhat.com>,
-       Robin Lee Powell <rlpowell@digitalkingdom.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: NFS hang + umount -f: better behaviour requested.
-Message-ID: <20070824155317.GC32175@fieldses.org>
-References: <20070820225415.GL3956@digitalkingdom.org> <18123.5699.405125.137517@stoffel.org> <46CB1A78.7040102@redhat.com> <18123.13314.43009.263383@stoffel.org> <20070821192556.GB27995@fieldses.org> <46CEF49A.2050105@emc.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46CEF49A.2050105@emc.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	id S1751245AbXHXPzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 11:55:17 -0400
+Subject: Re: [PATCH 14/30] net: Kill some unneeded allocation return value
+	casts in libertas
+From: Dan Williams <dcbw@redhat.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-wireless@vger.kernel.org
+In-Reply-To: <2ac91f5f0eed967cf1709cfbe476b351e536c299.1187912217.git.jesper.juhl@gmail.com>
+References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
+	 <2ac91f5f0eed967cf1709cfbe476b351e536c299.1187912217.git.jesper.juhl@gmail.com>
+Content-Type: text/plain
+Date: Fri, 24 Aug 2007 11:50:24 -0400
+Message-Id: <1187970624.20110.0.camel@xo-13-A4-25.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 11:09:14AM -0400, Ric Wheeler wrote:
-> J. Bruce Fields wrote:
->> The NFS server alone can't prevent the problems Peter Staubach refers
->> to.  Their frequency also depends on the network and the way you're
->> using the filesystem.  (A sufficiently paranoid application accessing
->> the filesystem could function correctly despite the problems caused by
->> soft mounts, but the degree of paranoia required probably isn't common.)
->>   
-> Would it be sufficient to insure that that application always issues an 
-> fsync() before closing any recently written/updated file? Is there some 
-> other subtle paranoid techniques that should be used?
+On Fri, 2007-08-24 at 02:03 +0200, Jesper Juhl wrote:
+> kmalloc() and friends return void*, no need to cast it.
 
-NFS already syncs on close (and on unlock), so you should just need to
-check the return values from any writes, fsyncs, closes, etc. (and
-realize that an error there may mean some or all of the previous writes
-to this file descriptor failed).  And operations like mkdir have the
-same problem--a timeout leaves you not knowing whether the directory was
-created, because you don't know whether the operation reached the server
-or not.
+Applied to libertas-2.6 'for-linville' branch, thanks.
 
-I assume the problems with executables that Peter Staubach refers to are
-due to reads on mmap'd files timing out.
+Dan
 
-I don't use soft mounts myself and haven't had to debug user problems
-with them, so my understanding of it all is purely theoretical--others
-will have a better idea when and how these kinds of failures actually
-manifest themselves in practice.
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+>  drivers/net/wireless/libertas/debugfs.c |    2 +-
+>  drivers/net/wireless/libertas/ethtool.c |    3 +--
+>  2 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/wireless/libertas/debugfs.c b/drivers/net/wireless/libertas/debugfs.c
+> index 715cbda..6ade63e 100644
+> --- a/drivers/net/wireless/libertas/debugfs.c
+> +++ b/drivers/net/wireless/libertas/debugfs.c
+> @@ -1839,7 +1839,7 @@ static ssize_t wlan_debugfs_write(struct file *f, const char __user *buf,
+>  	char *p2;
+>  	struct debug_data *d = (struct debug_data *)f->private_data;
+>  
+> -	pdata = (char *)kmalloc(cnt, GFP_KERNEL);
+> +	pdata = kmalloc(cnt, GFP_KERNEL);
+>  	if (pdata == NULL)
+>  		return 0;
+>  
+> diff --git a/drivers/net/wireless/libertas/ethtool.c b/drivers/net/wireless/libertas/ethtool.c
+> index 96f1974..7dad493 100644
+> --- a/drivers/net/wireless/libertas/ethtool.c
+> +++ b/drivers/net/wireless/libertas/ethtool.c
+> @@ -60,8 +60,7 @@ static int libertas_ethtool_get_eeprom(struct net_device *dev,
+>  
+>  //      mutex_lock(&priv->mutex);
+>  
+> -	adapter->prdeeprom =
+> -		    (char *)kmalloc(eeprom->len+sizeof(regctrl), GFP_KERNEL);
+> +	adapter->prdeeprom = kmalloc(eeprom->len+sizeof(regctrl), GFP_KERNEL);
+>  	if (!adapter->prdeeprom)
+>  		return -ENOMEM;
+>  	memcpy(adapter->prdeeprom, &regctrl, sizeof(regctrl));
 
---b.
