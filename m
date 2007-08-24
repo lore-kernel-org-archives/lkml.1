@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932972AbXHXB1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933861AbXHXB2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932972AbXHXB1l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 21:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763673AbXHXB1c
+	id S933861AbXHXB2q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 21:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765521AbXHXB2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 21:27:32 -0400
-Received: from straum.hexapodia.org ([64.81.70.185]:42731 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761276AbXHXB1b (ORCPT
+	Thu, 23 Aug 2007 21:28:36 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:55035 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765446AbXHXB2f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 21:27:31 -0400
-Date: Thu, 23 Aug 2007 18:27:30 -0700
-From: Andy Isaacson <adi@hexapodia.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Matt Mackall <mpm@selenic.com>, Matthew Wilcox <matthew@wil.cx>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ksummit-2007-discuss@thunk.org
-Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
-Message-ID: <20070824012730.GA1243@hexapodia.org>
-References: <1187796179.3410.32.camel@localhost.localdomain> <20070822224400.GA17255@srcf.ucam.org> <20070823002618.GO9163@parisc-linux.org> <20070823003748.GR30556@waste.org> <20070823004209.GP9163@parisc-linux.org> <20070823011953.GS30556@waste.org> <1187832907.3410.141.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Thu, 23 Aug 2007 21:28:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=s6BslxY1HHV91Vb2afqAkzGpuXk+a9sp/MFkDADy/iph1H66b/6E5y86zwO0A2hD1ColW8HUF91Wfbek9Gz8hVJYqIRwrmc1oyMczKonvM46G+EJWxgeQYCS14JlCoRIyRXVB+2xgRqxREVW51HY9Jjg6t+X7WwYdHW6YcOAD+c=
+Message-ID: <46CE33DA.9010501@googlemail.com>
+Date: Fri, 24 Aug 2007 03:26:50 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Joel Fuster <j@fuster.org>, linux-kernel@vger.kernel.org
+Subject: Re: sysfs_dir_cache growing out of control
+References: <46CCD3DF.4080303@fuster.org> <46CD057C.3080106@fuster.org> <20070823095933.GA6742@kroah.com> <46CE29DA.60409@fuster.org> <20070824005429.GA32265@kroah.com>
+In-Reply-To: <20070824005429.GA32265@kroah.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187832907.3410.141.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 08:35:07PM -0500, James Bottomley wrote:
-> > While I think that's laudable, we definitely don't have the resources
-> > for that, as everyone on the TAB already has a full workload. And it
-> > hardly seems worth the trouble for a once-a-year election.
+Greg KH wrote:
+> On Thu, Aug 23, 2007 at 08:44:10PM -0400, Joel Fuster wrote:
+>> Greg KH wrote:
+>>> On Wed, Aug 22, 2007 at 11:56:44PM -0400, Joel Fuster wrote:
+>>>> Joel Fuster wrote:
+>>>>> Hi,
+>>>>> I am running 2.6.22.3.  For reasons that escape me, over time (days) the 
+>>>>> sysfs_dir_cache, dentry, and inode_cache SLUB entries grow until they 
+>>>>> consume all the memory on my system, requiring a reboot.
+>>> Hm, those items should consume all the memory, but it should be freed if
+>>> you have memory pressure from other places.  Does it cause the machine
+>>> to lock up, or you just got scared when seeing them?
+>> Right.  The problem is that the memory never seems to get freed no matter 
+>> what I do.  I've tried setting /proc/sys/vm/vfs_cache_pressure to 10000, 
+>> but after a few days all my programs are running out of swap and I have to 
+>> reboot to get things back to a usable state.
+>>
+>>> Oh, and does the same thing happen if you do not use SLUB, but rather
+>>> the older SLAB?
+>> OK I just rebuilt 2.6.22.3 with SLAB and I seem to be getting the same 
+>> result..obviously I haven't waited several days, but 
+>> sysfs_dir_cache/dentry/inode_cache grow continuously when scanbuttond is 
+>> running, and stop growing when it isn't.
 > 
-> Exactly ... we want a process that's simple and transparent.  We chose
-> voting at the KS because almost all the attendees satisfy the "made
-> significant contributions to Linux" requirement without us having to do
-> anything or make any controversial determinations.  Like Matt said,
-> better suggestions are welcome.
+> Do you have a pointer to the scanbuttond source code?  I'll try to take
+> a look at this tomorrow.
+> 
 
-This is a dumb suggestion, but...
+I guess this one :
 
-How about one vote per git commit merged to linus' tree?
+https://sourceforge.net/projects/scanbuttond/
 
-Might be worthwhile to allocate votes for Acked-By and so on, as well.
+> thanks,
+> 
+> greg k-h
+> -
 
--andy
+
+Gabriel
