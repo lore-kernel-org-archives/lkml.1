@@ -1,123 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763231AbXHXO5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765148AbXHXO5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763231AbXHXO5Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 10:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbXHXO5D
+	id S1765148AbXHXO5w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 10:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbXHXO5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 10:57:03 -0400
-Received: from 85-18-251-172.ip.fastwebnet.it ([85.18.251.172]:46440 "EHLO
-	memento.home.lan" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751252AbXHXO5C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 10:57:02 -0400
-From: "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
-Subject: [PATCH] Script to check for undefined Kconfig symbols - v2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       "Paolo 'Blaisorblade' Giarrusso" <blaisorblade@yahoo.it>
-Date: Fri, 24 Aug 2007 16:56:49 +0200
-Message-ID: <20070824145649.18124.33973.stgit@americanbeauty.home.lan>
-User-Agent: StGIT/0.12.1
+	Fri, 24 Aug 2007 10:57:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54403 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754044AbXHXO5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 10:57:43 -0400
+Date: Fri, 24 Aug 2007 16:57:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederik Himpe <fhimpe@telenet.be>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: CFS + Rhythmbox audio skipping
+Message-ID: <20070824145743.GA24701@elte.hu>
+References: <pan.2007.08.24.12.15.32@telenet.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <pan.2007.08.24.12.15.32@telenet.be>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In this version, I've updated the scripts to search for "\<$symb_bare\>" instead
-of $symb_bare in Kconfig files. Please ignore my previous message.
 
-To avoid to look manually for used but undefined Kconfig variables, I've
-written a script which tries do this efficiently, in case all other attention
-fail. It accounts for _MODULE suffix and for UML_ prefixes to Kconfig variable,
-but otherwise looks for exact matches (i.e. \<CONFIG_; this is done to exclude
-macros like MMCONFIG_).
+* Frederik Himpe <fhimpe@telenet.be> wrote:
 
-Undefined Kconfig variables should be not be removed without care, but for
-instance arch/i386/boot/ uses a bunch of undefined Kconfig vars:
+> Some time ago, it was already discussed here that Rhythmbox would 
+> easily cause audio skipping when running with the CFS scheduler 
+> (http:// bhhdoa.org.au/pipermail/ck/2007-June/007886.html). It was 
+> said to be a Rhythmbox problem, for which someone needed to open a bug 
+> report. Well, I just did this, but the developer says he cannot 
+> reproduce this, and denies that Rhythmbox is making any X calls in its 
+> audio playback thread, so this bug is blocked for the moment.
+> 
+> http://bugzilla.gnome.org/show_bug.cgi?id=467437
+> 
+> It seems that there are people who know better what is wrong exactly. 
+> Can somebody give some more details about what Rhythmbox is doing 
+> wrong, either here, either in the bug ticket?
 
-$ scripts/checkunknowndefines.sh arch/i386/boot/
-arch/i386/boot/video.h uses undefined symbol VIDEO_400_HACK
-arch/i386/boot/video-vga.c uses undefined symbol VIDEO_400_HACK
-arch/i386/boot/video.c uses undefined symbol VIDEO_RETAIN
-arch/i386/boot/video.h uses undefined symbol VIDEO_RETAIN
-arch/i386/boot/video.h uses undefined symbol VIDEO_SVGA
-arch/i386/boot/video.h uses undefined symbol VIDEO_VESA
-arch/i386/boot/video-vesa.c uses undefined symbol VIDEO_VESA
+could you first check whether CFS v20.3:
 
-Hope you can merge this in -mm and use it frequently (probably, a script to look for
-regressions in its output is useful). It should also be mentioned in
-SubmittingPatches if you agree.
+   http://people.redhat.com/mingo/cfs-scheduler/
 
-Signed-off-by: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
----
+is it still showing the same symptoms with rhythmbox? If yes, what kind 
+of load of yours is typically causing the Rhythmbox skipping? x11perf?
 
- scripts/checkunknowndefines.sh |   59 ++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 59 insertions(+), 0 deletions(-)
-
-diff --git a/scripts/checkunknowndefines.sh b/scripts/checkunknowndefines.sh
-new file mode 100755
-index 0000000..dbb5cef
---- /dev/null
-+++ b/scripts/checkunknowndefines.sh
-@@ -0,0 +1,59 @@
-+#!/bin/sh
-+# Find Kconfig variables used in source code but never defined in Kconfig
-+# Copyright (C) 2007, Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
-+
-+# Tested with dash.
-+paths="$@"
-+[ -z "$paths" ] && paths=.
-+
-+# Doing this once at the beginning saves a lot of time, on a cache-hot tree.
-+Kconfigs="`find . -name 'Kconfig' -o -name 'Kconfig*[^~]'`"
-+
-+echo "File list \tundefined symbol used"
-+find $paths -name '*.[chS]' -o -name 'Makefile' -o -name 'Makefile*[^~]'| while read i
-+do
-+	# Output the bare Kconfig variable and the filename; the _MODULE part at
-+	# the end is not removed here (would need perl an not-hungry regexp for that).
-+	sed -ne 's!^.*\<\(UML_\)\?CONFIG_\([0-9A-Z_]\+\).*!\2 '$i'!p' < $i
-+done | \
-+# Smart "sort|uniq" implemented in awk and tuned to collect the names of all
-+# files which use a given symbol
-+awk '{map[$1, count[$1]++] = $2; }
-+END {
-+	for (combIdx in map) {
-+		split(combIdx, separate, SUBSEP);
-+		# The value may have been removed.
-+		if (! ( (separate[1], separate[2]) in map ) )
-+			continue;
-+		symb=separate[1];
-+		printf "%s ", symb;
-+		#Use gawk extension to delete the names vector
-+		delete names;
-+		#Portably delete the names vector
-+		#split("", names);
-+		for (i=0; i < count[symb]; i++) {
-+			names[map[symb, i]] = 1;
-+			# Unfortunately, we may still encounter symb, i in the
-+			# outside iteration.
-+			delete map[symb, i];
-+		}
-+		i=0;
-+		for (name in names) {
-+			if (i > 0)
-+				printf ", %s", name;
-+			else
-+				printf "%s", name;
-+			i++;
-+		}
-+		printf "\n";
-+	}
-+}' |
-+while read symb files; do
-+	# Remove the _MODULE suffix when checking the variable name. This should
-+	# be done only on tristate symbols, actually, but Kconfig parsing is
-+	# beyond the purpose of this script.
-+	symb_bare=`echo $symb | sed -e 's/_MODULE//'`
-+	if ! grep -q "\<$symb_bare\>" $Kconfigs; then
-+		echo "$files: \t$symb"
-+	fi
-+done|sort
-
+	Ingo
