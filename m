@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760968AbXHXMac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762128AbXHXMdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760968AbXHXMac (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 08:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbXHXMaW
+	id S1762128AbXHXMdg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 08:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758606AbXHXMd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 08:30:22 -0400
-Received: from 1wt.eu ([62.212.114.60]:2298 "EHLO 1wt.eu"
+	Fri, 24 Aug 2007 08:33:29 -0400
+Received: from ns1.suse.de ([195.135.220.2]:39342 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756499AbXHXMaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 08:30:22 -0400
-Date: Fri, 24 Aug 2007 14:14:59 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: "Mr. Berkley Shands" <bshands@exegy.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.22.5 forcedeth timeout hang
-Message-ID: <20070824121459.GB28737@1wt.eu>
-References: <46CE1CC7.6000507@exegy.com> <20070824050617.GS6002@1wt.eu> <46CEC083.2010708@exegy.com> <20070824115108.GA28737@1wt.eu> <46CECCAF.8050907@exegy.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1758589AbXHXMd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 08:33:28 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Subject: Re: [PATCH][RESEND] Implement missing x86_64 function smp_call_function_mask()
+Date: Fri, 24 Aug 2007 14:33:23 +0200
+User-Agent: KMail/1.9.6
+Cc: discuss@x86-64.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@qumranet.com>
+References: <46CD38E5.4000704@bull.net> <20070823105628.GM8058@bingen.suse.de> <46CEBF55.3070703@bull.net>
+In-Reply-To: <46CEBF55.3070703@bull.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46CECCAF.8050907@exegy.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200708241433.24024.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 07:18:55AM -0500, Mr. Berkley Shands wrote:
-> No joy.
+On Friday 24 August 2007 13:21:57 Laurent Vivier wrote:
+> This patch defines the missing function smp_call_function_mask() for x86_64,
+> this is more or less a cut&paste of i386 function. It removes also some
+> duplicate code.
 > 
-> I did a ping during the "make -j4"... it starts dropping packets, and 
-> gets to a 2-in-a-row, then hangs.
-> This time there was no error output in /var/log/messages.
+> This function is needed by KVM to execute a function on all CPUs.
 > 
-> Usually there is something..
+>  arch/x86_64/kernel/smp.c |  118 ++++++++++++++++++++++++-----------------------
+>  include/asm-x86_64/smp.h |    2
+>  2 files changed, 64 insertions(+), 56 deletions(-)
+> 
+> Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
 
-Ok, but please keep the list CC'ed. It's the second time I add it myself,
-if you remove the people who can help, it will be hard to get a fix.
 
-Willy
+Applied thanks
+-Andi
+ 
+
 
