@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765973AbXHXS5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932738AbXHXS6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765973AbXHXS5O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 14:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760996AbXHXS47
+	id S932738AbXHXS6F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 14:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761706AbXHXS5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 14:56:59 -0400
-Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:35076 "EHLO
-	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759759AbXHXS46 (ORCPT
+	Fri, 24 Aug 2007 14:57:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57147 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760996AbXHXS5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 14:56:58 -0400
-Date: Fri, 24 Aug 2007 14:56:13 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: john stultz <johnstul@us.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH RT 3/3] fix get_monotonic_cycles for latency tracer
-In-Reply-To: <1187980244.6163.13.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.58.0708241454250.4331@gandalf.stny.rr.com>
-References: <1187978236.2941.19.camel@localhost.localdomain>
- <1187980244.6163.13.camel@localhost.localdomain>
+	Fri, 24 Aug 2007 14:57:54 -0400
+Date: Sat, 25 Aug 2007 00:40:49 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Redefine {un}register_hotcpu_notifier() !HOTPLUG_CPU stubs
+Message-ID: <alpine.LFD.0.999.0708250037400.19678@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andrew,
+
+As discussed just now, please drop:
+redefine-unregister_hotcpu_notifier-hotplug_cpu.patch
+and apply the patch below instead.
+
+Satyam
 
 
---
-On Fri, 24 Aug 2007, john stultz wrote:
+[PATCH] Redefine {un}register_hotcpu_notifier() !HOTPLUG_CPU stubs
 
-> >
-> > -	/* calculate the delta since the last update_wall_time: */
-> > -	cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-> > +	} while (cycle_raw != clock->cycle_raw ||
-> > +		 cycle_last != clock->cycle_last);
->
-> So if I'm understanding this right, not taking a lock isn't an
-> optimization (as the seq read lock code is almost the same), but a
-> requirement (as this might be called while xtime_lock is held),
-> correct?
+The return of the present "do {} while" based stub definition of
+register_hotcpu_notifier() cannot be checked. This makes the stub
+asymmetric w.r.t. the real HOTPLUG_CPU=y implementation that is
+int-returning. So let us redefine this to be consistent with the
+full version. Also do the same for unregister_hotcpu_notifier().
 
-Exactly. The latency tracer uses this so no locks can be grabbed
-(seq_locks included).
+We cannot define these as static inline functions due to an existing
+GCC bug (#33172). So define as macros that return appropriately
+instead (int '0' for the register_hotcpu_notifier case and void for
+unregister_hotcpu_notifier).
 
->
-> Might want to clarify that a bit in the comment.
->
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
-OK, will do and send a updated patch.
+---
 
-I wasn't in the best state writing this patch in the wee hours of the
-night ;-)
+ include/linux/cpu.h |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
--- Steve
-
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 1d5ded0..2ffcef5 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -119,8 +119,9 @@ static inline void cpuhotplug_mutex_unlock(struct mutex *cpu_hp_mutex)
+ #define lock_cpu_hotplug()	do { } while (0)
+ #define unlock_cpu_hotplug()	do { } while (0)
+ #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+-#define register_hotcpu_notifier(nb)	do { (void)(nb); } while (0)
+-#define unregister_hotcpu_notifier(nb)	do { (void)(nb); } while (0)
++/* These aren't inline functions due to a GCC bug. */
++#define register_hotcpu_notifier(nb)	({ (void)(nb); 0; })
++#define unregister_hotcpu_notifier(nb)	({ (void)(nb); })
+ 
+ /* CPUs don't go offline once they're online w/o CONFIG_HOTPLUG_CPU */
+ static inline int cpu_is_offline(int cpu) { return 0; }
