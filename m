@@ -1,102 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765349AbXHWS0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765427AbXHWSab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765349AbXHWS0U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 14:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763888AbXHWS0K
+	id S1765427AbXHWSab (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 14:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763614AbXHWSaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 14:26:10 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45722 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761789AbXHWS0J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 14:26:09 -0400
-Date: Thu, 23 Aug 2007 14:24:55 -0400
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, torvalds@linux-foundation.org
-Subject: Re: [PATCH 09/23] lib: percpu_counter_init error handling
-Message-ID: <20070823182455.GB1608@filer.fsl.cs.sunysb.edu>
-References: <20070816074525.065850000@chello.nl> <20070816074626.739944000@chello.nl> <20070817155659.GD24323@filer.fsl.cs.sunysb.edu> <1187424574.6114.136.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1187424574.6114.136.camel@twins>
-User-Agent: Mutt/1.5.16 (2007-07-16)
+	Thu, 23 Aug 2007 14:30:21 -0400
+Received: from mailfe03.tele2.dk ([212.247.154.67]:34168 "EHLO swip.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759388AbXHWSaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 14:30:21 -0400
+X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Aug 2007 14:30:20 EDT
+X-Cloudmark-Score: 0.000000 []
+Subject: Re: Forcedeth: Nvidia NIC goes up and down
+From: Anders Rune Jensen <anders@gnulinux.dk>
+To: linux-kernel@vger.kernel.org
+Cc: "jos.huisken" <jos.huisken@kpnplanet.nl>
+In-Reply-To: <181B3AA5E931BA4AB8ED25976193DDC30137416B@CPEXBE-VOIP03.bbp.local>
+References: <181B3AA5E931BA4AB8ED25976193DDC30137416B@CPEXBE-VOIP03.bbp.local>
+Content-Type: text/plain
+Date: Fri, 24 Aug 2007 03:40:21 +0200
+Message-Id: <1187919621.8533.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 18, 2007 at 10:09:34AM +0200, Peter Zijlstra wrote:
-> On Fri, 2007-08-17 at 11:56 -0400, Josef Sipek wrote:
-> > On Thu, Aug 16, 2007 at 09:45:34AM +0200, Peter Zijlstra wrote:
- 
-Sorry...this mail got lost in the flood of email after a procmail rule
-stopped working...
-
-> The actual value of err is irrelevant, it is not used after this not
-> zero check.
+On Wed, 2007-08-22 at 22:43 +0200, jos.huisken@kpnplanet.nl wrote:
+> Hi,
 > 
-> But how about this:
-> ---
-> Subject: lib: percpu_counter_init error handling
 > 
-> alloc_percpu can fail, propagate that error.
+> I have a similar issue. The network drops away randomly for short periods (several to ten(s) seconds).
+> Strange enough nothing is reported is syslog, and indeed from the machine itself pinging works perfectly to another machine.
+> From that other machine however the connections looks dead in those periods...
 > 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  fs/ext2/super.c                |   15 ++++++++++++---
->  fs/ext3/super.c                |   21 +++++++++++++++------
->  fs/ext4/super.c                |   21 +++++++++++++++------
->  include/linux/percpu_counter.h |    5 +++--
->  lib/percpu_counter.c           |    8 +++++++-
->  5 files changed, 52 insertions(+), 18 deletions(-)
+> I'm running kernel 2.6.18.8-0.5-default on a SUSE 10.2 machine with a ASUS M2NPV-VM board.
+> Have tried both the default "0.59" and "0.62-Driver Package V1.23" version of forcedeth
+> Tried 2 BIOSes: 0901 and 1001.
 > 
-> Index: linux-2.6/fs/ext2/super.c
-> ===================================================================
-> --- linux-2.6.orig/fs/ext2/super.c
-> +++ linux-2.6/fs/ext2/super.c
-> @@ -725,6 +725,7 @@ static int ext2_fill_super(struct super_
->  	int db_count;
->  	int i, j;
->  	__le32 features;
-> +	int err;
->  
->  	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
->  	if (!sbi)
-> @@ -996,12 +997,20 @@ static int ext2_fill_super(struct super_
->  	sbi->s_rsv_window_head.rsv_goal_size = 0;
->  	ext2_rsv_window_add(sb, &sbi->s_rsv_window_head);
->  
-> -	percpu_counter_init(&sbi->s_freeblocks_counter,
-> +	err = percpu_counter_init(&sbi->s_freeblocks_counter,
->  				ext2_count_free_blocks(sb));
-> -	percpu_counter_init(&sbi->s_freeinodes_counter,
-> +	if (!err) {
-> +		err = percpu_counter_init(&sbi->s_freeinodes_counter,
->  				ext2_count_free_inodes(sb));
-> -	percpu_counter_init(&sbi->s_dirs_counter,
-> +	}
-> +	if (!err) {
-> +		err = percpu_counter_init(&sbi->s_dirs_counter,
->  				ext2_count_dirs(sb));
-> +	}
-> +	if (err) {
-> +		printk(KERN_ERR "EXT2-fs: insufficient memory\n");
-> +		goto failed_mount3;
-> +	}
->  	/*
->  	 * set up enough so that it can read an inode
->  	 */
+> Also have tried several kernel options independently: noapic, pci=routeirq, acpi=off, pci=nomsi
+> All did not help.
+> 
+> 
+> Any suggestions?
 
-I find this more readable as I don't have to try to figure out what the
-bitops are doing :)
+I got it working by connecting the network card my old 100mbit hub. It
+seems that the problem is only when it runs a 1gbit. So my setup is now
+1gbit switch <> computers, 1mbit hub <> machine with broken netcard.
 
-Jeff.
+This is good enough for now, since I don't really transfer that much
+data to and from the machine, but of course I would like to have 1gbit
+working for when I actually do need it ;-)
 
--- 
-Mankind invented the atomic bomb, but no mouse would ever construct a
-mousetrap.
-		- Albert Einstein
+> BTW I'm not subscribed, please CC me personally.
+> 
+> 
+> Thanks in advance,
+> -- Jos
+
+--
+Anders Rune Jensen
+http://people.iola.dk/anders/
+
