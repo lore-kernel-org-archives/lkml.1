@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932216AbXHXJmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765849AbXHXJpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932216AbXHXJmR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 05:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbXHXJmH
+	id S1765849AbXHXJpg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 05:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758861AbXHXJp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 05:42:07 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:58358 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760816AbXHXJmG (ORCPT
+	Fri, 24 Aug 2007 05:45:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:60953 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856AbXHXJp1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 05:42:06 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 24 Aug 2007 05:32:29 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Adrian Bunk <bunk@kernel.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: what is the value of the macro "__setup_param"?
-In-Reply-To: <20070824093738.GA30705@stusta.de>
-Message-ID: <Pine.LNX.4.64.0708240532160.14757@localhost.localdomain>
-References: <Pine.LNX.4.64.0708240516080.14019@localhost.localdomain>
- <20070824093738.GA30705@stusta.de>
+	Fri, 24 Aug 2007 05:45:27 -0400
+Date: Fri, 24 Aug 2007 11:45:13 +0200
+From: andre@finow14.de
+To: trivial@kernel.org
+Cc: linux-kernel@vger.kernel.org, Andre Haupt <andre@finow14.de>
+Subject: [patch trivial] fix typo in Documentation/SubmittingPatches
+Message-ID: <20070824094513.GA14451@ahaupt-debian-vm.localdomain>
+References: <20070824093648.585376833@finow14.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename=fix_typo_in_SubmittingPatches
+User-Agent: quilt/0.45-1
+X-Provags-ID: V01U2FsdGVkX18iKyNDaQc4u4fRVHSqvEP7J+HOsr0++s75TP1
+ C5zNsKLvMPgDjxUwdQ7IJtbFBawEeh2uvl++e2GhPcc77y/iH3
+ f26iY7wEoIGy2QhDOA6Qo/ambBap9lF
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007, Adrian Bunk wrote:
+From: Andre Haupt <andre@finow14.de>
+Signed-off-by: Andre Haupt <andre@finow14.de>
+---
+Index: linus/Documentation/SubmittingPatches
+===================================================================
+--- linus.orig/Documentation/SubmittingPatches	2007-08-24 11:12:33.000000000 +0200
++++ linus/Documentation/SubmittingPatches	2007-08-24 11:13:51.000000000 +0200
+@@ -126,7 +126,7 @@
+ without even being read.
+ 
+ At a minimum you should check your patches with the patch style
+-checker prior to submission (scripts/patchcheck.pl).  You should
++checker prior to submission (scripts/checkpatch.pl).  You should
+ be able to justify all violations that remain in your patch.
+ 
+ 
 
-> On Fri, Aug 24, 2007 at 05:19:29AM -0400, Robert P. J. Day wrote:
-> >
-> >   perhaps i'm missing it, but it seems that the macro __setup_param is
-> > entirely superfluous:
-> >
-> > $ grep -rw __setup_param *
-> > include/linux/init.h:#define __setup_param(str, unique_id, fn, early)      \
-> > include/linux/init.h:   __setup_param(str, unique_id, NULL, 0)
-> > include/linux/init.h:   __setup_param(str, fn, fn, 0)
-> > include/linux/init.h:   __setup_param(str, fn, fn, 1)
-> > include/linux/init.h:#define __setup_param(str, unique_id, fn)  /* nothing */
-> > $
-> >
-> > or am i must misreading something badly?
->
-> You miss that the inner 3 lines of your grep result are the usages...
-
-i need more sleep.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+--
