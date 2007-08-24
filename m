@@ -1,65 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934439AbXHXAXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965194AbXHXAX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934439AbXHXAXb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 20:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965129AbXHXAW6
+	id S965194AbXHXAX4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 20:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934136AbXHXAXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 20:22:58 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:44462 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965119AbXHXAW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 20:22:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:resent-from:resent-to:resent-date:resent-message-id:message-id:in-reply-to:references:from:date:subject:to:cc:mime-version:content-transfer-encoding:content-disposition;
-        b=ufSqW6PkPVuilST+NL32KV5KymORgt0Ua38ssVR9iFPlDoUG5GhLanaaBmy44TNOmwsvL7RnkQO8CHZQXjI+fwrSebeXiqlARtqIL4A78lKkLBz3mpvSBamWsJ6RLGV6qqPMj93Ja9v4cb8enujtoykG+RdyxB+3tvGrsy5dKok=
-Message-Id: <6e3f66d353155af12b075c2e919066908a2ce44c.1187912217.git.jesper.juhl@gmail.com>
-In-Reply-To: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-From: Jesper Juhl <jesper.juhl@gmail.com>
-Date: Fri, 24 Aug 2007 02:20:04 +0200
-Subject: [PATCH 22/30] ivtv: kzalloc() returns void pointer, no need to cast
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Kevin Thayer <nufan_wfk@yahoo.com>, Chris Kennedy <c@groovy.org>,
-       Hans Verkuil <hverkuil@xs4all.nl>, video4linux-list@redhat.com,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Thu, 23 Aug 2007 20:23:14 -0400
+Received: from waste.org ([66.93.16.53]:50339 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764852AbXHXAXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 20:23:10 -0400
+Date: Thu, 23 Aug 2007 19:24:13 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Bryan Wu <bryan.wu@analog.com>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, joe@perches.com,
+       yi.li@analog.com, vivi.li@analog.com, torvalds@linux-foundation.org,
+       sonic.zhang@analog.com, roy.huang@analog.com, robin.getz@analog.com,
+       michael.hennerich@analog.com, michael.frysinger@analog.com,
+       marc.hoffman@analog.com, linux-kernel@vger.kernel.org,
+       jie.zhang@analog.com, grace.pan@analog.com, bernd.schmidt@analog.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH take #2] MAINTAINTERS: use our mail list as Blackfin arch maintainters.
+Message-ID: <20070824002413.GB20266@waste.org>
+References: <46bff904.ANPWrqncsP8VpmBH%joe@perches.com> <1187777706.24914.2.camel@roc-desktop> <6bffcb0e0708220323w5592df25n9c21c7e3aca1dbfb@mail.gmail.com> <8bd0f97a0708220345g26c35288g5e96b6f1f8491f0e@mail.gmail.com> <1187794511.6805.3.camel@roc-laptop>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1187794511.6805.3.camel@roc-laptop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since kzalloc() returns a void pointer, we don't need to cast the
-return value in drivers/media/video/ivtv/ivtv-queue.c
+On Wed, Aug 22, 2007 at 10:55:11PM +0800, Bryan Wu wrote:
+> -L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+> +L:	uclinux-dist-devel@blackfin.uclinux.org
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
- drivers/media/video/ivtv/ivtv-queue.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Does your list generate a complaint message back to the sender if a
+non-subscriber posts to it? If so, it qualifies as a subscribers-only
+list.
 
-diff --git a/drivers/media/video/ivtv/ivtv-queue.c b/drivers/media/video/ivtv/ivtv-queue.c
-index a04f938..45825b8 100644
---- a/drivers/media/video/ivtv/ivtv-queue.c
-+++ b/drivers/media/video/ivtv/ivtv-queue.c
-@@ -196,7 +196,7 @@ int ivtv_stream_alloc(struct ivtv_stream *s)
- 		s->name, s->buffers, s->buf_size, s->buffers * s->buf_size / 1024);
- 
- 	if (ivtv_might_use_pio(s)) {
--		s->PIOarray = (struct ivtv_SG_element *)kzalloc(SGsize, GFP_KERNEL);
-+		s->PIOarray = kzalloc(SGsize, GFP_KERNEL);
- 		if (s->PIOarray == NULL) {
- 			IVTV_ERR("Could not allocate PIOarray for %s stream\n", s->name);
- 			return -ENOMEM;
-@@ -204,7 +204,7 @@ int ivtv_stream_alloc(struct ivtv_stream *s)
- 	}
- 
- 	/* Allocate DMA SG Arrays */
--	s->SGarray = (struct ivtv_SG_element *)kzalloc(SGsize, GFP_KERNEL);
-+	s->SGarray = kzalloc(SGsize, GFP_KERNEL);
- 	if (s->SGarray == NULL) {
- 		IVTV_ERR("Could not allocate SGarray for %s stream\n", s->name);
- 		if (ivtv_might_use_pio(s)) {
 -- 
-1.5.2.2
-
+Mathematics is the supreme nostalgia of our time.
