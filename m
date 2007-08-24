@@ -1,190 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbXHXSFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764670AbXHXSFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbXHXSFR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 14:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763678AbXHXSFB
+	id S1764670AbXHXSFm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 14:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932580AbXHXSFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 14:05:01 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:56683 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763130AbXHXSE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 14:04:59 -0400
-Subject: Re: [PATCH] Fix find_next_best_node (Re: [BUG] 2.6.23-rc3-mm1
-	Kernel panic - not syncing: DMA: Memory would be corrupted)
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@skynet.ie>, Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       "Luck, Tony" <tony.luck@intel.com>, Jeremy Higdon <jeremy@sgi.com>,
-       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-ia64@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0708240957010.20501@schroedinger.engr.sgi.com>
-References: <617E1C2C70743745A92448908E030B2A023EB020@scsmsx411.amr.corp.intel.com>
-	 <20070823142133.9359a1ce.akpm@linux-foundation.org>
-	 <20070824153945.3C75.Y-GOTO@jp.fujitsu.com>
-	 <20070824145233.GA26374@skynet.ie> <1187970572.5869.10.camel@localhost>
-	 <Pine.LNX.4.64.0708240957010.20501@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 24 Aug 2007 14:03:05 -0400
-Message-Id: <1187978585.5869.34.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Fri, 24 Aug 2007 14:05:22 -0400
+Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:3244 "EHLO
+	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932391AbXHXSFU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 14:05:20 -0400
+Message-ID: <46CF1DDE.7070302@xs4all.nl>
+Date: Fri, 24 Aug 2007 20:05:18 +0200
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Benoit Boissinot <bboissin@gmail.com>
+Subject: Re: possible BUG while doing gpg --gen-key
+References: <46CF079C.7010304@xs4all.nl> <40f323d00708241057k6549f22fl6abf802f14c03e44@mail.gmail.com>
+In-Reply-To: <40f323d00708241057k6549f22fl6abf802f14c03e44@mail.gmail.com>
+X-Enigmail-Version: 0.95.3
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-24 at 10:00 -0700, Christoph Lameter wrote:
-> On Fri, 24 Aug 2007, Lee Schermerhorn wrote:
+Benoit Boissinot wrote:
+> On 8/24/07, Udo van den Heuvel <udovdh@xs4all.nl> wrote:
+>> While doing gpg --gen-key I can reproduce quite well some sort of
+>> crash/bug/etc:
+>> # gpg --gen-key
 > 
-> > I reworked that patch and posted the update on 16aug which does not have
-> > this problem:
-> > 
-> > http://marc.info/?l=linux-mm&m=118729871101418&w=4
-> > 
-> > This should replace
-> > memoryless-nodes-fixup-uses-of-node_online_map-in-generic-code.patch
-> > in -mm.
+> [snip]
 > 
-> Could you post a diff to rc3-mm1 of that patch?
+> iirg gpg-keygen uses a lot of cpu time during that phase, you probably
+> should verify your ram and cpu. This kind of problem is often due to
+> faulty hardware.
 
-Sure.  Here it is.  This looks nicer to me than explicitly skipping
-unpopulated nodes in find_next_best_node()--as I tried to do, but
-botched it :-(.  I didn't notice that because I'd moved on to v2 before
-testing with any significant load.  Even when I was running with v1 with
-botched zonelists, I apparently had sufficient memory on each node that
-I never had to fallback.
+The box runs stable for days on end.
+Only when running gpg --gen-key I get this issue.
+Other gpg operations, run by a user, are without issue.
+There is 512MB of RAM and the hardware is `refreshed` regularly when an
+interesting VIA board comes out. Case stays closed otherwise. I am ESD
+certified. (or how to put that in the english language)
+memtest86 shows no problems. Kernel compiles etc run without issue.
+F7 upgraded installation. Updated regularly. gnupg rpm is Red Hat-stock.
+ My own compiles of gnupg show the same error.
 
-I also didn't notice that Andrew had added v1 instead of v2 to the mm
-tree.  Will pay more attention in the future, I promise.
-
-Lee
----------------------------
-PATCH Diffs between "Fix generic usage of node_online_map" V1 & V2
-
-Against 2.6.23-rc3-mm1
-
-V1 -> V2:
-+ moved population of N_HIGH_MEMORY node state mask to
-  free_area_init_nodes(), as this is called before we
-  build zonelists.  So, we can use this mask in 
-  find_next_best_node.  Still need to keep the duplicate
-  code in early_calculate_totalpages() for zone movable
-  setup.
-
-mm/page_alloc.c:find_next_best_node()
-
-	visit only nodes with memory [N_HIGH_MEMORY mask]
-	looking for next best node for fallback zonelists.
-
-mm/page_alloc.c:find_zone_movable_pfns_for_nodes()
-
-	spread kernelcore over nodes with memory.
-
-	This required calling early_calculate_totalpages()
-	unconditionally, and populating N_HIGH_MEMORY node
-	state therein from nodes in the early_node_map[].
-	This duplicates the code in free_area_init_nodes(), but
-	I don't want to depend on this copy if ZONE_MOVABLE 
-	might go away, taking early_calculate_totalpages()
-	with it.
-
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-
- mm/page_alloc.c |   48 ++++++++++++++++++++----------------------------
- 1 file changed, 20 insertions(+), 28 deletions(-)
-
-Index: Linux/mm/page_alloc.c
-===================================================================
---- Linux.orig/mm/page_alloc.c	2007-08-24 13:20:28.000000000 -0400
-+++ Linux/mm/page_alloc.c	2007-08-24 13:25:20.000000000 -0400
-@@ -2127,18 +2127,10 @@ static int find_next_best_node(int node,
- 		return node;
- 	}
- 
--	for_each_online_node(n) {
-+	for_each_node_state(n, N_HIGH_MEMORY) {
- 		pg_data_t *pgdat = NODE_DATA(n);
- 		cpumask_t tmp;
- 
--		/*
--		 * skip nodes w/o memory.
--		 * Note:  N_HIGH_MEMORY state not guaranteed to be
--		 *        populated yet.
--		 */
--		if (pgdat->node_present_pages)
--			continue;
--
- 		/* Don't want a node to appear more than once */
- 		if (node_isset(n, *used_node_mask))
- 			continue;
-@@ -2433,20 +2425,6 @@ static void build_zonelist_cache(pg_data
- 
- #endif	/* CONFIG_NUMA */
- 
--/* Any regular memory on that node ? */
--static void check_for_regular_memory(pg_data_t *pgdat)
--{
--#ifdef CONFIG_HIGHMEM
--	enum zone_type zone_type;
--
--	for (zone_type = 0; zone_type <= ZONE_NORMAL; zone_type++) {
--		struct zone *zone = &pgdat->node_zones[zone_type];
--		if (zone->present_pages)
--			node_set_state(zone_to_nid(zone), N_NORMAL_MEMORY);
--	}
--#endif
--}
--
- /* return values int ....just for stop_machine_run() */
- static int __build_all_zonelists(void *dummy)
- {
-@@ -2457,11 +2435,6 @@ static int __build_all_zonelists(void *d
- 
- 		build_zonelists(pgdat);
- 		build_zonelist_cache(pgdat);
--
--		/* Any memory on that node */
--		if (pgdat->node_present_pages)
--			node_set_state(nid, N_HIGH_MEMORY);
--		check_for_regular_memory(pgdat);
- 	}
- 	return 0;
- }
-@@ -3919,6 +3892,20 @@ restart:
- 			roundup(zone_movable_pfn[nid], MAX_ORDER_NR_PAGES);
- }
- 
-+/* Any regular memory on that node ? */
-+static void check_for_regular_memory(pg_data_t *pgdat)
-+{
-+#ifdef CONFIG_HIGHMEM
-+	enum zone_type zone_type;
-+
-+	for (zone_type = 0; zone_type <= ZONE_NORMAL; zone_type++) {
-+		struct zone *zone = &pgdat->node_zones[zone_type];
-+		if (zone->present_pages)
-+			node_set_state(zone_to_nid(zone), N_NORMAL_MEMORY);
-+	}
-+#endif
-+}
-+
- /**
-  * free_area_init_nodes - Initialise all pg_data_t and zone data
-  * @max_zone_pfn: an array of max PFNs for each zone
-@@ -3996,6 +3983,11 @@ void __init free_area_init_nodes(unsigne
- 		pg_data_t *pgdat = NODE_DATA(nid);
- 		free_area_init_node(nid, pgdat, NULL,
- 				find_min_pfn_for_node(nid), NULL);
-+
-+		/* Any memory on that node */
-+		if (pgdat->node_present_pages)
-+			node_set_state(nid, N_HIGH_MEMORY);
-+		check_for_regular_memory(pgdat);
- 	}
- }
- 
-
-
+So what is next?
