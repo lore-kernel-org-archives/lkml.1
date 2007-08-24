@@ -1,115 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760573AbXHXMUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761592AbXHXMUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760573AbXHXMUJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 08:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757186AbXHXMTz
+	id S1761592AbXHXMUu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 08:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757186AbXHXMUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 08:19:55 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:54167 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754440AbXHXMTx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 08:19:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=ak+ORfTN37cXT+/XY/TIqCLK3LAPxyflx0VCcmUJSWzlZQ6U2Mi+SXOyfJL9E/TCDs9J/CYAhpS6rExXJzrnN3OClk/ZTCq53qS3Axgi2u33ZQKSBr3P30Zs9ReLwcKSJBGvRgjBnMahPUb12fO8fTBO6UgPonvVScCYkBgQLrk=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Fri, 24 Aug 2007 13:19:04 +0100
-User-Agent: KMail/1.9.1
-Cc: Satyam Sharma <satyam@infradead.org>, Christoph Lameter <clameter@sgi.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       heiko.carstens@de.ibm.com, horms@verge.net.au,
-       linux-kernel@vger.kernel.org, rpjday@mindspring.com, ak@suse.de,
-       netdev@vger.kernel.org, cfriesen@nortel.com, akpm@linux-foundation.org,
-       jesper.juhl@gmail.com, linux-arch@vger.kernel.org, zlynx@acm.org,
-       schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
-       davem@davemloft.net, wensong@linux-vs.org, wjiang@resilience.com
-References: <20070815234021.GA28775@gondor.apana.org.au> <alpine.LFD.0.999.0708180709060.3666@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0708172110400.30176@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0708172110400.30176@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Aug 2007 08:20:41 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2694 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760532AbXHXMUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 08:20:41 -0400
+Date: Fri, 24 Aug 2007 12:20:25 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Zachary Amsden <zach@vmware.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] Add I/O hypercalls for i386 paravirt
+Message-ID: <20070824122025.GA3886@ucw.cz>
+References: <46CBC842.4070100@vmware.com> <46CBD0F5.2080709@zytor.com> <46CBD1A5.8070702@vmware.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708241319.05760.vda.linux@googlemail.com>
+In-Reply-To: <46CBD1A5.8070702@vmware.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 18 August 2007 05:13, Linus Torvalds wrote:
-> On Sat, 18 Aug 2007, Satyam Sharma wrote:
-> > No code does (or would do, or should do):
+Hi!
+
+> >>In general, I/O in a virtual guest is subject to 
+> >>performance problems. The I/O can not be completed 
+> >>physically, but must be virtualized.  This
+> >>means trapping and decoding port I/O instructions from 
+> >>the guest OS. Not only is the trap for a #GP 
+> >>heavyweight, both in the processor and
+> >>the hypervisor (which usually has a complex #GP path), 
+> >>but this forces
+> >>the hypervisor to decode the individual instruction 
+> >>which has faulted. Worse, even with hardware assist 
+> >>such as VT, the exit reason alone is
+> >>not sufficient to determine the true nature of the 
+> >>faulting instruction,
+> >>requiring a complex and costly instruction decode and 
+> >>simulation.
+> >>
+> >>This patch provides hypercalls for the i386 port I/O 
+> >>instructions, which
+> >>vastly helps guests which use native-style drivers.  
+> >>For certain VMI
+> >>workloads, this provides a performance boost of up to 
+> >>30%.  We expect
+> >>KVM and lguest to be able to achieve similar gains on 
+> >>I/O intensive
+> >>workloads.
+> >>
+> >>    
 > >
-> > 	x.counter++;
-> >
-> > on an "atomic_t x;" anyway.
->
-> That's just an example of a general problem.
->
-> No, you don't use "x.counter++". But you *do* use
->
-> 	if (atomic_read(&x) <= 1)
->
-> and loading into a register is stupid and pointless, when you could just
-> do it as a regular memory-operand to the cmp instruction.
+> >What about cost on hardware?
+> >  
+> 
+> On modern hardware, port I/O is about the most expensive 
+> thing you can do.  The extra function call cost is 
+> totally masked by the stall.  We have measured with port 
+> I/O converted like this on real hardware, and have seen 
+> zero measurable impact on macro-benchmarks.  
+> Micro-benchmarks that generate massively repeated port 
+> I/O might show some effect on ancient hardware, but I 
+> can't even imagine a workload which does such a thing, 
+> other than a polling port I/O loop perhaps - which would 
+> not be performance critical in any case I can reasonably 
+> imagine.
 
-It doesn't mean that (volatile int*) cast is bad, it means that current gcc
-is bad (or "not good enough"). IOW: instead of avoiding volatile cast,
-it's better to fix the compiler.
+SCSI controller in ISA slot? IDE without DMA enabled?
 
-> And as far as the compiler is concerned, the problem is the 100% same:
-> combining operations with the volatile memop.
->
-> The fact is, a compiler that thinks that
->
-> 	movl mem,reg
-> 	cmpl $val,reg
->
-> is any better than
->
-> 	cmpl $val,mem
->
-> is just not a very good compiler.
-
-Linus, in all honesty gcc has many more cases of suboptimal code,
-case of "volatile" is just one of many.
-
-Off the top of my head:
-
-http://gcc.gnu.org/bugzilla/show_bug.cgi?id=28417
-
-unsigned v;
-void f(unsigned A) { v = ((unsigned long long)A) * 365384439 >> (27+32); }
-
-gcc-4.1.1 -S -Os -fomit-frame-pointer t.c
-
-f:
-        movl    $365384439, %eax
-        mull    4(%esp)
-        movl    %edx, %eax <===== ?
-        shrl    $27, %eax
-        movl    %eax, v
-        ret
-
-Why is it moving %edx to %eax?
-
-gcc-4.2.1 -S -Os -fomit-frame-pointer t.c
-
-f:
-        movl    $365384439, %eax
-        mull    4(%esp)
-        movl    %edx, %eax <===== ?
-        xorl    %edx, %edx <===== ??!
-        shrl    $27, %eax
-        movl    %eax, v
-        ret
-
-Progress... Now we also zero out %edx afterwards for no apparent reason.
---
-vda
+Yes, those are performance-critical. The second case seems common with
+compactflash cards.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
