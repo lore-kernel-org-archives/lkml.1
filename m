@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765453AbXHXXY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765973AbXHXXZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765453AbXHXXY0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 19:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbXHXXYT
+	id S1765973AbXHXXZZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 19:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761683AbXHXXZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 19:24:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35531 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750912AbXHXXYS (ORCPT
+	Fri, 24 Aug 2007 19:25:12 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:22659 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754209AbXHXXZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 19:24:18 -0400
-Date: Fri, 24 Aug 2007 16:23:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH -mm 2/2] Hibernation: Arbitrary boot kernel support on
- x86_64
-Message-Id: <20070824162346.ec57f508.akpm@linux-foundation.org>
-In-Reply-To: <200708241211.55319.rjw@sisk.pl>
-References: <200708241206.57178.rjw@sisk.pl>
-	<200708241211.55319.rjw@sisk.pl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Aug 2007 19:25:10 -0400
+Date: Fri, 24 Aug 2007 17:24:52 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [sata_nv] timeout waiting for ADMA IDLE, stat=0x440
+In-reply-to: <fa.JryGluomV43EviuSMJKX+JI+tvU@ifi.uio.no>
+To: Maarten Maathuis <madman2003@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <46CF68C4.9040506@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.JryGluomV43EviuSMJKX+JI+tvU@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007 12:11:54 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Maarten Maathuis wrote:
+> I have this problem several times, always with the same harddrive, a
+> samsung sp2004c. My samsung hd161hj and hd321kj don't seem to suffer
+> from this problem. I do not know when exactly it happened for the
+> first, but it has happened twice on a 2.6.22 kernel.
+> 
+> Is there anything that can be done about this (besides disabling adma
+> for all drives), or any information i can provide to help?
+> 
+> Please CC me, as i am not a member of this mailinglist.
+> 
+> Sincerely,
+> 
+> Maarten Maathuis.
+> 
+> dmesg snippet:
+> 
+> ata4: timeout waiting for ADMA IDLE, stat=0x440
+> ata4.00: qc timeout (cmd 0x2f)
+> ata4: failed to read log page 10h (errno=-5)
+> ata4.00: exception Emask 0x1 SAct 0x1 SErr 0x380000 action 0x2 frozen
+> ata4.00: (CPB resp_flags 0x11: CMD error)
+> ata4.00: cmd 60/80:00:89:b0:30/00:00:02:00:00/40 tag 0 cdb 0x0 data 65536 in
+>          res 51/84:00:02:00:00/84:00:02:00:00/40 Emask 0x10 (ATA bus error)
 
-> Index: linux-2.6.23-rc3/include/asm-x86_64/suspend.h
-> ===================================================================
-> --- linux-2.6.23-rc3.orig/include/asm-x86_64/suspend.h	2007-08-21 20:36:49.000000000 +0200
-> +++ linux-2.6.23-rc3/include/asm-x86_64/suspend.h	2007-08-21 20:37:47.000000000 +0200
-> @@ -43,4 +43,10 @@ extern void fix_processor_context(void);
->  /* routines for saving/restoring kernel state */
->  extern int acpi_save_state_mem(void);
->  
-> +#define ARCH_HAS_HIBERNATION_HEADER
+Sounds like the drive has gotten into a really hosed state after this 
+point. The SError register is showing a CRC error, disparity error, and 
+10b to 8b decode error, which indicates that there are some major SATA 
+communication problems happening.
 
-The preferred way of doing this is via Kconfig, please.  ie: add a
-CONFIG_HIBERNATION_HEADER to arch/x86_64/Kconfig.
+It could be a hardware problem (bad drive, bad SATA cable, insufficient 
+power, etc.) or maybe this is another drive with broken NCQ..
 
-> +
-> +/* arch/x86_64/kernel/suspend.c */
-> +extern int arch_hibernation_header_save(void *addr, unsigned int max_size);
-> +extern int arch_hibernation_header_restore(void *addr);
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-Given that these are called from non-arch-specific code, they must have the
-same signature across all architectures.  So there's no point in putting
-the prototypes into an arch-specific header file.
-
-It would be better to do something like this in (say) suspend.h:
-
-#ifdef CONFIG_HIBERNATION_HEADER
-extern int arch_hibernation_header_save(void *addr, unsigned int max_size);
-extern int arch_hibernation_header_restore(void *addr);
-#else
-static inline int arch_hibernation_header_save(void *addr,
-						unsigned int max_size)
-{
-	return 0;
-}
-
-static inline int arch_hibernation_header_restore(void *addr)
-{
-	return 0;
-}
-#endif
-
-then go nuke some ifdefs from the .c files.
