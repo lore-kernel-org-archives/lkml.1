@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965063AbXHXDk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934019AbXHXDtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965063AbXHXDk0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 23:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760105AbXHXDkP
+	id S934019AbXHXDtn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 23:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbXHXDte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 23:40:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46176 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758140AbXHXDkN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 23:40:13 -0400
-Date: Fri, 24 Aug 2007 11:33:10 +0800
-From: Eugene Teo <eugeneteo@kernel.sg>
-To: linux-kernel@vger.kernel.org
-Cc: Takashi Iwai <tiwai@suse.de>, Arjan van de Ven <arjan@linux.intel.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: [PATCH] clean up exports in fs/{open,read_write}.c
-Message-ID: <20070824033310.GA5662@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+	Thu, 23 Aug 2007 23:49:34 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40573 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbXHXDtd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 23:49:33 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, samuel@sortiz.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc3-mm1 - irda goes belly up
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<23568.1187876026@turing-police.cc.vt.edu>
+	<20070823141652.d488a6e0.akpm@linux-foundation.org>
+Date: Thu, 23 Aug 2007 21:46:44 -0600
+In-Reply-To: <20070823141652.d488a6e0.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Thu, 23 Aug 2007 14:16:52 -0700")
+Message-ID: <m11wdtoaqj.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi-san fixed sound/isa/wavefront/wavefront_synth.c to use
-request_firmware instead of sys_*. Since that is the last driver in the
-kernel that uses sys_{read,close}, this patch kills these exports. sys_open
-is left exported for sparc64 only.
+Andrew Morton <akpm@linux-foundation.org> writes:
+>
+> Yes, the ENOMEM is bogus.  But irda_sysctl_register() saw a NULL return
+> from register_sysctl_table() and simply has no clue why it failed, and is
+> forced to assume ENOMEM.  That's a design shortcoming in
+> register_sysctl_table(), whcih should have returned an ERR_PTR.  Doesn't
+> matter much.
 
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
----
- fs/open.c       |    4 ++--
- fs/read_write.c |    1 -
- 2 files changed, 2 insertions(+), 3 deletions(-)
+I should say something about the return value issue.
 
-diff --git a/fs/open.c b/fs/open.c
-index 1d9e5e9..dc121ce 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -1056,7 +1056,9 @@ asmlinkage long sys_open(const char __user *filename, int flags, int mode)
- 	prevent_tail_call(ret);
- 	return ret;
- }
-+#ifdef CONFIG_SPARC64
- EXPORT_SYMBOL_GPL(sys_open);
-+#endif
- 
- asmlinkage long sys_openat(int dfd, const char __user *filename, int flags,
- 			   int mode)
-@@ -1148,8 +1150,6 @@ out_unlock:
- 	return -EBADF;
- }
- 
--EXPORT_SYMBOL(sys_close);
--
- /*
-  * This routine simulates a hangup on the tty, to arrange that users
-  * are given clean terminals at login time.
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 507ddff..d913d1e 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -370,7 +370,6 @@ asmlinkage ssize_t sys_read(unsigned int fd, char __user * buf, size_t count)
- 
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(sys_read);
- 
- asmlinkage ssize_t sys_write(unsigned int fd, const char __user * buf, size_t count)
- {
+Currently the only time this matters is when someone messes up in
+development, and if it isn't an out of memory error we get messages in
+dmesg so it shouldn't be to hard to sort out.
 
+I agree it is a bit of a short coming that we can only return NULL
+and it might be worth changing that at some point.  Perhaps when
+I introduce register_sysctl_path would be a good time.   Going
+through all of the callers just to give a better return value when
+they can't do anything about it anyway seems to be a lot of work
+for a very minor improvement.
+
+Eric
