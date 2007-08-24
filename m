@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765291AbXHXS4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765973AbXHXS5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765291AbXHXS4J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 14:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759759AbXHXSzz
+	id S1765973AbXHXS5O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 14:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760996AbXHXS47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 14:55:55 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57967 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758742AbXHXSzy (ORCPT
+	Fri, 24 Aug 2007 14:56:59 -0400
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:35076 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759759AbXHXS46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 14:55:54 -0400
-Date: Fri, 24 Aug 2007 14:55:53 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Oliver Neukum <oliver@neukum.org>, Matt Colyer <matt@colyer.name>,
-       <linux-kernel@vger.kernel.org>, <jeffm@suse.de>,
-       <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] [RFC] USB: driver for iphone charging
-In-Reply-To: <20070824183548.GA14879@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0708241449520.22079-100000@iolanthe.rowland.org>
+	Fri, 24 Aug 2007 14:56:58 -0400
+Date: Fri, 24 Aug 2007 14:56:13 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: john stultz <johnstul@us.ibm.com>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH RT 3/3] fix get_monotonic_cycles for latency tracer
+In-Reply-To: <1187980244.6163.13.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.58.0708241454250.4331@gandalf.stny.rr.com>
+References: <1187978236.2941.19.camel@localhost.localdomain>
+ <1187980244.6163.13.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007, Greg KH wrote:
 
-> Can someone with a iphone test this out?  If you look at how the
-> berry_charge driver does it, the set_config stuff happens after the
-> magic command.  As I don't have an iphone, nor have I ever seen any
-> dumps of the command streams, I don't really know if the set_config
-> message really is necessary or not.
 
-You know, now that I think back on it, it may be that the Set-Config
-really does have to come after the magic command.  Perhaps it triggers
-the changeover.  In which case the subroutine should look like this:
+--
+On Fri, 24 Aug 2007, john stultz wrote:
 
-static int iphone_probe(struct usb_interface *intf,
-			const struct usb_device_id *id)
-{
-	struct usb_device *udev = interface_to_usbdev(intf);
-	int rc;
+> >
+> > -	/* calculate the delta since the last update_wall_time: */
+> > -	cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
+> > +	} while (cycle_raw != clock->cycle_raw ||
+> > +		 cycle_last != clock->cycle_last);
+>
+> So if I'm understanding this right, not taking a lock isn't an
+> optimization (as the seq read lock code is almost the same), but a
+> requirement (as this might be called while xtime_lock is held),
+> correct?
 
-	if (udev->actconfig->desc.bConfigurationValue != 3) {
-		dbg(&udev->dev, "Sending magic comand\n");
-		rc = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
-				0x40, (USB_DIR_OUT | USB_TYPE_VENDOR |
-					USB_RECIP_DEVICE),
-				0x6400, 0, NULL, 0, 1000);
-		if (rc)
-			dev_err(&udev->dev, "Command failed: %d\n", rc);
-		else {
-			dbg(&udev->dev, "Calling set_configuration\n");
-			rc = usb_driver_set_configuration(udev, 3);
-			if (rc)
-				dev_err(&udev->dev, "Set-Config failed: %d\n",
-						rc);
-		}
-	}
+Exactly. The latency tracer uses this so no locks can be grabbed
+(seq_locks included).
 
-	/* we don't really want to bind to the device, userspace programs can
-	 * handle the syncing just fine, so get outta here. */
-	return -ENODEV;
-}
+>
+> Might want to clarify that a bit in the comment.
+>
 
-However Oliver's point is well taken.  This simple sort of manipulation
-could easily be done by a user program, started up by udev.
+OK, will do and send a updated patch.
 
-Alan Stern
+I wasn't in the best state writing this patch in the wee hours of the
+night ;-)
+
+-- Steve
 
