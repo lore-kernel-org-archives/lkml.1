@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbXHXAXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934439AbXHXAXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755387AbXHXAXE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 20:23:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965007AbXHXAWs
+	id S934439AbXHXAXb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 20:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965129AbXHXAW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 20:22:48 -0400
-Received: from ns.suse.de ([195.135.220.2]:42092 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933396AbXHXAWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 20:22:46 -0400
-Date: Thu, 23 Aug 2007 17:02:42 -0700
-From: Greg KH <gregkh@suse.de>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Randy Dunlap <rdunlap@xenotime.net>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [GIT PATCH] USB fixes for 2.6.23-rc3
-Message-ID: <20070824000242.GA5282@suse.de>
-References: <20070822220805.GB30603@kroah.com> <Pine.LNX.4.60.0708240036200.3246@poirot.grange> <20070823224956.GA25969@suse.de> <20070823161815.604f1a8b.rdunlap@xenotime.net> <20070823232831.GA4638@suse.de> <20070823233139.GU30705@stusta.de>
+	Thu, 23 Aug 2007 20:22:58 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:44462 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965119AbXHXAW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 20:22:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:resent-from:resent-to:resent-date:resent-message-id:message-id:in-reply-to:references:from:date:subject:to:cc:mime-version:content-transfer-encoding:content-disposition;
+        b=ufSqW6PkPVuilST+NL32KV5KymORgt0Ua38ssVR9iFPlDoUG5GhLanaaBmy44TNOmwsvL7RnkQO8CHZQXjI+fwrSebeXiqlARtqIL4A78lKkLBz3mpvSBamWsJ6RLGV6qqPMj93Ja9v4cb8enujtoykG+RdyxB+3tvGrsy5dKok=
+Message-Id: <6e3f66d353155af12b075c2e919066908a2ce44c.1187912217.git.jesper.juhl@gmail.com>
+In-Reply-To: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
+References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
+From: Jesper Juhl <jesper.juhl@gmail.com>
+Date: Fri, 24 Aug 2007 02:20:04 +0200
+Subject: [PATCH 22/30] ivtv: kzalloc() returns void pointer, no need to cast
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Kevin Thayer <nufan_wfk@yahoo.com>, Chris Kennedy <c@groovy.org>,
+       Hans Verkuil <hverkuil@xs4all.nl>, video4linux-list@redhat.com,
+       Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070823233139.GU30705@stusta.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 01:31:39AM +0200, Adrian Bunk wrote:
-> On Thu, Aug 23, 2007 at 04:28:31PM -0700, Greg KH wrote:
-> > On Thu, Aug 23, 2007 at 04:18:15PM -0700, Randy Dunlap wrote:
-> > > On Thu, 23 Aug 2007 15:49:56 -0700 Greg KH wrote:
-> > > 
-> > > > On Fri, Aug 24, 2007 at 12:43:47AM +0200, Guennadi Liakhovetski wrote:
-> > > > > Hi Greg,
-> > > > > 
-> > > > > sorry, this is a private egoistic request, so I took the liberty and 
-> > > > > removed Linus and Andrew from CC: If this wouldn't make things more 
-> > > > > difficult / worse for you and anyone else, could you perhaps post such 
-> > > > > patch chains as a reply to the first message (patch 0/x) and not each 
-> > > > > subsequent patch as a reply to the previous one? It would make it easier 
-> > > > > to view for _me_ (remember egoistic?) because my mail agent (pine) 
-> > > > > presents mail threads where every reply level produces a small right 
-> > > > > offset in the subject line, so, starting from about reply number 20 the 
-> > > > > subject is completely off-screen.
-> > > > > 
-> > > > > Again, this is a minor trouble, and, perhaps, I am the only one suffering 
-> > > > > from it, but if it doesn't matter either way for everyone else, I would 
-> > > > > really appreciate it that way.
-> > > > 
-> > > > Heh, people ask me about this every few months or so, so you are not
-> > > > alone.
-> > > 
-> > > I'd prefer that change also.  In fact I just modified (trivial)
-> > > send_lots_of_email.pl (gregkh_patchbomb mailer) to do this,
-> > > except that I just have it create an mbox that I email via
-> > > msmtp.  (and it reads a 'sendpatchset' control file for input
-> > > instead of needing to modify the script source file itself)
-> > 
-> > I use git-send-email these days, and it already supports this with the
-> > --no-chain-reply-to option.  I'll consider using it next time, if at
-> > least one more person complains about this :)
-> >...
-> 
-> *complain*  :)
+Since kzalloc() returns a void pointer, we don't need to cast the
+return value in drivers/media/video/ivtv/ivtv-queue.c
 
-Heh, ok, fair enough, I'll do --no-chain-reply-to next time and see how
-it turns out.
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+ drivers/media/video/ivtv/ivtv-queue.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-thanks,
+diff --git a/drivers/media/video/ivtv/ivtv-queue.c b/drivers/media/video/ivtv/ivtv-queue.c
+index a04f938..45825b8 100644
+--- a/drivers/media/video/ivtv/ivtv-queue.c
++++ b/drivers/media/video/ivtv/ivtv-queue.c
+@@ -196,7 +196,7 @@ int ivtv_stream_alloc(struct ivtv_stream *s)
+ 		s->name, s->buffers, s->buf_size, s->buffers * s->buf_size / 1024);
+ 
+ 	if (ivtv_might_use_pio(s)) {
+-		s->PIOarray = (struct ivtv_SG_element *)kzalloc(SGsize, GFP_KERNEL);
++		s->PIOarray = kzalloc(SGsize, GFP_KERNEL);
+ 		if (s->PIOarray == NULL) {
+ 			IVTV_ERR("Could not allocate PIOarray for %s stream\n", s->name);
+ 			return -ENOMEM;
+@@ -204,7 +204,7 @@ int ivtv_stream_alloc(struct ivtv_stream *s)
+ 	}
+ 
+ 	/* Allocate DMA SG Arrays */
+-	s->SGarray = (struct ivtv_SG_element *)kzalloc(SGsize, GFP_KERNEL);
++	s->SGarray = kzalloc(SGsize, GFP_KERNEL);
+ 	if (s->SGarray == NULL) {
+ 		IVTV_ERR("Could not allocate SGarray for %s stream\n", s->name);
+ 		if (ivtv_might_use_pio(s)) {
+-- 
+1.5.2.2
 
-greg k-h
