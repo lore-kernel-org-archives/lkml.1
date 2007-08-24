@@ -1,90 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763628AbXHXOM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762967AbXHXOUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763628AbXHXOM2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 10:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbXHXOMU
+	id S1762967AbXHXOUw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 10:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbXHXOUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 10:12:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41896 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752589AbXHXOMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 10:12:19 -0400
-Date: Fri, 24 Aug 2007 16:12:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [git pull request] scheduler updates
-Message-ID: <20070824141215.GA24403@elte.hu>
+	Fri, 24 Aug 2007 10:20:43 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:51481 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbXHXOUn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 10:20:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=uHJFV27Tjv2X+vPI5RUZ4ntJpVMtct1O6Z0ooQS5M2+JG/lO3mWk7+RziZldMfL78V6DGQtabiegj1Y2M6Ftd7OPpaEBBgJBIpbZDLzouWBpX83aIAPHTeQGhHdvgi+gEjJP1WdRto/5Ij557pzI/NB55+tsC3rMcPEZ8bEL2U0=
+Message-ID: <3ae72650708240720p33a7388h708787e8eb1921bf@mail.gmail.com>
+Date: Fri, 24 Aug 2007 16:20:41 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Meelis Roos" <mroos@linux.ee>
+Subject: Re: isapnp & module autoload (udev?)
+Cc: "Linux Kernel list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.SOC.4.64.0708241642540.27738@math.ut.ee>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <Pine.SOC.4.64.0708241434440.27738@math.ut.ee>
+	 <3ae72650708240540qcf05809j609e0fbb05f221b3@mail.gmail.com>
+	 <Pine.SOC.4.64.0708241642540.27738@math.ut.ee>
+X-Google-Sender-Auth: 5ff6d3f85c5d191a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull the latest scheduler git tree from:
+On 8/24/07, Meelis Roos <mroos@linux.ee> wrote:
+> > What's in the module? What does:
+> >   /sbin/modinfo <kernel module name> | grep alias
+> > print?
+>
+> filename:       /lib/modules/2.6.23-rc3/kernel/sound/isa/sb/snd-sb16.ko
+> description:    Sound Blaster 16
+...
+> alias:          pnp:cCTL0070dCTL0001*
+> alias:          pnp:cCTL0051dCTL0001*
+...
+> > And what does the hardware say? What does:
+> >   grep . /sys/bus/pnp/devices/*/id
+> > print?
+...
+> /sys/bus/pnp/devices/01:01.00/id:CTL0001
+...
+> CTL0001 seems to be present in both but it occurs with CTL0070 or
+> CTL0051.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+Right, that will not match. You could add:
+  alias pnp:dCTL0001 snd-sb16
+to:
+  /etc/modprobe.d/pnp
+or some other file in that directory.
 
-It includes 8 commits, 3 of which are important: the most important 
-change is a bugfix to the new task startup penalty code. This could 
-explain the task-startup unpredictability problem reported by Al Boldi.
+We may switch to acpi based module autoloading in the future and add
+"acpi:*" aliases to the modules intsead of the broken pnp alias hack.
+Just to check if that would work, can you please provide the output
+of:
+  grep . /sys/bus/acpi/devices/*/modalias
 
-Then there's also a change/tweak that increases the default granularity: 
-it's still well below human perception so should not be noticeable, but 
-servers win a bit from less preemption of CPU-bound tasks. (this is also 
-the first step towards eliminating HZ from the granularity default 
-calculation.)
-
-Plus a bonus balance inconsistency has been fixed: the previous logic 
-was slightly inflatory of sleeper wait-runtime, without a 
-counter-balance on runners. (I found no noticeable or measurable impact, 
-other than a ~5% improvement in hackbench performance [due to less 
-preemption scheduling] and a slightly nicer looking /proc/sched_debug 
-output when there are lots of sleepers.)
-
-Five other, low-impact changes: a group-scheduling fixlet from Bruce 
-Ashfield, two nice simplifications from Peter Zijlstra to the 
-bonus-balance code (which eliminate a 64-bit multiplication and shrink 
-the code), a QOI improvement from Dmitry Adamushko to RR RT task 
-preemption [not strictly required for .23 but this has been in my tree 
-for some time already with no ill effects and the code is obviously 
-correct] and a dead code elimination fix from Sven-Thorsten Dietrich.
-
-Test-built and test-booted on x86-32 and x86-64, and it passed a few 
-dozen "make randconfig" builds as well.
-
-	Ingo
-
------------------->
-Bruce Ashfield (1):
-      sched: CONFIG_SCHED_GROUP_FAIR=y fixlet
-
-Dmitry Adamushko (1):
-      sched: optimize task_tick_rt() a bit
-
-Ingo Molnar (3):
-      sched: increase default granularity a bit
-      sched: tidy up and simplify the bonus balance
-      sched: fix startup penalty calculation
-
-Peter Zijlstra (2):
-      sched: simplify bonus calculation #1
-      sched: simplify bonus calculation #2
-
-Sven-Thorsten Dietrich (1):
-      sched: simplify can_migrate_task()
-
- sched.c      |    6 ------
- sched_fair.c |   26 +++++++++++++++-----------
- sched_rt.c   |   11 ++++++++---
- 3 files changed, 23 insertions(+), 20 deletions(-)
-
+Thanks,
+Kay
