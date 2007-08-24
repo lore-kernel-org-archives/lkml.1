@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964793AbXHXCR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932683AbXHXCSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964793AbXHXCR7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Aug 2007 22:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765620AbXHXCRu
+	id S932683AbXHXCSg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Aug 2007 22:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765613AbXHXCS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Aug 2007 22:17:50 -0400
-Received: from paragon.brong.net ([74.52.187.94]:41953 "EHLO paragon.brong.net"
+	Thu, 23 Aug 2007 22:18:26 -0400
+Received: from waste.org ([66.93.16.53]:56856 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765596AbXHXCRt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Aug 2007 22:17:49 -0400
-X-Greylist: delayed 2065 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Aug 2007 22:17:49 EDT
-Date: Fri, 24 Aug 2007 11:43:20 +1000
-From: Bron Gondwana <brong@fastmail.fm>
-To: Scott Thompson <postfail@hushmail.com>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: Ideas on column length in kernel "problem"?
-Message-ID: <20070824014320.GA18488@brong.net>
-References: <20070823035442.6FD0DDA81F@mailserver7.hushmail.com>
+	id S1756181AbXHXCSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Aug 2007 22:18:25 -0400
+Date: Thu, 23 Aug 2007 21:19:53 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Oeser <ioe-lkml@rameria.de>, lode leroy <lode_leroy@hotmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] memchr (trivial) optimization
+Message-ID: <20070824021953.GG21720@waste.org>
+References: <BAY105-F323FF3DC8E6C544A2BBE98FFD50@phx.gbl> <200708230213.21332.ioe-lkml@rameria.de> <20070824001351.GA20266@waste.org> <46CE2E61.9010408@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070823035442.6FD0DDA81F@mailserver7.hushmail.com>
-Organization: brong.net
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <46CE2E61.9010408@goop.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 11:54:41PM -0400, Scott Thompson wrote:
-> Many free (and not-free) mail clients wordwrap.  Hushmail wraps at 
-> 68 (verified), Yahoo has options to wrap at a max of 99, and Gmail 
-> was somewhere around 85-90 as I recall.  Not sure on other free / 
-> inexpensive clients.  
+On Thu, Aug 23, 2007 at 06:03:29PM -0700, Jeremy Fitzhardinge wrote:
+> Matt Mackall wrote:
+> >   6e:   38 08                   cmp    %cl,(%eax)
+> >   70:   74 07                   je     79 <memchr3+0x1b>
+> >   72:   40                      inc    %eax
+> >   
+> It's a bit gross that the compiler is using inc here rather than lea or
+> add, but still...
+> 
+> Er, something's spending 30% of its time in memchr?  This is not the
+> code to fix.
 
-<disclaimer>I work for them</disclaimer>
+Indeed. I'm just pointing out the general optimization of walking
+one counter instead of two.
 
-FastMail (http://fastmail.fm/) have a tickbox in the web interface
-so you can turn off line-wrapping if you need to.
- 
-Otherwise, as other people have said, use direct SMTP (we don't allow
-it for non-paying accounts, but do for all levels of paying user)
-and use a sane local client (in my case mutt+offlineimap)
+Hmm, perhaps the culprit is validate_nla?
 
-Bron.
+-- 
+Mathematics is the supreme nostalgia of our time.
