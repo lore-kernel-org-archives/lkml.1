@@ -1,65 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932521AbXHXTfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764677AbXHXTiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932521AbXHXTfw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 15:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbXHXTfm
+	id S1764677AbXHXTiN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 15:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbXHXTh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 15:35:42 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:37389 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753965AbXHXTfl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 15:35:41 -0400
-Message-ID: <46CF31CE.306@vmware.com>
-Date: Fri, 24 Aug 2007 12:30:22 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Fri, 24 Aug 2007 15:37:59 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41131 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753803AbXHXTh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 15:37:59 -0400
+Date: Fri, 24 Aug 2007 21:37:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [git pull request] scheduler updates
+Message-ID: <20070824193758.GA6440@elte.hu>
+References: <20070824141215.GA24403@elte.hu> <alpine.LFD.0.999.0708241105410.25853@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Parag Warudkar <parag.warudkar@gmail.com>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>, Tino Keitel <tino.keitel@gmx.de>,
-       linux-alpha@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Oliver Falk <oliver@linux-kernel.at>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [4/4] 2.6.23-rc3: known regressions v3
-References: <46CF0DEF.5040107@googlemail.com> <46CF17A0.2060503@googlemail.com> <82e4877d0708241231j76474326ufdd19ec5448537b9@mail.gmail.com>
-In-Reply-To: <82e4877d0708241231j76474326ufdd19ec5448537b9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0708241105410.25853@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parag Warudkar wrote:
-> On 8/24/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
->   
->
->> Virtualization
->>
->> Subject         : CONFIG_VMI broken
->> References      : http://lkml.org/lkml/2007/8/14/203
->> Last known good : ?
->> Submitter       : Parag Warudkar <parag.warudkar@gmail.com>
->> Caused-By       : ?
->> Handled-By      : Zachary Amsden <zach@vmware.com>
->> Status          : problem is being debugged
->>     
->
-> Zach seemed to think that this is already fixed - I am not in a
-> position to test it immediately so if we know what fixed this - can be
-> closed. I'll report back once I get a chance to test latest git.
->   
 
-Parag, thanks.  I reproduced this bug with your kernel config on 
-2.6.23-rc3 and verified it does not happen on latest git.  I inspected 
-memory after the crash and determined the problem was patching of 
-instructions went awry.  Chris in the meantime fixed a bug with patching 
-instructions, and the change from 100% apocalyptic failure to 100% 
-unequivocal success has convinced me that was the same bug.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Zach
+> On Fri, 24 Aug 2007, Ingo Molnar wrote:
+> > 
+> > Then there's also a change/tweak that increases the default 
+> > granularity: it's still well below human perception so should not be 
+> > noticeable, but servers win a bit from less preemption of CPU-bound 
+> > tasks. (this is also the first step towards eliminating HZ from the 
+> > granularity default calculation.)
+> 
+> Your explanation makes NO sense.
+> 
+> It doesn't eliminate HZ at all. It's still there, and it's still 
+> totally bogus.
+
+fair enough, and i fixed that.
+
+( i called the previous patch the "first step" because i was too chicken
+  to pick a single granularity default :-/ )
+
+for the current queue i went for settings close to that of HZ=250 - 
+that's the most common HZ variant that was tested previously. That means 
+10 msec on a 1-way box, 20 msec on a 2-way box, 30 msec on a 4-way box, 
+etc. (up to a 100 msecs ceiling.)
+
+> Please just *remove* that thing. It has no possible value! You claim 
+> that the preemption granularity is in "ns", and that it defaults to "3 
+> msec", but it does no such thing at all, even with your patch. It 
+> does:
+> 
+> 	unsigned int sysctl_sched_granularity __read_mostly = 3000000000ULL/HZ;
+> 
+> which is just total and utter CRAP!
+
+ok, i've removed that and all the other HZ hacks too. I've uploaded a 
+new queue with that fixed (and all other patches unchanged):
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+
+booted it on a number of boxes (32-bit and 64-bit). The question will be 
+desktop behavior. I typically run my test-desktops with HZ=100 to make 
+sure that desktop workloads are fine with large granularity values and 
+coarse timers too, so i'm reasonably positive about this default.
+
+We'll see - people can still readily tweak these values under 
+CONFIG_SCHED_DEBUG=y and give us feedback, and if there's enough demand 
+for very-finegrained scheduling (throughput be damned), we could 
+introduce yet another config option or enable the runtime tunable 
+unconditionally. (Or maybe the best option is Peter Zijlstra's adaptive 
+granularity idea, that gives the best of both worlds.)
+
+	Ingo
+
+------------------>
+Bruce Ashfield (1):
+      sched: CONFIG_SCHED_GROUP_FAIR=y fixlet
+
+Dmitry Adamushko (1):
+      sched: optimize task_tick_rt() a bit
+
+Ingo Molnar (3):
+      sched: remove HZ dependency from the granularity default
+      sched: tidy up and simplify the bonus balance
+      sched: fix startup penalty calculation
+
+Peter Zijlstra (2):
+      sched: simplify bonus calculation #1
+      sched: simplify bonus calculation #2
+
+Sven-Thorsten Dietrich (1):
+      sched: simplify can_migrate_task()
+
+ sched.c      |    8 +-------
+ sched_fair.c |   35 +++++++++++++++++++----------------
+ sched_rt.c   |   11 ++++++++---
+ 3 files changed, 28 insertions(+), 26 deletions(-)
