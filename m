@@ -1,27 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933634AbXHXKLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbXHXKYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933634AbXHXKLg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 06:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761936AbXHXKL2
+	id S1755592AbXHXKYU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 06:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbXHXKYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 06:11:28 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:59373 "EHLO
+	Fri, 24 Aug 2007 06:24:11 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:59762 "EHLO
 	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760196AbXHXKL1 (ORCPT
+	with ESMTP id S1751485AbXHXKYJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 06:11:27 -0400
+	Fri, 24 Aug 2007 06:24:09 -0400
 X-Originating-Ip: 72.143.66.27
-Date: Fri, 24 Aug 2007 06:01:55 -0400 (EDT)
+Date: Fri, 24 Aug 2007 06:14:33 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
 X-X-Sender: rpjday@localhost.localdomain
-To: Paul Mundt <lethal@linux-sh.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: what is the value of the macro "__setup_param"?
-In-Reply-To: <20070824100217.GA32109@linux-sh.org>
-Message-ID: <Pine.LNX.4.64.0708240559450.16247@localhost.localdomain>
-References: <Pine.LNX.4.64.0708240516080.14019@localhost.localdomain>
- <20070824095058.GA32013@linux-sh.org> <Pine.LNX.4.64.0708240548220.15507@localhost.localdomain>
- <20070824100217.GA32109@linux-sh.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Remove superfluous definition of __setup_null_param() macro.
+Message-ID: <Pine.LNX.4.64.0708240608090.16678@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
@@ -34,49 +30,47 @@ X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007, Paul Mundt wrote:
 
-> On Fri, Aug 24, 2007 at 05:49:42AM -0400, Robert P. J. Day wrote:
-> > On Fri, 24 Aug 2007, Paul Mundt wrote:
-> >
-> > > On Fri, Aug 24, 2007 at 05:19:29AM -0400, Robert P. J. Day wrote:
-> > > >
-> > > >   perhaps i'm missing it, but it seems that the macro __setup_param is
-> > > > entirely superfluous:
-> > > >
-> > > > $ grep -rw __setup_param *
-> > > > include/linux/init.h:#define __setup_param(str, unique_id, fn, early)      \
-> > > > include/linux/init.h:   __setup_param(str, unique_id, NULL, 0)
-> > > > include/linux/init.h:   __setup_param(str, fn, fn, 0)
-> > > > include/linux/init.h:   __setup_param(str, fn, fn, 1)
-> > > > include/linux/init.h:#define __setup_param(str, unique_id, fn)  /* nothing */
-> > > > $
-> > > >
-> > > > or am i must misreading something badly?
-> >
-> > > Superfluous how? It does different things depending on whether
-> > > MODULE is defined or not. It's a good indicator of how often people
-> > > use __setup_param() from module context though, given the complete
-> > > mismatch of parameters. It's probably worth fixing that up at least.
-> >
-> > never mind, i've already clued in.  up too long, and trying to do too
-> > many things at once.  more sleep or more coffee -- time to make a
-> > decision.  sorry for the noise.
-> >
-> That's great, but you've ignored the second part of my mail. I'll
-> summarize:
->
-> > > > include/linux/init.h:#define __setup_param(str, unique_id, fn, early)      \
-> > > > include/linux/init.h:#define __setup_param(str, unique_id, fn)  /* nothing */
->
-> Notice the problem now? :-)
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-oh, certainly.  i'm just thinking that, in my condition, i shouldn't
-be allowed to submit patches or operate heavy machinery at the moment.
-:-)
+---
 
-rday
--- 
+  since i apparently removed the final remaining reference to this
+macro in commit f4895925976977aaeda26ee2a603a99f17db500b (thanks,
+adrian), there seems to be little value in keeping this definition
+around.
+
+$ grep -rw __setup_null_param *
+include/linux/init.h:#define __setup_null_param(str, unique_id)  \
+include/linux/init.h:#define __setup_null_param(str, unique_id)  /* nothing */
+$
+
+
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 74b1f43..2e4d3e0 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -165,9 +165,6 @@ struct obs_kernel_param {
+ 		__attribute__((aligned((sizeof(long)))))	\
+ 		= { __setup_str_##unique_id, fn, early }
+
+-#define __setup_null_param(str, unique_id)			\
+-	__setup_param(str, unique_id, NULL, 0)
+-
+ #define __setup(str, fn)					\
+ 	__setup_param(str, fn, fn, 0)
+
+@@ -234,7 +231,6 @@ void __init parse_early_param(void);
+ 	void cleanup_module(void) __attribute__((alias(#exitfn)));
+
+ #define __setup_param(str, unique_id, fn)	/* nothing */
+-#define __setup_null_param(str, unique_id) 	/* nothing */
+ #define __setup(str, func) 			/* nothing */
+ #endif
+
+
+
+ --
 ========================================================================
 Robert P. J. Day
 Linux Consulting, Training and Annoying Kernel Pedantry
