@@ -1,62 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763269AbXHXViy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764622AbXHXVjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763269AbXHXViy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 17:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbXHXViq
+	id S1764622AbXHXVjW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 17:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762061AbXHXVjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 17:38:46 -0400
-Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:3268 "EHLO
-	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756678AbXHXVip (ORCPT
+	Fri, 24 Aug 2007 17:39:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60924 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759914AbXHXVjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 17:38:45 -0400
-Date: Fri, 24 Aug 2007 23:38:26 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Pierre Chifflier <p.chifflier@inl.fr>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-kernel@vger.kernel.org
-Subject: Re: intel_rng: FWH not detected (and no entropy)
-Message-ID: <20070824213826.GG13237@vanheusden.com>
-References: <20070823090414.GD22638@piche.inl.fr> <20070823125304.GA22901@khazad-dum.debian.net> <20070823144114.GE22638@piche.inl.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070823144114.GE22638@piche.inl.fr>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Sat Aug 25 22:53:49 CEST 2007
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
-	key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 24 Aug 2007 17:39:04 -0400
+Date: Fri, 24 Aug 2007 14:38:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [patch 0/6] Per cpu structures for SLUB
+Message-Id: <20070824143848.a1ecb6bc.akpm@linux-foundation.org>
+In-Reply-To: <20070823064653.081843729@sgi.com>
+References: <20070823064653.081843729@sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This leaves the main problem, which is the lack of entropy. Does anyone
-> have an idea on how to solve this problem ?
+On Wed, 22 Aug 2007 23:46:53 -0700
+Christoph Lameter <clameter@sgi.com> wrote:
 
-If you have a spare audio-card lying around or maybe a tv-card/webcam or
-so, give then:
-http://www.vanheusden.com/aed/ (for audio)
-http://www.vanheusden.com/ved/ (for video4linux)
-a try.
+> The following patchset introduces per cpu structures for SLUB. These
+> are very small (and multiples of these may fit into one cacheline)
+> and (apart from performance improvements) allow the addressing of
+> several isues in SLUB:
+> 
+> 1. The number of objects per slab is no longer limited to a 16 bit
+>    number.
+> 
+> 2. Room is freed up in the page struct. We can avoid using the
+>    mapping field which allows to get rid of the #ifdef CONFIG_SLUB
+>    in page_mapping().
+> 
+> 3. We will have an easier time adding new things like Peter Z.s reserve
+>    management.
+> 
+> The RFC for this patchset was discussed on lkml a while ago:
+> 
+> http://marc.info/?l=linux-kernel&m=118386677704534&w=2
+> 
+> (And no this patchset does not include the use of cmpxchg_local that
+> we discussed recently on lkml nor the cmpxchg implementation
+> mentioned in the RFC)
+> 
+> Performance
+> -----------
+> 
+> 
+> Norm = 2.6.23-rc3
+> PCPU = Adds page allocator pass through plus per cpu structure patches
+> 
+> 
+> IA64 8p 4n NUMA Altix
+> 
+>             Single threaded               Concurrent Alloc
+> 
+> 	Kmalloc		Alloc/Free	Kmalloc         Alloc/Free
+>  Size	Norm   PCPU	Norm   PCPU	Norm   PCPU	Norm   PCPU
+> -------------------------------------------------------------------
+>     8	132	84	93	104	98	90	95	106
+>    16    98	92	93	104	115	98	95	106
+>    32   112	105	93	104	146	111	95	106
+>    64	119	112	93	104	214	133	95	106
+>   128   132	119	94	104	321	163	95	106
+>   256+  83255	176	106	115	415	224	108	117
+>   512   191	176	106	115	487	341	108	117
+>  1024   252	246	106	115	937	609	108	117
+>  2048   308	292	107	115	2494	1207	108	117
+>  4096   341	319	107	115	2497	1217	108	117
+>  8192   402	380	107	115	2367	1188	108	117
+> 16384*  560	474	106	434	4464	1904	108	478
+> 
+> X86_64 2p SMP (Dual Core Pentium 940)
+> 
+>          Single threaded                   Concurrent Alloc
+> 
+>         Kmalloc         Alloc/Free      Kmalloc         Alloc/Free
+>  Size   Norm   PCPU     Norm   PCPU     Norm   PCPU     Norm   PCPU
+> --------------------------------------------------------------------
+>     8	313	227	314	324	207	208	314	323
+>    16   202	203	315	324	209	211	312	321
+>    32	212	207	314	324	251	243	312	321
+>    64	240	237	314	326	329	306	312	321
+>   128	301	302	314	324	511	416	313	324
+>   256   498	554	327	332	970	837	326	332
+>   512   532	553	324	332	1025	932	326	335
+>  1024   705	718	325	333	1489	1231	324	330
+>  2048   764	767	324	334	2708	2175	324	332
+>  4096* 1033	476	325	674	4727	782	324	678
 
-And no, audio-entropyd won't fill up the entropy pool in a second, it
-takes a while. And often video-entropyd bails out because of not enough
-noise in the video-signal.
+I'm struggling a bit to understand these numbers.  Bigger is better, I
+assume?  In what units are these numbers?
+
+> Notes:
+> 
+> Worst case:
+> -----------
+> We generally loose in the alloc free test (x86_64 3%, IA64 5-10%)
+> since the processing overhead increases because we need to lookup
+> the per cpu structure. Alloc/Free is simply kfree(kmalloc(size, mask)).
+> So objects with the shortest lifetime possible. We would never use
+> objects in that way but the measurement is important to show the worst
+> case overhead created.
+> 
+> Single Threaded:
+> ----------------
+> The single threaded kmalloc test shows behavior of a continual stream
+> of allocation without contention. In the SMP case the losses are minimal.
+> In the NUMA case we already have a winner there because the per cpu structure
+> is placed local to the processor. So in the single threaded case we already
+> win around 5% just by placing things better.
+> 
+> Concurrent Alloc:
+> -----------------
+> We have varying gains up to a 50% on NUMA because we are now never updating
+> a cacheline used by the other processor and the data structures are local
+> to the processor.
+> 
+> The SMP case shows gains but they are smaller (especially since
+> this is the smallest SMP system possible.... 2 CPUs). So only up
+> to 25%.
+> 
+> Page allocator pass through
+> ---------------------------
+> There is a significant difference in the columns marked with a * because
+> of the way that allocations for page sized objects are handled.
+
+OK, but what happened to the third pair of columns (Concurrent Alloc,
+Kmalloc) for 1024 and 2048-byte allocations?  They seem to have become
+significantly slower?
+
+Thanks for running the numbers, but it's still a bit hard to work out
+whether these changes are an aggregate benefit?
+
+> If we handle
+> the allocations in the slab allocator (Norm) then the alloc free tests
+> results are superb since we can use the per cpu slab to just pass a pointer
+> back and forth. The page allocator pass through (PCPU) shows that the page
+> allocator may have problems with giving back the same page after a free.
+> Or there something else in the page allocator that creates significant
+> overhead compared to slab. Needs to be checked out I guess.
+> 
+> However, the page allocator pass through is a win in the other cases
+> since we can cut out the page allocator overhead. That is the more typical
+> load of allocating a sequence of objects and we should optimize for that.
+> 
+> (+ = Must be some cache artifact here or code crossing a TLB boundary.
+> The result is reproducable)
+> 
+
+Most Linux machines are uniprocessor.  We should keep an eye on what effect
+a change like this has on code size and performance for CONFIG_SMP=n
+builds..
 
 
-Folkert van Heusden
-
--- 
-MultiTail er et flexible tool for å kontrolere Logfiles og commandoer.
-Med filtrer, farger, sammenføringer, forskeliger ansikter etc.
-http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
