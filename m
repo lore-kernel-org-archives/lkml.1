@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbXHXPsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760077AbXHXPuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757521AbXHXPsH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 11:48:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbXHXPrw
+	id S1760077AbXHXPuQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 11:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbXHXPuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 11:47:52 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:60658 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752261AbXHXPru convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 11:47:50 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: akepner@sgi.com
-Subject: Re: RFC: issues concerning the next NAPI interface
-Date: Fri, 24 Aug 2007 17:47:15 +0200
-User-Agent: KMail/1.8.2
-Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-References: <200708241559.17055.ossthema@de.ibm.com> <20070824153703.GN5592@sgi.com>
-In-Reply-To: <20070824153703.GN5592@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708241747.16592.ossthema@de.ibm.com>
+	Fri, 24 Aug 2007 11:50:03 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:48755 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754079AbXHXPuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 11:50:00 -0400
+Subject: Re: [PATCH] Fix find_next_best_node (Re: [BUG] 2.6.23-rc3-mm1
+	Kernel panic - not syncing: DMA: Memory would be corrupted)
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Mel Gorman <mel@skynet.ie>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       "Luck, Tony" <tony.luck@intel.com>, Jeremy Higdon <jeremy@sgi.com>,
+       Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-ia64@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org
+In-Reply-To: <20070824145233.GA26374@skynet.ie>
+References: <617E1C2C70743745A92448908E030B2A023EB020@scsmsx411.amr.corp.intel.com>
+	 <20070823142133.9359a1ce.akpm@linux-foundation.org>
+	 <20070824153945.3C75.Y-GOTO@jp.fujitsu.com>
+	 <20070824145233.GA26374@skynet.ie>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Fri, 24 Aug 2007 11:49:31 -0400
+Message-Id: <1187970572.5869.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Friday 24 August 2007 17:37, akepner@sgi.com wrote:
-> On Fri, Aug 24, 2007 at 03:59:16PM +0200, Jan-Bernd Themann wrote:
-> > .......
-> > 3) On modern systems the incoming packets are processed very fast. Especially
-> >    on SMP systems when we use multiple queues we process only a few packets
-> >    per napi poll cycle. So NAPI does not work very well here and the interrupt 
-> >    rate is still high. What we need would be some sort of timer polling mode 
-> >    which will schedule a device after a certain amount of time for high load 
-> >    situations. With high precision timers this could work well. Current
-> >    usual timers are too slow. A finer granularity would be needed to keep the
-> >    latency down (and queue length moderate).
+On Fri, 2007-08-24 at 15:52 +0100, Mel Gorman wrote:
+> On (24/08/07 15:53), Yasunori Goto didst pronounce:
+> > 
+> > I found find_next_best_node() was wrong.
+> > I confirmed boot up by the following patch.
+> > Mel-san, Kamalesh-san, could you try this?
 > > 
 > 
-> We found the same on ia64-sn systems with tg3 a couple of years 
-> ago. Using simple interrupt coalescing ("don't interrupt until 
-> you've received N packets or M usecs have elapsed") worked 
-> reasonably well in practice. If your h/w supports that (and I'd 
-> guess it does, since it's such a simple thing), you might try 
-> it.
+> This boots the IA-64 successful and gets rid of that DMA corrupts
+> memory message. As a bonus, it fixes up the memoryless nodes (the bug
+> where Total pages == 0 and there is a BUG in page_alloc.c) by building
+> zonelists properly. The machine still fails to boot with the more familiar
+> net/core/skbuff.c:95 but that is a separate problem.
 > 
+> Well spotted Yasunori-san.
+> 
+> Andrew, this fixes a real problem and should be considered a fix to
+> memoryless-nodes-fixup-uses-of-node_online_map-in-generic-code.patch unless
+> Christoph Lameter objects.
 
-I don't see how this should work. Our latest machines are fast enough that they
-simply empty the queue during the first poll iteration (in most cases).
-Even if you wait until X packets have been received, it does not help for
-the next poll cycle. The average number of packets we process per poll queue
-is low. So a timer would be preferable that periodically polls the 
-queue, without the need of generating a HW interrupt. This would allow us
-to wait until a reasonable amount of packets have been received in the meantime
-to keep the poll overhead low. This would also be useful in combination
-with LRO.
+I reworked that patch and posted the update on 16aug which does not have
+this problem:
 
-Regards,
-Jan-Bernd
+http://marc.info/?l=linux-mm&m=118729871101418&w=4
+
+This should replace
+memoryless-nodes-fixup-uses-of-node_online_map-in-generic-code.patch
+in -mm.
+
+Lee
+
+
