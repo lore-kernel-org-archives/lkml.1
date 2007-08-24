@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758930AbXHXQYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760635AbXHXQY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758930AbXHXQYA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 12:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbXHXQXx
+	id S1760635AbXHXQY7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 12:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbXHXQYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 12:23:53 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40710 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750939AbXHXQXw (ORCPT
+	Fri, 24 Aug 2007 12:24:50 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:60395 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752261AbXHXQYt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 12:23:52 -0400
-Date: Fri, 24 Aug 2007 09:17:20 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Zan Lynx <zlynx@acm.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
-       Kees Cook <kees@outflux.net>
-Subject: Re: 2.6.23-rc3-mm1 - memory layout change?  - lost support for
- MAP_32BIT? - mono crashes
-Message-ID: <20070824091720.4c6f4227@laptopd505.fenrus.org>
-In-Reply-To: <Pine.LNX.4.64.0708240157430.5402@jikos.suse.cz>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	<1187834905.190825.16.camel@localhost>
-	<Pine.LNX.4.64.0708231126380.2460@twin.jikos.cz>
-	<20070823165201.717ed62d.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0708240157430.5402@jikos.suse.cz>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 24 Aug 2007 12:24:49 -0400
+Date: Fri, 24 Aug 2007 18:24:48 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: sparclinux@vger.kernel.org
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       parisc-linux@parisc-linux.org
+Subject: errno codes intertwined
+Message-ID: <Pine.LNX.4.64.0708241815540.28540@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007 02:09:59 +0200 (CEST)
-Jiri Kosina <jkosina@suse.cz> wrote:
+Hello lists,
 
-> (some more CCs added)
-> 
-> On Thu, 23 Aug 2007, Andrew Morton wrote:
-> 
-> > It is quite unobvious to me that the whole pie-randomization thing
-> > is worth merging.  Why shouldn't we just drop the lot?
-> 
-> Hi Andrew,
-> 
-> well, whenever it comes to address space layout randomization, there 
-> usually follows a huge debate whether it is needed or not, some
-> people think it's useful and powerful security protection against
-> 0day attacks, other people think that it's just fighting the bugs in
-> userspace software in a wrong way.
 
-randomizing PIE's is as a whole worth getting right and in mainline.
-That means that ONLY the PIE text should be randomized, not that mmap
-should break ;)
+I am currently working on a FUSE-based filesystem much like nfs/sshfs. 
+I pass the syscall on to the storage server, where it is executed, and 
+get back the result, or errno code. Let's jump into the real world 
+example where the storage unit is x86_64 and the mount side is 
+sparc/sparc64, and the syscall is getxattr.
 
-Randomizing address space is very widely recognized as being part of a
-whole set of things (and there's a lot of discussion about what that
-whole set should be, each vendor will say their solution should be part
-of that and that all others suck) that you need to do to make it a LOT
-harder to get a general purpose exploit working. (It's not fool proof;
-it's more comparable than a 4 tumble number lock than it is to a iris
-scan; yet even a tumble number lock makes it harder to break into your
-gym locker)
+If a file does not have the requested attribute, the syscall will 
+produce ENODATA. On x86_64, that is mapped to the value 61. Back on the 
+sparc side, 61 is mapped to ECONNREFUSED, and that gives odd errors 
+when ls tries to query xattrs:
+
+18:20 sun:../ccgfs/src # ls -dl /home/profile
+ls: /home/profile: Connection refused
+drwx------ 13 cf users 4096 Aug 24 16:05 /home/profile
+
+Just a grep away, this came up:
+
+18:16 ichi:../linux-2.6.23/include > grep -r ENODATA .
+./asm-alpha/errno.h:#define     ENODATA         86      /* No data available */
+./asm-generic/errno.h:#define   ENODATA         61      /* No data available */
+./asm-mips/errno.h:#define      ENODATA         61      /* No data available */
+./asm-parisc/errno.h:#define    ENODATA         51      /* No data available */
+./asm-sparc/errno.h:#define     ENODATA         111     /* No data available */
+./asm-sparc/solerrno.h:#define  SOL_ENODATA        61    /* No data avail at this time       */
+./asm-sparc64/errno.h:#define   ENODATA         111     /* No data available */
+./asm-sparc64/solerrno.h:#define        SOL_ENODATA        61    /* No data avail at this time       */
+
+Why do these architectures deviate from asm-generic? In fact,
+
+./asm-alpha/errno.h:#define     ECONNREFUSED    61      /* Connection refused */
+./asm-generic/errno.h:#define   ECONNREFUSED    111     /* Connection refused */
+./asm-sparc/errno.h:#define     ECONNREFUSED    61      /* Connection refused */
+./asm-sparc64/errno.h:#define   ECONNREFUSED    61      /* Connection refused */
+
+the values are exactly swapped (mips is another oddball not portrayed 
+here). Since these header files propagate into /usr/include, this 
+affects userspace programs too.
+
+So I'm just asking: can I rely on the same errno across Linuxes?
+And should the errno values be fixed up?
+
+
+
+	Jan
+-- 
