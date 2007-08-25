@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934030AbXHYV7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932964AbXHYWDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934030AbXHYV7x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 17:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbXHYV7r
+	id S932964AbXHYWDz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 18:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827AbXHYWDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 17:59:47 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:56549 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753090AbXHYV7q (ORCPT
+	Sat, 25 Aug 2007 18:03:46 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51911 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752920AbXHYWDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 17:59:46 -0400
-Date: Sat, 25 Aug 2007 22:59:45 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] FS: Make RAMFS both selectable and tristate.
-Message-ID: <20070825215945.GC21089@ftp.linux.org.uk>
-References: <Pine.LNX.4.64.0708251538320.29214@localhost.localdomain> <20070825212920.GB21089@ftp.linux.org.uk> <Pine.LNX.4.64.0708251736050.12852@localhost.localdomain>
+	Sat, 25 Aug 2007 18:03:45 -0400
+Date: Sat, 25 Aug 2007 14:57:42 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hare@suse.de
+Subject: Re: [PATCH] debloat aic7xxx and aic79xx drivers by deinlining
+Message-ID: <20070825145742.69b99168@laptopd505.fenrus.org>
+In-Reply-To: <200708252257.07241.vda.linux@googlemail.com>
+References: <200708252257.07241.vda.linux@googlemail.com>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708251736050.12852@localhost.localdomain>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 25, 2007 at 05:40:00PM -0400, Robert P. J. Day wrote:
-> On Sat, 25 Aug 2007, Al Viro wrote:
-> 
-> > On Sat, Aug 25, 2007 at 03:40:23PM -0400, Robert P. J. Day wrote:
-> > >
-> > > Allow RAMFS to be user-selectable, and to be built as a module.
-> > >
-> > > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> > >
-> > > ---
-> > >
-> > >   given that the help content for that option suggests it can be built
-> > > as a module, it just makes sense to make it selectable and tristate,
-> > > unless someone has a compelling argument against it.
-> >
-> > How about "check if the kernel builds if you do that"?
-> 
-> i did.  i did a simple "make defconfig" and "make", and the kernel
-> built fine.  that patch didn't change the status of RAMFS in any way,
-> it was still selected as default "y", so why would that patch have
-> made any difference to the eventual build?
+On Sat, 25 Aug 2007 22:57:07 +0100
+Denys Vlasenko <vda.linux@googlemail.com> wrote:
 
-Your patch allows to make it a module.  That seems to be the only point of
-your patch.  So check if it builds when RAMFS is made "m" or "n".
+> Hi,
+> 
+> Attached patch deinlines and moves big functions from .h to .c files
+> in drivers/scsi/aic7xxx/*. I also had to add prototypes for
+> ahc_lookup_scb and ahd_lookup_scb to .h files.
+> 
+
+one question... how many of these can actually be static (or would be
+if they were in their only-caller-c-file) ? Did you run the find static
+script or are you waiting for Adrian to do that ;-)
