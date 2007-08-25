@@ -1,67 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761878AbXHYGWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765089AbXHYGYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761878AbXHYGWK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 02:22:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbXHYGV7
+	id S1765089AbXHYGYJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 02:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbXHYGX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 02:21:59 -0400
-Received: from smtp-vbr11.xs4all.nl ([194.109.24.31]:4884 "EHLO
-	smtp-vbr11.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753644AbXHYGV6 (ORCPT
+	Sat, 25 Aug 2007 02:23:57 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44619
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754620AbXHYGX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 02:21:58 -0400
-Message-ID: <46CFCA78.2090500@xs4all.nl>
-Date: Sat, 25 Aug 2007 08:21:44 +0200
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: linux-kernel@vger.kernel.org, mpm@selenic.com, mb@bu3sch.de
-Subject: Re: possible BUG while doing gpg --gen-key
-References: <46CF079C.7010304@xs4all.nl> <20070825011419.GL30705@stusta.de>
-In-Reply-To: <20070825011419.GL30705@stusta.de>
-X-Enigmail-Version: 0.95.3
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=UTF-8
+	Sat, 25 Aug 2007 02:23:56 -0400
+Date: Fri, 24 Aug 2007 23:23:55 -0700 (PDT)
+Message-Id: <20070824.232355.82703897.davem@davemloft.net>
+To: jesper.juhl@gmail.com
+Cc: linux-kernel@vger.kernel.org, samuel@sortiz.org, a_villacis@palosanto.com
+Subject: Re: [PATCH 10/30] irda: Do not do pointless kmalloc return value
+ cast in KingSun driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <6d744c4594d042e63fa00469ccbfaeca54639b01.1187912217.git.jesper.juhl@gmail.com>
+References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
+	<6d744c4594d042e63fa00469ccbfaeca54639b01.1187912217.git.jesper.juhl@gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-(...)
-> Is CONFIG_HW_RANDOM_VIA enabled in your kernel?
-> If yes, does disabling it help?
+From: Jesper Juhl <jesper.juhl@gmail.com>
+Date: Fri, 24 Aug 2007 01:54:23 +0200
 
-I disabled rngd.
-I disabled audio-entropyd.
-netdev-random remained in effect.
+> kmalloc() returns a void pointer, so there is no need to cast it in
+>  drivers/net/irda/kingsun-sir.c::kingsun_probe().
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-Now it works:
-
-(...)
-Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? O
-You need a Passphrase to protect your secret key.
-
-We need to generate a lot of random bytes. It is a good idea to perform
-some other action (type on the keyboard, move the mouse, utilize the
-disks) during the prime generation; this gives the random number
-generator a better chance to gain enough entropy.
-
-Not enough random bytes available.  Please do some other work to give
-the OS a chance to collect more entropy! (Need 44 more bytes)
-We need to generate a lot of random bytes. It is a good idea to perform
-some other action (type on the keyboard, move the mouse, utilize the
-disks) during the prime generation; this gives the random number
-generator a better chance to gain enough entropy.
-
-public and secret key created and signed.
-
-pub   1024D/4A87572B 2007-08-25
-      Key fingerprint = 534F A772 774A 9C7D E10B  FCBF A28E 233F 4A87 572B
-uid                  root! <root@localhost>
-sub   2048g/E1BCAD7A 2007-08-25
-
-
-
-
-It even complains about a lack of entropy.
+Applied.
