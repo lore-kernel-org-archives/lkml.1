@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbXHYQoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764892AbXHYQpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760018AbXHYQoT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 12:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbXHYQoK
+	id S1764892AbXHYQpH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 12:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbXHYQow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 12:44:10 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:35417 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbXHYQoJ (ORCPT
+	Sat, 25 Aug 2007 12:44:52 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:18438 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761453AbXHYQom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 12:44:09 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46D05C42.4010606@s5r6.in-berlin.de>
-Date: Sat, 25 Aug 2007 18:43:46 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Sat, 25 Aug 2007 12:44:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=epwIdN4X4diDNifCVOW2t/puT/MWgAsq8tbEqVMlfhK5lX4hU3e1iTZc+pUqDFfnatL4nTtVm+O0G469COqMS+FixBZ/EC2gB7LaBaOqZxF7RDQ+tLP+1EwOt07/aEspZ3XtKagajujjhMV5Nq13kOK5sYG4VC30tRxpQL6CQic=
+Message-ID: <3c1737210708250944u7043c9e1j3be70674a1b55911@mail.gmail.com>
+Date: Sat, 25 Aug 2007 18:44:40 +0200
+From: "Michael Smith" <msmith@xiph.org>
+To: "john stultz" <johnstul@us.ibm.com>
+Subject: Re: gettimeofday() jumping into the future
+Cc: "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       "Andy Wingo" <wingo@fluendo.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <1187894822.6024.8.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: "Martin K. Petersen" <mkp@mkp.net>
-CC: Gregor Jasny <gjasny@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net
-Subject: Re: Corrupted filesystem with new Firewire stack
-References: <9d2cd630708151447u7e415712u17e974859fbd5481@mail.gmail.com>	<46C3EE1F.40309@s5r6.in-berlin.de> <yq1ps1m5odq.fsf@sermon.lab.mkp.net> <46C6F3C7.3070002@s5r6.in-berlin.de>
-In-Reply-To: <46C6F3C7.3070002@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3c1737210708230408i7a8049a9m5db49e6c4d89ab62@mail.gmail.com>
+	 <1187869632.6114.368.camel@twins>
+	 <3c1737210708230520l7dee896crc614f7fc60ac7a1a@mail.gmail.com>
+	 <1187894822.6024.8.camel@localhost.localdomain>
+X-Google-Sender-Auth: 9447366d6563c5c1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Martin K. Petersen wrote:
->> Happens here on both a G4 and an intel Mini.  Both running FC7.
->>
->> Aug 17 08:24:08 mini kernel: firewire_sbp2: status write for unknown orb
->> Aug 17 08:25:08 mini kernel: firewire_sbp2: sbp2_scsi_abort
->> Aug 17 08:26:36 mini kernel: firewire_sbp2: status write for unknown orb
->> Aug 17 08:27:36 mini kernel: firewire_sbp2: sbp2_scsi_abort
->> Aug 17 08:33:51 mini kernel: firewire_sbp2: status write for unknown orb
->> Aug 17 08:34:51 mini kernel: firewire_sbp2: sbp2_scsi_abort
+>
+> Hmm. That does sound like unsycned TSCs. Normally Intel systems don't
+> skew unless they are NUMA systems or you're entering low power states.
+> We try to catch both of those cases, so I'm not sure how you box is
+> slipping through.
+>
+> Can you run the following test to verify that the TSCs are skewed?
 
-The infrequent occurrences of this on my test setup vanished after
-Kristian's patch.  The patch is now in linux1394-2.6.git and in
-http://me.in-berlin.de/~s5r6/linux1394/updates/.
--- 
-Stefan Richter
--=====-=-=== =--- ==--=
-http://arcgraph.de/sr/
+I ran this for the past two days, multiple copies to put some load on
+the system (the initial problem with gettimeofday() was easier to
+reproduce under load). Nothing.
+
+So, I guess that rules out unsynced TSCs as the cause? Or perhaps it
+only happens in other conditions, for some reason. I'm on holidays
+right now, but my coworkers should be able to continue investigating
+other possible causes.
+
+Thanks for the advice/test program.
+
+Mike
