@@ -1,84 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934057AbXHYM2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964988AbXHYMeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934057AbXHYM2A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 08:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbXHYM1v
+	id S964988AbXHYMeh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 08:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbXHYMe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 08:27:51 -0400
-Received: from hu-out-0506.google.com ([72.14.214.236]:36522 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752000AbXHYM1u (ORCPT
+	Sat, 25 Aug 2007 08:34:27 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3495 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbXHYMe0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 08:27:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=YSeuIRsOL2NJXJaVNnX2eD9AMySWk6OIHbXp0ihPQ3YbVZsz4xQiyBfHcyuW9RMU8tb0LRmCqXWINDH0h3Lo+teu6pCg3c3jvqbaBAL3OATBeO5qxXleXqIKnmcMjlrzQ2tG2SCFPHfzMe6mhajSVaXqGzDEY/sot8LJ3kP0wf4=
-Date: Sat, 25 Aug 2007 14:23:24 +0200
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, kraxel@redhat.com
-Subject: Re: [-mm patch] enforce noreplace-smp in alternative_instructions()
-Message-ID: <20070825122324.GA6138@slug>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <20070822202551.GB31846@slug> <20070823145038.9895784f.akpm@linux-foundation.org> <20070824060438.GE31846@slug> <46CE7EDC.9080007@goop.org> <20070824082249.GG31846@slug> <1188043649.20041.81.camel@localhost.localdomain>
+	Sat, 25 Aug 2007 08:34:26 -0400
+Message-ID: <46D00DDD.1070101@shadowen.org>
+Date: Sat, 25 Aug 2007 12:09:17 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1188043649.20041.81.camel@localhost.localdomain>
-User-Agent: mutt-ng/devel-r804 (Linux)
+To: Andi Kleen <ak@suse.de>
+CC: Mel Gorman <mel@skynet.ie>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 Boot NUMA kernels on non-NUMA hardware with DISCONTIG
+ memory model
+References: <20070824162814.GD26374@skynet.ie> <20070824163521.GA16227@bingen.suse.de> <46CF0CCF.7010702@shadowen.org> <20070824170744.GB16227@bingen.suse.de> <20070824172626.GE26374@skynet.ie> <20070824173816.GC16227@bingen.suse.de> <20070824174438.GG26374@skynet.ie> <20070824175339.GD16227@bingen.suse.de>
+In-Reply-To: <20070824175339.GD16227@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 25, 2007 at 10:07:29PM +1000, Rusty Russell wrote:
-> On Fri, 2007-08-24 at 10:22 +0200, Frederik Deweerdt wrote:
-> > [Added Gerd Hoffman and Rusty Russel to cc]
-> > On Thu, Aug 23, 2007 at 11:46:52PM -0700, Jeremy Fitzhardinge wrote:
-> > > Frederik Deweerdt wrote:
-> > > > That means that even when you specify noreplace_smp, some replacing
-> > > > takes place anyway. One of the consequences, besides noreplace_smp not
-> > > > working as expected, is that lguest crashes when you feed it an SMP kernel
-> > > > (I suspect that you can not replace alternatives for smp _and_ paravirt).
-> > > >   
-> > > 
-> > > No, that should be fine.  Why does lguest crash?
-> > It dies with:
-> > [    0.131000] SMP alternatives: switching to UP code
-> > lguest: bad stack page 0xc057a000
-Hello Rusty,
+Andi Kleen wrote:
+> On Fri, Aug 24, 2007 at 06:44:38PM +0100, Mel Gorman wrote:
+>> On (24/08/07 19:38), Andi Kleen didst pronounce:
+>>>> Other than the fact that the memmap must be PMD aligned to use hugepage
+>>>> entries for the memmap. 
+>>> Why is that so?  mem_map should be just part of lowmem anyways.
+>>>
+>> Not in this case. memmap is allocated node local and mapped in the virtual
+>> memory area normally occupied by the end of low memory. The objective was
+>> to have memmap for the struct pages node-local. Hence, portions of
+>> memmap are really in highmem.
 > 
-> How odd!  This means that the guest set the kernel to a stack which it
-> hadn't mapped writable (or perhaps not mapped at all).  I always run SMP
-
-I had time to investigate this a little further, it appears that in fact
-0xc057a000 is the beginning of the __smp_locks section.
-
-The crash responsible function call is in alternative_instructions():
-		free_init_pages("SMP alternatives",
-				(unsigned long)__smp_locks,
-				(unsigned long)__smp_locks_end);
-
-Ie, if I comment this out, I can boot lguest without passing
-noreplace_smp.
-
-BTW, to make things clear: the patch I sent does _not_ fix the
-lguest/alternatives problem. It just makes noreplace_smp functional
-again and hence allows working around the lguest/alternatives bug.
-
-> kernels, and that seems a very strange side effect of a patching
-> problem...
+> Ok, but that still doesn't mean it has to be PMD aligned, 
+> as long as illegal virtual aliases are prevent in the overlap
+> (which is not very hard) 
 > 
-> Nonetheless, I did have a previous problem with a bug in the patching
-> code which didn't show up native and did show up under lguest.
+>>>> It could be mapped with small pages in corner cases
+>>>> but the complexity worth it?
+>>> You don't need to map it with small pages in the normal case,
+>>> the only requirement is that c_p_a() is aware of it so it can
+>>> split it if needed.
+>>>
+>>>> I can't see this type of lifting being done any time soon. As SPARSEMEM works
+>>>> and there is hope with the vmemmap work that DISCONTIG will finally go away,
+>>>> it may not be the best investment of time.
+>>> It's a trivial change, probably less code than your original patch.
+>>>
+>> I'll have to take your word for it because I haven't looked closely
+>> enough. I'll try and find time to look at it but the earliest I'll get around
+>> to it is post kernel-summit. In the meantime, SPARSEMEM works.
 > 
-> Can you send your config? 
-Here it is:
-http://fdeweerdt.free.fr/lguest_smp/dot_config
+> Ok, so we disable DISCONTIG i386 NUMA because there's nobody willing
+> to maintain it?
+>
+> I'll take your word SPARSEMEM works, although I was told DISCONTIG NUMA
+> works too and then my testing told a quite different story.
 
-> Do you need noreplace-smp even on 2.6.23-rc3,
-> or only 2.6.23-rc3-mm1?
-I'll try ASAP.
+That sounds like over kill to me.  The code unfixed works for all actual
+NUMA systems I am aware of, else we would have had reports of this
+problem before in the years that this code has been in the kernel.  The
+fix Mel sent up fixes the code so that it works on systems with
+unaligned node ends (which is what triggers the issue).  It does mean
+that a little memory is wasted when this kernel is used on a non-NUMA
+systems with unaligned node ends (only), but it works as designed at
+that point.  To be honest it looks very much that only a very small
+memory systems is going to trip this, and we have traditionally used
+non-NUMA kernels on non-NUMA systems so there is almost zero exposure in
+our install base.
 
-Thanks,
-Frederik
+Does this sudden interest in this combination, indicate a distro driven
+change to using NUMA kernels on non-NUMA systems??
+
+Having been involved in the development of the code originally, I think
+Mel's fix is a good compromise to fix the immediate problem.  Clearly
+there are bigger problems in this code that need clearing up if we are
+to use this code as it is on small memory non-NUMA systems.  For one the
+change merged to fix the "memmap overlapping initrd allocation" severely
+wastes memory by pushing the memmap into ZONE_NORMAL even when there is
+spare Kernel Virtual Address space available, and also looses the memory
+under it where it used to shift to HIGHMEM.
+
+I think that most of this can become moot if we simply pull node-0 out
+of this remap scheme, as node-0's memory is already local and the
+problem only occurs on node-0.  I have a todo item to look over this,
+but as Mel has indicated its probabally not going to be immediate.
+
+I think it makes sense to take Mel's fix as the smallest repair and
+we'll spend some time sorting it out cleanly soon.
+
+-apw
