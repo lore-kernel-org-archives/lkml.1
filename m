@@ -1,104 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763291AbXHYAIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761514AbXHYAK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763291AbXHYAIc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 20:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbXHYAIW
+	id S1761514AbXHYAK1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 20:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbXHYAKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 20:08:22 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47079 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755522AbXHYAIU (ORCPT
+	Fri, 24 Aug 2007 20:10:19 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:34060 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752462AbXHYAKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 20:08:20 -0400
-Date: Fri, 24 Aug 2007 17:07:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       Dave Jones <davej@codemonkey.org.uk>, Thomas Renninger <trenn@suse.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: 2.6.23-rc3-mm1
-Message-Id: <20070824170702.a2c51084.akpm@linux-foundation.org>
-In-Reply-To: <46CF695D.1020008@imap.cc>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	<46CF695D.1020008@imap.cc>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Fri, 24 Aug 2007 20:10:17 -0400
+Date: Fri, 24 Aug 2007 20:05:13 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Martin Bligh <mbligh@google.com>, "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [PATCH] Sort module list - use ppos instead of m->private
+Message-ID: <20070825000513.GA9811@Krystal>
+References: <20070812150844.305211039@polymtl.ca> <20070812151039.996081605@polymtl.ca> <20070815033945.GA13134@mail.ustc.edu.cn> <20070815041845.GJ21089@ftp.linux.org.uk> <20070815063741.GB5175@mail.ustc.edu.cn> <20070815065301.GK21089@ftp.linux.org.uk> <20070824153933.GA21226@Krystal> <20070824163448.a48dadc2.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070824163448.a48dadc2.akpm@linux-foundation.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:01:44 up 26 days, 20 min,  3 users,  load average: 0.12, 0.30, 0.23
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Aug 2007 01:27:25 +0200
-Tilman Schmidt <tilman@imap.cc> wrote:
-
-> Am 22.08.2007 11:06 schrieb Andrew Morton:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
+* Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Fri, 24 Aug 2007 11:39:33 -0400
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> After applying Matthew Wilcox' patch to include/linux/isa.h
-
-which patch is that?
-
-> this compiles
-> and boots on my Intel/openSUSE 10.2 test machine but throws out the
-> following messages I don't remember ever seeing with other kernels:
+> > Sort modules list - use ppos instead of m->private
+> > 
+> > When reading the data by small chunks (i.e. byte by byte), the index (ppos) is
+> > incremented by seq_read() directly and no "next" callback is called when going
+> > to the next module.
+> > 
+> > Therefore, use ppos instead of m->private to deal with the fact that this index
+> > is incremented directly to pass to the next module in seq_read() after the
+> > buffer has been emptied.
 > 
-> - on console early during boot, also in SuSE's /var/log/boot.msg:
+> Confused.  What problem is this patch fixing?  I'm guessing that something
+> is going wrong when /proc/modules is read one-byte-at-a-time?
 > 
-> your system time is not correct:
-> Wed Jul 13 13:15:31 UTC 1910
-> setting system time to:
-> Tue Jul 24 00:00:00 UTC 2007
-
-What architecture?
-
-if x86_64 then perhaps something went wrong with the old x86_64 dynticks
-leftovers which were in rc3-mm1.  I've just merged a shiny fresh new series
-so perhaps things there got fixed.  Please retest next -mm.
-
-Suitable cc's added.
-
-> - later, dto. on console and in /var/log/boot.msg:
+> <tests that>
 > 
-> FATAL: Error inserting processor (/lib/modules/2.6.23-rc3-mm1-testing/kernel/drivers/acpi/processor.ko): Input/output error
-> WARNING: Error inserting processor (/lib/modules/2.6.23-rc3-mm1-testing/kernel/drivers/acpi/processor.ko): Input/output error
-> FATAL: Error inserting thermal (/lib/modules/2.6.23-rc3-mm1-testing/kernel/drivers/acpi/thermal.ko): Unknown symbol in module, or unknown parameter (see dmesg)
+> <nope>
 > 
-> - apparently corresponding to that, in dmesg:
+> Better changelogs, please.
 > 
-> <4>[    7.691865] thermal: Unknown symbol acpi_processor_set_thermal_limit
 
-acpi cc's added
+Ok, will append this in the changelog (I sent this to Rusty earlier
+today):
 
-> - from fsck during boot:
-> 
-> /dev/system/root: Superblock last mount time is in the future.  FIXED.
-> /dev/system/root: Superblock last write time is in the future.  FIXED.
+Small test program for this:
 
-Presumably related to the time problem.
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
-> - in /var/log/warn:
-> 
-> Aug 25 00:44:00 xenon powersaved[5356]: WARNING (CpufreqManagement:51) No capability cpufreq_control
-> Aug 25 00:44:00 xenon powersaved[5356]: WARNING (CpufreqManagement:51) No capability cpufreq_control
+#define BUFSIZE 1024
 
-Dunno, there're some significant-looking cpufreq changes in there, such as
-cpufreq-allow-ondemand-and-conservative-cpufreq-governors-to-be-used-as-default.patch.
-Maybe we went and chose a different governor for you?
+int main()
+{
+        int fd = open("/proc/modules", O_RDONLY);
+        char buf[BUFSIZE];
+        ssize_t size;
 
-Perhaps it would be helpful if you could do a 
+        do {
+                size = read(fd, buf, 1);
+                printf("%c", buf[0]);
+                usleep(100000);
+        } while(size > 0);
 
-	diff -u dmesg-2.6.23-rc3 dmesg-2.6.26-rc3-mm1
+        close(fd);
+        return 0;
+}
 
-?
+Before fix, it prints the first module indefinitely. The patch fixes
+this.
 
+I will also append more detail to "Sort module list by pointer address
+to get coherent sleepable seq_file iterators" changelog before the
+2.6.23-rc3-mm1 repost.
 
-> And the SUSE startup sequence displays "failed" for the acpid daemon.
-> So it seems there is some strangeness wrt to system time and power
-> management. I don't have the time to bisect this right now, but
-> wanted to let you know anyway.
-> 
-> Apart from that, the kernel seems to work fine.
+Mathieu
 
-OK, thanks.
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
