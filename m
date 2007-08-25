@@ -1,67 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965083AbXHYUnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbXHYUu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965083AbXHYUnd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 16:43:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934357AbXHYUnZ
+	id S1755316AbXHYUu1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 16:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbXHYUuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 16:43:25 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46602 "EHLO mx3.mail.elte.hu"
+	Sat, 25 Aug 2007 16:50:14 -0400
+Received: from ozlabs.org ([203.10.76.45]:45435 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933844AbXHYUnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 16:43:23 -0400
-Date: Sat, 25 Aug 2007 22:43:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [git pull request] scheduler updates
-Message-ID: <20070825204319.GA8772@elte.hu>
-References: <20070824141215.GA24403@elte.hu> <alpine.LFD.0.999.0708241105410.25853@woody.linux-foundation.org> <20070824193758.GA6440@elte.hu> <20070825172319.GA2080@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070825172319.GA2080@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751038AbXHYUuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 16:50:12 -0400
+Subject: Re: [patch 1/4] Linux Kernel Markers - Architecture Independent
+	Code
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070824162656.GC21226@Krystal>
+References: <20070820202704.927923667@polymtl.ca>
+	 <20070820202758.850703563@polymtl.ca>
+	 <1187656987.19435.163.camel@localhost.localdomain>
+	 <20070824162656.GC21226@Krystal>
+Content-Type: text/plain
+Date: Sun, 26 Aug 2007 06:49:30 +1000
+Message-Id: <1188074970.20041.97.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
->    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+On Fri, 2007-08-24 at 12:26 -0400, Mathieu Desnoyers wrote:
+> * Rusty Russell (rusty@rustcorp.com.au) wrote:
+> > On Mon, 2007-08-20 at 16:27 -0400, Mathieu Desnoyers wrote:
+> > > +{
+> > > +	struct hlist_head *head;
+> > > +	struct hlist_node *node;
+> > > +	struct marker_entry *e;
+> > > +	size_t len = strlen(name) + 1;
+> > > +	u32 hash = jhash(name, len-1, 0);
+> > > +
+> > > +	head = &marker_table[hash & ((1 << MARKER_HASH_BITS)-1)];
+> > > +	hlist_for_each_entry(e, node, head, hlist) {
+> > > +		if (!strcmp(name, e->name))
+> > > +			return e;
+> > > +	}
+> > > +	return NULL;
+> > > +}
+> > 
+> > OK, don't understand the strlen, len, len-1 dance here?
+> > 
 > 
-> Find the shortlog further below. There are 3 commits in it: adaptive 
-> granularity, a subsequent cleanup, and a lockdep sysctl bug Peter 
-> noticed while hacking on this. (the bug was introduced with the 
-> initial CFS commits but nobody noticed because the lockdep sysctls are 
-> rarely used.)
+> Let's say we have abc\0 for marker name as name input.
+> 
+> len = 3 + 1 = 4 (including \0)
+> hash is done only on the 3 first chars, excluding the \0 (therefore the
+>                                                           len-1 there)
+> 
+> Actually, it's like this only for a matter of consistency between
+> add_marker and remove_marker, which are quite similar, but add_marker
+> needs name_len to include the \0 value. It would be odd to change the
+> logic between the two functions to one including the \0 and the other
+> excluding it.
 
-hm, a small (and mostly harmless) buglet sneaked into it: the wakeup 
-granularity and the runtime limit is now dependent on sched_latency - 
-while it should be dependent on min_granularity and latency. To pick up 
-that fix please pull from:
+Sure, but that doesn't really explain why the code does:
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+	size_t len = strlen(name) + 1;
+	u32 hash = jhash(name, len-1, 0);
 
-(ontop of your very latest git tree)
+Rather than:
 
-the effect of this bug was too high wakeup latency that could cause 
-audio skipping on small-audio-buffer setups. (didnt happen on mine, they 
-have large enough buffers.)
+	u32 hash = jhash(name, strlen(name), 0);
 
-	Ingo
+> Thanks for the review,
 
------------------->
-Ingo Molnar (1):
-      sched: s/sched_latency/sched_min_granularity
+That's fine, just some light reading...
 
- sched.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Cheers,
+Rusty.
+> 
+
