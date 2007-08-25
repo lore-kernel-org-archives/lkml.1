@@ -1,59 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964824AbXHYKti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934083AbXHYKuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964824AbXHYKti (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 06:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762405AbXHYKta
+	id S934083AbXHYKuY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 06:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765089AbXHYKuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 06:49:30 -0400
-Received: from main.gmane.org ([80.91.229.2]:44973 "EHLO ciao.gmane.org"
+	Sat, 25 Aug 2007 06:50:05 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:58068 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754613AbXHYKt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 06:49:28 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: James Bruce <bruce@andrew.cmu.edu>
-Subject: Re: USB Key light on/off state depending on mount
-Date: Sat, 25 Aug 2007 03:49:12 -0700
-Message-ID: <46D00928.1080901@andrew.cmu.edu>
-References: <fa.BwCgwGvTNIOD+KEeBrvP11xCEmw@ifi.uio.no> <46CF6791.8040509@shaw.ca>
+	id S1765059AbXHYKuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 06:50:04 -0400
+Date: Sat, 25 Aug 2007 12:51:22 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ram Pai <linuxram@us.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] call export_report from the Makefile
+Message-ID: <20070825105122.GB15183@uranus.ravnborg.org>
+References: <20070824210456.GF30705@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: Casey Dahlin <cjdahlin@ncsu.edu>
-X-Gmane-NNTP-Posting-Host: c-67-169-182-39.hsd1.ca.comcast.net
-User-Agent: Icedove 1.5.0.12 (X11/20070730)
-In-Reply-To: <46CF6791.8040509@shaw.ca>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070824210456.GF30705@stusta.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Casey Dahlin wrote:
->> Most USB keys nowadays have a small LED somewhere inside of them that 
->> lights up when they are plugged in. On a windows box, the key is lit 
->> up whenever it is mounted, and as soon as it is unmounted it turns 
->> off, giving a handy physical indicator that the key is safe to remove. 
->> On linux, the light is simply on whenever the key is plugged in.
->>
->> Should linux toggle the light depending on mount state? Is it as 
->> trivial as it seems or does this reflect some larger issue?
-> 
-> I think that Windows turns off power to the port when you do the "safely 
-> remove hardware" on it, or something like that. Mount/unmount doesn't 
-> really indicate whether the device is in use in Linux, though, since it 
-> can still be potentially accessed even when the device isn't mounted.
+On Fri, Aug 24, 2007 at 11:04:56PM +0200, Adrian Bunk wrote:
+> The main feature is that export_report now automatically works
+> for O= builds.
+Applied to kbuild.git.
 
-If there is a way to toggle the power state from userspace, then a 
-desktop environment or userland tool can emulate the Windows behavior if 
-that is desired.  A lot of devices can charge via USB now, and this is 
-actually more convenient on Linux than on Windows (in effect Windows 
-requires drivers in order to charge something).  However, having direct 
-control over this is useful.
-
-According to the following thread, it appears one can get the needed 
-functionality through libusb:
-http://www.mail-archive.com/linux-usb-users@lists.sourceforge.net/msg19131.html
-http://www.gniibe.org/ac-power-by-usb/ac-power-control.html
-
-  - Jim
-
+	Sam
