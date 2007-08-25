@@ -1,75 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934345AbXHYXPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934540AbXHYXZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934345AbXHYXPs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 19:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbXHYXPj
+	id S934540AbXHYXZw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 19:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbXHYXZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 19:15:39 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52529 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752454AbXHYXPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 19:15:38 -0400
-Date: Sun, 26 Aug 2007 01:15:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Al Boldi <a1426z@gawab.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-Message-ID: <20070825231525.GA334@elte.hu>
-References: <200708111344.42934.a1426z@gawab.com> <200708220127.30698.a1426z@gawab.com> <20070824134510.GA21382@elte.hu> <200708260127.32238.a1426z@gawab.com>
+	Sat, 25 Aug 2007 19:25:43 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:8204 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756263AbXHYXZm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 19:25:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=FzwaC2V1YeMkTswBA7P4aQ+DLUeRp7NWW5esj82WiZH/s9RtwYQvhdsV+IhXwl0RPa1B376ZZDAapGKTr0vTl0R16WSUipdIQ9JrgFfV7LlwimeXffz9DFp69alcXv5CwjZlvwwvWc2p6KciQ68SR/345ZR9dOw7HGSuo9guvF4=
+Message-ID: <46D0BA83.3040405@gmail.com>
+Date: Sun, 26 Aug 2007 01:25:55 +0200
+From: Luka Napotnik <luka.napotnik@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708260127.32238.a1426z@gawab.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4755]
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: division and cpu usage
+References: <46CE1BA2.8070200@gmail.com> <Pine.LNX.4.61.0708240731130.8096@chaos.analogic.com> <Pine.LNX.4.64.0708241442590.28540@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708241442590.28540@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello again.
 
-* Al Boldi <a1426z@gawab.com> wrote:
+I have the following code:
+========================================
+clock_t c_sum, j, p;
+cputime_t j_tmp;
+...
+c_sum = cputime64_to_clock_t(task->utime) +
+cputime64_to_clock_t(task->stime);
+cur_j = jiffies;
+j_tmp =  jiffies64_to_cputime64(cur_j);
+j = cputime64_to_clock_t(j_tmp);
+p = (c_sum * 100) / j;
+========================================
 
-> > ok. I think i might finally have found the bug causing this. Could 
-> > you try the fix below, does your webserver thread-startup test work 
-> > any better?
+And if I check the p value of a certain process it gives wrong results.
+For example for a process using 99% of the CPU it shows 20. What am I
+doing wrong?
+
+Greets,
+Luka
+
+Jan Engelhardt pravi:
+> On Aug 24 2007 07:34, linux-os (Dick Johnson) wrote:
+>>> I'm new to kernel development and have some questions.
+>>>
+>>> 1. Why can't I divide with regular casting to double ((double)a /
+>>> (double)b)? It gives me strange errors when compiling:
+>>>
+>>> WARNING: "__divdf3" [/root....] undefined!
+>>> WARNING: "__addf3" [/root/...] undefined!
+>>> WARNING: "__floatsidf" [/root/...] undefined!
+>>>
+>>> And if I compile with normal integers, I get zero as the result.
+>>>
+>>> 2. I'm trying to get the percentage of CPU used for a certain
+>>> task_struct and figured the following formula:
+>>>
+>>> (task->utime + task->stime) / jiffies
+>>>
+>>> Before calculating I convert all the variables to jiffies. Is this correct?
 > 
-> It seems to help somewhat, but the problem is still visible.  Even 
-> v20.3 on 2.6.22.5 didn't help.
+> * So use integer math: (task->utime + task->stime) * 100 / jiffies
+>   and you get the 'common' percentage. In integer, that is.
 > 
-> It does look related to ia-boosting, so I turned off __update_curr 
-> like Roman mentioned, which had an enormous smoothing effect, but then 
-> nice levels completely break down and lockup the system.
+> * I am not sure about the use of jiffies when it comes to CONFIG_NO_HZ=y.
+> 
+>> Floating point operations are not allowed in the kernel. Often,
+> 
+> IIRC they are allowed since ... recently (2.6.16, .17? can't remember). When
+> the kernel tries to execute an FP instruction (and traps as a result), more
+> kernel code will enable that the FP stack gets properly switched when a process
+> changes between userspace-kernelspace.
+> 
+>> You can use "long long" for high precision math if necessary.
+> 
+> That will give link failure for __udivdi3. Use do_div().
+> 
+> 
+> 	Jan
 
-you can turn sleeper-fairness off via:
-
-   echo 28 > /proc/sys/kernel/sched_features
-
-another thing to try would be:
-
-   echo 12 > /proc/sys/kernel/sched_features
-
-(that's the new-task penalty turned off.)
-
-Another thing to try would be to edit this:
-
-        if (sysctl_sched_features & SCHED_FEAT_START_DEBIT)
-                p->se.wait_runtime = -(sched_granularity(cfs_rq) / 2);
-
-to:
-
-        if (sysctl_sched_features & SCHED_FEAT_START_DEBIT)
-                p->se.wait_runtime = -(sched_granularity(cfs_rq);
-
-and could you also check 20.4 on 2.6.22.5 perhaps, or very latest -git? 
-(Peter has experienced smaller spikes with that.)
-
-	Ingo
