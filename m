@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934447AbXHYTNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934375AbXHYTZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934447AbXHYTNE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 15:13:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764422AbXHYTMx
+	id S934375AbXHYTZh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 15:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759010AbXHYTZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 15:12:53 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:8040 "EHLO
+	Sat, 25 Aug 2007 15:25:27 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:8057 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759762AbXHYTMw (ORCPT
+	by vger.kernel.org with ESMTP id S1757745AbXHYTZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 15:12:52 -0400
+	Sat, 25 Aug 2007 15:25:26 -0400
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Organization: MontaVista Software Inc.
 To: bzolnier@gmail.com
-Subject: [PATCH 2/4] hpt366: UltraDMA filter for SATA cards (take 2)
-Date: Sat, 25 Aug 2007 23:15:30 +0400
+Subject: [PATCH 2/4] hpt366: UltraDMA filter for SATA cards (take 3)
+Date: Sat, 25 Aug 2007 23:28:03 +0400
 User-Agent: KMail/1.5
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -22,7 +22,7 @@ Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708252315.30189.sshtylyov@ru.mvista.com>
+Message-Id: <200708252328.03826.sshtylyov@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -42,13 +42,15 @@ the following changes:
 
 - move the HPT370[A] cases below the HPT36x case for consistency...
 
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
 ---
+Argh!  I've managed to put = instead of &= here and there, so please disregard
+the take #2... :-/
 This version doesn't use explicit UltraDMA masks, so converting them to the
 ATA_UDMA* is left for another, global patch.  This patch against the current
 Linus' tree and unfortunately I was able to only compile test it since that
 tree gives MODPOST warning and dies early on bootup.
-
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
  drivers/ide/pci/hpt366.c |   78 ++++++++++++++++++++++++-----------------------
  1 files changed, 40 insertions(+), 38 deletions(-)
@@ -103,19 +105,19 @@ Index: linux-2.6/drivers/ide/pci/hpt366.c
 -			mask = 0x0f;
 -		else
 -			mask = 0x1f;
-+			mask = ~0x10;
++			mask &= ~0x10;
  
 -		if (!HPT366_ALLOW_ATA66_3 ||
 +		if (HPT366_ALLOW_ATA66_3 &&
  		    check_in_drive_list(drive, bad_ata66_3))
 -			mask = 0x07;
-+			mask = ~0x08;
++			mask &= ~0x08;
  		break;
 +	case HPT370 :
 +	case HPT370A:
 +		if (HPT370_ALLOW_ATA100_5 &&
 +		    check_in_drive_list(drive, bad_ata100_5))
-+			mask = ~0x20;
++			mask &= ~0x20;
 +
 +		if (info->chip_type == HPT370A)
 +			return mask;
