@@ -1,62 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760181AbXHYRbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765090AbXHYRdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760181AbXHYRbx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 13:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXHYRbp
+	id S1765090AbXHYRdZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 13:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbXHYRdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 13:31:45 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:3589 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbXHYRbo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 13:31:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PZap1XGLmlU9GEMFdT99OYp+4u17M5ALG0OKa60Ain0rQOohAUcSPJUBvXfbnJQoSvdhk2DX1dHbrq+blwfeFYF5SCoS5SNbzW2LQj23d/QyaJzMa24yVZaQOx/pn0lq4Y/gRjJZoBZp9ri0m4qnORs0yIwOzWnlw34kIcIzMpU=
-Message-ID: <e21d91280708251031k5e3bd962o6a268e6506696a8c@mail.gmail.com>
-Date: Sat, 25 Aug 2007 13:31:43 -0400
-From: "Clark Cooper" <clark.cooper@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: Caught SIGFPE exceptions aren't reset
-In-Reply-To: <e21d91280708251018l4904b6bcm5b40e22b6b2cbedc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 25 Aug 2007 13:33:17 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:34147 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753109AbXHYRdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 13:33:17 -0400
+Date: Sat, 25 Aug 2007 21:34:33 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Cc: taoyue <yue.tao@windriver.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH] sigqueue_free: fix the race with collect_signal()
+Message-ID: <20070825173433.GA2692@tv-sign.ru>
+References: <20070823134538.GA1358@tv-sign.ru> <46CEEA94.2070902@windriver.com> <20070824074558.GA86@tv-sign.ru> <46CF4DCB.6030304@windriver.com> <20070824110836.GA74@tv-sign.ru> <46CF3988.1020408@us.ibm.com> <20070824202305.GA274@tv-sign.ru> <46D065DC.2030902@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <e21d91280708242140i2e6223a4v51ba016837b74be8@mail.gmail.com>
-	 <18128.322.59087.367556@alkaid.it.uu.se>
-	 <e21d91280708251018l4904b6bcm5b40e22b6b2cbedc@mail.gmail.com>
+In-Reply-To: <46D065DC.2030902@us.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for your prompt answer. You wrote:
+On 08/25, Sukadev Bhattiprolu wrote:
+> 
+> Yes. I see it now. I had missed the SIGQUEUE_PREALLOC in __sigqueue_free().
 
+Thanks for looking at this. This code looks simple, but it is not obvious, at
+least for me.
 
-> Your handler can do this by masking
->  exceptions, changing the operands of the failed FP instruction,
-> or by changing the PC so that the failed instruction is skipped
-> (your handler may want to emulate the instruction in this case).
+Oleg.
 
-Given the current SIGFPE handling in the kernel, a userland handler
-CAN'T mask the exceptions or clear the exception flags. This is
-demonstrated in my example program where I call both feclearexception
-and fedisableexception in the handler. The reason these don't work is
-that any change you make to these FPU registers is overwritten with
-the saved FPU context on return from the signal handler. Changing the
-PC won't help since the exception flag is still set and unmasked on
-signal return.
-
-Now either the kernel should clear the corresponding exception flags
-or it should present the correct FPU state to the handler for
-manipulation. Currently neither of these appear to be the case. So if
-there is no problem with the kernel, then the signal man pages should
-indicate that while you can catch a SIGFPE, you can't actually return
-from it.
-
-If I am completely wrong on this, could you please indicate what kind
-of change could be made to the handler in my example program to allow
-it to reach the final printf statement in the main program?
-
-Thank you,
-Clark Cooper
