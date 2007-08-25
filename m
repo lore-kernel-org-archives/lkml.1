@@ -1,94 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934540AbXHYXZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934771AbXHYX0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934540AbXHYXZw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 19:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbXHYXZn
+	id S934771AbXHYX0c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 19:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbXHYX0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 19:25:43 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:8204 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756263AbXHYXZm (ORCPT
+	Sat, 25 Aug 2007 19:26:18 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:45462 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934665AbXHYXZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 19:25:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=FzwaC2V1YeMkTswBA7P4aQ+DLUeRp7NWW5esj82WiZH/s9RtwYQvhdsV+IhXwl0RPa1B376ZZDAapGKTr0vTl0R16WSUipdIQ9JrgFfV7LlwimeXffz9DFp69alcXv5CwjZlvwwvWc2p6KciQ68SR/345ZR9dOw7HGSuo9guvF4=
-Message-ID: <46D0BA83.3040405@gmail.com>
-Date: Sun, 26 Aug 2007 01:25:55 +0200
-From: Luka Napotnik <luka.napotnik@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
+	Sat, 25 Aug 2007 19:25:57 -0400
+X-Sasl-enc: Gxp2k5pxwDdyK00OpkFFPT33WOBLI99LZQYJsApU51rP 1188084356
+Message-ID: <46D0BA9D.1080708@imap.cc>
+Date: Sun, 26 Aug 2007 01:26:21 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: division and cpu usage
-References: <46CE1BA2.8070200@gmail.com> <Pine.LNX.4.61.0708240731130.8096@chaos.analogic.com> <Pine.LNX.4.64.0708241442590.28540@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0708241442590.28540@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       Andi Kleen <ak@suse.de>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>,
+       Thomas Renninger <trenn@suse.de>, Adam Belay <abelay@novell.com>
+Subject: Re: 2.6.23-rc3-mm1
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org><46CF695D.1020008@imap.cc> <20070824170702.a2c51084.akpm@linux-foundation.org> <653FFBB4508B9042B5D43DC9E18836F5014D954E@scsmsx415.amr.corp.intel.com> <653FFBB4508B9042B5D43DC9E18836F5014D956A@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F5014D956A@scsmsx415.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigFBDB9E1D74636CC399F10C41"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello again.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigFBDB9E1D74636CC399F10C41
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I have the following code:
-========================================
-clock_t c_sum, j, p;
-cputime_t j_tmp;
-...
-c_sum = cputime64_to_clock_t(task->utime) +
-cputime64_to_clock_t(task->stime);
-cur_j = jiffies;
-j_tmp =  jiffies64_to_cputime64(cur_j);
-j = cputime64_to_clock_t(j_tmp);
-p = (c_sum * 100) / j;
-========================================
+Am 25.08.2007 02:38 schrieb Pallipadi, Venkatesh:
+>>
+>>>> FATAL: Error inserting processor (/lib/modules/2.6.23-rc3-mm1-testin=
+g/kernel/drivers/acpi/processor.ko): Input/output error
+>>>> WARNING: Error inserting processor (/lib/modules/2.6.23-rc3-mm1-test=
+ing/kernel/drivers/acpi/processor.ko): Input/output error
+>=20
+> This is indeed related to CPUIDLE.
+>=20
+> Tilman: Can you configure CONFIG_CPU_IDLE in your config (under Power
+> Management option) and double check that the frequency part works after=
 
-And if I check the p value of a certain process it gives wrong results.
-For example for a process using 99% of the CPU it shows 20. What am I
-doing wrong?
+> that.
 
-Greets,
-Luka
+Strangely enough, I do not see that option in "make xconfig".
+The "Power Management" subtree ends with "CPU Frequency scaling".
+In "make menuconfig" the option is there, though.
+After activating it, these two errors are indeed gone, and the
+"thermal: Unknown symbol acpi_processor_set_thermal_limit" one
+as well.
 
-Jan Engelhardt pravi:
-> On Aug 24 2007 07:34, linux-os (Dick Johnson) wrote:
->>> I'm new to kernel development and have some questions.
->>>
->>> 1. Why can't I divide with regular casting to double ((double)a /
->>> (double)b)? It gives me strange errors when compiling:
->>>
->>> WARNING: "__divdf3" [/root....] undefined!
->>> WARNING: "__addf3" [/root/...] undefined!
->>> WARNING: "__floatsidf" [/root/...] undefined!
->>>
->>> And if I compile with normal integers, I get zero as the result.
->>>
->>> 2. I'm trying to get the percentage of CPU used for a certain
->>> task_struct and figured the following formula:
->>>
->>> (task->utime + task->stime) / jiffies
->>>
->>> Before calculating I convert all the variables to jiffies. Is this correct?
-> 
-> * So use integer math: (task->utime + task->stime) * 100 / jiffies
->   and you get the 'common' percentage. In integer, that is.
-> 
-> * I am not sure about the use of jiffies when it comes to CONFIG_NO_HZ=y.
-> 
->> Floating point operations are not allowed in the kernel. Often,
-> 
-> IIRC they are allowed since ... recently (2.6.16, .17? can't remember). When
-> the kernel tries to execute an FP instruction (and traps as a result), more
-> kernel code will enable that the FP stack gets properly switched when a process
-> changes between userspace-kernelspace.
-> 
->> You can use "long long" for high precision math if necessary.
-> 
-> That will give link failure for __udivdi3. Use do_div().
-> 
-> 
-> 	Jan
+HTH
+T.
 
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enigFBDB9E1D74636CC399F10C41
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFG0LqdMdB4Whm86/kRAgBUAJ0Qq4P2qNdQcgwOupw3ITsQDTiA8ACeIcs8
+sXsPB7xe6/sdOhfaEAR/lP4=
+=ctr4
+-----END PGP SIGNATURE-----
+
+--------------enigFBDB9E1D74636CC399F10C41--
