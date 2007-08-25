@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761402AbXHYR7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765989AbXHYSCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761402AbXHYR7i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 13:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbXHYR73
+	id S1765989AbXHYSCS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 14:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbXHYSCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 13:59:29 -0400
-Received: from effinger.acpub.duke.edu ([152.3.232.59]:41968 "EHLO
-	effinger.acpub.duke.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755885AbXHYR72 (ORCPT
+	Sat, 25 Aug 2007 14:02:09 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:54238 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756171AbXHYSCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 13:59:28 -0400
-X-Greylist: delayed 6258 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Aug 2007 13:59:28 EDT
-Date: Sat, 25 Aug 2007 12:15:07 -0400 (EDT)
-From: rb6@duke.edu
-X-X-Sender: rann@rann-gentoo
-Reply-To: rb6@duke.edu
-To: linux-kernel@vger.kernel.org
-Subject: Re: Problem with CFS V20 and Suspend2/tuxonice
-Message-ID: <alpine.LNX.0.999.0708251211480.9207@rann-gentoo>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
+	Sat, 25 Aug 2007 14:02:08 -0400
+Date: Sat, 25 Aug 2007 11:01:48 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Willy Tarreau <wtarreau@hera.kernel.org>
+Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Subject: Re: Linux 2.6.20.17
+Message-Id: <20070825110148.5fd59272.randy.dunlap@oracle.com>
+In-Reply-To: <20070825153810.GA32619@hera.kernel.org>
+References: <20070825153810.GA32619@hera.kernel.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Same problem on my centrino duo.  Reverting to cfs v19 fixes it.
+On Sat, 25 Aug 2007 15:38:10 +0000 Willy Tarreau wrote:
 
-Please personally CC me on replies, as I am not on the list.
+> 
+> I've just released Linux 2.6.20.17.
+> 
+> As a reminder, it fixes these 3 security issues :
+>   CVE-2007-3105
+>   CVE-2007-3848
+>   CVE-2007-3851
+> 
+> I'll also be replying to this message with a copy of the patch between
+> 2.6.20.16 and 2.6.20.17.
+> 
+> The patch and changelog will appear soon at the following locations:
+>   ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/
+>   ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/patch-2.6.20.17.bz2
+>   ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.20.17
+> 
+> Git repository:
+>    git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
+>   http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
+> 
+> Git repository through the gitweb interface:
+>   http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.20.y.git
+
+I'm getting build errors:
+
+x86_64 allyesconfig, allmodconfig:
+
+drivers/ata/pata_atiixp.c:286: error: 'PCI_DEVICE_ID_ATI_IXP700_IDE' undeclared here (not in a function)
+net/bluetooth/rfcomm/tty.c:275: error: 'struct rfcomm_dev' has no member named 'tty_dev'
+net/bluetooth/rfcomm/tty.c:278: error: 'struct rfcomm_dev' has no member named 'tty_dev'
 
 
-> Reproduced on a Intel Centrino based laptop with gentoo kamikaze7
-> sources (http://forums.gentoo.org/viewtopic-t-577970.html)
-
-
-
-> On 8/25/07, David Rodriguez <livuxman@gmail.com> wrote:
->> I'm using 2.6.22.5 with cfs v20.3 and  suspend2  2.2.10.2.
->> With that combination, suspend is not working anymore (with cfs v19
->> was working).
->> Stops on suspend in "Suspending tasks"
->> Looking at cfs patch, I managed to change the  migration_thread,
->> adding again the  try_to_freeze() removed in last patch and now the
->> suspend finished, but resume not work. Of course I don't know why that
->> was removed, and rewriting it is not a solution, but I want to report
->> it.
->>
->> All that in a core duo machine.
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" 
->in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" 
->in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
