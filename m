@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933573AbXHYSaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934118AbXHYSir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933573AbXHYSaX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 14:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758769AbXHYSaM
+	id S934118AbXHYSir (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 14:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbXHYSig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 14:30:12 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:53368 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756214AbXHYSaK (ORCPT
+	Sat, 25 Aug 2007 14:38:36 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:63359 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1760396AbXHYSig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 14:30:10 -0400
-Date: Sat, 25 Aug 2007 20:28:46 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morgan <morgan@kernel.org>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, chrisw@sous-sol.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [2.6 patch] remove securebits
-Message-ID: <20070825182846.GN30705@stusta.de>
-References: <20070824210649.GG30705@stusta.de> <20070824211942.GA24478@vino.hallyn.com> <46CFA6F2.9030209@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sat, 25 Aug 2007 14:38:36 -0400
+Date: Sat, 25 Aug 2007 14:38:34 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix kobject uevent string handling errors
+Message-ID: <20070825183833.GA2000@Krystal>
+References: <20070824224707.GA7275@Krystal> <20070824161029.6236a5f4.akpm@linux-foundation.org> <20070825001638.GB9811@Krystal> <20070824174450.70337f4f.akpm@linux-foundation.org> <20070825004640.GA21756@kroah.com> <20070825041754.GA18557@Krystal> <1188051937.2493.21.camel@lov.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46CFA6F2.9030209@kernel.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <1188051937.2493.21.camel@lov.localdomain>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:37:52 up 26 days, 18:56,  3 users,  load average: 0.32, 0.24, 0.20
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 08:50:10PM -0700, Andrew Morgan wrote:
+* Kay Sievers (kay.sievers@vrfy.org) wrote:
+ >  	env->envp[env->envp_idx++] = &env->buf[env->buflen];
+> >  	env->buflen += len + 1;
+> > Index: linux-2.6-lttng/drivers/firmware/dmi-id.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/drivers/firmware/dmi-id.c	2007-08-25 00:07:24.000000000 -0400
+> > +++ linux-2.6-lttng/drivers/firmware/dmi-id.c	2007-08-25 00:07:58.000000000 -0400
+> > @@ -152,9 +152,10 @@ static int dmi_dev_uevent(struct device 
+> >  	if (add_uevent_var(env, "MODALIAS="))
+> >  		return -ENOMEM;
+> >  	len = get_modalias(&env->buf[env->buflen - 1],
+> > -			   sizeof(env->buf) - env->buflen);
+> > -	if (len >= (sizeof(env->buf) - env->buflen))
+> > +			   sizeof(env->buf) - (env->buflen - 1));
+> > +	if (len >= (sizeof(env->buf) - (env->buflen - 1)))
+> >  		return -ENOMEM;
+> > +	env->buflen += len + 1;
 > 
-> FWIW, in the mm kernel, I've actually already removed them when one
-> configures without capabilities.
-> 
-> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/broken-out/v3-file-capabilities-alter-behavior-of-cap_setpcap.patch
-> 
-> Other than writing a custom module, so far as I can tell, there is/was
-> no way to set them anyway.
-> 
-> I'd obviously prefer to wait for the mm-merge process to complete and
-> minimize the churn in this area, but I basically agree that the bits as
-> implemented are pretty useless in their current form. In a per-process
-> mode (with filesystem capability support) they are much more useful...
+> The increment for the trailing '\0' is already done in add_uevent_var(),
+> so this change is not needed, I think.
 
-It was in the tree for nine years (sic) without a single user...
+Oh, you are right, since we replace the existing \0 which is already
+accounted for, we don't have to do len +1 here.
 
-Are you only improving a dead horse, or do you also have a rider for the 
-improved dead horse?
+Thanks,
 
-> Cheers
-> 
-> Andrew
+Mathieu
 
-cu
-Adrian
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
