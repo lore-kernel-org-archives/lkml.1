@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933285AbXHYIcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933541AbXHYIpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933285AbXHYIcT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 04:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765093AbXHYIcH
+	id S933541AbXHYIpF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 04:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761482AbXHYIox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 04:32:07 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41239 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765089AbXHYIcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 04:32:06 -0400
-Date: Sat, 25 Aug 2007 09:32:04 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [git pull] drm patches for 2.6.23-rc4
-Message-ID: <Pine.LNX.4.64.0708250930390.778@skynet.skynet.ie>
+	Sat, 25 Aug 2007 04:44:53 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:27243 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759941AbXHYIov (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 04:44:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=uX1/U2LS16aniP1Rzafm4Yb2Mj2ojxiB5Z+4xbwCwvIEnXVZVYP9z080Df47IVa9p8ETuJinW52RdZYw4GilxNGD6jn6HgMscTq8KESNuLkRS8Fb34v9YYqu/cNOYkED35f2pLLJscuHBm2V4S2AA7npBRzez3EehLaQXqx77Ww=
+Message-ID: <46CFEC40.7060006@gmail.com>
+Date: Sat, 25 Aug 2007 10:45:52 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: readXs on pci*iomap-ped regions [Was: [PATCH] /drivers/char sx.c
+ ioremap -> pci_ioremap api]
+References: <46CF2849.2090008@gmail.com>	<4af2d03a0708241159v56b46299h46df9777a98590e5@mail.gmail.com>	<20070824201530.5d741b37@the-village.bc.nu>	<46CF399E.3010808@gmail.com> <20070824213439.0007e653@the-village.bc.nu>
+In-Reply-To: <20070824213439.0007e653@the-village.bc.nu>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox napsal(a):
+>>>>> +	rebase = pci_iomap(pdev, 0, 0x80);
+>>>>>   	t = readl(rebase + CNTRL_REG_OFFSET);
+>>> Switch to ioread* if you are using the iomap interface. Its not a trivial
+>> Why, if you know it's surely a mem region (and thus you rely on it and do
+>> ioremap)? There are many places in the kernel, where this approach is used, e.g.
+>> libata piix.
+> 
+> Every single one of them is wrong. The encoding of iomap values is
+> platform dependant. Fixed in my tree.
 
-Hi Linus,
+OK, fast search found these suspicious (not considering e.g. arch/):
+$ find drivers/ -name '*.c' -exec grep -q pci.*iomap {} \; -a -exec grep -l
+'\<readl\>' {} \+
+drivers/firewire/fw-ohci.c
+drivers/scsi/sym53c8xx_2/sym_glue.c
+drivers/media/dvb/pluto2/pluto2.c
+drivers/media/dvb/b2c2/flexcop-pci.c
+drivers/ssb/scan.c
+drivers/char/cyclades.c
+drivers/char/sx.c
+drivers/ata/ata_piix.c
+drivers/ata/sata_inic162x.c
+drivers/ata/pata_pdc2027x.c
+drivers/ata/sata_sx4.c
+drivers/ata/sata_qstor.c
+drivers/ata/sata_mv.c
+drivers/ata/sata_svw.c
+drivers/ata/sata_nv.c
+drivers/ata/sata_sil.c
+drivers/ata/sata_vsc.c
+drivers/ata/sata_promise.c
+drivers/ata/ahci.c
+drivers/ata/sata_sil24.c
+drivers/net/cassini.c
+drivers/mtd/nand/cafe_nand.c
 
-Please pull the 'drm-patches' branch from
-git://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
+How do you imagine a proper fix?
+- move to ioreadX/iowriteX
+or
+- move back to ioremap (unlikely for the most)
+or?
 
-This just contains a pci id, ioremap balancing and dead code removal 
-patches.
-
-Dave.
-
-  drivers/char/drm/drm_bufs.c    |   13 +++++++------
-  drivers/char/drm/via_dmablit.c |    2 +-
-  2 files changed, 8 insertions(+), 7 deletions(-)
-
-commit 0769d39c993145754852b517ddd9c11586f0a014
-Author: Scott Thompson <postfail at hushmail.com>
-Date:   Sat Aug 25 18:17:49 2007 +1000
-
-     drm: ioremap return value checks
-
-     Signed-off-by: Scott Thompson <postfail <at> hushmail.com>
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 22c806c23fe17f9c744d19edfe650cfd6496bc2a
-Author: Simon Farnsworth <simon.farnsworth@onelan.co.uk>
-Date:   Mon Jul 23 18:32:01 2007 +1000
-
-     drm/via: Fix dmablit when blit queue is full
-
-     fd.o bug 11542
-
-     Acked-by: Thomas Hellstrom
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 7ea4d4bd5e21380f028c3a6e2500655090a3f932
-Author: Adrian Bunk <bunk@stusta.de>
-Date:   Mon Jul 23 10:00:51 2007 +0200
-
-     drm_rmmap_ioctl(): remove dead code
-
-     This patch removes some obviously dead code spotted by the Coverity
-     checker.
-
-     Signed-off-by: Adrian Bunk <bunk@stusta.de>
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
+thanks,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
