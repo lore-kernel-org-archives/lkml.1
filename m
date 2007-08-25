@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934475AbXHYTF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934447AbXHYTNE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934475AbXHYTF7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 15:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbXHYTFu
+	id S934447AbXHYTNE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 15:13:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764422AbXHYTMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 15:05:50 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:8025 "EHLO
+	Sat, 25 Aug 2007 15:12:53 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:8040 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759034AbXHYTFt (ORCPT
+	by vger.kernel.org with ESMTP id S1759762AbXHYTMw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 15:05:49 -0400
+	Sat, 25 Aug 2007 15:12:52 -0400
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Organization: MontaVista Software Inc.
 To: bzolnier@gmail.com
-Subject: [PATCH 1/4] ide: add ide_dev_is_sata() helper (take 2)
-Date: Sat, 25 Aug 2007 23:08:26 +0400
+Subject: [PATCH 2/4] hpt366: UltraDMA filter for SATA cards (take 2)
+Date: Sat, 25 Aug 2007 23:15:30 +0400
 User-Agent: KMail/1.5
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -22,63 +22,155 @@ Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708252308.26202.sshtylyov@ru.mvista.com>
+Message-Id: <200708252315.30189.sshtylyov@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the SATA drive detection code from eighty_ninty_three() into inline
-ide_dev_is_sata() helper fixing it along the way to be more strict while
-checking word 80 for the reserved values...
+The Marvell bridge chips used on HighPoint SATA cards do not seem to support
+the UltraDMA modes 1, 2, and 3 as well as any MWDMA modes, so the driver needs
+to account for this in the udma_filter() method.  In order to achieve that, do
+the following changes:
+
+- install the method for all chips, not only HPT36x/370 and impove the code
+  formatting by killing the extra tabs while at it;
+
+- add to the end of the 'switch' statement in the method cases for HPT372[AN]
+  and HPT374 chips upon which the known SATA cards are based;
+
+- use hwif->ultra_mask as a default mask for the ide_dma_filter() method to
+  behave correctly;
+
+- move the HPT370[A] cases below the HPT36x case for consistency...
+
+---
+This version doesn't use explicit UltraDMA masks, so converting them to the
+ATA_UDMA* is left for another, global patch.  This patch against the current
+Linus' tree and unfortunately I was able to only compile test it since that
+tree gives MODPOST warning and dies early on bootup.
 
 Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
----
-This version doesn't flip the MSB, it just casts word80 to 'signed short'
-This is still against the current Linus' tree and unfortunately I was able to
-only compile test it since that tree gives MODPOST warning and dies early on
-bootup (yes, Bart this is still the case).  Alos, I have no SATA bridge/drive
-here at hand...
+ drivers/ide/pci/hpt366.c |   78 ++++++++++++++++++++++++-----------------------
+ 1 files changed, 40 insertions(+), 38 deletions(-)
 
- drivers/ide/ide-iops.c |    3 +--
- include/linux/ide.h    |   13 +++++++++++++
- 2 files changed, 14 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/drivers/ide/ide-iops.c
+Index: linux-2.6/drivers/ide/pci/hpt366.c
 ===================================================================
---- linux-2.6.orig/drivers/ide/ide-iops.c
-+++ linux-2.6/drivers/ide/ide-iops.c
-@@ -615,8 +615,7 @@ u8 eighty_ninty_three (ide_drive_t *driv
- 	if (hwif->cbl != ATA_CBL_PATA80 && !ivb)
- 		goto no_80w;
+--- linux-2.6.orig/drivers/ide/pci/hpt366.c
++++ linux-2.6/drivers/ide/pci/hpt366.c
+@@ -1,5 +1,5 @@
+ /*
+- * linux/drivers/ide/pci/hpt366.c		Version 1.11	Aug 11, 2007
++ * linux/drivers/ide/pci/hpt366.c		Version 1.12	Aug 25, 2007
+  *
+  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
+  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
+@@ -114,6 +114,7 @@
+  *   unify HPT36x/37x timing setup code and the speedproc handlers by joining
+  *   the register setting lists into the table indexed by the clock selected
+  * - set the correct hwif->ultra_mask for each individual chip
++ * - add UltraDMA mode filtering for the HPT37[24] based SATA cards
+  *	Sergei Shtylyov, <sshtylyov@ru.mvista.com> or <source@mvista.com>
+  */
  
--	/* Check for SATA but only if we are ATA5 or higher */
--	if (id->hw_config == 0 && (id->major_rev_num & 0x7FE0))
-+	if (ide_dev_is_sata(id))
- 		return 1;
+@@ -524,36 +525,38 @@ static int check_in_drive_list(ide_drive
+ 
+ static u8 hpt3xx_udma_filter(ide_drive_t *drive)
+ {
+-	struct hpt_info *info	= pci_get_drvdata(HWIF(drive)->pci_dev);
+-	u8 mask;
++	ide_hwif_t *hwif	= HWIF(drive);
++	struct hpt_info *info	= pci_get_drvdata(hwif->pci_dev);
++	u8 mask 		= hwif->ultra_mask;
+ 
+ 	switch (info->chip_type) {
+-	case HPT370A:
+-		if (!HPT370_ALLOW_ATA100_5 ||
+-		    check_in_drive_list(drive, bad_ata100_5))
+-			return 0x1f;
+-		else
+-			return 0x3f;
+-	case HPT370:
+-		if (!HPT370_ALLOW_ATA100_5 ||
+-		    check_in_drive_list(drive, bad_ata100_5))
+-			mask = 0x1f;
+-		else
+-			mask = 0x3f;
+-		break;
+ 	case HPT36x:
+-		if (!HPT366_ALLOW_ATA66_4 ||
++		if (HPT366_ALLOW_ATA66_4 &&
+ 		    check_in_drive_list(drive, bad_ata66_4))
+-			mask = 0x0f;
+-		else
+-			mask = 0x1f;
++			mask = ~0x10;
+ 
+-		if (!HPT366_ALLOW_ATA66_3 ||
++		if (HPT366_ALLOW_ATA66_3 &&
+ 		    check_in_drive_list(drive, bad_ata66_3))
+-			mask = 0x07;
++			mask = ~0x08;
+ 		break;
++	case HPT370 :
++	case HPT370A:
++		if (HPT370_ALLOW_ATA100_5 &&
++		    check_in_drive_list(drive, bad_ata100_5))
++			mask = ~0x20;
++
++		if (info->chip_type == HPT370A)
++			return mask;
++		break;
++	case HPT372 :
++	case HPT372A:
++	case HPT372N:
++	case HPT374 :
++		if (ide_dev_is_sata(drive->id))
++			mask &= ~0x0e;
++		/* Fall thru */
+ 	default:
+-		return 0x7f;
++		return mask;
+ 	}
+ 
+ 	return check_in_drive_list(drive, bad_ata33) ? 0x00 : mask;
+@@ -1236,25 +1239,24 @@ static unsigned int __devinit init_chips
+ 
+ static void __devinit init_hwif_hpt366(ide_hwif_t *hwif)
+ {
+-	struct pci_dev	*dev		= hwif->pci_dev;
+-	struct hpt_info *info		= pci_get_drvdata(dev);
+-	int serialize			= HPT_SERIALIZE_IO;
+-	u8  scr1 = 0, ata66		= hwif->channel ? 0x01 : 0x02;
+-	u8  chip_type			= info->chip_type;
+-	u8  new_mcr, old_mcr 		= 0;
++	struct pci_dev	*dev	= hwif->pci_dev;
++	struct hpt_info *info	= pci_get_drvdata(dev);
++	int serialize		= HPT_SERIALIZE_IO;
++	u8  scr1 = 0, ata66	= hwif->channel ? 0x01 : 0x02;
++	u8  chip_type		= info->chip_type;
++	u8  new_mcr, old_mcr	= 0;
+ 
+ 	/* Cache the channel's MISC. control registers' offset */
+-	hwif->select_data		= hwif->channel ? 0x54 : 0x50;
++	hwif->select_data	= hwif->channel ? 0x54 : 0x50;
+ 
+-	hwif->tuneproc			= &hpt3xx_tune_drive;
+-	hwif->speedproc			= &hpt3xx_tune_chipset;
+-	hwif->quirkproc			= &hpt3xx_quirkproc;
+-	hwif->intrproc			= &hpt3xx_intrproc;
+-	hwif->maskproc			= &hpt3xx_maskproc;
+-	hwif->busproc			= &hpt3xx_busproc;
++	hwif->tuneproc		= &hpt3xx_tune_drive;
++	hwif->speedproc		= &hpt3xx_tune_chipset;
++	hwif->quirkproc		= &hpt3xx_quirkproc;
++	hwif->intrproc		= &hpt3xx_intrproc;
++	hwif->maskproc		= &hpt3xx_maskproc;
++	hwif->busproc		= &hpt3xx_busproc;
+ 
+-	if (chip_type <= HPT370A)
+-		hwif->udma_filter	= &hpt3xx_udma_filter;
++	hwif->udma_filter	= &hpt3xx_udma_filter;
  
  	/*
-Index: linux-2.6/include/linux/ide.h
-===================================================================
---- linux-2.6.orig/include/linux/ide.h
-+++ linux-2.6/include/linux/ide.h
-@@ -1380,6 +1380,19 @@ static inline int ide_dev_has_iordy(stru
- 	return ((id->field_valid & 2) && (id->capability & 8)) ? 1 : 0;
- }
- 
-+static inline int ide_dev_is_sata(struct hd_driveid *id)
-+{
-+	/*
-+	 * See if word 93 is 0 AND drive is at least ATA-5 compatible
-+	 * verifying that word 80 by casting it to a signed type --
-+	 * this trick allows us to filter out the reserved values of
-+	 * 0x0000 and 0xffff along with the earlier ATA revisions...
-+	 */
-+	if (id->hw_config == 0 && (short)id->major_rev_num >= 0x0020)
-+		return 1;
-+	return 0;
-+}
-+
- u8 ide_dump_status(ide_drive_t *, const char *, u8);
- 
- typedef struct ide_pio_timings_s {
+ 	 * HPT3xxN chips have some complications:
 
