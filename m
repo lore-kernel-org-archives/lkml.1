@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934501AbXHYTCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934484AbXHYTEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934501AbXHYTCv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 15:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965008AbXHYTCc
+	id S934484AbXHYTEO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 15:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764683AbXHYTD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 15:02:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46268 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964980AbXHYTCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 15:02:30 -0400
-Date: Sat, 25 Aug 2007 21:02:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthias Hensler <matthias@wspse.de>
-Cc: Christian Hesse <mail@earthworm.de>, suspend2-devel@lists.tuxonice.net,
-       Suspend2-users@lists.suspend2.net, linux-kernel@vger.kernel.org,
-       suspend2-devel <suspend2-devel@lists.suspend2.net>,
-       David Rodriguez <livuxman@gmail.com>
-Subject: Re: [Suspend2-devel] Problem with CFS V20 and Suspend2/tuxonice
-Message-ID: <20070825190223.GC15888@elte.hu>
-References: <1946b54f0708250423k75d5797fuc5b032be7e143f26@mail.gmail.com> <1946b54f0708250429y570a1620y2796d0ff8abb02eb@mail.gmail.com> <b637ec0b0708250554m35decdb3ic8db88787fc3c0c9@mail.gmail.com> <200708251852.28698.mail@earthworm.de> <20070825184917.GA7945@kobayashi-maru.wspse.de>
+	Sat, 25 Aug 2007 15:03:58 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:59057 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762624AbXHYTD5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 15:03:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NVoiaZ8v7PfcOM0HO+Op/33lEZ0Oq02ib09KR20dh64nrUNxc+Kv84HfrCe6Oi8ExWH/hrof4mPoh5SX6CtFCAZtiiFP3wc0zVuWlY6rcatYlvcyrkRm29ESSqouAn9au5noYNHvkdLXdep3H9zyAv9LuXsbIKXBOw18kmQH+is=
+Message-ID: <625fc13d0708251203g38053805x2fe53ab8198bb128@mail.gmail.com>
+Date: Sat, 25 Aug 2007 14:03:57 -0500
+From: "Josh Boyer" <jwboyer@gmail.com>
+To: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>
+Subject: Re: Linux-Kernel MAINTAINERS jffs-dev list entry alive?
+Cc: "Joe Perches" <joe@perches.com>, linux-mtd@lists.infradead.org,
+       "David Woodhouse" <dwmw2@infradead.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070825110215.GA471@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070825184917.GA7945@kobayashi-maru.wspse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <1188001134.32738.188.camel@localhost>
+	 <20070825110215.GA471@lazybastard.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 8/25/07, Jörn Engel <joern@logfs.org> wrote:
+> On Fri, 24 August 2007 17:18:54 -0700, Joe Perches wrote:
+> >
+> > JOURNALLING FLASH FILE SYSTEM V2 (JFFS2)
+> > P:    David Woodhouse
+> > M:    dwmw2@infradead.org
+> > L:    jffs-dev@axis.com
+> > W:    http://sources.redhat.com/jffs2/
+> >
+> > The L: jffs-dev@axis.com entry doesn't seem active.
+>
+> linux-mtd@lists.infradead.org seems more appropriate these days.
 
-* Matthias Hensler <matthias@wspse.de> wrote:
+Agreed.
 
-> > Same problem here: Core Duo, Kernel 2.6.22.5, Suspend 2.2.10, CFS 
-> > v20.2.
-> 
-> Me too for 2.6.22.5, TuxOnIce 2.2.10 and Centrino based notebook.
-
-possible bugfix below.
-
-	Ingo
-
-Index: linux-cfs-2.6.22.5.q/kernel/sched.c
-===================================================================
---- linux-cfs-2.6.22.5.q.orig/kernel/sched.c
-+++ linux-cfs-2.6.22.5.q/kernel/sched.c
-@@ -5043,6 +5043,8 @@ static int migration_thread(void *data)
- 		struct migration_req *req;
- 		struct list_head *head;
- 
-+		try_to_freeze();
-+
- 		spin_lock_irq(&rq->lock);
- 
- 		if (cpu_is_offline(cpu)) {
-@@ -5399,6 +5401,7 @@ migration_call(struct notifier_block *nf
- 		p = kthread_create(migration_thread, hcpu, "migration/%d", cpu);
- 		if (IS_ERR(p))
- 			return NOTIFY_BAD;
-+		p->flags |= PF_NOFREEZE;
- 		kthread_bind(p, cpu);
- 		/* Must be high prio: stop_machine expects to yield to it. */
- 		rq = task_rq_lock(p, &flags);
-
+josh
