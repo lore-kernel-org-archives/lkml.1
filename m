@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934438AbXHYTCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964990AbXHYTCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934438AbXHYTCA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 15:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761258AbXHYTBu
+	id S964990AbXHYTCb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 15:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934151AbXHYTCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 15:01:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59141 "EHLO mx2.mail.elte.hu"
+	Sat, 25 Aug 2007 15:02:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59202 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759010AbXHYTBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 15:01:49 -0400
-Date: Sat, 25 Aug 2007 21:01:42 +0200
+	id S934366AbXHYTCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 15:02:15 -0400
+Date: Sat, 25 Aug 2007 21:02:05 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: David Rodriguez <livuxman@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem with CFS V20 and Suspend2/tuxonice
-Message-ID: <20070825190142.GA15888@elte.hu>
-References: <1946b54f0708250423k75d5797fuc5b032be7e143f26@mail.gmail.com> <1946b54f0708250429y570a1620y2796d0ff8abb02eb@mail.gmail.com>
+To: Christian Hesse <mail@earthworm.de>
+Cc: suspend2-devel@lists.tuxonice.net, Fabio Comolli <fabio.comolli@gmail.com>,
+       linux-kernel@vger.kernel.org, Suspend2-users@lists.suspend2.net,
+       suspend2-devel <suspend2-devel@lists.suspend2.net>,
+       David Rodriguez <livuxman@gmail.com>
+Subject: Re: [Suspend2-devel] Problem with CFS V20 and Suspend2/tuxonice
+Message-ID: <20070825190205.GB15888@elte.hu>
+References: <1946b54f0708250423k75d5797fuc5b032be7e143f26@mail.gmail.com> <1946b54f0708250429y570a1620y2796d0ff8abb02eb@mail.gmail.com> <b637ec0b0708250554m35decdb3ic8db88787fc3c0c9@mail.gmail.com> <200708251852.28698.mail@earthworm.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1946b54f0708250429y570a1620y2796d0ff8abb02eb@mail.gmail.com>
+In-Reply-To: <200708251852.28698.mail@earthworm.de>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4489]
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Rodriguez <livuxman@gmail.com> wrote:
+* Christian Hesse <mail@earthworm.de> wrote:
 
-> I'm using 2.6.22.5 with cfs v20.3 and suspend2 2.2.10.2. With that 
-> combination, suspend is not working anymore (with cfs v19 was 
-> working). Stops on suspend in "Suspending tasks" Looking at cfs patch, 
-> I managed to change the migration_thread, adding again the 
-> try_to_freeze() removed in last patch and now the suspend finished, 
-> but resume not work. Of course I don't know why that was removed, and 
-> rewriting it is not a solution, but I want to report it.
+> > Reproduced on a Intel Centrino based laptop with gentoo kamikaze7
+> > sources (http://forums.gentoo.org/viewtopic-t-577970.html)
+> 
+> Same problem here: Core Duo, Kernel 2.6.22.5, Suspend 2.2.10, CFS v20.2.
 
-could you try the patch below, does it fix this problem?
+please try the patch below - does it fix the problem?
 
 	Ingo
 
