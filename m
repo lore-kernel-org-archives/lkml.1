@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbXHYE3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbXHYEev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbXHYE3u (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 00:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbXHYE3l
+	id S1757507AbXHYEev (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 00:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbXHYEen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 00:29:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52904 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbXHYE3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 00:29:40 -0400
-Date: Sat, 25 Aug 2007 00:28:09 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, Dave Jones <davej@codemonkey.org.uk>,
-       Thomas Renninger <trenn@suse.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: 2.6.23-rc3-mm1
-Message-ID: <20070825042809.GA15863@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>,
-	john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
-	Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-	Dave Jones <davej@codemonkey.org.uk>,
-	Thomas Renninger <trenn@suse.de>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CF695D.1020008@imap.cc> <20070824170702.a2c51084.akpm@linux-foundation.org> <46CF7C3F.10707@imap.cc> <20070824203000.1d710cee.akpm@linux-foundation.org>
+	Sat, 25 Aug 2007 00:34:43 -0400
+Received: from qsrv02ps.mx.bigpond.com ([144.140.83.182]:23357 "EHLO
+	qsrv02ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751620AbXHYEem (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 00:34:42 -0400
+Message-ID: <46CF8AEE.4090009@bigpond.net.au>
+Date: Sat, 25 Aug 2007 11:50:38 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070824203000.1d710cee.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Nick Piggin <npiggin@suse.de>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: Reduce overhead in balance_tasks()
+References: <46C2842E.3010806@bigpond.net.au> <20070824060403.GB24742@elte.hu>
+In-Reply-To: <20070824060403.GB24742@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta05ps.mx.bigpond.com from [121.222.142.3] using ID pwil3058@bigpond.net.au at Sat, 25 Aug 2007 01:50:38 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 08:30:00PM -0700, Andrew Morton wrote:
- 
- > >  <6>Linux agpgart interface v0.102
- > > +<6>rtc_cmos 00:03: rtc core: registered rtc_cmos as rtc0
- > > +<4>rtc_cmos: probe of 00:03 failed with error -16
- > > +<6>agpgart: suspend/resume problematic: resume with 3D/DRI active may lockup X.Org
- > > +<4>on some chipset/BIOS combos (see DEBUG_AGP_PM in intel-agp.c)
- > >  <6>agpgart: Detected an Intel 965Q Chipset.
- > >  <6>agpgart: Unknown page table size, assuming 512KB
- > >  <6>agpgart: Detected 7676K stolen memory.
- > >  <6>agpgart: AGP aperture is 256M @ 0x40000000
- > > -<6>rtc_cmos 00:03: rtc core: registered rtc_cmos as rtc0
- > > -<4>rtc_cmos: probe of 00:03 failed with error -16
- > 
- > I wonder if that was supposed to happen.  It's also happening in 2.6.23-rc3
- > base.
- 
-EBUSY. I've seen this happen when you have both CONFIG_RTC and
-CONFIG_RTC_DRV_CMOS set.
+Ingo Molnar wrote:
+> * Peter Williams <pwil3058@bigpond.net.au> wrote:
+> 
+>> At the moment, balance_tasks() provides low level functionality for 
+>> both
+>>  move_tasks() and move_one_task() (indirectly) via the load_balance() 
+>> function (in the sched_class interface) which also provides dual 
+>> functionality.  This dual functionality complicates the interfaces and 
+>> internal mechanisms and makes the run time overhead of operations that 
+>> are called with two run queue locks held.
+>>
+>> This patch addresses this issue and reduces the overhead of these 
+>> operations.
+> 
+> hm, i like it, and added it to my queue (probably .24 material though), 
+> but note that it increases .text and .data overhead:
+> 
+>    text    data     bss     dec     hex filename
+>   41028   37794    2168   80990   13c5e sched.o.before
+>   41349   37826    2168   81343   13dbf sched.o.after
+> 
+> is that expected?
 
-	Dave
+Yes, sort off.  It's a trade off of space for time and I expected an 
+increase (although I didn't think that it would be quite that much). 
+But it's still less than 1% and since the time saved is time when two 
+run queue locks are held I figure that it's a trade worth making.  Also 
+this separation lays the ground for a clean up of the active load 
+balancing code which should gain some space including making it possible 
+to exclude active load balancing on systems that don't need it (i.e. 
+those that don't have multiple multi core/hyperthreading packages).
 
+I've got a patch available that reduces the .text and .data for non SMP 
+systems by excluding the load balancing stuff (that has crept into those 
+systems) so that should help on embedded systems where memory is tight.
+
+Peter
 -- 
-http://www.codemonkey.org.uk
+Peter Williams                                   pwil3058@bigpond.net.au
+
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
