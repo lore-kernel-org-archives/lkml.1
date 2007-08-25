@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765691AbXHYD6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbXHYECN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765691AbXHYD6s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 23:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbXHYD6j
+	id S1753400AbXHYECN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 00:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbXHYEBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 23:58:39 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50763 "EHLO mail.dvmed.net"
+	Sat, 25 Aug 2007 00:01:55 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50823 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752217AbXHYD6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 23:58:38 -0400
-Message-ID: <46CFA8E8.90101@garzik.org>
-Date: Fri, 24 Aug 2007 23:58:32 -0400
+	id S1750733AbXHYEBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 00:01:54 -0400
+Message-ID: <46CFA9AB.6060506@garzik.org>
+Date: Sat, 25 Aug 2007 00:01:47 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Divy Le Ray <divy@chelsio.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Subject: Re: [PATCH 2.6.23 RESEND] cxgb3 - Fix dev->priv usage
-References: <20070823220628.9835.73819.stgit@speedy5>
-In-Reply-To: <20070823220628.9835.73819.stgit@speedy5>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Willy Tarreau <w@1wt.eu>
+CC: Prakash Punnoor <prakash@punnoor.de>, Greg KH <gregkh@suse.de>,
+       stable@kernel.org, netdev@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>, linux-kernel@vger.kernel.org,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: [PATCH] fix realtek phy id in forcedeth
+References: <20070822083844.%N@1wt.eu> <20070822204225.GD14132@1wt.eu> <20070822230526.GC32121@suse.de> <200708231750.45257.prakash@punnoor.de> <20070823165513.GA6341@kroah.com> <20070823192709.GA22729@1wt.eu>
+In-Reply-To: <20070823192709.GA22729@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.3 (----)
 X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
@@ -28,26 +30,36 @@ X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Divy Le Ray wrote:
-> From: Divy Le Ray <divy@chelsio.com>
+Willy Tarreau wrote:
+> Hi Greg,
 > 
-> cxgb3 used netdev_priv() and dev->priv for different purposes.
-> In 2.6.23, netdev_priv() == dev->priv, cxgb3 needs a fix.
-> This patch is a partial backport of Dave Miller's changes in the 
-> net-2.6.24 git branch. 
+> On Thu, Aug 23, 2007 at 09:55:13AM -0700, Greg KH wrote:
+>> It might help if someone sends a real patch that can be applied :)
 > 
-> Without this fix, cxgb3 crashes on 2.6.23.
+> This is getting really silly now :-) We're all wasting more time
+> wondering who will send the patch than posting it. I've lost, I got
+> fed up first, so here it is. Please apply to mainline then stable.
 > 
-> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+> Thanks,
+> Willy
+> 
+> --
+> 
+>>From a0e2922b99eedd9863232368ea2afe072c52783e Mon Sep 17 00:00:00 2001
+> From: Willy Tarreau <w@1wt.eu>
+> Date: Thu, 23 Aug 2007 21:35:41 +0200
+> Subject: [PATCH] fix realtek phy id in forcedeth
+> 
+> As noticed by Chuck Ebbert, commit c5e3ae8823693b260ce1f217adca8add1bc0b3de
+> introduced a copy-paste typo, as realtek phy is 0x732 and not 0x1c1. Obvious
+> fix below suggested by Ayaz Abdulla.
+> 
+> Signed-off-by: Willy Tarreau <w@1wt.eu>
+> Cc: Ayaz Abdulla <aabdulla@nvidia.com>
+> Cc: Chuck Ebbert <cebbert@redhat.com>
 > ---
-> 
->  drivers/net/cxgb3/adapter.h       |   10 +++
->  drivers/net/cxgb3/cxgb3_main.c    |  126 +++++++++++++++++++++----------------
->  drivers/net/cxgb3/cxgb3_offload.c |    6 +-
->  drivers/net/cxgb3/sge.c           |   23 ++++---
->  drivers/net/cxgb3/t3cdev.h        |    3 -
->  5 files changed, 100 insertions(+), 68 deletions(-)
-> 
+>  drivers/net/forcedeth.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 
 applied
 
