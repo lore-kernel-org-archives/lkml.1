@@ -1,534 +1,1298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765577AbXHYGla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932621AbXHYGr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765577AbXHYGla (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 02:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbXHYGlT
+	id S932621AbXHYGr0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 02:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbXHYGrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 02:41:19 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45427 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753273AbXHYGlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 02:41:17 -0400
-Cc: "Michael Kerrisk" <mtk-manpages@gmx.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Linux Torvalds" <torvalds@linux-foundation.org>, drepper@redhat.com,
-       stable@kernel.org, "Christoph Hellwig" <hch@lst.de>,
-       "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Jonathan Corbet" <corbet@lwn.net>
-Content-Type: text/plain; charset="us-ascii"
-Date: Sat, 25 Aug 2007 08:41:14 +0200
-From: "Michael Kerrisk" <mtk-manpages@gmx.net>
-Message-ID: <20070825064114.107820@gmx.net>
+	Sat, 25 Aug 2007 02:47:17 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:47901 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbXHYGrO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 02:47:14 -0400
+Date: Sat, 25 Aug 2007 08:47:12 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] fix undefined reference to device_power_up/resume
+Message-ID: <20070825064712.GA11699@aepfle.de>
+References: <20070824194201.GA8737@aepfle.de> <18127.33141.119362.34178@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Subject: Re: [PATCH] Revised timerfd() interface
-To: "Davide Libenzi" <davidel@xmailserver.org>,
-       "Randy Dunlap" <rdunlap@xenotime.net>
-X-Authenticated: #24879014
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1/e48c08eHea7WO8aFVRqsxpNNuwWnecrlOyZJAaE
- J1gaJYAvr0gaIUjKdKHyGW5gSs3flhaAv1fw== 
-Content-Transfer-Encoding: 7bit
-X-GMX-UID: QompLHZcaHItc9zNXSQlfCxiamdhZAQ5
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <18127.33141.119362.34178@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[resend, since LKML didn't like last send.]
+On Sat, Aug 25, Paul Mackerras wrote:
 
-Randy,
+> Olaf Hering writes:
+> 
+> > So change even more places from PM to PM_SLEEP to allow linking.
+> 
+> What config shows these errors?  I presume you need to have CONFIG_PM
+> but not CONFIG_PM_SLEEP in order to see them?
 
-Thanks for the input.  I will try to send a revised patch after I get back
-from holiday.  Some comments below.
-
-Davide -- ping!  Can you please offer your comments about this change, and
-also thoughts on Jon's and my comments about a more radical API change
-later  in this thread.
-
-Cheers,
-
-Michael
+The .config below boots on a wallstreet.
+atyfb hangs for some reason, pcmcia still broken. I will send separate
+mails for these bugs.
 
 
-Cheers,
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.23-rc3
+# Fri Aug 24 21:05:04 2007
+#
+# CONFIG_PPC64 is not set
 
-Michael
+#
+# Processor support
+#
+CONFIG_6xx=y
+# CONFIG_PPC_85xx is not set
+# CONFIG_PPC_8xx is not set
+# CONFIG_40x is not set
+# CONFIG_44x is not set
+# CONFIG_E200 is not set
+CONFIG_PPC_FPU=y
+# CONFIG_ALTIVEC is not set
+CONFIG_PPC_STD_MMU=y
+CONFIG_PPC_STD_MMU_32=y
+# CONFIG_PPC_MM_SLICES is not set
+# CONFIG_SMP is not set
+CONFIG_PPC32=y
+CONFIG_PPC_MERGE=y
+CONFIG_MMU=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_IRQ_PER_CPU=y
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_ARCH_HAS_ILOG2_U32=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
+CONFIG_PPC=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_GENERIC_NVRAM=y
+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_PPC_OF=y
+CONFIG_OF=y
+# CONFIG_PPC_UDBG_16550 is not set
+# CONFIG_GENERIC_TBSYNC is not set
+CONFIG_AUDIT_ARCH=y
+CONFIG_GENERIC_BUG=y
+CONFIG_SYS_SUPPORTS_APM_EMULATION=y
+# CONFIG_DEFAULT_UIMAGE is not set
+# CONFIG_PPC_DCR_NATIVE is not set
+# CONFIG_PPC_DCR_MMIO is not set
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
 
-On 8/14/07, Randy Dunlap <rdunlap@xenotime.net> wrote:
->
-> On Thu, 09 Aug 2007 23:11:45 +0200 Michael Kerrisk wrote:
->
-> > Andrew,
-> >
-> > Here's my first shot at changing the timerfd() interface; patch
-> > is against 2.6.23-rc1-mm2.
-> >
-> > I think I got to the bottom of understanding the timer code in
-> > the end, but I may still have missed some things...
-> >
-> > This is my first kernel patch of any substance.  Perhaps Randy
-> > or Christoph can give my toes a light toasting for the various
-> > boobs I've likely made.
-> >
-> > Thomas, would you please look over this patch to verify my
-> > timer code?
-> >
-> > Davide: would you please bless this interface change ;-).
-> > It makes it possible to:
-> >
-> > 1) Fetch the previous timer settings (i.e., interval, and time
-> >    remaining until next expiration) while installing new settings
-> >
-> > 2) Retrieve the settings of an existing timer without changing
-> >    the timer.
-> >
-> > Both of these features are supported by the older Unix timer APIs
-> > (setitimer/getitimer and timer_create/timer_settime/timer_gettime).
->
-> Hi,
->
-> OK, I'll make a few comments.
->
-> 1.  Provide a full changelog, including reasons why the patch is
-> needed.  Don't assume that we have read the previous email threads.
-> (We haven't. :)
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_BROKEN_ON_SMP=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION="-wallstreet"
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+# CONFIG_BSD_PROCESS_ACCT is not set
+# CONFIG_TASKSTATS is not set
+# CONFIG_USER_NS is not set
+# CONFIG_AUDIT is not set
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_LOG_BUF_SHIFT=21
+CONFIG_SYSFS_DEPRECATED=y
+# CONFIG_RELAY is not set
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+# CONFIG_EMBEDDED is not set
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+# CONFIG_KALLSYMS_ALL is not set
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_TIMERFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_SLAB=y
+# CONFIG_SLUB is not set
+# CONFIG_SLOB is not set
+CONFIG_RT_MUTEXES=y
+# CONFIG_TINY_SHMEM is not set
+CONFIG_BASE_SMALL=0
+# CONFIG_MODULES is not set
+CONFIG_BLOCK=y
+# CONFIG_LBD is not set
+# CONFIG_BLK_DEV_IO_TRACE is not set
+# CONFIG_LSF is not set
+# CONFIG_BLK_DEV_BSG is not set
 
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+# CONFIG_IOSCHED_AS is not set
+# CONFIG_IOSCHED_DEADLINE is not set
+# CONFIG_IOSCHED_CFQ is not set
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+# CONFIG_DEFAULT_CFQ is not set
+CONFIG_DEFAULT_NOOP=y
+CONFIG_DEFAULT_IOSCHED="noop"
 
-Okay -- will do for a future revision of this patch.
+#
+# Platform support
+#
+CONFIG_PPC_MULTIPLATFORM=y
+# CONFIG_EMBEDDED6xx is not set
+# CONFIG_PPC_82xx is not set
+# CONFIG_PPC_83xx is not set
+# CONFIG_PPC_86xx is not set
+CONFIG_CLASSIC32=y
+# CONFIG_PPC_CHRP is not set
+# CONFIG_PPC_MPC52xx is not set
+# CONFIG_PPC_MPC5200 is not set
+# CONFIG_PPC_EFIKA is not set
+# CONFIG_PPC_LITE5200 is not set
+CONFIG_PPC_PMAC=y
+# CONFIG_PPC_CELL is not set
+# CONFIG_PPC_CELL_NATIVE is not set
+# CONFIG_PQ2ADS is not set
+CONFIG_PPC_NATIVE=y
+CONFIG_MPIC=y
+# CONFIG_MPIC_WEIRD is not set
+# CONFIG_PPC_I8259 is not set
+# CONFIG_PPC_RTAS is not set
+# CONFIG_MMIO_NVRAM is not set
+CONFIG_PPC_MPC106=y
+# CONFIG_PPC_970_NAP is not set
+# CONFIG_PPC_INDIRECT_IO is not set
+# CONFIG_GENERIC_IOMAP is not set
+# CONFIG_CPU_FREQ is not set
+# CONFIG_PPC601_SYNC_FIX is not set
+# CONFIG_TAU is not set
+# CONFIG_CPM2 is not set
+# CONFIG_FSL_ULI1575 is not set
 
-In the meantime, the most relevant earlier mail thread is this:
+#
+# Kernel options
+#
+# CONFIG_HIGHMEM is not set
+CONFIG_HZ_100=y
+# CONFIG_HZ_250 is not set
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=100
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+CONFIG_BINFMT_ELF=y
+CONFIG_BINFMT_MISC=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+# CONFIG_KEXEC is not set
+CONFIG_ARCH_FLATMEM_ENABLE=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+# CONFIG_SPARSEMEM_MANUAL is not set
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+# CONFIG_SPARSEMEM_STATIC is not set
+CONFIG_SPLIT_PTLOCK_CPUS=4
+# CONFIG_RESOURCES_64BIT is not set
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_PROC_DEVICETREE=y
+# CONFIG_CMDLINE_BOOL is not set
+CONFIG_PM=y
+# CONFIG_PM_LEGACY is not set
+# CONFIG_PM_DEBUG is not set
+# CONFIG_SUSPEND is not set
+# CONFIG_HIBERNATION is not set
+CONFIG_APM_EMULATION=y
+# CONFIG_SECCOMP is not set
+# CONFIG_WANT_DEVICE_TREE is not set
+CONFIG_ISA_DMA_API=y
 
-http://article.gmane.org/gmane.linux.kernel/559193
+#
+# Bus options
+#
+CONFIG_ZONE_DMA=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_PPC_INDIRECT_PCI=y
+CONFIG_PCI=y
+CONFIG_PCI_DOMAINS=y
+CONFIG_PCI_SYSCALL=y
+# CONFIG_PCIEPORTBUS is not set
+CONFIG_ARCH_SUPPORTS_MSI=y
+# CONFIG_PCI_MSI is not set
+CONFIG_PCI_DEBUG=y
 
-The following are also of some relevance:
+#
+# PCCARD (PCMCIA/CardBus) support
+#
+CONFIG_PCCARD=y
+# CONFIG_PCMCIA_DEBUG is not set
+CONFIG_PCMCIA=y
+CONFIG_PCMCIA_LOAD_CIS=y
+CONFIG_PCMCIA_IOCTL=y
+CONFIG_CARDBUS=y
 
-http://article.gmane.org/gmane.linux.kernel/556043
-http://article.gmane.org/gmane.linux.kernel/556124
+#
+# PC-card bridges
+#
+CONFIG_YENTA=y
+CONFIG_YENTA_O2=y
+CONFIG_YENTA_RICOH=y
+CONFIG_YENTA_TI=y
+CONFIG_YENTA_ENE_TUNE=y
+CONFIG_YENTA_TOSHIBA=y
+# CONFIG_PD6729 is not set
+# CONFIG_I82092 is not set
+CONFIG_PCCARD_NONSTATIC=y
+# CONFIG_HOTPLUG_PCI is not set
 
-> The changes are as follows:
-> >
-> > a) A further argument, outmr, can be used to retrieve the interval
-> >    and time remaining before the expiration of a previously created
-> >    timer.  Thus the call signature is now:
-> >
-> >    timerfd(int utmr, int clockid, int flags,
->
->                  ufd,
+#
+# Advanced setup
+#
+# CONFIG_ADVANCED_OPTIONS is not set
 
-Yes.
+#
+# Default settings for advanced configuration options are used
+#
+CONFIG_HIGHMEM_START=0xfe000000
+CONFIG_LOWMEM_SIZE=0x30000000
+CONFIG_KERNEL_START=0xc0000000
+CONFIG_TASK_SIZE=0x80000000
+CONFIG_BOOT_LOAD=0x00800000
 
->            struct itimerspec *utmr,
-> >            struct itimerspec *outmr)
-> >
-> >    The outmr argument:
-> >
-> >    1) must be NULL for a new timer (ufd == -1).
-> >    2) can be NULL if we are updating an existing
-> >       timer (i.e., utmr != NULL), but we are not
-> >       interested in the previous timer value.
-> >    3) can be used to retrieve the time until next timer
-> >       expiration, without changing the timer.
-> >       (In this case, utmr == NULL and ufd >= 0.)
-> >
-> > b) Make the 'clockid' immutable: it can only be set
-> >    if 'ufd' is -1 -- that is, on the timerfd() call that
-> >    first creates a timer.  (This is effectively
-> >    the limitation that is imposed by POSIX timers: the
-> >    clockid is specified when the timer is created with
-> >    timer_create(), and can't be changed.)
-> >
-> >    [In the 2.6.22 interface, the clockid of an existing
-> >    timer can be changed with a further call to timerfd()
-> >    that specifies the file descriptor of an existing timer.]
-> >
-> > The use cases are as follows:
-> >
-> > ufd = timerfd(-1, clockid, flags, utmr, NULL);
-> > to create a new timer with given clockid, flags, and utmr (initial
-> > expiration + interval).  outmr must be NULL.
-> >
-> > ufd = timerfd(ufd, -1, flags, utmr, NULL);
-> > to change the flags and timer settings of an existing timer.
-> > (The clockid argument serves no purpose when modifying an
-> > existing timer, and as I've implemented things, the argument
-> > must be specified as -1 for an existing timer.)
-> >
-> > ufd = timerfd(ufd, -1, flags, utmr, &outmr);
-> > to change the flags and timer settings of an existing timer, and
-> > retrieve the time until the next expiration of the timer (and
-> > the associated interval).
-> >
-> > ufd = timerfd(ufd, -1, 0, NULL, &outmr);
-> > Return the time until the next expiration of the timer (and the
-> > associated interval), without changing the existing timer settings.
-> > The flags argument has no meaning in this case, and must be
-> > specified as 0.
-> >
-> > Other changes:
-> >
-> > * I've added checks for various combinations of arguments values
-> >   that could be deemed invalid; there is probably room for debate
-> >   about whether we want all of these checks.  Comments in the
-> >   patch describe these checks.
-> >
-> > * Appropriate, and possibly even correct, changes made in fs/compat.c.
-> >
-> > * Jan Engelhardt noted that a cast could be removed from Davide's
-> >   original code; I've removed it.
-> >
-> > The changes are correct as far as I've tested them.  I've attached a
-> > test program.  Davide, could you subject this to further test please?
-> >
-> > I'm off on holiday the day after tomorrow, back in two weeks, with
-> > very limited computer access.  I may have time for another pass of
-> > the code if comments come in over(euro)night, otherwise Davide may
-> > be willing to clean up whatever I messed up...
-> >
-> > Cheers,
-> >
-> > Michael
-> >
-> > diff -ruN linux-2.6.23-rc1-mm2-orig/fs/compat.c linux-2.6.23-rc1-mm2
-> /fs/compat.c
-> > --- linux-2.6.23-rc1-mm2-orig/fs/compat.c     2007-08-05 10:43:
-> 30.000000000 +0200
-> > +++ linux-2.6.23-rc1-mm2/fs/compat.c  2007-08-07 22:08:15.000000000+0200
-> > @@ -2211,18 +2211,38 @@
-> >  #ifdef CONFIG_TIMERFD
-> >
-> >  asmlinkage long compat_sys_timerfd(int ufd, int clockid, int flags,
-> > -                                const struct compat_itimerspec __user
-> *utmr)
-> > +                      const struct compat_itimerspec __user *utmr,
-> > +                      struct compat_itimerspec __user *old_utmr)
-> >  {
-> >       struct itimerspec t;
-> >       struct itimerspec __user *ut;
-> > +     long ret;
-> >
-> > -     if (get_compat_itimerspec(&t, utmr))
-> > -             return -EFAULT;
-> > -     ut = compat_alloc_user_space(sizeof(*ut));
-> > -     if (copy_to_user(ut, &t, sizeof(t)))
-> > -             return -EFAULT;
-> > +     /*:mtk: Framework taken from compat_sys_mq_getsetattr() */
->
-> Drop the :mtk: string(s).
+#
+# Networking
+#
+CONFIG_NET=y
 
+#
+# Networking options
+#
+CONFIG_PACKET=y
+# CONFIG_PACKET_MMAP is not set
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+CONFIG_XFRM_USER=y
+# CONFIG_XFRM_SUB_POLICY is not set
+# CONFIG_XFRM_MIGRATE is not set
+CONFIG_NET_KEY=y
+# CONFIG_NET_KEY_MIGRATE is not set
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_FIB_HASH=y
+# CONFIG_IP_PNP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_IP_MROUTE is not set
+# CONFIG_ARPD is not set
+CONFIG_SYN_COOKIES=y
+CONFIG_INET_AH=y
+CONFIG_INET_ESP=y
+# CONFIG_INET_IPCOMP is not set
+# CONFIG_INET_XFRM_TUNNEL is not set
+# CONFIG_INET_TUNNEL is not set
+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
+CONFIG_INET_XFRM_MODE_BEET=y
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+# CONFIG_TCP_CONG_ADVANCED is not set
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+# CONFIG_TCP_MD5SIG is not set
+# CONFIG_IPV6 is not set
+# CONFIG_INET6_XFRM_TUNNEL is not set
+# CONFIG_INET6_TUNNEL is not set
+# CONFIG_NETWORK_SECMARK is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_IP_DCCP is not set
+# CONFIG_IP_SCTP is not set
+# CONFIG_TIPC is not set
+# CONFIG_ATM is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_VLAN_8021Q is not set
+# CONFIG_DECNET is not set
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
 
-Yes, that was just a marker to myself  for comments that should eventually
-be removed.
+#
+# QoS and/or fair queueing
+#
+# CONFIG_NET_SCHED is not set
 
-> -     return sys_timerfd(ufd, clockid, flags, ut);
-> > +     ut = compat_alloc_user_space(2 * sizeof(*ut));
-> > +
-> > +     if (utmr) {
-> > +             if (get_compat_itimerspec(&t, utmr))
-> > +                     return -EFAULT;
-> > +             if (copy_to_user(ut, &t, sizeof(t)))
-> > +                     return -EFAULT;
-> > +     }
-> > +
-> > +     ret = sys_timerfd(ufd, clockid, flags,
-> > +                     utmr ? ut : NULL,
-> > +                     old_utmr ? ut + 1 : NULL);
-> > +
-> > +     if (ret)
-> > +             return ret;
-> > +
-> > +     if (old_utmr) {
-> > +             if (copy_from_user(&t, old_ut, sizeof(t)) ||
->
-> I can't find <old_ut> anywhere.  Should be old_utmr I guess.
->
-> > +                 put_compat_itimerspec(&t, old_utmr))
->
->                     put_compat_itimerspec(old_utmr, &t))
->
-> IOW, I think that the parameters are reversed (at least this way
-> their types match the function prototype).
+#
+# Network testing
+#
+# CONFIG_NET_PKTGEN is not set
+# CONFIG_HAMRADIO is not set
+CONFIG_IRDA=y
 
+#
+# IrDA protocols
+#
+CONFIG_IRLAN=y
+CONFIG_IRNET=y
+CONFIG_IRCOMM=y
+# CONFIG_IRDA_ULTRA is not set
 
-I'm not sure what happened there.  I had a compiled, working kernel with the patch.  Somehow I've messed up while making the patch, I guess.
+#
+# IrDA options
+#
+CONFIG_IRDA_CACHE_LAST_LSAP=y
+CONFIG_IRDA_FAST_RR=y
+# CONFIG_IRDA_DEBUG is not set
 
-> +                     return -EFAULT;
-> > +     }
-> > +
-> > +     return 0;
-> >  }
-> >
-> >  #endif /* CONFIG_TIMERFD */
-> > diff -ruN linux-2.6.23-rc1-mm2-orig/fs/timerfd.c linux-2.6.23-rc1-mm2
-> /fs/timerfd.c
-> > --- linux-2.6.23-rc1-mm2-orig/fs/timerfd.c    2007-08-05 10:44:
-> 24.000000000 +0200
-> > +++ linux-2.6.23-rc1-mm2/fs/timerfd.c 2007-08-09 22:11:25.000000000+0200
-> > @@ -2,6 +2,8 @@
-> >   *  fs/timerfd.c
-> >   *
-> >   *  Copyright (C) 2007  Davide Libenzi <davidel@xmailserver.org>
-> > + *  and Copyright (C) 2007 Google, Inc.
-> > + *      (Author: Michael Kerrisk <mtk@google.com>)
-> >   *
-> >   *
-> >   *  Thanks to Thomas Gleixner for code reviews and useful comments.
-> > @@ -26,6 +28,12 @@
-> >       ktime_t tintv;
-> >       wait_queue_head_t wqh;
-> >       int expired;
-> > +     int clockid;    /* Established when timer is created, then
-> > +                        immutable */
-> > +     int overrun;    /* Number of overruns for this timer so far,
-> > +                        updated on calls to timerfd() that retrieve
-> > +                        settings of an existing timer, reset to zero
-> > +                        by timerfd_read() */
-> >  };
-> >
-> >  /*
-> > @@ -61,6 +69,7 @@
-> >       hrtimer_init(&ctx->tmr, clockid, htmode);
-> >       ctx->tmr.expires = texp;
-> >       ctx->tmr.function = timerfd_tmrproc;
-> > +     ctx->overrun = 0;
-> >       if (texp.tv64 != 0)
-> >               hrtimer_start(&ctx->tmr, texp, htmode);
-> >  }
-> > @@ -130,10 +139,11 @@
-> >                        * callback to avoid DoS attacks specifying a very
-> >                        * short timer period.
-> >                        */
-> > -                     ticks = (u64)
-> > +                     ticks = ctx->overrun +
-> >                               hrtimer_forward(&ctx->tmr,
-> >
-> hrtimer_cb_get_time(&ctx->tmr),
-> >                                               ctx->tintv);
-> > +                     ctx->overrun = 0;
-> >                       hrtimer_restart(&ctx->tmr);
-> >               } else
-> >                       ticks = 1;
-> > @@ -151,24 +161,69 @@
-> >  };
-> >
-> >  asmlinkage long sys_timerfd(int ufd, int clockid, int flags,
-> > -                         const struct itimerspec __user *utmr)
-> > +                     const struct itimerspec __user *utmr,
-> > +                     struct itimerspec __user *old_utmr)
-> >  {
-> >       int error;
-> >       struct timerfd_ctx *ctx;
-> >       struct file *file;
-> >       struct inode *inode;
-> > -     struct itimerspec ktmr;
-> > +     struct itimerspec ktmr, oktmr;
-> >
-> > -     if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
-> > -             return -EFAULT;
-> > +     /*
-> > +      * Not sure if we really need the first check below -- it
-> > +      * relies on all clocks having a non-negative value.  That's
-> > +      * currently true, but I'm not sure that it is anywhere
-> > +      * documented as a requirement.
-> > +      * (The point of the check is that clockid has no meaning if
-> > +      * we are changing the settings of an existing timer
-> > +      * (i.e., ufd >= 0), so let's require it to be an otherwise
-> > +      * unused value.)
-> > +      */
-> >
-> > -     if (clockid != CLOCK_MONOTONIC &&
-> > -         clockid != CLOCK_REALTIME)
-> > +     if (ufd >= 0) {
-> > +             if (clockid != -1)
-> > +                     return -EINVAL;
-> > +     } else if (clockid != CLOCK_MONOTONIC && clockid !=
-> CLOCK_REALTIME)
-> > +             return -EINVAL;
-> > +
-> > +     /*
-> > +      * Disallow any other bits in flags than those we implement.
-> > +      */
-> > +     if ((flags & ~(TFD_TIMER_ABSTIME)) != 0)
-> > +             return -EINVAL;
-> > +
-> > +     /*
-> > +         * Not sure if this check is strictly necessary, except to stop
->
-> Use tab+space instead of spaces.
+#
+# Infrared-port device drivers
+#
 
+#
+# SIR device drivers
+#
+CONFIG_IRTTY_SIR=y
 
-Doh!  Yes.
+#
+# Dongle support
+#
+# CONFIG_DONGLE is not set
 
-> +      * userspace trying to do something silly.  Flags only has meaning
-> > +      * if we are creating/modifying a timer.
-> > +      */
-> > +     if (utmr == NULL && flags != 0)
-> >               return -EINVAL;
-> > -     if (!timespec_valid(&ktmr.it_value) ||
-> > -         !timespec_valid(&ktmr.it_interval))
-> > +
-> > +     /*
-> > +      * If we are creating a new timer, then we must supply the setting
-> > +      * and there is no previous timer setting to retrieve.
-> > +      */
-> > +     if (ufd == -1 && (utmr == NULL || old_utmr != NULL))
-> > +             return -EINVAL;
-> > +
-> > +     /*
-> > +      * Caller must provide a new timer setting, or ask for previous
-> > +      * setting, or both.
-> > +      */
-> > +     if (utmr == NULL && old_utmr == NULL)
-> >               return -EINVAL;
-> >
-> > +     if (utmr) {
-> > +             if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
-> > +                     return -EFAULT;
-> > +
-> > +             if (!timespec_valid(&ktmr.it_value) ||
-> > +                 !timespec_valid(&ktmr.it_interval))
-> > +                     return -EINVAL;
-> > +     }
-> > +
-> >       if (ufd == -1) {
-> >               ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
-> >               if (!ctx)
-> > @@ -176,6 +231,11 @@
-> >
-> >               init_waitqueue_head(&ctx->wqh);
-> >
-> > +             /*
-> > +              * Save the clockid since we need it later if we modify
-> > +              * the timer.
-> > +              */
-> > +             ctx->clockid = clockid;
-> >               timerfd_setup(ctx, clockid, flags, &ktmr);
-> >
-> >               /*
-> > @@ -195,23 +255,61 @@
-> >                       fput(file);
-> >                       return -EINVAL;
-> >               }
-> > -             /*
-> > -              * We need to stop the existing timer before reprogramming
-> > -              * it to the new values.
-> > -              */
-> > -             for (;;) {
-> > -                     spin_lock_irq(&ctx->wqh.lock);
-> > -                     if (hrtimer_try_to_cancel(&ctx->tmr) >= 0)
-> > -                             break;
-> > -                     spin_unlock_irq(&ctx->wqh.lock);
-> > -                     cpu_relax();
-> > +
-> > +             if (old_utmr) {
-> > +
-> > +                     /*
-> > +                      * Retrieve interval and time remaining before
-> > +                      * next expiration of timer.
-> > +                      */
-> > +
-> > +                     struct hrtimer *timer = &ctx->tmr;
-> > +                     ktime_t iv = ctx->tintv;
-> > +                     ktime_t now, remaining;
-> > +
-> > +                     clockid = ctx->clockid;
-> > +
-> > +                     memset(&oktmr, 0, sizeof(struct itimerspec));
-> > +                     if (iv.tv64)
-> > +                             oktmr.it_interval = ktime_to_timespec(iv);
-> > +
-> > +                     now = timer->base->get_time();
-> > +                     ctx->overrun += hrtimer_forward(&ctx->tmr,
-> > +                                     hrtimer_cb_get_time(&ctx->tmr),
-> > +                                     ctx->tintv);
-> > +                     remaining = ktime_sub(timer->expires, now);
-> > +                     if (remaining.tv64 <= 0)
-> > +                             oktmr.it_value.tv_nsec = 1;
-> > +                     else
-> > +                             oktmr.it_value =
-> ktime_to_timespec(remaining);
-> > +
-> > +                     if (copy_to_user(old_utmr, &oktmr, sizeof
-> (oktmr))) {
-> > +                             fput(file);
-> > +                             return -EFAULT;
-> > +                     }
-> >               }
-> > -             /*
-> > -              * Re-program the timer to the new value ...
-> > -              */
-> > -             timerfd_setup(ctx, clockid, flags, &ktmr);
-> >
-> > -             spin_unlock_irq(&ctx->wqh.lock);
-> > +             if (utmr) {
-> > +                     /*
-> > +                      * Modify settings of existing timer.
-> > +                      * We need to stop the existing timer before
-> > +                      * reprogramming it to the new values.
-> > +                      */
-> > +                     for (;;) {
-> > +                             spin_lock_irq(&ctx->wqh.lock);
-> > +                             if (hrtimer_try_to_cancel(&ctx->tmr) >= 0)
-> > +                                     break;
-> > +                             spin_unlock_irq(&ctx->wqh.lock);
-> > +                             cpu_relax();
-> > +                     }
-> > +
-> > +                     /*
-> > +                      * Re-program the timer to the new value ...
-> > +                      */
-> > +                     timerfd_setup(ctx, ctx->clockid, flags, &ktmr);
-> > +
-> > +                     spin_unlock_irq(&ctx->wqh.lock);
-> > +             }
-> >               fput(file);
-> >       }
-> >
-> > @@ -222,4 +320,3 @@
-> >       kfree(ctx);
-> >       return error;
-> >  }
-> > -
-> > diff -ruN linux-2.6.23-rc1-mm2-orig/include/linux/compat.h
-> linux-2.6.23-rc1-mm2/include/linux/compat.h
-> > --- linux-2.6.23-rc1-mm2-orig/include/linux/compat.h  2007-07-09 01:32:
-> 17.000000000 +0200
-> > +++ linux-2.6.23-rc1-mm2/include/linux/compat.h       2007-08-05 17:46:
-> 33.000000000 +0200
-> > @@ -265,7 +265,8 @@
-> >                               const compat_sigset_t __user *sigmask,
-> >                                  compat_size_t sigsetsize);
-> >  asmlinkage long compat_sys_timerfd(int ufd, int clockid, int flags,
-> > -                             const struct compat_itimerspec __user
-> *utmr);
-> > +                     const struct compat_itimerspec __user *utmr,
-> > +                     struct compat_itimerspec __user *old_utmr);
-> >
-> >  #endif /* CONFIG_COMPAT */
-> >  #endif /* _LINUX_COMPAT_H */
-> > diff -ruN linux-2.6.23-rc1-mm2-orig/include/linux/syscalls.h
-> linux-2.6.23-rc1-mm2/include/linux/syscalls.h
-> > --- linux-2.6.23-rc1-mm2-orig/include/linux/syscalls.h        2007-08-05
-> 10:44:32.000000000 +0200
-> > +++ linux-2.6.23-rc1-mm2/include/linux/syscalls.h     2007-08-05 17:47:
-> 15.000000000 +0200
-> > @@ -608,7 +608,8 @@
-> >  asmlinkage long sys_getcpu(unsigned __user *cpu, unsigned __user *node,
-> struct getcpu_cache __user *cache);
-> >  asmlinkage long sys_signalfd(int ufd, sigset_t __user *user_mask,
-> size_t sizemask);
-> >  asmlinkage long sys_timerfd(int ufd, int clockid, int flags,
-> > -                         const struct itimerspec __user *utmr);
-> > +                     const struct itimerspec __user *utmr,
-> > +                     struct itimerspec __user *old_utmr);
-> >  asmlinkage long sys_eventfd(unsigned int count);
-> >  asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t
-> len);
->
->
-> ---
-> ~Randy
-> *** Remember to use Documentation/SubmitChecklist when testing your code
-> ***
->
+#
+# Old SIR device drivers
+#
+# CONFIG_IRPORT_SIR is not set
+
+#
+# Old Serial dongle support
+#
+
+#
+# FIR device drivers
+#
+# CONFIG_NSC_FIR is not set
+# CONFIG_WINBOND_FIR is not set
+# CONFIG_TOSHIBA_FIR is not set
+# CONFIG_SMC_IRCC_FIR is not set
+# CONFIG_ALI_FIR is not set
+# CONFIG_VLSI_FIR is not set
+# CONFIG_VIA_FIR is not set
+# CONFIG_BT is not set
+# CONFIG_AF_RXRPC is not set
+
+#
+# Wireless
+#
+# CONFIG_CFG80211 is not set
+CONFIG_WIRELESS_EXT=y
+# CONFIG_MAC80211 is not set
+# CONFIG_IEEE80211 is not set
+# CONFIG_RFKILL is not set
+# CONFIG_NET_9P is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+# CONFIG_STANDALONE is not set
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+# CONFIG_SYS_HYPERVISOR is not set
+# CONFIG_CONNECTOR is not set
+# CONFIG_MTD is not set
+CONFIG_OF_DEVICE=y
+# CONFIG_PARPORT is not set
+# CONFIG_BLK_DEV is not set
+# CONFIG_MISC_DEVICES is not set
+CONFIG_IDE=y
+CONFIG_BLK_DEV_IDE=y
+
+#
+# Please see Documentation/ide.txt for help/info on IDE drives
+#
+# CONFIG_BLK_DEV_IDE_SATA is not set
+CONFIG_BLK_DEV_IDEDISK=y
+# CONFIG_IDEDISK_MULTI_MODE is not set
+# CONFIG_BLK_DEV_IDECS is not set
+# CONFIG_BLK_DEV_DELKIN is not set
+CONFIG_BLK_DEV_IDECD=y
+# CONFIG_BLK_DEV_IDETAPE is not set
+# CONFIG_BLK_DEV_IDEFLOPPY is not set
+# CONFIG_IDE_TASK_IOCTL is not set
+# CONFIG_IDE_PROC_FS is not set
+
+#
+# IDE chipset support/bugfixes
+#
+# CONFIG_IDE_GENERIC is not set
+CONFIG_BLK_DEV_IDEPCI=y
+CONFIG_IDEPCI_SHARE_IRQ=y
+CONFIG_IDEPCI_PCIBUS_ORDER=y
+# CONFIG_BLK_DEV_OFFBOARD is not set
+# CONFIG_BLK_DEV_GENERIC is not set
+# CONFIG_BLK_DEV_OPTI621 is not set
+CONFIG_BLK_DEV_IDEDMA_PCI=y
+# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
+# CONFIG_IDEDMA_ONLYDISK is not set
+# CONFIG_BLK_DEV_AEC62XX is not set
+# CONFIG_BLK_DEV_ALI15X3 is not set
+# CONFIG_BLK_DEV_AMD74XX is not set
+# CONFIG_BLK_DEV_CMD64X is not set
+# CONFIG_BLK_DEV_TRIFLEX is not set
+# CONFIG_BLK_DEV_CY82C693 is not set
+# CONFIG_BLK_DEV_CS5520 is not set
+# CONFIG_BLK_DEV_CS5530 is not set
+# CONFIG_BLK_DEV_HPT34X is not set
+# CONFIG_BLK_DEV_HPT366 is not set
+# CONFIG_BLK_DEV_JMICRON is not set
+# CONFIG_BLK_DEV_SC1200 is not set
+# CONFIG_BLK_DEV_PIIX is not set
+# CONFIG_BLK_DEV_IT8213 is not set
+# CONFIG_BLK_DEV_IT821X is not set
+# CONFIG_BLK_DEV_NS87415 is not set
+# CONFIG_BLK_DEV_PDC202XX_OLD is not set
+# CONFIG_BLK_DEV_PDC202XX_NEW is not set
+# CONFIG_BLK_DEV_SVWKS is not set
+# CONFIG_BLK_DEV_SIIMAGE is not set
+# CONFIG_BLK_DEV_SL82C105 is not set
+# CONFIG_BLK_DEV_SLC90E66 is not set
+# CONFIG_BLK_DEV_TRM290 is not set
+# CONFIG_BLK_DEV_VIA82CXXX is not set
+# CONFIG_BLK_DEV_TC86C001 is not set
+CONFIG_BLK_DEV_IDE_PMAC=y
+CONFIG_BLK_DEV_IDE_PMAC_ATA100FIRST=y
+CONFIG_BLK_DEV_IDEDMA_PMAC=y
+# CONFIG_IDE_ARM is not set
+CONFIG_BLK_DEV_IDEDMA=y
+# CONFIG_IDEDMA_IVB is not set
+# CONFIG_BLK_DEV_HD is not set
+
+#
+# SCSI device support
+#
+# CONFIG_RAID_ATTRS is not set
+# CONFIG_SCSI is not set
+# CONFIG_SCSI_DMA is not set
+# CONFIG_SCSI_NETLINK is not set
+# CONFIG_ATA is not set
+# CONFIG_MD is not set
+
+#
+# Fusion MPT device support
+#
+# CONFIG_FUSION is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+# CONFIG_FIREWIRE is not set
+# CONFIG_IEEE1394 is not set
+# CONFIG_I2O is not set
+CONFIG_MACINTOSH_DRIVERS=y
+CONFIG_ADB=y
+CONFIG_ADB_CUDA=y
+CONFIG_ADB_PMU=y
+CONFIG_ADB_PMU_LED=y
+CONFIG_ADB_PMU_LED_IDE=y
+CONFIG_PMAC_APM_EMU=y
+CONFIG_PMAC_MEDIABAY=y
+CONFIG_PMAC_BACKLIGHT=y
+CONFIG_PMAC_BACKLIGHT_LEGACY=y
+CONFIG_INPUT_ADBHID=y
+CONFIG_MAC_EMUMOUSEBTN=y
+# CONFIG_THERM_WINDTUNNEL is not set
+# CONFIG_THERM_ADT746X is not set
+# CONFIG_WINDFARM is not set
+# CONFIG_ANSLCD is not set
+# CONFIG_PMAC_RACKMETER is not set
+CONFIG_NETDEVICES=y
+# CONFIG_NETDEVICES_MULTIQUEUE is not set
+# CONFIG_DUMMY is not set
+# CONFIG_BONDING is not set
+# CONFIG_MACVLAN is not set
+# CONFIG_EQUALIZER is not set
+# CONFIG_TUN is not set
+# CONFIG_ARCNET is not set
+# CONFIG_PHYLIB is not set
+CONFIG_NET_ETHERNET=y
+# CONFIG_MII is not set
+CONFIG_MACE=y
+# CONFIG_MACE_AAUI_PORT is not set
+CONFIG_BMAC=y
+# CONFIG_HAPPYMEAL is not set
+# CONFIG_SUNGEM is not set
+# CONFIG_CASSINI is not set
+# CONFIG_NET_VENDOR_3COM is not set
+# CONFIG_NET_TULIP is not set
+# CONFIG_HP100 is not set
+# CONFIG_NET_PCI is not set
+# CONFIG_NETDEV_1000 is not set
+# CONFIG_NETDEV_10000 is not set
+# CONFIG_TR is not set
+
+#
+# Wireless LAN
+#
+# CONFIG_WLAN_PRE80211 is not set
+# CONFIG_WLAN_80211 is not set
+CONFIG_NET_PCMCIA=y
+# CONFIG_PCMCIA_3C589 is not set
+# CONFIG_PCMCIA_3C574 is not set
+# CONFIG_PCMCIA_FMVJ18X is not set
+# CONFIG_PCMCIA_PCNET is not set
+# CONFIG_PCMCIA_NMCLAN is not set
+# CONFIG_PCMCIA_SMC91C92 is not set
+CONFIG_PCMCIA_XIRC2PS=y
+# CONFIG_PCMCIA_AXNET is not set
+# CONFIG_WAN is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+CONFIG_PPP=y
+CONFIG_PPP_MULTILINK=y
+# CONFIG_PPP_FILTER is not set
+CONFIG_PPP_ASYNC=y
+CONFIG_PPP_SYNC_TTY=y
+CONFIG_PPP_DEFLATE=y
+CONFIG_PPP_BSDCOMP=y
+# CONFIG_PPP_MPPE is not set
+CONFIG_PPPOE=y
+# CONFIG_PPPOL2TP is not set
+# CONFIG_SLIP is not set
+CONFIG_SLHC=y
+# CONFIG_SHAPER is not set
+# CONFIG_NETCONSOLE is not set
+# CONFIG_NETPOLL is not set
+# CONFIG_NET_POLL_CONTROLLER is not set
+# CONFIG_ISDN is not set
+# CONFIG_PHONE is not set
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+# CONFIG_INPUT_FF_MEMLESS is not set
+# CONFIG_INPUT_POLLDEV is not set
+
+#
+# Userland interfaces
+#
+CONFIG_INPUT_MOUSEDEV=y
+# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+# CONFIG_INPUT_JOYDEV is not set
+# CONFIG_INPUT_TSDEV is not set
+CONFIG_INPUT_EVDEV=y
+# CONFIG_INPUT_EVBUG is not set
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=y
+# CONFIG_KEYBOARD_ATKBD is not set
+# CONFIG_KEYBOARD_SUNKBD is not set
+# CONFIG_KEYBOARD_LKKBD is not set
+# CONFIG_KEYBOARD_XTKBD is not set
+# CONFIG_KEYBOARD_NEWTON is not set
+# CONFIG_KEYBOARD_STOWAWAY is not set
+CONFIG_INPUT_MOUSE=y
+# CONFIG_MOUSE_PS2 is not set
+# CONFIG_MOUSE_SERIAL is not set
+# CONFIG_MOUSE_VSXXXAA is not set
+# CONFIG_INPUT_JOYSTICK is not set
+# CONFIG_INPUT_TABLET is not set
+# CONFIG_INPUT_TOUCHSCREEN is not set
+# CONFIG_INPUT_MISC is not set
+
+#
+# Hardware I/O ports
+#
+# CONFIG_SERIO is not set
+# CONFIG_GAMEPORT is not set
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+# CONFIG_VT_HW_CONSOLE_BINDING is not set
+# CONFIG_SERIAL_NONSTANDARD is not set
+
+#
+# Serial drivers
+#
+# CONFIG_SERIAL_8250 is not set
+
+#
+# Non-8250 serial port support
+#
+# CONFIG_SERIAL_UARTLITE is not set
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_SERIAL_PMACZILOG=y
+CONFIG_SERIAL_PMACZILOG_CONSOLE=y
+# CONFIG_SERIAL_JSM is not set
+CONFIG_UNIX98_PTYS=y
+# CONFIG_LEGACY_PTYS is not set
+# CONFIG_IPMI_HANDLER is not set
+# CONFIG_WATCHDOG is not set
+# CONFIG_HW_RANDOM is not set
+CONFIG_NVRAM=y
+CONFIG_GEN_RTC=y
+# CONFIG_GEN_RTC_X is not set
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+# CONFIG_AGP is not set
+# CONFIG_DRM is not set
+
+#
+# PCMCIA character devices
+#
+# CONFIG_SYNCLINK_CS is not set
+# CONFIG_CARDMAN_4000 is not set
+# CONFIG_CARDMAN_4040 is not set
+# CONFIG_RAW_DRIVER is not set
+# CONFIG_TCG_TPM is not set
+CONFIG_DEVPORT=y
+CONFIG_I2C=y
+CONFIG_I2C_BOARDINFO=y
+CONFIG_I2C_CHARDEV=y
+
+#
+# I2C Algorithms
+#
+CONFIG_I2C_ALGOBIT=y
+# CONFIG_I2C_ALGOPCF is not set
+# CONFIG_I2C_ALGOPCA is not set
+
+#
+# I2C Hardware Bus support
+#
+# CONFIG_I2C_ALI1535 is not set
+# CONFIG_I2C_ALI1563 is not set
+# CONFIG_I2C_ALI15X3 is not set
+# CONFIG_I2C_AMD756 is not set
+# CONFIG_I2C_AMD8111 is not set
+# CONFIG_I2C_I801 is not set
+# CONFIG_I2C_I810 is not set
+# CONFIG_I2C_PIIX4 is not set
+CONFIG_I2C_POWERMAC=y
+# CONFIG_I2C_MPC is not set
+# CONFIG_I2C_NFORCE2 is not set
+# CONFIG_I2C_OCORES is not set
+# CONFIG_I2C_PARPORT_LIGHT is not set
+# CONFIG_I2C_PROSAVAGE is not set
+# CONFIG_I2C_SAVAGE4 is not set
+# CONFIG_I2C_SIMTEC is not set
+# CONFIG_I2C_SIS5595 is not set
+# CONFIG_I2C_SIS630 is not set
+# CONFIG_I2C_SIS96X is not set
+# CONFIG_I2C_TAOS_EVM is not set
+# CONFIG_I2C_VIA is not set
+# CONFIG_I2C_VIAPRO is not set
+# CONFIG_I2C_VOODOO3 is not set
+
+#
+# Miscellaneous I2C Chip support
+#
+# CONFIG_SENSORS_DS1337 is not set
+# CONFIG_SENSORS_DS1374 is not set
+# CONFIG_DS1682 is not set
+# CONFIG_SENSORS_EEPROM is not set
+# CONFIG_SENSORS_PCF8574 is not set
+# CONFIG_SENSORS_PCA9539 is not set
+# CONFIG_SENSORS_PCF8591 is not set
+# CONFIG_SENSORS_M41T00 is not set
+# CONFIG_SENSORS_MAX6875 is not set
+# CONFIG_SENSORS_TSL2550 is not set
+# CONFIG_I2C_DEBUG_CORE is not set
+# CONFIG_I2C_DEBUG_ALGO is not set
+# CONFIG_I2C_DEBUG_BUS is not set
+# CONFIG_I2C_DEBUG_CHIP is not set
+
+#
+# SPI support
+#
+# CONFIG_SPI is not set
+# CONFIG_SPI_MASTER is not set
+# CONFIG_W1 is not set
+# CONFIG_POWER_SUPPLY is not set
+# CONFIG_HWMON is not set
+
+#
+# Multifunction device drivers
+#
+# CONFIG_MFD_SM501 is not set
+
+#
+# Multimedia devices
+#
+# CONFIG_VIDEO_DEV is not set
+# CONFIG_DVB_CORE is not set
+# CONFIG_DAB is not set
+
+#
+# Graphics support
+#
+CONFIG_BACKLIGHT_LCD_SUPPORT=y
+CONFIG_LCD_CLASS_DEVICE=y
+CONFIG_BACKLIGHT_CLASS_DEVICE=y
+
+#
+# Display device support
+#
+# CONFIG_DISPLAY_SUPPORT is not set
+# CONFIG_VGASTATE is not set
+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
+CONFIG_FB=y
+# CONFIG_FIRMWARE_EDID is not set
+# CONFIG_FB_DDC is not set
+CONFIG_FB_CFB_FILLRECT=y
+CONFIG_FB_CFB_COPYAREA=y
+CONFIG_FB_CFB_IMAGEBLIT=y
+# CONFIG_FB_SYS_FILLRECT is not set
+# CONFIG_FB_SYS_COPYAREA is not set
+# CONFIG_FB_SYS_IMAGEBLIT is not set
+# CONFIG_FB_SYS_FOPS is not set
+CONFIG_FB_DEFERRED_IO=y
+# CONFIG_FB_SVGALIB is not set
+CONFIG_FB_MACMODES=y
+CONFIG_FB_BACKLIGHT=y
+# CONFIG_FB_MODE_HELPERS is not set
+# CONFIG_FB_TILEBLITTING is not set
+
+#
+# Frame buffer hardware drivers
+#
+# CONFIG_FB_CIRRUS is not set
+# CONFIG_FB_PM2 is not set
+# CONFIG_FB_CYBER2000 is not set
+# CONFIG_FB_OF is not set
+# CONFIG_FB_CONTROL is not set
+# CONFIG_FB_PLATINUM is not set
+# CONFIG_FB_VALKYRIE is not set
+# CONFIG_FB_CT65550 is not set
+# CONFIG_FB_ASILIANT is not set
+# CONFIG_FB_IMSTT is not set
+# CONFIG_FB_VGA16 is not set
+# CONFIG_FB_S1D13XXX is not set
+# CONFIG_FB_NVIDIA is not set
+# CONFIG_FB_RIVA is not set
+# CONFIG_FB_MATROX is not set
+# CONFIG_FB_RADEON is not set
+# CONFIG_FB_ATY128 is not set
+CONFIG_FB_ATY=y
+CONFIG_FB_ATY_CT=y
+# CONFIG_FB_ATY_GENERIC_LCD is not set
+CONFIG_FB_ATY_GX=y
+CONFIG_FB_ATY_BACKLIGHT=y
+# CONFIG_FB_S3 is not set
+# CONFIG_FB_SAVAGE is not set
+# CONFIG_FB_SIS is not set
+# CONFIG_FB_NEOMAGIC is not set
+# CONFIG_FB_KYRO is not set
+# CONFIG_FB_3DFX is not set
+# CONFIG_FB_VOODOO1 is not set
+# CONFIG_FB_VT8623 is not set
+# CONFIG_FB_TRIDENT is not set
+# CONFIG_FB_ARK is not set
+# CONFIG_FB_PM3 is not set
+# CONFIG_FB_IBM_GXT4500 is not set
+# CONFIG_FB_VIRTUAL is not set
+
+#
+# Console display driver support
+#
+# CONFIG_VGA_CONSOLE is not set
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE=y
+# CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY is not set
+# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
+# CONFIG_FONTS is not set
+CONFIG_FONT_8x8=y
+CONFIG_FONT_8x16=y
+# CONFIG_LOGO is not set
+
+#
+# Sound
+#
+CONFIG_SOUND=y
+
+#
+# Advanced Linux Sound Architecture
+#
+CONFIG_SND=y
+CONFIG_SND_TIMER=y
+CONFIG_SND_PCM=y
+CONFIG_SND_SEQUENCER=y
+CONFIG_SND_SEQ_DUMMY=y
+CONFIG_SND_OSSEMUL=y
+CONFIG_SND_MIXER_OSS=y
+CONFIG_SND_PCM_OSS=y
+CONFIG_SND_PCM_OSS_PLUGINS=y
+CONFIG_SND_SEQUENCER_OSS=y
+# CONFIG_SND_DYNAMIC_MINORS is not set
+CONFIG_SND_SUPPORT_OLD_API=y
+CONFIG_SND_VERBOSE_PROCFS=y
+# CONFIG_SND_VERBOSE_PRINTK is not set
+# CONFIG_SND_DEBUG is not set
+
+#
+# Generic devices
+#
+CONFIG_SND_DUMMY=y
+# CONFIG_SND_VIRMIDI is not set
+# CONFIG_SND_MTPAV is not set
+# CONFIG_SND_SERIAL_U16550 is not set
+# CONFIG_SND_MPU401 is not set
+
+#
+# PCI devices
+#
+# CONFIG_SND_AD1889 is not set
+# CONFIG_SND_ALS300 is not set
+# CONFIG_SND_ALS4000 is not set
+# CONFIG_SND_ALI5451 is not set
+# CONFIG_SND_ATIIXP is not set
+# CONFIG_SND_ATIIXP_MODEM is not set
+# CONFIG_SND_AU8810 is not set
+# CONFIG_SND_AU8820 is not set
+# CONFIG_SND_AU8830 is not set
+# CONFIG_SND_AZT3328 is not set
+# CONFIG_SND_BT87X is not set
+# CONFIG_SND_CA0106 is not set
+# CONFIG_SND_CMIPCI is not set
+# CONFIG_SND_CS4281 is not set
+# CONFIG_SND_CS46XX is not set
+# CONFIG_SND_CS5530 is not set
+# CONFIG_SND_DARLA20 is not set
+# CONFIG_SND_GINA20 is not set
+# CONFIG_SND_LAYLA20 is not set
+# CONFIG_SND_DARLA24 is not set
+# CONFIG_SND_GINA24 is not set
+# CONFIG_SND_LAYLA24 is not set
+# CONFIG_SND_MONA is not set
+# CONFIG_SND_MIA is not set
+# CONFIG_SND_ECHO3G is not set
+# CONFIG_SND_INDIGO is not set
+# CONFIG_SND_INDIGOIO is not set
+# CONFIG_SND_INDIGODJ is not set
+# CONFIG_SND_EMU10K1 is not set
+# CONFIG_SND_EMU10K1X is not set
+# CONFIG_SND_ENS1370 is not set
+# CONFIG_SND_ENS1371 is not set
+# CONFIG_SND_ES1938 is not set
+# CONFIG_SND_ES1968 is not set
+# CONFIG_SND_FM801 is not set
+# CONFIG_SND_HDA_INTEL is not set
+# CONFIG_SND_HDSP is not set
+# CONFIG_SND_HDSPM is not set
+# CONFIG_SND_ICE1712 is not set
+# CONFIG_SND_ICE1724 is not set
+# CONFIG_SND_INTEL8X0 is not set
+# CONFIG_SND_INTEL8X0M is not set
+# CONFIG_SND_KORG1212 is not set
+# CONFIG_SND_MAESTRO3 is not set
+# CONFIG_SND_MIXART is not set
+# CONFIG_SND_NM256 is not set
+# CONFIG_SND_PCXHR is not set
+# CONFIG_SND_RIPTIDE is not set
+# CONFIG_SND_RME32 is not set
+# CONFIG_SND_RME96 is not set
+# CONFIG_SND_RME9652 is not set
+# CONFIG_SND_SONICVIBES is not set
+# CONFIG_SND_TRIDENT is not set
+# CONFIG_SND_VIA82XX is not set
+# CONFIG_SND_VIA82XX_MODEM is not set
+# CONFIG_SND_VX222 is not set
+# CONFIG_SND_YMFPCI is not set
+
+#
+# ALSA PowerMac devices
+#
+CONFIG_SND_POWERMAC=y
+CONFIG_SND_POWERMAC_AUTO_DRC=y
+
+#
+# ALSA PowerPC devices
+#
+
+#
+# Apple Onboard Audio driver
+#
+# CONFIG_SND_AOA is not set
+# CONFIG_SND_AOA_SOUNDBUS is not set
+
+#
+# PCMCIA devices
+#
+# CONFIG_SND_VXPOCKET is not set
+# CONFIG_SND_PDAUDIOCF is not set
+
+#
+# System on Chip audio support
+#
+# CONFIG_SND_SOC is not set
+
+#
+# SoC Audio support for SuperH
+#
+
+#
+# Open Sound System
+#
+# CONFIG_SOUND_PRIME is not set
+CONFIG_HID_SUPPORT=y
+# CONFIG_HID is not set
+# CONFIG_USB_SUPPORT is not set
+# CONFIG_MMC is not set
+CONFIG_NEW_LEDS=y
+CONFIG_LEDS_CLASS=y
+
+#
+# LED drivers
+#
+
+#
+# LED Triggers
+#
+CONFIG_LEDS_TRIGGERS=y
+# CONFIG_LEDS_TRIGGER_TIMER is not set
+CONFIG_LEDS_TRIGGER_IDE_DISK=y
+# CONFIG_LEDS_TRIGGER_HEARTBEAT is not set
+# CONFIG_INFINIBAND is not set
+# CONFIG_EDAC is not set
+# CONFIG_RTC_CLASS is not set
+
+#
+# DMA Engine support
+#
+# CONFIG_DMA_ENGINE is not set
+
+#
+# DMA Clients
+#
+
+#
+# DMA Devices
+#
+
+#
+# Userspace I/O
+#
+# CONFIG_UIO is not set
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=y
+# CONFIG_EXT2_FS_XATTR is not set
+# CONFIG_EXT2_FS_XIP is not set
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+# CONFIG_EXT3_FS_SECURITY is not set
+# CONFIG_EXT4DEV_FS is not set
+CONFIG_JBD=y
+# CONFIG_JBD_DEBUG is not set
+CONFIG_FS_MBCACHE=y
+# CONFIG_REISERFS_FS is not set
+# CONFIG_JFS_FS is not set
+CONFIG_FS_POSIX_ACL=y
+# CONFIG_XFS_FS is not set
+# CONFIG_GFS2_FS is not set
+# CONFIG_OCFS2_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_ROMFS_FS is not set
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+# CONFIG_QUOTA is not set
+CONFIG_DNOTIFY=y
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+# CONFIG_FUSE_FS is not set
+CONFIG_GENERIC_ACL=y
+
+#
+# CD-ROM/DVD Filesystems
+#
+CONFIG_ISO9660_FS=y
+CONFIG_JOLIET=y
+CONFIG_ZISOFS=y
+# CONFIG_UDF_FS is not set
+
+#
+# DOS/FAT/NT Filesystems
+#
+CONFIG_FAT_FS=y
+CONFIG_MSDOS_FS=y
+CONFIG_VFAT_FS=y
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+# CONFIG_NTFS_FS is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_TMPFS_POSIX_ACL=y
+# CONFIG_HUGETLB_PAGE is not set
+CONFIG_RAMFS=y
+# CONFIG_CONFIGFS_FS is not set
+
+#
+# Miscellaneous filesystems
+#
+# CONFIG_ADFS_FS is not set
+# CONFIG_AFFS_FS is not set
+CONFIG_HFS_FS=y
+CONFIG_HFSPLUS_FS=y
+# CONFIG_BEFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+
+#
+# Network File Systems
+#
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+# CONFIG_NFS_V3_ACL is not set
+# CONFIG_NFS_V4 is not set
+# CONFIG_NFS_DIRECTIO is not set
+# CONFIG_NFSD is not set
+CONFIG_LOCKD=y
+CONFIG_LOCKD_V4=y
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=y
+# CONFIG_SUNRPC_BIND34 is not set
+# CONFIG_RPCSEC_GSS_KRB5 is not set
+# CONFIG_RPCSEC_GSS_SPKM3 is not set
+# CONFIG_SMB_FS is not set
+# CONFIG_CIFS is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_CODA_FS is not set
+# CONFIG_AFS_FS is not set
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+# CONFIG_ACORN_PARTITION is not set
+# CONFIG_OSF_PARTITION is not set
+# CONFIG_AMIGA_PARTITION is not set
+# CONFIG_ATARI_PARTITION is not set
+CONFIG_MAC_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+# CONFIG_BSD_DISKLABEL is not set
+# CONFIG_MINIX_SUBPARTITION is not set
+# CONFIG_SOLARIS_X86_PARTITION is not set
+# CONFIG_UNIXWARE_DISKLABEL is not set
+# CONFIG_LDM_PARTITION is not set
+# CONFIG_SGI_PARTITION is not set
+# CONFIG_ULTRIX_PARTITION is not set
+# CONFIG_SUN_PARTITION is not set
+# CONFIG_KARMA_PARTITION is not set
+# CONFIG_EFI_PARTITION is not set
+# CONFIG_SYSV68_PARTITION is not set
+
+#
+# Native Language Support
+#
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+CONFIG_NLS_CODEPAGE_437=y
+# CONFIG_NLS_CODEPAGE_737 is not set
+# CONFIG_NLS_CODEPAGE_775 is not set
+# CONFIG_NLS_CODEPAGE_850 is not set
+# CONFIG_NLS_CODEPAGE_852 is not set
+# CONFIG_NLS_CODEPAGE_855 is not set
+# CONFIG_NLS_CODEPAGE_857 is not set
+# CONFIG_NLS_CODEPAGE_860 is not set
+# CONFIG_NLS_CODEPAGE_861 is not set
+# CONFIG_NLS_CODEPAGE_862 is not set
+# CONFIG_NLS_CODEPAGE_863 is not set
+# CONFIG_NLS_CODEPAGE_864 is not set
+# CONFIG_NLS_CODEPAGE_865 is not set
+# CONFIG_NLS_CODEPAGE_866 is not set
+# CONFIG_NLS_CODEPAGE_869 is not set
+# CONFIG_NLS_CODEPAGE_936 is not set
+# CONFIG_NLS_CODEPAGE_950 is not set
+# CONFIG_NLS_CODEPAGE_932 is not set
+# CONFIG_NLS_CODEPAGE_949 is not set
+# CONFIG_NLS_CODEPAGE_874 is not set
+# CONFIG_NLS_ISO8859_8 is not set
+# CONFIG_NLS_CODEPAGE_1250 is not set
+# CONFIG_NLS_CODEPAGE_1251 is not set
+# CONFIG_NLS_ASCII is not set
+CONFIG_NLS_ISO8859_1=y
+# CONFIG_NLS_ISO8859_2 is not set
+# CONFIG_NLS_ISO8859_3 is not set
+# CONFIG_NLS_ISO8859_4 is not set
+# CONFIG_NLS_ISO8859_5 is not set
+# CONFIG_NLS_ISO8859_6 is not set
+# CONFIG_NLS_ISO8859_7 is not set
+# CONFIG_NLS_ISO8859_9 is not set
+# CONFIG_NLS_ISO8859_13 is not set
+# CONFIG_NLS_ISO8859_14 is not set
+# CONFIG_NLS_ISO8859_15 is not set
+# CONFIG_NLS_KOI8_R is not set
+# CONFIG_NLS_KOI8_U is not set
+CONFIG_NLS_UTF8=y
+
+#
+# Distributed Lock Manager
+#
+# CONFIG_DLM is not set
+# CONFIG_UCC_SLOW is not set
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+CONFIG_CRC_CCITT=y
+# CONFIG_CRC16 is not set
+# CONFIG_CRC_ITU_T is not set
+CONFIG_CRC32=y
+# CONFIG_CRC7 is not set
+CONFIG_LIBCRC32C=y
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=y
+CONFIG_PLIST=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+
+#
+# Instrumentation Support
+#
+# CONFIG_PROFILING is not set
+
+#
+# Kernel hacking
+#
+# CONFIG_PRINTK_TIME is not set
+# CONFIG_ENABLE_MUST_CHECK is not set
+CONFIG_MAGIC_SYSRQ=y
+# CONFIG_UNUSED_SYMBOLS is not set
+# CONFIG_DEBUG_FS is not set
+# CONFIG_HEADERS_CHECK is not set
+CONFIG_DEBUG_KERNEL=y
+# CONFIG_DEBUG_SHIRQ is not set
+# CONFIG_DETECT_SOFTLOCKUP is not set
+# CONFIG_SCHED_DEBUG is not set
+# CONFIG_SCHEDSTATS is not set
+# CONFIG_TIMER_STATS is not set
+# CONFIG_DEBUG_SLAB is not set
+# CONFIG_DEBUG_RT_MUTEXES is not set
+# CONFIG_RT_MUTEX_TESTER is not set
+# CONFIG_DEBUG_SPINLOCK is not set
+# CONFIG_DEBUG_MUTEXES is not set
+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+# CONFIG_DEBUG_KOBJECT is not set
+CONFIG_DEBUG_BUGVERBOSE=y
+# CONFIG_DEBUG_INFO is not set
+# CONFIG_DEBUG_VM is not set
+# CONFIG_DEBUG_LIST is not set
+# CONFIG_FORCED_INLINING is not set
+# CONFIG_FAULT_INJECTION is not set
+# CONFIG_DEBUG_STACKOVERFLOW is not set
+# CONFIG_DEBUG_STACK_USAGE is not set
+# CONFIG_DEBUG_PAGEALLOC is not set
+CONFIG_DEBUGGER=y
+CONFIG_XMON=y
+CONFIG_XMON_DEFAULT=y
+CONFIG_XMON_DISASSEMBLY=y
+# CONFIG_BDI_SWITCH is not set
+CONFIG_BOOTX_TEXT=y
+# CONFIG_PPC_EARLY_DEBUG is not set
+
+#
+# Security options
+#
+# CONFIG_KEYS is not set
+# CONFIG_SECURITY is not set
+CONFIG_CRYPTO=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_HASH=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_HMAC=y
+# CONFIG_CRYPTO_XCBC is not set
+# CONFIG_CRYPTO_NULL is not set
+# CONFIG_CRYPTO_MD4 is not set
+CONFIG_CRYPTO_MD5=y
+CONFIG_CRYPTO_SHA1=y
+# CONFIG_CRYPTO_SHA256 is not set
+# CONFIG_CRYPTO_SHA512 is not set
+# CONFIG_CRYPTO_WP512 is not set
+# CONFIG_CRYPTO_TGR192 is not set
+# CONFIG_CRYPTO_GF128MUL is not set
+# CONFIG_CRYPTO_ECB is not set
+CONFIG_CRYPTO_CBC=y
+# CONFIG_CRYPTO_PCBC is not set
+# CONFIG_CRYPTO_LRW is not set
+# CONFIG_CRYPTO_CRYPTD is not set
+CONFIG_CRYPTO_DES=y
+# CONFIG_CRYPTO_FCRYPT is not set
+# CONFIG_CRYPTO_BLOWFISH is not set
+# CONFIG_CRYPTO_TWOFISH is not set
+# CONFIG_CRYPTO_SERPENT is not set
+# CONFIG_CRYPTO_AES is not set
+# CONFIG_CRYPTO_CAST5 is not set
+# CONFIG_CRYPTO_CAST6 is not set
+# CONFIG_CRYPTO_TEA is not set
+# CONFIG_CRYPTO_ARC4 is not set
+# CONFIG_CRYPTO_KHAZAD is not set
+# CONFIG_CRYPTO_ANUBIS is not set
+# CONFIG_CRYPTO_DEFLATE is not set
+# CONFIG_CRYPTO_MICHAEL_MIC is not set
+# CONFIG_CRYPTO_CRC32C is not set
+# CONFIG_CRYPTO_CAMELLIA is not set
+# CONFIG_CRYPTO_HW is not set
