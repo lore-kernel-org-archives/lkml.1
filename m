@@ -1,47 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbXHYFM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763062AbXHYF6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758534AbXHYFM3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 01:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXHYFMV
+	id S1763062AbXHYF6c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 01:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757418AbXHYF6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 01:12:21 -0400
-Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:1630 "EHLO
-	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751469AbXHYFMU (ORCPT
+	Sat, 25 Aug 2007 01:58:22 -0400
+Received: from smtp3.Stanford.EDU ([171.67.20.26]:46611 "EHLO
+	smtp3.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757295AbXHYF6W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 01:12:20 -0400
-Message-ID: <46CFBA1C.80506@xs4all.nl>
-Date: Sat, 25 Aug 2007 07:11:56 +0200
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: linux-kernel@vger.kernel.org, mpm@selenic.com, mb@bu3sch.de
-Subject: Re: possible BUG while doing gpg --gen-key
-References: <46CF079C.7010304@xs4all.nl> <20070825011419.GL30705@stusta.de>
-In-Reply-To: <20070825011419.GL30705@stusta.de>
-X-Enigmail-Version: 0.95.3
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sat, 25 Aug 2007 01:58:22 -0400
+X-Greylist: delayed 2036 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Aug 2007 01:58:22 EDT
+Subject: Re: [linux-usb-devel] [RFC] USB: driver for iphone charging
+From: Matt Colyer <matt@colyer.name>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Oliver Neukum <oliver@neukum.org>,
+       linux-kernel@vger.kernel.org, jeffm@suse.de,
+       linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <Pine.LNX.4.44L0.0708241449520.22079-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0708241449520.22079-100000@iolanthe.rowland.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-fjDuVDp9dwNxKV1Oxt6b"
+Date: Fri, 24 Aug 2007 19:21:55 -0700
+Message-Id: <1188008516.14761.7.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
->> FWIW: I run audio-entropyd and use netdev-random. Both pieces of
->> sofwtare don't interfere as far as I know.
-> 
-> 
-> Can you try without both, and if it works, which of them causes the 
-> problem?
 
-I can try.
+--=-fjDuVDp9dwNxKV1Oxt6b
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->> This is on a VIA Epia EK8000 again.
-> 
-> 
-> Is CONFIG_HW_RANDOM_VIA enabled in your kernel?
-> If yes, does disabling it help?
+On Fri, 2007-08-24 at 14:55 -0400, Alan Stern wrote:
+> On Fri, 24 Aug 2007, Greg KH wrote:
+>=20
+> > Can someone with a iphone test this out?  If you look at how the
+> > berry_charge driver does it, the set_config stuff happens after the
+> > magic command.  As I don't have an iphone, nor have I ever seen any
+> > dumps of the command streams, I don't really know if the set_config
+> > message really is necessary or not.
+>=20
+> You know, now that I think back on it, it may be that the Set-Config
+> really does have to come after the magic command.  Perhaps it triggers
+> the changeover.  In which case the subroutine should look like this:
+>=20
+Hi all,
+ I was the one who wrote the patch initially (sorry I haven't been able
+to chime in sooner). It turns out that the configuration must be set
+after the magic command (I tried both versions of the code tonight and
+only the one which changes the configuration after the command works).
+That said, I am not opposed to using a userspace program to accomplish
+this task (I tried to pursue that avenue at first and couldn't find a
+way to do, probably because it doesn't exist yet). I don't really have
+much experience in this area, so I am not really sure how to proceed.
 
-I only run rngd to get the random info from the CPu to the pool.
-Stopping rngd is enough?
+However the other part of this puzzle is that when you call lsusb the
+iPhone disconnects from the bus. Greg suggested that it might be an
+issue with the USB_SUSPEND support being broken on the iPhone and he
+suggested I tried adding it to the quirks.c file. I'll be sure to let
+you guys know when I figure it out.
+
+-Matt
+
+--=-fjDuVDp9dwNxKV1Oxt6b
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGz5JDbkQaRhQ29KURAi9kAKC21UKdSV5HgpMTtIYWmPNN3mevAgCgq8dI
+Zp59+fJVY/FW+oatSU6tiOs=
+=OSL6
+-----END PGP SIGNATURE-----
+
+--=-fjDuVDp9dwNxKV1Oxt6b--
+
