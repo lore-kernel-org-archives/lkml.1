@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933666AbXHYSCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933699AbXHYSDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933666AbXHYSCy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 14:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756967AbXHYSCp
+	id S933699AbXHYSDn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 14:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756967AbXHYSDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 14:02:45 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56941 "EHLO
+	Sat, 25 Aug 2007 14:03:35 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56950 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757176AbXHYSCo (ORCPT
+	with ESMTP id S1756243AbXHYSDe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 14:02:44 -0400
+	Sat, 25 Aug 2007 14:03:34 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, samuel@sortiz.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] sysctl: Properly register the irda binary sysctl numbers.
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+Subject: [PATCH] sysctl: Update sysctl_check to handle compiled out code.
 References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
 	<23568.1187876026@turing-police.cc.vt.edu>
 	<20070823141652.d488a6e0.akpm@linux-foundation.org>
@@ -22,37 +21,26 @@ References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
 	<6634.1188030574@turing-police.cc.vt.edu>
 	<m16433n55e.fsf@ebiederm.dsl.xmission.com>
 	<2371.1188050875@turing-police.cc.vt.edu>
-Date: Sat, 25 Aug 2007 11:59:53 -0600
+Date: Sat, 25 Aug 2007 12:03:19 -0600
 In-Reply-To: <2371.1188050875@turing-police.cc.vt.edu> (Valdis Kletnieks's
 	message of "Sat, 25 Aug 2007 10:07:55 -0400")
-Message-ID: <m1wsvjlckm.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <m1sl67lcew.fsf_-_@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
+Currently sysctl_check_table will complain if a strategy routine
+is missing when we have sys_sysctl compiled out, or a proc_handler
+is missing when we have procfs compiled out.  At least some
+of the custom handlers actually expand to NULL when this is the
+case so the warning is actually a problem.
+
 Valdis.Kletnieks@vt.edu writes:
-
-> On Sat, 25 Aug 2007 06:57:17 MDT, Eric W. Biederman said:
+> As far as "something else wrong", I'm still seeing these in -rc3-mm1
 >
->> It's good to have confirmation that my sysctl_check routine
->> didn't find something else wrong.
->
-> If I understand the code, anything it whinges about is either an outright bug
-> or it's a round of ammo already chambered. ;)
-
-Pretty much.  The heuristics aren't prefect but they are pretty good.
-
-> As far as "something else wrong", I'm still seeing these in -rc3-mm1, but
-> they've been reported before against -rc2-mm2, I think:
-
-Interesting.  No I haven't seen this one.  This appears to be one of
-those silly little corner cases I failed to account for in my checks.
-It looks like you don't have CONFIG_SYSCTL_SYSCALL defined, and it
-appears utsname_syscall and ipcdata_syscall both become NULL pointers
-if they aren't needed.  So the complaint is a false positive.
-
 > [    0.628000] sysctl table check failed: /kernel/ostype .1.1 Missing strategy
 > [ 0.628000] sysctl table check failed: /kernel/osrelease .1.2 Missing strategy
 > [    0.628000] sysctl table check failed: /kernel/version .1.4 Missing strategy
@@ -65,16 +53,39 @@ if they aren't needed.  So the complaint is a false positive.
 > [    0.628000] sysctl table check failed: /kernel/msgmni .1.42 Missing strategy
 > [    0.628000] sysctl table check failed: /kernel/msgmnb .1.36 Missing strategy
 > [    0.628000] sysctl table check failed: /kernel/sem .1.43 Missing strategy
->
-> And this isn't on an allyesconfig or allmodconfig. There may well be sysctl
-> code I didn't hit - my /lib/modules/2.6.23-rc3-mm1 is only about 10M, and
-> the Fedora kernels are weighing in at about 75M of /lib/modules a
-> pop.
 
-Yes.  Thank you.  I figure as long as we are reasonably close people
-we should catch most if not all things before this is merged into
-Linus's tree.
 
-Patch in a moment.
+So don't worry about missing strategy routines, or missing proc_handler
+routines when they will never be called.
 
-Eric
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ kernel/sysctl_check.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
+index aa5b6f6..10dd744 100644
+--- a/kernel/sysctl_check.c
++++ b/kernel/sysctl_check.c
+@@ -1552,14 +1552,18 @@ int sysctl_check_table(struct ctl_table *table)
+ 						set_fail(&fail, table, "No max");
+ 				}
+ 			}
++#ifdef CONFIG_SYSCTL_SYSCALL
+ 			if (table->ctl_name && !table->strategy)
+ 				set_fail(&fail, table, "Missing strategy");
++#endif
+ #if 0
+ 			if (!table->ctl_name && table->strategy)
+ 				set_fail(&fail, table, "Strategy without ctl_name");
+ #endif
++#ifdef CONFIG_PROC_FS
+ 			if (table->procname && !table->proc_handler)
+ 				set_fail(&fail, table, "No proc_handler");
++#endif
+ #if 0
+ 			if (!table->procname && table->proc_handler)
+ 				set_fail(&fail, table, "proc_handler without procname");
+-- 
+1.5.3.rc6.17.g1911
+
