@@ -1,39 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933968AbXHYJru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933953AbXHYJy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933968AbXHYJru (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 05:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763007AbXHYJrm
+	id S933953AbXHYJy7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 05:54:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763007AbXHYJyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 05:47:42 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45110 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754613AbXHYJrl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 05:47:41 -0400
-Date: Sat, 25 Aug 2007 10:55:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: TheOneKEA <theonekea@gmail.com>
-Cc: "Robert Hancock" <hancockr@shaw.ca>, linux-kernel@vger.kernel.org
-Subject: Re: Possible problems reading a DVD-RAM disc
-Message-ID: <20070825105552.0b762e1e@the-village.bc.nu>
-In-Reply-To: <443c85430708241806y4730bb15n9094fed2e51437f3@mail.gmail.com>
-References: <fa.pKJ1f/uGrEIrPt+FdyZwKxvM2Ws@ifi.uio.no>
-	<46CF6B71.7030001@shaw.ca>
-	<443c85430708241806y4730bb15n9094fed2e51437f3@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 25 Aug 2007 05:54:49 -0400
+Received: from qb-out-0506.google.com ([72.14.204.230]:65056 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763705AbXHYJys (ORCPT
+	<rfc822;Linux-Kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 05:54:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:subject:date:message-id:x-mailer;
+        b=OpjAd9dzr30MKgNgN7RPWy5PbHRh/OZyuYooqbhgbNcJC52xXJny4QgKTZb6CbCQdBtzKVEsFnRE7KKDNP2ercK5yJ4RBxDlMAEbwr+GnIYJSRpxR8pKPSgEPa5IaBaf2aKxmBc9UmOet4sdXsciHFUiZQn5Vjky0wR7t0LDPAI=
+From: Denis Cheng <crquan@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linux-Kernel@vger.kernel.org, cr_quan@163.com
+Subject: [PATCH] [arch/i386/boot]: for better readability in clearing BSS
+Date: Sat, 25 Aug 2007 17:54:32 +0800
+Message-Id: <11880356722224-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.3.rc4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Not sure why it would be writing to the disc though.. Maybe if the disc
-> > is mounted read-write it is doing last-access-time updates or something?
-> 
-> It's possible - I didn't explicitly specify noatime when mounting the
-> volume; does the vfat kernel module honor the noatime option?
+there are three different linker scripts with different usages,
 
-And more generally mounting readonly 
+	arch/i386/boot/setup.ld
+	arch/i386/boot/compressed/vmlinux.lds
+	arch/i386/kernel/vmlinux.lds
+
+accompanlying with three different sections of clearing BSS,
+
+	arch/i386/boot/header.S
+	arch/i386/boot/compressed/head.S
+	arch/i386/kernel/head.S
+
+but their label names in .bss section are different,
+when reading these files, they are apt to confuse,
+
+this patch kept them in the same style of clearing.
+
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ arch/i386/boot/compressed/head.S |    2 +-
+ arch/i386/boot/header.S          |    2 +-
+ arch/i386/boot/setup.ld          |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/i386/boot/compressed/head.S b/arch/i386/boot/compressed/head.S
+index f35ea22..e499db0 100644
+--- a/arch/i386/boot/compressed/head.S
++++ b/arch/i386/boot/compressed/head.S
+@@ -113,7 +113,7 @@ relocated:
+  * Clear BSS
+  */
+ 	xorl %eax,%eax
+-	leal _edata(%ebx),%edi
++	leal _bss(%ebx),%edi
+ 	leal _end(%ebx), %ecx
+ 	subl %edi,%ecx
+ 	cld
+diff --git a/arch/i386/boot/header.S b/arch/i386/boot/header.S
+index 7f4a2c5..cd074c1 100644
+--- a/arch/i386/boot/header.S
++++ b/arch/i386/boot/header.S
+@@ -254,7 +254,7 @@ setup2:
+ 
+ # Zero the bss
+ 	movw	$__bss_start, %di
+-	movw	$_end+3, %cx
++	movw	$__bss_end, %cx
+ 	xorl	%eax, %eax
+ 	subw	%di, %cx
+ 	shrw	$2, %cx
+diff --git a/arch/i386/boot/setup.ld b/arch/i386/boot/setup.ld
+index df9234b..f9d6897 100644
+--- a/arch/i386/boot/setup.ld
++++ b/arch/i386/boot/setup.ld
+@@ -36,15 +36,15 @@ SECTIONS
+ 		LONG(0x5a5aaa55)
+ 	}
+ 
+-
+ 	. = ALIGN(16);
+ 	.bss		:
+ 	{
+ 		__bss_start = .;
+ 		*(.bss)
++		. = ALIGN(16);
+ 		__bss_end = .;
+ 	}
+-	. = ALIGN(16);
++
+ 	_end = .;
+ 
+ 	/DISCARD/ : { *(.note*) }
+-- 
+1.5.3.rc4
+
