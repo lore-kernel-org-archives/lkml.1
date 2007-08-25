@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932847AbXHYARO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932722AbXHYATS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932847AbXHYARO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 20:17:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763466AbXHYAQq
+	id S932722AbXHYATS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 20:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbXHYATH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 20:16:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60014 "EHLO mx1.redhat.com"
+	Fri, 24 Aug 2007 20:19:07 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1532 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761356AbXHYAQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 20:16:44 -0400
-Date: Fri, 24 Aug 2007 20:14:54 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: 2.6.23-rc3-mm1
-Message-ID: <20070825001454.GA23622@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>,
-	john stultz <johnstul@us.ibm.com>, Andi Kleen <ak@suse.de>,
-	Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-	Thomas Renninger <trenn@suse.de>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CF695D.1020008@imap.cc> <20070824170702.a2c51084.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070824170702.a2c51084.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	id S1754654AbXHYATG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 20:19:06 -0400
+Subject: Linux-Kernel MAINTAINERS jffs-dev list entry alive?
+From: Joe Perches <joe@perches.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Fri, 24 Aug 2007 17:18:54 -0700
+Message-Id: <1188001134.32738.188.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 05:07:02PM -0700, Andrew Morton wrote:
+JOURNALLING FLASH FILE SYSTEM V2 (JFFS2)
+P:	David Woodhouse
+M:	dwmw2@infradead.org
+L:	jffs-dev@axis.com
+W:	http://sources.redhat.com/jffs2/
 
- > > FATAL: Error inserting processor (/lib/modules/2.6.23-rc3-mm1-testing/kernel/drivers/acpi/processor.ko): Input/output error
- > > WARNING: Error inserting processor (/lib/modules/2.6.23-rc3-mm1-testing/kernel/drivers/acpi/processor.ko): Input/output error
- > > 
- > > Aug 25 00:44:00 xenon powersaved[5356]: WARNING (CpufreqManagement:51) No capability cpufreq_control
- > > Aug 25 00:44:00 xenon powersaved[5356]: WARNING (CpufreqManagement:51) No capability cpufreq_control
- > 
- > Dunno, there're some significant-looking cpufreq changes in there, such as
- > cpufreq-allow-ondemand-and-conservative-cpufreq-governors-to-be-used-as-default.patch.
- > Maybe we went and chose a different governor for you?
- 
-More likely, he was using a cpufreq driver that required acpi
-functionality, and because processor.ko went boom, the house of cards
-came tumbling down.
+The L: jffs-dev@axis.com entry doesn't seem active.
 
-I long for the olde days when acpi changes didn't end up with
-finger pointing at cpufreq.
+----- Transcript of session follows -----
+... while talking to lsil.com.mail9.psmtp.com.:
+>>> RCPT To:<mpt_linux_developer@lsi.com>
+<<< 550 No such user - psmtp
+550 <mpt_linux_developer@lsi.com>... User unknown
 
-	Dave
+Should it be removed/replaced?
 
--- 
-http://www.codemonkey.org.uk
+The website entry:
+http://sources.redhat.com/jffs2/
+also references the jffs-dev@axis.com address.
+
+cheers, Joe
+
