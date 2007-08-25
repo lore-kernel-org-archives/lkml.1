@@ -1,57 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764892AbXHYQpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762767AbXHYQsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764892AbXHYQpH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 12:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbXHYQow
+	id S1762767AbXHYQsU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 12:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbXHYQsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 12:44:52 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:18438 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761453AbXHYQom (ORCPT
+	Sat, 25 Aug 2007 12:48:13 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:42491 "EHLO
+	viefep24-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754370AbXHYQsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 12:44:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=epwIdN4X4diDNifCVOW2t/puT/MWgAsq8tbEqVMlfhK5lX4hU3e1iTZc+pUqDFfnatL4nTtVm+O0G469COqMS+FixBZ/EC2gB7LaBaOqZxF7RDQ+tLP+1EwOt07/aEspZ3XtKagajujjhMV5Nq13kOK5sYG4VC30tRxpQL6CQic=
-Message-ID: <3c1737210708250944u7043c9e1j3be70674a1b55911@mail.gmail.com>
-Date: Sat, 25 Aug 2007 18:44:40 +0200
-From: "Michael Smith" <msmith@xiph.org>
-To: "john stultz" <johnstul@us.ibm.com>
-Subject: Re: gettimeofday() jumping into the future
-Cc: "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       "Andy Wingo" <wingo@fluendo.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <1187894822.6024.8.camel@localhost.localdomain>
+	Sat, 25 Aug 2007 12:48:12 -0400
+From: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
+To: Ondrej Zary <linux@rainbow-software.org>
+Subject: Re: [PATCH] IdealTEK URTC1000 support for usbtouchscreen
+Date: Sat, 25 Aug 2007 18:48:13 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <200708232355.28628.linux@rainbow-software.org>
+In-Reply-To: <200708232355.28628.linux@rainbow-software.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3c1737210708230408i7a8049a9m5db49e6c4d89ab62@mail.gmail.com>
-	 <1187869632.6114.368.camel@twins>
-	 <3c1737210708230520l7dee896crc614f7fc60ac7a1a@mail.gmail.com>
-	 <1187894822.6024.8.camel@localhost.localdomain>
-X-Google-Sender-Auth: 9447366d6563c5c1
+Message-Id: <200708251848.14866.daniel.ritz-ml@swissonline.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> Hmm. That does sound like unsycned TSCs. Normally Intel systems don't
-> skew unless they are NUMA systems or you're entering low power states.
-> We try to catch both of those cases, so I'm not sure how you box is
-> slipping through.
->
-> Can you run the following test to verify that the TSCs are skewed?
+	[ please don't send patches as attachment.. ]
 
-I ran this for the past two days, multiple copies to put some load on
-the system (the initial problem with gettimeofday() was easier to
-reproduce under load). Nothing.
+On Thursday 23 August 2007 23:55:28 Ondrej Zary wrote:
+> Hello,
+> this patch adds support for IdealTEK URTC1000 touchscreen controllers.
+> 
 
-So, I guess that rules out unsynced TSCs as the cause? Or perhaps it
-only happens in other conditions, for some reason. I'm on holidays
-right now, but my coworkers should be able to continue investigating
-other possible causes.
+looks good, just a few minor things...
 
-Thanks for the advice/test program.
+> Documentation can be downloaded at 
+> http://projects.tbmn.org/cgi-bin/trac.cgi/wiki/urtc-1000
+> 
+> I'm not sure that the code is correct, especially because the .rept_size is 
+> set to 8 bytes. I've tried 5, 6, 7, 8, 12 and 16. Only 8 and 16 work. Other 
+> values resulted in -EOVERFLOW in usbtouch_irq() and infinite retries.
+> 
 
-Mike
+8 is fine.
+
+> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+> 
+
++       if (pkt[0] == 1) {
++               /* response string - ignore it */
++               char *end = strchr(pkt, '\r');
++               end[0] = 0;
++               dbg("IdealTEK response: %s\n", &pkt[1]);
++               return 0;
+
+just remove this block
+
++       } else if ((pkt[0] & 0x98) == 0x88) {
++               /* touch data in IdealTEK mode */
++               dev->x = (pkt[1] << 5) | (pkt[2] >> 2);
++               dev->y = (pkt[3] << 5) | (pkt[4] >> 2);
++               dev->touch = (pkt[0] & 0x40) ? 1 : 0;
++               return 1;
++       } else if ((pkt[0] & 0x98) == 0x98) {
++               /* touch data in MT emulation mode */
++               dev->x = (pkt[2] << 5) | (pkt[1] >> 2);
++               dev->y = (pkt[4] << 5) | (pkt[3] >> 2);
++               dev->touch = (pkt[0] & 0x40) ? 1 : 0;
++               return 1;
++       } else {
++               dbg("IdealTEK: invalid data\n");
++               return 0;
++       }
+
+and this one as well...and do a 'return 0;' as last statement
+outside the 'if'
+
++               .process_pkt    = usbtouch_process_multi,
+
+so you're using the support for packets split across two
+URBs? is it required? if so, you have to ensure that the function
+is compiled in. ie. extend this statement in the driver with your
+config option:
+
+#if defined(CONFIG_TOUCHSCREEN_USB_EGALAX) || defined(CONFIG_TOUCHSCREEN_USB_ETURBO)
+#define MULTI_PACKET
+#endif
+
+the rest looks fine.
+
+rgds
+-daniel
