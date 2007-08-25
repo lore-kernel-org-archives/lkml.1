@@ -1,178 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934375AbXHYTZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934628AbXHYT0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934375AbXHYTZh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 15:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759010AbXHYTZ1
+	id S934628AbXHYT0Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 15:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934449AbXHYT0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 15:25:27 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:8057 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757745AbXHYTZ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 15:25:26 -0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-To: bzolnier@gmail.com
-Subject: [PATCH 2/4] hpt366: UltraDMA filter for SATA cards (take 3)
-Date: Sat, 25 Aug 2007 23:28:03 +0400
-User-Agent: KMail/1.5
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+	Sat, 25 Aug 2007 15:26:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56160 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S934458AbXHYT0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 15:26:07 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+595EwUNS599806VMFc0cgKU+RtZf+ZJM6/IVxo6
+	Zfc/dRZMsYey0h
+Date: Sat, 25 Aug 2007 21:26:09 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Josh Boyer <jwboyer@gmail.com>
+cc: Casey Dahlin <cjdahlin@ncsu.edu>, linux-kernel@vger.kernel.org
+Subject: Re: USB Key light on/off state depending on mount
+In-Reply-To: <625fc13d0708241413s1086527id377b49e7adacc5e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.60.0708252116580.3809@poirot.grange>
+References: <46CF468E.1080607@ncsu.edu> <625fc13d0708241413s1086527id377b49e7adacc5e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200708252328.03826.sshtylyov@ru.mvista.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Marvell bridge chips used on HighPoint SATA cards do not seem to support
-the UltraDMA modes 1, 2, and 3 as well as any MWDMA modes, so the driver needs
-to account for this in the udma_filter() method.  In order to achieve that, do
-the following changes:
+On Fri, 24 Aug 2007, Josh Boyer wrote:
 
-- install the method for all chips, not only HPT36x/370 and impove the code
-  formatting by killing the extra tabs while at it;
+> On 8/24/07, Casey Dahlin <cjdahlin@ncsu.edu> wrote:
+> > Most USB keys nowadays have a small LED somewhere inside of them that
+> > lights up when they are plugged in. On a windows box, the key is lit up
+> > whenever it is mounted, and as soon as it is unmounted it turns off,
+> > giving a handy physical indicator that the key is safe to remove. On
+> > linux, the light is simply on whenever the key is plugged in.
+> >
+> > Should linux toggle the light depending on mount state? Is it as trivial
+> > as it seems or does this reflect some larger issue?
+> 
+> I think that depends on the key.  My Corsair keys have the light
+> flicker whenever I/O is on-going.
 
-- add to the end of the 'switch' statement in the method cases for HPT372[AN]
-  and HPT374 chips upon which the known SATA cards are based;
+Yeah, it does, I am not a big expert in USB storage, and I haven't seen 
+many USB sticks, but I might imagine how windows turns the LED off on 
+unmount. Try "eject /dev/sdX", where sdX is your USB storage, after you 
+unmount it. Be careful, especially if you have SATA (or SCSI) discs in 
+your system or if you use libata for PATA discs not to eject the wrong 
+one... For example, if you think you have to eject /dev/sdc, check before 
+ejecting it with "mount" if there are any /dev/sdc* partitions mounted.
 
-- use hwif->ultra_mask as a default mask for the ide_dma_filter() method to
-  behave correctly;
+As for LED going on only when mounting, don't know. Maybe they also issue 
+eject after initial enumeration? In which case the LED would go shortly on 
+on plug in, then off, then on again on mount. You can try it under Linux 
+too, if you issue eject after plugging in but before mount. I think, you 
+won't be able to mount it directly after ejecting, you'd have to force 
+re-enumeration under Linux.
 
-- move the HPT370[A] cases below the HPT36x case for consistency...
-
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
+Thanks
+Guennadi
 ---
-Argh!  I've managed to put = instead of &= here and there, so please disregard
-the take #2... :-/
-This version doesn't use explicit UltraDMA masks, so converting them to the
-ATA_UDMA* is left for another, global patch.  This patch against the current
-Linus' tree and unfortunately I was able to only compile test it since that
-tree gives MODPOST warning and dies early on bootup.
-
- drivers/ide/pci/hpt366.c |   78 ++++++++++++++++++++++++-----------------------
- 1 files changed, 40 insertions(+), 38 deletions(-)
-
-Index: linux-2.6/drivers/ide/pci/hpt366.c
-===================================================================
---- linux-2.6.orig/drivers/ide/pci/hpt366.c
-+++ linux-2.6/drivers/ide/pci/hpt366.c
-@@ -1,5 +1,5 @@
- /*
-- * linux/drivers/ide/pci/hpt366.c		Version 1.11	Aug 11, 2007
-+ * linux/drivers/ide/pci/hpt366.c		Version 1.12	Aug 25, 2007
-  *
-  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
-  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
-@@ -114,6 +114,7 @@
-  *   unify HPT36x/37x timing setup code and the speedproc handlers by joining
-  *   the register setting lists into the table indexed by the clock selected
-  * - set the correct hwif->ultra_mask for each individual chip
-+ * - add UltraDMA mode filtering for the HPT37[24] based SATA cards
-  *	Sergei Shtylyov, <sshtylyov@ru.mvista.com> or <source@mvista.com>
-  */
- 
-@@ -524,36 +525,38 @@ static int check_in_drive_list(ide_drive
- 
- static u8 hpt3xx_udma_filter(ide_drive_t *drive)
- {
--	struct hpt_info *info	= pci_get_drvdata(HWIF(drive)->pci_dev);
--	u8 mask;
-+	ide_hwif_t *hwif	= HWIF(drive);
-+	struct hpt_info *info	= pci_get_drvdata(hwif->pci_dev);
-+	u8 mask 		= hwif->ultra_mask;
- 
- 	switch (info->chip_type) {
--	case HPT370A:
--		if (!HPT370_ALLOW_ATA100_5 ||
--		    check_in_drive_list(drive, bad_ata100_5))
--			return 0x1f;
--		else
--			return 0x3f;
--	case HPT370:
--		if (!HPT370_ALLOW_ATA100_5 ||
--		    check_in_drive_list(drive, bad_ata100_5))
--			mask = 0x1f;
--		else
--			mask = 0x3f;
--		break;
- 	case HPT36x:
--		if (!HPT366_ALLOW_ATA66_4 ||
-+		if (HPT366_ALLOW_ATA66_4 &&
- 		    check_in_drive_list(drive, bad_ata66_4))
--			mask = 0x0f;
--		else
--			mask = 0x1f;
-+			mask &= ~0x10;
- 
--		if (!HPT366_ALLOW_ATA66_3 ||
-+		if (HPT366_ALLOW_ATA66_3 &&
- 		    check_in_drive_list(drive, bad_ata66_3))
--			mask = 0x07;
-+			mask &= ~0x08;
- 		break;
-+	case HPT370 :
-+	case HPT370A:
-+		if (HPT370_ALLOW_ATA100_5 &&
-+		    check_in_drive_list(drive, bad_ata100_5))
-+			mask &= ~0x20;
-+
-+		if (info->chip_type == HPT370A)
-+			return mask;
-+		break;
-+	case HPT372 :
-+	case HPT372A:
-+	case HPT372N:
-+	case HPT374 :
-+		if (ide_dev_is_sata(drive->id))
-+			mask &= ~0x0e;
-+		/* Fall thru */
- 	default:
--		return 0x7f;
-+		return mask;
- 	}
- 
- 	return check_in_drive_list(drive, bad_ata33) ? 0x00 : mask;
-@@ -1236,25 +1239,24 @@ static unsigned int __devinit init_chips
- 
- static void __devinit init_hwif_hpt366(ide_hwif_t *hwif)
- {
--	struct pci_dev	*dev		= hwif->pci_dev;
--	struct hpt_info *info		= pci_get_drvdata(dev);
--	int serialize			= HPT_SERIALIZE_IO;
--	u8  scr1 = 0, ata66		= hwif->channel ? 0x01 : 0x02;
--	u8  chip_type			= info->chip_type;
--	u8  new_mcr, old_mcr 		= 0;
-+	struct pci_dev	*dev	= hwif->pci_dev;
-+	struct hpt_info *info	= pci_get_drvdata(dev);
-+	int serialize		= HPT_SERIALIZE_IO;
-+	u8  scr1 = 0, ata66	= hwif->channel ? 0x01 : 0x02;
-+	u8  chip_type		= info->chip_type;
-+	u8  new_mcr, old_mcr	= 0;
- 
- 	/* Cache the channel's MISC. control registers' offset */
--	hwif->select_data		= hwif->channel ? 0x54 : 0x50;
-+	hwif->select_data	= hwif->channel ? 0x54 : 0x50;
- 
--	hwif->tuneproc			= &hpt3xx_tune_drive;
--	hwif->speedproc			= &hpt3xx_tune_chipset;
--	hwif->quirkproc			= &hpt3xx_quirkproc;
--	hwif->intrproc			= &hpt3xx_intrproc;
--	hwif->maskproc			= &hpt3xx_maskproc;
--	hwif->busproc			= &hpt3xx_busproc;
-+	hwif->tuneproc		= &hpt3xx_tune_drive;
-+	hwif->speedproc		= &hpt3xx_tune_chipset;
-+	hwif->quirkproc		= &hpt3xx_quirkproc;
-+	hwif->intrproc		= &hpt3xx_intrproc;
-+	hwif->maskproc		= &hpt3xx_maskproc;
-+	hwif->busproc		= &hpt3xx_busproc;
- 
--	if (chip_type <= HPT370A)
--		hwif->udma_filter	= &hpt3xx_udma_filter;
-+	hwif->udma_filter	= &hpt3xx_udma_filter;
- 
- 	/*
- 	 * HPT3xxN chips have some complications:
-
+Guennadi Liakhovetski
