@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764305AbXHYDwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764867AbXHYD45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764305AbXHYDwT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 23:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbXHYDwM
+	id S1764867AbXHYD45 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 23:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbXHYD4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 23:52:12 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:45840 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751759AbXHYDwK (ORCPT
+	Fri, 24 Aug 2007 23:56:49 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:39795 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752217AbXHYD4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 23:52:10 -0400
-Date: Fri, 24 Aug 2007 23:52:08 -0400
+	Fri, 24 Aug 2007 23:56:49 -0400
+Date: Fri, 24 Aug 2007 23:56:47 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Kay Sievers <kay.sievers@vrfy.org>
 Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Subject: Re: kernel BUG with 2.6.23-rc3-mm1: skb_over_panic
-Message-ID: <20070825035208.GA17482@Krystal>
+Message-ID: <20070825035647.GB17482@Krystal>
 References: <20070824224707.GA7275@Krystal> <20070824161029.6236a5f4.akpm@linux-foundation.org> <20070825001638.GB9811@Krystal> <20070824174450.70337f4f.akpm@linux-foundation.org> <20070825004640.GA21756@kroah.com> <20070825030251.GA15827@Krystal> <1188013483.2641.8.camel@lov.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,7 +26,7 @@ In-Reply-To: <1188013483.2641.8.camel@lov.localdomain>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:49:52 up 26 days,  4:08,  5 users,  load average: 0.18, 0.37, 0.22
+X-Uptime: 23:55:28 up 26 days,  4:14,  5 users,  load average: 0.05, 0.18, 0.17
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -128,30 +128,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 >  
 > 
 
-Yep, adding some printks, it points in that direction:
+Here is a corrected version of the fix:
 
-[  179.898618] DBG string ACTION=add
-[  179.908565] put DBG 1 len 22 envlen 68
-[  179.919807] DBG string DEVPATH=/class/dmi/id
-[  179.921584] DBG req size 836
-[  179.921588] DBG ali size 864
-[  179.921632] DBG req size 836
-[  179.921634] DBG ali size 864
-[  179.966998] put DBG 2 len 14 envlen 68
-[  179.978208] DBG string SUBSYSTEM=dmi
-[  179.988901] put DBG 3 len 21 envlen 68
-[  180.000109] DBG string MODALIAS=dSEQNUM=971
 
-as we can see, MODALIAS=d is clearly wrong there and should have a \0.
-This is why the skb_put goes over the end of the allocated skb.
-
-[  180.012618] put DBG 4 len 11 envlen 68
-[  180.023829] DBG string SEQNUM=971
-[  180.033742] skb_over_panic: text:c0252ee8 len:97 put:11 head:c2afa200 data:c2afa200 tail:0xc2afa261 end:0xc2afa260 dev:<NULL>
-[  180.067545] ------------[ cut here ]------------
-[  180.081341] Kernel BUG at c039e1bc [verbose debug info unavailable]
-[  180.100069] invalid opcode: 0000 [#1] PREEMPT SMP
-
+===================================================================
+--- linux-2.6-lttng.orig/drivers/firmware/dmi-id.c	2007-08-24 23:51:25.000000000 -0400
++++ linux-2.6-lttng/drivers/firmware/dmi-id.c	2007-08-24 23:55:22.000000000 -0400
+@@ -152,9 +152,10 @@ static int dmi_dev_uevent(struct device 
+ 	if (add_uevent_var(env, "MODALIAS="))
+ 		return -ENOMEM;
+ 	len = get_modalias(&env->buf[env->buflen - 1],
+-			   sizeof(env->buf) - env->buflen);
+-	if (len >= (sizeof(env->buf) - env->buflen))
++			   sizeof(env->buf) - (env->buflen - 1));
++	if (len >= (sizeof(env->buf) - (env->buflen - 1)))
+ 		return -ENOMEM;
++	env->buflen += len + 1;
+ 	return 0;
+ }
+ 
+Mathieu
 
 -- 
 Mathieu Desnoyers
