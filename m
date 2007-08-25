@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932464AbXHYAu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765438AbXHYAyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932464AbXHYAu3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 20:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759937AbXHYAuU
+	id S1765438AbXHYAyv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 20:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXHYAyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 20:50:20 -0400
-Received: from mga03.intel.com ([143.182.124.21]:62626 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756910AbXHYAuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 20:50:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,305,1183359600"; 
-   d="scan'208";a="267764773"
-Date: Fri, 24 Aug 2007 17:50:18 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: travis@sgi.com
-Cc: Andi Kleen <ak@suse.de>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 0/6] x86: Reduce Memory Usage and Inter-Node message traffic (v2)
-Message-ID: <20070825005017.GC1894@linux-os.sc.intel.com>
-References: <20070824222654.687510000@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 24 Aug 2007 20:54:44 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:44086 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750911AbXHYAyn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 20:54:43 -0400
+Date: Sat, 25 Aug 2007 02:53:25 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Greg KH <greg@kroah.com>, Matt Mackall <mpm@selenic.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andy Isaacson <adi@hexapodia.org>, Josh Boyer <jwboyer@gmail.com>,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re:
+	LinuxFoundation Technical Advisory Board Elections
+Message-ID: <20070825005325.GJ30705@stusta.de>
+References: <20070824234840.GC19595@kroah.com> <617E1C2C70743745A92448908E030B2A0242FF38@scsmsx411.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070824222654.687510000@sgi.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <617E1C2C70743745A92448908E030B2A0242FF38@scsmsx411.amr.corp.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 03:26:54PM -0700, travis@sgi.com wrote:
-> Previous Intro:
+On Fri, Aug 24, 2007 at 05:01:13PM -0700, Luck, Tony wrote:
 
-Thanks for doing this.
+> Have there been any more nominations?  At the moment we are sitting
+> with three people standing for five positions, so the whole concept
+> of who should be allowed to vote in the election seems to be moot.
 
-> In x86_64 and i386 architectures most arrays that are sized
-> using NR_CPUS lay in local memory on node 0.  Not only will most
-> (99%?) of the systems not use all the slots in these arrays,
-> particularly when NR_CPUS is increased to accommodate future
-> very high cpu count systems, but a number of cache lines are
-> passed unnecessarily on the system bus when these arrays are
-> referenced by cpus on other nodes.
+Unless I'm misunderstanding it this is not the last time ever this 
+election will be held.
 
-Can we move cpuinfo_x86 also to per cpu area? Though critical run
-time code doesn't access this area, it will be nice to move the cpuinfo_x86
-also into per cpu area.
+And it's best to define election rules in a relaxed situation like now - 
+it saves you much hassle when there are already fixed rules if there 
+will ever be for any reason a fierce battle between candidates.
 
-Perhaps the current cpuinfo_x86 layout might cause confusion and make people
-add arch specific per cpu elements into cpuinfo_x86(thinking that it uses per
-cpu area).
+"fixed rules" doesn't has to be complicated, e.g. something like:
+- elected by KS attendees
+- every attendee has as many votes as open positions available
+- no cumulative voting
+- the candidates with most votes are elected
+- if there's a draw flip a coin
+- if requested by at least one attendee, vote will be secret
+would work fine and wouldn't result in overhead for uncontroversial 
+elections.
 
-Wonder if this confusion is the reason for git commit f3fa8ebc
+E.g. the latest SPI Board of Directors elections were followed by a 
+discussion how different vote counting methods would have changed the 
+result - but it was only a theoretical discussion since the election 
+rules are fixed.
 
-thanks,
-suresh
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
