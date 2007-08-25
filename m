@@ -1,72 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbXHYEev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbXHYEgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757507AbXHYEev (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 00:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbXHYEen
+	id S1759510AbXHYEgz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 00:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbXHYEgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 00:34:43 -0400
-Received: from qsrv02ps.mx.bigpond.com ([144.140.83.182]:23357 "EHLO
-	qsrv02ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751620AbXHYEem (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 00:34:42 -0400
-Message-ID: <46CF8AEE.4090009@bigpond.net.au>
-Date: Sat, 25 Aug 2007 11:50:38 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
+	Sat, 25 Aug 2007 00:36:45 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:56056 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751674AbXHYEgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 00:36:44 -0400
+Message-ID: <46CFB1D6.5030609@garzik.org>
+Date: Sat, 25 Aug 2007 00:36:38 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Nick Piggin <npiggin@suse.de>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: Reduce overhead in balance_tasks()
-References: <46C2842E.3010806@bigpond.net.au> <20070824060403.GB24742@elte.hu>
-In-Reply-To: <20070824060403.GB24742@elte.hu>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+CC: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 4/4] ehea: show physical port state
+References: <200708221621.32549.ossthema@de.ibm.com>
+In-Reply-To: <200708221621.32549.ossthema@de.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta05ps.mx.bigpond.com from [121.222.142.3] using ID pwil3058@bigpond.net.au at Sat, 25 Aug 2007 01:50:38 +0000
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Peter Williams <pwil3058@bigpond.net.au> wrote:
+Jan-Bernd Themann wrote:
+> Introduces a module parameter to decide whether the physical
+> port link state is propagated to the network stack or not.
+> It makes sense not to take the physical port state into account
+> on machines with more logical partitions that communicate
+> with each other. This is always possible no matter what the physical
+> port state is. Thus eHEA can be considered as a switch there.
 > 
->> At the moment, balance_tasks() provides low level functionality for 
->> both
->>  move_tasks() and move_one_task() (indirectly) via the load_balance() 
->> function (in the sched_class interface) which also provides dual 
->> functionality.  This dual functionality complicates the interfaces and 
->> internal mechanisms and makes the run time overhead of operations that 
->> are called with two run queue locks held.
->>
->> This patch addresses this issue and reduces the overhead of these 
->> operations.
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 > 
-> hm, i like it, and added it to my queue (probably .24 material though), 
-> but note that it increases .text and .data overhead:
+> ---
+>  drivers/net/ehea/ehea.h      |    5 ++++-
+>  drivers/net/ehea/ehea_main.c |   14 +++++++++++++-
+>  2 files changed, 17 insertions(+), 2 deletions(-)
 > 
->    text    data     bss     dec     hex filename
->   41028   37794    2168   80990   13c5e sched.o.before
->   41349   37826    2168   81343   13dbf sched.o.after
-> 
-> is that expected?
+> diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+> index d67f97b..8d58be5 100644
+> --- a/drivers/net/ehea/ehea.h
+> +++ b/drivers/net/ehea/ehea.h
+> @@ -39,7 +39,7 @@
+>  #include <asm/io.h>
+>  
+>  #define DRV_NAME	"ehea"
+> -#define DRV_VERSION	"EHEA_0073"
+> +#define DRV_VERSION	"EHEA_0074"
+>  
+>  /* eHEA capability flags */
+>  #define DLPAR_PORT_ADD_REM 1
+> @@ -402,6 +402,8 @@ struct ehea_mc_list {
+>  
+>  #define EHEA_PORT_UP 1
+>  #define EHEA_PORT_DOWN 0
+> +#define EHEA_PHY_LINK_UP 1
+> +#define EHEA_PHY_LINK_DOWN 0
+>  #define EHEA_MAX_PORT_RES 16
+>  struct ehea_port {
+>  	struct ehea_adapter *adapter;	 /* adapter that owns this port */
+> @@ -427,6 +429,7 @@ struct ehea_port {
+>  	u32 msg_enable;
+>  	u32 sig_comp_iv;
+>  	u32 state;
+> +	u8 phy_link;
+>  	u8 full_duplex;
+>  	u8 autoneg;
+>  	u8 num_def_qps;
+> diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+> index db57474..1804c99 100644
+> --- a/drivers/net/ehea/ehea_main.c
+> +++ b/drivers/net/ehea/ehea_main.c
+> @@ -53,17 +53,21 @@ static int rq3_entries = EHEA_DEF_ENTRIES_RQ3;
+>  static int sq_entries = EHEA_DEF_ENTRIES_SQ;
+>  static int use_mcs = 0;
+>  static int num_tx_qps = EHEA_NUM_TX_QP;
+> +static int show_phys_link = 0;
+>  
+>  module_param(msg_level, int, 0);
+>  module_param(rq1_entries, int, 0);
+>  module_param(rq2_entries, int, 0);
+>  module_param(rq3_entries, int, 0);
+>  module_param(sq_entries, int, 0);
+> +module_param(show_phys_link, int, 0);
+>  module_param(use_mcs, int, 0);
+>  module_param(num_tx_qps, int, 0);
+>  
+>  MODULE_PARM_DESC(num_tx_qps, "Number of TX-QPS");
+>  MODULE_PARM_DESC(msg_level, "msg_level");
+> +MODULE_PARM_DESC(show_phys_link, "Show link state of external port"
+> +		 "1:yes, 0: no.  Default = 0 ");
+>  MODULE_PARM_DESC(rq3_entries, "Number of entries for Receive Queue 3 "
+>  		 "[2^x - 1], x = [6..14]. Default = "
+>  		 __MODULE_STRING(EHEA_DEF_ENTRIES_RQ3) ")");
+> @@ -814,7 +818,9 @@ int ehea_set_portspeed(struct ehea_port *port, u32 port_speed)
+>  			ehea_error("Failed setting port speed");
+>  		}
+>  	}
+> -	netif_carrier_on(port->netdev);
+> +	if (!show_phys_link || (port->phy_link == EHEA_PHY_LINK_UP))
+> +		netif_carrier_on(port->netdev);
+> +
+>  	kfree(cb4);
+>  out:
+>  	return ret;
+> @@ -869,13 +875,19 @@ static void ehea_parse_eqe(struct ehea_adapter *adapter, u64 eqe)
+>  			}
+>  
+>  		if (EHEA_BMASK_GET(NEQE_EXTSWITCH_PORT_UP, eqe)) {
+> +			port->phy_link = EHEA_PHY_LINK_UP;
+>  			if (netif_msg_link(port))
+>  				ehea_info("%s: Physical port up",
+>  					  port->netdev->name);
+> +			if (show_phys_link)
+> +				netif_carrier_on(port->netdev);
+>  		} else {
+> +			port->phy_link = EHEA_PHY_LINK_DOWN;
+>  			if (netif_msg_link(port))
+>  				ehea_info("%s: Physical port down",
+>  					  port->netdev->name);
+> +			if (show_phys_link)
+> +				netif_carrier_off(port->netdev);
 
-Yes, sort off.  It's a trade off of space for time and I expected an 
-increase (although I didn't think that it would be quite that much). 
-But it's still less than 1% and since the time saved is time when two 
-run queue locks are held I figure that it's a trade worth making.  Also 
-this separation lays the ground for a clean up of the active load 
-balancing code which should gain some space including making it possible 
-to exclude active load balancing on systems that don't need it (i.e. 
-those that don't have multiple multi core/hyperthreading packages).
+I think it's misnamed, calling it "show_xxx", because this (as the 
+change description notes) controls propagation of carrier to the network 
+stack.
 
-I've got a patch available that reduces the .text and .data for non SMP 
-systems by excluding the load balancing stuff (that has crept into those 
-systems) so that should help on embedded systems where memory is tight.
+	Jeff
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+
