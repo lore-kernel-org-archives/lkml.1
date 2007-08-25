@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765989AbXHYSCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933666AbXHYSCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765989AbXHYSCS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 14:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbXHYSCJ
+	id S933666AbXHYSCy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 14:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756967AbXHYSCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 14:02:09 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:54238 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756171AbXHYSCI (ORCPT
+	Sat, 25 Aug 2007 14:02:45 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56941 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757176AbXHYSCo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 14:02:08 -0400
-Date: Sat, 25 Aug 2007 11:01:48 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Willy Tarreau <wtarreau@hera.kernel.org>
-Cc: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: Linux 2.6.20.17
-Message-Id: <20070825110148.5fd59272.randy.dunlap@oracle.com>
-In-Reply-To: <20070825153810.GA32619@hera.kernel.org>
-References: <20070825153810.GA32619@hera.kernel.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Sat, 25 Aug 2007 14:02:44 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>, samuel@sortiz.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] sysctl: Properly register the irda binary sysctl numbers.
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<23568.1187876026@turing-police.cc.vt.edu>
+	<20070823141652.d488a6e0.akpm@linux-foundation.org>
+	<m1wsvlmvu6.fsf_-_@ebiederm.dsl.xmission.com>
+	<6634.1188030574@turing-police.cc.vt.edu>
+	<m16433n55e.fsf@ebiederm.dsl.xmission.com>
+	<2371.1188050875@turing-police.cc.vt.edu>
+Date: Sat, 25 Aug 2007 11:59:53 -0600
+In-Reply-To: <2371.1188050875@turing-police.cc.vt.edu> (Valdis Kletnieks's
+	message of "Sat, 25 Aug 2007 10:07:55 -0400")
+Message-ID: <m1wsvjlckm.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Aug 2007 15:38:10 +0000 Willy Tarreau wrote:
+Valdis.Kletnieks@vt.edu writes:
 
-> 
-> I've just released Linux 2.6.20.17.
-> 
-> As a reminder, it fixes these 3 security issues :
->   CVE-2007-3105
->   CVE-2007-3848
->   CVE-2007-3851
-> 
-> I'll also be replying to this message with a copy of the patch between
-> 2.6.20.16 and 2.6.20.17.
-> 
-> The patch and changelog will appear soon at the following locations:
->   ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/
->   ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/patch-2.6.20.17.bz2
->   ftp://ftp.all.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.20.17
-> 
-> Git repository:
->    git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
->   http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
-> 
-> Git repository through the gitweb interface:
->   http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.20.y.git
+> On Sat, 25 Aug 2007 06:57:17 MDT, Eric W. Biederman said:
+>
+>> It's good to have confirmation that my sysctl_check routine
+>> didn't find something else wrong.
+>
+> If I understand the code, anything it whinges about is either an outright bug
+> or it's a round of ammo already chambered. ;)
 
-I'm getting build errors:
+Pretty much.  The heuristics aren't prefect but they are pretty good.
 
-x86_64 allyesconfig, allmodconfig:
+> As far as "something else wrong", I'm still seeing these in -rc3-mm1, but
+> they've been reported before against -rc2-mm2, I think:
 
-drivers/ata/pata_atiixp.c:286: error: 'PCI_DEVICE_ID_ATI_IXP700_IDE' undeclared here (not in a function)
-net/bluetooth/rfcomm/tty.c:275: error: 'struct rfcomm_dev' has no member named 'tty_dev'
-net/bluetooth/rfcomm/tty.c:278: error: 'struct rfcomm_dev' has no member named 'tty_dev'
+Interesting.  No I haven't seen this one.  This appears to be one of
+those silly little corner cases I failed to account for in my checks.
+It looks like you don't have CONFIG_SYSCTL_SYSCALL defined, and it
+appears utsname_syscall and ipcdata_syscall both become NULL pointers
+if they aren't needed.  So the complaint is a false positive.
 
+> [    0.628000] sysctl table check failed: /kernel/ostype .1.1 Missing strategy
+> [ 0.628000] sysctl table check failed: /kernel/osrelease .1.2 Missing strategy
+> [    0.628000] sysctl table check failed: /kernel/version .1.4 Missing strategy
+> [ 0.628000] sysctl table check failed: /kernel/hostname .1.7 Missing strategy
+> [ 0.628000] sysctl table check failed: /kernel/domainname .1.8 Missing strategy
+> [    0.628000] sysctl table check failed: /kernel/shmmax .1.34 Missing strategy
+> [    0.628000] sysctl table check failed: /kernel/shmall .1.41 Missing strategy
+> [    0.628000] sysctl table check failed: /kernel/shmmni .1.45 Missing strategy
+> [    0.628000] sysctl table check failed: /kernel/msgmax .1.35 Missing strategy
+> [    0.628000] sysctl table check failed: /kernel/msgmni .1.42 Missing strategy
+> [    0.628000] sysctl table check failed: /kernel/msgmnb .1.36 Missing strategy
+> [    0.628000] sysctl table check failed: /kernel/sem .1.43 Missing strategy
+>
+> And this isn't on an allyesconfig or allmodconfig. There may well be sysctl
+> code I didn't hit - my /lib/modules/2.6.23-rc3-mm1 is only about 10M, and
+> the Fedora kernels are weighing in at about 75M of /lib/modules a
+> pop.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Yes.  Thank you.  I figure as long as we are reasonably close people
+we should catch most if not all things before this is merged into
+Linus's tree.
+
+Patch in a moment.
+
+Eric
