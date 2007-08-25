@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932989AbXHYAWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933074AbXHYAX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932989AbXHYAWR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 20:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760274AbXHYAWB
+	id S933074AbXHYAX6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 20:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760274AbXHYAXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 20:22:01 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:47260 "EHLO e6.ny.us.ibm.com"
+	Fri, 24 Aug 2007 20:23:51 -0400
+Received: from mga01.intel.com ([192.55.52.88]:58196 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756911AbXHYAWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 20:22:00 -0400
-Subject: Re: 2.6.23-rc3-mm1
-From: john stultz <johnstul@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       Dave Jones <davej@codemonkey.org.uk>, Thomas Renninger <trenn@suse.de>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <20070824170702.a2c51084.akpm@linux-foundation.org>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	 <46CF695D.1020008@imap.cc>
-	 <20070824170702.a2c51084.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 24 Aug 2007 17:21:31 -0700
-Message-Id: <1188001291.6163.36.camel@localhost.localdomain>
+	id S1756921AbXHYAXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 20:23:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,305,1183359600"; 
+   d="scan'208";a="287882019"
+Date: Fri, 24 Aug 2007 17:23:49 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: travis@sgi.com
+Cc: Andi Kleen <ak@suse.de>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 1/6] x86: fix cpu_to_node references (v2)
+Message-ID: <20070825002349.GB1894@linux-os.sc.intel.com>
+References: <20070824222654.687510000@sgi.com> <20070824222948.587159000@sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070824222948.587159000@sgi.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-24 at 17:07 -0700, Andrew Morton wrote:
-> On Sat, 25 Aug 2007 01:27:25 +0200
-> Tilman Schmidt <tilman@imap.cc> wrote:
+On Fri, Aug 24, 2007 at 03:26:55PM -0700, travis@sgi.com wrote:
+> Fix four instances where cpu_to_node is referenced
+> by array instead of via the cpu_to_node macro.  This
+> is preparation to moving it to the per_cpu data area.
 > 
-> > Am 22.08.2007 11:06 schrieb Andrew Morton:
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
-> > 
-> > After applying Matthew Wilcox' patch to include/linux/isa.h
-> 
-> which patch is that?
-> 
-> > this compiles
-> > and boots on my Intel/openSUSE 10.2 test machine but throws out the
-> > following messages I don't remember ever seeing with other kernels:
-> > 
-> > - on console early during boot, also in SuSE's /var/log/boot.msg:
-> > 
-> > your system time is not correct:
-> > Wed Jul 13 13:15:31 UTC 1910
-> > setting system time to:
-> > Tue Jul 24 00:00:00 UTC 2007
+...
 
-Hrmm. I'm not super familiar w/ SuSE's init scripts, but I'm guessing
-that's the ntpdate call. And "Tuesday Jul 24th"? Sounds about a month
-off, is this just stale info?
+>  unsigned long __init numa_free_all_bootmem(void) 
+> --- a/arch/x86_64/mm/srat.c
+> +++ b/arch/x86_64/mm/srat.c
+> @@ -431,9 +431,9 @@
+>  			setup_node_bootmem(i, nodes[i].start, nodes[i].end);
+>  
+>  	for (i = 0; i < NR_CPUS; i++) {
+> -		if (cpu_to_node[i] == NUMA_NO_NODE)
+> +		if (cpu_to_node(i) == NUMA_NO_NODE)
+>  			continue;
+> -		if (!node_isset(cpu_to_node[i], node_possible_map))
+> +		if (!node_isset(cpu_to_node(i), node_possible_map))
+>  			numa_set_node(i, NUMA_NO_NODE);
+>  	}
+>  	numa_init_array();
 
+During this particular routine execution, per cpu areas are not yet setup. In
+future, when we make cpu_to_node(i) use per cpu area, then this code will break.
 
-> What architecture?
-> 
-> if x86_64 then perhaps something went wrong with the old x86_64 dynticks
-> leftovers which were in rc3-mm1.  I've just merged a shiny fresh new series
-> so perhaps things there got fixed.  Please retest next -mm.
-> 
-[snip]
-> > - from fsck during boot:
-> > 
-> > /dev/system/root: Superblock last mount time is in the future.  FIXED.
-> > /dev/system/root: Superblock last write time is in the future.  FIXED.
-> 
-> Presumably related to the time problem.
+And actually setup_per_cpu_areas() uses cpu_to_node(). So...
 
-
-Does this show up before or after the above date stuff? 
-Does the issue go away using an older kernel (I want to eliminate easy
-stuff like CMOS batteries giving up)?
-
-Also you're not using Linus' CMOS corrupting suspend/resume debugging
-trick, right (I'm forgetting the CONFIG name).
-
-thanks
--john
-
-
+thanks,
+suresh
