@@ -1,111 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764578AbXHYR0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760181AbXHYRbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764578AbXHYR0U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 13:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbXHYR0M
+	id S1760181AbXHYRbx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 13:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXHYRbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 13:26:12 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:35130 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755203AbXHYR0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 13:26:11 -0400
-Message-ID: <46D065DC.2030902@us.ibm.com>
-Date: Sat, 25 Aug 2007 10:24:44 -0700
-From: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sat, 25 Aug 2007 13:31:45 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:3589 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751476AbXHYRbo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 13:31:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PZap1XGLmlU9GEMFdT99OYp+4u17M5ALG0OKa60Ain0rQOohAUcSPJUBvXfbnJQoSvdhk2DX1dHbrq+blwfeFYF5SCoS5SNbzW2LQj23d/QyaJzMa24yVZaQOx/pn0lq4Y/gRjJZoBZp9ri0m4qnORs0yIwOzWnlw34kIcIzMpU=
+Message-ID: <e21d91280708251031k5e3bd962o6a268e6506696a8c@mail.gmail.com>
+Date: Sat, 25 Aug 2007 13:31:43 -0400
+From: "Clark Cooper" <clark.cooper@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: Caught SIGFPE exceptions aren't reset
+In-Reply-To: <e21d91280708251018l4904b6bcm5b40e22b6b2cbedc@mail.gmail.com>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: taoyue <yue.tao@windriver.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH] sigqueue_free: fix the race with collect_signal()
-References: <20070823134538.GA1358@tv-sign.ru> <46CEEA94.2070902@windriver.com> <20070824074558.GA86@tv-sign.ru> <46CF4DCB.6030304@windriver.com> <20070824110836.GA74@tv-sign.ru> <46CF3988.1020408@us.ibm.com> <20070824202305.GA274@tv-sign.ru>
-In-Reply-To: <20070824202305.GA274@tv-sign.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e21d91280708242140i2e6223a4v51ba016837b74be8@mail.gmail.com>
+	 <18128.322.59087.367556@alkaid.it.uu.se>
+	 <e21d91280708251018l4904b6bcm5b40e22b6b2cbedc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 08/24, Sukadev Bhattiprolu wrote:
->   
->> Oleg Nesterov wrote:
->>     
->>> On 08/24, taoyue wrote:
->>>  
->>>       
->>>> Oleg Nesterov wrote:
->>>>    
->>>>         
->>>>>> collect_signal:				sigqueue_free:
->>>>>>
->>>>>> 	list_del_init(&first->list);
->>>>>>                                      spin_lock_irqsave(lock, flags);
->>>>>>   
->>>>>>        
->>>>>>             
->>>>>                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->>>>>
->>>>>      
->>>>>           
->>>>>>                                      if (!list_empty(&q->list))
->>>>>>                                            list_del_init(&q->list);
->>>>>>                                      spin_unlock_irqrestore(lock, 
->>>>>>                                      flags);
->>>>>>                                      q->flags &= ~SIGQUEUE_PREALLOC;
->>>>>>
->>>>>>      __sigqueue_free(first);		__sigqueue_free(q);
->>>>>>   
->>>>>>        
->>>>>>             
->>>>> collect_signal() is always called under ->siglock which is also taken by
->>>>> sigqueue_free(), so this is not possible.
->>>>>
->>>>>
->>>>>      
->>>>>           
->>>> I know, using current->sighand->siglock to prevent one sigqueue
->>>> is free twice. I want to know whether it is possible that the two
->>>> function is called in different thread. If that, the spin_lock is useless.
->>>>    
->>>>         
->>> Not sure I understand. Yes, it is possible they are called by 2 different
->>> threads, that is why we had a race. But all threads in the same thread
->>> group have the same ->sighand, and thus the same ->sighand->siglock.
->>>  
->>>       
->> Oleg, if one thread can be in collect_signal() and another in 
->> sigqueue_free() and both operate on the exact same sigqueue object, its 
->> not clear how we prevent two calls to __sigqueue_free() to
->> the same object. In that case the lock (or some lock) should be around 
->> __sigqueue_free() - no ?
->>
->> i.e if we enter sigqueue_free(), we will call __sigqueue_free() 
->> regardless of the state.
->>     
->
-> Yes. They both will call __sigqueue_free(). But please note that __sigqueue_free()
-> checks SIGQUEUE_PREALLOC, which is cleared by sigqueue_free().
->
-> IOW, when sigqueue_free() unlocks ->siglock, we know that it can't be used
-> by collect_signal() from another thread. So we can clear SIGQUEUE_PREALLOC
-> and free sigqueue. We don't need this lock around sigqueue_free() to prevent
-> the race. collect_signal() can "see" only those sigqueues which are on list.
->
-> IOW, when sigqueue_free() takes ->siglock, colect_signal() can't run, because
-> it needs the same lock. Now we delete this sigqueue from list, nobody can
-> see it, it can't have other references. So we can unlock ->siglock, mark
-> sigqueue as freeable (clear SIGQUEUE_PREALLOC), and free it.
->
-> Do you agree?
->   
-
-Yes. I see it now. I had missed the SIGQUEUE_PREALLOC in __sigqueue_free().
-
-Thanks for clarifying
-
-Suka
+Thank you for your prompt answer. You wrote:
 
 
+> Your handler can do this by masking
+>  exceptions, changing the operands of the failed FP instruction,
+> or by changing the PC so that the failed instruction is skipped
+> (your handler may want to emulate the instruction in this case).
+
+Given the current SIGFPE handling in the kernel, a userland handler
+CAN'T mask the exceptions or clear the exception flags. This is
+demonstrated in my example program where I call both feclearexception
+and fedisableexception in the handler. The reason these don't work is
+that any change you make to these FPU registers is overwritten with
+the saved FPU context on return from the signal handler. Changing the
+PC won't help since the exception flag is still set and unmasked on
+signal return.
+
+Now either the kernel should clear the corresponding exception flags
+or it should present the correct FPU state to the handler for
+manipulation. Currently neither of these appear to be the case. So if
+there is no problem with the kernel, then the signal man pages should
+indicate that while you can catch a SIGFPE, you can't actually return
+from it.
+
+If I am completely wrong on this, could you please indicate what kind
+of change could be made to the handler in my example program to allow
+it to reach the final printf statement in the main program?
+
+Thank you,
+Clark Cooper
