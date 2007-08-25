@@ -1,168 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934184AbXHYPJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934274AbXHYPK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934184AbXHYPJp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 11:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763127AbXHYPJf
+	id S934274AbXHYPK5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 11:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757870AbXHYPKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 11:09:35 -0400
-Received: from mx.treblig.org ([80.68.94.177]:4302 "EHLO mx.treblig.org"
+	Sat, 25 Aug 2007 11:10:50 -0400
+Received: from smtp3-g19.free.fr ([212.27.42.29]:51236 "EHLO smtp3-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762968AbXHYPJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 11:09:34 -0400
-Date: Sat, 25 Aug 2007 16:09:27 +0100
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: neilb@suse.de, bfields@fieldses.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add source address to sunrpc svc errors
-Message-ID: <20070825150927.GA29335@gallifrey>
-References: <20070825012630.GB5431@gallifrey> <20070824185621.3f16f7c9.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070824185621.3f16f7c9.randy.dunlap@oracle.com>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
-X-Uptime: 16:01:57 up 11 days, 23:16,  1 user,  load average: 0.44, 0.43, 0.46
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1757729AbXHYPKt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 11:10:49 -0400
+Date: Sat, 25 Aug 2007 17:10:39 +0200
+From: Guillaume Chazarain <guichaz@yahoo.fr>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jay Lan <jlan@engr.sgi.com>, Jonathan Lim <jlim@sgi.com>
+Subject: Re: [PATCH] Add all thread stats for TASKSTATS_CMD_ATTR_TGID
+Message-ID: <20070825171039.3bc73781@localhost.localdomain>
+In-Reply-To: <46C9C8D4.9080108@linux.vnet.ibm.com>
+References: <3d8471ca0708020653l575db8cam464a3cffce68fb26@mail.gmail.com>
+ <20070802120427.270e5589.akpm@linux-foundation.org>
+ <20070819213435.72b287ad@localhost.localdomain>
+ <46C9C8D4.9080108@linux.vnet.ibm.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Randy,
-  Thanks for your comments,
+Le Mon, 20 Aug 2007 22:31:08 +0530,
+Balbir Singh <balbir@linux.vnet.ibm.com> a écrit :
 
-* Randy Dunlap (randy.dunlap@oracle.com) wrote:
-  in reply to my patch:
-
-> > +static int
-> > +svc_printkerr(struct svc_rqst *rqstp, const char* fmt,...)
+> > --- a/kernel/taskstats.c	Sat Aug 18 17:15:17 2007 -0700
+> > +++ b/kernel/taskstats.c	Sun Aug 19 17:20:15 2007 +0200
+> > @@ -246,6 +246,8 @@ static int fill_tgid(pid_t tgid, struct 
+> > 
+> >  		stats->nvcsw += tsk->nvcsw;
+> >  		stats->nivcsw += tsk->nivcsw;
+> > +		bacct_add_tsk(stats, tsk);
+> > +		xacct_add_tsk(stats, tsk);
 > 
-> add:
-> 	__attribute__ ((format (printf, 2, 3)))
-> so that the compiler can check the args list.
+> I'm afraid this is still not good enough. bacct_add_tsk() will assign
+> values and do nothing in the loop (HINT: no summation).
 
-Added.
+Hi Balbir, thank you for your review. I agree with everything you said
+and am on my way to do it as time permits, but I have some trouble
+understanding this part. You stated that bacct_add_tsk() would overwrite
+the stats of each thread in the tgid stats, but the other part of the
+patch is the (actually wrong) combination of stats in xxx_add_tsk()
+using min/max/sum.
 
-> > +	printk("svc: %s :", svc_print_addr(rqstp, buf, sizeof(buf)));
-> 
-> some KERN_* level, please.
+Also, I don't understand why the code to update btime:
 
-I've gone with KERN_WARNING which seems about right.
+        /* calculate task elapsed time in timespec */
+        do_posix_clock_monotonic_gettime(&uptime);
+        ts = timespec_sub(uptime, tsk->start_time);
+	...
+        stats->ac_btime = get_seconds() - ts.tv_sec;
 
-Here is a v2 of the patch that adds those two fixes and also
-tidies up the output a little.
+does not simply use tsk->start_time or tsk->real_start_time without
+comparing it to the current time.
 
-Dave
+Thanks.
+
 -- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
-\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
-
-----------------------------------------------------------
-Hi,
-  This patch adds the address of the client that caused an
-error in sunrpc/svc.c so that you get errors that look like:
-
-svc: 192.168.66.28, port=709: unknown version (3 for prog 100003, nfsd)
-
-I've seen machines which get bunches of unknown version or similar
-errors from time to time, and while the recent patch to add
-the service helps to find which service has the wrong version it doesn't
-help find the potentially bad client.
-
-  The patch is against a checkout of Linus's git tree made
-on 2007-08-24.
-
-  One observation is that the svc_print_addr function
-prints to a buffer which in this case makes life a little more complex;
-it just feels as if there must be lots of places that print a
-connection address - is there a better function to use anywhere?
-
-I think actually there are a few places with semi duplicated code; e.g.
-one_sock_name switches on the address family but only currently
-has IPV4; I wonder how many other places are similar.
-
-Dave
-
-    Signed-off-by: Dave Gilbert <linux@treblig.org>
-
---- linux-2.6/net/sunrpc/svc.c.predag	2007-08-25 00:50:06.000000000 +0100
-+++ linux-2.6/net/sunrpc/svc.c	2007-08-25 15:53:36.000000000 +0100
-@@ -777,6 +777,30 @@ svc_register(struct svc_serv *serv, int 
- }
- 
- /*
-+ * Printk the given error with the address of the client that caused it.
-+ */
-+static int
-+__attribute__ ((format (printf, 2, 3)))
-+svc_printkerr(struct svc_rqst *rqstp, const char *fmt, ...)
-+{
-+	va_list args;
-+	int 	r;
-+	char 	buf[RPC_MAX_ADDRBUFLEN];
-+
-+	if (!net_ratelimit())
-+		return 0;
-+
-+	printk(KERN_WARNING "svc: %s: ",
-+		svc_print_addr(rqstp, buf, sizeof(buf)));
-+
-+	va_start(args, fmt);
-+	r = vprintk(fmt, args);
-+	va_end(args);
-+
-+	return r;
-+}
-+
-+/*
-  * Process the RPC request.
-  */
- int
-@@ -963,14 +987,13 @@ svc_process(struct svc_rqst *rqstp)
- 	return 0;
- 
- err_short_len:
--	if (net_ratelimit())
--		printk("svc: short len %Zd, dropping request\n", argv->iov_len);
-+	svc_printkerr(rqstp, "short len %Zd, dropping request\n",
-+			argv->iov_len);
- 
- 	goto dropit;			/* drop request */
- 
- err_bad_dir:
--	if (net_ratelimit())
--		printk("svc: bad direction %d, dropping request\n", dir);
-+	svc_printkerr(rqstp, "bad direction %d, dropping request\n", dir);
- 
- 	serv->sv_stats->rpcbadfmt++;
- 	goto dropit;			/* drop request */
-@@ -1000,8 +1023,7 @@ err_bad_prog:
- 	goto sendit;
- 
- err_bad_vers:
--	if (net_ratelimit())
--		printk("svc: unknown version (%d for prog %d, %s)\n",
-+	svc_printkerr(rqstp, "unknown version (%d for prog %d, %s)\n",
- 		       vers, prog, progp->pg_name);
- 
- 	serv->sv_stats->rpcbadfmt++;
-@@ -1011,16 +1033,14 @@ err_bad_vers:
- 	goto sendit;
- 
- err_bad_proc:
--	if (net_ratelimit())
--		printk("svc: unknown procedure (%d)\n", proc);
-+	svc_printkerr(rqstp, "unknown procedure (%d)\n", proc);
- 
- 	serv->sv_stats->rpcbadfmt++;
- 	svc_putnl(resv, RPC_PROC_UNAVAIL);
- 	goto sendit;
- 
- err_garbage:
--	if (net_ratelimit())
--		printk("svc: failed to decode args\n");
-+	svc_printkerr(rqstp, "failed to decode args\n");
- 
- 	rpc_stat = rpc_garbage_args;
- err_bad:
+Guillaume
