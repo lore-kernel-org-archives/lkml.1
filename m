@@ -1,42 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763628AbXHYA1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763143AbXHYAim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763628AbXHYA1x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 20:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756721AbXHYA1q
+	id S1763143AbXHYAim (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 20:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756819AbXHYAic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 20:27:46 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40388 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756306AbXHYA1p (ORCPT
+	Fri, 24 Aug 2007 20:38:32 -0400
+Received: from mga03.intel.com ([143.182.124.21]:40853 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751712AbXHYAib convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 20:27:45 -0400
-Date: Fri, 24 Aug 2007 17:15:59 -0700
-From: Greg KH <greg@kroah.com>
-To: tonyj@suse.de
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, kay.sievers@vrfy.org
-Subject: Re: [patch 11/14] Convert from class_device to device for USB host
-Message-ID: <20070825001559.GA3749@kroah.com>
-References: <20070820224806.154198000@suse.de> <20070820225131.546468000@suse.de>
+	Fri, 24 Aug 2007 20:38:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,305,1183359600"; 
+   d="scan'208";a="267762348"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070820225131.546468000@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.23-rc3-mm1
+Date: Fri, 24 Aug 2007 17:38:27 -0700
+Message-ID: <653FFBB4508B9042B5D43DC9E18836F5014D956A@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F5014D954E@scsmsx415.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.23-rc3-mm1
+Thread-Index: Acfmq+bLWfekzg4sQo6w9Ws5qcOUoQAAHsvgAADIgIA=
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org><46CF695D.1020008@imap.cc> <20070824170702.a2c51084.akpm@linux-foundation.org> <653FFBB4508B9042B5D43DC9E18836F5014D954E@scsmsx415.amr.corp.intel.com>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Tilman Schmidt" <tilman@imap.cc>
+Cc: <linux-kernel@vger.kernel.org>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "john stultz" <johnstul@us.ibm.com>, "Andi Kleen" <ak@suse.de>,
+       "Len Brown" <lenb@kernel.org>, <linux-acpi@vger.kernel.org>,
+       "Dave Jones" <davej@codemonkey.org.uk>,
+       "Thomas Renninger" <trenn@suse.de>, "Adam Belay" <abelay@novell.com>
+X-OriginalArrivalTime: 25 Aug 2007 00:38:29.0283 (UTC) FILETIME=[419D9F30:01C7E6B0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 20, 2007 at 03:48:17PM -0700, tonyj@suse.de wrote:
-> -- 
-> Content-Disposition: inline; filename=usb-host.patch
+ 
+
+>-----Original Message-----
+>From: linux-acpi-owner@vger.kernel.org 
+>[mailto:linux-acpi-owner@vger.kernel.org] On Behalf Of 
+>Pallipadi, Venkatesh
+>Sent: Friday, August 24, 2007 5:14 PM
+>To: Andrew Morton; Tilman Schmidt
+>Cc: linux-kernel@vger.kernel.org; Thomas Gleixner; john 
+>stultz; Andi Kleen; Len Brown; linux-acpi@vger.kernel.org; 
+>Dave Jones; Thomas Renninger
+>Subject: RE: 2.6.23-rc3-mm1
+>
 > 
-> Convert from class_device to device for drivers/ide/usb/host.   Greg, not
-> sure if you're looking for a patch for this. Kay mentioned maybe it was to
-> be superceded by a diff mechanism.  Free free to drop if so. Thanks!
+>>> - in /var/log/warn:
+>>> 
+>>> Aug 25 00:44:00 xenon powersaved[5356]: WARNING 
+>>(CpufreqManagement:51) No capability cpufreq_control
+>>> Aug 25 00:44:00 xenon powersaved[5356]: WARNING 
+>>(CpufreqManagement:51) No capability cpufreq_control
+>>
+>>Dunno, there're some significant-looking cpufreq changes in 
+>>there, such as
+>>cpufreq-allow-ondemand-and-conservative-cpufreq-governors-to-be
+>>-used-as-default.patch.
+>>Maybe we went and chose a different governor for you?
+>>
+>
+>This is probably not related to cpufreq changes itself. Looks 
+>like it is
+>coming due to
+>
+>>> FATAL: Error inserting processor 
+>>(/lib/modules/2.6.23-rc3-mm1-testing/kernel/drivers/acpi/proces
+>>sor.ko): Input/output error
+>>> WARNING: Error inserting processor 
+>>(/lib/modules/2.6.23-rc3-mm1-testing/kernel/drivers/acpi/proces
+>>sor.ko): Input/output error
+>
+>Not sure why this is failing though. Don't recall any significant
+>changes in processor.ko recently apart from CPUIDLE stuff.
+>
 
-Yeah, these files all need to go to debugfs, not stay as sysfs files.
-If you want to do that, that would be wonderful, I'd really appreciate
-it.  Otherwise it's going to be a few weeks before I can do this.
+This is indeed related to CPUIDLE.
 
-thanks,
+Tilman: Can you configure CONFIG_CPU_IDLE in your config (under Power
+Management option) and double check that the frequency part works after
+that.
 
-greg k-h
+Andrew: Adam Belay sent a recent patchset on linux-pm and linux-acpi and
+one of the patches of that addresses this issue (CPUIDLE: load ACPI
+properly when CPUIDLE is disabled). Those patches should come to mm soon
+through acpi-test.
+
+Thanks,
+Venki
