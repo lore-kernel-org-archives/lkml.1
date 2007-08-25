@@ -1,101 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765483AbXHYBWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbXHYB0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765483AbXHYBWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 21:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbXHYBWM
+	id S932136AbXHYB0l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 21:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756616AbXHYB0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 21:22:12 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:64852 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750911AbXHYBWL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 21:22:11 -0400
-Subject: Re: kernel BUG with 2.6.23-rc3-mm1: skb_over_panic
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070825004640.GA21756@kroah.com>
-References: <20070824224707.GA7275@Krystal>
-	 <20070824161029.6236a5f4.akpm@linux-foundation.org>
-	 <20070825001638.GB9811@Krystal>
-	 <20070824174450.70337f4f.akpm@linux-foundation.org>
-	 <20070825004640.GA21756@kroah.com>
-Content-Type: text/plain
-Date: Sat, 25 Aug 2007 03:26:18 +0200
-Message-Id: <1188005178.3548.49.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+izLg8RwbwaeA6FywfPikP9BwHGY/FVp48DOi
- 88Dqd4SSOMrKfpsYzMknxtWJs7Q3VtiLxTfZtMHdtZ43RnCQZp
- lGGK/dTsgrtXpAwSnQQgAHP8NKIwVMc
+	Fri, 24 Aug 2007 21:26:34 -0400
+Received: from mx.treblig.org ([80.68.94.177]:2628 "EHLO mx.treblig.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755902AbXHYB0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Aug 2007 21:26:33 -0400
+Date: Sat, 25 Aug 2007 02:26:30 +0100
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: neilb@suse.de
+Cc: bfields@fieldses.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Add source address to sunrpc svc errors
+Message-ID: <20070825012630.GB5431@gallifrey>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
+X-Uptime: 02:02:33 up 11 days,  9:17,  1 user,  load average: 0.52, 0.56, 0.59
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-24 at 17:46 -0700, Greg KH wrote:
-> On Fri, Aug 24, 2007 at 05:44:50PM -0700, Andrew Morton wrote:
-> > On Fri, 24 Aug 2007 20:16:38 -0400
-> > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > > * Andrew Morton (akpm@linux-foundation.org) wrote:
-> > > > On Fri, 24 Aug 2007 18:47:07 -0400
-> > > > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+Hi,
+  This patch adds the address of the client that caused an
+error in sunrpc/svc.c so that you get errors that look like:
 
-> > > > > I get the following BUG when booting 2.6.23-rc3-mm1 on i386. I wonder if
-> > > > > you would have some ideas about what is causing this problem. I'll start
-> > > > > bissecting it soon. I seems to be caused by an buggy skb_put call in
-> > > > > kobject_uevent_env.
-> > > > 
-> > > > hm, don't know, sorry.  Kay fixed a few things in there, but iirc pretty
-> > > > much all of the fixes were in rc3-mm1 anyway.
-> > > > 
-> > > > I doubt if bisection will tell us a lot: it'll probably point at
-> > > > gregkh-driver-driver-core-change-add_uevent_var-to-use-a-struct.patch.
-> > > > 
-> > > > What we _would_ like to know is which sysfs file is being written to.  We
-> > > > used to have a debug patch to exactly address this problem but it got
-> > > > transferred into Greg's tree from whence it mysteriously disappeared.
-> > > > 
-> > > 
-> > > Ok, here it is:
-> > > 
-> > > filename :
-> > > 
-> > > /devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/rev
-> > 
-> > Bah.  I've never found a sane way of going from a sysfs pathname back to the
-> > code which implements that pathname :(
-> > 
-> > <greps the tree for '"rev"'>
-> > 
-> > <comes up with zilch>
-> 
-> It's a scsi file, as the above is a scsi device.  It's created in the
-> drivers/scsi/scsi_sysfs.c file.
-> 
-> Kay, did you miss this set of attributes somehow?
+svc: 192.168.66.28, port=709 :unknown version (3 for prog 100003, nfsd)
 
-We didn't really touch anything in scsi. I expect it's something messing
-around with the buffer values.
+I've seen machines which get bunches of unknown version or similar
+errors from time to time, and while the recent patch to add
+the service helps to find which service has the wrong version it doesn't
+help find the potentially bad client.
 
-Mathieu,
-does this fix it? If it does, we need to find what's going wrong, as it
-probably just hides a bug somewhere.
+  The patch is against a checkout of Linus's git tree made
+on 2007-08-24.
 
-Thanks,
-Kay
+  One observation is that the svc_print_addr function
+prints to a buffer which in this case makes life a little more complex;
+it just feels as if there must be lots of places that print a
+connection address - is there a better function to use anywhere?
+
+I think actually there are a few places with semi duplicated code; e.g.
+one_sock_name switches on the address family but only currently
+has IPV4; I wonder how many other places are similar.
+
+Dave
+
+	Signed-off-by: Dave Gilbert <linux@treblig.org>
+
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
+\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
 
 
---- a/lib/kobject_uevent.c
-+++ b/lib/kobject_uevent.c
-@@ -176,7 +176,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+--- linux-2.6/net/sunrpc/svc.c.predag	2007-08-25 00:50:06.000000000 +0100
++++ linux-2.6/net/sunrpc/svc.c	2007-08-25 01:34:56.000000000 +0100
+@@ -777,6 +777,28 @@ svc_register(struct svc_serv *serv, int 
+ }
  
- 		/* allocate message with the maximum possible size */
- 		len = strlen(action_string) + strlen(devpath) + 2;
--		skb = alloc_skb(len + env->buflen, GFP_KERNEL);
-+		skb = alloc_skb(len + UEVENT_BUFFER_SIZE, GFP_KERNEL);
- 		if (skb) {
- 			char *scratch;
+ /*
++ * Printk the given error with the address of the client that caused it.
++ */
++static int
++svc_printkerr(struct svc_rqst *rqstp, const char* fmt,...)
++{
++	va_list args;
++	int 	r;
++	char 	buf[RPC_MAX_ADDRBUFLEN];
++
++	if (!net_ratelimit())
++		return 0;
++
++	printk("svc: %s :", svc_print_addr(rqstp, buf, sizeof(buf)));
++
++	va_start(args, fmt);
++	r = vprintk(fmt, args);
++	va_end(args);
++
++	return r;
++}
++
++/*
+  * Process the RPC request.
+  */
+ int
+@@ -963,14 +985,13 @@ svc_process(struct svc_rqst *rqstp)
+ 	return 0;
  
-
+ err_short_len:
+-	if (net_ratelimit())
+-		printk("svc: short len %Zd, dropping request\n", argv->iov_len);
++	svc_printkerr(rqstp, "short len %Zd, dropping request\n",
++			argv->iov_len);
+ 
+ 	goto dropit;			/* drop request */
+ 
+ err_bad_dir:
+-	if (net_ratelimit())
+-		printk("svc: bad direction %d, dropping request\n", dir);
++	svc_printkerr(rqstp, "bad direction %d, dropping request\n", dir);
+ 
+ 	serv->sv_stats->rpcbadfmt++;
+ 	goto dropit;			/* drop request */
+@@ -1000,8 +1021,7 @@ err_bad_prog:
+ 	goto sendit;
+ 
+ err_bad_vers:
+-	if (net_ratelimit())
+-		printk("svc: unknown version (%d for prog %d, %s)\n",
++	svc_printkerr(rqstp, "unknown version (%d for prog %d, %s)\n",
+ 		       vers, prog, progp->pg_name);
+ 
+ 	serv->sv_stats->rpcbadfmt++;
+@@ -1011,16 +1031,14 @@ err_bad_vers:
+ 	goto sendit;
+ 
+ err_bad_proc:
+-	if (net_ratelimit())
+-		printk("svc: unknown procedure (%d)\n", proc);
++	svc_printkerr(rqstp, "unknown procedure (%d)\n", proc);
+ 
+ 	serv->sv_stats->rpcbadfmt++;
+ 	svc_putnl(resv, RPC_PROC_UNAVAIL);
+ 	goto sendit;
+ 
+ err_garbage:
+-	if (net_ratelimit())
+-		printk("svc: failed to decode args\n");
++	svc_printkerr(rqstp, "svc: failed to decode args\n");
+ 
+ 	rpc_stat = rpc_garbage_args;
+ err_bad:
