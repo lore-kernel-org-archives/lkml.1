@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934609AbXHYTu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934634AbXHYUOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934609AbXHYTu2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 15:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933880AbXHYTuT
+	id S934634AbXHYUOs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 16:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934263AbXHYUOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 15:50:19 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:60741 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933780AbXHYTuS (ORCPT
+	Sat, 25 Aug 2007 16:14:39 -0400
+Received: from kolab.mylinuxtime.de ([212.112.242.22]:51339 "EHLO
+	kolab.mylinuxtime.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934238AbXHYUOi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 15:50:18 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sat, 25 Aug 2007 15:40:23 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] FS: Make RAMFS both selectable and tristate.
-Message-ID: <Pine.LNX.4.64.0708251538320.29214@localhost.localdomain>
+	Sat, 25 Aug 2007 16:14:38 -0400
+X-Spam-ASN: 
+From: Christian Hesse <mail@earthworm.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Suspend2-devel] Problem with CFS V20 and Suspend2/tuxonice
+Date: Sat, 25 Aug 2007 22:14:22 +0200
+User-Agent: KMail/1.9.7
+Cc: suspend2-devel@lists.tuxonice.net, Fabio Comolli <fabio.comolli@gmail.com>,
+       linux-kernel@vger.kernel.org, Suspend2-users@lists.suspend2.net,
+       suspend2-devel <suspend2-devel@lists.suspend2.net>,
+       David Rodriguez <livuxman@gmail.com>
+References: <1946b54f0708250423k75d5797fuc5b032be7e143f26@mail.gmail.com> <200708251852.28698.mail@earthworm.de> <20070825190205.GB15888@elte.hu>
+In-Reply-To: <20070825190205.GB15888@elte.hu>
+X-Face: 1\p'dhO'VZk,x0lx6U}!Y*9UjU4n2@4c<"a*K%3Eiu'VwM|-OYs;S-PH>4EdJMfGyycC)=?utf-8?q?k=0A=09=3Anv*xqk4C?=@1b8tdr||mALWpN[2|~h#Iv;)M"O$$#P9Kg+S8+O#%EJx0TBH7b&Q<m)=?utf-8?q?n=23Q=2Eo=0A=09kE=7E=26T=5D0cQX6=5D?=<q!HEE,F}O'Jd#lx/+){Gr@W~J`h7sTS(M+oe5<=?utf-8?q?3O7GY9y=5Fi!qG=26Vv=5CD8/=0A=09=254?=@&~$Z@UwV'NQ$Ph&3fZc(qbDO?{LN'nk>+kRh4`C3[KN`-1uT-TD_m
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: multipart/signed;
+  boundary="nextPart1353628.JZp7TIcT3D";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200708252214.27497.mail@earthworm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1353628.JZp7TIcT3D
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Allow RAMFS to be user-selectable, and to be built as a module.
+On Saturday 25 August 2007, Ingo Molnar wrote:
+> * Christian Hesse <mail@earthworm.de> wrote:
+> > > Reproduced on a Intel Centrino based laptop with gentoo kamikaze7
+> > > sources (http://forums.gentoo.org/viewtopic-t-577970.html)
+> >
+> > Same problem here: Core Duo, Kernel 2.6.22.5, Suspend 2.2.10, CFS v20.2.
+>
+> please try the patch below - does it fix the problem?
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+Works for me. Thanks a lot!
+=2D-=20
+Regards,
+Chris
 
----
+--nextPart1353628.JZp7TIcT3D
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-  given that the help content for that option suggests it can be built
-as a module, it just makes sense to make it selectable and tristate,
-unless someone has a compelling argument against it.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index 58a0650..e79ac86 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1003,7 +1003,7 @@ config HUGETLB_PAGE
- 	def_bool HUGETLBFS
+iD8DBQBG0I2elZfG2c8gdSURAve+AJ9pvnPQSBV+sqCHQXcYFNYzWCbyawCg7dYB
+ZxAJYHwPWg6VpL6+UGQaV6I=
+=ujGM
+-----END PGP SIGNATURE-----
 
- config RAMFS
--	bool
-+	tristate "Ramfs support"
- 	default y
- 	---help---
- 	  Ramfs is a file system which keeps all files in RAM. It allows
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+--nextPart1353628.JZp7TIcT3D--
