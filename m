@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932484AbXHYAMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932116AbXHYANv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932484AbXHYAMB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Aug 2007 20:12:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758755AbXHYALu
+	id S932116AbXHYANv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Aug 2007 20:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758751AbXHYANm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 20:11:50 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:53411 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758810AbXHYALt (ORCPT
+	Fri, 24 Aug 2007 20:13:42 -0400
+Received: from mga09.intel.com ([134.134.136.24]:11688 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758637AbXHYANk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 20:11:49 -0400
-Subject: RE: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re:
-	LinuxFoundation Technical Advisory Board Elections
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Greg KH <greg@kroah.com>, Matt Mackall <mpm@selenic.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andy Isaacson <adi@hexapodia.org>, Josh Boyer <jwboyer@gmail.com>,
-       ksummit-2007-discuss@thunk.org
-In-Reply-To: <617E1C2C70743745A92448908E030B2A0242FF38@scsmsx411.amr.corp.intel.com>
-References: <20070823003748.GR30556@waste.org>
-	 <20070823004209.GP9163@parisc-linux.org><20070823011953.GS30556@waste.org>
-	 <1187832907.3410.141.camel@localhost.localdomain>
-	 <20070824012730.GA1243@hexapodia.org>
-	 <625fc13d0708231934q5b369b4fh1a5c83def0e56a0d@mail.gmail.com>
-	 <20070824025254.GH21720@waste.org><20070824025504.GT9163@parisc-linux.org>
-	 <20070824032228.GJ21720@waste.org><20070824155735.GA14978@kroah.com>
-	 <20070824234840.GC19595@kroah.com>
-	 <617E1C2C70743745A92448908E030B2A0242FF38@scsmsx411.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Fri, 24 Aug 2007 20:11:40 -0400
-Message-Id: <1188000700.3991.78.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Aug 2007 20:13:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,305,1183359600"; 
+   d="scan'208";a="121476862"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.23-rc3-mm1
+Date: Fri, 24 Aug 2007 17:13:37 -0700
+Message-ID: <653FFBB4508B9042B5D43DC9E18836F5014D954E@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <20070824170702.a2c51084.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.23-rc3-mm1
+Thread-Index: Acfmq+bLWfekzg4sQo6w9Ws5qcOUoQAAHsvg
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org><46CF695D.1020008@imap.cc> <20070824170702.a2c51084.akpm@linux-foundation.org>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Tilman Schmidt" <tilman@imap.cc>
+Cc: <linux-kernel@vger.kernel.org>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "john stultz" <johnstul@us.ibm.com>, "Andi Kleen" <ak@suse.de>,
+       "Len Brown" <lenb@kernel.org>, <linux-acpi@vger.kernel.org>,
+       "Dave Jones" <davej@codemonkey.org.uk>,
+       "Thomas Renninger" <trenn@suse.de>
+X-OriginalArrivalTime: 25 Aug 2007 00:13:38.0939 (UTC) FILETIME=[C94D2CB0:01C7E6AC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-24 at 17:01 -0700, Luck, Tony wrote:
-> Have there been any more nominations?  At the moment we are sitting
-> with three people standing for five positions, so the whole concept
-> of who should be allowed to vote in the election seems to be moot.
+ 
+>> - in /var/log/warn:
+>> 
+>> Aug 25 00:44:00 xenon powersaved[5356]: WARNING 
+>(CpufreqManagement:51) No capability cpufreq_control
+>> Aug 25 00:44:00 xenon powersaved[5356]: WARNING 
+>(CpufreqManagement:51) No capability cpufreq_control
+>
+>Dunno, there're some significant-looking cpufreq changes in 
+>there, such as
+>cpufreq-allow-ondemand-and-conservative-cpufreq-governors-to-be
+>-used-as-default.patch.
+>Maybe we went and chose a different governor for you?
+>
 
-Yes, the current nominations slate is
+This is probably not related to cpufreq changes itself. Looks like it is
+coming due to
 
-Arjan van de Ven <arjan@infradead.org>
-Greg Kroah Hartman <greg@kroah.com>
-Christoph Lameter <christoph@lameter.com>
-Jonathan Corbet <corbet@lwn.net>
-James Morris <jmorris@namei.org>
+>> FATAL: Error inserting processor 
+>(/lib/modules/2.6.23-rc3-mm1-testing/kernel/drivers/acpi/proces
+>sor.ko): Input/output error
+>> WARNING: Error inserting processor 
+>(/lib/modules/2.6.23-rc3-mm1-testing/kernel/drivers/acpi/proces
+>sor.ko): Input/output error
 
-So we're still one shy of an actual contest, but there's time yet.
+Not sure why this is failing though. Don't recall any significant
+changes in processor.ko recently apart from CPUIDLE stuff.
 
-James
-
-
+Thanks,
+Venki
