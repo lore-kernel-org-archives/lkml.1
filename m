@@ -1,146 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934511AbXHYWqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934345AbXHYXPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934511AbXHYWqt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 18:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbXHYWqj
+	id S934345AbXHYXPs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 19:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbXHYXPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 18:46:39 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:2534 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750941AbXHYWqi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 18:46:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VChMF6aRpTykr5PDEcBEb5l+BuBHDRuClHWx1p6nBaRS0fgz+QsHmeuFLJK6qsTqH73OFEJkoz1Cnxe21YZwixLUOn+KeUKyda7QqTDWWhR6oNXxmIxan2aSU76byK6ckYA7KAxq6t9Gk9ojleN3Lg8E3Kf88S23+fgkuv0NBAA=
-Message-ID: <9d732d950708251546t6a441c4pd3ce78c46ce27617@mail.gmail.com>
-Date: Sun, 26 Aug 2007 07:46:37 +0900
-From: "Toshiharu Harada" <haradats@gmail.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: [TOMOYO 14/15] Conditional permission support.
-Cc: "Kentaro Takeda" <k.takeda26@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, chrisw@sous-sol.org
-In-Reply-To: <20070825110825.GB5850@ucw.cz>
+	Sat, 25 Aug 2007 19:15:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52529 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752454AbXHYXPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 19:15:38 -0400
+Date: Sun, 26 Aug 2007 01:15:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+Message-ID: <20070825231525.GA334@elte.hu>
+References: <200708111344.42934.a1426z@gawab.com> <200708220127.30698.a1426z@gawab.com> <20070824134510.GA21382@elte.hu> <200708260127.32238.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46CED214.6050505@gmail.com> <46CED5C6.8050501@gmail.com>
-	 <20070825110825.GB5850@ucw.cz>
+In-Reply-To: <200708260127.32238.a1426z@gawab.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4755]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-2007/8/25, Pavel Machek <pavel@ucw.cz>:
-> Hi!
->
-> > This patch allows administrators use conditional permission.
-> > TOMOYO Linux supports conditional permission based on
-> > process's UID,GID etc. and/or requested pathname's UID/GID.
-> >
-> > Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-> > Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
->
-> > + * Since the trailing spaces are removed by tmy_normalize_line(),
-> > + * the last "\040if\040" sequence corresponds to condition part.
-> > + */
-> > +char *tmy_find_condition_part(char *data)
-> > +{
-> > +     char *cp = strstr(data, " if ");
-> > +     if (cp) {
-> > +             char *cp2;
-> > +             while ((cp2 = strstr(cp + 3, " if ")) != NULL)
-> > +                     cp = cp2;
-> > +             *cp++ = '\0';
-> > +     }
-> > +     return cp;
-> > +}
-> ...
->
-> > +     unsigned long left_min = 0;
-> > +     unsigned long left_max = 0;
-> > +     unsigned long right_min = 0;
-> > +     unsigned long right_max = 0;
-> > +     if (strncmp(condition, "if ", 3))
-> > +             return NULL;
-> > +     condition += 3;
-> > +     start = condition;
-> > +     while (*condition) {
-> > +             if (*condition == ' ')
-> > +                     condition++;
-> > +             for (left = 0; left < MAX_KEYWORD; left++) {
-> > +                     if (strncmp(condition, cc_keyword[left].keyword,
-> > +                                 cc_keyword[left].keyword_len))
-> > +                             continue;
-> > +                     condition += cc_keyword[left].keyword_len;
-> > +                     break;
-> > +             }
-> > +             if (left == MAX_KEYWORD) {
-> > +                     if (!tmy_parse_ulong(&left_min, &condition))
-> > +                             goto out;
-> > +                     counter++; /* body */
-> > +                     if (*condition != '-')
-> > +                             goto not_range1;
-> > +                     condition++;
-> > +                     if (!tmy_parse_ulong(&left_max, &condition)
-> > +                         || left_min > left_max)
-> > +                             goto out;
-> > +                     counter++; /* body */
-> > +not_range1: ;
-> > +             }
-> > +             if (strncmp(condition, "!=", 2) == 0)
-> > +                     condition += 2;
-> > +             else if (*condition == '=')
-> > +                     condition++;
-> > +             else
-> > +                     goto out;
-> > +             counter++; /* header */
-> > +             for (right = 0; right < MAX_KEYWORD; right++) {
-> > +                     if (strncmp(condition, cc_keyword[right].keyword,
-> > +                                 cc_keyword[right].keyword_len))
-> > +                             continue;
-> > +                     condition += cc_keyword[right].keyword_len;
-> > +                     break;
-> > +             }
->
-> What is that? Language parser in kernel?
->
->                                                         Pavel
+* Al Boldi <a1426z@gawab.com> wrote:
 
-Key idea of TOMOYO Linux is to let each process to remember the program
-(path) name. Names are stored in task struct and "appended" to the list when
-execve is called.
+> > ok. I think i might finally have found the bug causing this. Could 
+> > you try the fix below, does your webserver thread-startup test work 
+> > any better?
+> 
+> It seems to help somewhat, but the problem is still visible.  Even 
+> v20.3 on 2.6.22.5 didn't help.
+> 
+> It does look related to ia-boosting, so I turned off __update_curr 
+> like Roman mentioned, which had an enormous smoothing effect, but then 
+> nice levels completely break down and lockup the system.
 
-An example of /usr/lib/cups/backend/lpd.
-(picked up from
-http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/centos4.4/domain_policy.txt?v=policy-sample)
+you can turn sleeper-fairness off via:
 
-/etc/rc.d/init.d/cups (fork&exec)
- /sbin/initlog (fork&exec)
-   /usr/sbin/cupsd (fork&exec)
-     /bin/bash (fork&exec)
-       /usr/lib/cups/backend/lpd (current process)
+   echo 28 > /proc/sys/kernel/sched_features
 
-SELinux and other DTE implementations need domain definitions to  work.
-It is administrators task to design domains and name each domains.
-TOMOYO Linux can be used as DTE MAC, but administrators don't
-have to define and name domains. Because TOMOYO Linux
-automatically defines domains and name them (from booting to
-shutdown).
+another thing to try would be:
 
-I wrote "TOMOYO Linux can be used as MAC", because
-users can just view the domain transitions and analyze systems
-with TOMOYO Linux. Or they can use TOMOYO Linux to
-get logs with process invocation histories instead of a simple
-program name.
+   echo 12 > /proc/sys/kernel/sched_features
 
-TOMOYO Linux policy consists of path names and they are currently
-handled as strings.
+(that's the new-task penalty turned off.)
 
-Thanks.
+Another thing to try would be to edit this:
 
---
-Toshiharu Harada
-NTT DATA CORPORATION
+        if (sysctl_sched_features & SCHED_FEAT_START_DEBIT)
+                p->se.wait_runtime = -(sched_granularity(cfs_rq) / 2);
+
+to:
+
+        if (sysctl_sched_features & SCHED_FEAT_START_DEBIT)
+                p->se.wait_runtime = -(sched_granularity(cfs_rq);
+
+and could you also check 20.4 on 2.6.22.5 perhaps, or very latest -git? 
+(Peter has experienced smaller spikes with that.)
+
+	Ingo
