@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933207AbXHYSR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933573AbXHYSaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933207AbXHYSR3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 14:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbXHYSRT
+	id S933573AbXHYSaX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 14:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758769AbXHYSaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 14:17:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37849 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755885AbXHYSRS convert rfc822-to-8bit (ORCPT
+	Sat, 25 Aug 2007 14:30:12 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:53368 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756214AbXHYSaK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 14:17:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH -mm 2/2] Hibernation: Arbitrary boot kernel support on x86_64
-Date: Sat, 25 Aug 2007 20:27:25 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200708241206.57178.rjw@sisk.pl> <200708241211.55319.rjw@sisk.pl> <20070824204632.GA5008@ucw.cz>
-In-Reply-To: <20070824204632.GA5008@ucw.cz>
+	Sat, 25 Aug 2007 14:30:10 -0400
+Date: Sat, 25 Aug 2007 20:28:46 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morgan <morgan@kernel.org>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>, chrisw@sous-sol.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [2.6 patch] remove securebits
+Message-ID: <20070825182846.GN30705@stusta.de>
+References: <20070824210649.GG30705@stusta.de> <20070824211942.GA24478@vino.hallyn.com> <46CFA6F2.9030209@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200708252027.26721.rjw@sisk.pl>
+In-Reply-To: <46CFA6F2.9030209@kernel.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 24 August 2007 22:46, Pavel Machek wrote:
-> Hi!
+On Fri, Aug 24, 2007 at 08:50:10PM -0700, Andrew Morgan wrote:
 > 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Make it possible to restore a hibernation image on x86_64 with the help of a
-> > kernel different from the one in the image.
-> > 
-> > The idea is to split the core restoration code into two separate parts and to
-> > place each of them in a different page.  The first part belongs to the boot
+> FWIW, in the mm kernel, I've actually already removed them when one
+> configures without capabilities.
 > 
-> What happens in case where both parts want to be
-> at the same place? (Like kernel being restored is 4KB smaller, so that
-> routines now collide?)
+> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/broken-out/v3-file-capabilities-alter-behavior-of-cap_setpcap.patch
+> 
+> Other than writing a custom module, so far as I can tell, there is/was
+> no way to set them anyway.
+> 
+> I'd obviously prefer to wait for the mm-merge process to complete and
+> minimize the churn in this area, but I basically agree that the bits as
+> implemented are pretty useless in their current form. In a per-process
+> mode (with filesystem capability support) they are much more useful...
 
-Bad things, but I can't see how to avoid that reliably.
+It was in the tree for nine years (sic) without a single user...
 
-Greetings,
-Rafael
+Are you only improving a dead horse, or do you also have a rider for the 
+improved dead horse?
+
+> Cheers
+> 
+> Andrew
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
