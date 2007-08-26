@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbXHZRlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbXHZRms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbXHZRlw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 13:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbXHZRlp
+	id S1755407AbXHZRms (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 13:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbXHZRml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 13:41:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:31955 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754040AbXHZRlp (ORCPT
+	Sun, 26 Aug 2007 13:42:41 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57703 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754382AbXHZRmk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 13:41:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=n6uaO9s5WEQwKugIHUBE/+2+zaJt63POs09V8qP/SsEjZpkyj7X9INpG6eUwrnqBFweOBA39WqxhnrwqQw2qAttzlr0A9u3l/K9S4hxuVujr0rMDlzuX1+q6gl7hnvPQtUoJYIKtuBmU273aDw2+vUEs6tF6Aa4FLUEeXLRiKeE=
-Message-ID: <466ad3f90708261041g72fee1a2q2f541161884d4499@mail.gmail.com>
-Date: Sun, 26 Aug 2007 13:41:44 -0400
-From: "Fred Tyler" <fredty8@gmail.com>
-To: vda.linux@googlemail.com, linux-kernel@vger.kernel.org
+	Sun, 26 Aug 2007 13:42:40 -0400
+Date: Sun, 26 Aug 2007 19:42:40 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Fred Tyler <fredty8@gmail.com>
+cc: linux-kernel@vger.kernel.org
 Subject: Re: Slow, persistent memory leak in 2.6.20
-In-Reply-To: <200708261803.12717.vda.linux@googlemail.com>
+In-Reply-To: <466ad3f90708260958ha149c40ncf5a8287c8a25307@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0708261940230.15614@fbirervta.pbzchgretzou.qr>
+References: <466ad3f90708260739v645294b9t641cb8258dcc4f4@mail.gmail.com> 
+ <466ad3f90708260851u5d8ac58duc4072b71ebf78fc8@mail.gmail.com> 
+ <Pine.LNX.4.64.0708261752260.15614@fbirervta.pbzchgretzou.qr> 
+ <466ad3f90708260916x5d19d0d3hd828e63520960192@mail.gmail.com> 
+ <Pine.LNX.4.64.0708261828540.15614@fbirervta.pbzchgretzou.qr>
+ <466ad3f90708260958ha149c40ncf5a8287c8a25307@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <466ad3f90708260739v645294b9t641cb8258dcc4f4@mail.gmail.com>
-	 <Pine.LNX.4.64.0708261752260.15614@fbirervta.pbzchgretzou.qr>
-	 <466ad3f90708260916x5d19d0d3hd828e63520960192@mail.gmail.com>
-	 <200708261803.12717.vda.linux@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/26/07, Denys Vlasenko <vda.linux@googlemail.com> wrote:
-> On Sunday 26 August 2007 17:16, Fred Tyler wrote:
-> > So, I guess it worked? (I don't know what was supposed to happen, but
-> > memory usage dropped significantly when I did this.)
+
+On Aug 26 2007 12:58, Fred Tyler wrote:
+>> So I guess you are not seeing any memory leak at all, but just the regular
+>> caching?
 >
-> If you can reclaim "leaked" memory this way, it means that
-> you found a bug where cached data is incorrectly kept
-> in RAM in preference of other data.
-> (I'm assuming that you do have real problems after some time
-> of "leaking" memory - you mention that you get swap storms
-> and eventually machine is dead.)
+>Also, how can you explain the differences between the graphs of
+>long-term memory usage? This first graph is from a server running
+>2.6.16 that never has memory problems:
+>
+>    http://i239.photobucket.com/albums/ff117/fredty8/memory-a4.png
+>
+>And here's a graph of a server running 2.6.12 that has to be rebooted
+>every month or two because it runs out of memory:
+>
+>    http://i239.photobucket.com/albums/ff117/fredty8/memory-a2.png
 
-This was exactly what happened with 2.6.12 -- more and more memory
-used until there was a swap storm and a dead machine.
+Indeed that looks like a leak. But perhaps it would be helpful to not only
+match MemFree Buffers and Cached (from /proc/meminfo) but also Slab.
 
-The 2.6.20 machines haven't been up long enough to know if they're
-going to be hit by the same problem, but it seems peculiar to me that
-the 2.6.16 machine does not do anything remotely like this. As you can
-see in the graphs, the 2.6.16 memory use levels off very quickly, but
-2.6.12 keeps dropping until the machine bombs.
+>Now, admittedly, the 2.6.20 server has not been running long enough to
+>know whether or not it's going to start starving applications of
+>memory, but the graph here looks a whole lot more like 2.6.12 than
+>2.6.16, wouldn't you agree:
+>
+>    http://i239.photobucket.com/albums/ff117/fredty8/memory-b1.png
 
-The 2.6.20 graph looks like it's heading the same direction as 2.6.12.
+But it looks like.
 
-I'm going to run drop_caches on the 2.6.20 machines tonight and see
-what happens...
+>Those 2.6.12 servers caused me a ton of stress because I let the
+>problem go too long before I did anything. In the event that 2.6.20 is
+>doing the same thing, I'm trying to fix it before things get out of
+>control.
+>
+
+	Jan
+-- 
