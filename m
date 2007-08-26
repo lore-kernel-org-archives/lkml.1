@@ -1,32 +1,33 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbXHXPh3 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 24 Aug 2007 11:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXHXPhH
+	id S1752623AbXHZLv4 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 26 Aug 2007 07:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbXHZLvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Aug 2007 11:37:07 -0400
-Received: from smtp-out2.libero.it ([212.52.84.42]:45787 "EHLO
-	smtp-out2.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757291AbXHXPhE convert rfc822-to-8bit (ORCPT
+	Sun, 26 Aug 2007 07:51:45 -0400
+Received: from hu-out-0506.google.com ([72.14.214.230]:8021 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751356AbXHZLvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Aug 2007 11:37:04 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgAAAIeXzkbAqBEN/2dsb2JhbAAM
-Date: Fri, 24 Aug 2007 17:37:01 +0200
-Message-Id: <JNABDP$6D81A86FA2D34BCD4605BCBD3A51F208@libero.it>
-Subject: From Ms.Suzana Vaye.
+	Sun, 26 Aug 2007 07:51:45 -0400
+Message-ID: <8c9c3af10708260451r211cb406g78cb4a27aecb5e75@mail.gmail.com>
+Date: Sun, 26 Aug 2007 04:51:42 -0700
+From: "YAMILET RODRIGUEZ" <ouioui.dmontreal37@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Hi
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-From: "LUCKY DAY LOTTERY" <ldlnl5@libero.it>
-X-XaM3-API-Version: 4.3 (R1) (B3pl19)
-X-SenderIP: 82.169.148.44
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754033AbXHXPh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752623AbXHZLv4@vger.kernel.org>
 
-Do email us for Clarification and Claim of your US$1,000,000.00 won in the Lucky Day Lotto.Contact Mr.Jossip Welber on this email address: (ldlottery11@aim.com) for more details.
-
-Regards,
-Ms.Suzana Vaye.
+Hey I saw your ad for escort services, You should also be on the
+website Vois. Vois.com is a social network for adults ages 30-50. The
+site is mostly wealthy bored married men around 40 years old looking
+for GFE. You can upload all your pics and even link to your website,
+they even have a private album for the graphic photos you might want
+to display. I GUARANTEE you will get customers and a lot of them. Try
+it its totally free and once you put your profile its there until you
+take it down. Just make it like you want to meet guys and they will
+flock to you.
