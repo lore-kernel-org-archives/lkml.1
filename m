@@ -1,165 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752741AbXHZL5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbXHZMA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752741AbXHZL5V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 07:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbXHZL5K
+	id S1752888AbXHZMA5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 08:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbXHZMAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 07:57:10 -0400
-Received: from sccrmhc15.comcast.net ([204.127.200.85]:53567 "EHLO
-	sccrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751289AbXHZL5I (ORCPT
+	Sun, 26 Aug 2007 08:00:50 -0400
+Received: from smtp-out4.blueyonder.co.uk ([195.188.213.7]:47823 "EHLO
+	smtp-out4.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751361AbXHZMAs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 07:57:08 -0400
-X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Aug 2007 07:57:08 EDT
-From: "Michael J. Evans" <mjevans1983@comcast.net>
-To: Neil Brown <neilb@suse.de>
-Subject: [patch v2 1/1] md: Software Raid autodetect dev list not array
-Date: Sun, 26 Aug 2007 04:51:24 -0700
+	Sun, 26 Aug 2007 08:00:48 -0400
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: "exception Emask: 0x42" errors with 2.6.22.x and SATA drives
+Date: Sun, 26 Aug 2007 13:00:44 +0100
 User-Agent: KMail/1.9.7
-Cc: Ingo Molnar <mingo@redhat.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Michael J "." Evans <mjevans1983@gmail.com>
-References: <200708222058.45480.mjevans1983@comcast.net> <18126.21113.981032.286298@notabene.brown>
-In-Reply-To: <18126.21113.981032.286298@notabene.brown>
+Cc: "Dermot Bradley" <dermot.bradley@sla-mobile.com>,
+       linux-kernel@vger.kernel.org
+References: <94439DDF32D7464A916B5068EFF76B3B0225E6AD@bart.tisolutions.biz> <20070824202002.4d11525c@the-village.bc.nu>
+In-Reply-To: <20070824202002.4d11525c@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708260451.24868.mjevans1983@comcast.net>
+Message-Id: <200708261300.45073.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael J. Evans <mjevans1983@gmail.com>
+On Friday 24 August 2007 20:20:02 Alan Cox wrote:
+> On Fri, 24 Aug 2007 14:39:10 +0100
+>
+> "Dermot Bradley" <dermot.bradley@sla-mobile.com> wrote:
+> > I've just built a new machine using a ASUS M2A-VM boardboard (ATI SB600
+> > chipset), AMD X2 3800+ processor, and 2 Western Digital 2.5" 80Gb drives
+> > running in RAID-1 using MD. I've had these problems with both 2.6.22.1
+> > and now 2.6.22.5 kernels.
+> >
+> > I'm getting the following errors on occasion:
+> >
+> > Aug 24 13:19:22 playpbx kernel: APIC error on CPU0: 00(40)
+> > Aug 24 13:19:33 playpbx kernel: APIC error on CPU0: 40(40)
+>
+> This is not good.
 
-In current release kernels the md module (Software RAID) uses a static array
- (dev_t[128]) to store partition/device info temporarily for autostart.
+FWIW, I've got the HDMI version of this board and I have exactly the same 
+problem (even with the newest BIOS) if nmi_watchdog is not set to zero. Try 
+booting with nmi_watchdog=0 (default on x86-64, I think) and see if these go 
+away.
 
-This patch replaces that static array with a list.
+I guess the APIC has some difficulties handling NMIs.
 
-Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
---- 
-Version 2: Following Neil Brown's requests...
-using list_add_tail, and corrected missing i_passed++;.
-removed sections of code that would never be reached.
-- -
-The data/structures are only used within md.c, and very close together.
-However I wonder if the structural information shouldn't go in to...
-../../include/linux/raid/md_k.h instead.
+> > Aug 24 13:55:31 playpbx kernel: ata3.00: exception Emask 0x42 SAct
+> > 0x7fc77 SErr0x800 action 0x6 frozen
+> > Aug 24 13:55:31 playpbx kernel: ata3.00: (spurious completions during
+> > NCQ issue=0x0 SAct=0x7fc77 FIS=004040a1:00000008)
+>
+> Probably not connected - your drive seems to be talking rubbish
+>
+> Neither are good, the latter is probably a drive firmware problem and the
+> kernel will give up using NCQ with it if it keeps doing that, which
+> should be just fine.
 
+I get the feeling this problem is independent of the APIC errors, and I don't 
+see it here. I'm using Hitachi Deskstars on the on-board controller in AHCI 
+mode, and everything works fine.
 
-I discovered this (and that the devices are added as disks/partitions are
-discovered at boot) while I was debugging why only one of my MD arrays would
-come up whole, while all the others were short a disk.
+As Alan said, it's very possibly just the drive not properly supporting NCQ.
 
-I eventually discovered that it was enumerating through all of 9 of my 11 hds
-(2 had only 4 partitions apiece) while the other 9 have 15 partitions
-(I wanted 64 per drive...). The last partition of the 8th drive in my 9 drive
-raid 5 sets wasn't added, thus making the final md array short both a parity
-and data disk, and it was started later, elsewhere.
+-- 
+Cheers,
+Alistair.
 
-Subject: [patch 1/1] md: Software Raid autodetect dev list not array
+137/1 Warrender Park Road, Edinburgh, UK.
 
-SOFTWARE RAID (Multiple Disks) SUPPORT
-P:	Ingo Molnar
-M:	mingo@redhat.com
-P:	Neil Brown
-M:	neilb@suse.de
-L:	linux-raid@vger.kernel.org
-S:	Supported
-Unless you have a reason NOT to do so, CC linux-kernel@vger.kernel.org.
-
-12: Has been tested with CONFIG_PREEMPT, CONFIG_DEBUG_PREEMPT,
-    CONFIG_DEBUG_SLAB, CONFIG_DEBUG_PAGEALLOC, CONFIG_DEBUG_MUTEXES,
-    CONFIG_DEBUG_SPINLOCK, CONFIG_DEBUG_SPINLOCK_SLEEP all simultaneously
-    enabled.
-
-It has been tested with CONFIG_SMP set and unset (Different x86_64 systems).
-It has been tested with CONFIG_PREEMPT set and unset (same system).
-CONFIG_LBD isn't even an option in my .config file.
-
-Note: between 2.6.22 and 2.6.23-rc3-git5
-                rdev = md_import_device(dev,0, 0);
-became
-                rdev = md_import_device(dev,0, 90);
-So the patch has been edited to patch around that line. (might be fuzzy)
-
-Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
-=============================================================
---- linux/drivers/md/md.c.orig	2007-08-21 03:19:42.511576248 -0700
-+++ linux/drivers/md/md.c	2007-08-21 04:30:09.775525710 -0700
-@@ -24,4 +24,6 @@
-
-+   - autodetect dev list not array: Michael J. Evans <mjevans1983@gmail.com>
-+
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2, or (at your option)
-@@ -5752,13 +5754,24 @@ void md_autodetect_dev(dev_t dev)
-  * Searches all registered partitions for autorun RAID arrays
-  * at boot time.
-  */
--static dev_t detected_devices[128];
--static int dev_cnt;
-+
-+static LIST_HEAD(all_detected_devices);
-+struct detected_devices_node {
-+	struct list_head list;
-+	dev_t dev;
-+};
- 
- void md_autodetect_dev(dev_t dev)
- {
--	if (dev_cnt >= 0 && dev_cnt < 127)
--		detected_devices[dev_cnt++] = dev;
-+	struct detected_devices_node *node_detected_dev;
-+	node_detected_dev = kzalloc(sizeof(*node_detected_dev), GFP_KERNEL);\
-+	if (node_detected_dev) {
-+		node_detected_dev->dev = dev;
-+		list_add_tail(&node_detected_dev->list, &all_detected_devices);
-+	} else {
-+		printk(KERN_CRIT "md: kzAlloc node failed, skipping device."
-+				 " : 0x%p.\n", node_detected_dev);
-+	}
- }
- 
- 
-@@ -5765,7 +5778,12 @@ static void autostart_arrays(int part)
- static void autostart_arrays(int part)
- {
- 	mdk_rdev_t *rdev;
--	int i;
-+	struct detected_devices_node *node_detected_dev;
-+	dev_t dev;
-+	int i_scanned, i_passed;
-+	signed int i_found;
-+	i_scanned = 0;
-+	i_passed = 0;
- 
- 	printk(KERN_INFO "md: Autodetecting RAID arrays.\n");
- 
-@@ -5772,3 +5790,8 @@ static void autostart_arrays(int part)
--	for (i = 0; i < dev_cnt; i++) {
--		dev_t dev = detected_devices[i];
--
-+		/* FIXME: max 'int' #DEFINEd somewhere?  not   0x7FFFFFFF ? */
-+	while (!list_empty(&all_detected_devices) && i_scanned < 0x7FFFFFFF) {
-+		i_scanned++;
-+		node_detected_dev = list_entry(all_detected_devices.next,
-+					struct detected_devices_node, list);
-+		list_del(&node_detected_dev->list);
-+		dev = node_detected_dev->dev;
-+		kfree(node_detected_dev);
-@@ -5781,8 +5806,11 @@ static void autostart_arrays(int part)
- 			continue;
- 		}
- 		list_add(&rdev->same_set, &pending_raid_disks);
-+		i_passed++;
- 	}
--	dev_cnt = 0;
-+
-+	printk(KERN_INFO "md: Scanned %d and added %d devices.\n",
-+						i_scanned, i_passed);
- 
- 	autorun_devices(part);
- }
