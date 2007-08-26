@@ -1,84 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbXHZP6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbXHZQBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbXHZP6h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 11:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbXHZP6J
+	id S1754006AbXHZQBf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 12:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXHZQB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 11:58:09 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:38200 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbXHZP6H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 11:58:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ylraus2KUQBD1rUlhmWuwmAMrbPrj0ZePw9JtK0XH94KBlE7yeTVlxMP+XE8py/KuCwmxm0h/GqN4glgig7oIMJI232TlSuJdJze/2iGdhqHrfK2blmYiKUXqO/aiCfme02r8HvWBOPqQcJckf2kHze3qO4FeZq4ST6GA67qFy8=
-Message-ID: <4877c76c0708260858i51ddfd6csb69d3adf405245eb@mail.gmail.com>
-Date: Sun, 26 Aug 2007 08:58:06 -0700
-From: "Michael Evans" <mjevans1983@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: [patch v2 1/1] md: Software Raid autodetect dev list not array
-Cc: "Michael J. Evans" <mjevans1983@comcast.net>, "Neil Brown" <neilb@suse.de>,
-       "Ingo Molnar" <mingo@redhat.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708261453450.15614@fbirervta.pbzchgretzou.qr>
+	Sun, 26 Aug 2007 12:01:28 -0400
+Received: from lug-owl.de ([195.71.106.12]:42523 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751726AbXHZQB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 12:01:27 -0400
+Date: Sun, 26 Aug 2007 18:01:25 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: Peter Firefly Lund <firefly@vax64.dk>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Christoph Hellwig <hch@infradead.org>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, Momchil Velikov <velco@fadata.bg>
+Subject: Re: [LV] [PATCH] avoid negative shifts in radix-tree.c
+Message-ID: <20070826160125.GQ11718@lug-owl.de>
+Mail-Followup-To: Peter Firefly Lund <firefly@vax64.dk>,
+	Christoph Lameter <clameter@sgi.com>,
+	Christoph Hellwig <hch@infradead.org>, trivial@kernel.org,
+	linux-kernel@vger.kernel.org, Momchil Velikov <velco@fadata.bg>
+References: <1188051967.18306.45.camel@ls-search>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="4ickEXl+ukcSQ/3E"
 Content-Disposition: inline
-References: <200708222058.45480.mjevans1983@comcast.net>
-	 <18126.21113.981032.286298@notabene.brown>
-	 <200708260451.24868.mjevans1983@comcast.net>
-	 <Pine.LNX.4.64.0708261453450.15614@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <1188051967.18306.45.camel@ls-search>
+X-Operating-System: Linux mail 2.6.18-4-686
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/26/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->
-> On Aug 26 2007 04:51, Michael J. Evans wrote:
-> > {
-> >-      if (dev_cnt >= 0 && dev_cnt < 127)
-> >-              detected_devices[dev_cnt++] = dev;
-> >+      struct detected_devices_node *node_detected_dev;
-> >+      node_detected_dev = kzalloc(sizeof(*node_detected_dev), GFP_KERNEL);\
->
-> What's the \ good for, besides escaping the newline
-> that is ignored as whitespace anyway? :-)
->
 
-I hadn't even noticed that, I suppose I mashed the key above enter at
-some time.  Removing from my local file.
+--4ickEXl+ukcSQ/3E
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> >@@ -5772,3 +5790,8 @@ static void autostart_arrays(int part)
-> >-      for (i = 0; i < dev_cnt; i++) {
-> >-              dev_t dev = detected_devices[i];
-> >-
-> >+              /* FIXME: max 'int' #DEFINEd somewhere?  not   0x7FFFFFFF ? */
-> >+      while (!list_empty(&all_detected_devices) && i_scanned < 0x7FFFFFFF) {
->
-> I doubt someone really has _that_ many devices. Of course, to be on the
-> safer side, make it an unsigned int. That way, people could put in about
-> 0xFFFFFFFE devs (which is even less likely than 0x7FFFFFFF)
->
+On Sat, 2007-08-25 16:26:07 +0200, Peter Firefly Lund <firefly@vax64.dk> wr=
+ote:
+> --- lib/radix-tree-old.c	2007-08-25 15:36:40.000000000 +0200
+> +++ lib/radix-tree.c	2007-08-25 15:36:51.000000000 +0200
+> @@ -980,12 +980,14 @@ radix_tree_node_ctor(void *node, struct=20
+> =20
+>  static __init unsigned long __maxindex(unsigned int height)
+>  {
+> -	unsigned int tmp =3D height * RADIX_TREE_MAP_SHIFT;
+> -	unsigned long index =3D (~0UL >> (RADIX_TREE_INDEX_BITS - tmp - 1)) >> =
+1;
+> -
+> -	if (tmp >=3D RADIX_TREE_INDEX_BITS)
+> -		index =3D ~0UL;
+> -	return index;
+> +	unsigned int	tmp   =3D=20
+> +	int shift =3D RADIX_TREE_INDEX_BITS - height * RADIX_TREE_MAP_SHIFT;
+> +	unsigned long	index;
+> +
+> +	if (shift < 0)
+> +		return ~0UL;
+> +	else
+> +		return ~0UL >> shift;
+>  }
+> =20
+>  static __init void radix_tree_init_maxindex(void)
 
-There is that, but I'm almost expecting someone to ask me to remove
-both the ints and kprint statement.  (I'd like them as part of some
-kind of verbose startup that people would actually think to use
-however.)  Additionally a though occurred to me earlier, if there are
-That many devices, the chance of a UUID namespace collision might
-actually be realistic anyway.  Though I'm not short sighted enough to
-put it past anyone to have more then 32/64K possible block devices.
-Anyone with that much cash today is probably buying hardware raid, but
-who knows.
+`index' seems to be unused now?  And indention does neither follow
+kernel coding style, nor this file's style. You'd also hammer out
+`tmp' and put its initializer right there where it's used.
 
-> >+              i_scanned++;
-> >+              node_detected_dev = list_entry(all_detected_devices.next,
-> >+                                      struct detected_devices_node, list);
-> >+              list_del(&node_detected_dev->list);
-> >+              dev = node_detected_dev->dev;
-> >+              kfree(node_detected_dev);
->
->         Jan
-> --
->
+MfG, JBG
+
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+Signature of:               Tr=C3=A4ume nicht von Dein Leben: Lebe Deinen T=
+raum!
+the second  :
+
+--4ickEXl+ukcSQ/3E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG0aPVHb1edYOZ4bsRAnV5AJ4h6Uoe0wFCMTVNdTyK0pkPYhcfNwCgg+T3
+moaP5XHNokBiq9Eo3Yw8sFA=
+=xUwg
+-----END PGP SIGNATURE-----
+
+--4ickEXl+ukcSQ/3E--
