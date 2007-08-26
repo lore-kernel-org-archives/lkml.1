@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbXHZSnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbXHZSvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753519AbXHZSnS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 14:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbXHZSnI
+	id S1754569AbXHZSvB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 14:51:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbXHZSuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 14:43:08 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:45497 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750843AbXHZSnH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 14:43:07 -0400
-Date: Sun, 26 Aug 2007 20:43:06 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Mike Frysinger <vapier@gentoo.org>
-cc: parisc-linux@lists.parisc-linux.org, sparclinux@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       parisc-linux@parisc-linux.org
-Subject: Re: [parisc-linux] errno codes intertwined
-In-Reply-To: <200708261345.43165.vapier@gentoo.org>
-Message-ID: <Pine.LNX.4.64.0708262038170.12920@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0708241815540.28540@fbirervta.pbzchgretzou.qr>
- <200708261345.43165.vapier@gentoo.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 26 Aug 2007 14:50:52 -0400
+Received: from zer09.zwecker.de ([88.198.57.35]:55006 "EHLO zer09.zwecker.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751248AbXHZSuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 14:50:51 -0400
+X-Greylist: delayed 1154 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Aug 2007 14:50:50 EDT
+Subject: PROBLEM: Suspend corrupts bios clock since 2.6.21
+From: Andreas Steffan <a.steffan@deas-online.de>
+To: linux-pm@lists.linux-foundation.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sun, 26 Aug 2007 20:31:00 +0200
+Message-Id: <1188153060.14603.31.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hallo everybody,
 
-On Aug 26 2007 13:45, Mike Frysinger wrote:
->> can I rely on the same errno across Linuxes?
->
->nope
->
->> And should the errno values be fixed up?
->
->i guess that depends on whether you think it's even broken :)
->
->no spec requires any errno symbol have an exact numeric value ... i'm guessing 
->your FUSE is only cross-Linux and you're not planning on dipping into any 
->other OS ?
+I am running fedora core 7 on my Dell latitude D810 notebook (BIOS
+rev A05).
 
-If the errnos are not the same in the Linux world, it's not even
-cross-Linux ;-) - but it's always translated to fixed numbers now anyway.
+Since 2.6.21 I found that suspending (to disk and to ram) corrupts
+the bios clock most of the time (not always). The corruption is
+happening during suspend. When I enter the system bios right after
+I switch the system back on, I find the bios clock is set to a time
+far in the future (many years). I guess that problem is related to
+the clock changes that where introduced with 2.6.21.
 
-I have not really thought about putting it in use on other systems yet. I
-don't have macosx to test, and Windows generally lacks some fuses. :^)
-You are free to spin it if you like, http://freshmeat.net/p/ccgfs/
+Please let me know if you want me to provide further information to
+get this problem fixed.
 
+If there is a known quirk to work around this problem, I would
+really appreciate a hint.
 
-	Jan
--- 
+PS: I have not yet tried 2.6.22.4-65.fc7, but the latest 2.6.22 kernel
+before showed the same behaviour for me.
+--
+regards 
+Andreas
+
++-----------------------------------------------------------+
+Andreas Steffan              email: a.steffan@deas-online.de
+Hamburg, Germany             mobil: +49179 3903615
++-----------------------------------------------------------+
+
+In theory, practice and theory are the same, but in practice
+they are different -- Larry McVoy
+
