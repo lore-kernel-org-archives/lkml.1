@@ -1,102 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbXHZXK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbXHZXUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111AbXHZXK1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 19:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbXHZXKP
+	id S1753631AbXHZXUo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 19:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbXHZXUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 19:10:15 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:41813 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752793AbXHZXKN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 19:10:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PH+WmPagmCo/EjDl/jwRhCoQuau5b165wPAmOBOth28/WnIjgf5nazL1YImn8ss7va50r+zFW3FwR8mxORuZlOGE8r3b3ifSKBxxmvOc1hSlg9ABTCeC2ydl6sH9iAgvEuTm/YukpJkuwFRhVIxaqUU3EHF4qp+BDI1gkKQ9KWE=
-Message-ID: <6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>
-Date: Mon, 27 Aug 2007 01:10:13 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: bryan@arbores.ca
-Subject: Re: Stardom SATA HSM violation
-Cc: linux-kernel@vger.kernel.org,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>
-In-Reply-To: <46CFA08E.6090604@arbores.ca>
+	Sun, 26 Aug 2007 19:20:35 -0400
+Received: from smtp2f.orange.fr ([80.12.242.151]:55729 "EHLO smtp2f.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750896AbXHZXUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 19:20:34 -0400
+X-Greylist: delayed 4666 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Aug 2007 19:20:34 EDT
+X-ME-UUID: 20070826220245536.82EB3700009A@mwinf2f23.orange.fr
+Date: Mon, 27 Aug 2007 01:02:44 +0300
+From: Samuel Ortiz <samuel@sortiz.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] sysctl: Properly register the irda binary sysctl
+	numbers.
+Message-ID: <20070826220244.GA3881@sortiz.org>
+Reply-To: Samuel Ortiz <samuel@sortiz.org>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <23568.1187876026@turing-police.cc.vt.edu> <20070823141652.d488a6e0.akpm@linux-foundation.org> <m1wsvlmvu6.fsf_-_@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46CFA08E.6090604@arbores.ca>
+In-Reply-To: <m1wsvlmvu6.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Eric,
 
-[Adding linux-ide to CC]
+On Thu, Aug 23, 2007 at 09:53:53PM -0600, Eric W. Biederman wrote:
+> 
+> Grumble.  These numbers should have been in sysctl.h from the
+> beginning if we ever expected anyone to use them.  Oh well put
+> them there now so we can find them and make maintenance easier.
+Thanks for that, I should have taken care of it earlier...
 
-On 25/08/07, Bryan Woods <bryan@arbores.ca> wrote:
-> Hi KML
->
-> I am installing gentoo 2007.0 (kernel 2.6.19) on a dual AMD Opteron server (total of 4 cores). The hard disk is a Stardom 2611-2S-S1 device: actually two 250GB drives in a RAID0 config managed by the device itself - it should appear to the kernel as one SATA drive. If it matters, the underlying HDs are "Seagate Barracuda 7200 10"s. Here's the device:
->
->  http://www.synetic.net/Synetic-Products/Stardoms/SR-2611-SA/Stardom-2611.htm
->
-> During the install and at different points in the process I get an "HSM violation" and the system becomes unresponsive. It looks like a similar situation to:
->
->   http://lkml.org/lkml/2007/6/6/195
->
-> Will more recent kernels work with this hardware (should I keep it and try the install again) or should I switch hardware to something more compatible (like an Adaptec card)?
->
-> Thanks!
-> Bryan
->
-> --
-> console output:
->
-> tag 0 cmd 0x39 Emask 0x2 stat 0x58 err 0x0 (HSM violation)
-> exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
->
-> --
-> Output from hdparm -I /dev/sda:
->
-> /dev/sda:
->
-> ATA device, with non-removable media
->         Model Number:   STARDOM V.36.A0B
->         Serial Number:
->         Firmware Revision:      V.36.A0B
-> Standards:
->         Used: ATA/ATAPI-6 T13 1410D revision 0
->
-> [snip]
->
-> Commands/features:
->         Enabled Supported:
->         *       SMART feature set
->         *       Power Management feature set
->         *       Advanced Power Management feature set
->         *       48-bit Address feature set
->         *       Mandatory FLUSH_CACHE
->         *       SATA-I signaling speed (1.5 Gb/s)
->         *       SATA-II signaling speed (3.0 Gb/s)
->
-> --
-> Parts of dmesg:
-> libata version 2.00 loaded
-> sata_nv 0000:00:05.0: version 2.0
-> ata1: SATA max UDMA/133 cmd 0xD480 ctl 0xD402 bmdma 0xCC00 irq 21
-> ata2: SATA max UDMA/133 cmd 0xD080 ctl 0xD002 bmdma 0xCC08 irq 21
-> scsi0 : sata_nv
-> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata1.00: ATA-6, max UDMA/133,976794112 sectors: LBA48
-> ata1.00: ata1: dev 0 multi count 1
-> ata1.00: applying bridge limits
-> ata1.00: configured for UDMA/100
->
 
-Regards,
-Michal
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Samuel Ortiz <samuel@sortiz.org>
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+> ---
+>  include/linux/sysctl.h |   20 ++++++++++++++++++++
+>  net/irda/irsysctl.c    |   34 ++++++++++++++--------------------
+>  2 files changed, 34 insertions(+), 20 deletions(-)
+> 
+> diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+> index 88f0941..77c9ae2 100644
+> --- a/include/linux/sysctl.h
+> +++ b/include/linux/sysctl.h
+> @@ -238,6 +238,7 @@ enum
+>  	NET_LLC=18,
+>  	NET_NETFILTER=19,
+>  	NET_DCCP=20,
+> +	NET_IRDA=412,
+>  };
+>  
+>  /* /proc/sys/kernel/random */
+> @@ -795,6 +796,25 @@ enum {
+>  	NET_BRIDGE_NF_FILTER_PPPOE_TAGGED = 5,
+>  };
+>  
+> +/* proc/sys/net/irda */
+> +enum { 
+> +	NET_IRDA_DISCOVERY=1,
+> +	NET_IRDA_DEVNAME=2, 
+> +	NET_IRDA_DEBUG=3, 
+> +	NET_IRDA_FAST_POLL=4,
+> +	NET_IRDA_DISCOVERY_SLOTS=5,
+> +	NET_IRDA_DISCOVERY_TIMEOUT=6,
+> +	NET_IRDA_SLOT_TIMEOUT=7,
+> +	NET_IRDA_MAX_BAUD_RATE=8,
+> +	NET_IRDA_MIN_TX_TURN_TIME=9,
+> +	NET_IRDA_MAX_TX_DATA_SIZE=10,
+> +	NET_IRDA_MAX_TX_WINDOW=11,
+> +	NET_IRDA_MAX_NOREPLY_TIME=12,
+> +	NET_IRDA_WARN_NOREPLY_TIME=13,
+> +	NET_IRDA_LAP_KEEPALIVE_TIME=14,
+> +};
+> +
+> +
+>  /* CTL_FS names: */
+>  enum
+>  {
+> diff --git a/net/irda/irsysctl.c b/net/irda/irsysctl.c
+> index 957e04f..525343a 100644
+> --- a/net/irda/irsysctl.c
+> +++ b/net/irda/irsysctl.c
+> @@ -31,12 +31,6 @@
+>  #include <net/irda/irda.h>		/* irda_debug */
+>  #include <net/irda/irias_object.h>
+>  
+> -#define NET_IRDA 412 /* Random number */
+> -enum { DISCOVERY=1, DEVNAME, DEBUG, FAST_POLL, DISCOVERY_SLOTS,
+> -       DISCOVERY_TIMEOUT, SLOT_TIMEOUT, MAX_BAUD_RATE, MIN_TX_TURN_TIME,
+> -       MAX_TX_DATA_SIZE, MAX_TX_WINDOW, MAX_NOREPLY_TIME, WARN_NOREPLY_TIME,
+> -       LAP_KEEPALIVE_TIME };
+> -
+>  extern int  sysctl_discovery;
+>  extern int  sysctl_discovery_slots;
+>  extern int  sysctl_discovery_timeout;
+> @@ -94,7 +88,7 @@ static int do_devname(ctl_table *table, int write, struct file *filp,
+>  /* One file */
+>  static ctl_table irda_table[] = {
+>  	{
+> -		.ctl_name	= DISCOVERY,
+> +		.ctl_name	= NET_IRDA_DISCOVERY,
+>  		.procname	= "discovery",
+>  		.data		= &sysctl_discovery,
+>  		.maxlen		= sizeof(int),
+> @@ -102,7 +96,7 @@ static ctl_table irda_table[] = {
+>  		.proc_handler	= &proc_dointvec
+>  	},
+>  	{
+> -		.ctl_name	= DEVNAME,
+> +		.ctl_name	= NET_IRDA_DEVNAME,
+>  		.procname	= "devname",
+>  		.data		= sysctl_devname,
+>  		.maxlen		= 65,
+> @@ -112,7 +106,7 @@ static ctl_table irda_table[] = {
+>  	},
+>  #ifdef CONFIG_IRDA_DEBUG
+>  	{
+> -		.ctl_name	= DEBUG,
+> +		.ctl_name	= NET_IRDA_DEBUG,
+>  		.procname	= "debug",
+>  		.data		= &irda_debug,
+>  		.maxlen		= sizeof(int),
+> @@ -122,7 +116,7 @@ static ctl_table irda_table[] = {
+>  #endif
+>  #ifdef CONFIG_IRDA_FAST_RR
+>  	{
+> -		.ctl_name	= FAST_POLL,
+> +		.ctl_name	= NET_IRDA_FAST_POLL,
+>  		.procname	= "fast_poll_increase",
+>  		.data		= &sysctl_fast_poll_increase,
+>  		.maxlen		= sizeof(int),
+> @@ -131,7 +125,7 @@ static ctl_table irda_table[] = {
+>  	},
+>  #endif
+>  	{
+> -		.ctl_name	= DISCOVERY_SLOTS,
+> +		.ctl_name	= NET_IRDA_DISCOVERY_SLOTS,
+>  		.procname	= "discovery_slots",
+>  		.data		= &sysctl_discovery_slots,
+>  		.maxlen		= sizeof(int),
+> @@ -142,7 +136,7 @@ static ctl_table irda_table[] = {
+>  		.extra2		= &max_discovery_slots
+>  	},
+>  	{
+> -		.ctl_name	= DISCOVERY_TIMEOUT,
+> +		.ctl_name	= NET_IRDA_DISCOVERY_TIMEOUT,
+>  		.procname	= "discovery_timeout",
+>  		.data		= &sysctl_discovery_timeout,
+>  		.maxlen		= sizeof(int),
+> @@ -150,7 +144,7 @@ static ctl_table irda_table[] = {
+>  		.proc_handler	= &proc_dointvec
+>  	},
+>  	{
+> -		.ctl_name	= SLOT_TIMEOUT,
+> +		.ctl_name	= NET_IRDA_SLOT_TIMEOUT,
+>  		.procname	= "slot_timeout",
+>  		.data		= &sysctl_slot_timeout,
+>  		.maxlen		= sizeof(int),
+> @@ -161,7 +155,7 @@ static ctl_table irda_table[] = {
+>  		.extra2		= &max_slot_timeout
+>  	},
+>  	{
+> -		.ctl_name	= MAX_BAUD_RATE,
+> +		.ctl_name	= NET_IRDA_MAX_BAUD_RATE,
+>  		.procname	= "max_baud_rate",
+>  		.data		= &sysctl_max_baud_rate,
+>  		.maxlen		= sizeof(int),
+> @@ -172,7 +166,7 @@ static ctl_table irda_table[] = {
+>  		.extra2		= &max_max_baud_rate
+>  	},
+>  	{
+> -		.ctl_name	= MIN_TX_TURN_TIME,
+> +		.ctl_name	= NET_IRDA_MIN_TX_TURN_TIME,
+>  		.procname	= "min_tx_turn_time",
+>  		.data		= &sysctl_min_tx_turn_time,
+>  		.maxlen		= sizeof(int),
+> @@ -183,7 +177,7 @@ static ctl_table irda_table[] = {
+>  		.extra2		= &max_min_tx_turn_time
+>  	},
+>  	{
+> -		.ctl_name	= MAX_TX_DATA_SIZE,
+> +		.ctl_name	= NET_IRDA_MAX_TX_DATA_SIZE,
+>  		.procname	= "max_tx_data_size",
+>  		.data		= &sysctl_max_tx_data_size,
+>  		.maxlen		= sizeof(int),
+> @@ -194,7 +188,7 @@ static ctl_table irda_table[] = {
+>  		.extra2		= &max_max_tx_data_size
+>  	},
+>  	{
+> -		.ctl_name	= MAX_TX_WINDOW,
+> +		.ctl_name	= NET_IRDA_MAX_TX_WINDOW,
+>  		.procname	= "max_tx_window",
+>  		.data		= &sysctl_max_tx_window,
+>  		.maxlen		= sizeof(int),
+> @@ -205,7 +199,7 @@ static ctl_table irda_table[] = {
+>  		.extra2		= &max_max_tx_window
+>  	},
+>  	{
+> -		.ctl_name	= MAX_NOREPLY_TIME,
+> +		.ctl_name	= NET_IRDA_MAX_NOREPLY_TIME,
+>  		.procname	= "max_noreply_time",
+>  		.data		= &sysctl_max_noreply_time,
+>  		.maxlen		= sizeof(int),
+> @@ -216,7 +210,7 @@ static ctl_table irda_table[] = {
+>  		.extra2		= &max_max_noreply_time
+>  	},
+>  	{
+> -		.ctl_name	= WARN_NOREPLY_TIME,
+> +		.ctl_name	= NET_IRDA_WARN_NOREPLY_TIME,
+>  		.procname	= "warn_noreply_time",
+>  		.data		= &sysctl_warn_noreply_time,
+>  		.maxlen		= sizeof(int),
+> @@ -227,7 +221,7 @@ static ctl_table irda_table[] = {
+>  		.extra2		= &max_warn_noreply_time
+>  	},
+>  	{
+> -		.ctl_name	= LAP_KEEPALIVE_TIME,
+> +		.ctl_name	= NET_IRDA_LAP_KEEPALIVE_TIME,
+>  		.procname	= "lap_keepalive_time",
+>  		.data		= &sysctl_lap_keepalive_time,
+>  		.maxlen		= sizeof(int),
+> -- 
+> 1.5.1.1.181.g2de0
+> 
+
