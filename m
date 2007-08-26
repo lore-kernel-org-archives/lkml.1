@@ -1,97 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbXHZQBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbXHZQFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754006AbXHZQBf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 12:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXHZQB2
+	id S1754078AbXHZQFU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 12:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbXHZQFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 12:01:28 -0400
-Received: from lug-owl.de ([195.71.106.12]:42523 "EHLO lug-owl.de"
+	Sun, 26 Aug 2007 12:05:08 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:58360 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751726AbXHZQB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 12:01:27 -0400
-Date: Sun, 26 Aug 2007 18:01:25 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Peter Firefly Lund <firefly@vax64.dk>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Christoph Hellwig <hch@infradead.org>, trivial@kernel.org,
-       linux-kernel@vger.kernel.org, Momchil Velikov <velco@fadata.bg>
-Subject: Re: [LV] [PATCH] avoid negative shifts in radix-tree.c
-Message-ID: <20070826160125.GQ11718@lug-owl.de>
-Mail-Followup-To: Peter Firefly Lund <firefly@vax64.dk>,
-	Christoph Lameter <clameter@sgi.com>,
-	Christoph Hellwig <hch@infradead.org>, trivial@kernel.org,
-	linux-kernel@vger.kernel.org, Momchil Velikov <velco@fadata.bg>
-References: <1188051967.18306.45.camel@ls-search>
+	id S1752934AbXHZQFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 12:05:07 -0400
+X-Greylist: delayed 1727 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Aug 2007 12:05:06 EDT
+Date: Sun, 26 Aug 2007 18:36:18 +0300
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Olaf Hering <olaf@aepfle.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] atyfb: remove dead code
+Message-ID: <20070826153618.GB6003@sci.fi>
+Mail-Followup-To: Olaf Hering <olaf@aepfle.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org,
+	linux-fbdev-devel@lists.sourceforge.net
+References: <20070826091237.GA17667@aepfle.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="4ickEXl+ukcSQ/3E"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1188051967.18306.45.camel@ls-search>
-X-Operating-System: Linux mail 2.6.18-4-686
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070826091237.GA17667@aepfle.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Aug 26, 2007 at 11:12:37AM +0200, Olaf Hering wrote:
+> Remove dead code.
+> 
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> 
+> ---
+>  drivers/video/aty/atyfb_base.c |    6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+> 
+> --- a/drivers/video/aty/atyfb_base.c
+> +++ b/drivers/video/aty/atyfb_base.c
+> @@ -2767,8 +2767,7 @@ static int atyfb_blank(int blank, struct
+>  	if (par->lock_blank || par->asleep)
+>  		return 0;
+>  
+> -#ifdef CONFIG_FB_ATY_BACKLIGHT
+> -#elif defined(CONFIG_FB_ATY_GENERIC_LCD)
+> +#ifdef CONFIG_FB_ATY_GENERIC_LCD
+>  	if (par->lcd_table && blank > FB_BLANK_NORMAL &&
+>  	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
+>  		u32 pm = aty_ld_lcd(POWER_MANAGEMENT, par);
 
---4ickEXl+ukcSQ/3E
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This will change the behavior of the code. I basically agree with the
+change because the current code will not control the backlight when the
+kernel is built with CONFIG_FB_ATY_BACKLIGHT but the system doesn't
+support the backlight interface (ie. non-pmac system). However someone
+should check that it doesn't cause problems for pmac users.
 
-On Sat, 2007-08-25 16:26:07 +0200, Peter Firefly Lund <firefly@vax64.dk> wr=
-ote:
-> --- lib/radix-tree-old.c	2007-08-25 15:36:40.000000000 +0200
-> +++ lib/radix-tree.c	2007-08-25 15:36:51.000000000 +0200
-> @@ -980,12 +980,14 @@ radix_tree_node_ctor(void *node, struct=20
-> =20
->  static __init unsigned long __maxindex(unsigned int height)
->  {
-> -	unsigned int tmp =3D height * RADIX_TREE_MAP_SHIFT;
-> -	unsigned long index =3D (~0UL >> (RADIX_TREE_INDEX_BITS - tmp - 1)) >> =
-1;
-> -
-> -	if (tmp >=3D RADIX_TREE_INDEX_BITS)
-> -		index =3D ~0UL;
-> -	return index;
-> +	unsigned int	tmp   =3D=20
-> +	int shift =3D RADIX_TREE_INDEX_BITS - height * RADIX_TREE_MAP_SHIFT;
-> +	unsigned long	index;
-> +
-> +	if (shift < 0)
-> +		return ~0UL;
-> +	else
-> +		return ~0UL >> shift;
->  }
-> =20
->  static __init void radix_tree_init_maxindex(void)
-
-`index' seems to be unused now?  And indention does neither follow
-kernel coding style, nor this file's style. You'd also hammer out
-`tmp' and put its initializer right there where it's used.
-
-MfG, JBG
-
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-Signature of:               Tr=C3=A4ume nicht von Dein Leben: Lebe Deinen T=
-raum!
-the second  :
-
---4ickEXl+ukcSQ/3E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG0aPVHb1edYOZ4bsRAnV5AJ4h6Uoe0wFCMTVNdTyK0pkPYhcfNwCgg+T3
-moaP5XHNokBiq9Eo3Yw8sFA=
-=xUwg
------END PGP SIGNATURE-----
-
---4ickEXl+ukcSQ/3E--
+-- 
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
