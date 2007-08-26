@@ -1,99 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbXHZFod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbXHZGIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616AbXHZFod (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 01:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbXHZFoY
+	id S1754092AbXHZGIl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 02:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbXHZGId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 01:44:24 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:54598
+	Sun, 26 Aug 2007 02:08:33 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:35371
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751209AbXHZFoX (ORCPT
+	by vger.kernel.org with ESMTP id S1751258AbXHZGIc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 01:44:23 -0400
+	Sun, 26 Aug 2007 02:08:32 -0400
 From: Rob Landley <rob@landley.net>
 Organization: Boundaries Unlimited
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] include linux/pagemap.h in asm-generic/tlb.h
-Date: Sun, 26 Aug 2007 00:44:17 -0500
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: What's up with CONFIG_BLK_DEV?
+Date: Sun, 26 Aug 2007 01:08:28 -0500
 User-Agent: KMail/1.9.6
-Cc: Jeff Dike <jdike@addtoit.com>, LKML <linux-kernel@vger.kernel.org>
-References: <20070824184616.GA9442@c2.user-mode-linux.org> <20070824172027.0ad5d2c0.akpm@linux-foundation.org>
-In-Reply-To: <20070824172027.0ad5d2c0.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+References: <200708241517.28475.rob@landley.net> <Pine.LNX.4.64.0708242234250.28540@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0708242234500.28540@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708242234500.28540@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708260044.18490.rob@landley.net>
+Message-Id: <200708260108.28584.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 August 2007 7:20:27 pm Andrew Morton wrote:
-> On Fri, 24 Aug 2007 14:46:16 -0400
->
-> Jeff Dike <jdike@addtoit.com> wrote:
-> > [ This looks non-urgent to me ]
+On Friday 24 August 2007 3:36:54 pm Jan Engelhardt wrote:
+> On Aug 24 2007 22:34, Jan Engelhardt wrote:
+> >On Aug 24 2007 15:17, Rob Landley wrote:
+> >>CONFIG_BLOCK disables the block layer.
+> >>CONFIG_BLK_DEV disables the block devices.
 > >
-> > Without linux/pagemap.h, asm-generic/tlb.h is missing declarations of
-> > page_cache_release and release_pages.
+> >menuconfig BLK_DEV
+> >        bool "Block devices"
+> >        depends on BLOCK
+> >        default y
+> >        ---help---
+> >          Say Y here to get to see options for various different block
+> > device drivers. This option alone does not add any kernel code.
 > >
-> > Signed-off-by: Jeff Dike <jdike@linux.intel.com>
-> > --
-> >  include/asm-generic/tlb.h |    1 +
-> >  1 file changed, 1 insertion(+)
+> >          If you say N, all options in this submenu will be skipped and
+> > disabled only do this if you know what you are doing.
 > >
-> > Index: linux-2.6.22/include/asm-generic/tlb.h
-> > ===================================================================
-> > --- linux-2.6.22.orig/include/asm-generic/tlb.h	2007-07-08
-> > 19:32:17.000000000 -0400 +++
-> > linux-2.6.22/include/asm-generic/tlb.h	2007-08-22 17:29:45.000000000
-> > -0400 @@ -13,6 +13,7 @@
-> >  #ifndef _ASM_GENERIC__TLB_H
-> >  #define _ASM_GENERIC__TLB_H
-> >
-> > +#include <linux/pagemap.h>
-> >  #include <linux/swap.h>
-> >  #include <asm/pgalloc.h>
-> >  #include <asm/tlbflush.h>
+> >>Is there _ever_ a time you want the block layer but no block devices?
 >
-> This is worrisome.  If you look at pagemap.h, it includes a pile of things
-> which could easily themsleves try to include tlb.h via some path or
-> another.  I fear that this patch will cause explosions with some config
-> and/or architecture.
->
-> If you like, tlb.h is a low-level sort of thing whereas pagemap.h is a
-> higher-level VFS thing.  It is more appropriate that pagemap.h be including
-> tlb.h.
->
->
-> So I think a better fix would be better, but I'm not able to suggest what,
-> as there is little detail about the failure here and I can find no mention
-> of page_cache_release and release_pages in asm-generic/tlb.h.
+> Well, where do you think your hard disk drivers come from? Definitely
+> not from the BLK_DEV menu...
 
-To reproduce it, do this in -rc3:
+Actually I hadn't looked that far into it.  Juggling seven things yesterday 
+and offline most of today, and what I actually _noticed_ was that my 
+miniconfig that had worked unchanged to build UML since 2.6.12 finally broke 
+on a kernel upgrade, and I have no idea what the actual reason for the change 
+is other than possibly aesthetics.  Oh well.
 
-cat > mini.conf << EOF
-CONFIG_MODE_SKAS=y
-CONFIG_BINFMT_ELF=y
-CONFIG_HOSTFS=y
-CONFIG_SYSCTL=y
-CONFIG_STDERR_CONSOLE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_LBD=y
-CONFIG_EXT2_FS=y
-CONFIG_PROC_FS=y
-EOF
-make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf
-make ARCH=um
+Now that I look I see that all the devices in this menu (at least in User Mode 
+Linux) are actually virtual block devices (UBD, loopback, and ramdisk), which 
+the menu help doesn't indicate.
+
+Now I'm trying to think of a better user interface way of cross-referencing 
+this sort of thing.  Network block devices live in the networking menu, 
+device drivers for hardware live off in another menu.  What I really want is 
+a way to dynamically create menus via search critiera: "Show me all the block 
+devices"...
+
+Also "here's a symbol, show me a menu containing everything else that is 
+either required by or enabled by this symbol..."  That sounds like a more 
+powerful abstraction, since the previous one is "show me everything that 
+depends on CONFIG_BLOCK".
+
+(I wonder if this would be a largeish rewrite of the menuconfig 
+infrastructure?  Hmmm...)
 
 Rob
-
-(P.S. I note that in order for CONFIG_BLK_DEV_LOOP to actually trigger work 
-now, I have to add CONFIG_BLK_DEV=y to the above, which I didn't have to do 
-in 2.6.22 or in any previous version all the way back to 2.6.12.  Not a major 
-regression, but still a bit of a surprise.  That said, the above is what 
-triggered the break for me.)
 -- 
 "One of my most productive days was throwing away 1000 lines of code."
   - Ken Thompson.
