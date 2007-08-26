@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbXHZH7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751788AbXHZIK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751907AbXHZH7U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 03:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbXHZH7L
+	id S1751788AbXHZIK1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 04:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbXHZIKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 03:59:11 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:11279 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750747AbXHZH7J (ORCPT
+	Sun, 26 Aug 2007 04:10:13 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56007 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750711AbXHZIKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 03:59:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:organization:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding;
-        b=BaQXMkOltMqgrrlEva2kkvZ+VhVl93e5yCn8ilLXxaiE5eA2yCqQYnMLixpfTk6Hx/el34lHTJET6snfQrrSC41SsqzQt4kyF9VtRopOJXGZQt4Dwo2USiVMMk1KhCkuwAkcMaO7AioPY5hEOR+ExgEfdN4A5NunlnDTjbv2ddw=
-Message-ID: <46D132C5.5000803@gmail.com>
-Date: Sun, 26 Aug 2007 09:59:01 +0200
-From: Patrizio Bassi <patrizio.bassi@gmail.com>
-Reply-To: patrizio.bassi@gmail.com
-Organization: patrizio.bassi@gmail.com
-User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
-MIME-Version: 1.0
-To: "Kernel, " <linux-kernel@vger.kernel.org>
-Subject: libata not working for sis5533
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
+	Sun, 26 Aug 2007 04:10:11 -0400
+Date: Sun, 26 Aug 2007 01:09:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: ego@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
+       Cliff Wickman <cpw@sgi.com>, mingo@elte.hu, vatsa@in.ibm.com,
+       pj@sgi.com, linux-kernel@vger.kernel.org, ntl@in.ibm.com,
+       Dipankar Sarma <dipankar@in.ibm.com>
+Subject: Re: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
+Message-Id: <20070826010903.7599c22e.akpm@linux-foundation.org>
+In-Reply-To: <1188089244.19877.3.camel@localhost.localdomain>
+References: <20070824221806.GA3602@sgi.com>
+	<20070824155455.cc161b61.akpm@linux-foundation.org>
+	<20070825094740.GA106@tv-sign.ru>
+	<20070826001625.GA17962@in.ibm.com>
+	<1188089244.19877.3.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My sis630 chipset shipped with Asus A1000
-doesn't work properly with suspend with ide drivers
-(http://bugzilla.kernel.org/show_bug.cgi?id=7077)
+On Sun, 26 Aug 2007 10:47:24 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-i tried to switch to libata but i cannot boot.
-I've enabled generic ide and sis specific code, both in-kernel. of
-course scsi too.
+> On Sun, 2007-08-26 at 05:46 +0530, Gautham R Shenoy wrote:
+> > On Sat, Aug 25, 2007 at 01:47:40PM +0400, Oleg Nesterov wrote:
+> > > Before this patch, process leaves its ->cpuset and migrates to some "random"
+> > > any_online_cpu(). With this patch it stays within ->cpuset and migrates to
+> > > CPU 3.
+> > 
+> > The decision to bind a task to a specific cpu, was taken by the userspace
+> > for a reason, which is _unknown_ to the kernel.
+> > So logically, shouldn't the userspace decide what should be 
+> > the fate of those exclusive-affined tasks, whose cpu is about to go
+> > offline? After all, the reason to offline the cpu is, again, unknown to
+> > the kernel.
+> 
+> Userspace is not monolithic.  If you refuse to take a CPU offline
+> because a task is affine, then any user can prevent a CPU from going
+> offline.
 
-when i boot i get: irq #14 nobody cared and stop
+That's a kernel bug.
 
-i have to remove battery to reboot pc.
-I'm using 2.6.22.5, but i never got any libata kernel working.
+> You could, perhaps, introduce a "gentle" offline which fails if process
+> affinity can no longer be met.
 
-Patrizio
+Suitably privileged userspace should be able to
 
-ps. i'm writing from my desktop as i'm doing hardware mainteinance on
-the laptop and could not boot it
+1) prevent tasks from binding to CPU N then
+2) migrate all tasks which can use CPU N over to other CPU(s) then
+3) offline CPU N.
 
-Please CC me.
-
-lspci:
-00:00.0 Host bridge: Silicon Integrated Systems [SiS] 630 Host (rev 11)
-00:00.1 IDE interface: Silicon Integrated Systems [SiS] 5513 [IDE] (rev d0)
-00:01.0 ISA bridge: Silicon Integrated Systems [SiS] SiS85C503/5513 (LPC
-Bridge)
-00:01.1 Ethernet controller: Silicon Integrated Systems [SiS] SiS900
-PCI Fast Ethernet (rev 80)
-00:01.2 USB Controller: Silicon Integrated Systems [SiS] USB  1.0
-Controller (rev 07)
-00:01.3 USB Controller: Silicon Integrated Systems [SiS] USB 1.0
-Controller (rev 07)
-00:01.4 Multimedia audio controller: Silicon Integrated Systems [SiS]
-SiS PCI Audio Accelerator (rev 01)
- 00:01.6 Modem: Silicon Integrated Systems [SiS] AC'97 Modem
-Controller (rev a0)
-00:02.0 PCI bridge: Silicon Integrated Systems [SiS] Virtual
-PCI-to-PCI bridge (AGP)
-00:0a.0 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev 80)
-00:0a.1 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev 80)
-01:00.0 VGA compatible controller: Silicon Integrated Systems [SiS]
-630/730 PCI/AGP VGA Display Adapter (rev 11)
