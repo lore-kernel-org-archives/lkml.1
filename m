@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbXHZWUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbXHZWe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbXHZWUr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 18:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbXHZWUk
+	id S1753862AbXHZWe7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 18:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbXHZWeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 18:20:40 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:17287 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752184AbXHZWUk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 18:20:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kbn7y8q0+wX4Zl17ujaJZuYy0UnyKghBBvXZX0nhy2Iy5BG12WFl7bZYKMVefZTFCQWOU4cdG3sonj8d3HaeluHcdCzwHbLfB6lwMQK7B//RSKxJau5Yxj/AQHf9QGv648I5eVE+UzQJwhSsmsvG3yb0W6ir8FhGa0OMTGvO6Ek=
-Message-ID: <9a8748490708261520h74e97bb5sc486b1cf8294c686@mail.gmail.com>
-Date: Mon, 27 Aug 2007 00:20:39 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-Subject: Re: Compiling 2.6.22.5 on Debian Etch (internal compiler error)
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <46D1FA57.60601@mandic.com.br>
+	Sun, 26 Aug 2007 18:34:50 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41928 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752394AbXHZWet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 18:34:49 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PROBLEM: Suspend corrupts bios clock since 2.6.21
+Date: Mon, 27 Aug 2007 00:45:08 +0200
+User-Agent: KMail/1.9.5
+Cc: Andreas Steffan <a.steffan@deas-online.de>,
+       linux-pm@lists.linux-foundation.org, pavel@suse.cz,
+       linux-kernel@vger.kernel.org
+References: <fa.Hms7k1HwOwCbv7cPqUWGLhT5uyk@ifi.uio.no> <46D1D6D1.5040203@shaw.ca>
+In-Reply-To: <46D1D6D1.5040203@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <46D1FA57.60601@mandic.com.br>
+Message-Id: <200708270045.09050.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27/08/07, Renato S. Yamane <renatoyamane@mandic.com.br> wrote:
-> Can someone help me with this?
->
-> $ make xconfig
-> HOSTCC  scripts/basic/fixdep
-> scripts/basic/fixdep.c: In function 'parse_dep_file':
-> scripts/basic/fixdep.c:399: internal compiler error: segmentation fault
-> Please submit a full bug report,
-> with preprocessed source if appropriate.
-> See <URL:http://gcc.gnu.org/bugs.html> for instructions.
-> For Debian GNU/Linux specific bug reporting instructions,
-> see <URL:file:///usr/share/doc/gcc-4.1/README.Bugs>.
-> Preprocessed source stored into /tmp/ccyzmUDF.out file, please attach
-> this to your bugreport.
-> make[1]: ** [scripts/basic/fixdep] Error 1
-> make: ** [scripts_basic] Error 2
->
+On Sunday, 26 August 2007 21:38, Robert Hancock wrote:
+> Andreas Steffan wrote:
+> > Hallo everybody,
+> > 
+> > I am running fedora core 7 on my Dell latitude D810 notebook (BIOS
+> > rev A05).
+> > 
+> > Since 2.6.21 I found that suspending (to disk and to ram) corrupts
+> > the bios clock most of the time (not always). The corruption is
+> > happening during suspend. When I enter the system bios right after
+> > I switch the system back on, I find the bios clock is set to a time
+> > far in the future (many years). I guess that problem is related to
+> > the clock changes that where introduced with 2.6.21.
+> > 
+> > Please let me know if you want me to provide further information to
+> > get this problem fixed.
+> > 
+> > If there is a known quirk to work around this problem, I would
+> > really appreciate a hint.
+> > 
+> > PS: I have not yet tried 2.6.22.4-65.fc7, but the latest 2.6.22 kernel
+> > before showed the same behaviour for me.
+> 
+> Please check if PM_TRACE is enabled in your kernel configuration. It 
+> will do this intentionally.
 
-Is it repeatable or just a one-off ?
+Yes, but only if you have "1" in /sys/power/pm_trace ...
 
-I'm using gcc 4.1.2 as well :
-
-$ gcc --version
-gcc (GCC) 4.1.2
-
-and I don't see this - are you sure it's not a hardware problem?
-
-
-You probably want to report this (as pointed out in the error message)
-to the GCC folks.
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Greetings,
+Rafael
