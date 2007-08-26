@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbXHZE3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbXHZExY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758774AbXHZE3X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 00:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbXHZE3P
+	id S1757404AbXHZExY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 00:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXHZExP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 00:29:15 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:43868 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbXHZE3O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 00:29:14 -0400
-Date: Sat, 25 Aug 2007 22:27:41 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: 2.6.22.5 SATA Failure
-In-reply-to: <fa.9lnv231u8AU5Nlw9OFEhJs+u+Yw@ifi.uio.no>
-To: Dong Feng <middle.fengdong@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Message-id: <46D1013D.5040801@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.9lnv231u8AU5Nlw9OFEhJs+u+Yw@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sun, 26 Aug 2007 00:53:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58047 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751998AbXHZExO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 00:53:14 -0400
+Message-ID: <46D10721.7070406@redhat.com>
+Date: Sun, 26 Aug 2007 00:52:49 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>
+CC: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
+References: <20070820215040.937296148@sgi.com>  <1187692586.6114.211.camel@twins>  <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com>  <1187730812.5463.12.camel@lappy>  <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>  <1187734144.5463.35.camel@lappy>  <Pine.LNX.4.64.0708211532560.5728@schroedinger.engr.sgi.com>  <1187766156.6114.280.camel@twins>  <Pine.LNX.4.64.0708221157180.13813@schroedinger.engr.sgi.com> <1187813025.5463.85.camel@lappy> <Pine.LNX.4.64.0708221306080.15775@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0708221306080.15775@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dong Feng wrote:
-> I have been using 2.6.21.1. It seems working well, that is, all my
-> disk partitions are mapped as "/dev/sda*" and the performance looks
-> good. After I upgrade to 2.6.22.5 with the exact same configuration,
-> all the disk device turn to "/dev/hda*" and the performance degrade
-> obviously.
+Christoph Lameter wrote:
+> On Wed, 22 Aug 2007, Peter Zijlstra wrote:
 > 
-> While I boot with 2.6.21.1, the logs regarding disk are:
+>>> That is an extreme case that AFAIK we currently ignore and could be 
+>>> avoided with some effort.
+>> Its not extreme, not even rare, and its handled now. Its what
+>> PF_MEMALLOC is for.
 > 
-> Aug 26 06:11:26 localhost kernel: ata_piix 0000:00:1f.2: MAP [ P0 P2 IDE IDE ]
-> Aug 26 06:11:26 localhost kernel: ACPI: PCI Interrupt 0000:00:1f.2[B]
-> -> GSI 17 (level, low) -> IRQ 17
-> Aug 26 06:11:26 localhost kernel: ata: 0x170 IDE port busy
-> Aug 26 06:11:26 localhost kernel: ata: conflict with ide1
-> Aug 26 06:11:26 localhost kernel: ata1: SATA max UDMA/133 cmd
-> 0x000101f0 ctl 0x000103f6 bmdma 0x0001bfa0 irq 14
-> Aug 26 06:11:26 localhost kernel: ata2: DUMMY
-> Aug 26 06:11:26 localhost kernel: scsi0 : ata_piix
-> Aug 26 06:11:26 localhost kernel: ata1.00: ATA-7: ST9120821AS, 8.03,
-> max UDMA/133
-> Aug 26 06:11:26 localhost kernel: ata1.00: 234441648 sectors, multi 8:
-> LBA48 NCQ (depth 0/32)
-> Aug 26 06:11:26 localhost kernel: ata1.00: configured for UDMA/133
-> Aug 26 06:11:26 localhost kernel: scsi1 : ata_piix
-> Aug 26 06:11:26 localhost kernel: scsi 0:0:0:0: Direct-Access     ATA
->     ST9120821AS      8.03 PQ: 0 ANSI: 5
-> Aug 26 06:11:26 localhost kernel: SCSI device sda: 234441648 512-byte
-> hdwr sectors (120034 MB)
-> Aug 26 06:11:26 localhost kernel: sda: Write Protect is off
-> Aug 26 06:11:26 localhost kernel: SCSI device sda: write cache:
-> enabled, read cache: enabled, doesn't support DPO or FUA
-> Aug 26 06:11:26 localhost kernel: SCSI device sda: 234441648 512-byte
-> hdwr sectors (120034 MB)
-> Aug 26 06:11:26 localhost kernel: sda: Write Protect is off
-> Aug 26 06:11:26 localhost kernel: SCSI device sda: write cache:
-> enabled, read cache: enabled, doesn't support DPO or FUA
-> Aug 26 06:11:26 localhost kernel:  sda: sda1 sda2 sda3 < sda5 sda6 sda7 >
-> 
-> 
-> 
-> While booting with 2.6.22.5, the logs are:
-> 
-> Aug 26 09:30:04 localhost kernel: ACPI: PCI Interrupt 0000:00:1f.2[B]
-> -> GSI 17 (level, low) -> IRQ 17
-> Aug 26 09:30:04 localhost kernel: ata_piix 0000:00:1f.2: 0x1F0 IDE port busy
-> Aug 26 09:30:04 localhost kernel: ata_piix 0000:00:1f.2: 0x170 IDE port busy
-> Aug 26 09:30:04 localhost kernel: ata_piix 0000:00:1f.2: no available
-> legacy port
-> 
-> 
-> 
-> It seems the dramatic change in libata.c incurs this failure.
+> No its not. If you have all pages allocated as anonymous pages and your 
+> writeout requires more pages than available in the reserves then you are 
+> screwed either way regardless if you have PF_MEMALLOC set or not.
 
-It looks like you have some CONFIG_IDE options enabled in your kernel 
-configuration that result in drivers/ide trying to drive part or all of 
-that controller, preventing libata from doing so. Likely the easiest 
-thing to do is just set CONFIG_IDE=n entirely..
+Only if the _first_ writeout needs more pages.
+
+If the sum of all writeouts need more pages than you have
+available, that is fine.  After all, buffer heads and some
+other metadata is freed on IO completion.
+
+Recursive reclaim will also be able to free the data pages
+after IO completion, and really fix the problem.
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
