@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbXHZRF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbXHZRM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754970AbXHZRF1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 13:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbXHZRFO
+	id S1754738AbXHZRM6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 13:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbXHZRMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 13:05:14 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:34688 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753962AbXHZRFI (ORCPT
+	Sun, 26 Aug 2007 13:12:47 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:4808 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753879AbXHZRMp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 13:05:08 -0400
+	Sun, 26 Aug 2007 13:12:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=E+lQrpnqHcQlOHV9Ux35lueE7v7uWL4cB5OfbWzhv4w9TbT1oFYA+LHNPiS2ERoaJxnLXtgROpd4NvrFl+/7ihymRtlayJOrC/eDPwHLeALT06KSP9QTAeTdggrS7YcRCfoIbbgYPcbiTWgMod+DiRzBV0ZJaORST4cZt+PnkEg=
-Message-ID: <a44ae5cd0708261005mbf37295t16e25780518bcd72@mail.gmail.com>
-Date: Sun, 26 Aug 2007 13:05:07 -0400
+        b=PzIsyI+NB1YL6dJa0dNGBXFGm0D6z+inVKdzJTff5RS7nQG6JfqJwT7tYx2Ab0hNtoGJchfYLDjt8/KEHMXHD33tOjNioTLtMJ9j0Tb3vc4UaNCXgDHnoJCiCzBMZCU0UCW9fKoZj8isnAuonHxbq7uriXFP4/f6BejRMK5Y7G0=
+Message-ID: <a44ae5cd0708261012l5a0c125q5716400db3e911ba@mail.gmail.com>
+Date: Sun, 26 Aug 2007 13:12:43 -0400
 From: "Miles Lane" <miles.lane@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>,
-       "Andreas Jaggi" <andreas.jaggi@waterwave.ch>,
-       "Danny van Dyk" <kugelfang@gentoo.org>, "Michael Buesch" <mb@bu3sch.de>,
-       "Stefano Brivio" <st3@riseup.net>,
-       "Martin Langer" <martin-langer@gmx.de>
-Subject: =?WINDOWS-1252?Q?2.6.23-rc3-mm1_--_drivers/net/wi?= =?WINDOWS-1252?Q?reless/b43/main.c:1194:_error:_t?= =?WINDOWS-1252?Q?oo_many_arguments_to_function_=91i?= =?WINDOWS-1252?Q?eee80211=5Fgeneric=5Fframe=5Fduration=92?=
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, dsd@gentoo.org,
+       kune@deine-taler.de
+Subject: =?WINDOWS-1252?Q?2.6.23-rc3-mm1_--_drivers/net/wireles?= =?WINDOWS-1252?Q?s/zd1211rw-mac80211/zd=5Fmac.c:822:_err?= =?WINDOWS-1252?Q?or:_=91IEEE80211=5FERP=5FCHANGE=5FPREAMBLE=92_u?= =?WINDOWS-1252?Q?ndeclared_(first_use_in_this_function)?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -30,18 +28,27 @@ Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  CC [M]  drivers/net/wireless/b43/main.o
-drivers/net/wireless/b43/main.c: In function 'b43_write_probe_resp_plcp':
-drivers/net/wireless/b43/main.c:1194: error: too many arguments to
-function 'ieee80211_generic_frame_duration'
-drivers/net/wireless/b43/main.c: In function 'b43_generate_probe_resp':
-drivers/net/wireless/b43/main.c:1251: error: too many arguments to
-function 'ieee80211_generic_frame_duration'
+  CC [M]  drivers/net/wireless/zd1211rw-mac80211/zd_mac.o
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c: In function
+'zd_op_erp_ie_changed':
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c:822: error:
+'IEEE80211_ERP_CHANGE_PREAMBLE' undeclared (first use in this
+function)
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c:822: error: (Each
+undeclared identifier is reported only once
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c:822: error: for each
+function it appears in.)
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c: At top level:
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c:844: error: unknown
+field 'erp_ie_changed' specified in initializer
+drivers/net/wireless/zd1211rw-mac80211/zd_mac.c:844: warning:
+initialization from incompatible pointer type
+make[4]: *** [drivers/net/wireless/zd1211rw-mac80211/zd_mac.o] Error 1
 
 #
 # Automatically generated make config: don't edit
 # Linux kernel version: 2.6.23-rc3-mm1
-# Sun Aug 26 13:01:40 2007
+# Sun Aug 26 13:06:44 2007
 #
 CONFIG_X86_32=y
 CONFIG_GENERIC_TIME=y
@@ -1289,16 +1296,9 @@ CONFIG_BCM43XX_PIO=y
 CONFIG_BCM43XX_DMA_AND_PIO_MODE=y
 # CONFIG_BCM43XX_DMA_MODE is not set
 # CONFIG_BCM43XX_PIO_MODE is not set
-CONFIG_B43=m
+# CONFIG_B43 is not set
 CONFIG_B43_PCI_AUTOSELECT=y
 CONFIG_B43_PCICORE_AUTOSELECT=y
-CONFIG_B43_PCMCIA=y
-CONFIG_B43_DEBUG=y
-CONFIG_B43_DMA=y
-CONFIG_B43_PIO=y
-CONFIG_B43_DMA_AND_PIO_MODE=y
-# CONFIG_B43_DMA_MODE is not set
-# CONFIG_B43_PIO_MODE is not set
 CONFIG_ZD1211RW=m
 CONFIG_ZD1211RW_DEBUG=y
 CONFIG_ZD1211RW_MAC80211=m
