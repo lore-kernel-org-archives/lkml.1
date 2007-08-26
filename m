@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934946AbXHZCh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbXHZDgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934946AbXHZCh2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 22:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933980AbXHZChT
+	id S1759568AbXHZDgU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 23:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbXHZDgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 22:37:19 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:48230 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934050AbXHZChR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 22:37:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=T+tNX71zXzhyhdACYyMl21Hf1kEWomfBA5HhVde1Ti8U9sWCknY153UKUQuiuUjo5ir/OsVRCAgGYzGpgOqTBMT57oqvghtDvagBbadDQCZApWBl3mgwEjtTV5a7oJr6/l2DEvgCZfcOS8Cua3GsXIltByTgsp40lcrjsdoQOls=
-Message-ID: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
-Date: Sat, 25 Aug 2007 23:37:16 -0300
-From: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@gmail.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       debian-powerpc@lists.debian.org
-Subject: Sleep problems with kernels >= 2.6.21 on powerpc
-Cc: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@ime.usp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Sat, 25 Aug 2007 23:36:11 -0400
+Received: from sccrmhc14.comcast.net ([204.127.200.84]:40942 "EHLO
+	sccrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753641AbXHZDgK (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 23:36:10 -0400
+Subject: Re: [PATCH RT] - rebalance_domains incorrect parameter
+From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: RT Users List <linux-rt-users@vger.kernel.org>,
+       LKML <Linux-kernel@vger.kernel.org>
+In-Reply-To: <20070824091533.GA31142@elte.hu>
+References: <1187946562.16573.47.camel@sx.thebigcorporation.com>
+	 <20070824091533.GA31142@elte.hu>
+Content-Type: text/plain
+Organization: The Big Corporation
+Date: Sat, 25 Aug 2007 20:32:23 -0700
+Message-Id: <1188099143.4412.2.camel@sven.thebigcorporation.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Fri, 2007-08-24 at 11:15 +0200, Ingo Molnar wrote:
+> * Sven-Thorsten Dietrich <sven@thebigcorporation.com> wrote:
+> 
+> > Same issue has been fixed in mainline by: 
+> > 
+> > diff-tree de0cf899bbf06b6f64a5dce9c59d74c41b6b4232 (from
+> > 5d2b3d3695a841231b65b55
+> > Author: Oleg Nesterov <oleg@tv-sign.ru>
+> > Date:   Sun Aug 12 18:08:19 2007 +0200
+> 
+> > signed-off-by: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+> 
+> ah, you mean we should pick up an upstream fix for -rt?
 
-Unfortunately, it seems that kernels later than 2.6.21 have problems
-letting my powerpc iBook (G3 processor) going to sleep (suspend to
-ram).
+Well, um yes - I had made the patch a few days ago, but then realized it
+was already fixed in mainline.
 
-The userland that I am using is a Debian testing (lenny) and the
-default kernel that comes with it is 2.6.22, with some patches applied
-and pbbuttonsd (as the daemon for making the machine sleep).
+>  We'll do that 
+> and we'll pick up much more: all the other ~100 CFS commits that 
+> happened meanwhile. (Btw., there's no need to sign off on patch 
+> forwarding or backport requests - the signoff made me first believe this 
+> is some new patch.)
+> 
 
-With kernel 2.6.21, from Debian (and other earlier kernels), the
-symptoms that I see when I press the power button is that the machine
-goes to sleep and the led that indicates that the machine is sleeping
-is blinking normally.
+Ok. Thanks
 
-If I, on the other hand, use Debian's kernel 2.6.22 or compile my own
-kernel with just the necessary parts for my work (version 2.6.23-rc3
-taken from kernel.org), then I can't make the machine sleep: when I
-press the button, it acts like if I had, in sequence, pressed anything
-to wake it up (say, like pressing shift).
+Sven
 
-I have already grabbed Linus's git tree and I am willing to do some
-cycles of "git bisect" to discover the point where it stopped working.
-
-I just thought that others may have seen such behaviour before or, if
-not, that being informative about what I see is of use for debugging
-this.
-
-I would also appreciate any guidance on this as I wish kernel 2.6.23
-to be working again on powerpc machines.
-
-Please, if any tests are required, don't hesitate to ask me and I will
-try to whatever is needed to restore the correct behaviour of sleep
-with the Linux kernel.
-
-I have copied mailing lists that I think that are relevant. If they
-aren't, then please let me know. I would also appreciate if I were
-kept on carbon copies as I am only subscribed to debian-powerpc at the
-moment.
-
-
-Regards, Rogério Brito.
-
-P.S.: It unfortunately doesn't matter if I switch to a console or if I
-am in X when I press the power button with recent kernels.
