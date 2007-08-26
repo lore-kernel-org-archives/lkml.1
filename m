@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934902AbXHZCfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934946AbXHZCh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934902AbXHZCfE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 22:35:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934050AbXHZCey
+	id S934946AbXHZCh2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 22:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933980AbXHZChT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 22:34:54 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:61912 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751303AbXHZCex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 22:34:53 -0400
-X-Greylist: delayed 1261 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Aug 2007 22:34:53 EDT
-To: pavel@ucw.cz
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       chrisw@sous-sol.org
-Subject: Re: [TOMOYO 14/15] Conditional permission support.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <46CED214.6050505@gmail.com>
-	<46CED5C6.8050501@gmail.com>
-	<20070825110825.GB5850@ucw.cz>
-In-Reply-To: <20070825110825.GB5850@ucw.cz>
-Message-Id: <200708261113.JHH03043.VQOtSOJLFFFHMO@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50]
-X-Accept-Language: ja,en
-Date: Sun, 26 Aug 2007 11:13:48 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 25 Aug 2007 22:37:19 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:48230 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934050AbXHZChR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 22:37:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=T+tNX71zXzhyhdACYyMl21Hf1kEWomfBA5HhVde1Ti8U9sWCknY153UKUQuiuUjo5ir/OsVRCAgGYzGpgOqTBMT57oqvghtDvagBbadDQCZApWBl3mgwEjtTV5a7oJr6/l2DEvgCZfcOS8Cua3GsXIltByTgsp40lcrjsdoQOls=
+Message-ID: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
+Date: Sat, 25 Aug 2007 23:37:16 -0300
+From: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@gmail.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       debian-powerpc@lists.debian.org
+Subject: Sleep problems with kernels >= 2.6.21 on powerpc
+Cc: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@ime.usp.br>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi.
 
-Pavel Machek wrote:
-> What is that? Language parser in kernel?
+Unfortunately, it seems that kernels later than 2.6.21 have problems
+letting my powerpc iBook (G3 processor) going to sleep (suspend to
+ram).
 
-Yes. This is a policy parser in kernel.
+The userland that I am using is a Debian testing (lenny) and the
+default kernel that comes with it is 2.6.22, with some patches applied
+and pbbuttonsd (as the daemon for making the machine sleep).
 
-TOMOYO Linux' policy is passed from/to the kernel as a plain text
-(i.e. ASCII printable) file via /proc/tomoyo interface.
+With kernel 2.6.21, from Debian (and other earlier kernels), the
+symptoms that I see when I press the power button is that the machine
+goes to sleep and the led that indicates that the machine is sleeping
+is blinking normally.
 
-For example, to add a permission to allow /usr/sbin/sshd
-to execute /bin/bash if the authenticated user's uid = 500,
-the administrator runs
+If I, on the other hand, use Debian's kernel 2.6.22 or compile my own
+kernel with just the necessary parts for my work (version 2.6.23-rc3
+taken from kernel.org), then I can't make the machine sleep: when I
+press the button, it acts like if I had, in sequence, pressed anything
+to wake it up (say, like pressing shift).
 
-# /bin/cat > /proc/tomoyo/domain_policy << EOF
-select <kernel> /usr/sbin/sshd
-1 /bin/bash if task.uid=500
-EOF
+I have already grabbed Linus's git tree and I am willing to do some
+cycles of "git bisect" to discover the point where it stopped working.
 
-and to remove this permission, the administrator runs
+I just thought that others may have seen such behaviour before or, if
+not, that being informative about what I see is of use for debugging
+this.
 
-# /bin/cat > /proc/tomoyo/domain_policy << EOF
-select <kernel> /usr/sbin/sshd
-delete 1 /bin/bash if task.uid=500
-EOF
+I would also appreciate any guidance on this as I wish kernel 2.6.23
+to be working again on powerpc machines.
 
-The patch [TOMOYO 14/15] handles "if task.uid=500" part.
+Please, if any tests are required, don't hesitate to ask me and I will
+try to whatever is needed to restore the correct behaviour of sleep
+with the Linux kernel.
 
-No compilation at userspace and
-only difference between old and new policy is written.
-This is similar to LDAP manipulation using LDIF format.
+I have copied mailing lists that I think that are relevant. If they
+aren't, then please let me know. I would also appreciate if I were
+kept on carbon copies as I am only subscribed to debian-powerpc at the
+moment.
 
-(To be exact, only programs that are registered in
-/proc/tomoyo/manager can modify policy via /proc/tomoyo interface.
-You need to use /usr/lib/ccs/loadpolicy or something
-instead of /bin/cat .)
+
+Regards, Rogério Brito.
+
+P.S.: It unfortunately doesn't matter if I switch to a console or if I
+am in X when I press the power button with recent kernels.
