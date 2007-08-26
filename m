@@ -1,146 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbXHZRvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbXHZSAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbXHZRvj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 13:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbXHZRva
+	id S1755180AbXHZSAp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 14:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbXHZSAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 13:51:30 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:55176 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752769AbXHZRv3 (ORCPT
+	Sun, 26 Aug 2007 14:00:36 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:49035 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753628AbXHZSAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 13:51:29 -0400
-Date: Sun, 26 Aug 2007 18:51:22 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-Subject: [PATCH] IOC3: Program UART predividers.
-Message-ID: <20070826175122.GA16430@linux-mips.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Sun, 26 Aug 2007 14:00:35 -0400
+Date: Sun, 26 Aug 2007 11:59:13 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] Fix boot-time hang on G31/G33 PC
+In-reply-to: <20070826140743.GF14130@parisc-linux.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jesse.barnes@intel.com>, Greg KH <greg@kroah.com>
+Message-id: <46D1BF71.3020602@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <20070826015556.GC14130@parisc-linux.org> <46D10099.40401@shaw.ca>
+ <20070826125542.GD14130@parisc-linux.org>
+ <20070826140743.GF14130@parisc-linux.org>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The IOC3 driver's UART detection bits used to rely on the the firmware
-setting the UART pre-divider in a way that's apropriate for the 8250
-driver which doesn't currently program this register.  This happens
-to work for the console but not rarely for additional ports.
+Matthew Wilcox wrote:
+> On Sun, Aug 26, 2007 at 06:55:42AM -0600, Matthew Wilcox wrote:
+>> On Sat, Aug 25, 2007 at 10:24:57PM -0600, Robert Hancock wrote:
+>>> We've already got a patch for this in Greg's PCI tree, hopefully it 
+>>> should go in for 2.6.24.
+>> I haven't seen it.  I guess it wasn't sent to the PCI mailing list.
+>>
+>> Your patch had two or three problems with it; assuming we're talking
+>> about the same patch.
+> 
+> I found
+> http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f=pci/pci-disable-decode-of-io-memory-during-bar-sizing.patch;h=958ef4e837733206a80f058aee236847eec5fbd8;hb=HEAD
+> 
+> which has two problems:
+> 
+>  - With a 64-bit BAR, it checks to see if the upper 32 bits represent IO
+>    or memory.  You can't do that to the upper 32 bits.
+>  - It does a lot of additional writes to the cmd register; my patch does two
+>    writes per device; yours does two per BAR
+> 
+> It's also a lot more complex than my patch, IMO.
+> 
+> Greg, please drop Robert's patch and put mine in instead.
 
-While at it, also program the UART to RS-232 PIO mode; it the UART might
-have been in mac-serial and/or DMA mode though that hasn't actually been
-observed in practice.
+Based on looking at your patch it seems OK. The first problem you 
+mentioned with what Jesse and I had there is definitely a valid one.
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+You can add my:
 
-diff --git a/drivers/net/ioc3-eth.c b/drivers/net/ioc3-eth.c
-index a36e95c..c030030 100644
---- a/drivers/net/ioc3-eth.c
-+++ b/drivers/net/ioc3-eth.c
-@@ -48,6 +48,7 @@
- #ifdef CONFIG_SERIAL_8250
- #include <linux/serial_core.h>
- #include <linux/serial_8250.h>
-+#include <linux/serial_reg.h>
- #endif
- 
- #include <linux/netdevice.h>
-@@ -1146,13 +1147,41 @@ static int ioc3_is_menet(struct pci_dev *pdev)
-  * Also look in ip27-pci.c:pci_fixup_ioc3() for some comments on working
-  * around ioc3 oddities in this respect.
-  *
-- * The IOC3 serials use a 22MHz clock rate with an additional divider by 3.
-+ * The IOC3 serials use a 22MHz clock rate with an additional divider which
-+ * can be programmed in the SCR register if the DLAB bit is set.
-+ *
-+ * Register to interrupt zero because we share the interrupt with
-+ * the serial driver which we don't properly support yet.
-+ *
-+ * Can't use UPF_IOREMAP as the whole of IOC3 resources have already been
-+ * registered.
-  */
-+static void __devinit ioc3_8250_register(struct ioc3_uartregs __iomem *uart)
-+{
-+#define COSMISC_CONSTANT 6
-+
-+	struct uart_port port = {
-+		.irq		= 0,
-+		.flags		= UPF_SKIP_TEST | UPF_BOOT_AUTOCONF,
-+		.iotype		= UPIO_MEM,
-+		.regshift	= 0,
-+		.uartclk	= (22000000 << 1) / COSMISC_CONSTANT,
-+
-+		.membase	= (unsigned char __iomem *) uart,
-+		.mapbase	= (unsigned long) uart,
-+	};
-+	unsigned char lcr;
-+
-+	lcr = uart->iu_lcr;
-+	uart->iu_lcr = lcr | UART_LCR_DLAB;
-+	uart->iu_scr = COSMISC_CONSTANT,
-+	uart->iu_lcr = lcr;
-+	uart->iu_lcr;
-+	serial8250_register_port(&port);
-+}
- 
- static void __devinit ioc3_serial_probe(struct pci_dev *pdev, struct ioc3 *ioc3)
- {
--	struct uart_port port;
--
- 	/*
- 	 * We need to recognice and treat the fourth MENET serial as it
- 	 * does not have an SuperIO chip attached to it, therefore attempting
-@@ -1166,24 +1195,35 @@ static void __devinit ioc3_serial_probe(struct pci_dev *pdev, struct ioc3 *ioc3)
- 		return;
- 
- 	/*
--	 * Register to interrupt zero because we share the interrupt with
--	 * the serial driver which we don't properly support yet.
--	 *
--	 * Can't use UPF_IOREMAP as the whole of IOC3 resources have already
--	 * been registered.
-+	 * Switch IOC3 to PIO mode.  It probably already was but let's be
-+	 * paranoid
- 	 */
--	memset(&port, 0, sizeof(port));
--	port.irq      = 0;
--	port.flags    = UPF_SKIP_TEST | UPF_BOOT_AUTOCONF;
--	port.iotype   = UPIO_MEM;
--	port.regshift = 0;
--	port.uartclk  = 22000000 / 3;
--
--	port.membase  = (unsigned char *) &ioc3->sregs.uarta;
--	serial8250_register_port(&port);
--
--	port.membase  = (unsigned char *) &ioc3->sregs.uartb;
--	serial8250_register_port(&port);
-+	ioc3->gpcr_s = GPCR_UARTA_MODESEL | GPCR_UARTB_MODESEL;
-+	ioc3->gpcr_s;
-+	ioc3->gppr_6 = 0;
-+	ioc3->gppr_6;
-+	ioc3->gppr_7 = 0;
-+	ioc3->gppr_7;
-+	ioc3->sscr_a = ioc3->sscr_a & ~SSCR_DMA_EN;
-+	ioc3->sscr_a;
-+	ioc3->sscr_b = ioc3->sscr_b & ~SSCR_DMA_EN;
-+	ioc3->sscr_b;
-+	/* Disable all SA/B interrupts except for SA/B_INT in SIO_IEC. */
-+	ioc3->sio_iec &= ~ (SIO_IR_SA_TX_MT | SIO_IR_SA_RX_FULL |
-+			    SIO_IR_SA_RX_HIGH | SIO_IR_SA_RX_TIMER |
-+			    SIO_IR_SA_DELTA_DCD | SIO_IR_SA_DELTA_CTS |
-+			    SIO_IR_SA_TX_EXPLICIT | SIO_IR_SA_MEMERR);
-+	ioc3->sio_iec |= SIO_IR_SA_INT;
-+	ioc3->sscr_a = 0;
-+	ioc3->sio_iec &= ~ (SIO_IR_SB_TX_MT | SIO_IR_SB_RX_FULL |
-+			    SIO_IR_SB_RX_HIGH | SIO_IR_SB_RX_TIMER |
-+			    SIO_IR_SB_DELTA_DCD | SIO_IR_SB_DELTA_CTS |
-+			    SIO_IR_SB_TX_EXPLICIT | SIO_IR_SB_MEMERR);
-+	ioc3->sio_iec |= SIO_IR_SB_INT;
-+	ioc3->sscr_b = 0;
-+
-+	ioc3_8250_register(&ioc3->sregs.uarta);
-+	ioc3_8250_register(&ioc3->sregs.uartb);
- }
- #endif
- 
+Acked-by: Robert Hancock <hancockr@shaw.ca>
+
