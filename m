@@ -1,89 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbXHZE7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbXHZFod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758544AbXHZE7B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 00:59:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbXHZE6y
+	id S1755616AbXHZFod (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 01:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbXHZFoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 00:58:54 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:56859 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752074AbXHZE6x (ORCPT
+	Sun, 26 Aug 2007 01:44:24 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:54598
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751209AbXHZFoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 00:58:53 -0400
-Message-ID: <46D10884.6040401@linux.vnet.ibm.com>
-Date: Sun, 26 Aug 2007 10:28:44 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Sun, 26 Aug 2007 01:44:23 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] include linux/pagemap.h in asm-generic/tlb.h
+Date: Sun, 26 Aug 2007 00:44:17 -0500
+User-Agent: KMail/1.9.6
+Cc: Jeff Dike <jdike@addtoit.com>, LKML <linux-kernel@vger.kernel.org>
+References: <20070824184616.GA9442@c2.user-mode-linux.org> <20070824172027.0ad5d2c0.akpm@linux-foundation.org>
+In-Reply-To: <20070824172027.0ad5d2c0.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Guillaume Chazarain <guichaz@yahoo.fr>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jay Lan <jlan@engr.sgi.com>, Jonathan Lim <jlim@sgi.com>
-Subject: Re: [PATCH] Add all thread stats for TASKSTATS_CMD_ATTR_TGID
-References: <3d8471ca0708020653l575db8cam464a3cffce68fb26@mail.gmail.com> <20070802120427.270e5589.akpm@linux-foundation.org> <20070819213435.72b287ad@localhost.localdomain> <46C9C8D4.9080108@linux.vnet.ibm.com> <20070825171039.3bc73781@localhost.localdomain>
-In-Reply-To: <20070825171039.3bc73781@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708260044.18490.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guillaume Chazarain wrote:
-> Le Mon, 20 Aug 2007 22:31:08 +0530,
-> Balbir Singh <balbir@linux.vnet.ibm.com> a écrit :
-> 
->>> --- a/kernel/taskstats.c	Sat Aug 18 17:15:17 2007 -0700
->>> +++ b/kernel/taskstats.c	Sun Aug 19 17:20:15 2007 +0200
->>> @@ -246,6 +246,8 @@ static int fill_tgid(pid_t tgid, struct 
->>>
->>>  		stats->nvcsw += tsk->nvcsw;
->>>  		stats->nivcsw += tsk->nivcsw;
->>> +		bacct_add_tsk(stats, tsk);
->>> +		xacct_add_tsk(stats, tsk);
->> I'm afraid this is still not good enough. bacct_add_tsk() will assign
->> values and do nothing in the loop (HINT: no summation).
-> 
-> Hi Balbir, thank you for your review. I agree with everything you said
-> and am on my way to do it as time permits, but I have some trouble
-> understanding this part. You stated that bacct_add_tsk() would overwrite
-> the stats of each thread in the tgid stats, but the other part of the
-> patch is the (actually wrong) combination of stats in xxx_add_tsk()
-> using min/max/sum.
-> 
+On Friday 24 August 2007 7:20:27 pm Andrew Morton wrote:
+> On Fri, 24 Aug 2007 14:46:16 -0400
+>
+> Jeff Dike <jdike@addtoit.com> wrote:
+> > [ This looks non-urgent to me ]
+> >
+> > Without linux/pagemap.h, asm-generic/tlb.h is missing declarations of
+> > page_cache_release and release_pages.
+> >
+> > Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+> > --
+> >  include/asm-generic/tlb.h |    1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > Index: linux-2.6.22/include/asm-generic/tlb.h
+> > ===================================================================
+> > --- linux-2.6.22.orig/include/asm-generic/tlb.h	2007-07-08
+> > 19:32:17.000000000 -0400 +++
+> > linux-2.6.22/include/asm-generic/tlb.h	2007-08-22 17:29:45.000000000
+> > -0400 @@ -13,6 +13,7 @@
+> >  #ifndef _ASM_GENERIC__TLB_H
+> >  #define _ASM_GENERIC__TLB_H
+> >
+> > +#include <linux/pagemap.h>
+> >  #include <linux/swap.h>
+> >  #include <asm/pgalloc.h>
+> >  #include <asm/tlbflush.h>
+>
+> This is worrisome.  If you look at pagemap.h, it includes a pile of things
+> which could easily themsleves try to include tlb.h via some path or
+> another.  I fear that this patch will cause explosions with some config
+> and/or architecture.
+>
+> If you like, tlb.h is a low-level sort of thing whereas pagemap.h is a
+> higher-level VFS thing.  It is more appropriate that pagemap.h be including
+> tlb.h.
+>
+>
+> So I think a better fix would be better, but I'm not able to suggest what,
+> as there is little detail about the failure here and I can find no mention
+> of page_cache_release and release_pages in asm-generic/tlb.h.
 
-Hi, Guillaume,
+To reproduce it, do this in -rc3:
 
-The CSA code was written by Jay Lan, but I'll see if I can answer your
-questions. In the current implementation, CSA does not use TGID exit
-notifications. In fill_pid(), both bacct_add_tsk() and xacct_add_tsk()
-are called (which is correct), they complement each other.
+cat > mini.conf << EOF
+CONFIG_MODE_SKAS=y
+CONFIG_BINFMT_ELF=y
+CONFIG_HOSTFS=y
+CONFIG_SYSCTL=y
+CONFIG_STDERR_CONSOLE=y
+CONFIG_UNIX98_PTYS=y
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_LBD=y
+CONFIG_EXT2_FS=y
+CONFIG_PROC_FS=y
+EOF
+make ARCH=um allnoconfig KCONFIG_ALLCONFIG=mini.conf
+make ARCH=um
 
-The code needs refactoring to ensure that they can work together
-in the fill_tgid() scenario.
+Rob
 
-> Also, I don't understand why the code to update btime:
-> 
->         /* calculate task elapsed time in timespec */
->         do_posix_clock_monotonic_gettime(&uptime);
->         ts = timespec_sub(uptime, tsk->start_time);
-> 	...
->         stats->ac_btime = get_seconds() - ts.tv_sec;
-> 
-> does not simply use tsk->start_time or tsk->real_start_time without
-> comparing it to the current time.
-> 
-
->From what I understand, task->start_time and task->real_start_time
-are taken from the realtime clock. The accounting in CSA seems
-to be very similar to the accounting done in do_acct_process()
-(kernel/acct.c).
-
-Jay/Jonathan any comments?
-
-
+(P.S. I note that in order for CONFIG_BLK_DEV_LOOP to actually trigger work 
+now, I have to add CONFIG_BLK_DEV=y to the above, which I didn't have to do 
+in 2.6.22 or in any previous version all the way back to 2.6.12.  Not a major 
+regression, but still a bit of a surprise.  That said, the above is what 
+triggered the break for me.)
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
