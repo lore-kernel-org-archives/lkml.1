@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbXHZGsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbXHZGxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754215AbXHZGsb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 02:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbXHZGsW
+	id S1756616AbXHZGxR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 02:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbXHZGxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 02:48:22 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:43821
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751736AbXHZGsV (ORCPT
+	Sun, 26 Aug 2007 02:53:09 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:43219 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751191AbXHZGxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 02:48:21 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Jeff Dike <jdike@addtoit.com>
-Subject: Re: [PATCH] include linux/pagemap.h in asm-generic/tlb.h
-Date: Sun, 26 Aug 2007 01:48:18 -0500
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-References: <20070824184616.GA9442@c2.user-mode-linux.org> <200708241551.41628.rob@landley.net> <20070824224651.GA11512@c2.user-mode-linux.org>
-In-Reply-To: <20070824224651.GA11512@c2.user-mode-linux.org>
+	Sun, 26 Aug 2007 02:53:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=lKmSq1sln9czz3DAQCwdoODe6e8I3UiWjCU99xmAaOUyJ7K0H5IqYRQleszr9dxwdpjM/iLI/2qZ04AjmA5Hp8XsK8fRnGmtq42Wa4wQj0G+xZz52r7HSYl/BHaS83DZvznAnVgSp5IdAdJ1VwjcMVm6WxF1T6Ryjcuvtb6pgwA=  ;
+X-YMail-OSG: oyEF4ikVM1lWKTcaYvgSUHKjMckbOzsdvY6k6ncn.NbULNsxDdmAfgSAMobFVq25P36h4E3Q_A--
+Message-ID: <46D1234D.4090300@yahoo.com.au>
+Date: Sun, 26 Aug 2007 16:53:01 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mitchell Erblich <erblichs@earthlink.net>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [RFC] : mm : / Patch / code : Suggestion :snip  kswapd &  get_page_from_freelist()
+  : No more no page failures.
+References: <000601c7e6ae$db887680$6501a8c0@earthlink.net>
+In-Reply-To: <000601c7e6ae$db887680$6501a8c0@earthlink.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708260148.18261.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 August 2007 5:46:51 pm Jeff Dike wrote:
-> On Fri, Aug 24, 2007 at 03:51:41PM -0500, Rob Landley wrote:
-> > It may be non-urgent to you, but it still broke my build. :)
-> >
-> > Acked-by: Rob Landley <rob@landley.net>
->
-> Heh, it doesn't seem like -stable material to me, but if there aren't
-> any screams while it sits in -mm, maybe it's 2.6.23 material.
+Mitchell@kvack.org wrote:
+> linux-mm@kvack.org
+> Sent: Friday, August 24, 2007 3:11 PM
+> Subject: Re: [RFC] : mm : / Patch / code : Suggestion :snip kswapd &
+> get_page_from_freelist() : No more no page failures.
+> 
+> Mailer added a HTML subpart and chopped the earlier email.... :^(
 
-I believe 2.6.22 built for me without the patch.  It was 2.6.23-rc3 that 
-needed it.
+Hi Mitchell,
 
-(I have a bad head cold right now so I'm not going back to confirm this 
-belief.  I am, instead, making tea.)
+Is it possible to send suggestions in the form of a unified diff, even
+if you haven't even compiled it (just add a note to let people know).
 
-> 				Jeff
+Secondly, we already have a (supposedly working) system of asynch
+reclaim, with buffering and hysteresis. I don't exactly understand
+what problem you think it has that would be solved by rechecking
+watermarks after allocating a page.
 
-Rob
+When we're in the (min,low) watermark range, we'll wake up kswapd
+_before_ allocating anything, so what is better about the change to
+wake up kswapd after allocating? Can you perhaps come up with an
+example situation also to make this more clear?
+
+Overhead of wakeup_kswapd isn't too much of a problem: if we _should_
+be waking it up when we currently aren't, then we should be calling
+it. However the extra checking in the allocator fastpath is something
+we want to avoid if possible, because this can be a really hot path.
+
+Thanks,
+Nick
+
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+SUSE Labs, Novell Inc.
