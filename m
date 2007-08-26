@@ -1,83 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbXHZX1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754935AbXHZXd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754816AbXHZX1h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 19:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbXHZX12
+	id S1754935AbXHZXd0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 19:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbXHZXdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 19:27:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:13335 "EHLO
+	Sun, 26 Aug 2007 19:33:19 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:23505 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752733AbXHZX10 (ORCPT
+	with ESMTP id S1751722AbXHZXdS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 19:27:26 -0400
+	Sun, 26 Aug 2007 19:33:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bogh1IFKE9jqVkVHwbHXviZX4Kw6AhPuGJwqSvcUJW2l8NoMlvqNSO6XGtBU4/0supz4zv0+weRyBiAA2gOUUP5M7DqFioK9JG1ocTWy10ehZVTzeYT1JApxTYu51OdNZeadVkzCjx+5WMSmv76I8YN4DpNk/VVmM6ivHFjKB0c=
-Message-ID: <6bffcb0e0708261627s12e5a9acqef92d0261264a40c@mail.gmail.com>
-Date: Mon, 27 Aug 2007 01:27:25 +0200
+        b=LYHrZ/V5vBStABCUiqliT7r82bWLsFAYyteCNRdh8gCJYgP+aTPk8AwPvlp2KB297rruIuSyAdd9pIFqv7TAa2lGgAczzADLU/y4jiChC3kjfWPEV2KSiIoUftgjoDgJdP2cbPdOKeft4fsaDJO+DgQzbvie09gccRDKMWw2eoQ=
+Message-ID: <6bffcb0e0708261633r5de8296di53aca3def4ebbdcd@mail.gmail.com>
+Date: Mon, 27 Aug 2007 01:33:17 +0200
 From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: patrizio.bassi@gmail.com
-Subject: Re: libata not working for sis5533
-Cc: "Kernel," <linux-kernel@vger.kernel.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       "Alan Cox" <alan@redhat.com>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-In-Reply-To: <46D132C5.5000803@gmail.com>
+To: "fredoxygene@free.fr" <fredoxygene@free.fr>
+Subject: Re: PROBLEM: kernel BUG at kernel/workqueue.c:323!
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1188125967.46d15d0f87c01@imp.free.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <46D132C5.5000803@gmail.com>
+References: <1188125967.46d15d0f87c01@imp.free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-[Adding IDE wizards to CC]
+On 26/08/07, fredoxygene@free.fr <fredoxygene@free.fr> wrote:
+> PROBLEM: kernel BUG at kernel/workqueue.c:323!
+>
+> Summary :
+> Happened while i was transferring a huge amount of data on wifi (ipw3945).
+> Computer is a Fujitsu/Siemens Si 1520 / T5500, running Unbuntu Feisty 7.04.
+>
+> Follows :
+> - dmesg output with "kernel bug"
+> - scripts/ver_linux output
+> - others thinks like lspci -vvv, etc...
+>
+> Feel free to ask i you need some more details or if i can help (by doing some
+> testings or other stuffs)
+>
+> dmesg output :
+> [  178.752000] ieee80211_crypt: registered algorithm 'TKIP'
+> [  196.120000] eth1: no IPv6 routers present
+> [ 1548.228000] ipw3945: Error sending LEDS_CMD: time out after 500ms.
+> [ 1548.924000] ipw3945: Error sending cmd #07 to daemon: time out after 500ms.
+> [ 1550.524000] ipw3945: Error sending SCAN_ABORT_CMD: time out after 500ms.
+> [ 1551.024000] ipw3945: Error sending cmd #08 to daemon: time out after 500ms.
+> [ 1551.524000] ipw3945: Error sending ADD_STA: time out after 500ms.
+> [ 1552.024000] ipw3945: Error sending SCAN_ABORT_CMD: time out after 500ms.
+> [ 1561.536000] ipw3945: Error sending LEDS_CMD: time out after 500ms.
+> [ 1561.712000] ADDRCONF(NETDEV_UP): eth1: link is not ready
+> [ 1582.928000] ADDRCONF(NETDEV_UP): eth1: link is not ready
+> [ 1611.024000] ipw3945: Error sending LEDS_CMD: time out after 500ms.
+> [ 1611.524000] ipw3945: Error sending LEDS_CMD: time out after 500ms.
+> [ 1611.796000] ------------[ cut here ]------------
+> [ 1611.796000] kernel BUG at kernel/workqueue.c:323!
 
-On 26/08/07, Patrizio Bassi <patrizio.bassi@gmail.com> wrote:
-> My sis630 chipset shipped with Asus A1000
-> doesn't work properly with suspend with ide drivers
-> (http://bugzilla.kernel.org/show_bug.cgi?id=7077)
->
-> i tried to switch to libata but i cannot boot.
-> I've enabled generic ide and sis specific code, both in-kernel. of
-> course scsi too.
->
-> when i boot i get: irq #14 nobody cared and stop
->
-> i have to remove battery to reboot pc.
-> I'm using 2.6.22.5, but i never got any libata kernel working.
->
-> Patrizio
->
-> ps. i'm writing from my desktop as i'm doing hardware mainteinance on
-> the laptop and could not boot it
->
-> Please CC me.
->
-> lspci:
-> 00:00.0 Host bridge: Silicon Integrated Systems [SiS] 630 Host (rev 11)
-> 00:00.1 IDE interface: Silicon Integrated Systems [SiS] 5513 [IDE] (rev d0)
-> 00:01.0 ISA bridge: Silicon Integrated Systems [SiS] SiS85C503/5513 (LPC
-> Bridge)
-> 00:01.1 Ethernet controller: Silicon Integrated Systems [SiS] SiS900
-> PCI Fast Ethernet (rev 80)
-> 00:01.2 USB Controller: Silicon Integrated Systems [SiS] USB  1.0
-> Controller (rev 07)
-> 00:01.3 USB Controller: Silicon Integrated Systems [SiS] USB 1.0
-> Controller (rev 07)
-> 00:01.4 Multimedia audio controller: Silicon Integrated Systems [SiS]
-> SiS PCI Audio Accelerator (rev 01)
->  00:01.6 Modem: Silicon Integrated Systems [SiS] AC'97 Modem
-> Controller (rev a0)
-> 00:02.0 PCI bridge: Silicon Integrated Systems [SiS] Virtual
-> PCI-to-PCI bridge (AGP)
-> 00:0a.0 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev 80)
-> 00:0a.1 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev 80)
-> 01:00.0 VGA compatible controller: Silicon Integrated Systems [SiS]
-> 630/730 PCI/AGP VGA Display Adapter (rev 11)
+"Problems building with kernel v2.6.20
+The work queue structure changed with 2.6.20. In addition,
+pci_module_init was deprecated. The three patches below in Patches
+were provided by Mattiaa Dongili to correct this behavior. Download
+them and apply them to ipw3945-1.1.3 James"
+
+http://ipw3945.sourceforge.net/
 
 Regards,
 Michal
