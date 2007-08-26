@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbXHZXwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbXHZX5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753626AbXHZXwi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 19:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbXHZXw3
+	id S1754386AbXHZX5v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 19:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbXHZX5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 19:52:29 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45063 "EHLO
+	Sun, 26 Aug 2007 19:57:42 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59887 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751159AbXHZXw2 (ORCPT
+	with ESMTP id S1752036AbXHZX5l (ORCPT
 	<rfc822;Linux-Kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 19:52:28 -0400
-Message-ID: <46D2122D.2050202@zytor.com>
-Date: Sun, 26 Aug 2007 16:52:13 -0700
+	Sun, 26 Aug 2007 19:57:41 -0400
+Message-ID: <46D2136B.8010307@zytor.com>
+Date: Sun, 26 Aug 2007 16:57:31 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
@@ -67,8 +67,8 @@ Here you change _edata.._end into _bss.._end.
 >  	subw	%di, %cx
 >  	shrw	$2, %cx
 
-Here you change __bss_start..to __bss_end, and have to change the linker
-script for it not to break.
+Here you change __bss_start.._end to __bss_start..__bss_end, and have to
+change the linker script for it not to break.
 
 There is no consistency improvement, and as such, it's just churn.
 
