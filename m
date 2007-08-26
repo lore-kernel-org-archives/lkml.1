@@ -1,172 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbXHZQ6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbXHZQ7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbXHZQ6g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 12:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbXHZQ60
+	id S1754806AbXHZQ7K (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 12:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbXHZQ64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 12:58:26 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:19457 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753148AbXHZQ6Z (ORCPT
+	Sun, 26 Aug 2007 12:58:56 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:62839 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753649AbXHZQ6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 12:58:25 -0400
-Date: Sun, 26 Aug 2007 09:56:51 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Michael J. Evans" <mjevans1983@comcast.net>
-Cc: Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@redhat.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michael J "." Evans <mjevans1983@gmail.com>
-Subject: Re: [patch v2 1/1] md: Software Raid autodetect dev list not array
-Message-Id: <20070826095651.75e92556.randy.dunlap@oracle.com>
-In-Reply-To: <200708260451.24868.mjevans1983@comcast.net>
-References: <200708222058.45480.mjevans1983@comcast.net>
-	<18126.21113.981032.286298@notabene.brown>
-	<200708260451.24868.mjevans1983@comcast.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 26 Aug 2007 12:58:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oEFganyfq3+ZAL0G2F6kQ1PRAImP6HKQ+Lm822yaT/9dBIsfuvY7DVmUh+M8Q632f4kVnANlug0MOaI2H1tygrr2oGsfQ26TSDjdS/D0iF4jCFuzziLis0v/KKd4XZqb34rmPFCX432tjUViZH5KVfMIMeMSPf6qmiX58NAf/xY=
+Message-ID: <466ad3f90708260958ha149c40ncf5a8287c8a25307@mail.gmail.com>
+Date: Sun, 26 Aug 2007 12:58:54 -0400
+From: "Fred Tyler" <fredty8@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: Slow, persistent memory leak in 2.6.20
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708261828540.15614@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <466ad3f90708260739v645294b9t641cb8258dcc4f4@mail.gmail.com>
+	 <466ad3f90708260851u5d8ac58duc4072b71ebf78fc8@mail.gmail.com>
+	 <Pine.LNX.4.64.0708261752260.15614@fbirervta.pbzchgretzou.qr>
+	 <466ad3f90708260916x5d19d0d3hd828e63520960192@mail.gmail.com>
+	 <Pine.LNX.4.64.0708261828540.15614@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Aug 2007 04:51:24 -0700 Michael J. Evans wrote:
+On 8/26/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>
+> On Aug 26 2007 12:16, Fred Tyler wrote:
+> >> Please rule out filesystem caches by issuing
+> >>         sync;
+> >>         echo 3 >/proc/sys/vm/drop_caches;
+> >
+> >
+> >So, I guess it worked? (I don't know what was supposed to happen, but
+> >memory usage dropped significantly when I did this.)
+>
+> So I guess you are not seeing any memory leak at all, but just the regular
+> caching?
 
-> From: Michael J. Evans <mjevans1983@gmail.com>
-> 
-> In current release kernels the md module (Software RAID) uses a static array
->  (dev_t[128]) to store partition/device info temporarily for autostart.
-> 
-> This patch replaces that static array with a list.
-> 
-> Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
-> --- 
-> Version 2: Following Neil Brown's requests...
-> using list_add_tail, and corrected missing i_passed++;.
-> removed sections of code that would never be reached.
-> - -
-> The data/structures are only used within md.c, and very close together.
-> However I wonder if the structural information shouldn't go in to...
-> ../../include/linux/raid/md_k.h instead.
-> 
-> 
-> I discovered this (and that the devices are added as disks/partitions are
-> discovered at boot) while I was debugging why only one of my MD arrays would
-> come up whole, while all the others were short a disk.
-> 
-> I eventually discovered that it was enumerating through all of 9 of my 11 hds
-> (2 had only 4 partitions apiece) while the other 9 have 15 partitions
-> (I wanted 64 per drive...). The last partition of the 8th drive in my 9 drive
-> raid 5 sets wasn't added, thus making the final md array short both a parity
-> and data disk, and it was started later, elsewhere.
-> 
-> Subject: [patch 1/1] md: Software Raid autodetect dev list not array
-> 
-> SOFTWARE RAID (Multiple Disks) SUPPORT
-> P:	Ingo Molnar
-> M:	mingo@redhat.com
-> P:	Neil Brown
-> M:	neilb@suse.de
-> L:	linux-raid@vger.kernel.org
-> S:	Supported
-> Unless you have a reason NOT to do so, CC linux-kernel@vger.kernel.org.
-> 
-> 12: Has been tested with CONFIG_PREEMPT, CONFIG_DEBUG_PREEMPT,
->     CONFIG_DEBUG_SLAB, CONFIG_DEBUG_PAGEALLOC, CONFIG_DEBUG_MUTEXES,
->     CONFIG_DEBUG_SPINLOCK, CONFIG_DEBUG_SPINLOCK_SLEEP all simultaneously
->     enabled.
-> 
-> It has been tested with CONFIG_SMP set and unset (Different x86_64 systems).
-> It has been tested with CONFIG_PREEMPT set and unset (same system).
-> CONFIG_LBD isn't even an option in my .config file.
+Also, how can you explain the differences between the graphs of
+long-term memory usage? This first graph is from a server running
+2.6.16 that never has memory problems:
 
-It's not an option 64_BIT builds.
+    http://i239.photobucket.com/albums/ff117/fredty8/memory-a4.png
 
-> Note: between 2.6.22 and 2.6.23-rc3-git5
->                 rdev = md_import_device(dev,0, 0);
-> became
->                 rdev = md_import_device(dev,0, 90);
-> So the patch has been edited to patch around that line. (might be fuzzy)
-> 
-> Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
-> =============================================================
-> --- linux/drivers/md/md.c.orig	2007-08-21 03:19:42.511576248 -0700
-> +++ linux/drivers/md/md.c	2007-08-21 04:30:09.775525710 -0700
-> @@ -5752,13 +5754,24 @@ void md_autodetect_dev(dev_t dev)
->   * Searches all registered partitions for autorun RAID arrays
->   * at boot time.
->   */
-> -static dev_t detected_devices[128];
-> -static int dev_cnt;
-> +
-> +static LIST_HEAD(all_detected_devices);
-> +struct detected_devices_node {
-> +	struct list_head list;
-> +	dev_t dev;
-> +};
->  
->  void md_autodetect_dev(dev_t dev)
->  {
-> -	if (dev_cnt >= 0 && dev_cnt < 127)
-> -		detected_devices[dev_cnt++] = dev;
-> +	struct detected_devices_node *node_detected_dev;
-> +	node_detected_dev = kzalloc(sizeof(*node_detected_dev), GFP_KERNEL);\
-> +	if (node_detected_dev) {
-> +		node_detected_dev->dev = dev;
-> +		list_add_tail(&node_detected_dev->list, &all_detected_devices);
-> +	} else {
-> +		printk(KERN_CRIT "md: kzAlloc node failed, skipping device."
-> +				 " : 0x%p.\n", node_detected_dev);
+And here's a graph of a server running 2.6.12 that has to be rebooted
+every month or two because it runs out of memory:
 
-Is there any way to tell the user what device (or partition?) is
-bein skipped?  This printk should just print (confirm) that
-node_detected_dev is NULL.  Shouldn't it just print <dev> in
-major:minor format?
+    http://i239.photobucket.com/albums/ff117/fredty8/memory-a2.png
 
-> +	}
->  }
->  
->  
-> @@ -5765,7 +5778,12 @@ static void autostart_arrays(int part)
->  static void autostart_arrays(int part)
->  {
->  	mdk_rdev_t *rdev;
-> -	int i;
-> +	struct detected_devices_node *node_detected_dev;
-> +	dev_t dev;
-> +	int i_scanned, i_passed;
-> +	signed int i_found;
+Now, admittedly, the 2.6.20 server has not been running long enough to
+know whether or not it's going to start starving applications of
+memory, but the graph here looks a whole lot more like 2.6.12 than
+2.6.16, wouldn't you agree:
 
-Drop "signed", like the surrounding code.
-Leave a blank line between data declarations and beginning of code.
-
-> +	i_scanned = 0;
-> +	i_passed = 0;
->  
->  	printk(KERN_INFO "md: Autodetecting RAID arrays.\n");
->  
-> @@ -5772,3 +5790,8 @@ static void autostart_arrays(int part)
-> -	for (i = 0; i < dev_cnt; i++) {
-> -		dev_t dev = detected_devices[i];
-> -
-> +		/* FIXME: max 'int' #DEFINEd somewhere?  not   0x7FFFFFFF ? */
-
-include/linux/kernel.h has INT_MAX, UINT_MAX, LONG_MAX, ULONG_MAX,
-LLONG_MAX, ULLONG_MAX.
-
-> +	while (!list_empty(&all_detected_devices) && i_scanned < 0x7FFFFFFF) {
-> +		i_scanned++;
-> +		node_detected_dev = list_entry(all_detected_devices.next,
-> +					struct detected_devices_node, list);
-> +		list_del(&node_detected_dev->list);
-> +		dev = node_detected_dev->dev;
-> +		kfree(node_detected_dev);
+    http://i239.photobucket.com/albums/ff117/fredty8/memory-b1.png
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Those 2.6.12 servers caused me a ton of stress because I let the
+problem go too long before I did anything. In the event that 2.6.20 is
+doing the same thing, I'm trying to fix it before things get out of
+control.
