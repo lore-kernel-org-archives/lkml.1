@@ -1,92 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbXHZTTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbXHZTjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbXHZTTP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 15:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbXHZTS6
+	id S1753844AbXHZTjf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 15:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbXHZTj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 15:18:58 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:18632 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbXHZTS5 (ORCPT
+	Sun, 26 Aug 2007 15:39:26 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:47394 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752060AbXHZTjZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 15:18:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=V83q7BO8rESMV+xT0Tb+3UcJT1TBWYVYVgQdeJC2igWohsSAAGR1iy0yj+oXcznxyogom+qOBVxoF3ZTVUHwwBQV2McvrV/+ICxKZpuNTJW8y6CL77G5MoZEbzPjz/pFax2/KMgrtQY5bwSrAO8tQTaxoAwDncyoRmDedwmAy0k=
-Message-ID: <4877c76c0708261218r2c1ed2eeg6d604eeb58f6b235@mail.gmail.com>
-Date: Sun, 26 Aug 2007 12:18:56 -0700
-From: "Michael Evans" <mjevans1983@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [patch v2 1/1] md: Software Raid autodetect dev list not array
-Cc: "Michael J. Evans" <mjevans1983@comcast.net>, "Neil Brown" <neilb@suse.de>,
-       "Ingo Molnar" <mingo@redhat.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070826095651.75e92556.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200708222058.45480.mjevans1983@comcast.net>
-	 <18126.21113.981032.286298@notabene.brown>
-	 <200708260451.24868.mjevans1983@comcast.net>
-	 <20070826095651.75e92556.randy.dunlap@oracle.com>
+	Sun, 26 Aug 2007 15:39:25 -0400
+Date: Sun, 26 Aug 2007 13:38:57 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PROBLEM: Suspend corrupts bios clock since 2.6.21
+In-reply-to: <fa.Hms7k1HwOwCbv7cPqUWGLhT5uyk@ifi.uio.no>
+To: Andreas Steffan <a.steffan@deas-online.de>
+Cc: linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pavel@suse.cz, linux-kernel@vger.kernel.org
+Message-id: <46D1D6D1.5040203@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Hms7k1HwOwCbv7cPqUWGLhT5uyk@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/26/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Sun, 26 Aug 2007 04:51:24 -0700 Michael J. Evans wrote:
->
-> > From: Michael J. Evans <mjevans1983@gmail.com>
-> >
+Andreas Steffan wrote:
+> Hallo everybody,
+> 
+> I am running fedora core 7 on my Dell latitude D810 notebook (BIOS
+> rev A05).
+> 
+> Since 2.6.21 I found that suspending (to disk and to ram) corrupts
+> the bios clock most of the time (not always). The corruption is
+> happening during suspend. When I enter the system bios right after
+> I switch the system back on, I find the bios clock is set to a time
+> far in the future (many years). I guess that problem is related to
+> the clock changes that where introduced with 2.6.21.
+> 
+> Please let me know if you want me to provide further information to
+> get this problem fixed.
+> 
+> If there is a known quirk to work around this problem, I would
+> really appreciate a hint.
+> 
+> PS: I have not yet tried 2.6.22.4-65.fc7, but the latest 2.6.22 kernel
+> before showed the same behaviour for me.
 
->
-> Is there any way to tell the user what device (or partition?) is
-> bein skipped?  This printk should just print (confirm) that
-> node_detected_dev is NULL.  Shouldn't it just print <dev> in
-> major:minor format?
->
+Please check if PM_TRACE is enabled in your kernel configuration. It 
+will do this intentionally.
 
-It would be possible with the MAJOR() and MINOR() macros to do this...
-however it doesn't really help out much during troubleshooting. I
-tried using the bdevname function like the function that calls this
-one uses, however, it wants a struct device_block... which I tried
-getting with:
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-container_of(dev, struct block_device, bd_dev)
-
-Of course this didn't quite work out, I got kernel panics on my two
-trial attempts.
-
-Here's a skip from a dmesg where I added a printk right under the line
-in question.
-
-[   63.033532] sd 11:0:0:0: [sdk] 976773168 512-byte hardware sectors
-(500108 MB)
-[   63.039842] sd 11:0:0:0: [sdk] Write Protect is off
-[   63.046012] sd 11:0:0:0: [sdk] Mode Sense: 00 3a 00 00
-[   63.046025] sd 11:0:0:0: [sdk] Write cache: enabled, read cache:
-enabled, doesn't support DPO or FUA
-[   63.052309]  sdk: sdk1 sdk2 sdk3 sdk4 sdk5 sdk6 sdk7 sdk8 sdk9
-sdk10 sdk11 sdk12 sdk13 sdk14 sdk15
-[   63.082546] md: Autodetect-buffering the above device.
-[   63.088893] md: Autodetect-buffering the above device.
-[   63.095053] md: Autodetect-buffering the above device.
-[   63.101082] md: Autodetect-buffering the above device.
-[   63.106956] md: Autodetect-buffering the above device.
-[   63.112596] md: Autodetect-buffering the above device.
-[   63.117998] md: Autodetect-buffering the above device.
-[   63.123396] md: Autodetect-buffering the above device.
-[   63.128789] md: Autodetect-buffering the above device.
-[   63.134182] md: Autodetect-buffering the above device.
-[   63.139576] md: Autodetect-buffering the above device.
-[   63.144970] md: Autodetect-buffering the above device.
-[   63.150360] md: Autodetect-buffering the above device.
-[   63.155749] md: Autodetect-buffering the above device.
-[   63.161498] sd 11:0:0:0: [sdk] Attached SCSI disk
-
-
-> ---
-> ~Randy
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
->
