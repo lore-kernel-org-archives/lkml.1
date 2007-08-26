@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbXHZQFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbXHZQFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754078AbXHZQFU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 12:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbXHZQFI
+	id S1754326AbXHZQFg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 12:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbXHZQFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 26 Aug 2007 12:05:11 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:57744 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752956AbXHZQFI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 26 Aug 2007 12:05:08 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:58360 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752934AbXHZQFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 12:05:07 -0400
-X-Greylist: delayed 1727 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Aug 2007 12:05:06 EDT
-Date: Sun, 26 Aug 2007 18:36:18 +0300
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-To: Olaf Hering <olaf@aepfle.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH] atyfb: remove dead code
-Message-ID: <20070826153618.GB6003@sci.fi>
-Mail-Followup-To: Olaf Hering <olaf@aepfle.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	linux-fbdev-devel@lists.sourceforge.net
-References: <20070826091237.GA17667@aepfle.de>
+X-Originating-Ip: 72.143.66.27
+Date: Sun, 26 Aug 2007 11:54:58 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] remove BITS_TO_TYPE macro
+In-Reply-To: <880710657292153543@pripojeni.net>
+Message-ID: <Pine.LNX.4.64.0708261143470.4267@localhost.localdomain>
+References: <880710657292153543@pripojeni.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070826091237.GA17667@aepfle.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 26, 2007 at 11:12:37AM +0200, Olaf Hering wrote:
-> Remove dead code.
-> 
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
-> 
-> ---
->  drivers/video/aty/atyfb_base.c |    6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> --- a/drivers/video/aty/atyfb_base.c
-> +++ b/drivers/video/aty/atyfb_base.c
-> @@ -2767,8 +2767,7 @@ static int atyfb_blank(int blank, struct
->  	if (par->lock_blank || par->asleep)
->  		return 0;
->  
-> -#ifdef CONFIG_FB_ATY_BACKLIGHT
-> -#elif defined(CONFIG_FB_ATY_GENERIC_LCD)
-> +#ifdef CONFIG_FB_ATY_GENERIC_LCD
->  	if (par->lcd_table && blank > FB_BLANK_NORMAL &&
->  	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
->  		u32 pm = aty_ld_lcd(POWER_MANAGEMENT, par);
+On Sun, 26 Aug 2007, Jiri Slaby wrote:
 
-This will change the behavior of the code. I basically agree with the
-change because the current code will not control the backlight when the
-kernel is built with CONFIG_FB_ATY_BACKLIGHT but the system doesn't
-support the backlight interface (ie. non-pmac system). However someone
-should check that it doesn't cause problems for pmac users.
+> remove BITS_TO_TYPE macro
+>
+> I realized, that it is actually the same as DIV_ROUND_UP, use it instead.
 
+unless there are some patches in the queue, the whole area of rounding
+up and aligning is still sort of messy.
+
+kernel.h defines the following:
+
+...
+#define ALIGN(x,a)              __ALIGN_MASK(x,(typeof(x))(a)-1)
+#define __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
+...
+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+...
+
+yet there is no corresponding DIV_ROUND_DOWN() or rounddown(), just
+for the sake of consistency. (maybe there's simply no need?)
+
+would someone like to propose a single, consistent standard for those
+things?  or is it not worth it?
+
+rday
 -- 
-Ville Syrjälä
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
