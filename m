@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934863AbXHZBx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965097AbXHZBze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934863AbXHZBx5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 21:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933724AbXHZBxs
+	id S965097AbXHZBze (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 21:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933980AbXHZBzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 21:53:48 -0400
-Received: from smtpout.mac.com ([17.250.248.176]:50142 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933670AbXHZBxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 21:53:47 -0400
-In-Reply-To: <9a8748490708251736k5b751998yee72abdc8c4c1b53@mail.gmail.com>
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com> <5ebfb93eca0dd43cf17876e643079cbcfeb3111c.1187912217.git.jesper.juhl@gmail.com> <200708241141.06358.vda.linux@googlemail.com> <Pine.LNX.4.64.0708240642500.18301@localhost.localdomain> <9a8748490708251527n26cc2065n5b8716bd7f65e252@mail.gmail.com> <Pine.LNX.4.64.0708251956380.29507@localhost.localdomain> <9a8748490708251728h51d51092r11a3562ceb63b2f9@mail.gmail.com> <Pine.LNX.4.64.0708252021070.8721@localhost.localdomain> <9a8748490708251736k5b751998yee72abdc8c4c1b53@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <51189954-4301-4C83-91F2-26B376D0DDD7@mac.com>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Sat, 25 Aug 2007 21:55:25 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:9271 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933607AbXHZBzY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 21:55:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ZDzuzqx0K5MXfsdPUQeOG5tlGTy6RX4flZS2dcUP7tCJmSi/gpgr5SPK8RRjKjbSeNTXdCRmBWm6gUEljgsiue/pVAp6DBVqIsZqqcViC2ZUHpSBkVmpjX1LPDLqNj6ws8kE139sOCoPD3976wvnsFTfxw5FB180LAIwRY0tt6w=
+Message-ID: <a2ebde260708251855j708d2b33hfce905f623597325@mail.gmail.com>
+Date: Sun, 26 Aug 2007 09:55:22 +0800
+From: "Dong Feng" <middle.fengdong@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: 2.6.22.5 SATA Failure
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH 09/30] mtd: Don't cast kmalloc() return value in drivers/mtd/maps/pmcmsp-flash.c
-Date: Sat, 25 Aug 2007 21:52:51 -0400
-To: Jesper Juhl <jesper.juhl@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 25, 2007, at 20:36:32, Jesper Juhl wrote:
-> On 26/08/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
->> technically, nothing.  but if you're not going to use kcalloc()  
->> when you're explicitly allocating an array of identical objects  
->> (that you want zero-filled, as a bonus), then what's the point of  
->> ever having defined a kcalloc() routine in the first place?
->>
-> I wonder a bit about that myself...
->
-> I have found some other issues in that function that I want to fix,  
-> so I'll be respinning the patch as a patch series instead - and why  
-> not; I'll just go with kcalloc() and see what the maintainers have  
-> to say, it's not like I personally care much one way or the other.
+I have been using 2.6.21.1. It seems working well, that is, all my
+disk partitions are mapped as "/dev/sda*" and the performance looks
+good. After I upgrade to 2.6.22.5 with the exact same configuration,
+all the disk device turn to "/dev/hda*" and the performance degrade
+obviously.
 
-I think the original reasoning behind kcalloc() was that it did some  
-extra input checking, so that if the product of the two numbers  
-overflowed, it would fail with NULL instead of allocating  
-insufficient space.  In the kernel it doesn't matter in practice  
-since you MUST have additional checking on the size of allocated  
-memory anyways, not even considering the fact that >PAGE_SIZE  
-allocations are probably going to fail with decent frequency regardless.
+While I boot with 2.6.21.1, the logs regarding disk are:
 
-Cheers,
-Kyle Moffett
+Aug 26 06:11:26 localhost kernel: ata_piix 0000:00:1f.2: MAP [ P0 P2 IDE IDE ]
+Aug 26 06:11:26 localhost kernel: ACPI: PCI Interrupt 0000:00:1f.2[B]
+-> GSI 17 (level, low) -> IRQ 17
+Aug 26 06:11:26 localhost kernel: ata: 0x170 IDE port busy
+Aug 26 06:11:26 localhost kernel: ata: conflict with ide1
+Aug 26 06:11:26 localhost kernel: ata1: SATA max UDMA/133 cmd
+0x000101f0 ctl 0x000103f6 bmdma 0x0001bfa0 irq 14
+Aug 26 06:11:26 localhost kernel: ata2: DUMMY
+Aug 26 06:11:26 localhost kernel: scsi0 : ata_piix
+Aug 26 06:11:26 localhost kernel: ata1.00: ATA-7: ST9120821AS, 8.03,
+max UDMA/133
+Aug 26 06:11:26 localhost kernel: ata1.00: 234441648 sectors, multi 8:
+LBA48 NCQ (depth 0/32)
+Aug 26 06:11:26 localhost kernel: ata1.00: configured for UDMA/133
+Aug 26 06:11:26 localhost kernel: scsi1 : ata_piix
+Aug 26 06:11:26 localhost kernel: scsi 0:0:0:0: Direct-Access     ATA
+    ST9120821AS      8.03 PQ: 0 ANSI: 5
+Aug 26 06:11:26 localhost kernel: SCSI device sda: 234441648 512-byte
+hdwr sectors (120034 MB)
+Aug 26 06:11:26 localhost kernel: sda: Write Protect is off
+Aug 26 06:11:26 localhost kernel: SCSI device sda: write cache:
+enabled, read cache: enabled, doesn't support DPO or FUA
+Aug 26 06:11:26 localhost kernel: SCSI device sda: 234441648 512-byte
+hdwr sectors (120034 MB)
+Aug 26 06:11:26 localhost kernel: sda: Write Protect is off
+Aug 26 06:11:26 localhost kernel: SCSI device sda: write cache:
+enabled, read cache: enabled, doesn't support DPO or FUA
+Aug 26 06:11:26 localhost kernel:  sda: sda1 sda2 sda3 < sda5 sda6 sda7 >
 
 
+
+While booting with 2.6.22.5, the logs are:
+
+Aug 26 09:30:04 localhost kernel: ACPI: PCI Interrupt 0000:00:1f.2[B]
+-> GSI 17 (level, low) -> IRQ 17
+Aug 26 09:30:04 localhost kernel: ata_piix 0000:00:1f.2: 0x1F0 IDE port busy
+Aug 26 09:30:04 localhost kernel: ata_piix 0000:00:1f.2: 0x170 IDE port busy
+Aug 26 09:30:04 localhost kernel: ata_piix 0000:00:1f.2: no available
+legacy port
+
+
+
+It seems the dramatic change in libata.c incurs this failure.
