@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbXHZMU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811AbXHZMzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752927AbXHZMU6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 08:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbXHZMUr
+	id S1752811AbXHZMzx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 08:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbXHZMzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 08:20:47 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:35840 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751412AbXHZMUq (ORCPT
+	Sun, 26 Aug 2007 08:55:44 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:51510 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbXHZMzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 08:20:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lh8TLlJoyFqL9Kxzohr2oiQJ4A/kTejiPWWP8p4bFUoynDInpU3TGbH5JwcxlQjxFjNR9EGCRipoxGpM7XhakUCCKWhegFgVXAQOPHtTFOOPk9sLul49GOMG3Uxc2DC8FVEfI57C44SuWtxih7vkO2O1g/AvS/SHRAT8zdqIynQ=
-Message-ID: <4877c76c0708260520v33bc36bfu24e688a5902912e5@mail.gmail.com>
-Date: Sun, 26 Aug 2007 05:20:45 -0700
-From: "Michael Evans" <mjevans1983@gmail.com>
-To: "Michael J. Evans" <mjevans1983@comcast.net>
-Subject: Re: [patch v2 1/1] md: Software Raid autodetect dev list not array
-Cc: "Neil Brown" <neilb@suse.de>, "Ingo Molnar" <mingo@redhat.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200708260451.24868.mjevans1983@comcast.net>
+	Sun, 26 Aug 2007 08:55:43 -0400
+Date: Sun, 26 Aug 2007 06:55:42 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jesse.barnes@intel.com>, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Fix boot-time hang on G31/G33 PC
+Message-ID: <20070826125542.GD14130@parisc-linux.org>
+References: <20070826015556.GC14130@parisc-linux.org> <46D10099.40401@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200708222058.45480.mjevans1983@comcast.net>
-	 <18126.21113.981032.286298@notabene.brown>
-	 <200708260451.24868.mjevans1983@comcast.net>
+In-Reply-To: <46D10099.40401@shaw.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also, I forgot to mention, the reason I added the counters was mostly
-for debugging.  However they're also as useful in the same way that
-listing the partitions when a new disk is added can be (in fact this
-augments that and the existing messages the autodetect routines
-provide).
+On Sat, Aug 25, 2007 at 10:24:57PM -0600, Robert Hancock wrote:
+> We've already got a patch for this in Greg's PCI tree, hopefully it 
+> should go in for 2.6.24.
 
-As for using autodetect or not... the only way to skip it seems to be
-compiling md's raid support as a module.  I checked 2.6.22's
-menuconfig and there's no way for me to explicitly turn it on or off
-at compile time.  I also feel that forcing the addition of a boot
-parameter to de-activate a broken and deprecated system you aren't
-even aware you are getting is somehow wrong.  So if you have over 128
-devices for it to scan, as I do on one of my PCs, then it can bring up
-an array in degraded mode.
+I haven't seen it.  I guess it wasn't sent to the PCI mailing list.
 
-... crud.
+Your patch had two or three problems with it; assuming we're talking
+about the same patch.
 
-I also just noticed, while looking to see if there was some existing
-way of detecting if debugging were enabled and to be extra-verbose,
-that I left in one of my other debugging variables by mistake.
-i_found. Since it's signed, it must have been the variable I was using
-to detect where my list matched the existing array in my initial
-verification runs.
+> Are you getting MMCONFIG enabled on your system with 2.6.23?
 
+Yes, I have to pass pci=nommconf to make it boot.
 
-Are there any other things you'd like to see changed before I submit a
-third patch version?
+-- 
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
