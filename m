@@ -1,83 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbXHZQQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754267AbXHZQ2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbXHZQQa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 12:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbXHZQQX
+	id S1754267AbXHZQ2T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 12:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbXHZQ2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 12:16:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:11801 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751982AbXHZQQW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 12:16:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UrvrBxzKT5JXNwERe979CSKHjXc88rMgUYrcMXNfEz2HFjxGel7WqnTxfuwHJAEPGsF2sD7vCGJmcb2/s06QwuBka9EHHMDNMPQ5NooQDLVXCVR+JozGBvWeWwEFI8bdhy280veOjWSLPk8fFCM6fB+mBXtj4JZKeYZdRtvusTs=
-Message-ID: <466ad3f90708260916x5d19d0d3hd828e63520960192@mail.gmail.com>
-Date: Sun, 26 Aug 2007 12:16:21 -0400
-From: "Fred Tyler" <fredty8@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Slow, persistent memory leak in 2.6.20
-In-Reply-To: <Pine.LNX.4.64.0708261752260.15614@fbirervta.pbzchgretzou.qr>
+	Sun, 26 Aug 2007 12:28:10 -0400
+Received: from [212.12.190.157] ([212.12.190.157]:32818 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753410AbXHZQ2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 12:28:09 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: CFS review
+Date: Sun, 26 Aug 2007 19:27:07 +0300
+User-Agent: KMail/1.5
+Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <200708111344.42934.a1426z@gawab.com> <200708260127.32238.a1426z@gawab.com> <20070825231525.GA334@elte.hu>
+In-Reply-To: <20070825231525.GA334@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <466ad3f90708260739v645294b9t641cb8258dcc4f4@mail.gmail.com>
-	 <466ad3f90708260851u5d8ac58duc4072b71ebf78fc8@mail.gmail.com>
-	 <Pine.LNX.4.64.0708261752260.15614@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200708261927.07040.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/26/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->
-> On Aug 26 2007 11:51, Fred Tyler wrote:
-> >On 8/26/07, Fred Tyler <fredty8@gmail.com> wrote:
-> >> I think I've come across a memory leak in 2.6.20. I've upgraded to the
-> >> latest 2.6.20.17, but it didn't seem to help.
+Ingo Molnar wrote:
+> * Al Boldi <a1426z@gawab.com> wrote:
+> > > ok. I think i might finally have found the bug causing this. Could
+> > > you try the fix below, does your webserver thread-startup test work
+> > > any better?
 > >
-> >Sorry to keep replying to my own post, but further investigation
-> >suggests that the memory losses may be occurring at times of heavy
-> >filesystem access. The machines in question run rsyncs of hundreds of
-> >thousands of files every few hours, and I'm starting to think that the
-> >memory loss occurs during these times. I don't know how I'd go about
-> >proving this though...
+> > It seems to help somewhat, but the problem is still visible.  Even
+> > v20.3 on 2.6.22.5 didn't help.
+> >
+> > It does look related to ia-boosting, so I turned off __update_curr
+> > like Roman mentioned, which had an enormous smoothing effect, but then
+> > nice levels completely break down and lockup the system.
 >
-> Please rule out filesystem caches by issuing
->         sync;
->         echo 3 >/proc/sys/vm/drop_caches;
+> you can turn sleeper-fairness off via:
+>
+>    echo 28 > /proc/sys/kernel/sched_features
+>
+> another thing to try would be:
+>
+>    echo 12 > /proc/sys/kernel/sched_features
+>
+> (that's the new-task penalty turned off.)
+>
+> Another thing to try would be to edit this:
+>
+>         if (sysctl_sched_features & SCHED_FEAT_START_DEBIT)
+>                 p->se.wait_runtime = -(sched_granularity(cfs_rq) / 2);
+>
+> to:
+>
+>         if (sysctl_sched_features & SCHED_FEAT_START_DEBIT)
+>                 p->se.wait_runtime = -(sched_granularity(cfs_rq);
+>
+> and could you also check 20.4 on 2.6.22.5 perhaps, or very latest -git?
+> (Peter has experienced smaller spikes with that.)
 
-(Sorry if this goes to the list twice... Mailer problems.)
+Ok, I tried all your suggestions, but nothing works as smooth as removing 
+__update_curr.
 
-Ok, I did this on a non-production machine that has only been up for a
-few hours, and here's what happened:
-
-======== Before =========
-
-$ free -m
-            total       used       free     shared    buffers     cached
-Mem:           878        824         54          0        111        422
--/+ buffers/cache:        290        587
-Swap:           63          0         63
+Does the problem show on your machine with the 3x gears under X-vesa test?
 
 
-======== After ========
+Thanks!
 
-root@b0$ free -m
-            total       used       free     shared    buffers     cached
-Mem:           878         47        830          0          6          4
--/+ buffers/cache:         36        841
-Swap:           63          0         63
+--
+Al
 
-======================
-
-So, I guess it worked? (I don't know what was supposed to happen, but
-memory usage dropped significantly when I did this.)
-
-However, I'm not sure this staging machine has been up long enough or
-doing enough to exhibit the problem. I can try this on my production
-servers (the ones I provided graphs for) late tonight, but how safe is
-running this command? Does it permanently disable file caching? Do I
-need to reset it afterwards? If I stop all services (databases,
-logging, etc) first, am I protected against data loss?
