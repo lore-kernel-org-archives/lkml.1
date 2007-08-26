@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbXHZExY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbXHZE7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbXHZExY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 00:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXHZExP
+	id S1758544AbXHZE7B (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 00:59:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbXHZE6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 00:53:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58047 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751998AbXHZExO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 00:53:14 -0400
-Message-ID: <46D10721.7070406@redhat.com>
-Date: Sun, 26 Aug 2007 00:52:49 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Sun, 26 Aug 2007 00:58:54 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:56859 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752074AbXHZE6x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 00:58:53 -0400
+Message-ID: <46D10884.6040401@linux.vnet.ibm.com>
+Date: Sun, 26 Aug 2007 10:28:44 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 0/7] Postphone reclaim laundry to write at high water marks
-References: <20070820215040.937296148@sgi.com>  <1187692586.6114.211.camel@twins>  <Pine.LNX.4.64.0708211347480.3082@schroedinger.engr.sgi.com>  <1187730812.5463.12.camel@lappy>  <Pine.LNX.4.64.0708211418120.3267@schroedinger.engr.sgi.com>  <1187734144.5463.35.camel@lappy>  <Pine.LNX.4.64.0708211532560.5728@schroedinger.engr.sgi.com>  <1187766156.6114.280.camel@twins>  <Pine.LNX.4.64.0708221157180.13813@schroedinger.engr.sgi.com> <1187813025.5463.85.camel@lappy> <Pine.LNX.4.64.0708221306080.15775@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0708221306080.15775@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jay Lan <jlan@engr.sgi.com>, Jonathan Lim <jlim@sgi.com>
+Subject: Re: [PATCH] Add all thread stats for TASKSTATS_CMD_ATTR_TGID
+References: <3d8471ca0708020653l575db8cam464a3cffce68fb26@mail.gmail.com> <20070802120427.270e5589.akpm@linux-foundation.org> <20070819213435.72b287ad@localhost.localdomain> <46C9C8D4.9080108@linux.vnet.ibm.com> <20070825171039.3bc73781@localhost.localdomain>
+In-Reply-To: <20070825171039.3bc73781@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Wed, 22 Aug 2007, Peter Zijlstra wrote:
+Guillaume Chazarain wrote:
+> Le Mon, 20 Aug 2007 22:31:08 +0530,
+> Balbir Singh <balbir@linux.vnet.ibm.com> a écrit :
 > 
->>> That is an extreme case that AFAIK we currently ignore and could be 
->>> avoided with some effort.
->> Its not extreme, not even rare, and its handled now. Its what
->> PF_MEMALLOC is for.
+>>> --- a/kernel/taskstats.c	Sat Aug 18 17:15:17 2007 -0700
+>>> +++ b/kernel/taskstats.c	Sun Aug 19 17:20:15 2007 +0200
+>>> @@ -246,6 +246,8 @@ static int fill_tgid(pid_t tgid, struct 
+>>>
+>>>  		stats->nvcsw += tsk->nvcsw;
+>>>  		stats->nivcsw += tsk->nivcsw;
+>>> +		bacct_add_tsk(stats, tsk);
+>>> +		xacct_add_tsk(stats, tsk);
+>> I'm afraid this is still not good enough. bacct_add_tsk() will assign
+>> values and do nothing in the loop (HINT: no summation).
 > 
-> No its not. If you have all pages allocated as anonymous pages and your 
-> writeout requires more pages than available in the reserves then you are 
-> screwed either way regardless if you have PF_MEMALLOC set or not.
+> Hi Balbir, thank you for your review. I agree with everything you said
+> and am on my way to do it as time permits, but I have some trouble
+> understanding this part. You stated that bacct_add_tsk() would overwrite
+> the stats of each thread in the tgid stats, but the other part of the
+> patch is the (actually wrong) combination of stats in xxx_add_tsk()
+> using min/max/sum.
+> 
 
-Only if the _first_ writeout needs more pages.
+Hi, Guillaume,
 
-If the sum of all writeouts need more pages than you have
-available, that is fine.  After all, buffer heads and some
-other metadata is freed on IO completion.
+The CSA code was written by Jay Lan, but I'll see if I can answer your
+questions. In the current implementation, CSA does not use TGID exit
+notifications. In fill_pid(), both bacct_add_tsk() and xacct_add_tsk()
+are called (which is correct), they complement each other.
 
-Recursive reclaim will also be able to free the data pages
-after IO completion, and really fix the problem.
+The code needs refactoring to ensure that they can work together
+in the fill_tgid() scenario.
+
+> Also, I don't understand why the code to update btime:
+> 
+>         /* calculate task elapsed time in timespec */
+>         do_posix_clock_monotonic_gettime(&uptime);
+>         ts = timespec_sub(uptime, tsk->start_time);
+> 	...
+>         stats->ac_btime = get_seconds() - ts.tv_sec;
+> 
+> does not simply use tsk->start_time or tsk->real_start_time without
+> comparing it to the current time.
+> 
+
+>From what I understand, task->start_time and task->real_start_time
+are taken from the realtime clock. The accounting in CSA seems
+to be very similar to the accounting done in do_acct_process()
+(kernel/acct.c).
+
+Jay/Jonathan any comments?
+
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
