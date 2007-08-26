@@ -1,61 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbXHZTRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbXHZTTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753920AbXHZTRa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 15:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbXHZTRU
+	id S1754866AbXHZTTP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 15:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbXHZTS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 15:17:20 -0400
-Received: from 15.61.79.83.cust.bluewin.ch ([83.79.61.15]:39132 "EHLO
-	spock.one.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751450AbXHZTRU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 15:17:20 -0400
-X-Greylist: delayed 472 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Aug 2007 15:17:19 EDT
-Date: Sun, 26 Aug 2007 21:09:13 +0200
-From: Michal Januszewski <spock@gentoo.org>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Ondrej Zajicek <santiago@crfreenet.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fbdev: find mode with highest
-	refresh rate in fb_find_mode()
-Message-ID: <20070826190913.GA24286@spock.one.pl>
-Reply-To: spock@gentoo.org
-References: <20070718084102.GA22694@spock.one.pl> <20070718143803.GA5787@localhost.localdomain> <1184771895.4523.33.camel@daplas>
+	Sun, 26 Aug 2007 15:18:58 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:18632 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751528AbXHZTS5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 15:18:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=V83q7BO8rESMV+xT0Tb+3UcJT1TBWYVYVgQdeJC2igWohsSAAGR1iy0yj+oXcznxyogom+qOBVxoF3ZTVUHwwBQV2McvrV/+ICxKZpuNTJW8y6CL77G5MoZEbzPjz/pFax2/KMgrtQY5bwSrAO8tQTaxoAwDncyoRmDedwmAy0k=
+Message-ID: <4877c76c0708261218r2c1ed2eeg6d604eeb58f6b235@mail.gmail.com>
+Date: Sun, 26 Aug 2007 12:18:56 -0700
+From: "Michael Evans" <mjevans1983@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [patch v2 1/1] md: Software Raid autodetect dev list not array
+Cc: "Michael J. Evans" <mjevans1983@comcast.net>, "Neil Brown" <neilb@suse.de>,
+       "Ingo Molnar" <mingo@redhat.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070826095651.75e92556.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1184771895.4523.33.camel@daplas>
-X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <200708222058.45480.mjevans1983@comcast.net>
+	 <18126.21113.981032.286298@notabene.brown>
+	 <200708260451.24868.mjevans1983@comcast.net>
+	 <20070826095651.75e92556.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 18, 2007 at 11:18:15PM +0800, Antonino A. Daplas wrote:
-
-> > > Currently if the refresh rate is not specified fb_find_mode() returns
-> > > the first known video mode with the requested resoluion, which provides
-> > > no guarantees wrt the refresh rate.  Change this so that the mode with
-> > > the highest refresh rate is returned instead.
-> > 
-> > What refresh rate it sets when used on card or monitor without DDC?
+On 8/26/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Sun, 26 Aug 2007 04:51:24 -0700 Michael J. Evans wrote:
 >
-> Yes, I noted this also while reviewing patches.  fb_find_mode() is used
-> predominantly with the 'generic' modedb which contains modes that are
-> not specific to the card or monitor.  And fb_try_mode() is not a
-> guarantee that the returned refresh rate will be safe (we have a lot of
-> drivers that do not check the timings against the display capabilities).
-> 
-> It would be best that fb_find_mode() return the safest refresh rate
-> (60Hz) instead of the highest.
+> > From: Michael J. Evans <mjevans1983@gmail.com>
+> >
 
-How about modifying it so that it looks for a mode with the highest
-refresh rate if either a non-generic modedb is used or
-info.monspecs.{vfmin,vfmax,hfmin,hfmax,dclkmax} are all non-zero,
-and for a mode with refresh rate closest to 60 Hz otherwise?
+>
+> Is there any way to tell the user what device (or partition?) is
+> bein skipped?  This printk should just print (confirm) that
+> node_detected_dev is NULL.  Shouldn't it just print <dev> in
+> major:minor format?
+>
 
-I'm sorry for the delayed reply.
+It would be possible with the MAJOR() and MINOR() macros to do this...
+however it doesn't really help out much during troubleshooting. I
+tried using the bdevname function like the function that calls this
+one uses, however, it wants a struct device_block... which I tried
+getting with:
 
-Best regards.
--- 
-Michal Januszewski                              JID: spock@im.gentoo.org
-Gentoo Linux Developer                    http://people.gentoo.org/spock
+container_of(dev, struct block_device, bd_dev)
 
+Of course this didn't quite work out, I got kernel panics on my two
+trial attempts.
+
+Here's a skip from a dmesg where I added a printk right under the line
+in question.
+
+[   63.033532] sd 11:0:0:0: [sdk] 976773168 512-byte hardware sectors
+(500108 MB)
+[   63.039842] sd 11:0:0:0: [sdk] Write Protect is off
+[   63.046012] sd 11:0:0:0: [sdk] Mode Sense: 00 3a 00 00
+[   63.046025] sd 11:0:0:0: [sdk] Write cache: enabled, read cache:
+enabled, doesn't support DPO or FUA
+[   63.052309]  sdk: sdk1 sdk2 sdk3 sdk4 sdk5 sdk6 sdk7 sdk8 sdk9
+sdk10 sdk11 sdk12 sdk13 sdk14 sdk15
+[   63.082546] md: Autodetect-buffering the above device.
+[   63.088893] md: Autodetect-buffering the above device.
+[   63.095053] md: Autodetect-buffering the above device.
+[   63.101082] md: Autodetect-buffering the above device.
+[   63.106956] md: Autodetect-buffering the above device.
+[   63.112596] md: Autodetect-buffering the above device.
+[   63.117998] md: Autodetect-buffering the above device.
+[   63.123396] md: Autodetect-buffering the above device.
+[   63.128789] md: Autodetect-buffering the above device.
+[   63.134182] md: Autodetect-buffering the above device.
+[   63.139576] md: Autodetect-buffering the above device.
+[   63.144970] md: Autodetect-buffering the above device.
+[   63.150360] md: Autodetect-buffering the above device.
+[   63.155749] md: Autodetect-buffering the above device.
+[   63.161498] sd 11:0:0:0: [sdk] Attached SCSI disk
+
+
+> ---
+> ~Randy
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>
