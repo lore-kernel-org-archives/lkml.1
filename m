@@ -1,84 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbXHZLGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752741AbXHZL5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752634AbXHZLGy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 07:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbXHZLGl
+	id S1752741AbXHZL5V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 07:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbXHZL5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 07:06:41 -0400
-Received: from asia.telenet-ops.be ([195.130.137.74]:41466 "EHLO
-	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751358AbXHZLGi (ORCPT
+	Sun, 26 Aug 2007 07:57:10 -0400
+Received: from sccrmhc15.comcast.net ([204.127.200.85]:53567 "EHLO
+	sccrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751289AbXHZL5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 07:06:38 -0400
-X-Greylist: delayed 9352 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Aug 2007 07:06:38 EDT
-Date: Sun, 26 Aug 2007 13:06:31 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-       blinux-list@redhat.com, cluster-devel@redhat.com, discuss@x86-64.org,
-       jffs-dev@axis.com, linux-acpi@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-mips@linux-mips.org,
-       linux-mm@kvack.org, linux-mtd@lists.infradead.org,
-       linux-scsi@vger.kernel.org, mpt_linux_developer@lsi.com,
-       netdev@vger.kernel.org, osst-users@lists.sourceforge.net,
-       parisc-linux@parisc-linux.org, tpmdd-devel@lists.sourceforge.net,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH] Prefix each line of multiline printk(KERN_<level>
- "foo\nbar") with KERN_<level>
-In-Reply-To: <8bd0f97a0708260354xb4c8546od0cc19a590820f32@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708261305020.31149@anakin>
-References: <1187999098.32738.179.camel@localhost> <Pine.LNX.4.64.0708261028120.31149@anakin>
- <8bd0f97a0708260354xb4c8546od0cc19a590820f32@mail.gmail.com>
+	Sun, 26 Aug 2007 07:57:08 -0400
+X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Aug 2007 07:57:08 EDT
+From: "Michael J. Evans" <mjevans1983@comcast.net>
+To: Neil Brown <neilb@suse.de>
+Subject: [patch v2 1/1] md: Software Raid autodetect dev list not array
+Date: Sun, 26 Aug 2007 04:51:24 -0700
+User-Agent: KMail/1.9.7
+Cc: Ingo Molnar <mingo@redhat.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Michael J "." Evans <mjevans1983@gmail.com>
+References: <200708222058.45480.mjevans1983@comcast.net> <18126.21113.981032.286298@notabene.brown>
+In-Reply-To: <18126.21113.981032.286298@notabene.brown>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708260451.24868.mjevans1983@comcast.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Aug 2007, Mike Frysinger wrote:
-> On 8/26/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Fri, 24 Aug 2007, Joe Perches wrote:
-> > > Corrected printk calls with multiple output lines which
-> > > did not correctly preface each line with KERN_<level>
-> > >
-> > > Fixed uses of some single lines with too many KERN_<level>
-> >
-> > > --- a/arch/arm/kernel/ecard.c
-> > > +++ b/arch/arm/kernel/ecard.c
-> > > @@ -547,7 +547,8 @@ static void ecard_check_lockup(struct irq_desc *desc)
-> > >       if (last == jiffies) {
-> > >               lockup += 1;
-> > >               if (lockup > 1000000) {
-> > > -                     printk(KERN_ERR "\nInterrupt lockup detected - "
-> > > +                     printk(KERN_ERR "\n"
-> > > +                            KERN_ERR "Interrupt lockup detected - "
-> > >                              "disabling all expansion card interrupts\n");
-> > >
-> > >                       desc->chip->mask(IRQ_EXPANSIONCARD);
-> >
-> > What's the purpose of having lines printed with e.g. `KERN_ERR "\n"' only?
-> > Shouldn't these just be removed?
-> >
-> > Usually lines starting with `\n' are continuations, but given some other
-> > module may call printk() in between, there's no guarantee continuations
-> > appear on the same line.
-> 
-> erm, i thought the prink lock was grabbed per-buffer, not per-line ...
-> so yes, if the function calls were like printk(KERN_ERR "\n");
-> printk(KERN_ERR "..."); things could be broken up, but this is on
-> function call, so it shouldnt ...
+From: Michael J. Evans <mjevans1983@gmail.com>
 
-Yes it is.
+In current release kernels the md module (Software RAID) uses a static array
+ (dev_t[128]) to store partition/device info temporarily for autostart.
 
-What I mean is that probably there used to be a printk() call starting with
-`\n'. Then someone added a `KERN_ERR' in front of it.
+This patch replaces that static array with a list.
 
-Gr{oetje,eeting}s,
+Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
+--- 
+Version 2: Following Neil Brown's requests...
+using list_add_tail, and corrected missing i_passed++;.
+removed sections of code that would never be reached.
+- -
+The data/structures are only used within md.c, and very close together.
+However I wonder if the structural information shouldn't go in to...
+../../include/linux/raid/md_k.h instead.
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I discovered this (and that the devices are added as disks/partitions are
+discovered at boot) while I was debugging why only one of my MD arrays would
+come up whole, while all the others were short a disk.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I eventually discovered that it was enumerating through all of 9 of my 11 hds
+(2 had only 4 partitions apiece) while the other 9 have 15 partitions
+(I wanted 64 per drive...). The last partition of the 8th drive in my 9 drive
+raid 5 sets wasn't added, thus making the final md array short both a parity
+and data disk, and it was started later, elsewhere.
+
+Subject: [patch 1/1] md: Software Raid autodetect dev list not array
+
+SOFTWARE RAID (Multiple Disks) SUPPORT
+P:	Ingo Molnar
+M:	mingo@redhat.com
+P:	Neil Brown
+M:	neilb@suse.de
+L:	linux-raid@vger.kernel.org
+S:	Supported
+Unless you have a reason NOT to do so, CC linux-kernel@vger.kernel.org.
+
+12: Has been tested with CONFIG_PREEMPT, CONFIG_DEBUG_PREEMPT,
+    CONFIG_DEBUG_SLAB, CONFIG_DEBUG_PAGEALLOC, CONFIG_DEBUG_MUTEXES,
+    CONFIG_DEBUG_SPINLOCK, CONFIG_DEBUG_SPINLOCK_SLEEP all simultaneously
+    enabled.
+
+It has been tested with CONFIG_SMP set and unset (Different x86_64 systems).
+It has been tested with CONFIG_PREEMPT set and unset (same system).
+CONFIG_LBD isn't even an option in my .config file.
+
+Note: between 2.6.22 and 2.6.23-rc3-git5
+                rdev = md_import_device(dev,0, 0);
+became
+                rdev = md_import_device(dev,0, 90);
+So the patch has been edited to patch around that line. (might be fuzzy)
+
+Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
+=============================================================
+--- linux/drivers/md/md.c.orig	2007-08-21 03:19:42.511576248 -0700
++++ linux/drivers/md/md.c	2007-08-21 04:30:09.775525710 -0700
+@@ -24,4 +24,6 @@
+
++   - autodetect dev list not array: Michael J. Evans <mjevans1983@gmail.com>
++
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2, or (at your option)
+@@ -5752,13 +5754,24 @@ void md_autodetect_dev(dev_t dev)
+  * Searches all registered partitions for autorun RAID arrays
+  * at boot time.
+  */
+-static dev_t detected_devices[128];
+-static int dev_cnt;
++
++static LIST_HEAD(all_detected_devices);
++struct detected_devices_node {
++	struct list_head list;
++	dev_t dev;
++};
+ 
+ void md_autodetect_dev(dev_t dev)
+ {
+-	if (dev_cnt >= 0 && dev_cnt < 127)
+-		detected_devices[dev_cnt++] = dev;
++	struct detected_devices_node *node_detected_dev;
++	node_detected_dev = kzalloc(sizeof(*node_detected_dev), GFP_KERNEL);\
++	if (node_detected_dev) {
++		node_detected_dev->dev = dev;
++		list_add_tail(&node_detected_dev->list, &all_detected_devices);
++	} else {
++		printk(KERN_CRIT "md: kzAlloc node failed, skipping device."
++				 " : 0x%p.\n", node_detected_dev);
++	}
+ }
+ 
+ 
+@@ -5765,7 +5778,12 @@ static void autostart_arrays(int part)
+ static void autostart_arrays(int part)
+ {
+ 	mdk_rdev_t *rdev;
+-	int i;
++	struct detected_devices_node *node_detected_dev;
++	dev_t dev;
++	int i_scanned, i_passed;
++	signed int i_found;
++	i_scanned = 0;
++	i_passed = 0;
+ 
+ 	printk(KERN_INFO "md: Autodetecting RAID arrays.\n");
+ 
+@@ -5772,3 +5790,8 @@ static void autostart_arrays(int part)
+-	for (i = 0; i < dev_cnt; i++) {
+-		dev_t dev = detected_devices[i];
+-
++		/* FIXME: max 'int' #DEFINEd somewhere?  not   0x7FFFFFFF ? */
++	while (!list_empty(&all_detected_devices) && i_scanned < 0x7FFFFFFF) {
++		i_scanned++;
++		node_detected_dev = list_entry(all_detected_devices.next,
++					struct detected_devices_node, list);
++		list_del(&node_detected_dev->list);
++		dev = node_detected_dev->dev;
++		kfree(node_detected_dev);
+@@ -5781,8 +5806,11 @@ static void autostart_arrays(int part)
+ 			continue;
+ 		}
+ 		list_add(&rdev->same_set, &pending_raid_disks);
++		i_passed++;
+ 	}
+-	dev_cnt = 0;
++
++	printk(KERN_INFO "md: Scanned %d and added %d devices.\n",
++						i_scanned, i_passed);
+ 
+ 	autorun_devices(part);
+ }
