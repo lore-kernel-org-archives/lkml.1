@@ -1,234 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbXHZXUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbXHZXWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753631AbXHZXUo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 19:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbXHZXUf
+	id S1754644AbXHZXWL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 19:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbXHZXV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 19:20:35 -0400
-Received: from smtp2f.orange.fr ([80.12.242.151]:55729 "EHLO smtp2f.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750896AbXHZXUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 19:20:34 -0400
-X-Greylist: delayed 4666 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Aug 2007 19:20:34 EDT
-X-ME-UUID: 20070826220245536.82EB3700009A@mwinf2f23.orange.fr
-Date: Mon, 27 Aug 2007 01:02:44 +0300
-From: Samuel Ortiz <samuel@sortiz.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] sysctl: Properly register the irda binary sysctl
-	numbers.
-Message-ID: <20070826220244.GA3881@sortiz.org>
-Reply-To: Samuel Ortiz <samuel@sortiz.org>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <23568.1187876026@turing-police.cc.vt.edu> <20070823141652.d488a6e0.akpm@linux-foundation.org> <m1wsvlmvu6.fsf_-_@ebiederm.dsl.xmission.com>
+	Sun, 26 Aug 2007 19:21:58 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:3521 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750896AbXHZXV5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 19:21:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hYpX4wBCDn5EX3fIqhUHjhNDxmcv6/LOeHjqc0V/FcTGvUyC7Xbh1y1dmDm2NRws8luSzk1Dk8ANYIE2PbLpAgxIj9O6i79WbG6KoWXzLSECWR1NYH+sy/Huxs1MxHYIWifBPBvpUhIjjpgej8i0RE3c0p7uOCpYneEy+toSlrc=
+Message-ID: <6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
+Date: Mon, 27 Aug 2007 01:21:56 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@gmail.com>
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       debian-powerpc@lists.debian.org,
+       "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@ime.usp.br>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <m1wsvlmvu6.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,
+Hi
 
-On Thu, Aug 23, 2007 at 09:53:53PM -0600, Eric W. Biederman wrote:
-> 
-> Grumble.  These numbers should have been in sysctl.h from the
-> beginning if we ever expected anyone to use them.  Oh well put
-> them there now so we can find them and make maintenance easier.
-Thanks for that, I should have taken care of it earlier...
+[Adding STR wizards to CC]
 
-
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Samuel Ortiz <samuel@sortiz.org>
-
-> ---
->  include/linux/sysctl.h |   20 ++++++++++++++++++++
->  net/irda/irsysctl.c    |   34 ++++++++++++++--------------------
->  2 files changed, 34 insertions(+), 20 deletions(-)
-> 
-> diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-> index 88f0941..77c9ae2 100644
-> --- a/include/linux/sysctl.h
-> +++ b/include/linux/sysctl.h
-> @@ -238,6 +238,7 @@ enum
->  	NET_LLC=18,
->  	NET_NETFILTER=19,
->  	NET_DCCP=20,
-> +	NET_IRDA=412,
->  };
->  
->  /* /proc/sys/kernel/random */
-> @@ -795,6 +796,25 @@ enum {
->  	NET_BRIDGE_NF_FILTER_PPPOE_TAGGED = 5,
->  };
->  
-> +/* proc/sys/net/irda */
-> +enum { 
-> +	NET_IRDA_DISCOVERY=1,
-> +	NET_IRDA_DEVNAME=2, 
-> +	NET_IRDA_DEBUG=3, 
-> +	NET_IRDA_FAST_POLL=4,
-> +	NET_IRDA_DISCOVERY_SLOTS=5,
-> +	NET_IRDA_DISCOVERY_TIMEOUT=6,
-> +	NET_IRDA_SLOT_TIMEOUT=7,
-> +	NET_IRDA_MAX_BAUD_RATE=8,
-> +	NET_IRDA_MIN_TX_TURN_TIME=9,
-> +	NET_IRDA_MAX_TX_DATA_SIZE=10,
-> +	NET_IRDA_MAX_TX_WINDOW=11,
-> +	NET_IRDA_MAX_NOREPLY_TIME=12,
-> +	NET_IRDA_WARN_NOREPLY_TIME=13,
-> +	NET_IRDA_LAP_KEEPALIVE_TIME=14,
-> +};
-> +
-> +
->  /* CTL_FS names: */
->  enum
->  {
-> diff --git a/net/irda/irsysctl.c b/net/irda/irsysctl.c
-> index 957e04f..525343a 100644
-> --- a/net/irda/irsysctl.c
-> +++ b/net/irda/irsysctl.c
-> @@ -31,12 +31,6 @@
->  #include <net/irda/irda.h>		/* irda_debug */
->  #include <net/irda/irias_object.h>
->  
-> -#define NET_IRDA 412 /* Random number */
-> -enum { DISCOVERY=1, DEVNAME, DEBUG, FAST_POLL, DISCOVERY_SLOTS,
-> -       DISCOVERY_TIMEOUT, SLOT_TIMEOUT, MAX_BAUD_RATE, MIN_TX_TURN_TIME,
-> -       MAX_TX_DATA_SIZE, MAX_TX_WINDOW, MAX_NOREPLY_TIME, WARN_NOREPLY_TIME,
-> -       LAP_KEEPALIVE_TIME };
+On 26/08/07, Rogério Brito <rbrito@gmail.com> wrote:
+> Hi.
+>
+> Unfortunately, it seems that kernels later than 2.6.21 have problems
+> letting my powerpc iBook (G3 processor) going to sleep (suspend to
+> ram).
+>
+> The userland that I am using is a Debian testing (lenny) and the
+> default kernel that comes with it is 2.6.22, with some patches applied
+> and pbbuttonsd (as the daemon for making the machine sleep).
+>
+> With kernel 2.6.21, from Debian (and other earlier kernels), the
+> symptoms that I see when I press the power button is that the machine
+> goes to sleep and the led that indicates that the machine is sleeping
+> is blinking normally.
+>
+> If I, on the other hand, use Debian's kernel 2.6.22 or compile my own
+> kernel with just the necessary parts for my work (version 2.6.23-rc3
+> taken from kernel.org), then I can't make the machine sleep: when I
+> press the button, it acts like if I had, in sequence, pressed anything
+> to wake it up (say, like pressing shift).
+>
+> I have already grabbed Linus's git tree and I am willing to do some
+> cycles of "git bisect" to discover the point where it stopped working.
+>
+> I just thought that others may have seen such behaviour before or, if
+> not, that being informative about what I see is of use for debugging
+> this.
+>
+> I would also appreciate any guidance on this as I wish kernel 2.6.23
+> to be working again on powerpc machines.
+>
+> Please, if any tests are required, don't hesitate to ask me and I will
+> try to whatever is needed to restore the correct behaviour of sleep
+> with the Linux kernel.
+>
+> I have copied mailing lists that I think that are relevant. If they
+> aren't, then please let me know. I would also appreciate if I were
+> kept on carbon copies as I am only subscribed to debian-powerpc at the
+> moment.
+>
+>
+> Regards, Rogério Brito.
+>
+> P.S.: It unfortunately doesn't matter if I switch to a console or if I
+> am in X when I press the power button with recent kernels.
 > -
->  extern int  sysctl_discovery;
->  extern int  sysctl_discovery_slots;
->  extern int  sysctl_discovery_timeout;
-> @@ -94,7 +88,7 @@ static int do_devname(ctl_table *table, int write, struct file *filp,
->  /* One file */
->  static ctl_table irda_table[] = {
->  	{
-> -		.ctl_name	= DISCOVERY,
-> +		.ctl_name	= NET_IRDA_DISCOVERY,
->  		.procname	= "discovery",
->  		.data		= &sysctl_discovery,
->  		.maxlen		= sizeof(int),
-> @@ -102,7 +96,7 @@ static ctl_table irda_table[] = {
->  		.proc_handler	= &proc_dointvec
->  	},
->  	{
-> -		.ctl_name	= DEVNAME,
-> +		.ctl_name	= NET_IRDA_DEVNAME,
->  		.procname	= "devname",
->  		.data		= sysctl_devname,
->  		.maxlen		= 65,
-> @@ -112,7 +106,7 @@ static ctl_table irda_table[] = {
->  	},
->  #ifdef CONFIG_IRDA_DEBUG
->  	{
-> -		.ctl_name	= DEBUG,
-> +		.ctl_name	= NET_IRDA_DEBUG,
->  		.procname	= "debug",
->  		.data		= &irda_debug,
->  		.maxlen		= sizeof(int),
-> @@ -122,7 +116,7 @@ static ctl_table irda_table[] = {
->  #endif
->  #ifdef CONFIG_IRDA_FAST_RR
->  	{
-> -		.ctl_name	= FAST_POLL,
-> +		.ctl_name	= NET_IRDA_FAST_POLL,
->  		.procname	= "fast_poll_increase",
->  		.data		= &sysctl_fast_poll_increase,
->  		.maxlen		= sizeof(int),
-> @@ -131,7 +125,7 @@ static ctl_table irda_table[] = {
->  	},
->  #endif
->  	{
-> -		.ctl_name	= DISCOVERY_SLOTS,
-> +		.ctl_name	= NET_IRDA_DISCOVERY_SLOTS,
->  		.procname	= "discovery_slots",
->  		.data		= &sysctl_discovery_slots,
->  		.maxlen		= sizeof(int),
-> @@ -142,7 +136,7 @@ static ctl_table irda_table[] = {
->  		.extra2		= &max_discovery_slots
->  	},
->  	{
-> -		.ctl_name	= DISCOVERY_TIMEOUT,
-> +		.ctl_name	= NET_IRDA_DISCOVERY_TIMEOUT,
->  		.procname	= "discovery_timeout",
->  		.data		= &sysctl_discovery_timeout,
->  		.maxlen		= sizeof(int),
-> @@ -150,7 +144,7 @@ static ctl_table irda_table[] = {
->  		.proc_handler	= &proc_dointvec
->  	},
->  	{
-> -		.ctl_name	= SLOT_TIMEOUT,
-> +		.ctl_name	= NET_IRDA_SLOT_TIMEOUT,
->  		.procname	= "slot_timeout",
->  		.data		= &sysctl_slot_timeout,
->  		.maxlen		= sizeof(int),
-> @@ -161,7 +155,7 @@ static ctl_table irda_table[] = {
->  		.extra2		= &max_slot_timeout
->  	},
->  	{
-> -		.ctl_name	= MAX_BAUD_RATE,
-> +		.ctl_name	= NET_IRDA_MAX_BAUD_RATE,
->  		.procname	= "max_baud_rate",
->  		.data		= &sysctl_max_baud_rate,
->  		.maxlen		= sizeof(int),
-> @@ -172,7 +166,7 @@ static ctl_table irda_table[] = {
->  		.extra2		= &max_max_baud_rate
->  	},
->  	{
-> -		.ctl_name	= MIN_TX_TURN_TIME,
-> +		.ctl_name	= NET_IRDA_MIN_TX_TURN_TIME,
->  		.procname	= "min_tx_turn_time",
->  		.data		= &sysctl_min_tx_turn_time,
->  		.maxlen		= sizeof(int),
-> @@ -183,7 +177,7 @@ static ctl_table irda_table[] = {
->  		.extra2		= &max_min_tx_turn_time
->  	},
->  	{
-> -		.ctl_name	= MAX_TX_DATA_SIZE,
-> +		.ctl_name	= NET_IRDA_MAX_TX_DATA_SIZE,
->  		.procname	= "max_tx_data_size",
->  		.data		= &sysctl_max_tx_data_size,
->  		.maxlen		= sizeof(int),
-> @@ -194,7 +188,7 @@ static ctl_table irda_table[] = {
->  		.extra2		= &max_max_tx_data_size
->  	},
->  	{
-> -		.ctl_name	= MAX_TX_WINDOW,
-> +		.ctl_name	= NET_IRDA_MAX_TX_WINDOW,
->  		.procname	= "max_tx_window",
->  		.data		= &sysctl_max_tx_window,
->  		.maxlen		= sizeof(int),
-> @@ -205,7 +199,7 @@ static ctl_table irda_table[] = {
->  		.extra2		= &max_max_tx_window
->  	},
->  	{
-> -		.ctl_name	= MAX_NOREPLY_TIME,
-> +		.ctl_name	= NET_IRDA_MAX_NOREPLY_TIME,
->  		.procname	= "max_noreply_time",
->  		.data		= &sysctl_max_noreply_time,
->  		.maxlen		= sizeof(int),
-> @@ -216,7 +210,7 @@ static ctl_table irda_table[] = {
->  		.extra2		= &max_max_noreply_time
->  	},
->  	{
-> -		.ctl_name	= WARN_NOREPLY_TIME,
-> +		.ctl_name	= NET_IRDA_WARN_NOREPLY_TIME,
->  		.procname	= "warn_noreply_time",
->  		.data		= &sysctl_warn_noreply_time,
->  		.maxlen		= sizeof(int),
-> @@ -227,7 +221,7 @@ static ctl_table irda_table[] = {
->  		.extra2		= &max_warn_noreply_time
->  	},
->  	{
-> -		.ctl_name	= LAP_KEEPALIVE_TIME,
-> +		.ctl_name	= NET_IRDA_LAP_KEEPALIVE_TIME,
->  		.procname	= "lap_keepalive_time",
->  		.data		= &sysctl_lap_keepalive_time,
->  		.maxlen		= sizeof(int),
-> -- 
-> 1.5.1.1.181.g2de0
-> 
 
+Regards,
+Michal
+
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
