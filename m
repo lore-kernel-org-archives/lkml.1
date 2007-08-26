@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbXHZTlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbXHZTy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbXHZTlg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 15:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbXHZTl0
+	id S1754773AbXHZTy0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 15:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbXHZTyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 15:41:26 -0400
-Received: from s36.avahost.net ([74.53.95.194]:59058 "EHLO s36.avahost.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752065AbXHZTlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 15:41:25 -0400
-Message-ID: <46D1D634.7060007@katalix.com>
-Date: Sun, 26 Aug 2007 20:36:20 +0100
-From: James Chapman <jchapman@katalix.com>
-Organization: Katalix Systems Ltd
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sun, 26 Aug 2007 15:54:18 -0400
+Received: from smtp104.sbc.mail.re2.yahoo.com ([68.142.229.101]:37402 "HELO
+	smtp104.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751401AbXHZTyR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 15:54:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=zu6sqXOQX9Vdb9ww7SWXKVEt2G8HPtRJlfHjg+F7Geki0zhREcX3eBM3c5ntdBDCMaGbWwF6HkHZ8ieZQfoegCc4Qrn/KWIpvFlfGI5do1PwVd1VBct4UVvVKKvtByl6fCqBCW7iqktk8drZiPROhZagmAh2h9ZPvvOSmYCq2f0=  ;
+X-YMail-OSG: XUBgFTkVM1nJ8HRevXgpx8_m7m3uHlRIUM6N2zczxRl4_NwrBj1DeNPMStdzXptNoNR6Bh2qdA--
+From: David Brownell <david-b@pacbell.net>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [patch 09/14] Convert from class_device to device for SPI
+Date: Sun, 26 Aug 2007 12:54:14 -0700
+User-Agent: KMail/1.9.6
+Cc: Tony Jones <tonyj@suse.de>, linux-kernel@vger.kernel.org
+References: <20070820224806.154198000@suse.de> <200708231403.52846.david-b@pacbell.net> <1187907172.3632.43.camel@lov.localdomain>
+In-Reply-To: <1187907172.3632.43.camel@lov.localdomain>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: shemminger@linux-foundation.org, ossthema@de.ibm.com, akepner@sgi.com,
-       netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
-       tklein@de.ibm.com, stefan.roscher@de.ibm.com
-Subject: Re: RFC: issues concerning the next NAPI interface
-References: <200708241747.16592.ossthema@de.ibm.com>	<20070824085203.42f4305c@freepuppy.rosehill.hemminger.net>	<46CF127D.1090609@katalix.com> <20070824.144711.18301866.davem@davemloft.net>
-In-Reply-To: <20070824.144711.18301866.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - s36.avahost.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - katalix.com
+Content-Disposition: inline
+Message-Id: <200708261254.14641.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: James Chapman <jchapman@katalix.com>
-> Date: Fri, 24 Aug 2007 18:16:45 +0100
+On Thursday 23 August 2007, Kay Sievers wrote:
+> On Thu, 2007-08-23 at 14:03 -0700, David Brownell wrote:
+> > On Tuesday 21 August 2007, Tony Jones wrote:
+> > > I believe this is the necessary documentation changes.
+> > 
+> > Thanks.  I have an update, plus updates for the mmc_spi
+> > driver (now in MM) which you didn't update.
+> > 
+> > By the way, it's worth noting an incompatibility introduced
+> > through these conversions and CONFIG_SYSFS_DEPRECATED=n:
+> > 
+> >  ...
+> >  
+> >  - now, /sys/class/spi_master/spi2 is a symlink to
+> >    .../controller/spi_master (with DEPRECATED=n).
 > 
->> Does hardware interrupt mitigation really interact well with NAPI?
-> 
-> It interacts quite excellently.
+> Ugh! Are you sure, that is doesn't point to:
+>   .../controller/spi_master/spi2/ ?
 
-If NAPI disables interrupts and keeps them disabled while there are more 
-packets arriving or more transmits being completed, why do hardware 
-interrupt mitigation / coalescing features of the network silicon help?
+Turns out that it does -- once you tell Minicom to change its
+bogus default of discarding data rather than line wrapping!
+Which means there can still be multiple class instances that
+get coupled to a given physical device; no lossage there.
 
-> There was a long saga about this with tg3 and huge SGI numa
-> systems with large costs for interrupt processing, and the
-> fix was to do a minimal amount of interrupt mitigation and
-> this basically cleared up all the problems.
-> 
-> Someone should reference that thread _now_ before this discussion goes
-> too far and we repeat a lot of information and people like myself have
-> to stay up all night correcting the misinformation and
-> misunderstandings that are basically guarenteed for this topic :)
+Sigh.  It's hard sometimes to remember to apply all the
+right bug workarounds, when some of them are in userspace.
 
-I hope I'm not spreading misinformation. :) The original poster was 
-observing NAPI going in/out of polled mode because the CPU is fast 
-enough to process all work per poll. I've seen the same and I'm 
-suggesting that the NAPI driver keeps itself in polled mode for N polls 
-or M jiffies after it sees workdone=0. This has always worked for me in 
-packet forwarding scenarios to maximize packets/sec and minimize 
-latency. I'm considering putting a patch together to add this as another 
-tuning knob, hence I'm keen to understand what I'm missing. :)
+Still, that's a needless incompatibility.  Why isn't that
+pointing to a .../controller/spi_master:spi2 directory,
+so that the pathnames don't change (only symlink polarity)?
 
--- 
-James Chapman
-Katalix Systems Ltd
-http://www.katalix.com
-Catalysts for your Embedded Linux software development
-
+- Dave
