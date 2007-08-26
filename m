@@ -1,154 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752997AbXHZNFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbXHZOHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752997AbXHZNFQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 09:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbXHZNFF
+	id S1752674AbXHZOHy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 10:07:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbXHZOHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 09:05:05 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:48926 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbXHZNFC (ORCPT
+	Sun, 26 Aug 2007 10:07:45 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:47594 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751836AbXHZOHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 09:05:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=deiykGQIWANzp1eF+0JFSVJU1UfmbXFEUk08GaXfxFaePHMBz2FPMg9Loe0x8yPwZ6SwPnjOSoGwCYvhgIc0qxwpPtx0eGRypkJXHM/Gvd8CzSwqjqU1FwPSDTDoZZo6YkEkhdXZbkUec26mlecz/bcuD6hRCiPtLu2ODhgcGOM=
-Message-ID: <46D17A7A.70609@gmail.com>
-Date: Sun, 26 Aug 2007 15:04:58 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 26 Aug 2007 10:07:45 -0400
+Date: Sun, 26 Aug 2007 08:07:44 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jesse.barnes@intel.com>, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Fix boot-time hang on G31/G33 PC
+Message-ID: <20070826140743.GF14130@parisc-linux.org>
+References: <20070826015556.GC14130@parisc-linux.org> <46D10099.40401@shaw.ca> <20070826125542.GD14130@parisc-linux.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, gareth@valinux.com,
-       dri-devel@lists.sourceforge.net
-Subject: X freezes kernel during exit [Re: 2.6.23-rc3-mm1]
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-In-Reply-To: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070826125542.GD14130@parisc-linux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton napsal(a):
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
+On Sun, Aug 26, 2007 at 06:55:42AM -0600, Matthew Wilcox wrote:
+> On Sat, Aug 25, 2007 at 10:24:57PM -0600, Robert Hancock wrote:
+> > We've already got a patch for this in Greg's PCI tree, hopefully it 
+> > should go in for 2.6.24.
+> 
+> I haven't seen it.  I guess it wasn't sent to the PCI mailing list.
+> 
+> Your patch had two or three problems with it; assuming we're talking
+> about the same patch.
 
-Hi,
+I found
+http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f=pci/pci-disable-decode-of-io-memory-during-bar-sizing.patch;h=958ef4e837733206a80f058aee236847eec5fbd8;hb=HEAD
 
-I've found a regression against 2.6.23-rc2-mm2. X server shutdown freezes
-(untainted) kernel hardly. Nothing on netconsole, X output follows:
+which has two problems:
 
+ - With a 64-bit BAR, it checks to see if the upper 32 bits represent IO
+   or memory.  You can't do that to the upper 32 bits.
+ - It does a lot of additional writes to the cmd register; my patch does two
+   writes per device; yours does two per BAR
 
-X Window System Version 1.3.0
-Release Date: 19 April 2007
-X Protocol Version 11, Revision 0, Release 1.3
-Build Operating System: Fedora Core 7 Red Hat, Inc.
-Current Operating System: Linux bellona 2.6.23-rc3-mm1 #315 SMP Wed Aug 22
-21:43:06 CEST 2007 i686
-Build Date: 11 June 2007
-Build ID: xorg-x11-server 1.3.0.0-9.fc7
-        Before reporting problems, check http://wiki.x.org
-        to make sure that you have the latest version.
-Module Loader present
-Markers: (--) probed, (**) from config file, (==) default setting,
-        (++) from command line, (!!) notice, (II) informational,
-        (WW) warning, (EE) error, (NI) not implemented, (??) unknown.
-(==) Log file: "/var/log/Xorg.0.log", Time: Sun Aug 26 14:22:43 2007
-(==) Using config file: "/etc/X11/xorg.conf"
-(WW) RADEON: No matching Device section for instance (BusID PCI:1:0:1) found
-(**) RADEON(0): RADEONPreInit
-(II) Module already built-in
-(II) Module already built-in
-(II) Module already built-in
-(**) RADEON(0): RADEONScreenInit f0000000 0
-(**) RADEON(0): Map: 0xf0000000, 0x04000000
-(**) RADEON(0): RADEONSave
-(**) RADEON(0): RADEONSaveMode(0x8240870)
-(**) RADEON(0): Read: 0x0000000c 0x00030065 0x00000000
-(**) RADEON(0): Read: rd=12, fd=101, pd=3
-(**) RADEON(0): RADEONSaveMode returns 0x8240870
-(**) RADEON(0): DRI New memory map param
-(**) RADEON(0): RADEONInitMemoryMap() :
-(**) RADEON(0):   mem_size         : 0x04000000
-(**) RADEON(0):   MC_FB_LOCATION   : 0xf3fff000
-(**) RADEON(0):   MC_AGP_LOCATION  : 0xffffffc0
-(**) RADEON(0): RADEONModeInit()
-1280x1024     108.00  1280 1328 1440 1688  1024 1025 1028 1066 (24,32) +H +V
-1280x1024     108.00  1280 1328 1440 1688  1024 1025 1028 1066 (24,32) +H +V
-(**) RADEON(0): Pitch = 10485920 bytes (virtualX = 1280, displayWidth = 1280)
-(**) RADEON(0): dc=10800, of=21600, fd=96, pd=2
-(**) RADEON(0): RADEONInit returns 0x8241220
-(**) RADEON(0): RADEONRestoreMode()
-(**) RADEON(0): RADEONRestoreMode(0x8241220)
-(**) RADEON(0): RADEONRestoreMemMapRegisters() :
-(**) RADEON(0):   MC_FB_LOCATION   : 0xf3fff000
-(**) RADEON(0):   MC_AGP_LOCATION  : 0xffffffc0
-(**) RADEON(0):   Map Changed ! Applying ...
-(**) RADEON(0):   Map applied, resetting engine ...
-(**) RADEON(0): Updating display base addresses...
-(**) RADEON(0): Memory map updated.
-(**) RADEON(0): Programming CRTC1, offset: 0x00000000
-(**) RADEON(0): Wrote: 0x0000000c 0x00010060 0x00000000 (0x0000a400)
-(**) RADEON(0): Wrote: rd=12, fd=96, pd=1
-(**) RADEON(0): GRPH_BUFFER_CNTL from 20205c5c to 20125c5c
-(**) RADEON(0): RADEONSaveScreen(0)
-(**) RADEON(0): Setting up initial surfaces
-(**) RADEON(0): Initializing fb layer
-(**) RADEON(0): Setting up accel memmap
-(**) RADEON(0): Initializing backing store
-(**) RADEON(0): DRI Finishing init !
-(**) RADEON(0): EngineRestore (32/32)
-(**) RADEON(0): GRPH_BUFFER_CNTL from 20205c5c to 20125c5c
-(**) RADEON(0): Setting up final surfaces
-(**) RADEON(0): Initializing Acceleration
-(**) RADEON(0): EngineInit (32/32)
-(**) RADEON(0): Pitch for acceleration = 160
-(**) RADEON(0): EngineRestore (32/32)
-(**) RADEON(0): Initializing DPMS
-(**) RADEON(0): Initializing Cursor
-(**) RADEON(0): Initializing color map
-(**) RADEON(0): Initializing DGA
-(**) RADEON(0): Initializing Xv
-(**) RADEON(0): RADEONScreenInit finished
-(**) RADEON(0): RADEONSaveScreen(2)
-(**) RADEON(0): RADEONCloseScreen
-(**) RADEON(0): RADEONDRIStop
-(**) RADEON(0): EngineRestore (32/32)
-(**) RADEON(0): RADEONDisplayPowerManagementSet(0,0x0)
-(**) RADEON(0): RADEONRestore
-(**) RADEON(0): RADEONRestoreMode()
-(**) RADEON(0): RADEONRestoreMode(0x8240870)
-(**) RADEON(0): RADEONRestoreMemMapRegisters() :
-(**) RADEON(0):   MC_FB_LOCATION   : 0x1fff0000
-(**) RADEON(0):   MC_AGP_LOCATION  : 0x27ff2000
-(**) RADEON(0):   Map Changed ! Applying ...
-(**) RADEON(0):   Map applied, resetting engine ...
-(**) RADEON(0): Updating display base addresses...
-(**) RADEON(0): Memory map updated.
-(**) RADEON(0): Programming CRTC1, offset: 0x00000000
-(**) RADEON(0): Wrote: 0x0000000c 0x00030065 0x00000000 (0x0000a400)
-(**) RADEON(0): Wrote: rd=12, fd=101, pd=3
-(**) RADEON(0): Disposing accel...
-(**) RADEON(0): Disposing cusor info
-(**) RADEON(0): Disposing DGA
-(**) RADEON(0): Unmapping memory
-(**) RADEON(0): RADEONDRICloseScreen
+It's also a lot more complex than my patch, IMO.
 
+Greg, please drop Robert's patch and put mine in instead.
 
-
-the only difference is, that 2.6.23-rc2-mm2 writes further
-
-FreeFontPath: FPE "/usr/share/X11/fonts/misc:unscaled" refcount is 2, should be
-1; fixing.
-
-and exits succesfully (note that these messages are taken on remote host, X
-runned remotely).
-
-Both vesa and radeon + Option "NoAccel" "true" works obviously fine.
-
-regards,
 -- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
-
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
