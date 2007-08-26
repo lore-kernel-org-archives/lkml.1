@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934804AbXHZB1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934863AbXHZBx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934804AbXHZB1s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Aug 2007 21:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756916AbXHZB1n
+	id S934863AbXHZBx5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Aug 2007 21:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933724AbXHZBxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Aug 2007 21:27:43 -0400
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:62182 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752246AbXHZB1m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Aug 2007 21:27:42 -0400
-Date: Sat, 25 Aug 2007 21:26:42 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Frank Ch. Eigler" <fche@redhat.com>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       RT <linux-rt-users@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH RT 3/3 - take two ] fix get_monotonic_cycles for latency
- tracer
-In-Reply-To: <y0modgv50vl.fsf@ton.toronto.redhat.com>
-Message-ID: <Pine.LNX.4.58.0708252121310.26667@gandalf.stny.rr.com>
-References: <1187978236.2941.19.camel@localhost.localdomain>
- <1187982149.4574.1.camel@localhost.localdomain> <y0modgv50vl.fsf@ton.toronto.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 25 Aug 2007 21:53:48 -0400
+Received: from smtpout.mac.com ([17.250.248.176]:50142 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933670AbXHZBxr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Aug 2007 21:53:47 -0400
+In-Reply-To: <9a8748490708251736k5b751998yee72abdc8c4c1b53@mail.gmail.com>
+References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com> <5ebfb93eca0dd43cf17876e643079cbcfeb3111c.1187912217.git.jesper.juhl@gmail.com> <200708241141.06358.vda.linux@googlemail.com> <Pine.LNX.4.64.0708240642500.18301@localhost.localdomain> <9a8748490708251527n26cc2065n5b8716bd7f65e252@mail.gmail.com> <Pine.LNX.4.64.0708251956380.29507@localhost.localdomain> <9a8748490708251728h51d51092r11a3562ceb63b2f9@mail.gmail.com> <Pine.LNX.4.64.0708252021070.8721@localhost.localdomain> <9a8748490708251736k5b751998yee72abdc8c4c1b53@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <51189954-4301-4C83-91F2-26B376D0DDD7@mac.com>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH 09/30] mtd: Don't cast kmalloc() return value in drivers/mtd/maps/pmcmsp-flash.c
+Date: Sat, 25 Aug 2007 21:52:51 -0400
+To: Jesper Juhl <jesper.juhl@gmail.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---
-On Sat, 25 Aug 2007, Frank Ch. Eigler wrote:
-
+On Aug 25, 2007, at 20:36:32, Jesper Juhl wrote:
+> On 26/08/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+>> technically, nothing.  but if you're not going to use kcalloc()  
+>> when you're explicitly allocating an array of identical objects  
+>> (that you want zero-filled, as a bonus), then what's the point of  
+>> ever having defined a kcalloc() routine in the first place?
+>>
+> I wonder a bit about that myself...
 >
-> Steven Rostedt <rostedt@goodmis.org> writes:
->
-> > [...]
-> > +		 * [...] We don't need to grab
-> > +		 * any locks, we just keep trying until get all the
-> > +		 * calculations together in one state.
-> > +		 *
-> > +		 * In fact, we __cant__ grab any locks. This
-> > +		 * function is called from the latency_tracer which can
-> > +		 * be called anywhere. To grab any locks (including
-> > +		 * seq_locks) we risk putting ourselves into a deadlock.
->
-> Perhaps you could add a comment about why the loop, which appears
-> potentially infinite as written, avoids livelock.  (It looks rather
-> like a seqlock read loop.)
->
+> I have found some other issues in that function that I want to fix,  
+> so I'll be respinning the patch as a patch series instead - and why  
+> not; I'll just go with kcalloc() and see what the maintainers have  
+> to say, it's not like I personally care much one way or the other.
 
-I guess I need to rewrite that comment. It shouldn't appear infinitely
-looping, since it is basically: do { x=A; func() } while (x != A); which
-to me seems that while is most likely to fail unless something touches A.
+I think the original reasoning behind kcalloc() was that it did some  
+extra input checking, so that if the product of the two numbers  
+overflowed, it would fail with NULL instead of allocating  
+insufficient space.  In the kernel it doesn't matter in practice  
+since you MUST have additional checking on the size of allocated  
+memory anyways, not even considering the fact that >PAGE_SIZE  
+allocations are probably going to fail with decent frequency regardless.
 
-But yes, it _is_ basically a seq lock, but its on what we are working
-with.  And we don't even need any memory barriers that a seq lock might
-do, since it is very obvious to gcc that the function call can modify the
-variables that we are testing.
+Cheers,
+Kyle Moffett
 
-But do you still think that looks inifinte?  If so, I'll reword it.
-
--- Steve
 
