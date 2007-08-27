@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbXH0V03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764734AbXH0V0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755048AbXH0V03 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760337AbXH0VUe
+	id S1764734AbXH0V0r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764512AbXH0VXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:20:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40259
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758753AbXH0VU2 (ORCPT
+	Mon, 27 Aug 2007 17:23:47 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42296 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764499AbXH0VXq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:20:28 -0400
-Date: Mon, 27 Aug 2007 14:20:17 -0700 (PDT)
-Message-Id: <20070827.142017.48523835.davem@davemloft.net>
-To: grundler@parisc-linux.org
-Cc: mathieu.desnoyers@polymtl.ca, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, parisc-linux@parisc-linux.org,
-       clameter@sgi.com
-Subject: Re: [parisc-linux] [patch 15/23] Add cmpxchg_local to parisc
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070827210432.GA22484@colo.lackof.org>
-References: <20070812145434.520271946@polymtl.ca>
-	<20070812145840.691277845@polymtl.ca>
-	<20070827210432.GA22484@colo.lackof.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Aug 2007 17:23:46 -0400
+Date: Mon, 27 Aug 2007 14:23:45 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+In-Reply-To: <20070827211003.GA10627@Krystal>
+Message-ID: <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com>
+References: <20070820215413.GA28452@Krystal>
+ <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
+ <20070821173849.GA8360@Krystal> <Pine.LNX.4.64.0708211612580.6062@schroedinger.engr.sgi.com>
+ <1188197539.6114.426.camel@twins> <Pine.LNX.4.64.0708271237580.5056@schroedinger.engr.sgi.com>
+ <20070827202203.GB5653@Krystal> <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com>
+ <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com>
+ <20070827211003.GA10627@Krystal>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Grundler <grundler@parisc-linux.org>
-Date: Mon, 27 Aug 2007 15:04:32 -0600
+On Mon, 27 Aug 2007, Mathieu Desnoyers wrote:
 
-> Doesn't explain the difference between "local" and "non-local" either.
-> Per CPU data should only need memory barriers (in some cases) and
-> protection against interrupts (in probably more cases). So I'm not
-> understanding why a new set of APIs is needed.
+> > a clean solution source code wise. It also minimizes the interrupt holdoff 
+> > for the non-cmpxchg_local arches. However, it means that we will have to 
+> > disable interrupts twice for the slow path. If that is too expensive then 
+> > we need a different solution.
+> > 
 > 
-> Can you add a description to Documentation/atomic_ops.txt ?
+> cmpxchg_local is not used on the slow path... ?
 
-My understanding is that the local versions can run without
-memory barriers.  Only local cpu execution and local interrupt
-threads of control can access the variable, and interrupts
-force all stores to become visible to the local cpu so an
-interrupt can't see the datum from before the atomic update
-if one was in progress when the interrupt triggered, and
-stuff like that.
+Right.
+
+> Did you meant:
+> 
+> it means that we will have to disable preemption _and_ interrupts on the
+> fast path for non-cmpxchg_local arches ?
+
+We would have to disable preemption and interrupts once on the fast path. 
+The interrupt holdoff would just be a couple of instructions.
+
+The slow path would require disable preemption and two interrupt disables.
+
+Question is if this makes sense performance wise. If not then we may have 
+to look at more complicated schemes.
+
+
