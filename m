@@ -1,87 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760384AbXH0RZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbXH0R1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760384AbXH0RZu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757320AbXH0RZk
+	id S1760217AbXH0R1e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbXH0R1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:25:40 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:57824 "EHLO pasmtpA.tele.dk"
+	Mon, 27 Aug 2007 13:27:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41628 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757570AbXH0RZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 13:25:39 -0400
-Date: Mon, 27 Aug 2007 19:26:54 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       kbuild-devel@lists.sourceforge.net
-Subject: Re: CONFIG_HOTPLUG_CPU: kconfig bug?
-Message-ID: <20070827172654.GA21871@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0708271525400.21853@blonde.wat.veritas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708271525400.21853@blonde.wat.veritas.com>
-User-Agent: Mutt/1.4.2.1i
+	id S1756622AbXH0R1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 13:27:20 -0400
+Date: Mon, 27 Aug 2007 13:27:13 -0400
+Message-Id: <200708271727.l7RHRDmr007253@dantu.rdu.redhat.com>
+From: Jeff Layton <jlayton@redhat.com>
+Subject: [PATCH 1/4] VFS: Introduce the killattr inode operation for handling ATTR_KILL_S*ID
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 03:54:49PM +0100, Hugh Dickins wrote:
-> Hi Roman,
-> 
-> I've noticed an oddity with CONFIG_HOTPLUG_CPU in 2.6.23-rc:
-> make oldconfig seems to turn it on even when nothing wants it,
-> increasing kernel size by about 10k; but if you then edit the
-> line out of .config and make oldconfig again, it correctly
-> offers the choice and lets it be turned off after all.
-> 
-> (I've not actually tried make anything_else_config.)
-> 
-> Attached is a 2.6.23-rc1 i386 SMP .config, CONFIG_HOTPLUG_CPU
-> not set, with which it should be easy to reproduce the issue: just
-> make oldconfig in an -rc2 or current kernel tree (being sure to
-> choose N for SUSPEND and HIBERNATION: those rightly select it).
+This patch adds the killattr inode operation. inodes that have a
+killattr operation defined are responsible for properly handling the
+ATTR_KILL_SUID and ATTR_KILL_SGID bits within this operation. inodes
+that do not have a killattr op will instead use "standard" logic which
+turns these bits into a mode change if the setuid or setgid bits are
+currently set in the inode's mode.
 
-I tried to reproduce this with no luck:
+To enable this, the patch does the standard processing of these bits on
+a set of local variables, and then has these local variables supercede
+the values in the iattr when a killattr op isn't defined.
 
-$ mv hugh .config 
-$ make 
-scripts/kconfig/conf -s arch/i386/Kconfig
-*
-* Restart config...
-*
-*
-* Power management options (ACPI, APM)
-*
-Power Management support (PM) [Y/n/?] y
-  Legacy Power Management API (DEPRECATED) (PM_LEGACY) [N/y/?] n
-  Power Management Debug Support (PM_DEBUG) [N/y/?] n
-Suspend to RAM and standby (SUSPEND) [Y/n/?] (NEW) n              <= I selected 'n'
-Hibernation (aka 'suspend to disk') (HIBERNATION) [N/y/?] (NEW) n <= I selected 'n'
-*
-* Fusion MPT device support
-*
-Fusion MPT ScsiHost drivers for SPI (FUSION_SPI) [Y/n/m/?] y
-Fusion MPT ScsiHost drivers for FC (FUSION_FC) [N/m/y/?] n
-Fusion MPT ScsiHost drivers for SAS (FUSION_SAS) [N/m/y/?] n
-Maximum number of scatter gather entries (16 - 128) (FUSION_MAX_SGE) [128] 128
-Fusion MPT misc device (ioctl) driver (FUSION_CTL) [N/m/y/?] n
-Fusion MPT logging facility (FUSION_LOGGING) [N/y/?] (NEW) 
-#
-# configuration written to .config
-#
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-make: *** [_all] Interrupt
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/attr.c          |   33 ++++++++++++++++++++-------------
+ include/linux/fs.h |    1 +
+ 2 files changed, 21 insertions(+), 13 deletions(-)
 
-$ grep HOTPLUG_CPU .config
-# CONFIG_HOTPLUG_CPU is not set
+diff --git a/fs/attr.c b/fs/attr.c
+index ae58bd3..77608d3 100644
+--- a/fs/attr.c
++++ b/fs/attr.c
+@@ -103,12 +103,11 @@ EXPORT_SYMBOL(inode_setattr);
+ int notify_change(struct dentry * dentry, struct iattr * attr)
+ {
+ 	struct inode *inode = dentry->d_inode;
+-	mode_t mode;
++	mode_t mode = attr->ia_mode;
+ 	int error;
+ 	struct timespec now;
+ 	unsigned int ia_valid = attr->ia_valid;
+ 
+-	mode = inode->i_mode;
+ 	now = current_fs_time(inode->i_sb);
+ 
+ 	attr->ia_ctime = now;
+@@ -126,28 +125,36 @@ int notify_change(struct dentry * dentry, struct iattr * attr)
+ 			return error;
+ 	}
+ 	if (ia_valid & ATTR_KILL_SUID) {
+-		attr->ia_valid &= ~ATTR_KILL_SUID;
+-		if (mode & S_ISUID) {
++		ia_valid &= ~ATTR_KILL_SUID;
++		if (inode->i_mode & S_ISUID) {
+ 			if (!(ia_valid & ATTR_MODE)) {
+-				ia_valid = attr->ia_valid |= ATTR_MODE;
+-				attr->ia_mode = inode->i_mode;
++				ia_valid |= ATTR_MODE;
++				mode = inode->i_mode;
+ 			}
+-			attr->ia_mode &= ~S_ISUID;
++			mode &= ~S_ISUID;
+ 		}
+ 	}
+ 	if (ia_valid & ATTR_KILL_SGID) {
+-		attr->ia_valid &= ~ ATTR_KILL_SGID;
+-		if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
++		ia_valid &= ~ATTR_KILL_SGID;
++		if ((inode->i_mode & (S_ISGID | S_IXGRP)) ==
++					(S_ISGID | S_IXGRP)) {
+ 			if (!(ia_valid & ATTR_MODE)) {
+-				ia_valid = attr->ia_valid |= ATTR_MODE;
+-				attr->ia_mode = inode->i_mode;
++				ia_valid |= ATTR_MODE;
++				mode = inode->i_mode;
+ 			}
+-			attr->ia_mode &= ~S_ISGID;
++			mode &= ~S_ISGID;
+ 		}
+ 	}
+-	if (!attr->ia_valid)
++	if (!ia_valid)
+ 		return 0;
+ 
++	if (inode->i_op && inode->i_op->killattr) {
++		inode->i_op->killattr(dentry, attr);
++	} else {
++		attr->ia_valid = ia_valid;
++		attr->ia_mode = mode;
++	}
++
+ 	if (ia_valid & ATTR_SIZE)
+ 		down_write(&dentry->d_inode->i_alloc_sem);
+ 
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 291d40b..d213539 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1220,6 +1220,7 @@ struct inode_operations {
+ 	void (*truncate_range)(struct inode *, loff_t, loff_t);
+ 	long (*fallocate)(struct inode *inode, int mode, loff_t offset,
+ 			  loff_t len);
++	void (*killattr) (struct dentry *dentry, struct iattr *attr);
+ };
+ 
+ struct seq_file;
+-- 
+1.5.2.1
 
-If you let kbuild do a silentoldconfig then I expect
-it to be set due to SUSPEND being set.
-
-If you can still reproduce it could you then explan the
-exect stepts to do so.
-
-PS. I used latest -linus as of yesterday.
-
-	Sam
