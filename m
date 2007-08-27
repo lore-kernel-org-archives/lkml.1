@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964903AbXH0U3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932872AbXH0U3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964903AbXH0U3Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 16:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761301AbXH0UXS
+	id S932872AbXH0U3w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 16:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762133AbXH0UXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 16:23:18 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:43348 "EHLO fieldses.org"
+	Mon, 27 Aug 2007 16:23:19 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:43397 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762057AbXH0UXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 16:23:11 -0400
+	id S1762076AbXH0UXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 16:23:13 -0400
 From: "J. Bruce Fields" <bfields@fieldses.org>
 To: linux-kernel@vger.kernel.org
 Cc: nfs@lists.sourceforge.net, Neil Brown <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
        "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [PATCH 13/15] knfsd: remove code duplication in nfsd4_setclientid()
-Date: Mon, 27 Aug 2007 16:22:54 -0400
-Message-Id: <11882461782430-git-send-email-bfields@fieldses.org>
+Subject: [PATCH 11/15] knfsd: fix callback rpc cred
+Date: Mon, 27 Aug 2007 16:22:52 -0400
+Message-Id: <11882461773657-git-send-email-bfields@fieldses.org>
 X-Mailer: git-send-email 1.5.3.rc6.48.g17437
-In-Reply-To: <11882461772689-git-send-email-bfields@fieldses.org>
+In-Reply-To: <11882461773221-git-send-email-bfields@fieldses.org>
 References: <11882461763072-git-send-email-bfields@fieldses.org>
  <1188246176681-git-send-email-bfields@fieldses.org>
  <1188246176897-git-send-email-bfields@fieldses.org>
@@ -29,93 +30,95 @@ References: <11882461763072-git-send-email-bfields@fieldses.org>
  <1188246177259-git-send-email-bfields@fieldses.org>
  <1188246177192-git-send-email-bfields@fieldses.org>
  <11882461773221-git-send-email-bfields@fieldses.org>
- <11882461773657-git-send-email-bfields@fieldses.org>
- <11882461772689-git-send-email-bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: J. Bruce Fields <bfields@citi.umich.edu>
+From: J. Bruce Fields <bfields@fieldses.org>
 
-Each branch of this if-then-else has a bunch of duplicated code that we
-could just put at the end.
+It doesn't make sense to make the callback with credentials that the
+client made the setclientid with.  Instead the spec requires that the
+callback occur with the credentials the client authenticated *to*.
+It probably doesn't matter what we use for auth_unix, and some more
+infrastructure will be needed for auth_gss, so let's just remove the
+cred lookup for now.
 
-Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 ---
- fs/nfsd/nfs4state.c |   30 ++++++------------------------
- 1 files changed, 6 insertions(+), 24 deletions(-)
+ fs/nfsd/nfs4callback.c |   33 ---------------------------------
+ 1 files changed, 0 insertions(+), 33 deletions(-)
 
-diff --git a/fs/nfsd/nfs4state.c b/fs/nfsd/nfs4state.c
-index 09573b9..6256492 100644
---- a/fs/nfsd/nfs4state.c
-+++ b/fs/nfsd/nfs4state.c
-@@ -774,13 +774,7 @@ nfsd4_setclientid(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
- 		new = create_client(clname, dname);
- 		if (new == NULL)
- 			goto out;
--		copy_verf(new, &clverifier);
--		new->cl_addr = sin->sin_addr.s_addr;
--		copy_cred(&new->cl_cred,&rqstp->rq_cred);
- 		gen_clid(new);
--		gen_confirm(new);
--		gen_callback(new, setclid);
--		add_to_unconfirmed(new, strhashval);
- 	} else if (same_verf(&conf->cl_verifier, &clverifier)) {
- 		/*
- 		 * CASE 1:
-@@ -806,13 +800,7 @@ nfsd4_setclientid(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
- 		new = create_client(clname, dname);
- 		if (new == NULL)
- 			goto out;
--		copy_verf(new,&conf->cl_verifier);
--		new->cl_addr = sin->sin_addr.s_addr;
--		copy_cred(&new->cl_cred,&rqstp->rq_cred);
- 		copy_clid(new, conf);
--		gen_confirm(new);
--		gen_callback(new, setclid);
--		add_to_unconfirmed(new,strhashval);
- 	} else if (!unconf) {
- 		/*
- 		 * CASE 2:
-@@ -825,13 +813,7 @@ nfsd4_setclientid(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
- 		new = create_client(clname, dname);
- 		if (new == NULL)
- 			goto out;
--		copy_verf(new,&clverifier);
--		new->cl_addr = sin->sin_addr.s_addr;
--		copy_cred(&new->cl_cred,&rqstp->rq_cred);
- 		gen_clid(new);
--		gen_confirm(new);
--		gen_callback(new, setclid);
--		add_to_unconfirmed(new, strhashval);
- 	} else if (!same_verf(&conf->cl_confirm, &unconf->cl_confirm)) {
- 		/*	
- 		 * CASE3:
-@@ -852,19 +834,19 @@ nfsd4_setclientid(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
- 		new = create_client(clname, dname);
- 		if (new == NULL)
- 			goto out;
--		copy_verf(new,&clverifier);
--		new->cl_addr = sin->sin_addr.s_addr;
--		copy_cred(&new->cl_cred,&rqstp->rq_cred);
- 		gen_clid(new);
--		gen_confirm(new);
--		gen_callback(new, setclid);
--		add_to_unconfirmed(new, strhashval);
- 	} else {
- 		/* No cases hit !!! */
- 		status = nfserr_inval;
- 		goto out;
+diff --git a/fs/nfsd/nfs4callback.c b/fs/nfsd/nfs4callback.c
+index c17a520..c1cb7e0 100644
+--- a/fs/nfsd/nfs4callback.c
++++ b/fs/nfsd/nfs4callback.c
+@@ -344,28 +344,6 @@ static struct rpc_version *	nfs_cb_version[] = {
+ 	&nfs_cb_version4,
+ };
  
+-/*
+- * Use the SETCLIENTID credential
+- */
+-static struct rpc_cred *
+-nfsd4_lookupcred(struct nfs4_client *clp, int taskflags)
+-{
+-        struct auth_cred acred;
+-	struct rpc_clnt *clnt = clp->cl_callback.cb_client;
+-	struct rpc_cred *ret;
+-
+-        get_group_info(clp->cl_cred.cr_group_info);
+-        acred.uid = clp->cl_cred.cr_uid;
+-        acred.gid = clp->cl_cred.cr_gid;
+-        acred.group_info = clp->cl_cred.cr_group_info;
+-
+-        dprintk("NFSD:     looking up %s cred\n",
+-                clnt->cl_auth->au_ops->au_name);
+-        ret = rpcauth_lookup_credcache(clnt->cl_auth, &acred, taskflags);
+-        put_group_info(clp->cl_cred.cr_group_info);
+-        return ret;
+-}
+-
+ /* Reference counting, callback cleanup, etc., all look racy as heck.
+  * And why is cb_set an atomic? */
+ 
+@@ -379,18 +357,13 @@ static int do_probe_callback(void *data)
+ 	};
+ 	int status;
+ 
+-	msg.rpc_cred = nfsd4_lookupcred(clp, 0);
+-	if (IS_ERR(msg.rpc_cred))
+-		goto out;
+ 	status = rpc_call_sync(cb->cb_client, &msg, RPC_TASK_SOFT);
+-	put_rpccred(msg.rpc_cred);
+ 
+ 	if (status) {
+ 		rpc_shutdown_client(cb->cb_client);
+ 		cb->cb_client = NULL;
+ 	} else
+ 		atomic_set(&cb->cb_set, 1);
+-out:
+ 	put_nfs4_client(clp);
+ 	return 0;
+ }
+@@ -488,10 +461,6 @@ nfsd4_cb_recall(struct nfs4_delegation *dp)
+ 	if ((!atomic_read(&clp->cl_callback.cb_set)) || !clnt)
+ 		return;
+ 
+-	msg.rpc_cred = nfsd4_lookupcred(clp, 0);
+-	if (IS_ERR(msg.rpc_cred))
+-		goto out;
+-
+ 	cbr->cbr_trunc = 0; /* XXX need to implement truncate optimization */
+ 	cbr->cbr_dp = dp;
+ 
+@@ -512,8 +481,6 @@ nfsd4_cb_recall(struct nfs4_delegation *dp)
+ 		status = rpc_call_sync(clnt, &msg, RPC_TASK_SOFT);
  	}
-+	copy_verf(new, &clverifier);
-+	new->cl_addr = sin->sin_addr.s_addr;
-+	copy_cred(&new->cl_cred, &rqstp->rq_cred);
-+	gen_confirm(new);
-+	gen_callback(new, setclid);
-+	add_to_unconfirmed(new, strhashval);
- 	setclid->se_clientid.cl_boot = new->cl_clientid.cl_boot;
- 	setclid->se_clientid.cl_id = new->cl_clientid.cl_id;
- 	memcpy(setclid->se_confirm.data, new->cl_confirm.data, sizeof(setclid->se_confirm.data));
+ out_put_cred:
+-	put_rpccred(msg.rpc_cred);
+-out:
+ 	if (status == -EIO)
+ 		atomic_set(&clp->cl_callback.cb_set, 0);
+ 	/* Success or failure, now we're either waiting for lease expiration
 -- 
 1.5.3.rc5.19.g0734d
 
