@@ -1,118 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbXH0B7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbXH0CDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230AbXH0B7X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 21:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbXH0B7O
+	id S1755499AbXH0CDW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 22:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbXH0CDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 21:59:14 -0400
-Received: from mail.windriver.com ([147.11.1.11]:54268 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754690AbXH0B7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 21:59:13 -0400
-Message-ID: <46D2D57E.4070406@windriver.com>
-Date: Mon, 27 Aug 2007 09:45:34 -0400
-From: taoyue <yue.tao@windriver.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Sun, 26 Aug 2007 22:03:12 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56707 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753786AbXH0CDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 22:03:12 -0400
+Date: Mon, 27 Aug 2007 04:03:10 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Andrew Morton <akpm@osdl.org>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, hare@suse.de
+Subject: Re: [PATCH] debloat aic7xxx and aic79xx drivers by deinlining
+Message-ID: <20070827020310.GC4121@stusta.de>
+References: <200708252257.07241.vda.linux@googlemail.com> <20070825145742.69b99168@laptopd505.fenrus.org> <200708261621.30563.vda.linux@googlemail.com>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Mark Zhan <rongkai.zhan@windriver.com>,
-       "Ashfield, Bruce" <Bruce.Ashfield@windriver.com>
-Subject: Re: [PATCH] sigqueue_free: fix the race with collect_signal()
-References: <20070823134538.GA1358@tv-sign.ru> <46CEEA94.2070902@windriver.com> <20070824074558.GA86@tv-sign.ru> <46CF4DCB.6030304@windriver.com> <20070824110836.GA74@tv-sign.ru> <46CF3988.1020408@us.ibm.com> <20070824202305.GA274@tv-sign.ru>
-In-Reply-To: <20070824202305.GA274@tv-sign.ru>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Aug 2007 01:49:08.0550 (UTC) FILETIME=[753DEE60:01C7E84C]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200708261621.30563.vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 08/24, Sukadev Bhattiprolu wrote:
->   
->> Oleg Nesterov wrote:
->>     
->>> On 08/24, taoyue wrote:
->>>  
->>>       
->>>> Oleg Nesterov wrote:
->>>>    
->>>>         
->>>>>> collect_signal:				sigqueue_free:
->>>>>>
->>>>>> 	list_del_init(&first->list);
->>>>>>                                      spin_lock_irqsave(lock, flags);
->>>>>>   
->>>>>>        
->>>>>>             
->>>>>                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->>>>>
->>>>>      
->>>>>           
->>>>>>                                      if (!list_empty(&q->list))
->>>>>>                                            list_del_init(&q->list);
->>>>>>                                      spin_unlock_irqrestore(lock, 
->>>>>>                                      flags);
->>>>>>                                      q->flags &= ~SIGQUEUE_PREALLOC;
->>>>>>
->>>>>>      __sigqueue_free(first);		__sigqueue_free(q);
->>>>>>   
->>>>>>        
->>>>>>             
->>>>> collect_signal() is always called under ->siglock which is also taken by
->>>>> sigqueue_free(), so this is not possible.
->>>>>
->>>>>
->>>>>      
->>>>>           
->>>> I know, using current->sighand->siglock to prevent one sigqueue
->>>> is free twice. I want to know whether it is possible that the two
->>>> function is called in different thread. If that, the spin_lock is useless.
->>>>    
->>>>         
->>> Not sure I understand. Yes, it is possible they are called by 2 different
->>> threads, that is why we had a race. But all threads in the same thread
->>> group have the same ->sighand, and thus the same ->sighand->siglock.
->>>       
-I has applied the new patch, and start test program last Friday.
-So far, the test program has run for three days.
-In my test program, all threads is created in one process, so they
-are in the same thread group. If two thread is not in the same thread
-group, they have the different ->sighand->siglock. In this case, the
-lock can't prevent the sigqueue object from race condition.
->>>  
->>>       
->> Oleg, if one thread can be in collect_signal() and another in 
->> sigqueue_free() and both operate on the exact same sigqueue object, its 
->> not clear how we prevent two calls to __sigqueue_free() to
->> the same object. In that case the lock (or some lock) should be around 
->> __sigqueue_free() - no ?
->>
->> i.e if we enter sigqueue_free(), we will call __sigqueue_free() 
->> regardless of the state.
->>     
->
-> Yes. They both will call __sigqueue_free(). But please note that __sigqueue_free()
-> checks SIGQUEUE_PREALLOC, which is cleared by sigqueue_free().
->
-> IOW, when sigqueue_free() unlocks ->siglock, we know that it can't be used
-> by collect_signal() from another thread. So we can clear SIGQUEUE_PREALLOC
-> and free sigqueue. We don't need this lock around sigqueue_free() to prevent
-> the race. collect_signal() can "see" only those sigqueues which are on list.
->
-> IOW, when sigqueue_free() takes ->siglock, colect_signal() can't run, because
-> it needs the same lock. Now we delete this sigqueue from list, nobody can
-> see it, it can't have other references. So we can unlock ->siglock, mark
-> sigqueue as freeable (clear SIGQUEUE_PREALLOC), and free it.
->
-> Do you agree?
->
-> Oleg.
->
->
->   
+On Sun, Aug 26, 2007 at 04:21:30PM +0100, Denys Vlasenko wrote:
+> On Saturday 25 August 2007 22:57, Arjan van de Ven wrote:
+>...
+> > Did you run the find static
+> > script or are you waiting for Adrian to do that ;-)
+> 
+> $ find -name '*find*static*'
+> $
+
+  make namespacecheck
+
+> vda
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
