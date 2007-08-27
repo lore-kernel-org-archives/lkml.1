@@ -1,103 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762256AbXH0Uf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762725AbXH0Uhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762256AbXH0Uf3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 16:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbXH0UfT
+	id S1762725AbXH0Uhd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 16:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbXH0UhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 16:35:19 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:40858 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752346AbXH0UfS (ORCPT
+	Mon, 27 Aug 2007 16:37:22 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:46594 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752762AbXH0UhU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 16:35:18 -0400
-Date: Mon, 27 Aug 2007 17:34:58 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Bob Picco <bob.picco@hp.com>, "Luck, Tony" <tony.luck@intel.com>,
-       Paolo Ornati <ornati@fastwebnet.it>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: "double" hpet clocksource && hard freeze [bisected]
-Message-ID: <20070827173458.5a1ffed1@localhost>
-In-Reply-To: <1187979454.6163.2.camel@localhost.localdomain>
-References: <20070823222115.122a37ca@localhost>
-	<617E1C2C70743745A92448908E030B2A023EB2E1@scsmsx411.amr.corp.intel.com>
-	<1187903135.6024.18.camel@localhost.localdomain>
-	<1187905306.6024.24.camel@localhost.localdomain>
-	<20070824124631.GF10594@localhost>
-	<1187979454.6163.2.camel@localhost.localdomain>
-Organization: Mandriva
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Aug 2007 16:37:20 -0400
+Date: Mon, 27 Aug 2007 21:37:14 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix bogus hotplug cpu warning
+In-Reply-To: <20070827111802.8d0a675b.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708272126050.29594@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0708271604440.21853@blonde.wat.veritas.com>
+ <20070827111802.8d0a675b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, 24 Aug 2007 11:17:34 -0700
-john stultz <johnstul@us.ibm.com> escreveu:
+On Mon, 27 Aug 2007, Andrew Morton wrote:
+> On Mon, 27 Aug 2007 16:06:19 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> 
+> > Fix bogus DEBUG_PREEMPT warning on x86_64, when cpu brought online after
+> > bootup: current_is_keventd is right to note its use of smp_processor_id
+> > is preempt-safe, but should use raw_smp_processor_id to avoid the warning.
+> > 
+> > Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> > 
+> > --- 2.6.23-rc3-git10/kernel/workqueue.c	2007-07-26 19:49:58.000000000 +0100
+> > +++ linux/kernel/workqueue.c	2007-08-26 18:59:16.000000000 +0100
+> > @@ -635,7 +635,7 @@ int keventd_up(void)
+> >  int current_is_keventd(void)
+> >  {
+> >  	struct cpu_workqueue_struct *cwq;
+> > -	int cpu = smp_processor_id();	/* preempt-safe: keventd is per-cpu */
+> > +	int cpu = raw_smp_processor_id(); /* preempt-safe: keventd is per-cpu */
+> >  	int ret = 0;
+> >  
+> >  	BUG_ON(!keventd_wq);
+> 
+> But lib/smp_processor_id.c:debug_smp_processor_id() does
+> 
+> 	/*
+> 	 * Kernel threads bound to a single CPU can safely use
+> 	 * smp_processor_id():
+> 	 */
+> 	this_mask = cpumask_of_cpu(this_cpu);
+> 
+> 	if (cpus_equal(current->cpus_allowed, this_mask))
+> 		goto out;
+> 
+> So I assume that this warning was triggering because some non-keventd,
+> non-pinned task is calling current_is_keventd()?
 
-| On Fri, 2007-08-24 at 08:46 -0400, Bob Picco wrote:
-| > john stultz wrote:	[Thu Aug 23 2007, 05:41:45PM EDT]
-| > > On Thu, 2007-08-23 at 14:05 -0700, john stultz wrote:
-| > > > On Thu, 2007-08-23 at 13:41 -0700, Luck, Tony wrote:
-| > > > > > I have a double "hpet" entry in "available_clocksource":
-| > > > > >	$ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-| > > > > >	tsc hpet hpet acpi_pm jiffies
-| > > > > 
-| > > > > Oops.  If seems that both drivers/char/hpet.c and arch/x86_64/kernel/hpet.c
-| > > > > both register a clocksource named "hpet".  Probably a result of bringing
-| > > > > back to life a long lost patch, and having someone else (John Stultz, according
-| > > > > to git blame) make a similar change to a different file in the intervening
-| > > > > time.
-| > > > > 
-| > > > > Presumably the thing to do would be merge the x86_64 specific version
-| > > > > into the drivers/char/hpet.c version?
-| > > > 
-| > > > Ugh. Yea. i386 has an hpet clocksource as well. We should kill the
-| > > > duplication, but at the moment I'm not comfortable that the
-| > > > driver/char/hpet.c is ok to be used for i386/x86_64 (Bob: Do you know
-| > > > why the shift value is only 10?).
-| > > > 
-| > > > 
-| > > > I'm a little surprised by this, as the clocksource code use to prevent
-| > > > duplicate named clocksources from being registered, so I'm not sure how
-| > > > that check got dropped.  Also I'm not quite sure I see where the hard
-| > > > freeze is coming from.
-| > > > 
-| > > > My initial reaction would be to either ifdef ia64 implementation in
-| > > > drivers/char/hpet.c or move the code under the ia64 arch dir until it is
-| > > > really usable by all arches.
-| > > 
-| > > Here is a possible quick fix. I'm open to other approaches, but I also
-| > > want to avoid too much churn before 2.6.23 goes out.
-| > > 
-| > > Paolo, could you verify this fixes the issue for you?
-| > > 
-| > > thanks
-| > > -john
-| > > 
-| > [snip]
-| > 
-| > I saw what was missed by me in my brief examination of this last night.
-| > The platform registers the hpet clocksource too.
-| > 
-| > Instead of adding the config flag to hpet driver, how about the patch
-| > below? Since you already check for duplication by address then adding
-| > a check for by name too seems okay to me.
-| > 
-| > bob
-| > 
-| > 
-| > Prevent duplicate names being registered with clocksource. This also
-| > eliminates the duplication of hpet clock registration when the arch
-| > uses the hpet timer and the hpet driver does too. The patch was
-| > compile and link tested.
-| 
-| Yea. While I'm still not completely comfortable leaving this up to boot
-| order alone (the ia64 hpet clocksource is clearly causing issues on
-| x86_64), I think this patch is something we need as well.
+That's right, the x86_64 (and the ia64) do_boot_cpu() functions (called
+when onlining a cpu) do a check on current_is_keventd(): commented thus
+ * During cold boot process, keventd thread is not spun up yet.
+ * When we do cpu hot-add, we create idle threads on the fly, we should
+ * not acquire any attributes from the calling context. Hence the clean
+ * way to create kernel_threads() is to do that from keventd().
+ * We do the current_is_keventd() due to the fact that ACPI notifier
+ * was also queuing to keventd() and when the caller is already running
+ * in context of keventd(), we would end up with locking up the keventd
+ * thread.
+though I've not tried to think that through.
 
- Does -stable need this too?
+> So I agree with the patch, but not with its description.
 
--- 
-Luiz Fernando N. Capitulino
+I don't see which part of the description you disagree with, but please
+do improve it if you can.  The actual trace (when powersaved was saving
+power by onlining a cpu I'd tried to exclude with maxcpus=1 ;) was this:
+
+ BUG: using smp_processor_id() in preemptible [00000001] code: powersaved/3368
+ caller is current_is_keventd+0x9/0x3d
+ 
+ Call Trace:
+  [<ffffffff8031e5f5>] debug_smp_processor_id+0xc1/0xd4
+  [<ffffffff802453f3>] current_is_keventd+0x9/0x3d
+  [<ffffffff80219c9b>] do_boot_cpu+0x19e/0x3c9
+  [<ffffffff80219ad4>] do_fork_idle+0x0/0x29
+  [<ffffffff80219fb7>] __cpu_up+0xd4/0x107
+  [<ffffffff80252932>] _cpu_up+0xd9/0x17a
+  [<ffffffff80252a09>] cpu_up+0x36/0x4d
+  [<ffffffff8038f7ca>] store_online+0x52/0x81
+  [<ffffffff8038b575>] sysdev_store+0x3c/0x3e
+  [<ffffffff802cfed4>] flush_write_buffer+0x63/0x81
+  [<ffffffff802cff5b>] sysfs_write_file+0x69/0x8f
+  [<ffffffff8046e5d9>] _spin_unlock_irqrestore+0x16/0x30
+  [<ffffffff8028aea3>] vfs_write+0xc5/0x186
+  [<ffffffff8024c180>] up_write+0xd/0xf
+  [<ffffffff8028b02f>] sys_write+0x51/0x7a
+  [<ffffffff8020bc5e>] system_call+0x7e/0x83
+
+Hugh
