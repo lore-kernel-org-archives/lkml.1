@@ -1,44 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761010AbXH0Tjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761902AbXH0TmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761010AbXH0Tjo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 15:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbXH0Tjh
+	id S1761902AbXH0TmQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 15:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbXH0TmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 15:39:37 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34564 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756455AbXH0Tjh (ORCPT
+	Mon, 27 Aug 2007 15:42:07 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:54473 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757635AbXH0TmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 15:39:37 -0400
-Date: Mon, 27 Aug 2007 12:39:35 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mingo@redhat.com
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-In-Reply-To: <1188197539.6114.426.camel@twins>
-Message-ID: <Pine.LNX.4.64.0708271237580.5056@schroedinger.engr.sgi.com>
-References: <20070820201519.512791382@polymtl.ca>  <20070820201822.597720007@polymtl.ca>
-  <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com> 
- <20070820204126.GA22507@Krystal>  <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com>
-  <20070820212922.GA27011@Krystal>  <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
-  <20070820215413.GA28452@Krystal>  <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
-  <20070821173849.GA8360@Krystal>  <Pine.LNX.4.64.0708211612580.6062@schroedinger.engr.sgi.com>
- <1188197539.6114.426.camel@twins>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 27 Aug 2007 15:42:06 -0400
+From: Anthony Liguori <aliguori@us.ibm.com>
+To: kvm-devel@lists.sourceforge.net
+Cc: Anthony Liguori <aliguori@us.ibm.com>, Avi Kivity <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] KVM paravirtualization framework (v2)
+Date: Mon, 27 Aug 2007 14:42:00 -0500
+Message-Id: <1188243723984-git-send-email-aliguori@us.ibm.com>
+X-Mailer: git-send-email 1.5.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007, Peter Zijlstra wrote:
+This patchset refactors KVM's paravirtualization support to better support
+guest SMP and cross platform migration.  It also introduces a bare-bones KVM
+paravirt_ops implementation.
 
-> So, if the fast path can be done with a preempt off, it might be doable
-> to suffer the slow path with a per cpu lock like that.
+I've tested this on VT and it works nicely.  I'm having trouble getting a
+bzImage to boot on SVM so I haven't been able to test on SVM yet.
 
-Sadly the cmpxchg_local requires local per cpu data access. Isnt there 
-some way to make this less expensive on RT? Acessing cpu local memory is 
-really good for performance on NUMA since the data is optimally placed and 
-one can avoid/reduce locking if the process stays tied to the processor.
-
+I've incorporated all of the feedback into this series from posting the
+last series.
