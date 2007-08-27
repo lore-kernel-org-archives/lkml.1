@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765261AbXH0V3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765447AbXH0V3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765261AbXH0V3M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764689AbXH0V1V
+	id S1765447AbXH0V3k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764603AbXH0V1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:27:21 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58793 "EHLO
+	Mon, 27 Aug 2007 17:27:25 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58796 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764436AbXH0V1T (ORCPT
+	with ESMTP id S1762014AbXH0V1X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:27:19 -0400
-Date: Mon, 27 Aug 2007 23:27:18 +0200
+	Mon, 27 Aug 2007 17:27:23 -0400
+Date: Mon, 27 Aug 2007 23:27:23 +0200
 From: Adrian Bunk <bunk@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>, perex@suse.cz
 Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] unexport snd_ctl_elem_{read,write}
-Message-ID: <20070827212718.GL4121@stusta.de>
+Subject: [-mm patch] unexport sys_{open,read}
+Message-ID: <20070827212723.GM4121@stusta.de>
 References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -34,36 +34,39 @@ On Wed, Aug 22, 2007 at 02:06:48AM -0700, Andrew Morton wrote:
 >  git trees
 >...
 
-snd_ctl_elem_{read,write} no longer have any modular users.
+sys_{open,read} can finally be unexported.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- sound/core/control.c |    4 ----
- 1 file changed, 4 deletions(-)
+ fs/open.c       |    1 -
+ fs/read_write.c |    1 -
+ 2 files changed, 2 deletions(-)
 
-23e15051dde57c569e4c9aff1339aaf64185ea71 
-diff --git a/sound/core/control.c b/sound/core/control.c
-index 396e98e..6144d8a 100644
---- a/sound/core/control.c
-+++ b/sound/core/control.c
-@@ -716,8 +716,6 @@ int snd_ctl_elem_read(struct snd_card *card, struct snd_ctl_elem_value *control)
- 	return result;
+6f6884f9ee675f2e804c6c58ca46337f9765dd0d 
+diff --git a/fs/open.c b/fs/open.c
+index 23f334d..c0814de 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -1057,7 +1057,6 @@ asmlinkage long sys_open(const char __user *filename, int flags, int mode)
+ 	prevent_tail_call(ret);
+ 	return ret;
  }
+-EXPORT_SYMBOL_GPL(sys_open);
  
--EXPORT_SYMBOL(snd_ctl_elem_read);
--
- static int snd_ctl_elem_read_user(struct snd_card *card,
- 				  struct snd_ctl_elem_value __user *_control)
- {
-@@ -781,8 +779,6 @@ int snd_ctl_elem_write(struct snd_card *card, struct snd_ctl_file *file,
- 	return result;
+ asmlinkage long sys_openat(int dfd, const char __user *filename, int flags,
+ 			   int mode)
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 507ddff..d913d1e 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -370,7 +370,6 @@ asmlinkage ssize_t sys_read(unsigned int fd, char __user * buf, size_t count)
+ 
+ 	return ret;
  }
+-EXPORT_SYMBOL_GPL(sys_read);
  
--EXPORT_SYMBOL(snd_ctl_elem_write);
--
- static int snd_ctl_elem_write_user(struct snd_ctl_file *file,
- 				   struct snd_ctl_elem_value __user *_control)
+ asmlinkage ssize_t sys_write(unsigned int fd, const char __user * buf, size_t count)
  {
 
