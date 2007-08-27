@@ -1,32 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbXH0Izk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbXH0I7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754535AbXH0Izk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 04:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbXH0Ize
+	id S1754515AbXH0I7T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 04:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbXH0I7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 04:55:34 -0400
-Received: from 85-92-144-52.reasonnet.com ([85.92.144.52]:40438 "EHLO
-	srv352.flexwebhosting.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751305AbXH0Izd (ORCPT
+	Mon, 27 Aug 2007 04:59:12 -0400
+Received: from darkcity.gna.ch ([195.226.6.51]:48800 "EHLO mail.gna.ch"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752310AbXH0I7L convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 04:55:33 -0400
-X-Greylist: delayed 1146 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Aug 2007 04:55:33 EDT
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain;
-	charset=US-ASCII;
-	format=flowed
-Message-Id: <25DFD15A-EF91-4918-B4EE-BFCEB54B0679@hotmail.com>
-Content-Transfer-Encoding: 7bit
-X-Mailer: Apple Mail (2.752.2)
-From: cicikiz <ogulex@hotmail.com>
-Subject: selam
-Date: Mon, 27 Aug 2007 10:36:24 +0200
-To: linux-kernel@vger.kernel.org
+	Mon, 27 Aug 2007 04:59:11 -0400
+X-Greylist: delayed 1291 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Aug 2007 04:59:11 EDT
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <daenzer@debian.org>
+To: =?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       =?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@gmail.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       debian-powerpc@lists.debian.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <20070827065246.GA21220@ime.usp.br>
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
+	 <6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
+	 <20070827065246.GA21220@ime.usp.br>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Organization: Debian
+Date: Mon, 27 Aug 2007 10:37:27 +0200
+Message-Id: <1188203847.10738.357.camel@thor.sulgenrain.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yeni cikan albumleri ve filimleri indirmek hic bukadar kolay olmamisti
-yeni cikan albumleri ve filimleri indirmek istersen
-____________
-www.gulec.nl
-____________
+On Mon, 2007-08-27 at 03:52 -0300, Rogério Brito wrote:
+> 
+> I did 13 compiles with git bisect and some of them were unsucessfuly
+> compiled, which I am afraid that may miss the real cause if I tag them as
+> being "bad" (which I did).
+
+Yes, don't mark such cases as bad or good but look for a nearby commit
+that compiles.
+
+
+-- 
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
