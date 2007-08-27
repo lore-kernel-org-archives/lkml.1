@@ -1,118 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbXH0R1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbXH0R1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760217AbXH0R1e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbXH0R1V
+	id S1758299AbXH0R1y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757875AbXH0R1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:27:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41628 "EHLO mx1.redhat.com"
+	Mon, 27 Aug 2007 13:27:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41587 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756622AbXH0R1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757284AbXH0R1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 27 Aug 2007 13:27:20 -0400
-Date: Mon, 27 Aug 2007 13:27:13 -0400
-Message-Id: <200708271727.l7RHRDmr007253@dantu.rdu.redhat.com>
+Date: Mon, 27 Aug 2007 13:27:03 -0400
+Message-Id: <200708271727.l7RHR36m007248@dantu.rdu.redhat.com>
 From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 1/4] VFS: Introduce the killattr inode operation for handling ATTR_KILL_S*ID
+Subject: [PATCH 0/4] add killattr inode operation to allow filesystems to interpret ATTR_KILL_S*ID bits
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the killattr inode operation. inodes that have a
-killattr operation defined are responsible for properly handling the
-ATTR_KILL_SUID and ATTR_KILL_SGID bits within this operation. inodes
-that do not have a killattr op will instead use "standard" logic which
-turns these bits into a mode change if the setuid or setgid bits are
-currently set in the inode's mode.
+When an unprivileged process attempts to modify a file that has the
+setuid or setgid bits set, the VFS will attempt to clear these bits. The
+VFS will set the ATTR_KILL_SUID or ATTR_KILL_SGID bits in the ia_valid
+mask, and then call notify_change to clear these bits and set the mode
+accordingly.
 
-To enable this, the patch does the standard processing of these bits on
-a set of local variables, and then has these local variables supercede
-the values in the iattr when a killattr op isn't defined.
+With a networked filesystem (NFS and CIFS in particular but likely
+others), the client machine or process may not have credentials that
+allow for setting the mode. In some situations, this can lead to file
+corruption, an operation failing outright because the setattr fails, or
+to races that lead to a mode change being reverted.
+
+In this situation, we'd like to just leave the handling of this to the
+server and ignore these bits. The problem is that by the time the
+setattr op is called, the VFS has already reinterpreted the ATTR_KILL_*
+bits into a mode change. We can't fix this in the filesystems where this
+is a problem, as doing so would leave us having to second-guess what the
+VFS wants us to do. So we need to change it so that filesystems have
+more flexibility in how to interpret the ATTR_KILL_* bits.
+
+The first patch in the following patchset adds a new inode operation
+called "killattr" and has notify change call it if it's defined. The
+purpose of this inode op is to properly interpret the ATTR_KILL_SUID and
+ATTR_KILL_SGID bits. Filesystems that do not declare a killattr inode
+operation will keep the existing behavior, converting these bits
+into a mode change.
+
+The next two patches add a killattr inode op for NFS and CIFS which just
+clears the bits (to allow the server to handle them). The final patch
+updates the Documentation dir to describe the new killattr inode
+operation.
+
+This patchset should apply cleanly to 2.6.23-rc3-mm1. Comments and
+suggestions appreciated...
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/attr.c          |   33 ++++++++++++++++++++-------------
- include/linux/fs.h |    1 +
- 2 files changed, 21 insertions(+), 13 deletions(-)
-
-diff --git a/fs/attr.c b/fs/attr.c
-index ae58bd3..77608d3 100644
---- a/fs/attr.c
-+++ b/fs/attr.c
-@@ -103,12 +103,11 @@ EXPORT_SYMBOL(inode_setattr);
- int notify_change(struct dentry * dentry, struct iattr * attr)
- {
- 	struct inode *inode = dentry->d_inode;
--	mode_t mode;
-+	mode_t mode = attr->ia_mode;
- 	int error;
- 	struct timespec now;
- 	unsigned int ia_valid = attr->ia_valid;
- 
--	mode = inode->i_mode;
- 	now = current_fs_time(inode->i_sb);
- 
- 	attr->ia_ctime = now;
-@@ -126,28 +125,36 @@ int notify_change(struct dentry * dentry, struct iattr * attr)
- 			return error;
- 	}
- 	if (ia_valid & ATTR_KILL_SUID) {
--		attr->ia_valid &= ~ATTR_KILL_SUID;
--		if (mode & S_ISUID) {
-+		ia_valid &= ~ATTR_KILL_SUID;
-+		if (inode->i_mode & S_ISUID) {
- 			if (!(ia_valid & ATTR_MODE)) {
--				ia_valid = attr->ia_valid |= ATTR_MODE;
--				attr->ia_mode = inode->i_mode;
-+				ia_valid |= ATTR_MODE;
-+				mode = inode->i_mode;
- 			}
--			attr->ia_mode &= ~S_ISUID;
-+			mode &= ~S_ISUID;
- 		}
- 	}
- 	if (ia_valid & ATTR_KILL_SGID) {
--		attr->ia_valid &= ~ ATTR_KILL_SGID;
--		if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
-+		ia_valid &= ~ATTR_KILL_SGID;
-+		if ((inode->i_mode & (S_ISGID | S_IXGRP)) ==
-+					(S_ISGID | S_IXGRP)) {
- 			if (!(ia_valid & ATTR_MODE)) {
--				ia_valid = attr->ia_valid |= ATTR_MODE;
--				attr->ia_mode = inode->i_mode;
-+				ia_valid |= ATTR_MODE;
-+				mode = inode->i_mode;
- 			}
--			attr->ia_mode &= ~S_ISGID;
-+			mode &= ~S_ISGID;
- 		}
- 	}
--	if (!attr->ia_valid)
-+	if (!ia_valid)
- 		return 0;
- 
-+	if (inode->i_op && inode->i_op->killattr) {
-+		inode->i_op->killattr(dentry, attr);
-+	} else {
-+		attr->ia_valid = ia_valid;
-+		attr->ia_mode = mode;
-+	}
-+
- 	if (ia_valid & ATTR_SIZE)
- 		down_write(&dentry->d_inode->i_alloc_sem);
- 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 291d40b..d213539 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1220,6 +1220,7 @@ struct inode_operations {
- 	void (*truncate_range)(struct inode *, loff_t, loff_t);
- 	long (*fallocate)(struct inode *inode, int mode, loff_t offset,
- 			  loff_t len);
-+	void (*killattr) (struct dentry *dentry, struct iattr *attr);
- };
- 
- struct seq_file;
--- 
-1.5.2.1
 
