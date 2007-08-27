@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754945AbXH0L6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbXH0MES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754945AbXH0L6x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 07:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbXH0L6r
+	id S1755584AbXH0MES (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 08:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbXH0MEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 07:58:47 -0400
-Received: from mx1.suse.de ([195.135.220.2]:59058 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750988AbXH0L6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 07:58:46 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: =?iso-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
-Cc: "Esteban Fernandez" <estfern@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Pausing kernel boot messages
-References: <179e6e720708270421r5f07f9dfp434077f6a106d2d7@mail.gmail.com>
-	<200708271353.22665.hjk@linutronix.de>
-X-Yow: Here we are in America...  when do we collect unemployment?
-Date: Mon, 27 Aug 2007 13:58:45 +0200
-In-Reply-To: <200708271353.22665.hjk@linutronix.de> (=?iso-8859-1?Q?=22Han?=
- =?iso-8859-1?Q?s-J=FCrgen?= Koch"'s
-	message of "Mon\, 27 Aug 2007 13\:53\:22 +0200")
-Message-ID: <jesl6542a2.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 27 Aug 2007 08:04:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43203 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbXH0MEJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 08:04:09 -0400
+Date: Mon, 27 Aug 2007 05:03:36 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: Chris Mason <chris.mason@oracle.com>, Andrew Morton <akpm@osdl.org>,
+       David Chinner <dgc@sgi.com>, Michael Rubin <mrubin@google.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] [RFC][PATCH] clustered writeback
+Message-ID: <20070827050336.6a7e8e16@laptopd505.fenrus.org>
+In-Reply-To: <388214369.05937@ustc.edu.cn>
+References: <388214369.05937@ustc.edu.cn>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hans-Jürgen Koch <hjk@linutronix.de> writes:
+On Mon, 27 Aug 2007 19:21:52 +0800
+> 
+> Because it does the work in small batches of 10 inodes, when the
+> system has <=10 dirty inodes, its behavior will reduce to:
+> - do a full sweep *at once* on every 25s
+> Which means the disk will flicker once every 25s, not bad :)
 
-> Am Montag 27 August 2007 13:21 schrieb Esteban Fernandez:
->> How do you pause the kernel boot messages ?
->> 
->> ^S, Pause and Scroll lock do nothing and you can't Shift-Page-Up  after a
->> kernel panic.
->
-> These are functions of a shell (like bash),
+25 seconds is quite not good already though.... it takes a disk a
+second or two of no activity to go into low power mode, every 25
+seconds means you now have at least a 10% constant power cost....
 
-Definitely not.  The shell is not a console driver, it only uses it.
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+I don't know the right answer (well other than "make sure inodes aren't
+dirty", which involves fixing apps to not do as much file operations,
+as well as relatime) but just "every 25s is no big deal" isn't really
+the case ;-(
