@@ -1,76 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932446AbXH0R3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbXH0R3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932446AbXH0R3B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:29:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757745AbXH0R1t
+	id S1760954AbXH0R3p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbXH0R3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:27:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41894 "EHLO mx1.redhat.com"
+	Mon, 27 Aug 2007 13:29:15 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:39921 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760754AbXH0R1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 13:27:47 -0400
-Date: Mon, 27 Aug 2007 13:27:44 -0400
-Message-Id: <200708271727.l7RHRi42007270@dantu.rdu.redhat.com>
-From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 4/4] Documentation: update in-tree fs docs for new function
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net
+	id S1757745AbXH0R3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 13:29:13 -0400
+Subject: Re: [PATCH 2/3] Refactor hypercall infrastructure
+From: Anthony Liguori <aliguori@us.ibm.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
+       Dor Laor <dor.laor@qumranet.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46D2F680.9060100@qumranet.com>
+References: <11882278064002-git-send-email-aliguori@us.ibm.com>
+	 <1188227808405-git-send-email-aliguori@us.ibm.com>
+	 <11882278082826-git-send-email-aliguori@us.ibm.com>
+	 <46D2F680.9060100@qumranet.com>
+Content-Type: text/plain
+Organization: IBM
+Date: Mon, 27 Aug 2007 12:29:10 -0500
+Message-Id: <1188235750.6364.8.camel@squirrel>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This updates the VFS docs under the Documentation/ directory to describe
-the new killattr inode operation.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- Documentation/filesystems/Locking |    2 ++
- Documentation/filesystems/vfs.txt |    6 ++++++
- 2 files changed, 8 insertions(+), 0 deletions(-)
+On Mon, 2007-08-27 at 19:06 +0300, Avi Kivity wrote:
+> Anthony Liguori wrote:
+> >  void kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
+> >  {
+> >  	int i;
+> > @@ -1632,6 +1575,12 @@ void kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
+> >  	vcpu->regs[VCPU_REGS_RBX] = 0;
+> >  	vcpu->regs[VCPU_REGS_RCX] = 0;
+> >  	vcpu->regs[VCPU_REGS_RDX] = 0;
+> > +
+> > +	if ((function & 0xFFFF0000) == 0x40000000) {
+> > +		emulate_paravirt_cpuid(vcpu, function);
+> > +		goto out;
+> > +	}
+> > +
+> >   
+> 
+> Hmm.  Suppose we expose kvm capabilities to host userspace instead, and 
+> let the host userspace decide which features to expose to the guest via 
+> the regular cpuid emulation?  That allows the qemu command line to 
+> control the feature set.
 
-diff --git a/Documentation/filesystems/Locking b/Documentation/filesystems/Locking
-index fe26cc9..ac377aa 100644
---- a/Documentation/filesystems/Locking
-+++ b/Documentation/filesystems/Locking
-@@ -51,6 +51,7 @@ ata *);
- 	ssize_t (*getxattr) (struct dentry *, const char *, void *, size_t);
- 	ssize_t (*listxattr) (struct dentry *, char *, size_t);
- 	int (*removexattr) (struct dentry *, const char *);
-+	void (*killattr) (struct dentry *, struct iattr *);
- 
- locking rules:
- 	all may block, none have BKL
-@@ -74,6 +75,7 @@ setxattr:	yes
- getxattr:	no
- listxattr:	no
- removexattr:	yes
-+killattr:	yes
- 	Additionally, ->rmdir(), ->unlink() and ->rename() have ->i_mutex on
- victim.
- 	cross-directory ->rename() has (per-superblock) ->s_vfs_rename_sem.
-diff --git a/Documentation/filesystems/vfs.txt b/Documentation/filesystems/vfs.txt
-index 05a7b83..ca3a403 100644
---- a/Documentation/filesystems/vfs.txt
-+++ b/Documentation/filesystems/vfs.txt
-@@ -348,6 +348,7 @@ struct inode_operations {
- 	ssize_t (*listxattr) (struct dentry *, char *, size_t);
- 	int (*removexattr) (struct dentry *, const char *);
- 	void (*truncate_range)(struct inode *, loff_t, loff_t);
-+	void (*killattr)(struct dentry *, struct iattr *);
- };
- 
- Again, all methods are called without any locks being held, unless
-@@ -447,6 +448,11 @@ otherwise noted.
-   truncate_range: a method provided by the underlying filesystem to truncate a
-   	range of blocks , i.e. punch a hole somewhere in a file.
- 
-+  killattr: called by the VFS when a setuid/setgid inode is modified. This 
-+	allows a filesystem to override the standard behavior and handle
-+	the ATTR_KILL_SUID and ATTR_KILL_SGID bits in its own way. Should
-+	only be defined if the standard method for clearing setuid/setgid
-+	bits is not adequate for your filesystem.
- 
- The Address Space Object
- ========================
--- 
-1.5.2.1
+That's a little awkward with something like NPT.  Some CPUID features
+should be masked by the availability of NPT support in hardware and
+whether kernelspace supports NPT.  To set these feature bits in
+userspace, you would have to query kernelspace anyway.
+
+It would be nice to be consistent with the other cpuid flags though.
+There is somewhat of a similar issue with migration here.  If we have an
+initial set of PV features and down the road, add more, it may be
+desirable to enable those features depending on what your network looks
+like.  Yeah, I think I agree that userspace is the right place to set
+these bits.
+
+> >  
+> > +static int ud_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+> > +{
+> > +	int er;
+> > +	
+> > +	er = emulate_instruction(&svm->vcpu, kvm_run, 0, 0);
+> > +
+> > +	/* we should only succeed here in the case of hypercalls which
+> > +	   cannot generate an MMIO event.  MMIO means that the emulator
+> > +	   is mistakenly allowing an instruction that should generate
+> > +	   a UD fault so it's a bug. */
+> > +	BUG_ON(er == EMULATE_DO_MMIO);
+> >   
+> 
+> It's a guest-triggerable bug; one vcpu can be issuing ud2-in-a-loop 
+> while the other replaces the instruction with something that does mmio.
+
+Good catch!  I'll update.
+
+> > +
+> > +#define KVM_ENOSYS		ENOSYS
+> >   
+> 
+> A real number (well, an integer, not a real) here please.  I know that 
+> ENOSYS isn't going to change soon, but this file defines the kvm abi and 
+> I'd like it to be as independent as possible.
+> 
+> Let's start it at 1000 so that spurious "return 1"s or "return -1"s 
+> don't get translated into valid error numbers.
+
+Okay.
+
+> I really like the simplification to the guest/host interface that this 
+> patch brings.
+
+Thanks.
+
+Regards,
+
+Anthony Liguori
 
