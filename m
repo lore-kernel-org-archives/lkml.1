@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbXH0XQD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbXH0XRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754575AbXH0XQD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 19:16:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbXH0XPv
+	id S1754624AbXH0XRR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 19:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbXH0XRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 19:15:51 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:58495 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752033AbXH0XPu (ORCPT
+	Mon, 27 Aug 2007 19:17:03 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34622 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752676AbXH0XRA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 19:15:50 -0400
-Subject: Re: nmi_watchdog=2 regression in 2.6.21
-From: Daniel Walker <dwalker@mvista.com>
-To: eranian@hpl.hp.com
-Cc: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>, ak@suse.de,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20070827225555.GI784@frankl.hpl.hp.com>
-References: <1186531609.22044.50.camel@imap.mvista.com>
-	 <20070808142059.GF30805@atjola.homenet>
-	 <20070827175431.GD784@frankl.hpl.hp.com>
-	 <1188237331.2435.255.camel@dhcp193.mvista.com>
-	 <20070827225555.GI784@frankl.hpl.hp.com>
-Content-Type: text/plain
-Date: Mon, 27 Aug 2007 16:07:54 -0700
-Message-Id: <1188256074.2435.272.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Aug 2007 19:17:00 -0400
+Date: Tue, 28 Aug 2007 01:16:59 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Eugene Teo <eugeneteo@kernel.sg>
+Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] clean up exports in fs/{open,read_write}.c
+Message-ID: <20070827231659.GO26410@stusta.de>
+References: <20070824033310.GA5662@kernel.sg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070824033310.GA5662@kernel.sg>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-27 at 15:55 -0700, Stephane Eranian wrote:
+On Fri, Aug 24, 2007 at 11:33:10AM +0800, Eugene Teo wrote:
+> Takashi-san fixed sound/isa/wavefront/wavefront_synth.c to use
+> request_firmware instead of sys_*. Since that is the last driver in the
+> kernel that uses sys_{read,close}, this patch kills these exports. sys_open
+> is left exported for sparc64 only.
+>...
 
-> Yet the model name looks strange. So we need to run one more test,
-> as the fam/model is not enough. What we need to check is whether or
-> not this processor implements architectural perfmon or not.
-> 
-> Could you please compile and run the attached program and send me 
-> the output?
+fs/binfmt_misc.c still uses sys_close.
 
-The output below is all the output ..
+cu
+Adrian
 
-eax=0x7280201: version=1  num_cnt=2
+-- 
 
-Daniel
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
