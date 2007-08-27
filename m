@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932390AbXH0SJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbXH0SLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932390AbXH0SJx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 14:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbXH0SJp
+	id S1759203AbXH0SLO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 14:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbXH0SK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 14:09:45 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:40197 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752175AbXH0SJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 14:09:44 -0400
-Subject: Re: [PATCH 1/3] Implement emulator_write_phys()
-From: Anthony Liguori <aliguori@us.ibm.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <46D2F1B7.70604@qumranet.com>
-References: <11882278064002-git-send-email-aliguori@us.ibm.com>
-	 <1188227808405-git-send-email-aliguori@us.ibm.com>
-	 <46D2F1B7.70604@qumranet.com>
-Content-Type: text/plain
-Organization: IBM
-Date: Mon, 27 Aug 2007 13:09:42 -0500
-Message-Id: <1188238182.6364.23.camel@squirrel>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.90 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Aug 2007 14:10:59 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57115 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751049AbXH0SK6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 14:10:58 -0400
+Date: Mon, 27 Aug 2007 13:10:56 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: akpm@linux-foundation.org, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, tony.luck@intel.com,
+       jes@sgi.com
+Subject: Re: [PATCH 1/4] export __put_task_struct for XPMEM
+Message-ID: <20070827181056.GA30176@sgi.com>
+References: <20070827155622.GA25589@sgi.com> <20070827155933.GB25589@sgi.com> <20070827161327.GG21089@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070827161327.GG21089@ftp.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2007-08-27 at 18:45 +0300, Avi Kivity wrote:
-> Anthony Liguori wrote:
-> > Since a hypercall may span two pages and is a gva, we need a function to write
-> > to a gva that may span multiple pages.  emulator_write_phys() seems like the
-> > logical choice for this.
-> >
-> > @@ -962,8 +962,35 @@ static int emulator_write_std(unsigned long addr,
-> >  			      unsigned int bytes,
-> >  			      struct kvm_vcpu *vcpu
+On Mon, Aug 27, 2007 at 05:13:28PM +0100, Al Viro wrote:
+> On Mon, Aug 27, 2007 at 10:59:33AM -0500, Dean Nelson wrote:
+> > This patch exports __put_task_struct as it is needed by XPMEM.
+> > 
+> > Signed-off-by: Dean Nelson <dcn@sgi.com>
+> > 
+> > ---
+> > 
+> > One struct file_operations registered by XPMEM, xpmem_open(), calls
+> > 'get_task_struct(current->group_leader)' and another, xpmem_flush(), calls
+> > 'put_task_struct(tg->group_leader)'.
 > 
-> I think that emulator_write_emulated(), except for being awkwardly 
-> named, should do the job.  We have enough APIs.
+> Does it?  Well, then open the file in question and start doing close(dup(fd))
+> in a loop.  Won't take long for an oops...
 
-I'll drop this patch.  My mistakenly thought emulator_write_emulated()
-took a GPA.  Thanks!
-
-Regards,
-
-Anthony Liguori
-
-> But!  We may not overwrite the hypercall instruction while a vcpu may be 
-> executing, since there's no atomicity guarantee for code fetch.  We have 
-> to to be out of guest mode while writing that insn.
-> 
-
+Actually it won't oops. And that's because when the file is opened,
+xpmem_open() creates a structure for that thread group, and when
+xpmem_flush() is called on the close() it first looks for that structure
+and if it finds it then it does what it needs to do (which includes the
+put_task_struct() call) and then finishes off by destroying the structure.
+So for subsequent closes xpmem_flush() returns without calling
+put_task_struct().
