@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbXH0Lij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbXH0LmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbXH0Lij (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 07:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbXH0Lic
+	id S1756131AbXH0LmV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 07:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbXH0LmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 07:38:32 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:51623 "EHLO
+	Mon, 27 Aug 2007 07:42:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:58072 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754531AbXH0Lib (ORCPT
+	with ESMTP id S1754356AbXH0LmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 07:38:31 -0400
+	Mon, 27 Aug 2007 07:42:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JeiGsjbhDl5caHN9OqgZjKZdADp94OZRUl+hskW07aXv0ZExRb/8zs5w8BiGwZPoXlr+G3XcFPAgP9K2FSOTLo1EL/t6Enw0kpKYDu9+6cW3WjJGqIWIJqwoRarsIPtBNwVsEHoDfSNurrvmGYA+P+ZF7P4Pb5Cd/ptz1Wx2M7E=
-Message-ID: <6bffcb0e0708270438j4c92a0b4m1396b4010f25bfb5@mail.gmail.com>
-Date: Mon, 27 Aug 2007 13:38:30 +0200
+        b=M2sfrbymPXtLkVEO9uwdsJO+2kp8xl0a8DdyxivpLB8UIILKcq0HX8pUkGwL83WBkFUqzMuMUAaD1rqo2IAXYvyzHr+hV5BerLYodTK4eVu8APv/kF4+zmcGPrWOJU8fgbNi0SvGcanPs/YSh3FV6gNagiRXPYqKTG+6OzBnrlo=
+Message-ID: <6bffcb0e0708270442oad445a6jfbcac7f0a2c1d525@mail.gmail.com>
+Date: Mon, 27 Aug 2007 13:42:12 +0200
 From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
+To: "David Rees" <drees76@gmail.com>
 Subject: Re: Who wants to maintain KR list for stable releases? (was Re: nmi_watchdog=2 regression in 2.6.21)
 Cc: "Daniel Walker" <dwalker@mvista.com>,
        "=?ISO-8859-1?Q?Bj=F6rn_Steinbrink?=" <B.Steinbrink@gmx.de>,
-       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       "Natalie Protasevich" <protasnb@gmail.com>
-In-Reply-To: <20070827005131.b93f5935.akpm@linux-foundation.org>
+       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org
+In-Reply-To: <72dbd3150708270111h7845b5eam2b1d6279a0e33900@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -34,58 +33,40 @@ References: <1186531609.22044.50.camel@imap.mvista.com>
 	 <46CDE94A.7000600@googlemail.com>
 	 <1187904169.2435.83.camel@dhcp193.mvista.com>
 	 <46D21E8E.4000003@googlemail.com>
-	 <20070827005131.b93f5935.akpm@linux-foundation.org>
+	 <72dbd3150708270111h7845b5eam2b1d6279a0e33900@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27/08/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Mon, 27 Aug 2007 02:45:02 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
->
-> > Daniel Walker pisze:
-> > [snip]
-> > > Have you considered maintaining all the lists in Bugzilla?
-> >
-> > Yes, I have considered it.
-> >
+On 27/08/07, David Rees <drees76@gmail.com> wrote:
+> On 8/26/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 > > Bugzilla sucks when it comes to tracking things. There is
 > > a regression field, but there are no difference between
 > > 2.6.22 and 2.6.23 regression.
-> >
-> > Most people are reporting bugs through LKML:
-> > - 23 regressions with reference to LKML
-> > - 4 regressions with reference to Bugzilla
 >
-> Presumably that's fixable.
+> Here's how to use Bugzilla to track regressions between different
+> kernel versions:
 >
-> But I think bugzilla is more appropriate for tracking longer-term bugs.  If
-> some problem has just popped up (or has just been discovered) then it's
-> best to try to knock it over with a quick email discussion.  If that
-> doesn't work out then the bug should be captured in bugzilla so that it
-> doesn't get lost.
+> Create a 2.6.22 regression bug and a 2.6.23 regression bug. All
+> regression bugs which are 2.6.22 regression bugs should block the
+> 2.6.22 regression bug. All regression bugs which are 2.6.23 regression
+> bugs should block the 2.6.23 regression bug.
 >
-> The really important data which bugzilla will record are
+> For example, say your master 2.6.22 regression bug tracking bug is #1.
+> When someone comes and files a new bug #2 which is a regression of
+> 2.6.22, make bug #2 block bug #1. Then it is easy to see to track all
+> the 2.6.22 regressions.
 >
-> a) the fact that the bug exists and
->
-> b) the identity of the person who can reproduce it and who will hopefully
-> work with us on fixing it.
->
-> > > If you had a
-> > > search of open bugs they would just fall of the list as they get
-> > > closed..
-> >
-> > Unfortunately, the world is not perfect.
-> >
-> > Is anyone interested in maintaining KR list for stable releases?
->
-> I'm not sure that we need one, really.  Any bugs in a stable release can be
-> handled via email and/or bugzilla as we are presently doing?
->
-> What I'm concerned about is that regressions which we didn't fix are just
-> getting lost.  Is anyone taking care to ensure that they are getting
-> transitioned into bugzilla for tracking?
+> To make it easier to remember what bug number tracks regressions for a
+> specific kernel, use a naming convention to create aliases for those
+> bugs.
 
-I can copy all regression reports into Bugzilla after each release.
+This sounds pretty easy :), thanks.
+
+Unfortunately, Bugzilla is not a standard tool for handling bug reports.
+
+>
+> -Dave
+>
 
 Regards,
 Michal
