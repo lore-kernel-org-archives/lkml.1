@@ -1,48 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932541AbXH0Rf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932208AbXH0Rjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932541AbXH0Rf5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:35:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758786AbXH0RfI
+	id S932208AbXH0Rjt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbXH0Rjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:35:08 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:51169 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756813AbXH0RfE (ORCPT
+	Mon, 27 Aug 2007 13:39:39 -0400
+Received: from mga03.intel.com ([143.182.124.21]:49423 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756677AbXH0Rji convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 13:35:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=X3w0ezuO2nMONlr74+f5lPmo0Bqc+CvcLbtS+jYi3b9jdMHJQU0pGe4Nv73TF3WB27TWw9RbEd4Vvr0BUoa8geXKKXMOMnkVxtWJ/VK3+jkgB0AMtXpa81o5JjIu7MYBl9cDRohyMFHfVQBb/TvBpxGCG/suXRmip3iEuxx6xrs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 1/4] ide: add ide_dev_is_sata() helper (take 2)
-Date: Mon, 27 Aug 2007 19:22:28 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200708252308.26202.sshtylyov@ru.mvista.com>
-In-Reply-To: <200708252308.26202.sshtylyov@ru.mvista.com>
+	Mon, 27 Aug 2007 13:39:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,312,1183359600"; 
+   d="scan'208";a="268565623"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200708271922.28257.bzolnier@gmail.com>
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] reverse CONFIG_ACPI_PROC_EVENT default
+Date: Mon, 27 Aug 2007 13:39:34 -0400
+Message-ID: <CFF307C98FEABE47A452B27C06B85BB603ABF93B@hdsmsx411.amr.corp.intel.com>
+In-Reply-To: <Pine.LNX.4.64.0708271602170.21853@blonde.wat.veritas.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] reverse CONFIG_ACPI_PROC_EVENT default
+Thread-Index: Acfoy0miVwx3FRVrQyWprNmp8UNElQABesFw
+References: <Pine.LNX.4.64.0708271602170.21853@blonde.wat.veritas.com>
+From: "Brown, Len" <len.brown@intel.com>
+To: "Hugh Dickins" <hugh@veritas.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 27 Aug 2007 17:39:36.0638 (UTC) FILETIME=[3CA195E0:01C7E8D1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 25 August 2007, Sergei Shtylyov wrote:
-> Make the SATA drive detection code from eighty_ninty_three() into inline
-> ide_dev_is_sata() helper fixing it along the way to be more strict while
-> checking word 80 for the reserved values...
+Thanks Hugh.
+
+-Len 
+
+>-----Original Message-----
+>From: Hugh Dickins [mailto:hugh@veritas.com] 
+>Sent: Monday, August 27, 2007 11:05 AM
+>To: Linus Torvalds
+>Cc: Andrew Morton; Brown, Len; linux-kernel@vger.kernel.org
+>Subject: [PATCH] reverse CONFIG_ACPI_PROC_EVENT default
+>
+>Sigh.  Again an ACPI assault on the Thinkpad's Fn+F4 to suspend to RAM.
+>The default and text for CONFIG_THINKPAD_ACPI_INPUT_ENABLED were fixed
+>in -rc3, but now 14e04fb34ffa82ee61ae69f98d8fca12d2e8e31c introduces
+>CONFIG_ACPI_PROC_EVENT default n to disable it again.  Change default
+>to y, and add comment to make it clearer that n is for future distros.
+>
+>Signed-off-by: Hugh Dickins <hugh@veritas.com>
+>
+>--- 2.6.23-rc3-git10/drivers/acpi/Kconfig	2007-08-26 
+>18:10:15.000000000 +0100
+>+++ linux/drivers/acpi/Kconfig	2007-08-26 18:59:16.000000000 +0100
+>@@ -71,6 +71,7 @@ config ACPI_PROCFS
+> config ACPI_PROC_EVENT
+> 	bool "Deprecated /proc/acpi/event support"
+> 	depends on PROC_FS
+>+	default y
+> 	---help---
+> 	  A user-space daemon, acpi, typically read /proc/acpi/event
+> 	  and handled all ACPI sub-system generated events.
+>@@ -78,10 +79,13 @@ config ACPI_PROC_EVENT
+> 	  These events are now delivered to user-space via
+> 	  either the input layer, or as netlink events.
 > 
-> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-applied
-
-> ---
-> This version doesn't flip the MSB, it just casts word80 to 'signed short'
-> This is still against the current Linus' tree and unfortunately I was able to
-> only compile test it since that tree gives MODPOST warning and dies early on
-> bootup (yes, Bart this is still the case).  Alos, I have no SATA bridge/drive
-> here at hand...
+>-	  This build option enables the old code for for legacy
+>+	  This build option enables the old code for legacy
+> 	  user-space implementation.  After some time, this will
+> 	  be moved under CONFIG_ACPI_PROCFS, and then deleted.
+> 
+>+	  Say Y here to retain the old behaviour.  Say N if your
+>+	  user-space is newer than kernel 2.6.23 (September 2007).
+>+
+> config ACPI_AC
+> 	tristate "AC Adapter"
+> 	depends on X86
+>
