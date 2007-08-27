@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762223AbXH0Wvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760556AbXH0Wxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762223AbXH0Wvp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 18:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXH0Wvf
+	id S1760556AbXH0Wxh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 18:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbXH0Wxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 18:51:35 -0400
-Received: from mga07.intel.com ([143.182.124.22]:42980 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753620AbXH0Wve (ORCPT
+	Mon, 27 Aug 2007 18:53:30 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49784 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751395AbXH0Wx3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 18:51:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,313,1183359600"; 
-   d="scan'208";a="268687600"
-Message-ID: <46D354DD.6000208@linux.intel.com>
-Date: Mon, 27 Aug 2007 15:49:01 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5 (Windows/20051201)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, Eugene Teo <eugeneteo@kernel.sg>,
-       linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH] clean up exports in fs/{open,read_write}.c
-References: <20070824033310.GA5662@kernel.sg> <20070827213747.GA17049@infradead.org>
-In-Reply-To: <20070827213747.GA17049@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 27 Aug 2007 18:53:29 -0400
+Date: Mon, 27 Aug 2007 15:53:02 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, perex@suse.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] unexport sys_{open,read}
+Message-ID: <20070827155302.47ba71e2@laptopd505.fenrus.org>
+In-Reply-To: <20070827212723.GM4121@stusta.de>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	<20070827212723.GM4121@stusta.de>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Fri, Aug 24, 2007 at 11:33:10AM +0800, Eugene Teo wrote:
->> Takashi-san fixed sound/isa/wavefront/wavefront_synth.c to use
->> request_firmware instead of sys_*. Since that is the last driver in the
->> kernel that uses sys_{read,close}, this patch kills these exports. sys_open
->> is left exported for sparc64 only.
+On Mon, 27 Aug 2007 23:27:23 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
+
+> On Wed, Aug 22, 2007 at 02:06:48AM -0700, Andrew Morton wrote:
+> >...
+> > Changes since 2.6.23-rc2-mm2:
+> >...
+> >  git-alsa.patch
+> >...
+> >  git trees
+> >...
 > 
-> I can't find any spar user of it, so please kill it.  
+> sys_{open,read} can finally be unexported.
+> 
 
-it's in the solaris compat code which is modular
-
-
-> In the case a symbol
-> is needed only for a particular architecture it's better to do it in the
-> architecture-specific ksyms file than with an ifdef, btw.
-
-agreed.
-(well if it's only 1 or 2, if it's "half of them" it's obviously a 
-different story)
+isn't sys_close in the same boat?
