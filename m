@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933133AbXH0VoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765408AbXH0Vol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933133AbXH0VoN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932880AbXH0Vab
+	id S1765408AbXH0Vol (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765560AbXH0VbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:30:31 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58895 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932758AbXH0VaF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:30:05 -0400
-Date: Mon, 27 Aug 2007 23:30:05 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>, James.Bottomley@SteelEye.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/scsi/imm.c: fix check-after-use
-Message-ID: <20070827213005.GM26410@stusta.de>
+	Mon, 27 Aug 2007 17:31:15 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59044 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765532AbXH0VbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 17:31:12 -0400
+Date: Mon, 27 Aug 2007 23:31:34 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [RFC][PATCH 2/2 -mm] kexec based hibernation: kexec restore
+Message-ID: <20070827213134.GE3398@elf.ucw.cz>
+References: <1188177296.3247.38.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <1188177296.3247.38.camel@caritas-dev.intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted that we have already oops'ed if "cmd"
-was NULL.
+Hi!
 
-Since "cmd" being NULL doesn't seem to be possible at this point this 
-patch removes the NULL check.
+> This patch adds writing support for /dev/oldmem. This is used to
+> restore the memory contents of hibernated system.
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> +ssize_t write_oldmem_page(unsigned long pfn, const char *buf,
+> +			  size_t csize, unsigned long offset, int userbuf)
 
----
+Hmm, int userbuf is only ever set to one... Does it make sense to have
+write_oldmem_page in the separate file? The onl user is mem.c, perhaps
+it should go there?
 
-This patch has been sent on:
-- 31 Jul 2007
+> +
+> +/*
+> + * Write memory corresponding to the old kernel.
+> + */
+> +static ssize_t write_oldmem(struct file *file, const char __user *buf,
+> +			    size_t count, loff_t *ppos)
+> +{
+> +	unsigned long pfn, offset;
+> +	size_t write = 0, csize;
+> +	int rc = 0;
+> +
+> +	while (count) {
+> +		pfn = *ppos / PAGE_SIZE;
+> +		if (pfn > saved_max_pfn)
+> +			return write;
+> +
+> +		offset = (unsigned long)(*ppos % PAGE_SIZE);
+> +		if (count > PAGE_SIZE - offset)
+> +			csize = PAGE_SIZE - offset;
+> +		else
+> +			csize = count;
+> +		rc = write_oldmem_page(pfn, buf, csize, offset, 1);
+> +		if (rc < 0)
+> +			return rc;
+> +		buf += csize;
+> +		*ppos += csize;
+> +		write += csize;
+> +		count -= csize;
+> +	}
+> +	return write;
+> +}
 
---- linux-2.6.23-rc1-mm1/drivers/scsi/imm.c.old	2007-07-30 13:58:00.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/drivers/scsi/imm.c	2007-07-30 13:58:24.000000000 +0200
-@@ -740,10 +740,6 @@ static void imm_interrupt(struct work_st
- 	struct Scsi_Host *host = cmd->device->host;
- 	unsigned long flags;
- 
--	if (!cmd) {
--		printk("IMM: bug in imm_interrupt\n");
--		return;
--	}
- 	if (imm_engine(dev, cmd)) {
- 		schedule_delayed_work(&dev->imm_tq, 1);
- 		return;
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
