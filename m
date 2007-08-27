@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbXH0QIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbXH0QIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760217AbXH0QIB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758747AbXH0P7c
+	id S1760310AbXH0QIc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758781AbXH0P7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:59:32 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:43299 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758449AbXH0P7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:59:30 -0400
-Message-Id: <20070827155850.932265049@polymtl.ca>
-References: <20070827155601.360241608@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:56:04 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
-       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net
-Subject: [patch 03/10] Kprobes - declare kprobe_mutex static
-Content-Disposition: inline; filename=kprobes-declare-kprobes-mutex-static.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:58:51 +0000
+	Mon, 27 Aug 2007 11:59:36 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47419 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758775AbXH0P7e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:59:34 -0400
+Date: Mon, 27 Aug 2007 10:59:33 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: akpm@linux-foundation.org
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, tony.luck@intel.com, jes@sgi.com
+Subject: [PATCH 1/4] export __put_task_struct for XPMEM
+Message-ID: <20070827155933.GB25589@sgi.com>
+References: <20070827155622.GA25589@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070827155622.GA25589@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since it will not be used by other kernel objects, it makes sense to declare it
-static.
+This patch exports __put_task_struct as it is needed by XPMEM.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: hch@infradead.org
-CC: prasanna@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
+Signed-off-by: Dean Nelson <dcn@sgi.com>
+
 ---
- kernel/kprobes.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/kernel/kprobes.c
+One struct file_operations registered by XPMEM, xpmem_open(), calls
+'get_task_struct(current->group_leader)' and another, xpmem_flush(), calls
+'put_task_struct(tg->group_leader)'. The reason for this is given in the
+comment block that appears in xpmem_open().
+
+	/*
+	 * Increment 'usage' and 'mm->mm_users' for the current task's thread
+	 * group leader. This ensures that both its task_struct and mm_struct
+	 * will still be around when our thread group exits. (The Linux kernel
+	 * normally tears down the mm_struct prior to calling a module's
+	 * 'flush' function.) Since all XPMEM thread groups must go through
+	 * this path, this extra reference to mm_users also allows us to
+	 * directly inc/dec mm_users in xpmem_ensure_valid_PFNs() and avoid
+	 * mmput() which has a scaling issue with the mmlist_lock.
+	 */
+
+Index: linux-2.6/kernel/fork.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-19 09:09:15.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2007-08-19 17:18:07.000000000 -0400
-@@ -68,7 +68,7 @@ static struct hlist_head kretprobe_inst_
- /* NOTE: change this value only with kprobe_mutex held */
- static bool kprobe_enabled;
+--- linux-2.6.orig/kernel/fork.c	2007-08-09 07:07:55.426611601 -0500
++++ linux-2.6/kernel/fork.c	2007-08-09 07:15:43.246391700 -0500
+@@ -127,6 +127,7 @@
+ 	if (!profile_handoff_task(tsk))
+ 		free_task(tsk);
+ }
++EXPORT_SYMBOL_GPL(__put_task_struct);
  
--DEFINE_MUTEX(kprobe_mutex);		/* Protects kprobe_table */
-+static DEFINE_MUTEX(kprobe_mutex);	/* Protects kprobe_table */
- DEFINE_SPINLOCK(kretprobe_lock);	/* Protects kretprobe_inst_table */
- static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
- 
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ void __init fork_init(unsigned long mempages)
+ {
