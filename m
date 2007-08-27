@@ -1,111 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762984AbXH0VFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762530AbXH0VKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762984AbXH0VFM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:05:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760686AbXH0VE4
+	id S1762530AbXH0VKS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758941AbXH0VKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:04:56 -0400
-Received: from colo.lackof.org ([198.49.126.79]:59135 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760674AbXH0VEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:04:55 -0400
-Date: Mon, 27 Aug 2007 15:04:32 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       parisc-linux@parisc-linux.org, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [parisc-linux] [patch 15/23] Add cmpxchg_local to parisc
-Message-ID: <20070827210432.GA22484@colo.lackof.org>
-References: <20070812145434.520271946@polymtl.ca> <20070812145840.691277845@polymtl.ca>
+	Mon, 27 Aug 2007 17:10:04 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:50305 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758126AbXH0VKC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 17:10:02 -0400
+Date: Mon, 27 Aug 2007 22:09:46 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix bogus hotplug cpu warning
+In-Reply-To: <20070827135212.6a5a847e.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708272157260.3851@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0708271604440.21853@blonde.wat.veritas.com>
+ <20070827111802.8d0a675b.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0708272126050.29594@blonde.wat.veritas.com>
+ <20070827135212.6a5a847e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070812145840.691277845@polymtl.ca>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 12, 2007 at 10:54:49AM -0400, Mathieu Desnoyers wrote:
-> Use the new generic cmpxchg_local (disables interrupt). Also use the generic
-> cmpxchg as fallback if SMP is not set.
+On Mon, 27 Aug 2007, Andrew Morton wrote:
+> On Mon, 27 Aug 2007 21:37:14 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> 
+> > > So I agree with the patch, but not with its description.
+> > 
+> > I don't see which part of the description you disagree with, but please
+> > do improve it if you can.
+> 
+> I'd change the description to
+> 
+> 
+> current_is_keventd() is a stupid load of crap.  It does
+> 
+> int current_is_keventd(void)
+> {
+> 	struct cpu_workqueue_struct *cwq;
+> 	int cpu = smp_processor_id();	/* preempt-safe: keventd is per-cpu */
+> 
+> but that comment (and the code itself) only make sense when
+> current_is_keventd() is called by keventd.  In which case thers is no point
+> in the function even existing!
 
-Mathieu,
-thanks for adding __cmpxchg_local to parisc.... but why do we need it?
+I disagree.  The comment (your very own, I think?) and the code made
+sense to me.  It's saying this is rather unusual, but safe against
+preemption, because keventd is per-cpu (it might perhaps be better
+if it said each keventd is bound to a cpu).
 
-By definition, atomic operators are, well, atomic.
+The code works in such a way that if it is a keventd, then it'll
+correctly arrive at the answer yes; and if it's not a keventd,
+then even if it's preempted to a different cpu in the middle,
+the test won't match any keventd and so it'll correctly arrive
+at the answer no.
 
-I searched for __cmpxchg_local and found this reference:
-    http://www.ussg.iu.edu/hypermail/linux/kernel/0612.2/1337.html
-
-but the "root" of that thread (Dec 20, 2006):
-    http://www.ussg.iu.edu/hypermail/linux/kernel/0612.2/1334.html
-
-Doesn't explain the difference between "local" and "non-local" either.
-Per CPU data should only need memory barriers (in some cases) and
-protection against interrupts (in probably more cases). So I'm not
-understanding why a new set of APIs is needed.
-
-Can you add a description to Documentation/atomic_ops.txt ?
-*sigh* sorry for being "late to the party" on this one...
-
-cheers,
-grant
+But I'm content with the half-liner already there.
 
 > 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: clameter@sgi.com
-> CC: parisc-linux@parisc-linux.org
-> ---
->  include/asm-parisc/atomic.h |   29 +++++++++++++++++++++++++++++
->  1 file changed, 29 insertions(+)
-> 
-> Index: linux-2.6-lttng/include/asm-parisc/atomic.h
-> ===================================================================
-> --- linux-2.6-lttng.orig/include/asm-parisc/atomic.h	2007-07-20 19:44:40.000000000 -0400
-> +++ linux-2.6-lttng/include/asm-parisc/atomic.h	2007-07-20 19:44:47.000000000 -0400
-> @@ -122,6 +122,35 @@ __cmpxchg(volatile void *ptr, unsigned l
->  				    (unsigned long)_n_, sizeof(*(ptr))); \
->    })
->  
-> +#include <asm-generic/cmpxchg-local.h>
-> +
-> +static inline unsigned long __cmpxchg_local(volatile void *ptr,
-> +				      unsigned long old,
-> +				      unsigned long new_, int size)
-> +{
-> +	switch (size) {
-> +#ifdef CONFIG_64BIT
-> +	case 8:	return __cmpxchg_u64((unsigned long *)ptr, old, new_);
-> +#endif
-> +	case 4:	return __cmpxchg_u32(ptr, old, new_);
-> +	default:
-> +		return __cmpxchg_local_generic(ptr, old, new_, size);
-> +	}
-> +}
-> +
-> +/*
-> + * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
-> + * them available.
-> + */
-> +#define cmpxchg_local(ptr,o,n)					  	\
-> +     (__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
-> +			   	 (unsigned long)(n), sizeof(*(ptr)))
-> +#ifdef CONFIG_64BIT
-> +#define cmpxchg64_local(ptr,o,n) cmpxchg_local((ptr), (o), (n))
-> +#else
-> +#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
-> +#endif
-> +
->  /* Note that we need not lock read accesses - aligned word writes/reads
->   * are atomic, so a reader never sees unconsistent values.
->   *
-> 
-> -- 
-> Mathieu Desnoyers
-> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> _______________________________________________
-> parisc-linux mailing list
-> parisc-linux@lists.parisc-linux.org
-> http://lists.parisc-linux.org/mailman/listinfo/parisc-linux
+> We need to use raw_smp_processor_id() so that non-keventd (or, more
+> specifically, non-pinned-to-one-cpu) callers won't generate "using
+> smp_processor_id() in preemptible" warnings.
+
+Yes, that's true, raw_smp_processor_id() is needed to avoid the
+warning; but it was already preempt-safe with smp_processor_id(),
+just in danger of giving an inappropriate warning.
+
+Hugh
