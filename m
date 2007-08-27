@@ -1,33 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964796AbXH0Tfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761010AbXH0Tjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964796AbXH0Tfr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 15:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758215AbXH0Tfe
+	id S1761010AbXH0Tjo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 15:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbXH0Tjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 15:35:34 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35657 "EHLO
+	Mon, 27 Aug 2007 15:39:37 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34564 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760071AbXH0Tfd (ORCPT
+	with ESMTP id S1756455AbXH0Tjh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 15:35:33 -0400
-Date: Mon, 27 Aug 2007 12:35:33 -0700 (PDT)
+	Mon, 27 Aug 2007 15:39:37 -0400
+Date: Mon, 27 Aug 2007 12:39:35 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/28] Add cmpxchg64_local and cmpxchg_local to each
- architecture
-In-Reply-To: <20070827155234.062715780@polymtl.ca>
-Message-ID: <Pine.LNX.4.64.0708271234580.5026@schroedinger.engr.sgi.com>
-References: <20070827155234.062715780@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mingo@redhat.com
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+In-Reply-To: <1188197539.6114.426.camel@twins>
+Message-ID: <Pine.LNX.4.64.0708271237580.5056@schroedinger.engr.sgi.com>
+References: <20070820201519.512791382@polymtl.ca>  <20070820201822.597720007@polymtl.ca>
+  <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com> 
+ <20070820204126.GA22507@Krystal>  <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com>
+  <20070820212922.GA27011@Krystal>  <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
+  <20070820215413.GA28452@Krystal>  <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
+  <20070821173849.GA8360@Krystal>  <Pine.LNX.4.64.0708211612580.6062@schroedinger.engr.sgi.com>
+ <1188197539.6114.426.camel@twins>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007, Mathieu Desnoyers wrote:
+On Mon, 27 Aug 2007, Peter Zijlstra wrote:
 
-> Here is the patch series for 2.6.23-rc3-mm1 that adds cmpxchg_local, and now
-> also cmpxchg64_local, to each architecture.
+> So, if the fast path can be done with a preempt off, it might be doable
+> to suffer the slow path with a per cpu lock like that.
 
-Any planned uses of cmpxchg64_local? 
+Sadly the cmpxchg_local requires local per cpu data access. Isnt there 
+some way to make this less expensive on RT? Acessing cpu local memory is 
+really good for performance on NUMA since the data is optimally placed and 
+one can avoid/reduce locking if the process stays tied to the processor.
+
