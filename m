@@ -1,46 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbXH0Jll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXH0Jr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755093AbXH0Jll (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 05:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbXH0Jle
+	id S1755259AbXH0Jr1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 05:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbXH0JrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 05:41:34 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54867 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752540AbXH0Jld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 05:41:33 -0400
-Message-ID: <46D29C3D.5070801@garzik.org>
-Date: Mon, 27 Aug 2007 05:41:17 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 27 Aug 2007 05:47:18 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:35674 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753113AbXH0JrQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 05:47:16 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: RFC: issues concerning the next NAPI interface
+Date: Mon, 27 Aug 2007 11:47:01 +0200
+User-Agent: KMail/1.8.2
+Cc: jchapman@katalix.com, shemminger@linux-foundation.org, akepner@sgi.com,
+       netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
+       tklein@de.ibm.com, stefan.roscher@de.ibm.com
+References: <46CF127D.1090609@katalix.com> <46D1D634.7060007@katalix.com> <20070826.185815.93042514.davem@davemloft.net>
+In-Reply-To: <20070826.185815.93042514.davem@davemloft.net>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>,
-       =?ISO-8859-1?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: Who wants to maintain KR list for stable releases? (was Re: nmi_watchdog=2
- regression in 2.6.21)
-References: <1186531609.22044.50.camel@imap.mvista.com>	<20070808142059.GF30805@atjola.homenet>	<1187628296.7732.14.camel@imap.mvista.com>	<46CDE94A.7000600@googlemail.com>	<1187904169.2435.83.camel@dhcp193.mvista.com>	<46D21E8E.4000003@googlemail.com> <20070827005131.b93f5935.akpm@linux-foundation.org>
-In-Reply-To: <20070827005131.b93f5935.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200708271147.01890.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> What I'm concerned about is that regressions which we didn't fix are just
-> getting lost.  Is anyone taking care to ensure that they are getting
-> transitioned into bugzilla for tracking?
+On Monday 27 August 2007 03:58, David Miller wrote:
+> From: James Chapman <jchapman@katalix.com>
+> Date: Sun, 26 Aug 2007 20:36:20 +0100
+> 
+> > David Miller wrote:
+> > > From: James Chapman <jchapman@katalix.com>
+> > > Date: Fri, 24 Aug 2007 18:16:45 +0100
+> > > 
+> > >> Does hardware interrupt mitigation really interact well with NAPI?
+> > > 
+> > > It interacts quite excellently.
+> > 
+> > If NAPI disables interrupts and keeps them disabled while there are more 
+> > packets arriving or more transmits being completed, why do hardware 
+> > interrupt mitigation / coalescing features of the network silicon help?
+> 
+> Because if your packet rate is low enough such that the cpu can
+> process the interrupt fast enough and thus only one packet gets
+> processed per NAPI poll, the cost of going into and out of NAPI mode
+> dominates the packet processing costs.
 
-Maybe this was a dumb assumption on my part, but I thought regressions 
-were getting rolled over into the next release's list, if they are not 
-solved?
+As far as I understand your argumentation, NAPI is supposed to work well only
+for HW with coalescing features (concerning dropping the interrupt rate).
+NAPI itself does not provide a reliable functionality to reduce the
+number of interrupts, especially not for systems with only 1 NIC. 
+NAPI will only wait for some time when the budget is exceeded
+and the softIRQs don't call net_rx_action again. This seems to be the case
+after 10 rounds. That means NAPI really waits after 300 x 10 packets 
+have been processed in a row (worst case).
 
-	Jeff
+As a matter of fact there is HW that does not have this feature. There seems
+to be HW which does not work well with plain NAPI.
+This HW performs well if the operation system supports HP timers 
+(and when they are used either in the device driver or polling engine).
 
+So the question is simply: Do we want drivers that need (benefit from)
+a timer based polling support to implement their own timers each, 
+or should there be a generic support? 
+
+Thanks,
+Jan-Bernd
 
