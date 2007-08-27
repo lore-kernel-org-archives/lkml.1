@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbXH0Vgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765860AbXH0VhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755703AbXH0Vgj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765426AbXH0V2p
+	id S1765860AbXH0VhJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764249AbXH0V2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:28:45 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58843 "EHLO
+	Mon, 27 Aug 2007 17:28:49 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:58848 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762655AbXH0V2d (ORCPT
+	with ESMTP id S1765227AbXH0V2h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:28:33 -0400
-Date: Mon, 27 Aug 2007 23:28:32 +0200
+	Mon, 27 Aug 2007 17:28:37 -0400
+Date: Mon, 27 Aug 2007 23:28:37 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>, dmitry.torokhov@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-input@atrey.karlin.mff.cuni.cz
-Subject: [-mm patch] mousedev.c:mixdev_open_devices() bugfix
-Message-ID: <20070827212832.GA4121@stusta.de>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+To: mchehab@infradead.org
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] video-buf.c: remove dead code
+Message-ID: <20070827212837.GB4121@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070822020648.5ea3a612.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 22, 2007 at 02:06:48AM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.23-rc2-mm2:
->...
->  git-input.patch
->...
->  git trees
->...
-
-This patch fixes an obvious bug in mixdev_open_devices().
+This patch removes code that was both dead and pointless.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-bb574366744163ff84609843ee43e84a39f57d5a 
-diff --git a/drivers/input/mousedev.c b/drivers/input/mousedev.c
-index 2ad8633..4ca0ad3 100644
---- a/drivers/input/mousedev.c
-+++ b/drivers/input/mousedev.c
-@@ -461,7 +461,7 @@ static void mixdev_open_devices(void)
- 
- 	list_for_each_entry(mousedev, &mousedev_mix_list, mixdev_node) {
- 		if (!mousedev->mixdev_open) {
--			if (mousedev_open_device(mousedev));
-+			if (mousedev_open_device(mousedev))
+d72841ad9ded136818ab054613ab2f3e027af67f 
+diff --git a/drivers/media/video/video-buf.c b/drivers/media/video/video-buf.c
+index f6f31e1..87cf89a 100644
+--- a/drivers/media/video/video-buf.c
++++ b/drivers/media/video/video-buf.c
+@@ -1200,8 +1200,6 @@ videobuf_vm_close(struct vm_area_struct *vma)
+ 		for (i = 0; i < VIDEO_MAX_FRAME; i++) {
+ 			if (NULL == q->bufs[i])
  				continue;
- 
- 			mousedev->mixdev_open = 1;
+-			if (q->bufs[i])
+-				;
+ 			if (q->bufs[i]->map != map)
+ 				continue;
+ 			q->bufs[i]->map   = NULL;
 
