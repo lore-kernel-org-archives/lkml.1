@@ -1,63 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbXH0P6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbXH0P7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758218AbXH0P6r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 11:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757810AbXH0Pzm
+	id S1758598AbXH0P7V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 11:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757845AbXH0Pzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:55:42 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:41883 "EHLO smtp.polymtl.ca"
+	Mon, 27 Aug 2007 11:55:43 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41901 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757501AbXH0Pzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:55:39 -0400
-Message-Id: <20070827155528.896119141@polymtl.ca>
+	id S1757778AbXH0Pzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:55:41 -0400
+Message-Id: <20070827155528.232020441@polymtl.ca>
 References: <20070827155234.062715780@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:52:50 -0400
+Date: Mon, 27 Aug 2007 11:52:48 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Hirokazu Takata <takata@linux-m32r.org>
-Subject: [patch 16/28] m32r: build fix of arch/m32r/kernel/smpboot.c
-Content-Disposition: inline; filename=fix-m32r-include-sched-h-in-smpboot.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:55:30 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Hirokazu Takata <takata@linux-m32r.org>, clameter@sgi.com,
+       linux-m32r@ml.linux-m32r.org
+Subject: [patch 14/28] New cmpxchg_local (optimized for UP case) for m32r
+Content-Disposition: inline; filename=add-cmpxchg-local-to-m32r.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:55:28 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is for Mathieu Desnoyers's include/asm-m32r/local.h.
-Applying the new include/asm-m32r/local.h, inclusion of linux/sched.h
-is needed to fix a build error of arch/m32r/kernel/smpboot.c.
+Add __xchg_local, xchg_local (define), __cmpxchg_local_u32, __cmpxchg_local,
+cmpxchg_local(macro).
 
-<--  snip  -->
-  ...
-  CC      arch/m32r/kernel/smpboot.o
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c: In function 'do_boot_cpu':
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:279: error: implicit declaration of function 'fork_idle'
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:279: warning: assignment makes pointer from integer without a cast
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:283: error: dereferencing pointer to incomplete type
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:289: error: dereferencing pointer to incomplete type
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:290: error: implicit declaration of function 'task_thread_info'
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:290: error: invalid type argument of '->'
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c: In function 'start_secondary':
-/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:429: error: implicit declaration of function 'cpu_init'
-make[2]: *** [arch/m32r/kernel/smpboot.o] Error 1
-<--  snip  -->
+cmpxchg_local and cmpxchg64_local will use the architecture specific
+__cmpxchg_local_u32 for 32 bits arguments, and use the generic
+__cmpxchg_local_generic for 8, 16 and 64 bits arguments.
 
-Signed-off-by: Hirokazu Takata <takata@linux-m32r.org>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Acked-by: Hirokazu Takata <takata@linux-m32r.org>
+CC: clameter@sgi.com
+CC: linux-m32r@ml.linux-m32r.org
 ---
- arch/m32r/kernel/smpboot.c |    1 +
- 1 file changed, 1 insertion(+)
+ include/asm-m32r/system.h |  103 +++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 97 insertions(+), 6 deletions(-)
 
-Index: linux-2.6-lttng/arch/m32r/kernel/smpboot.c
+Index: linux-2.6-lttng/include/asm-m32r/system.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/m32r/kernel/smpboot.c	2007-08-21 09:57:48.000000000 -0400
-+++ linux-2.6-lttng/arch/m32r/kernel/smpboot.c	2007-08-21 09:58:12.000000000 -0400
-@@ -43,6 +43,7 @@
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/mm.h>
-+#include <linux/sched.h>
- #include <linux/err.h>
- #include <linux/irq.h>
- #include <linux/bootmem.h>
+--- linux-2.6-lttng.orig/include/asm-m32r/system.h	2007-08-07 14:31:52.000000000 -0400
++++ linux-2.6-lttng/include/asm-m32r/system.h	2007-08-07 14:55:02.000000000 -0400
+@@ -123,6 +123,9 @@ static inline void local_irq_disable(voi
+ 
+ #define xchg(ptr,x) \
+ 	((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
++#define xchg_local(ptr,x) \
++	((__typeof__(*(ptr)))__xchg_local((unsigned long)(x),(ptr), \
++			sizeof(*(ptr))))
+ 
+ #ifdef CONFIG_SMP
+ extern void  __xchg_called_with_bad_pointer(void);
+@@ -196,6 +199,42 @@ __xchg(unsigned long x, volatile void * 
+ 	return (tmp);
+ }
+ 
++static __always_inline unsigned long
++__xchg_local(unsigned long x, volatile void * ptr, int size)
++{
++	unsigned long flags;
++	unsigned long tmp = 0;
++
++	local_irq_save(flags);
++
++	switch (size) {
++	case 1:
++		__asm__ __volatile__ (
++			"ldb	%0, @%2 \n\t"
++			"stb	%1, @%2 \n\t"
++			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
++		break;
++	case 2:
++		__asm__ __volatile__ (
++			"ldh	%0, @%2 \n\t"
++			"sth	%1, @%2 \n\t"
++			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
++		break;
++	case 4:
++		__asm__ __volatile__ (
++			"ld	%0, @%2 \n\t"
++			"st	%1, @%2 \n\t"
++			: "=&r" (tmp) : "r" (x), "r" (ptr) : "memory");
++		break;
++	default:
++		__xchg_called_with_bad_pointer();
++	}
++
++	local_irq_restore(flags);
++
++	return (tmp);
++}
++
+ #define __HAVE_ARCH_CMPXCHG	1
+ 
+ static inline unsigned long
+@@ -228,6 +267,37 @@ __cmpxchg_u32(volatile unsigned int *p, 
+ 	return retval;
+ }
+ 
++static inline unsigned long
++__cmpxchg_local_u32(volatile unsigned int *p, unsigned int old,
++			unsigned int new)
++{
++	unsigned long flags;
++	unsigned int retval;
++
++	local_irq_save(flags);
++	__asm__ __volatile__ (
++			DCACHE_CLEAR("%0", "r4", "%1")
++			"ld %0, @%1;		\n"
++		"	bne	%0, %2, 1f;	\n"
++			"st %3, @%1;		\n"
++		"	bra	2f;		\n"
++                "       .fillinsn		\n"
++		"1:"
++			"st %0, @%1;		\n"
++                "       .fillinsn		\n"
++		"2:"
++			: "=&r" (retval)
++			: "r" (p), "r" (old), "r" (new)
++			: "cbit", "memory"
++#ifdef CONFIG_CHIP_M32700_TS1
++			, "r4"
++#endif  /* CONFIG_CHIP_M32700_TS1 */
++		);
++	local_irq_restore(flags);
++
++	return retval;
++}
++
+ /* This function doesn't exist, so you'll get a linker error
+    if something tries to do an invalid cmpxchg().  */
+ extern void __cmpxchg_called_with_bad_pointer(void);
+@@ -248,12 +318,33 @@ __cmpxchg(volatile void *ptr, unsigned l
+ }
+ 
+ #define cmpxchg(ptr,o,n)						 \
+-  ({									 \
+-     __typeof__(*(ptr)) _o_ = (o);					 \
+-     __typeof__(*(ptr)) _n_ = (n);					 \
+-     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
+-				    (unsigned long)_n_, sizeof(*(ptr))); \
+-  })
++     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)(o),		 \
++				    (unsigned long)(n), sizeof(*(ptr)))
++
++#include <asm-generic/cmpxchg-local.h>
++
++static inline unsigned long __cmpxchg_local(volatile void *ptr,
++				      unsigned long old,
++				      unsigned long new, int size)
++{
++	switch (size) {
++	case 4:
++		return __cmpxchg_local_u32(ptr, old, new);
++	default:
++		return __cmpxchg_local_generic(ptr, old, new, size);
++	}
++
++	return old;
++}
++
++/*
++ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
++ * them available.
++ */
++#define cmpxchg_local(ptr,o,n)					  	    \
++     (__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	    \
++			   	 (unsigned long)(n), sizeof(*(ptr)))
++#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
+ 
+ #endif  /* __KERNEL__ */
+ 
 
 -- 
 Mathieu Desnoyers
