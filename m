@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932749AbXH0UTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbXH0UVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932749AbXH0UTz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 16:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932119AbXH0UTq
+	id S1760741AbXH0UVn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 16:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbXH0UVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 16:19:46 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:64340 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758728AbXH0UTp (ORCPT
+	Mon, 27 Aug 2007 16:21:36 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37871 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754491AbXH0UVg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 16:19:45 -0400
-Date: Mon, 27 Aug 2007 16:19:41 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/28] Add cmpxchg64_local and cmpxchg_local to each architecture
-Message-ID: <20070827201941.GA5653@Krystal>
-References: <20070827155234.062715780@polymtl.ca> <Pine.LNX.4.64.0708271234580.5026@schroedinger.engr.sgi.com>
+	Mon, 27 Aug 2007 16:21:36 -0400
+Date: Mon, 27 Aug 2007 15:21:33 -0500
+From: Cliff Wickman <cpw@sgi.com>
+To: akpm@linux-foundation.org, ego@in.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
+       oleg@tv-sign.ru, pj@sgi.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] hotplug cpu: documentation addition to downing a cpu
+Message-ID: <20070827202133.GA4728@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708271234580.5026@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:12:09 up 28 days, 20:31,  4 users,  load average: 0.64, 0.34, 0.33
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> On Mon, 27 Aug 2007, Mathieu Desnoyers wrote:
-> 
-> > Here is the patch series for 2.6.23-rc3-mm1 that adds cmpxchg_local, and now
-> > also cmpxchg64_local, to each architecture.
-> 
-> Any planned uses of cmpxchg64_local? 
 
-Let's say it could possibly eliminate the xtime read seqlock on x86
-(should be investigated) and can be useful to overcome the
-non-synchronized TSC handling when taking TSC-based timestamps. All
-these operations require locking to play with 64 bits values on 32 bits
-architectures, which could be improved by cmpxchg64_local.
+In answer to Andrew:
+> How do we communicate this new design/feature to our users?
+> Documentation/cpusets.txt, perhaps?  Documentation/cpu-hotplug.txt?
+> git-log?  ;)
 
-But again, it would require some testing to see if we can improve
-performances there.
+Patch "[PATCH 1/1] V4: hotplug cpu: migrate a task within its cpuset" may
+warrant an addition to the documentation.  I would propose this note
+in cpu-hotplug.txt.
 
-Mathieu
+Diffed against 2.6.23-rc3
 
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+
+---
+ Documentation/cpu-hotplug.txt |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linus.070821/Documentation/cpu-hotplug.txt
+===================================================================
+--- linus.070821.orig/Documentation/cpu-hotplug.txt
++++ linus.070821/Documentation/cpu-hotplug.txt
+@@ -220,7 +220,9 @@ A: The following happen, listed in no pa
+   CPU_DOWN_PREPARE or CPU_DOWN_PREPARE_FROZEN, depending on whether or not the
+   CPU is being offlined while tasks are frozen due to a suspend operation in
+   progress
+-- All process is migrated away from this outgoing CPU to a new CPU
++- All processes are migrated away from this outgoing CPU to new CPUs.
++  The new CPU is chosen from each process' current cpuset, which may be
++  a subset of all online CPUs.
+ - All interrupts targeted to this CPU is migrated to a new CPU
+ - timers/bottom half/task lets are also migrated to a new CPU
+ - Once all services are migrated, kernel calls an arch specific routine
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Cliff Wickman
+Silicon Graphics, Inc.
+cpw@sgi.com
+(651) 683-3824
