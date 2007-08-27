@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932582AbXH0UIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932749AbXH0UTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932582AbXH0UIa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 16:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757205AbXH0UIW
+	id S932749AbXH0UTz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 16:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932119AbXH0UTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 16:08:22 -0400
-Received: from mail.reagi.com ([195.60.188.80]:58659 "EHLO mail.reagi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756799AbXH0UIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 16:08:21 -0400
-Message-ID: <46D32F2F.3050408@oxeva.fr>
-Date: Mon, 27 Aug 2007 22:08:15 +0200
-From: Gabriel Barazer <gabriel@oxeva.fr>
-Organization: OXEVA
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Al Viro <viro@ftp.linux.org.uk>, nfsv4@linux-nfs.org,
-       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       jkar8572@users.sourceforge.net
-Subject: Re: nfs4 filesystem mounted via the "bind" option reports wrong	fstype
-References: <46D318D3.9020101@oxeva.fr> <20070827184059.GI3118@fieldses.org> <20070827191507.GI21089@ftp.linux.org.uk> <20070827193242.GJ3118@fieldses.org>
-In-Reply-To: <20070827193242.GJ3118@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 27 Aug 2007 16:19:46 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:64340 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758728AbXH0UTp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 16:19:45 -0400
+Date: Mon, 27 Aug 2007 16:19:41 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/28] Add cmpxchg64_local and cmpxchg_local to each architecture
+Message-ID: <20070827201941.GA5653@Krystal>
+References: <20070827155234.062715780@polymtl.ca> <Pine.LNX.4.64.0708271234580.5026@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708271234580.5026@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:12:09 up 28 days, 20:31,  4 users,  load average: 0.64, 0.34, 0.33
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/27/2007 9:32:42 PM +0200, "J. Bruce Fields" <bfields@fieldses.org> 
-wrote:
-> On Mon, Aug 27, 2007 at 08:15:07PM +0100, Al Viro wrote:
->> On Mon, Aug 27, 2007 at 02:40:59PM -0400, J. Bruce Fields wrote:
->>  
->>> There's no reason not to just mount server:/exports/data directly at
->>> /home/data; the bind mounts are just a workaround for the somewhat
->>> primitive exports facility on the server side.
->> Bullshit.  Bindings are first-class operations on _client_, regardless
->> of fs types involved.
+* Christoph Lameter (clameter@sgi.com) wrote:
+> On Mon, 27 Aug 2007, Mathieu Desnoyers wrote:
 > 
-> I know.  Did I say something to the contrary?
+> > Here is the patch series for 2.6.23-rc3-mm1 that adds cmpxchg_local, and now
+> > also cmpxchg64_local, to each architecture.
 > 
-> Maybe I was too terse; in more detail: the original poster appears to be
-> mounting server:/exports/data by first mounting server:/ somewhere and
-> then bind-mounting the exports/data someplace else.  I couldn't see an
-> obvious reason they'd be using two steps instead of just performing a
-> single mount of server:/exports/data.
-> 
-> So my assumption was that this was due to a confused memory of some
-> server-side setup instructions. (On the server side, nfs4 export setup
-> often requires the administrator to do some extra bind mounts which
-> shouldn't really be necessary.)
+> Any planned uses of cmpxchg64_local? 
 
-Right. When setting up the clients, I remembered these "bind" mount 
-things, and applied the same client-side because at this time I had 
-other bugs for which I thought "bind" mount was the solution. In fact 
-it's not, but as nfs4 is seen as a unique filesystem and I had several 
-exported volumes, It was easier to mount the nfsv4 pseudoroot, then 
-"bind" mount all the volumes from it.
+Let's say it could possibly eliminate the xtime read seqlock on x86
+(should be investigated) and can be useful to overcome the
+non-synchronized TSC handling when taking TSC-based timestamps. All
+these operations require locking to play with 64 bits values on 32 bits
+architectures, which could be improved by cmpxchg64_local.
 
-But the bug's still here, and since these additional mounts appear 
-"magically" in /proc/mounts, I don't know where to look at in the kernel 
-source. The nfsv4 client code must have somewhere a kind of nfs4 
-automounter for "nohide" volumes. A bit ugly IMHO, but the only way to 
-show quotas for separates nfsv4 exported volumes too.
+But again, it would require some testing to see if we can improve
+performances there.
 
-Gabriel
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
