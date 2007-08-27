@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932496AbXH0TbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbXH0Tbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932496AbXH0TbT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 15:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757978AbXH0TbF
+	id S1760696AbXH0Tbh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 15:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932272AbXH0TbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 15:31:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:62810 "EHLO mga03.intel.com"
+	Mon, 27 Aug 2007 15:31:14 -0400
+Received: from mga09.intel.com ([134.134.136.24]:41660 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756726AbXH0TbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 15:31:04 -0400
+	id S932195AbXH0TbM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 15:31:12 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.19,313,1183359600"; 
-   d="scan'208";a="268614744"
-Date: Mon, 27 Aug 2007 12:31:03 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, nickpiggin@yahoo.com.au,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [patch] sched: fix broken smt/mc optimizations with CFS
-Message-ID: <20070827193103.GF1894@linux-os.sc.intel.com>
-References: <20070816010150.GG10033@linux-os.sc.intel.com> <20070823115416.GA31027@elte.hu> <20070823121341.GA5775@elte.hu> <20070827191905.GE1894@linux-os.sc.intel.com> <20070827192324.GA29441@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070827192324.GA29441@elte.hu>
-User-Agent: Mutt/1.4.1i
+   d="scan'208";a="122224260"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [md-accel PATCH 16/19] dmaengine: driver for the iop32x, iop33x, and iop13xx raid engines
+Date: Mon, 27 Aug 2007 12:31:10 -0700
+Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E52025B10E4@azsmsx413.amr.corp.intel.com>
+In-Reply-To: <c70ff3ad0708270614t6f17b38nfbdf84ace69b8d78@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [md-accel PATCH 16/19] dmaengine: driver for the iop32x, iop33x, and iop13xx raid engines
+Thread-Index: AcforCpGTGSf57AMR/+X5MV/HEqZjgAMhwfQ
+References: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com> <20070627015155.18962.88413.stgit@dwillia2-linux.ch.intel.com> <c70ff3ad0708270611x5598fa9dlc3afa5f6fabd6563@mail.gmail.com> <c70ff3ad0708270614t6f17b38nfbdf84ace69b8d78@mail.gmail.com>
+From: "Williams, Dan J" <dan.j.williams@intel.com>
+To: "saeed bishara" <saeed.bishara@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>,
+       <neilb@suse.de>, "Nelson, Shannon" <shannon.nelson@intel.com>
+X-OriginalArrivalTime: 27 Aug 2007 19:31:11.0366 (UTC) FILETIME=[D3000260:01C7E8E0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 09:23:24PM +0200, Ingo Molnar wrote:
+> From: saeed bishara [mailto:saeed.bishara@gmail.com]
+> Hi Dan,
+> I think you have a bug in this function, the list_splice_init adds the
+> new slots in the head of the chain_node, but you get the
+> old_chain_tail (latest descriptor) from the tail of the chain!!
 > 
-> * Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
-> 
-> > > -	if (*imbalance + SCHED_LOAD_SCALE_FUZZ < busiest_load_per_task/2) {
-> > > +	if (*imbalance + SCHED_LOAD_SCALE_FUZZ < busiest_load_per_task) {
-> > 
-> > Ingo, this is still broken. This condition is always false for nice-0 
-> > tasks..
-> 
-> yes - negative reniced tasks are not spread out via this - and positive 
-> reniced tasks are spread out more easily.
+>  > +static dma_cookie_t
+>  > +iop_adma_tx_submit(struct dma_async_tx_descriptor *tx)
+>  > +{
+>  > +
+>  > +       old_chain_tail = list_entry(iop_chan->chain.prev,
+>  > +               struct iop_adma_desc_slot, chain_node);
+>  > +       list_splice_init(&sw_desc->group_list, &old_chain_tail-
+> >chain_node);
+>  > +
+>  > +       /* fix up the hardware chain */
+>  > +       iop_desc_set_next_desc(old_chain_tail, grp_start->phys);
+>  > +
+[ dropped akpm, davem, jeff, and chris from the cc ]
 
-Or the opposite?
+This looks ok to me.  &sw_desc->group_list is the head of a new list of
+descriptors to be added to the chain.  old_chain_tail is youngest
+descriptor at the end of the current channel chain.
 
-Essentially I observed that nice 0 tasks still endup on two cores of same
-package, with out getting spread out to two different packages. This behavior
-is same with out this fix and this fix doesn't help in any way.
+Before list_splice_init:
+old_chain_tail->next = channel_chain_head
+channel_chain_head->prev = old_chain_tail
+new_chain_start->prev = sw_desc->group_list;
+new_chain_end->next = sw_desc->group_list;
 
-thanks,
-suresh
+After list_splice_init:
+new_chain_start->prev = old_chain_tail
+old_chain_tail->next = new_chain_start
+new_chain_end->next = channel_chain_head
+channel_chain_head->prev = new_chain_end
+
+sw_desc->group_list is empty
+
+--
+Dan
