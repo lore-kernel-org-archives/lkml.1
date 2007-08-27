@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932703AbXH0Tr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760687AbXH0UAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932703AbXH0Tr2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 15:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbXH0TrT
+	id S1760687AbXH0UAH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 16:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758243AbXH0T7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 15:47:19 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36558 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757589AbXH0TrS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 15:47:18 -0400
-Date: Mon, 27 Aug 2007 19:47:14 +0000
-From: Mike Travis <travis@cthulhu.engr.sgi.com>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-cc: travis@sgi.com, Andi Kleen <ak@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 1/6] x86: fix cpu_to_node references (v2)
-In-Reply-To: <20070825002349.GB1894@linux-os.sc.intel.com>
-Message-ID: <Pine.SGI.4.56.0708271940550.4346753@kluge.engr.sgi.com>
-References: <20070824222654.687510000@sgi.com> <20070824222948.587159000@sgi.com>
- <20070825002349.GB1894@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 27 Aug 2007 15:59:55 -0400
+Received: from palrel11.hp.com ([156.153.255.246]:56005 "EHLO palrel11.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757783AbXH0T7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 15:59:54 -0400
+Date: Mon, 27 Aug 2007 14:58:51 -0500
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.linux.org, hch@infradead.org,
+       james.bottomley@steeleye.com
+Subject: Re: [PATCH 1/1] cciss: fix error reporting for SG_IO
+Message-ID: <20070827195851.GA25572@beardog.cca.cpqcorp.net>
+References: <20070824175354.GA14125@beardog.cca.cpqcorp.net> <20070824171047.77cf7adc.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070824171047.77cf7adc.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 24, 2007 at 05:10:47PM -0700, Andrew Morton wrote:
+> On Fri, 24 Aug 2007 12:53:54 -0500
+> "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
+> 
+> > This fixes a problem with the way cciss was filling out the "errors"
+> > field of the request structure upon completion of requests. 
+> > Previously, it just put a 1 or a 0 in there and used the negation
+> > of this as the uptodate parameter to one of the functions in the
+> > block layer, being a block device.  For the SG_IO ioctl, this was not
+> > sufficient, and we noticed that, for example, sg_turs from sg3_utils 
+> > did not correctly detect problems due to cciss having set rq->errors 
+> > incorrectly.
+> 
+> Do we think this problem is sufficiently serious to merit merging
+> this (largeish) patch into 2.6.23?
+> 
+> I'm thinking "no", but that might be wrong...
 
+We'd like to see it 2.6.23. It may help insulate me from lots of questions
+about where it is. :) But it's entirely up to you.
 
-On Fri, 24 Aug 2007, Siddha, Suresh B wrote:
-
-> On Fri, Aug 24, 2007 at 03:26:55PM -0700, travis@sgi.com wrote:
-> > Fix four instances where cpu_to_node is referenced
-> > by array instead of via the cpu_to_node macro.  This
-> > is preparation to moving it to the per_cpu data area.
-> >
-> ...
->
-> >  unsigned long __init numa_free_all_bootmem(void)
-> > --- a/arch/x86_64/mm/srat.c
-> > +++ b/arch/x86_64/mm/srat.c
-> > @@ -431,9 +431,9 @@
-> >  			setup_node_bootmem(i, nodes[i].start, nodes[i].end);
-> >
-> >  	for (i = 0; i < NR_CPUS; i++) {
-> > -		if (cpu_to_node[i] == NUMA_NO_NODE)
-> > +		if (cpu_to_node(i) == NUMA_NO_NODE)
-> >  			continue;
-> > -		if (!node_isset(cpu_to_node[i], node_possible_map))
-> > +		if (!node_isset(cpu_to_node(i), node_possible_map))
-> >  			numa_set_node(i, NUMA_NO_NODE);
-> >  	}
-> >  	numa_init_array();
->
-> During this particular routine execution, per cpu areas are not yet setup. In
-> future, when we make cpu_to_node(i) use per cpu area, then this code will break.
->
-> And actually setup_per_cpu_areas() uses cpu_to_node(). So...
->
-
-I have a scheme to use an __initdata array during __init processing which
-is removed after the per cpu data area is setup.  I'm looking more closely
-at all the various node <--> cpu tables.
-
-Thanks,
-Mike
+mikem
