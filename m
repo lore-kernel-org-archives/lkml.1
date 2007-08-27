@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbXH0QVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762645AbXH0QWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758180AbXH0QVy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761692AbXH0QR3
+	id S1762645AbXH0QWY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761759AbXH0QSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 12:17:29 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:38843 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761625AbXH0QR1 (ORCPT
+	Mon, 27 Aug 2007 12:18:07 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35592 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761732AbXH0QSE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 12:17:27 -0400
-Date: Mon, 27 Aug 2007 09:16:36 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Joe Perches <joe@perches.com>
-Cc: "Moore, Eric" <Eric.Moore@lsi.com>, linux-kernel@vger.kernel.org
-Subject: Re: Linux-Kernel MAINTAINERS - LSILOGIC MPT FUSION DRIVERS
-Message-Id: <20070827091636.c461e994.randy.dunlap@oracle.com>
-In-Reply-To: <1188230344.18004.73.camel@localhost>
-References: <664A4EBB07F29743873A87CF62C26D70940794@NAMAIL4.ad.lsil.com>
-	<1188230344.18004.73.camel@localhost>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 27 Aug 2007 12:18:04 -0400
+Date: Mon, 27 Aug 2007 09:17:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/28] Add cmpxchg64_local and cmpxchg_local to each
+ architecture
+Message-Id: <20070827091726.a2e8fbb8.akpm@linux-foundation.org>
+In-Reply-To: <20070827155234.062715780@polymtl.ca>
+References: <20070827155234.062715780@polymtl.ca>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007 08:59:04 -0700 Joe Perches wrote:
+On Mon, 27 Aug 2007 11:52:34 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> On Mon, 2007-08-27 at 09:30 -0600, Moore, Eric wrote:
-> > Yes it was changed to DL-MPTFusionLinux@lsi.com.     I had posted a
-> > patch about a month back, along with the changes for all the driver
-> > sources. 
-> 
-> This is what I have:
-> 
-> LSILOGIC MPT FUSION DRIVERS (FC/SAS/SPI)
-> P:	Eric Moore
-> M:	Eric.Moore@lsi.com
-> M:	support@lsi.com
-> L:	DL-MPTFusionLinux@lsi.com
-> L:	linux-scsi@vger.kernel.org
-> W:	http://www.lsilogic.com/support
-> S:	Supported
-> F:	drivers/message/fusion/
-> 
-> > You will notice the sources were updated
-> > (driver/message/fusion), I have no idea why MAINTAINERS didn't'.
-> 
-> I can't find a patch for MAINTAINERS and DL-MPTFusionLinux
-> This commit is just for the sources.
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=16d201016a9f29e0557849907352769c63cef259
+> Here is the patch series for 2.6.23-rc3-mm1 that adds cmpxchg_local, and now
+> also cmpxchg64_local, to each architecture.
 
-http://marc.info/?l=linux-scsi&m=118177408121329&w=2
+How well tested are these on the various architectures?
 
-If all of the source files have been updated, I'd suggest that you
-resend this to Andrew or Linus (since James is traveling AFAIK).
+> When the architecture supports it, it also defines cmpxchg64, but is is not
+> defined for architecture that does not support atomic 64 bits updates.
+> 
+> Following performance testing of the slub allocator with cmpxchg_local, these
+> patches should prove themselves useful in a near future.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+It would be useful if we could have (numerical) details on these benefits as
+part of this patch series description, please.
+
+Also, it would be good to get the slub patch in there at the same time so that
+the new code gets a bit of exercise.
+
+Thanks.
