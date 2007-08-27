@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964796AbXH0Rt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964966AbXH0Rum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964796AbXH0Rt6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbXH0Rts
+	id S964966AbXH0Rum (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758001AbXH0Ru1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:49:48 -0400
-Received: from il.qumranet.com ([82.166.9.18]:41499 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756677AbXH0Rtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 13:49:47 -0400
-Message-ID: <46D30E25.1090607@qumranet.com>
-Date: Mon, 27 Aug 2007 20:47:17 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Anthony Liguori <aliguori@us.ibm.com>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Implement emulator_write_phys()
-References: <11882278064002-git-send-email-aliguori@us.ibm.com>	 <1188227808405-git-send-email-aliguori@us.ibm.com>	 <46D2F1B7.70604@qumranet.com> <1188235419.6364.2.camel@squirrel>	 <46D3095A.6020305@qumranet.com> <1188236391.6364.14.camel@squirrel>
-In-Reply-To: <1188236391.6364.14.camel@squirrel>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Aug 2007 13:50:27 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:61340 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964866AbXH0RuY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 13:50:24 -0400
+Date: Mon, 27 Aug 2007 10:58:01 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] mptsas: scan the logical volume at first
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Sathya Prakash <sathya.prakash@lsi.com>,
+       James Bottomley <James.Bottomley@steeleye.com>, Eric.Moore@lsi.com
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mpt_linux_developer@lsi.com, linux-scsi@vger.kernel.org
+Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Message-id: <200708271058.01919.yinghai.lu@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> On Mon, 2007-08-27 at 20:26 +0300, Avi Kivity wrote:
->   
->> Anthony Liguori wrote:
->>     
->>> On Mon, 2007-08-27 at 18:45 +0300, Avi Kivity wrote:
->>>   
->>>       
->>>> Anthony Liguori wrote:
->>>>     
->>>>         
->>>>> Since a hypercall may span two pages and is a gva, we need a function to write
->>>>> to a gva that may span multiple pages.  emulator_write_phys() seems like the
->>>>> logical choice for this.
->>>>>
->>>>> @@ -962,8 +962,35 @@ static int emulator_write_std(unsigned long addr,
->>>>>  			      unsigned int bytes,
->>>>>  			      struct kvm_vcpu *vcpu
->>>>>       
->>>>>           
->>>> I think that emulator_write_emulated(), except for being awkwardly 
->>>> named, should do the job.  We have enough APIs.
->>>>
->>>> But!  We may not overwrite the hypercall instruction while a vcpu may be 
->>>> executing, since there's no atomicity guarantee for code fetch.  We have 
->>>> to to be out of guest mode while writing that insn.
->>>>     
->>>>         
->>> Hrm, good catch.
->>>
->>> How can we get out of guest mode given SMP guest support?
->>>
->>>   
->>>       
->> kvm_flush_remote_tlbs() is something that can be generalized.  
->> Basically, you set a bit in each vcpu and send an IPI to take them out.
->>
->> But that's deadlock prone and complex.  Maybe you can just take 
->> kvm->lock, zap the mmu and the flush tlbs, and patch the instruction at 
->> your leisure, as no vcpu will be able to map memory until the lock is 
->> released.
->>     
->
-> This works for shadow paging but not necessarily with NPT.  
+[PATCH] mptsas: scan the logical volume at first
 
-NPT will have tlb and 2nd level pagetable flushing (to support memory 
-unplug, ballooning, guest swapping, and the like) so it's safe to assume 
-that it will continue to work.
+user like to see the raid show as /dev/sda before left raw disks.
+So scan the volume at first to make their life easier.
 
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-> Do code
-> fetches really not respect atomic writes?  We could switch to a 32-bit
-> atomic operation and that should result in no worse than the code being
-> patched twice.
->   
-
-I think they don't respect it (the data cache and insn cache and fetch 
-pipeline are very separated for performance reasons, so it's not 
-unexpected).
-
-I think the Intel manual has some guidelines on self-modifying code.
-
--- 
-Any sufficiently difficult bug is indistinguishable from a feature.
-
+diff --git a/drivers/message/fusion/mptsas.c b/drivers/message/fusion/mptsas.c
+index b9c69bf..4c452be 100644
+--- a/drivers/message/fusion/mptsas.c
++++ b/drivers/message/fusion/mptsas.c
+@@ -2403,9 +2403,6 @@ mptsas_scan_sas_topology(MPT_ADAPTER *ioc)
+ 	int i;
+ 
+ 	mutex_lock(&ioc->sas_discovery_mutex);
+-	mptsas_probe_hba_phys(ioc);
+-	while (!mptsas_probe_expander_phys(ioc, &handle))
+-		;
+ 	/*
+ 	  Reporting RAID volumes.
+ 	*/
+@@ -2420,6 +2417,9 @@ mptsas_scan_sas_topology(MPT_ADAPTER *ioc)
+ 		    ioc->raid_data.pIocPg2->RaidVolume[i].VolumeID, 0);
+ 	}
+  out:
++	mptsas_probe_hba_phys(ioc);
++	while (!mptsas_probe_expander_phys(ioc, &handle))
++		;
+ 	mutex_unlock(&ioc->sas_discovery_mutex);
+ }
+ 
