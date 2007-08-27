@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965182AbXH0VkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765938AbXH0Vk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965182AbXH0VkX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765181AbXH0V3T
+	id S1765938AbXH0Vk5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763165AbXH0V3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:29:19 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58864 "EHLO
+	Mon, 27 Aug 2007 17:29:23 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58867 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765498AbXH0V3R (ORCPT
+	with ESMTP id S1764481AbXH0V3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:29:17 -0400
-Date: Mon, 27 Aug 2007 23:29:13 +0200
+	Mon, 27 Aug 2007 17:29:22 -0400
+Date: Mon, 27 Aug 2007 23:29:21 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: perex@suse.cz
+To: rmk@arm.linux.org.uk
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] au88x0_synth.c bugfix
-Message-ID: <20070827212913.GF26410@stusta.de>
+Subject: [2.6 patch] omap1/leds-innovator.c: remove dead code
+Message-ID: <20070827212921.GG26410@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,26 +23,23 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the code in vortex_wt_SetFrequency() to what seems to 
-have been intended.
+This patch removes dead code.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-71ccb57f36553decc9cae117f3ff6dff1658c91f 
-diff --git a/sound/pci/au88x0/au88x0_synth.c b/sound/pci/au88x0/au88x0_synth.c
-index d3e662a..978b856 100644
---- a/sound/pci/au88x0/au88x0_synth.c
-+++ b/sound/pci/au88x0/au88x0_synth.c
-@@ -370,8 +370,8 @@ static void vortex_wt_SetFrequency(vortex_t * vortex, int wt, unsigned int sr)
- 			while ((edx & 0x80000000) == 0) {
- 				edx <<= 1;
- 				eax--;
--				if (eax == 0) ;
--				break;
-+				if (eax == 0)
-+					break;
- 			}
- 			if (eax)
- 				edx <<= 1;
+327cae41c436186c6c480b0b8d5f125ab26b6b7c 
+diff --git a/arch/arm/mach-omap1/leds-innovator.c b/arch/arm/mach-omap1/leds-innovator.c
+index a0cd001..e7835d6 100644
+--- a/arch/arm/mach-omap1/leds-innovator.c
++++ b/arch/arm/mach-omap1/leds-innovator.c
+@@ -95,8 +95,5 @@ void innovator_leds_event(led_event_t evt)
+ 		break;
+ 	}
+ 
+-	if (led_state & LED_STATE_ENABLED)
+-		;
+-
+ 	local_irq_restore(flags);
+ }
 
