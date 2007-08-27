@@ -1,139 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbXH0GSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752121AbXH0Gfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753097AbXH0GSI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 02:18:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbXH0GR5
+	id S1752121AbXH0Gfc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 02:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbXH0GfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 02:17:57 -0400
-Received: from mga11.intel.com ([192.55.52.93]:28811 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750823AbXH0GR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 02:17:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,310,1183359600"; 
-   d="scan'208";a="288604066"
-Subject: Re: [RFC][PATCH 0/2 -mm] kexec based hibernation
-From: "Huang, Ying" <ying.huang@intel.com>
-To: vgoyal@in.ibm.com
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070827050027.GB9809@in.ibm.com>
-References: <1188177245.3247.36.camel@caritas-dev.intel.com>
-	 <20070827050027.GB9809@in.ibm.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 27 Aug 2007 14:18:49 +0800
-Message-Id: <1188195529.3247.82.camel@caritas-dev.intel.com>
+	Mon, 27 Aug 2007 02:35:22 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:56906 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750928AbXH0GfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 02:35:21 -0400
+Date: Mon, 27 Aug 2007 08:36:35 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: paulmck@linux.vnet.ibm.com
+Cc: Adrian Bunk <bunk@kernel.org>, Gabriel C <nix.or.die@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: net/ipv4/fib_trie.c - compile error (Re: 2.6.23-rc3-mm1)
+Message-ID: <20070827063635.GB1703@ff.dom.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 27 Aug 2007 06:17:52.0772 (UTC) FILETIME=[0006F440:01C7E872]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070822170302.GC8786@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-27 at 10:30 +0530, Vivek Goyal wrote:
-> On Mon, Aug 27, 2007 at 09:14:05AM +0800, Huang, Ying wrote:
-> > Kexec base hibernation has some potential advantages over uswsusp and
-> > TuxOnIce (suspend2). Some most obvious advantages are:
-> > 
-> > 1. The hibernation image size can exceed half of memory size easily.
-> > 
-> > 2. The hibernation image can be written to and read from almost
-> >    anywhere, such as USB disk, NFS.
-> > 
-> > 3. It is possible to eliminate freezer from kexec based hibernation
-> >    implementation.
-> > 
-> > 4. Based on kexec/kdump implementation, the kernel code needed is
-> >    less.
-> > 
-> > 
-> > This patch set implements a prototype of kexec based hibernation. The
-> > kernel functionalities added are as follow:
-> > 
-> > 1. Jumping from kexeced kernel back to original kernel. This is used
-> >    by hibernation to save/load necessary state in original kernel and
-> >    jumping back to original kernel after restore the memory of
-> >    original kernel.
-> > 
-> > 2. Add writing support to /dev/oldmem. This is used by hibernation to
-> >    restore the memory of original kernel.
-> > 
-> > 
-> > The hibernation process with the patch set is as follow:
-> > 
-> > 1. Boot a kernel A
-> > 
-> > 2. Work under kernel A
-> > 
-> > 3. Kexec another kernel B (crash dump enabled) in kernel A.
-> > 
-> > 4. Save the memory image of kernel A through crash dump (such as "cp
-> >    /proc/vmcore ~"). Save the "jump buffer pfn".
-> > 
-> > 5. Shutdown or reboot
-> > 
-> > 
-> > The restore process with the patch set is as follow:
-> > 
-> > 1. Boot a kernel C
-> > 
-> > 2. Kexec another kernel D (crash dump enabled) in kernel C. The memory
-> >    area used by kernel D must be a subset of memory area used by
-> >    kernel B.
-> > 
+On 22-08-2007 19:03, Paul E. McKenney wrote:
+> On Wed, Aug 22, 2007 at 05:41:11PM +0200, Adrian Bunk wrote:
+>> On Wed, Aug 22, 2007 at 05:30:13PM +0200, Gabriel C wrote:
+>>> Got it with a randconfig ( http://194.231.229.228/kernel/mm/2.6.23-rc3-mm1/r/randconfig-8 )
+>>>
+>>> ...
+>>>
+>>> net/ipv4/fib_trie.c: In function 'trie_rebalance':
+>>> net/ipv4/fib_trie.c:969: error: lvalue required as unary '&' operand
+>>> net/ipv4/fib_trie.c:971: error: lvalue required as unary '&' operand
+>>> net/ipv4/fib_trie.c:977: error: lvalue required as unary '&' operand
+>>> net/ipv4/fib_trie.c:980: error: lvalue required as unary '&' operand
+>>> ...
+>> Side effect of the git-net removal, temporarily removing 
+>> immunize-rcu_dereference-against-crazy-compiler-writers.patch should 
+>> work around it.
 > 
-> If one compiles the kernel C to boot from reserved memory area (subset
-> of memory area used by kernel B), then I can skip the step of kexecing
-> from C to D? (COFIG_PHYSICAL_START)
-
-Yes. I think so.
-
-> Alternatively, can we give hint to kernel C to run from a specified address
-> at run time with the help of command line parameters. What I mean boot-loader
-> can load the kernel at any address, but kernel will move itself to run
-> from a different location depending on command line parameter.  For example,
-> let say kernel_run_addr = 0x1000000. This parameter will tell the kernel
-> to move itself to 16MB address and run from there. I think it can be made
-> to work with little work in existing setup of relocatable kernel.
+> Alternatively, the following one-line patch to net/ipv4/fib_trie.c could
+> be used.
 > 
-> Kernel run address can be put by some user space script which will save
-> the hibernated image of original kernel. So after saving the /proc/vmcore,
-> script can modify the boot loader config file to append the right
-> command line to the kernel (kernel_run_addr).
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
 > 
-> After hibernation, user will shutdown/reboot. Next time the kernel boots
-> it will load at 16MB addr (because of kernel_run_addr) and then it can
-> restore the previously saved image.
+>  fib_trie.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> We shall have to get rid of (kernel_run_addr) parameter from command
-> line while resuming. One can restore the image (krestore) and then edit
-> the boot loader config file to get rid of command line param, kernel_run_addr.
-> 
-> In this scheme, with the help of relocatable kernel, we can use a single
-> kernel for everything. (A, B, C, D). We will also avoid additional kexec
-> from kernel C to kernel D.
-> 
-> I think in the long run we shall have to work out so that a user does
-> not have to maintain multiple kernels. 
+> diff -urpNa -X dontdiff linux-2.6.23-rc3-mm1/net/ipv4/fib_trie.c linux-2.6.23-rc3-mm1.compile/net/ipv4/fib_trie.c
+> --- linux-2.6.23-rc3-mm1/net/ipv4/fib_trie.c	2007-08-22 09:20:33.000000000 -0700
+> +++ linux-2.6.23-rc3-mm1.compile/net/ipv4/fib_trie.c	2007-08-22 09:47:33.000000000 -0700
+> @@ -94,7 +94,7 @@ typedef unsigned int t_key;
+>  #define T_LEAF  1
+>  #define NODE_TYPE_MASK	0x1UL
+>  #define NODE_PARENT(node) \
+> -	((struct tnode *)rcu_dereference(((node)->parent & ~NODE_TYPE_MASK)))
+> +	((struct tnode *)(rcu_dereference((node)->parent) & ~NODE_TYPE_MASK))
+...
 
-Only one relocatable kernel image is needed. In fact, I use one
-relocatable kernel image in testing during development.
+After first reading of this thread I've had an impression it's about
+compiler's behavior, but now it seems to me this patch is not an
+alternative, but a 'must be' and only proper way of calling
+rcu_dereference (with a variable instead of an expression)? Am I
+right?
 
-> Does this make sense?
-
-Yes, this is a sensible optimization. But I think it may be better to
-make bootloader load kernel D directly into a specified memory location.
-For example, we can add a option to "kernel" command of grub. 
-
-And, I think we can do more in bootloader. Such as we can prepare two
-kernel command line for one grub menu item, one for normal kernel, the
-other for restore kernel. After hibernating successfully, the effective
-kernel command line is switched.
-
-Best Regards,
-Huang Ying
+Regards,
+Jarek P.
