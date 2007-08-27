@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762733AbXH0QWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762688AbXH0QXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762733AbXH0QWs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762135AbXH0QTx
+	id S1762688AbXH0QXu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758436AbXH0QXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 12:19:53 -0400
-Received: from host-66-43-248-10 ([67.55.143.10]:34117 "EHLO albrecht.rdi1.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762304AbXH0QTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 12:19:50 -0400
-Subject: Re: coldplug zd1211rw wireless driver results in firefox segfault
-From: Paul Albrecht <albrecht@rdi1.com>
-To: Greg KH <greg@kroah.com>
-Cc: Paul Albrecht <albrecht@rdi1.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070825013808.GA24439@kroah.com>
-References: <1187986902.24891.12.camel@albrecht.rdi1.com>
-	 <20070825013808.GA24439@kroah.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 27 Aug 2007 11:23:44 -0400
-Message-Id: <1188228224.800.2.camel@albrecht.rdi1.com>
+	Mon, 27 Aug 2007 12:23:36 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:44003 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757934AbXH0QXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 12:23:35 -0400
+Date: Mon, 27 Aug 2007 20:25:16 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Cliff Wickman <cpw@sgi.com>
+Cc: akpm@linux-foundation.org, ego@in.ibm.com, mingo@elte.hu, vatsa@in.ibm.com,
+       pj@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] V3: hotplug cpu: migrate a task within its cpuset
+Message-ID: <20070827162516.GA1398@tv-sign.ru>
+References: <20070827160703.GA2446@sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070827160703.GA2446@sgi.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-24 at 18:38 -0700, Greg KH wrote:
-> On Fri, Aug 24, 2007 at 04:21:42PM -0400, Paul Albrecht wrote:
-> > Hi,
-> > 
-> > I'm trying to use a hawking hwu54g with the zd1211rw driver in the
-> > 2.6.20 linux kernel. It works ok when I hotplug the device, but causes
-> > firefox to segfault when I coldplug the device.
-> > 
-> > As I get the segfault whether or not I bring the device up, I'm
-> > wondering if there's a problem with the usb subsystem initialization.
-> > 
-> > Any ideas? Please cc me because I don't usually subscribe to the lkml.
+On 08/27, Cliff Wickman wrote:
 > 
-> Can you try a newer kernel?  That driver has gotten a lot of work in the
-> past 6 months.
+> --- linus.070821.orig/kernel/sched.c
+> +++ linus.070821/kernel/sched.c
+> @@ -61,6 +61,7 @@
+>  #include <linux/delayacct.h>
+>  #include <linux/reciprocal_div.h>
+>  #include <linux/unistd.h>
+> +#include <linux/cpuset.h>
+>  
+>  #include <asm/tlb.h>
+>  
+> @@ -5091,6 +5092,19 @@ restart:
+>  	if (dest_cpu == NR_CPUS)
+>  		dest_cpu = any_online_cpu(p->cpus_allowed);
+>  
+> +	/* try to stay on the same cpuset */
+> +	if (dest_cpu == NR_CPUS) {
+> +		rq = task_rq_lock(p, &flags);
+> +		/*
+> +		 * The cpuset_cpus_allowed_locked() variant of
+> +		 * cpuset_cpus_allowed() will not block
+> +		 * It must be called within calls to cpuset_lock/cpuset_unlock.
+> +		 */
+> +		p->cpus_allowed = cpuset_cpus_allowed_locked(p);
+> +		dest_cpu = any_online_cpu(p->cpus_allowed);
+> +		task_rq_unlock(rq, &flags);
 
-Tried 2.6.21 and that worked. Thanks.
+No, no, we can't take task_lock() under rq->lock, nesting error. I think we
+need a local "cpumask_t cpus_allowed = cpuset_cpus_allowed_locked()", like
+sched_setaffinity() does.
 
-Paul Albrecht
+task_lock() doesn't disable irqs, this means that it can't be used under any
+lock which can be used from interrupt context.
+
+Oleg.
+
