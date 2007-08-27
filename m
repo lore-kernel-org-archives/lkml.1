@@ -1,62 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbXH0QIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758495AbXH0QIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760310AbXH0QIc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758781AbXH0P7g
+	id S1758495AbXH0QIt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758226AbXH0P7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:59:36 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47419 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758775AbXH0P7e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:59:34 -0400
-Date: Mon, 27 Aug 2007 10:59:33 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, tony.luck@intel.com, jes@sgi.com
-Subject: [PATCH 1/4] export __put_task_struct for XPMEM
-Message-ID: <20070827155933.GB25589@sgi.com>
-References: <20070827155622.GA25589@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070827155622.GA25589@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 27 Aug 2007 11:59:53 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:43421 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758012AbXH0P7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:59:52 -0400
+Message-Id: <20070827155850.346897059@polymtl.ca>
+References: <20070827155601.360241608@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Mon, 27 Aug 2007 11:56:02 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net
+Subject: [patch 01/10] Kprobes - use a mutex to protect the instruction pages list.
+Content-Disposition: inline; filename=kprobes-use-mutex-for-insn-pages.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:58:50 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch exports __put_task_struct as it is needed by XPMEM.
+Protect the instruction pages list by a specific insn pages mutex, called in 
+get_insn_slot() and free_insn_slot(). It makes sure that architectures that does
+not need to call arch_remove_kprobe() does not take an unneeded kprobes mutex.
 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
-
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: hch@infradead.org
+CC: prasanna@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
 ---
+ kernel/kprobes.c |   27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
 
-One struct file_operations registered by XPMEM, xpmem_open(), calls
-'get_task_struct(current->group_leader)' and another, xpmem_flush(), calls
-'put_task_struct(tg->group_leader)'. The reason for this is given in the
-comment block that appears in xpmem_open().
-
-	/*
-	 * Increment 'usage' and 'mm->mm_users' for the current task's thread
-	 * group leader. This ensures that both its task_struct and mm_struct
-	 * will still be around when our thread group exits. (The Linux kernel
-	 * normally tears down the mm_struct prior to calling a module's
-	 * 'flush' function.) Since all XPMEM thread groups must go through
-	 * this path, this extra reference to mm_users also allows us to
-	 * directly inc/dec mm_users in xpmem_ensure_valid_PFNs() and avoid
-	 * mmput() which has a scaling issue with the mmlist_lock.
-	 */
-
-Index: linux-2.6/kernel/fork.c
+Index: linux-2.6-lttng/kernel/kprobes.c
 ===================================================================
---- linux-2.6.orig/kernel/fork.c	2007-08-09 07:07:55.426611601 -0500
-+++ linux-2.6/kernel/fork.c	2007-08-09 07:15:43.246391700 -0500
-@@ -127,6 +127,7 @@
- 	if (!profile_handoff_task(tsk))
- 		free_task(tsk);
- }
-+EXPORT_SYMBOL_GPL(__put_task_struct);
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-27 11:48:56.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2007-08-27 11:48:58.000000000 -0400
+@@ -95,6 +95,10 @@ enum kprobe_slot_state {
+ 	SLOT_USED = 2,
+ };
  
- void __init fork_init(unsigned long mempages)
++/*
++ * Protects the kprobe_insn_pages list. Can nest into kprobe_mutex.
++ */
++static DEFINE_MUTEX(kprobe_insn_mutex);
+ static struct hlist_head kprobe_insn_pages;
+ static int kprobe_garbage_slots;
+ static int collect_garbage_slots(void);
+@@ -131,7 +135,9 @@ kprobe_opcode_t __kprobes *get_insn_slot
  {
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos;
++	kprobe_opcode_t *ret;
+ 
++	mutex_lock(&kprobe_insn_mutex);
+  retry:
+ 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
+ 		if (kip->nused < INSNS_PER_PAGE) {
+@@ -140,7 +146,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 				if (kip->slot_used[i] == SLOT_CLEAN) {
+ 					kip->slot_used[i] = SLOT_USED;
+ 					kip->nused++;
+-					return kip->insns + (i * MAX_INSN_SIZE);
++					ret = kip->insns + (i * MAX_INSN_SIZE);
++					goto end;
+ 				}
+ 			}
+ 			/* Surprise!  No unused slots.  Fix kip->nused. */
+@@ -154,8 +161,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	}
+ 	/* All out of space.  Need to allocate a new page. Use slot 0. */
+ 	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
+-	if (!kip)
+-		return NULL;
++	if (!kip) {
++		ret = NULL;
++		goto end;
++	}
+ 
+ 	/*
+ 	 * Use module_alloc so this page is within +/- 2GB of where the
+@@ -165,7 +174,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	kip->insns = module_alloc(PAGE_SIZE);
+ 	if (!kip->insns) {
+ 		kfree(kip);
+-		return NULL;
++		ret = NULL;
++		goto end;
+ 	}
+ 	INIT_HLIST_NODE(&kip->hlist);
+ 	hlist_add_head(&kip->hlist, &kprobe_insn_pages);
+@@ -173,7 +183,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	kip->slot_used[0] = SLOT_USED;
+ 	kip->nused = 1;
+ 	kip->ngarbage = 0;
+-	return kip->insns;
++	ret = kip->insns;
++end:
++	mutex_unlock(&kprobe_insn_mutex);
++	return ret;
+ }
+ 
+ /* Return 1 if all garbages are collected, otherwise 0. */
+@@ -207,7 +220,7 @@ static int __kprobes collect_garbage_slo
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos, *next;
+ 
+-	/* Ensure no-one is preepmted on the garbages */
++	/* Ensure no-one is preempted on the garbages */
+ 	if (check_safety() != 0)
+ 		return -EAGAIN;
+ 
+@@ -231,6 +244,7 @@ void __kprobes free_insn_slot(kprobe_opc
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos;
+ 
++	mutex_lock(&kprobe_insn_mutex);
+ 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
+ 		if (kip->insns <= slot &&
+ 		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
+@@ -247,6 +261,7 @@ void __kprobes free_insn_slot(kprobe_opc
+ 
+ 	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
+ 		collect_garbage_slots();
++	mutex_unlock(&kprobe_insn_mutex);
+ }
+ #endif
+ 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
