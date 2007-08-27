@@ -1,458 +1,535 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbXH0BNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbXH0BN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754239AbXH0BNX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 21:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbXH0BNP
+	id S1754861AbXH0BN6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 21:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXH0BNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 21:13:15 -0400
-Received: from mga02.intel.com ([134.134.136.20]:59341 "EHLO mga02.intel.com"
+	Sun, 26 Aug 2007 21:13:50 -0400
+Received: from mga02.intel.com ([134.134.136.20]:21675 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752669AbXH0BNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 21:13:14 -0400
+	id S1752405AbXH0BNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 21:13:48 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.19,309,1183359600"; 
-   d="scan'208";a="284109235"
-Subject: [RFC][PATCH 0/2 -mm] kexec based hibernation
+   d="scan'208";a="284109338"
+Subject: [RFC][PATCH 1/2 -mm] kexec based hibernation: kexec jump
 From: "Huang, Ying" <ying.huang@intel.com>
 To: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
        nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
 Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
        Kexec Mailing List <kexec@lists.infradead.org>
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Mon, 27 Aug 2007 09:14:05 +0800
-Message-Id: <1188177245.3247.36.camel@caritas-dev.intel.com>
+Date: Mon, 27 Aug 2007 09:14:39 +0800
+Message-Id: <1188177280.3247.37.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 27 Aug 2007 01:13:08.0973 (UTC) FILETIME=[6E08A1D0:01C7E847]
+X-OriginalArrivalTime: 27 Aug 2007 01:13:44.0256 (UTC) FILETIME=[83106400:01C7E847]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kexec base hibernation has some potential advantages over uswsusp and
-TuxOnIce (suspend2). Some most obvious advantages are:
+ChangeLog 2007/8/25
 
-1. The hibernation image size can exceed half of memory size easily.
+1. The reboot command LINUX_REBOOT_CMD_KJUMP is splited into to two
+   reboot command to reflect the different function.
 
-2. The hibernation image can be written to and read from almost
-   anywhere, such as USB disk, NFS.
+2. Document is added for added kernel parameters.
 
-3. It is possible to eliminate freezer from kexec based hibernation
-   implementation.
+3. /sys/kernel/kexec_jump_buf_pfn is made writable, it is used for
+   memory image restoring.
 
-4. Based on kexec/kdump implementation, the kernel code needed is
-   less.
+4. Console restoring after jumping back is implemented.
 
 
-This patch set implements a prototype of kexec based hibernation. The
-kernel functionalities added are as follow:
+ChangeLog 2007/7/15
 
-1. Jumping from kexeced kernel back to original kernel. This is used
-   by hibernation to save/load necessary state in original kernel and
-   jumping back to original kernel after restore the memory of
-   original kernel.
+1. The kexec jump implementation is put into the kexec/kdump framework
+   instead of software suspend framework. The device and CPU state
+   save/restore code of software suspend is called when needed.
 
-2. Add writing support to /dev/oldmem. This is used by hibernation to
-   restore the memory of original kernel.
-
-
-The hibernation process with the patch set is as follow:
-
-1. Boot a kernel A
-
-2. Work under kernel A
-
-3. Kexec another kernel B (crash dump enabled) in kernel A.
-
-4. Save the memory image of kernel A through crash dump (such as "cp
-   /proc/vmcore ~"). Save the "jump buffer pfn".
-
-5. Shutdown or reboot
-
-
-The restore process with the patch set is as follow:
-
-1. Boot a kernel C
-
-2. Kexec another kernel D (crash dump enabled) in kernel C. The memory
-   area used by kernel D must be a subset of memory area used by
-   kernel B.
-
-3. Restore the memory image of kernel A through /dev/oldmem. Restore
-   the "jump buffer pfn".
-
-4. Jump from kernel D back to kernel A
-
-5. Continue work under kernel A
-
-
-The following user-space tools are needed to implement hibernation and
-restore.
-
-1. kexec-tools needs to be patched to support kexec jump. The patch is
-   attached in this mail. The precompiled kexec can be download from:
-       http://linux-mcr700.sourceforge.net/kjump/kexec
-
-2. Memory image saving tool. Currently, the memory image saving is
-   done through: "cp /proc/vmcore <image file>". This will save all
-   memory pages of original kernel including the free pages. Maybe the
-   crash dump tool "makedumpfile" can be used for this, but it has not
-   been tested.
-
-3. Memory image restore tool. A simplest memory image restoring tool
-   named "krestore" is implemented. It can be downloaded from
-   following URL:
-       source: http://linux-mcr700.sourceforge.net/kjump/krestore.tar.gz
-       binary: http://linux-mcr700.sourceforge.net/kjump/krestore
-
-
-Known issues:
-
-1. The kernel B run as a crashdump kernel in reserved memory
-   region. This is the biggest constrains of the patch set and planed
-   to be eliminated in the future version. That is, instead of
-   reserving memory region previously, the needed memory region is
-   backupped before kexec and restored after jumping back.
-
-2. Another constrains of the patch set is that the CONFIG_ACPI must be
-   turned off to make kexec jump work. Because ACPI will put devices
-   into low power state, the kexeced kernel can not be booted properly
-   under it. This constrains can be eliminated by separating the
-   suspend method and hibernate method of the devices as proposed
-   earlier in the LKML.
-
-3. The setup of hibernation/restore is fairly complex. I will continue
-   working on simplifying.
-
-4. Memory pages including free pages of kernel A are saved. I think
-   the "makedumpfile" tool can be used to exclude "free pages", but I
-   have not tested it.
-
-Now, only the i386 architecture is supported. The patch is based on
-Linux kernel 2.6.23-rc3-mm1, and has been tested on my IBM T42.
-
-
-Usage:
-
-1. Compile kernel with following options selected:
-
-CONFIG_X86_32=y
-CONFIG_RELOCATABLE=y # not needed strictly, but it is more convenient with it
-CONFIG_KEXEC=y
-CONFIG_CRASH_DUMP=y # only needed by kexeced kernel to save/restore memory image
-CONFIG_PM=y
-CONFIG_KEXEC_JUMP=y
-
-2. Download the kexec-tools-testing git tree, apply the kexec-tools
-   kjump patch and compile. The kexec-tools kjump patch is appended
-   with the mail. The precompiled kexec can be download from:
-       http://linux-mcr700.sourceforge.net/kjump/kexec
-
-3. Download and compile the krestore tool. The source code and
-   precompiled binary can be downloaded from the following URL:
-       source: http://linux-mcr700.sourceforge.net/kjump/krestore.tar.gz
-       binary: http://linux-mcr700.sourceforge.net/kjump/krestore
-
-4. Prepare 3 root partition used by kernel A, kernel B, kernel C,
-   refered as /dev/hda, /dev/hdb, /dev/hdc in following text. This is
-   not strictly necessary, I use this scheme for testing during
-   development.
-
-5. Boot kernel compiled for normal usage (kernel A), the reserved
-   crash kernel memory region must be added to kernel command line as
-   follow:
-
-   crashkernel=<XX>M@<XX>M
-
-   Where, <XX> should be replaced by the real memory size and
-   position. I use 16M@32M in my testing.
-
-6. Load kernel compiled for hibernating usage (kernel B) as a
-   crashdump kernel with kexec, the same kernel as that of 5 can be
-   used if CONFIG_RELOCATABLE=y and CONFIG_CRASH_DUMP=y are
-   selected. The kernel command line option as follow should be
-   appended to kernel command line.
-
-   kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`
-
-   The --elf64-core-headers should be specified in command line of
-   kexec, because only the 64bit ELF is supported by krestore tool.
-
-   For example, the shell command line can be as follow:
-
-   kexec -p /boot/bzImage --elf64-core-headers --append="root=/dev/hdb
-       single kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
-
-7. Jump to the hibernating kernel (kernel B) with following shell
-   command line:
-
-   kexec -j
-
-8. In the hibernating kernel (kernel B), the memory image of
-   hibernated kernel (kernel A) can be saved as follow:
-
-   cp /proc/vmcore .
-   cp /sys/kernel/kexec_jump_buf_pfn .
-
-9. Shutdown or reboot in hibernating kernel (kernel B).
-
-10. Boot kernel (kernel C) compiled for normal usage in another root
-    file system (/dev/hdc).
-
-11. Load restore kernel (kernel D) in kernel C through kexec. This is
-    almost same as step 6. The root file system of kernel D should be
-    /dev/hdb.
-
-12. In restore kernel (kernel D), the memory image of kernel A can be
-    restored as follow:
-
-    # get backup address through kernel command line
-    backup_addr=`cat /proc/cmdline | tr ' ' '\n' | grep kexec_backup | cut -d '=' -f 2`
-    cp kexec_jump_buf_pfn /sys/kernel/kexec_jump_buf_pfn
-    krestore -b $backup_addr vmcore
-
-13. Jump back to hibernated kernel (kernel A)
-
-    kexec -b
-
+2. The same code path is used for both kexec a new kernel and jump
+   back to original kernel.
 
 ---
 
-Changelog of kexec-tools
+This patch implements the functionality of jumping from the kexeced
+kernel back to the original kernel.
 
-A command line option -j/--jump-to is added to support jumping
-to/executing the currently loaded kernel. A command line option
--b/--jump-back is added to support jumping back to the original
-kernel. The implementation of options is to call corresponding
-syscall.
+Two new reboot command named LINUX_REBOOT_CMD_KJUMP_TO and
+LINUX_REBOOT_CMD_KJUMP_BACK are defined to trigger the jumping to
+(executing) the new kernel and jumping back to the original kernel.
 
-For i386 architecture, the address of backup of 0~640k is passed to
-kexeced kernel as a kernel command line option. This is used by
-kexeced kernel to restore the backup.
+To support jumping back from kexeced kernel, before executing the new
+kernel, the devices are put into quiescent state (to be fully
+implemented), and the state of devices and CPU is saved. After jumping
+back from kexeced kernel, the state of devices and CPU are restored
+accordingly. The devices/CPU state save/restore code of software
+suspend is called to implement corresponding function.
 
-This patch is against kexec-tools-testing git tree.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Index: kexec-tools/kexec/arch/i386/crashdump-x86.c
+---
+
+ Documentation/kernel-parameters.txt |    8 +++
+ arch/i386/Kconfig                   |    7 ++
+ arch/i386/kernel/Makefile           |    1 
+ arch/i386/kernel/kexec_jump.S       |   74 ++++++++++++++++++++++++++++
+ arch/i386/kernel/machine_kexec.c    |   59 +++++++++++++++++++++++
+ include/asm-i386/kexec.h            |    4 +
+ include/linux/kexec.h               |   16 ++++++
+ include/linux/reboot.h              |    2 
+ kernel/kexec.c                      |   92 ++++++++++++++++++++++++++++++++++++
+ kernel/ksysfs.c                     |   21 ++++++++
+ kernel/power/Kconfig                |    2 
+ kernel/sys.c                        |   16 ++++++
+ 12 files changed, 301 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.23-rc3/arch/i386/kernel/machine_kexec.c
 ===================================================================
---- kexec-tools.orig/kexec/arch/i386/crashdump-x86.c	2007-08-17 13:48:51.000000000 +0800
-+++ kexec-tools/kexec/arch/i386/crashdump-x86.c	2007-08-17 13:49:50.000000000 +0800
-@@ -428,6 +428,29 @@
+--- linux-2.6.23-rc3.orig/arch/i386/kernel/machine_kexec.c	2007-08-25 21:56:54.000000000 +0800
++++ linux-2.6.23-rc3/arch/i386/kernel/machine_kexec.c	2007-08-25 21:57:00.000000000 +0800
+@@ -10,6 +10,7 @@
+ #include <linux/kexec.h>
+ #include <linux/delay.h>
+ #include <linux/init.h>
++#include <linux/highmem.h>
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
+@@ -169,3 +170,61 @@
  	return 0;
  }
- 
-+/* Adds the kexec_backup= command line parameter to command line. */
-+static int cmdline_add_backup(char *cmdline, unsigned long addr)
-+{
-+	int cmdlen, len, align = 1024;
-+	char str[30], *ptr;
+ early_param("crashkernel", parse_crashkernel);
 +
-+	/* Passing in kexec_backup=xxxK format. Saves space required
-+	 * in cmdline. Ensure 1K alignment*/
-+	if (addr%align)
-+		return -1;
-+	addr = addr/align;
-+	ptr = str;
-+	strcpy(str, " kexec_backup=");
-+	ptr += strlen(str);
-+	ultoa(addr, ptr);
-+	strcat(str, "K");
-+	len = strlen(str);
-+	cmdlen = strlen(cmdline) + len;
-+	if (cmdlen > (COMMAND_LINE_SIZE - 1))
-+		die("Command line overflow\n");
-+	strcat(cmdline, str);
++#ifdef CONFIG_KEXEC_JUMP
++int machine_kexec_jump(void)
++{
++	asmlinkage int (*real_jump)(void *buf);
++	unsigned long jump_buf_pfn;
++	void *jump_buf;
++
++	if (!(kexec_jump_flags & KEXEC_JUMP_FLAG_IS_KEXECED_KERNEL) &&
++	    !kexec_crash_image)
++		return -EINVAL;
++	jump_buf_pfn = kexec_get_jump_buf_pfn(0);
++	if (!jump_buf_pfn)
++		return -EINVAL;
++	jump_buf = kmap_atomic_pfn(jump_buf_pfn, KM_PTE0);
++	memcpy(jump_buf + PAGE_SIZE/2, machine_kexec_real_jump, PAGE_SIZE/2);
++	real_jump = jump_buf + PAGE_SIZE/2;
++
++	if (!real_jump(jump_buf))
++		machine_kexec(kexec_crash_image);
++	kunmap_atomic(jump_buf, KM_PTE0);
 +	return 0;
 +}
++
++static unsigned long kexec_backup_addr = ~0UL;
++
++/* kexec_backup= specifies the location of backuped 0~640k memory of
++ * crashed kernel.
++ */
++static int __init parse_kexec_backup(char *arg)
++{
++	if (!arg)
++		return -EINVAL;
++
++	kexec_backup_addr = memparse(arg, &arg);
++	return 0;
++}
++early_param("kexec_backup", parse_kexec_backup);
++
++void kexec_restore_backup(void)
++{
++	void *vaddr;
++	void *vaddr_backup;
++	unsigned long paddr;
++
++	if (kexec_backup_addr == ~0UL)
++		return;
++
++	for (paddr = 0; paddr < 640 * 1024; paddr += PAGE_SIZE) {
++		vaddr = kmap_atomic_pfn(paddr >> PAGE_SHIFT, KM_PTE0);
++		vaddr_backup = kmap_atomic_pfn((paddr+kexec_backup_addr) >> PAGE_SHIFT,
++					       KM_PTE1);
++		memcpy(vaddr, vaddr_backup, PAGE_SIZE);
++		kunmap_atomic(vaddr, KM_PTE0);
++		kunmap_atomic(vaddr_backup, KM_PTE1);
++	}
++}
++#endif /* CONFIG_KEXEC_JUMP */
+Index: linux-2.6.23-rc3/include/asm-i386/kexec.h
+===================================================================
+--- linux-2.6.23-rc3.orig/include/asm-i386/kexec.h	2007-08-25 21:56:54.000000000 +0800
++++ linux-2.6.23-rc3/include/asm-i386/kexec.h	2007-08-25 21:57:00.000000000 +0800
+@@ -94,6 +94,10 @@
+ 		unsigned long start_address,
+ 		unsigned int has_pae) ATTRIB_NORET;
  
- /*
-  * This routine is specific to i386 architecture to maintain the
-@@ -575,6 +598,7 @@
- 		return -1;
- 	cmdline_add_memmap(mod_cmdline, memmap_p);
- 	cmdline_add_elfcorehdr(mod_cmdline, elfcorehdr);
-+	cmdline_add_backup(mod_cmdline, info->backup_start);
++#ifdef CONFIG_KEXEC_JUMP
++extern asmlinkage int machine_kexec_real_jump(void *buf);
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _I386_KEXEC_H */
+Index: linux-2.6.23-rc3/include/linux/kexec.h
+===================================================================
+--- linux-2.6.23-rc3.orig/include/linux/kexec.h	2007-08-25 21:56:54.000000000 +0800
++++ linux-2.6.23-rc3/include/linux/kexec.h	2007-08-25 21:57:00.000000000 +0800
+@@ -1,6 +1,11 @@
+ #ifndef LINUX_KEXEC_H
+ #define LINUX_KEXEC_H
+ 
++#ifdef CONFIG_KEXEC_JUMP
++#define KEXEC_JUMP_FLAG_IS_KEXECED_KERNEL     0x1
++#endif /* CONFIG_KEXEC_JUMP */
++
++#ifndef __ASSEMBLY__
+ #ifdef CONFIG_KEXEC
+ #include <linux/types.h>
+ #include <linux/list.h>
+@@ -161,4 +166,15 @@
+ static inline void crash_kexec(struct pt_regs *regs) { }
+ static inline int kexec_should_crash(struct task_struct *p) { return 0; }
+ #endif /* CONFIG_KEXEC */
++
++#ifdef CONFIG_KEXEC_JUMP
++extern int kexec_jump_flags;
++extern int machine_kexec_jump(void);
++extern int kexec_jump(void);
++extern unsigned long kexec_get_jump_buf_pfn(int alloc);
++extern void kexec_set_jump_buf_pfn(unsigned long pfn);
++extern void kexec_restore_backup(void);
++#endif /* CONFIG_KEXEC_JUMP */
++#endif /* !__ASSEMBLY__ */
++
+ #endif /* LINUX_KEXEC_H */
+Index: linux-2.6.23-rc3/kernel/kexec.c
+===================================================================
+--- linux-2.6.23-rc3.orig/kernel/kexec.c	2007-08-25 21:56:54.000000000 +0800
++++ linux-2.6.23-rc3/kernel/kexec.c	2007-08-25 21:57:00.000000000 +0800
+@@ -21,6 +21,10 @@
+ #include <linux/hardirq.h>
+ #include <linux/elf.h>
+ #include <linux/elfcore.h>
++#include <linux/suspend.h>
++#include <linux/pm.h>
++#include <linux/cpu.h>
++#include <linux/console.h>
+ 
+ #include <asm/page.h>
+ #include <asm/uaccess.h>
+@@ -1134,3 +1138,91 @@
  	return 0;
  }
- 
-Index: kexec-tools/kexec/kexec-syscall.h
-===================================================================
---- kexec-tools.orig/kexec/kexec-syscall.h	2007-08-17 13:48:51.000000000 +0800
-+++ kexec-tools/kexec/kexec-syscall.h	2007-08-24 13:44:22.000000000 +0800
-@@ -21,6 +21,8 @@
- #define LINUX_REBOOT_CMD_KEXEC_OLD	0x81726354
- #define LINUX_REBOOT_CMD_KEXEC_OLD2	0x18263645
- #define LINUX_REBOOT_CMD_KEXEC		0x45584543
-+#define LINUX_REBOOT_CMD_KJUMP_TO	0x3928A5FD
-+#define LINUX_REBOOT_CMD_KJUMP_BACK	0x4A39B60E
- 
- #ifdef __i386__
- #define __NR_kexec_load		283
-@@ -63,6 +65,15 @@
- 	return (long) syscall(__NR_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_KEXEC, 0);
- }
- 
-+static inline long kexec_jump_to(void)
+ module_init(crash_notes_memory_init)
++
++#ifdef CONFIG_KEXEC_JUMP
++int kexec_jump_flags;
++
++static unsigned long kexec_jump_buf_pfn;
++
++static int __init parse_kexec_jump_buf_pfn(char *arg)
 +{
-+	return (long) syscall(__NR_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_KJUMP_TO, 0);
++	unsigned long pfn;
++
++	if (!arg)
++		return -EINVAL;
++	pfn = memparse(arg, &arg);
++	kexec_set_jump_buf_pfn(pfn);
++	return 0;
++}
++early_param("kexec_jump_buf_pfn", parse_kexec_jump_buf_pfn);
++
++unsigned long kexec_get_jump_buf_pfn(int alloc)
++{
++	struct page *jump_buf_page;
++
++	if (!kexec_jump_buf_pfn && alloc) {
++		jump_buf_page = alloc_page(GFP_KERNEL);
++		kexec_jump_buf_pfn = page_to_pfn(jump_buf_page);
++	}
++	return kexec_jump_buf_pfn;
 +}
 +
-+static inline long kexec_jump_back(void)
++void kexec_set_jump_buf_pfn(unsigned long pfn)
 +{
-+	return (long) syscall(__NR_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_KJUMP_BACK, 0);
++	kexec_jump_buf_pfn = pfn;
++	kexec_jump_flags |= KEXEC_JUMP_FLAG_IS_KEXECED_KERNEL;
 +}
- 
- #define KEXEC_ON_CRASH  0x00000001
- #define KEXEC_ARCH_MASK 0xffff0000
-Index: kexec-tools/kexec/kexec.c
++
++int kexec_jump(void)
++{
++	int error;
++	int is_kexeced;
++
++	is_kexeced = kexec_jump_flags & KEXEC_JUMP_FLAG_IS_KEXECED_KERNEL;
++	if (!is_kexeced && !kexec_crash_image)
++		return -EINVAL;
++
++	pm_prepare_console();
++	suspend_console();
++	error = device_suspend(PMSG_FREEZE);
++	if (error)
++		goto Resume_console;
++	error = disable_nonboot_cpus();
++	if (error)
++		goto Resume_devices;
++	local_irq_disable();
++	/* At this point, device_suspend() has been called, but *not*
++	 * device_power_down(). We *must* device_power_down() now.
++	 * Otherwise, drivers for some devices (e.g. interrupt controllers)
++	 * become desynchronized with the actual state of the hardware
++	 * at resume time, and evil weirdness ensues.
++	 */
++	error = device_power_down(PMSG_FREEZE);
++	if (error)
++		goto Enable_irqs;
++
++	if (is_kexeced)
++		kexec_restore_backup();
++	save_processor_state();
++	error = machine_kexec_jump();
++	restore_processor_state();
++
++	/* NOTE:  device_power_up() is just a resume() for devices
++	 * that suspended with irqs off ... no overall powerup.
++	 */
++	device_power_up();
++ Enable_irqs:
++	local_irq_enable();
++	enable_nonboot_cpus();
++ Resume_devices:
++	device_resume();
++	if (!is_kexeced && !error) {
++		kimage_free(kexec_crash_image);
++		kexec_crash_image = NULL;
++	}
++ Resume_console:
++	resume_console();
++	pm_restore_console();
++	return error;
++}
++#endif /* CONFIG_KEXEC_JUMP */
+Index: linux-2.6.23-rc3/kernel/ksysfs.c
 ===================================================================
---- kexec-tools.orig/kexec/kexec.c	2007-08-17 13:48:51.000000000 +0800
-+++ kexec-tools/kexec/kexec.c	2007-08-24 13:53:43.000000000 +0800
-@@ -716,6 +716,33 @@
- 	return -1;
+--- linux-2.6.23-rc3.orig/kernel/ksysfs.c	2007-08-25 21:56:54.000000000 +0800
++++ linux-2.6.23-rc3/kernel/ksysfs.c	2007-08-25 21:57:00.000000000 +0800
+@@ -60,6 +60,24 @@
+ 	return sprintf(page, "%d\n", !!kexec_crash_image);
  }
+ KERNEL_ATTR_RO(kexec_crash_loaded);
++
++#ifdef CONFIG_KEXEC_JUMP
++static ssize_t kexec_jump_buf_pfn_show(struct kset *kset, char *page)
++{
++	return sprintf(page, "0x%lx\n", kexec_get_jump_buf_pfn(1));
++}
++static ssize_t kexec_jump_buf_pfn_store(struct kset *kset, const char *page,
++					size_t count)
++{
++	unsigned long pfn;
++
++	pfn = simple_strtoul(page, NULL, 0);
++	kexec_set_jump_buf_pfn(pfn);
++	return count;
++}
++
++KERNEL_ATTR_RW(kexec_jump_buf_pfn);
++#endif /* CONFIG_KEXEC_JUMP */
+ #endif /* CONFIG_KEXEC */
  
+ /*
+@@ -95,6 +113,9 @@
+ #ifdef CONFIG_KEXEC
+ 	&kexec_loaded_attr.attr,
+ 	&kexec_crash_loaded_attr.attr,
++#ifdef CONFIG_KEXEC_JUMP
++	&kexec_jump_buf_pfn_attr.attr,
++#endif
+ #endif
+ 	NULL
+ };
+Index: linux-2.6.23-rc3/arch/i386/kernel/kexec_jump.S
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.23-rc3/arch/i386/kernel/kexec_jump.S	2007-08-25 21:57:00.000000000 +0800
+@@ -0,0 +1,74 @@
 +/*
-+ *	Jump to the new kernel
++ * kexec_jump.S - Jump between original kernel and kexeced kernel
++ * Copyright (C) 2007 Huang Ying <ying.huang@intel.com>
++ *
++ * This source code is licensed under the GNU General Public License,
++ * Version 2.  See the file COPYING for more details.
 + */
-+static int my_jump_to(void)
-+{
-+	int result;
 +
-+	result = kexec_jump_to();
-+	if (result)
-+		fprintf(stderr, "kexec jump to failed: %s\n",
-+			strerror(errno));
-+	return result;
-+}
++#include <linux/linkage.h>
++#include <linux/kexec.h>
++#include <asm/page.h>
++#include <asm/kexec.h>
 +
 +/*
-+ *	Jump back to the original kernel
++ * Must be relocatable PIC code callable as a C function
 + */
-+static int my_jump_back(void)
-+{
-+	int result;
++#define HALF_PAGE_ALIGNED (1 << (PAGE_SHIFT-1))
 +
-+	result = kexec_jump_back();
-+	fprintf(stderr, "kexec jump back failed: %s\n",
-+		strerror(errno));
-+	return -1;
-+}
++#define EBX	0x0
++#define ESI	0x4
++#define EDI	0x8
++#define EBP	0xc
++#define ESP	0x10
++#define CR0	0x14
++#define CR3	0x18
++#define CR4	0x1c
++#define FLAG	0x20
++#define RET	0x24
 +
- static void version(void)
- {
- 	printf(PACKAGE " " VERSION " released " RELEASE_DATE "\n");
-@@ -743,6 +770,8 @@
- 	       "                      If capture kernel is being unloaded\n"
- 	       "                      specify -p with -u.\n"
- 	       " -e, --exec           Execute a currently loaded kernel.\n"
-+ 	       " -j, --jump-to        Jump to a currently loaded kernel.\n"
-+	       " -b, --jump-back      Jump back to the original kernel.\n"
- 	       " -t, --type=TYPE      Specify the new kernel is of this type.\n"
- 	       "     --mem-min=<addr> Specify the lowest memory address to\n"
- 	       "                      load code into.\n"
-@@ -773,6 +802,19 @@
- 	return ret;
- }
- 
-+static int kexec_crash_loaded(void)
-+{
-+	int ret;
-+	FILE *fp;
-+
-+	fp = fopen("/sys/kernel/kexec_crash_loaded", "r");
-+	if (fp == NULL)
-+		return -1;
-+	fscanf(fp, "%d", &ret);
-+	fclose(fp);
-+	return ret;
-+}
-+
- /* check we retained the initrd */
- void check_reuse_initrd(void)
- {
-@@ -803,6 +845,8 @@
- {
- 	int do_load = 1;
- 	int do_exec = 0;
-+	int do_jump_to = 0;
-+	int do_jump_back = 0;
- 	int do_shutdown = 1;
- 	int do_sync = 1;
- 	int do_ifdown = 0;
-@@ -858,6 +902,22 @@
- 			do_ifdown = 1;
- 			do_exec = 1;
- 			break;
-+		case OPT_JUMP_TO:
-+			do_load = 0;
-+			do_shutdown = 0;
-+			do_sync = 1;
-+			do_ifdown = 0;
-+			do_exec = 0;
-+			do_jump_to = 1;
-+			break;
-+		case OPT_JUMP_BACK:
-+			do_load = 0;
-+			do_shutdown = 0;
-+			do_sync = 1;
-+			do_ifdown = 1;
-+			do_exec = 0;
-+			do_jump_back = 1;
-+			break;
- 		case OPT_TYPE:
- 			type = optarg;
- 			break;
-@@ -936,6 +996,9 @@
- 	if ((result == 0) && (do_shutdown || do_exec) && !kexec_loaded()) {
- 		die("Nothing has been loaded!\n");
- 	}
-+	if ((result == 0) && do_jump_to && !kexec_crash_loaded()) {
-+		die("Nothing has been loaded!\n");
-+	}
- 	if ((result == 0) && do_shutdown) {
- 		result = my_shutdown();
- 	}
-@@ -949,6 +1012,12 @@
- 	if ((result == 0) && do_exec) {
- 		result = my_exec();
- 	}
-+	if ((result == 0) && do_jump_to) {
-+		result = my_jump_to();
-+	}
-+	if ((result == 0) && do_jump_back) {
-+		result = my_jump_back();
-+	}
- 
- 	fflush(stdout);
- 	fflush(stderr);
-Index: kexec-tools/kexec/kexec.h
++	.text
++	.align HALF_PAGE_ALIGNED
++	.globl machine_kexec_real_jump
++machine_kexec_real_jump:
++	movl	4(%esp), %edx
++	movl	kexec_jump_flags, %ecx
++	andl	$KEXEC_JUMP_FLAG_IS_KEXECED_KERNEL, %ecx
++	jnz	1f
++	movl	%ebx, EBX(%edx)
++	movl	%esi, ESI(%edx)
++	movl	%edi, EDI(%edx)
++	movl	%ebp, EBP(%edx)
++	movl	%esp, ESP(%edx)
++	movl	%cr0, %eax
++	movl	%eax, CR0(%edx)
++	movl	%cr3, %eax
++	movl	%eax, CR3(%edx)
++	movl	%cr4, %eax
++	movl	%eax, CR4(%edx)
++	pushf
++	popl	%eax
++	movl	%eax, FLAG(%edx)
++	movl	(%esp), %eax
++	movl	%eax, RET(%edx)
++	mov	$0, %eax
++	ret
++1:
++	movl	EBX(%edx), %ebx
++	movl	ESI(%edx), %esi
++	movl	EDI(%edx), %edi
++	movl	EBP(%edx), %ebp
++	movl	FLAG(%edx), %eax
++	pushl	%eax
++	popf
++	movl	ESP(%edx), %esp
++	movl	CR4(%edx), %eax
++	movl	%eax, %cr4
++	movl	CR3(%edx), %eax
++	movl	%eax, %cr3
++	movl	CR0(%edx), %eax
++	movl	%eax, %cr0
++	movl	RET(%edx), %eax
++	movl	%eax, (%esp)
++	mov	$1, %eax
++	ret
+Index: linux-2.6.23-rc3/kernel/sys.c
 ===================================================================
---- kexec-tools.orig/kexec/kexec.h	2007-08-17 13:48:51.000000000 +0800
-+++ kexec-tools/kexec/kexec.h	2007-08-24 11:15:27.000000000 +0800
-@@ -156,6 +156,8 @@
- #define OPT_FORCE		'f'
- #define OPT_NOIFDOWN		'x'
- #define OPT_EXEC		'e'
-+#define OPT_JUMP_TO		'j'
-+#define OPT_JUMP_BACK		'b'
- #define OPT_LOAD		'l'
- #define OPT_UNLOAD		'u'
- #define OPT_TYPE		't'
-@@ -172,13 +174,15 @@
- 	{ "load",		0, 0, OPT_LOAD }, \
- 	{ "unload",		0, 0, OPT_UNLOAD }, \
- 	{ "exec",		0, 0, OPT_EXEC }, \
-+ 	{ "jump-to",		0, 0, OPT_JUMP_TO }, \
-+ 	{ "jump-back",		0, 0, OPT_JUMP_BACK }, \
- 	{ "type",		1, 0, OPT_TYPE }, \
- 	{ "load-panic",         0, 0, OPT_PANIC }, \
- 	{ "mem-min",		1, 0, OPT_MEM_MIN }, \
- 	{ "mem-max",		1, 0, OPT_MEM_MAX }, \
- 	{ "reuseinitrd",	0, 0, OPT_REUSE_INITRD }, \
+--- linux-2.6.23-rc3.orig/kernel/sys.c	2007-08-25 21:56:54.000000000 +0800
++++ linux-2.6.23-rc3/kernel/sys.c	2007-08-25 21:57:00.000000000 +0800
+@@ -424,6 +424,22 @@
+ 		unlock_kernel();
+ 		return -EINVAL;
  
--#define KEXEC_OPT_STR "hvdfxluet:p"
-+#define KEXEC_OPT_STR "hvdfxluejbt:p"
++#ifdef CONFIG_KEXEC_JUMP
++	case LINUX_REBOOT_CMD_KJUMP_BACK:
++		if (!(kexec_jump_flags & KEXEC_JUMP_FLAG_IS_KEXECED_KERNEL)) {
++			unlock_kernel();
++			return -EINVAL;
++		}
++		/* fall through */
++	case LINUX_REBOOT_CMD_KJUMP_TO:
++		{
++			int ret;
++			ret = kexec_jump();
++			unlock_kernel();
++			return ret;
++		}
++#endif
++
+ #ifdef CONFIG_HIBERNATION
+ 	case LINUX_REBOOT_CMD_SW_SUSPEND:
+ 		{
+Index: linux-2.6.23-rc3/include/linux/reboot.h
+===================================================================
+--- linux-2.6.23-rc3.orig/include/linux/reboot.h	2007-08-25 21:56:54.000000000 +0800
++++ linux-2.6.23-rc3/include/linux/reboot.h	2007-08-25 21:57:00.000000000 +0800
+@@ -33,6 +33,8 @@
+ #define	LINUX_REBOOT_CMD_RESTART2	0xA1B2C3D4
+ #define	LINUX_REBOOT_CMD_SW_SUSPEND	0xD000FCE2
+ #define	LINUX_REBOOT_CMD_KEXEC		0x45584543
++#define	LINUX_REBOOT_CMD_KJUMP_TO	0x3928A5FD
++#define	LINUX_REBOOT_CMD_KJUMP_BACK	0x4A39B60E
  
- extern void die(char *fmt, ...);
- extern void *xmalloc(size_t size);
+ 
+ #ifdef __KERNEL__
+Index: linux-2.6.23-rc3/arch/i386/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/arch/i386/Kconfig	2007-08-25 21:56:54.000000000 +0800
++++ linux-2.6.23-rc3/arch/i386/Kconfig	2007-08-25 21:57:00.000000000 +0800
+@@ -828,6 +828,13 @@
+           PHYSICAL_START.
+ 	  For more details see Documentation/kdump/kdump.txt
+ 
++config KEXEC_JUMP
++	bool "kexec jump (EXPERIMENTAL)"
++	depends on EXPERIMENTAL
++	depends on PM && X86_32 && KEXEC
++	---help---
++	  Jump back from kexeced kernel to orignal kernel.
++
+ config PHYSICAL_START
+ 	hex "Physical address where the kernel is loaded" if (EMBEDDED || CRASH_DUMP)
+ 	default "0x1000000" if X86_NUMAQ
+Index: linux-2.6.23-rc3/arch/i386/kernel/Makefile
+===================================================================
+--- linux-2.6.23-rc3.orig/arch/i386/kernel/Makefile	2007-08-25 21:56:54.000000000 +0800
++++ linux-2.6.23-rc3/arch/i386/kernel/Makefile	2007-08-25 21:57:00.000000000 +0800
+@@ -30,6 +30,7 @@
+ obj-$(CONFIG_X86_REBOOTFIXUPS)	+= reboot_fixups.o
+ obj-$(CONFIG_KEXEC)		+= machine_kexec.o relocate_kernel.o crash.o
+ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
++obj-$(CONFIG_KEXEC_JUMP)	+= kexec_jump.o
+ obj-$(CONFIG_X86_NUMAQ)		+= numaq.o
+ obj-$(CONFIG_X86_SUMMIT_NUMA)	+= summit.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+Index: linux-2.6.23-rc3/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.23-rc3.orig/Documentation/kernel-parameters.txt	2007-08-25 21:56:54.000000000 +0800
++++ linux-2.6.23-rc3/Documentation/kernel-parameters.txt	2007-08-25 21:57:00.000000000 +0800
+@@ -899,6 +899,14 @@
+ 
+ 	keepinitrd	[HW,ARM]
+ 
++	kexec_backup	[X86-32]
++			Specifies physical address of backup area for 0~640k
++			memory area of original kernel.
++
++	kexec_jump_buf_pfn	[X86-32]
++			Specifies page frame number of jump buffer page used
++			to jump between original kernel and kexeced kernel.
++
+ 	kstack=N	[X86-32,X86-64] Print N words from the kernel stack
+ 			in oops dumps.
+ 
+Index: linux-2.6.23-rc3/kernel/power/Kconfig
+===================================================================
+--- linux-2.6.23-rc3.orig/kernel/power/Kconfig	2007-08-25 21:56:54.000000000 +0800
++++ linux-2.6.23-rc3/kernel/power/Kconfig	2007-08-25 21:57:00.000000000 +0800
+@@ -70,7 +70,7 @@
+ 
+ config PM_SLEEP
+ 	bool
+-	depends on SUSPEND || HIBERNATION
++	depends on SUSPEND || HIBERNATION || KEXEC_JUMP
+ 	default y
+ 
+ config SUSPEND_UP_POSSIBLE
