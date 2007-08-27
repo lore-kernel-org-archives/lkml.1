@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758098AbXH0P5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbXH0P5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758098AbXH0P5S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 11:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbXH0Pzj
+	id S1758079AbXH0P5o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 11:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757039AbXH0Pzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:55:39 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:41870 "EHLO smtp.polymtl.ca"
+	Mon, 27 Aug 2007 11:55:40 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41879 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757211AbXH0Pzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:55:38 -0400
-Message-Id: <20070827155532.874031829@polymtl.ca>
+	id S1757442AbXH0Pzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:55:39 -0400
+Message-Id: <20070827155530.834256125@polymtl.ca>
 References: <20070827155234.062715780@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:53:02 -0400
+Date: Mon, 27 Aug 2007 11:52:56 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com
-Subject: [patch 28/28] Add cmpxchg_local to xtensa
-Content-Disposition: inline; filename=add-cmpxchg-local-to-xtensa.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:55:33 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com,
+       schwidefsky@de.ibm.com, linux390@de.ibm.com
+Subject: [patch 22/28] Add cmpxchg_local to s390
+Content-Disposition: inline; filename=add-cmpxchg-local-to-s390.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:55:31 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the architecture specific __cmpxchg_u32 for 32 bits cmpxchg)_local. Else,
-use the new generic cmpxchg_local (disables interrupt).
+Use the standard __cmpxchg for every type that can be updated atomically.
+Use the new generic cmpxchg_local (disables interrupt) for other types.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: clameter@sgi.com
-chris@zankel.net
+CC: schwidefsky@de.ibm.com
+CC: linux390@de.ibm.com
 ---
- include/asm-xtensa/system.h |   22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ include/asm-s390/system.h |   34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-xtensa/system.h
+Index: linux-2.6-lttng/include/asm-s390/system.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-xtensa/system.h	2007-07-23 11:29:18.000000000 -0400
-+++ linux-2.6-lttng/include/asm-xtensa/system.h	2007-07-23 11:32:32.000000000 -0400
-@@ -156,8 +156,30 @@ __cmpxchg(volatile void *ptr, unsigned l
- 	   			        (unsigned long)_n_, sizeof (*(ptr))); \
- 	})
+--- linux-2.6-lttng.orig/include/asm-s390/system.h	2007-08-27 11:46:43.000000000 -0400
++++ linux-2.6-lttng/include/asm-s390/system.h	2007-08-27 11:48:38.000000000 -0400
+@@ -355,6 +355,40 @@ __cmpxchg(volatile void *ptr, unsigned l
+ 
+ #include <linux/irqflags.h>
  
 +#include <asm-generic/cmpxchg-local.h>
- 
++
 +static inline unsigned long __cmpxchg_local(volatile void *ptr,
 +				      unsigned long old,
 +				      unsigned long new, int size)
 +{
 +	switch (size) {
++	case 1:
++	case 2:
 +	case 4:
-+		return __cmpxchg_u32(ptr, old, new);
++#ifdef __s390x__
++	case 8:
++#endif
++		return __cmpxchg(ptr, old, new, size);
 +	default:
 +		return __cmpxchg_local_generic(ptr, old, new, size);
 +	}
- 
++
 +	return old;
 +}
 +
@@ -60,13 +67,18 @@ Index: linux-2.6-lttng/include/asm-xtensa/system.h
 + * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
 + * them available.
 + */
-+#define cmpxchg_local(ptr,o,n)					  	    \
-+     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
++#define cmpxchg_local(ptr,o,n)						\
++     (__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
 +			   	 (unsigned long)(n), sizeof(*(ptr)))
++#ifdef __s390x__
++#define cmpxchg64_local(ptr,o,n) cmpxchg_local((ptr),(o),(n))
++#else
 +#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
- 
++#endif
++
  /*
-  * xchg_u32
+  * Use to set psw mask except for the first byte which
+  * won't be changed by this function.
 
 -- 
 Mathieu Desnoyers
