@@ -1,77 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751143AbXH0WHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764860AbXH0WHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751143AbXH0WHc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 18:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbXH0WHQ
+	id S1764860AbXH0WHu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 18:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763457AbXH0WHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 18:07:16 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:31610 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753219AbXH0WHO (ORCPT
+	Mon, 27 Aug 2007 18:07:31 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:59454 "EHLO
+	viefep23-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762863AbXH0WH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 18:07:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=KuavD9ypNyfSBBuL9fULkiKPb1VLRx3wpxd102EjUm5UZ7I8P1JwH8akt9weV8gL0W2S/KBc65fgcrBJ4UP0PjobtIAOjVJ1otYBCX76ir8tuFJTQpqJdL+KKmQw0LE0SoXycIDGECjLQE1hKdpsMg2gjU8+EzPu7KLnIwJyqOg=
-Message-ID: <46D34B19.6050006@gmail.com>
-Date: Tue, 28 Aug 2007 00:07:21 +0200
-From: Luka Napotnik <luka.napotnik@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
+	Mon, 27 Aug 2007 18:07:29 -0400
+Content-Disposition: inline
+From: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Ondrej Zary <linux@rainbow-software.org>
+Subject: Fwd: [PATCH] IdealTEK URTC1000 support for usbtouchscreen
+Date: Tue, 28 Aug 2007 00:07:39 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: division and cpu usage
-References: <46CE1BA2.8070200@gmail.com> <Pine.LNX.4.61.0708240731130.8096@chaos.analogic.com> <Pine.LNX.4.64.0708241442590.28540@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0708241442590.28540@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200708280007.40457.daniel.ritz-ml@swissonline.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt pravi:
-> On Aug 24 2007 07:34, linux-os (Dick Johnson) wrote:
->>> I'm new to kernel development and have some questions.
->>>
->>> 1. Why can't I divide with regular casting to double ((double)a /
->>> (double)b)? It gives me strange errors when compiling:
->>>
->>> WARNING: "__divdf3" [/root....] undefined!
->>> WARNING: "__addf3" [/root/...] undefined!
->>> WARNING: "__floatsidf" [/root/...] undefined!
->>>
->>> And if I compile with normal integers, I get zero as the result.
->>>
->>> 2. I'm trying to get the percentage of CPU used for a certain
->>> task_struct and figured the following formula:
->>>
->>> (task->utime + task->stime) / jiffies
+> OK, so here's the new patch, inline this time:
 
-This formula just doesn't work. I have a task with 99% CPU (top) but the
-result of that formula is random (4, sometimes 8). What am I doing
-wrong? Please help.
+thanks. looks fine now. forwarding to Dmitry for mainline inclusion...
 
->>>
->>> Before calculating I convert all the variables to jiffies. Is this correct?
-> 
-> * So use integer math: (task->utime + task->stime) * 100 / jiffies
->   and you get the 'common' percentage. In integer, that is.
-> 
-> * I am not sure about the use of jiffies when it comes to CONFIG_NO_HZ=y.
-> 
->> Floating point operations are not allowed in the kernel. Often,
-> 
-> IIRC they are allowed since ... recently (2.6.16, .17? can't remember). When
-> the kernel tries to execute an FP instruction (and traps as a result), more
-> kernel code will enable that the FP stack gets properly switched when a process
-> changes between userspace-kernelspace.
-> 
->> You can use "long long" for high precision math if necessary.
-> 
-> That will give link failure for __udivdi3. Use do_div().
-> 
-> 
-> 	Jan
+rgds
+-daniel
 
+-----------------
+
+[PATCH] IdealTEK URTC1000 support for usbtouchscreen
+
+This patch adds support for IdealTEK URTC1000 touchscreen controllers.
+
+Documentation can be downloaded at 
+http://projects.tbmn.org/cgi-bin/trac.cgi/wiki/urtc-1000
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Signed-off-by: Daniel Ritz <daniel.ritz@gmx.ch>
+
+
+diff -ur linux-2.6.23-rc3-orig/drivers/input/touchscreen/Kconfig linux-2.6.23-rc3/drivers/input/touchscreen/Kconfig
+--- linux-2.6.23-rc3-orig/drivers/input/touchscreen/Kconfig	2007-08-21 15:32:50.000000000 +0200
++++ linux-2.6.23-rc3/drivers/input/touchscreen/Kconfig	2007-08-23 16:07:08.000000000 +0200
+@@ -191,6 +191,7 @@
+ 	  - Gunze AHL61
+ 	  - DMC TSC-10/25
+ 	  - IRTOUCHSYSTEMS/UNITOP
++	  - IdealTEK URTC1000
+ 
+ 	  Have a look at <http://linux.chapter7.ch/touchkit/> for
+ 	  a usage description and the required user-space stuff.
+@@ -238,4 +239,9 @@
+ 	bool "IRTOUCHSYSTEMS/UNITOP device support" if EMBEDDED
+ 	depends on TOUCHSCREEN_USB_COMPOSITE
+ 
++config TOUCHSCREEN_USB_IDEALTEK
++	default y
++	bool "IdealTEK URTC1000 device support" if EMBEDDED
++	depends on TOUCHSCREEN_USB_COMPOSITE
++
+ endif
+diff -ur linux-2.6.23-rc3-orig/drivers/input/touchscreen/usbtouchscreen.c linux-2.6.23-rc3/drivers/input/touchscreen/usbtouchscreen.c
+--- linux-2.6.23-rc3-orig/drivers/input/touchscreen/usbtouchscreen.c	2007-08-23 16:24:16.000000000 +0200
++++ linux-2.6.23-rc3/drivers/input/touchscreen/usbtouchscreen.c	2007-08-27 09:29:06.000000000 +0200
+@@ -10,6 +10,7 @@
+  *  - Gunze AHL61
+  *  - DMC TSC-10/25
+  *  - IRTOUCHSYSTEMS/UNITOP
++ *  - IdealTEK URTC1000
+  *
+  * Copyright (C) 2004-2006 by Daniel Ritz <daniel.ritz@gmx.ch>
+  * Copyright (C) by Todd E. Johnson (mtouchusb.c)
+@@ -92,7 +93,7 @@
+ };
+ 
+ 
+-#if defined(CONFIG_TOUCHSCREEN_USB_EGALAX) || defined(CONFIG_TOUCHSCREEN_USB_ETURBO)
++#if defined(CONFIG_TOUCHSCREEN_USB_EGALAX) || defined(CONFIG_TOUCHSCREEN_USB_ETURBO) || defined(CONFIG_TOUCHSCREEN_USB_IDEALTEK)
+ #define MULTI_PACKET
+ #endif
+ 
+@@ -112,6 +113,7 @@
+ 	DEVTYPE_GUNZE,
+ 	DEVTYPE_DMC_TSC10,
+ 	DEVTYPE_IRTOUCH,
++	DEVTYPE_IDEALTEK,
+ };
+ 
+ static struct usb_device_id usbtouch_devices[] = {
+@@ -157,6 +159,10 @@
+ 	{USB_DEVICE(0x6615, 0x0001), .driver_info = DEVTYPE_IRTOUCH},
+ #endif
+ 
++#ifdef CONFIG_TOUCHSCREEN_USB_IDEALTEK
++	{USB_DEVICE(0x1391, 0x1000), .driver_info = DEVTYPE_IDEALTEK},
++#endif
++
+ 	{}
+ };
+ 
+@@ -438,6 +444,39 @@
+ 
+ 
+ /*****************************************************************************
++ * IdealTEK URTC1000 Part
++ */
++#ifdef CONFIG_TOUCHSCREEN_USB_IDEALTEK
++static int idealtek_get_pkt_len(unsigned char *buf, int len)
++{
++	if (buf[0] & 0x80)
++		return 5;
++	if (buf[0] == 0x01)
++		return len;
++	return 0;
++}
++
++static int idealtek_read_data(struct usbtouch_usb *dev, unsigned char *pkt)
++{
++	if ((pkt[0] & 0x98) == 0x88) {
++		/* touch data in IdealTEK mode */
++		dev->x = (pkt[1] << 5) | (pkt[2] >> 2);
++		dev->y = (pkt[3] << 5) | (pkt[4] >> 2);
++		dev->touch = (pkt[0] & 0x40) ? 1 : 0;
++		return 1;
++	} else if ((pkt[0] & 0x98) == 0x98) {
++		/* touch data in MT emulation mode */
++		dev->x = (pkt[2] << 5) | (pkt[1] >> 2);
++		dev->y = (pkt[4] << 5) | (pkt[3] >> 2);
++		dev->touch = (pkt[0] & 0x40) ? 1 : 0;
++		return 1;
++	}
++	return 0;
++}
++#endif
++
++
++/*****************************************************************************
+  * the different device descriptors
+  */
+ static struct usbtouch_device_info usbtouch_dev_info[] = {
+@@ -537,6 +576,20 @@
+ 		.read_data	= irtouch_read_data,
+ 	},
+ #endif
++
++#ifdef CONFIG_TOUCHSCREEN_USB_IDEALTEK
++	[DEVTYPE_IDEALTEK] = {
++		.min_xc		= 0x0,
++		.max_xc		= 0x0fff,
++		.min_yc		= 0x0,
++		.max_yc		= 0x0fff,
++		.rept_size	= 8,
++		.flags		= USBTOUCH_FLG_BUFFER,
++		.process_pkt	= usbtouch_process_multi,
++		.get_pkt_len	= idealtek_get_pkt_len,
++		.read_data	= idealtek_read_data,
++	},
++#endif
+ };
+ 
+ 
+
+
+-- 
+Ondrej Zary
+
+-------------------------------------------------------
