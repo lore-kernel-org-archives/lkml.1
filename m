@@ -1,141 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbXH0QjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760194AbXH0Qjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757862AbXH0QjY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757509AbXH0Qh6
+	id S1760194AbXH0Qjw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbXH0Qh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 27 Aug 2007 12:37:58 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54168 "EHLO smtp.polymtl.ca"
+Received: from smtp.polymtl.ca ([132.207.4.11]:54179 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757191AbXH0Qh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 12:37:56 -0400
-Message-Id: <20070827155525.463431665@polymtl.ca>
+	id S1757293AbXH0Qh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 12:37:57 -0400
+Message-Id: <20070827155527.504300673@polymtl.ca>
 References: <20070827155234.062715780@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:52:40 -0400
+Date: Mon, 27 Aug 2007 11:52:46 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com
-Subject: [patch 06/28] Add cmpxchg_local to asm-generic for per cpu atomic operations
-Content-Disposition: inline; filename=add-cmpxchg-local-to-generic-for-up.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 16:37:49 +0000
+Subject: [patch 12/28] Add cmpxchg_local to h8300
+Content-Disposition: inline; filename=add-cmpxchg-local-to-h8300.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 16:37:52 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Emulates the cmpxchg_local by disabling interrupts around variable modification.
-This is not reentrant wrt NMIs and MCEs. It is only protected against normal
-interrupts, but this is enough for architectures without such interrupt sources
-or if used in a context where the data is not shared with such handlers.
-
-It can be used as a fallback for architectures lacking a real cmpxchg
-instruction.
-
-For architectures that have a real cmpxchg but does not have NMIs or MCE,
-testing which of the generic vs architecture specific cmpxchg is the fastest
-should be done.
-
-asm-generic/cmpxchg.h defines a cmpxchg that uses cmpxchg_local. It is meant to
-be used as a cmpxchg fallback for architectures that do not support SMP.
+Use the new generic cmpxchg_local (disables interrupt). Also use the generic
+cmpxchg as fallback if SMP is not set.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: clameter@sgi.com
 ---
- include/asm-generic/cmpxchg-local.h |   60 ++++++++++++++++++++++++++++++++++++
- include/asm-generic/cmpxchg.h       |   22 +++++++++++++
- 2 files changed, 82 insertions(+)
+ include/asm-h8300/system.h |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-generic/cmpxchg.h
+Index: linux-2.6-lttng/include/asm-h8300/system.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/asm-generic/cmpxchg.h	2007-08-22 10:45:12.000000000 -0400
-@@ -0,0 +1,22 @@
-+#ifndef __ASM_GENERIC_CMPXCHG_H
-+#define __ASM_GENERIC_CMPXCHG_H
+--- linux-2.6-lttng.orig/include/asm-h8300/system.h	2007-07-20 18:36:09.000000000 -0400
++++ linux-2.6-lttng/include/asm-h8300/system.h	2007-07-20 19:27:23.000000000 -0400
+@@ -139,6 +139,21 @@ static inline unsigned long __xchg(unsig
+         asm("jmp @@0");			\
+ })
+ 
++#include <asm-generic/cmpxchg-local.h>
 +
 +/*
-+ * Generic cmpxchg
-+ *
-+ * Uses the local cmpxchg. Does not support SMP.
++ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
++ * them available.
 + */
-+#ifdef CONFIG_SMP
-+#error "Cannot use generic cmpxchg on SMP"
++#define cmpxchg_local(ptr,o,n)					  	    \
++     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
++			   	 (unsigned long)(n), sizeof(*(ptr)))
++#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
++
++#ifndef CONFIG_SMP
++#include <asm-generic/cmpxchg.h>
 +#endif
 +
-+/*
-+ * Atomic compare and exchange.
-+ *
-+ * Do not define __HAVE_ARCH_CMPXCHG because we want to use it to check whether
-+ * a cmpxchg primitive faster than repeated local irq save/restore exists.
-+ */
-+#define cmpxchg(ptr,o,n)	cmpxchg_local((ptr), (o), (n))
-+#define cmpxchg64(ptr,o,n)	cmpxchg64_local((ptr), (o), (n))
-+
-+#endif
-Index: linux-2.6-lttng/include/asm-generic/cmpxchg-local.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/asm-generic/cmpxchg-local.h	2007-08-20 17:54:12.000000000 -0400
-@@ -0,0 +1,60 @@
-+#ifndef __ASM_GENERIC_CMPXCHG_LOCAL_H
-+#define __ASM_GENERIC_CMPXCHG_LOCAL_H
-+
-+#include <linux/types.h>
-+
-+extern unsigned long wrong_size_cmpxchg(volatile void *ptr);
-+
-+/*
-+ * Generic version of __cmpxchg_local (disables interrupts). Takes an unsigned
-+ * long parameter, supporting various types of architectures.
-+ */
-+static inline unsigned long __cmpxchg_local_generic(volatile void *ptr,
-+				    unsigned long old,
-+				    unsigned long new, int size)
-+{
-+	unsigned long flags, prev;
-+
-+	/*
-+	 * Sanity checking, compile-time.
-+	 */
-+	if (size == 8 && sizeof(unsigned long) != 8)
-+		wrong_size_cmpxchg(ptr);
-+
-+	local_irq_save(flags);
-+	switch (size) {
-+	case 1: if ((prev = *(u8*)ptr) == old)
-+			*(u8*)ptr = (u8)new;
-+		break;
-+	case 2: if ((prev = *(u16*)ptr) == old)
-+			*(u16*)ptr = (u16)new;
-+		break;
-+	case 4: if ((prev = *(u32*)ptr) == old)
-+			*(u32*)ptr = (u32)new;
-+		break;
-+	case 8: if ((prev = *(u64*)ptr) == old)
-+			*(u64*)ptr = (u64)new;
-+		break;
-+	default:
-+		wrong_size_cmpxchg(ptr);
-+	}
-+	local_irq_restore(flags);
-+	return prev;
-+}
-+
-+/*
-+ * Generic version of __cmpxchg64_local. Takes an u64 parameter.
-+ */
-+static inline u64 __cmpxchg64_local_generic(volatile void *ptr, u64 old, u64 new)
-+{
-+	u64 prev;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	if ((prev = *(u64*)ptr) == old)
-+		*(u64*)ptr = new;
-+	local_irq_restore(flags);
-+	return prev;
-+}
-+
-+#endif
+ #define arch_align_stack(x) (x)
+ 
+ #endif /* _H8300_SYSTEM_H */
 
 -- 
 Mathieu Desnoyers
