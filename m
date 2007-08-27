@@ -1,104 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761734AbXH0QTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762223AbXH0QTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761734AbXH0QTI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760237AbXH0QI4
+	id S1762223AbXH0QTm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760423AbXH0QJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 12:08:56 -0400
-Received: from il.qumranet.com ([82.166.9.18]:60659 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760541AbXH0QIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 12:08:53 -0400
-Message-ID: <46D2F680.9060100@qumranet.com>
-Date: Mon, 27 Aug 2007 19:06:24 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 27 Aug 2007 12:09:18 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:53234 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760154AbXH0QJQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 12:09:16 -0400
+Date: Mon, 27 Aug 2007 18:09:16 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Daniel Walker <dwalker@mvista.com>,
+       =?utf-8?B?QmrDtnJu?= Steinbrink <B.Steinbrink@gmx.de>,
+       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: Who wants to maintain KR list for stable releases? (was Re:
+	nmi_watchdog=2 regression in 2.6.21)
+Message-ID: <20070827160916.GF4121@stusta.de>
+References: <1186531609.22044.50.camel@imap.mvista.com> <20070808142059.GF30805@atjola.homenet> <1187628296.7732.14.camel@imap.mvista.com> <46CDE94A.7000600@googlemail.com> <1187904169.2435.83.camel@dhcp193.mvista.com> <46D21E8E.4000003@googlemail.com> <20070827005131.b93f5935.akpm@linux-foundation.org> <46D29C3D.5070801@garzik.org>
 MIME-Version: 1.0
-To: Anthony Liguori <aliguori@us.ibm.com>
-CC: kvm-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-       Dor Laor <dor.laor@qumranet.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] Refactor hypercall infrastructure
-References: <11882278064002-git-send-email-aliguori@us.ibm.com> <1188227808405-git-send-email-aliguori@us.ibm.com> <11882278082826-git-send-email-aliguori@us.ibm.com>
-In-Reply-To: <11882278082826-git-send-email-aliguori@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46D29C3D.5070801@garzik.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> This patch refactors the current hypercall infrastructure to better support live
-> migration and SMP.  It eliminates the hypercall page by trapping the UD
-> exception that would occur if you used the wrong hypercall instruction for the
-> underlying architecture and replacing it with the right one lazily.
+On Mon, Aug 27, 2007 at 05:41:17AM -0400, Jeff Garzik wrote:
+> Andrew Morton wrote:
+>> What I'm concerned about is that regressions which we didn't fix are just
+>> getting lost.  Is anyone taking care to ensure that they are getting
+>> transitioned into bugzilla for tracking?
 >
-> It also introduces the infrastructure to probe for hypercall available via
-> CPUID leaves 0x40000002 and 0x40000003.
->
-> A fall-out of this patch is that the unhandled hypercalls no longer trap to
-> userspace.  There is very little reason though to use a hypercall to communicate
-> with userspace as PIO or MMIO can be used.  There is no code in tree that uses
-> userspace hypercalls.
->
->   
+> Maybe this was a dumb assumption on my part, but I thought regressions were 
+> getting rolled over into the next release's list, if they are not solved?
 
-Allowing userspace to handle hypercalls means that we can have block and 
-net drivers in the kernel or userspace, reflecting user privileges and 
-performance/flxibility tradeoffs.  I think that's an important feature 
-to have.
+Judging from the regression lists and the regression reports we get 
+post-release both on lkml and in the kernel Bugzilla we have much more 
+than 100 unfixed regressions since 2.6.20 (plus regressions from older 
+kernels...).
 
+Tracking that many regressions is one problem (although getting all bug 
+reports in Bugzilla would make this quite easy), but the bigger problem 
+is how to get them debugged and resolved.
 
->  void kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
->  {
->  	int i;
-> @@ -1632,6 +1575,12 @@ void kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
->  	vcpu->regs[VCPU_REGS_RBX] = 0;
->  	vcpu->regs[VCPU_REGS_RCX] = 0;
->  	vcpu->regs[VCPU_REGS_RDX] = 0;
-> +
-> +	if ((function & 0xFFFF0000) == 0x40000000) {
-> +		emulate_paravirt_cpuid(vcpu, function);
-> +		goto out;
-> +	}
-> +
->   
+> 	Jeff
 
-Hmm.  Suppose we expose kvm capabilities to host userspace instead, and 
-let the host userspace decide which features to expose to the guest via 
-the regular cpuid emulation?  That allows the qemu command line to 
-control the feature set.
-
->  
-> +static int ud_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
-> +{
-> +	int er;
-> +	
-> +	er = emulate_instruction(&svm->vcpu, kvm_run, 0, 0);
-> +
-> +	/* we should only succeed here in the case of hypercalls which
-> +	   cannot generate an MMIO event.  MMIO means that the emulator
-> +	   is mistakenly allowing an instruction that should generate
-> +	   a UD fault so it's a bug. */
-> +	BUG_ON(er == EMULATE_DO_MMIO);
->   
-
-It's a guest-triggerable bug; one vcpu can be issuing ud2-in-a-loop 
-while the other replaces the instruction with something that does mmio.
-
-> +
-> +#define KVM_ENOSYS		ENOSYS
->   
-
-A real number (well, an integer, not a real) here please.  I know that 
-ENOSYS isn't going to change soon, but this file defines the kvm abi and 
-I'd like it to be as independent as possible.
-
-Let's start it at 1000 so that spurious "return 1"s or "return -1"s 
-don't get translated into valid error numbers.
-
-I really like the simplification to the guest/host interface that this 
-patch brings.
+cu
+Adrian
 
 -- 
-Any sufficiently difficult bug is indistinguishable from a feature.
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
