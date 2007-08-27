@@ -1,139 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbXH0R2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761306AbXH0R2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbXH0R2U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbXH0R13
+	id S1761306AbXH0R2m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760650AbXH0R1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:27:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41706 "EHLO mx1.redhat.com"
+	Mon, 27 Aug 2007 13:27:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41810 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758223AbXH0R11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 13:27:27 -0400
-Date: Mon, 27 Aug 2007 13:27:23 -0400
-Message-Id: <200708271727.l7RHRNXo007260@dantu.rdu.redhat.com>
+	id S1760595AbXH0R1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 13:27:37 -0400
+Date: Mon, 27 Aug 2007 13:27:33 -0400
+Message-Id: <200708271727.l7RHRXdK007265@dantu.rdu.redhat.com>
 From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 2/4] NFS: add nfs_killattr inode_operation
+Subject: [PATCH 3/4] CIFS: add cifs_killattr inode_operation
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the nfs_killattr inode operation. For NFS, we generally want the server
-to handle clearing these bits. So the function is really just a noop.
+..make it just clear the ATTR_KILL_S*ID bits since we want the
+server to handle it.
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
- fs/nfs/dir.c           |    3 +++
- fs/nfs/file.c          |    2 ++
- fs/nfs/inode.c         |   10 ++++++++++
- fs/nfs/nfs4proc.c      |    1 +
- fs/nfs/symlink.c       |    1 +
- include/linux/nfs_fs.h |    1 +
- 6 files changed, 18 insertions(+), 0 deletions(-)
+ fs/cifs/cifsfs.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index 74fe1e2..ac22770 100644
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -78,6 +78,7 @@ const struct inode_operations nfs_dir_inode_operations = {
- 	.permission	= nfs_permission,
- 	.getattr	= nfs_getattr,
- 	.setattr	= nfs_setattr,
-+	.killattr	= nfs_killattr,
- };
- 
- #ifdef CONFIG_NFS_V3
-@@ -98,6 +99,7 @@ const struct inode_operations nfs3_dir_inode_operations = {
- 	.getxattr	= nfs3_getxattr,
- 	.setxattr	= nfs3_setxattr,
- 	.removexattr	= nfs3_removexattr,
-+	.killattr	= nfs_killattr,
- };
- #endif  /* CONFIG_NFS_V3 */
- 
-@@ -120,6 +122,7 @@ const struct inode_operations nfs4_dir_inode_operations = {
- 	.getxattr       = nfs4_getxattr,
- 	.setxattr       = nfs4_setxattr,
- 	.listxattr      = nfs4_listxattr,
-+	.killattr	= nfs_killattr,
- };
- 
- #endif /* CONFIG_NFS_V4 */
-diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-index 591d59c..169c2a9 100644
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -80,6 +80,7 @@ const struct inode_operations nfs_file_inode_operations = {
- 	.permission	= nfs_permission,
- 	.getattr	= nfs_getattr,
- 	.setattr	= nfs_setattr,
-+	.killattr	= nfs_killattr,
- };
- 
- #ifdef CONFIG_NFS_V3
-@@ -91,6 +92,7 @@ const struct inode_operations nfs3_file_inode_operations = {
- 	.getxattr	= nfs3_getxattr,
- 	.setxattr	= nfs3_setxattr,
- 	.removexattr	= nfs3_removexattr,
-+	.killattr	= nfs_killattr,
- };
- #endif  /* CONFIG_NFS_v3 */
- 
-diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
-index 45633f9..3d68a8d 100644
---- a/fs/nfs/inode.c
-+++ b/fs/nfs/inode.c
-@@ -316,6 +316,16 @@ out_no_inode:
- 	goto out;
+diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+index cabb6a5..c357c55 100644
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -553,6 +553,13 @@ static loff_t cifs_llseek(struct file *file, loff_t offset, int origin)
+ 	return remote_llseek(file, offset, origin);
  }
  
-+/*
-+ * On NFS, we want the server to handle clearing of setuid/setgid. Make this
-+ * a noop.
-+ */
-+void
-+nfs_killattr(struct dentry *dentry, struct iattr *attr)
++/* The server should handle this, so we just clear the bits */
++static void cifs_killattr(struct dentry *dentry, struct iattr *attr)
 +{
++	attr->ia_valid &= ~(ATTR_KILL_SUID|ATTR_KILL_SGID);
 +	return;
 +}
 +
- #define NFS_VALID_ATTRS (ATTR_MODE|ATTR_UID|ATTR_GID|ATTR_SIZE|ATTR_ATIME|ATTR_ATIME_SET|ATTR_MTIME|ATTR_MTIME_SET)
- 
- int
-diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
-index b49aa05..7643a25 100644
---- a/fs/nfs/nfs4proc.c
-+++ b/fs/nfs/nfs4proc.c
-@@ -3711,6 +3711,7 @@ static const struct inode_operations nfs4_file_inode_operations = {
- 	.getxattr	= nfs4_getxattr,
- 	.setxattr	= nfs4_setxattr,
- 	.listxattr	= nfs4_listxattr,
-+	.killattr	= nfs_killattr,
- };
- 
- const struct nfs_rpc_ops nfs_v4_clientops = {
-diff --git a/fs/nfs/symlink.c b/fs/nfs/symlink.c
-index 83e865a..fd0a880 100644
---- a/fs/nfs/symlink.c
-+++ b/fs/nfs/symlink.c
-@@ -77,4 +77,5 @@ const struct inode_operations nfs_symlink_inode_operations = {
- 	.put_link	= page_put_link,
- 	.getattr	= nfs_getattr,
- 	.setattr	= nfs_setattr,
-+	.killattr	= nfs_killattr,
- };
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index c444d24..bea2cf1 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -301,6 +301,7 @@ extern int __nfs_revalidate_inode(struct nfs_server *, struct inode *);
- extern int nfs_revalidate_mapping(struct inode *inode, struct address_space *mapping);
- extern int nfs_revalidate_mapping_nolock(struct inode *inode, struct address_space *mapping);
- extern int nfs_setattr(struct dentry *, struct iattr *);
-+extern void nfs_killattr(struct dentry *dentry, struct iattr *attr);
- extern void nfs_setattr_update_inode(struct inode *inode, struct iattr *attr);
- extern void nfs_begin_attr_update(struct inode *);
- extern void nfs_end_attr_update(struct inode *);
+ static struct file_system_type cifs_fs_type = {
+ 	.owner = THIS_MODULE,
+ 	.name = "cifs",
+@@ -574,6 +581,7 @@ const struct inode_operations cifs_dir_inode_ops = {
+ 	.setattr = cifs_setattr,
+ 	.symlink = cifs_symlink,
+ 	.mknod   = cifs_mknod,
++	.killattr = cifs_killattr,
+ #ifdef CONFIG_CIFS_XATTR
+ 	.setxattr = cifs_setxattr,
+ 	.getxattr = cifs_getxattr,
+@@ -588,6 +596,7 @@ const struct inode_operations cifs_file_inode_ops = {
+ 	.getattr = cifs_getattr, /* do we need this anymore? */
+ 	.rename = cifs_rename,
+ 	.permission = cifs_permission,
++	.killattr = cifs_killattr,
+ #ifdef CONFIG_CIFS_XATTR
+ 	.setxattr = cifs_setxattr,
+ 	.getxattr = cifs_getxattr,
 -- 
 1.5.2.1
 
