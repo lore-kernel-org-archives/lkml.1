@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbXH1RXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbXH1RX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759565AbXH1RXQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 13:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbXH1RW6
+	id S1759209AbXH1RX3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 13:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754346AbXH1RXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 13:22:58 -0400
-Received: from ozlabs.org ([203.10.76.45]:57080 "EHLO ozlabs.org"
+	Tue, 28 Aug 2007 13:23:01 -0400
+Received: from ozlabs.org ([203.10.76.45]:57084 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752921AbXH1RW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 13:22:56 -0400
-Subject: Re: [PATCH 1/1] hotplug cpu: migrate a task within its cpuset
+	id S1754705AbXH1RXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 13:23:00 -0400
+Subject: [PATCH] Fix lguest page-pinning logic ("lguest: bad stack page
+	0xc057a000")
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ego@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
-       Cliff Wickman <cpw@sgi.com>, mingo@elte.hu, vatsa@in.ibm.com,
-       pj@sgi.com, linux-kernel@vger.kernel.org, ntl@in.ibm.com,
-       Dipankar Sarma <dipankar@in.ibm.com>
-In-Reply-To: <20070826010903.7599c22e.akpm@linux-foundation.org>
-References: <20070824221806.GA3602@sgi.com>
-	 <20070824155455.cc161b61.akpm@linux-foundation.org>
-	 <20070825094740.GA106@tv-sign.ru> <20070826001625.GA17962@in.ibm.com>
-	 <1188089244.19877.3.camel@localhost.localdomain>
-	 <20070826010903.7599c22e.akpm@linux-foundation.org>
+To: Frederik Deweerdt <deweerdt@free.fr>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lguest <lguest@ozlabs.org>
+In-Reply-To: <20070825211405.GA18217@slug>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	 <20070822202551.GB31846@slug>
+	 <20070823145038.9895784f.akpm@linux-foundation.org>
+	 <20070824060438.GE31846@slug> <46CE7EDC.9080007@goop.org>
+	 <20070824082249.GG31846@slug>
+	 <1188043649.20041.81.camel@localhost.localdomain>
+	 <20070825122324.GA6138@slug>  <20070825211405.GA18217@slug>
 Content-Type: text/plain
-Date: Mon, 27 Aug 2007 17:01:34 +1000
-Message-Id: <1188198094.5531.13.camel@localhost.localdomain>
+Date: Tue, 28 Aug 2007 02:09:59 +1000
+Message-Id: <1188230999.5531.15.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-08-26 at 01:09 -0700, Andrew Morton wrote:
-> On Sun, 26 Aug 2007 10:47:24 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > Userspace is not monolithic.  If you refuse to take a CPU offline
-> > because a task is affine, then any user can prevent a CPU from going
-> > offline.
-> 
-> That's a kernel bug.
+If the stack pointer is 0xc057a000, then the first stack page is at
+0xc0579000 (the stack pointer is decremented before use).  Not
+calculating this correctly caused guests with CONFIG_DEBUG_PAGEALLOC=y
+to be killed with a "bad stack page" message: the initial kernel stack
+was just preceeding the .smp_locks section which
+CONFIG_DEBUG_PAGEALLOC marks read-only when freeing.
 
-You mean "would be if it were implemented"?  Although consider the
-equivalent forkbomb or thrashing userspace problems, where we just say
-"use quotas".
+Thanks to Frederik Deweerdt for the bug report!
 
-Just to clarify: that is not how we work, we migrate tasks off a dying
-CPU, breaking affinity and printing a warning if necessary.  
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-It was simple and has not proven problematic in practice.  (Userspace
-cpu affinity has been a question of optimality not correctness)
-
-> > You could, perhaps, introduce a "gentle" offline which fails if process
-> > affinity can no longer be met.
-> 
-> Suitably privileged userspace should be able to
-> 
-> 1) prevent tasks from binding to CPU N then
-> 2) migrate all tasks which can use CPU N over to other CPU(s) then
-> 3) offline CPU N.
-
-Indeed, (1) is missing.  I would hesitate to introduce more
-infrastructure in an under-worn and over-buggy part of the kernel
-though.
-
-Rusty.
+diff -r cb71c5b0bbb5 drivers/lguest/interrupts_and_traps.c
+--- a/drivers/lguest/interrupts_and_traps.c	Sun Aug 26 10:31:53 2007 +1000
++++ b/drivers/lguest/interrupts_and_traps.c	Sun Aug 26 10:34:44 2007 +1000
+@@ -270,8 +270,11 @@ void pin_stack_pages(struct lguest *lg)
+ 	/* Depending on the CONFIG_4KSTACKS option, the Guest can have one or
+ 	 * two pages of stack space. */
+ 	for (i = 0; i < lg->stack_pages; i++)
+-		/* The stack grows *upwards*, hence the subtraction */
+-		pin_page(lg, lg->esp1 - i * PAGE_SIZE);
++		/* The stack grows *upwards*, so the address we're given is the
++		 * start of the page after the kernel stack.  Subtract one to
++		 * get back onto the first stack page, and keep subtracting to
++		 * get to the rest of the stack pages. */
++		pin_page(lg, lg->esp1 - 1 - i * PAGE_SIZE);
+ }
+ 
+ /* Direct traps also mean that we need to know whenever the Guest wants to use
 
 
