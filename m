@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933262AbXH0VsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbXH0Vss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933262AbXH0VsT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765683AbXH0Vc3
+	id S1760065AbXH0Vss (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933387AbXH0Vdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:32:29 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51660 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760625AbXH0Vc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:32:27 -0400
-Date: Mon, 27 Aug 2007 23:32:48 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: cpu hotplug support broken in 2.6.23-rc3
-Message-ID: <20070827213248.GF3398@elf.ucw.cz>
-References: <20070827104350.GA2073@elf.ucw.cz> <20070827105801.GA4053@elf.ucw.cz> <b6a2187b0708270736q5cfc180fp3c223a57ea6904f9@mail.gmail.com>
+	Mon, 27 Aug 2007 17:33:44 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:28569 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933374AbXH0Vdl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 17:33:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=Euv8+laIUD5UlxucGfoAEmN8lq4tnid6mpzVynh9O+gxkC9z184Ufnx0GLEUg2WFBS3gNQd60tBe9BSia1i+lutVSKOffJBsOSypfb4qpcfOGchleeYZCPnm9xQz/9hTmEaMwNxkx068HS5slgkxaG8wEEsGuGXQKOKHWyKYNeM=
+Date: Tue, 28 Aug 2007 01:33:23 +0400
+To: Joe Perches <joe@perches.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] trivial - constify sched.h
+Message-ID: <20070827213323.GA1759@martell.zuzino.mipt.ru>
+References: <1188247231.18004.129.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b6a2187b0708270736q5cfc180fp3c223a57ea6904f9@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <1188247231.18004.129.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2007-08-27 22:36:57, Jeff Chua wrote:
-> On 8/27/07, Pavel Machek <pavel@ucw.cz> wrote:
-> > On Mon 2007-08-27 12:43:50, Pavel Machek wrote:
-> > > Hi!
-> > >
-> > > Trying to do few onlines/offlines reliably hangs my machine (thinkpad
-> > > x60, i386 architecture).
-> 
-> I just 3 cycles of on-line/off-line on 2.6.23-rc3 on ThinkPad x60s,
-> and my system still survives.
+On Mon, Aug 27, 2007 at 01:40:31PM -0700, Joe Perches wrote:
+> Add const to some struct task_struct * uses
 
-Can you try 20-or-so tests? Mine hangs randomly, so it survived 4 or
-so cycles at one point.
+Why, oh, why? This way code there are more characters on screen and zero
+change in vmlinux, at least here.
 
-...or maybe difference is in the .config, or maybe I broken something
-in my kernel sources....
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1222,22 +1222,22 @@ static inline int rt_prio(int prio)
+>  	return 0;
+>  }
+>  
+> -static inline int rt_task(struct task_struct *p)
+> +static inline int rt_task(const struct task_struct *p)
+>  {
+>  	return rt_prio(p->prio);
+>  }
+	...
