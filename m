@@ -1,104 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932381AbXH0UbF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbXH0Ubl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932381AbXH0UbF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 16:31:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762254AbXH0UZH
+	id S933115AbXH0Ubl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 16:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762955AbXH0U0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 16:25:07 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:44006 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761934AbXH0UZE (ORCPT
+	Mon, 27 Aug 2007 16:26:13 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38450 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763102AbXH0U0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 16:25:04 -0400
-Date: Mon, 27 Aug 2007 16:25:02 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+	Mon, 27 Aug 2007 16:26:11 -0400
+Date: Mon, 27 Aug 2007 13:26:11 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [PATCH] SLUB: use have_arch_cmpxchg()
-Message-ID: <20070827202501.GC5653@Krystal>
-References: <20070821234702.GE29691@Krystal> <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com> <20070822000323.GG29691@Krystal> <Pine.LNX.4.64.0708211704260.7852@schroedinger.engr.sgi.com> <20070822002616.GA1400@Krystal> <Pine.LNX.4.64.0708211731410.3354@schroedinger.engr.sgi.com> <20070822150248.GB8504@Krystal> <84144f020708220924y6d707d50md1c95eeb58d5ce7@mail.gmail.com> <20070827145627.GB18504@Krystal> <Pine.LNX.4.64.0708271240350.5056@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708271240350.5056@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:22:20 up 28 days, 20:41,  4 users,  load average: 0.03, 0.17, 0.24
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+In-Reply-To: <20070827202203.GB5653@Krystal>
+Message-ID: <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com>
+References: <20070820204126.GA22507@Krystal>
+ <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com>
+ <20070820212922.GA27011@Krystal> <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
+ <20070820215413.GA28452@Krystal> <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
+ <20070821173849.GA8360@Krystal> <Pine.LNX.4.64.0708211612580.6062@schroedinger.engr.sgi.com>
+ <1188197539.6114.426.camel@twins> <Pine.LNX.4.64.0708271237580.5056@schroedinger.engr.sgi.com>
+ <20070827202203.GB5653@Krystal>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> On Mon, 27 Aug 2007, Mathieu Desnoyers wrote:
-> 
-> > Hrm, actually, I don't think such have_arch_cmpxchg() macro will be
-> > required at all because of the small performance hit disabling
-> > preemption will have on the slow and fast paths. Let's compare, for each
-> > of the slow path and fast path, what locking looks like on architecture
-> > with and without local cmpxchg:
+On Mon, 27 Aug 2007, Mathieu Desnoyers wrote:
+
+> * Christoph Lameter (clameter@sgi.com) wrote:
+> > On Mon, 27 Aug 2007, Peter Zijlstra wrote:
 > > 
-> > What we actually do here is:
+> > > So, if the fast path can be done with a preempt off, it might be doable
+> > > to suffer the slow path with a per cpu lock like that.
 > > 
-> > fast path:
-> > with local_cmpxchg:
-> >   preempt_disable()
-> >   preempt_enable()
-> > without local_cmpxchg:
-> >   preempt_disable()
-> >   local_irq_save
-> >   local_irq_restore
-> >   preempt_enable()
-> >     (we therefore disable preemption _and_ disable interrupts for
-> >     nothing)
-> 
-> Hmmm..... This is a performance issue for preempt kernels.
-> 
-> > slow path:
-> > both with and without local_cmpxchg():
-> >   preempt_disable()
-> >   preempt_enable()
-> 
-> Here we potentially loose our per cpu structure since the process may be 
-> rescheduled.
-> 
-
-Yes, what you do here is more precisely:
-
-  preempt_disable()
-  local_irq_save()
-  preempt_enable_no_resched()
-  ...
-  local_irq_restore()
-  preempt_check_resched()
-
-
-> >   local_irq_save()
-> >   local_irq_restore()
+> > Sadly the cmpxchg_local requires local per cpu data access. Isnt there 
+> > some way to make this less expensive on RT? Acessing cpu local memory is 
+> > really good for performance on NUMA since the data is optimally placed and 
+> > one can avoid/reduce locking if the process stays tied to the processor.
 > > 
-> > 
-> > Therefore, we would add preempt disable/enable to the fast path of
-> > architectures where local_cmpxchg is emulated with irqs off. But since
-> > preempt disable/enable is just a check counter increment/decrement with
-> > barrier() and thread flag check, I doubt it would hurt performances
-> > enough to justify the added complexity of disabling interrupts for the
-> > whole fast path in this case.
 > 
-> One additional cacheline referenced in the hot path. Ok the counter may be 
-> hot as well if this is a preemptible kernel. Nevertheless a cause for 
-> concern.
-> 
+> On the slow path, in slab_new, we already have to reenable interrupts
+> because we can sleep. If we make sure that whenever we return to an irq
+> disable code path we take the current per-cpu data structure again, can
+> we make the preempt-disable/irq-disabled code paths O(1) ?
 
-If kernel is non preemptible, the macros preempt_*() are defined to
-nothing. And as you say, on preemptible kernels, these variables (thread
-flags and preempt count) are very likely to be in cache, since they are
-in the thread info struct, but it should still be kept in mind.
+Not sure exactly what you are getting at?
+This would mean running __alloc_pages tied to one processor even though 
+waiting is possible?
 
-Mathieu
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
