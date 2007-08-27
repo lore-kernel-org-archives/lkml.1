@@ -1,101 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764027AbXH0Vw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764170AbXH0Vxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764027AbXH0Vw7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759549AbXH0Vlz
+	id S1764170AbXH0Vxg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759531AbXH0Vmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:41:55 -0400
-Received: from s36.avahost.net ([74.53.95.194]:35026 "EHLO s36.avahost.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964874AbXH0Vlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:41:53 -0400
-Message-ID: <46D34517.4010505@katalix.com>
-Date: Mon, 27 Aug 2007 22:41:43 +0100
-From: James Chapman <jchapman@katalix.com>
-Organization: Katalix Systems Ltd
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 27 Aug 2007 17:42:47 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:16092 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762858AbXH0Vmp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 17:42:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RZ88iBYGynWGsBo5eKweiB+55GfHkGe+6ZXNb+tIHp/i4FQC11XZmg9b20rDc0OdsuCTKLoNxF+9m0qKdOrDAEAgH9ZB5etbzdojvvqxH5kB048CAlEtWQZ6lqrtf0w9eS4FerrM3KSqwVkIyDWiGP0FLjMFfnp8xLnreeBqDxM=
+Message-ID: <8bd0f97a0708271442l4a2f8c76if38ae002b2d32f03@mail.gmail.com>
+Date: Mon, 27 Aug 2007 17:42:43 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [-mm patch] make types.h usable for non-gcc C parsers
+Cc: "Gabriel C" <nix.or.die@googlemail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Olaf Hering" <olh@suse.de>
+In-Reply-To: <20070827213637.GN26410@stusta.de>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: shemminger@linux-foundation.org, ossthema@de.ibm.com, akepner@sgi.com,
-       netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
-       tklein@de.ibm.com, stefan.roscher@de.ibm.com
-Subject: Re: RFC: issues concerning the next NAPI interface
-References: <46D1D634.7060007@katalix.com>	<20070826.185815.93042514.davem@davemloft.net>	<46D2F301.7050105@katalix.com> <20070827.140251.95055210.davem@davemloft.net>
-In-Reply-To: <20070827.140251.95055210.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - s36.avahost.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - katalix.com
+Content-Disposition: inline
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	 <46CC3B27.10604@googlemail.com> <20070827212743.GN4121@stusta.de>
+	 <8bd0f97a0708271434y2d0dac76v6ab4036cec0aadd9@mail.gmail.com>
+	 <20070827213637.GN26410@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: James Chapman <jchapman@katalix.com>
-> Date: Mon, 27 Aug 2007 16:51:29 +0100
-> 
->> To implement this, there's no need for timers, hrtimers or generic NAPI 
->> support that others have suggested. A driver's poll() would set an 
->> internal flag and record the current jiffies value when finding 
->> workdone=0 rather than doing an immediate napi_complete(). Early in 
->> poll() it would test this flag and if set, do a low-cost test to see if 
->> it had any work to do. If no work, it would check the saved jiffies 
->> value and do the napi_complete() only if no work has been done for a 
->> configurable number of jiffies. This keeps interrupts disabled longer at 
->> the expense of many more calls to poll() where no work is done. So 
->> critical to this scheme is modifying the driver's poll() to fastpath the 
->> case of having no work to do while waiting for its local jiffy count to 
->> expire.
->>
->> Here's an untested patch for tg3 that illustrates the idea.
-> 
-> It's only going to work with hrtimers, these interfaces can
-> process at least 100,000 per jiffies tick.
+On 8/27/07, Adrian Bunk <bunk@kernel.org> wrote:
+> On Mon, Aug 27, 2007 at 05:34:21PM -0400, Mike Frysinger wrote:
+> > On 8/27/07, Adrian Bunk <bunk@kernel.org> wrote:
+> > > This patch makes the 64bit integers on 32bit architectures usable for
+> > > all C parsers that know about "long long".
+> >
+> > ah, yet another attempt at this stuff
+> >
+> > you probably need to update linux/types.h as well
+>
+> What problems do you observe with linux/types.h?
 
-I don't understand where hrtimers or interface speed comes in. If the 
-CPU is fast enough to call poll() 100,000 times per jiffies tick, it 
-means 100,000 wasted poll() calls while the netdev migrates from active 
-to poll-off state. Hence the need to fastpath the "no work" case in the 
-netdev's poll(). These extra poll() calls are tolerable if it avoids 
-NAPI thrashing between poll-on and poll-off states for certain packet rates.
+just grep for __GNUC__ ...
 
-> And the hrtimer granularity is going to need to be significantly low,
-> and futhermore you're adding a guaranteed extra interrupt (for the
-> hrtimer firing) in these cases where we're exactly trying to avoid is
-> more interrupts.
-> 
-> If you can make it work, fine, but it's going to need to be at a
-> minimum disabled when the hrtimer granularity is not sufficient.
-> 
-> But there are huger fish to fry for you I think.  Talk to your
-> platform maintainers and ask for an interface for obtaining
-> a flat static distribution of interrupts to cpus in order to
-> support multiqueue NAPI better.
-> 
-> In your previous postings you made arguments saying that the
-> automatic placement of interrupts to cpus made everything
-> bunch of to a single cpu and you wanted to propagate the
-> NAPI work to other cpu's software interrupts from there.
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+typedef     __u64       uint64_t;
+typedef     __u64       u_int64_t;
+typedef     __s64       int64_t;
+#endif
 
-I don't recall saying anything in previous posts about this. Are you 
-confusing my posts with Jan-Bernd's? Jan-Bernd has been talking about 
-using hrtimers to _reschedule_ NAPI. My posts are suggesting an 
-alternative mechanism that keeps NAPI active (with interrupts disabled) 
-for a jiffy or two after it would otherwise have gone idle in order to 
-avoid too many interrupts when the packet rate is such that NAPI 
-thrashes between poll-on and poll-off.
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+typedef __u64 __bitwise __le64;
+typedef __u64 __bitwise __be64;
+#endif
 
-> That logic is bogus, because it merely proves that the hardware
-> interrupt distribution is broken.  If it's a bad cpu to run
-> software interrupts on, it's also a bad cpu to run hardware
-> interrupts on.
-
--- 
-James Chapman
-Katalix Systems Ltd
-http://www.katalix.com
-Catalysts for your Embedded Linux software development
-
+you've made available __u64 and __s64, but not the rest ...
+-mike
