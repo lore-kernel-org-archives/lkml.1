@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbXH0OhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbXH0OrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbXH0OhN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 10:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbXH0Og7
+	id S1756397AbXH0OrU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 10:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbXH0OrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 10:36:59 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:11717 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751935AbXH0Og7 (ORCPT
+	Mon, 27 Aug 2007 10:47:10 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:5792 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752278AbXH0OrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 10:36:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lJsZIEq0BM7IthMg9KcWYePlufmvl9d4tA1X2QMzH5xAuISwRYJDGPOQcfrS+lLeZGuARkpCT1KijPT8r4eeT/4FrwC7OkBR0cxcxU4qrSQR4vCeBbfCOdV14BSNYNJRfy75sxYMRvFl7h48KYPJRgJLDK8HwGLg5NfphvEFlBI=
-Message-ID: <b6a2187b0708270736q5cfc180fp3c223a57ea6904f9@mail.gmail.com>
-Date: Mon, 27 Aug 2007 22:36:57 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Subject: Re: cpu hotplug support broken in 2.6.23-rc3
-Cc: rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20070827105801.GA4053@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 27 Aug 2007 10:47:09 -0400
+Subject: Re: Who wants to maintain KR list for stable releases? (was Re:
+	nmi_watchdog=2 regression in 2.6.21)
+From: Daniel Walker <dwalker@mvista.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org
+In-Reply-To: <46D21E8E.4000003@googlemail.com>
+References: <1186531609.22044.50.camel@imap.mvista.com>
+	 <20070808142059.GF30805@atjola.homenet>
+	 <1187628296.7732.14.camel@imap.mvista.com>
+	 <46CDE94A.7000600@googlemail.com>
+	 <1187904169.2435.83.camel@dhcp193.mvista.com>
+	 <46D21E8E.4000003@googlemail.com>
+Content-Type: text/plain
+Date: Mon, 27 Aug 2007 07:39:26 -0700
+Message-Id: <1188225567.2435.188.camel@dhcp193.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070827104350.GA2073@elf.ucw.cz>
-	 <20070827105801.GA4053@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/27/07, Pavel Machek <pavel@ucw.cz> wrote:
-> On Mon 2007-08-27 12:43:50, Pavel Machek wrote:
-> > Hi!
-> >
-> > Trying to do few onlines/offlines reliably hangs my machine (thinkpad
-> > x60, i386 architecture).
+On Mon, 2007-08-27 at 02:45 +0200, Michal Piotrowski wrote:
+> Daniel Walker pisze:
+> [snip]
+> > Have you considered maintaining all the lists in Bugzilla?
+> 
+> Yes, I have considered it.
+> 
+> Bugzilla sucks when it comes to tracking things. There is
+> a regression field, but there are no difference between
+> 2.6.22 and 2.6.23 regression.
+> 
+> Most people are reporting bugs through LKML:
+> - 23 regressions with reference to LKML
+> - 4 regressions with reference to Bugzilla
 
-I just 3 cycles of on-line/off-line on 2.6.23-rc3 on ThinkPad x60s,
-and my system still survives.
+The main reason that I commented on this was because of your comment
+below in the release emails,
 
-Jeff.
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
+
+And I was thinking, if these bugz need to transition over the bugzilla
+anyway why not go straight there instead of via kernelnewbies .. People
+would just get bugzilla accounts and open new bugz entry.
+
+I not trying to force you into something , and ultimately it whatever is
+easier for you.. Which was my main reason for commenting on it.
+
+> > If you had a
+> > search of open bugs they would just fall of the list as they get
+> > closed.. 
+> 
+> Unfortunately, the world is not perfect.
+
+I think over time it would work like that , but I'm sure there's lots of
+people who don't care about our bugzilla ..
+
+Daniel
+
