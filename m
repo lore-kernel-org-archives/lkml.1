@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbXH1O4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbXH1O4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757618AbXH1O4H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 10:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbXH1Ozv
+	id S1757335AbXH1O4Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 10:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbXH1O4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 10:55:51 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41488 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752655AbXH1Ozu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 10:55:50 -0400
-Date: Wed, 29 Aug 2007 00:55:30 +1000
-From: David Chinner <dgc@sgi.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: David Chinner <dgc@sgi.com>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@osdl.org>, Ken Chen <kenchen@google.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0/6] writeback time order/delay fixes take 3
-Message-ID: <20070828145530.GD61154114@sgi.com>
-References: <386910467.21100@ustc.edu.cn> <20070821202314.335e86ec@think.oraclecorp.com> <20070822011841.GA8090@mail.ustc.edu.cn> <20070823023306.GM61154114@sgi.com> <20070824135504.GA9029@mail.ustc.edu.cn>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070824135504.GA9029@mail.ustc.edu.cn>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 28 Aug 2007 10:56:12 -0400
+Received: from [221.202.118.17] ([221.202.118.17]:4978 "HELO 221.202.118.17"
+	rhost-flags-FAIL-FAIL-FAIL-FAIL) by vger.kernel.org with SMTP
+	id S1754017AbXH1O4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 10:56:10 -0400
+Message-Id: <H3BS2MOS.CZXVY00@gmail.com>
+From: "brad coats" <sales.1188@gmail.com>
+Subject: RE: Samsung toner cartridge
+To: "customer" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+Reply-To: "brad coats" <sales.1188@gmail.com>
+Date: Tue, 28 Aug 2007 07:28:38 +0800
+X-Priority: 3
+X-Mailer: Microsoft Outlook Build 10.0.2627
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 09:55:04PM +0800, Fengguang Wu wrote:
-> On Thu, Aug 23, 2007 at 12:33:06PM +1000, David Chinner wrote:
-> > On Wed, Aug 22, 2007 at 09:18:41AM +0800, Fengguang Wu wrote:
-> > > On Tue, Aug 21, 2007 at 08:23:14PM -0400, Chris Mason wrote:
-> > > Notes:
-> > > (1) I'm not sure inode number is correlated to disk location in
-> > >     filesystems other than ext2/3/4. Or parent dir?
-> > 
-> > The correspond to the exact location on disk on XFS. But, XFS has it's
-> > own inode clustering (see xfs_iflush) and it can't be moved up
-> > into the generic layers because of locking and integration into
-> > the transaction subsystem.
-> >
-> > > (2) It duplicates some function of elevators. Why is it necessary?
-> > 
-> > The elevators have no clue as to how the filesystem might treat adjacent
-> > inodes. In XFS, inode clustering is a fundamental feature of the inode
-> > reading and writing and that is something no elevator can hope to
-> > acheive....
->  
-> Thank you. That explains the linear write curve(perfect!) in Chris' graph.
-> 
-> I wonder if XFS can benefit any more from the general writeback clustering.
-> How large would be a typical XFS cluster?
+Dear sir/madam,
 
-Depends on inode size. typically they are 8k in size, so anything from 4-32
-inodes. The inode writeback clustering is pretty tightly integrated into the
-transaction subsystem and has some intricate locking, so it's not likely
-to be easy (or perhaps even possible) to make it more generic.
 
-Cheers,
+We are only provide COMPATIBLE cartridges:
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+1) COMPATIBLE Toner Cartridges ;
+>> HP Q2612A ;
+>> HP 6000A / 6001A / 60002A / 6003A ;
+>> HP C7115A ;
+>> Samsung ML-1610 / 2010 ;
+>> Samsung ML-1710 / 1740 / 1750 ;
+>> Samsung ML-2150 / 2550 ;
+>> Xerox 203A ;
+
+
+2) COMPATIBLE Ink Cartridges
+>> HP 21 / 22 ;
+>> Canon PG-40 / 41 ;
+>> Lexmark / Epson ;
+
+
+
+************************************************
+OEM vs Compatible vs Remanufactured
+************************************************
+
+OEM Cartridges
+=============
+New OEM cartridges carry the brand name of your printer manufacturer and are sold new cartridges. But read the fine print on their box and you will see that your toner cartridge was made with new and recycled parts. And then take a peek at the price tag for your OEM cartridge!
+
+
+Compatible Cartridges
+=================
+Our new compatible cartridges are sold as new cartridges and are produced by a manufacturer other than your printer manufacturer and like the OEM, are manufactured with new and recycled parts. Our new premium compatibles are produced under stringent quality controls and are built to meet or exceed your OEM's specifications. This means simply that our new compatibles deliver the highest quality print as well as the longest possible life and at a fraction of the cost of an OEM.
+
+
+Remanufactured Cartridges
+======================
+Our factory remanufactured cartridges are produced using only cartridges that have never been refilled. They are filled to capacity with the same high quality inks the OEM's use. These cartridges are produced with confidence and are strictly monitored for quality control. Our premium cartridges deliver the highest quality prints and the longest possible life due to being refilled to capacity. And check out our savings!
+
+
+*******************************************************************
+WE ALSO PROVIDE PRINTER REPAIRS & SERVICES
+*******************************************************************
+
+
+To REDUCE or SAVE more cost, please do not hesitate to contact us for more information.
+
+
+regards,
+
+Mr Ken
+Tel: 012-366 2818
+
+IT CITY COMPUTER
+46M, Jalan Wangsa 2/5, Taman Wangsa Permai, 
+Kepong 52100. Kuala Lumpur.
+Tel: 03-6276 3561
+Fax: 03-6272 9718
+Email: prolaser_toner@yahoo.com
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
+To unsubcribe this newsletter in the future, please reply with subject 'REMOVE'. Other product names used herein are trademarks of their respective owners. 
