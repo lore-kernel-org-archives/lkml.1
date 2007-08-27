@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbXH0MOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbXH0MOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756995AbXH0MOH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 08:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbXH0MNz
+	id S1757335AbXH0MOX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 08:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756512AbXH0MN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 08:13:55 -0400
-Received: from www.osadl.org ([213.239.205.134]:43073 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751306AbXH0MNy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 08:13:54 -0400
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Organization: Linutronix
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: Pausing kernel boot messages
-Date: Mon, 27 Aug 2007 14:13:51 +0200
-User-Agent: KMail/1.9.5
-Cc: "Esteban Fernandez" <estfern@gmail.com>, linux-kernel@vger.kernel.org
-References: <179e6e720708270421r5f07f9dfp434077f6a106d2d7@mail.gmail.com> <200708271353.22665.hjk@linutronix.de> <jesl6542a2.fsf@sykes.suse.de>
-In-Reply-To: <jesl6542a2.fsf@sykes.suse.de>
+	Mon, 27 Aug 2007 08:13:59 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:36290 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1756165AbXH0MN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 08:13:58 -0400
+Message-ID: <388216835.20155@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Mon, 27 Aug 2007 20:13:54 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How to find out how many other processes share VM with $PID?
+Message-ID: <20070827121354.GA5616@mail.ustc.edu.cn>
+References: <200708271256.31874.vda.linux@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708271413.51368.hjk@linutronix.de>
+In-Reply-To: <200708271256.31874.vda.linux@googlemail.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 27 August 2007 13:58 schrieb Andreas Schwab:
-> Hans-Jürgen Koch <hjk@linutronix.de> writes:
-> 
-> > Am Montag 27 August 2007 13:21 schrieb Esteban Fernandez:
-> >> How do you pause the kernel boot messages ?
-> >> 
-> >> ^S, Pause and Scroll lock do nothing and you can't Shift-Page-Up  after a
-> >> kernel panic.
-> >
-> > These are functions of a shell (like bash),
-> 
-> Definitely not.  The shell is not a console driver, it only uses it.
+Hi Denys,
 
-Right, I wasn't precise. But it's still possible that you don't have your
-keyboard available during early parts of the boot process.
+On Mon, Aug 27, 2007 at 12:56:31PM +0100, Denys Vlasenko wrote:
+> Hi,
+> 
+> I was a bit frustrated by bad quality of memory usage info
+> from top and ps, and decided to write my own utility.
+> 
+> One problem I don't know how to solve is how to avoid counting
+> twice (or more) memory used by processes which share VM
+> (by use of CLONE_VM flage to sys_clone).
+> 
+> I know how to detect and correctly account for threads
+> (processes created with CLONE_THREAD), but how to detect non-threads
+> with shared VM?
 
-Hans
+There is a nice LWN article on this issue:
+        ELC: How much memory are applications really using?
+        http://lwn.net/Articles/230975/
+
+Another helpful patch could be:
+        maps: PSS(proportional set size) accounting in smaps
+        http://lkml.org/lkml/2007/8/19/23
+
+Fengguang
+
