@@ -1,143 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbXH0NRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbXH0N1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756341AbXH0NRs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 09:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbXH0NRk
+	id S1755540AbXH0N1S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 09:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbXH0N1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 09:17:40 -0400
-Received: from pat.uio.no ([129.240.10.15]:41589 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751333AbXH0NRj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 09:17:39 -0400
-Subject: Re: NFS woes again Was: [linux-usb-devel] USB-related oops in
-	sysfs with linux v2.6.23-rc3-50-g28e8351
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Florin Iucha <florin@iucha.net>
-Cc: Bret Towe <magnade@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-In-Reply-To: <20070823173637.GS10422@iucha.net>
-References: <Pine.LNX.4.64.0708151656070.2460@twin.jikos.cz>
-	 <20070821115115.GD10422@iucha.net> <20070821125718.GH10422@iucha.net>
-	 <Pine.LNX.4.64.0708211502330.2460@twin.jikos.cz>
-	 <20070821131759.GI10422@iucha.net> <20070821132704.GJ10422@iucha.net>
-	 <Pine.LNX.4.64.0708211536560.2460@twin.jikos.cz>
-	 <20070822132200.GO10422@iucha.net> <20070823125210.GQ10422@iucha.net>
-	 <dda83e780708231014x66093dafj83263a2a1c8203bb@mail.gmail.com>
-	 <20070823173637.GS10422@iucha.net>
-Content-Type: multipart/mixed; boundary="=-MSOtyhfndz80M7RobPwx"
-Date: Mon, 27 Aug 2007 09:17:31 -0400
-Message-Id: <1188220651.6701.32.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.097)
-X-UiO-Scanned: 3E6723F2B2BFCEA948A316C45A4D429C741D6FD1
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 575 total 3486374 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Mon, 27 Aug 2007 09:27:06 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:57436 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbXH0N1E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 09:27:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=InqMIvmCTEKJGYQ6iPaq7+8uTZGu+WWroaF20XfDAZ+NqdhKGooAIdilAKrkH0243C+nM0qvdw9K6mah7K0tk94XuuTAI4s2a9emZMwKMxPpz38SVmXo/xDqqJfrVqu36zXvu0EUsL/kdoyP7zsY68Qnx7N3ZpkilBKOTuOadEw=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Subject: Re: How to find out how many other processes share VM with $PID?
+Date: Mon, 27 Aug 2007 14:26:50 +0100
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org
+References: <200708271256.31874.vda.linux@googlemail.com> <388216835.20155@ustc.edu.cn>
+In-Reply-To: <388216835.20155@ustc.edu.cn>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708271426.50675.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 27 August 2007 13:13, Fengguang Wu wrote:
+> Hi Denys,
+>
+> On Mon, Aug 27, 2007 at 12:56:31PM +0100, Denys Vlasenko wrote:
+> > Hi,
+> >
+> > I was a bit frustrated by bad quality of memory usage info
+> > from top and ps, and decided to write my own utility.
+> >
+> > One problem I don't know how to solve is how to avoid counting
+> > twice (or more) memory used by processes which share VM
+> > (by use of CLONE_VM flage to sys_clone).
+> >
+> > I know how to detect and correctly account for threads
+> > (processes created with CLONE_THREAD), but how to detect non-threads
+> > with shared VM?
+>
+> There is a nice LWN article on this issue:
+>         ELC: How much memory are applications really using?
+>         http://lwn.net/Articles/230975/
+>
+> Another helpful patch could be:
+>         maps: PSS(proportional set size) accounting in smaps
+>         http://lkml.org/lkml/2007/8/19/23
 
---=-MSOtyhfndz80M7RobPwx
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Thanks a lot, very useful pages indeed.
 
-On Thu, 2007-08-23 at 12:36 -0500, Florin Iucha wrote:
-> On Thu, Aug 23, 2007 at 10:14:38AM -0700, Bret Towe wrote:
-> > this sounds alot like the post i did yesterday titled 'nfs4 hang regression'
-> > i tracked it down to commit 3d39c691ff486142dd9aaeac12f553f4476b7a6
-> 
-> Yes, it certainly does -- all the symptoms match!
-> 
-> I'm not [alone in] seeing dead keyboards!
-> 
-> Now, if only somebody could clarify to me the connection between
-> the bad NFS4 shooting the keyboard but not the mouse, that would
-> be wonderful.
-> 
-> florin
+However they still don't explain how I can avoid counting memory
+twice for /proc/PID1 and /proc/PID2 when PID2 is a child of PID1,
+created with CLONE_VM.
 
-Could you and Bret please check if the attached patch fixes the hang?
+The example: I allocate 1234k, dirty it, then clone with CLONE_VM.
+I will seemingly have two processes, each using 1234k, _privately_
+(i.e., pages are not shown as shared in smaps) -
+which is technically correct, pages are not shared with other VMs,
+but they ARE shared by means of these two processes having the same VM!
 
-Cheers
-  Trond
+How userspace tools can figure out that these processes have shared VM?
+
+IOW: do we need "VMsharecount: N" in addition to "Threads: N"
+in /proc/PID/status?
 
 
+$ gcc clonetest.c
+$ ./a.out
+parent 21143 (21143)
+clone returned 21144
+child 21144 (21144)
+<sleeps 1000 seconds>
 
---=-MSOtyhfndz80M7RobPwx
-Content-Disposition: inline; filename=linux-2.6.23-001-fix_cancel_work_hang.dif
-Content-Type: message/rfc822; name=linux-2.6.23-001-fix_cancel_work_hang.dif
+On another console:
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: Mon, 27 Aug 2007 09:14:56 -0400
-NFS: Fix use of cancel_delayed_work_sync in nfs_release_automount_timer
-Subject: No Subject
-Message-Id: <1188220651.6701.33.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+$ cp /proc/21143/smaps /tmp/1
+$ cp /proc/21144/smaps /tmp/2
+$ diff -u /tmp/1 /tmp/2  <============ smaps are the same!
+$ ls -l /tmp/1 /tmp/2
+-r--r--r-- 1 vda eng 2869 Aug 27 14:17 /tmp/1
+-r--r--r-- 1 vda eng 2869 Aug 27 14:17 /tmp/2
 
-We need to ensure that nobody adds anything to nfs_automount_list while we
-are killing off the work queue entry, or else nfs_expire_automounts will
-simply rearm it, and we hang.
+This is the 1234k of memset'ed malloc in /proc/*/smaps:
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+f7eae000-f7fe4000 rw-p f7eae000 00:00 0
+Size:              1240 kB
+Rss:               1240 kB
+Shared_Clean:         0 kB
+Shared_Dirty:         0 kB
+Private_Clean:        0 kB
+Private_Dirty:     1240 kB
 
- fs/nfs/namespace.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+See? Any memory tool will conclude that 21143 is using 1240k here and 21144
+uses another 1240k. But it's the same 1240k!
 
-diff --git a/fs/nfs/namespace.c b/fs/nfs/namespace.c
-index aea76d0..bcd0777 100644
---- a/fs/nfs/namespace.c
-+++ b/fs/nfs/namespace.c
-@@ -22,6 +22,11 @@ static void nfs_expire_automounts(struct work_struct *work);
- 
- LIST_HEAD(nfs_automount_list);
- static DECLARE_DELAYED_WORK(nfs_automount_task, nfs_expire_automounts);
-+/*
-+ * The following mutex prevents nfs_follow_mountpoint from adding new
-+ * entries to nfs_automount_list
-+ */
-+static DEFINE_MUTEX(nfs_automount_mutex);
- int nfs_mountpoint_expiry_timeout = 500 * HZ;
- 
- static struct vfsmount *nfs_do_submount(const struct vfsmount *mnt_parent,
-@@ -128,18 +133,21 @@ static void * nfs_follow_mountpoint(struct dentry *dentry, struct nameidata *nd)
- 		goto out_err;
- 
- 	mntget(mnt);
-+	mutex_lock(&nfs_automount_mutex);
- 	err = do_add_mount(mnt, nd, nd->mnt->mnt_flags|MNT_SHRINKABLE, &nfs_automount_list);
- 	if (err < 0) {
-+		mutex_unlock(&nfs_automount_mutex);
- 		mntput(mnt);
- 		if (err == -EBUSY)
- 			goto out_follow;
- 		goto out_err;
- 	}
-+	schedule_delayed_work(&nfs_automount_task, nfs_mountpoint_expiry_timeout);
-+	mutex_unlock(&nfs_automount_mutex);
- 	mntput(nd->mnt);
- 	dput(nd->dentry);
- 	nd->mnt = mnt;
- 	nd->dentry = dget(mnt->mnt_root);
--	schedule_delayed_work(&nfs_automount_task, nfs_mountpoint_expiry_timeout);
- out:
- 	dprintk("%s: done, returned %d\n", __FUNCTION__, err);
- 
-@@ -175,8 +183,12 @@ static void nfs_expire_automounts(struct work_struct *work)
- 
- void nfs_release_automount_timer(void)
- {
-+	if (!list_empty(&nfs_automount_list))
-+		return;
-+	mutex_lock(&nfs_automount_mutex);
- 	if (list_empty(&nfs_automount_list))
- 		cancel_delayed_work_sync(&nfs_automount_task);
-+	mutex_unlock(&nfs_automount_mutex);
- }
- 
- /*
+clonetest.c
+===========
+#include <sched.h>
+#include <sys/types.h>
+#include <linux/unistd.h>
+#include <errno.h>
+#include <syscall.h>
 
---=-MSOtyhfndz80M7RobPwx--
+// Run this proggie, cd into /proc and explore there
+// while it runs, erm, sleeps.
 
+/* Defeat glibc "pid caching" */
+#define GETPID() ((int)syscall(SYS_getpid))
+#define GETTID() ((int)syscall(SYS_gettid))
+
+char stack[8*1024];
+
+int f(void *arg)
+{
+        printf("child %d (%d)\n", GETPID(),  GETTID());
+        sleep(1000);
+        _exit(0);
+}
+
+int main()
+{
+        int n;
+        memset(malloc(1234*1024), 1, 1234*1024);
+        printf("parent %d (%d)\n", GETPID(), GETTID());
+        // Create thread
+        // Create a process with shared VM, but not a thread
+        n = clone(f, stack + sizeof(stack)/2, CLONE_VM, 0);
+        printf("clone returned %d\n", n);
+        sleep(1000);
+        _exit(0);
+}
+
+
+--
+vda
