@@ -1,83 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757125AbXH0PF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757125AbXH0PHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757125AbXH0PF2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 11:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbXH0PFT
+	id S1757125AbXH0PHZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 11:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbXH0PHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:05:19 -0400
-Received: from xenotime.net ([66.160.160.81]:37493 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753401AbXH0PFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:05:18 -0400
-Date: Mon, 27 Aug 2007 08:05:09 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Jes Sorensen <jes@sgi.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andy Isaacson <adi@hexapodia.org>, Josh Boyer <jwboyer@gmail.com>,
-       ksummit-2007-discuss@thunk.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux
- Foundation Technical Advisory Board Elections
-Message-Id: <20070827080509.966590b3.rdunlap@xenotime.net>
-In-Reply-To: <46D2BFC8.7000904@sgi.com>
-References: <20070823003748.GR30556@waste.org>
-	<20070823004209.GP9163@parisc-linux.org>
-	<20070823011953.GS30556@waste.org>
-	<1187832907.3410.141.camel@localhost.localdomain>
-	<20070824012730.GA1243@hexapodia.org>
-	<625fc13d0708231934q5b369b4fh1a5c83def0e56a0d@mail.gmail.com>
-	<20070824025254.GH21720@waste.org>
-	<20070824025504.GT9163@parisc-linux.org>
-	<20070824032228.GJ21720@waste.org>
-	<20070824155735.GA14978@kroah.com>
-	<20070824234840.GC19595@kroah.com>
-	<20070825010329.6f5bc47c@the-village.bc.nu>
-	<46D2A113.2030403@sgi.com>
-	<20070827050432.06f9590f@laptopd505.fenrus.org>
-	<46D2BFC8.7000904@sgi.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Aug 2007 11:07:09 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:1760 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751824AbXH0PHG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:07:06 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH 1/2] ehea: propagate physical port state
+Date: Mon, 27 Aug 2007 17:06:58 +0200
+User-Agent: KMail/1.8.2
+MIME-Version: 1.0
+Content-Disposition: inline
+To: Jeff Garzik <jeff@garzik.org>
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200708271706.58984.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007 14:12:56 +0200 Jes Sorensen wrote:
+Introduces a module parameter to decide whether the physical
+port link state is propagated to the network stack or not.
+It makes sense not to take the physical port state into account
+on machines with more logical partitions that communicate
+with each other. This is always possible no matter what the physical
+port state is. Thus eHEA can be considered as a switch there.
 
-> Arjan van de Ven wrote:
-> > On Mon, 27 Aug 2007 12:01:55 +0200
-> > 
-> >> But replacing the flawed KS list with one based on actual
-> >> contributors, from the git logs as I proposed last week, doesn't seem
-> >> silly.
-
-I agree.
-
-> > to some degree the KS list is based on that git logs thing ;)
-       ~~~~
-Good thing you put a ;) there, Arjan.
-
-> Yes, as well as 12 committee members, of which 5 didn't even comply with
-> their own git commit requirement last time I checked. Not to mention the
-> 10 seats sold to sponsors (presuming it goes like in previous years,
-> with each sponsor being awarded one grease slot per sponsorship).
-
-Yes, I'm not fond of the PC automatic invites either.
-(that's Program Committee, not politically correct or other PC
-acronyms)
-
-> Based on the published list of invitees (which didn't seem to include
-> the seats sold off) that means 25% of the people who can vote for the
-> TAB were not given a vote based on their contributions.
-> 
-> Of course this matches the voting system in some countries, but just
-> because a lot of places rely on broken systems, that shouldn't encourage
-> the TAB to do the same.
-
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
 ---
-~Randy
+ drivers/net/ehea/ehea.h      |    5 ++++-
+ drivers/net/ehea/ehea_main.c |   14 +++++++++++++-
+ 2 files changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index d67f97b..8d58be5 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -39,7 +39,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0073"
++#define DRV_VERSION	"EHEA_0074"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+@@ -402,6 +402,8 @@ struct ehea_mc_list {
+ 
+ #define EHEA_PORT_UP 1
+ #define EHEA_PORT_DOWN 0
++#define EHEA_PHY_LINK_UP 1
++#define EHEA_PHY_LINK_DOWN 0
+ #define EHEA_MAX_PORT_RES 16
+ struct ehea_port {
+ 	struct ehea_adapter *adapter;	 /* adapter that owns this port */
+@@ -427,6 +429,7 @@ struct ehea_port {
+ 	u32 msg_enable;
+ 	u32 sig_comp_iv;
+ 	u32 state;
++	u8 phy_link;
+ 	u8 full_duplex;
+ 	u8 autoneg;
+ 	u8 num_def_qps;
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index db57474..1e9fd6f 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -53,17 +53,21 @@ static int rq3_entries = EHEA_DEF_ENTRIES_RQ3;
+ static int sq_entries = EHEA_DEF_ENTRIES_SQ;
+ static int use_mcs = 0;
+ static int num_tx_qps = EHEA_NUM_TX_QP;
++static int prop_carrier_state = 0;
+ 
+ module_param(msg_level, int, 0);
+ module_param(rq1_entries, int, 0);
+ module_param(rq2_entries, int, 0);
+ module_param(rq3_entries, int, 0);
+ module_param(sq_entries, int, 0);
++module_param(prop_carrier_state, int, 0);
+ module_param(use_mcs, int, 0);
+ module_param(num_tx_qps, int, 0);
+ 
+ MODULE_PARM_DESC(num_tx_qps, "Number of TX-QPS");
+ MODULE_PARM_DESC(msg_level, "msg_level");
++MODULE_PARM_DESC(prop_carrier_state, "Propagate carrier state of physical "
++		 "port to stack. 1:yes, 0:no.  Default = 0 ");
+ MODULE_PARM_DESC(rq3_entries, "Number of entries for Receive Queue 3 "
+ 		 "[2^x - 1], x = [6..14]. Default = "
+ 		 __MODULE_STRING(EHEA_DEF_ENTRIES_RQ3) ")");
+@@ -814,7 +818,9 @@ int ehea_set_portspeed(struct ehea_port *port, u32 port_speed)
+ 			ehea_error("Failed setting port speed");
+ 		}
+ 	}
+-	netif_carrier_on(port->netdev);
++	if (!prop_carrier_state || (port->phy_link == EHEA_PHY_LINK_UP))
++		netif_carrier_on(port->netdev);
++
+ 	kfree(cb4);
+ out:
+ 	return ret;
+@@ -869,13 +875,19 @@ static void ehea_parse_eqe(struct ehea_adapter *adapter, u64 eqe)
+ 			}
+ 
+ 		if (EHEA_BMASK_GET(NEQE_EXTSWITCH_PORT_UP, eqe)) {
++			port->phy_link = EHEA_PHY_LINK_UP;
+ 			if (netif_msg_link(port))
+ 				ehea_info("%s: Physical port up",
+ 					  port->netdev->name);
++			if (prop_carrier_state)
++				netif_carrier_on(port->netdev);
+ 		} else {
++			port->phy_link = EHEA_PHY_LINK_DOWN;
+ 			if (netif_msg_link(port))
+ 				ehea_info("%s: Physical port down",
+ 					  port->netdev->name);
++			if (prop_carrier_state)
++				netif_carrier_off(port->netdev);
+ 		}
+ 
+ 		if (EHEA_BMASK_GET(NEQE_EXTSWITCH_PRIMARY, eqe))
+-- 
+1.5.2
+
