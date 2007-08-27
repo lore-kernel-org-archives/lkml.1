@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759267AbXH0QCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759457AbXH0QDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759267AbXH0QCo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758466AbXH0P5k
+	id S1759457AbXH0QDS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbXH0P6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:57:40 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:42688 "EHLO smtp.polymtl.ca"
+	Mon, 27 Aug 2007 11:58:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34702 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758437AbXH0P5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:57:39 -0400
-Message-Id: <20070827155526.170873605@polymtl.ca>
-References: <20070827155234.062715780@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:52:42 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>, clameter@sgi.com
-Subject: [patch 08/28] Add cmpxchg_local to avr32
-Content-Disposition: inline; filename=add-cmpxchg-local-to-avr32.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:55:26 +0000
+	id S1758553AbXH0P6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:58:31 -0400
+Message-ID: <46D2F281.5030305@redhat.com>
+Date: Mon, 27 Aug 2007 11:49:21 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: Masami Hiramatsu <mhiramat@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ananth@in.ibm.com,
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       Jim Keniston <jkenisto@us.ibm.com>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: [PATCH][kprobes] support kretprobe-blacklist
+References: <46C5FA48.2050308@redhat.com> <20070827133154.GA22322@infradead.org>
+In-Reply-To: <20070827133154.GA22322@infradead.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt) for 8, 16 and 64 bits
-cmpxchg_local. Use the __cmpxchg_u32 primitive for 32 bits cmpxchg_local.
+Hi Christoph,
 
-Note that cmpxchg only uses the __cmpxchg_u32 or __cmpxchg_u64 and will cause
-a linker error if called with 8 or 16 bits argument.
+Christoph Hellwig wrote:
+> On Fri, Aug 17, 2007 at 03:43:04PM -0400, Masami Hiramatsu wrote:
+>> This patch introduces architecture dependent kretprobe
+>> blacklists to prohibit users from inserting return
+>> probes on the function in which kprobes can be inserted
+>> but kretprobes can not.
+> 
+> I don't like this at all.  If people want to shoot themselves into
+> their own foot using kernel modules they have an unlimited number
+> of ways to do this, and even more with kprobes, so there's no point
+> in making it a little harder for some cases.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
-CC: clameter@sgi.com
-CC: hskinnemoen@atmel.com
----
- include/asm-avr32/system.h |   23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+Would you mean that the kernel need not to check whether the probe
+point is safe or not?
 
-Index: linux-2.6-lttng/include/asm-avr32/system.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-avr32/system.h	2007-07-20 19:10:57.000000000 -0400
-+++ linux-2.6-lttng/include/asm-avr32/system.h	2007-07-20 19:32:36.000000000 -0400
-@@ -140,6 +140,29 @@ static inline unsigned long __cmpxchg(vo
- 				   (unsigned long)(new),	\
- 				   sizeof(*(ptr))))
- 
-+#include <asm-generic/cmpxchg-local.h>
-+
-+static inline unsigned long __cmpxchg_local(volatile void *ptr,
-+				      unsigned long old,
-+				      unsigned long new, int size)
-+{
-+	switch (size) {
-+	case 4:
-+		return __cmpxchg_u32(ptr, old, new);
-+	default:
-+		return __cmpxchg_local_generic(ptr, old, new, size);
-+	}
-+
-+	return old;
-+}
-+
-+#define cmpxchg_local(ptr, old, new)					\
-+	((typeof(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(old),	\
-+				   (unsigned long)(new),		\
-+				   sizeof(*(ptr))))
-+
-+#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
-+
- struct pt_regs;
- void NORET_TYPE die(const char *str, struct pt_regs *regs, long err);
- void _exception(long signr, struct pt_regs *regs, int code,
+Actually, there are many ways to shoot themselves from kernel modules.
+Even so, IMHO, it is benefit for people that the kernel rejects at least
+those obviously (and known) dangerous operation.
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+e-mail: mhiramat@redhat.com, masami.hiramatsu.pt@hitachi.com
