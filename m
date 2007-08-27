@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965134AbXH0Uw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965183AbXH0Uy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965134AbXH0Uw1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 16:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758565AbXH0UwU
+	id S965183AbXH0Uy5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 16:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758846AbXH0Uyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 16:52:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36582 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758280AbXH0UwT (ORCPT
+	Mon, 27 Aug 2007 16:54:50 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:49777 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758779AbXH0Uyt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 16:52:19 -0400
-Date: Mon, 27 Aug 2007 13:52:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 27 Aug 2007 16:54:49 -0400
+Date: Mon, 27 Aug 2007 21:53:49 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Len Brown <len.brown@intel.com>,
+       Andi Kleen <ak@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix bogus hotplug cpu warning
-Message-Id: <20070827135212.6a5a847e.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0708272126050.29594@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0708271604440.21853@blonde.wat.veritas.com>
-	<20070827111802.8d0a675b.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0708272126050.29594@blonde.wat.veritas.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] fix maxcpus=N parsing
+In-Reply-To: <alpine.LFD.0.999.0708271009270.25853@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708272151510.3326@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0708271554570.21853@blonde.wat.veritas.com>
+ <alpine.LFD.0.999.0708271009270.25853@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007 21:37:14 +0100 (BST)
-Hugh Dickins <hugh@veritas.com> wrote:
-
-> > So I agree with the patch, but not with its description.
+On Mon, 27 Aug 2007, Linus Torvalds wrote:
+> On Mon, 27 Aug 2007, Hugh Dickins wrote:
+> >
+> > Fix 61ec7567db103d537329b0db9a887db570431ff4: maxcpus=N is now having no
+> > ...
 > 
-> I don't see which part of the description you disagree with, but please
-> do improve it if you can.
+> On a totally unrelated issue:
+> 
+> While looking at the history in gitk and gitweb etc shows these commit 
+> ID's as nice hyperlinks, I really think it's nicer for everybody if the 
+> commit is also described with its "headline", so that non-git users (or 
+> even git users, when just using "git log" or similar) at least can grep or 
+> google for it.
+> 
+> So when writing descriptions, I would prefer it if people wrote them 
+> something like
+> 
+>    Commit 61ec7567db103d537329b0db9a887db570431ff4 ('ACPI: boot correctly 
+>    with "nosmp" or "maxcpus=0"') broke maxcpus parsing on x86[-64] ...
+> 
+> so that it gets both the exact commit naming and the nice hyperlinks where 
+> appropriate *and* it ends up being more useful even without the links.
 
-I'd change the description to
+Agreed and noted.
 
+> 
+> Yes, it's redundant information, but since we have the useful one-line 
+> descriptions, it's generally a good idea. And I really do think that it 
+> tends to make the explanations read better too.
+> 
+> For example, in this example, I think it really made it more clear what 
+> kind of change had caused the breakage. Maybe that's not always true, but 
+> I suspect it's true most of the time.
+> 
+> I'll fix it up manually (I often do), but I thought I'd just mention this 
+> stylistic issue.
 
-current_is_keventd() is a stupid load of crap.  It does
+Thanks.
 
-int current_is_keventd(void)
-{
-	struct cpu_workqueue_struct *cwq;
-	int cpu = smp_processor_id();	/* preempt-safe: keventd is per-cpu */
-
-but that comment (and the code itself) only make sense when
-current_is_keventd() is called by keventd.  In which case thers is no point
-in the function even existing!
-
-We need to use raw_smp_processor_id() so that non-keventd (or, more
-specifically, non-pinned-to-one-cpu) callers won't generate "using
-smp_processor_id() in preemptible" warnings.
-
+Hugh
