@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbXH0PSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbXH0PTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757362AbXH0PSI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 11:18:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXH0PRy
+	id S1757452AbXH0PTB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 11:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbXH0PSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:17:54 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:50964 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752289AbXH0PRx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:17:53 -0400
-Date: Mon, 27 Aug 2007 17:17:52 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Andrew Morgan <morgan@kernel.org>, chrisw@sous-sol.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [2.6 patch] remove securebits
-Message-ID: <20070827151751.GD4121@stusta.de>
-References: <20070824210649.GG30705@stusta.de> <20070824211942.GA24478@vino.hallyn.com> <46CFA6F2.9030209@kernel.org> <20070825182846.GN30705@stusta.de> <20070827150941.GA31042@vino.hallyn.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Mon, 27 Aug 2007 11:18:51 -0400
+Received: from iona.labri.fr ([147.210.8.143]:43540 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752047AbXH0PSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:18:50 -0400
+Date: Mon, 27 Aug 2007 16:59:12 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       dtor@mail.ru, Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH] Console keyboard events and accessibility
+Message-ID: <20070827145912.GB3268@implementation.ifsic.univ-rennes1.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Adrian Bunk <bunk@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+	dtor@mail.ru, Jiri Kosina <jkosina@suse.cz>
+References: <20070821005718.GD3658@interface.famille.thibault.fr> <20070821130233.58faaa8a.akpm@linux-foundation.org> <20070821202251.GB3658@interface.famille.thibault.fr> <20070825010704.GK30705@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070827150941.GA31042@vino.hallyn.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070825010704.GK30705@stusta.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 10:09:42AM -0500, Serge E. Hallyn wrote:
-> Quoting Adrian Bunk (bunk@kernel.org):
-> > On Fri, Aug 24, 2007 at 08:50:10PM -0700, Andrew Morgan wrote:
-> > > 
-> > > FWIW, in the mm kernel, I've actually already removed them when one
-> > > configures without capabilities.
-> > > 
-> > > http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/broken-out/v3-file-capabilities-alter-behavior-of-cap_setpcap.patch
-> > > 
-> > > Other than writing a custom module, so far as I can tell, there is/was
-> > > no way to set them anyway.
-> > > 
-> > > I'd obviously prefer to wait for the mm-merge process to complete and
-> > > minimize the churn in this area, but I basically agree that the bits as
-> > > implemented are pretty useless in their current form. In a per-process
-> > > mode (with filesystem capability support) they are much more useful...
-> > 
-> > It was in the tree for nine years (sic) without a single user...
+Hi,
+
+Adrian Bunk, le Sat 25 Aug 2007 03:07:04 +0200, a écrit :
+> > If they
+> > remain in -mm for some time and people don't complain, well that's good
+> > too: at least we know how speakup may hook into the kernel when it gets
+> > merged.
+> >...
 > 
-> That's because without file capabilities there was no way for a process
-> to retain capabilities across exec, so not having a privileged root user
-> was simply not workable.
-> 
-> > Are you only improving a dead horse, or do you also have a rider for the 
-> > improved dead horse?
-> 
-> It will allow process trees to run with strict capabilities, without a
-> root user which automatically gains full capabilities.  That wasn't
-> possible without file capabilities, since there was no way for processes
-> to retain capabilities across exec.  Now that we have file capabilities,
-> it is feasible, and it certainly is useful.
+> Without any users it's dead code noone uses,
 
-I didn't question that the dead horse gets improved, but where's the 
-rider?
+Not so much dead: the notify chain will get called anyway, taking
+spinlocks, etc. even if nothing is really called.  And people can see
+the patches and complain if they think they're bad.
 
-A user of the improved securebits has to be submitted for inclusion in 
-the kernel.
+> BTW: Are these the speakup patches that were in -ac five years ago?
 
-> -serge
+No, they are some rework of the way Speakup glues into the kernel.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Samuel
