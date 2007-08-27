@@ -1,102 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758586AbXH0P6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbXH0P6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758586AbXH0P6P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 11:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757780AbXH0Pzl
+	id S1758218AbXH0P6r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 11:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757810AbXH0Pzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:55:41 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:41884 "EHLO smtp.polymtl.ca"
+	Mon, 27 Aug 2007 11:55:42 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41883 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757617AbXH0Pzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:55:40 -0400
-Message-Id: <20070827155531.284432130@polymtl.ca>
+	id S1757501AbXH0Pzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:55:39 -0400
+Message-Id: <20070827155528.896119141@polymtl.ca>
 References: <20070827155234.062715780@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:52:57 -0400
+Date: Mon, 27 Aug 2007 11:52:50 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com,
-       lethal@linux-sh.org
-Subject: [patch 23/28] Add cmpxchg_local to sh, use generic cmpxchg() instead of cmpxchg_u32
-Content-Disposition: inline; filename=add-cmpxchg-local-to-sh.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:55:31 +0000
+Cc: Hirokazu Takata <takata@linux-m32r.org>
+Subject: [patch 16/28] m32r: build fix of arch/m32r/kernel/smpboot.c
+Content-Disposition: inline; filename=fix-m32r-include-sched-h-in-smpboot.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:55:30 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt). Also use the generic
-cmpxchg as fallback if SMP is not set.
+This patch is for Mathieu Desnoyers's include/asm-m32r/local.h.
+Applying the new include/asm-m32r/local.h, inclusion of linux/sched.h
+is needed to fix a build error of arch/m32r/kernel/smpboot.c.
 
-Since cmpxchg_u32 is _exactly_ the cmpxchg_local generic implementation, remove
-it and use the generic version instead.
+<--  snip  -->
+  ...
+  CC      arch/m32r/kernel/smpboot.o
+/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c: In function 'do_boot_cpu':
+/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:279: error: implicit declaration of function 'fork_idle'
+/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:279: warning: assignment makes pointer from integer without a cast
+/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:283: error: dereferencing pointer to incomplete type
+/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:289: error: dereferencing pointer to incomplete type
+/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:290: error: implicit declaration of function 'task_thread_info'
+/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:290: error: invalid type argument of '->'
+/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c: In function 'start_secondary':
+/project/m32r-linux/kernel/work/linux-2.6_dev.git/arch/m32r/kernel/smpboot.c:429: error: implicit declaration of function 'cpu_init'
+make[2]: *** [arch/m32r/kernel/smpboot.o] Error 1
+<--  snip  -->
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: clameter@sgi.com
-CC: lethal@linux-sh.org
+Signed-off-by: Hirokazu Takata <takata@linux-m32r.org>
 ---
- include/asm-sh/system.h |   48 ++++++++++++------------------------------------
- 1 file changed, 12 insertions(+), 36 deletions(-)
+ arch/m32r/kernel/smpboot.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Index: linux-2.6-lttng/include/asm-sh/system.h
+Index: linux-2.6-lttng/arch/m32r/kernel/smpboot.c
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-sh/system.h	2007-08-07 14:31:51.000000000 -0400
-+++ linux-2.6-lttng/include/asm-sh/system.h	2007-08-07 15:08:10.000000000 -0400
-@@ -201,44 +201,20 @@ extern void __xchg_called_with_bad_point
- #define xchg(ptr,x)	\
- 	((__typeof__(*(ptr)))__xchg((ptr),(unsigned long)(x), sizeof(*(ptr))))
- 
--static inline unsigned long __cmpxchg_u32(volatile int * m, unsigned long old,
--	unsigned long new)
--{
--	__u32 retval;
--	unsigned long flags;
--
--	local_irq_save(flags);
--	retval = *m;
--	if (retval == old)
--		*m = new;
--	local_irq_restore(flags);       /* implies memory barrier  */
--	return retval;
--}
--
--/* This function doesn't exist, so you'll get a linker error
-- * if something tries to do an invalid cmpxchg(). */
--extern void __cmpxchg_called_with_bad_pointer(void);
--
--#define __HAVE_ARCH_CMPXCHG 1
-+#include <asm-generic/cmpxchg-local.h>
- 
--static inline unsigned long __cmpxchg(volatile void * ptr, unsigned long old,
--		unsigned long new, int size)
--{
--	switch (size) {
--	case 4:
--		return __cmpxchg_u32(ptr, old, new);
--	}
--	__cmpxchg_called_with_bad_pointer();
--	return old;
--}
-+/*
-+ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
-+ * them available.
-+ */
-+#define cmpxchg_local(ptr,o,n)					  	    \
-+     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
-+			   	 (unsigned long)(n), sizeof(*(ptr)))
-+#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
- 
--#define cmpxchg(ptr,o,n)						 \
--  ({									 \
--     __typeof__(*(ptr)) _o_ = (o);					 \
--     __typeof__(*(ptr)) _n_ = (n);					 \
--     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
--				    (unsigned long)_n_, sizeof(*(ptr))); \
--  })
-+#ifndef CONFIG_SMP
-+#include <asm-generic/cmpxchg.h>
-+#endif
- 
- extern void die(const char *str, struct pt_regs *regs, long err) __attribute__ ((noreturn));
- 
+--- linux-2.6-lttng.orig/arch/m32r/kernel/smpboot.c	2007-08-21 09:57:48.000000000 -0400
++++ linux-2.6-lttng/arch/m32r/kernel/smpboot.c	2007-08-21 09:58:12.000000000 -0400
+@@ -43,6 +43,7 @@
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/mm.h>
++#include <linux/sched.h>
+ #include <linux/err.h>
+ #include <linux/irq.h>
+ #include <linux/bootmem.h>
 
 -- 
 Mathieu Desnoyers
