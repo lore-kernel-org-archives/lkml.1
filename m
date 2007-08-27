@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763344AbXH0WVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762358AbXH0W10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763344AbXH0WVl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 18:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbXH0WVc
+	id S1762358AbXH0W10 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 18:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbXH0W1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 18:21:32 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47979 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753688AbXH0WVb (ORCPT
+	Mon, 27 Aug 2007 18:27:18 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:44011 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752051AbXH0W1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 18:21:31 -0400
-From: akepner@sgi.com
-Date: Mon, 27 Aug 2007 15:20:27 -0700
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       gregkh@suse.de, James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/3] pci: let devices flush DMA to host memory
-Message-ID: <20070827222027.GD29161@sgi.com>
-References: <20070824180232.GP5592@sgi.com> <20070827220548.GB22484@colo.lackof.org>
+	Mon, 27 Aug 2007 18:27:17 -0400
+Date: Mon, 27 Aug 2007 18:27:15 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+Message-ID: <20070827222715.GA16982@Krystal>
+References: <1188197539.6114.426.camel@twins> <Pine.LNX.4.64.0708271237580.5056@schroedinger.engr.sgi.com> <20070827202203.GB5653@Krystal> <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com> <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com> <20070827211003.GA10627@Krystal> <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com> <20070827213845.GB9748@Krystal> <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070827220548.GB22484@colo.lackof.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:25:14 up 28 days, 22:44,  3 users,  load average: 0.21, 0.38, 0.86
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 04:05:48PM -0600, Grant Grundler wrote:
-
-> .....
-> After reading the thread, my take is we need a more elegant way for a
-> device driver to handle registration of DMA regions allocated by user
-> space. The API would "make this page/region act like dma_alloc_coherent()".
-> That implies strong ordering between CPU and DMA to/from the device.
-> Maybe the code is the right thing and I want a name that makes
-> sense in the context of current DMA API.
-
-Need to think about this...
-
+* Christoph Lameter (clameter@sgi.com) wrote:
+> On Mon, 27 Aug 2007, Mathieu Desnoyers wrote:
 > 
-> On IRC, willy suggested an mmap() flag and that sounds reasonable too
-> though I don't know if it's feasible. 
+> > > The slow path would require disable preemption and two interrupt disables.
+> > If the slow path have to call new_slab, then yes. But it seems that not
+> > every slow path must call it, so for the other slow paths, only one
+> > interrupt disable would be required.
+> 
+> If we include new_slab then we get to 3 times:
+> 
+> 1. In the cmpxchg_local emulation that fails
+> 
+> 2. For the slow path
+> 
+> 3. When calling the page allocator.
 > 
 
-Yeah, we're doing something like this now as a band-aid solution. 
-Not a flag to mmap(), but a magic offset value. But it wasn't 
-acceptable to the maintainer of the mthca IB driver (Roland 
-Dreier), hence the new proposal....
+Hrm, I just want to certify one thing: A lot of code paths seems to go
+to the slow path without requiring cmpxchg_local to execute at all. So
+is the slow path more likely to be triggered by the (!object),
+(!node_match) tests or by these same tests done in the redo after the
+initial cmpxchg_local ?
 
 -- 
-Arthur
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
