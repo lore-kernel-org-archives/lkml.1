@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbXH0Vla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbXH0Vlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755369AbXH0Vla (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756523AbXH0V3b
+	id S1757710AbXH0Vlx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765558AbXH0V3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:29:31 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58871 "EHLO
+	Mon, 27 Aug 2007 17:29:36 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58873 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765524AbXH0V3a (ORCPT
+	with ESMTP id S1765542AbXH0V3f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:29:30 -0400
-Date: Mon, 27 Aug 2007 23:29:29 +0200
+	Mon, 27 Aug 2007 17:29:35 -0400
+Date: Mon, 27 Aug 2007 23:29:34 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>, mchehab@infradead.org
-Cc: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org
-Subject: [-mm patch] ivtv-fb.c bugfix
-Message-ID: <20070827212929.GH26410@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>, linville@tuxdriver.com
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: [-mm patch] iwl-base.c bugfixes
+Message-ID: <20070827212934.GI26410@stusta.de>
 References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -28,31 +28,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 On Wed, Aug 22, 2007 at 02:06:48AM -0700, Andrew Morton wrote:
 >...
 > Changes since 2.6.23-rc2-mm2:
->...
->  git-dvb.patch
+>... 
+>  git-wireless.patch
 >...
 >  git trees
 >...
 
-This patch fixes an obvious bug in ivtvfb_release_buffers().
+This patch fixes two obvious bugs.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-093bdc9ba94bffbec2ed44743418899771488832 
-diff --git a/drivers/media/video/ivtv/ivtv-fb.c b/drivers/media/video/ivtv/ivtv-fb.c
-index 0080765..8a344d5 100644
---- a/drivers/media/video/ivtv/ivtv-fb.c
-+++ b/drivers/media/video/ivtv/ivtv-fb.c
-@@ -1068,8 +1068,8 @@ static void ivtvfb_release_buffers (struct ivtv *itv)
- 	struct osd_info *oi = itv->osd_info;
+
+ drivers/net/wireless/iwl-base.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+600ffdc11b25ac0aee15271d1b2ce99a367efa31 
+diff --git a/drivers/net/wireless/iwl-base.c b/drivers/net/wireless/iwl-base.c
+index b8293fe..f65c30e 100644
+--- a/drivers/net/wireless/iwl-base.c
++++ b/drivers/net/wireless/iwl-base.c
+@@ -343,7 +343,7 @@ int iwl_tx_queue_init(struct iwl_priv *priv,
+ 	 * command is very huge the system will not have two scan at the
+ 	 * same time */
+ 	len = sizeof(struct iwl_cmd) * slots_num;
+-	if (txq_id == IWL_CMD_QUEUE_NUM);
++	if (txq_id == IWL_CMD_QUEUE_NUM)
+ 		len +=  IWL_MAX_SCAN_SIZE;
+ 	txq->cmd = pci_alloc_consistent(dev, len, &txq->dma_addr_cmd);
+ 	if (!txq->cmd)
+@@ -390,7 +390,7 @@ void iwl_tx_queue_free(struct iwl_priv *priv, struct iwl_tx_queue *txq)
+ 		iwl_hw_txq_free_tfd(priv, txq);
  
- 	/* Release cmap */
--	if (oi->ivtvfb_info.cmap.len);
--	fb_dealloc_cmap(&oi->ivtvfb_info.cmap);
-+	if (oi->ivtvfb_info.cmap.len)
-+		fb_dealloc_cmap(&oi->ivtvfb_info.cmap);
+ 	len = sizeof(struct iwl_cmd) * q->n_window;
+-	if (q->id == IWL_CMD_QUEUE_NUM);
++	if (q->id == IWL_CMD_QUEUE_NUM)
+ 		len += IWL_MAX_SCAN_SIZE;
  
- 	/* Release pseudo palette */
- 	if (oi->ivtvfb_info.pseudo_palette)
+ 	pci_free_consistent(dev, len, txq->cmd, txq->dma_addr_cmd);
 
