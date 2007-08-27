@@ -1,42 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbXH0RKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759651AbXH0RLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbXH0RKR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbXH0RKF
+	id S1759651AbXH0RLW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756557AbXH0RLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:10:05 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:53340 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750718AbXH0RKD (ORCPT
+	Mon, 27 Aug 2007 13:11:15 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:45644 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755949AbXH0RLO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 13:10:03 -0400
-Date: Mon, 27 Aug 2007 16:06:19 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] fix bogus hotplug cpu warning
-Message-ID: <Pine.LNX.4.64.0708271604440.21853@blonde.wat.veritas.com>
+	Mon, 27 Aug 2007 13:11:14 -0400
+X-Sasl-enc: KeQa+UnyV05HA08RrKkjBAsp5Ctt6855wBh1iaQc/5cW 1188234672
+Date: Mon, 27 Aug 2007 14:11:07 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Yan Burman <burman.yan@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       hdaps-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2.6.23-rc2]  hwmon: HP Mobile Data Protection System 3D
+	ACPI driver (resend)
+Message-ID: <20070827171107.GA15647@khazad-dum.debian.net>
+References: <1186831562.6452.10.camel@localhost> <20070825102512.GA5850@ucw.cz> <46D01420.3070400@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Tracker: AAAAAQAAAWE=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46D01420.3070400@gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix bogus DEBUG_PREEMPT warning on x86_64, when cpu brought online after
-bootup: current_is_keventd is right to note its use of smp_processor_id
-is preempt-safe, but should use raw_smp_processor_id to avoid the warning.
+On Sat, 25 Aug 2007, Yan Burman wrote:
+>> Aha, /sys. Could we simply power off the device when its input device
+>> is not opened?
+>>   
+> No, we can't since the sys interface provides the position info and some 
+> applications (hdaps apps for example) use this interface.
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Power it off when not used for some time.  Power on when opened.  -EBUSY
+while powering on and before it stablizes, if you don't want to get anything
+userland stuck in D state.  This much work might not make sense if your
+accelerometer doesn't waste resources when enabled.
 
---- 2.6.23-rc3-git10/kernel/workqueue.c	2007-07-26 19:49:58.000000000 +0100
-+++ linux/kernel/workqueue.c	2007-08-26 18:59:16.000000000 +0100
-@@ -635,7 +635,7 @@ int keventd_up(void)
- int current_is_keventd(void)
- {
- 	struct cpu_workqueue_struct *cwq;
--	int cpu = smp_processor_id();	/* preempt-safe: keventd is per-cpu */
-+	int cpu = raw_smp_processor_id(); /* preempt-safe: keventd is per-cpu */
- 	int ret = 0;
- 
- 	BUG_ON(!keventd_wq);
+Heck, try to get rid of that position sysfs crap if you can! It was a bad
+design idea for hdaps to come up with, there is no reason to let it leak to
+other drivers.
+
+Input devices are the way to go for this, a joystick-emulation input device
+(for games and toys), plus a input device that outputs accelerometer data in
+micro (or mili?) gravities (generic stuff that works with all accelerometers
+should use this one) and a raw accelerometer data input device (for higly
+specific signal processing apps) when possible.
+
+HDAPS (the one that matters, which ships in tp_smapi) lacks the g-normalized
+device, though, but it would be a proper generic accelerometer interface.
+The in-tree hdaps driver is basically ignored.  So some other accelerometer
+driver gets the dibs on how to implement those interfaces in a proper
+generic way.  Want to be the one? Please?  We in hdaps-devel can certainly
+help with ideas and fix out-of-tree hdaps to also implement the interface.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
