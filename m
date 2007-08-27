@@ -1,192 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbXH0Egn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbXH0FJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752732AbXH0Egn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 00:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbXH0Ege
+	id S1753293AbXH0FJV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 01:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXH0FJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 00:36:34 -0400
-Received: from ozlabs.org ([203.10.76.45]:45523 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751014AbXH0Egd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 00:36:33 -0400
-Date: Mon, 27 Aug 2007 14:36:27 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Andrew Morton <akpm@osdl.org>
-Cc: William Lee Irwin <wli@holomorphy.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org
-Subject: hugepage: Fix broken check for offset alignment in hugepage mappings
-Message-ID: <20070827043627.GA7306@localhost.localdomain>
-Mail-Followup-To: David Gibson <david@gibson.dropbear.id.au>,
-	Andrew Morton <akpm@osdl.org>,
-	William Lee Irwin <wli@holomorphy.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	Mon, 27 Aug 2007 01:09:09 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:42873 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbXH0FJH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 01:09:07 -0400
+Date: Mon, 27 Aug 2007 10:30:27 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 0/2 -mm] kexec based hibernation
+Message-ID: <20070827050027.GB9809@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <1188177245.3247.36.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1188177245.3247.36.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For hugepage mappings, the file offset, like the address and size,
-needs to be aligned to the size of a hugepage.
+On Mon, Aug 27, 2007 at 09:14:05AM +0800, Huang, Ying wrote:
+> Kexec base hibernation has some potential advantages over uswsusp and
+> TuxOnIce (suspend2). Some most obvious advantages are:
+> 
+> 1. The hibernation image size can exceed half of memory size easily.
+> 
+> 2. The hibernation image can be written to and read from almost
+>    anywhere, such as USB disk, NFS.
+> 
+> 3. It is possible to eliminate freezer from kexec based hibernation
+>    implementation.
+> 
+> 4. Based on kexec/kdump implementation, the kernel code needed is
+>    less.
+> 
+> 
+> This patch set implements a prototype of kexec based hibernation. The
+> kernel functionalities added are as follow:
+> 
+> 1. Jumping from kexeced kernel back to original kernel. This is used
+>    by hibernation to save/load necessary state in original kernel and
+>    jumping back to original kernel after restore the memory of
+>    original kernel.
+> 
+> 2. Add writing support to /dev/oldmem. This is used by hibernation to
+>    restore the memory of original kernel.
+> 
+> 
+> The hibernation process with the patch set is as follow:
+> 
+> 1. Boot a kernel A
+> 
+> 2. Work under kernel A
+> 
+> 3. Kexec another kernel B (crash dump enabled) in kernel A.
+> 
+> 4. Save the memory image of kernel A through crash dump (such as "cp
+>    /proc/vmcore ~"). Save the "jump buffer pfn".
+> 
+> 5. Shutdown or reboot
+> 
+> 
+> The restore process with the patch set is as follow:
+> 
+> 1. Boot a kernel C
+> 
+> 2. Kexec another kernel D (crash dump enabled) in kernel C. The memory
+>    area used by kernel D must be a subset of memory area used by
+>    kernel B.
+> 
 
-In commit 68589bc353037f233fe510ad9ff432338c95db66, the check for this
-was moved into prepare_hugepage_range() along with the address and
-size checks.  But since BenH's rework of the get_unmapped_area() paths
-leading up to commit 4b1d89290b62bb2db476c94c82cf7442aab440c8,
-prepare_hugepage_range() is only called for MAP_FIXED mappings, not
-for other mappings.  This means we're no longer ever checking for an
-aligned offset - I've confirmed that mmap() will (apparently) succeed
-with a misaligned offset on both powerpc and i386 at least.
+If one compiles the kernel C to boot from reserved memory area (subset
+of memory area used by kernel B), then I can skip the step of kexecing
+from C to D? (COFIG_PHYSICAL_START)
 
-This patch restores the check, removing it from
-prepare_hugepage_range() and putting it back into
-hugetlbfs_file_mmap().  I'm putting it there, rather than in the
-get_unmapped_area() path so it only needs to go in one place, than
-separately in the half-dozen or so arch-specific implementations of
-hugetlb_get_unmapped_area().
+Alternatively, can we give hint to kernel C to run from a specified address
+at run time with the help of command line parameters. What I mean boot-loader
+can load the kernel at any address, but kernel will move itself to run
+from a different location depending on command line parameter.  For example,
+let say kernel_run_addr = 0x1000000. This parameter will tell the kernel
+to move itself to 16MB address and run from there. I think it can be made
+to work with little work in existing setup of relocatable kernel.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Kernel run address can be put by some user space script which will save
+the hibernated image of original kernel. So after saving the /proc/vmcore,
+script can modify the boot loader config file to append the right
+command line to the kernel (kernel_run_addr).
 
----
- arch/i386/mm/hugetlbpage.c    |    2 +-
- arch/ia64/mm/hugetlbpage.c    |    6 ++----
- arch/sparc64/mm/hugetlbpage.c |    2 +-
- fs/hugetlbfs/inode.c          |   15 ++++++++++-----
- include/linux/hugetlb.h       |   10 +++-------
- 5 files changed, 17 insertions(+), 18 deletions(-)
+After hibernation, user will shutdown/reboot. Next time the kernel boots
+it will load at 16MB addr (because of kernel_run_addr) and then it can
+restore the previously saved image.
 
-Andrew, please apply.  I think this bugfix should go into 2.6.23.
+We shall have to get rid of (kernel_run_addr) parameter from command
+line while resuming. One can restore the image (krestore) and then edit
+the boot loader config file to get rid of command line param, kernel_run_addr.
 
-Index: working-2.6/fs/hugetlbfs/inode.c
-===================================================================
---- working-2.6.orig/fs/hugetlbfs/inode.c	2007-08-27 13:37:02.000000000 +1000
-+++ working-2.6/fs/hugetlbfs/inode.c	2007-08-27 13:37:11.000000000 +1000
-@@ -82,14 +82,19 @@ static int hugetlbfs_file_mmap(struct fi
- 	int ret;
- 
- 	/*
--	 * vma alignment has already been checked by prepare_hugepage_range.
--	 * If you add any error returns here, do so after setting VM_HUGETLB,
--	 * so is_vm_hugetlb_page tests below unmap_region go the right way
--	 * when do_mmap_pgoff unwinds (may be important on powerpc and ia64).
-+	 * vma address alignment (but not the pgoff alignment) has
-+	 * already been checked by prepare_hugepage_range.  If you add
-+	 * any error returns here, do so after setting VM_HUGETLB, so
-+	 * is_vm_hugetlb_page tests below unmap_region go the right
-+	 * way when do_mmap_pgoff unwinds (may be important on powerpc
-+	 * and ia64).
- 	 */
- 	vma->vm_flags |= VM_HUGETLB | VM_RESERVED;
- 	vma->vm_ops = &hugetlb_vm_ops;
- 
-+	if (vma->vm_pgoff & ~(HPAGE_MASK >> PAGE_SHIFT))
-+		return -EINVAL;
-+
- 	vma_len = (loff_t)(vma->vm_end - vma->vm_start);
- 
- 	mutex_lock(&inode->i_mutex);
-@@ -132,7 +137,7 @@ hugetlb_get_unmapped_area(struct file *f
- 		return -ENOMEM;
- 
- 	if (flags & MAP_FIXED) {
--		if (prepare_hugepage_range(addr, len, pgoff))
-+		if (prepare_hugepage_range(addr, len))
- 			return -EINVAL;
- 		return addr;
- 	}
-Index: working-2.6/include/linux/hugetlb.h
-===================================================================
---- working-2.6.orig/include/linux/hugetlb.h	2007-08-27 13:37:02.000000000 +1000
-+++ working-2.6/include/linux/hugetlb.h	2007-08-27 13:37:11.000000000 +1000
-@@ -66,11 +66,8 @@ void hugetlb_free_pgd_range(struct mmu_g
-  * If the arch doesn't supply something else, assume that hugepage
-  * size aligned regions are ok without further preparation.
-  */
--static inline int prepare_hugepage_range(unsigned long addr, unsigned long len,
--						pgoff_t pgoff)
-+static inline int prepare_hugepage_range(unsigned long addr, unsigned long len)
- {
--	if (pgoff & (~HPAGE_MASK >> PAGE_SHIFT))
--		return -EINVAL;
- 	if (len & ~HPAGE_MASK)
- 		return -EINVAL;
- 	if (addr & ~HPAGE_MASK)
-@@ -78,8 +75,7 @@ static inline int prepare_hugepage_range
- 	return 0;
- }
- #else
--int prepare_hugepage_range(unsigned long addr, unsigned long len,
--						pgoff_t pgoff);
-+int prepare_hugepage_range(unsigned long addr, unsigned long len);
- #endif
- 
- #ifndef ARCH_HAS_SETCLEAR_HUGE_PTE
-@@ -117,7 +113,7 @@ static inline unsigned long hugetlb_tota
- #define hugetlb_report_meminfo(buf)		0
- #define hugetlb_report_node_meminfo(n, buf)	0
- #define follow_huge_pmd(mm, addr, pmd, write)	NULL
--#define prepare_hugepage_range(addr,len,pgoff)	(-EINVAL)
-+#define prepare_hugepage_range(addr,len)	(-EINVAL)
- #define pmd_huge(x)	0
- #define is_hugepage_only_range(mm, addr, len)	0
- #define hugetlb_free_pgd_range(tlb, addr, end, floor, ceiling) ({BUG(); 0; })
-Index: working-2.6/arch/i386/mm/hugetlbpage.c
-===================================================================
---- working-2.6.orig/arch/i386/mm/hugetlbpage.c	2007-08-27 13:37:02.000000000 +1000
-+++ working-2.6/arch/i386/mm/hugetlbpage.c	2007-08-27 13:37:11.000000000 +1000
-@@ -367,7 +367,7 @@ hugetlb_get_unmapped_area(struct file *f
- 		return -ENOMEM;
- 
- 	if (flags & MAP_FIXED) {
--		if (prepare_hugepage_range(addr, len, pgoff))
-+		if (prepare_hugepage_range(addr, len))
- 			return -EINVAL;
- 		return addr;
- 	}
-Index: working-2.6/arch/ia64/mm/hugetlbpage.c
-===================================================================
---- working-2.6.orig/arch/ia64/mm/hugetlbpage.c	2007-08-27 13:37:02.000000000 +1000
-+++ working-2.6/arch/ia64/mm/hugetlbpage.c	2007-08-27 13:37:12.000000000 +1000
-@@ -75,10 +75,8 @@ int huge_pmd_unshare(struct mm_struct *m
-  * Don't actually need to do any preparation, but need to make sure
-  * the address is in the right region.
-  */
--int prepare_hugepage_range(unsigned long addr, unsigned long len, pgoff_t pgoff)
-+int prepare_hugepage_range(unsigned long addr, unsigned long len)
- {
--	if (pgoff & (~HPAGE_MASK >> PAGE_SHIFT))
--		return -EINVAL;
- 	if (len & ~HPAGE_MASK)
- 		return -EINVAL;
- 	if (addr & ~HPAGE_MASK)
-@@ -151,7 +149,7 @@ unsigned long hugetlb_get_unmapped_area(
- 
- 	/* Handle MAP_FIXED */
- 	if (flags & MAP_FIXED) {
--		if (prepare_hugepage_range(addr, len, pgoff))
-+		if (prepare_hugepage_range(addr, len))
- 			return -EINVAL;
- 		return addr;
- 	}
-Index: working-2.6/arch/sparc64/mm/hugetlbpage.c
-===================================================================
---- working-2.6.orig/arch/sparc64/mm/hugetlbpage.c	2007-08-27 13:37:02.000000000 +1000
-+++ working-2.6/arch/sparc64/mm/hugetlbpage.c	2007-08-27 13:37:12.000000000 +1000
-@@ -175,7 +175,7 @@ hugetlb_get_unmapped_area(struct file *f
- 		return -ENOMEM;
- 
- 	if (flags & MAP_FIXED) {
--		if (prepare_hugepage_range(addr, len, pgoff))
-+		if (prepare_hugepage_range(addr, len))
- 			return -EINVAL;
- 		return addr;
- 	}
+In this scheme, with the help of relocatable kernel, we can use a single
+kernel for everything. (A, B, C, D). We will also avoid additional kexec
+from kernel C to kernel D.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I think in the long run we shall have to work out so that a user does
+not have to maintain multiple kernels. 
+
+Does this make sense?
+
+Thanks
+Vivek
