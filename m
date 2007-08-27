@@ -1,78 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbXH0N17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbXH0N3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbXH0N17 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 09:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbXH0N1u
+	id S1756537AbXH0N3D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 09:29:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbXH0N2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 09:27:50 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53235 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753206AbXH0N1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 09:27:49 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX19SFctLjhtSQR+NcIouYBiCzSr15kYy79yZePEgU6
-	OU86AzFqGEIidq
-Message-ID: <46D2D0E2.9060408@gmx.net>
-Date: Mon, 27 Aug 2007 15:25:54 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
-MIME-Version: 1.0
-To: Nicolas George <nicolas.george@ens.fr>
-CC: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
-       jdike@linux.intel.com
-Subject: Re: UML/man: BLKGETSIZE takes a long, not an int
-References: <20070814092942.GA14324@clipper.ens.fr>
-In-Reply-To: <20070814092942.GA14324@clipper.ens.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Mon, 27 Aug 2007 09:28:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55820 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752634AbXH0N2x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 09:28:53 -0400
+Date: Mon, 27 Aug 2007 14:28:43 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Peter Firefly Lund <firefly@vax64.dk>
+Cc: Christoph Lameter <clameter@sgi.com>, Momchil Velikov <velco@fadata.bg>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] avoid negative shifts in radix-tree.c
+Message-ID: <20070827132843.GB21970@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Peter Firefly Lund <firefly@vax64.dk>,
+	Christoph Lameter <clameter@sgi.com>,
+	Momchil Velikov <velco@fadata.bg>, linux-kernel@vger.kernel.org,
+	trivial@kernel.org
+References: <1188051967.18306.45.camel@ls-search>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1188051967.18306.45.camel@ls-search>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Nicolas,
-
-> I fear that my bug-report yesterday was very badly written, with me writing
-> to the wrong mailing-list and all.
+On Sat, Aug 25, 2007 at 04:26:07PM +0200, Peter Firefly Lund wrote:
+> (linux-vax@pergamentum.com only bcc'ed because it's subscribers only,
+> Lameter addressed because I think he touched the code last, Velikov and
+> Hellwig because they touched the code first.)
 > 
-> I was saying:
+> The current code in __max_index() will shift by a negative amount first
+> and only then fix the situation by ignoring the result if the shift
+> amount would have been negative.  This happens to work on almost any
+> architecture despite not being valid C.
 > 
->> I found a type mismatch in UML that makes host block devices unusable as ubd
->> devices on x86_64 and other 64 bits systems (segfault of the mm subsystem):
->>
->> In block/ioctl.c, the following lines show that the BLKGETSIZE ioctl expects
->> a pointer to a long:
->>
->> 	case BLKGETSIZE:
->> 		if ((bdev->bd_inode->i_size >> 9) > ~0UL)
->> 			return -EFBIG;
->> 		return put_ulong(arg, bdev->bd_inode->i_size >> 9);
->>
->> In arch/um/os-Linux/file.c, os_file_size calls it with an int.
->>
->> The ioctl_list man page should be fixed as well.
+> Chapter and verse from the (draft) ISO C99 standard, "6.5.7 Bitwise
+> shift operators", paragraph 3:
+> 
+>   "The integer promotions are performed on each of the operands. The
+>    type of the result is that of the promoted left operand. If the
+>    value of the right operand is negative or is greater than or equal
+>    to the width of the promoted left operand, the behavior is
+>    undefined."
+> 
+> Right-shifting by a negative amount causes a "reserved operand fault" on
+> the VAX with some gcc versions.
+> 
+> 
+> Applies to 2.6.22.
+> Boot tested lightly on an emulated VAX.
+> 
+> (The function is called 7 times on booth with the values 0..6 -- I
+> checked that the return values were the same + that it returns ~0UL for
+> height==6 as was clearly the intention.)
+> 
+> -Peter
+> 
+> --- lib/radix-tree-old.c	2007-08-25 15:36:40.000000000 +0200
+> +++ lib/radix-tree.c	2007-08-25 15:36:51.000000000 +0200
+> @@ -980,12 +980,14 @@ radix_tree_node_ctor(void *node, struct 
+>  
+>  static __init unsigned long __maxindex(unsigned int height)
+>  {
+> -	unsigned int tmp = height * RADIX_TREE_MAP_SHIFT;
+> -	unsigned long index = (~0UL >> (RADIX_TREE_INDEX_BITS - tmp - 1)) >> 1;
+> -
+> -	if (tmp >= RADIX_TREE_INDEX_BITS)
+> -		index = ~0UL;
+> -	return index;
+> +	unsigned int	tmp   = height * RADIX_TREE_MAP_SHIFT;
+> +	int		shift = RADIX_TREE_INDEX_BITS - tmp;
+> +	unsigned long	index;
+> +
+> +	if (shift < 0)
+> +		return ~0UL;
+> +	else
+> +		return ~0UL >> shift;
 
-manual page changed for 2.65:
+The conceptual change looks fine to me, but the code looks a little odd,
+what about:
 
---- ioctl_list.2
-+++ ioctl_list.2        (working copy)
-@@ -243,7 +243,7 @@
- 0x0000125D  BLKROSET                   const int *
- 0x0000125E  BLKROGET                   int *
- 0x0000125F  BLKRRPART                  void
--0x00001260  BLKGETSIZE                 int *
-+0x00001260  BLKGETSIZE                 unsigned long *
- 0x00001261  BLKFLSBUF                  void
- 0x00001262  BLKRASET                   int
- 0x00001263  BLKRAGET                   int *
+static __init unsigned long __maxindex(unsigned int height)
+{
+	unsigned int tmp = height * RADIX_TREE_MAP_SHIFT;
+	int shift = RADIX_TREE_INDEX_BITS - tmp;
 
-Thanks,
+	if (shift < 0)
+		return ~0UL;
+	return ~0UL >> shift;
+}
 
-Michael
-
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
+instead?
