@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbXH0Tne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932703AbXH0Tr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762171AbXH0Tne (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 15:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932201AbXH0TnU
+	id S932703AbXH0Tr2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 15:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbXH0TrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 15:43:20 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36215 "EHLO
+	Mon, 27 Aug 2007 15:47:19 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36558 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759554AbXH0TnT (ORCPT
+	with ESMTP id S1757589AbXH0TrS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 15:43:19 -0400
-Date: Mon, 27 Aug 2007 12:43:18 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [PATCH] SLUB: use have_arch_cmpxchg()
-In-Reply-To: <20070827145627.GB18504@Krystal>
-Message-ID: <Pine.LNX.4.64.0708271240350.5056@schroedinger.engr.sgi.com>
-References: <20070821233938.GD29691@Krystal> <Pine.LNX.4.64.0708211640430.6225@schroedinger.engr.sgi.com>
- <20070821234702.GE29691@Krystal> <Pine.LNX.4.64.0708211649260.6886@schroedinger.engr.sgi.com>
- <20070822000323.GG29691@Krystal> <Pine.LNX.4.64.0708211704260.7852@schroedinger.engr.sgi.com>
- <20070822002616.GA1400@Krystal> <Pine.LNX.4.64.0708211731410.3354@schroedinger.engr.sgi.com>
- <20070822150248.GB8504@Krystal> <84144f020708220924y6d707d50md1c95eeb58d5ce7@mail.gmail.com>
- <20070827145627.GB18504@Krystal>
+	Mon, 27 Aug 2007 15:47:18 -0400
+Date: Mon, 27 Aug 2007 19:47:14 +0000
+From: Mike Travis <travis@cthulhu.engr.sgi.com>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+cc: travis@sgi.com, Andi Kleen <ak@suse.de>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 1/6] x86: fix cpu_to_node references (v2)
+In-Reply-To: <20070825002349.GB1894@linux-os.sc.intel.com>
+Message-ID: <Pine.SGI.4.56.0708271940550.4346753@kluge.engr.sgi.com>
+References: <20070824222654.687510000@sgi.com> <20070824222948.587159000@sgi.com>
+ <20070825002349.GB1894@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007, Mathieu Desnoyers wrote:
 
-> Hrm, actually, I don't think such have_arch_cmpxchg() macro will be
-> required at all because of the small performance hit disabling
-> preemption will have on the slow and fast paths. Let's compare, for each
-> of the slow path and fast path, what locking looks like on architecture
-> with and without local cmpxchg:
-> 
-> What we actually do here is:
-> 
-> fast path:
-> with local_cmpxchg:
->   preempt_disable()
->   preempt_enable()
-> without local_cmpxchg:
->   preempt_disable()
->   local_irq_save
->   local_irq_restore
->   preempt_enable()
->     (we therefore disable preemption _and_ disable interrupts for
->     nothing)
 
-Hmmm..... This is a performance issue for preempt kernels.
+On Fri, 24 Aug 2007, Siddha, Suresh B wrote:
 
-> slow path:
-> both with and without local_cmpxchg():
->   preempt_disable()
->   preempt_enable()
+> On Fri, Aug 24, 2007 at 03:26:55PM -0700, travis@sgi.com wrote:
+> > Fix four instances where cpu_to_node is referenced
+> > by array instead of via the cpu_to_node macro.  This
+> > is preparation to moving it to the per_cpu data area.
+> >
+> ...
+>
+> >  unsigned long __init numa_free_all_bootmem(void)
+> > --- a/arch/x86_64/mm/srat.c
+> > +++ b/arch/x86_64/mm/srat.c
+> > @@ -431,9 +431,9 @@
+> >  			setup_node_bootmem(i, nodes[i].start, nodes[i].end);
+> >
+> >  	for (i = 0; i < NR_CPUS; i++) {
+> > -		if (cpu_to_node[i] == NUMA_NO_NODE)
+> > +		if (cpu_to_node(i) == NUMA_NO_NODE)
+> >  			continue;
+> > -		if (!node_isset(cpu_to_node[i], node_possible_map))
+> > +		if (!node_isset(cpu_to_node(i), node_possible_map))
+> >  			numa_set_node(i, NUMA_NO_NODE);
+> >  	}
+> >  	numa_init_array();
+>
+> During this particular routine execution, per cpu areas are not yet setup. In
+> future, when we make cpu_to_node(i) use per cpu area, then this code will break.
+>
+> And actually setup_per_cpu_areas() uses cpu_to_node(). So...
+>
 
-Here we potentially loose our per cpu structure since the process may be 
-rescheduled.
+I have a scheme to use an __initdata array during __init processing which
+is removed after the per cpu data area is setup.  I'm looking more closely
+at all the various node <--> cpu tables.
 
->   local_irq_save()
->   local_irq_restore()
-> 
-> 
-> Therefore, we would add preempt disable/enable to the fast path of
-> architectures where local_cmpxchg is emulated with irqs off. But since
-> preempt disable/enable is just a check counter increment/decrement with
-> barrier() and thread flag check, I doubt it would hurt performances
-> enough to justify the added complexity of disabling interrupts for the
-> whole fast path in this case.
-
-One additional cacheline referenced in the hot path. Ok the counter may be 
-hot as well if this is a preemptible kernel. Nevertheless a cause for 
-concern.
-
+Thanks,
+Mike
