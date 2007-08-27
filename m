@@ -1,25 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbXH0MES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbXH0ME7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755584AbXH0MES (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 08:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbXH0MEK
+	id S1756006AbXH0ME7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 08:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbXH0MEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 08:04:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43203 "EHLO
+	Mon, 27 Aug 2007 08:04:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43215 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbXH0MEJ (ORCPT
+	with ESMTP id S1751155AbXH0MEu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 08:04:09 -0400
-Date: Mon, 27 Aug 2007 05:03:36 -0700
+	Mon, 27 Aug 2007 08:04:50 -0400
+Date: Mon, 27 Aug 2007 05:04:32 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Cc: Chris Mason <chris.mason@oracle.com>, Andrew Morton <akpm@osdl.org>,
-       David Chinner <dgc@sgi.com>, Michael Rubin <mrubin@google.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] [RFC][PATCH] clustered writeback
-Message-ID: <20070827050336.6a7e8e16@laptopd505.fenrus.org>
-In-Reply-To: <388214369.05937@ustc.edu.cn>
-References: <388214369.05937@ustc.edu.cn>
+To: Jes Sorensen <jes@sgi.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andy Isaacson <adi@hexapodia.org>, Josh Boyer <jwboyer@gmail.com>,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux
+ Foundation Technical Advisory Board Elections
+Message-ID: <20070827050432.06f9590f@laptopd505.fenrus.org>
+In-Reply-To: <46D2A113.2030403@sgi.com>
+References: <20070823003748.GR30556@waste.org>
+	<20070823004209.GP9163@parisc-linux.org>
+	<20070823011953.GS30556@waste.org>
+	<1187832907.3410.141.camel@localhost.localdomain>
+	<20070824012730.GA1243@hexapodia.org>
+	<625fc13d0708231934q5b369b4fh1a5c83def0e56a0d@mail.gmail.com>
+	<20070824025254.GH21720@waste.org>
+	<20070824025504.GT9163@parisc-linux.org>
+	<20070824032228.GJ21720@waste.org>
+	<20070824155735.GA14978@kroah.com>
+	<20070824234840.GC19595@kroah.com>
+	<20070825010329.6f5bc47c@the-village.bc.nu>
+	<46D2A113.2030403@sgi.com>
 Organization: Intel
 X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -30,18 +47,10 @@ X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafl
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007 19:21:52 +0800
-> 
-> Because it does the work in small batches of 10 inodes, when the
-> system has <=10 dirty inodes, its behavior will reduce to:
-> - do a full sweep *at once* on every 25s
-> Which means the disk will flicker once every 25s, not bad :)
+On Mon, 27 Aug 2007 12:01:55 +0200
 
-25 seconds is quite not good already though.... it takes a disk a
-second or two of no activity to go into low power mode, every 25
-seconds means you now have at least a 10% constant power cost....
+> But replacing the flawed KS list with one based on actual
+> contributors, from the git logs as I proposed last week, doesn't seem
+> silly.
 
-I don't know the right answer (well other than "make sure inodes aren't
-dirty", which involves fixing apps to not do as much file operations,
-as well as relatime) but just "every 25s is no big deal" isn't really
-the case ;-(
+to some degree the KS list is based on that git logs thing ;)
