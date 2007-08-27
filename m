@@ -1,70 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbXH0Gwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbXH0GzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752939AbXH0Gwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 02:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbXH0Gw1
+	id S1753860AbXH0GzP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 02:55:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbXH0GzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 02:52:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56661 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751226AbXH0Gw1 (ORCPT
+	Mon, 27 Aug 2007 02:55:03 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:46390 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbXH0GzA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 02:52:27 -0400
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mingo@redhat.com
-In-Reply-To: <Pine.LNX.4.64.0708211612580.6062@schroedinger.engr.sgi.com>
-References: <20070820201519.512791382@polymtl.ca>
-	 <20070820201822.597720007@polymtl.ca>
-	 <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com>
-	 <20070820204126.GA22507@Krystal>
-	 <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com>
-	 <20070820212922.GA27011@Krystal>
-	 <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
-	 <20070820215413.GA28452@Krystal>
-	 <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
-	 <20070821173849.GA8360@Krystal>
-	 <Pine.LNX.4.64.0708211612580.6062@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 27 Aug 2007 08:52:19 +0200
-Message-Id: <1188197539.6114.426.camel@twins>
+	Mon, 27 Aug 2007 02:55:00 -0400
+Date: Mon, 27 Aug 2007 12:16:04 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 0/2 -mm] kexec based hibernation
+Message-ID: <20070827064604.GD9809@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <1188177245.3247.36.camel@caritas-dev.intel.com> <20070827050027.GB9809@in.ibm.com> <1188195529.3247.82.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1188195529.3247.82.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-21 at 16:14 -0700, Christoph Lameter wrote:
-> On Tue, 21 Aug 2007, Mathieu Desnoyers wrote:
+On Mon, Aug 27, 2007 at 02:18:49PM +0800, Huang, Ying wrote:
+
+[..]
+> > 
+> > If one compiles the kernel C to boot from reserved memory area (subset
+> > of memory area used by kernel B), then I can skip the step of kexecing
+> > from C to D? (COFIG_PHYSICAL_START)
 > 
-> > - Changed smp_rmb() for barrier(). We are not interested in read order
-> >   across cpus, what we want is to be ordered wrt local interrupts only.
-> >   barrier() is much cheaper than a rmb().
+> Yes. I think so.
 > 
-> But this means a preempt disable is required. RT users do not want that.
-> Without preemption the processor can be moved after c has been determined.
-> That is why the smp_rmb() is there.
+> > Alternatively, can we give hint to kernel C to run from a specified address
+> > at run time with the help of command line parameters. What I mean boot-loader
+> > can load the kernel at any address, but kernel will move itself to run
+> > from a different location depending on command line parameter.  For example,
+> > let say kernel_run_addr = 0x1000000. This parameter will tell the kernel
+> > to move itself to 16MB address and run from there. I think it can be made
+> > to work with little work in existing setup of relocatable kernel.
+> > 
+> > Kernel run address can be put by some user space script which will save
+> > the hibernated image of original kernel. So after saving the /proc/vmcore,
+> > script can modify the boot loader config file to append the right
+> > command line to the kernel (kernel_run_addr).
+> > 
+> > After hibernation, user will shutdown/reboot. Next time the kernel boots
+> > it will load at 16MB addr (because of kernel_run_addr) and then it can
+> > restore the previously saved image.
+> > 
+> > We shall have to get rid of (kernel_run_addr) parameter from command
+> > line while resuming. One can restore the image (krestore) and then edit
+> > the boot loader config file to get rid of command line param, kernel_run_addr.
+> > 
+> > In this scheme, with the help of relocatable kernel, we can use a single
+> > kernel for everything. (A, B, C, D). We will also avoid additional kexec
+> > from kernel C to kernel D.
+> > 
+> > I think in the long run we shall have to work out so that a user does
+> > not have to maintain multiple kernels. 
+> 
+> Only one relocatable kernel image is needed. In fact, I use one
+> relocatable kernel image in testing during development.
+> 
+> > Does this make sense?
+> 
+> Yes, this is a sensible optimization. But I think it may be better to
+> make bootloader load kernel D directly into a specified memory location.
+> For example, we can add a option to "kernel" command of grub. 
+> 
 
-Likewise for disabling interrupts, we don't like that either. So
-anything that requires cpu-pinning is preferably not done.
+IIUC, you mean a command line option which is parsed by boot-loader and
+then boot-loader loads the kernel at user specified address?
 
-That said, we can suffer a preempt-off section if its O(1) and only a
-few hundred cycles.
+I think it might not be a very good idea as hibernation becomes boot-loader
+dependent scheme. How many boot-loaders will one modify and hibernation
+will not work with older versions of boot-loader. 
 
-The trouble with all this percpu data in slub is that it also requires
-pinning to the cpu in much of the slow path, either that or what we've
-been doing so far with slab, a lock per cpu, and just grab one of those
-locks and stick to the data belonging to that lock, regardless of
-whether we get migrated.
+I think it is better to make kernel relocate to user specified address and
+keep hibernation mechanism independent of specific boot-loader(grup, lilo,...)
+and boot-loader version.
 
-slab-rt has these locks for all allocations and they are a massive
-bottleneck for quite a few workloads, getting a fast path allocation
-without using these would be most welcome.
-
-So, if the fast path can be done with a preempt off, it might be doable
-to suffer the slow path with a per cpu lock like that.
-
-
+Thanks
+Vivek
