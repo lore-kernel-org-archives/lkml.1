@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbXH0Vss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933950AbXH0VtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760065AbXH0Vss (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933387AbXH0Vdo
+	id S933950AbXH0VtU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933492AbXH0VeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:33:44 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:28569 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933374AbXH0Vdl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:33:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=Euv8+laIUD5UlxucGfoAEmN8lq4tnid6mpzVynh9O+gxkC9z184Ufnx0GLEUg2WFBS3gNQd60tBe9BSia1i+lutVSKOffJBsOSypfb4qpcfOGchleeYZCPnm9xQz/9hTmEaMwNxkx068HS5slgkxaG8wEEsGuGXQKOKHWyKYNeM=
-Date: Tue, 28 Aug 2007 01:33:23 +0400
-To: Joe Perches <joe@perches.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] trivial - constify sched.h
-Message-ID: <20070827213323.GA1759@martell.zuzino.mipt.ru>
-References: <1188247231.18004.129.camel@localhost>
+	Mon, 27 Aug 2007 17:34:08 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51669 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933484AbXH0VeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 17:34:07 -0400
+Date: Mon, 27 Aug 2007 23:34:30 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH -mm 1/4] Hibernation: Arbitrary boot kernel support - generic code (rev. 2)
+Message-ID: <20070827213430.GG3398@elf.ucw.cz>
+References: <200708272331.28584.rjw@sisk.pl> <200708272333.44159.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1188247231.18004.129.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <200708272333.44159.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 01:40:31PM -0700, Joe Perches wrote:
-> Add const to some struct task_struct * uses
+On Mon 2007-08-27 23:33:43, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Add the bits needed for supporting arbitrary boot kernels to the common
+> hibernation code.
+> 
+> To support arbitrary boot kernels, make it possible to replace the 'struct
+> new_utsname' and the kernel version in the hibernation image header by some
+> architecture specific data that will be used to verify if the image is valid
+> and to restore the image.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Why, oh, why? This way code there are more characters on screen and zero
-change in vmlinux, at least here.
+ACK.
 
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1222,22 +1222,22 @@ static inline int rt_prio(int prio)
->  	return 0;
->  }
->  
-> -static inline int rt_task(struct task_struct *p)
-> +static inline int rt_task(const struct task_struct *p)
->  {
->  	return rt_prio(p->prio);
->  }
-	...
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
