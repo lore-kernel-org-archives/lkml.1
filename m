@@ -1,121 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbXH0FJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbXH0FhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753293AbXH0FJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 01:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXH0FJJ
+	id S1753914AbXH0FhO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 01:37:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbXH0FhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 01:09:09 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:42873 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbXH0FJH (ORCPT
+	Mon, 27 Aug 2007 01:37:03 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:60534 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751244AbXH0FhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 01:09:07 -0400
-Date: Mon, 27 Aug 2007 10:30:27 +0530
+	Mon, 27 Aug 2007 01:37:00 -0400
+Date: Mon, 27 Aug 2007 11:06:56 +0530
 From: Vivek Goyal <vgoyal@in.ibm.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 0/2 -mm] kexec based hibernation
-Message-ID: <20070827050027.GB9809@in.ibm.com>
+To: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+Cc: RT <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] kexec: reenable HPET before kexec
+Message-ID: <20070827053656.GC9809@in.ibm.com>
 Reply-To: vgoyal@in.ibm.com
-References: <1188177245.3247.36.camel@caritas-dev.intel.com>
+References: <20070820205530.1ffd5876@windmill.dev.rtsoft.ru> <20070823090845.GA13065@in.ibm.com> <20070823154936.3b7ae498@windmill.dev.rtsoft.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1188177245.3247.36.camel@caritas-dev.intel.com>
+In-Reply-To: <20070823154936.3b7ae498@windmill.dev.rtsoft.ru>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 09:14:05AM +0800, Huang, Ying wrote:
-> Kexec base hibernation has some potential advantages over uswsusp and
-> TuxOnIce (suspend2). Some most obvious advantages are:
+On Thu, Aug 23, 2007 at 03:49:36PM +0400, Konstantin Baydarov wrote:
+> On Thu, 23 Aug 2007 14:38:45 +0530
+> Vivek Goyal <vgoyal@in.ibm.com> wrote:
+> > Does your kernel 2 boot normally? I mean through BIOS and boot-loader?
+> > This explanation seems to be suggesting that because PM and ACPI is
+> > disabled, kernel 2 does not search for HPET. If this is the case,
+> > this kernel will not boot even through normal boot-loader and will
+> > try to use PIT instead?
+> > 
+> > If so, it is not an kexec issue at all.
+> > 
+> > Thanks
+> > Vivek
 > 
-> 1. The hibernation image size can exceed half of memory size easily.
-> 
-> 2. The hibernation image can be written to and read from almost
->    anywhere, such as USB disk, NFS.
-> 
-> 3. It is possible to eliminate freezer from kexec based hibernation
->    implementation.
-> 
-> 4. Based on kexec/kdump implementation, the kernel code needed is
->    less.
-> 
-> 
-> This patch set implements a prototype of kexec based hibernation. The
-> kernel functionalities added are as follow:
-> 
-> 1. Jumping from kexeced kernel back to original kernel. This is used
->    by hibernation to save/load necessary state in original kernel and
->    jumping back to original kernel after restore the memory of
->    original kernel.
-> 
-> 2. Add writing support to /dev/oldmem. This is used by hibernation to
->    restore the memory of original kernel.
-> 
-> 
-> The hibernation process with the patch set is as follow:
-> 
-> 1. Boot a kernel A
-> 
-> 2. Work under kernel A
-> 
-> 3. Kexec another kernel B (crash dump enabled) in kernel A.
-> 
-> 4. Save the memory image of kernel A through crash dump (such as "cp
->    /proc/vmcore ~"). Save the "jump buffer pfn".
-> 
-> 5. Shutdown or reboot
-> 
-> 
-> The restore process with the patch set is as follow:
-> 
-> 1. Boot a kernel C
-> 
-> 2. Kexec another kernel D (crash dump enabled) in kernel C. The memory
->    area used by kernel D must be a subset of memory area used by
->    kernel B.
-> 
+> kernel 2 boots normally through BIOS and boot-loader. I agree with your
+> explanation.
+> It seems that kernel 2 can't enable PIT, when it is executed by kexec.
+> As kernel 1 disabled HPET(IRQ0 source) and PIT is "broken"(or isn't
+> enabled) IRQ0 are not triggered at all, and kernel 2 hangs.
 
-If one compiles the kernel C to boot from reserved memory area (subset
-of memory area used by kernel B), then I can skip the step of kexecing
-from C to D? (COFIG_PHYSICAL_START)
+My hunch is that PIT might be disabled here. Because when first kernel
+must have detected HPET and enabled it, then it might have disabled
+PIT and second kernel never sees the interrupts from PIT. But it should
+have seen the interrupts from HPET as no body disabled it?
 
-Alternatively, can we give hint to kernel C to run from a specified address
-at run time with the help of command line parameters. What I mean boot-loader
-can load the kernel at any address, but kernel will move itself to run
-from a different location depending on command line parameter.  For example,
-let say kernel_run_addr = 0x1000000. This parameter will tell the kernel
-to move itself to 16MB address and run from there. I think it can be made
-to work with little work in existing setup of relocatable kernel.
+I think kexec does not enable/disable any timer devices. It just tries
+to bring LAPIC/IOAPIC in a state so that next kernel still seems
+timer interrupts before next kernel sets up LAPIC and IPAOIC.
+ 
+> As kernel 2 boots normally through BIOS and boot-loader, than
+> additional code needed(in Linux kernel init code) for PIT or ACPI
+> or APIC initialization, I mean the same code as executed on BIOS stage.
 
-Kernel run address can be put by some user space script which will save
-the hibernated image of original kernel. So after saving the /proc/vmcore,
-script can modify the boot loader config file to append the right
-command line to the kernel (kernel_run_addr).
+I am not sure which initial code you are referring to? During kexec, we
+will run kernel initial code (except real mode code). But one thing to find
+out here will be how does BIOS pass the control to the OS when HPET device is
+present. Does it enable the HPET and put LAPIC and IOAPIC in virtual wire
+mode or it enables PIT and then later kernel switches from PIT to HPET?
 
-After hibernation, user will shutdown/reboot. Next time the kernel boots
-it will load at 16MB addr (because of kernel_run_addr) and then it can
-restore the previously saved image.
+> I agree that it's not an kexec issue. But can we use my fix as a
+> workaround(to make kexec work) until PIT will be fixed?
+> Everything above is correct for i386/x86_64 RT(2.6.23-rc2-rt2) kernel
+> and for i368 "plain"(2.6.23-rc3) kernel. Bug isn't reproduced in 2.6.23-rc3
+> x86_64 kernel, because x86_64 code never disables HPET. So on every
+> boot(initiated by kexec or BIOS) IRQ0 are triggered.
 
-We shall have to get rid of (kernel_run_addr) parameter from command
-line while resuming. One can restore the image (krestore) and then edit
-the boot loader config file to get rid of command line param, kernel_run_addr.
+I think we should dive little deeper to find out the root cause of the problem
+instead of putting the intermediate patch. These timer issues are tricky
+ones and we have already solved few of these.
 
-In this scheme, with the help of relocatable kernel, we can use a single
-kernel for everything. (A, B, C, D). We will also avoid additional kexec
-from kernel C to kernel D.
+Going back to your original mail where you specify root cause.
 
-I think in the long run we shall have to work out so that a user does
-not have to maintain multiple kernels. 
+- You mentioned that first kernel disables HPET while enabling Local APIC
+timer. Can you please point me when exactly it happens. I had thought local
+APIC timer and HPET server different purpose and co-exist.
 
-Does this make sense?
+- You also mentioned that kernel tries to setup PIT as it does not find
+HPET in second kernel. Where exactly does it do that? I think we need to
+then go deeper to find out why PIT is not working now? Is it disabled? or
+LAPIC/IOAPIC have not been setup properly and PIT interrupts never reach
+CPU? 
 
 Thanks
 Vivek
