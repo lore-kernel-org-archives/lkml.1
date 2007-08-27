@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965266AbXH0Vux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965295AbXH0Vva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965266AbXH0Vux (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763232AbXH0Vgj
+	id S965295AbXH0Vva (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762963AbXH0Vh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:36:39 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59311 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755703AbXH0Vgi (ORCPT
+	Mon, 27 Aug 2007 17:37:56 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35304 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765633AbXH0Vhv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:36:38 -0400
-Date: Mon, 27 Aug 2007 23:36:37 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Olaf Hering <olh@suse.de>
-Subject: Re: [-mm patch] make types.h usable for non-gcc C parsers
-Message-ID: <20070827213637.GN26410@stusta.de>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CC3B27.10604@googlemail.com> <20070827212743.GN4121@stusta.de> <8bd0f97a0708271434y2d0dac76v6ab4036cec0aadd9@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Mon, 27 Aug 2007 17:37:51 -0400
+Date: Mon, 27 Aug 2007 22:37:47 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Eugene Teo <eugeneteo@kernel.sg>
+Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] clean up exports in fs/{open,read_write}.c
+Message-ID: <20070827213747.GA17049@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Eugene Teo <eugeneteo@kernel.sg>, linux-kernel@vger.kernel.org,
+	Takashi Iwai <tiwai@suse.de>,
+	Arjan van de Ven <arjan@linux.intel.com>
+References: <20070824033310.GA5662@kernel.sg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8bd0f97a0708271434y2d0dac76v6ab4036cec0aadd9@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20070824033310.GA5662@kernel.sg>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 05:34:21PM -0400, Mike Frysinger wrote:
-> On 8/27/07, Adrian Bunk <bunk@kernel.org> wrote:
-> > This patch makes the 64bit integers on 32bit architectures usable for
-> > all C parsers that know about "long long".
-> 
-> ah, yet another attempt at this stuff
-> 
-> you probably need to update linux/types.h as well
+On Fri, Aug 24, 2007 at 11:33:10AM +0800, Eugene Teo wrote:
+> Takashi-san fixed sound/isa/wavefront/wavefront_synth.c to use
+> request_firmware instead of sys_*. Since that is the last driver in the
+> kernel that uses sys_{read,close}, this patch kills these exports. sys_open
+> is left exported for sparc64 only.
 
-What problems do you observe with linux/types.h?
-
-> -mike
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+I can't find any spar user of it, so please kill it.  In the case a symbol
+is needed only for a particular architecture it's better to do it in the
+architecture-specific ksyms file than with an ifdef, btw.
 
