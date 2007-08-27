@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbXH0MLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757159AbXH0MMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756685AbXH0MLw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 08:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXH0MLm
+	id S1757159AbXH0MMJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 08:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756301AbXH0MLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 08:11:42 -0400
-Received: from smtpout.mac.com ([17.250.248.185]:54477 "EHLO smtpout.mac.com"
+	Mon, 27 Aug 2007 08:11:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38401 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751144AbXH0MLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 08:11:41 -0400
-In-Reply-To: <200708261113.JHH03043.VQOtSOJLFFFHMO@I-love.SAKURA.ne.jp>
-References: <46CED214.6050505@gmail.com> <46CED5C6.8050501@gmail.com> <20070825110825.GB5850@ucw.cz> <200708261113.JHH03043.VQOtSOJLFFFHMO@I-love.SAKURA.ne.jp>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <60BDD3AF-A5BD-4076-922E-40E629D7CBFA@mac.com>
-Cc: pavel@ucw.cz, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, chrisw@sous-sol.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [TOMOYO 14/15] Conditional permission support.
-Date: Mon, 27 Aug 2007 08:11:15 -0400
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-X-Mailer: Apple Mail (2.752.2)
+	id S1756191AbXH0MLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 08:11:46 -0400
+Date: Mon, 27 Aug 2007 14:11:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthias Hensler <matthias@wspse.de>, Christian Hesse <mail@earthworm.de>,
+       suspend2-devel@lists.tuxonice.net, Suspend2-users@lists.suspend2.net,
+       linux-kernel@vger.kernel.org,
+       suspend2-devel <suspend2-devel@lists.suspend2.net>,
+       David Rodriguez <livuxman@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Suspend2-devel] Problem with CFS V20 and Suspend2/tuxonice
+Message-ID: <20070827121130.GA27592@elte.hu>
+References: <1946b54f0708250423k75d5797fuc5b032be7e143f26@mail.gmail.com> <1946b54f0708250429y570a1620y2796d0ff8abb02eb@mail.gmail.com> <b637ec0b0708250554m35decdb3ic8db88787fc3c0c9@mail.gmail.com> <200708251852.28698.mail@earthworm.de> <20070825184917.GA7945@kobayashi-maru.wspse.de> <20070825190223.GC15888@elte.hu> <20070827114120.GA1797@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070827114120.GA1797@elf.ucw.cz>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 25, 2007, at 22:13:48, Tetsuo Handa wrote:
-> Pavel Machek wrote:
->> What is that? Language parser in kernel?
->
-> Yes. This is a policy parser in kernel.
->
-> TOMOYO Linux' policy is passed from/to the kernel as a plain text  
-> (i.e. ASCII printable) file via /proc/tomoyo interface.
->
-> For example, to add a permission to allow /usr/sbin/sshd to  
-> execute /bin/bash if the authenticated user's uid = 500, the  
-> administrator runs
->
-> # /bin/cat > /proc/tomoyo/domain_policy << EOF
-> select <kernel> /usr/sbin/sshd
-> 1 /bin/bash if task.uid=500
-> EOF
 
-This is probably not acceptable; I doubt there's a chance in hell  
-that TOMOYO will get merged as long as it has text-based-language  
-parsing in the kernel.  You also have $NEW_RANDOM_ABUSE_OF_PROCFS and  
-$PATH_BASED_LSM_ISSUES.  See the long flamewars on AppArmor for  
-discussion on the latter.
+* Pavel Machek <pavel@ucw.cz> wrote:
 
-Cheers,
-Kyle Moffett
+> > > Me too for 2.6.22.5, TuxOnIce 2.2.10 and Centrino based notebook.
 
+> > +		try_to_freeze();
+> > +
+> >  		spin_lock_irq(&rq->lock);
+> >  
+> >  		if (cpu_is_offline(cpu)) {
+> 
+> If it is NONFREEZE, you should not be trying to freeze it.
+
+that fix is for .22 - the bug is a backporting bug. (i look .23's 
+sched.c and stuck it into .22)
+
+	Ingo
