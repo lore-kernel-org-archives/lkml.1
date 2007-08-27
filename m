@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764218AbXH0VVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763951AbXH0VW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764218AbXH0VVy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758388AbXH0VOG
+	id S1763951AbXH0VW2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758847AbXH0VOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:14:06 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1170 "EHLO
+	Mon, 27 Aug 2007 17:14:08 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1173 "EHLO
 	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758231AbXH0VOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:14:05 -0400
-Message-Id: <20070827211355.909371000@tuxland.pl>
+	id S1758231AbXH0VOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 17:14:07 -0400
+Message-Id: <20070827211358.413481000@tuxland.pl>
 References: <20070827205750.514001000@tuxland.pl>
 User-Agent: quilt/0.45-1
-Date: Mon, 27 Aug 2007 22:58:06 +0200
+Date: Mon, 27 Aug 2007 22:58:09 +0200
 From: m.kozlowski@tuxland.pl
 To: airlied@linux.ie, akpm@linux-foundation.org
 Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH 16/23] i915_mem.c: drm_alloc + memset to drm_zalloc
-Content-Disposition: inline; filename=i915_mem.diff
+Subject: [PATCH 19/23] radeon_cp.c: drm_alloc + memset to drm_zalloc
+Content-Disposition: inline; filename=radeon_cp.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
- drivers/char/drm/i915_mem.c | 9842 -> 9808 (-34 bytes)
- drivers/char/drm/i915_mem.o | 114556 -> 114464 (-92 bytes)
+ drivers/char/drm/radeon_cp.c | 62519 -> 62461 (-58 bytes)
+ drivers/char/drm/radeon_cp.o | 160564 -> 160596 (+32 bytes)
 
- drivers/char/drm/i915_mem.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/char/drm/radeon_cp.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
---- linux-2.6.23-rc3-mm1.orig/drivers/char/drm/i915_mem.c
-+++ linux-2.6.23-rc3-mm1/drivers/char/drm/i915_mem.c
-@@ -189,7 +189,7 @@ static int init_heap(struct mem_block **
- 	if (!blocks)
- 		return -ENOMEM;
+--- linux-2.6.23-rc3-mm1.orig/drivers/char/drm/radeon_cp.c
++++ linux-2.6.23-rc3-mm1/drivers/char/drm/radeon_cp.c
+@@ -2239,11 +2239,10 @@ int radeon_driver_load(struct drm_device
+ 	drm_radeon_private_t *dev_priv;
+ 	int ret = 0;
 
--	*heap = drm_alloc(sizeof(**heap), DRM_MEM_BUFLISTS);
-+	*heap = drm_zalloc(sizeof(**heap), DRM_MEM_BUFLISTS);
- 	if (!*heap) {
- 		drm_free(blocks, sizeof(*blocks), DRM_MEM_BUFLISTS);
- 		return -ENOMEM;
-@@ -200,7 +200,6 @@ static int init_heap(struct mem_block **
- 	blocks->filp = NULL;
- 	blocks->next = blocks->prev = *heap;
+-	dev_priv = drm_alloc(sizeof(drm_radeon_private_t), DRM_MEM_DRIVER);
+-	if (dev_priv == NULL)
++	dev_priv = drm_zalloc(sizeof(drm_radeon_private_t), DRM_MEM_DRIVER);
++	if (!dev_priv)
+ 		return DRM_ERR(ENOMEM);
 
--	memset(*heap, 0, sizeof(**heap));
- 	(*heap)->filp = (DRMFILE) - 1;
- 	(*heap)->next = (*heap)->prev = blocks;
- 	return 0;
+-	memset(dev_priv, 0, sizeof(drm_radeon_private_t));
+ 	dev->dev_private = (void *)dev_priv;
+ 	dev_priv->flags = flags;
 
 --
