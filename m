@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761623AbXH0Rax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761462AbXH0Rby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761623AbXH0Rax (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757114AbXH0Ral
+	id S1761462AbXH0Rby (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760331AbXH0RbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:30:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43672 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758758AbXH0Raj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 13:30:39 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18KLRo2S3QKtQWAtAIXy8wO3MumGIBSHdUvc0T3f9
-	/dthHCpNJz0T/m
-Date: Mon, 27 Aug 2007 19:30:33 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Pavel Machek <pavel@ucw.cz>
-cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] [PATCH, RFC] wake up from a serial port
-In-Reply-To: <20070827100029.GB1972@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.60.0708271924180.5705@poirot.grange>
-References: <Pine.LNX.4.60.0708260010250.3809@poirot.grange>
- <20070827100029.GB1972@elf.ucw.cz>
+	Mon, 27 Aug 2007 13:31:16 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:25953 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760675AbXH0RbL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 13:31:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UQ9XhbGm0HaQWwHLx6OZwncYSMYv9m0P9iklGc2cc/b/pCw4pIr7rq904LBs6Apd8b7eX2fYE7dcvC5pIqBQKcZBJbmUlE9lFkJOk6Zkml8KnomWuH3mOzZGIi2b6kZowlZUQRkQqrApE8aQRIZD8mQKsrYagN0dWfrOEnl+80k=
+Message-ID: <6bffcb0e0708271031m322fc411p8b27bcd802ff8508@mail.gmail.com>
+Date: Mon, 27 Aug 2007 19:31:08 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "David Newall" <david@davidnewall.com>
+Subject: Re: help
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46D30778.4040800@davidnewall.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46D25A05.4070606@davidnewall.com>
+	 <46D30778.4040800@davidnewall.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007, Pavel Machek wrote:
+Hi,
 
-> Hi!
-> 
-> > Enable wakeup from serial ports, make it run-time configurable over sysfs, 
-> > e.g.,
-> > 
-> > echo enabled > /sys/devices/platform/serial8250.0/tty/ttyS0/power/wakeup
-> > 
-> > Requires
-> > 
-> > # CONFIG_SYSFS_DEPRECATED is not set
-> > 
-> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> 
-> Hmm, interesting, looks ok to me. What are you using it for?
+On 27/08/07, David Newall <david@davidnewall.com> wrote:
+> help
 
-Linkstation / kurobox systems from Buffalo Tech. have an AVR controller 
-connected to host's UART. The AVR controls power, buttons, fan, LEDs, 
-sensors... So, practically the only way to wake the system up is to press 
-a button, which sends a byte from the AVR to the CPU.
+http://www.kernel.org/pub/linux/docs/lkml/
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Regards,
+Michal
+
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
