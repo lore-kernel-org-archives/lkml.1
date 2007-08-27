@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbXH0BcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbXH0B60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbXH0BcU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 21:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbXH0BcJ
+	id S1754868AbXH0B60 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 21:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbXH0B6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 21:32:09 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:37073 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753515AbXH0BcI (ORCPT
+	Sun, 26 Aug 2007 21:58:18 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42080
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753266AbXH0B6R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 21:32:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=k3V3fMwkTlkvAdewIbSPhSxHw2Tud6kWtY+Z1vue7ga61s8Uq3qy48Bjk0NLz11z3UjiwSgt5qc+pTLy2JOLrGlIRpJNGai3Gcmqa4Q0Fwl0QfDqtTAlYMN0ZMDSvIlNM3YQcNTMn9kNzz4WmjUTrM4Bwo0CnE1V+XNaQOBWNrU=
-Message-ID: <46D2298E.7010105@gmail.com>
-Date: Mon, 27 Aug 2007 10:31:58 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Andreas John <lists@aj.net-lab.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Conke Hu <conke.hu@gmail.com>
-Subject: Re: [PATCH] ahci.c: fix ati sb600 sata IRQ_TF_ERR
-References: <5767b9100703140222k79dbed9dq6419b4f35d276242@mail.gmail.com>	 <45F7E7E9.6010703@gmail.com>	 <5767b9100703150500t1c34dfb0kc6a199b5374a8d78@mail.gmail.com>	 <45F93888.1080207@gmail.com> <5767b9100703270253j2ac3b543y499323b42c6402b@mail.gmail.com> <46CCA483.4080105@aj.net-lab.net> <46CCB23E.1000506@aj.net-lab.net> <46CD692D.3070508@aj.net-lab.net> <46CF92E2.8080207@gmail.com>
-In-Reply-To: <46CF92E2.8080207@gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Sun, 26 Aug 2007 21:58:17 -0400
+Date: Sun, 26 Aug 2007 18:58:15 -0700 (PDT)
+Message-Id: <20070826.185815.93042514.davem@davemloft.net>
+To: jchapman@katalix.com
+Cc: shemminger@linux-foundation.org, ossthema@de.ibm.com, akepner@sgi.com,
+       netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
+       tklein@de.ibm.com, stefan.roscher@de.ibm.com
+Subject: Re: RFC: issues concerning the next NAPI interface
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <46D1D634.7060007@katalix.com>
+References: <46CF127D.1090609@katalix.com>
+	<20070824.144711.18301866.davem@davemloft.net>
+	<46D1D634.7060007@katalix.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Andreas John wrote:
->> 00:00.0 Host bridge [0600]: ATI Technologies Inc Unknown device [1002:7910]
+From: James Chapman <jchapman@katalix.com>
+Date: Sun, 26 Aug 2007 20:36:20 +0100
+
+> David Miller wrote:
+> > From: James Chapman <jchapman@katalix.com>
+> > Date: Fri, 24 Aug 2007 18:16:45 +0100
+> > 
+> >> Does hardware interrupt mitigation really interact well with NAPI?
+> > 
+> > It interacts quite excellently.
 > 
-> Okidoki, another ATI host bridge which can't forward MSI write upto the
-> cpu.  I'll blacklist it.  Thanks.
+> If NAPI disables interrupts and keeps them disabled while there are more 
+> packets arriving or more transmits being completed, why do hardware 
+> interrupt mitigation / coalescing features of the network silicon help?
 
-Scrap that.  I got confused.  You weren't using MSI.
-
-In the log, you have a detection failure on ata2.00.  What's attached to
-the port?
-
-Regarding timeout on /dev/sda: Most disks have a dip switch which forces
-the drive to limit itself to 1.5Gbps if you put the dip switch on, is it
-any better?
-
--- 
-tejun
+Because if your packet rate is low enough such that the cpu can
+process the interrupt fast enough and thus only one packet gets
+processed per NAPI poll, the cost of going into and out of NAPI mode
+dominates the packet processing costs.
