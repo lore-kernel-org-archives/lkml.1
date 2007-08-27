@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965034AbXH0Vjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965182AbXH0VkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965034AbXH0Vjs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764659AbXH0V3K
+	id S965182AbXH0VkX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765181AbXH0V3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:29:10 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58863 "EHLO
+	Mon, 27 Aug 2007 17:29:19 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:58864 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932180AbXH0V3G (ORCPT
+	with ESMTP id S1765498AbXH0V3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:29:06 -0400
-Date: Mon, 27 Aug 2007 23:29:05 +0200
+	Mon, 27 Aug 2007 17:29:17 -0400
+Date: Mon, 27 Aug 2007 23:29:13 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
+To: perex@suse.cz
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make kernel/profile.c:time_hook static
-Message-ID: <20070827212905.GE26410@stusta.de>
+Subject: [2.6 patch] au88x0_synth.c bugfix
+Message-ID: <20070827212913.GF26410@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,45 +23,26 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-{,un}register_timer_hook() is the API that should be used.
+This patch fixes the code in vortex_wt_SetFrequency() to what seems to 
+have been intended.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
-This patch has been sent on:
-- 14 Aug 2007
-
- include/linux/profile.h |    3 ---
- kernel/profile.c        |    2 +-
- 2 files changed, 1 insertion(+), 4 deletions(-)
-
-eb5ee2402ed38bdaa3587d01a0ec3e80d5d1e438 
-diff --git a/include/linux/profile.h b/include/linux/profile.h
-index eec48f5..ff576d1 100644
---- a/include/linux/profile.h
-+++ b/include/linux/profile.h
-@@ -78,9 +78,6 @@ int profile_event_unregister(enum profile_type, struct notifier_block * n);
- int register_timer_hook(int (*hook)(struct pt_regs *));
- void unregister_timer_hook(int (*hook)(struct pt_regs *));
- 
--/* Timer based profiling hook */
--extern int (*timer_hook)(struct pt_regs *);
--
- struct pt_regs;
- 
- #else
-diff --git a/kernel/profile.c b/kernel/profile.c
-index ed407f5..fa3ee33 100644
---- a/kernel/profile.c
-+++ b/kernel/profile.c
-@@ -37,7 +37,7 @@ struct profile_hit {
- #define NR_PROFILE_GRP		(NR_PROFILE_HIT/PROFILE_GRPSZ)
- 
- /* Oprofile timer tick hook */
--int (*timer_hook)(struct pt_regs *) __read_mostly;
-+static int (*timer_hook)(struct pt_regs *) __read_mostly;
- 
- static atomic_t *prof_buffer;
- static unsigned long prof_len, prof_shift;
+71ccb57f36553decc9cae117f3ff6dff1658c91f 
+diff --git a/sound/pci/au88x0/au88x0_synth.c b/sound/pci/au88x0/au88x0_synth.c
+index d3e662a..978b856 100644
+--- a/sound/pci/au88x0/au88x0_synth.c
++++ b/sound/pci/au88x0/au88x0_synth.c
+@@ -370,8 +370,8 @@ static void vortex_wt_SetFrequency(vortex_t * vortex, int wt, unsigned int sr)
+ 			while ((edx & 0x80000000) == 0) {
+ 				edx <<= 1;
+ 				eax--;
+-				if (eax == 0) ;
+-				break;
++				if (eax == 0)
++					break;
+ 			}
+ 			if (eax)
+ 				edx <<= 1;
 
