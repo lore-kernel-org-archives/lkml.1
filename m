@@ -1,38 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbXH0WPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760533AbXH0WRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759517AbXH0WPm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 18:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbXH0WPe
+	id S1760533AbXH0WRW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 18:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbXH0WRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 18:15:34 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47497 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751640AbXH0WPd (ORCPT
+	Mon, 27 Aug 2007 18:17:09 -0400
+Received: from rwcrmhc11.comcast.net ([204.127.192.81]:60970 "EHLO
+	rwcrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751530AbXH0WRH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 18:15:33 -0400
-Date: Mon, 27 Aug 2007 15:15:32 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mingo@redhat.com
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-In-Reply-To: <Pine.LNX.4.64.0708271237580.5056@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0708271514020.8891@schroedinger.engr.sgi.com>
-References: <20070820201519.512791382@polymtl.ca>  <20070820201822.597720007@polymtl.ca>
-  <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com> 
- <20070820204126.GA22507@Krystal>  <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com>
-  <20070820212922.GA27011@Krystal>  <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
-  <20070820215413.GA28452@Krystal>  <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
-  <20070821173849.GA8360@Krystal>  <Pine.LNX.4.64.0708211612580.6062@schroedinger.engr.sgi.com>
- <1188197539.6114.426.camel@twins> <Pine.LNX.4.64.0708271237580.5056@schroedinger.engr.sgi.com>
+	Mon, 27 Aug 2007 18:17:07 -0400
+From: "Michael J. Evans" <mjevans1983@comcast.net>
+To: "Michael Evans" <mjevans1983@gmail.com>
+Subject: [patch v3 1/1] md: Software Raid autodetect dev list not array
+Date: Mon, 27 Aug 2007 15:16:21 -0700
+User-Agent: KMail/1.9.7
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>, "Neil Brown" <neilb@suse.de>,
+       "Ingo Molnar" <mingo@redhat.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200708222058.45480.mjevans1983@comcast.net> <20070826095651.75e92556.randy.dunlap@oracle.com> <4877c76c0708261218r2c1ed2eeg6d604eeb58f6b235@mail.gmail.com>
+In-Reply-To: <4877c76c0708261218r2c1ed2eeg6d604eeb58f6b235@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708271516.21889.mjevans1983@comcast.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hmmmm. One wild idea would be to use a priority futex for the slab lock? 
-That would make the slow paths interrupt safe without requiring interrupt 
-disable? Does a futex fit into the page struct?
+From: Michael J. Evans <mjevans1983@gmail.com>
 
+In current release kernels the md module (Software RAID) uses a static array
+ (dev_t[128]) to store partition/device info temporarily for autostart.
+
+This patch replaces that static array with a list.
+
+Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
+--- 
+Sorry, it looks like I hit reply instead of reply to all yesterday.
+
+Version 3:
+md_autodetect_dev failure message is now more usefully verbose.
+removed unused i_found that was leftover from initial verification.
+Thank you Randy Dunlap for pointing where INT_MAX was, fixme fixed.
+
+Version 2:
+using list_add_tail, and corrected missing i_passed++;.
+removed sections of code that would never be reached.
+
+Version 1:
+The data/structures are only used within md.c, and very close together.
+However I wonder if the structural information shouldn't go in to...
+../../include/linux/raid/md_k.h instead.
+
+
+I discovered this (and that the devices are added as disks/partitions are
+discovered at boot) while I was debugging why only one of my MD arrays would
+come up whole, while all the others were short a disk.
+
+I eventually discovered that it was enumerating through all of 9 of my 11 hds
+(2 had only 4 partitions apiece) while the other 9 have 15 partitions
+(I wanted 64 per drive...). The last partition of the 8th drive in my 9 drive
+raid 5 sets wasn't added, thus making the final md array short both a parity
+and data disk, and it was started later, elsewhere.
+
+Subject: [patch 1/1] md: Software Raid autodetect dev list not array
+
+SOFTWARE RAID (Multiple Disks) SUPPORT
+P:	Ingo Molnar
+M:	mingo@redhat.com
+P:	Neil Brown
+M:	neilb@suse.de
+L:	linux-raid@vger.kernel.org
+S:	Supported
+Unless you have a reason NOT to do so, CC linux-kernel@vger.kernel.org.
+
+12: Has been tested with CONFIG_PREEMPT, CONFIG_DEBUG_PREEMPT,
+    CONFIG_DEBUG_SLAB, CONFIG_DEBUG_PAGEALLOC, CONFIG_DEBUG_MUTEXES,
+    CONFIG_DEBUG_SPINLOCK, CONFIG_DEBUG_SPINLOCK_SLEEP all simultaneously
+    enabled.
+
+It has been tested with CONFIG_SMP set and unset (Different x86_64 systems).
+It has been tested with CONFIG_PREEMPT set and unset (same system).
+CONFIG_LBD isn't even an option in my .config file.
+
+Note: between 2.6.22 and 2.6.23-rc3-git5
+                rdev = md_import_device(dev,0, 0);
+became
+                rdev = md_import_device(dev,0, 90);
+So the patch has been edited to patch around that line. (might be fuzzy)
+
+Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
+=============================================================
+--- linux/drivers/md/md.c.orig	2007-08-21 03:19:42.511576248 -0700
++++ linux/drivers/md/md.c	2007-08-21 04:30:09.775525710 -0700
+@@ -24,4 +24,6 @@
+
++   - autodetect dev list not array: Michael J. Evans <mjevans1983@gmail.com>
++
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2, or (at your option)
+@@ -5752,13 +5754,26 @@ void md_autodetect_dev(dev_t dev)
+  * Searches all registered partitions for autorun RAID arrays
+  * at boot time.
+  */
+-static dev_t detected_devices[128];
+-static int dev_cnt;
++
++static LIST_HEAD(all_detected_devices);
++struct detected_devices_node {
++	struct list_head list;
++	dev_t dev;
++};
+ 
+ void md_autodetect_dev(dev_t dev)
+ {
+-	if (dev_cnt >= 0 && dev_cnt < 127)
+-		detected_devices[dev_cnt++] = dev;
++	struct detected_devices_node *node_detected_dev;
++	char strbuf[BDEVNAME_SIZE];
++
++	node_detected_dev = kzalloc(sizeof(*node_detected_dev), GFP_KERNEL);\
++	if (node_detected_dev) {
++		node_detected_dev->dev = dev;
++		list_add_tail(&node_detected_dev->list, &all_detected_devices);
++	} else {
++		printk(KERN_CRIT "md: md_autodetect_dev: kzAlloc node failed"
++		" (null return), skipping dev(%d,%d)\n", MAJOR(dev), MINOR(dev));
++	}
+ }
+ 
+ 
+@@ -5765,7 +5760,12 @@ static void autostart_arrays(int part)
+ static void autostart_arrays(int part)
+ {
+ 	mdk_rdev_t *rdev;
+-	int i;
++	struct detected_devices_node *node_detected_dev;
++	dev_t dev;
++	int i_scanned, i_passed;
++
++	i_scanned = 0;
++	i_passed = 0;
+ 
+ 	printk(KERN_INFO "md: Autodetecting RAID arrays.\n");
+ 
+@@ -5772,3 +5792,7 @@ static void autostart_arrays(int part)
+-	for (i = 0; i < dev_cnt; i++) {
+-		dev_t dev = detected_devices[i];
+-
++	while (!list_empty(&all_detected_devices) && i_scanned < INT_MAX) {
++		i_scanned++;
++		node_detected_dev = list_entry(all_detected_devices.next,
++					struct detected_devices_node, list);
++		list_del(&node_detected_dev->list);
++		dev = node_detected_dev->dev;
++		kfree(node_detected_dev);
+@@ -5781,8 +5807,11 @@ static void autostart_arrays(int part)
+ 			continue;
+ 		}
+ 		list_add(&rdev->same_set, &pending_raid_disks);
++		i_passed++;
+ 	}
+-	dev_cnt = 0;
++
++	printk(KERN_INFO "md: Scanned %d and added %d devices.\n",
++						i_scanned, i_passed);
+ 
+ 	autorun_devices(part);
+ }
