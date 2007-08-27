@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbXH0RaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761623AbXH0Rax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758991AbXH0RaT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760093AbXH0R3R
+	id S1761623AbXH0Rax (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757114AbXH0Ral
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:29:17 -0400
-Received: from il.qumranet.com ([82.166.9.18]:55571 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758539AbXH0R3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 13:29:15 -0400
-Message-ID: <46D3095A.6020305@qumranet.com>
-Date: Mon, 27 Aug 2007 20:26:50 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 27 Aug 2007 13:30:41 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43672 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758758AbXH0Raj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 13:30:39 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18KLRo2S3QKtQWAtAIXy8wO3MumGIBSHdUvc0T3f9
+	/dthHCpNJz0T/m
+Date: Mon, 27 Aug 2007 19:30:33 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Pavel Machek <pavel@ucw.cz>
+cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [PATCH, RFC] wake up from a serial port
+In-Reply-To: <20070827100029.GB1972@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.60.0708271924180.5705@poirot.grange>
+References: <Pine.LNX.4.60.0708260010250.3809@poirot.grange>
+ <20070827100029.GB1972@elf.ucw.cz>
 MIME-Version: 1.0
-To: Anthony Liguori <aliguori@us.ibm.com>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Implement emulator_write_phys()
-References: <11882278064002-git-send-email-aliguori@us.ibm.com>	 <1188227808405-git-send-email-aliguori@us.ibm.com>	 <46D2F1B7.70604@qumranet.com> <1188235419.6364.2.camel@squirrel>
-In-Reply-To: <1188235419.6364.2.camel@squirrel>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> On Mon, 2007-08-27 at 18:45 +0300, Avi Kivity wrote:
->   
->> Anthony Liguori wrote:
->>     
->>> Since a hypercall may span two pages and is a gva, we need a function to write
->>> to a gva that may span multiple pages.  emulator_write_phys() seems like the
->>> logical choice for this.
->>>
->>> @@ -962,8 +962,35 @@ static int emulator_write_std(unsigned long addr,
->>>  			      unsigned int bytes,
->>>  			      struct kvm_vcpu *vcpu
->>>       
->> I think that emulator_write_emulated(), except for being awkwardly 
->> named, should do the job.  We have enough APIs.
->>
->> But!  We may not overwrite the hypercall instruction while a vcpu may be 
->> executing, since there's no atomicity guarantee for code fetch.  We have 
->> to to be out of guest mode while writing that insn.
->>     
->
->
-> Hrm, good catch.
->
-> How can we get out of guest mode given SMP guest support?
->
->   
+On Mon, 27 Aug 2007, Pavel Machek wrote:
 
-kvm_flush_remote_tlbs() is something that can be generalized.  
-Basically, you set a bit in each vcpu and send an IPI to take them out.
+> Hi!
+> 
+> > Enable wakeup from serial ports, make it run-time configurable over sysfs, 
+> > e.g.,
+> > 
+> > echo enabled > /sys/devices/platform/serial8250.0/tty/ttyS0/power/wakeup
+> > 
+> > Requires
+> > 
+> > # CONFIG_SYSFS_DEPRECATED is not set
+> > 
+> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> 
+> Hmm, interesting, looks ok to me. What are you using it for?
 
-But that's deadlock prone and complex.  Maybe you can just take 
-kvm->lock, zap the mmu and the flush tlbs, and patch the instruction at 
-your leisure, as no vcpu will be able to map memory until the lock is 
-released.
+Linkstation / kurobox systems from Buffalo Tech. have an AVR controller 
+connected to host's UART. The AVR controls power, buttons, fan, LEDs, 
+sensors... So, practically the only way to wake the system up is to press 
+a button, which sends a byte from the AVR to the CPU.
 
--- 
-Any sufficiently difficult bug is indistinguishable from a feature.
-
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
