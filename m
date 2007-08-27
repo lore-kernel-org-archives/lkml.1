@@ -1,53 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762720AbXH0VES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762984AbXH0VFM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762720AbXH0VES (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760205AbXH0VEJ
+	id S1762984AbXH0VFM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:05:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760686AbXH0VE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:04:09 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41143 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758956AbXH0VEI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:04:08 -0400
-Date: Mon, 27 Aug 2007 14:04:07 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
+	Mon, 27 Aug 2007 17:04:56 -0400
+Received: from colo.lackof.org ([198.49.126.79]:59135 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760674AbXH0VEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 17:04:55 -0400
+Date: Mon, 27 Aug 2007 15:04:32 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
 To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-In-Reply-To: <20070827203913.GA7416@Krystal>
-Message-ID: <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com>
-References: <20070820212922.GA27011@Krystal>
- <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
- <20070820215413.GA28452@Krystal> <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
- <20070821173849.GA8360@Krystal> <Pine.LNX.4.64.0708211612580.6062@schroedinger.engr.sgi.com>
- <1188197539.6114.426.camel@twins> <Pine.LNX.4.64.0708271237580.5056@schroedinger.engr.sgi.com>
- <20070827202203.GB5653@Krystal> <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com>
- <20070827203913.GA7416@Krystal>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       parisc-linux@parisc-linux.org, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [parisc-linux] [patch 15/23] Add cmpxchg_local to parisc
+Message-ID: <20070827210432.GA22484@colo.lackof.org>
+References: <20070812145434.520271946@polymtl.ca> <20070812145840.691277845@polymtl.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070812145840.691277845@polymtl.ca>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think the simplest solution may be to leave slub as done in the patch 
-that we developed last week. The arch must provide a cmpxchg_local that is 
-performance wise the fastest possible. On x86 this is going to be the 
-cmpxchg_local on others where cmpxchg is slower than interrupt 
-disable/enable this is going to be the emulation that does
+On Sun, Aug 12, 2007 at 10:54:49AM -0400, Mathieu Desnoyers wrote:
+> Use the new generic cmpxchg_local (disables interrupt). Also use the generic
+> cmpxchg as fallback if SMP is not set.
 
-interrupt disable
+Mathieu,
+thanks for adding __cmpxchg_local to parisc.... but why do we need it?
 
-cmpchg simulation
+By definition, atomic operators are, well, atomic.
 
-interrupt enable
+I searched for __cmpxchg_local and found this reference:
+    http://www.ussg.iu.edu/hypermail/linux/kernel/0612.2/1337.html
 
+but the "root" of that thread (Dec 20, 2006):
+    http://www.ussg.iu.edu/hypermail/linux/kernel/0612.2/1334.html
 
-If we can establish that this is not a performance regression then we have 
-a clean solution source code wise. It also minimizes the interrupt holdoff 
-for the non-cmpxchg_local arches. However, it means that we will have to 
-disable interrupts twice for the slow path. If that is too expensive then 
-we need a different solution.
+Doesn't explain the difference between "local" and "non-local" either.
+Per CPU data should only need memory barriers (in some cases) and
+protection against interrupts (in probably more cases). So I'm not
+understanding why a new set of APIs is needed.
 
+Can you add a description to Documentation/atomic_ops.txt ?
+*sigh* sorry for being "late to the party" on this one...
 
+cheers,
+grant
+
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: clameter@sgi.com
+> CC: parisc-linux@parisc-linux.org
+> ---
+>  include/asm-parisc/atomic.h |   29 +++++++++++++++++++++++++++++
+>  1 file changed, 29 insertions(+)
+> 
+> Index: linux-2.6-lttng/include/asm-parisc/atomic.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/asm-parisc/atomic.h	2007-07-20 19:44:40.000000000 -0400
+> +++ linux-2.6-lttng/include/asm-parisc/atomic.h	2007-07-20 19:44:47.000000000 -0400
+> @@ -122,6 +122,35 @@ __cmpxchg(volatile void *ptr, unsigned l
+>  				    (unsigned long)_n_, sizeof(*(ptr))); \
+>    })
+>  
+> +#include <asm-generic/cmpxchg-local.h>
+> +
+> +static inline unsigned long __cmpxchg_local(volatile void *ptr,
+> +				      unsigned long old,
+> +				      unsigned long new_, int size)
+> +{
+> +	switch (size) {
+> +#ifdef CONFIG_64BIT
+> +	case 8:	return __cmpxchg_u64((unsigned long *)ptr, old, new_);
+> +#endif
+> +	case 4:	return __cmpxchg_u32(ptr, old, new_);
+> +	default:
+> +		return __cmpxchg_local_generic(ptr, old, new_, size);
+> +	}
+> +}
+> +
+> +/*
+> + * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
+> + * them available.
+> + */
+> +#define cmpxchg_local(ptr,o,n)					  	\
+> +     (__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
+> +			   	 (unsigned long)(n), sizeof(*(ptr)))
+> +#ifdef CONFIG_64BIT
+> +#define cmpxchg64_local(ptr,o,n) cmpxchg_local((ptr), (o), (n))
+> +#else
+> +#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
+> +#endif
+> +
+>  /* Note that we need not lock read accesses - aligned word writes/reads
+>   * are atomic, so a reader never sees unconsistent values.
+>   *
+> 
+> -- 
+> Mathieu Desnoyers
+> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> _______________________________________________
+> parisc-linux mailing list
+> parisc-linux@lists.parisc-linux.org
+> http://lists.parisc-linux.org/mailman/listinfo/parisc-linux
