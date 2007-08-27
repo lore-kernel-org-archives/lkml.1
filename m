@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934077AbXH0Vx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764449AbXH0Vyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934077AbXH0Vx6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761188AbXH0VnR
+	id S1764449AbXH0Vyj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933550AbXH0Vno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:43:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:41799 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765511AbXH0VnI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:43:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=SIyoxvoLl3GA0TQ7cnuT57UY8/diZfmOoProfpA1OhGNp6i5I5+9QuIrd7epbPAKqcdFmJXFu9oF1+XEGA8cWgId7CTeN/+oqWw9H/7Wt9cNJrvtgVrA60WHiPAdLu+slNCCCZSv+fBH58CkNPzn4SnItYuvOb7ZjfNTyEv2IuY=
-Message-ID: <fb4a4650708271443v221bdf8aq74f2ee8401479136@mail.gmail.com>
-Date: Mon, 27 Aug 2007 18:43:04 -0300
-From: "Thiago Ramos dos Santos" <dimtracker@gmail.com>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Subject: Re: Configuring previously loaded module
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <3ae72650708261515q66fc473fua4b99728e4d5a3f8@mail.gmail.com>
+	Mon, 27 Aug 2007 17:43:44 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:49775 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753065AbXH0Vnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 17:43:41 -0400
+Date: Mon, 27 Aug 2007 17:43:33 -0400
+To: "Dr. David Alan Gilbert" <linux@treblig.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, neilb@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add source address to sunrpc svc errors
+Message-ID: <20070827214333.GM3118@fieldses.org>
+References: <20070825012630.GB5431@gallifrey> <20070824185621.3f16f7c9.randy.dunlap@oracle.com> <20070825150927.GA29335@gallifrey>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <fb4a4650708261502v5b64ca6ev680599ad9eb58b3@mail.gmail.com>
-	 <3ae72650708261515q66fc473fua4b99728e4d5a3f8@mail.gmail.com>
-X-Google-Sender-Auth: 4da7f2881ec1c62e
+In-Reply-To: <20070825150927.GA29335@gallifrey>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It worked.
-Thanks a lot.
+On Sat, Aug 25, 2007 at 04:09:27PM +0100, Dr. David Alan Gilbert wrote:
+>   This patch adds the address of the client that caused an
+> error in sunrpc/svc.c so that you get errors that look like:
+> 
+> svc: 192.168.66.28, port=709: unknown version (3 for prog 100003, nfsd)
+> 
+> I've seen machines which get bunches of unknown version or similar
+> errors from time to time, and while the recent patch to add
+> the service helps to find which service has the wrong version it doesn't
+> help find the potentially bad client.
 
-Thiago
+Looks like a reasonable idea to me, thanks!  Any objection to just
+calling it "svc_printk" instead of "svc_printkerr"?
 
-On 8/26/07, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On 8/27/07, Thiago Ramos dos Santos <dimtracker@gmail.com> wrote:
-> > I have 2 devices which use the usbserial module: a CDMA modem and a
-> > Palm PDA (to be more especific, the PDA uses the visor module, which
-> > uses the usbserial).
-> > When I plug the PDA to the computer, the visor module gets
-> > automatically loaded by the kernel, and so is the usbserial module.
-> > When the modem is pluged, the module is not loaded automaticaly, so I
-> > created a hotplug entry for it.
-> > For both devices I put rules in udev configuration files, so they are
-> > autmaticaly mapped to the same /dev node in despite of the ttyUSB*
-> > node they are mapped to.
-> >
-> > The problem is that the modem requires the usbserial module to be
-> > loaded with some parameters: product=xxxxx vendor=xxxxx. So, if I plug
-> > the PDA first, the usbserial is loaded without those parameters, and
-> > when the modem is pluged, the ttyUSB nodes are not created for it. So
-> > I have to manually unload both the visor and usbserial modules, reload
-> > the usbserial with the specific parameters (to get the ttyUSB nodes
-> > for the modem) and reload the visor module (to recreate the ttyUSB
-> > nodes for the PDA).
-> >
-> > Is there anyway to configure the previously loaded usbserial module
-> > with the modem parameters without having to unload it? If it is not
-> > possible, is there any other solution?
->
-> Try putting:
->   options usbserial product=xxxxx vendor=xxxxx
-> in:
->   /etc/modprobe.d/serial
->
-> Kay
->
+I also wonder whether these shouldn't all be dprintk's instead of
+printk's.  One misbehaving client could create a lot of noise in the
+logs.
+
+--b.
