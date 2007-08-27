@@ -1,45 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763326AbXH0Uht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbXH0Uj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763326AbXH0Uht (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 16:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759654AbXH0UhY
+	id S1762943AbXH0Uj0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 16:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbXH0UjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 16:37:24 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39978
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758100AbXH0UhX (ORCPT
+	Mon, 27 Aug 2007 16:39:17 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:46121 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758854AbXH0UjQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 16:37:23 -0400
-Date: Mon, 27 Aug 2007 13:37:21 -0700 (PDT)
-Message-Id: <20070827.133721.59473971.davem@davemloft.net>
-To: ossthema@de.ibm.com
-Cc: jchapman@katalix.com, shemminger@linux-foundation.org, akepner@sgi.com,
-       netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
-       tklein@de.ibm.com, stefan.roscher@de.ibm.com
-Subject: Re: RFC: issues concerning the next NAPI interface
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200708271147.01890.ossthema@de.ibm.com>
-References: <46D1D634.7060007@katalix.com>
-	<20070826.185815.93042514.davem@davemloft.net>
-	<200708271147.01890.ossthema@de.ibm.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 27 Aug 2007 16:39:16 -0400
+Date: Mon, 27 Aug 2007 16:39:13 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+Message-ID: <20070827203913.GA7416@Krystal>
+References: <20070820212922.GA27011@Krystal> <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com> <20070820215413.GA28452@Krystal> <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com> <20070821173849.GA8360@Krystal> <Pine.LNX.4.64.0708211612580.6062@schroedinger.engr.sgi.com> <1188197539.6114.426.camel@twins> <Pine.LNX.4.64.0708271237580.5056@schroedinger.engr.sgi.com> <20070827202203.GB5653@Krystal> <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:32:49 up 28 days, 20:51,  5 users,  load average: 0.56, 0.25, 0.26
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Date: Mon, 27 Aug 2007 11:47:01 +0200
+* Christoph Lameter (clameter@sgi.com) wrote:
+> On Mon, 27 Aug 2007, Mathieu Desnoyers wrote:
+> 
+> > * Christoph Lameter (clameter@sgi.com) wrote:
+> > > On Mon, 27 Aug 2007, Peter Zijlstra wrote:
+> > > 
+> > > > So, if the fast path can be done with a preempt off, it might be doable
+> > > > to suffer the slow path with a per cpu lock like that.
+> > > 
+> > > Sadly the cmpxchg_local requires local per cpu data access. Isnt there 
+> > > some way to make this less expensive on RT? Acessing cpu local memory is 
+> > > really good for performance on NUMA since the data is optimally placed and 
+> > > one can avoid/reduce locking if the process stays tied to the processor.
+> > > 
+> > 
+> > On the slow path, in slab_new, we already have to reenable interrupts
+> > because we can sleep. If we make sure that whenever we return to an irq
+> > disable code path we take the current per-cpu data structure again, can
+> > we make the preempt-disable/irq-disabled code paths O(1) ?
+> 
+> Not sure exactly what you are getting at?
+> This would mean running __alloc_pages tied to one processor even though 
+> waiting is possible?
+> 
 
-> So the question is simply: Do we want drivers that need (benefit
-> from) a timer based polling support to implement their own timers
-> each, or should there be a generic support?
+Not exactly. What I propose is:
 
-I'm trying to figure out how an hrtimer implementation would
-even work.
+- Running slab_alloc and slab_free fast paths in preempt_disable
+  context, using cmpxchg_local.
+- Running slab_alloc and slab_free slow paths with irqs disabled.
+- Running __alloc_pages in preemptible context, not tied to any CPU.
 
-Would you start the timer from the chip interrupt handler?  If so,
-that's taking two steps backwards as you've already taken all of the
-overhead of running the interrupt handler.
+In this scheme, calling __alloc_pages from slab_alloc would reenable
+interrupts and potentially migrate us to a different CPU. We would
+therefore have to get once again our per-cpu data structure once we get
+back into irq disabled code, because we may be running on a different
+CPU. This is actually what the __slab_alloc slow path does:
+
+
+new_slab:
+        new = get_partial(s, gfpflags, node);
+        if (new) {
+                c->page = new;
+                goto load_freelist;
+        }
+
+        new = new_slab(s, gfpflags, node);
+
+          ----> within new_slab, we can reenable interrupts for the
+                __slab_alloc call.
+
+        if (new) {
+                c = get_cpu_slab(s, smp_processor_id());
+                if (c->page) {
+                        /*
+                         * Someone else populated the cpu_slab while we
+                         * enabled interrupts, or we have gotten scheduled
+                         * on another cpu. The page may not be on the
+                         * requested node even if __GFP_THISNODE was
+                         * specified. So we need to recheck.
+                         */
+                        if (node_match(c, node)) {
+                                /*
+                                 * Current cpuslab is acceptable and we
+                                 * want the current one since its cache hot
+                                 */
+                                discard_slab(s, new);
+                                slab_lock(c->page);
+                                goto load_freelist;
+                        }
+                        /* New slab does not fit our expectations */
+                        flush_slab(s, c);
+                }
+                slab_lock(new);
+                SetSlabFrozen(new);
+                c->page = new;
+                goto load_freelist;
+
+So the idea would be to split the code in O(1)
+preempt_disable/irq_disable sections and to enable interrupt and check
+for current per-cpu data structure when re-entering in irq disabled
+code.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
