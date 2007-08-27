@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759826AbXH0RXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbXH0RZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759826AbXH0RXx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:23:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757320AbXH0RXq
+	id S1759998AbXH0RZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757320AbXH0RZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:23:46 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:60985 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757247AbXH0RXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 13:23:45 -0400
-Subject: Re: [PATCH 1/3] Implement emulator_write_phys()
-From: Anthony Liguori <aliguori@us.ibm.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <46D2F1B7.70604@qumranet.com>
-References: <11882278064002-git-send-email-aliguori@us.ibm.com>
-	 <1188227808405-git-send-email-aliguori@us.ibm.com>
-	 <46D2F1B7.70604@qumranet.com>
+	Mon, 27 Aug 2007 13:25:14 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:29800 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757432AbXH0RZN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 13:25:13 -0400
+Subject: Re: Who wants to maintain KR list for stable releases? (was
+	Re:	nmi_watchdog=2 regression in 2.6.21)
+From: Daniel Walker <dwalker@mvista.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
+       Natalie Protasevich <protasnb@gmail.com>
+In-Reply-To: <46D303A3.1030708@googlemail.com>
+References: <1186531609.22044.50.camel@imap.mvista.com>
+	 <20070808142059.GF30805@atjola.homenet>
+	 <1187628296.7732.14.camel@imap.mvista.com>
+	 <46CDE94A.7000600@googlemail.com>
+	 <1187904169.2435.83.camel@dhcp193.mvista.com>
+	 <46D21E8E.4000003@googlemail.com>
+	 <20070827005131.b93f5935.akpm@linux-foundation.org>
+	 <6bffcb0e0708270438j4c92a0b4m1396b4010f25bfb5@mail.gmail.com>
+	 <1188227585.2435.192.camel@dhcp193.mvista.com>
+	 <6bffcb0e0708270826p7a7fb044re53d0db4094bc3d5@mail.gmail.com>
+	 <1188229197.2435.207.camel@dhcp193.mvista.com>
+	 <46D303A3.1030708@googlemail.com>
 Content-Type: text/plain
-Organization: IBM
-Date: Mon, 27 Aug 2007 12:23:39 -0500
-Message-Id: <1188235419.6364.2.camel@squirrel>
+Date: Mon, 27 Aug 2007 10:17:28 -0700
+Message-Id: <1188235048.2435.252.camel@dhcp193.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.11.90 
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-08-27 at 19:02 +0200, Michal Piotrowski wrote:
 
-On Mon, 2007-08-27 at 18:45 +0300, Avi Kivity wrote:
-> Anthony Liguori wrote:
-> > Since a hypercall may span two pages and is a gva, we need a function to write
-> > to a gva that may span multiple pages.  emulator_write_phys() seems like the
-> > logical choice for this.
-> >
-> > @@ -962,8 +962,35 @@ static int emulator_write_std(unsigned long addr,
-> >  			      unsigned int bytes,
-> >  			      struct kvm_vcpu *vcpu
+> Indeed, now we need a predefined search "show regressions in 2.6.x" :)
 > 
-> I think that emulator_write_emulated(), except for being awkwardly 
-> named, should do the job.  We have enough APIs.
-> 
-> But!  We may not overwrite the hypercall instruction while a vcpu may be 
-> executing, since there's no atomicity guarantee for code fetch.  We have 
-> to to be out of guest mode while writing that insn.
+> So the plan is simple:
+> - copy all regressions into bugzilla after each release
+> - make sure that all regressions reported on lkml after realase hit bugzilla
+> - make sure that all regressions in bugzilla are marked as regression
 
+That would be great ;) 
 
-Hrm, good catch.
-
-How can we get out of guest mode given SMP guest support?
-
-Regards,
-
-Anthony Liguori
-
-> 
-> 
+Daniel
 
