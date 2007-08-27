@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752292AbXH0FxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbXH0F7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752292AbXH0FxY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 01:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbXH0FxM
+	id S1754621AbXH0F7c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 01:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbXH0F7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 01:53:12 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:48764 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751357AbXH0FxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 01:53:11 -0400
-Date: Mon, 27 Aug 2007 07:54:26 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, David Woodhouse <dwmw2@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.23-rc3-mm1] request_irq fix DEBUG_SHIRQ handling Re: 2.6.23-rc2-mm1: rtl8139 inconsistent lock state
-Message-ID: <20070827055426.GA1703@ff.dom.local>
-References: <20070822133511.GH1684@ff.dom.local> <200708251143.09425.m.kozlowski@tuxland.pl>
+	Mon, 27 Aug 2007 01:59:24 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:36933 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751447AbXH0F7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 01:59:23 -0400
+Date: Mon, 27 Aug 2007 09:57:31 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: taoyue <yue.tao@windriver.com>
+Cc: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Mark Zhan <rongkai.zhan@windriver.com>,
+       "Ashfield, Bruce" <Bruce.Ashfield@windriver.com>
+Subject: Re: [PATCH] sigqueue_free: fix the race with collect_signal()
+Message-ID: <20070827055731.GA91@tv-sign.ru>
+References: <20070823134538.GA1358@tv-sign.ru> <46CEEA94.2070902@windriver.com> <20070824074558.GA86@tv-sign.ru> <46CF4DCB.6030304@windriver.com> <20070824110836.GA74@tv-sign.ru> <46CF3988.1020408@us.ibm.com> <20070824202305.GA274@tv-sign.ru> <46D2D57E.4070406@windriver.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708251143.09425.m.kozlowski@tuxland.pl>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <46D2D57E.4070406@windriver.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 25, 2007 at 11:43:08AM +0200, Mariusz Kozlowski wrote:
-> > > =================================
-> > > [ INFO: inconsistent lock state ]
-> > > 2.6.23-rc2-mm1 #7
-> > > ---------------------------------
-> > > inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-> > > ifconfig/5492 [HC0[0]:SC0[0]:HE1:SE1] takes:
-> > >  (&tp->lock){+...}, at: [<de8706e0>] rtl8139_interrupt+0x27/0x46b [8139too]
-...
-> I tested your patch and it still happens. Dmesg info from patched kernel attached.
-> I coulnd't reproduce that on 2.6.23-rc3-mm1 - but on 2.6.23-rc2-mm2 it is easily
-> reproducible.
-> 
-> If you need more info, test some patches, etc. - just mail me.
-> 
-...
-> =========================================================
-> [ INFO: possible irq lock inversion dependency detected ]
-> 2.6.23-rc2-mm2 #2
-> ---------------------------------------------------------
-> runscript.sh/5065 just changed the state of lock:
->  (_xmit_ETHER){-+..}, at: [<c03cb659>] dev_watchdog+0x17/0xcc
-> but this lock took another, soft-irq-unsafe lock in the past:
->  (&tp->lock){--..}
-> 
-> and interrupts could create inverse lock ordering between them.
+On 08/27, taoyue wrote:
+>
+> Oleg Nesterov wrote:
+> >On 08/24, Sukadev Bhattiprolu wrote:
+> >>>>>          
+> >>>>I know, using current->sighand->siglock to prevent one sigqueue
+> >>>>is free twice. I want to know whether it is possible that the two
+> >>>>function is called in different thread. If that, the spin_lock is 
+> >>>>useless.
+> >>>>   
+> >>>>        
+> >>>Not sure I understand. Yes, it is possible they are called by 2 different
+> >>>threads, that is why we had a race. But all threads in the same thread
+> >>>group have the same ->sighand, and thus the same ->sighand->siglock.
+> >>>      
+> I has applied the new patch, and start test program last Friday.
+> So far, the test program has run for three days.
 
-It's OK! These're 2 different warnings. As a matter of fact, my patch
-wasn't supposed to fix any of them, but something similar to the first
-one, which was possible, but for some reason wasn't reported by
-lockdep.
+Great, thanks.
 
-The first warning was fixed by Andrew Morton's patch to free_irq(),
-so it shouldn't happen in -rc3-mm. The second warning could have been
-fixed too, I don't know, but since it's quite long, I would prefer to
-think about it only if it still happens in current -mm's.
+> In my test program, all threads is created in one process, so they
+> are in the same thread group. If two thread is not in the same thread
+> group, they have the different ->sighand->siglock. In this case, the
+> lock can't prevent the sigqueue object from race condition.
 
-Thanks,
-Jarek P.
+If two thread are not in the same thread, they can't access the same
+SIGQUEUE_PREALLOC sigqueue. That is why sigqueue_free() uses current->sighand.
+Otherwise, this lock doesn't make any sense, and can't protect list_del(q->list).
+
+Oleg.
+
