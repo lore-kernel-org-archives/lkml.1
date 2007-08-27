@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbXH0PJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbXH0PMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756696AbXH0PJy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 11:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbXH0PJq
+	id S1756674AbXH0PMP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 11:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbXH0PMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:09:46 -0400
-Received: from smtp101.sbc.mail.re2.yahoo.com ([68.142.229.104]:41729 "HELO
-	smtp101.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751711AbXH0PJo (ORCPT
+	Mon, 27 Aug 2007 11:12:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:46578 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750811AbXH0PL7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:09:44 -0400
-X-YMail-OSG: njHrbuEVM1k.TwHOFgFbR19rkEDljDPJtbX_1ZhZtQUYeIL5rWFnjtXMNMp9dcaHhxgvuG5lc_s4Ucz.W6zclzhihk8vyjmpg5Y7szWm5buzF82qESgty1l4.9Y3zg--
-Date: Mon, 27 Aug 2007 10:09:42 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andrew Morgan <morgan@kernel.org>, "Serge E. Hallyn" <serge@hallyn.com>,
-       chrisw@sous-sol.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [2.6 patch] remove securebits
-Message-ID: <20070827150941.GA31042@vino.hallyn.com>
-References: <20070824210649.GG30705@stusta.de> <20070824211942.GA24478@vino.hallyn.com> <46CFA6F2.9030209@kernel.org> <20070825182846.GN30705@stusta.de>
+	Mon, 27 Aug 2007 11:11:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TeKbulGtCP2YFzc/l69EbL2y1LNSwU9WObaYvml/+xcMwy7cuJywrRxYIK5Y55lOiJcaeIjRkowx94mJhVL4w17Vo2G8qupOhAONQqXePNoyI8eknvID8x53Aa/2ZCnMqs2WyG5VJRPs1mYyoJHRE6RubP6YrFoM3Qk1QoKxp4Q=
+Message-ID: <6bffcb0e0708270811t645e5794pdd76596f71f1ba7e@mail.gmail.com>
+Date: Mon, 27 Aug 2007 17:11:55 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Daniel Walker" <dwalker@mvista.com>
+Subject: Re: Who wants to maintain KR list for stable releases? (was Re: nmi_watchdog=2 regression in 2.6.21)
+Cc: "=?ISO-8859-1?Q?Bj=F6rn_Steinbrink?=" <B.Steinbrink@gmx.de>,
+       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org
+In-Reply-To: <1188225567.2435.188.camel@dhcp193.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070825182846.GN30705@stusta.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1186531609.22044.50.camel@imap.mvista.com>
+	 <20070808142059.GF30805@atjola.homenet>
+	 <1187628296.7732.14.camel@imap.mvista.com>
+	 <46CDE94A.7000600@googlemail.com>
+	 <1187904169.2435.83.camel@dhcp193.mvista.com>
+	 <46D21E8E.4000003@googlemail.com>
+	 <1188225567.2435.188.camel@dhcp193.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Adrian Bunk (bunk@kernel.org):
-> On Fri, Aug 24, 2007 at 08:50:10PM -0700, Andrew Morgan wrote:
-> > 
-> > FWIW, in the mm kernel, I've actually already removed them when one
-> > configures without capabilities.
-> > 
-> > http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/broken-out/v3-file-capabilities-alter-behavior-of-cap_setpcap.patch
-> > 
-> > Other than writing a custom module, so far as I can tell, there is/was
-> > no way to set them anyway.
-> > 
-> > I'd obviously prefer to wait for the mm-merge process to complete and
-> > minimize the churn in this area, but I basically agree that the bits as
-> > implemented are pretty useless in their current form. In a per-process
-> > mode (with filesystem capability support) they are much more useful...
-> 
-> It was in the tree for nine years (sic) without a single user...
+On 27/08/07, Daniel Walker <dwalker@mvista.com> wrote:
+> On Mon, 2007-08-27 at 02:45 +0200, Michal Piotrowski wrote:
+> > Daniel Walker pisze:
+> > [snip]
+> > > Have you considered maintaining all the lists in Bugzilla?
+> >
+> > Yes, I have considered it.
+> >
+> > Bugzilla sucks when it comes to tracking things. There is
+> > a regression field, but there are no difference between
+> > 2.6.22 and 2.6.23 regression.
+> >
+> > Most people are reporting bugs through LKML:
+> > - 23 regressions with reference to LKML
+> > - 4 regressions with reference to Bugzilla
+>
+> The main reason that I commented on this was because of your comment
+> below in the release emails,
+>
+> Feel free to add new regressions/remove fixed etc.
+> http://kernelnewbies.org/known_regressions
+>
+> And I was thinking, if these bugz need to transition over the bugzilla
+> anyway why not go straight there instead of via kernelnewbies .. People
+> would just get bugzilla accounts and open new bugz entry.
 
-That's because without file capabilities there was no way for a process
-to retain capabilities across exec, so not having a privileged root user
-was simply not workable.
+Some people hates Bugzilla, and they do not want to use it.
 
-> Are you only improving a dead horse, or do you also have a rider for the 
-> improved dead horse?
+>
+> I not trying to force you into something , and ultimately it whatever is
+> easier for you.. Which was my main reason for commenting on it.
+>
+> > > If you had a
+> > > search of open bugs they would just fall of the list as they get
+> > > closed..
+> >
+> > Unfortunately, the world is not perfect.
+>
+> I think over time it would work like that , but I'm sure there's lots of
+> people who don't care about our bugzilla ..
+>
+> Daniel
+>
+>
 
-It will allow process trees to run with strict capabilities, without a
-root user which automatically gains full capabilities.  That wasn't
-possible without file capabilities, since there was no way for processes
-to retain capabilities across exec.  Now that we have file capabilities,
-it is feasible, and it certainly is useful.
+Regards,
+Michal
 
--serge
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
