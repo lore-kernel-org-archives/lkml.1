@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbXH0Bba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbXH0BcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314AbXH0Bba (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 21:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbXH0BbX
+	id S1755540AbXH0BcU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 21:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbXH0BcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 21:31:23 -0400
-Received: from 1wt.eu ([62.212.114.60]:2305 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752716AbXH0BbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 21:31:23 -0400
-Date: Mon, 27 Aug 2007 03:12:32 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: bb@kernelpanic.ru, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: Linux 2.6.20.17
-Message-ID: <20070827011232.GA23159@1wt.eu>
-References: <20070825153810.GA32619@hera.kernel.org> <20070825110148.5fd59272.randy.dunlap@oracle.com> <46D198FE.70506@kernelpanic.ru> <1188143334.15402.243.camel@violet>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1188143334.15402.243.camel@violet>
-User-Agent: Mutt/1.5.11
+	Sun, 26 Aug 2007 21:32:09 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:37073 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753515AbXH0BcI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 21:32:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=k3V3fMwkTlkvAdewIbSPhSxHw2Tud6kWtY+Z1vue7ga61s8Uq3qy48Bjk0NLz11z3UjiwSgt5qc+pTLy2JOLrGlIRpJNGai3Gcmqa4Q0Fwl0QfDqtTAlYMN0ZMDSvIlNM3YQcNTMn9kNzz4WmjUTrM4Bwo0CnE1V+XNaQOBWNrU=
+Message-ID: <46D2298E.7010105@gmail.com>
+Date: Mon, 27 Aug 2007 10:31:58 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Andreas John <lists@aj.net-lab.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Conke Hu <conke.hu@gmail.com>
+Subject: Re: [PATCH] ahci.c: fix ati sb600 sata IRQ_TF_ERR
+References: <5767b9100703140222k79dbed9dq6419b4f35d276242@mail.gmail.com>	 <45F7E7E9.6010703@gmail.com>	 <5767b9100703150500t1c34dfb0kc6a199b5374a8d78@mail.gmail.com>	 <45F93888.1080207@gmail.com> <5767b9100703270253j2ac3b543y499323b42c6402b@mail.gmail.com> <46CCA483.4080105@aj.net-lab.net> <46CCB23E.1000506@aj.net-lab.net> <46CD692D.3070508@aj.net-lab.net> <46CF92E2.8080207@gmail.com>
+In-Reply-To: <46CF92E2.8080207@gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marcel,
-
-On Sun, Aug 26, 2007 at 05:48:54PM +0200, Marcel Holtmann wrote:
-> Hi Boris,
+Tejun Heo wrote:
+> Andreas John wrote:
+>> 00:00.0 Host bridge [0600]: ATI Technologies Inc Unknown device [1002:7910]
 > 
-> > > I'm getting build errors:
-> > > 
-> > > x86_64 allyesconfig, allmodconfig:
-> > > 
-> > > drivers/ata/pata_atiixp.c:286: error: 'PCI_DEVICE_ID_ATI_IXP700_IDE' undeclared here (not in a function)
-> > > net/bluetooth/rfcomm/tty.c:275: error: 'struct rfcomm_dev' has no member named 'tty_dev'
-> > > net/bluetooth/rfcomm/tty.c:278: error: 'struct rfcomm_dev' has no member named 'tty_dev'
-> > 
-> > 
-> > After applying patch-2.6.20.17, I'm getting build errors either:
-> > 
-> > net/bluetooth/rfcomm/tty.c: In function `rfcomm_dev_add':
-> > net/bluetooth/rfcomm/tty.c:275: error: structure has no member named 
-> > `tty_dev'
-> > net/bluetooth/rfcomm/tty.c:278: error: structure has no member named 
-> > `tty_dev'
-> > make[3]: *** [net/bluetooth/rfcomm/tty.o] Error 1
-> > make[2]: *** [net/bluetooth/rfcomm] Error 2
-> > make[1]: *** [net/bluetooth] Error 2
-> > make: *** [net] Error 2
-> 
-> the device_move() support was introduced with 2.6.21 so it seems we have
-> a backport here that is not meant for this kernel.
+> Okidoki, another ATI host bridge which can't forward MSI write upto the
+> cpu.  I'll blacklist it.  Thanks.
 
-Eventhough I tried to be very careful this time, I got it wrong for
-these two patches affecting code I do not use :-(  I'll fix all
-this mess ASAP in -18rc1.
+Scrap that.  I got confused.  You weren't using MSI.
 
-Regards,
-Willy
+In the log, you have a detection failure on ata2.00.  What's attached to
+the port?
 
+Regarding timeout on /dev/sda: Most disks have a dip switch which forces
+the drive to limit itself to 1.5Gbps if you put the dip switch on, is it
+any better?
+
+-- 
+tejun
