@@ -1,152 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760086AbXH0QGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760120AbXH0QHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760086AbXH0QGt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758695AbXH0P7S
+	id S1760120AbXH0QHh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758699AbXH0P7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:59:18 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:43227 "EHLO smtp.polymtl.ca"
+	Mon, 27 Aug 2007 11:59:20 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:43245 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758371AbXH0P7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:59:16 -0400
-Message-Id: <20070827155850.643346344@polymtl.ca>
+	id S1758698AbXH0P7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:59:19 -0400
+Message-Id: <20070827155853.276151078@polymtl.ca>
 References: <20070827155601.360241608@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:56:03 -0400
+Date: Mon, 27 Aug 2007 11:56:11 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, prasanna@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [patch 02/10] Kprobes - do not use kprobes mutex in arch code
-Content-Disposition: inline; filename=kprobes-dont-use-kprobes-mutex-in-arch-code.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:58:51 +0000
+       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu
+Subject: [patch 10/10] Text Edit Lock - x86_64 standardize debug rodata
+Content-Disposition: inline; filename=text-edit-lock-x86_64-standardize-debug-rodata.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:58:53 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the kprobes mutex from kprobes.h, since it does not belong there. Also
-remove all use of this mutex in the architecture specific code, replacing it by
-a proper mutex lock/unlock in the architecture agnostic code.
+Standardize DEBUG_RODATA, removing special cases for hotplug and kprobes.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: prasanna@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
+CC: Andi Kleen <andi@firstfloor.org>
+CC: pageexec@freemail.hu
 ---
- arch/i386/kernel/kprobes.c    |    2 --
- arch/ia64/kernel/kprobes.c    |    2 --
- arch/powerpc/kernel/kprobes.c |    2 --
- arch/s390/kernel/kprobes.c    |    2 --
- arch/x86_64/kernel/kprobes.c  |    2 --
- include/linux/kprobes.h       |    2 --
- kernel/kprobes.c              |    2 ++
- 7 files changed, 2 insertions(+), 12 deletions(-)
+ arch/x86_64/mm/init.c           |   23 +++++------------------
+ include/asm-x86_64/cacheflush.h |   22 ++++++++++++++++++++++
+ 2 files changed, 27 insertions(+), 18 deletions(-)
 
-Index: linux-2.6-lttng/include/linux/kprobes.h
+Index: linux-2.6-lttng/arch/x86_64/mm/init.c
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/kprobes.h	2007-08-27 11:48:56.000000000 -0400
-+++ linux-2.6-lttng/include/linux/kprobes.h	2007-08-27 11:49:01.000000000 -0400
-@@ -35,7 +35,6 @@
- #include <linux/percpu.h>
- #include <linux/spinlock.h>
- #include <linux/rcupdate.h>
--#include <linux/mutex.h>
+--- linux-2.6-lttng.orig/arch/x86_64/mm/init.c	2007-08-18 10:02:58.000000000 -0400
++++ linux-2.6-lttng/arch/x86_64/mm/init.c	2007-08-18 10:04:14.000000000 -0400
+@@ -598,25 +598,11 @@ void free_initmem(void)
  
- #ifdef CONFIG_KPROBES
- #include <asm/kprobes.h>
-@@ -177,7 +176,6 @@ static inline void kretprobe_assert(stru
- }
- 
- extern spinlock_t kretprobe_lock;
--extern struct mutex kprobe_mutex;
- extern int arch_prepare_kprobe(struct kprobe *p);
- extern void arch_arm_kprobe(struct kprobe *p);
- extern void arch_disarm_kprobe(struct kprobe *p);
-Index: linux-2.6-lttng/arch/i386/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/arch/i386/kernel/kprobes.c	2007-08-27 11:48:56.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/kernel/kprobes.c	2007-08-27 11:49:01.000000000 -0400
-@@ -180,9 +180,7 @@ void __kprobes arch_disarm_kprobe(struct
- 
- void __kprobes arch_remove_kprobe(struct kprobe *p)
+ void mark_rodata_ro(void)
  {
--	mutex_lock(&kprobe_mutex);
- 	free_insn_slot(p->ainsn.insn, (p->ainsn.boostable == 1));
--	mutex_unlock(&kprobe_mutex);
+-	unsigned long start = (unsigned long)_stext, end;
++	unsigned long start = PFN_ALIGN(_stext);
++	unsigned long end = PFN_ALIGN(__end_rodata);
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+-	/* It must still be possible to apply SMP alternatives. */
+-	if (num_possible_cpus() > 1)
+-		start = (unsigned long)_etext;
+-#endif
+-
+-#ifdef CONFIG_KPROBES
+-	start = (unsigned long)__start_rodata;
+-#endif
+-	
+-	end = (unsigned long)__end_rodata;
+-	start = (start + PAGE_SIZE - 1) & PAGE_MASK;
+-	end &= PAGE_MASK;
+-	if (end <= start)
+-		return;
+-
+-	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT, PAGE_KERNEL_RO);
++	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT,
++				PAGE_KERNEL_RO);
+ 
+ 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
+ 	       (end - start) >> 10);
+@@ -629,6 +615,7 @@ void mark_rodata_ro(void)
+ 	 */
+ 	global_flush_tlb();
  }
++
+ #endif
  
- static void __kprobes save_previous_kprobe(struct kprobe_ctlblk *kcb)
-Index: linux-2.6-lttng/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-27 11:48:58.000000000 -0400
-+++ linux-2.6-lttng/kernel/kprobes.c	2007-08-27 11:49:01.000000000 -0400
-@@ -644,7 +644,9 @@ valid_p:
- 			list_del_rcu(&p->list);
- 			kfree(old_p);
- 		}
-+		mutex_lock(&kprobe_mutex);
- 		arch_remove_kprobe(p);
-+		mutex_unlock(&kprobe_mutex);
- 	} else {
- 		mutex_lock(&kprobe_mutex);
- 		if (p->break_handler)
-Index: linux-2.6-lttng/arch/ia64/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/arch/ia64/kernel/kprobes.c	2007-08-27 11:48:56.000000000 -0400
-+++ linux-2.6-lttng/arch/ia64/kernel/kprobes.c	2007-08-27 11:49:01.000000000 -0400
-@@ -565,9 +565,7 @@ void __kprobes arch_disarm_kprobe(struct
- 
- void __kprobes arch_remove_kprobe(struct kprobe *p)
- {
--	mutex_lock(&kprobe_mutex);
- 	free_insn_slot(p->ainsn.insn, 0);
--	mutex_unlock(&kprobe_mutex);
- }
- /*
-  * We are resuming execution after a single step fault, so the pt_regs
-Index: linux-2.6-lttng/arch/powerpc/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/kernel/kprobes.c	2007-08-27 11:48:56.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/kernel/kprobes.c	2007-08-27 11:49:01.000000000 -0400
-@@ -86,9 +86,7 @@ void __kprobes arch_disarm_kprobe(struct
- 
- void __kprobes arch_remove_kprobe(struct kprobe *p)
- {
--	mutex_lock(&kprobe_mutex);
- 	free_insn_slot(p->ainsn.insn, 0);
--	mutex_unlock(&kprobe_mutex);
- }
- 
- static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
-Index: linux-2.6-lttng/arch/s390/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/arch/s390/kernel/kprobes.c	2007-08-27 11:48:56.000000000 -0400
-+++ linux-2.6-lttng/arch/s390/kernel/kprobes.c	2007-08-27 11:49:01.000000000 -0400
-@@ -218,9 +218,7 @@ void __kprobes arch_disarm_kprobe(struct
- 
- void __kprobes arch_remove_kprobe(struct kprobe *p)
- {
--	mutex_lock(&kprobe_mutex);
- 	free_insn_slot(p->ainsn.insn, 0);
--	mutex_unlock(&kprobe_mutex);
- }
- 
- static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
-Index: linux-2.6-lttng/arch/x86_64/kernel/kprobes.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86_64/kernel/kprobes.c	2007-08-27 11:48:56.000000000 -0400
-+++ linux-2.6-lttng/arch/x86_64/kernel/kprobes.c	2007-08-27 11:49:01.000000000 -0400
-@@ -219,9 +219,7 @@ void __kprobes arch_disarm_kprobe(struct
- 
- void __kprobes arch_remove_kprobe(struct kprobe *p)
- {
--	mutex_lock(&kprobe_mutex);
- 	free_insn_slot(p->ainsn.insn, 0);
--	mutex_unlock(&kprobe_mutex);
- }
- 
- static void __kprobes save_previous_kprobe(struct kprobe_ctlblk *kcb)
+ #ifdef CONFIG_BLK_DEV_INITRD
 
 -- 
 Mathieu Desnoyers
