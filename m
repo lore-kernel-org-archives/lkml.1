@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765408AbXH0Vol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764218AbXH0Vp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765408AbXH0Vol (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765560AbXH0VbP
+	id S1764218AbXH0Vp2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765614AbXH0VbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:31:15 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59044 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765532AbXH0VbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:31:12 -0400
-Date: Mon, 27 Aug 2007 23:31:34 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [RFC][PATCH 2/2 -mm] kexec based hibernation: kexec restore
-Message-ID: <20070827213134.GE3398@elf.ucw.cz>
-References: <1188177296.3247.38.camel@caritas-dev.intel.com>
+	Mon, 27 Aug 2007 17:31:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47192 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765565AbXH0VbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 17:31:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm 0/4] Hibernation: Arbitrary boot kernel support on x86_64 (rev. 2)
+Date: Mon, 27 Aug 2007 23:31:27 +0200
+User-Agent: KMail/1.9.5
+Cc: Andi Kleen <ak@suse.de>, Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1188177296.3247.38.camel@caritas-dev.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Message-Id: <200708272331.28584.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi,
 
-> This patch adds writing support for /dev/oldmem. This is used to
-> restore the memory contents of hibernated system.
-> 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
+The first two patches in this series make it possible to restore the memory
+state from a hibernation image with the help of a kernel different from the
+image one.
 
-> +ssize_t write_oldmem_page(unsigned long pfn, const char *buf,
-> +			  size_t csize, unsigned long offset, int userbuf)
+The first patch adds the generic, platform independent code needed for that.
+The second patch implements the idea on x86_64.
 
-Hmm, int userbuf is only ever set to one... Does it make sense to have
-write_oldmem_page in the separate file? The onl user is mem.c, perhaps
-it should go there?
+The remaining two patches remove some implicit assumptions about the boot and
+image kernels from the x86_64 restore code.
 
-> +
-> +/*
-> + * Write memory corresponding to the old kernel.
-> + */
-> +static ssize_t write_oldmem(struct file *file, const char __user *buf,
-> +			    size_t count, loff_t *ppos)
-> +{
-> +	unsigned long pfn, offset;
-> +	size_t write = 0, csize;
-> +	int rc = 0;
-> +
-> +	while (count) {
-> +		pfn = *ppos / PAGE_SIZE;
-> +		if (pfn > saved_max_pfn)
-> +			return write;
-> +
-> +		offset = (unsigned long)(*ppos % PAGE_SIZE);
-> +		if (count > PAGE_SIZE - offset)
-> +			csize = PAGE_SIZE - offset;
-> +		else
-> +			csize = count;
-> +		rc = write_oldmem_page(pfn, buf, csize, offset, 1);
-> +		if (rc < 0)
-> +			return rc;
-> +		buf += csize;
-> +		*ppos += csize;
-> +		write += csize;
-> +		count -= csize;
-> +	}
-> +	return write;
-> +}
+Greetings,
+Rafael
+
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"Premature optimization is the root of all evil." - Donald Knuth
+
