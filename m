@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbXH0QNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbXH0QOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755669AbXH0QNz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758975AbXH0QCv
+	id S1758449AbXH0QOh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759269AbXH0QDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 12:02:51 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49272 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759395AbXH0QCs (ORCPT
+	Mon, 27 Aug 2007 12:03:21 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:6458 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759348AbXH0QDS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 12:02:48 -0400
-Date: Mon, 27 Aug 2007 11:02:48 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, tony.luck@intel.com, jes@sgi.com
-Subject: [PATCH 3/4] add new lock ordering rule to mm/filemap.c
-Message-ID: <20070827160247.GD25589@sgi.com>
-References: <20070827155622.GA25589@sgi.com>
+	Mon, 27 Aug 2007 12:03:18 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: James Chapman <jchapman@katalix.com>
+Subject: Re: RFC: issues concerning the next NAPI interface
+Date: Mon, 27 Aug 2007 18:02:47 +0200
+User-Agent: KMail/1.8.2
+Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
+       akepner@sgi.com, netdev@vger.kernel.org, raisch@de.ibm.com,
+       themann@de.ibm.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, meder@de.ibm.com, tklein@de.ibm.com,
+       stefan.roscher@de.ibm.com
+References: <46CF127D.1090609@katalix.com> <20070826.185815.93042514.davem@davemloft.net> <46D2F301.7050105@katalix.com>
+In-Reply-To: <46D2F301.7050105@katalix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070827155622.GA25589@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200708271802.48691.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a lock ordering rule to avoid a potential deadlock when
-multiple mmap_sems need to be locked.
+On Monday 27 August 2007 17:51, James Chapman wrote:
 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
+> In the second half of my previous reply (which seems to have been 
+> deleted), I suggest a way to avoid this problem without using hardware 
+> interrupt mitigation / coalescing. Original text is quoted below.
+> 
+>  >> I've seen the same and I'm suggesting that the NAPI driver keeps
+>  >> itself in polled mode for N polls or M jiffies after it sees
+>  >> workdone=0. This has always worked for me in packet forwarding
+>  >> scenarios to maximize packets/sec and minimize latency.
+> 
+> To implement this, there's no need for timers, hrtimers or generic NAPI 
+> support that others have suggested. A driver's poll() would set an 
+> internal flag and record the current jiffies value when finding 
+> workdone=0 rather than doing an immediate napi_complete(). Early in 
+> poll() it would test this flag and if set, do a low-cost test to see if 
+> it had any work to do. If no work, it would check the saved jiffies 
+> value and do the napi_complete() only if no work has been done for a 
+> configurable number of jiffies. This keeps interrupts disabled longer at 
+> the expense of many more calls to poll() where no work is done. So 
+> critical to this scheme is modifying the driver's poll() to fastpath the 
+> case of having no work to do while waiting for its local jiffy count to 
+> expire.
+> 
 
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c	2007-08-09 19:18:15.000000000 -0500
-+++ linux-2.6/mm/filemap.c	2007-08-27 09:13:47.435717670 -0500
-@@ -78,6 +78,9 @@
-  *  ->i_mutex			(generic_file_buffered_write)
-  *    ->mmap_sem		(fault_in_pages_readable->do_page_fault)
-  *
-+ *    When taking multiple mmap_sems, one should lock the lowest-addressed
-+ *    one first proceeding on up to the highest-addressed one.
-+ *
-  *  ->i_mutex
-  *    ->i_alloc_sem             (various)
-  *
+The problem I see with this approach is that the time that passes between
+two jiffies might be too long for 10G ethernet adapters. (I tried to implement
+a timer based approach with usual timers and the result was a disaster).
+HW interrupts / or HP timer avoid the jiffy problem as they activate softIRQs
+as soon as you call netif_rx_schedule. 
