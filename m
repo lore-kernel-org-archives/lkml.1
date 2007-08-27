@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbXH0MKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbXH0MLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbXH0MKh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 08:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756994AbXH0MJy
+	id S1756685AbXH0MLw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 08:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbXH0MLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 08:09:54 -0400
-Received: from 193-189-87-45.ip.kis.lt ([193.189.87.45]:30962 "EHLO
-	barclay.wilibox.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756979AbXH0MJx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 08:09:53 -0400
-Subject: Re: Pausing kernel boot messages
-From: Zilvinas Valinskas <zilvinas@wilibox.com>
-Reply-To: zilvinas@wilibox.com
-To: =?ISO-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
-Cc: Esteban Fernandez <estfern@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200708271353.22665.hjk@linutronix.de>
-References: <179e6e720708270421r5f07f9dfp434077f6a106d2d7@mail.gmail.com>
-	 <200708271353.22665.hjk@linutronix.de>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 27 Aug 2007 15:09:50 +0300
-Message-Id: <1188216590.5361.27.camel@zv.wilibox.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 8bit
+	Mon, 27 Aug 2007 08:11:42 -0400
+Received: from smtpout.mac.com ([17.250.248.185]:54477 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751144AbXH0MLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 08:11:41 -0400
+In-Reply-To: <200708261113.JHH03043.VQOtSOJLFFFHMO@I-love.SAKURA.ne.jp>
+References: <46CED214.6050505@gmail.com> <46CED5C6.8050501@gmail.com> <20070825110825.GB5850@ucw.cz> <200708261113.JHH03043.VQOtSOJLFFFHMO@I-love.SAKURA.ne.jp>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <60BDD3AF-A5BD-4076-922E-40E629D7CBFA@mac.com>
+Cc: pavel@ucw.cz, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, chrisw@sous-sol.org
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [TOMOYO 14/15] Conditional permission support.
+Date: Mon, 27 Aug 2007 08:11:15 -0400
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Esteban,
+On Aug 25, 2007, at 22:13:48, Tetsuo Handa wrote:
+> Pavel Machek wrote:
+>> What is that? Language parser in kernel?
+>
+> Yes. This is a policy parser in kernel.
+>
+> TOMOYO Linux' policy is passed from/to the kernel as a plain text  
+> (i.e. ASCII printable) file via /proc/tomoyo interface.
+>
+> For example, to add a permission to allow /usr/sbin/sshd to  
+> execute /bin/bash if the authenticated user's uid = 500, the  
+> administrator runs
+>
+> # /bin/cat > /proc/tomoyo/domain_policy << EOF
+> select <kernel> /usr/sbin/sshd
+> 1 /bin/bash if task.uid=500
+> EOF
 
-Alternatively, read Documentation/networking/netconsole.txt. Might help
-or might not. It depends when system is crashing.
+This is probably not acceptable; I doubt there's a chance in hell  
+that TOMOYO will get merged as long as it has text-based-language  
+parsing in the kernel.  You also have $NEW_RANDOM_ABUSE_OF_PROCFS and  
+$PATH_BASED_LSM_ISSUES.  See the long flamewars on AppArmor for  
+discussion on the latter.
 
-On Mon, 2007-08-27 at 13:53 +0200, Hans-Jürgen Koch wrote:
-> Am Montag 27 August 2007 13:21 schrieb Esteban Fernandez:
-> > How do you pause the kernel boot messages ?
-> > 
-> > ^S, Pause and Scroll lock do nothing and you can't Shift-Page-Up  after a
-> > kernel panic.
-> 
-> These are functions of a shell (like bash), which you haven't got yet during
-> kernel boot. You can read the kernel boot messages _after_ your system's up
-> using dmesg etc.
-> If you can't do that, e.g. because your kernel always hangs during boot, you
-> could enable a serial console in your kernel and watch/log your kernel 
-> messages with a terminal program running on a different computer.
-> 
-> Hans
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Cheers,
+Kyle Moffett
 
