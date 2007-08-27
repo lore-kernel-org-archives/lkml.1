@@ -1,51 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbXH0B60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbXH0B7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754868AbXH0B60 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Aug 2007 21:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbXH0B6S
+	id S1754230AbXH0B7X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Aug 2007 21:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbXH0B7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Aug 2007 21:58:18 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42080
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753266AbXH0B6R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Aug 2007 21:58:17 -0400
-Date: Sun, 26 Aug 2007 18:58:15 -0700 (PDT)
-Message-Id: <20070826.185815.93042514.davem@davemloft.net>
-To: jchapman@katalix.com
-Cc: shemminger@linux-foundation.org, ossthema@de.ibm.com, akepner@sgi.com,
-       netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
-       tklein@de.ibm.com, stefan.roscher@de.ibm.com
-Subject: Re: RFC: issues concerning the next NAPI interface
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46D1D634.7060007@katalix.com>
-References: <46CF127D.1090609@katalix.com>
-	<20070824.144711.18301866.davem@davemloft.net>
-	<46D1D634.7060007@katalix.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 26 Aug 2007 21:59:14 -0400
+Received: from mail.windriver.com ([147.11.1.11]:54268 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754690AbXH0B7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Aug 2007 21:59:13 -0400
+Message-ID: <46D2D57E.4070406@windriver.com>
+Date: Mon, 27 Aug 2007 09:45:34 -0400
+From: taoyue <yue.tao@windriver.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Mark Zhan <rongkai.zhan@windriver.com>,
+       "Ashfield, Bruce" <Bruce.Ashfield@windriver.com>
+Subject: Re: [PATCH] sigqueue_free: fix the race with collect_signal()
+References: <20070823134538.GA1358@tv-sign.ru> <46CEEA94.2070902@windriver.com> <20070824074558.GA86@tv-sign.ru> <46CF4DCB.6030304@windriver.com> <20070824110836.GA74@tv-sign.ru> <46CF3988.1020408@us.ibm.com> <20070824202305.GA274@tv-sign.ru>
+In-Reply-To: <20070824202305.GA274@tv-sign.ru>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Aug 2007 01:49:08.0550 (UTC) FILETIME=[753DEE60:01C7E84C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Chapman <jchapman@katalix.com>
-Date: Sun, 26 Aug 2007 20:36:20 +0100
+Oleg Nesterov wrote:
+> On 08/24, Sukadev Bhattiprolu wrote:
+>   
+>> Oleg Nesterov wrote:
+>>     
+>>> On 08/24, taoyue wrote:
+>>>  
+>>>       
+>>>> Oleg Nesterov wrote:
+>>>>    
+>>>>         
+>>>>>> collect_signal:				sigqueue_free:
+>>>>>>
+>>>>>> 	list_del_init(&first->list);
+>>>>>>                                      spin_lock_irqsave(lock, flags);
+>>>>>>   
+>>>>>>        
+>>>>>>             
+>>>>>                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>>>>>
+>>>>>      
+>>>>>           
+>>>>>>                                      if (!list_empty(&q->list))
+>>>>>>                                            list_del_init(&q->list);
+>>>>>>                                      spin_unlock_irqrestore(lock, 
+>>>>>>                                      flags);
+>>>>>>                                      q->flags &= ~SIGQUEUE_PREALLOC;
+>>>>>>
+>>>>>>      __sigqueue_free(first);		__sigqueue_free(q);
+>>>>>>   
+>>>>>>        
+>>>>>>             
+>>>>> collect_signal() is always called under ->siglock which is also taken by
+>>>>> sigqueue_free(), so this is not possible.
+>>>>>
+>>>>>
+>>>>>      
+>>>>>           
+>>>> I know, using current->sighand->siglock to prevent one sigqueue
+>>>> is free twice. I want to know whether it is possible that the two
+>>>> function is called in different thread. If that, the spin_lock is useless.
+>>>>    
+>>>>         
+>>> Not sure I understand. Yes, it is possible they are called by 2 different
+>>> threads, that is why we had a race. But all threads in the same thread
+>>> group have the same ->sighand, and thus the same ->sighand->siglock.
+>>>       
+I has applied the new patch, and start test program last Friday.
+So far, the test program has run for three days.
+In my test program, all threads is created in one process, so they
+are in the same thread group. If two thread is not in the same thread
+group, they have the different ->sighand->siglock. In this case, the
+lock can't prevent the sigqueue object from race condition.
+>>>  
+>>>       
+>> Oleg, if one thread can be in collect_signal() and another in 
+>> sigqueue_free() and both operate on the exact same sigqueue object, its 
+>> not clear how we prevent two calls to __sigqueue_free() to
+>> the same object. In that case the lock (or some lock) should be around 
+>> __sigqueue_free() - no ?
+>>
+>> i.e if we enter sigqueue_free(), we will call __sigqueue_free() 
+>> regardless of the state.
+>>     
+>
+> Yes. They both will call __sigqueue_free(). But please note that __sigqueue_free()
+> checks SIGQUEUE_PREALLOC, which is cleared by sigqueue_free().
+>
+> IOW, when sigqueue_free() unlocks ->siglock, we know that it can't be used
+> by collect_signal() from another thread. So we can clear SIGQUEUE_PREALLOC
+> and free sigqueue. We don't need this lock around sigqueue_free() to prevent
+> the race. collect_signal() can "see" only those sigqueues which are on list.
+>
+> IOW, when sigqueue_free() takes ->siglock, colect_signal() can't run, because
+> it needs the same lock. Now we delete this sigqueue from list, nobody can
+> see it, it can't have other references. So we can unlock ->siglock, mark
+> sigqueue as freeable (clear SIGQUEUE_PREALLOC), and free it.
+>
+> Do you agree?
+>
+> Oleg.
+>
+>
+>   
 
-> David Miller wrote:
-> > From: James Chapman <jchapman@katalix.com>
-> > Date: Fri, 24 Aug 2007 18:16:45 +0100
-> > 
-> >> Does hardware interrupt mitigation really interact well with NAPI?
-> > 
-> > It interacts quite excellently.
-> 
-> If NAPI disables interrupts and keeps them disabled while there are more 
-> packets arriving or more transmits being completed, why do hardware 
-> interrupt mitigation / coalescing features of the network silicon help?
-
-Because if your packet rate is low enough such that the cpu can
-process the interrupt fast enough and thus only one packet gets
-processed per NAPI poll, the cost of going into and out of NAPI mode
-dominates the packet processing costs.
