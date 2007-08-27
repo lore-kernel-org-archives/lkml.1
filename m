@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbXH0MyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbXH0NK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbXH0MyS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 08:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbXH0MyH
+	id S1753551AbXH0NK1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 09:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbXH0NKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 08:54:07 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:63930 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbXH0MyG (ORCPT
+	Mon, 27 Aug 2007 09:10:14 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52220 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbXH0NKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 08:54:06 -0400
-Date: Mon, 27 Aug 2007 08:43:01 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Andrew Morton <akpm@osdl.org>,
-       David Chinner <dgc@sgi.com>, Michael Rubin <mrubin@google.com>,
+	Mon, 27 Aug 2007 09:10:12 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Huang, Ying" <ying.huang@intel.com>, vgoyal@in.ibm.com,
+       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] [RFC][PATCH] clustered writeback
-Message-ID: <20070827084301.73217bde@think.oraclecorp.com>
-In-Reply-To: <20070827050336.6a7e8e16@laptopd505.fenrus.org>
-References: <388214369.05937@ustc.edu.cn>
-	<20070827050336.6a7e8e16@laptopd505.fenrus.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Subject: Re: [RFC][PATCH 0/2 -mm] kexec based hibernation
+References: <1188177245.3247.36.camel@caritas-dev.intel.com>
+	<20070827050027.GB9809@in.ibm.com>
+	<1188195529.3247.82.camel@caritas-dev.intel.com>
+	<20070827075317.GB2060@elf.ucw.cz>
+Date: Mon, 27 Aug 2007 07:05:41 -0600
+In-Reply-To: <20070827075317.GB2060@elf.ucw.cz> (Pavel Machek's message of
+	"Mon, 27 Aug 2007 09:53:17 +0200")
+Message-ID: <m1d4x95dqy.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007 05:03:36 -0700
-Arjan van de Ven <arjan@infradead.org> wrote:
+Pavel Machek <pavel@ucw.cz> writes:
 
-> On Mon, 27 Aug 2007 19:21:52 +0800
-> > 
-> > Because it does the work in small batches of 10 inodes, when the
-> > system has <=10 dirty inodes, its behavior will reduce to:
-> > - do a full sweep *at once* on every 25s
-> > Which means the disk will flicker once every 25s, not bad :)
-> 
-> 25 seconds is quite not good already though.... it takes a disk a
-> second or two of no activity to go into low power mode, every 25
-> seconds means you now have at least a 10% constant power cost....
-> 
-> I don't know the right answer (well other than "make sure inodes
-> aren't dirty", which involves fixing apps to not do as much file
-> operations, as well as relatime) but just "every 25s is no big deal"
-> isn't really the case ;-(
+> Hi!
+>
+>> > Does this make sense?
+>> 
+>> Yes, this is a sensible optimization. But I think it may be better to
+>> make bootloader load kernel D directly into a specified memory location.
+>> For example, we can add a option to "kernel" command of grub. 
+>> 
+>> And, I think we can do more in bootloader. Such as we can prepare
+>> two
+>
+> Yes, that would be nice.
+>
+> It will mean quite a bit of work, but I guess it should be the long
+> term goal. Loading restore kernel directly from bootloader means:
+>
+> 1) it is fast -- no need to boot another kernel
+>
+> 2) it is "classical" way of doing things
+>
+> On the other hand, we loose flexibility that way:
+>
+> 1) it locks you onto one bootloader
+>
+> 2) you no longer have userland there to do uncompression, decryption,
+> etc..
 
-But fixing this isn't the job of this patch....It needs something like
-the laptop mode logic where it says ohhhh, the disk is awake, lets send
-stuff down.
+True although for the uncompression and decryption those aren't exactly foreign
+requirements for bootloaders.
 
-kupdate hitting on the disk isn't really a new problem, I'd rather
-address it with a different patch series.
-
--chris
+Eric
