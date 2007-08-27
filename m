@@ -1,76 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXH0QYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758947AbXH0QZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932290AbXH0QYb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762513AbXH0QX4
+	id S1758947AbXH0QZm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756919AbXH0QZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 12:23:56 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:34005 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760448AbXH0QXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 12:23:54 -0400
-Date: Mon, 27 Aug 2007 09:23:18 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Adrian Bunk <bunk@kernel.org>, Gabriel C <nix.or.die@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: net/ipv4/fib_trie.c - compile error (Re: 2.6.23-rc3-mm1)
-Message-ID: <20070827162318.GB8290@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070822170302.GC8786@linux.vnet.ibm.com> <20070827063635.GB1703@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070827063635.GB1703@ff.dom.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 27 Aug 2007 12:25:29 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56652 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756866AbXH0QZ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 12:25:28 -0400
+Date: Mon, 27 Aug 2007 09:25:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Cliff Wickman <cpw@sgi.com>
+Cc: ego@in.ibm.com, mingo@elte.hu, vatsa@in.ibm.com, oleg@tv-sign.ru,
+       pj@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] V3: hotplug cpu: migrate a task within its cpuset
+Message-Id: <20070827092500.be762139.akpm@linux-foundation.org>
+In-Reply-To: <20070827160703.GA2446@sgi.com>
+References: <20070827160703.GA2446@sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 08:36:35AM +0200, Jarek Poplawski wrote:
-> On 22-08-2007 19:03, Paul E. McKenney wrote:
-> > On Wed, Aug 22, 2007 at 05:41:11PM +0200, Adrian Bunk wrote:
-> >> On Wed, Aug 22, 2007 at 05:30:13PM +0200, Gabriel C wrote:
-> >>> Got it with a randconfig ( http://194.231.229.228/kernel/mm/2.6.23-rc3-mm1/r/randconfig-8 )
-> >>>
-> >>> ...
-> >>>
-> >>> net/ipv4/fib_trie.c: In function 'trie_rebalance':
-> >>> net/ipv4/fib_trie.c:969: error: lvalue required as unary '&' operand
-> >>> net/ipv4/fib_trie.c:971: error: lvalue required as unary '&' operand
-> >>> net/ipv4/fib_trie.c:977: error: lvalue required as unary '&' operand
-> >>> net/ipv4/fib_trie.c:980: error: lvalue required as unary '&' operand
-> >>> ...
-> >> Side effect of the git-net removal, temporarily removing 
-> >> immunize-rcu_dereference-against-crazy-compiler-writers.patch should 
-> >> work around it.
-> > 
-> > Alternatively, the following one-line patch to net/ipv4/fib_trie.c could
-> > be used.
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> > 
-> >  fib_trie.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff -urpNa -X dontdiff linux-2.6.23-rc3-mm1/net/ipv4/fib_trie.c linux-2.6.23-rc3-mm1.compile/net/ipv4/fib_trie.c
-> > --- linux-2.6.23-rc3-mm1/net/ipv4/fib_trie.c	2007-08-22 09:20:33.000000000 -0700
-> > +++ linux-2.6.23-rc3-mm1.compile/net/ipv4/fib_trie.c	2007-08-22 09:47:33.000000000 -0700
-> > @@ -94,7 +94,7 @@ typedef unsigned int t_key;
-> >  #define T_LEAF  1
-> >  #define NODE_TYPE_MASK	0x1UL
-> >  #define NODE_PARENT(node) \
-> > -	((struct tnode *)rcu_dereference(((node)->parent & ~NODE_TYPE_MASK)))
-> > +	((struct tnode *)(rcu_dereference((node)->parent) & ~NODE_TYPE_MASK))
-> ...
+On Mon, 27 Aug 2007 11:07:03 -0500 Cliff Wickman <cpw@sgi.com> wrote:
+
 > 
-> After first reading of this thread I've had an impression it's about
-> compiler's behavior, but now it seems to me this patch is not an
-> alternative, but a 'must be' and only proper way of calling
-> rcu_dereference (with a variable instead of an expression)? Am I
-> right?
+> Version 3 adds a missing task_rq_lock()/task_rq_unlock() pair. (Oleg found)
+> 
+> There was discussion about this patch among:
+> Andrew Morton, Oleg Nesterov, Gautham Shenoy, Rusty Russell
+> regarding other approaches:
+>   refusing to offline a cpu with tasks pinned to it, or
+>   providing an administrator the ability to assign such tasks to other cpus
+> 
+> There is indeed an "assumption" in my patch that the cpuset containing a
+> pinned task's cpu is a better choice than any online cpu. I think that is
+> a reasonable assumption given the typical construction of a cpuset and the
+> reason a task is running in a cpuset.
+> 
+> And there will be coming cases, at least on some architectures, where a
+> cpu is offlined as a kernel reaction to a hardware error.  In that case
+> would it not be preferrable to re-pin such tasks and let them proceed?
+> 
+> 
+> 
+> When a cpu is disabled, move_task_off_dead_cpu() is called for tasks
+> that have been running on that cpu.
+> 
+> Currently, such a task is migrated:
+>  1) to any cpu on the same node as the disabled cpu, which is both online
+>     and among that task's cpus_allowed
+>  2) to any cpu which is both online and among that task's cpus_allowed
+> 
+> It is typical of a multithreaded application running on a large NUMA system
+> to have its tasks confined to a cpuset so as to cluster them near the
+> memory that they share. Furthermore, it is typical to explicitly place such
+> a task on a specific cpu in that cpuset.  And in that case the task's
+> cpus_allowed includes only a single cpu.
+> 
+> This patch would insert a preference to migrate such a task to some cpu within
+> its cpuset (and set its cpus_allowed to its entire cpuset).
+> 
+> With this patch, migrate the task to:
+>  1) to any cpu on the same node as the disabled cpu, which is both online
+>     and among that task's cpus_allowed
+>  2) to any online cpu within the task's cpuset
+>  3) to any cpu which is both online and among that task's cpus_allowed
+> 
 
-Yes, rcu_dereference() does indeed need to be invoked on a lvalue.
+<looks at the No more Mr. Nice Guy. code>
 
-							Thanx, Paul
+OK, so we're no worse than we used to be, really.
+
+>  include/linux/cpuset.h |    5 +++++
+>  kernel/cpuset.c        |   15 ++++++++++++++-
+>  kernel/sched.c         |   16 ++++++++++++++++
+
+How do we communicate this new design/feature to our users? 
+Documentation/cpusets.txt, perhaps?  Documentation/cpu-hotplug.txt? 
+git-log?  ;)
+
+
