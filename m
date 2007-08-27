@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761314AbXH0WUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763344AbXH0WVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761314AbXH0WUr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 18:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbXH0WUi
+	id S1763344AbXH0WVl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 18:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbXH0WVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 18:20:38 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:62442 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751414AbXH0WUg convert rfc822-to-8bit (ORCPT
+	Mon, 27 Aug 2007 18:21:32 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47979 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753688AbXH0WVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 18:20:36 -0400
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] mptsas: scan the logical volume at first
-Date: Mon, 27 Aug 2007 16:20:16 -0600
-Message-ID: <664A4EBB07F29743873A87CF62C26D709409BA@NAMAIL4.ad.lsil.com>
-In-Reply-To: <200708271058.01919.yinghai.lu@sun.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] mptsas: scan the logical volume at first
-Thread-Index: Acfo0t2nHssrHEqdQee7X+gJSbO+HAAJL0YQ
-From: "Moore, Eric" <Eric.Moore@lsi.com>
-To: "Yinghai Lu" <Yinghai.Lu@Sun.COM>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Prakash, Sathya" <Sathya.Prakash@lsi.com>,
-       "James Bottomley" <James.Bottomley@steeleye.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <mpt_linux_developer@lsi.com>, <linux-scsi@vger.kernel.org>
-X-OriginalArrivalTime: 27 Aug 2007 22:20:17.0141 (UTC) FILETIME=[725A6A50:01C7E8F8]
+	Mon, 27 Aug 2007 18:21:31 -0400
+From: akepner@sgi.com
+Date: Mon, 27 Aug 2007 15:20:27 -0700
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       gregkh@suse.de, James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Jes Sorensen <jes@sgi.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 0/3] pci: let devices flush DMA to host memory
+Message-ID: <20070827222027.GD29161@sgi.com>
+References: <20070824180232.GP5592@sgi.com> <20070827220548.GB22484@colo.lackof.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070827220548.GB22484@colo.lackof.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, August 27, 2007 11:58 AM,  Yinghai Lu wrote:
+On Mon, Aug 27, 2007 at 04:05:48PM -0600, Grant Grundler wrote:
+
+> .....
+> After reading the thread, my take is we need a more elegant way for a
+> device driver to handle registration of DMA regions allocated by user
+> space. The API would "make this page/region act like dma_alloc_coherent()".
+> That implies strong ordering between CPU and DMA to/from the device.
+> Maybe the code is the right thing and I want a name that makes
+> sense in the context of current DMA API.
+
+Need to think about this...
+
 > 
-> [PATCH] mptsas: scan the logical volume at first
-> 
-> user like to see the raid show as /dev/sda before left raw disks.
-> So scan the volume at first to make their life easier.
-> 
-> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+> On IRC, willy suggested an mmap() flag and that sounds reasonable too
+> though I don't know if it's feasible. 
 > 
 
-Although I agree with the patch, there are people on this list that will
-reject it due to the fact distro's ship today having udev label and
-device id mapping, so device ordering should be an non-issue.  However
-there are systems that ship that don't have BIOS BBS support, allowing
-you to select the boot device. Without it BBS support, you are forced to
-boot to the lowest device id.  There are HP and Dell systems like that.
-Are SUN systems like that?   If so, there is an additional patch which I
-have yet posted that will sort the raid volumes in acsending order.
-Currently they are in descending order (due to Firmware putting them in
-that order), which if you did a install to what you think is /dev/sda,
-its really the highest target id, and when you reboot, the BIOS will
-boot to the lowest id, which is /dev/sdb, and it will not find the boot
-partition.
+Yeah, we're doing something like this now as a band-aid solution. 
+Not a flag to mmap(), but a magic offset value. But it wasn't 
+acceptable to the maintainer of the mthca IB driver (Roland 
+Dreier), hence the new proposal....
 
-Eric
+-- 
+Arthur
+
