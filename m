@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760944AbXH0QLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760571AbXH0QMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760944AbXH0QLw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758859AbXH0QC1
+	id S1760571AbXH0QMg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759338AbXH0QCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 12:02:27 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:44243 "EHLO smtp.polymtl.ca"
+	Mon, 27 Aug 2007 12:02:34 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:44271 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758992AbXH0QCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 12:02:25 -0400
-Message-Id: <20070827160213.898554665@polymtl.ca>
+	id S1759001AbXH0QCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 12:02:30 -0400
+Message-Id: <20070827160213.541717899@polymtl.ca>
 References: <20070827155910.336723755@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:59:16 -0400
+Date: Mon, 27 Aug 2007 11:59:15 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Christoph Hellwig <hch@infradead.org>
-Subject: [patch 6/8] Immediate Values - Powerpc Optimization
-Content-Disposition: inline; filename=immediate-values-powerpc-optimization.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 16:02:14 +0000
+Subject: [patch 5/8] Immediate Values - i386 Optimization
+Content-Disposition: inline; filename=immediate-values-i386-optimization.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 16:02:13 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PowerPC optimization of the immediate values which uses a li instruction,
-patched with an immediate value.
+i386 optimization of the immediate values which uses a movl with code patching
+to set/unset the value used to populate the register used as variable source.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Reviewed-by: Andi Kleen <ak@muc.de>
+Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
+Reviewed-by: Chuck Ebbert <cebbert@redhat.com>
 CC: Christoph Hellwig <hch@infradead.org>
 ---
- arch/powerpc/kernel/Makefile    |    1 
- arch/powerpc/kernel/immediate.c |  103 ++++++++++++++++++++++++++++++++
- include/asm-powerpc/immediate.h |  127 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 231 insertions(+)
+ arch/i386/kernel/Makefile    |    1 
+ arch/i386/kernel/immediate.c |  296 +++++++++++++++++++++++++++++++++++++++++++
+ arch/i386/kernel/traps.c     |    8 -
+ include/asm-i386/immediate.h |  137 +++++++++++++++++++
+ 4 files changed, 438 insertions(+), 4 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
+Index: linux-2.6-lttng/include/asm-i386/immediate.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/asm-powerpc/immediate.h	2007-08-27 11:49:21.000000000 -0400
-@@ -0,0 +1,127 @@
-+#ifndef _ASM_POWERPC_IMMEDIATE_H
-+#define _ASM_POWERPC_IMMEDIATE_H
++++ linux-2.6-lttng/include/asm-i386/immediate.h	2007-08-27 11:49:18.000000000 -0400
+@@ -0,0 +1,137 @@
++#ifndef _ASM_I386_IMMEDIATE_H
++#define _ASM_I386_IMMEDIATE_H
 +
 +/*
-+ * Immediate values. PowerPC architecture optimizations.
++ * Immediate values. i386 architecture optimizations.
 + *
 + * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 + *
@@ -51,16 +55,15 @@ Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
 + * See the file COPYING for more details.
 + */
 +
-+#include <asm/asm-compat.h>
-+
 +struct module;
 +
 +struct __immediate {
-+	long var;		/* Identifier variable of the immediate value */
++	long var;		/* Pointer to the identifier variable of the
++				 * immediate value
++				 */
 +	long immediate;		/*
-+				 * Pointer to the memory location that holds
-+				 * the immediate value within the load immediate
-+				 * instruction.
++				 * Pointer to the memory location of the
++				 * immediate value within the instruction.
 +				 */
 +	long size;		/* Type size. */
 +};
@@ -72,11 +75,9 @@ Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
 + * Reads the value of @var.
 + * Optimized version of the immediate.
 + * Do not use in __init and __exit functions. Use _immediate_read() instead.
-+ * Makes sure the 2 bytes update will be atomic by aligning the immediate
-+ * value. Use a normal memory read for the 4 bytes immediate because there is no
-+ * way to atomically update it without using a seqlock read side, which would
-+ * cost more in term of total i-cache and d-cache space than a simple memory
-+ * read.
++ * Makes sure the 2 and 4 bytes update will be atomic by aligning the immediate
++ * value. 2 bytes (short) uses a 66H prefix. If size is bigger than 4 bytes,
++ * fall back on a memory read.
 + */
 +#define immediate_read(var)						\
 +	({								\
@@ -84,31 +85,44 @@ Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
 +		switch (sizeof(value)) {				\
 +		case 1:							\
 +			asm (	".section __immediate, \"a\", @progbits;\n\t" \
-+					PPC_LONG "%1, ((0f)+3), 1;\n\t"	\
++					".long %1, (0f)+1, 1;\n\t"	\
 +					".previous;\n\t"		\
 +					"0:\n\t"			\
-+					"li %0,%2;\n\t"			\
++					"mov %2,%0;\n\t"		\
 +				: "=r" (value)				\
-+				: "i" (&(var)->value),			\
++				: "m" ((var)->value),			\
 +				  "i" (0));				\
 +			break;						\
 +		case 2:							\
 +			asm (	".section __immediate, \"a\", @progbits;\n\t" \
-+					PPC_LONG "%1, ((0f)+2), 2;\n\t"	\
++					".long %1, (0f)+2, 2;\n\t"	\
 +					".previous;\n\t"		\
-+					".align 2\n\t"			\
++					"1:\n\t"			\
++					".align 2;\n\t"			\
 +					"0:\n\t"			\
-+					"li %0,%2;\n\t"			\
++					"mov %2,%0;\n\t"		\
 +				: "=r" (value)				\
-+				: "i" (&(var)->value),			\
++				: "m" ((var)->value),			\
 +				  "i" (0));				\
 +			break;						\
-+		default:						\
-+			value = (var)->value;				\
++		case 4:							\
++			asm (	".section __immediate, \"a\", @progbits;\n\t" \
++					".long %1, (0f)+1, 4;\n\t"	\
++					".previous;\n\t"		\
++					"1:\n\t"			\
++					".org (1b)+(3-((1b)%%4)), 0x90;\n\t" \
++					"0:\n\t"			\
++					"mov %2,%0;\n\t"		\
++				: "=r" (value)				\
++				: "m" ((var)->value),			\
++				  "i" (0));				\
++			break;						\
++		default:value = (var)->value;				\
 +			break;						\
 +		};							\
 +		value;							\
 +	})
++
 +
 +/**
 + * immediate_set - set immediate variable (with locking)
@@ -165,35 +179,196 @@ Index: linux-2.6-lttng/include/asm-powerpc/immediate.h
 +extern int arch_immediate_update(const struct __immediate *immediate);
 +extern void arch_immediate_update_early(const struct __immediate *immediate);
 +
-+#endif /* _ASM_POWERPC_IMMEDIATE_H */
-Index: linux-2.6-lttng/arch/powerpc/kernel/Makefile
++#endif /* _ASM_I386_IMMEDIATE_H */
+Index: linux-2.6-lttng/arch/i386/kernel/Makefile
 ===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/kernel/Makefile	2007-08-27 11:16:08.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/kernel/Makefile	2007-08-27 11:49:21.000000000 -0400
-@@ -104,3 +104,4 @@ obj-$(CONFIG_PPC64)		+= $(obj64-y)
- 
- extra-$(CONFIG_PPC_FPU)		+= fpu.o
- extra-$(CONFIG_PPC64)		+= entry_64.o
+--- linux-2.6-lttng.orig/arch/i386/kernel/Makefile	2007-08-27 11:16:08.000000000 -0400
++++ linux-2.6-lttng/arch/i386/kernel/Makefile	2007-08-27 11:49:18.000000000 -0400
+@@ -37,6 +37,7 @@ obj-$(CONFIG_MODULES)		+= module.o
+ obj-y				+= sysenter.o vsyscall.o
+ obj-$(CONFIG_ACPI_SRAT) 	+= srat.o
+ obj-$(CONFIG_EFI) 		+= efi.o efi_stub.o
 +obj-$(CONFIG_IMMEDIATE)		+= immediate.o
-Index: linux-2.6-lttng/arch/powerpc/kernel/immediate.c
+ obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault.o
+ obj-$(CONFIG_KGDB)		+= kgdb.o kgdb-jmp.o
+ obj-$(CONFIG_VM86)		+= vm86.o
+Index: linux-2.6-lttng/arch/i386/kernel/immediate.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/arch/powerpc/kernel/immediate.c	2007-08-27 11:49:21.000000000 -0400
-@@ -0,0 +1,103 @@
++++ linux-2.6-lttng/arch/i386/kernel/immediate.c	2007-08-27 11:49:18.000000000 -0400
+@@ -0,0 +1,296 @@
 +/*
-+ * Powerpc optimized immediate values enabling/disabling.
++ * Immediate Value - i386 architecture specific code.
++ *
++ * Rationale
++ *
++ * Required because of :
++ * - Erratum 49 fix for Intel PIII.
++ * - Still present on newer processors : Intel Core 2 Duo Processor for Intel
++ *   Centrino Duo Processor Technology Specification Update, AH33.
++ *   Unsynchronized Cross-Modifying Code Operations Can Cause Unexpected
++ *   Instruction Execution Results.
++ *
++ * Permits immediate value modification by XMC with correct serialization.
++ *
++ * Reentrant for NMI and trap handler instrumentation. Permits XMC to a
++ * location that has preemption enabled because it involves no temporary or
++ * reused data structure.
++ *
++ * Quoting Richard J Moore, source of the information motivating this
++ * implementation which differs from the one proposed by Intel which is not
++ * suitable for kernel context (does not support NMI and would require disabling
++ * interrupts on every CPU for a long period) :
++ *
++ * "There is another issue to consider when looking into using probes other
++ * then int3:
++ *
++ * Intel erratum 54 - Unsynchronized Cross-modifying code - refers to the
++ * practice of modifying code on one processor where another has prefetched
++ * the unmodified version of the code. Intel states that unpredictable general
++ * protection faults may result if a synchronizing instruction (iret, int,
++ * int3, cpuid, etc ) is not executed on the second processor before it
++ * executes the pre-fetched out-of-date copy of the instruction.
++ *
++ * When we became aware of this I had a long discussion with Intel's
++ * microarchitecture guys. It turns out that the reason for this erratum
++ * (which incidentally Intel does not intend to fix) is because the trace
++ * cache - the stream of micorops resulting from instruction interpretation -
++ * cannot guaranteed to be valid. Reading between the lines I assume this
++ * issue arises because of optimization done in the trace cache, where it is
++ * no longer possible to identify the original instruction boundaries. If the
++ * CPU discoverers that the trace cache has been invalidated because of
++ * unsynchronized cross-modification then instruction execution will be
++ * aborted with a GPF. Further discussion with Intel revealed that replacing
++ * the first opcode byte with an int3 would not be subject to this erratum.
++ *
++ * So, is cmpxchg reliable? One has to guarantee more than mere atomicity."
++ *
++ * Overall design
++ *
++ * The algorithm proposed by Intel applies not so well in kernel context: it
++ * would imply disabling interrupts and looping on every CPUs while modifying
++ * the code and would not support instrumentation of code called from interrupt
++ * sources that cannot be disabled.
++ *
++ * Therefore, we use a different algorithm to respect Intel's erratum (see the
++ * quoted discussion above). We make sure that no CPU sees an out-of-date copy
++ * of a pre-fetched instruction by 1 - using a breakpoint, which skips the
++ * instruction that is going to be modified, 2 - issuing an IPI to every CPU to
++ * execute a sync_core(), to make sure that even when the breakpoint is removed,
++ * no cpu could possibly still have the out-of-date copy of the instruction,
++ * modify the now unused 2nd byte of the instruction, and then put back the
++ * original 1st byte of the instruction.
++ *
++ * It has exactly the same intent as the algorithm proposed by Intel, but
++ * it has less side-effects, scales better and supports NMI, SMI and MCE.
 + *
 + * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 + */
 +
++#include <linux/notifier.h>
++#include <linux/preempt.h>
++#include <linux/smp.h>
++#include <linux/notifier.h>
 +#include <linux/module.h>
 +#include <linux/immediate.h>
-+#include <linux/string.h>
++#include <linux/kdebug.h>
++#include <linux/rcupdate.h>
 +#include <linux/kprobes.h>
-+#include <asm/cacheflush.h>
-+#include <asm/page.h>
 +
-+#define LI_OPCODE_LEN	2
++#include <asm/cacheflush.h>
++
++#define BREAKPOINT_INSTRUCTION  0xcc
++#define BREAKPOINT_INS_LEN	1
++#define NOP_INSTRUCTION		0x90
++#define NR_NOPS			8
++
++static long target_after_int3;		/* EIP of the target after the int3 */
++static long bypass_eip;			/* EIP of the bypass. */
++static long bypass_after_int3;		/* EIP after the end-of-bypass int3 */
++static long after_immediate;		/*
++					 * EIP where to resume after the
++					 * single-stepping.
++					 */
++
++/*
++ * Size of the movl instruction (without the immediate value) in bytes.
++ * The 2 bytes load immediate has a 66H prefix, which makes the opcode 2 bytes
++ * wide.
++ */
++static inline size_t _immediate_get_insn_size(long size)
++{
++	switch (size) {
++		case 1: return 1;
++		case 2: return 2;
++		case 4: return 1;
++		default: BUG();
++	};
++}
++
++/*
++ * Internal bypass used during value update. The bypass is skipped by the
++ * function in which it is inserted.
++ * No need to be aligned because we exclude readers from the site during
++ * update.
++ * Layout is:
++ * nop nop nop nop nop nop nop nop int3
++ * The nops are the target replaced by the instruction to single-step.
++ */
++static inline void _immediate_bypass(long *bypassaddr, long *breaknextaddr)
++{
++		asm volatile (	"jmp 2f;\n\t"
++				"0:\n\t"
++				".space 8, 0x90;\n\t"
++				"1:\n\t"
++				"int3;\n\t"
++				"2:\n\t"
++				"movl $(0b),%0;\n\t"
++				"movl $((1b)+1),%1;\n\t"
++				: "=r" (*bypassaddr),
++				  "=r" (*breaknextaddr) : );
++}
++
++static void immediate_synchronize_core(void *info)
++{
++	sync_core();	/* use cpuid to stop speculative execution */
++}
++
++/*
++ * The eip value points right after the breakpoint instruction, in the second
++ * byte of the movl.
++ * Disable preemption in the bypass to make sure no thread will be preempted in
++ * it. We can then use synchronize_sched() to make sure every bypass users have
++ * ended.
++ */
++static int immediate_notifier(struct notifier_block *nb,
++	unsigned long val, void *data)
++{
++	enum die_val die_val = (enum die_val) val;
++	struct die_args *args = data;
++
++	if (!args->regs || user_mode_vm(args->regs))
++		return NOTIFY_DONE;
++
++	if (die_val == DIE_INT3) {
++		if (args->regs->eip == target_after_int3) {
++			preempt_disable();
++			args->regs->eip = bypass_eip;
++			return NOTIFY_STOP;
++		} else if (args->regs->eip == bypass_after_int3) {
++			args->regs->eip = after_immediate;
++			preempt_enable();
++			return NOTIFY_STOP;
++		}
++	}
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block immediate_notify = {
++	.notifier_call = immediate_notifier,
++	.priority = 0x7fffffff,	/* we need to be notified first */
++};
++
 +
 +/**
 + * arch_immediate_update - update one immediate value
@@ -201,27 +376,19 @@ Index: linux-2.6-lttng/arch/powerpc/kernel/immediate.c
 + *
 + * Update one immediate value. Must be called with immediate_mutex held.
 + */
-+int arch_immediate_update(const struct __immediate *immediate)
++__kprobes int arch_immediate_update(const struct __immediate *immediate)
 +{
++	int ret;
++	size_t insn_size = _immediate_get_insn_size(immediate->size);
++	long insn = immediate->immediate - insn_size;
++
 +#ifdef CONFIG_KPROBES
-+	kprobe_opcode_t *insn;
 +	/*
 +	 * Fail if a kprobe has been set on this instruction.
 +	 * (TODO: we could eventually do better and modify all the (possibly
 +	 * nested) kprobes for this site if kprobes had an API for this.
 +	 */
-+	switch (immediate->size) {
-+		case 1:	/* The uint8_t points to the 3rd byte of the
-+			 * instruction */
-+			insn = (void*)(immediate->immediate - 1 - LI_OPCODE_LEN);
-+			break;
-+		case 2:	insn = (void*)(immediate->immediate - LI_OPCODE_LEN);
-+			break;
-+		default:
-+		return -EINVAL;
-+	}
-+
-+	if (unlikely(*insn == BREAKPOINT_INSTRUCTION)) {
++	if (unlikely(*(unsigned char*)insn == BREAKPOINT_INSTRUCTION)) {
 +		printk(KERN_WARNING "Immediate value in conflict with kprobe. "
 +				    "Variable at %p, "
 +				    "instruction at %p, size %lu\n",
@@ -244,12 +411,55 @@ Index: linux-2.6-lttng/arch/powerpc/kernel/immediate.c
 +					== *(uint16_t*)immediate->var)
 +				return 0;
 +			break;
++		case 4:	if (*(uint32_t*)immediate->immediate
++					== *(uint32_t*)immediate->var)
++				return 0;
++			break;
 +		default:return -EINVAL;
 +	}
-+	memcpy((void*)immediate->immediate, (void*)immediate->var,
++
++	_immediate_bypass(&bypass_eip, &bypass_after_int3);
++
++	after_immediate = immediate->immediate + immediate->size;
++
++	text_poke((void*)bypass_eip, (void*)insn, insn_size + immediate->size);
++	/*
++	 * Fill the rest with nops.
++	 */
++	text_set((void*)(bypass_eip + insn_size + immediate->size),
++		NOP_INSTRUCTION,
++		NR_NOPS - immediate->size - insn_size);
++
++	target_after_int3 = insn + BREAKPOINT_INS_LEN;
++	/* register_die_notifier has memory barriers */
++	register_die_notifier(&immediate_notify);
++	/* The breakpoint will single-step the bypass */
++	text_set((void*)insn, BREAKPOINT_INSTRUCTION, 1);
++	wmb();
++	/*
++	 * Execute serializing instruction on each CPU.
++	 * Acts as a memory barrier.
++	 */
++	ret = on_each_cpu(immediate_synchronize_core, NULL, 1, 1);
++	BUG_ON(ret != 0);
++
++	text_poke((void*)(insn + insn_size), (void*)immediate->var,
 +			immediate->size);
-+	flush_icache_range((unsigned long)immediate->immediate,
-+				immediate->size);
++	wmb();
++	text_set((void*)insn, *(char*)bypass_eip, 1);
++		/*
++		 * Wait for all int3 handlers to end
++		 * (interrupts are disabled in int3).
++		 * This CPU is clearly not in a int3 handler,
++		 * because int3 handler is not preemptible and
++		 * there cannot be any more int3 handler called
++		 * for this site, because we placed the original
++		 * instruction back.
++		 * synchronize_sched has memory barriers.
++		 */
++	synchronize_sched();
++	unregister_die_notifier(&immediate_notify);
++	/* unregister_die_notifier has memory barriers */
 +	return 0;
 +}
 +
@@ -258,8 +468,6 @@ Index: linux-2.6-lttng/arch/powerpc/kernel/immediate.c
 + * @immediate: pointer of type const struct __immediate to update
 + *
 + * Update one immediate value at boot time.
-+ * We can use flush_icache_range, since the cpu identification has been done in
-+ * the early_init stage.
 + */
 +void __init arch_immediate_update_early(const struct __immediate *immediate)
 +{
@@ -276,13 +484,46 @@ Index: linux-2.6-lttng/arch/powerpc/kernel/immediate.c
 +					== *(uint16_t*)immediate->var)
 +				return;
 +			break;
++		case 4:	if (*(uint32_t*)immediate->immediate
++					== *(uint32_t*)immediate->var)
++				return;
++			break;
 +		default:return;
 +	}
 +	memcpy((void*)immediate->immediate, (void*)immediate->var,
 +			immediate->size);
-+	flush_icache_range((unsigned long)immediate->immediate,
-+				immediate->size);
 +}
+Index: linux-2.6-lttng/arch/i386/kernel/traps.c
+===================================================================
+--- linux-2.6-lttng.orig/arch/i386/kernel/traps.c	2007-08-27 11:16:08.000000000 -0400
++++ linux-2.6-lttng/arch/i386/kernel/traps.c	2007-08-27 11:49:18.000000000 -0400
+@@ -602,7 +602,7 @@ fastcall void do_##name(struct pt_regs *
+ }
+ 
+ DO_VM86_ERROR_INFO( 0, SIGFPE,  "divide error", divide_error, FPE_INTDIV, regs->eip)
+-#ifndef CONFIG_KPROBES
++#if !defined(CONFIG_KPROBES) && !defined(CONFIG_IMMEDIATE)
+ DO_VM86_ERROR( 3, SIGTRAP, "int3", int3)
+ #endif
+ DO_VM86_ERROR( 4, SIGSEGV, "overflow", overflow)
+@@ -844,14 +844,14 @@ void restart_nmi(void)
+ 	acpi_nmi_enable();
+ }
+ 
+-#ifdef CONFIG_KPROBES
++#if defined(CONFIG_KPROBES) || defined(CONFIG_IMMEDIATE)
+ fastcall void __kprobes do_int3(struct pt_regs *regs, long error_code)
+ {
+ 	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
+ 			== NOTIFY_STOP)
+ 		return;
+-	/* This is an interrupt gate, because kprobes wants interrupts
+-	disabled.  Normal trap handlers don't. */
++	/* This is an interrupt gate, because kprobes and immediate values wants
++	 * interrupts disabled. Normal trap handlers don't. */
+ 	restore_interrupts(regs);
+ 	do_trap(3, SIGTRAP, "int3", 1, regs, error_code, NULL);
+ }
 
 -- 
 Mathieu Desnoyers
