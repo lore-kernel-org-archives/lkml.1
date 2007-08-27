@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbXH0RVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759826AbXH0RXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932195AbXH0RVT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755669AbXH0RVM
+	id S1759826AbXH0RXx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757320AbXH0RXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:21:12 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42173 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757015AbXH0RVL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 13:21:11 -0400
-Date: Mon, 27 Aug 2007 10:20:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Len Brown <len.brown@intel.com>,
-       Andi Kleen <ak@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix maxcpus=N parsing
-In-Reply-To: <Pine.LNX.4.64.0708271554570.21853@blonde.wat.veritas.com>
-Message-ID: <alpine.LFD.0.999.0708271009270.25853@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0708271554570.21853@blonde.wat.veritas.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 27 Aug 2007 13:23:46 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:60985 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757247AbXH0RXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 13:23:45 -0400
+Subject: Re: [PATCH 1/3] Implement emulator_write_phys()
+From: Anthony Liguori <aliguori@us.ibm.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <46D2F1B7.70604@qumranet.com>
+References: <11882278064002-git-send-email-aliguori@us.ibm.com>
+	 <1188227808405-git-send-email-aliguori@us.ibm.com>
+	 <46D2F1B7.70604@qumranet.com>
+Content-Type: text/plain
+Organization: IBM
+Date: Mon, 27 Aug 2007 12:23:39 -0500
+Message-Id: <1188235419.6364.2.camel@squirrel>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Mon, 2007-08-27 at 18:45 +0300, Avi Kivity wrote:
+> Anthony Liguori wrote:
+> > Since a hypercall may span two pages and is a gva, we need a function to write
+> > to a gva that may span multiple pages.  emulator_write_phys() seems like the
+> > logical choice for this.
+> >
+> > @@ -962,8 +962,35 @@ static int emulator_write_std(unsigned long addr,
+> >  			      unsigned int bytes,
+> >  			      struct kvm_vcpu *vcpu
+> 
+> I think that emulator_write_emulated(), except for being awkwardly 
+> named, should do the job.  We have enough APIs.
+> 
+> But!  We may not overwrite the hypercall instruction while a vcpu may be 
+> executing, since there's no atomicity guarantee for code fetch.  We have 
+> to to be out of guest mode while writing that insn.
 
-On Mon, 27 Aug 2007, Hugh Dickins wrote:
->
-> Fix 61ec7567db103d537329b0db9a887db570431ff4: maxcpus=N is now having no
-> ...
 
-On a totally unrelated issue:
+Hrm, good catch.
 
-While looking at the history in gitk and gitweb etc shows these commit 
-ID's as nice hyperlinks, I really think it's nicer for everybody if the 
-commit is also described with its "headline", so that non-git users (or 
-even git users, when just using "git log" or similar) at least can grep or 
-google for it.
+How can we get out of guest mode given SMP guest support?
 
-So when writing descriptions, I would prefer it if people wrote them 
-something like
+Regards,
 
-   Commit 61ec7567db103d537329b0db9a887db570431ff4 ('ACPI: boot correctly 
-   with "nosmp" or "maxcpus=0"') broke maxcpus parsing on x86[-64] ...
+Anthony Liguori
 
-so that it gets both the exact commit naming and the nice hyperlinks where 
-appropriate *and* it ends up being more useful even without the links.
+> 
+> 
 
-Yes, it's redundant information, but since we have the useful one-line 
-descriptions, it's generally a good idea. And I really do think that it 
-tends to make the explanations read better too.
-
-For example, in this example, I think it really made it more clear what 
-kind of change had caused the breakage. Maybe that's not always true, but 
-I suspect it's true most of the time.
-
-I'll fix it up manually (I often do), but I thought I'd just mention this 
-stylistic issue.
-
-		Linus
