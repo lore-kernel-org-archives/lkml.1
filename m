@@ -1,77 +1,503 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbXH0XeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758335AbXH0Xfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756942AbXH0XeE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 19:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbXH0Xdw
+	id S1758335AbXH0Xfi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 19:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbXH0Xf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 19:33:52 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33162 "EHLO mx2.suse.de"
+	Mon, 27 Aug 2007 19:35:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58648 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751778AbXH0Xdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 19:33:51 -0400
-From: Neil Brown <neilb@suse.de>
-To: Al Viro <viro@ftp.linux.org.uk>
-Date: Tue, 28 Aug 2007 09:33:41 +1000
+	id S1752327AbXH0Xf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 19:35:26 -0400
+Date: Tue, 28 Aug 2007 01:35:22 +0200
+From: Karel Zak <kzak@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng 2.13 (stable)
+Message-ID: <20070827233522.GN3870@petra.dvoda.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18131.24405.451485.40460@notabene.brown>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, axboe@kernel.dk
-Subject: Re: [RFC] block_device_operations prototype changes
-In-Reply-To: message from Al Viro on Monday August 27
-References: <20070827103053.GF21089@ftp.linux.org.uk>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday August 27, viro@ftp.linux.org.uk wrote:
-> 	* a bug (AFAICT) in md.c - we open raid components r/w and if it
-> fails, it fails.  Good for our purposes, but... how about raid0 on read-only
-> devices?  In any case, we have a ready place to store mode_t, so it's not a
-> problem for getting the right value to blkdev_put().  FWIW, I think that
-> allowing fallback to r/o (and making the entire array r/o, of course) would
-> be a good thing to have.  Any comments from drivers/md folks?
 
-I've never heard any suggestion of anybody wanting to include a
-readonly device in an md array -  I guess one could imagine an array
-of CDROMs, but I doubt anyone would actually create one.
-However I agree that falling back to read-only (particular if the
-error value indicated that this was the only problem) would be a
-sensible thing to do in some circumstances.
+The stable util-linux-ng 2.13 release is available at:
 
-More interestingly:  one could argue that when the md array is
-switched to read-only, each component device should be reopened as
-read-only.  So I would really like the interface to have a way to
-switch a device between read-only and read-write without closing and
-re-opening.
+    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
 
-Though I guess opening and then closing as you suggest below would be OK.
+A few numbers:
+    - 8 months (grr...)
+    - 368 patches (wow...)
+    - 35 contributors (thanks...!)
 
-> 	* open_bdev_excl()/close_bdev_excl().  Needs an extra argument for
-> the latter.  Two interesting callers:
-> 	* kill_block_super() - need to store relevant mode_t in superblock,
-> along with reference to bdev.  Note that just looking at sb->s_flags is *not*
-> enough - some filesystems go read-only on errors and that changes ->s_flags.
-> Another side of that is explicit remount from r/o to r/w and there we have
-> a bug - we do _not_ tell the driver that something had happened.  Proper
-> fix is simple enough - bdget() + blkdev_get() for write + blkdev_put() with
-> old mode_t (i.e. FMODE_READ) once we are done remounting (and similar for
-> explicit remount to r/o).
+Feedback and bug reports, as always, are welcomed.
+
+    Karel
 
 
-I would *really* like to see this.  When the root filesystem gets
-mounted read-only, I want md to know so that it can mark the array as
-'clean' straight away.  I really don't like having a reboot-notifier
-to mark all arrays as 'clean' on shutdown.
 
-So each device would be responsible for keeping a count of 'readonly'
-and 'read-write' accesses?  Or would that be in common code?
+Util-linux-ng 2.13 Release Notes  (28-Aug-2007)
+===============================================
 
-I look forward to this all getting cleaned up!
+Release highlights:
+------------------
 
-NeilBrown
+ mount(8) doesn't include NFS client code anymore. Don't forget to
+ install nfs-utils 1.1.0 or newer with /sbin/[u]mount.{nfs,nfs4}.
+
+ mount(8) doesn't include filesystem detection code anymore. You
+ have to compile --with-fsprobe={blkid,volume_id}, and libblkid
+ (e2fsprogs) or libvolume_id (udev >= v110) is required.
+
+ mount(8) supports new relatime, context, fscontext, and defcontext
+ mount options.
+
+ losetup(8) supports command line option "-a" to list all used loop
+ devices, '-s' to print a device name if "-f" and a file argument
+ are present, and "-r" to create a read-only loop device.
+
+ fdisk(8) Sun label support has been improved. fdisk(8) is also able
+ to warn about detected GPT (fdisk doesn't support GPT).
+
+ taskset(1) is independent on hardcoded NR_CPUS. chrt(1) supports
+ SCHED_BATCH scheduling policy.
+
+ The package build system is now based on autotools. The build system
+ supports  separate CFLAGS and LDFLAGS for suid programs (SUID_CFLAGS,
+ SUID_LDFLAGS). For more details see the README file
+
+ hwclock(8) supports command line option --rtc=<path> and /dev/rtc0
+ device. --systohc functionality has been improved, and it doesn't cause
+ a 500ms inaccuracy each time it is used.
+
+ Audit system support (--with-audit) has been added to hwclock(8) and
+ login(1).
+
+ SELinux support (--with-selinux) has been added to mkswap(8) and
+ mount(8).
+
+ setarch(8) upstream has been merged with util-linux-ng.
+
+ rtcwake(8) command has been added to util-linux-ng.
+
+ arch(1) is deprecated in favor of "uname -m" or arch(1) from coreutils
+ (>= 6.9+). The util-linux-ng package doesn't build arch by default,
+ you have to use the option --enable-arch.
+
+
+Fixed security issues:
+---------------------
+
+ CVE-2007-0822 - mount(8) allows local users to trigger a NULL
+                 dereference and an application crash
+ CVE-2006-7108 - login(1) omits PAM account validation when auth is
+                 skipped
+
+
+Changelog:
+---------
+
+ For more details see ChangeLog files at:
+ ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/
+
+
+agetty:
+   - 8 bit characters on the Linux console lead to input corruption  [Samuel Thibault]
+   - add 'O' escape code to display domain name  [Karel Zak]
+   - check gethostname() return value  [Karel Zak]
+   - fix short malloc in initstring handling  [LaMont Jones]
+blockdev:
+   - add BLKFRAGET/BLKFRASET ioctls  [Karel Zak]
+   - cleanup usage() and update man page  [Karel Zak]
+   - fix "blockdev --getsz" for large devices  [Karel Zak]
+   - use LU and LLU for BLKGETSIZE and BLKGETSIZE64  [Karel Zak]
+build-sys:
+   - add ${AC,AP,AM,AH}_OPTS to autogen.sh  [Karel Zak]
+   - add AC_GNU_SOURCE  [Karel Zak]
+   - add Automake option dist-bzip2  [Stepan Kasal]
+   - add --disable-makeinstall-chown  [Karel Zak]
+   - add missing files  [Karel Zak]
+   - add SUID_CFLAGS  [Karel Zak]
+   - add SUID_LDFLAGS  [Stepan Kasal]
+   - add support for audit  [Karel Zak]
+   - add warning when libuuid is not found  [Karel Zak]
+   - amend .gitignore  [Stepan Kasal]
+   - call automake after autoconf  [Stepan Kasal]
+   - cleanup architecture conditionals  [Karel Zak]
+   - cleanup sys-utils/ rdev symlinks  [Karel Zak]
+   - configure.am selinux support cleanup  [Karel Zak]
+   - declare SUID_CFLAGS and SUID_LDFLAGS as precious  [Stepan Kasal]
+   - do not build convenience libraries in lib/  [Stepan Kasal]
+   - do not kick off AM_CFLAGS by SUID_CFLAGS  [Stepan Kasal]
+   - do not play with DEFS, use AM_CPPFLAGS  [Stepan Kasal]
+   - do not set with_foo twice  [Stepan Kasal]
+   - do not use internal Autoconf variables  [Stepan Kasal]
+   - do not use wildcards in EXTRA_DIST  [Stepan Kasal]
+   - factor out common parts from mount/Makefile.am  [Stepan Kasal]
+   - fix directories in EXTRA_DIST  [Karel Zak]
+   - fix HAVE_NCURSES  [Karel Zak]
+   - fix ifdef ENABLE_WIDECHAR usage  [Karel Zak]
+   - fix linking when ncurses is built with --with-termlib=tinfo  [Arkadiusz Miskiewicz]
+   - fix README filenames and add missing files to EXTRA_DISTs  [Karel Zak]
+   - fix the example configure call in README  [Stepan Kasal]
+   - fix the final message of autogen.sh  [Stepan Kasal]
+   - in configure.ac, change "po" -> "$srcdir/po"  [Stepan Kasal]
+   - in the clean targets use "find ... | xargs rm -f"  [Stepan Kasal]
+   - let configure instantiate the misc-utils/*.pl scripts  [Stepan Kasal]
+   - make the getopt example directory relative to datadir  [Stepan Kasal]
+   - merge adjacent AC_CONFIG_HEADERS and AC_CONFIG_FUNCS calls  [Stepan Kasal]
+   - minor fixes in configure.in  [Karel Zak]
+   - missing header when NLS is disabled  [Gabriel Barazer]
+   - mount/Makefile.am tiny cleanup II  [Stepan Kasal]
+   - mount/Makefile.am tiny cleanup  [Stepan Kasal]
+   - move -D flags to *_CPPFLAGS  [Stepan Kasal]
+   - move the optimization flags to AM_CFLAGS  [Stepan Kasal]
+   - --prefix defaults to /usr  [Stepan Kasal]
+   - release++  [Karel Zak]
+   - remove aclocal.m4 from SCM  [Karel Zak]
+   - remove AC_PROG_RANLIB  [Stepan Kasal]
+   - remove asm/page.h test  [Karel Zak]
+   - remove config.h.in from VCS  [Stepan Kasal]
+   - remove config/include-Makefile.am from EXTRA_DIST  [Stepan Kasal]
+   - remove DEFAULT_INCLUDES workaround  [Karel Zak]
+   - remove -fomit-frame-pointer  [Karel Zak]
+   - remove generated autotools stuff from git  [Karel Zak]
+   - remove libtool  [Karel Zak]
+   - remove "make mrproper", git-clean is good enough  [Karel Zak]
+   - remove po/Makevars.template from EXTRA_DIST  [Stepan Kasal]
+   - remove swapargs.h, move the tests to main configure.ac  [Stepan Kasal]
+   - rename to -ng, change maintainer name  [Karel Zak]
+   - replace AC_TRY_* by AC_*_IFELSE  [Stepan Kasal]
+   - s/AC_HELP_STRING/AS_HELP_STRING/  [Stepan Kasal]
+   - set DISTCHECK_CONFIGURE_FLAGS in top-level makefile  [Stepan Kasal]
+   - simplify "clean" in tests/Makefile.am  [Stepan Kasal]
+   - update po/POTFILES.in  [Stepan Kasal]
+   - use dist_example_DATA  [Stepan Kasal]
+   - use dist_noinst_DATA to work around the bug with dist_man_MANS  [Stepan Kasal]
+   - use dist_noinst_HEADERS in include/Makefile.am  [Stepan Kasal]
+   - use dist_usrbinexec_SCRIPTS in misc-utils/Makefile.am  [Stepan Kasal]
+cal:
+   - add test code  [Karel Zak]
+   - fix a segfault and -3m highlighting  [Karel Zak]
+   - ifdef cleanup, non-curses/tempcap code fixes  [Karel Zak]
+   - widechar code cleanup  [Karel Zak]
+cfdisk:
+   - build-sys defines HAVE_RPMATCH, not HAVE_rpmatch  [Karel Zak]
+   - fix stupid typo in GPT checker call  [Karel Zak]
+chsh:
+   - don't use empty shell field in /etc/passwd  [Karel Zak]
+   - remove tailing wihit-spaces and use PATH_BSHELL  [Karel Zak]
+col:
+   - getwchar() errors shouldn't be hidden  [Karel Zak]
+cytune:
+   - make the oneliner more specific the cyclades hw in question  [Justin B Rye]
+   - remove linux/tty.h inclusion  [Karel Zak]
+ddate:
+   - fix compiler warnings  [Karel Zak]
+disk-utils:
+   - fix libuuid usage in mkswap  [Matthias Koenig]
+   - let mkfs tools open with O_EXCL  [Matthias Koenig]
+docs:
+   - add DEPRECATED to EXTRA_DIST  [Karel Zak]
+   - add note about http //translationproject.org  [Karel Zak]
+   - add rdev(8) between deprecated utils  [Karel Zak]
+   - add README.licensing  [Karel Zak]
+   - add release notes  [Karel Zak]
+   - add the DEPRECATED file  [Karel Zak]
+   - clean up TODO file and add a new resuest for 2.14  [Karel Zak]
+   - fix authorship of 8-bit cleanup agetty patch  [Karel Zak]
+   - fix BSD licence name in README.licensing  [Karel Zak]
+   - fix info about devel/master branchs  [Karel Zak]
+   - fix URL and typos in README.devel  [Karel Zak]
+   - remove deprecated section from README  [Karel Zak]
+   - update release notes  [Karel Zak]
+fdisk:
+   - Makefile.am refactoring  [Karel Zak]
+   - add GPT detection code  [Karel Zak]
+   - add MAC label detection  [Karel Zak]
+   - add support for udev persistent device names  [Matthias Koenig]
+   - check returns in fdisk from partition changes  [Mike Frysinger]
+   - cleanup full disk detection code  [Karel Zak]
+   - cleanup partname.c  [Karel Zak]
+   - do not complain about regular files  [H. Peter Anvin]
+   - fix "differ in signedness" compiler warnings  [Karel Zak]
+   - fix "type qualifiers ignored on function return type"  [Karel Zak]
+   - many significant improvements and fixes to Sun label handling  [David Miller]
+   - move duplicate stuff from fdisk*label.h to fdisk.h  [Karel Zak]
+   - use unsigned long long instead int for sectors  [Karel Zak]
+   - when generating a DOS disk label, give it an ID  [H. Peter Anvin]
+getopt:
+   - remove old unused files  [Karel Zak]
+hexdump:
+   - don't use memset with zero lenght  [Karel Zak]
+hwclock:
+   - add --rtc=<path> option and support for /dev/rtc0  [Karel Zak]
+   - add support for audit system  [Karel Zak]
+   - fix --systohc sets clock 0.5 seconds slow  [Karel Zak]
+   - make ggc happy and check return values from fgets, read and write  [Karel Zak]
+   - remove tailing white-spaces and clean up clock.h  [Karel Zak]
+ionice:
+   - clean up error handling  [Matthias Koenig]
+   - cleanup usage for idle class  [Matthias Koenig]
+   - fix ionice build on sparc  [David Miller]
+   - prefer SYS_ioprio_{set,get} from glibc to hardcoded version  [Karel Zak]
+ipcs:
+   - add new tests for ipcs limits  [Karel Zak]
+   - add regression test for output headers  [Karel Zak]
+   - fix typo in Semaphore headers  [Karel Zak]
+   - max total shared memory in kbytes instead pages  [Karel Zak]
+logger:
+   - use snprintf instead of sprintf in logger.c  [LaMont Jones]
+login:
+   - add audit support  [Karel Zak]
+   - add IPv6 support  [Karel Zak]
+   - add regression test for IP address checking code  [Karel Zak]
+   - attempt to run if it has no read/write access to its terminal  [Jason Vas Dias]
+   - close PAM session after failed pam_setcred  [Steve Grubb]
+   - improve work with signals  [Karel Zak]
+   - keep syslog useful for end of PAM session.  [Karel Zak]
+   - login's timeout can fail  [Jason Vas Dias]
+   - omits PAM account validation when auth is skipped (CVE-2006-7108)  [Karel Zak]
+   - remove triiling white-spaces  [Karel Zak]
+   - replace /usr/spool/mail with /var/spool/main in man page  [Karel Zak]
+   - update 32bit utmp correctly on 64bit system  [Karel Zak]
+lomount.c:
+   - don't use mlockall if CRYPT_NONE  [Masatake YAMATO]
+look:
+   - fix problem with !isalnum() words  [Karel Zak]
+   - man page clarification  [Pádraig Brady]
+   - remove tailing white-spaces  [Karel Zak]
+losetup:
+   - add -a option to list all used loop devices  [Karel Zak]
+   - add a new option -s  [Karel Zak]
+   - add long options and fix man page  [Karel Zak]
+   - add support read-only loops  [Karel Zak]
+   - add to man page info about deprecated cryptoloop  [Karel Zak]
+man pages:
+   - add "AVAILABILITY" section  [Karel Zak]
+   - cleanup of chrt.1 and taskset.1  [LaMont Jones]
+mcookie:
+   - remove non-linux code  [Karel Zak]
+misc-util:
+   - new rtcwake command  [Bernhard Walle]
+misc-utils:
+   - add scriptreplay manpage  [Matthias Koenig]
+   - remove old cal test  [Karel Zak]
+mkfs:
+   - remove nonsense from man page  [Karel Zak]
+mkfs.cramfs:
+   - cleanup HAVE_ macros usage  [Karel Zak]
+   - fix a way how mkfs works with empty files  [Karel Zak]
+   - remove hardcoded limit for directories  [Karel Zak]
+mkswap:
+   - add regression test  [Karel Zak]
+   - automatically add selinux label to swapfile  [Karel Zak]
+   - avoid mkswap usage on already mounted device  [Karel Zak]
+   - default to V1 in any case  [Matthias Koenig]
+   - fix signedness problems and remove obsolete code  [Karel Zak]
+   - gcc happy  unsigned long usage  [Karel Zak]
+more:
+   - fix file descriptor leak  [Steve Grubb]
+   - fix underlining for multibyte chars  [Karel Zak]
+mount:
+   - add acl option documentation for ext3 and reiserfs  [Matthias Koenig]
+   - add note about /etc/mtab unreliability to mount.8  [Karel Zak]
+   - add note about fcntl/ioctl unreliability on NFS to mount.8  [Karel Zak]
+   - add -s and -f and note to man page for external mount helpers  [Karel Zak]
+   - add simple (printf-like) debug routine and --debug option  [Karel Zak]
+   - add support for context, fscontext and defcontext selinux mount options  [Karel Zak]
+   - add support for mixed usage of SPECes  [Karel Zak]
+   - add support for mtab "uhelper" option  [Karel Zak]
+   - avoid duplicate entries in mtab when mount -f  [Karel Zak]
+   - avoid duplicates for root fs in mtab  [Matthias Koenig]
+   - call /sbin/mount.<type> also when mounting without "-t"  [Karel Zak]
+   - clean up getfs* (fstab.c) interface  [Karel Zak]
+   - clean up info about NFS in mount.8  [Karel Zak]
+   - doesn't rpc_pipefs and nfsd on umount -a  [Karel Zak]
+   - do not treat arm/sparc specially.  [Mike Frysinger]
+   - don't umount sysfs when running umount -a  [Mike Frysinger]
+   - fix -f -o remount  [Karel Zak]
+   - fix -fv so that it doesn't incorrectly spit out an error that nothing was done.  [Mike Frysinger]
+   - fix has_* functions (CVE-2007-0822)  [Karel Zak]
+   - fix incorrect behavior when more than one fs type is specified  [Attila Áfra]
+   - fix list logic in update_mtab  [Karel Zak]
+   - fix memory usage in update_mtab  [Mike Frysinger]
+   - fix mtab_lock  [Karel Zak]
+   - fix typo in error message  [Karel Zak]
+   - free loop device on failure  [Sascha Sommer]
+   - fsprobe  add libvolume_id support  [Karel Zak]
+   - fsprobe  add libvolume_id support to configure.ac  [Karel Zak]
+   - fsprobe  make fsprobe_get_devname functions more generic  [Karel Zak]
+   - fsprobe  remove mount_guess_fstype.{c,h}  [Karel Zak]
+   - fsprobe  remove non-blkid code  [Karel Zak]
+   - fsprobe  rename files to fsprobe_*  [Karel Zak]
+   - fsprobe  rename the rest of API routines to fsprobe_*  [Karel Zak]
+   - fsprobe  use blkid cache only when really necessary  [Karel Zak]
+   - getfs_* (fstab) interface has to work with canonicalize()  [Karel Zak]
+   - kill mount_guess_rootdev  [Stepan Kasal]
+   - loop device race condition  [Matthias Koenig]
+   - mention hfsplus in mount manpage  [LaMont Jones]
+   - needs to handle special mountprog even on guessed file systems.  [Karel Zak]
+   - parse SPEC before search in fstab  [Karel Zak]
+   - relative atime support  [Valerie Henson]
+   - remove all NFS code  [Karel Zak]
+   - remove nfsmount() from sundries.h  [Karel Zak]
+   - rewrite getfs_by_specdir() without mem leaks  [Karel Zak]
+   - shared-subtree support  [Karel Zak]
+   - should set proper permissions on locktime  [Flávio Leitner]
+   - update mtab correctly when mount --move  [Karel Zak]
+   - update xfs mount options  [Matthias Koenig]
+   - use encoded labels for volume_id  [Kay Sievers]
+   - use growable string for options  [Karel Zak]
+   - use loop= option when mounting by /sbin/mount.<type>  [Karel Zak]
+   - use realloc for xstrconcat functions  [Karel Zak]
+   - use verbose mode instead debug mode  [Karel Zak]
+namei:
+   - fix logic and infinite loop of symlinks  [Karel Zak]
+   - new regression test  [Karel Zak]
+newgrp:
+   - add support for /etc/gshadow  [Karel Zak]
+   - check result from getgrnam() more carefully  [Karel Zak]
+partx:
+   - add man pages for addpart, delpart and partx  [Karel Zak]
+po:
+   - gettextizing some overlooked messages.  [Benno Schulenberg]
+   - rename mount/mntent.c to mount/mount_mntent.c  [Karel Zak]
+   - typo in french translation of mount error.  [Mike Frysinger]
+   - update cs.po (from translationproject.org)  [Petr Pisar]
+   - update de.po (from translationproject.org)  [Michael Piefel]
+   - update nl.po (from translationproject.org)  [Benno Schulenberg]
+   - update sv.po (from translationproject.org)  [Daniel Nylander]
+   - update vi.po (from translationproject.org)  [Phan Vinh Thinh]
+   - vipw doesn't use rpmatch, all translations have to use y/n  [Karel Zak]
+raw:
+   - add file with udev rule example  [Karel Zak]
+   - don't accept raw0 as a target name  [Karel Zak]
+   - move the raw command to /sbin  [Karel Zak]
+   - update man page (about dd and O_DIRECT)  [Karel Zak]
+rdev:
+   - should be delivered on amd64 as well as i386.  [LaMont Jones]
+readprofile:
+   - fix on ppc64  [Matthias Koenig]
+schedutils:
+   - add support for SCHED_BATCH  [Karel Zak]
+   - define SCHED_BATCH when compile with old glibc  [Karel Zak]
+   - fix chrt docs and pid=0 usage  [Matthias Koenig]
+   - remove extra hyptens from man pages  [Karel Zak]
+script:
+   - fix race conditions  [Karel Zak]
+   - improve quiet mode  [Karel Zak]
+setarch:
+   - add NLS support  [Karel Zak]
+   - add --3gb option fot compatibility with Debian linux{32,64} command  [Karel Zak, LaMont Jones]
+   - add __alpha__ support  [Balint Cristian]
+   - add parisc/parisc64 support  [LaMont Jones]
+   - add sparc32bash alias to keep compatibility with sparc32  [Dennis Gilmore]
+   - cleanup licensing note  [Karel Zak]
+   - finish adding parisc support  [Karel Zak, LaMont Jones]
+sfdisk:
+   - fix "differ in signedness" compiler warnings  [Karel Zak]
+   - fix "may be used uninitialized" compiler warnings  [Karel Zak]
+   - setting default geometry values  [Luciano Chavez]
+swapoff:
+   - correctly handle UUID= and LABEL= identifiers  [LaMont Jones]
+swapon:
+   - cleanup PATH_ macros and tailing white-spaces  [Karel Zak]
+   - cleanup fsprobe_*() usage  [Karel Zak]
+   - does not correctly deal with symlinks  [Marco d'Itri]
+   - fix swapon headers and syscalls  [Mike Frysinger]
+   - simplify an #if  [Stepan Kasal]
+sys-utils:
+   - add arch(1) back to the official tree  [Karel Zak]
+   - add note about obsolete ramsize option to rdev.8  [Karel Zak]
+   - added setarch command  [Karel Zak]
+   - fix man page headers  [Karel Zak]
+   - move some man pages from category 8 to 1  [Karel Zak]
+taskset:
+   - check for existence of sched_getaffinity  [Mike Frysinger]
+   - independent of hardcoded NR_CPUS max.  [Cliff Wickman]
+tests:
+   - add basic infrastructure for regression tests  [Karel Zak]
+   - add cal -1 test  [Karel Zak]
+   - add cal -3 test  [Karel Zak]
+   - add cal -y test  [Karel Zak]
+   - add expected outputs for cramfs  [Karel Zak]
+   - add functions for label, uuid and fstype detection  [Karel Zak]
+   - add hwclock systohc test  [Karel Zak]
+   - add library for LD_PRELOAD to manipulate with time() in tests  [Karel Zak]
+   - add license notices, change from gplv2-only to gplv2-or-later  [Karel Zak]
+   - add lock_mtab() performance and reliability test  [Karel Zak]
+   - add look test for words with separator  [Karel Zak]
+   - add missing header  [Matthias Koenig]
+   - add mkfs.cramfs tests  [Karel Zak]
+   - add more variants to {mount,fstab}-by-{label,uuid,devname}  [Karel Zak]
+   - add mount by devname from fstab  [Karel Zak]
+   - add mount by devname test  [Karel Zak]
+   - add mount by devname with label in fstab  [Karel Zak]
+   - add mount by devname with uuid in fstab  [Karel Zak]
+   - add mount by label from fstab test  [Karel Zak]
+   - add mount by LABEL test  [Karel Zak]
+   - add mount by label with devname in fstab  [Karel Zak]
+   - add mount by label with uuid in fstab  [Karel Zak]
+   - add mount by UUID from fstab test  [Karel Zak]
+   - add mount by UUID test  [Karel Zak]
+   - add mount by uuid with devname in fstab  [Karel Zak]
+   - add mount by uuid with label in fstab  [Karel Zak]
+   - add mount /dev/symlink test  [Karel Zak]
+   - add mount --move test  [Karel Zak]
+   - add mount -o remount test  [Karel Zak]
+   - add return code  [Karel Zak]
+   - add script(1) race condition test  [Karel Zak]
+   - add simple helper that returns info about system  [Karel Zak]
+   - add support for fstab modification  [Karel Zak]
+   - add support for suid programs  [Karel Zak]
+   - add swapon by devname test  [Karel Zak]
+   - add swapon by UUID test  [Karel Zak]
+   - add test for /sbin/mount.<type> call  [Karel Zak]
+   - add ts_log and --verbose support  [Karel Zak]
+   - add ts_ok and ts_failed  [Karel Zak]
+   - cleanup blkid cache after test device deinitialization  [Karel Zak]
+   - code refactoring -- new ts_device_init function  [Karel Zak]
+   - code refactoring -- new ts_skip_nonroot function  [Karel Zak]
+   - code refactoring -- new ts_udev_loop_support function  [Karel Zak]
+   - enable mtablock test when uid=0 only  [Karel Zak]
+   - fix argv[] usage in mnt_test_sysinfo.c  [Karel Zak]
+   - fix dependence on blkid  [Karel Zak]
+   - fix Makefile.am (add missing tests)  [Karel Zak]
+   - fix ts_fstab_add function  [Karel Zak]
+   - fix ULONG_MAX usage on 32bit machines  [Karel Zak]
+   - "if [...]" clean up  [Karel Zak]
+   - make clean need to remove diffs and outputs  [Karel Zak]
+   - pass all arguments to ts_init, add ts_has_option function  [Karel Zak]
+   - refresh mtablock output in expected/ directory  [Karel Zak]
+   - remove dependence on helpers/libpreload-time.so  [Karel Zak]
+   - simplify devices usage  [Karel Zak]
+   - use $AWK based on configure results  [Karel Zak]
+   - use relative paths when sourcing files  [Mike Frysinger]
+text-utils:
+   - fix the more command compilation against termcap  [Karel Zak]
+tools:
+   - add codecheck-config that checks for {HAVE,ENABLE}_ orphans  [Karel Zak]
+vipw:
+   - fix permissions (600->400) for edited /etc/[g]shodow files  [Karel Zak]
+wall:
+   - fix O_NONBLOCK usage  [Alan Curry]
+   - remove deprecated sigsetmask() from wall  [Karel Zak]
+   - remove unwanted newlines from wall  [Karel Zak]
+whereis:
+   - add lib64 paths  [Karel Zak]
+
+- Clean up pagesize/PAGE_SIZE usage.  [Karel Zak]
+- also search for __stext in readprofile  [Mike Frysinger]
+- check exit status of autotools  [Mike Frysinger]
+- clean up realpath.[ch] includes and macros  [Karel Zak]
+- execl() should be use NULL not 0  [Karel Zak]
+- manpage typos  [LaMont Jones]
+- remove hardcoded package name from some utils  [Karel Zak]
+
+
+-- 
+ Karel Zak  <kzak@redhat.com>
