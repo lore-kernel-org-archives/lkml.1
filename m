@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbXH0P5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758586AbXH0P6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758079AbXH0P5o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 11:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757039AbXH0Pzk
+	id S1758586AbXH0P6P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 11:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757780AbXH0Pzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:55:40 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:41879 "EHLO smtp.polymtl.ca"
+	Mon, 27 Aug 2007 11:55:41 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41884 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757442AbXH0Pzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:55:39 -0400
-Message-Id: <20070827155530.834256125@polymtl.ca>
+	id S1757617AbXH0Pzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:55:40 -0400
+Message-Id: <20070827155531.284432130@polymtl.ca>
 References: <20070827155234.062715780@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:52:56 -0400
+Date: Mon, 27 Aug 2007 11:52:57 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com,
-       schwidefsky@de.ibm.com, linux390@de.ibm.com
-Subject: [patch 22/28] Add cmpxchg_local to s390
-Content-Disposition: inline; filename=add-cmpxchg-local-to-s390.patch
+       lethal@linux-sh.org
+Subject: [patch 23/28] Add cmpxchg_local to sh, use generic cmpxchg() instead of cmpxchg_u32
+Content-Disposition: inline; filename=add-cmpxchg-local-to-sh.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:55:31 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the standard __cmpxchg for every type that can be updated atomically.
-Use the new generic cmpxchg_local (disables interrupt) for other types.
+Use the new generic cmpxchg_local (disables interrupt). Also use the generic
+cmpxchg as fallback if SMP is not set.
+
+Since cmpxchg_u32 is _exactly_ the cmpxchg_local generic implementation, remove
+it and use the generic version instead.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: clameter@sgi.com
-CC: schwidefsky@de.ibm.com
-CC: linux390@de.ibm.com
+CC: lethal@linux-sh.org
 ---
- include/asm-s390/system.h |   34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ include/asm-sh/system.h |   48 ++++++++++++------------------------------------
+ 1 file changed, 12 insertions(+), 36 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-s390/system.h
+Index: linux-2.6-lttng/include/asm-sh/system.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-s390/system.h	2007-08-27 11:46:43.000000000 -0400
-+++ linux-2.6-lttng/include/asm-s390/system.h	2007-08-27 11:48:38.000000000 -0400
-@@ -355,6 +355,40 @@ __cmpxchg(volatile void *ptr, unsigned l
+--- linux-2.6-lttng.orig/include/asm-sh/system.h	2007-08-07 14:31:51.000000000 -0400
++++ linux-2.6-lttng/include/asm-sh/system.h	2007-08-07 15:08:10.000000000 -0400
+@@ -201,44 +201,20 @@ extern void __xchg_called_with_bad_point
+ #define xchg(ptr,x)	\
+ 	((__typeof__(*(ptr)))__xchg((ptr),(unsigned long)(x), sizeof(*(ptr))))
  
- #include <linux/irqflags.h>
- 
+-static inline unsigned long __cmpxchg_u32(volatile int * m, unsigned long old,
+-	unsigned long new)
+-{
+-	__u32 retval;
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-	retval = *m;
+-	if (retval == old)
+-		*m = new;
+-	local_irq_restore(flags);       /* implies memory barrier  */
+-	return retval;
+-}
+-
+-/* This function doesn't exist, so you'll get a linker error
+- * if something tries to do an invalid cmpxchg(). */
+-extern void __cmpxchg_called_with_bad_pointer(void);
+-
+-#define __HAVE_ARCH_CMPXCHG 1
 +#include <asm-generic/cmpxchg-local.h>
-+
-+static inline unsigned long __cmpxchg_local(volatile void *ptr,
-+				      unsigned long old,
-+				      unsigned long new, int size)
-+{
-+	switch (size) {
-+	case 1:
-+	case 2:
-+	case 4:
-+#ifdef __s390x__
-+	case 8:
-+#endif
-+		return __cmpxchg(ptr, old, new, size);
-+	default:
-+		return __cmpxchg_local_generic(ptr, old, new, size);
-+	}
-+
-+	return old;
-+}
-+
+ 
+-static inline unsigned long __cmpxchg(volatile void * ptr, unsigned long old,
+-		unsigned long new, int size)
+-{
+-	switch (size) {
+-	case 4:
+-		return __cmpxchg_u32(ptr, old, new);
+-	}
+-	__cmpxchg_called_with_bad_pointer();
+-	return old;
+-}
 +/*
 + * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
 + * them available.
 + */
-+#define cmpxchg_local(ptr,o,n)						\
-+     (__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
++#define cmpxchg_local(ptr,o,n)					  	    \
++     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
 +			   	 (unsigned long)(n), sizeof(*(ptr)))
-+#ifdef __s390x__
-+#define cmpxchg64_local(ptr,o,n) cmpxchg_local((ptr),(o),(n))
-+#else
 +#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
+ 
+-#define cmpxchg(ptr,o,n)						 \
+-  ({									 \
+-     __typeof__(*(ptr)) _o_ = (o);					 \
+-     __typeof__(*(ptr)) _n_ = (n);					 \
+-     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
+-				    (unsigned long)_n_, sizeof(*(ptr))); \
+-  })
++#ifndef CONFIG_SMP
++#include <asm-generic/cmpxchg.h>
 +#endif
-+
- /*
-  * Use to set psw mask except for the first byte which
-  * won't be changed by this function.
+ 
+ extern void die(const char *str, struct pt_regs *regs, long err) __attribute__ ((noreturn));
+ 
 
 -- 
 Mathieu Desnoyers
