@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbXH0I7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbXH0JU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbXH0I7T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 04:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbXH0I7M
+	id S1754058AbXH0JU1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 05:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbXH0JUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 04:59:12 -0400
-Received: from darkcity.gna.ch ([195.226.6.51]:48800 "EHLO mail.gna.ch"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752310AbXH0I7L convert rfc822-to-8bit (ORCPT
+	Mon, 27 Aug 2007 05:20:15 -0400
+Received: from salsa.ec-nantes.fr ([130.66.33.3]:45138 "EHLO
+	salsa.ec-nantes.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752089AbXH0JUN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 04:59:11 -0400
-X-Greylist: delayed 1291 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Aug 2007 04:59:11 EDT
-Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <daenzer@debian.org>
-To: =?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       =?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@gmail.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       debian-powerpc@lists.debian.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <20070827065246.GA21220@ime.usp.br>
-References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
-	 <6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
-	 <20070827065246.GA21220@ime.usp.br>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Organization: Debian
-Date: Mon, 27 Aug 2007 10:37:27 +0200
-Message-Id: <1188203847.10738.357.camel@thor.sulgenrain.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Mon, 27 Aug 2007 05:20:13 -0400
+X-Greylist: delayed 1193 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Aug 2007 05:20:12 EDT
+Message-ID: <46D29294.4080302@gmail.com>
+Date: Mon, 27 Aug 2007 11:00:04 +0200
+From: Giggz <giggzounet@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM : On a laptop Aopen 1556 or 1557 my integrated card-reader
+ doesn't work.
+References: <46C068FB.1040200@gmail.com>	<20070827005710.b77ab643.akpm@linux-foundation.org> <20070827105224.172fc5b0@poseidon.drzeus.cx>
+In-Reply-To: <20070827105224.172fc5b0@poseidon.drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-CentraleNantes-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-27 at 03:52 -0300, Rogério Brito wrote:
-> 
-> I did 13 compiles with git bisect and some of them were unsucessfuly
-> compiled, which I am afraid that may miss the real cause if I tag them as
-> being "bad" (which I did).
+Pierre Ossman a �crit :
+> On Mon, 27 Aug 2007 00:57:10 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+>   
+>> I don't even know which subsystem is supposed to handle that device. 
+>> Perhaps someone can tell us.  It's a Secure Digital card slot?  I
+>> think the MMC subsystem can handle some types SD cards, but not all?
+>>
+>> Perhaps Pierre can clue us in?
+>>
+>>     
+>
+> The MMC layer can handle all MMC and SD cards, but it does not support
+> all known controllers as most vendors refuse to release any specs.
+>
+> Unfortunately, that is the case here. Ricoh has several controller
+> interfaces, and currently we only support one of them (the public
+> standard sdhci interface).
+>
+> So until Ricoh changes their policy or someone reverse engineers their
+> interface, then I'm afraid you're out of luck.
+>
+> Rgds
+> Pierre
+>   
+Hi,
 
-Yes, don't mark such cases as bad or good but look for a nearby commit
-that compiles.
+Thx for your interest for my problem.
+
+I have try the MMC layer and it doesn't work. But lot's of people on the 
+web tell me, that their SD or MMC card are handled like USB (like 
+storage). And in my case, nothing happens :'(
+
+If I understand, I can just wait an improvement of the MMC layer, isn't it ?
+
+Thx for your great work!
+Regards,
+Guillaume
 
 
--- 
-Earthling Michel Dänzer           |          http://tungstengraphics.com
-Libre software enthusiast         |          Debian, X and DRI developer
+
