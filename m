@@ -1,80 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763034AbXH0Qpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760486AbXH0Qo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763034AbXH0Qpv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759505AbXH0Qij
+	id S1760486AbXH0Qo1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759424AbXH0QiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 12:38:39 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54438 "EHLO smtp.polymtl.ca"
+	Mon, 27 Aug 2007 12:38:20 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54328 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932416AbXH0Qii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 12:38:38 -0400
-Message-Id: <20070827155529.833951221@polymtl.ca>
-References: <20070827155234.062715780@polymtl.ca>
+	id S1758617AbXH0QiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 12:38:15 -0400
+Message-Id: <20070827160214.252315593@polymtl.ca>
+References: <20070827155910.336723755@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:52:53 -0400
+Date: Mon, 27 Aug 2007 11:59:17 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com,
-       gerg@uclinux.org
-Subject: [patch 19/28] Add cmpxchg_local to m68knommu
-Content-Disposition: inline; filename=add-cmpxchg-local-to-m68knommu.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 16:37:57 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 7/8] Immediate Values - Documentation
+Content-Disposition: inline; filename=immediate-values-documentation.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 16:38:09 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new generic cmpxchg_local (disables interrupt). Also use the generic
-cmpxchg as fallback if SMP is not set.
-
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: clameter@sgi.com
-CC: gerg@uclinux.org
 ---
- include/asm-m68knommu/system.h |   28 +++++++++++-----------------
- 1 file changed, 11 insertions(+), 17 deletions(-)
+ Documentation/immediate.txt |  232 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 232 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-m68knommu/system.h
+Index: linux-2.6-lttng/Documentation/immediate.txt
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-m68knommu/system.h	2007-07-20 18:36:08.000000000 -0400
-+++ linux-2.6-lttng/include/asm-m68knommu/system.h	2007-07-20 19:37:02.000000000 -0400
-@@ -187,26 +187,20 @@ static inline unsigned long __xchg(unsig
- }
- #endif
- 
-+#include <asm-generic/cmpxchg-local.h>
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/Documentation/immediate.txt	2007-08-20 15:55:26.000000000 -0400
+@@ -0,0 +1,232 @@
++		        Using the Immediate Values
 +
- /*
-- * Atomic compare and exchange.  Compare OLD with MEM, if identical,
-- * store NEW in MEM.  Return the initial value in MEM.  Success is
-- * indicated by comparing RETURN with OLD.
-+ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
-+ * them available.
-  */
--#define __HAVE_ARCH_CMPXCHG	1
--
--static __inline__ unsigned long
--cmpxchg(volatile int *p, int old, int new)
--{
--	unsigned long flags;
--	int prev;
--
--	local_irq_save(flags);
--	if ((prev = *p) == old)
--		*p = new;
--	local_irq_restore(flags);
--	return(prev);
--}
-+#define cmpxchg_local(ptr,o,n)					  	    \
-+     (__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o), \
-+			   	 (unsigned long)(n), sizeof(*(ptr)))
-+#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
- 
-+#ifndef CONFIG_SMP
-+#include <asm-generic/cmpxchg.h>
-+#endif
- 
- #ifdef CONFIG_M68332
- #define HARD_RESET_NOW() ({		\
++			    Mathieu Desnoyers
++
++
++This document introduces Immediate Values and their use.
++
++* Purpose of immediate values
++
++An immediate value is used to compile into the kernel variables that sits within
++the instruction stream. They are meant to be rarely updated but read often.
++Using immediate values for these variables will save cache lines.
++
++This infrastructure is specialized in supporting dynamic patching of the values
++in the instruction stream when multiple CPUs are running without disturbing the
++normal system behavior.
++
++Compiling code meant to be rarely enabled at runtime can be done using
++immediate_if() as condition surrounding the code.
++
++* Usage
++
++In order to use the macro immediate, you should include linux/immediate.h.
++
++#include <linux/immediate.h>
++
++immediate_char_t this_immediate;
++EXPORT_SYMBOL(this_immediate);
++
++
++Add, in your code :
++
++Use immediate_set(&this_immediate) to set the immediate value.
++
++Use immediate_read(&this_immediate) to read the immediate value.
++
++The immediate mechanism supports inserting multiple instances of the same
++immediate. Immediate values can be put in inline functions, inlined static
++functions, and unrolled loops.
++
++If you have to read the immediate values from a function declared as __init or
++__exit, you should explicitly use _immediate_read(), which will fall back on a
++global variable read. Failing to do so will leave a reference to the __init
++section after it is freed (it would generate a modpost warning).
++
++The prefered idiom to dynamically enable compiled-in code is to use
++immediate_if (&this_immediate), which may eventually use gcc improvements to
++provide a jump instruction patching based condition instead of a immediate value
++feeding a conditional jump. You should use _immediate_if () instead of
++immediate_if () in functions marked __init or __exit.
++
++immediate_set_early() should be used only at early kernel boot time, before SMP
++is activated.
++
++If you need to declare your own immediate types (for instance, a pointer to
++struct task_struct), use:
++
++DEFINE_IMMEDIATE_TYPE(struct task_struct*, immediate_task_struct_ptr_t);
++
++and declare your variable with:
++immediate_task_struct_ptr_t myptr;
++
++You can choose to set an initial static value to the immediate by using, for
++instance:
++
++immediate_task_struct_ptr_t myptr = IMMEDIATE_INIT(10);
++
++
++* Optimization for a given architecture
++
++One can implement optimized immediate values for a given architecture by
++replacing asm-$ARCH/immediate.h.
++
++* Performance improvement
++
++* Memory hit for a data-based branch
++
++Here are the results on a 3GHz Pentium 4:
++
++number of tests : 100
++number of branches per test : 100000
++memory hit cycles per iteration (mean) : 636.611
++L1 cache hit cycles per iteration (mean) : 89.6413
++instruction stream based test, cycles per iteration (mean) : 85.3438
++Just getting the pointer from a modulo on a pseudo-random value, doing
++  noting with it, cycles per iteration (mean) : 77.5044
++
++So:
++Base case:                      77.50 cycles
++instruction stream based test:  +7.8394 cycles
++L1 cache hit based test:        +12.1369 cycles
++Memory load based test:         +559.1066 cycles
++
++So let's say we have a ping flood coming at
++(14014 packets transmitted, 14014 received, 0% packet loss, time 1826ms)
++7674 packets per second. If we put 2 markers for irq entry/exit, it
++brings us to 15348 markers sites executed per second.
++
++(15348 exec/s) * (559 cycles/exec) / (3G cycles/s) = 0.0029
++We therefore have a 0.29% slowdown just on this case.
++
++Compared to this, the instruction stream based test will cause a
++slowdown of:
++
++(15348 exec/s) * (7.84 cycles/exec) / (3G cycles/s) = 0.00004
++For a 0.004% slowdown.
++
++If we plan to use this for memory allocation, spinlock, and all sort of
++very high event rate tracing, we can assume it will execute 10 to 100
++times more sites per second, which brings us to 0.4% slowdown with the
++instruction stream based test compared to 29% slowdown with the memory
++load based test on a system with high memory pressure.
++
++
++
++* Markers impact under heavy memory load
++
++Running a kernel with my LTTng instrumentation set, in a test that
++generates memory pressure (from userspace) by trashing L1 and L2 caches
++between calls to getppid() (note: syscall_trace is active and calls
++a marker upon syscall entry and syscall exit; markers are disarmed).
++This test is done in user-space, so there are some delays due to IRQs
++coming and to the scheduler. (UP 2.6.22-rc6-mm1 kernel, task with -20
++nice level)
++
++My first set of results : Linear cache trashing, turned out not to be
++very interesting, because it seems like the linearity of the memset on a
++full array is somehow detected and it does not "really" trash the
++caches.
++
++Now the most interesting result : Random walk L1 and L2 trashing
++surrounding a getppid() call.
++
++- Markers compiled out (but syscall_trace execution forced)
++number of tests : 10000
++No memory pressure
++Reading timestamps takes 108.033 cycles
++getppid : 1681.4 cycles
++With memory pressure
++Reading timestamps takes 102.938 cycles
++getppid : 15691.6 cycles
++
++
++- With the immediate values based markers:
++number of tests : 10000
++No memory pressure
++Reading timestamps takes 108.006 cycles
++getppid : 1681.84 cycles
++With memory pressure
++Reading timestamps takes 100.291 cycles
++getppid : 11793 cycles
++
++
++- With global variables based markers:
++number of tests : 10000
++No memory pressure
++Reading timestamps takes 107.999 cycles
++getppid : 1669.06 cycles
++With memory pressure
++Reading timestamps takes 102.839 cycles
++getppid : 12535 cycles
++
++The result is quite interesting in that the kernel is slower without
++markers than with markers. I explain it by the fact that the data
++accessed is not layed out in the same manner in the cache lines when the
++markers are compiled in or out. It seems that it aligns the function's
++data better to compile-in the markers in this case.
++
++But since the interesting comparison is between the immediate values and
++global variables based markers, and because they share the same memory
++layout, except for the movl being replaced by a movz, we see that the
++global variable based markers (2 markers) adds 742 cycles to each system
++call (syscall entry and exit are traced and memory locations for both
++global variables lie on the same cache line).
++
++
++- Test redone with less iterations, but with error estimates
++
++10 runs of 100 iterations each: Tests done on a 3GHz P4. Here I run getppid with
++syscall trace inactive, comparing memory pressure and w/o memory pressure.
++(sorry, my system is not setup to execute syscall_trace this time, but it will
++make the point anyway).
++
++No memory pressure
++Reading timestamps:     150.92 cycles,     std dev.    1.01 cycles
++getppid:               1462.09 cycles,     std dev.   18.87 cycles
++
++With memory pressure
++Reading timestamps:     578.22 cycles,     std dev.  269.51 cycles
++getppid:              17113.33 cycles,     std dev. 1655.92 cycles
++
++
++Now for memory read timing: (10 runs, branches per test: 100000)
++Memory read based branch:
++                       644.09 cycles,      std dev.   11.39 cycles
++L1 cache hit based branch:
++                        88.16 cycles,      std dev.    1.35 cycles
++
++
++So, now that we have the raw results, let's calculate:
++
++Memory read:
++644.09±11.39 - 88.16±1.35 = 555.93±11.46 cycles
++
++Getppid without memory pressure:
++1462.09±18.87 - 150.92±1.01 = 1311.17±18.90 cycles
++
++Getppid with memory pressure:
++17113.33±1655.92 - 578.22±269.51 = 16535.11±1677.71 cycles
++
++Therefore, if we add 2 markers not based on immediate values to the getppid
++code, which would add 2 memory reads, we would add
++2 * 555.93±12.74 = 1111.86±25.48 cycles
++
++Therefore,
++
++1111.86±25.48 / 16535.11±1677.71 = 0.0672
++ relative error: sqrt(((25.48/1111.86)^2)+((1677.71/16535.11)^2))
++                     = 0.1040
++ absolute error: 0.1040 * 0.0672 = 0.0070
++
++Therefore: 0.0672±0.0070 * 100% = 6.72±0.70 %
++
++We can therefore affirm that adding 2 markers to getppid, on a system with high
++memory pressure, would have a performance hit of at least 6.0% on the system
++call time, all within the uncertainty limits of these tests. The same applies to
++other kernel code paths. The smaller those code paths are, the highest the
++impact ratio will be.
++
++Therefore, not only is it interesting to use the immediate values to dynamically
++activate dormant code such as the markers, but I think it should also be
++considered as a replacement for many of the "read mostly" static variables.
 
 -- 
 Mathieu Desnoyers
