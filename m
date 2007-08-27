@@ -1,53 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbXH0QKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbXH0QKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759892AbXH0QKJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:10:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759072AbXH0QBf
+	id S1760713AbXH0QKk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758979AbXH0QCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 12:01:35 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47596 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758835AbXH0QBd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 12:01:33 -0400
-Date: Mon, 27 Aug 2007 11:01:32 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, tony.luck@intel.com, jes@sgi.com
-Subject: [PATCH 2/4] export zap_page_range for XPMEM
-Message-ID: <20070827160132.GC25589@sgi.com>
-References: <20070827155622.GA25589@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070827155622.GA25589@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 27 Aug 2007 12:02:19 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:44204 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759325AbXH0QCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 12:02:17 -0400
+Message-Id: <20070827155910.336723755@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Mon, 27 Aug 2007 11:59:10 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [patch 0/8] Immediate Values
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 16:02:12 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch exports zap_page_range as it is needed by XPMEM.
+Hi Andrew,
 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
+Here are the updated immediate values for 2.6.23-rc3-mm1. It depends on "Text
+Edit Lock".
 
----
+The example user is the scheduler profiling, but I plan to use it mainly for my
+linux kernel markers. Immediate values should prove themselves useful in
+situation where features, such as profiling, are rarely used, but should
+nevertheless be compiled in a distribution kernel because of their usefulness to
+provide useful profiling information.
 
-XPMEM would have used sys_madvise() except that madvise_dontneed()
-madvise_dontneed() returns an -EINVAL if VM_PFNMAP is set, which is
-always true for the pages XPMEM imports from other partitions and is
-also true for uncached pages allocated locally via the mspec allocator.
-XPMEM needs zap_page_range() functionality for these types of pages as
-well as 'normal' pages.
+Mathieu
 
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2007-08-09 07:07:55.762651612 -0500
-+++ linux-2.6/mm/memory.c	2007-08-09 07:15:43.226389312 -0500
-@@ -894,6 +894,7 @@
- 		tlb_finish_mmu(tlb, address, end);
- 	return end;
- }
-+EXPORT_SYMBOL_GPL(zap_page_range);
- 
- /*
-  * Do a quick page-table lookup for a single page.
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
