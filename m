@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXH0Jr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbXH0KES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbXH0Jr1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 05:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbXH0JrS
+	id S1754793AbXH0KES (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 06:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbXH0KED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 05:47:18 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:35674 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753113AbXH0JrQ (ORCPT
+	Mon, 27 Aug 2007 06:04:03 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58569 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751246AbXH0KEB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 05:47:16 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: RFC: issues concerning the next NAPI interface
-Date: Mon, 27 Aug 2007 11:47:01 +0200
-User-Agent: KMail/1.8.2
-Cc: jchapman@katalix.com, shemminger@linux-foundation.org, akepner@sgi.com,
-       netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
-       tklein@de.ibm.com, stefan.roscher@de.ibm.com
-References: <46CF127D.1090609@katalix.com> <46D1D634.7060007@katalix.com> <20070826.185815.93042514.davem@davemloft.net>
-In-Reply-To: <20070826.185815.93042514.davem@davemloft.net>
+	Mon, 27 Aug 2007 06:04:01 -0400
+Message-ID: <46D2A113.2030403@sgi.com>
+Date: Mon, 27 Aug 2007 12:01:55 +0200
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Greg KH <greg@kroah.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andy Isaacson <adi@hexapodia.org>, Josh Boyer <jwboyer@gmail.com>,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux	Foundation
+ Technical Advisory Board Elections
+References: <20070823003748.GR30556@waste.org>	<20070823004209.GP9163@parisc-linux.org>	<20070823011953.GS30556@waste.org>	<1187832907.3410.141.camel@localhost.localdomain>	<20070824012730.GA1243@hexapodia.org>	<625fc13d0708231934q5b369b4fh1a5c83def0e56a0d@mail.gmail.com>	<20070824025254.GH21720@waste.org>	<20070824025504.GT9163@parisc-linux.org>	<20070824032228.GJ21720@waste.org>	<20070824155735.GA14978@kroah.com>	<20070824234840.GC19595@kroah.com> <20070825010329.6f5bc47c@the-village.bc.nu>
+In-Reply-To: <20070825010329.6f5bc47c@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708271147.01890.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 August 2007 03:58, David Miller wrote:
-> From: James Chapman <jchapman@katalix.com>
-> Date: Sun, 26 Aug 2007 20:36:20 +0100
+Alan Cox wrote:
+>> although I would worry about their members only being the ones voting on
+>> the TAB for no other reason than the bias toward one distro only at this
+>> point in time.
 > 
-> > David Miller wrote:
-> > > From: James Chapman <jchapman@katalix.com>
-> > > Date: Fri, 24 Aug 2007 18:16:45 +0100
-> > > 
-> > >> Does hardware interrupt mitigation really interact well with NAPI?
-> > > 
-> > > It interacts quite excellently.
-> > 
-> > If NAPI disables interrupts and keeps them disabled while there are more 
-> > packets arriving or more transmits being completed, why do hardware 
-> > interrupt mitigation / coalescing features of the network silicon help?
-> 
-> Because if your packet rate is low enough such that the cpu can
-> process the interrupt fast enough and thus only one packet gets
-> processed per NAPI poll, the cost of going into and out of NAPI mode
-> dominates the packet processing costs.
+> Given the complaint was about the question of correct selection of voters
+> replacing the somewhat flawed kernel summit attendee test with a
+> completely bogus SPI membership one seems silly.
 
-As far as I understand your argumentation, NAPI is supposed to work well only
-for HW with coalescing features (concerning dropping the interrupt rate).
-NAPI itself does not provide a reliable functionality to reduce the
-number of interrupts, especially not for systems with only 1 NIC. 
-NAPI will only wait for some time when the budget is exceeded
-and the softIRQs don't call net_rx_action again. This seems to be the case
-after 10 rounds. That means NAPI really waits after 300 x 10 packets 
-have been processed in a row (worst case).
+But replacing the flawed KS list with one based on actual contributors,
+from the git logs as I proposed last week, doesn't seem silly.
 
-As a matter of fact there is HW that does not have this feature. There seems
-to be HW which does not work well with plain NAPI.
-This HW performs well if the operation system supports HP timers 
-(and when they are used either in the device driver or polling engine).
+Right now it looks like we have a list of sane candidates up, which I
+certainly would be willing to vote for. However, it would be a shame
+that the credibility of the election is lost because of sticking to an
+undemocratic voting procedure. A procedure which it in fact was stated
+when the board was created last year, would be replaced this year.
 
-So the question is simply: Do we want drivers that need (benefit from)
-a timer based polling support to implement their own timers each, 
-or should there be a generic support? 
+So, yes, I support Willy's motion of having it moved away from KS. I am
+less excited about SPI, but even that would be better than KS.
 
-Thanks,
-Jan-Bernd
-
+Jes
