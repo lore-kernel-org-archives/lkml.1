@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbXH0L2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbXH0LdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbXH0L2o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 07:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbXH0L2g
+	id S1755973AbXH0LdA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 07:33:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755211AbXH0Lcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 07:28:36 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:32919 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754275AbXH0L2f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 07:28:35 -0400
-Message-ID: <46D2A9D3.50703@linux.vnet.ibm.com>
-Date: Mon, 27 Aug 2007 16:09:15 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
-CC: akpm@linux-foundation.org, npiggin@suse.de, a.p.zijlstra@chello.nl,
-       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, ebiederm@xmission.com, containers@lists.osdl.org,
-       menage@google.com, xemul@openvz.org
-Subject: Re: [-mm PATCH 5/10] Memory controller task migration (v7)
-References: <20070824152043.16582.37727.sendpatchset@balbir-laptop> <20070827082635.195471BFA2C@siro.lan>
-In-Reply-To: <20070827082635.195471BFA2C@siro.lan>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Aug 2007 07:32:53 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:49481 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751053AbXH0Lcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 07:32:52 -0400
+Message-ID: <388214369.05937@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Message-Id: <20070827112152.816663278@mail.ustc.edu.cn>
+User-Agent: quilt/0.46-1
+Date: Mon, 27 Aug 2007 19:21:52 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Andrew Morton <akpm@osdl.org>
+Cc: David Chinner <dgc@sgi.com>
+Cc: Michael Rubin <mrubin@google.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] [RFC][PATCH] clustered writeback
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-YAMAMOTO Takashi wrote:
->> Allow tasks to migrate from one container to the other. We migrate
->> mm_struct's mem_container only when the thread group id migrates.
-> 
->> +	/*
->> +	 * Only thread group leaders are allowed to migrate, the mm_struct is
->> +	 * in effect owned by the leader
->> +	 */
->> +	if (p->tgid != p->pid)
->> +		goto out;
-> 
-> does it mean that you can't move a process between containers
-> once its thread group leader exited?
-> 
-> YAMAMOTO Takashi
+Chris,
+
+This is one possible implementation of the clustered writeback idea.
+It runs OK on ext3 (compiling, syncing, etc.).
+
+The patch is based on 2.6.23-rc3-mm1 and the writeback patches here:
+http://lkml.org/lkml/2007/8/19/10
+
+By default, with many dirty inodes, it works as follows:
+- store dirty inodes in a radix tree, indexed by their inode numbers
+- sweep the whole inode number space in 25s and do it in 5 times
+- each time we walk only 1/5 of the inode number space
+- pull all inodes with dirty-age larger than 5s to the io dispatching queue
+
+Because it does the work in small batches of 10 inodes, when the system has
+<=10 dirty inodes, its behavior will reduce to:
+- do a full sweep *at once* on every 25s
+Which means the disk will flicker once every 25s, not bad :)
 
 
-Hi,
+The implications for the majority users could be:
+- medium-to-heavy writes becomes less seeky
+- dirty inodes are getting synced earlier(before: 30s; now: 5-30s)
+- less panic for the 'atime' mount option (a future work)
 
-Good catch! Currently, we treat the mm as owned by the thread group leader.
-But this policy can be easily adapted to any other desired policy.
-Would you like to see it change to something else?
-
+Fengguang
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
