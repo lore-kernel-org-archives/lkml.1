@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbXH0MKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbXH0MKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756531AbXH0MKI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 08:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbXH0MJY
+	id S1756548AbXH0MKh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 08:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756994AbXH0MJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 08:09:24 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47647 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756801AbXH0MJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 08:09:23 -0400
-Date: Mon, 27 Aug 2007 11:55:05 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@gmail.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       debian-powerpc@lists.debian.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
-Message-ID: <20070827095505.GA1972@elf.ucw.cz>
-References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com> <6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com> <20070827065246.GA21220@ime.usp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070827065246.GA21220@ime.usp.br>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Mon, 27 Aug 2007 08:09:54 -0400
+Received: from 193-189-87-45.ip.kis.lt ([193.189.87.45]:30962 "EHLO
+	barclay.wilibox.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756979AbXH0MJx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 08:09:53 -0400
+Subject: Re: Pausing kernel boot messages
+From: Zilvinas Valinskas <zilvinas@wilibox.com>
+Reply-To: zilvinas@wilibox.com
+To: =?ISO-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
+Cc: Esteban Fernandez <estfern@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200708271353.22665.hjk@linutronix.de>
+References: <179e6e720708270421r5f07f9dfp434077f6a106d2d7@mail.gmail.com>
+	 <200708271353.22665.hjk@linutronix.de>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 27 Aug 2007 15:09:50 +0300
+Message-Id: <1188216590.5361.27.camel@zv.wilibox.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Esteban,
 
-> I didn't know who to include as the wizards of the matter.
-> 
+Alternatively, read Documentation/networking/netconsole.txt. Might help
+or might not. It depends when system is crashing.
 
-> > > If I, on the other hand, use Debian's kernel 2.6.22 or compile my own
-> > > kernel with just the necessary parts for my work (version 2.6.23-rc3
-> > > taken from kernel.org), then I can't make the machine sleep: when I
-> > > press the button, it acts like if I had, in sequence, pressed anything
-> > > to wake it up (say, like pressing shift).
+On Mon, 2007-08-27 at 13:53 +0200, Hans-Jürgen Koch wrote:
+> Am Montag 27 August 2007 13:21 schrieb Esteban Fernandez:
+> > How do you pause the kernel boot messages ?
+> > 
+> > ^S, Pause and Scroll lock do nothing and you can't Shift-Page-Up  after a
+> > kernel panic.
 > 
-> Things are getting now a little bit fishy.
+> These are functions of a shell (like bash), which you haven't got yet during
+> kernel boot. You can read the kernel boot messages _after_ your system's up
+> using dmesg etc.
+> If you can't do that, e.g. because your kernel always hangs during boot, you
+> could enable a serial console in your kernel and watch/log your kernel 
+> messages with a terminal program running on a different computer.
 > 
-> Before, I was using gnome and all the little daemons that come with it
-> (even though I just prefer a plain window manager), but, as I mentioned
-> before, it didn't matter if I pressed the power button on X or on a
-> console.
+> Hans
 > 
-> I had the gnomee power-thingy sounding like an alarm (an ambulance!) on me
-> when I pressed the power button with Debian kernels 2.6.22, for instance. I
-> compiled my own (this time, from kernel.org) 2.6.23-rc3, with many modules
-> and subsystems removed (e.g., bluetooth, as this laptop doesn't have it)
-> and I got the exact same behavior.
-> 
-> If I booted, OTOH, with Debian's kernel 2.6.18, things were fine and the
-> machine would go to sleep without any problems.
-> 
-> I am now suspecting of some module that prevented the machine from going to
-> sleep and I now using just a fluxbox as my window manager. This time, even
-> with a 2.6.23-rc3 kernel (again, from kernel.org) the machine went to sleep
-> normally.
-> 
-> I did 13 compiles with git bisect and some of them were unsucessfuly
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Rather than doing bisect, it might be more interesting to find out
-which userspace part makes it fail to sleep, then see what is it that
-makes the difference.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
