@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760901AbXH0TTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbXH0TXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760901AbXH0TTe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 15:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757008AbXH0TTK
+	id S1760494AbXH0TXl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 15:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbXH0TXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 15:19:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33235 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756631AbXH0TTI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 15:19:08 -0400
-Date: Mon, 27 Aug 2007 14:19:06 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: akpm@linux-foundation.org, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, tony.luck@intel.com,
-       jes@sgi.com
-Subject: Re: [PATCH 1/4] export __put_task_struct for XPMEM
-Message-ID: <20070827191906.GB30176@sgi.com>
-References: <20070827155622.GA25589@sgi.com> <20070827155933.GB25589@sgi.com> <20070827161327.GG21089@ftp.linux.org.uk> <20070827181056.GA30176@sgi.com> <20070827181544.GH21089@ftp.linux.org.uk>
+	Mon, 27 Aug 2007 15:23:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36644 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752675AbXH0TXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 15:23:33 -0400
+Date: Mon, 27 Aug 2007 21:23:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [patch] sched: fix broken smt/mc optimizations with CFS
+Message-ID: <20070827192324.GA29441@elte.hu>
+References: <20070816010150.GG10033@linux-os.sc.intel.com> <20070823115416.GA31027@elte.hu> <20070823121341.GA5775@elte.hu> <20070827191905.GE1894@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070827181544.GH21089@ftp.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070827191905.GE1894@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.1.7-deb
+	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
+	[score: 0.2355]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 07:15:44PM +0100, Al Viro wrote:
-> On Mon, Aug 27, 2007 at 01:10:56PM -0500, Dean Nelson wrote:
-> > On Mon, Aug 27, 2007 at 05:13:28PM +0100, Al Viro wrote:
-> > > On Mon, Aug 27, 2007 at 10:59:33AM -0500, Dean Nelson wrote:
-> > > > This patch exports __put_task_struct as it is needed by XPMEM.
-> > > > 
-> > > > Signed-off-by: Dean Nelson <dcn@sgi.com>
-> > > > 
-> > > > ---
-> > > > 
-> > > > One struct file_operations registered by XPMEM, xpmem_open(), calls
-> > > > 'get_task_struct(current->group_leader)' and another, xpmem_flush(), calls
-> > > > 'put_task_struct(tg->group_leader)'.
-> > > 
-> > > Does it?  Well, then open the file in question and start doing close(dup(fd))
-> > > in a loop.  Won't take long for an oops...
-> > 
-> > Actually it won't oops. And that's because when the file is opened,
-> > xpmem_open() creates a structure for that thread group, and when
-> > xpmem_flush() is called on the close() it first looks for that structure
-> > and if it finds it then it does what it needs to do (which includes the
-> > put_task_struct() call) and then finishes off by destroying the structure.
-> > So for subsequent closes xpmem_flush() returns without calling
-> > put_task_struct().
+
+* Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
+
+> > -	if (*imbalance + SCHED_LOAD_SCALE_FUZZ < busiest_load_per_task/2) {
+> > +	if (*imbalance + SCHED_LOAD_SCALE_FUZZ < busiest_load_per_task) {
 > 
-> Then what kind of protection does it get you?  It can be called immediately
-> after the call of ->open(), so you can't rely on it being there for any
-> operations.  Makes no sense...
+> Ingo, this is still broken. This condition is always false for nice-0 
+> tasks..
 
-No operations can be done once it's closed, only while it's opened.
+yes - negative reniced tasks are not spread out via this - and positive 
+reniced tasks are spread out more easily.
 
-At fault time we need to be able to fault pages that belong to another
-thread group. To call get_user_pages() we need to have the task_struct
-and the mm_struct for the other thread group.
-
-At one time we did look up the task_struct by pid, but that brought the
-system to its knees due to heavy lock contention.
-
-Do you know of a better way of doing this?
+	Ingo
