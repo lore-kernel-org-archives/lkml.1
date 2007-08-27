@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753055AbXH0IMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbXH0I0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753055AbXH0IMM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 04:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbXH0IL5
+	id S1753314AbXH0I0p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 04:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXH0I0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 04:11:57 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:7304 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751060AbXH0IL4 (ORCPT
+	Mon, 27 Aug 2007 04:26:37 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:42616 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752044AbXH0I0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 04:11:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=D7YHfMlEk97VVlEfFslrHA7kZbaazhULiJngaXv5BJ9x1yaE2d5uW1heT7CSSirf8Td/lfLfUl0XChoagVit2in/FKn7nU1Oc8y6AJhVjrzbqGpuAVKVQwUjX+yQvNBcmVFwduS1dZlgNR3ISptse+Dvh6qvdKlcKm9wheDSXmo=
-Message-ID: <72dbd3150708270111h7845b5eam2b1d6279a0e33900@mail.gmail.com>
-Date: Mon, 27 Aug 2007 01:11:55 -0700
-From: "David Rees" <drees76@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: Who wants to maintain KR list for stable releases? (was Re: nmi_watchdog=2 regression in 2.6.21)
-Cc: "Daniel Walker" <dwalker@mvista.com>,
-       "=?ISO-8859-1?Q?Bj=F6rn_Steinbrink?=" <B.Steinbrink@gmx.de>,
-       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org
-In-Reply-To: <46D21E8E.4000003@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1186531609.22044.50.camel@imap.mvista.com>
-	 <20070808142059.GF30805@atjola.homenet>
-	 <1187628296.7732.14.camel@imap.mvista.com>
-	 <46CDE94A.7000600@googlemail.com>
-	 <1187904169.2435.83.camel@dhcp193.mvista.com>
-	 <46D21E8E.4000003@googlemail.com>
+	Mon, 27 Aug 2007 04:26:36 -0400
+To: balbir@linux.vnet.ibm.com
+Cc: akpm@linux-foundation.org, npiggin@suse.de, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, ebiederm@xmission.com, containers@lists.osdl.org,
+       menage@google.com, xemul@openvz.org
+Subject: Re: [-mm PATCH 5/10] Memory controller task migration (v7)
+In-Reply-To: Your message of "Fri, 24 Aug 2007 20:50:43 +0530"
+	<20070824152043.16582.37727.sendpatchset@balbir-laptop>
+References: <20070824152043.16582.37727.sendpatchset@balbir-laptop>
+X-Mailer: Cue version 0.8 (070404-1613/takashi)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20070827082635.195471BFA2C@siro.lan>
+Date: Mon, 27 Aug 2007 17:26:35 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/26/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> Bugzilla sucks when it comes to tracking things. There is
-> a regression field, but there are no difference between
-> 2.6.22 and 2.6.23 regression.
+> Allow tasks to migrate from one container to the other. We migrate
+> mm_struct's mem_container only when the thread group id migrates.
 
-Here's how to use Bugzilla to track regressions between different
-kernel versions:
+> +	/*
+> +	 * Only thread group leaders are allowed to migrate, the mm_struct is
+> +	 * in effect owned by the leader
+> +	 */
+> +	if (p->tgid != p->pid)
+> +		goto out;
 
-Create a 2.6.22 regression bug and a 2.6.23 regression bug. All
-regression bugs which are 2.6.22 regression bugs should block the
-2.6.22 regression bug. All regression bugs which are 2.6.23 regression
-bugs should block the 2.6.23 regression bug.
+does it mean that you can't move a process between containers
+once its thread group leader exited?
 
-For example, say your master 2.6.22 regression bug tracking bug is #1.
-When someone comes and files a new bug #2 which is a regression of
-2.6.22, make bug #2 block bug #1. Then it is easy to see to track all
-the 2.6.22 regressions.
-
-To make it easier to remember what bug number tracks regressions for a
-specific kernel, use a naming convention to create aliases for those
-bugs.
-
--Dave
+YAMAMOTO Takashi
