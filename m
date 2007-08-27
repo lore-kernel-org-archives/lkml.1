@@ -1,36 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbXH0QKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760476AbXH0QLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760713AbXH0QKk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758979AbXH0QCT
+	id S1760476AbXH0QLA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758938AbXH0QCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 12:02:19 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:44204 "EHLO smtp.polymtl.ca"
+	Mon, 27 Aug 2007 12:02:21 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:44208 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759325AbXH0QCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759329AbXH0QCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 27 Aug 2007 12:02:17 -0400
-Message-Id: <20070827155910.336723755@polymtl.ca>
+Message-Id: <20070827160212.316828686@polymtl.ca>
+References: <20070827155910.336723755@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:59:10 -0400
+Date: Mon, 27 Aug 2007 11:59:11 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch 0/8] Immediate Values
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 1/8] Immediate Values - Global Modules List and Module Mutex
+Content-Disposition: inline; filename=immediate-values-global-modules-list-and-mutex.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 16:02:12 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Remove "static" from module_mutex and the modules list so it can be used by
+other builtin objects in the kernel. Otherwise, every code depending on the
+module list would have to be put in kernel/module.c. Since the immediate values
+depends on the module list but can be considered as logically different, it
+makes sense to implement them in their own file.
 
-Here are the updated immediate values for 2.6.23-rc3-mm1. It depends on "Text
-Edit Lock".
+The alternative to this would be to disable preemption in code path that need
+such synchronization, so they can be protected against module unload by
+stop_machine(), but not being able to sleep within while needing such
+synchronization is limiting.
 
-The example user is the scheduler profiling, but I plan to use it mainly for my
-linux kernel markers. Immediate values should prove themselves useful in
-situation where features, such as profiling, are rarely used, but should
-nevertheless be compiled in a distribution kernel because of their usefulness to
-provide useful profiling information.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ include/linux/module.h |    4 ++++
+ kernel/module.c        |    4 ++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-Mathieu
+Index: linux-2.6-lttng/kernel/module.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/module.c	2007-08-07 11:03:56.000000000 -0400
++++ linux-2.6-lttng/kernel/module.c	2007-08-07 11:40:22.000000000 -0400
+@@ -64,8 +64,8 @@ extern int module_sysfs_initialized;
+ 
+ /* List of modules, protected by module_mutex or preempt_disable
+  * (add/delete uses stop_machine). */
+-static DEFINE_MUTEX(module_mutex);
+-static LIST_HEAD(modules);
++DEFINE_MUTEX(module_mutex);
++LIST_HEAD(modules);
+ static DECLARE_MUTEX(notify_mutex);
+ 
+ static BLOCKING_NOTIFIER_HEAD(module_notify_list);
+Index: linux-2.6-lttng/include/linux/module.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/module.h	2007-08-07 11:03:48.000000000 -0400
++++ linux-2.6-lttng/include/linux/module.h	2007-08-07 11:39:55.000000000 -0400
+@@ -60,6 +60,10 @@ struct module_kobject
+ 	struct kobject *drivers_dir;
+ };
+ 
++/* Protects the list of modules. */
++extern struct mutex module_mutex;
++extern struct list_head modules;
++
+ /* These are either module local, or the kernel's dummy ones. */
+ extern int init_module(void);
+ extern void cleanup_module(void);
 
 -- 
 Mathieu Desnoyers
