@@ -1,84 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbXH0RDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbXH0RGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758913AbXH0RDR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 13:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbXH0RC7
+	id S1758905AbXH0RGO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 13:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbXH0RF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 13:02:59 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:27463 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751077AbXH0RC6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 13:02:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=ccGi7EMHaZylFJSA6nTvm1qHji7uyQbVxAKYuvQTGSpKwx7ukMIBfF7W1csQoLp4w6LW+EwM/cvL66QQqNpc+yQ1BIVHUP8fgS4WUZJLGkWW5NKbSnippHqBsd7gvpwDQm+G6av/3Tv62CzdLBf0mTqRe/h3N7NabkmNQTYbD3c=
-Message-ID: <46D303A3.1030708@googlemail.com>
-Date: Mon, 27 Aug 2007 19:02:27 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 27 Aug 2007 13:05:57 -0400
+Received: from s36.avahost.net ([74.53.95.194]:51361 "EHLO s36.avahost.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752159AbXH0RFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 13:05:55 -0400
+Message-ID: <46D3046A.5090607@katalix.com>
+Date: Mon, 27 Aug 2007 18:05:46 +0100
+From: James Chapman <jchapman@katalix.com>
+Organization: Katalix Systems Ltd
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       =?ISO-8859-2?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: Who wants to maintain KR list for stable releases? (was Re:	nmi_watchdog=2
- regression in 2.6.21)
-References: <1186531609.22044.50.camel@imap.mvista.com>	 <20070808142059.GF30805@atjola.homenet>	 <1187628296.7732.14.camel@imap.mvista.com>	 <46CDE94A.7000600@googlemail.com>	 <1187904169.2435.83.camel@dhcp193.mvista.com>	 <46D21E8E.4000003@googlemail.com>	 <20070827005131.b93f5935.akpm@linux-foundation.org>	 <6bffcb0e0708270438j4c92a0b4m1396b4010f25bfb5@mail.gmail.com>	 <1188227585.2435.192.camel@dhcp193.mvista.com>	 <6bffcb0e0708270826p7a7fb044re53d0db4094bc3d5@mail.gmail.com> <1188229197.2435.207.camel@dhcp193.mvista.com>
-In-Reply-To: <1188229197.2435.207.camel@dhcp193.mvista.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+CC: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
+       akepner@sgi.com, netdev@vger.kernel.org, raisch@de.ibm.com,
+       themann@de.ibm.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, meder@de.ibm.com, tklein@de.ibm.com,
+       stefan.roscher@de.ibm.com
+Subject: Re: RFC: issues concerning the next NAPI interface
+References: <46CF127D.1090609@katalix.com> <20070826.185815.93042514.davem@davemloft.net> <46D2F301.7050105@katalix.com> <200708271802.48691.ossthema@de.ibm.com>
+In-Reply-To: <200708271802.48691.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - s36.avahost.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - katalix.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker pisze:
-> On Mon, 2007-08-27 at 17:26 +0200, Michal Piotrowski wrote:
->> On 27/08/07, Daniel Walker <dwalker@mvista.com> wrote:
->>> On Mon, 2007-08-27 at 13:38 +0200, Michal Piotrowski wrote:
->>>> On 27/08/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->> [..]
->>>>> I'm not sure that we need one, really.  Any bugs in a stable release can be
->>>>> handled via email and/or bugzilla as we are presently doing?
->>>>>
->>>>> What I'm concerned about is that regressions which we didn't fix are just
->>>>> getting lost.  Is anyone taking care to ensure that they are getting
->>>>> transitioned into bugzilla for tracking?
->>>> I can copy all regression reports into Bugzilla after each release.
->>> Should we get the regression field fix before? Or had you planned on
->>> just bypassing that completely ?
->> IMO solution proposed by David http://lkml.org/lkml/2007/8/27/21 seems
->> to be most reasonable.
+Jan-Bernd Themann wrote:
+> On Monday 27 August 2007 17:51, James Chapman wrote:
 > 
-> Now that I'm looking at the kernel bugzilla .. If you set the kernel
-> version to 2.6.22 and set the "Regression" check box you could denote
-> the fact that it's a regression in that kernel version ..
+>> In the second half of my previous reply (which seems to have been 
+>> deleted), I suggest a way to avoid this problem without using hardware 
+>> interrupt mitigation / coalescing. Original text is quoted below.
+>>
+>>  >> I've seen the same and I'm suggesting that the NAPI driver keeps
+>>  >> itself in polled mode for N polls or M jiffies after it sees
+>>  >> workdone=0. This has always worked for me in packet forwarding
+>>  >> scenarios to maximize packets/sec and minimize latency.
+>>
+>> To implement this, there's no need for timers, hrtimers or generic NAPI 
+>> support that others have suggested. A driver's poll() would set an 
+>> internal flag and record the current jiffies value when finding 
+>> workdone=0 rather than doing an immediate napi_complete(). Early in 
+>> poll() it would test this flag and if set, do a low-cost test to see if 
+>> it had any work to do. If no work, it would check the saved jiffies 
+>> value and do the napi_complete() only if no work has been done for a 
+>> configurable number of jiffies. This keeps interrupts disabled longer at 
+>> the expense of many more calls to poll() where no work is done. So 
+>> critical to this scheme is modifying the driver's poll() to fastpath the 
+>> case of having no work to do while waiting for its local jiffy count to 
+>> expire.
+>>
 > 
-> I don't know if this URL is going to come out right,
-> 
-> http://bugzilla.kernel.org/buglist.cgi?query_format=advanced&short_desc_type=allwordssubstr&short_desc=&tree=Mainline&long_desc_type=substring&long_desc=&kernel_version_type=allwordssubstr&kernel_version=2.6.22&bug_status=NEW&bug_status=REOPENED&bug_status=ASSIGNED&emailassigned_to1=1&emailtype1=substring&email1=&emailassigned_to2=1&emailreporter2=1&emailcc2=1&emailtype2=substring&email2=&bugidtype=include&bug_id=&chfieldfrom=&chfieldto=Now&chfieldvalue=&regression=include&cmdtype=doit&order=Reuse+same+sort+as+last+time&field0-0-0=noop&type0-0-0=noop&value0-0-0=
-> 
-> That should be open bugs , kernel version 2.6.22, with the regression
-> check box set ..
-> 
-> So you may not need a master tracking bug ..
+> The problem I see with this approach is that the time that passes between
+> two jiffies might be too long for 10G ethernet adapters. 
 
-Indeed, now we need a predefined search "show regressions in 2.6.x" :)
+Why would staying in polled mode for 2 jiffies be too long in the 10G 
+case? I don't see why 10G makes any difference. Your poll() would be 
+called as fast as your CPU allows during those 2 jiffies (it would 
+actually be between 1 and 2 jiffies in practice). It is therefore 
+critical that the driver's poll() implementation is as efficient as 
+possible for the "no work" case to minimize the overhead of the extra 
+poll() calls. Your poll might be called thousands of times in 1-2 
+jiffies with nothing to do...
 
-So the plan is simple:
-- copy all regressions into bugzilla after each release
-- make sure that all regressions reported on lkml after realase hit bugzilla
-- make sure that all regressions in bugzilla are marked as regression
+> (I tried to implement
+> a timer based approach with usual timers and the result was a disaster).
+> HW interrupts / or HP timer avoid the jiffy problem as they activate softIRQs
+> as soon as you call netif_rx_schedule. 
 
-> 
-> Daniel
+My scheme doesn't use timers to do netif_rx_schedule() because the 
+device stays in polled mode for 1-2 jiffies _after_ it detects it has no 
+more work. So the device remains scheduled, processing packets as usual. 
+The device deschedules itself and re-enables its interrupts only when it 
+has a period of 1-2 jiffies of doing no work.
 
-Regards,
-Michal
+BTW, I chose 2 jiffies in the example patch just to keep the patch 
+simple. It might be more for systems with large HZ or those that want to 
+be even more aggressive at staying in polled mode. I envisage it being 
+another parameter that can be tweaked using ethtool if people see a 
+benefit of this scheme.
 
 -- 
-LOG
-http://www.stardust.webpages.pl/log/
+James Chapman
+Katalix Systems Ltd
+http://www.katalix.com
+Catalysts for your Embedded Linux software development
+
