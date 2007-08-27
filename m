@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbXH0ME7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbXH0MHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbXH0ME7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 08:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbXH0MEv
+	id S1756020AbXH0MHz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 08:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbXH0MHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 08:04:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43215 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155AbXH0MEu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 08:04:50 -0400
-Date: Mon, 27 Aug 2007 05:04:32 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jes Sorensen <jes@sgi.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andy Isaacson <adi@hexapodia.org>, Josh Boyer <jwboyer@gmail.com>,
-       ksummit-2007-discuss@thunk.org
-Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux
- Foundation Technical Advisory Board Elections
-Message-ID: <20070827050432.06f9590f@laptopd505.fenrus.org>
-In-Reply-To: <46D2A113.2030403@sgi.com>
-References: <20070823003748.GR30556@waste.org>
-	<20070823004209.GP9163@parisc-linux.org>
-	<20070823011953.GS30556@waste.org>
-	<1187832907.3410.141.camel@localhost.localdomain>
-	<20070824012730.GA1243@hexapodia.org>
-	<625fc13d0708231934q5b369b4fh1a5c83def0e56a0d@mail.gmail.com>
-	<20070824025254.GH21720@waste.org>
-	<20070824025504.GT9163@parisc-linux.org>
-	<20070824032228.GJ21720@waste.org>
-	<20070824155735.GA14978@kroah.com>
-	<20070824234840.GC19595@kroah.com>
-	<20070825010329.6f5bc47c@the-village.bc.nu>
-	<46D2A113.2030403@sgi.com>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 27 Aug 2007 08:07:47 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47627 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751042AbXH0MHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 08:07:46 -0400
+Date: Mon, 27 Aug 2007 10:28:45 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Yan Burman <burman.yan@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.23-rc2]  hwmon: HP Mobile Data Protection System 3D ACPI driver (resend)
+Message-ID: <20070827082845.GI2060@elf.ucw.cz>
+References: <1186831562.6452.10.camel@localhost> <20070825102512.GA5850@ucw.cz> <46D01420.3070400@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46D01420.3070400@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007 12:01:55 +0200
+On Sat 2007-08-25 13:36:00, Yan Burman wrote:
+> Pavel Machek wrote:
+> >On Sat 2007-08-11 14:26:02, Yan Burman wrote:
+> >  
+> >>HP Mobile Data Protection System 3D ACPI driver. Similar to hdaps in 
+> >>functionality.
+> >>This driver provides 4 kinds of functionality:
+> >>1) Creates a misc device /dev/accel that acts similar to /dev/rtc and 
+> >>unblocks
+> >>the process reading from it when the device detects free-fall interrupt
+> >>2) Functions as an input class device to provide similar functionality to
+> >>hdaps, in order to be able to use the laptop as a joystick
+> >>3) Provides an interface similar to hdaps, so that hdapsd could work with 
+> >>it
+> >>4) Makes it possible to power the device off.
+> >>    
+> >
+> >I assume this means 'power the sensor down'? What is interface for
+> >that?
+> >
+> >Aha, /sys. Could we simply power off the device when its input device
+> >is not opened?
+> >
+> >  
+> No, we can't since the sys interface provides the position info and some 
+> applications (hdaps apps for example) use this interface.
 
-> But replacing the flawed KS list with one based on actual
-> contributors, from the git logs as I proposed last week, doesn't seem
-> silly.
+One more reason not to use /sys to access the position data.
 
-to some degree the KS list is based on that git logs thing ;)
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
