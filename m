@@ -1,83 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbXH0HwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbXH0H4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752740AbXH0HwT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 03:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbXH0HwF
+	id S1753110AbXH0H4n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 03:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbXH0H4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 03:52:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50837 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751825AbXH0HwD (ORCPT
+	Mon, 27 Aug 2007 03:56:33 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:7806 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751841AbXH0H4c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 03:52:03 -0400
-Date: Mon, 27 Aug 2007 00:51:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Daniel Walker <dwalker@mvista.com>,
-       =?ISO-8859-1?B?Qmr2cm4=?= Steinbrink <B.Steinbrink@gmx.de>,
-       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: Who wants to maintain KR list for stable releases? (was Re:
- nmi_watchdog=2 regression in 2.6.21)
-Message-Id: <20070827005131.b93f5935.akpm@linux-foundation.org>
-In-Reply-To: <46D21E8E.4000003@googlemail.com>
-References: <1186531609.22044.50.camel@imap.mvista.com>
-	<20070808142059.GF30805@atjola.homenet>
-	<1187628296.7732.14.camel@imap.mvista.com>
-	<46CDE94A.7000600@googlemail.com>
-	<1187904169.2435.83.camel@dhcp193.mvista.com>
-	<46D21E8E.4000003@googlemail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Aug 2007 03:56:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PXPNEdzmzl2wld4CM8MSAt29xyawtUnfiI/pjPcCvIbu7Xq+jLmCJcvQ0IaXqdoyqvpnbrPGTHlb8MHB2OT/lotj66YwLZYUhF05m9dcn/nArNFHF63BZpGUAIZ++QhaHUR6Z8s+7LHKjfgxm4xG+Ew6jOEpURZ+MQ7Y22amPdE=
+Message-ID: <4877c76c0708270056g40b75dc8qb63f6a32d04ebc34@mail.gmail.com>
+Date: Mon, 27 Aug 2007 00:56:30 -0700
+From: "Michael Evans" <mjevans1983@gmail.com>
+To: "Kyle Moffett" <mrmacman_g4@mac.com>
+Subject: Re: [patch v2 1/1] md: Software Raid autodetect dev list not array
+Cc: "Michael J. Evans" <mjevans1983@comcast.net>, "Neil Brown" <neilb@suse.de>,
+       "Ingo Molnar" <mingo@redhat.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <ADB93FAB-45EF-439A-816C-8E27D8D3F5BB@mac.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200708222058.45480.mjevans1983@comcast.net>
+	 <18126.21113.981032.286298@notabene.brown>
+	 <200708260451.24868.mjevans1983@comcast.net>
+	 <4877c76c0708260520v33bc36bfu24e688a5902912e5@mail.gmail.com>
+	 <ADB93FAB-45EF-439A-816C-8E27D8D3F5BB@mac.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007 02:45:02 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+On 8/26/07, Kyle Moffett <mrmacman_g4@mac.com> wrote:
+> On Aug 26, 2007, at 08:20:45, Michael Evans wrote:
+> > Also, I forgot to mention, the reason I added the counters was
+> > mostly for debugging.  However they're also as useful in the same
+> > way that listing the partitions when a new disk is added can be (in
+> > fact this augments that and the existing messages the autodetect
+> > routines provide).
+> >
+> > As for using autodetect or not... the only way to skip it seems to
+> > be compiling md's raid support as a module.  I checked 2.6.22's
+> > menuconfig and there's no way for me to explicitly turn it on or
+> > off at compile time.  I also feel that forcing the addition of a
+> > boot parameter to de-activate a broken and deprecated system you
+> > aren't even aware you are getting is somehow wrong.  So if you have
+> > over 128 devices for it to scan, as I do on one of my PCs, then it
+> > can bring up
+> > an array in degraded mode.  ... crud.
+>
+> Well, you could just change the MSDOS disk label to use a different
+> "Partition Type" for your raid partitions.  Just pick the standard
+> "Linux" type and you will get exactly the same behavior that
+> everybody who doesn't use MSDOS partition tables gets.
+>
+> Cheers,
+> Kyle Moffett
+>
+>
 
-> Daniel Walker pisze:
-> [snip]
-> > Have you considered maintaining all the lists in Bugzilla?
-> 
-> Yes, I have considered it.
-> 
-> Bugzilla sucks when it comes to tracking things. There is
-> a regression field, but there are no difference between
-> 2.6.22 and 2.6.23 regression.
-> 
-> Most people are reporting bugs through LKML:
-> - 23 regressions with reference to LKML
-> - 4 regressions with reference to Bugzilla
+I recall most of the guides I referenced during setup having me change
+the partition type, additionally parted only calls the flag 'raid' not
+'raid autodetect'.  However it would still be confusing to anyone not
+intimately familiar with the subsystem.
 
-Presumably that's fixable.
+Also, even though the system has a standard PC BIOS, I liked some of
+the specifications of the GUID partition table (GPT) provided.  Namely
+a checksum and backup copy, and up to 128 partitions per disk.  Parted
+is the only real tool I could find for editing such a disk label.
 
-But I think bugzilla is more appropriate for tracking longer-term bugs.  If
-some problem has just popped up (or has just been discovered) then it's
-best to try to knock it over with a quick email discussion.  If that
-doesn't work out then the bug should be captured in bugzilla so that it
-doesn't get lost.
-
-The really important data which bugzilla will record are
-
-a) the fact that the bug exists and
-
-b) the identity of the person who can reproduce it and who will hopefully
-work with us on fixing it.
-
-> > If you had a
-> > search of open bugs they would just fall of the list as they get
-> > closed.. 
-> 
-> Unfortunately, the world is not perfect.
-> 
-> Is anyone interested in maintaining KR list for stable releases?
-
-I'm not sure that we need one, really.  Any bugs in a stable release can be
-handled via email and/or bugzilla as we are presently doing?
-
-What I'm concerned about is that regressions which we didn't fix are just
-getting lost.  Is anyone taking care to ensure that they are getting
-transitioned into bugzilla for tracking?
-
-
+A problem I experienced that is almost completely unrelated to this
+patch are other 'magic number' assumptions.  It is rather unfortunate
+that linux allocates a fixed (and very small) number of partitions per
+scsi disk.  A better method might be a complete dis-association of
+major:minor pair to device name, and instead simply enumerating
+partitions as they are detected.  That way if I choose to have 128
+drives but each having at most 2 partitions I still easily fit within
+one major, or if I choose the opposite (for whatever reason) I still
+come to the same conclusion.  Before anyone mentions using LVM
+instead, sharing operating systems, and using different partitions for
+different raid stripe sizes/rebuilding flexibility/restriping
+flexibility are just two good reasons I can think of for supporting
+more then 15 partitions per device.
