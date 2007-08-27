@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756440AbXH0MZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbXH0M1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756440AbXH0MZB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 08:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbXH0MYx
+	id S1756642AbXH0M1u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 08:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbXH0M1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 08:24:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44913 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752455AbXH0MYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 08:24:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: Who wants to maintain KR list for stable releases? (was Re: nmi_watchdog=2 regression in 2.6.21)
-Date: Mon, 27 Aug 2007 14:35:37 +0200
-User-Agent: KMail/1.9.5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Daniel Walker" <dwalker@mvista.com>,
-       "=?iso-8859-1?q?Bj=F6rn?= Steinbrink" <B.Steinbrink@gmx.de>,
-       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       "Natalie Protasevich" <protasnb@gmail.com>
-References: <1186531609.22044.50.camel@imap.mvista.com> <20070827005131.b93f5935.akpm@linux-foundation.org> <6bffcb0e0708270438j4c92a0b4m1396b4010f25bfb5@mail.gmail.com>
-In-Reply-To: <6bffcb0e0708270438j4c92a0b4m1396b4010f25bfb5@mail.gmail.com>
+	Mon, 27 Aug 2007 08:27:43 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:41716 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751634AbXH0M1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 08:27:42 -0400
+Message-ID: <388217659.90061@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Mon, 27 Aug 2007 20:27:38 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Chris Mason <chris.mason@oracle.com>, Andrew Morton <akpm@osdl.org>,
+       David Chinner <dgc@sgi.com>, Michael Rubin <mrubin@google.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] [RFC][PATCH] clustered writeback
+Message-ID: <20070827122738.GA6999@mail.ustc.edu.cn>
+References: <388214369.05937@ustc.edu.cn> <20070827050336.6a7e8e16@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708271435.38518.rjw@sisk.pl>
+In-Reply-To: <20070827050336.6a7e8e16@laptopd505.fenrus.org>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 27 August 2007 13:38, Michal Piotrowski wrote:
-> On 27/08/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Mon, 27 Aug 2007 02:45:02 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> >
-> > > Daniel Walker pisze:
-> > > [snip]
-> > > > Have you considered maintaining all the lists in Bugzilla?
-> > >
-> > > Yes, I have considered it.
-> > >
-> > > Bugzilla sucks when it comes to tracking things. There is
-> > > a regression field, but there are no difference between
-> > > 2.6.22 and 2.6.23 regression.
-> > >
-> > > Most people are reporting bugs through LKML:
-> > > - 23 regressions with reference to LKML
-> > > - 4 regressions with reference to Bugzilla
-> >
-> > Presumably that's fixable.
-> >
-> > But I think bugzilla is more appropriate for tracking longer-term bugs.  If
-> > some problem has just popped up (or has just been discovered) then it's
-> > best to try to knock it over with a quick email discussion.  If that
-> > doesn't work out then the bug should be captured in bugzilla so that it
-> > doesn't get lost.
-> >
-> > The really important data which bugzilla will record are
-> >
-> > a) the fact that the bug exists and
-> >
-> > b) the identity of the person who can reproduce it and who will hopefully
-> > work with us on fixing it.
-> >
-> > > > If you had a
-> > > > search of open bugs they would just fall of the list as they get
-> > > > closed..
-> > >
-> > > Unfortunately, the world is not perfect.
-> > >
-> > > Is anyone interested in maintaining KR list for stable releases?
-> >
-> > I'm not sure that we need one, really.  Any bugs in a stable release can be
-> > handled via email and/or bugzilla as we are presently doing?
-> >
-> > What I'm concerned about is that regressions which we didn't fix are just
-> > getting lost.  Is anyone taking care to ensure that they are getting
-> > transitioned into bugzilla for tracking?
+On Mon, Aug 27, 2007 at 05:03:36AM -0700, Arjan van de Ven wrote:
+> On Mon, 27 Aug 2007 19:21:52 +0800
+> > 
+> > Because it does the work in small batches of 10 inodes, when the
+> > system has <=10 dirty inodes, its behavior will reduce to:
+> > - do a full sweep *at once* on every 25s
+> > Which means the disk will flicker once every 25s, not bad :)
 > 
-> I can copy all regression reports into Bugzilla after each release.
+> 25 seconds is quite not good already though.... it takes a disk a
+> second or two of no activity to go into low power mode, every 25
+> seconds means you now have at least a 10% constant power cost....
+> 
+> I don't know the right answer (well other than "make sure inodes aren't
+> dirty", which involves fixing apps to not do as much file operations,
+> as well as relatime) but just "every 25s is no big deal" isn't really
+> the case ;-(
 
-The unresolved ones, that is?  If you can do that, it would be a very good
-thing, IMO.
+Yeah, 25s may be too frequent... What I meant is that the old behavior
+could be "write 1-3 inodes on every 5s" if the inodes are dirtied at
+random times. Now it becomes "write 10 inodes on every 25s". So it is
+actually better ;-)
 
-Greetings,
-Rafael
+It's interesting that we want writeback to be smooth on heavy loads
+and to be 'bursty' on light loads. Increasing dirty_expire_centisecs
+and decreasing dirty_writeback_centisecs could help it somehow.
+
