@@ -1,40 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbXH0XRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbXH0XRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624AbXH0XRR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 19:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbXH0XRD
+	id S1756696AbXH0XRr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 19:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbXH0XRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 19:17:03 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:34622 "EHLO
+	Mon, 27 Aug 2007 19:17:39 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34628 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752676AbXH0XRA (ORCPT
+	with ESMTP id S1753222AbXH0XRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 19:17:00 -0400
-Date: Tue, 28 Aug 2007 01:16:59 +0200
+	Mon, 27 Aug 2007 19:17:38 -0400
+Date: Tue, 28 Aug 2007 01:17:38 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Eugene Teo <eugeneteo@kernel.sg>
-Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] clean up exports in fs/{open,read_write}.c
-Message-ID: <20070827231659.GO26410@stusta.de>
-References: <20070824033310.GA5662@kernel.sg>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, perex@suse.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] unexport sys_{open,read}
+Message-ID: <20070827231738.GP26410@stusta.de>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <20070827212723.GM4121@stusta.de> <20070827155302.47ba71e2@laptopd505.fenrus.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070824033310.GA5662@kernel.sg>
+In-Reply-To: <20070827155302.47ba71e2@laptopd505.fenrus.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 24, 2007 at 11:33:10AM +0800, Eugene Teo wrote:
-> Takashi-san fixed sound/isa/wavefront/wavefront_synth.c to use
-> request_firmware instead of sys_*. Since that is the last driver in the
-> kernel that uses sys_{read,close}, this patch kills these exports. sys_open
-> is left exported for sparc64 only.
->...
+On Mon, Aug 27, 2007 at 03:53:02PM -0700, Arjan van de Ven wrote:
+> On Mon, 27 Aug 2007 23:27:23 +0200
+> Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > On Wed, Aug 22, 2007 at 02:06:48AM -0700, Andrew Morton wrote:
+> > >...
+> > > Changes since 2.6.23-rc2-mm2:
+> > >...
+> > >  git-alsa.patch
+> > >...
+> > >  git trees
+> > >...
+> > 
+> > sys_{open,read} can finally be unexported.
+> > 
+> 
+> isn't sys_close in the same boat?
 
-fs/binfmt_misc.c still uses sys_close.
+Still used in fs/binfmt_misc.c ...
 
 cu
 Adrian
