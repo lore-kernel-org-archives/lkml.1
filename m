@@ -1,103 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbXH0N3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbXH0Nae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756537AbXH0N3D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 09:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbXH0N2y
+	id S1756628AbXH0Nae (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 09:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbXH0Na1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 09:28:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55820 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752634AbXH0N2x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 09:28:53 -0400
-Date: Mon, 27 Aug 2007 14:28:43 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Peter Firefly Lund <firefly@vax64.dk>
-Cc: Christoph Lameter <clameter@sgi.com>, Momchil Velikov <velco@fadata.bg>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [PATCH] avoid negative shifts in radix-tree.c
-Message-ID: <20070827132843.GB21970@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Peter Firefly Lund <firefly@vax64.dk>,
-	Christoph Lameter <clameter@sgi.com>,
-	Momchil Velikov <velco@fadata.bg>, linux-kernel@vger.kernel.org,
-	trivial@kernel.org
-References: <1188051967.18306.45.camel@ls-search>
+	Mon, 27 Aug 2007 09:30:27 -0400
+Received: from pat.uio.no ([129.240.10.15]:33936 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753223AbXH0Na0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 09:30:26 -0400
+Subject: Re: [BUG] problem with nfs_invaildate_page
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <200708240743.AA00249@paprika.lab.ntt.co.jp>
+References: <200708240743.AA00249@paprika.lab.ntt.co.jp>
+Content-Type: text/plain
+Date: Mon, 27 Aug 2007 09:30:12 -0400
+Message-Id: <1188221412.6701.45.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1188051967.18306.45.camel@ls-search>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.072)
+X-UiO-Scanned: EE0863F876572B69F5E12F1E81EA57B687223029
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 983 total 3486782 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 25, 2007 at 04:26:07PM +0200, Peter Firefly Lund wrote:
-> (linux-vax@pergamentum.com only bcc'ed because it's subscribers only,
-> Lameter addressed because I think he touched the code last, Velikov and
-> Hellwig because they touched the code first.)
-> 
-> The current code in __max_index() will shift by a negative amount first
-> and only then fix the situation by ignoring the result if the shift
-> amount would have been negative.  This happens to work on almost any
-> architecture despite not being valid C.
-> 
-> Chapter and verse from the (draft) ISO C99 standard, "6.5.7 Bitwise
-> shift operators", paragraph 3:
-> 
->   "The integer promotions are performed on each of the operands. The
->    type of the result is that of the promoted left operand. If the
->    value of the right operand is negative or is greater than or equal
->    to the width of the promoted left operand, the behavior is
->    undefined."
-> 
-> Right-shifting by a negative amount causes a "reserved operand fault" on
-> the VAX with some gcc versions.
-> 
-> 
-> Applies to 2.6.22.
-> Boot tested lightly on an emulated VAX.
-> 
-> (The function is called 7 times on booth with the values 0..6 -- I
-> checked that the return values were the same + that it returns ~0UL for
-> height==6 as was clearly the intention.)
-> 
-> -Peter
-> 
-> --- lib/radix-tree-old.c	2007-08-25 15:36:40.000000000 +0200
-> +++ lib/radix-tree.c	2007-08-25 15:36:51.000000000 +0200
-> @@ -980,12 +980,14 @@ radix_tree_node_ctor(void *node, struct 
->  
->  static __init unsigned long __maxindex(unsigned int height)
->  {
-> -	unsigned int tmp = height * RADIX_TREE_MAP_SHIFT;
-> -	unsigned long index = (~0UL >> (RADIX_TREE_INDEX_BITS - tmp - 1)) >> 1;
-> -
-> -	if (tmp >= RADIX_TREE_INDEX_BITS)
-> -		index = ~0UL;
-> -	return index;
-> +	unsigned int	tmp   = height * RADIX_TREE_MAP_SHIFT;
-> +	int		shift = RADIX_TREE_INDEX_BITS - tmp;
-> +	unsigned long	index;
-> +
-> +	if (shift < 0)
-> +		return ~0UL;
-> +	else
-> +		return ~0UL >> shift;
+It looks as if ecryptfs is dropping the page lock between the calls to
+prepare_write() and commit_write(). That would be a bug.
 
-The conceptual change looks fine to me, but the code looks a little odd,
-what about:
+Cheers
+  Trond
 
-static __init unsigned long __maxindex(unsigned int height)
-{
-	unsigned int tmp = height * RADIX_TREE_MAP_SHIFT;
-	int shift = RADIX_TREE_INDEX_BITS - tmp;
+On Fri, 2007-08-24 at 16:43 +0900, Ryusuke Konishi wrote:
+> Hi,
+> 
+> I got the following BUG in nfs_inode_add_request() when I was using
+> eCryptfs on NFS. (Don't ask me why I was doing that)
+> 
+> ------------[ cut here ]------------
+> kernel BUG at fs/nfs/write.c:387!
+> invalid opcode: 0000 [#1]
+> PREEMPT SMP
+> Modules linked in: cbc md5 aes ecb blkcipher cryptomgr crypto_algapi ecryptfs
+> nfs iscsi_tcp libiscsi scsi_transport_iscsi nfsd exportfs lockd nfs_acl sunrpc
+> nbd md_mod dm_snapshot dm_mirror dm_mod video output
+> CPU:    5
+> EIP:    0060:[<f90113e2>]    Not tainted VLI
+> EFLAGS: 00010246   (2.6.23-rc3 #5)
+> EIP is at nfs_writepage_setup+0xc8/0x305 [nfs]
+> eax: ffffffef   ebx: ffffffef   ecx: 00000000   edx: f776a6c8
+> esi: f776a700   edi: f3392680   ebp: f6489c04   esp: f6489bc4
+> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Process dd (pid: 4260, ti=f6488000 task=f5719500 task.ti=f6488000)
+> Stack: 00000000 00001000 dd751a4f 730e4905 00000000 c404e0c0 f5a86a80 f33927e4
+>        f3392774 00000000 f6489bf4 c029e298 00000000 f6812780 00000000 c404e0c0
+>        f6489c44 f9011b8c 00001000 00001000 00000010 fff2b000 f6489d08 00000246
+> Call Trace:
+>  [<c01082d6>] show_trace_log_lvl+0x1a/0x2f
+>  [<c0108388>] show_stack_log_lvl+0x9d/0xa5
+>  [<c0108581>] show_registers+0x1f1/0x332
+>  [<c01087dd>] die+0x11b/0x250
+>  [<c0480cd0>] do_trap+0x8a/0xa3
+>  [<c0108bd1>] do_invalid_op+0x88/0x92
+>  [<c0480a9a>] error_code+0x72/0x78
+>  [<f9011b8c>] nfs_updatepage+0x14d/0x1b3 [nfs]
+>  [<f9008f93>] nfs_commit_write+0x29/0x39 [nfs]
+>  [<f8fe0ae5>] ecryptfs_commit_lower_page+0x26/0x6b [ecryptfs]
+>  [<f8fe2675>] ecryptfs_write_out_page+0x28/0x73 [ecryptfs]
+>  [<f8fe32ac>] ecryptfs_encrypt_page+0x3a4/0x419 [ecryptfs]
+>  [<f8fe12e0>] ecryptfs_commit_write+0x1ba/0x31f [ecryptfs]
+>  [<c015c1ab>] generic_file_buffered_write+0x3a6/0x54e
+>  [<c015c793>] __generic_file_aio_write_nolock+0x440/0x493
+>  [<c015c83c>] generic_file_aio_write+0x56/0xb4
+>  [<c0178a7c>] do_sync_write+0xc5/0x102
+>  [<c017923e>] vfs_write+0xaf/0x138
+>  [<c0179806>] sys_write+0x3d/0x61
+>  [<c010719a>] syscall_call+0x7/0xb
+>  =======================
+> Code: 00 00 00 f0 0f ba 6e 28 00 19 c0 8b 7d e0 81 ef f4 00 00 00 8b 56
+> 14 8b 45 e0 83 e8 1c 89 f1 e8 50 db 29 c7 89 c3 83 f8 ef 75 04 <0f> 0b
+> eb fe 85 c0 75 4e 83 bf e8 00 00 00 00 75 10 8b 45 e0 e8
+> EIP: [<f90113e2>] nfs_writepage_setup+0xc8/0x305 [nfs] SS:ESP 0068:f6489bc4
+> 
+> As you may have guessed, the BUG shows a collision of nfs_page in a nfs
+> page tree.  That is, there is a case that nfs_page remains even if 
+> the requested page is removed from page cache.
+> 
+> static int nfs_inode_add_request(struct inode *inode, struct nfs_page *req)
+> {
+>         struct nfs_inode *nfsi = NFS_I(inode);
+>         int error;
+> 
+>         error = radix_tree_insert(&nfsi->nfs_page_tree, req->wb_index, req);
+>         BUG_ON(error == -EEXIST);
+>         ...
+> }
+> 
+> By some tests, it turned out to be a discordance between 
+> nfs_invalidate_page() and truncate_inode_pages() in recent kernels.
+> 
+> In kernel 2.6.20, truncate_complete_page() was changed to clear dirty flag
+> from the removing page just before calling a_ops->invalidatepage().
+> As a result, nfs_wb_page_priority(), which is called from nfs_invalidate_page(),
+> get to skip nfs_writepage_locked() that starts to write dirty pages.
+> 
+> int nfs_wb_page_priority(struct inode *inode, struct page *page, int how)
+> {
+> 	...
+> 	if (clear_page_dirty_for_io(page)) {
+> 		ret = nfs_writepage_locked(page, &wbc);
+> 		if (ret < 0)
+> 			goto out;
+> 	}
+> 	if (!PagePrivate(page))
+> 		return 0;
+> 	ret = nfs_sync_mapping_wait(page->mapping, &wbc, how);
+>  	...
+> }
+> 
+> Since nfs_sync_mapping_wait() does not care for non-dirty, unwritten,
+> and uncommitted pages, their nfs_page get into orphans.
+> It seems to need some sort of change to handle unwritten non-dirty
+> pages.
+> 
+> For reference, I will show the way to reproduce the BUG using
+> eCryptfs below.  I tried other way, but I couldn't find simpler
+> way not requiring eCryptfs so far.
+> 
+>  # mount -t nfs server:/pub /nfs
+>  # mount -t ecryptfs -o cipher=aes,ecryptfs_key_bytes=16 /nfs /secret
+>  # dd if=/dev/zero of=/secret/aaa bs=4096 count=1
+>  # dd if=/dev/zero of=/secret/aaa bs=4096 count=1
+> 
+> These procedures do truncate an unwritten NFS page.
+> Note that overwritting without use of eCryptfs doesn't reproduce 
+> the problem because it calls nfs_setattr() and forces the pages 
+> to be written back.
+> 
+> Cheers,
+> Ryusuke Konishi
 
-	if (shift < 0)
-		return ~0UL;
-	return ~0UL >> shift;
-}
-
-instead?
