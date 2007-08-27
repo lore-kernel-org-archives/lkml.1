@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760120AbXH0QHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbXH0QIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760120AbXH0QHh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 12:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758699AbXH0P7U
+	id S1760217AbXH0QIB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758747AbXH0P7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:59:20 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:43245 "EHLO smtp.polymtl.ca"
+	Mon, 27 Aug 2007 11:59:32 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:43299 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758698AbXH0P7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:59:19 -0400
-Message-Id: <20070827155853.276151078@polymtl.ca>
+	id S1758449AbXH0P7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:59:30 -0400
+Message-Id: <20070827155850.932265049@polymtl.ca>
 References: <20070827155601.360241608@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:56:11 -0400
+Date: Mon, 27 Aug 2007 11:56:04 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu
-Subject: [patch 10/10] Text Edit Lock - x86_64 standardize debug rodata
-Content-Disposition: inline; filename=text-edit-lock-x86_64-standardize-debug-rodata.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:58:53 +0000
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net
+Subject: [patch 03/10] Kprobes - declare kprobe_mutex static
+Content-Disposition: inline; filename=kprobes-declare-kprobes-mutex-static.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:58:51 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Standardize DEBUG_RODATA, removing special cases for hotplug and kprobes.
+Since it will not be used by other kernel objects, it makes sense to declare it
+static.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: pageexec@freemail.hu
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: hch@infradead.org
+CC: prasanna@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
 ---
- arch/x86_64/mm/init.c           |   23 +++++------------------
- include/asm-x86_64/cacheflush.h |   22 ++++++++++++++++++++++
- 2 files changed, 27 insertions(+), 18 deletions(-)
+ kernel/kprobes.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/arch/x86_64/mm/init.c
+Index: linux-2.6-lttng/kernel/kprobes.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/x86_64/mm/init.c	2007-08-18 10:02:58.000000000 -0400
-+++ linux-2.6-lttng/arch/x86_64/mm/init.c	2007-08-18 10:04:14.000000000 -0400
-@@ -598,25 +598,11 @@ void free_initmem(void)
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-19 09:09:15.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2007-08-19 17:18:07.000000000 -0400
+@@ -68,7 +68,7 @@ static struct hlist_head kretprobe_inst_
+ /* NOTE: change this value only with kprobe_mutex held */
+ static bool kprobe_enabled;
  
- void mark_rodata_ro(void)
- {
--	unsigned long start = (unsigned long)_stext, end;
-+	unsigned long start = PFN_ALIGN(_stext);
-+	unsigned long end = PFN_ALIGN(__end_rodata);
+-DEFINE_MUTEX(kprobe_mutex);		/* Protects kprobe_table */
++static DEFINE_MUTEX(kprobe_mutex);	/* Protects kprobe_table */
+ DEFINE_SPINLOCK(kretprobe_lock);	/* Protects kretprobe_inst_table */
+ static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
  
--#ifdef CONFIG_HOTPLUG_CPU
--	/* It must still be possible to apply SMP alternatives. */
--	if (num_possible_cpus() > 1)
--		start = (unsigned long)_etext;
--#endif
--
--#ifdef CONFIG_KPROBES
--	start = (unsigned long)__start_rodata;
--#endif
--	
--	end = (unsigned long)__end_rodata;
--	start = (start + PAGE_SIZE - 1) & PAGE_MASK;
--	end &= PAGE_MASK;
--	if (end <= start)
--		return;
--
--	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT, PAGE_KERNEL_RO);
-+	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT,
-+				PAGE_KERNEL_RO);
- 
- 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
- 	       (end - start) >> 10);
-@@ -629,6 +615,7 @@ void mark_rodata_ro(void)
- 	 */
- 	global_flush_tlb();
- }
-+
- #endif
- 
- #ifdef CONFIG_BLK_DEV_INITRD
 
 -- 
 Mathieu Desnoyers
