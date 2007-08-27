@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764449AbXH0Vyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965319AbXH0Vy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764449AbXH0Vyj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 17:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933550AbXH0Vno
+	id S965319AbXH0Vy7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 17:54:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933228AbXH0Voy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 17:43:44 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:49775 "EHLO fieldses.org"
+	Mon, 27 Aug 2007 17:44:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47335 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753065AbXH0Vnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 17:43:41 -0400
-Date: Mon, 27 Aug 2007 17:43:33 -0400
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, neilb@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add source address to sunrpc svc errors
-Message-ID: <20070827214333.GM3118@fieldses.org>
-References: <20070825012630.GB5431@gallifrey> <20070824185621.3f16f7c9.randy.dunlap@oracle.com> <20070825150927.GA29335@gallifrey>
+	id S932140AbXH0Vov convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 17:44:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm 0/3] PM: Improve ACPI handling during suspend and hibernation (rev. 3)
+Date: Mon, 27 Aug 2007 23:47:44 +0200
+User-Agent: KMail/1.9.5
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070825150927.GA29335@gallifrey>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Message-Id: <200708272347.45438.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 25, 2007 at 04:09:27PM +0100, Dr. David Alan Gilbert wrote:
->   This patch adds the address of the client that caused an
-> error in sunrpc/svc.c so that you get errors that look like:
-> 
-> svc: 192.168.66.28, port=709: unknown version (3 for prog 100003, nfsd)
-> 
-> I've seen machines which get bunches of unknown version or similar
-> errors from time to time, and while the recent patch to add
-> the service helps to find which service has the wrong version it doesn't
-> help find the potentially bad client.
+Hi,
 
-Looks like a reasonable idea to me, thanks!  Any objection to just
-calling it "svc_printk" instead of "svc_printkerr"?
+The patches in this series are intended to improve the handling of the ACPI
+platform during suspend and hibernation.
 
-I also wonder whether these shouldn't all be dprintk's instead of
-printk's.  One misbehaving client could create a lot of noise in the
-logs.
+They do the following things:
+* make hibernation_platform_enter() consistent with the sleep state entering
+  code in kernel/power/main.c
+* introduce global platform callbacks allowing us to handle ACPI in a more fine
+  grained way during suspend and hibernation
+* improve the handling of the system status indicator during suspend and
+  hibernation.
 
---b.
+Greetings,
+Rafael
+
