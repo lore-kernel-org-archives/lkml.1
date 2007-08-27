@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbXH0P7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbXH0QAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758798AbXH0P7n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 11:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757856AbXH0Pzp
+	id S1758865AbXH0QAN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 12:00:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757832AbXH0Pzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 11:55:45 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:41916 "EHLO smtp.polymtl.ca"
+	Mon, 27 Aug 2007 11:55:46 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41927 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757789AbXH0Pzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 11:55:42 -0400
-Message-Id: <20070827155532.230714989@polymtl.ca>
+	id S1757847AbXH0Pzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 11:55:44 -0400
+Message-Id: <20070827155528.561293418@polymtl.ca>
 References: <20070827155234.062715780@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 27 Aug 2007 11:53:00 -0400
+Date: Mon, 27 Aug 2007 11:52:49 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, clameter@sgi.com,
-       sparclinux@vger.kernel.org, wli@holomorphy.com
-Subject: [patch 26/28] Add cmpxchg_local to sparc64
-Content-Disposition: inline; filename=add-cmpxchg-local-to-sparc64.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:55:32 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Hirokazu Takata <takata@linux-m32r.org>, linux-m32r@ml.linux-m32r.org,
+       Adrian Bunk <bunk@kernel.org>
+Subject: [patch 15/28] Fix m32r __xchg
+Content-Disposition: inline; filename=fix-m32r-__xchg.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Mon, 27 Aug 2007 15:55:30 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use cmpxchg_u32 and cmpxchg_u64 for cmpxchg_local and cmpxchg64_local. For other
-type sizes, use the new generic cmpxchg_local (disables interrupt).
+the #endif  /* CONFIG_SMP */ should cover the default condition, or it may cause
+bad parameter to be silently missed.
 
-Change:
-Since the header depends on local_irqsave/local_irqrestore, it must be
-included after their declaration.
-
-Actually, being below the
-#include <linux/irqflags.h> should be enough, and on sparc64 it is
-included at the beginning of system.h.
-
-So it makes sense to move it up for sparc64.
+To make it work correctly, we have to remove the ifdef CONFIG SMP surrounding 
+__xchg_called_with_bad_pointer declaration. Thanks to Adrian Bunk for detecting
+this.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: clameter@sgi.com
-CC: sparclinux@vger.kernel.org
-CC: wli@holomorphy.com
+Acked-by: Hirokazu Takata <takata@linux-m32r.org>
+CC: linux-m32r@ml.linux-m32r.org
+CC: Adrian Bunk <bunk@kernel.org>
 ---
- include/asm-sparc64/system.h |   25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ include/asm-m32r/system.h |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-sparc64/system.h
+Index: linux-2.6-lttng/include/asm-m32r/system.h
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-sparc64/system.h	2007-08-20 17:40:57.000000000 -0400
-+++ linux-2.6-lttng/include/asm-sparc64/system.h	2007-08-20 19:42:32.000000000 -0400
-@@ -9,6 +9,7 @@
- #ifndef __ASSEMBLY__
+--- linux-2.6-lttng.orig/include/asm-m32r/system.h	2007-08-13 18:21:02.000000000 -0400
++++ linux-2.6-lttng/include/asm-m32r/system.h	2007-08-19 07:08:26.000000000 -0400
+@@ -127,9 +127,7 @@ static inline void local_irq_disable(voi
+ 	((__typeof__(*(ptr)))__xchg_local((unsigned long)(x),(ptr), \
+ 			sizeof(*(ptr))))
  
- #include <linux/irqflags.h>
-+#include <asm-generic/cmpxchg-local.h>
+-#ifdef CONFIG_SMP
+ extern void  __xchg_called_with_bad_pointer(void);
+-#endif
  
- /*
-  * Sparc (general) CPU types
-@@ -314,6 +315,30 @@ __cmpxchg(volatile void *ptr, unsigned l
- 				    (unsigned long)_n_, sizeof(*(ptr))); \
-   })
+ #ifdef CONFIG_CHIP_M32700_TS1
+ #define DCACHE_CLEAR(reg0, reg1, addr)				\
+@@ -189,9 +187,9 @@ __xchg(unsigned long x, volatile void * 
+ #endif	/* CONFIG_CHIP_M32700_TS1 */
+ 		);
+ 		break;
++#endif  /* CONFIG_SMP */
+ 	default:
+ 		__xchg_called_with_bad_pointer();
+-#endif  /* CONFIG_SMP */
+ 	}
  
-+/*
-+ * cmpxchg_local and cmpxchg64_local are atomic wrt current CPU. Always make
-+ * them available.
-+ */
-+
-+static inline unsigned long __cmpxchg_local(volatile void *ptr,
-+				      unsigned long old,
-+				      unsigned long new, int size)
-+{
-+	switch (size) {
-+	case 4:
-+	case 8:	return __cmpxchg(ptr, old, new, size);
-+	default:
-+		return __cmpxchg_local_generic(ptr, old, new, size);
-+	}
-+
-+	return old;
-+}
-+
-+#define cmpxchg_local(ptr,o,n)					  	\
-+	(__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
-+			   	 (unsigned long)(n), sizeof(*(ptr)))
-+#define cmpxchg64_local(ptr,o,n) cmpxchg_local((ptr), (o), (n))
-+
- #endif /* !(__ASSEMBLY__) */
- 
- #define arch_align_stack(x) (x)
+ 	local_irq_restore(flags);
 
 -- 
 Mathieu Desnoyers
