@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbXH1RLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757000AbXH1RMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755661AbXH1RLV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 13:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbXH1RLN
+	id S1757000AbXH1RMQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 13:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbXH1RL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 13:11:13 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:58595 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094AbXH1RLM (ORCPT
+	Tue, 28 Aug 2007 13:11:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50599 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbXH1RL5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 13:11:12 -0400
-Message-ID: <46D455DB.8000800@gmail.com>
-Date: Tue, 28 Aug 2007 19:05:31 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: =?ISO-8859-15?Q?Jos=E9_Luis_Pati=F1o_Andr=E9s?= 
-	<jopan@alumni.uv.es>
-CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
-Subject: Re: Problems with IDE on linux 2.6.22.X
-References: <200708212149.12912.jopan@alumni.uv.es> <20070822162312.GG9412@csclub.uwaterloo.ca> <46CC6A2F.5000406@gmail.com> <200708280044.34475.jopan@alumni.uv.es>
-In-Reply-To: <200708280044.34475.jopan@alumni.uv.es>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Tue, 28 Aug 2007 13:11:57 -0400
+Date: Tue, 28 Aug 2007 18:11:55 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
+Message-ID: <20070828171155.GC29343@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jiri Slaby <jirislaby@gmail.com>, linville@tuxdriver.com,
+	linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+	netdev@vger.kernel.org
+References: <2713029743177393055@pripojeni.net> <7515194658758617@pripojeni.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7515194658758617@pripojeni.net>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/28/2007 02:44 AM, José Luis Patiño Andrés wrote:
+On Tue, Aug 28, 2007 at 12:00:50PM -0400, Jiri Slaby wrote:
+> ath5k, license is GPLv2
+> 
+> The files are available only under GPLv2 since now.
 
-> Okay Rene, I activated SCSI CD-ROM support in kernel config and now all
-> works again. It's strange, because I never used this option to get my DVD
-> device on.
-
-Sheesh. How could anyone _not_ understand you need SCSI CD-ROM support for 
-your IDE DVD-RW drive...
-
-Rene "Sigh" Herman
-
+Is this really a good idea?  Most of the reverse-engineering was
+done by the OpenBSD folks, and it would certainly be helpful to
+work together with them on new hardware revisions, etc..
