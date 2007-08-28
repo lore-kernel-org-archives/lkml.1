@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932428AbXH1Tzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762438AbXH1Tzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932428AbXH1Tzb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbXH1TzT
+	id S1762438AbXH1Tzz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932546AbXH1Tzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:55:19 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:9757 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753813AbXH1TzR (ORCPT
+	Tue, 28 Aug 2007 15:55:41 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35593 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932530AbXH1Tzj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 15:55:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=f8RvNvU9Ooyx0BOBrIMHrfM4FOspjMi+rfSTbx7Z82c9qEhlq+fQCffi1SU17AcpzxClcRxu1jy4YP/0nMOYnKjCxvxdC7l2WJACEWB7wi3WgYK1HjJNRB+sPIvYk5lw5RsI3qmYiH8HmY00eZoJvXHVN0R40EObLmBB6ADDM9w=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] debloat aic7xxx and aic79xx drivers by deinlining
-Date: Tue, 28 Aug 2007 20:55:06 +0100
-User-Agent: KMail/1.9.1
-Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@osdl.org>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, hare@suse.de
-References: <200708252257.07241.vda.linux@googlemail.com> <200708281256.35162.vda.linux@googlemail.com> <20070828081710.4687185c@laptopd505.fenrus.org>
-In-Reply-To: <20070828081710.4687185c@laptopd505.fenrus.org>
+	Tue, 28 Aug 2007 15:55:39 -0400
+Date: Tue, 28 Aug 2007 12:55:38 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Christoph Hellwig <hch@lst.de>
+cc: torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
+       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [00/36] Large Blocksize Support V6
+In-Reply-To: <20070828192034.GA13883@lst.de>
+Message-ID: <Pine.LNX.4.64.0708281254070.16473@schroedinger.engr.sgi.com>
+References: <20070828190551.415127746@sgi.com> <20070828192034.GA13883@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708282055.07411.vda.linux@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 August 2007 16:17, Arjan van de Ven wrote:
-> On Tue, 28 Aug 2007 12:56:34 +010
->
-> Denys Vlasenko <vda.linux@googlemail.com> wrote:
-> > >   make namespacecheck
-> >
-> > Thanks, nice tool.
-> >
-> > aic7xxx is kind of not very nice in this regard.
-> >
-> > See below what I get even on non-patched driver.
-> >
-> > I am willing to clean it up, but I still would like
-> > "debloating" patch to be accepted.
->
-> Fwiw I do like your debloat patch a lot; it's just only half the
-> equation ... if you also do the namespace fixes, I bet the driver
-> debloats even more...
+On Tue, 28 Aug 2007, Christoph Hellwig wrote:
 
-Yes, I know, and I am happy to do that too. I just don't know
-whether patches will be accepted.
+> one patch per file is the most braindead and most unacceptable way
+> to split a series.  Please stop whatever you're doing right now and
+> correct it and send out a patch that has one patch per logical change
+> for the whole tree.  This means people can actually read the patch,
+> and it's bisectable.
 
-Why this patch is not commented on by scsi people?
-Am I sending patches to wrong people/lists?
---
-vda
+The patches are per logical change aside from the first patches that 
+introduce the page cache functions all over the kernel. It would be 
+unacceptably big and difficult to merge if I put them all together.
+
