@@ -1,569 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbXH1Vkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763280AbXH1Vkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757271AbXH1Vkd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 17:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756601AbXH1ViW
+	id S1763280AbXH1Vkx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 17:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbXH1ViY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 17:38:22 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:65023 "EHLO
+	Tue, 28 Aug 2007 17:38:24 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:65038 "EHLO
 	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754330AbXH1ViP (ORCPT
+	with ESMTP id S1753343AbXH1ViR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 17:38:15 -0400
-Message-Id: <20070828213800.225582637@mvista.com>
-References: <20070828213748.790253419@mvista.com>
+	Tue, 28 Aug 2007 17:38:17 -0400
+Message-Id: <20070828213748.790253419@mvista.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 28 Aug 2007 14:37:50 -0700
+Date: Tue, 28 Aug 2007 14:37:49 -0700
 From: Daniel Walker <dwalker@mvista.com>
 To: mingo@elte.hu
 Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Content-Disposition: inline; filename=pickop-spinlock-rwlocks.patch
-Subject: [PATCH -rt 2/8] spinlocks/rwlocks: use PICK_FUNCTION()
+       linux-rt-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Content-Disposition: inline; filename=pickop-rt_lock_h.patch
+Subject: [PATCH -rt 1/8] introduce PICK_FUNCTION
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reaplace old PICK_OP style macros with the new PICK_FUNCTION macro.
+PICK_FUNCTION() is similar to the other PICK_OP style macros, and was
+created to replace them all. I used variable argument macros to handle
+PICK_FUNC_2ARG/PICK_FUNC_1ARG. Otherwise the marcos are similar to the
+original macros used for semaphores. The entire system is used to do a
+compile time switch between two different locking APIs. For example,
+real spinlocks (raw_spinlock_t) and mutexes (or sleeping spinlocks).
+
+This new macro replaces all the duplication from lock type to lock type.
+The result of this patch, and the next two, is a fairly nice simplification,
+and consolidation. Although the seqlock changes are larger than the originals
+I think over all the patchset is worth while.
+
+Incorporated peterz's suggestion to not require TYPE_EQUAL() to only
+use pointers.
 
 Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
 ---
- include/linux/sched.h    |   13 -
- include/linux/spinlock.h |  345 ++++++++++++++---------------------------------
- kernel/rtmutex.c         |    2 
- lib/dec_and_lock.c       |    2 
- 4 files changed, 111 insertions(+), 251 deletions(-)
+ include/linux/pickop.h  |   36 +++++++++++++
+ include/linux/rt_lock.h |  129 +++++++++++++++---------------------------------
+ 2 files changed, 77 insertions(+), 88 deletions(-)
 
-Index: linux-2.6.22/include/linux/sched.h
+Index: linux-2.6.22/include/linux/pickop.h
 ===================================================================
---- linux-2.6.22.orig/include/linux/sched.h
-+++ linux-2.6.22/include/linux/sched.h
-@@ -2022,17 +2022,8 @@ extern int __cond_resched_raw_spinlock(r
- extern int __cond_resched_spinlock(spinlock_t *spinlock);
- 
- #define cond_resched_lock(lock) \
--({								\
--	int __ret;						\
--								\
--	if (TYPE_EQUAL((lock), raw_spinlock_t))	 		\
--		__ret = __cond_resched_raw_spinlock((raw_spinlock_t *)lock);\
--	else if (TYPE_EQUAL(lock, spinlock_t))			\
--		__ret = __cond_resched_spinlock((spinlock_t *)lock); \
--	else __ret = __bad_spinlock_type();			\
--								\
--	__ret;							\
--})
-+	PICK_SPIN_OP_RET(__cond_resched_raw_spinlock, __cond_resched_spinlock,\
-+		 lock)
- 
- extern int cond_resched_softirq(void);
- extern int cond_resched_softirq_context(void);
-Index: linux-2.6.22/include/linux/spinlock.h
+--- /dev/null
++++ linux-2.6.22/include/linux/pickop.h
+@@ -0,0 +1,36 @@
++#ifndef _LINUX_PICKOP_H
++#define _LINUX_PICKOP_H
++
++#undef TYPE_EQUAL
++#define TYPE_EQUAL(var, type) \
++		__builtin_types_compatible_p(typeof(var), type *)
++
++#undef PICK_TYPE_EQUAL
++#define PICK_TYPE_EQUAL(var, type) \
++		__builtin_types_compatible_p(typeof(var), type)
++
++extern int __bad_func_type(void);
++
++#define PICK_FUNCTION(type1, type2, func1, func2, arg0, ...)		\
++do {									\
++	if (PICK_TYPE_EQUAL((arg0), type1))				\
++		func1((type1)(arg0), ##__VA_ARGS__);			\
++	else if (PICK_TYPE_EQUAL((arg0), type2))			\
++		func2((type2)(arg0), ##__VA_ARGS__);			\
++	else __bad_func_type();						\
++} while (0)
++
++#define PICK_FUNCTION_RET(type1, type2, func1, func2, arg0, ...)	\
++({									\
++	unsigned long __ret;						\
++									\
++	if (PICK_TYPE_EQUAL((arg0), type1))				\
++		__ret = func1((type1)(arg0), ##__VA_ARGS__);		\
++	else if (PICK_TYPE_EQUAL((arg0), type2))			\
++		__ret = func2((type2)(arg0), ##__VA_ARGS__);		\
++	else __ret = __bad_func_type();					\
++									\
++	__ret;								\
++})
++
++#endif /* _LINUX_PICKOP_H */
+Index: linux-2.6.22/include/linux/rt_lock.h
 ===================================================================
---- linux-2.6.22.orig/include/linux/spinlock.h
-+++ linux-2.6.22/include/linux/spinlock.h
-@@ -91,6 +91,7 @@
- #include <linux/stringify.h>
- #include <linux/bottom_half.h>
- #include <linux/irqflags.h>
-+#include <linux/pickop.h>
+--- linux-2.6.22.orig/include/linux/rt_lock.h
++++ linux-2.6.22/include/linux/rt_lock.h
+@@ -156,76 +156,40 @@ extern void fastcall rt_up(struct semaph
  
- #include <asm/system.h>
- 
-@@ -162,7 +163,7 @@ extern void __lockfunc rt_spin_unlock_wa
- extern int __lockfunc
- rt_spin_trylock_irqsave(spinlock_t *lock, unsigned long *flags);
- extern int __lockfunc rt_spin_trylock(spinlock_t *lock);
--extern int _atomic_dec_and_spin_lock(atomic_t *atomic, spinlock_t *lock);
-+extern int _atomic_dec_and_spin_lock(spinlock_t *lock, atomic_t *atomic);
- 
- /*
-  * lockdep-less calls, for derived types like rwlock:
-@@ -243,54 +244,6 @@ do {							\
- #  define _spin_trylock_irqsave(l,f)	TSNBCONRT(l)
- #endif
+ extern int __bad_func_type(void);
  
 -#undef TYPE_EQUAL
--#define TYPE_EQUAL(lock, type) \
--		__builtin_types_compatible_p(typeof(lock), type *)
+-#define TYPE_EQUAL(var, type) \
+-		__builtin_types_compatible_p(typeof(var), type *)
 -
--#define PICK_OP(op, lock)						\
+-#define PICK_FUNC_1ARG(type1, type2, func1, func2, arg)			\
 -do {									\
--	if (TYPE_EQUAL((lock), raw_spinlock_t))				\
--		__spin##op((raw_spinlock_t *)(lock));			\
--	else if (TYPE_EQUAL(lock, spinlock_t))				\
--		_spin##op((spinlock_t *)(lock));			\
--	else __bad_spinlock_type();					\
+-	if (TYPE_EQUAL((arg), type1))					\
+-		func1((type1 *)(arg));					\
+-	else if (TYPE_EQUAL((arg), type2))				\
+-		func2((type2 *)(arg));					\
+-	else __bad_func_type();						\
 -} while (0)
--
--#define PICK_OP_RET(op, lock...)					\
--({									\
--	unsigned long __ret;						\
--									\
--	if (TYPE_EQUAL((lock), raw_spinlock_t))	 			\
--		__ret = __spin##op((raw_spinlock_t *)(lock));		\
--	else if (TYPE_EQUAL(lock, spinlock_t))				\
--		__ret = _spin##op((spinlock_t *)(lock));		\
--	else __ret = __bad_spinlock_type();				\
--									\
--	__ret;								\
--})
--
--#define PICK_OP2(op, lock, flags)					\
--do {									\
--	if (TYPE_EQUAL((lock), raw_spinlock_t))				\
--		__spin##op((raw_spinlock_t *)(lock), flags);		\
--	else if (TYPE_EQUAL(lock, spinlock_t))				\
--		_spin##op((spinlock_t *)(lock), flags);			\
--	else __bad_spinlock_type();					\
--} while (0)
--
--#define PICK_OP2_RET(op, lock, flags)					\
--({									\
--	unsigned long __ret;						\
--									\
--	if (TYPE_EQUAL((lock), raw_spinlock_t))				\
--		__ret = __spin##op((raw_spinlock_t *)(lock), flags);	\
--	else if (TYPE_EQUAL(lock, spinlock_t))				\
--		__ret = _spin##op((spinlock_t *)(lock), flags);		\
--	else __bad_spinlock_type();					\
--									\
--	__ret;								\
--})
--
- extern void __lockfunc rt_write_lock(rwlock_t *rwlock);
- extern void __lockfunc rt_read_lock(rwlock_t *rwlock);
- extern int __lockfunc rt_write_trylock(rwlock_t *rwlock);
-@@ -349,76 +302,10 @@ do {							\
- # define _read_unlock_irqrestore(rwl, f)	rt_read_unlock(rwl)
- # define _write_unlock_irqrestore(rwl, f)	rt_write_unlock(rwl)
++#include <linux/pickop.h>
  
--#define __PICK_RW_OP(optype, op, lock)					\
--do {									\
--	if (TYPE_EQUAL((lock), raw_rwlock_t))				\
--		__##optype##op((raw_rwlock_t *)(lock));			\
--	else if (TYPE_EQUAL(lock, rwlock_t))				\
--		##op((rwlock_t *)(lock));				\
--	else __bad_rwlock_type();					\
--} while (0)
--
--#define PICK_RW_OP(optype, op, lock)					\
--do {									\
--	if (TYPE_EQUAL((lock), raw_rwlock_t))				\
--		__##optype##op((raw_rwlock_t *)(lock));			\
--	else if (TYPE_EQUAL(lock, rwlock_t))				\
--		_##optype##op((rwlock_t *)(lock));			\
--	else __bad_rwlock_type();					\
--} while (0)
--
--#define __PICK_RW_OP_RET(optype, op, lock...)				\
+-#define PICK_FUNC_1ARG_RET(type1, type2, func1, func2, arg)		\
 -({									\
 -	unsigned long __ret;						\
 -									\
--	if (TYPE_EQUAL((lock), raw_rwlock_t))		  		\
--		__ret = __##optype##op((raw_rwlock_t *)(lock));		\
--	else if (TYPE_EQUAL(lock, rwlock_t))				\
--		__ret = _##optype##op((rwlock_t *)(lock));		\
--	else __ret = __bad_rwlock_type();				\
+-	if (TYPE_EQUAL((arg), type1))					\
+-		__ret = func1((type1 *)(arg));				\
+-	else if (TYPE_EQUAL((arg), type2))				\
+-		__ret = func2((type2 *)(arg));				\
+-	else __ret = __bad_func_type();					\
 -									\
 -	__ret;								\
 -})
 -
--#define PICK_RW_OP_RET(optype, op, lock...)				\
--({									\
--	unsigned long __ret;						\
--									\
--	if (TYPE_EQUAL((lock), raw_rwlock_t))				\
--		__ret = __##optype##op((raw_rwlock_t *)(lock));		\
--	else if (TYPE_EQUAL(lock, rwlock_t))				\
--		__ret = _##optype##op((rwlock_t *)(lock));		\
--	else __ret = __bad_rwlock_type();				\
--									\
--	__ret;								\
--})
--
--#define PICK_RW_OP2(optype, op, lock, flags)				\
+-#define PICK_FUNC_2ARG(type1, type2, func1, func2, arg0, arg1)		\
 -do {									\
--	if (TYPE_EQUAL((lock), raw_rwlock_t))				\
--		__##optype##op((raw_rwlock_t *)(lock), flags);		\
--	else if (TYPE_EQUAL(lock, rwlock_t))				\
--		_##optype##op((rwlock_t *)(lock), flags);		\
--	else __bad_rwlock_type();					\
+-	if (TYPE_EQUAL((arg0), type1))					\
+-		func1((type1 *)(arg0), arg1);				\
+-	else if (TYPE_EQUAL((arg0), type2))				\
+-		func2((type2 *)(arg0), arg1);				\
+-	else __bad_func_type();						\
 -} while (0)
--
--#define PICK_RW_OP2_RET(optype, op, lock, flags)			\
--({									\
--	unsigned long __ret;						\
--									\
--	if (TYPE_EQUAL((lock), raw_rwlock_t))				\
--		__ret = __##optype##op((raw_rwlock_t *)(lock), flags);	\
--	else if (TYPE_EQUAL(lock, rwlock_t))				\
--		__ret = _##optype##op((rwlock_t *)(lock), flags);	\
--	else __bad_rwlock_type();					\
--									\
--	__ret;								\
--})
--
- #ifdef CONFIG_DEBUG_SPINLOCK
-   extern void __raw_spin_lock_init(raw_spinlock_t *lock, const char *name,
- 				   struct lock_class_key *key);
--# define _raw_spin_lock_init(lock)				\
-+# define _raw_spin_lock_init(lock, name, file, line)		\
- do {								\
- 	static struct lock_class_key __key;			\
- 								\
-@@ -428,25 +315,28 @@ do {								\
- #else
- #define __raw_spin_lock_init(lock) \
- 	do { *(lock) = RAW_SPIN_LOCK_UNLOCKED(lock); } while (0)
--# define _raw_spin_lock_init(lock) __raw_spin_lock_init(lock)
-+# define _raw_spin_lock_init(lock, name, file, line) __raw_spin_lock_init(lock)
- #endif
- 
--#define PICK_OP_INIT(op, lock)						\
--do {									\
--	if (TYPE_EQUAL((lock), raw_spinlock_t))				\
--		_raw_spin##op((raw_spinlock_t *)(lock));		\
--	else if (TYPE_EQUAL(lock, spinlock_t))				\
--		_spin##op((spinlock_t *)(lock), #lock, __FILE__, __LINE__); \
--	else __bad_spinlock_type();					\
--} while (0)
--
 +/*
-+ * PICK_SPIN_OP()/PICK_RW_OP() are simple redirectors for PICK_FUNCTION
++ * PICK_SEM_OP() is a small redirector to allow less typing of the lock
++ * types struct compat_semaphore, struct semaphore, at the front of the
++ * PICK_FUNCTION macro.
 + */
-+#define PICK_SPIN_OP(...)	\
-+	PICK_FUNCTION(raw_spinlock_t *, spinlock_t *, ##__VA_ARGS__)
-+#define PICK_SPIN_OP_RET(...)	\
-+	PICK_FUNCTION_RET(raw_spinlock_t *, spinlock_t *, ##__VA_ARGS__)
-+#define PICK_RW_OP(...)	PICK_FUNCTION(raw_rwlock_t *, rwlock_t *, ##__VA_ARGS__)
-+#define PICK_RW_OP_RET(...)	\
-+	PICK_FUNCTION_RET(raw_rwlock_t *, rwlock_t *, ##__VA_ARGS__)
++#define PICK_SEM_OP(...) PICK_FUNCTION(struct compat_semaphore *,	\
++	struct semaphore *, ##__VA_ARGS__)
++#define PICK_SEM_OP_RET(...) PICK_FUNCTION_RET(struct compat_semaphore *,\
++	struct semaphore *, ##__VA_ARGS__)
  
--#define spin_lock_init(lock)		PICK_OP_INIT(_lock_init, lock)
-+#define spin_lock_init(lock) \
-+	PICK_SPIN_OP(_raw_spin_lock_init, _spin_lock_init, lock, #lock,	\
-+		__FILE__, __LINE__)
+ #define sema_init(sem, val) \
+-	PICK_FUNC_2ARG(struct compat_semaphore, struct semaphore, \
+-		compat_sema_init, rt_sema_init, sem, val)
++	PICK_SEM_OP(compat_sema_init, rt_sema_init, sem, val)
  
- #ifdef CONFIG_DEBUG_SPINLOCK
-   extern void __raw_rwlock_init(raw_rwlock_t *lock, const char *name,
- 				struct lock_class_key *key);
--# define _raw_rwlock_init(lock)					\
-+# define _raw_rwlock_init(lock, name, file, line)		\
- do {								\
- 	static struct lock_class_key __key;			\
- 								\
-@@ -455,83 +345,82 @@ do {								\
- #else
- #define __raw_rwlock_init(lock) \
- 	do { *(lock) = RAW_RW_LOCK_UNLOCKED(lock); } while (0)
--# define _raw_rwlock_init(lock) __raw_rwlock_init(lock)
-+# define _raw_rwlock_init(lock, name, file, line) __raw_rwlock_init(lock)
- #endif
+-#define init_MUTEX(sem) \
+-	PICK_FUNC_1ARG(struct compat_semaphore, struct semaphore, \
+-		compat_init_MUTEX, rt_init_MUTEX, sem)
++#define init_MUTEX(sem) PICK_SEM_OP(compat_init_MUTEX, rt_init_MUTEX, sem)
  
--#define __PICK_RW_OP_INIT(optype, op, lock)				\
--do {									\
--	if (TYPE_EQUAL((lock), raw_rwlock_t))				\
--		_raw_##optype##op((raw_rwlock_t *)(lock));		\
--	else if (TYPE_EQUAL(lock, rwlock_t))				\
--		_##optype##op((rwlock_t *)(lock), #lock, __FILE__, __LINE__);\
--	else __bad_spinlock_type();					\
--} while (0)
--
--#define rwlock_init(lock)	__PICK_RW_OP_INIT(rwlock, _init, lock)
-+#define rwlock_init(lock) \
-+	PICK_RW_OP(_raw_rwlock_init, _rwlock_init, lock, #lock,	\
-+		__FILE__, __LINE__)
+ #define init_MUTEX_LOCKED(sem) \
+-	PICK_FUNC_1ARG(struct compat_semaphore, struct semaphore, \
+-		compat_init_MUTEX_LOCKED, rt_init_MUTEX_LOCKED, sem)
++	PICK_SEM_OP(compat_init_MUTEX_LOCKED, rt_init_MUTEX_LOCKED, sem)
  
- #define __spin_is_locked(lock)	__raw_spin_is_locked(&(lock)->raw_lock)
+-#define down(sem) \
+-	PICK_FUNC_1ARG(struct compat_semaphore, struct semaphore, \
+-		compat_down, rt_down, sem)
++#define down(sem) PICK_SEM_OP(compat_down, rt_down, sem)
  
--#define spin_is_locked(lock)	PICK_OP_RET(_is_locked, lock)
-+#define spin_is_locked(lock)	\
-+	PICK_SPIN_OP_RET(__spin_is_locked, _spin_is_locked, lock)
+ #define down_interruptible(sem) \
+-	PICK_FUNC_1ARG_RET(struct compat_semaphore, struct semaphore, \
+-		compat_down_interruptible, rt_down_interruptible, sem)
++	PICK_SEM_OP_RET(compat_down_interruptible, rt_down_interruptible, sem)
  
- #define __spin_unlock_wait(lock) __raw_spin_unlock_wait(&(lock)->raw_lock)
+ #define down_trylock(sem) \
+-	PICK_FUNC_1ARG_RET(struct compat_semaphore, struct semaphore, \
+-		compat_down_trylock, rt_down_trylock, sem)
++	PICK_SEM_OP_RET(compat_down_trylock, rt_down_trylock, sem)
  
--#define spin_unlock_wait(lock)	PICK_OP(_unlock_wait, lock)
-+#define spin_unlock_wait(lock) \
-+	PICK_SPIN_OP(__spin_unlock_wait, _spin_unlock_wait, lock)
-+
- /*
-  * Define the various spin_lock and rw_lock methods.  Note we define these
-  * regardless of whether CONFIG_SMP or CONFIG_PREEMPT are set. The various
-  * methods are defined as nops in the case they are not required.
-  */
--// #define spin_trylock(lock)	_spin_trylock(lock)
--#define spin_trylock(lock)	__cond_lock(lock, PICK_OP_RET(_trylock, lock))
-+#define spin_trylock(lock)	\
-+	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock, _spin_trylock, lock))
+-#define up(sem) \
+-	PICK_FUNC_1ARG(struct compat_semaphore, struct semaphore, \
+-		compat_up, rt_up, sem)
++#define up(sem) PICK_SEM_OP(compat_up, rt_up, sem)
  
--//#define read_trylock(lock)	_read_trylock(lock)
--#define read_trylock(lock)	__cond_lock(lock, PICK_RW_OP_RET(read, _trylock, lock))
-+#define read_trylock(lock)	\
-+	__cond_lock(lock, PICK_RW_OP_RET(__read_trylock, _read_trylock, lock))
+ #define sem_is_locked(sem) \
+-	PICK_FUNC_1ARG_RET(struct compat_semaphore, struct semaphore, \
+-		compat_sem_is_locked, rt_sem_is_locked, sem)
++	PICK_SEM_OP_RET(compat_sem_is_locked, rt_sem_is_locked, sem)
  
--//#define write_trylock(lock)	_write_trylock(lock)
--#define write_trylock(lock)	__cond_lock(lock, PICK_RW_OP_RET(write, _trylock, lock))
-+#define write_trylock(lock)	\
-+	__cond_lock(lock, PICK_RW_OP_RET(__write_trylock, _write_trylock, lock))
- 
- #define write_trylock_irqsave(lock, flags) \
--	__cond_lock(lock, PICK_RW_OP2_RET(write, _trylock_irqsave, lock, &flags))
-+	__cond_lock(lock, PICK_RW_OP_RET(__write_trylock_irqsave, 	\
-+		_write_trylock_irqsave, lock, &flags))
- 
- #define __spin_can_lock(lock)	__raw_spin_can_lock(&(lock)->raw_lock)
- #define __read_can_lock(lock)	__raw_read_can_lock(&(lock)->raw_lock)
- #define __write_can_lock(lock)	__raw_write_can_lock(&(lock)->raw_lock)
- 
- #define spin_can_lock(lock) \
--	__cond_lock(lock, PICK_OP_RET(_can_lock, lock))
-+	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_can_lock, _spin_can_lock,\
-+		lock))
- 
- #define read_can_lock(lock) \
--	__cond_lock(lock, PICK_RW_OP_RET(read, _can_lock, lock))
-+	__cond_lock(lock, PICK_RW_OP_RET(__read_can_lock, _read_can_lock, lock))
- 
- #define write_can_lock(lock) \
--	__cond_lock(lock, PICK_RW_OP_RET(write, _can_lock, lock))
-+	__cond_lock(lock, PICK_RW_OP_RET(__write_can_lock, _write_can_lock,\
-+		lock))
- 
--// #define spin_lock(lock)	_spin_lock(lock)
--#define spin_lock(lock)		PICK_OP(_lock, lock)
-+#define spin_lock(lock) PICK_SPIN_OP(__spin_lock, _spin_lock, lock)
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
--# define spin_lock_nested(lock, subclass) PICK_OP2(_lock_nested, lock, subclass)
-+# define spin_lock_nested(lock, subclass)	\
-+	PICK_SPIN_OP(__spin_lock_nested, _spin_lock_nested, lock, subclass)
- #else
- # define spin_lock_nested(lock, subclass) spin_lock(lock)
- #endif
- 
--//#define write_lock(lock)	_write_lock(lock)
--#define write_lock(lock)	PICK_RW_OP(write, _lock, lock)
-+#define write_lock(lock) PICK_RW_OP(__write_lock, _write_lock, lock)
- 
--// #define read_lock(lock)	_read_lock(lock)
--#define read_lock(lock)		PICK_RW_OP(read, _lock, lock)
-+#define read_lock(lock)	PICK_RW_OP(__read_lock, _read_lock, lock)
- 
- # define spin_lock_irqsave(lock, flags)				\
- do {								\
- 	BUILD_CHECK_IRQ_FLAGS(flags);				\
--	flags = PICK_OP_RET(_lock_irqsave, lock);		\
-+	flags = PICK_SPIN_OP_RET(__spin_lock_irqsave, _spin_lock_irqsave, \
-+			lock);						\
- } while (0)
- 
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
- # define spin_lock_irqsave_nested(lock, flags, subclass)		\
- do {									\
- 	BUILD_CHECK_IRQ_FLAGS(flags);					\
--	flags = PICK_OP2_RET(_lock_irqsave_nested, lock, subclass);	\
-+	flags = PICK_SPIN_OP_RET(__spin_lock_irqsave_nested, 		\
-+		_spin_lock_irqsave_nested, lock, subclass);		\
- } while (0)
- #else
- # define spin_lock_irqsave_nested(lock, flags, subclass) \
-@@ -541,112 +430,92 @@ do {									\
- # define read_lock_irqsave(lock, flags)				\
- do {								\
- 	BUILD_CHECK_IRQ_FLAGS(flags);				\
--	flags = PICK_RW_OP_RET(read, _lock_irqsave, lock);	\
-+	flags = PICK_RW_OP_RET(__read_lock_irqsave, _read_lock_irqsave, lock);\
- } while (0)
- 
- # define write_lock_irqsave(lock, flags)			\
- do {								\
- 	BUILD_CHECK_IRQ_FLAGS(flags);				\
--	flags = PICK_RW_OP_RET(write, _lock_irqsave, lock);	\
-+	flags = PICK_RW_OP_RET(__write_lock_irqsave, _write_lock_irqsave,lock);\
- } while (0)
- 
--// #define spin_lock_irq(lock)	_spin_lock_irq(lock)
--// #define spin_lock_bh(lock)	_spin_lock_bh(lock)
--#define spin_lock_irq(lock)	PICK_OP(_lock_irq, lock)
--#define spin_lock_bh(lock)	PICK_OP(_lock_bh, lock)
--
--// #define read_lock_irq(lock)	_read_lock_irq(lock)
--// #define read_lock_bh(lock)	_read_lock_bh(lock)
--#define read_lock_irq(lock)	PICK_RW_OP(read, _lock_irq, lock)
--#define read_lock_bh(lock)	PICK_RW_OP(read, _lock_bh, lock)
--
--// #define write_lock_irq(lock)		_write_lock_irq(lock)
--// #define write_lock_bh(lock)		_write_lock_bh(lock)
--#define write_lock_irq(lock)	PICK_RW_OP(write, _lock_irq, lock)
--#define write_lock_bh(lock)	PICK_RW_OP(write, _lock_bh, lock)
--
--// #define spin_unlock(lock)	_spin_unlock(lock)
--// #define write_unlock(lock)	_write_unlock(lock)
--// #define read_unlock(lock)	_read_unlock(lock)
--#define spin_unlock(lock)	PICK_OP(_unlock, lock)
--#define read_unlock(lock)	PICK_RW_OP(read, _unlock, lock)
--#define write_unlock(lock)	PICK_RW_OP(write, _unlock, lock)
-+#define spin_lock_irq(lock) PICK_SPIN_OP(__spin_lock_irq, _spin_lock_irq, lock)
- 
--// #define spin_unlock(lock)	_spin_unlock_no_resched(lock)
--#define spin_unlock_no_resched(lock) \
--				PICK_OP(_unlock_no_resched, lock)
-+#define spin_lock_bh(lock) PICK_SPIN_OP(__spin_lock_bh, _spin_lock_bh, lock)
- 
--//#define spin_unlock_irqrestore(lock, flags)
--//		_spin_unlock_irqrestore(lock, flags)
--//#define spin_unlock_irq(lock)	_spin_unlock_irq(lock)
--//#define spin_unlock_bh(lock)	_spin_unlock_bh(lock)
--#define spin_unlock_irqrestore(lock, flags)		\
--do {							\
--	BUILD_CHECK_IRQ_FLAGS(flags);			\
--	PICK_OP2(_unlock_irqrestore, lock, flags);	\
--} while (0)
-+#define read_lock_irq(lock) PICK_RW_OP(__read_lock_irq, _read_lock_irq, lock)
- 
--#define spin_unlock_irq(lock)	PICK_OP(_unlock_irq, lock)
--#define spin_unlock_bh(lock)	PICK_OP(_unlock_bh, lock)
-+#define read_lock_bh(lock) PICK_RW_OP(__read_lock_bh, _read_lock_bh, lock)
- 
--// #define read_unlock_irqrestore(lock, flags)
--// 		_read_unlock_irqrestore(lock, flags)
--// #define read_unlock_irq(lock)	_read_unlock_irq(lock)
--// #define read_unlock_bh(lock)	_read_unlock_bh(lock)
--#define read_unlock_irqrestore(lock, flags)			\
--do {								\
--	BUILD_CHECK_IRQ_FLAGS(flags);				\
--	PICK_RW_OP2(read, _unlock_irqrestore, lock, flags);	\
-+#define write_lock_irq(lock) PICK_RW_OP(__write_lock_irq, _write_lock_irq, lock)
-+
-+#define write_lock_bh(lock) PICK_RW_OP(__write_lock_bh, _write_lock_bh, lock)
-+
-+#define spin_unlock(lock) PICK_SPIN_OP(__spin_unlock, _spin_unlock, lock)
-+
-+#define read_unlock(lock) PICK_RW_OP(__read_unlock, _read_unlock, lock)
-+
-+#define write_unlock(lock) PICK_RW_OP(__write_unlock, _write_unlock, lock)
-+
-+#define spin_unlock_no_resched(lock) \
-+	PICK_SPIN_OP(__spin_unlock_no_resched, _spin_unlock_no_resched, lock)
-+
-+#define spin_unlock_irqrestore(lock, flags)				\
-+do {									\
-+	BUILD_CHECK_IRQ_FLAGS(flags);					\
-+	PICK_SPIN_OP(__spin_unlock_irqrestore, _spin_unlock_irqrestore,	\
-+		     lock, flags);					\
- } while (0)
- 
--#define read_unlock_irq(lock)	PICK_RW_OP(read, _unlock_irq, lock)
--#define read_unlock_bh(lock)	PICK_RW_OP(read, _unlock_bh, lock)
-+#define spin_unlock_irq(lock)	\
-+	PICK_SPIN_OP(__spin_unlock_irq, _spin_unlock_irq, lock)
-+#define spin_unlock_bh(lock)	\
-+	PICK_SPIN_OP(__spin_unlock_bh, _spin_unlock_bh, lock)
- 
--// #define write_unlock_irqrestore(lock, flags)
--// 	_write_unlock_irqrestore(lock, flags)
--// #define write_unlock_irq(lock)			_write_unlock_irq(lock)
--// #define write_unlock_bh(lock)			_write_unlock_bh(lock)
--#define write_unlock_irqrestore(lock, flags)			\
--do {								\
--	BUILD_CHECK_IRQ_FLAGS(flags);				\
--	PICK_RW_OP2(write, _unlock_irqrestore, lock, flags);	\
-+#define read_unlock_irqrestore(lock, flags)				\
-+do {									\
-+	BUILD_CHECK_IRQ_FLAGS(flags);					\
-+	PICK_RW_OP(__read_unlock_irqrestore, _read_unlock_irqrestore,	\
-+		lock, flags);						\
- } while (0)
--#define write_unlock_irq(lock)	PICK_RW_OP(write, _unlock_irq, lock)
--#define write_unlock_bh(lock)	PICK_RW_OP(write, _unlock_bh, lock)
- 
--// #define spin_trylock_bh(lock)	_spin_trylock_bh(lock)
--#define spin_trylock_bh(lock)	__cond_lock(lock, PICK_OP_RET(_trylock_bh, lock))
-+#define read_unlock_irq(lock)	\
-+	PICK_RW_OP(__read_unlock_irq, _read_unlock_irq, lock)
-+#define read_unlock_bh(lock) PICK_RW_OP(__read_unlock_bh, _read_unlock_bh, lock)
- 
--// #define spin_trylock_irq(lock)
-+#define write_unlock_irqrestore(lock, flags)				\
-+do {									\
-+	BUILD_CHECK_IRQ_FLAGS(flags);					\
-+	PICK_RW_OP(__write_unlock_irqrestore, _write_unlock_irqrestore, \
-+		lock, flags);						\
-+} while (0)
-+#define write_unlock_irq(lock)	\
-+	PICK_RW_OP(__write_unlock_irq, _write_unlock_irq, lock)
- 
--#define spin_trylock_irq(lock)	__cond_lock(lock, PICK_OP_RET(_trylock_irq, lock))
-+#define write_unlock_bh(lock)	\
-+	PICK_RW_OP(__write_unlock_bh, _write_unlock_bh, lock)
- 
--// #define spin_trylock_irqsave(lock, flags)
-+#define spin_trylock_bh(lock)	\
-+	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock_bh, _spin_trylock_bh,\
-+		lock))
-+
-+#define spin_trylock_irq(lock)	\
-+	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock_irq,		\
-+		__spin_trylock_irq, lock))
- 
- #define spin_trylock_irqsave(lock, flags) \
--		__cond_lock(lock, PICK_OP2_RET(_trylock_irqsave, lock, &flags))
-+	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock_irqsave, 	\
-+		_spin_trylock_irqsave, lock, &flags))
- 
- /* "lock on reference count zero" */
- #ifndef ATOMIC_DEC_AND_LOCK
- # include <asm/atomic.h>
--  extern int __atomic_dec_and_spin_lock(atomic_t *atomic, raw_spinlock_t *lock);
-+  extern int __atomic_dec_and_spin_lock(raw_spinlock_t *lock, atomic_t *atomic);
- #endif
- 
- #define atomic_dec_and_lock(atomic, lock)				\
--__cond_lock(lock, ({							\
--	unsigned long __ret;						\
--									\
--	if (TYPE_EQUAL(lock, raw_spinlock_t))				\
--		__ret = __atomic_dec_and_spin_lock(atomic,		\
--					(raw_spinlock_t *)(lock));	\
--	else if (TYPE_EQUAL(lock, spinlock_t))				\
--		__ret = _atomic_dec_and_spin_lock(atomic,		\
--					(spinlock_t *)(lock));		\
--	else __ret = __bad_spinlock_type();				\
--									\
--	__ret;								\
--}))
--
-+	__cond_lock(lock, PICK_SPIN_OP_RET(__atomic_dec_and_spin_lock,	\
-+		_atomic_dec_and_spin_lock, lock, atomic))
+-#define sema_count(sem) \
+-	PICK_FUNC_1ARG_RET(struct compat_semaphore, struct semaphore, \
+-		compat_sema_count, rt_sema_count, sem)
++#define sema_count(sem) PICK_SEM_OP_RET(compat_sema_count, rt_sema_count, sem)
  
  /*
-  *  bit-based spin_lock()
-Index: linux-2.6.22/kernel/rtmutex.c
-===================================================================
---- linux-2.6.22.orig/kernel/rtmutex.c
-+++ linux-2.6.22/kernel/rtmutex.c
-@@ -857,7 +857,7 @@ int __lockfunc rt_spin_trylock_irqsave(s
- }
- EXPORT_SYMBOL(rt_spin_trylock_irqsave);
+  * rwsems:
+@@ -272,58 +236,47 @@ extern void fastcall rt_downgrade_write(
  
--int _atomic_dec_and_spin_lock(atomic_t *atomic, spinlock_t *lock)
-+int _atomic_dec_and_spin_lock(spinlock_t *lock, atomic_t *atomic)
- {
- 	/* Subtract 1 from counter unless that drops it to 0 (ie. it was 1) */
- 	if (atomic_add_unless(atomic, -1, 1))
-Index: linux-2.6.22/lib/dec_and_lock.c
-===================================================================
---- linux-2.6.22.orig/lib/dec_and_lock.c
-+++ linux-2.6.22/lib/dec_and_lock.c
-@@ -17,7 +17,7 @@
-  * because the spin-lock and the decrement must be
-  * "atomic".
-  */
--int __atomic_dec_and_spin_lock(atomic_t *atomic, raw_spinlock_t *lock)
-+int __atomic_dec_and_spin_lock(raw_spinlock_t *lock, atomic_t *atomic)
- {
- #ifdef CONFIG_SMP
- 	/* Subtract 1 from counter unless that drops it to 0 (ie. it was 1) */
+ # define rt_rwsem_is_locked(rws)	(rt_mutex_is_locked(&(rws)->lock))
+ 
+-#define init_rwsem(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_init_rwsem, rt_init_rwsem, rwsem)
+-
+-#define down_read(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_read, rt_down_read, rwsem)
++#define PICK_RWSEM_OP(...) PICK_FUNCTION(struct compat_rw_semaphore *,	\
++	struct rw_semaphore *, ##__VA_ARGS__)
++#define PICK_RWSEM_OP_RET(...) PICK_FUNCTION_RET(struct compat_rw_semaphore *,\
++	struct rw_semaphore *, ##__VA_ARGS__)
++
++#define init_rwsem(rwsem) PICK_RWSEM_OP(compat_init_rwsem, rt_init_rwsem, rwsem)
++
++#define down_read(rwsem) PICK_RWSEM_OP(compat_down_read, rt_down_read, rwsem)
+ 
+ #define down_read_non_owner(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_read_non_owner, rt_down_read_non_owner, rwsem)
++	PICK_RWSEM_OP(compat_down_read_non_owner, rt_down_read_non_owner, rwsem)
+ 
+ #define down_read_trylock(rwsem) \
+-	PICK_FUNC_1ARG_RET(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_read_trylock, rt_down_read_trylock, rwsem)
++	PICK_RWSEM_OP_RET(compat_down_read_trylock, rt_down_read_trylock, rwsem)
+ 
+-#define down_write(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_write, rt_down_write, rwsem)
++#define down_write(rwsem) PICK_RWSEM_OP(compat_down_write, rt_down_write, rwsem)
+ 
+ #define down_read_nested(rwsem, subclass) \
+-	PICK_FUNC_2ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_read_nested, rt_down_read_nested, rwsem, subclass)
+-
++	PICK_RWSEM_OP(compat_down_read_nested, rt_down_read_nested,	\
++		rwsem, subclass)
+ 
+ #define down_write_nested(rwsem, subclass) \
+-	PICK_FUNC_2ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_write_nested, rt_down_write_nested, rwsem, subclass)
++	PICK_RWSEM_OP(compat_down_write_nested, rt_down_write_nested,	\
++		rwsem, subclass)
+ 
+ #define down_write_trylock(rwsem) \
+-	PICK_FUNC_1ARG_RET(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_write_trylock, rt_down_write_trylock, rwsem)
++	PICK_RWSEM_OP_RET(compat_down_write_trylock, rt_down_write_trylock,\
++		rwsem)
+ 
+-#define up_read(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_up_read, rt_up_read, rwsem)
++#define up_read(rwsem) PICK_RWSEM_OP(compat_up_read, rt_up_read, rwsem)
+ 
+ #define up_read_non_owner(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_up_read_non_owner, rt_up_read_non_owner, rwsem)
++	PICK_RWSEM_OP(compat_up_read_non_owner, rt_up_read_non_owner, rwsem)
+ 
+-#define up_write(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_up_write, rt_up_write, rwsem)
++#define up_write(rwsem) PICK_RWSEM_OP(compat_up_write, rt_up_write, rwsem)
+ 
+ #define downgrade_write(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_downgrade_write, rt_downgrade_write, rwsem)
++	PICK_RWSEM_OP(compat_downgrade_write, rt_downgrade_write, rwsem)
+ 
+ #define rwsem_is_locked(rwsem) \
+-	PICK_FUNC_1ARG_RET(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_rwsem_is_locked, rt_rwsem_is_locked, rwsem)
++	PICK_RWSEM_OP_RET(compat_rwsem_is_locked, rt_rwsem_is_locked, rwsem)
+ 
+ #endif /* CONFIG_PREEMPT_RT */
+ 
 
 -- 
