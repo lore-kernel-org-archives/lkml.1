@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762296AbXH1TQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761519AbXH1TRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762296AbXH1TQe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761318AbXH1TIZ
+	id S1761519AbXH1TRG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbXH1TI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:08:25 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58841 "EHLO
+	Tue, 28 Aug 2007 15:08:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58794 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759816AbXH1THl (ORCPT
+	with ESMTP id S1759409AbXH1THl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Aug 2007 15:07:41 -0400
-Message-Id: <20070828190735.076092591@sgi.com>
+Message-Id: <20070828190734.825652766@sgi.com>
 References: <20070828190551.415127746@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 28 Aug 2007 12:06:21 -0700
+Date: Tue, 28 Aug 2007 12:06:20 -0700
 From: clameter@sgi.com
 To: torvalds@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -25,121 +25,189 @@ Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
 Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com,
        "H. Peter Anvin" <hpa@zytor.com>
 Cc: joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [30/36] Add VM_BUG_ONs to check for correct page order
-Content-Disposition: inline; filename=0030-Add-VM_BUG_ONs-to-check-for-correct-page-order.patch
+Subject: [29/36] Fix up reclaim counters
+Content-Disposition: inline; filename=0029-Fix-up-reclaim-counters.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before allowing different page orders it may be wise to get some checkpoints
-in at various places. Checkpoints will help debugging whenever a wrong order
-page shows up in a mapping. Helps when converting new filesystems to utilize
-larger pages.
+Compound pages of an arbitrary order may now be on the LRU and
+may be reclaimed.
+
+Adjust the counting in vmscan.c to could the number of base
+pages.
+
+Also change the active and inactive accounting to do the same.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- fs/buffer.c  |    1 +
- mm/filemap.c |   18 +++++++++++++++---
- 2 files changed, 16 insertions(+), 3 deletions(-)
+ include/linux/mm_inline.h |   36 +++++++++++++++++++++++++++---------
+ mm/vmscan.c               |   22 ++++++++++++----------
+ 2 files changed, 39 insertions(+), 19 deletions(-)
 
-Index: linux-2.6/fs/buffer.c
+Index: linux-2.6/include/linux/mm_inline.h
 ===================================================================
---- linux-2.6.orig/fs/buffer.c	2007-08-27 20:52:34.000000000 -0700
-+++ linux-2.6/fs/buffer.c	2007-08-27 21:09:19.000000000 -0700
-@@ -893,6 +893,7 @@ struct buffer_head *alloc_page_buffers(s
- 	long offset;
- 	unsigned int page_size = page_cache_size(page->mapping);
- 
-+	BUG_ON(size > page_size);
- try_again:
- 	head = NULL;
- 	offset = page_size;
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c	2007-08-27 21:08:04.000000000 -0700
-+++ linux-2.6/mm/filemap.c	2007-08-27 21:09:19.000000000 -0700
-@@ -128,6 +128,7 @@ void remove_from_page_cache(struct page 
- 	struct address_space *mapping = page->mapping;
- 
- 	BUG_ON(!PageLocked(page));
-+	VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 
- 	write_lock_irq(&mapping->tree_lock);
- 	__remove_from_page_cache(page);
-@@ -269,6 +270,7 @@ int wait_on_page_writeback_range(struct 
- 			if (page->index > end)
- 				continue;
- 
-+			VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 			wait_on_page_writeback(page);
- 			if (PageError(page))
- 				ret = -EIO;
-@@ -440,6 +442,7 @@ int add_to_page_cache(struct page *page,
+--- linux-2.6.orig/include/linux/mm_inline.h	2007-08-27 19:22:13.000000000 -0700
++++ linux-2.6/include/linux/mm_inline.h	2007-08-27 21:08:27.000000000 -0700
+@@ -2,39 +2,57 @@ static inline void
+ add_page_to_active_list(struct zone *zone, struct page *page)
  {
- 	int error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
- 
-+	VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 	if (error == 0) {
- 		write_lock_irq(&mapping->tree_lock);
- 		error = radix_tree_insert(&mapping->page_tree, offset, page);
-@@ -599,8 +602,10 @@ struct page * find_get_page(struct addre
- 
- 	read_lock_irq(&mapping->tree_lock);
- 	page = radix_tree_lookup(&mapping->page_tree, offset);
--	if (page)
-+	if (page) {
-+		VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 		page_cache_get(page);
-+	}
- 	read_unlock_irq(&mapping->tree_lock);
- 	return page;
+ 	list_add(&page->lru, &zone->active_list);
+-	__inc_zone_state(zone, NR_ACTIVE);
++	if (!PageHead(page))
++		__inc_zone_state(zone, NR_ACTIVE);
++	else
++		__inc_zone_page_state(page, NR_ACTIVE);
  }
-@@ -625,6 +630,7 @@ struct page *find_lock_page(struct addre
- repeat:
- 	page = radix_tree_lookup(&mapping->page_tree, offset);
- 	if (page) {
-+		VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 		page_cache_get(page);
- 		if (TestSetPageLocked(page)) {
- 			read_unlock_irq(&mapping->tree_lock);
-@@ -715,8 +721,10 @@ unsigned find_get_pages(struct address_s
- 	read_lock_irq(&mapping->tree_lock);
- 	ret = radix_tree_gang_lookup(&mapping->page_tree,
- 				(void **)pages, start, nr_pages);
--	for (i = 0; i < ret; i++)
-+	for (i = 0; i < ret; i++) {
-+		VM_BUG_ON(mapping_order(mapping) != compound_order(pages[i]));
- 		page_cache_get(pages[i]);
-+	}
- 	read_unlock_irq(&mapping->tree_lock);
- 	return ret;
+ 
+ static inline void
+ add_page_to_inactive_list(struct zone *zone, struct page *page)
+ {
+ 	list_add(&page->lru, &zone->inactive_list);
+-	__inc_zone_state(zone, NR_INACTIVE);
++	if (!PageHead(page))
++		__inc_zone_state(zone, NR_INACTIVE);
++	else
++		__inc_zone_page_state(page, NR_INACTIVE);
  }
-@@ -746,6 +754,7 @@ unsigned find_get_pages_contig(struct ad
- 		if (pages[i]->mapping == NULL || pages[i]->index != index)
+ 
+ static inline void
+ del_page_from_active_list(struct zone *zone, struct page *page)
+ {
+ 	list_del(&page->lru);
+-	__dec_zone_state(zone, NR_ACTIVE);
++	if (!PageHead(page))
++		__dec_zone_state(zone, NR_ACTIVE);
++	else
++		__dec_zone_page_state(page, NR_ACTIVE);
+ }
+ 
+ static inline void
+ del_page_from_inactive_list(struct zone *zone, struct page *page)
+ {
+ 	list_del(&page->lru);
+-	__dec_zone_state(zone, NR_INACTIVE);
++	if (!PageHead(page))
++		__dec_zone_state(zone, NR_INACTIVE);
++	else
++		__dec_zone_page_state(page, NR_INACTIVE);
+ }
+ 
+ static inline void
+ del_page_from_lru(struct zone *zone, struct page *page)
+ {
++	enum zone_stat_item counter = NR_ACTIVE;
++
+ 	list_del(&page->lru);
+-	if (PageActive(page)) {
++	if (PageActive(page))
+ 		__ClearPageActive(page);
+-		__dec_zone_state(zone, NR_ACTIVE);
+-	} else {
+-		__dec_zone_state(zone, NR_INACTIVE);
+-	}
++	else
++		counter = NR_INACTIVE;
++
++	if (!PageHead(page))
++		__dec_zone_state(zone, counter);
++	else
++		__dec_zone_page_state(page, counter);
+ }
+ 
++
+Index: linux-2.6/mm/vmscan.c
+===================================================================
+--- linux-2.6.orig/mm/vmscan.c	2007-08-27 19:22:13.000000000 -0700
++++ linux-2.6/mm/vmscan.c	2007-08-27 21:08:27.000000000 -0700
+@@ -466,14 +466,14 @@ static unsigned long shrink_page_list(st
+ 
+ 		VM_BUG_ON(PageActive(page));
+ 
+-		sc->nr_scanned++;
++		sc->nr_scanned += compound_pages(page);
+ 
+ 		if (!sc->may_swap && page_mapped(page))
+ 			goto keep_locked;
+ 
+ 		/* Double the slab pressure for mapped and swapcache pages */
+ 		if (page_mapped(page) || PageSwapCache(page))
+-			sc->nr_scanned++;
++			sc->nr_scanned += compound_pages(page);
+ 
+ 		may_enter_fs = (sc->gfp_mask & __GFP_FS) ||
+ 			(PageSwapCache(page) && (sc->gfp_mask & __GFP_IO));
+@@ -590,7 +590,7 @@ static unsigned long shrink_page_list(st
+ 
+ free_it:
+ 		unlock_page(page);
+-		nr_reclaimed++;
++		nr_reclaimed += compound_pages(page);
+ 		if (!pagevec_add(&freed_pvec, page))
+ 			__pagevec_release_nonlru(&freed_pvec);
+ 		continue;
+@@ -682,22 +682,23 @@ static unsigned long isolate_lru_pages(u
+ 	unsigned long nr_taken = 0;
+ 	unsigned long scan;
+ 
+-	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
++	for (scan = 0; scan < nr_to_scan && !list_empty(src); ) {
+ 		struct page *page;
+ 		unsigned long pfn;
+ 		unsigned long end_pfn;
+ 		unsigned long page_pfn;
++		int pages;
+ 		int zone_id;
+ 
+ 		page = lru_to_page(src);
+ 		prefetchw_prev_lru_page(page, src, flags);
+-
++		pages = compound_pages(page);
+ 		VM_BUG_ON(!PageLRU(page));
+ 
+ 		switch (__isolate_lru_page(page, mode)) {
+ 		case 0:
+ 			list_move(&page->lru, dst);
+-			nr_taken++;
++			nr_taken += pages;
  			break;
  
-+		VM_BUG_ON(mapping_order(mapping) != compound_order(pages[i]));
- 		page_cache_get(pages[i]);
- 		index++;
+ 		case -EBUSY:
+@@ -743,8 +744,8 @@ static unsigned long isolate_lru_pages(u
+ 			switch (__isolate_lru_page(cursor_page, mode)) {
+ 			case 0:
+ 				list_move(&cursor_page->lru, dst);
+-				nr_taken++;
+-				scan++;
++				nr_taken += compound_pages(cursor_page);
++				scan += compound_pages(cursor_page);
+ 				break;
+ 
+ 			case -EBUSY:
+@@ -754,6 +755,7 @@ static unsigned long isolate_lru_pages(u
+ 				break;
+ 			}
+ 		}
++		scan += pages;
  	}
-@@ -774,8 +783,10 @@ unsigned find_get_pages_tag(struct addre
- 	read_lock_irq(&mapping->tree_lock);
- 	ret = radix_tree_gang_lookup_tag(&mapping->page_tree,
- 				(void **)pages, *index, nr_pages, tag);
--	for (i = 0; i < ret; i++)
-+	for (i = 0; i < ret; i++) {
-+		VM_BUG_ON(mapping_order(mapping) != compound_order(pages[i]));
- 		page_cache_get(pages[i]);
-+	}
- 	if (ret)
- 		*index = pages[ret - 1]->index + 1;
- 	read_unlock_irq(&mapping->tree_lock);
-@@ -2233,6 +2244,7 @@ int try_to_release_page(struct page *pag
- 	struct address_space * const mapping = page->mapping;
  
- 	BUG_ON(!PageLocked(page));
-+	VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 	if (PageWriteback(page))
- 		return 0;
+ 	*scanned = scan;
+@@ -1010,7 +1012,7 @@ force_reclaim_mapped:
+ 		ClearPageActive(page);
  
+ 		list_move(&page->lru, &zone->inactive_list);
+-		pgmoved++;
++		pgmoved += compound_pages(page);
+ 		if (!pagevec_add(&pvec, page)) {
+ 			__mod_zone_page_state(zone, NR_INACTIVE, pgmoved);
+ 			spin_unlock_irq(&zone->lru_lock);
+@@ -1038,7 +1040,7 @@ force_reclaim_mapped:
+ 		SetPageLRU(page);
+ 		VM_BUG_ON(!PageActive(page));
+ 		list_move(&page->lru, &zone->active_list);
+-		pgmoved++;
++		pgmoved += compound_pages(page);
+ 		if (!pagevec_add(&pvec, page)) {
+ 			__mod_zone_page_state(zone, NR_ACTIVE, pgmoved);
+ 			pgmoved = 0;
 
 -- 
