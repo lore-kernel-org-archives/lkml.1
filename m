@@ -1,595 +1,1068 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763680AbXH1T3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764126AbXH1T3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763680AbXH1T3L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761967AbXH1TOs
+	id S1764126AbXH1T3m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760650AbXH1TOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:14:48 -0400
-Received: from cpe-70-113-91-236.austin.res.rr.com ([70.113.91.236]:52004 "EHLO
+	Tue, 28 Aug 2007 15:14:50 -0400
+Received: from cpe-70-113-91-236.austin.res.rr.com ([70.113.91.236]:52002 "EHLO
 	ericvh.homeip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762088AbXH1TOo (ORCPT
+	with ESMTP id S1762085AbXH1TOo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Aug 2007 15:14:44 -0400
+X-Greylist: delayed 1348 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Aug 2007 15:14:43 EDT
 From: Eric Van Hensbergen <ericvh@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: lguest@ozlabs.org, v9fs-developer@lists.sourceforge.net,
        kvm-devel@lists.sourceforge.net,
        Eric Van Hensbergen <ericvh@opteron (none)>,
        Eric Van Hensbergen <ericvh@gmail.com>
-Subject: [RFC] 9p: add lguest transport
-Date: Tue, 28 Aug 2007 13:52:39 -0500
-Message-Id: <11883271601888-git-send-email-ericvh@gmail.com>
+Subject: [RFC] 9p: Make transports dynamic
+Date: Tue, 28 Aug 2007 13:52:37 -0500
+Message-Id: <11883271601227-git-send-email-ericvh@gmail.com>
 X-Mailer: git-send-email 1.5.0.2.gfbe3d-dirty
-In-Reply-To: <11883271602233-git-send-email-ericvh@gmail.com>
-References: <11883271601857-git-send-email-ericvh@gmail.com> <11883271601227-git-send-email-ericvh@gmail.com> <11883271602233-git-send-email-ericvh@gmail.com>
+In-Reply-To: <11883271601857-git-send-email-ericvh@gmail.com>
+References: <11883271601857-git-send-email-ericvh@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Eric Van Hensbergen <ericvh@opteron.(none)>
 
-This adds a transport to 9p for communicating between guest and host
-domains on lguest.  Currently, the host-side proxies the communication to a
-socket connected to the actual server.  The transport is based heavily on
-the existing console code.
-
-A better integrated server component which eliminates some of the copy
-overhead is in progress and will look less like the existing console code.
+This patch abstracts out the interfaces to underlying transports so that
+new transports can be added as modules.  This should also allow kernel
+configuration of transports without ifdef-hell.
 
 Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
 ---
- Documentation/filesystems/9p.txt |    2 +
- Documentation/lguest/lguest.c    |  127 ++++++++++++++++
- fs/9p/v9fs.c                     |    2 +-
- include/linux/lguest_launcher.h  |    1 +
- net/9p/Kconfig                   |    7 +
- net/9p/Makefile                  |    4 +
- net/9p/trans_lg.c                |  303 ++++++++++++++++++++++++++++++++++++++
- 7 files changed, 445 insertions(+), 1 deletions(-)
- create mode 100644 net/9p/trans_lg.c
+ Documentation/filesystems/9p.txt |    8 +-
+ fs/9p/v9fs.c                     |  149 +++++++-------
+ fs/9p/v9fs.h                     |   15 +--
+ fs/9p/vfs_super.c                |   19 +--
+ include/net/9p/client.h          |    4 +-
+ include/net/9p/conn.h            |    4 +-
+ include/net/9p/transport.h       |   25 ++-
+ net/9p/Kconfig                   |   10 +
+ net/9p/Makefile                  |    5 +-
+ net/9p/client.c                  |    2 +-
+ net/9p/mux.c                     |    4 +-
+ net/9p/trans_fd.c                |  419 ++++++++++++++++++++++++--------------
+ 12 files changed, 379 insertions(+), 285 deletions(-)
 
 diff --git a/Documentation/filesystems/9p.txt b/Documentation/filesystems/9p.txt
-index e1879bd..1a3342f 100644
+index cda6905..1a5f50d 100644
 --- a/Documentation/filesystems/9p.txt
 +++ b/Documentation/filesystems/9p.txt
-@@ -48,6 +48,8 @@ OPTIONS
-                                 (see rfdno and wfdno)
- 			pci  - use a PCI pseudo device for 9p communication
- 				over shared memory between a guest and host
-+ 			lg   - use a lguest 9p channel for communication
-+				over shared memory between a guest and host
+@@ -35,12 +35,12 @@ For remote file server:
  
-   uname=name	user name to attempt mount as on the remote server.  The
-   		server may override or ignore this value.  Certain user
-diff --git a/Documentation/lguest/lguest.c b/Documentation/lguest/lguest.c
-index f791840..adc50de 100644
---- a/Documentation/lguest/lguest.c
-+++ b/Documentation/lguest/lguest.c
-@@ -1318,6 +1318,128 @@ static void setup_tun_net(const char *arg, struct device_list *devices)
- }
- /* That's the end of device setup. */
+ For Plan 9 From User Space applications (http://swtch.com/plan9)
  
-+/* 9p transport code.
-+ * This code implements the host side of the 9p transport.  Right now
-+ * this is heavily based on the console code and just proxies data to
-+ * a socket connected to an external server.  Eventually we'll hook the
-+ * server code in more directly like we do with lguest to avoid the
-+ * socket overhead.
-+ */
-+/* This is the routine proxies 9p channel input */
-+static bool handle_9p_input(int fd, struct device *dev)
-+{
-+	u32 irq = 0;
-+	u32 *lenp;
-+	int len = 0;
-+	unsigned int num = 0;
-+	struct iovec iov[LGUEST_MAX_DMA_SECTIONS];
-+
-+	/* First we get the console buffer from the Guest.  The key is dev->mem
-+	 * which was set in setup_9p(). */
-+
-+	lenp = get_dma_buffer(fd, dev->mem, iov, &num, &irq);
-+	if (!lenp) {
-+		/* If it's not ready for input, warn and set up to discard. */
-+		warn("9p: no dma buffer!");
-+		discard_iovec(iov, &num);
-+	}
-+
-+	/* This is why we convert to iovecs: the readv() call uses them, and so
-+	 * it reads straight into the Guest's buffer. */
-+	len = readv(dev->fd, iov, num);
-+	if (len == 0) {
-+		/*
-+		 * BUG: When using msize > 1k we get zero length reads
-+		 * and I'm not sure why.
-+		 */
-+		err(1, "9p: zero length read!");
-+	}
-+
-+	if (len < 0) /* Something has gone horribly wrong */
-+		errx(1, "9p: input readv returned %d", len);
-+
-+	/* If we read the data into the Guest, fill in the length and send the
-+	 * interrupt. */
-+	if (lenp) {
-+		*lenp = len;
-+		trigger_irq(fd, irq);
-+	}
-+
-+	/* Now, if we didn't read anything, return failure */
-+	if (!len)
-+		return false;
-+
-+	/* Everything went OK! */
-+	return true;
-+}
-+
-+/*  Proxy output to socket. */
-+static u32 handle_9p_output(int fd, const struct iovec *iov,
-+				 unsigned num, struct device*dev)
-+{
-+	/* Whatever the Guest sends, write it to the fd.  Return the
-+	 * number of bytes written. */
-+	return writev(dev->fd, iov, num);
-+}
-+
-+/* Connect to 9p server (stolen from spfsclient by Lucho Ionkov) */
-+/* We can't use gethostbyname because it makes us link a shared library */
-+static int connect_9p(const char *arg)
-+{
-+	int fd, port;
-+	char *addr, *p, *s;
-+	struct sockaddr_in saddr;
-+	u32 ipaddr;
-+
-+	if (!arg)
-+		err(1, "9p: problem with args");
-+
-+	addr = strdup(arg);
-+	ipaddr = str2ip(addr);
-+
-+	port = 567;
-+	p = strrchr(addr, ':');
-+	if (p) {
-+		*p = '\0';
-+		p++;
-+		port = strtol(p, &s, 10);
-+		if (*s != '\0')
-+			err(1, "9p: invalid port format");
-+	}
-+
-+	fd = socket(PF_INET, SOCK_STREAM, 0);
-+	if (fd < 0)
-+		err(1, "9p: problem allocating socket");
-+
-+
-+	saddr.sin_family = AF_INET;
-+	saddr.sin_port = htons(port);
-+	saddr.sin_addr.s_addr = htonl(ipaddr);
-+
-+	if (connect(fd, (struct sockaddr *) &saddr, sizeof(saddr)) < 0)
-+		err(1, "9p: problem connecting to server");
-+
-+	free(addr);
-+
-+	return fd;
-+}
-+
-+/* This sets up the 9p transport */
-+static void setup_9p(const char *addr, struct device_list *devices)
-+{
-+	struct device *dev;
-+	int fd = connect_9p(addr);
-+
-+	/* We allocate a page to store or channel info and
-+	   give a unique offset for our dma key */
-+	dev = new_device(devices, LGUEST_DEVICE_T_9P, 1, 0, fd,
-+			 handle_9p_input, 0, handle_9p_output);
-+
-+	verbose("device %p: 9p transport\n",
-+		(void *)(dev->desc->pfn * getpagesize()));
-+}
-+/* End 9p Additions */
-+
- /*L:220 Finally we reach the core of the Launcher, which runs the Guest, serves
-  * its input and output, and finally, lays it to rest. */
- static void __attribute__((noreturn))
-@@ -1369,6 +1491,7 @@ static struct option opts[] = {
- 	{ "tunnet", 1, NULL, 't' },
- 	{ "block", 1, NULL, 'b' },
- 	{ "initrd", 1, NULL, 'i' },
-+	{ "9p", 1, NULL, '9'},
- 	{ NULL },
- };
- static void usage(void)
-@@ -1376,6 +1499,7 @@ static void usage(void)
- 	errx(1, "Usage: lguest [--verbose] "
- 	     "[--sharenet=<filename>|--tunnet=(<ipaddr>|bridge:<bridgename>)\n"
- 	     "|--block=<filename>|--initrd=<filename>]...\n"
-+	     "[--9p=(<ipaddr>:<port>)] "
- 	     "<mem-in-mb> vmlinux [args...]");
- }
+-	mount -t 9p `namespace`/acme /mnt/9 -o proto=unix,uname=$USER
++	mount -t 9p `namespace`/acme /mnt/9 -o trans=unix,uname=$USER
  
-@@ -1449,6 +1573,9 @@ int main(int argc, char *argv[])
- 		case 'i':
- 			initrd_name = optarg;
- 			break;
-+		case '9':
-+			setup_9p(optarg, &device_list);
-+			break;
- 		default:
- 			warnx("Unknown argument %s", argv[optind]);
- 			usage();
+ OPTIONS
+ =======
+ 
+-  proto=name	select an alternative transport.  Valid options are
++  trans=name	select an alternative transport.  Valid options are
+   		currently:
+  			unix - specifying a named pipe mount point
+  			tcp  - specifying a normal TCP/IP connection
+@@ -68,9 +68,9 @@ OPTIONS
+ 			0x40 = display transport debug
+ 			0x80 = display allocation debug
+ 
+-  rfdno=n	the file descriptor for reading with proto=fd
++  rfdno=n	the file descriptor for reading with trans=fd
+ 
+-  wfdno=n	the file descriptor for writing with proto=fd
++  wfdno=n	the file descriptor for writing with trans=fd
+ 
+   maxdata=n	the number of bytes to use for 9p packet payload (msize)
+ 
 diff --git a/fs/9p/v9fs.c b/fs/9p/v9fs.c
-index 08d880f..b39123b 100644
+index 0a7068e..08d880f 100644
 --- a/fs/9p/v9fs.c
 +++ b/fs/9p/v9fs.c
-@@ -244,7 +244,7 @@ struct p9_fid *v9fs_session_init(struct v9fs_session_info *v9ses,
- 		v9ses->maxdata = v9ses->trans->maxsize-P9_IOHDRSZ;
+@@ -37,18 +37,58 @@
+ #include "v9fs_vfs.h"
  
- 	v9ses->clnt = p9_client_create(trans, v9ses->maxdata+P9_IOHDRSZ,
--		v9ses->extended);
-+							v9ses->extended);
+ /*
++ * Dynamic Transport Registration Routines
++ *
++ */
++
++static LIST_HEAD(v9fs_trans_list);
++static struct p9_trans_module *v9fs_default_trans;
++
++/**
++ * v9fs_register_trans - register a new transport with 9p
++ * @m - structure describing the transport module and entry points
++ *
++ */
++void v9fs_register_trans(struct p9_trans_module *m)
++{
++	list_add_tail(&m->list, &v9fs_trans_list);
++	if (m->def)
++		v9fs_default_trans = m;
++}
++EXPORT_SYMBOL(v9fs_register_trans);
++
++/**
++ * v9fs_match_trans - match transport versus registered transports
++ * @arg: string identifying transport
++ *
++ */
++static struct p9_trans_module *v9fs_match_trans(const substring_t *name)
++{
++	struct list_head *p;
++	struct p9_trans_module *t = NULL;
++
++	list_for_each(p, &v9fs_trans_list) {
++		t = list_entry(p, struct p9_trans_module, list);
++		if (strncmp(t->name, name->from, name->to-name->from) == 0) {
++			P9_DPRINTK(P9_DEBUG_TRANS, "trans=%s\n", t->name);
++			break;
++		}
++	}
++	return t;
++}
++
++/*
+   * Option Parsing (code inspired by NFS code)
+-  *
++  *  NOTE: each transport will parse its own options
+   */
+ 
+ enum {
+ 	/* Options that take integer arguments */
+-	Opt_debug, Opt_port, Opt_msize, Opt_uid, Opt_gid, Opt_afid,
+-	Opt_rfdno, Opt_wfdno,
++	Opt_debug, Opt_msize, Opt_uid, Opt_gid, Opt_afid,
+ 	/* String options */
+-	Opt_uname, Opt_remotename,
++	Opt_uname, Opt_remotename, Opt_trans,
+ 	/* Options that take no arguments */
+-	Opt_legacy, Opt_nodevmap, Opt_unix, Opt_tcp, Opt_fd, Opt_pci,
++	Opt_legacy, Opt_nodevmap,
+ 	/* Cache options */
+ 	Opt_cache_loose,
+ 	/* Error token */
+@@ -57,24 +97,13 @@ enum {
+ 
+ static match_table_t tokens = {
+ 	{Opt_debug, "debug=%x"},
+-	{Opt_port, "port=%u"},
+ 	{Opt_msize, "msize=%u"},
+ 	{Opt_uid, "uid=%u"},
+ 	{Opt_gid, "gid=%u"},
+ 	{Opt_afid, "afid=%u"},
+-	{Opt_rfdno, "rfdno=%u"},
+-	{Opt_wfdno, "wfdno=%u"},
+ 	{Opt_uname, "uname=%s"},
+ 	{Opt_remotename, "aname=%s"},
+-	{Opt_unix, "proto=unix"},
+-	{Opt_tcp, "proto=tcp"},
+-	{Opt_fd, "proto=fd"},
+-#ifdef CONFIG_PCI_9P
+-	{Opt_pci, "proto=pci"},
+-#endif
+-	{Opt_tcp, "tcp"},
+-	{Opt_unix, "unix"},
+-	{Opt_fd, "fd"},
++	{Opt_trans, "trans=%s"},
+ 	{Opt_legacy, "noextend"},
+ 	{Opt_nodevmap, "nodevmap"},
+ 	{Opt_cache_loose, "cache=loose"},
+@@ -82,12 +111,6 @@ static match_table_t tokens = {
+ 	{Opt_err, NULL}
+ };
+ 
+-extern struct p9_transport *p9pci_trans_create(void);
+-
+-/*
+- *  Parse option string.
+- */
+-
+ /**
+  * v9fs_parse_options - parse mount options into session structure
+  * @options: options string passed from mount
+@@ -95,23 +118,21 @@ extern struct p9_transport *p9pci_trans_create(void);
+  *
+  */
+ 
+-static void v9fs_parse_options(char *options, struct v9fs_session_info *v9ses)
++static void v9fs_parse_options(struct v9fs_session_info *v9ses)
+ {
+-	char *p;
++	char *options = v9ses->options;
+ 	substring_t args[MAX_OPT_ARGS];
++	char *p;
+ 	int option;
+ 	int ret;
+ 
+ 	/* setup defaults */
+-	v9ses->port = V9FS_PORT;
+-	v9ses->maxdata = 9000;
+-	v9ses->proto = PROTO_TCP;
++	v9ses->maxdata = 8192;
+ 	v9ses->extended = 1;
+ 	v9ses->afid = ~0;
+ 	v9ses->debug = 0;
+-	v9ses->rfdno = ~0;
+-	v9ses->wfdno = ~0;
+ 	v9ses->cache = 0;
++	v9ses->trans = v9fs_default_trans;
+ 
+ 	if (!options)
+ 		return;
+@@ -135,9 +156,6 @@ static void v9fs_parse_options(char *options, struct v9fs_session_info *v9ses)
+ 			p9_debug_level = option;
+ #endif
+ 			break;
+-		case Opt_port:
+-			v9ses->port = option;
+-			break;
+ 		case Opt_msize:
+ 			v9ses->maxdata = option;
+ 			break;
+@@ -150,23 +168,8 @@ static void v9fs_parse_options(char *options, struct v9fs_session_info *v9ses)
+ 		case Opt_afid:
+ 			v9ses->afid = option;
+ 			break;
+-		case Opt_rfdno:
+-			v9ses->rfdno = option;
+-			break;
+-		case Opt_wfdno:
+-			v9ses->wfdno = option;
+-			break;
+-		case Opt_tcp:
+-			v9ses->proto = PROTO_TCP;
+-			break;
+-		case Opt_unix:
+-			v9ses->proto = PROTO_UNIX;
+-			break;
+-		case Opt_pci:
+-			v9ses->proto = PROTO_PCI;
+-			break;
+-		case Opt_fd:
+-			v9ses->proto = PROTO_FD;
++		case Opt_trans:
++			v9ses->trans = v9fs_match_trans(&args[0]);
+ 			break;
+ 		case Opt_uname:
+ 			match_strcpy(v9ses->name, &args[0]);
+@@ -201,7 +204,7 @@ struct p9_fid *v9fs_session_init(struct v9fs_session_info *v9ses,
+ 		  const char *dev_name, char *data)
+ {
+ 	int retval = -EINVAL;
+-	struct p9_transport *trans;
++	struct p9_trans *trans = NULL;
+ 	struct p9_fid *fid;
+ 
+ 	v9ses->name = __getname();
+@@ -217,39 +220,30 @@ struct p9_fid *v9fs_session_init(struct v9fs_session_info *v9ses,
+ 	strcpy(v9ses->name, V9FS_DEFUSER);
+ 	strcpy(v9ses->remotename, V9FS_DEFANAME);
+ 
+-	v9fs_parse_options(data, v9ses);
+-
+-	switch (v9ses->proto) {
+-	case PROTO_TCP:
+-		trans = p9_trans_create_tcp(dev_name, v9ses->port);
+-		break;
+-	case PROTO_UNIX:
+-		trans = p9_trans_create_unix(dev_name);
+-		*v9ses->remotename = 0;
+-		break;
+-	case PROTO_FD:
+-		trans = p9_trans_create_fd(v9ses->rfdno, v9ses->wfdno);
+-		*v9ses->remotename = 0;
+-		break;
+-#ifdef CONFIG_PCI_9P
+-	case PROTO_PCI:
+-		trans = p9pci_trans_create();
+-		*v9ses->remotename = 0;
+-		break;
+-#endif
+-	default:
+-		printk(KERN_ERR "v9fs: Bad mount protocol %d\n", v9ses->proto);
+-		retval = -ENOPROTOOPT;
++	v9ses->options = kstrdup(data, GFP_KERNEL);
++	v9fs_parse_options(v9ses);
++
++	if ((v9ses->trans == NULL) && !list_empty(&v9fs_trans_list))
++		v9ses->trans = list_first_entry(&v9fs_trans_list,
++		 struct p9_trans_module, list);
++
++	if (v9ses->trans == NULL) {
++		retval = -EPROTONOSUPPORT;
++		P9_DPRINTK(P9_DEBUG_ERROR,
++				"No transport defined or default transport\n");
+ 		goto error;
+-	};
++	}
+ 
++	trans = v9ses->trans->create(dev_name, v9ses->options);
+ 	if (IS_ERR(trans)) {
+ 		retval = PTR_ERR(trans);
+ 		trans = NULL;
+ 		goto error;
+ 	}
++	if ((v9ses->maxdata+P9_IOHDRSZ) > v9ses->trans->maxsize)
++		v9ses->maxdata = v9ses->trans->maxsize-P9_IOHDRSZ;
+ 
+-	v9ses->clnt = p9_client_create(trans, v9ses->maxdata + P9_IOHDRSZ,
++	v9ses->clnt = p9_client_create(trans, v9ses->maxdata+P9_IOHDRSZ,
+ 		v9ses->extended);
  
  	if (IS_ERR(v9ses->clnt)) {
- 		retval = PTR_ERR(v9ses->clnt);
-diff --git a/include/linux/lguest_launcher.h b/include/linux/lguest_launcher.h
-index 6416705..9170046 100644
---- a/include/linux/lguest_launcher.h
-+++ b/include/linux/lguest_launcher.h
-@@ -90,6 +90,7 @@ struct lguest_device_desc {
- #define LGUEST_DEVICE_T_CONSOLE	1
- #define LGUEST_DEVICE_T_NET	2
- #define LGUEST_DEVICE_T_BLOCK	3
-+#define LGUEST_DEVICE_T_9P	9
+@@ -290,6 +284,7 @@ void v9fs_session_close(struct v9fs_session_info *v9ses)
  
- 	/* The specific features of this device: these depends on device type
- 	 * except for LGUEST_DEVICE_F_RANDOMNESS. */
+ 	__putname(v9ses->name);
+ 	__putname(v9ses->remotename);
++	kfree(v9ses->options);
+ }
+ 
+ /**
+@@ -311,7 +306,7 @@ extern int v9fs_error_init(void);
+ static int __init init_v9fs(void)
+ {
+ 	printk(KERN_INFO "Installing v9fs 9p2000 file system support\n");
+-
++	/* TODO: Setup list of registered trasnport modules */
+ 	return register_filesystem(&v9fs_fs_type);
+ }
+ 
+diff --git a/fs/9p/v9fs.h b/fs/9p/v9fs.h
+index abc4b16..7eb135c 100644
+--- a/fs/9p/v9fs.h
++++ b/fs/9p/v9fs.h
+@@ -31,31 +31,20 @@ struct v9fs_session_info {
+ 	unsigned int maxdata;
+ 	unsigned char extended;	/* set to 1 if we are using UNIX extensions */
+ 	unsigned char nodev;	/* set to 1 if no disable device mapping */
+-	unsigned short port;	/* port to connect to */
+ 	unsigned short debug;	/* debug level */
+-	unsigned short proto;	/* protocol to use */
+ 	unsigned int afid;	/* authentication fid */
+-	unsigned int rfdno;	/* read file descriptor number */
+-	unsigned int wfdno;	/* write file descriptor number */
+ 	unsigned int cache;	/* cache mode */
+ 
++	char *options;		/* copy of mount options */
+ 	char *name;		/* user name to mount as */
+ 	char *remotename;	/* name of remote hierarchy being mounted */
+ 	unsigned int uid;	/* default uid/muid for legacy support */
+ 	unsigned int gid;	/* default gid for legacy support */
+-
++	struct p9_trans_module *trans; /* 9p transport */
+ 	struct p9_client *clnt;	/* 9p client */
+ 	struct dentry *debugfs_dir;
+ };
+ 
+-/* possible values of ->proto */
+-enum {
+-	PROTO_TCP,
+-	PROTO_UNIX,
+-	PROTO_FD,
+-	PROTO_PCI,
+-};
+-
+ /* possible values of ->cache */
+ /* eventually support loose, tight, time, session, default always none */
+ enum {
+diff --git a/fs/9p/vfs_super.c b/fs/9p/vfs_super.c
+index ba90437..bb0cef9 100644
+--- a/fs/9p/vfs_super.c
++++ b/fs/9p/vfs_super.c
+@@ -216,24 +216,7 @@ static int v9fs_show_options(struct seq_file *m, struct vfsmount *mnt)
+ {
+ 	struct v9fs_session_info *v9ses = mnt->mnt_sb->s_fs_info;
+ 
+-	if (v9ses->debug != 0)
+-		seq_printf(m, ",debug=%x", v9ses->debug);
+-	if (v9ses->port != V9FS_PORT)
+-		seq_printf(m, ",port=%u", v9ses->port);
+-	if (v9ses->maxdata != 9000)
+-		seq_printf(m, ",msize=%u", v9ses->maxdata);
+-	if (v9ses->afid != ~0)
+-		seq_printf(m, ",afid=%u", v9ses->afid);
+-	if (v9ses->proto == PROTO_UNIX)
+-		seq_puts(m, ",proto=unix");
+-	if (v9ses->extended == 0)
+-		seq_puts(m, ",noextend");
+-	if (v9ses->nodev == 1)
+-		seq_puts(m, ",nodevmap");
+-	seq_printf(m, ",name=%s", v9ses->name);
+-	seq_printf(m, ",aname=%s", v9ses->remotename);
+-	seq_printf(m, ",uid=%u", v9ses->uid);
+-	seq_printf(m, ",gid=%u", v9ses->gid);
++	seq_printf(m, "%s", v9ses->options);
+ 	return 0;
+ }
+ 
+diff --git a/include/net/9p/client.h b/include/net/9p/client.h
+index d65ed7c..0adafdb 100644
+--- a/include/net/9p/client.h
++++ b/include/net/9p/client.h
+@@ -29,7 +29,7 @@ struct p9_client {
+ 	spinlock_t lock; /* protect client structure */
+ 	int msize;
+ 	unsigned char dotu;
+-	struct p9_transport *trans;
++	struct p9_trans *trans;
+ 	struct p9_conn *conn;
+ 
+ 	struct p9_idpool *fidpool;
+@@ -52,7 +52,7 @@ struct p9_fid {
+ 	struct list_head dlist;	/* list of all fids attached to a dentry */
+ };
+ 
+-struct p9_client *p9_client_create(struct p9_transport *trans, int msize,
++struct p9_client *p9_client_create(struct p9_trans *trans, int msize,
+ 								int dotu);
+ void p9_client_destroy(struct p9_client *clnt);
+ void p9_client_disconnect(struct p9_client *clnt);
+diff --git a/include/net/9p/conn.h b/include/net/9p/conn.h
+index 583b6a2..756d878 100644
+--- a/include/net/9p/conn.h
++++ b/include/net/9p/conn.h
+@@ -42,8 +42,8 @@ struct p9_req;
+  */
+ typedef void (*p9_conn_req_callback)(struct p9_req *req, void *a);
+ 
+-struct p9_conn *p9_conn_create(struct p9_transport *trans, int msize,
+-	unsigned char *dotu);
++struct p9_conn *p9_conn_create(struct p9_trans *trans, int msize,
++							unsigned char *dotu);
+ void p9_conn_destroy(struct p9_conn *);
+ int p9_conn_rpc(struct p9_conn *m, struct p9_fcall *tc, struct p9_fcall **rc);
+ 
+diff --git a/include/net/9p/transport.h b/include/net/9p/transport.h
+index 462d422..7c68b3e 100644
+--- a/include/net/9p/transport.h
++++ b/include/net/9p/transport.h
+@@ -26,24 +26,29 @@
+ #ifndef NET_9P_TRANSPORT_H
+ #define NET_9P_TRANSPORT_H
+ 
+-enum p9_transport_status {
++enum p9_trans_status {
+ 	Connected,
+ 	Disconnected,
+ 	Hung,
+ };
+ 
+-struct p9_transport {
+-	enum p9_transport_status status;
++struct p9_trans {
++	enum p9_trans_status status;
+ 	void *priv;
++	int (*write) (struct p9_trans *, void *, int);
++	int (*read) (struct p9_trans *, void *, int);
++	void (*close) (struct p9_trans *);
++	unsigned int (*poll)(struct p9_trans *, struct poll_table_struct *);
++};
+ 
+-	int (*write) (struct p9_transport *, void *, int);
+-	int (*read) (struct p9_transport *, void *, int);
+-	void (*close) (struct p9_transport *);
+-	unsigned int (*poll)(struct p9_transport *, struct poll_table_struct *);
++struct p9_trans_module {
++	struct list_head list;
++	char *name;		/* name of transport */
++	int maxsize;		/* max message size of transport */
++	int def;		/* this transport should be default */
++	struct p9_trans * (*create)(const char *devname, char *options);
+ };
+ 
+-struct p9_transport *p9_trans_create_tcp(const char *addr, int port);
+-struct p9_transport *p9_trans_create_unix(const char *addr);
+-struct p9_transport *p9_trans_create_fd(int rfd, int wfd);
++void v9fs_register_trans(struct p9_trans_module *m);
+ 
+ #endif /* NET_9P_TRANSPORT_H */
 diff --git a/net/9p/Kconfig b/net/9p/Kconfig
-index 8517560..fab7bb9 100644
+index 66821cd..09566ae 100644
 --- a/net/9p/Kconfig
 +++ b/net/9p/Kconfig
-@@ -31,6 +31,13 @@ config NET_9P_PCI
- 	  under KVM/QEMU which allows for 9p transactions over shared
- 	  memory between the guest and the host.
+@@ -13,6 +13,16 @@ menuconfig NET_9P
  
-+config NET_9P_LG
+ 	  If unsure, say N.
+ 
++config NET_9P_FD
 +	depends on NET_9P
-+	tristate "9p Lguest Transport (Experimental)"
++	default y if NET_9P
++	tristate "9P File Descriptor Transports (Experimental)"
 +	help
-+	  This builds support for a transport between an Lguest
-+	  guest partition and the host partition.
++	  This builds support for file descriptor transports for 9p
++	  which includes support for TCP/IP, named pipes, or passed
++	  file descriptors.  TCP/IP is the default transport for 9p,
++	  so if you are going to use 9p, you'll likely want this.  
 +
  config NET_9P_DEBUG
  	bool "Debug information"
  	depends on NET_9P
 diff --git a/net/9p/Makefile b/net/9p/Makefile
-index 26ce89d..80a4227 100644
+index 85b3a78..7b2a67a 100644
 --- a/net/9p/Makefile
 +++ b/net/9p/Makefile
-@@ -1,6 +1,7 @@
+@@ -1,8 +1,8 @@
  obj-$(CONFIG_NET_9P) := 9pnet.o
- obj-$(CONFIG_NET_9P_FD) += 9pnet_fd.o
- obj-$(CONFIG_NET_9P_PCI) += 9pnet_pci.o
-+obj-$(CONFIG_NET_9P_LG) += 9pnet_lg.o
++obj-$(CONFIG_NET_9P_FD) += 9pnet_fd.o
  
  9pnet-objs := \
  	mod.o \
-@@ -18,3 +19,6 @@ obj-$(CONFIG_NET_9P_PCI) += 9pnet_pci.o
+-	trans_fd.o \
+ 	mux.o \
+ 	client.o \
+ 	conv.o \
+@@ -11,3 +11,6 @@ obj-$(CONFIG_NET_9P) := 9pnet.o
+ 	util.o \
  
- 9pnet_pci-objs := \
- 	trans_pci.o \
+ 9pnet-$(CONFIG_SYSCTL) += sysctl.o
 +
-+9pnet_lg-objs := \
-+	trans_lg.o \
-diff --git a/net/9p/trans_lg.c b/net/9p/trans_lg.c
-new file mode 100644
-index 0000000..146ed01
---- /dev/null
-+++ b/net/9p/trans_lg.c
-@@ -0,0 +1,303 @@
-+/*
-+ * The Guest 9p transport driver
-+ *
-+ * This is a trivial pipe-based transport driver based on the lguest console
-+ * code: we use lguest's DMA mechanism to send bytes out, and register a
-+ * DMA buffer to receive bytes in.  It is assumed to be present and available
-+ * from the very beginning of boot.
-+ *
-+ * This may be have been done by just instaniating another HVC console,
-+ * but HVC's blocksize of 16 bytes is annoying and painful to performance.
-+ *
-+ */
-+/*
-+ *  Copyright (C) 2007 Eric Van Hensbergen, IBM Corporation
-+ *
-+ *  Based on lguest console driver
-+ *  Copyright (C) 2006 Rusty Russel, IBM Corporation
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License version 2
-+ *  as published by the Free Software Foundation.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to:
-+ *  Free Software Foundation
-+ *  51 Franklin Street, Fifth Floor
-+ *  Boston, MA  02111-1301  USA
-+ *
-+ */
-+
-+#include <linux/in.h>
-+#include <linux/module.h>
-+#include <linux/net.h>
-+#include <linux/ipv6.h>
-+#include <linux/errno.h>
-+#include <linux/kernel.h>
-+#include <linux/un.h>
-+#include <linux/uaccess.h>
-+#include <linux/inet.h>
-+#include <linux/idr.h>
-+#include <linux/file.h>
-+#include <linux/lguest_bus.h>
-+#include <net/9p/9p.h>
-+#include <net/9p/transport.h>
-+
-+/* 9p Buffer Size in Pages */
-+#define P9_BUF_PAGES 16
-+/* 9p Buffer Size as 2^x */
-+#define P9_BUF_SHIFT 4
-+/* only support a single channel for now */
-+#define MAX_9P_CHAN 1
-+/* for channel names */
-+#define NAMELEN 256
-+
-+/* We keep all per-channel information in a structure.
-+ * This structure is allocated within the devices dev->mem space.
-+ * A pointer to the structure will get put in the transport private.
-+ */
-+static struct lg_chan {
-+	struct lguest_dma input;	/* input structure for channel */
-+	unsigned long offset;		/* input offset */
-+	unsigned long key;		/* dma key */
-+	char *buf;			/* input buffer */
-+	wait_queue_head_t wq;		/* waitq for buffer */
-+	struct lguest_device *dev;	/* back pointer to device */
-+} channels[MAX_9P_CHAN];
-+
-+/* How many bytes left in this page. */
-+static unsigned int rest_of_page(void *data)
-+{
-+	return PAGE_SIZE - ((unsigned long)data % PAGE_SIZE);
-+}
-+
-+/* this breaks up any dma requests along page size boundries */
-+static void p9_lg_setup_dma(struct lguest_dma *i, void *buf, int len)
-+{
-+	int index;
-+
-+	/* setup first buffer to page align subsequent buffers */
-+	i->addr[0] = __pa(buf);
-+	if (len > PAGE_SIZE)
-+		i->len[0] = rest_of_page(buf);
-+	else
-+		i->len[0] = len;
-+	buf += i->len[0];
-+	len -= i->len[0];
-+
-+	for (index = 1; index < LGUEST_MAX_DMA_SECTIONS; index++) {
-+		if (len == 0) {
-+			if (index < LGUEST_MAX_DMA_SECTIONS)
-+				i->len[index] = 0;
-+			break;
-+		}
-+		i->addr[index] = __pa(buf);
-+		if (len > PAGE_SIZE)
-+			i->len[index] = PAGE_SIZE;
-+		else
-+			i->len[index] = len;
-+
-+		buf += i->len[index];
-+		len -= i->len[index];
-+	}
-+
-+	if (len) {
-+		printk(KERN_ERR "9p: lg: buffer didn't fit in dma %d by %d\n",
-+			index, len);
-+		BUG();
-+	}
-+}
-+
-+/* Since we are likely to have multi-page data and data which crosses
-+ * page boundries, we need to split things up properly.
-+ */
-+static int p9_lg_write(struct p9_trans *trans, void *buf, int count)
-+{
-+	struct lguest_dma dma;
-+	struct lg_chan *chan = (struct lg_chan *)trans->priv;
-+
-+	p9_lg_setup_dma(&dma, buf, count);
-+	lguest_send_dma(chan->key, &dma);
-+
-+	return count;
-+}
-+
-+/* We have started with a naive read implementation that will
-+ * require an extra copy.  In the near future we'll be modifying the
-+ * v9fs transport infrastructure to better support zero-copy readv/writev
-+ * style implementations.
-+ */ static int p9_lg_read(struct p9_trans *trans, void *buf, int count)
-+{
-+	struct lg_chan *chan = (struct lg_chan *)trans->priv;
-+
-+	if (!chan->input.used_len)
-+		return 0;
-+
-+	/* You want more than we have to give?  Well, try wanting less! */
-+	if (chan->input.used_len - chan->offset < count)
-+		count = chan->input.used_len - chan->offset;
-+
-+	/* Copy across to their buffer and increment offset. */
-+	memcpy(buf, chan->buf + chan->offset, count);
-+	chan->offset += count;
-+
-+	/* Finished?  Zero offset, and reset p9_lg_input so Host will use it
-+	 * again. */
-+	if (chan->offset == chan->input.used_len) {
-+		chan->input.used_len = 0;
-+		chan->offset = 0;
-+	}
-+
-+	return count;
-+}
-+
-+/* The poll function is used by 9p transports to determine if there
-+ * is there is activity available on a particular channel.  In our case
-+ * we use it to wait for an interrupt.
-+ */
-+static unsigned int
-+p9_lg_poll(struct p9_trans *trans, struct poll_table_struct *pt)
-+{
-+	struct lg_chan *chan = (struct lg_chan *)trans->priv;
-+	int ret = POLLOUT; /* we can always handle more output */
-+
-+	poll_wait(NULL, &chan->wq, pt);
-+
-+	if (chan->input.used_len)
-+		ret |= POLLIN;
-+
-+	return ret;
-+}
-+
-+static void p9_lg_close(struct p9_trans *trans)
-+{
-+	kfree(trans);
-+}
-+
-+static irqreturn_t
-+p9_lg_intr(int irq, void *arg)
-+{
-+	wait_queue_head_t *w = (wait_queue_head_t *) arg;
-+
-+	wake_up_interruptible(w);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/* This registers available probe devices with the kernel.  Right now
-+ * we really only support a single channel -- but things are setup to allow
-+ * for multiple channels */
-+static int p9_lg_probe(struct lguest_device *lgdev)
-+{
-+	static int chan_index;
-+	struct lg_chan *chan = &channels[chan_index++];
-+	int err;
-+
-+	if (chan_index > MAX_9P_CHAN) {
-+		printk(KERN_ERR "9p: lg: Maximum channels exceeded\n");
-+		BUG();
-+	}
-+
-+	lgdev->private = (void *) chan;
-+	chan->key = (lguest_devices[lgdev->index].pfn << PAGE_SHIFT);
-+
-+	/* Allocate 16 pages */
-+	chan->buf = (char *)__get_free_pages(GFP_KERNEL|__GFP_ZERO,
-+								P9_BUF_SHIFT);
-+	if (chan->buf == 0)
-+		BUG();
-+
-+	p9_lg_setup_dma(&chan->input, chan->buf, PAGE_SIZE*P9_BUF_PAGES);
-+
-+	chan->input.used_len = 0;
-+
-+	/* We bind a single DMA buffer using the channel's key which is set
-+	 * to dev->mem, and we also give the interrupt we want. */
-+	err = lguest_bind_dma(chan->key, &chan->input, P9_BUF_PAGES,
-+							lgdev_irq(lgdev));
-+	if (err) {
-+		printk(KERN_ERR "9p: lg: failed to bind buffer.\n");
-+		BUG();
-+	}
-+
-+	init_waitqueue_head(&chan->wq);
-+	err = request_irq(lgdev_irq(lgdev), &p9_lg_intr, 0, "p9_lg",
-+								&chan->wq);
-+	if (err) {
-+		printk(KERN_ERR "9p: lg: failed to obtain irq.\n");
-+		BUG();
-+	}
-+
-+	return 0;
-+}
-+
-+/* The standard "struct lguest_driver": */
-+static struct lguest_driver p9_lg_drv = {
-+	.name = "9p_lg",
-+	.owner = THIS_MODULE,
-+	.device_type = LGUEST_DEVICE_T_9P,
-+	.probe = p9_lg_probe,
-+};
-+
-+/* This sets up a transport channel for 9p communication.  Right now
-+ * we only match the first channel, but eventually we'll be able to look up
-+ * alternate channels by matching devname versus chan->name.  We use a simple
-+ * reference count mechanism to ensure that only a single mount has a
-+ * channel open at a time. */
-+static struct p9_trans *p9_lg_create(const char *devname, char *args)
-+{
++9pnet_fd-objs := \
++	trans_fd.o \
+diff --git a/net/9p/client.c b/net/9p/client.c
+index cb17075..e161012 100644
+--- a/net/9p/client.c
++++ b/net/9p/client.c
+@@ -38,7 +38,7 @@ static struct p9_fid *p9_fid_create(struct p9_client *clnt);
+ static void p9_fid_destroy(struct p9_fid *fid);
+ static struct p9_stat *p9_clone_stat(struct p9_stat *st, int dotu);
+ 
+-struct p9_client *p9_client_create(struct p9_transport *trans, int msize,
++struct p9_client *p9_client_create(struct p9_trans *trans, int msize,
+ 								   int dotu)
+ {
+ 	int err, n;
+diff --git a/net/9p/mux.c b/net/9p/mux.c
+index 5d70558..934e2ea 100644
+--- a/net/9p/mux.c
++++ b/net/9p/mux.c
+@@ -71,7 +71,7 @@ struct p9_conn {
+ 	struct p9_mux_poll_task *poll_task;
+ 	int msize;
+ 	unsigned char *extended;
+-	struct p9_transport *trans;
 +	struct p9_trans *trans;
-+	struct lg_chan *chan = channels; /* don't bother w/match now */
+ 	struct p9_idpool *tagpool;
+ 	int err;
+ 	wait_queue_head_t equeue;
+@@ -271,7 +271,7 @@ static void p9_mux_poll_stop(struct p9_conn *m)
+  * @msize - maximum message size
+  * @extended - pointer to the extended flag
+  */
+-struct p9_conn *p9_conn_create(struct p9_transport *trans, int msize,
++struct p9_conn *p9_conn_create(struct p9_trans *trans, int msize,
+ 				    unsigned char *extended)
+ {
+ 	int i, n;
+diff --git a/net/9p/trans_fd.c b/net/9p/trans_fd.c
+index fd636e9..30269a4 100644
+--- a/net/9p/trans_fd.c
++++ b/net/9p/trans_fd.c
+@@ -5,7 +5,7 @@
+  *
+  *  Copyright (C) 2006 by Russ Cox <rsc@swtch.com>
+  *  Copyright (C) 2004-2005 by Latchesar Ionkov <lucho@ionkov.net>
+- *  Copyright (C) 2004-2005 by Eric Van Hensbergen <ericvh@gmail.com>
++ *  Copyright (C) 2004-2007 by Eric Van Hensbergen <ericvh@gmail.com>
+  *  Copyright (C) 1997-2002 by Ron Minnich <rminnich@sarnoff.com>
+  *
+  *  This program is free software; you can redistribute it and/or modify
+@@ -36,160 +36,114 @@
+ #include <linux/inet.h>
+ #include <linux/idr.h>
+ #include <linux/file.h>
++#include <linux/parser.h>
+ #include <net/9p/9p.h>
+ #include <net/9p/transport.h>
+ 
+ #define P9_PORT 564
++#define MAX_SOCK_BUF (64*1024)
 +
-+	if (strcmp(paravirt_ops.name, "lguest") != 0) {
-+		printk(KERN_ERR "9p: not running on lguest, no lg possible\n");
-+		return ERR_PTR(-ENODEV);
++
++struct p9_fd_opts {
++	int rfd;
++	int wfd;
++	u16 port;
++};
+ 
+ struct p9_trans_fd {
+ 	struct file *rd;
+ 	struct file *wr;
+ };
+ 
+-static int p9_socket_open(struct p9_transport *trans, struct socket *csocket);
+-static int p9_fd_open(struct p9_transport *trans, int rfd, int wfd);
+-static int p9_fd_read(struct p9_transport *trans, void *v, int len);
+-static int p9_fd_write(struct p9_transport *trans, void *v, int len);
+-static unsigned int p9_fd_poll(struct p9_transport *trans,
+-						struct poll_table_struct *pt);
+-static void p9_fd_close(struct p9_transport *trans);
+-
+-struct p9_transport *p9_trans_create_tcp(const char *addr, int port)
+-{
+-	int err;
+-	struct p9_transport *trans;
+-	struct socket *csocket;
+-	struct sockaddr_in sin_server;
+-
+-	csocket = NULL;
+-	trans = kmalloc(sizeof(struct p9_transport), GFP_KERNEL);
+-	if (!trans)
+-		return ERR_PTR(-ENOMEM);
+-
+-	trans->write = p9_fd_write;
+-	trans->read = p9_fd_read;
+-	trans->close = p9_fd_close;
+-	trans->poll = p9_fd_poll;
+-
+-	sin_server.sin_family = AF_INET;
+-	sin_server.sin_addr.s_addr = in_aton(addr);
+-	sin_server.sin_port = htons(port);
+-	sock_create_kern(PF_INET, SOCK_STREAM, IPPROTO_TCP, &csocket);
+-
+-	if (!csocket) {
+-		P9_EPRINTK(KERN_ERR, "p9_trans_tcp: problem creating socket\n");
+-		err = -EIO;
+-		goto error;
+-	}
+-
+-	err = csocket->ops->connect(csocket,
+-				    (struct sockaddr *)&sin_server,
+-				    sizeof(struct sockaddr_in), 0);
+-	if (err < 0) {
+-		P9_EPRINTK(KERN_ERR,
+-			"p9_trans_tcp: problem connecting socket to %s\n",
+-			addr);
+-		goto error;
+-	}
+-
+-	err = p9_socket_open(trans, csocket);
+-	if (err < 0)
+-		goto error;
++/*
++  * Option Parsing (code inspired by NFS code)
++  *  - a little lazy - parse all fd-transport options
++  */
+ 
+-	return trans;
++enum {
++	/* Options that take integer arguments */
++	Opt_port, Opt_rfdno, Opt_wfdno,
++};
+ 
+-error:
+-	if (csocket)
+-		sock_release(csocket);
++static match_table_t tokens = {
++	{Opt_port, "port=%u"},
++	{Opt_rfdno, "rfdno=%u"},
++	{Opt_wfdno, "wfdno=%u"},
++};
+ 
+-	kfree(trans);
+-	return ERR_PTR(err);
+-}
+-EXPORT_SYMBOL(p9_trans_create_tcp);
++/**
++ * v9fs_parse_options - parse mount options into session structure
++ * @options: options string passed from mount
++ * @v9ses: existing v9fs session information
++ *
++ */
+ 
+-struct p9_transport *p9_trans_create_unix(const char *addr)
++static void parse_opts(char *options, struct p9_fd_opts *opts)
+ {
+-	int err;
+-	struct socket *csocket;
+-	struct sockaddr_un sun_server;
+-	struct p9_transport *trans;
+-
+-	csocket = NULL;
+-	trans = kmalloc(sizeof(struct p9_transport), GFP_KERNEL);
+-	if (!trans)
+-		return ERR_PTR(-ENOMEM);
++	char *p;
++	substring_t args[MAX_OPT_ARGS];
++	int option;
++	int ret;
+ 
+-	trans->write = p9_fd_write;
+-	trans->read = p9_fd_read;
+-	trans->close = p9_fd_close;
+-	trans->poll = p9_fd_poll;
++	opts->port = P9_PORT;
++	opts->rfd = ~0;
++	opts->wfd = ~0;
+ 
+-	if (strlen(addr) > UNIX_PATH_MAX) {
+-		P9_EPRINTK(KERN_ERR, "p9_trans_unix: address too long: %s\n",
+-			addr);
+-		err = -ENAMETOOLONG;
+-		goto error;
+-	}
++	if (!options)
++		return;
+ 
+-	sun_server.sun_family = PF_UNIX;
+-	strcpy(sun_server.sun_path, addr);
+-	sock_create_kern(PF_UNIX, SOCK_STREAM, 0, &csocket);
+-	err = csocket->ops->connect(csocket, (struct sockaddr *)&sun_server,
+-			sizeof(struct sockaddr_un) - 1, 0);
+-	if (err < 0) {
+-		P9_EPRINTK(KERN_ERR,
+-			"p9_trans_unix: problem connecting socket: %s: %d\n",
+-			addr, err);
+-		goto error;
++	while ((p = strsep(&options, ",")) != NULL) {
++		int token;
++		if (!*p)
++			continue;
++		token = match_token(p, tokens, args);
++		ret = match_int(&args[0], &option);
++		if (ret < 0) {
++			P9_DPRINTK(P9_DEBUG_ERROR,
++			 "integer field, but no integer?\n");
++			continue;
++		}
++		switch (token) {
++		case Opt_port:
++			opts->port = option;
++			break;
++		case Opt_rfdno:
++			opts->rfd = option;
++			break;
++		case Opt_wfdno:
++			opts->wfd = option;
++			break;
++		default:
++			continue;
++		}
+ 	}
+-
+-	err = p9_socket_open(trans, csocket);
+-	if (err < 0)
+-		goto error;
+-
+-	return trans;
+-
+-error:
+-	if (csocket)
+-		sock_release(csocket);
+-
+-	kfree(trans);
+-	return ERR_PTR(err);
+ }
+-EXPORT_SYMBOL(p9_trans_create_unix);
+ 
+-struct p9_transport *p9_trans_create_fd(int rfd, int wfd)
++static int p9_fd_open(struct p9_trans *trans, int rfd, int wfd)
+ {
+-	int err;
+-	struct p9_transport *trans;
++	struct p9_trans_fd *ts = kmalloc(sizeof(struct p9_trans_fd),
++					   GFP_KERNEL);
++	if (!ts)
++		return -ENOMEM;
+ 
+-	if (rfd == ~0 || wfd == ~0) {
+-		printk(KERN_ERR "v9fs: Insufficient options for proto=fd\n");
+-		return ERR_PTR(-ENOPROTOOPT);
++	ts->rd = fget(rfd);
++	ts->wr = fget(wfd);
++	if (!ts->rd || !ts->wr) {
++		if (ts->rd)
++			fput(ts->rd);
++		if (ts->wr)
++			fput(ts->wr);
++		kfree(ts);
++		return -EIO;
+ 	}
+ 
+-	trans = kmalloc(sizeof(struct p9_transport), GFP_KERNEL);
+-	if (!trans)
+-		return ERR_PTR(-ENOMEM);
+-
+-	trans->write = p9_fd_write;
+-	trans->read = p9_fd_read;
+-	trans->close = p9_fd_close;
+-	trans->poll = p9_fd_poll;
+-
+-	err = p9_fd_open(trans, rfd, wfd);
+-	if (err < 0)
+-		goto error;
+-
+-	return trans;
++	trans->priv = ts;
++	trans->status = Connected;
+ 
+-error:
+-	kfree(trans);
+-	return ERR_PTR(err);
++	return 0;
+ }
+-EXPORT_SYMBOL(p9_trans_create_fd);
+ 
+-static int p9_socket_open(struct p9_transport *trans, struct socket *csocket)
++static int p9_socket_open(struct p9_trans *trans, struct socket *csocket)
+ {
+ 	int fd, ret;
+ 
+@@ -212,30 +166,6 @@ static int p9_socket_open(struct p9_transport *trans, struct socket *csocket)
+ 	return 0;
+ }
+ 
+-static int p9_fd_open(struct p9_transport *trans, int rfd, int wfd)
+-{
+-	struct p9_trans_fd *ts = kmalloc(sizeof(struct p9_trans_fd),
+-					   GFP_KERNEL);
+-	if (!ts)
+-		return -ENOMEM;
+-
+-	ts->rd = fget(rfd);
+-	ts->wr = fget(wfd);
+-	if (!ts->rd || !ts->wr) {
+-		if (ts->rd)
+-			fput(ts->rd);
+-		if (ts->wr)
+-			fput(ts->wr);
+-		kfree(ts);
+-		return -EIO;
+-	}
+-
+-	trans->priv = ts;
+-	trans->status = Connected;
+-
+-	return 0;
+-}
+-
+ /**
+  * p9_fd_read- read from a fd
+  * @v9ses: session information
+@@ -243,7 +173,7 @@ static int p9_fd_open(struct p9_transport *trans, int rfd, int wfd)
+  * @len: size of receive buffer
+  *
+  */
+-static int p9_fd_read(struct p9_transport *trans, void *v, int len)
++static int p9_fd_read(struct p9_trans *trans, void *v, int len)
+ {
+ 	int ret;
+ 	struct p9_trans_fd *ts = NULL;
+@@ -270,7 +200,7 @@ static int p9_fd_read(struct p9_transport *trans, void *v, int len)
+  * @len: size of send buffer
+  *
+  */
+-static int p9_fd_write(struct p9_transport *trans, void *v, int len)
++static int p9_fd_write(struct p9_trans *trans, void *v, int len)
+ {
+ 	int ret;
+ 	mm_segment_t oldfs;
+@@ -297,7 +227,7 @@ static int p9_fd_write(struct p9_transport *trans, void *v, int len)
+ }
+ 
+ static unsigned int
+-p9_fd_poll(struct p9_transport *trans, struct poll_table_struct *pt)
++p9_fd_poll(struct p9_trans *trans, struct poll_table_struct *pt)
+ {
+ 	int ret, n;
+ 	struct p9_trans_fd *ts = NULL;
+@@ -341,7 +271,7 @@ end:
+  * @trans: private socket structure
+  *
+  */
+-static void p9_fd_close(struct p9_transport *trans)
++static void p9_fd_close(struct p9_trans *trans)
+ {
+ 	struct p9_trans_fd *ts;
+ 
+@@ -361,3 +291,182 @@ static void p9_fd_close(struct p9_transport *trans)
+ 	kfree(ts);
+ }
+ 
++static struct p9_trans *p9_trans_create_tcp(const char *addr, char *args)
++{
++	int err;
++	struct p9_trans *trans;
++	struct socket *csocket;
++	struct sockaddr_in sin_server;
++	struct p9_fd_opts opts;
++
++	parse_opts(args, &opts);
++
++	csocket = NULL;
++	trans = kmalloc(sizeof(struct p9_trans), GFP_KERNEL);
++	if (!trans)
++		return ERR_PTR(-ENOMEM);
++
++	trans->write = p9_fd_write;
++	trans->read = p9_fd_read;
++	trans->close = p9_fd_close;
++	trans->poll = p9_fd_poll;
++
++	sin_server.sin_family = AF_INET;
++	sin_server.sin_addr.s_addr = in_aton(addr);
++	sin_server.sin_port = htons(opts.port);
++	sock_create_kern(PF_INET, SOCK_STREAM, IPPROTO_TCP, &csocket);
++
++	if (!csocket) {
++		P9_EPRINTK(KERN_ERR, "p9_trans_tcp: problem creating socket\n");
++		err = -EIO;
++		goto error;
++	}
++
++	err = csocket->ops->connect(csocket,
++				    (struct sockaddr *)&sin_server,
++				    sizeof(struct sockaddr_in), 0);
++	if (err < 0) {
++		P9_EPRINTK(KERN_ERR,
++			"p9_trans_tcp: problem connecting socket to %s\n",
++			addr);
++		goto error;
++	}
++
++	err = p9_socket_open(trans, csocket);
++	if (err < 0)
++		goto error;
++
++	return trans;
++
++error:
++	if (csocket)
++		sock_release(csocket);
++
++	kfree(trans);
++	return ERR_PTR(err);
++}
++
++static struct p9_trans *p9_trans_create_unix(const char *addr, char *args)
++{
++	int err;
++	struct socket *csocket;
++	struct sockaddr_un sun_server;
++	struct p9_trans *trans;
++
++	csocket = NULL;
++	trans = kmalloc(sizeof(struct p9_trans), GFP_KERNEL);
++	if (!trans)
++		return ERR_PTR(-ENOMEM);
++
++	trans->write = p9_fd_write;
++	trans->read = p9_fd_read;
++	trans->close = p9_fd_close;
++	trans->poll = p9_fd_poll;
++
++	if (strlen(addr) > UNIX_PATH_MAX) {
++		P9_EPRINTK(KERN_ERR, "p9_trans_unix: address too long: %s\n",
++			addr);
++		err = -ENAMETOOLONG;
++		goto error;
++	}
++
++	sun_server.sun_family = PF_UNIX;
++	strcpy(sun_server.sun_path, addr);
++	sock_create_kern(PF_UNIX, SOCK_STREAM, 0, &csocket);
++	err = csocket->ops->connect(csocket, (struct sockaddr *)&sun_server,
++			sizeof(struct sockaddr_un) - 1, 0);
++	if (err < 0) {
++		P9_EPRINTK(KERN_ERR,
++			"p9_trans_unix: problem connecting socket: %s: %d\n",
++			addr, err);
++		goto error;
++	}
++
++	err = p9_socket_open(trans, csocket);
++	if (err < 0)
++		goto error;
++
++	return trans;
++
++error:
++	if (csocket)
++		sock_release(csocket);
++
++	kfree(trans);
++	return ERR_PTR(err);
++}
++
++static struct p9_trans *p9_trans_create_fd(const char *name, char *args)
++{
++	int err;
++	struct p9_trans *trans;
++	struct p9_fd_opts opts;
++
++	parse_opts(args, &opts);
++
++	if (opts.rfd == ~0 || opts.wfd == ~0) {
++		printk(KERN_ERR "v9fs: Insufficient options for proto=fd\n");
++		return ERR_PTR(-ENOPROTOOPT);
 +	}
 +
 +	trans = kmalloc(sizeof(struct p9_trans), GFP_KERNEL);
-+	if (!trans) {
-+		printk(KERN_ERR "9p: couldn't allocate transport\n");
++	if (!trans)
 +		return ERR_PTR(-ENOMEM);
-+	}
 +
-+	trans->write = p9_lg_write;
-+	trans->read = p9_lg_read;
-+	trans->close = p9_lg_close;
-+	trans->poll = p9_lg_poll;
-+	trans->priv = chan;
++	trans->write = p9_fd_write;
++	trans->read = p9_fd_read;
++	trans->close = p9_fd_close;
++	trans->poll = p9_fd_poll;
++
++	err = p9_fd_open(trans, opts.rfd, opts.wfd);
++	if (err < 0)
++		goto error;
 +
 +	return trans;
++
++error:
++	kfree(trans);
++	return ERR_PTR(err);
 +}
 +
-+static struct p9_trans_module p9_lg_trans = {
-+	.name = "lg",
-+	.create = p9_lg_create,
-+	.maxsize = 1024,
-+	.def = 0,
++static struct p9_trans_module p9_tcp_trans = {
++	.name = "tcp",
++	.maxsize = MAX_SOCK_BUF,
++	.def = 1,
++	.create = p9_trans_create_tcp,
 +};
 +
-+/* The standard init function */
-+static int __init p9_lg_init(void)
++static struct p9_trans_module p9_unix_trans = {
++	.name = "unix",
++	.maxsize = MAX_SOCK_BUF,
++	.def = 0,
++	.create = p9_trans_create_unix,
++};
++
++static struct p9_trans_module p9_fd_trans = {
++	.name = "fd",
++	.maxsize = MAX_SOCK_BUF,
++	.def = 0,
++	.create = p9_trans_create_fd,
++};
++
++static int __init p9_trans_fd_init(void)
 +{
-+	v9fs_register_trans(&p9_lg_trans);
-+	return register_lguest_driver(&p9_lg_drv);
++	v9fs_register_trans(&p9_tcp_trans);
++	v9fs_register_trans(&p9_unix_trans);
++	v9fs_register_trans(&p9_fd_trans);
++
++	return 1;
 +}
 +
-+static void __exit p9_lg_cleanup(void)
-+{
++static void __exit p9_trans_fd_exit(void) {
 +	printk(KERN_ERR "Removal of 9p transports not implemented\n");
 +	BUG();
 +}
 +
-+module_init(p9_lg_init);
-+module_exit(p9_lg_cleanup);
++module_init(p9_trans_fd_init);
++module_exit(p9_trans_fd_exit);
 +
++MODULE_AUTHOR("Latchesar Ionkov <lucho@ionkov.net>");
 +MODULE_AUTHOR("Eric Van Hensbergen <ericvh@gmail.com>");
-+MODULE_DESCRIPTION("9p Lguest Pipe");
 +MODULE_LICENSE("GPL");
-+
 -- 
 1.5.0.2.gfbe3d-dirty
 
