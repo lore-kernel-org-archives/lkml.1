@@ -1,80 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbXH1Tri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbXH1Tte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757061AbXH1Tri (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759560AbXH1TrM
+	id S1759034AbXH1Tte (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbXH1TtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:47:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36935 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757881AbXH1TrK (ORCPT
+	Tue, 28 Aug 2007 15:49:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44269 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751526AbXH1TtX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 15:47:10 -0400
-Subject: Re: [PATCH] SLUB use cmpxchg_local
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mingo@redhat.com
-In-Reply-To: <Pine.LNX.4.64.0708281235170.16473@schroedinger.engr.sgi.com>
-References: <20070820201519.512791382@polymtl.ca>
-	 <20070820201822.597720007@polymtl.ca>
-	 <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com>
-	 <20070820204126.GA22507@Krystal>
-	 <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com>
-	 <20070820212922.GA27011@Krystal>
-	 <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
-	 <20070820215413.GA28452@Krystal>
-	 <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
-	 <20070821173849.GA8360@Krystal>
-	 <Pine.LNX.4.64.0708211612580.6062@schroedinger.engr.sgi.com>
-	 <1188197539.6114.426.camel@twins>
-	 <Pine.LNX.4.64.0708271237580.5056@schroedinger.engr.sgi.com>
-	 <Pine.LNX.4.64.0708271514020.8891@schroedinger.engr.sgi.com>
-	 <1188285159.6112.4.camel@twins>
-	 <Pine.LNX.4.64.0708281235170.16473@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Tue, 28 Aug 2007 21:46:52 +0200
-Message-Id: <1188330413.11709.27.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.90 
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Aug 2007 15:49:23 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH -mm 2/3] PM: More fine grained ACPI handling during suspend and hibernation (rev. 3)
+Date: Tue, 28 Aug 2007 15:48:45 -0400
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200708272347.45438.rjw@sisk.pl> <200708272351.10882.rjw@sisk.pl>
+In-Reply-To: <200708272351.10882.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200708281548.45912.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 27 August 2007 17:51, Rafael J. Wysocki wrote:
+> According to the ACPI specification (eg. ACPI 2.0c, sec. 7.3.1, 7.3.3,
+> ACPI 3.0b, sec. 7.3.1, 7.3.3) the _GTS and _BFS global control methods should
+> be executed, respectively, right before entering a sleep state (S1-S4) and right
+> after leaving it, but we don't follow this reqirement.  Namely, in our
+> implementation the nonboot CPUs are disabled after executing _GTS and enabled
+> before executing _BFS, which doesn't seem to be correct.
 
-On Tue, 2007-08-28 at 12:36 -0700, Christoph Lameter wrote:
-> On Tue, 28 Aug 2007, Peter Zijlstra wrote:
-> 
-> > On Mon, 2007-08-27 at 15:15 -0700, Christoph Lameter wrote:
-> > > Hmmmm. One wild idea would be to use a priority futex for the slab lock? 
-> > > That would make the slow paths interrupt safe without requiring interrupt 
-> > > disable? Does a futex fit into the page struct?
-> > 
-> > Very much puzzled at what you propose. in-kernel we use rt_mutex (has
-> > PI) or mutex, futexes are user-space. (on -rt spinlock_t == mutex ==
-> > rt_mutex)
-> > 
-> > Neither disable interrupts since they are sleeping locks.
-> > 
-> > That said, on -rt we do not need to disable interrupts in the allocators
-> > because its a bug to call an allocator from raw irq context.
-> 
-> Right so if a prioriuty futex 
+I've never encountered a BIOS that actually implements _GTS or _BFS,
+so I expect that changing how they are invoked may be somewhat academic.
 
-futex stands for Fast Userspace muTEX, please lets call it a rt_mutex.
+> [In fact, the ACPI 
+> specification requires that no physical I/O and interrupt servicing be performed
+> after the sleep state has been left and before _BFS is executed as well as after
+> executing _GTS and before the sleep state is entered, but we can't follow this
+> requirement literally, 
 
-> would have been taken from a process 
-> context and then an interrupt thread (or so no idea about RT) is scheduled 
-> then the interrupt thread could switch to the process context and complete 
-> the work there before doing the "interrupt" work. So disabling interrupts 
-> is no longer necessary.
+> since our AML interpreter needs to run with interrupts 
+> enabled and we need to carry out some operations with interrupts disabled before
+> entering the sleep state and after leaving it.]
 
--rt does all of the irq handler in thread (process) context, the hard
-irq handler just does something akin to a wakeup.
+This is sort of a myth.
 
-These irq threads typically run fifo/50 or simething like that.
+The real requirement is that the ACPI interpreter must be able to call kmalloc().
+It does this today via acpi_os_allocate(), which does this:
 
-[ note that this allows a form of irq priorisation even if the hardware
-  doesn't. ]
+kmalloc(size, irqs_disabled()? GFP_ATOMIC : GFP_KERNEL);
+
+No, we don't actually run the interpreter during device interrupts,
+but we need to be able to run it with interrupts off for boot,
+suspend, and resume.
+
+So how did boot work before this hack was added?
+kmalloc() does a might_sleep(), but deep down in
+cond_sleep, there is a handy little check for
+if (system_state == SYSTEM_RUNNING)
+to disable the run-time oops.
+
+I suggested that since it works during boot, and resume is in many
+ways similar to boot, we should just re-use system_state for early resume.
+But at the time, akpm told me not to use system_state, and so we have the hack above.
+
+I don't recall his reasoning -- it might be something that should
+be re-visited.  I don't like disabling the may_sleep() check all the time,
+I'd rather just disable it during the critical boot/suspend/resume states.
+
+> Moreover, acpi_enable() called 
+> after restoring the system memory state from a hibernation image should really
+> be executed before enabling the nonboot CPUs, since functional ACPI may be
+> needed for that.  All of this means that we need to handle ACPI in a more fine
+> grained manner during suspend and hibernation.
+
+I don't follow the requirement to boot an ACPI-enabled resume image
+from a non-ACPI-enabled boot kernel.  Certainly this isn't a scenario
+described by the ACPI spec, which transitions between G1(S4) and G0(S0) without
+going through an ACPI-disabled state.
+
+-Len
 
