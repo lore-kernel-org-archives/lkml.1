@@ -1,52 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbXH2EJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbXH2EKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757822AbXH2EJt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 00:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbXH2EJ3
+	id S1757711AbXH2EKn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 00:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbXH2EKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 00:09:29 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:18792 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752243AbXH2EJ2 (ORCPT
+	Wed, 29 Aug 2007 00:10:33 -0400
+Received: from kashary.donpac.ru ([80.254.111.37]:36069 "EHLO
+	kashary.donpac.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751160AbXH2EKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 00:09:28 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 2/2] iw_cxgb3 - dev->priv fix follow up
-To: jeff@garzik.org, rdreier@cisco.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Tue, 28 Aug 2007 21:09:20 -0700
-Message-ID: <20070829040920.2085.38426.stgit@speedy5>
-User-Agent: StGIT/0.12
+	Wed, 29 Aug 2007 00:10:32 -0400
+X-Greylist: delayed 61686 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Aug 2007 00:10:31 EDT
+Date: Tue, 28 Aug 2007 15:01:54 +0400
+From: Andrey Panin <pazke@donpac.ru>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, pazke@donpac.ru,
+       linux-visws-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] i386 visws: "extern inline" -> "static inline"
+Message-ID: <20070828110154.GA5081@pazke.donpac.ru>
+Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>, pazke@donpac.ru,
+	linux-visws-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+References: <20070827212819.GW4121@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
+Content-Disposition: inline
+In-Reply-To: <20070827212819.GW4121@stusta.de>
+X-Uname: Linux 2.6.23-rc3 x86_64
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
 
-The RDMA driver sitting on top of cxgb3 
-now uses the exported function dev2t3cdev() 
-to retrieve the the t3cdev associated with 
-a net_device.
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+On 239, 08 27, 2007 at 11:28:19PM +0200, Adrian Bunk wrote:
+> "extern inline" will have different semantics with gcc 4.3.
+>=20
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
- drivers/infiniband/hw/cxgb3/cxio_hal.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Looks good.
 
-diff --git a/drivers/infiniband/hw/cxgb3/cxio_hal.c b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-index 1518b41..beb2a38 100644
---- a/drivers/infiniband/hw/cxgb3/cxio_hal.c
-+++ b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-@@ -916,7 +916,7 @@ int cxio_rdev_open(struct cxio_rdev *rdev_p)
- 	PDBG("%s opening rnic dev %s\n", __FUNCTION__, rdev_p->dev_name);
- 	memset(&rdev_p->ctrl_qp, 0, sizeof(rdev_p->ctrl_qp));
- 	if (!rdev_p->t3cdev_p)
--		rdev_p->t3cdev_p = T3CDEV(netdev_p);
-+		rdev_p->t3cdev_p = dev2t3cdev(netdev_p);
- 	rdev_p->t3cdev_p->ulp = (void *) rdev_p;
- 	err = rdev_p->t3cdev_p->ctl(rdev_p->t3cdev_p, RDMA_GET_PARAMS,
- 					 &(rdev_p->rnic_info));
+Acked-by: Andrey Panin <pazke@donpac.ru>
+
+
+> ---
+>=20
+> This patch has been sent on:
+> - 14 Aug 2007
+>=20
+>  include/asm-i386/mach-visws/cobalt.h  |    8 ++++----
+>  include/asm-i386/mach-visws/lithium.h |    8 ++++----
+>  2 files changed, 8 insertions(+), 8 deletions(-)
+>=20
+> e12d2e797af72524f53a0ef3a7dd3cf91f58c542=20
+> diff --git a/include/asm-i386/mach-visws/cobalt.h b/include/asm-i386/mach=
+-visws/cobalt.h
+> index 33c3622..9952588 100644
+> --- a/include/asm-i386/mach-visws/cobalt.h
+> +++ b/include/asm-i386/mach-visws/cobalt.h
+> @@ -94,22 +94,22 @@
+>  #define	CO_IRQ_8259	CO_IRQ(CO_APIC_8259)
+> =20
+>  #ifdef CONFIG_X86_VISWS_APIC
+> -extern __inline void co_cpu_write(unsigned long reg, unsigned long v)
+> +static inline void co_cpu_write(unsigned long reg, unsigned long v)
+>  {
+>  	*((volatile unsigned long *)(CO_CPU_VADDR+reg))=3Dv;
+>  }
+> =20
+> -extern __inline unsigned long co_cpu_read(unsigned long reg)
+> +static inline unsigned long co_cpu_read(unsigned long reg)
+>  {
+>  	return *((volatile unsigned long *)(CO_CPU_VADDR+reg));
+>  }           =20
+>              =20
+> -extern __inline void co_apic_write(unsigned long reg, unsigned long v)
+> +static inline void co_apic_write(unsigned long reg, unsigned long v)
+>  {
+>  	*((volatile unsigned long *)(CO_APIC_VADDR+reg))=3Dv;
+>  }           =20
+>              =20
+> -extern __inline unsigned long co_apic_read(unsigned long reg)
+> +static inline unsigned long co_apic_read(unsigned long reg)
+>  {
+>  	return *((volatile unsigned long *)(CO_APIC_VADDR+reg));
+>  }
+> diff --git a/include/asm-i386/mach-visws/lithium.h b/include/asm-i386/mac=
+h-visws/lithium.h
+> index d443e68..dfcd4f0 100644
+> --- a/include/asm-i386/mach-visws/lithium.h
+> +++ b/include/asm-i386/mach-visws/lithium.h
+> @@ -29,22 +29,22 @@
+>  #define	LI_INTD		0x0080
+> =20
+>  /* More special purpose macros... */
+> -extern __inline void li_pcia_write16(unsigned long reg, unsigned short v)
+> +static inline void li_pcia_write16(unsigned long reg, unsigned short v)
+>  {
+>  	*((volatile unsigned short *)(LI_PCIA_VADDR+reg))=3Dv;
+>  }
+> =20
+> -extern __inline unsigned short li_pcia_read16(unsigned long reg)
+> +static inline unsigned short li_pcia_read16(unsigned long reg)
+>  {
+>  	 return *((volatile unsigned short *)(LI_PCIA_VADDR+reg));
+>  }
+> =20
+> -extern __inline void li_pcib_write16(unsigned long reg, unsigned short v)
+> +static inline void li_pcib_write16(unsigned long reg, unsigned short v)
+>  {
+>  	*((volatile unsigned short *)(LI_PCIB_VADDR+reg))=3Dv;
+>  }
+> =20
+> -extern __inline unsigned short li_pcib_read16(unsigned long reg)
+> +static inline unsigned short li_pcib_read16(unsigned long reg)
+>  {
+>  	return *((volatile unsigned short *)(LI_PCIB_VADDR+reg));
+>  }
+>=20
+>=20
+
+--=20
+Andrey Panin		| Linux and UNIX system administrator
+pazke@donpac.ru		| PGP key: wwwkeys.pgp.net
+
+--Kj7319i9nmIyA2yE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG1ACiIWZCBzwS8mkRAkdqAJ0RnrUSQcdvQE9byvGHUD2qeUxnoACcCjXQ
+hRfBRHFGJOyT1BLFj/Eq/A8=
+=TuuO
+-----END PGP SIGNATURE-----
+
+--Kj7319i9nmIyA2yE--
