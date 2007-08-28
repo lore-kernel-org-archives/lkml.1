@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbXH1JbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbXH1Jbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758758AbXH1JbW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 05:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbXH1JbN
+	id S1759368AbXH1Jbt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 05:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbXH1Jbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 05:31:13 -0400
-Received: from astra.telenet-ops.be ([195.130.132.58]:50999 "EHLO
-	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754765AbXH1JbN (ORCPT
+	Tue, 28 Aug 2007 05:31:38 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:44170 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752934AbXH1Jbh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 05:31:13 -0400
-Date: Tue, 28 Aug 2007 11:31:03 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Remove final traces of long-deprecated "ramdisk" kernel
- parm.
-In-Reply-To: <Pine.LNX.4.64.0708280233390.19913@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0708281130460.26867@anakin>
-References: <Pine.LNX.4.64.0708280233390.19913@localhost.localdomain>
+	Tue, 28 Aug 2007 05:31:37 -0400
+Date: Tue, 28 Aug 2007 10:30:42 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: fix bogus hotplug cpu warning
+In-Reply-To: <20070828090709.GA24578@elte.hu>
+Message-ID: <Pine.LNX.4.64.0708281022440.17987@blonde.wat.veritas.com>
+References: <20070828090709.GA24578@elte.hu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Aug 2007, Robert P. J. Day wrote:
-> Since the "ramdisk" kernel parameter has been officially deprecated
-> since at least 2.6.18, might as well finally get rid of it.
+On Tue, 28 Aug 2007, Ingo Molnar wrote:
+> this commit:
 > 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+>  commit d243769d3f83b318813a04a9592bb7cfedc6c280
+>  Author: Hugh Dickins <hugh@veritas.com>
+>  Date:   Mon Aug 27 16:06:19 2007 +0100
+> 
+>     fix bogus hotplug cpu warning
+> 
+>     Fix bogus DEBUG_PREEMPT warning on x86_64, when cpu brought online 
+>     after bootup: current_is_keventd is right to note its use of 
+>     smp_processor_id is preempt-safe, but should use 
+>     raw_smp_processor_id to avoid the warning.
+> 
+> -       int cpu = smp_processor_id();   /* preempt-safe: keventd is per-cpu */
+> +       int cpu = raw_smp_processor_id(); /* preempt-safe: keventd is per-cpu */
+> 
+> is incorrect. smp_processor_id() will _not_ warn about true per-cpu 
+> tasks:
+> 
+>         /*
+>          * Kernel threads bound to a single CPU can safely use
+>          * smp_processor_id():
+>          */
+>         this_mask = cpumask_of_cpu(this_cpu);
+> 
+>         if (cpus_equal(current->cpus_allowed, this_mask))
+>                 goto out;
+> 
+> so if this check triggered for the cpu-offline code it's because keventd 
+> was _not_ per-cpu (perhaps because the cpu offline code broke its 
+> affinity?). So your patch hides a real bug.
 
-m68k part is
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+No, keventd is properly per-cpu, but the task which is calling
+current_is_keventd() is a normal user task, so smp_processor_id()
+did warn about it.  It wouldn't make much sense to have a function
+current_is_keventd() if you could only call it from a keventd, would
+it ;-?  Take a look at it (kernel/workqueue.c), I believe what it does
+is unusual (hence that comment about being "preempt-safe") but valid.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Hugh
