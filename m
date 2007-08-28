@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbXH1Rzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbXH1R6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbXH1Rzc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 13:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbXH1RzR
+	id S1755412AbXH1R6q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 13:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbXH1R6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 13:55:17 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:36309 "EHLO 2ka.mipt.ru"
+	Tue, 28 Aug 2007 13:58:39 -0400
+Received: from ozlabs.org ([203.10.76.45]:48145 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751148AbXH1RzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 13:55:14 -0400
-Date: Tue, 28 Aug 2007 21:54:03 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [1/1] Block device throttling [Re: Distributed storage.]
-Message-ID: <20070828175403.GA28440@2ka.mipt.ru>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708271457.38100.phillips@phunq.net> <20070828093540.GB20534@2ka.mipt.ru> <200708281027.59528.phillips@phunq.net>
+	id S1751007AbXH1R6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 13:58:39 -0400
+Subject: Re: [PATCH] fix maxcpus=N parsing
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <len.brown@intel.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708271554570.21853@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0708271554570.21853@blonde.wat.veritas.com>
+Content-Type: text/plain
+Date: Wed, 29 Aug 2007 03:58:16 +1000
+Message-Id: <1188323896.5531.63.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708281027.59528.phillips@phunq.net>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 28, 2007 at 10:27:59AM -0700, Daniel Phillips (phillips@phunq.net) wrote:
-> > We do not care about one cpu being able to increase its counter
-> > higher than the limit, such inaccuracy (maximum bios in flight thus
-> > can be more than limit, difference is equal to the number of CPUs -
-> > 1) is a price for removing atomic operation. I thought I pointed it
-> > in the original description, but might forget, that if it will be an
-> > issue, that atomic operations can be introduced there. Any
-> > uber-precise measurements in the case when we are close to the edge
-> > will not give us any benefit at all, since were are already in the
-> > grey area.
+On Mon, 2007-08-27 at 16:02 +0100, Hugh Dickins wrote:
+> Fix 61ec7567db103d537329b0db9a887db570431ff4: maxcpus=N is now having no
+> effect on x86_64, and freezing bootup on i386 (because of inconsistency
+> with the separate maxcpus parsing down in arch/i386, I guess).  That's
+> because early_param parsing is a little different from __setup parsing,
+> and needs the "=" omitted: then it seems to work as the original commit
+> intended (no mention of IO-APIC in /proc/interrupts when maxcpus=0).
 > 
-> This is not just inaccurate, it is suicide.  Keep leaking throttle 
-> counts and eventually all of them will be gone.  No more IO
-> on that block device!
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
+> Sorry, I noticed this back in -mm, but got diverted by deeper mysteries.
+> Cc'ed Rusty: I presume there's a good reason why early_param parsing is
+> confusingly different, but he may know better and want to change it.
 
-First, because number of increased and decreased operations are the
-same, so it will dance around limit in both directions. Second, I
-wrote about this race and there is number of ways to deal with it, from
-atomic operations to separated counters for in-flight and completed
-bios (which can be racy too, but in different angle). Third, if people
-can not agree even on much higher layer detail about should bio
-structure be increased or not, how we can discuss details of
-the preliminary implementation with known issues.
+Yeah, early_param is modelled on module_param which does more than the
+naive substring match of __setup.  There's a warning in the header IIRC.
 
-So I can not agree with fatality of the issue, but of course it exists,
-and was highlighted.
+The original intention wass that everything would move to
+module_param-style parameters.  However __setup is still useful for
+trivial core stuff.
 
-Let's solve problems in order of their appearence. If bio structure will
-be allowed to grow, then the whole patches can be done better, if not,
-then there are issues with performance (although the more I think, the
-more I become sure that since bio itself is very rarely shared, and thus
-requires cloning and alocation/freeing, which itself is much more costly
-operation than atomic_sub/dec, it can safely host additional operation).
+> It's odd that i386 treats maxcpus=N differently from other architectures:
+> on i386 it limits cpu_possible_map, on others it just limits what boots
+> (then powersaved is liable to bring up the others on x86_64 - hmmm).
 
--- 
-	Evgeniy Polyakov
+Indeed, it'd be nice to see this made uniform.
+
+But this patch is fine.
+
+Cheers,
+Rusty.
+
