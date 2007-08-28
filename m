@@ -1,430 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbXH1Ny3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbXH1Nzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756659AbXH1Ny3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 09:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbXH1NyT
+	id S1757973AbXH1Nzu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 09:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbXH1Nzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 09:54:19 -0400
-Received: from styx.suse.cz ([82.119.242.94]:53620 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752978AbXH1NyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 09:54:18 -0400
-Date: Tue, 28 Aug 2007 16:13:18 +0200
-From: Jan Kara <jack@suse.cz>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Send quota messages via netlink
-Message-ID: <20070828141318.GC5869@duck.suse.cz>
+	Tue, 28 Aug 2007 09:55:44 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:45907 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753564AbXH1Nzn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 09:55:43 -0400
+Message-ID: <46D427E7.5030106@linux.vnet.ibm.com>
+Date: Tue, 28 Aug 2007 19:19:27 +0530
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="vtzGhvizbBRQ85DL"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: ltp-list@lists.sourceforge.net
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, risrajak@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Containers Testcases Plan
+Content-Type: multipart/mixed;
+ boundary="------------040701030409060808050900"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------040701030409060808050900
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
---vtzGhvizbBRQ85DL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Please find attached the Tentative CONTAINER Test case Plan, depicting 
+the future testcases that will be merged to LTP.
+Regards--
+Subrata
 
-  Hello,
+--------------040701030409060808050900
+Content-Type: text/plain;
+ name="TEST_PLAN.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="TEST_PLAN.txt"
 
-  I'm sending rediffed patch implementing sending of quota messages via netlink
-interface (some rationale in patch description). I've already posted it to
-LKML some time ago and there were no objections, so I guess it's fine to put
-it to -mm. Andrew, would you be so kind? Thanks.
-  Userspace deamon reading the messages from the kernel and sending them to
-dbus and/or user console is also written (it's part of quota-tools). The
-only remaining problem is there are a few changes needed to libnl needed for
-the userspace daemon. They were basically acked by the maintainer but it
-seems he has not merged the patches yet. So this will take a bit more time.
+Following are tentative Testcases to be included into LTP-Containers in future:
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+NAME						TENTATIVE-TIME
+=================================================================================
+PID NAMESPACES					(NEAR FUTURE)
+NETWROK NAMESPACES				(NEAR FUTURE)
+POSIX IPC NAMESPACES				(NEAR FUTURE)
+TTY+CONSOLE+DEVPTS NAMESPACES			(NEAR FUTURE)
+PROC+SYSFS ISOLATION				(NEAR FUTURE)
+PER-CONTAINER CAPABILITY/SECURITY TESTS		(NEAR FUTURE)
+=================================================================================
 
---vtzGhvizbBRQ85DL
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="quota-2.6.23-rc4-1-quota_messages.diff"
-
-Implement sending of quota messages via netlink interface. The advantage is
-that in userspace we can better decide what to do with the message - for
-example display a dialogue in your X session or just write the message to the
-console. As a bonus, we can get rid of problems with console locking deep
-inside filesystem code once we remove the old printing mechanism.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-rc4/fs/dquot.c linux-2.6.23-rc4-1-quota_messages/fs/dquot.c
---- linux-2.6.23-rc4/fs/dquot.c	2007-08-28 14:08:51.000000000 +0200
-+++ linux-2.6.23-rc4-1-quota_messages/fs/dquot.c	2007-08-28 14:16:26.000000000 +0200
-@@ -79,6 +79,10 @@
- #include <linux/capability.h>
- #include <linux/quotaops.h>
- #include <linux/writeback.h> /* for inode_lock, oddly enough.. */
-+#ifdef CONFIG_QUOTA_NETLINK_INTERFACE
-+#include <net/netlink.h>
-+#include <net/genetlink.h>
-+#endif
- 
- #include <asm/uaccess.h>
- 
-@@ -823,6 +827,7 @@ static inline void dquot_decr_space(stru
- 	clear_bit(DQ_BLKS_B, &dquot->dq_flags);
- }
- 
-+#ifdef CONFIG_PRINT_QUOTA_WARNING
- static int flag_print_warnings = 1;
- 
- static inline int need_print_warning(struct dquot *dquot)
-@@ -839,22 +844,15 @@ static inline int need_print_warning(str
- 	return 0;
- }
- 
--/* Values of warnings */
--#define NOWARN 0
--#define IHARDWARN 1
--#define ISOFTLONGWARN 2
--#define ISOFTWARN 3
--#define BHARDWARN 4
--#define BSOFTLONGWARN 5
--#define BSOFTWARN 6
--
- /* Print warning to user which exceeded quota */
- static void print_warning(struct dquot *dquot, const char warntype)
- {
- 	char *msg = NULL;
- 	struct tty_struct *tty;
--	int flag = (warntype == BHARDWARN || warntype == BSOFTLONGWARN) ? DQ_BLKS_B :
--	  ((warntype == IHARDWARN || warntype == ISOFTLONGWARN) ? DQ_INODES_B : 0);
-+	int flag = (warntype == QUOTA_NL_BHARDWARN ||
-+		warntype == QUOTA_NL_BSOFTLONGWARN) ? DQ_BLKS_B :
-+		((warntype == QUOTA_NL_IHARDWARN ||
-+		warntype == QUOTA_NL_ISOFTLONGWARN) ? DQ_INODES_B : 0);
- 
- 	if (!need_print_warning(dquot) || (flag && test_and_set_bit(flag, &dquot->dq_flags)))
- 		return;
-@@ -864,28 +862,28 @@ static void print_warning(struct dquot *
- 	if (!tty)
- 		goto out_lock;
- 	tty_write_message(tty, dquot->dq_sb->s_id);
--	if (warntype == ISOFTWARN || warntype == BSOFTWARN)
-+	if (warntype == QUOTA_NL_ISOFTWARN || warntype == QUOTA_NL_BSOFTWARN)
- 		tty_write_message(tty, ": warning, ");
- 	else
- 		tty_write_message(tty, ": write failed, ");
- 	tty_write_message(tty, quotatypes[dquot->dq_type]);
- 	switch (warntype) {
--		case IHARDWARN:
-+		case QUOTA_NL_IHARDWARN:
- 			msg = " file limit reached.\r\n";
- 			break;
--		case ISOFTLONGWARN:
-+		case QUOTA_NL_ISOFTLONGWARN:
- 			msg = " file quota exceeded too long.\r\n";
- 			break;
--		case ISOFTWARN:
-+		case QUOTA_NL_ISOFTWARN:
- 			msg = " file quota exceeded.\r\n";
- 			break;
--		case BHARDWARN:
-+		case QUOTA_NL_BHARDWARN:
- 			msg = " block limit reached.\r\n";
- 			break;
--		case BSOFTLONGWARN:
-+		case QUOTA_NL_BSOFTLONGWARN:
- 			msg = " block quota exceeded too long.\r\n";
- 			break;
--		case BSOFTWARN:
-+		case QUOTA_NL_BSOFTWARN:
- 			msg = " block quota exceeded.\r\n";
- 			break;
- 	}
-@@ -893,14 +891,89 @@ static void print_warning(struct dquot *
- out_lock:
- 	mutex_unlock(&tty_mutex);
- }
-+#endif
-+
-+#ifdef CONFIG_QUOTA_NETLINK_INTERFACE
-+
-+/* Size of quota netlink message - actually an upperbound for buffer size */
-+#define QUOTA_NL_MSG_SIZE 32
-+
-+/* Netlink family structure for quota */
-+static struct genl_family quota_genl_family = {
-+	.id = GENL_ID_GENERATE,
-+	.hdrsize = 0,
-+	.name = "VFS_DQUOT",
-+	.version = 1,
-+	.maxattr = QUOTA_NL_A_MAX,
-+};
-+
-+/* Send warning to userspace about user which exceeded quota */
-+static void send_warning(const struct dquot *dquot, const char warntype)
-+{
-+	static unsigned long seq;
-+	struct sk_buff *skb;
-+	void *msg_head;
-+	int ret;
-+
-+	skb = genlmsg_new(QUOTA_NL_MSG_SIZE, GFP_NOFS);
-+	if (!skb) {
-+		printk(KERN_ERR
-+		  "VFS: Not enough memory to send quota warning.\n");
-+		return;
-+	}
-+	msg_head = genlmsg_put(skb, 0, seq++, &quota_genl_family, 0, QUOTA_NL_C_WARNING);
-+	if (!msg_head) {
-+		printk(KERN_ERR
-+		  "VFS: Cannot store netlink header in quota warning.\n");
-+		goto err_out;
-+	}
-+	ret = nla_put_u32(skb, QUOTA_NL_A_QTYPE, dquot->dq_type);
-+	if (ret)
-+		goto attr_err_out;
-+	ret = nla_put_u64(skb, QUOTA_NL_A_EXCESS_ID, dquot->dq_id);
-+	if (ret)
-+		goto attr_err_out;
-+	ret = nla_put_u32(skb, QUOTA_NL_A_WARNING, warntype);
-+	if (ret)
-+		goto attr_err_out;
-+	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MAJOR,
-+		MAJOR(dquot->dq_sb->s_dev));
-+	if (ret)
-+		goto attr_err_out;
-+	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MINOR,
-+		MINOR(dquot->dq_sb->s_dev));
-+	if (ret)
-+		goto attr_err_out;
-+	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current->user->uid);
-+	if (ret)
-+		goto attr_err_out;
-+	genlmsg_end(skb, msg_head);
-+
-+	ret = genlmsg_multicast(skb, 0, quota_genl_family.id, GFP_NOFS);
-+	if (ret < 0 && ret != -ESRCH)
-+		printk(KERN_ERR
-+			"VFS: Failed to send notification message: %d\n", ret);
-+	return;
-+attr_err_out:
-+	printk(KERN_ERR "VFS: Failed to compose quota message: %d\n", ret);
-+err_out:
-+	kfree_skb(skb);
-+}
-+#endif
- 
- static inline void flush_warnings(struct dquot **dquots, char *warntype)
- {
- 	int i;
- 
- 	for (i = 0; i < MAXQUOTAS; i++)
--		if (dquots[i] != NODQUOT && warntype[i] != NOWARN)
-+		if (dquots[i] != NODQUOT && warntype[i] != QUOTA_NL_NOWARN) {
-+#ifdef CONFIG_PRINT_QUOTA_WARNING
- 			print_warning(dquots[i], warntype[i]);
-+#endif
-+#ifdef CONFIG_QUOTA_NETLINK_INTERFACE
-+			send_warning(dquots[i], warntype[i]);
-+#endif
-+		}
- }
- 
- static inline char ignore_hardlimit(struct dquot *dquot)
-@@ -914,14 +987,14 @@ static inline char ignore_hardlimit(stru
- /* needs dq_data_lock */
- static int check_idq(struct dquot *dquot, ulong inodes, char *warntype)
- {
--	*warntype = NOWARN;
-+	*warntype = QUOTA_NL_NOWARN;
- 	if (inodes <= 0 || test_bit(DQ_FAKE_B, &dquot->dq_flags))
- 		return QUOTA_OK;
- 
- 	if (dquot->dq_dqb.dqb_ihardlimit &&
- 	   (dquot->dq_dqb.dqb_curinodes + inodes) > dquot->dq_dqb.dqb_ihardlimit &&
-             !ignore_hardlimit(dquot)) {
--		*warntype = IHARDWARN;
-+		*warntype = QUOTA_NL_IHARDWARN;
- 		return NO_QUOTA;
- 	}
- 
-@@ -929,14 +1002,14 @@ static int check_idq(struct dquot *dquot
- 	   (dquot->dq_dqb.dqb_curinodes + inodes) > dquot->dq_dqb.dqb_isoftlimit &&
- 	    dquot->dq_dqb.dqb_itime && get_seconds() >= dquot->dq_dqb.dqb_itime &&
-             !ignore_hardlimit(dquot)) {
--		*warntype = ISOFTLONGWARN;
-+		*warntype = QUOTA_NL_ISOFTLONGWARN;
- 		return NO_QUOTA;
- 	}
- 
- 	if (dquot->dq_dqb.dqb_isoftlimit &&
- 	   (dquot->dq_dqb.dqb_curinodes + inodes) > dquot->dq_dqb.dqb_isoftlimit &&
- 	    dquot->dq_dqb.dqb_itime == 0) {
--		*warntype = ISOFTWARN;
-+		*warntype = QUOTA_NL_ISOFTWARN;
- 		dquot->dq_dqb.dqb_itime = get_seconds() + sb_dqopt(dquot->dq_sb)->info[dquot->dq_type].dqi_igrace;
- 	}
- 
-@@ -946,7 +1019,7 @@ static int check_idq(struct dquot *dquot
- /* needs dq_data_lock */
- static int check_bdq(struct dquot *dquot, qsize_t space, int prealloc, char *warntype)
- {
--	*warntype = 0;
-+	*warntype = QUOTA_NL_NOWARN;
- 	if (space <= 0 || test_bit(DQ_FAKE_B, &dquot->dq_flags))
- 		return QUOTA_OK;
- 
-@@ -954,7 +1027,7 @@ static int check_bdq(struct dquot *dquot
- 	   toqb(dquot->dq_dqb.dqb_curspace + space) > dquot->dq_dqb.dqb_bhardlimit &&
-             !ignore_hardlimit(dquot)) {
- 		if (!prealloc)
--			*warntype = BHARDWARN;
-+			*warntype = QUOTA_NL_BHARDWARN;
- 		return NO_QUOTA;
- 	}
- 
-@@ -963,7 +1036,7 @@ static int check_bdq(struct dquot *dquot
- 	    dquot->dq_dqb.dqb_btime && get_seconds() >= dquot->dq_dqb.dqb_btime &&
-             !ignore_hardlimit(dquot)) {
- 		if (!prealloc)
--			*warntype = BSOFTLONGWARN;
-+			*warntype = QUOTA_NL_BSOFTLONGWARN;
- 		return NO_QUOTA;
- 	}
- 
-@@ -971,7 +1044,7 @@ static int check_bdq(struct dquot *dquot
- 	   toqb(dquot->dq_dqb.dqb_curspace + space) > dquot->dq_dqb.dqb_bsoftlimit &&
- 	    dquot->dq_dqb.dqb_btime == 0) {
- 		if (!prealloc) {
--			*warntype = BSOFTWARN;
-+			*warntype = QUOTA_NL_BSOFTWARN;
- 			dquot->dq_dqb.dqb_btime = get_seconds() + sb_dqopt(dquot->dq_sb)->info[dquot->dq_type].dqi_bgrace;
- 		}
- 		else
-@@ -1066,7 +1139,7 @@ out_add:
- 		return QUOTA_OK;
- 	}
- 	for (cnt = 0; cnt < MAXQUOTAS; cnt++)
--		warntype[cnt] = NOWARN;
-+		warntype[cnt] = QUOTA_NL_NOWARN;
- 
- 	down_read(&sb_dqopt(inode->i_sb)->dqptr_sem);
- 	if (IS_NOQUOTA(inode)) {	/* Now we can do reliable test... */
-@@ -1112,7 +1185,7 @@ int dquot_alloc_inode(const struct inode
- 	if (IS_NOQUOTA(inode))
- 		return QUOTA_OK;
- 	for (cnt = 0; cnt < MAXQUOTAS; cnt++)
--		warntype[cnt] = NOWARN;
-+		warntype[cnt] = QUOTA_NL_NOWARN;
- 	down_read(&sb_dqopt(inode->i_sb)->dqptr_sem);
- 	if (IS_NOQUOTA(inode)) {
- 		up_read(&sb_dqopt(inode->i_sb)->dqptr_sem);
-@@ -1234,7 +1307,7 @@ int dquot_transfer(struct inode *inode, 
- 	/* Clear the arrays */
- 	for (cnt = 0; cnt < MAXQUOTAS; cnt++) {
- 		transfer_to[cnt] = transfer_from[cnt] = NODQUOT;
--		warntype[cnt] = NOWARN;
-+		warntype[cnt] = QUOTA_NL_NOWARN;
- 	}
- 	down_write(&sb_dqopt(inode->i_sb)->dqptr_sem);
- 	/* Now recheck reliably when holding dqptr_sem */
-@@ -1808,6 +1881,7 @@ static ctl_table fs_dqstats_table[] = {
- 		.mode		= 0444,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+#ifdef CONFIG_PRINT_QUOTA_WARNING
- 	{
- 		.ctl_name	= FS_DQ_WARNINGS,
- 		.procname	= "warnings",
-@@ -1816,6 +1890,7 @@ static ctl_table fs_dqstats_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+#endif
- 	{ .ctl_name = 0 },
- };
- 
-@@ -1877,6 +1952,11 @@ static int __init dquot_init(void)
- 
- 	register_shrinker(&dqcache_shrinker);
- 
-+#ifdef CONFIG_QUOTA_NETLINK_INTERFACE
-+	if (genl_register_family(&quota_genl_family) != 0)
-+		printk(KERN_ERR "VFS: Failed to create quota netlink interface.\n");
-+#endif
-+
- 	return 0;
- }
- module_init(dquot_init);
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-rc4/fs/Kconfig linux-2.6.23-rc4-1-quota_messages/fs/Kconfig
---- linux-2.6.23-rc4/fs/Kconfig	2007-08-28 14:08:50.000000000 +0200
-+++ linux-2.6.23-rc4-1-quota_messages/fs/Kconfig	2007-08-28 14:16:26.000000000 +0200
-@@ -537,6 +537,24 @@ config QUOTA
- 	  with the quota tools. Probably the quota support is only useful for
- 	  multi user systems. If unsure, say N.
- 
-+config QUOTA_NETLINK_INTERFACE
-+	bool "Report quota messages through netlink interface"
-+	depends on QUOTA && NET
-+	help
-+	  If you say Y here, quota warnings (about exceeding softlimit, reaching
-+	  hardlimit, etc.) will be reported through netlink interface. If unsure,
-+	  say Y.
-+
-+config PRINT_QUOTA_WARNING
-+	bool "Print quota warnings to console (OBSOLETE)"
-+	depends on QUOTA
-+	default y
-+	help
-+	  If you say Y here, quota warnings (about exceeding softlimit, reaching
-+	  hardlimit, etc.) will be printed to the process' controlling terminal.
-+	  Note that this behavior is currently deprecated and may go away in
-+	  future. Please use notification via netlink socket instead.
-+
- config QFMT_V1
- 	tristate "Old quota format support"
- 	depends on QUOTA
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-rc4/include/linux/quota.h linux-2.6.23-rc4-1-quota_messages/include/linux/quota.h
---- linux-2.6.23-rc4/include/linux/quota.h	2007-07-16 17:47:29.000000000 +0200
-+++ linux-2.6.23-rc4-1-quota_messages/include/linux/quota.h	2007-08-28 14:24:02.000000000 +0200
-@@ -128,6 +128,37 @@ struct if_dqinfo {
- 	__u32 dqi_valid;
- };
- 
-+/*
-+ * Definitions for quota netlink interface
-+ */
-+#define QUOTA_NL_NOWARN 0
-+#define QUOTA_NL_IHARDWARN 1		/* Inode hardlimit reached */
-+#define QUOTA_NL_ISOFTLONGWARN 2 	/* Inode grace time expired */
-+#define QUOTA_NL_ISOFTWARN 3		/* Inode softlimit reached */
-+#define QUOTA_NL_BHARDWARN 4		/* Block hardlimit reached */
-+#define QUOTA_NL_BSOFTLONGWARN 5	/* Block grace time expired */
-+#define QUOTA_NL_BSOFTWARN 6		/* Block softlimit reached */
-+
-+enum {
-+	QUOTA_NL_C_UNSPEC,
-+	QUOTA_NL_C_WARNING,
-+	__QUOTA_NL_C_MAX,
-+};
-+#define QUOTA_NL_C_MAX (__QUOTA_NL_C_MAX - 1)
-+
-+enum {
-+	QUOTA_NL_A_UNSPEC,
-+	QUOTA_NL_A_QTYPE,
-+	QUOTA_NL_A_EXCESS_ID,
-+	QUOTA_NL_A_WARNING,
-+	QUOTA_NL_A_DEV_MAJOR,
-+	QUOTA_NL_A_DEV_MINOR,
-+	QUOTA_NL_A_CAUSED_ID,
-+	__QUOTA_NL_A_MAX,
-+};
-+#define QUOTA_NL_A_MAX (__QUOTA_NL_A_MAX - 1)
-+
-+
- #ifdef __KERNEL__
- #include <linux/spinlock.h>
- #include <linux/rwsem.h>
-
---vtzGhvizbBRQ85DL--
+--------------040701030409060808050900--
