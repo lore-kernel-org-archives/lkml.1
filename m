@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762287AbXH1T5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763439AbXH1T7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762287AbXH1T5u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758810AbXH1T5b
+	id S1763439AbXH1T7w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXH1T7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:57:31 -0400
-Received: from mga11.intel.com ([192.55.52.93]:13721 "EHLO mga11.intel.com"
+	Tue, 28 Aug 2007 15:59:44 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:39308 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757044AbXH1T53 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 15:57:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,318,1183359600"; 
-   d="scan'208";a="289581042"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1754058AbXH1T7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 15:59:43 -0400
+Message-ID: <46D47E69.1000804@us.ibm.com>
+Date: Tue, 28 Aug 2007 12:58:33 -0700
+From: Ian Romanick <idr@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH -mm 3/3] PM: Improve handling of ACPI system state indicator (rev. 3)
-Date: Tue, 28 Aug 2007 12:57:27 -0700
-Message-ID: <B28E9812BAF6E2498B7EC5C427F293A4031EF65B@orsmsx415.amr.corp.intel.com>
-In-Reply-To: <200708272353.09380.rjw@sisk.pl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH -mm 3/3] PM: Improve handling of ACPI system state indicator (rev. 3)
-thread-index: AcfpAz2rfKW1Q6+WQJKGN6eGg/3X+wAqhlmw
-References: <200708272347.45438.rjw@sisk.pl> <200708272353.09380.rjw@sisk.pl>
-From: "Moore, Robert" <robert.moore@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Cc: "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>,
-       "Len Brown" <lenb@kernel.org>, "LKML" <linux-kernel@vger.kernel.org>,
-       "Pavel Machek" <pavel@ucw.cz>,
-       "pm list" <linux-pm@lists.linux-foundation.org>
-X-OriginalArrivalTime: 28 Aug 2007 19:57:27.0885 (UTC) FILETIME=[A91777D0:01C7E9AD]
+To: m.kozlowski@tuxland.pl
+CC: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/23] introduce drm_zalloc as a drm_alloc + memset replacement
+References: <20070827205750.514001000@tuxland.pl> <20070827211341.994873000@tuxland.pl>
+In-Reply-To: <20070827211341.994873000@tuxland.pl>
+X-Enigmail-Version: 0.95.3
+OpenPGP: id=AC84030F
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since these changes appear to affect the ACPICA core in a fairly big
-way, I would like to see a short, concise description of each change and
-why it is necessary.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Thanks,
-Bob
+Instead of adding drm_zalloc, why not just use drm_calloc?  At the very
+least just make drm_zalloc a macro that calls drm_calloc.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-
------Original Message-----
-From: linux-acpi-owner@vger.kernel.org
-[mailto:linux-acpi-owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
-Sent: Monday, August 27, 2007 2:53 PM
-To: Andrew Morton
-Cc: ACPI Devel Maling List; Len Brown; LKML; Pavel Machek; pm list
-Subject: [PATCH -mm 3/3] PM: Improve handling of ACPI system state
-indicator (rev. 3)
-
-From: Rafael J. Wysocki <rjw@sisk.pl>
+iD8DBQFG1H5pX1gOwKyEAw8RAuXrAJ9W+Oyaimcedg0LdDqwqfMgX9Gl2QCeM9BM
+sdiP4BDvLirsYex5hqhHsFc=
+=/qZb
+-----END PGP SIGNATURE-----
