@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbXH1VQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbXH1VYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757917AbXH1VQg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 17:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbXH1VQY
+	id S932192AbXH1VYA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 17:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbXH1VXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 17:16:24 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:20818 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752705AbXH1VQW (ORCPT
+	Tue, 28 Aug 2007 17:23:51 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:25089 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752871AbXH1VXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 17:16:22 -0400
-X-IronPort-AV: i="4.19,318,1183359600"; 
-   d="scan'208"; a="208196018:sNHT44271405"
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Divy Le Ray <divy@chelsio.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, swise@opengridcomputing.com
-Subject: Re: [PATCH 2.6.23 RESEND] cxgb3 - Fix dev->priv usage
-X-Message-Flag: Warning: May contain useful information
-References: <20070823220628.9835.73819.stgit@speedy5>
-	<46CFA8E8.90101@garzik.org> <46CFCCDF.9060101@garzik.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 28 Aug 2007 14:16:21 -0700
-In-Reply-To: <46CFCCDF.9060101@garzik.org> (Jeff Garzik's message of "Sat, 25 Aug 2007 02:31:59 -0400")
-Message-ID: <adahcmjcqca.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Tue, 28 Aug 2007 17:23:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rsg1I7zFO+JIqyGGMPJjV+agIJO/RxUMNoJz7SL8o0q5nMP9Q0BlbqT/nCUCGv0w1FVTkzWS1L3CsVUCrJvegZRxFD9sSwHQnN1KtpHpZhgxgxQN5UMrz06/F1eUo/qWxcZys/sCfctFlcqcfxqtfbZDbtEY9CJB0XT7IcO1Us8=
+Message-ID: <a4e6962a0708281356p2c808841ud486376974c94eff@mail.gmail.com>
+Date: Tue, 28 Aug 2007 15:56:43 -0500
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Subject: Re: [kvm-devel] [RFC] 9p: add KVM/QEMU pci transport
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       v9fs-developer@lists.sourceforge.net, lguest@ozlabs.org
+In-Reply-To: <200708282208.52902.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Aug 2007 21:16:21.0469 (UTC) FILETIME=[AE8710D0:01C7E9B8]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11883271601857-git-send-email-ericvh@gmail.com>
+	 <11883271601227-git-send-email-ericvh@gmail.com>
+	 <11883271602233-git-send-email-ericvh@gmail.com>
+	 <200708282208.52902.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I take that back.  Rejected -- it breaks infiniband build.
+On 8/28/07, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Tuesday 28 August 2007, Eric Van Hensbergen wrote:
+>
+> > This adds a shared memory transport for a synthetic 9p device for
+> > paravirtualized file system support under KVM/QEMU.
+>
+> Nice driver. I'm hoping we can do a virtio driver using a similar
+> concept.
+>
 
-To be more precise:
+Yes.  I'm looking at the patches from Dor now, it should be pretty
+straight forward.  The PCI is interesting in its own right for other
+(non-virtual) projects we've been playing with....
 
-    drivers/infiniband/hw/cxgb3/cxio_hal.c: In function 'cxio_rdev_open':
-    drivers/infiniband/hw/cxgb3/cxio_hal.c:919: error: implicit declaration of function 'T3CDEV'
-
-it seems the problem is that T3CDEV() has been deleted and been
-replaced with the dev2t3cdev() inline function.  However a simple
-replacement s/T3CDEV/dev2t3cdev/ in drivers/infiniband/hw/cxgb3
-doesn't work because the function has moved from t3cdev.h to
-adapter.h; and moving the function back to t3cdev.h doesn't work
-because it depends on more structure definitions now.
-
-And at that point I gave up...
-
- - R.
+     -eric
