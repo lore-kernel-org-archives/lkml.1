@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbXH1OnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbXH1OnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbXH1OnA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 10:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbXH1Omu
+	id S1757440AbXH1OnW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 10:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbXH1OnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 10:42:50 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43369 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751786AbXH1Omt (ORCPT
+	Tue, 28 Aug 2007 10:43:09 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:64846 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756726AbXH1OnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 10:42:49 -0400
-Date: Tue, 28 Aug 2007 16:42:48 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Gabriel C <nix.or.die@googlemail.com>,
-       linux-kernel@vger.kernel.org, Olaf Hering <olh@suse.de>,
-       netdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [-mm patch] make types.h usable for non-gcc C parsers
-Message-ID: <20070828144248.GR26410@stusta.de>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46CC3B27.10604@googlemail.com> <20070827212743.GN4121@stusta.de> <20070828003704.deed71ae.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070828003704.deed71ae.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 28 Aug 2007 10:43:07 -0400
+Subject: Re: nmi_watchdog=2 regression in 2.6.21
+From: Daniel Walker <dwalker@mvista.com>
+To: eranian@hpl.hp.com
+Cc: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>, ak@suse.de,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20070828091217.GA1645@frankl.hpl.hp.com>
+References: <1186531609.22044.50.camel@imap.mvista.com>
+	 <20070808142059.GF30805@atjola.homenet>
+	 <20070827175431.GD784@frankl.hpl.hp.com>
+	 <1188237331.2435.255.camel@dhcp193.mvista.com>
+	 <20070827225555.GI784@frankl.hpl.hp.com>
+	 <1188256074.2435.272.camel@dhcp193.mvista.com>
+	 <20070828091217.GA1645@frankl.hpl.hp.com>
+Content-Type: text/plain
+Date: Tue, 28 Aug 2007 07:34:44 -0700
+Message-Id: <1188311684.2435.288.camel@dhcp193.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 28, 2007 at 12:37:04AM -0700, Andrew Morton wrote:
-> On Mon, 27 Aug 2007 23:27:43 +0200 Adrian Bunk <bunk@kernel.org> wrote:
+On Tue, 2007-08-28 at 02:12 -0700, Stephane Eranian wrote:
+> Daniel,
 > 
-> > On Wed, Aug 22, 2007 at 03:33:27PM +0200, Gabriel C wrote:
-> > >...
-> > > WARNING: "div64_64" [net/netfilter/xt_connbytes.ko] has no CRC!
-> > >...
+> On Mon, Aug 27, 2007 at 04:07:54PM -0700, Daniel Walker wrote:
+> > On Mon, 2007-08-27 at 15:55 -0700, Stephane Eranian wrote:
 > > 
-> > Patch below.
-> > 
-> > > Regards,
+> > > Yet the model name looks strange. So we need to run one more test,
+> > > as the fam/model is not enough. What we need to check is whether or
+> > > not this processor implements architectural perfmon or not.
 > > > 
-> > > Gabriel
+> > > Could you please compile and run the attached program and send me 
+> > > the output?
 > > 
-> > cu
-> > Adrian
+> > The output below is all the output ..
 > > 
+> > eax=0x7280201: version=1  num_cnt=2
 > > 
-> > <--  snip  -->
-> > 
-> > 
-> > This patch makes the 64bit integers on 32bit architectures usable for
-> > all C parsers that know about "long long".
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > 
-> 
-> Given that this patch (hopefully) fixes a problem in the current net-2.6.24
-> tree, I'm inclined to slip it into mainline immediately.
+> Then you have a Core Duo processor and the commit from Bjorn should
+> fix the problem. If it does not, then there is something else wrong.
+> Unfortunately, I do not have a Core Duo machine to try and reproduce.
 
-It fixes a bug exposed by a -mm only patch, not by the net tree
-(and 2.6.23-rc3-mm1 doesn't contain the net tree at all).
+There must be something else wrong, cause the problem persists .. As I
+said in past emails to Bjorn, I tested his commit in git, as well as the
+latest git all with the same issue (as well as bisecting git)..
 
-> But I'd like a better description, please.  Which "non-gcc parser" are we
-> talking about here?  Something under ./scripts/.  Well, please identify it,
-> and describe what the problem is, and how the proposed patch will address
-> it.
->...
+If the hardware is buggy then we need some way to determine that..
 
-It's about parsers like the Sun C compiler and the C parser shipped 
-with genksyms.
+If this machine didn't support performance counters, what would happen
+then?
 
-We can fix the C parser shipped with genksyms, but we have nearly the 
-same problem with userspace C parsers:
-
-These are userspace headers, and we had a bug report that the Sun C 
-compiler was not able to compile some userspace code.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Daniel
 
