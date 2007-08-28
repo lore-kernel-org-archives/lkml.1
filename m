@@ -1,47 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbXH1N5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbXH1N7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbXH1N5q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 09:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbXH1N5k
+	id S1755230AbXH1N7M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 09:59:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbXH1N67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 09:57:40 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45749 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752673AbXH1N5j (ORCPT
+	Tue, 28 Aug 2007 09:58:59 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:34333 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752465AbXH1N66 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 09:57:39 -0400
-Date: Tue, 28 Aug 2007 06:57:06 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] i386: unexport machine_id
-Message-ID: <20070828065706.50a3eba4@laptopd505.fenrus.org>
-In-Reply-To: <20070828010741.19fccb06.akpm@linux-foundation.org>
-References: <20070827212808.GT4121@stusta.de>
-	<20070828010741.19fccb06.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 28 Aug 2007 09:58:58 -0400
+Date: Tue, 28 Aug 2007 14:58:55 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 03/28] Add cmpxchg64 and cmpxchg64_local to mips
+Message-ID: <20070828135855.GC31568@linux-mips.org>
+References: <20070827155234.062715780@polymtl.ca> <20070827155524.503255159@polymtl.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070827155524.503255159@polymtl.ca>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Aug 2007 01:07:41 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> You know my position on removal of exports with no warning.
+On Mon, Aug 27, 2007 at 11:52:37AM -0400, Mathieu Desnoyers wrote:
 
-I know it (and don't quite agree but ok)
-> 
-> If the relevant maintainer chooses to apply the patch then ho hum I
-> have other things to think about.  Your best shot at getting this
-> sort of thing merged would be to cc the appropriate maintainer.
-> 
-> Or, better, use __deprecated_for_modules.  That's what it was added
-> for. -
+> Make sure that at least cmpxchg64_local is available on all architectures to use
+> for unsigned long long values.
 
-and/or use EXPORT_UNUSED_SYMBOL so that people at least have the option
-to not suffer the overhead *now*.
+Queued for 2.6.24.  Thanks,
+
+  Ralf
