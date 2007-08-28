@@ -1,76 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763278AbXH1T4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763582AbXH1T4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763278AbXH1T4V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbXH1Tzq
+	id S1763582AbXH1T4o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762863AbXH1T4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:55:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55568 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760891AbXH1Tzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 15:55:45 -0400
-Date: Tue, 28 Aug 2007 21:55:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Xavier Bestel <xavier.bestel@free.fr>, Al Boldi <a1426z@gawab.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-Message-ID: <20070828195525.GB30537@elte.hu>
-References: <200708111344.42934.a1426z@gawab.com> <200708271746.47685.a1426z@gawab.com> <20070827204116.GA12495@elte.hu> <200708280737.53439.a1426z@gawab.com> <1188287015.1131.232.camel@frg-rhel40-em64t-04> <20070828080218.GA12247@elte.hu> <20070828191924.GT6002@1wt.eu>
+	Tue, 28 Aug 2007 15:56:06 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34068 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762793AbXH1T4E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 15:56:04 -0400
+Date: Tue, 28 Aug 2007 12:56:03 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Christoph Hellwig <hch@lst.de>
+cc: torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
+       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [35/36] Large blocksize support for ext2
+In-Reply-To: <20070828192209.GB13883@lst.de>
+Message-ID: <Pine.LNX.4.64.0708281255530.16473@schroedinger.engr.sgi.com>
+References: <20070828190551.415127746@sgi.com> <20070828190736.220951776@sgi.com>
+ <20070828192209.GB13883@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070828191924.GT6002@1wt.eu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 28 Aug 2007, Christoph Hellwig wrote:
 
-* Willy Tarreau <w@1wt.eu> wrote:
-
-> On Tue, Aug 28, 2007 at 10:02:18AM +0200, Ingo Molnar wrote:
-> > 
-> > * Xavier Bestel <xavier.bestel@free.fr> wrote:
-> > 
-> > > Are you sure they are stalled ? What you may have is simple gears 
-> > > running at a multiple of your screen refresh rate, so they only appear 
-> > > stalled.
-> > > 
-> > > Plus, as said Linus, you're not really testing the kernel scheduler. 
-> > > gears is really bad benchmark, it should die.
-> > 
-> > i like glxgears as long as it runs on _real_ 3D hardware, because there 
-> > it has minimal interaction with X and so it's an excellent visual test 
-> > about consistency of scheduling. You can immediately see (literally) 
-> > scheduling hickups down to a millisecond range (!). In this sense, if 
-> > done and interpreted carefully, glxgears gives more feedback than many 
-> > audio tests. (audio latency problems are audible, but on most sound hw 
-> > it takes quite a bit of latency to produce an xrun.) So basically 
-> > glxgears is the "early warning system" that tells us about the potential 
-> > for xruns earlier than an xrun would happen for real.
-> > 
-> > [ of course you can also run all the other tools to get numeric results,
-> >   but glxgears is nice in that it gives immediate visual feedback. ]
+> On Tue, Aug 28, 2007 at 12:06:26PM -0700, clameter@sgi.com wrote:
+> > Hmmm... Actually there is nothing additional to be done after the earlier
+> > cleanup of the macros. So just modify copyright.
 > 
-> Al could also test ocbench, which brings visual feedback without 
-> harnessing the X server : http://linux.1wt.eu/sched/
-> 
-> I packaged it exactly for this problem and it has already helped. It 
-> uses X after each loop, so if you run it with large run time, X is 
-> nearly not sollicitated.
+> So you get a copyright line for some trivial macro cleanups?  Please
+> drop this patch and rather put your copyright into places where you
+> actually did major work..
 
-yeah, and ocbench is one of my favorite cross-task-fairness tests - i 
-dont release a CFS patch without checking it with ocbench first :-)
+Ok.
 
-	Ingo
