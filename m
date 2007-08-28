@@ -1,86 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbXH1BQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759823AbXH1BTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759383AbXH1BQL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 21:16:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbXH1BP6
+	id S1759823AbXH1BTk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 21:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbXH1BTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 21:15:58 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:56231 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752777AbXH1BP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 21:15:57 -0400
-Date: Mon, 27 Aug 2007 18:15:54 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
-       josh@kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] Make rcutorture RNG use temporal entropy
-Message-ID: <20070828011554.GB31860@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070816024904.GA5312@linux.vnet.ibm.com> <20070817115356.cb201e42.akpm@linux-foundation.org> <20070817200022.GH8464@linux.vnet.ibm.com> <20070823180658.GQ11166@waste.org> <20070823185830.GC8371@linux.vnet.ibm.com> <20070823194037.GW30556@waste.org>
+	Mon, 27 Aug 2007 21:19:32 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:38089 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752777AbXH1BTb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 21:19:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iWGQIndcbRIK3A5ucFi6VmGvAmbQFwop3hH6qdIoHW7+JPIvpz0660Kh0KgsrJIUKsaGWqDIcBwkdaSfFxd4kbaXIalNyscLq9HP7XxBaHwp4tedWK4ZjXjYogIg3+NtgFuSUTWf2ivl7wkYxxriTmM+dzjCp5AuSzG11gYMDcw=
+Message-ID: <dda83e780708271819x247ac49dx981c49a80ed6a999@mail.gmail.com>
+Date: Mon, 27 Aug 2007 18:19:29 -0700
+From: "Bret Towe" <magnade@gmail.com>
+To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
+Subject: Re: NFS woes again Was: [linux-usb-devel] USB-related oops in sysfs with linux v2.6.23-rc3-50-g28e8351
+Cc: "Florin Iucha" <florin@iucha.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <1188220651.6701.32.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070823194037.GW30556@waste.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <Pine.LNX.4.64.0708151656070.2460@twin.jikos.cz>
+	 <Pine.LNX.4.64.0708211502330.2460@twin.jikos.cz>
+	 <20070821131759.GI10422@iucha.net> <20070821132704.GJ10422@iucha.net>
+	 <Pine.LNX.4.64.0708211536560.2460@twin.jikos.cz>
+	 <20070822132200.GO10422@iucha.net> <20070823125210.GQ10422@iucha.net>
+	 <dda83e780708231014x66093dafj83263a2a1c8203bb@mail.gmail.com>
+	 <20070823173637.GS10422@iucha.net>
+	 <1188220651.6701.32.camel@heimdal.trondhjem.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 23, 2007 at 02:40:37PM -0500, Matt Mackall wrote:
-> On Thu, Aug 23, 2007 at 11:58:31AM -0700, Paul E. McKenney wrote:
-> > On Thu, Aug 23, 2007 at 01:06:58PM -0500, Matt Mackall wrote:
-> > > On Fri, Aug 17, 2007 at 01:00:22PM -0700, Paul E. McKenney wrote:
-> > > > On Fri, Aug 17, 2007 at 11:53:56AM -0700, Andrew Morton wrote:
-> > > > > On Wed, 15 Aug 2007 19:49:04 -0700
-> > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > 
-> > > > > > Repost of http://lkml.org/lkml/2007/8/10/472 made available by request.
-> > > > > > 
-> > > > > > The locking used by get_random_bytes() can conflict with the
-> > > > > > preempt_disable() and synchronize_sched() form of RCU.  This patch changes
-> > > > > > rcutorture's RNG to gather entropy from the new cpu_clock() interface
-> > > > > > (relying on interrupts, preemption, daemons, and rcutorture's reader
-> > > > > > thread's rock-bottom scheduling priority to provide useful entropy),
-> > > > > > and also adds and EXPORT_SYMBOL_GPL() to make that interface available
-> > > > > > to GPLed kernel modules such as rcutorture.
-> > > > > > 
-> > > > > > Passes several hours of rcutorture.
-> > > > > 
-> > > > > Please explain what "conflict with" means so that I can work out if
-> > > > > this is a needed-in-2.6.23 change, thanks.
-> > > > 
-> > > > Not needed in 2.6.23.  This change falls into the "preparation for -rt"
-> > > > category.  Also in the "don't unnecessarily eat entropy, leave some for
-> > > > the people needing crypographically secure randomness" category.
-> > > 
-> > > We've had several calls for a more fast and loose version of
-> > > get_random_bytes. Generalizing one of the cookie generation functions
-> > > is probably a good way to go.
-> > 
-> > Are you thinking in terms of secure_tcp_syn_cookie(), or did you have
-> > something else in mind?
-> 
-> Yes. Using a hash function rather than a trivial LFSR is preferable.
-> But pulling the guts out and giving it an n-bytes interface like
-> get_random_bytes().
+On 8/27/07, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> On Thu, 2007-08-23 at 12:36 -0500, Florin Iucha wrote:
+> > On Thu, Aug 23, 2007 at 10:14:38AM -0700, Bret Towe wrote:
+> > > this sounds alot like the post i did yesterday titled 'nfs4 hang regression'
+> > > i tracked it down to commit 3d39c691ff486142dd9aaeac12f553f4476b7a6
+> >
+> > Yes, it certainly does -- all the symptoms match!
+> >
+> > I'm not [alone in] seeing dead keyboards!
+> >
+> > Now, if only somebody could clarify to me the connection between
+> > the bad NFS4 shooting the keyboard but not the mouse, that would
+> > be wonderful.
+> >
+> > florin
+>
+> Could you and Bret please check if the attached patch fixes the hang?
 
-OK.  But this cannot be the first discussion of getting a fast and loose
-version of get_random_bytes() into the kernel.  Anyplace I should look
-for cautionary tales?  A quick search located a spirited discussion of
-proposed kernel infrastructure for user-mode random number generation
-back in 2003, but...
+no good for me still hangs after ~30minutes
 
-Also a 2006 proposal from Stephan Eranian: http://lkml.org/lkml/2006/8/23/41
-This appears to have gotten zero replies.  :-/  (Though not hash-based.)
-
-Other semi-related threads:
-
-	http://lkml.org/lkml/2005/3/15/102
-	http://lkml.org/lkml/2004/9/23/337
-
-Some years back, my reflexive design would have been per-CPU state,
-accessed with interrupts disabled.  Not so good for realtime usage,
-though.  One could go with per-task state in order to avoid the
-interrupt disabling, which might be OK if the state is quite small.
-
-							Thanx, Paul
+> Cheers
+>   Trond
+>
+>
+>
+>
+> ---------- Forwarded message ----------
+> From: Trond Myklebust <Trond.Myklebust@netapp.com>
+> To:
+> Date: Mon, 27 Aug 2007 09:14:56 -0400
+> Subject: No Subject
+> We need to ensure that nobody adds anything to nfs_automount_list while we
+> are killing off the work queue entry, or else nfs_expire_automounts will
+> simply rearm it, and we hang.
+>
+> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> ---
+>
+>  fs/nfs/namespace.c |   14 +++++++++++++-
+>  1 files changed, 13 insertions(+), 1 deletions(-)
+>
+> diff --git a/fs/nfs/namespace.c b/fs/nfs/namespace.c
+> index aea76d0..bcd0777 100644
+> --- a/fs/nfs/namespace.c
+> +++ b/fs/nfs/namespace.c
+> @@ -22,6 +22,11 @@ static void nfs_expire_automounts(struct work_struct *work);
+>
+>  LIST_HEAD(nfs_automount_list);
+>  static DECLARE_DELAYED_WORK(nfs_automount_task, nfs_expire_automounts);
+> +/*
+> + * The following mutex prevents nfs_follow_mountpoint from adding new
+> + * entries to nfs_automount_list
+> + */
+> +static DEFINE_MUTEX(nfs_automount_mutex);
+>  int nfs_mountpoint_expiry_timeout = 500 * HZ;
+>
+>  static struct vfsmount *nfs_do_submount(const struct vfsmount *mnt_parent,
+> @@ -128,18 +133,21 @@ static void * nfs_follow_mountpoint(struct dentry *dentry, struct nameidata *nd)
+>                 goto out_err;
+>
+>         mntget(mnt);
+> +       mutex_lock(&nfs_automount_mutex);
+>         err = do_add_mount(mnt, nd, nd->mnt->mnt_flags|MNT_SHRINKABLE, &nfs_automount_list);
+>         if (err < 0) {
+> +               mutex_unlock(&nfs_automount_mutex);
+>                 mntput(mnt);
+>                 if (err == -EBUSY)
+>                         goto out_follow;
+>                 goto out_err;
+>         }
+> +       schedule_delayed_work(&nfs_automount_task, nfs_mountpoint_expiry_timeout);
+> +       mutex_unlock(&nfs_automount_mutex);
+>         mntput(nd->mnt);
+>         dput(nd->dentry);
+>         nd->mnt = mnt;
+>         nd->dentry = dget(mnt->mnt_root);
+> -       schedule_delayed_work(&nfs_automount_task, nfs_mountpoint_expiry_timeout);
+>  out:
+>         dprintk("%s: done, returned %d\n", __FUNCTION__, err);
+>
+> @@ -175,8 +183,12 @@ static void nfs_expire_automounts(struct work_struct *work)
+>
+>  void nfs_release_automount_timer(void)
+>  {
+> +       if (!list_empty(&nfs_automount_list))
+> +               return;
+> +       mutex_lock(&nfs_automount_mutex);
+>         if (list_empty(&nfs_automount_list))
+>                 cancel_delayed_work_sync(&nfs_automount_task);
+> +       mutex_unlock(&nfs_automount_mutex);
+>  }
+>
+>  /*
+>
+>
