@@ -1,119 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbXH1Pvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbXH1PxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755846AbXH1Pvk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 11:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbXH1Pvc
+	id S1757068AbXH1PxS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 11:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbXH1PxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 11:51:32 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:55866 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752536AbXH1Pvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 11:51:32 -0400
-Date: Tue, 28 Aug 2007 19:54:33 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: PATCH? fix SIGNAL_STOP_DEQUEUED vs SIGCONT race
-Message-ID: <20070828155433.GA1081@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Tue, 28 Aug 2007 11:53:11 -0400
+Received: from web32614.mail.mud.yahoo.com ([68.142.207.241]:46591 "HELO
+	web32614.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753413AbXH1PxK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 11:53:10 -0400
+X-YMail-OSG: XExD4KUVM1lQ53dC7DrxcwgFI9.W1ibml3iXBhgll26fJ.wpbNEmsny7L5zqJcuhMePqNASHrLAFFmW6ZcoiyJShZg--
+X-RocketYMMF: knobi.rm
+Date: Tue, 28 Aug 2007 08:53:07 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Reply-To: spamtrap@knobisoft.de
+Subject: Understanding I/O behaviour - next try
+To: linux-kernel@vger.kernel.org
+Cc: Peter zijlstra <a.p.zijlstra@chello.nl>, mingo@redhat.com,
+       spam trap <spamtrap@knobisoft.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <713252.42570.qm@web32614.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two threads, T1 and T2, SIGTTIN is SIG_DFL, SIGTTOU has a handler.
+Keywords: I/O, bdi-v9, cfs
 
-	T1 does get_signal_to_deliver(), dequeus SIGTTIN, unlocks ->siglock.
+Hi,
 
-	SIGCONT comes in, nothing to do yet, just clear SIGNAL_STOP_DEQUEUED.
+ a while ago I asked a few questions on the Linux I/O behaviour,
+because I were (still am) fighting some "misbehaviour" related to heavy
+I/O.
 
-	SIGTTOU is sent, T2 dequeues it and sets SIGNAL_STOP_DEQUEUED again.
-	It has a handler, we shouldn't stop, but
+ The basic setup is a dual x86_64 box with 8 GB of memory. The DL380
+has a HW RAID5, made from 4x72GB disks and about 100 MB write cache.
+The performance of the block device with O_DIRECT is about 90 MB/sec.
 
-	T1 continues, takes ->siglock, and calls do_signal_stop().
+ The problematic behaviour comes when we are moving large files through
+the system. The file usage in this case is mostly "use once" or
+streaming. As soon as the amount of file data is larger than 7.5 GB, we
+see occasional unresponsiveness of the system (e.g. no more ssh
+connections into the box) of more than 1 or 2 minutes (!) duration
+(kernels up to 2.6.19). Load goes up, mainly due to pdflush threads and
+some other poor guys being in "D" state.
 
-Move the setting of SIGNAL_STOP_DEQUEUED from dequeue_signal() to
-get_signal_to_deliver(), and set this flag only if we are really going to stop.
-This also simplifies the code and makes the SIGNAL_STOP_DEQUEUED usage more
-understandable.
+ The data flows in basically three modes. All of them are affected:
 
-However, this changes the behaviour when the task is ptraced. If the debugger
-doesn't clear ->exit_code, SIGSTOP always succeeds after ptrace_stop(), even
-if SIGCONT was sent in between. I can't decide whether this change is good
-or bad, hopefully Roland can clarify.
+local-disk -> NFS
+NFS -> local-disk
+NFS -> NFS
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+ NFS is V3/TCP.
 
---- t/kernel/signal.c~S_G_S	2007-08-23 16:02:57.000000000 +0400
-+++ t/kernel/signal.c	2007-08-28 19:15:28.000000000 +0400
-@@ -409,22 +409,7 @@ int dequeue_signal(struct task_struct *t
- 	}
- 	if (likely(tsk == current))
- 		recalc_sigpending();
--	if (signr && unlikely(sig_kernel_stop(signr))) {
--		/*
--		 * Set a marker that we have dequeued a stop signal.  Our
--		 * caller might release the siglock and then the pending
--		 * stop signal it is about to process is no longer in the
--		 * pending bitmasks, but must still be cleared by a SIGCONT
--		 * (and overruled by a SIGKILL).  So those cases clear this
--		 * shared flag after we've set it.  Note that this flag may
--		 * remain set after the signal we return is ignored or
--		 * handled.  That doesn't matter because its only purpose
--		 * is to alert stop-signal processing code when another
--		 * processor has come along and cleared the flag.
--		 */
--		if (!(tsk->signal->flags & SIGNAL_GROUP_EXIT))
--			tsk->signal->flags |= SIGNAL_STOP_DEQUEUED;
--	}
-+
- 	if (signr && likely(tsk == current) &&
- 	     ((info->si_code & __SI_MASK) == __SI_TIMER) &&
- 	     info->si_sys_private){
-@@ -1683,9 +1668,6 @@ static int do_signal_stop(int signr)
- 	struct signal_struct *sig = current->signal;
- 	int stop_count;
- 
--	if (!likely(sig->flags & SIGNAL_STOP_DEQUEUED))
--		return 0;
--
- 	if (sig->group_stop_count > 0) {
- 		/*
- 		 * There is a group stop in progress.  We don't need to
-@@ -1849,6 +1831,9 @@ relock:
- 			continue;
- 
- 		if (sig_kernel_stop(signr)) {
-+			if (current->signal->flags & SIGNAL_GROUP_EXIT)
-+				continue;
-+
- 			/*
- 			 * The default action is to stop all threads in
- 			 * the thread group.  The job control signals
-@@ -1860,14 +1845,20 @@ relock:
- 			 * We need to check for that and bail out if necessary.
- 			 */
- 			if (signr != SIGSTOP) {
-+				/*
-+				 * Set a marker that we have dequeued a stop
-+				 * signal. We are going to unlock ->siglock,
-+				 * another signal can cancel group stop request
-+				 * during this window. In that case this marker
-+				 * will be cleared when we re-check below.
-+				 */
-+				current->signal->flags |= SIGNAL_STOP_DEQUEUED;
- 				spin_unlock_irq(&current->sighand->siglock);
--
--				/* signals can be posted during this window */
--
- 				if (is_current_pgrp_orphaned())
- 					goto relock;
--
- 				spin_lock_irq(&current->sighand->siglock);
-+				if (!(current->signal->flags & SIGNAL_STOP_DEQUEUED))
-+					continue;
- 			}
- 
- 			if (likely(do_signal_stop(signr))) {
+ So, I made a few experiments in the last few days, using three
+different kernels: 2.6.22.5, 2.6.22.5+cfs20.4 an 2.6.22.5+bdi-v9.
 
+ The first observation (independent of the kernel) is that we *should*
+use O_DIRECT, at least for output to the local disk. Here we see about
+90 MB/sec write performance. A simple "dd" using 1,2 and 3 parallel
+threads to the same block device (through a ext2 FS) gives:
+
+O_Direct: 88 MB/s, 2x44, 3x29.5
+non-O_DIRECT: 51 MB/s, 2x19, 3x12.5
+
+- Observation 1a: IO schedulers are mostly equivalent, with CFQ
+slightly worse than AS and DEADLINE
+- Observation 1b: when using a 2.6.22.5+cfs20.4, the non-O_DIRECT
+performance goes [slightly] down. With three threads it is 3x10 MB/s.
+Ingo?
+- Observation 1c: bdi-v9 does not help in this case, which is not
+surprising.
+
+ The real question here is why the non-O_DIRECT case is so slow. Is
+this a general thing? Is this related to the CCISS controller? Using
+O_DIRECT is unfortunatelly not an option for us.
+
+ When using three different targets (local disk plus two different NFS
+Filesystems) bdi-v9 is a big winner. Without it, all threads are [seem
+to be] limited to the speed of the slowest FS. With bdi-v9 we see a
+considerable speedup.
+
+ Just by chance I found out that doing all I/O inc sync-mode does
+prevent the load from going up. Of course, I/O throughput is not
+stellar (but not much worse than the non-O_DIRECT case). But the
+responsiveness seem OK. Maybe a solution, as this can be controlled via
+mount (would be great for O_DIRECT :-).
+
+ In general 2.6.22 seems to bee better that 2.6.19, but this is highly
+subjective :-( I am using the following setting in /proc. They seem to
+provide the smoothest responsiveness:
+
+vm.dirty_background_ratio = 1
+vm.dirty_ratio = 1
+vm.swappiness = 1
+vm.vfs_cache_pressure = 1
+
+ Another thing I saw during my tests is that when writing to NFS, the
+"dirty" or "nr_dirty" numbers are always 0. Is this a conceptual thing,
+or a bug?
+
+ In any case, view this as a report for one specific loadcase that does
+not behave very well. It seems there are ways to make things better
+(sync, per device throttling, ...), but nothing "perfect yet. Use once
+does seem to be a problem.
+
+Cheers
+Martin
+
+------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
