@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbXH1PR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759233AbXH1PSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757205AbXH1PR7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 11:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbXH1PRt
+	id S1759233AbXH1PSW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 11:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbXH1PSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 11:17:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50449 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753712AbXH1PRs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 11:17:48 -0400
-Date: Tue, 28 Aug 2007 08:17:10 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@osdl.org>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, hare@suse.de
-Subject: Re: [PATCH] debloat aic7xxx and aic79xx drivers by deinlining
-Message-ID: <20070828081710.4687185c@laptopd505.fenrus.org>
-In-Reply-To: <200708281256.35162.vda.linux@googlemail.com>
-References: <200708252257.07241.vda.linux@googlemail.com>
-	<200708261621.30563.vda.linux@googlemail.com>
-	<20070827020310.GC4121@stusta.de>
-	<200708281256.35162.vda.linux@googlemail.com>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 28 Aug 2007 11:18:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43054 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754027AbXH1PSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 11:18:07 -0400
+Date: Tue, 28 Aug 2007 17:18:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Subject: [backport] CFS scheduler, -v20.5, for v2.6.22.5, v2.6.21.7,
+	v2.6.20.16
+Message-ID: <20070828151804.GA23553@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Aug 2007 12:56:34 +010
-Denys Vlasenko <vda.linux@googlemail.com> wrote:
 
-> >
-> >   make namespacecheck
-> 
-> Thanks, nice tool.
-> 
-> aic7xxx is kind of not very nice in this regard.
-> 
-> See below what I get even on non-patched driver.
-> 
-> I am willing to clean it up, but I still would like
-> "debloating" patch to be accepted.
+i've uploaded the -v20.5 CFS backport patches, which includes a handful 
+of other (small) fixes, again related to cornercases. It can be picked 
+up from the usual place:
 
-Fwiw I do like your debloat patch a lot; it's just only half the
-equation ... if you also do the namespace fixes, I bet the driver
-debloats even more...
+    http://people.redhat.com/mingo/cfs-scheduler/
 
+this updates the CFS backport to include the .23-rc4's scheduler plus 
+the changes in the latest scheduler tree. Any scheduler problem you 
+might find in -v20.5 will likely affect the .23 kernel too so please 
+give it a good workout and report any suspicious behavior :-)
+
+	Ingo
