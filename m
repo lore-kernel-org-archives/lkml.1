@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbXH1NOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757086AbXH1NRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757219AbXH1NOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 09:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbXH1NOE
+	id S1757086AbXH1NRk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 09:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbXH1NRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 09:14:04 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:43552 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752390AbXH1NOB (ORCPT
+	Tue, 28 Aug 2007 09:17:32 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:24885 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753598AbXH1NRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 09:14:01 -0400
-Date: Tue, 28 Aug 2007 15:14:00 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Michael Evans <mjevans1983@gmail.com>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       "Michael J. Evans" <mjevans1983@comcast.net>,
-       Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@redhat.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch v3 1/1] md: Software Raid autodetect dev list not array
-In-Reply-To: <4877c76c0708280608m529296edgd83f9c08e3918815@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708281511470.3018@fbirervta.pbzchgretzou.qr>
-References: <200708222058.45480.mjevans1983@comcast.net> 
- <200708271516.21889.mjevans1983@comcast.net>  <20070827153020.43788e21.randy.dunlap@oracle.com>
-  <200708272138.19785.mjevans1983@comcast.net>  <46D3A8AD.6000701@oracle.com>
- <4877c76c0708280608m529296edgd83f9c08e3918815@mail.gmail.com>
+	Tue, 28 Aug 2007 09:17:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=gzhfmFqRY2j5JUkhdq4FEVshTYZU/so3ujuSUWQxy8tdNJf/e3B1BGLxNLCpC+mjhgbhS6jKvWb8VFYmjSPemOy8ZzpYnqbYjb3++Yo/lE6XoS8bTaw1faa0FdRhvz3DUbxdnYSJf6xAxJ21GMfD+jc2v7ZFrbEyTppG+Y7xoyE=
+Message-ID: <46D42057.9090507@gmail.com>
+Date: Tue, 28 Aug 2007 15:17:11 +0200
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: arch_align_stack() seems useless
+References: <46D2DADF.8060505@gmail.com> <20070827071413.736e3dcb@laptopd505.fenrus.org>
+In-Reply-To: <20070827071413.736e3dcb@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Arjan,
 
-On Aug 28 2007 06:08, Michael Evans wrote:
->
->Oh, I see.  I forgot about the changelogs.  I'd send out version 5
->now, but I'm not sure what kernel version to make the patch against.
->2.6.23-rc4 is on kernel.org and I don't see any git snapshots.
+Arjan van de Ven wrote:
+> arch_align_stack aligns, on x86, within a 2 page range (this is for
+> cache coloring).
 
-2.6.23-rc4 is a snapshot in itself, a tagged one at that.
-Just use git pull to get the latest, which is always good.
-Or git fetch; git checkout 2.6.23-rc4; if you need that particular one.
+OK, but for elf case this seems useless since the top of the stack is
+already randomized.
 
->Additionally I never could tell what git tree was the 'mainline' as it
->isn't labeled with such a keyword (at least in the list of git trees I
->saw).
+It seems that the randomization stuff (top of the stack + stack
+pointer inside a page) belongs to the elf binary format whereas it
+could have been part of exec.c. Are there any reasons ?
 
-/torvalds/linux-2.6.git or so; yes, it's not clearly marked. Then again, why?
-/Mainline is tarballs for most people, and they don't want to go deeper ;-)
+> The other thing you missed is that arch_align_stack()
+> is called in 2 locations, binfmt_elf.c is the primary location for
+> inside-the-page randomization.
+> 
 
+Well not really because for mips case, we have:
 
-	Jan
--- 
+	$ git grep ELF_PLATFORM include/asm-mips
+	include/asm-mips/elf.h:#define ELF_PLATFORM  (NULL)
+
+So on mips, the stack pointer won't get the inside the page
+randomization. Is that correct ?
+
+If so, I'm wondering why this randomization must depend on that string
+to be defined. I must admit that I'm not sure how it's used. I guess
+it's used by ld.so and it could be set to "mips" for now...
+
+thanks
+		Franck
