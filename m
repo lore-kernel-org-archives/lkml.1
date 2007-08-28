@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbXH1GMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbXH1GWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbXH1GMr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 02:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXH1GMj
+	id S1752815AbXH1GWT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 02:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXH1GWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 02:12:39 -0400
-Received: from aa011msr.fastwebnet.it ([85.18.95.71]:47014 "EHLO
-	aa011msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751071AbXH1GMj (ORCPT
+	Tue, 28 Aug 2007 02:22:08 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:57972 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbXH1GWF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 02:12:39 -0400
-Date: Tue, 28 Aug 2007 08:07:00 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Cc: john stultz <johnstul@us.ibm.com>, Bob Picco <bob.picco@hp.com>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: "double" hpet clocksource && hard freeze [bisected]
-Message-ID: <20070828080700.42234a99@localhost>
-In-Reply-To: <20070827173458.5a1ffed1@localhost>
-References: <20070823222115.122a37ca@localhost>
-	<617E1C2C70743745A92448908E030B2A023EB2E1@scsmsx411.amr.corp.intel.com>
-	<1187903135.6024.18.camel@localhost.localdomain>
-	<1187905306.6024.24.camel@localhost.localdomain>
-	<20070824124631.GF10594@localhost>
-	<1187979454.6163.2.camel@localhost.localdomain>
-	<20070827173458.5a1ffed1@localhost>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 28 Aug 2007 02:22:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=jrHj0FtuRsfn5KKX3lLKXa8VsPGBrdJhqtwJSggspCyCKlzZL+kYrZ+ukw5UTnA0eyGi8zZ1nPLRPcmeR94jr6w/MiMHQ0EkkYvjxbx6eSpXCOED+ZNa+7aLsKTa/yhmWdEEHR2xznMEyEGihvvfnQrha2T63aX5eIjqjLoY/Rc=
+Message-ID: <24c1515f0708272322h2875ea28k7a28b8651513132a@mail.gmail.com>
+Date: Tue, 28 Aug 2007 09:22:04 +0300
+From: "Janne Karhunen" <janne.karhunen@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: NFSv3 lock recovery
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007 17:34:58 -0300
-"Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br> wrote:
+Hi,
 
-> | Yea. While I'm still not completely comfortable leaving this up to boot
-> | order alone (the ia64 hpet clocksource is clearly causing issues on
-> | x86_64), I think this patch is something we need as well.
-> 
->  Does -stable need this too?
+Brief question about NFSv3 lock recovery to those who might
+know - does Linux implementation (or NLM/NSM protocol)
+properly support the case in which client and server state
+change simultaneously?
 
-No  :)
+Reason I'm asking is that this very case is occasionally giving
+me stale locks. Given that NFSv3 server crashes it's possible
+that client 'rooting' from it crashes as well. Now, once the
+server comes back up it tries to notify the client that just
+crashed. Hardly surprisingly, this notification doesn't go
+anywhere and server discards the notification/client. And once
+the client starts to boot again it tries to notify the server which
+instantly whines about SM_NOTIFY when no-one is being
+monitored. Thus, whole notification cycle is busted and lock
+states go haywire :/. Is this even supposed to work?
+
+
 
 -- 
-	Paolo Ornati
-	Linux 2.6.22.5 on x86_64
+// Janne
