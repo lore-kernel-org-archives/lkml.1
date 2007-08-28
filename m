@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbXH1IIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbXH1IRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbXH1IIG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 04:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbXH1IHx
+	id S1757482AbXH1IRl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 04:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbXH1IR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 04:07:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47080 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751851AbXH1IHw (ORCPT
+	Tue, 28 Aug 2007 04:17:27 -0400
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:45430 "EHLO
+	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752971AbXH1IRP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 04:07:52 -0400
-Date: Tue, 28 Aug 2007 01:07:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] i386: unexport machine_id
-Message-Id: <20070828010741.19fccb06.akpm@linux-foundation.org>
-In-Reply-To: <20070827212808.GT4121@stusta.de>
-References: <20070827212808.GT4121@stusta.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Aug 2007 04:17:15 -0400
+Message-id: <12315207221202319057@pripojeni.net>
+Subject: [PATCH 1/3] V4L: stk11xx, use ARRAY_SIZE in another 2 cases
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Date: Tue, 28 Aug 2007 04:17:15 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007 23:28:08 +0200 Adrian Bunk <bunk@kernel.org> wrote:
+stk11xx, use ARRAY_SIZE in another 2 cases
 
-> This patch removes the unused EXPORT_SYMBOL(machine_id).
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
-> This patch has been sent on:
-> - 14 Aug 2007
-> 
-> --- a/arch/i386/kernel/setup.c
-> +++ b/arch/i386/kernel/setup.c
-> @@ -86,9 +86,6 @@ unsigned long mmu_cr4_features;
->  
->  /* for MCA, but anyone else can use it if they want */
->  unsigned int machine_id;
-> -#ifdef CONFIG_MCA
-> -EXPORT_SYMBOL(machine_id);
-> -#endif
->  unsigned int machine_submodel_id;
->  unsigned int BIOS_revision;
->  unsigned int mca_pentium_flag;
+There were 2 places with constant in for loop. Use ARRARY_SIZE instead to
+allow easy update of the tables.
 
-You know my position on removal of exports with no warning.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
-If the relevant maintainer chooses to apply the patch then ho hum I have
-other things to think about.  Your best shot at getting this sort of thing
-merged would be to cc the appropriate maintainer.
+---
+commit addcd116df57eaca525a1c827efdd5bf3e61b7b5
+tree a4ee11673dfdbaabe1500cd9e4301bd535177bfa
+parent 926af968884e1e153ad2f91892ff71ec33005d22
+author Jiri Slaby <jirislaby@gmail.com> Tue, 28 Aug 2007 09:53:55 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Tue, 28 Aug 2007 09:53:55 +0200
 
-Or, better, use __deprecated_for_modules.  That's what it was added for.
+ drivers/media/video/stk1125.c |    2 +-
+ drivers/media/video/stk1135.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/media/video/stk1125.c b/drivers/media/video/stk1125.c
+index ed3cc58..2429225 100644
+--- a/drivers/media/video/stk1125.c
++++ b/drivers/media/video/stk1125.c
+@@ -80,7 +80,7 @@ static int stk1125_load_microcode(struct stk11xx *dev)
+ 		break;
+ 	}
+ 
+-	for (i = 0; i < 59; i++) {
++	for (i = 0; i < ARRAY_SIZE(values_1_204); i++) {
+ 		stk11xx_read_dummy(dev, 0x02ff);
+ 		stk11xx_write_reg(dev, 0x02ff, 0x00);
+ 
+diff --git a/drivers/media/video/stk1135.c b/drivers/media/video/stk1135.c
+index c6e0361..9acd951 100644
+--- a/drivers/media/video/stk1135.c
++++ b/drivers/media/video/stk1135.c
+@@ -53,7 +53,7 @@ static int stk1135_load_microcode(struct stk11xx *dev)
+ 		0xe4, 0x09, 0xc8, 0x08, 0x08, 0x10, 0x14
+ 	};
+ 
+-	for (i = 0; i < 117; i++) {
++	for (i = 0; i < ARRAY_SIZE(values_204); i++) {
+ 		stk11xx_read_dummy(dev, 0x02ff);
+ 		stk11xx_write_reg(dev, 0x02ff, 0x00);
+ 
