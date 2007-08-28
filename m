@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932413AbXH1Tbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764047AbXH1Tcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932413AbXH1Tbz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762829AbXH1TTP
+	id S1764047AbXH1Tcc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762745AbXH1TTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:19:15 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:58131 "EHLO fieldses.org"
+	Tue, 28 Aug 2007 15:19:45 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:53216 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762735AbXH1TTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 15:19:13 -0400
-Date: Tue, 28 Aug 2007 15:19:07 -0400
-To: Valdis.Kletnieks@vt.edu
-Cc: "Dr. David Alan Gilbert" <linux@treblig.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, neilb@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add source address to sunrpc svc errors
-Message-ID: <20070828191907.GE3764@fieldses.org>
-References: <20070825012630.GB5431@gallifrey> <20070824185621.3f16f7c9.randy.dunlap@oracle.com> <20070825150927.GA29335@gallifrey> <20070827214333.GM3118@fieldses.org> <7788.1188328346@turing-police.cc.vt.edu>
-MIME-Version: 1.0
+	id S1762911AbXH1TTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 15:19:43 -0400
+Date: Tue, 28 Aug 2007 21:21:04 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Alexey Dobriyan <adobriyan@sw.ru>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ver_linux is [censored]
+Message-ID: <20070828192104.GA32104@uranus.ravnborg.org>
+References: <20070821071938.GA17761@localhost.sw.ru> <9a8748490708211702q7ed2649ft978cea8ab07b63fa@mail.gmail.com> <20070822005236.GF21089@ftp.linux.org.uk> <200708220311.56736.jesper.juhl@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7788.1188328346@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <200708220311.56736.jesper.juhl@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 28, 2007 at 03:12:26PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 27 Aug 2007 17:43:33 EDT, "J. Bruce Fields" said:
-> > I also wonder whether these shouldn't all be dprintk's instead of
-> > printk's.  One misbehaving client could create a lot of noise in the
-> > logs.
+On Wed, Aug 22, 2007 at 03:11:56AM +0200, Jesper Juhl wrote:
 > 
-> I shouldn't have to rebuild my kernel with debugging enabled just to see
-> who is throwing trash at my machine.
+> Fix ver_linux glibc version printing (for real this time)
+> 
+> Alexey Dobriyan reported that commit 
+> 4a645d5ea65baaa5736bcb566673bf4a351b2ad8
+> broke ver_linux when glibc has a 3 digit 
+> version number, and proposed a patch.
+> Al Viro then suggested a simpler way to 
+> solve the problem which I've then simply 
+> put into patch form.
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+> Signed-off-by: Al Viro <viro@ftp.linux.org.uk>
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+> 
+>  scripts/ver_linux |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/scripts/ver_linux b/scripts/ver_linux
+> index 8f8df93..5a16bad 100755
+> --- a/scripts/ver_linux
+> +++ b/scripts/ver_linux
+> @@ -65,9 +65,8 @@ isdnctrl 2>&1 | grep version | awk \
+>  showmount --version 2>&1 | grep nfs-utils | awk \
+>  'NR==1{print "nfs-utils             ", $NF}'
+>  
+> -ls -l `ldd /bin/sh | awk '/libc/{print $3}'` | sed \
+> --e 's/\.so$//' | sed -e 's/>//' | \
+> -awk -F'[.-]' '{print "Linux C Library        "$(NF-1)"."$NF}'
+> +echo -n "Linux C Library        "
+> +sed -n -e '/^.*\/libc-\([^/]*\)\.so$/{s//\1/;p;q}' < /proc/self/maps
+>  
+>  ldd -v > /dev/null 2>&1 && ldd -v || ldd --version |head -n 1 | awk \
+>  'NR==1{print "Dynamic linker (ldd)  ", $NF}'
+> 
 
-Fair enough.
+Applied.
 
-The dprintk's throughout the nfs and sunrpc server and client code can
-be selectively enabled at runtime using a set of sysctls in
-sys/sunrpc/*_debug; see
-
-	include/linux/lockd/debug.h
-	include/linux/nfsd/debug.h
-	include/linux/sunrpc/debug.h
-
---b.
+	Sam
