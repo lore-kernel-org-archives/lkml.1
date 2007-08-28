@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760092AbXH1Qq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760351AbXH1Qqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760092AbXH1Qq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 12:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758981AbXH1Qp7
+	id S1760351AbXH1Qqp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 12:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759508AbXH1QqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 12:45:59 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:3561 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756854AbXH1Qp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 12:45:56 -0400
-Subject: Re: [NET]: Mark Paul Moore as maintainer of labelled networking.
-From: Joe Perches <joe@perches.com>
-To: Paul Moore <paul.moore@hp.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-In-Reply-To: <20070828130813.E6A1D39C199@ldl.fc.hp.com>
-References: <200708280001.l7S01Cxt004543@hera.kernel.org>
-	 <1188283579.6062.12.camel@localhost>
-	 <20070828130813.E6A1D39C199@ldl.fc.hp.com>
-Content-Type: text/plain
-Date: Tue, 28 Aug 2007 09:45:50 -0700
-Message-Id: <1188319550.6062.31.camel@localhost>
+	Tue, 28 Aug 2007 12:46:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44371 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759979AbXH1QqU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 12:46:20 -0400
+Date: Tue, 28 Aug 2007 09:45:48 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Clemens Kolbitsch <clemens.kol@gmx.at>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: user-mode stack size & location
+Message-ID: <20070828094548.34186c0c@laptopd505.fenrus.org>
+In-Reply-To: <200708281825.01688.clemens.kol@gmx.at>
+References: <200708281825.01688.clemens.kol@gmx.at>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-28 at 08:46 -0400, Paul Moore wrote:
-> If having both a labeled networking and NetLabel maintainer entry is a
-> problem then how about the patch below?
+On Tue, 28 Aug 2007 18:25:01 +0200
+Clemens Kolbitsch <clemens.kol@gmx.at> wrote:
+> i see that the aout-, elf-, etc. handlers all set this variable -->
+> is this the only location where it can be set?
+> 
+> 2.) when looking at /proc/PID/maps, i see that the stack always ends
+> at different locations (obviously close to TASK_SIZE). thus the sizes
+> seem to vary. where are they set / where are the infos written to the
+> vma's / the PGD?
+> 
+> any help would be greatly appreciated!!
+\
 
-I don't think it is.
+hi,
 
-> -NETWORKING [LABELED] (NetLabel, CIPSO, Labeled IPsec, SECMARK)
-> +NETWORKING [LABELED] (NetLabel/CIPSO, Labeled IPsec, SECMARK)
->  P:	Paul Moore
->  M:	paul.moore@hp.com
-> +W:	http://netlabel.sf.net (NetLabel/CIPSO)
->  L:	netdev@vger.kernel.org
->  S:	Maintained
+if you look where arch_align_stack() gets called.. that's where you
+want to look. arch_align_stack() gets invoked in code that selects
+userspace stack pointers....
 
-My preference would be for something like:
-
-        NETLABEL and CIPSO
-        P:	Paul Moore
-        M:	paul.moore@hp.com
-        W:	http://netlabel.sf.net
-        L:	netdev@vger.kernel.org
-        S:	Maintained
-        F:	Documentation/netlabel/
-        F:	include/net/netlabel.h
-        F:	net/netlabel/
-        
-        Labeled IPsec and SECMARK
-        P:	Paul Moore
-        M:	paul.moore@hp.com
-        L:	netdev@vger.kernel.org
-        S:	Supported
-        F:	include/linux/netfilter/*SECMARK*
-        F:	net/netfilter/*SECMARK*
-        
-I would like to add appropriate file patterns for each
-block.  Also, I'm not sure of the Supported/Maintained
-status of each block.
-
-The distinction is supposed to be:
-
-        Supported:	Someone is actually paid to look after this.
-        Maintained:	Someone actually looks after it.
-
-Could you please clarify those for me?
-
-cheers, Joe
-
+Greetings,
+   Arjan van de Ven
