@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbXH1OVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbXH1OVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbXH1OVE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 10:21:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbXH1OUj
+	id S1756714AbXH1OVs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 10:21:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbXH1OVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 10:20:39 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:32400 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756541AbXH1OUM convert rfc822-to-8bit (ORCPT
+	Tue, 28 Aug 2007 10:21:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:9892 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751412AbXH1OVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 10:20:12 -0400
-Date: Tue, 28 Aug 2007 16:20:11 +0200
-From: Christian Krafft <krafft@de.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: kou.ishizaki@toshiba.co.jp, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, cbe-oss-dev@ozlabs.org, jk@ozlabs.org,
-       krafft@de.ibm.com
-Subject: Re: [Cbe-oss-dev] [patch 1/5] spu_manage: use newer physical-id
-Message-ID: <20070828162011.5356afaa@localhost>
-In-Reply-To: <200708231812.20493.arnd@arndb.de>
-References: <20070823.180152.-1300528381.kouish@swc.toshiba.co.jp>
-	<200708231812.20493.arnd@arndb.de>
-X-Mailer: Claws Mail 2.7.2 (GTK+ 2.10.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Tue, 28 Aug 2007 10:21:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Cco1POUeCODIZuoC+OstK7DrGxHelxG2NuAnUg3beOePu6mp+2/9YJRzaqtsToumzHJz4DG2fb3NeWbH6M+uJZFWVKYVN4HmTgu7oCuv+7ZoSvSs5OIg/Zw7oC03nNqH/SIpdMI9KPG+/86DIg/zmZXQ2piUzht+VdZUCgKtdSg=
+Message-ID: <b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com>
+Date: Tue, 28 Aug 2007 22:21:34 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: cpu hotplug support broken in 2.6.23-rc3
+Cc: rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20070827213248.GF3398@elf.ucw.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070827104350.GA2073@elf.ucw.cz>
+	 <20070827105801.GA4053@elf.ucw.cz>
+	 <b6a2187b0708270736q5cfc180fp3c223a57ea6904f9@mail.gmail.com>
+	 <20070827213248.GF3398@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Aug 2007 18:12:19 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+On 8/28/07, Pavel Machek <pavel@ucw.cz> wrote:
 
-> On Thursday 23 August 2007, kou.ishizaki@toshiba.co.jp wrote:
-> > Please check "unit-id" if "physical-id" doesn't exist. Because Celleb
-> > uses "unit-id" to provide spe_id.
+> Can you try 20-or-so tests? Mine hangs randomly, so it survived 4 or
+> so cycles at one point.
 
-Sorry for the late answer, wasn't on cc
-and had to receive all mails of the last 6 month once again :-(
+Mine still survives with this ... with sleep 1 ...
 
-Can you check if the patch below is working with celleb device tree ?
+# for((i=0; i<100; i++)); do echo $i; echo $((i % 2))
+>/sys/devices/system/cpu/cpu1/online; sleep 1; done
 
-------
-Subject: spu_manage: fix spu_unit_number for celleb device tree
+and this as well ... without sleep ...
 
-From: Christian Krafft <krafft@de.ibm.com>
+# for((i=0; i<100; i++)); do echo $i; echo $((i % 2))
+>/sys/devices/system/cpu/cpu1/online; done
 
-New device trees provide "physical-id".
-Celleb device tree provide the "unit-id".
-Legacy device tree used the reg property for the physical id of an spe.
-This patch fixes find_spu_unit_number to look for the spu id in that order.
-The length is checked to avoid misinterpretation in case the attributes
-unit-id or reg do not contain the id.
+I'm on reiserfs. gcc 3.4.5. Config sent to you seperately so as not to
+cloud lkml. If anyone wants the config, please let me know. Is mime
+"attachment" acceptable now on lkml?
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-
-Index: linux/arch/powerpc/platforms/cell/spu_manage.c
-===================================================================
---- linux.orig/arch/powerpc/platforms/cell/spu_manage.c
-+++ linux/arch/powerpc/platforms/cell/spu_manage.c
-@@ -48,10 +48,18 @@ static u64 __init find_spu_unit_number(s
- {
- 	const unsigned int *prop;
- 	int proplen;
-+
-+	/* new device trees should provide the physical-id attribute */
- 	prop = of_get_property(spe, "physical-id", &proplen);
- 	if (proplen == 4)
- 		return (u64)*prop;
- 
-+	/* celleb device tree provides the unit-id */
-+	prop = of_get_property(spe, "unit-id", &proplen);
-+	if (proplen == 4)
-+		return (u64)*prop;
-+
-+	/* legacy device trees provide the id in the reg attribute */
- 	prop = of_get_property(spe, "reg", &proplen);
- 	if (proplen == 4)
- 		return (u64)*prop;
-
-
--- 
-Mit freundlichen Grüssen,
-kind regards,
-
-Christian Krafft
-IBM Systems & Technology Group, 
-Linux Kernel Development
-IT Specialist
+Thanks,
+Jeff.
