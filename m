@@ -1,271 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762153AbXH1Vl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbXH1Vyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762153AbXH1Vl1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 17:41:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761235AbXH1Viq
+	id S1760908AbXH1Vyy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 17:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbXH1Vyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 17:38:46 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:65114 "EHLO
-	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754958AbXH1Vin (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 17:38:43 -0400
-Message-Id: <20070828213801.758943975@mvista.com>
-References: <20070828213748.790253419@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 28 Aug 2007 14:37:55 -0700
-From: Daniel Walker <dwalker@mvista.com>
-To: mingo@elte.hu
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Carsten Emde <cbe@osadl.org>
-Content-Disposition: inline; filename=latency_tracing_histogram_reset.patch
-Subject: [PATCH -rt 7/8] latency hist: add resetting for all timing options
+	Tue, 28 Aug 2007 17:54:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52292 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751217AbXH1Vyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 17:54:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Moore, Robert" <robert.moore@intel.com>
+Subject: Re: [PATCH -mm 3/3] PM: Improve handling of ACPI system state indicator (rev. 3)
+Date: Wed, 29 Aug 2007 00:05:11 +0200
+User-Agent: KMail/1.9.5
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>,
+       "Len Brown" <lenb@kernel.org>, "LKML" <linux-kernel@vger.kernel.org>,
+       "Pavel Machek" <pavel@ucw.cz>,
+       "pm list" <linux-pm@lists.linux-foundation.org>
+References: <200708272347.45438.rjw@sisk.pl> <200708272353.09380.rjw@sisk.pl> <B28E9812BAF6E2498B7EC5C427F293A4031EF65B@orsmsx415.amr.corp.intel.com>
+In-Reply-To: <B28E9812BAF6E2498B7EC5C427F293A4031EF65B@orsmsx415.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708290005.12323.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I dropped parts of the prior reset method, and added a file called
-"reset" into the /proc/latency_hist/ timing directories. It allows
-any of the timing options to get their histograms reset.
+On Tuesday, 28 August 2007 21:57, Moore, Robert wrote:
+> Since these changes appear to affect the ACPICA core in a fairly big
+> way, I would like to see a short, concise description of each change and
+> why it is necessary.
 
-I also fixed a couple of oddities in the code. Instead of creating a 
-file for all NR_CPUS , I just used num_possible_cpus() . I also drop
-a string which only hold "CPU" and just inserted it where it was used.
+All right.  I'll describe the changes made by the current version of the
+patches, but please note that if it's safe to run the AML interpreter with
+IRQs disabled, it's better to do some of them in a different way.
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+1. Remove the execution of _GTS from acpi_enter_sleep_state_prep()
 
----
- include/linux/latency_hist.h |    1 
- kernel/latency_hist.c        |  119 ++++++++++++++++++++++++++++---------------
- kernel/latency_trace.c       |   13 ----
- 3 files changed, 80 insertions(+), 53 deletions(-)
+	acpi_enter_sleep_state_prep() is called before disabling the nonboot
+	CPUs and _GTS should be executed after that, according to the spec.
 
-Index: linux-2.6.22/include/linux/latency_hist.h
-===================================================================
---- linux-2.6.22.orig/include/linux/latency_hist.h
-+++ linux-2.6.22/include/linux/latency_hist.h
-@@ -23,7 +23,6 @@ enum {
- 
- #ifdef CONFIG_LATENCY_HIST
- extern void latency_hist(int latency_type, int cpu, unsigned long latency);
--extern void latency_hist_reset(void);
- # define latency_hist_flag 1
- #else
- # define latency_hist(a,b,c) do { (void)(cpu); } while (0)
-Index: linux-2.6.22/kernel/latency_hist.c
-===================================================================
---- linux-2.6.22.orig/kernel/latency_hist.c
-+++ linux-2.6.22/kernel/latency_hist.c
-@@ -16,6 +16,7 @@
- #include <linux/latency_hist.h>
- #include <asm/atomic.h>
- #include <asm/div64.h>
-+#include <asm/uaccess.h>
- 
- typedef struct hist_data_struct {
- 	atomic_t hist_mode; /* 0 log, 1 don't log */
-@@ -31,8 +32,6 @@ typedef struct hist_data_struct {
- static struct proc_dir_entry * latency_hist_root = NULL;
- static char * latency_hist_proc_dir_root = "latency_hist";
- 
--static char * percpu_proc_name = "CPU";
--
- #ifdef CONFIG_INTERRUPT_OFF_HIST
- static DEFINE_PER_CPU(hist_data_t, interrupt_off_hist);
- static char * interrupt_off_hist_proc_dir = "interrupt_off_latency";
-@@ -56,7 +55,7 @@ static inline u64 u64_div(u64 x, u64 y)
-         return x;
- }
- 
--void latency_hist(int latency_type, int cpu, unsigned long latency)
-+void notrace latency_hist(int latency_type, int cpu, unsigned long latency)
- {
- 	hist_data_t * my_hist;
- 
-@@ -205,6 +204,69 @@ static struct file_operations latency_hi
- 	.release = seq_release,
- };
- 
-+static void hist_reset(hist_data_t *hist)
-+{
-+	atomic_dec(&hist->hist_mode);
-+
-+	memset(hist->hist_array, 0, sizeof(hist->hist_array));
-+	hist->beyond_hist_bound_samples = 0UL;
-+	hist->min_lat = 0xFFFFFFFFUL;
-+	hist->max_lat = 0UL;
-+	hist->total_samples = 0UL;
-+	hist->accumulate_lat = 0UL;
-+	hist->avg_lat = 0UL;
-+
-+	atomic_inc(&hist->hist_mode);
-+}
-+
-+ssize_t latency_hist_reset(struct file *file, const char __user *a, size_t size, loff_t *off)
-+{
-+	int cpu;
-+	hist_data_t *hist;
-+	struct proc_dir_entry *entry_ptr = PDE(file->f_dentry->d_inode);
-+	int latency_type = (int)entry_ptr->data;
-+
-+	switch (latency_type) {
-+
-+#ifdef CONFIG_WAKEUP_LATENCY_HIST
-+		case WAKEUP_LATENCY:
-+			for_each_online_cpu(cpu) {
-+				hist = &per_cpu(wakeup_latency_hist, cpu);
-+				hist_reset(hist);
-+			}
-+			break;
-+#endif
-+
-+#ifdef CONFIG_PREEMPT_OFF_HIST
-+		case PREEMPT_LATENCY:
-+			for_each_online_cpu(cpu) {
-+				hist = &per_cpu(preempt_off_hist, cpu);
-+				hist_reset(hist);
-+			}
-+			break;
-+#endif
-+
-+#ifdef CONFIG_INTERRUPT_OFF_HIST
-+		case INTERRUPT_LATENCY:
-+			for_each_online_cpu(cpu) {
-+				hist = &per_cpu(interrupt_off_hist, cpu);
-+				hist_reset(hist);
-+			}
-+			break;
-+#endif
-+	}
-+
-+	return size;
-+}
-+
-+static struct file_operations latency_hist_reset_seq_fops = {
-+	.write = latency_hist_reset,
-+};
-+
-+static struct proc_dir_entry *interrupt_off_reset;
-+static struct proc_dir_entry *preempt_off_reset;
-+static struct proc_dir_entry *wakeup_latency_reset;
-+
- static __init int latency_hist_init(void)
- {
- 	struct proc_dir_entry *tmp_parent_proc_dir;
-@@ -214,11 +276,10 @@ static __init int latency_hist_init(void
- 
- 	latency_hist_root = proc_mkdir(latency_hist_proc_dir_root, NULL);
- 
--
- #ifdef CONFIG_INTERRUPT_OFF_HIST
- 	tmp_parent_proc_dir = proc_mkdir(interrupt_off_hist_proc_dir, latency_hist_root);
--	for (i = 0; i < NR_CPUS; i++) {
--		len = sprintf(procname, "%s%d", percpu_proc_name, i);
-+	for (i = 0; i < num_possible_cpus(); i++) {
-+		len = sprintf(procname, "CPU%d", i);
- 		procname[len] = '\0';
- 		entry[INTERRUPT_LATENCY][i] =
- 			create_proc_entry(procname, 0, tmp_parent_proc_dir);
-@@ -228,12 +289,15 @@ static __init int latency_hist_init(void
- 		atomic_set(&my_hist->hist_mode,1);
- 		my_hist->min_lat = 0xFFFFFFFFUL;
- 	}
-+	interrupt_off_reset = create_proc_entry("reset", 0, tmp_parent_proc_dir);
-+	interrupt_off_reset->data = INTERRUPT_LATENCY;
-+	interrupt_off_reset->proc_fops = &latency_hist_reset_seq_fops;
- #endif
- 
- #ifdef CONFIG_PREEMPT_OFF_HIST
- 	tmp_parent_proc_dir = proc_mkdir(preempt_off_hist_proc_dir, latency_hist_root);
--	for (i = 0; i < NR_CPUS; i++) {
--		len = sprintf(procname, "%s%d", percpu_proc_name, i);
-+	for (i = 0; i < num_possible_cpus(); i++) {
-+		len = sprintf(procname, "CPU%d", i);
- 		procname[len] = '\0';
- 		entry[PREEMPT_LATENCY][i] =
- 			create_proc_entry(procname, 0, tmp_parent_proc_dir);
-@@ -243,12 +307,15 @@ static __init int latency_hist_init(void
- 		atomic_set(&my_hist->hist_mode,1);
- 		my_hist->min_lat = 0xFFFFFFFFUL;
- 	}
-+	preempt_off_reset = create_proc_entry("reset", 0, tmp_parent_proc_dir);
-+	preempt_off_reset->data = PREEMPT_LATENCY;
-+	preempt_off_reset->proc_fops = &latency_hist_reset_seq_fops;
- #endif
- 
- #ifdef CONFIG_WAKEUP_LATENCY_HIST
- 	tmp_parent_proc_dir = proc_mkdir(wakeup_latency_hist_proc_dir, latency_hist_root);
--	for (i = 0; i < NR_CPUS; i++) {
--		len = sprintf(procname, "%s%d", percpu_proc_name, i);
-+	for (i = 0; i < num_possible_cpus(); i++) {
-+		len = sprintf(procname, "CPU%d", i);
- 		procname[len] = '\0';
- 		entry[WAKEUP_LATENCY][i] =
- 			create_proc_entry(procname, 0, tmp_parent_proc_dir);
-@@ -258,38 +325,12 @@ static __init int latency_hist_init(void
- 		atomic_set(&my_hist->hist_mode,1);
- 		my_hist->min_lat = 0xFFFFFFFFUL;
- 	}
-+	wakeup_latency_reset = create_proc_entry("reset", 0, tmp_parent_proc_dir);
-+	wakeup_latency_reset->data = WAKEUP_LATENCY;
-+	wakeup_latency_reset->proc_fops = &latency_hist_reset_seq_fops;
- #endif
- 	return 0;
- 
- }
- 
- __initcall(latency_hist_init);
--
--
--#ifdef CONFIG_WAKEUP_LATENCY_HIST
--static void hist_reset(hist_data_t *hist)
--{
--	atomic_dec(&hist->hist_mode);
--
--	memset(hist->hist_array, 0, sizeof(hist->hist_array));
--	hist->beyond_hist_bound_samples = 0UL;
--	hist->min_lat = 0xFFFFFFFFUL;
--	hist->max_lat = 0UL;
--	hist->total_samples = 0UL;
--	hist->accumulate_lat = 0UL;
--	hist->avg_lat = 0UL;
--
--	atomic_inc(&hist->hist_mode);
--}
--
--void latency_hist_reset(void)
--{
--	int cpu;
--	hist_data_t *hist;
--
--	for_each_online_cpu(cpu) {
--		hist = &per_cpu(wakeup_latency_hist, cpu);
--		hist_reset(hist);
--	}
--}
--#endif
-Index: linux-2.6.22/kernel/latency_trace.c
-===================================================================
---- linux-2.6.22.orig/kernel/latency_trace.c
-+++ linux-2.6.22/kernel/latency_trace.c
-@@ -2207,19 +2207,6 @@ check_wakeup_timing(struct cpu_trace *tr
- 	if (!report_latency(delta))
- 		goto out;
- 
--#ifdef CONFIG_WAKEUP_LATENCY_HIST
--	/*
--	 * Was preempt_max_latency reset?
--	 * If so, we reinitialize the latency histograms to keep them in sync.
--	 *
--	 * FIXME: Remove the poll and write our own procfs handler, so
--	 * we can trigger on the write to preempt_max_latency
--	 */
--	if (last_preempt_max_latency > 0 && preempt_max_latency == 0)
--		latency_hist_reset();
--	last_preempt_max_latency = preempt_max_latency;
--#endif
--
- 	____trace(smp_processor_id(), TRACE_FN, tr, CALLER_ADDR0, parent_eip,
- 		  0, 0, 0, *flags);
- 
+2. Introduce acpi_enter_sleep_state_prep_late() that will execute _GTS
 
--- 
+	Necessary because of 1.
+
+3. Split acpi_leave_sleep_state() into two functions:
+   acpi_leave_sleep_state_prep() and acpi_leave_sleep_state().
+
+	acpi_leave_sleep_state_prep() contains the code that should be executed
+	before enabling the nonboot CPUs, most importantly the execution of
+	_BFS, and acpi_leave_sleep_state() contains the remaining code (the
+	enabling of GPEs, the execution of _WAK and the enabling of power
+	buttons)
+
+4. Change the code ordering in acpi_leave_sleep_state_prep() (introduced
+   in 3.) so that _SST is executed after _BFS
+
+	According to the spec, _BFS should be the first ACPI method executed
+	after leaving a sleep state
+
+5. Introduce acpi_set_sleep_state_indicator() that will execute _SST for given
+   ACPI sleep state
+
+	Needed so that we can set the state indicator independently of the
+	other lower-level operations.
+
+6. Remove the execution of _SST from acpi_leave_sleep_state()
+
+	No longer needed, because we can use acpi_set_sleep_state_indicator()
+	to set the state indicator appropriately from higher level routines.
+
+The other changes affect only drivers/acpi/sleep/main.c and the files in
+kernel/power .
+
+Greetings,
+Rafael
