@@ -1,87 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760505AbXH1TrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbXH1Tri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760505AbXH1TrQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbXH1Tq7
+	id S1757061AbXH1Tri (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759560AbXH1TrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:46:59 -0400
-Received: from madara.hpl.hp.com ([192.6.19.124]:63877 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750736AbXH1Tq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 15:46:58 -0400
-Date: Tue, 28 Aug 2007 12:46:36 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>, ak@suse.de,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: nmi_watchdog=2 regression in 2.6.21
-Message-ID: <20070828194636.GB2814@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <1186531609.22044.50.camel@imap.mvista.com> <20070808142059.GF30805@atjola.homenet> <20070827175431.GD784@frankl.hpl.hp.com> <1188237331.2435.255.camel@dhcp193.mvista.com> <20070827225555.GI784@frankl.hpl.hp.com> <1188256074.2435.272.camel@dhcp193.mvista.com> <20070828091217.GA1645@frankl.hpl.hp.com> <1188311684.2435.288.camel@dhcp193.mvista.com> <20070828170556.GI1645@frankl.hpl.hp.com> <1188325835.2435.317.camel@dhcp193.mvista.com>
+	Tue, 28 Aug 2007 15:47:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36935 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757881AbXH1TrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 15:47:10 -0400
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mingo@redhat.com
+In-Reply-To: <Pine.LNX.4.64.0708281235170.16473@schroedinger.engr.sgi.com>
+References: <20070820201519.512791382@polymtl.ca>
+	 <20070820201822.597720007@polymtl.ca>
+	 <Pine.LNX.4.64.0708201330130.30053@schroedinger.engr.sgi.com>
+	 <20070820204126.GA22507@Krystal>
+	 <Pine.LNX.4.64.0708201346160.30353@schroedinger.engr.sgi.com>
+	 <20070820212922.GA27011@Krystal>
+	 <Pine.LNX.4.64.0708201448080.31411@schroedinger.engr.sgi.com>
+	 <20070820215413.GA28452@Krystal>
+	 <Pine.LNX.4.64.0708201506010.32213@schroedinger.engr.sgi.com>
+	 <20070821173849.GA8360@Krystal>
+	 <Pine.LNX.4.64.0708211612580.6062@schroedinger.engr.sgi.com>
+	 <1188197539.6114.426.camel@twins>
+	 <Pine.LNX.4.64.0708271237580.5056@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0708271514020.8891@schroedinger.engr.sgi.com>
+	 <1188285159.6112.4.camel@twins>
+	 <Pine.LNX.4.64.0708281235170.16473@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Tue, 28 Aug 2007 21:46:52 +0200
+Message-Id: <1188330413.11709.27.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1188325835.2435.317.camel@dhcp193.mvista.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+X-Mailer: Evolution 2.11.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel,
 
-On Tue, Aug 28, 2007 at 11:30:35AM -0700, Daniel Walker wrote:
+On Tue, 2007-08-28 at 12:36 -0700, Christoph Lameter wrote:
+> On Tue, 28 Aug 2007, Peter Zijlstra wrote:
 > 
-> Here is some output from my boot log,
+> > On Mon, 2007-08-27 at 15:15 -0700, Christoph Lameter wrote:
+> > > Hmmmm. One wild idea would be to use a priority futex for the slab lock? 
+> > > That would make the slow paths interrupt safe without requiring interrupt 
+> > > disable? Does a futex fit into the page struct?
+> > 
+> > Very much puzzled at what you propose. in-kernel we use rt_mutex (has
+> > PI) or mutex, futexes are user-space. (on -rt spinlock_t == mutex ==
+> > rt_mutex)
+> > 
+> > Neither disable interrupts since they are sleeping locks.
+> > 
+> > That said, on -rt we do not need to disable interrupts in the allocators
+> > because its a bug to call an allocator from raw irq context.
 > 
-> md: raid1 personality registered for level 1
-> device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised: dm-devel@redhat.com
-> ip_tables: (C) 2000-2006 Netfilter Core Team
-> TCP cubic registered
-> NET: Registered protocol family 1
-> NET: Registered protocol family 17
-> Testing NMI watchdog ... CPU#0: NMI appears to be stuck (0->0)!
-> CPU#1: NMI appears to be stuck (0->0)!
-> CPU#2: NMI appears to be stuck (0->0)!
-> CPU#3: NMI appears to be stuck (0->0)!
-> Starting balanced_irq
-> <hangs>
-> 
-> So it does appear to make it out of the check_nmi_watchdog() function
-> even tho there is a problem with the watchdog .. "Starting balance_irq"
-> is in balanced_irq_init(). It usually hangs at this spot , but with
-> initcall_debug on it once hung a little further down ..
+> Right so if a prioriuty futex 
 
-I think I found the problem. As I suspected, it seems there is an assymetry
-between the 1st end 2nd counter (just like what they have on P6 core). Yet
-for architectural perfmon v1, this restriction is supposed to be lifted.
+futex stands for Fast Userspace muTEX, please lets call it a rt_mutex.
 
-Unfortunately, a quick look at the errata document at
-http://download.intel.com/design/mobile/SPECUPDT/30922212.pdf
+> would have been taken from a process 
+> context and then an interrupt thread (or so no idea about RT) is scheduled 
+> then the interrupt thread could switch to the process context and complete 
+> the work there before doing the "interrupt" work. So disabling interrupts 
+> is no longer necessary.
 
-for Core Duo shows bugs A49 as 'nofix':
-  Core Duo processor has a bug which renders the enable bit (22) of
-  PERFEVTSEL1 inoperative. The processor behaves like former P6 cores,
-  the enable bit of PERFEVTSEL0 controls the activation of both counters
+-rt does all of the irq handler in thread (process) context, the hard
+irq handler just does something akin to a wakeup.
 
-That explains why you get the 'NMI stuck' message when using PERFEVTSEL1.
-I suspect when using PERFEVTSEL0, then NMI watchdog is not stuck. So it
-is possible that in case NMI is stuck the code does not cleanly shutdown the
-NMI interrupt and you get some spurious NMI interrupt later in the boot at
-you are stuck because you are holding a lock. We need to look at the error
-path of check_nmi_watchdog(). I glance through it and could not find the place
-where the APIC vector is cleared.
+These irq threads typically run fifo/50 or simething like that.
 
-> It seems like there might be some other interrupt going off too early,
-> that causes the system to hang..
-> 
-> As you can see from the log above, this system is a quad.. Two physical
-> cpus each with two cores.
-> 
+[ note that this allows a form of irq priorisation even if the hardware
+  doesn't. ]
 
--- 
-
--Stephane
