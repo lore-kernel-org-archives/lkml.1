@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764303AbXH1TeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764729AbXH1Teu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764303AbXH1TeW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932365AbXH1TYj
+	id S1764729AbXH1Teu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932571AbXH1TcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:24:39 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58719 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763136AbXH1TYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 15:24:38 -0400
-Date: Tue, 28 Aug 2007 21:25:58 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: lkml@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] scripts/ver_linux : correct printing of binutils version
-Message-ID: <20070828192558.GA32202@uranus.ravnborg.org>
-References: <200708020121.15883.jesper.juhl@gmail.com>
-Mime-Version: 1.0
+	Tue, 28 Aug 2007 15:32:18 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35937 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932559AbXH1TcP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 15:32:15 -0400
+Date: Tue, 28 Aug 2007 15:31:26 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Christoph Hellwig <hch@infradead.org>, Jeff Layton <jlayton@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net
+Subject: Re: [PATCH 0/4] add killattr inode operation to allow filesystems
+	to interpret ATTR_KILL_S*ID bits
+Message-ID: <20070828193125.GA27309@filer.fsl.cs.sunysb.edu>
+References: <200708271727.l7RHR36m007248@dantu.rdu.redhat.com> <20070828191114.GA3419@infradead.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708020121.15883.jesper.juhl@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070828191114.GA3419@infradead.org>
+User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 01:21:15AM +0200, Jesper Juhl wrote:
-> Hi,
+On Tue, Aug 28, 2007 at 08:11:14PM +0100, Christoph Hellwig wrote:
 > 
-> Currently scripts/ver_linux prints "Binutils" or other random 
-> information for the version number in the "binutils" output line 
-> on some distributions. This patch corrects that.
+> Sorry for not replying to the previsious revisions, but I've been out
+> for on vacation.
 > 
-> When I initially submitted a patch to correct that, I was not aware 
-> that the output from "ld -v" could differ as much as it turned out 
-> it can, so my original fix turned out to not cover all bases.
-> This patch works correctly with all the different "ld -v" output 
-> that people posted in replys to my first patch, so it should be a 
-> clear win over what we have currently.
+> I can't say I like this version.  Now we've got callouts at two rather close
+> levels which is not very nice from the interface POV.
 > 
-> Please apply.
+> Maybe preference is for the first scheme where we simply move interpreation
+> of the ATTR_KILL_SUID/ATTR_KILL_SGID into the setattr routine and provide
+> a nice helper for the normal filesystem to use.
+> 
+> If people are really concerned about adding two lines of code to the
+> handfull of setattr operation there's a variant of this scheme that can
+> avoid it:
+ 
+It's not about adding 2 lines of code - it's about adding the requirement
+for the fs to call a function.
 
-Done,
+>  - notify_change is modified to not clear the ATTR_KILL_SUID/ATTR_KILL_SGID
+>    but update ia_mode and the ia_valid flag to include ATTR_MODE.
+>  - disk filesystems stay unchanged and never look at
+>    ATTR_KILL_SUID/ATTR_KILL_SGID, but nfs can check for it and ignore
+>    the ATTR_MODE flags and ia_valid in this case and do the right thing
+>    on the server side.
 
-	Sam
+Sounds reasonable.
+
+Josef 'Jeff' Sipek.
+
+-- 
+I abhor a system designed for the "user", if that word is a coded pejorative
+meaning "stupid and unsophisticated."
+		- Ken Thompson
