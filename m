@@ -1,222 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753006AbXH1NAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbXH1NJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753006AbXH1NAt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 09:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbXH1NAi
+	id S1755551AbXH1NJE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 09:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbXH1NIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 09:00:38 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:58292 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752282AbXH1NAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 09:00:36 -0400
-To: mrmacman_g4@mac.com
-Cc: pavel@ucw.cz, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, chrisw@sous-sol.org
-Subject: Re: [TOMOYO 14/15] Conditional permission support.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <46CED214.6050505@gmail.com>
-	<46CED5C6.8050501@gmail.com>
-	<20070825110825.GB5850@ucw.cz>
-	<200708261113.JHH03043.VQOtSOJLFFFHMO@I-love.SAKURA.ne.jp>
-	<60BDD3AF-A5BD-4076-922E-40E629D7CBFA@mac.com>
-In-Reply-To: <60BDD3AF-A5BD-4076-922E-40E629D7CBFA@mac.com>
-Message-Id: <200708282200.HGG00985.VtOOOFFMJFSHQL@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50]
-X-Accept-Language: ja,en
-Date: Tue, 28 Aug 2007 22:00:34 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 28 Aug 2007 09:08:51 -0400
+Received: from el-out-1112.google.com ([209.85.162.183]:33238 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752812AbXH1NIu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 09:08:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=M6uWJRSetyyXJpxbSkiV05wjODdPOZzmlvsH6LsqxdK1GyX3DYqwnErdlyw9KMwn+WRAscWh+bAFjwXnwve5syIS55sa/zFRQP1BJStCrz7tijfDwi/lDB3WpHUe7sSDr67YGufWZ3HLRM6+gAD1xNSQEfft0XLm1uTLFiwwuPU=
+Message-ID: <4877c76c0708280608m529296edgd83f9c08e3918815@mail.gmail.com>
+Date: Tue, 28 Aug 2007 06:08:45 -0700
+From: "Michael Evans" <mjevans1983@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [patch v3 1/1] md: Software Raid autodetect dev list not array
+Cc: "Michael J. Evans" <mjevans1983@comcast.net>, "Neil Brown" <neilb@suse.de>,
+       "Ingo Molnar" <mingo@redhat.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46D3A8AD.6000701@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200708222058.45480.mjevans1983@comcast.net>
+	 <200708271516.21889.mjevans1983@comcast.net>
+	 <20070827153020.43788e21.randy.dunlap@oracle.com>
+	 <200708272138.19785.mjevans1983@comcast.net>
+	 <46D3A8AD.6000701@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On 8/27/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> Michael J. Evans wrote:
+> > On Monday 27 August 2007, Randy Dunlap wrote:
+> >> On Mon, 27 Aug 2007 15:16:21 -0700 Michael J. Evans wrote:
+> >>
+> >>> =============================================================
+> >>> --- linux/drivers/md/md.c.orig      2007-08-21 03:19:42.511576248 -0700
+> >>> +++ linux/drivers/md/md.c   2007-08-21 04:30:09.775525710 -0700
+> >>> @@ -24,4 +24,6 @@
+> >>>
+> >>> +   - autodetect dev list not array: Michael J. Evans
+> > <mjevans1983@gmail.com>
+> >>> +
+> >> Nowadays we use an SCM for such comments, not the source file(s).
+> >
+> > SCM?  Is this automatic, where do I go to see it?
+>
+> See Documentation/SubmittingPatches:
+> 14) The canonical patch format:
+>
+> The canonical patch message body contains the following:
+>
+>   - A "from" line specifying the patch author.
+>
+>   - An empty line.
+>
+>   - The body of the explanation, which will be copied to the
+>     permanent changelog to describe this patch.
+>
+>   - The "Signed-off-by:" lines, described above, which will
+>     also go in the changelog.
+>
+>   - A marker line containing simply "---".
+>
+>   - Any additional comments not suitable for the changelog.
+>
+>   - The actual patch (diff output).
+>
+>
+> so just put whatever you want to be in the permanent SCM logs
+> into the "body of the explanation" part of the email.
+>
+>
+> --
+> ~Randy
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>
 
-Kyle Moffett wrote:
-> This is probably not acceptable; I doubt there's a chance in hell
-> that TOMOYO will get merged as long as it has text-based-language
-> parsing in the kernel.  You also have $NEW_RANDOM_ABUSE_OF_PROCFS and
-> $PATH_BASED_LSM_ISSUES.  See the long flamewars on AppArmor for
-> discussion on the latter.
-
-Thank you for your comment.
-
-Regarding /proc/tomoyo , this is not a big problem.
-It will be possible to create a dedicated filesystem
-after all other remaining problems are solved.
-
-Regarding text-based-language parsing in the kernel,
-it might be possible to use compiled policy.
-
-So, let me explain pitfalls of path based access controls and
-how TOMOYO Linux avoids these pitfalls.
-Since problems of pathname based access control is scattered around,
-I can't find all problems. But as far as I can see, it seems to me that
-they are confusing userland-specific problems and kernel-specific problems
-/ white-listing approach and black-listing approach.
-
-
-
-Q1: Not all objects have pathnames!
-
-A1: What TOMOYO Linux does is use pathnames
-    that are accessible via filesystem's mount tree.
-    TOMOYO Linux does not deny labeling on objects
-    that are not accessible via filesystem's mount tree.
-    Although it is not implemented yet; it's a future work.
-    I need to reduce my burden of catching up with the latest kernels.
-
-Q2: Pathname based access control is bypassed by creating hard links!
-
-    Suppose an administrator wants to forbid access to /etc/shadow .
-    Regarding pathname based access control, one can access to /etc/shadow
-    by creating hardlinks to /tmp/shadow . Regarding label based access control,
-    one can't access to /etc/shadow by creating hardlinks to /tmp/shadow
-    because /tmp/shadow keeps the same label with /etc/shadow .
-
-A2: Do you think you need to allow creating hardlinks of /etc/shadow
-    to /tmp/shadow ? I don't think so.
-    Such operation is not needed for systems to operate properly.
-
-    Thus, TOMOYO Linux forbids creating hardlinks of /etc/shadow
-    to /tmp/shadow from the beginning.
-    TOMOYO Linux handles pathnames carefully.
-    TOMOYO Linux checks for both link-source and link-target together.
-    One can't do "ln /etc/shadow /tmp/shadow" unless the administrator
-    explicitly give "allow_link /etc/shadow /tmp/shadow" permission.
-
-    The essential combinations of link-source and link-target are not infinite
-    and TOMOYO Linux allows only essential combinations to minimize the risk of
-    bypassing pathname based access control.
-
-    Please remember, TOMOYO Linux is white-listing and system-wide
-    access control.
-    It's black-listing's approach that denies access to /etc/shadow
-    but allows access to /tmp/shadow .
-    White-listing approach will not allow access to
-    /tmp/shadow unless explicitly given.
-    TOMOYO Linux can apply access control including login session.
-    One can't do "ln /etc/shadow /tmp/shadow" unless the administrator
-    explicitly give "allow_link /etc/shadow /tmp/shadow" permission.
-
-Q3: Pathname based access control is bypassed by renaming files!
-
-    Suppose an administrator wants to forbid access to /etc/shadow .
-    Regarding pathname based access control, one can access to /etc/shadow
-    by renaming to /tmp/shadow . Regarding label based access control,
-    one can't access to /etc/shadow by renaming to /tmp/shadow
-    because /tmp/shadow keeps the same label as /etc/shadow .
-
-A3: Do you think you need to allow renaming /etc/shadow to /tmp/shadow ?
-    I don't think so.
-    Such operation is not needed for systems to operate properly.
-
-    Thus, TOMOYO Linux forbids renaming /etc/shadow to /tmp/shadow
-    from the beginning.
-    TOMOYO Linux checks for both old-name and new-name together.
-    One can't do "mv /etc/shadow /tmp/shadow" unless the administrator
-    explicitly give "allow_rename /etc/shadow /tmp/shadow" permission.
-
-    The essential combinations of old-name and new-name are not infinite
-    and TOMOYO Linux allows only essential combinations to minimize the risk of
-    bypassing pathname based access control.
-
-    You might worry that /etc/shadow can be renamed to /tmp/shadow between
-    the moment the kernel got "dentry" and "vfsmount" from /etc/shadow and
-    the moment TOMOYO Linux obtains a pathname from "dentry" and "vfsmount".
-    Yes, the possibility is not zero.
-    But TOMOYO Linux is white-listing and system-wide access control.
-    TOMOYO Linux allows only essential combinations of renaming requests.
-    Thus, renaming /etc/shadow to /tmp/shadow will not happen
-    unless the administrator explicitly give
-    "allow_rename /etc/shadow /tmp/shadow" permission.
-
-Q4: Pathname based access control is bypassed by creating symbolic links!
-
-    Suppose an administrator wants to forbid access to /etc/shadow .
-    Regarding pathname based access control, one can access to /etc/shadow
-    by creating symbolic links from /tmp/shadow to /etc/shadow .
-
-A4: This is because you are using pathnames before resolving symbolic links
-    for access control, and this is a problem of performing access control
-    at userland level.
-    What TOMOYO Linux deals is performing access control at kernel level.
-
-    In the kernel, a pathname is converted into "dentry" and "vfsmount".
-    And one can get a pathname without symbolic links, ".", "..", "//"
-    by traversing "dentry" and "vfsmount" upward.
-    Thus, even if one requests access to /tmp/shadow , TOMOYO Linux will think
-    that /etc/shadow is requested.
-    Therefore, TOMOYO Linux will not allow access to /etc/shadow
-    using a symbolic link /tmp/shadow .
-
-Q5: Pathname based access control is poor at handling random names.
-
-    Suppose an administrator wants to perform access control for temporary files
-    created in /tmp/ directory. Since temporary files has random names,
-    the administrator has to grant very wide access permission like /tmp/* .
-
-A5: Do you think the administrator has to give such a wide permission?
-    I don't think so.
-
-    Most temporary files has some prefix.
-    Thus, the administrator seldom need to grant whole permission like /tmp/* .
-    If there is no prefix, it is easy to modify the source code to use prefix.
-    Also, you will be able to switch the location of temporary files
-    using environment variables like TMP/TEMP and/or config files of application
-    to e.g. ~/tmp/ directory.
-
-Q6: Pathname based access control is bypassed by namespace manipulation!
-
-    a) One can change the location of a file using mount() operation.
-    b) One can change the location of a file using pivot_root() operation.
-    c) Each process can have different namespace.
-    d) Process can access files outside chroot jail
-       if chroot() operation failed.
-
-A6: Not so regarding TOMOYO Linux.
-
-    a) TOMOYO Linux checks combination of mount_device, mount_point, filesystems
-       for mount operation. This is what [TOMOYO 11/15] is doing.
-       Thus, one can't do "mount --bind /etc/ /tmp/" unless the administrator
-       explicitly give "allow_mount /etc/ /tmp/ --bind 0" permission.
-
-    b) TOMOYO Linux checks combination of old_root and new_root
-       for pivot_root() operation (although pivot_root() is seldom used
-       after /sbin/init starts).
-       Thus, one can't do "pivot_root / /tmp/" unless the administrator
-       explicitly give "allow_pivot_root / /tmp/" permission.
-
-    c) Even if each process can have different namespace,
-       it is restricted by mount()/pivot_root() checking.
-       Thus, one can't freely create his/her own namespace.
-
-    d) TOMOYO Linux uses absolute pathname that is not affected by chroot()
-       (this is what [TOMOYO 04/15] is doing).
-       Pathnames derived by traversing upward up to the root of process's
-       namespace are used in TOMOYO Linux. It is not a process's root directory.
-       Thus, permissions are given using pathnames starting from outside
-       the chroot jail.
-
-Q7: Pathnames don't contain owner's information.
-
-A7: Yes, it is true. But there is no rule that pathname-based access control
-    must not use anything but pathname.
-    In fact, TOMOYO Linux allows the administrator use inode's uid/gid/ino
-    information in addition to pathnames (this is what [TOMOYO 14/15] is doing).
-
-Q8: LSM hook functions are not receiving vfsmount parameter!
-
-A8: Exactly. It is a painful thing for TOMOYO Linux too.
-    [TOMOYO 13/15] scans namespace list for matching vfsmount for given dentry.
-
-    Since vfsmount is not added to LSM hook functions yet, the development of
-    TOMOYO Linux 1.5.x (non-LSM version of TOMOYO Linux which can coexist with
-    SELinux and AppArmor) has been continued.
-    http://tomoyo.sourceforge.jp/en/1.5.x/
-
-
-
-I'll be offline for days because of summer vacation.
-Therefore, I can't respond soon. Please be patient.
-
-Regards.
+Oh, I see.  I forgot about the changelogs.  I'd send out version 5
+now, but I'm not sure what kernel version to make the patch against.
+2.6.23-rc4 is on kernel.org and I don't see any git snapshots.
+Additionally I never could tell what git tree was the 'mainline' as it
+isn't labeled with such a keyword (at least in the list of git trees I
+saw).
