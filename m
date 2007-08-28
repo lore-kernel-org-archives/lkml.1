@@ -1,81 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758323AbXH1PEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbXH1PKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758323AbXH1PEs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 11:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXH1PEl
+	id S1756197AbXH1PKT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 11:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbXH1PKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 11:04:41 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:49395 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbXH1PEk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 11:04:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Jnw1YhNi+mCI/7pkL6W3++jJKBoBJk5Xl/duASLMUYLtomE3gAfYAgCgsP5ziBeIic6IlHOjgK7QSbtrUNAEvlQjEUGZAuhx/Y4UtrO7lq/+Hm+epWULSvRv5Xvl8E3rqKrN0HvLMG8po98s4YUyaB0BwS0FmuPVsoQfj5fCSlA=
-Message-ID: <ab40e9c0708280804o548ae69du8136d149232e4ba6@mail.gmail.com>
-Date: Tue, 28 Aug 2007 17:04:35 +0200
-From: "Xu Yang" <risingsunxy@googlemail.com>
-To: "Gavin Shan" <gshan@alcatel-lucent.com>
-Subject: Re: lowlevel_init.c
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <003a01c7e983$d95fa4a0$02fca8c0@gshan>
+	Tue, 28 Aug 2007 11:10:05 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:43113 "EHLO smtp4-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752524AbXH1PKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 11:10:04 -0400
+Message-ID: <46D43ABE.2090701@free.fr>
+Date: Tue, 28 Aug 2007 17:09:50 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ab40e9c0708280749o1d2d4872m3b7688e36d717c6c@mail.gmail.com>
-	 <003a01c7e983$d95fa4a0$02fca8c0@gshan>
+To: Daniel Walker <dwalker@mvista.com>
+CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: pdflush preemption
+References: <46D3FB7F.6060805@free.fr> <1188311169.2435.279.camel@dhcp193.mvista.com>
+In-Reply-To: <1188311169.2435.279.camel@dhcp193.mvista.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gavin,
+Daniel Walker wrote:
 
-yes, the file lowlevel_init. c is under board/xxx,
+> John Sigler wrote:
+> 
+>> Why does pdflush kick in to ruin my party? :-)
+>> The expected latency is ~600 µs.
+>> http://linux.kernel.free.fr/latency/pdflush.trace
+>> Does ide_inb mean I'm reading from the disk?
+> 
+> Does your real time application lock its memory, or allow itself to be
+> swapped?
 
-but for the board realview-eb this files doesn't contain anything but
-a dummy funtion. that is why I am wondering where is the board memory
-partitioin done .
-thanks,
+Now that you mention it, I do remember reading this page:
+http://rt.wiki.kernel.org/index.php/HOWTO:_Build_an_RT-application
 
-any new comments?
+There is no swap configured on the system, and 90% of the 256 MB of RAM 
+are free, according to /proc/meminfo, and the system is otherwise idle.
 
-regards,
+I don't think this is a major page fault. Am I wrong?
 
-yang
+# /bin/time ./check_dektec_output2 4140063957 38000000 2632 30
+0.02user 0.31system 0:20.02elapsed 1%CPU
+(0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+270minor)pagefaults 0swaps
+                   ^^^^^^
 
-2007/8/28, Gavin Shan <gshan@alcatel-lucent.com>:
->
-> ----- Original Message -----
-> From: "Xu Yang" <risingsunxy@googlemail.com>
-> To: <linux-kernel@vger.kernel.org>
-> Sent: Tuesday, August 28, 2007 10:49 PM
-> Subject: lowlevel_init.c
->
->
-> > Hello everyone,
-> >
-> > i am trying to run linux on realview_eb_mpcore.
-> > I read some articles about how to port linux and uboot to a new board,
-> > according to the article, when I am porting the uboot, i should modify
-> > a file called lowlevel_init.c , which is in the fold
-> > board/realview_eb. this file describes the memory partition of the
-> > board. but in the realview_eb , this file doesn't do this job.
-> > anyone can tell me , where is it done?
-> >
-> > without doing this, the file system can be booted or not?
-> >
-> > any comments are appreciated.
-> >
-> > regards,
-> >
-> > yang
->
-> I don't know what realview_eb_mpcore is actually. I'm supposing you mentioned the uboot.
-> The files under board/xxx/ directory is related to board layout. I think what you need to do are:
->
-> 1) Make your serial port to work at frist so that you can see any output for debugging.
-> 2) Try to print more info to debug your issue.
->
-> Gavin
+# cat /proc/vmstat
+nr_free_pages 59351
+nr_inactive 1465
+nr_active 1830
+nr_anon_pages 486
+nr_mapped 569
+nr_file_pages 2813
+nr_dirty 0
+nr_writeback 0
+nr_slab_reclaimable 449
+nr_slab_unreclaimable 663
+nr_page_table_pages 41
+nr_unstable 0
+nr_bounce 0
+nr_vmscan_write 0
+pgpgin 8197
+pgpgout 113
+pswpin 0
+pswpout 0
+pgalloc_dma 0
+pgalloc_normal 27260
+pgfree 86682
+pgactivate 1372
+pgdeactivate 0
+pgfault 77490
+pgmajfault 121
+pgrefill_dma 0
+pgrefill_normal 0
+pgsteal_dma 0
+pgsteal_normal 0
+pgscan_kswapd_dma 0
+pgscan_kswapd_normal 0
+pgscan_direct_dma 0
+pgscan_direct_normal 0
+pginodesteal 0
+slabs_scanned 0
+kswapd_steal 0
+kswapd_inodesteal 0
+pageoutrun 0
+allocstall 0
+pgrotated 0
+
+Regards.
