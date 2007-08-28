@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbXH1Buo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbXH1ByR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758905AbXH1Buo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 21:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbXH1Buf
+	id S1759506AbXH1ByR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 21:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbXH1ByE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 21:50:35 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:52736 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752122AbXH1Bue (ORCPT
+	Mon, 27 Aug 2007 21:54:04 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:43392 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752175AbXH1ByB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 21:50:34 -0400
-X-Sasl-enc: Bs4OPheK9Q0Fzx1F8Zdd8P1o5KVFAIR+zN+b0BtkUMQF 1188265833
-Date: Mon, 27 Aug 2007 22:50:29 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] v1 of IBM power meter driver
-Message-ID: <20070828015029.GA10107@khazad-dum.debian.net>
-References: <20070827211446.GG32667@tree.beaverton.ibm.com>
+	Mon, 27 Aug 2007 21:54:01 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=WwDaGP6Lu52ReNAzFY4xTLGGxtDDxP0DGnzZN4F46s0wK9Q/E2xGU+p+B/0SXxphvhMMgnM1kY4u6Hxa7xX/TCECOItgPfMy2cGjO7KMcbPFgdB029e940N3vc2pHj+UyC6lCHAeXqlswl3s5r22tV6r+UJlyZtTSNkVShVPFpw=  ;
+X-YMail-OSG: KY9AnPYVM1kGhg9eX_9Rkj3QHEdhgaU9coDGyvUMPW2phBdLyU9YEyP.oFgriMqmlelJ2xAK9RzkpuN7zEeTICgmLixZ.gRnuCwt9UoWuevTfaNhSfkqFQVQtww_zA--
+Message-ID: <46D38035.1010707@yahoo.com.au>
+Date: Tue, 28 Aug 2007 11:53:57 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070827211446.GG32667@tree.beaverton.ibm.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: "Patrick J. LoPresti" <lopresti@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: oom-killer with 27G free swap and overcommit_memory=2
+References: <23986fd90708271103r8f0ef68j86f85a6039be2f54@mail.gmail.com>
+In-Reply-To: <23986fd90708271103r8f0ef68j86f85a6039be2f54@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Aug 2007, Darrick J. Wong wrote:
-> documentation doesn't mention any naming conventions for sensors that
-> measure Watts, so I am proposing that they be called "powerX_input" in a
-> fashion similar to temperature/rpm/current sensors.  If that is
-> agreeable to everyone, I'll post a follow-up patch to amend the
-> documentation.
+Patrick J. LoPresti wrote:
+> I am using Linux 2.6.16.46-0.12-smp (SUSE 10 SP1 stock kernel).
+> I do intend to bother SUSE, but I am hoping some kind kernel savant
+> can help me interpret these log messages and/or give me some
+> suggestions for how to proceed.
+> 
+> My system is a SunFire x4100 (x86_64) with 16G of RAM and 32G of swap
+> in a single partition.  I have an application which consumes a lot of
+> memory, and after a few hours the oom-killer kills it.
+> 
+> This would not be surprising, except a) the machine still has 27G of
+> free swap at the time; and b) it happens even when I set
+> vm.overcommit_memory=2 (with overcommit_ratio=50).  It is
+> time-consuming to reproduce, but consistent.
+> 
+> Below is the first batch of messages from the oom-killer.  In this
+> case, overcommit_memory was set to 2, and the application
+> received no failures from malloc() or new.
+> 
+> 9-10 more such batches appear in the log in rapid succession before
+> I get the "Kill process XXXX ... Killed process XXXX" pair of messages.
+> 
+> Here are my questions.  I realize these log messages may be insufficient
+> to answer them, and I am ready to provide more information upon
+> request.  (Unfortunately I cannot provide the application itself.  But
+> I can perform tests and provide logs.)
+> 
+> 1) Does this behavior definitely indicate a kernel bug?  If not, what
+> could my application possibly be doing to cause it?
+> 
+> 2) Is there any sysctl setting that might "avoid" this problem?  Or a
+> way to change my application to avoid it?
+> 
+> 3) Should I attempt to reproduce this problem on the stock kernel.org
+> kernel?
 
-What unit should we use? Watts are way, way too big as there is no
-floating/fixed point in sysfs.  10^-6 W is probably what is called for,
-since we already need 10^-3 V and 10^-3 A.  Small portable devices can
-easily draw less than 10^-3 W nowadays.
+Hi,
+
+Yeah it doesn't seem like the right behaviour. Your app isn't allocating
+mlocked memory, is it? What is the value of your /proc/sys/vm/swappiness
+sysctl? (increasing it may help).
+
+I'll take a look at the SLES kernel and see whether we can do better
+there. Thanks.
+
+Nick
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+SUSE Labs, Novell Inc.
