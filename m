@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758979AbXH1Xy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbXH2ADR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758979AbXH1Xy0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 19:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbXH1XyS
+	id S1757439AbXH2ADR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 20:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXH2ADH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 19:54:18 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51423 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbXH1XyS (ORCPT
+	Tue, 28 Aug 2007 20:03:07 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:45025 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750990AbXH2ADF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 19:54:18 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible fashion.
-References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
-	<20070828230459.GA15937@infradead.org>
-Date: Tue, 28 Aug 2007 17:53:53 -0600
-In-Reply-To: <20070828230459.GA15937@infradead.org> (Christoph Hellwig's
-	message of "Wed, 29 Aug 2007 00:04:59 +0100")
-Message-ID: <m1r6lnb4ha.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 28 Aug 2007 20:03:05 -0400
+Subject: Re: [PATCH -rt 1/8] introduce PICK_FUNCTION
+From: Daniel Walker <dwalker@mvista.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: mingo@elte.hu, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <46D4B356.7060604@yahoo.com.au>
+References: <20070828213748.790253419@mvista.com>
+	 <46D4B356.7060604@yahoo.com.au>
+Content-Type: text/plain
+Date: Tue, 28 Aug 2007 16:54:32 -0700
+Message-Id: <1188345272.2435.343.camel@dhcp193.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> writes:
+On Wed, 2007-08-29 at 09:44 +1000, Nick Piggin wrote:
+> Daniel Walker wrote:
+> > PICK_FUNCTION() is similar to the other PICK_OP style macros, and was
+> > created to replace them all. I used variable argument macros to handle
+> > PICK_FUNC_2ARG/PICK_FUNC_1ARG. Otherwise the marcos are similar to the
+> > original macros used for semaphores. The entire system is used to do a
+> > compile time switch between two different locking APIs. For example,
+> > real spinlocks (raw_spinlock_t) and mutexes (or sleeping spinlocks).
+> > 
+> > This new macro replaces all the duplication from lock type to lock type.
+> > The result of this patch, and the next two, is a fairly nice simplification,
+> > and consolidation. Although the seqlock changes are larger than the originals
+> > I think over all the patchset is worth while.
+> > 
+> > Incorporated peterz's suggestion to not require TYPE_EQUAL() to only
+> > use pointers.
+> 
+> How come this is cc'ed to lkml? Is it something that is relevant to
+> the mainline kernel... or?
 
-> Umm, no way we're ever going to remove a syscall like this.  
+The real time changes are usually developed on lkml , that's how it's
+been in the past. I personally like CC'ing lkml since real time can
+sometimes touch lots of different subsystems .. So it good to have a
+diverse set of people reviewing ..
 
-If someone besides me cares about more then rhetoric I will be happy
-to reconsider and several years is plenty of time to find that out.
+Daniel
 
-I aborted the removal last time precisely because we had not done an
-adequate job of warning our users.  A printk when we run a program
-that uses the binary interface and an long enough interval the warning
-makes it to the Enterprise kernels before we remove the interface
-should be sufficient.
-
-> stop this deprecration crap.  Just make sure no ones adds more binary
-> sysctls.
-
-The sysctl_check_table function should keep out most of the problem
-cases and especially it should ensure we don't add any new binary
-sysctls by accident. 
-
-However given our atrocious record at catching these kinds of
-problems via code review and testing and the fact that no one
-uses these things anyway, I don't see an argument for keeping
-dead code in the kernel.
-
-Over the long term the goal is to not break user space binaries.
-
-I see a better chance of achieving the goal of not breaking user space
-binaries if we remove interfaces that no known user space applications
-use, in a way a well written application can handle, then to let
-the user space interface code succumb to bit rot, and start returning
-the wrong values to user space.
-
-That is where we are at with sys_sysctl.
-Almost all of the binary paths have no known users and the
-implementations are succumbing to bit rot.  The binary interface and
-the proc interface go through two completely separate paths so there
-is little to ensure those paths don't diverge over time.
-
-It is also true that the non-generic helper functions are diverging
-over time.  Currently these things are not an issue because no one
-actually uses the binary interfaces.  The empirical evidence seems
-overwhelming on this point.
-
-So just freezing us at our current set of non-broken binary sysctls
-does not seem sufficient to ensure we don't break user space binaries.
-Although it does seem to be a good start.
-
-Eric
