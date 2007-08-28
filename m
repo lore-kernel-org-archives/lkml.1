@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbXH1GbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbXH1Ge6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753962AbXH1GbX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 02:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbXH1GbP
+	id S1753430AbXH1Ge6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 02:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbXH1Gev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 02:31:15 -0400
-Received: from mx1.suse.de ([195.135.220.2]:43156 "EHLO mx1.suse.de"
+	Tue, 28 Aug 2007 02:34:51 -0400
+Received: from relay4.usu.ru ([194.226.235.39]:53903 "EHLO relay4.usu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751155AbXH1GbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 02:31:14 -0400
-From: Neil Brown <neilb@suse.de>
-To: "Janne Karhunen" <janne.karhunen@gmail.com>
-Date: Tue, 28 Aug 2007 16:31:08 +1000
+	id S1750988AbXH1Get (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 02:34:49 -0400
+Message-ID: <46D3C242.4090106@ums.usu.ru>
+Date: Tue, 28 Aug 2007 12:35:46 +0600
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); ru-RU; rv:1.8.0.13pre) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.10~pre070720-0etch3+lenny1) Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
+References: <300725321593711206@pripojeni.net>
+In-Reply-To: <300725321593711206@pripojeni.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18131.49452.211244.327585@notabene.brown>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: NFSv3 lock recovery
-In-Reply-To: message from Janne Karhunen on Tuesday August 28
-References: <24c1515f0708272322h2875ea28k7a28b8651513132a@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday August 28, janne.karhunen@gmail.com wrote:
-> Hi,
-> 
-> Brief question about NFSv3 lock recovery to those who might
-> know - does Linux implementation (or NLM/NSM protocol)
-> properly support the case in which client and server state
-> change simultaneously?
+Jiri Slaby wrote:
+> +	/* From 80x60 to 640x480 */
+> +	const u8 values_1_204[] = {
+> +		0x12, 0x11, 0x3b, 0x6a, 0x13, 0x10, 0x00, 0x01, 0x02, 0x13,
+> +		0x39, 0x38, 0x37, 0x35, 0x0e, 0x12, 0x04, 0x0c, 0x0d, 0x17,
+> +		0x18, 0x32, 0x19, 0x1a, 0x03, 0x1b, 0x16, 0x33, 0x34, 0x41,
+> +		0x96, 0x3d, 0x69, 0x3a, 0x8e, 0x3c, 0x8f, 0x8b, 0x8c, 0x94,
+> +		0x95, 0x40, 0x29, 0x0f, 0xa5, 0x1e, 0xa9, 0xaa, 0xab, 0x90,
+> +		0x91, 0x9f, 0xa0, 0x24, 0x25, 0x26, 0x14, 0x2a, 0x2b
+> +	};
+> +	const u8 values_1_205[] = {
+> +		0x45, 0x80, 0x01, 0x7d, 0x80, 0x00, 0x00, 0x80, 0x80, 0x80,
+> +		0x50, 0x93, 0x00, 0x81, 0x20, 0x45, 0x00, 0x00, 0x00, 0x24,
+> +		0xc4, 0xb6, 0x00, 0x3c, 0x36, 0x00, 0x07, 0xe2, 0xbf, 0x00,
+> +		0x04, 0x19, 0x40, 0x0d, 0x00, 0x73, 0xdf, 0x06, 0x20, 0x88,
+> +		0x88, 0xc1, 0x3f, 0x42, 0x80, 0x04, 0xb8, 0x92, 0x0a, 0x00,
+> +		0x00, 0x00, 0x00, 0x68, 0x5c, 0xc3, 0x2e, 0x00, 0x00
+> +	};
+> +
+> +	/* From 800x600 to 1280x1024 */
+> +	const u8 values_2_204[] = {
+> +		0x12, 0x11, 0x3b, 0x6a, 0x13, 0x10, 0x00, 0x01, 0x02, 0x13,
+> +		0x39, 0x38, 0x37, 0x35, 0x0e, 0x12, 0x04, 0x0c, 0x0d, 0x17,
+> +		0x18, 0x32, 0x19, 0x1a, 0x03, 0x1b, 0x16, 0x33, 0x34, 0x41,
+> +		0x96, 0x3d, 0x69, 0x3a, 0x8e, 0x3c, 0x8f, 0x8b, 0x8c, 0x94,
+> +		0x95, 0x40, 0x29, 0x0f, 0xa5, 0x1e, 0xa9, 0xaa, 0xab, 0x90,
+> +		0x91, 0x9f, 0xa0, 0x24, 0x25, 0x26, 0x14, 0x2a, 0x2b
+> +	};
+> +	const u8 values_2_205[] = {
+> +		0x05, 0x80, 0x01, 0x7d, 0x80, 0x00, 0x00, 0x80, 0x80, 0x80,
+> +		0x50, 0x93, 0x00, 0x81, 0x20, 0x05, 0x00, 0x00, 0x00, 0x1b,
+> +		0xbb, 0xa4, 0x01, 0x81, 0x12, 0x00, 0x07, 0xe2, 0xbf, 0x00,
+> +		0x04, 0x19, 0x40, 0x0d, 0x00, 0x73, 0xdf, 0x06, 0x20, 0x88,
+> +		0x88, 0xc1, 0x3f, 0x42, 0x80, 0x04, 0xb8, 0x92, 0x0a, 0x00,
+> +		0x00, 0x00, 0x00, 0x68, 0x5c, 0xc3, 0x2e, 0x00, 0x00
+> +	};
 
-If both crash, there is nothing for a client to reclaim and nothing
-for a server to discard, so it is hard to see where a problem could
-lie.
+How does one derive these values? At least Debian kernel people will 
+remove your driver from their tree because of this unexplained binary blob.
 
-> 
-> Reason I'm asking is that this very case is occasionally giving
-> me stale locks. Given that NFSv3 server crashes it's possible
-> that client 'rooting' from it crashes as well. Now, once the
-> server comes back up it tries to notify the client that just
-> crashed. Hardly surprisingly, this notification doesn't go
-> anywhere and server discards the notification/client. And once
-> the client starts to boot again it tries to notify the server which
-> instantly whines about SM_NOTIFY when no-one is being
-> monitored. Thus, whole notification cycle is busted and lock
-> states go haywire :/. Is this even supposed to work?
-> 
+> + * We don't know the meaning of these steps! We only replay the USB log.
 
-More details.  What, exactly, goes "haywire"...
+Maybe it is a good idea to convert this blob, as well as others, into a 
+firmware request.
 
-If your client is diskless and mounting root from the server, then it
-should be mounting the root with "-o nolock" and there should be no
-locking issues at all.
-Possibly it mounts some other filesystems as well, and they are
-mounted with locks.  But still, I cannot imagine a problem scenario.
-
-Please explain in detail your configuration (What is mounted where and
-with what options etc) and what happens (why does the client crash
-just because the server crashed - it shouldn't), and what actually
-fails that you expected to work.
-
-NeilBrown
+-- 
+Alexander E. Patrakov
