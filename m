@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760768AbXH1RYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760438AbXH1RZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760768AbXH1RYA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 13:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759707AbXH1RXT
+	id S1760438AbXH1RZR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 13:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbXH1RY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 13:23:19 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55222 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759597AbXH1RXR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 13:23:17 -0400
-Message-ID: <46D45A02.6010306@zytor.com>
-Date: Tue, 28 Aug 2007 10:23:14 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: ok to kill "ether=" kernel parm?
-References: <Pine.LNX.4.64.0708280307350.3354@localhost.localdomain> <46D45111.2040600@zytor.com> <Pine.LNX.4.64.0708281300030.18151@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0708281300030.18151@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 28 Aug 2007 13:24:58 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3595 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751759AbXH1RY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 13:24:56 -0400
+Subject: Re: [PATCH] [360/2many] MAINTAINERS - ORINOCO DRIVER
+From: Joe Perches <joe@perches.com>
+To: Pavel Roskin <proski@gnu.org>
+Cc: torvalds@linux-foundation.org, orinoco-users@lists.sourceforge.net,
+       orinoco-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hermes@gibson.dropbear.id.au,
+       akpm@linux-foundation.org
+In-Reply-To: <1188321322.2226.2.camel@dv>
+References: <46bffb31.f1XwyK4H0RsPvky8%joe@perches.com>
+	 <1188321322.2226.2.camel@dv>
+Content-Type: text/plain
+Date: Tue, 28 Aug 2007 10:23:13 -0700
+Message-Id: <1188321793.6062.40.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Tue, 28 Aug 2007, H. Peter Anvin wrote:
-> 
->> Robert P. J. Day wrote:
->>>   given that "ether=" has been officially obsolete since 2.6.18
->>> (replaced by "netdev="), is there any reason to keep it around?
->>> or can it be blasted?
->> That sounds like way too short of a timeline for breaking people's
->> working boot setup.  For a lot of people, 2.6.18->current is going
->> to be a single step.
-> 
-> actually, now that i look more closely at the code browser at
-> lxr.linux.no, "ether=" has been listed as "obsolete" since *at least*
-> 2.6.10.  not to sound unsympathetic but anyone who tries to jump from
-> 2.6.10 to 2.6.24 in one step deserves what they get.  :-)
-> 
-> ok, that was cruel, but you see my point, right?
+On Tue, 2007-08-28 at 13:15 -0400, Pavel Roskin wrote:
+> NAK.  Please also add airport*, spectrum* and hermes* in the same
+> directory.
 
-Yes, and I think it's quite pointless.
+Here's what I have now:
 
-The thing is, people's boot setups have probably been that way since
-*long* before 2.6.9.  They continue to work, as they should, so they
-aren't changed.  This is why we very rarely break boot interfaces (and
-this is a user-visible interface you're talking about); we're still
-supporting interfaces that have been obsolete *SINCE BEFORE 1.0 WAS
-RELEASED.*
+ORINOCO/AIRPORT/SPECTRUM/HERMES WIRELESS DRIVERS
+P:	Pavel Roskin
+M:	proski@gnu.org
+P:	David Gibson
+M:	hermes@gibson.dropbear.id.au
+L:	linux-wireless@vger.kernel.org
+L:	orinoco-users@lists.sourceforge.net
+L:	orinoco-devel@lists.sourceforge.net
+W:	http://www.nongnu.org/orinoco/
+S:	Maintained
+F:	drivers/net/wireless/orinoco*
+F:	drivers/net/wireless/airport*
+F:	drivers/net/wireless/spectrum*
+F:	drivers/net/wireless/hermes*
 
-What's the upside of changing?  What's the downside?  The upside is so
-infinitesimal that that leaving "ether=" in indefinitely seems like a
-good move to me.
+> Sorry for delay (due to vacation).
 
-	-hpa
+Vacations good.  Apologies unnecessary.  Cheers, Joe
 
