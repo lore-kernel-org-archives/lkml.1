@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763745AbXH1UBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762639AbXH1UFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763745AbXH1UBB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 16:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXH1UAx
+	id S1762639AbXH1UFN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 16:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbXH1UE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 16:00:53 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:19224 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751641AbXH1UAv (ORCPT
+	Tue, 28 Aug 2007 16:04:59 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:60539 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753635AbXH1UE6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 16:00:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=cs6XsPfDESD/U9HPLMxaHnT8fHqXIPbFfH1FZdPEo1+u9SGZWFc5zrN2NYlr1tOVK3647IVQrA7FcuwABLTt2F3jnTLXIRetxL+TZPXvTGWorxS0q4XhP4Bypj60t18gkaxgL+BmiLjtIVow/MLPCFPAikayjn7EY9w6JxGVS94=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Fengguang Wu <wfg@mail.ustc.edu.cn>
-Subject: Re: How to find out how many other processes share VM with $PID?
-Date: Tue, 28 Aug 2007 21:00:41 +0100
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org
-References: <200708271256.31874.vda.linux@googlemail.com> <200708271426.50675.vda.linux@googlemail.com> <388259805.10631@ustc.edu.cn>
-In-Reply-To: <388259805.10631@ustc.edu.cn>
+	Tue, 28 Aug 2007 16:04:58 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=xDbY/Ob/abtHKArdxoUzW3jBJrNpqYXQarTjs/CVzzUyg2X0GXaoGqYo8cekwhRZZ
+	eOgM9Q5dklZq7CktHPgOg==
+Message-ID: <6599ad830708281304m18a34ab5m96692eafc55e3c57@mail.gmail.com>
+Date: Tue, 28 Aug 2007 13:04:34 -0700
+From: "Paul Menage" <menage@google.com>
+To: "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>
+Subject: Re: [-mm PATCH 5/10] Memory controller task migration (v7)
+Cc: balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, npiggin@suse.de,
+       a.p.zijlstra@chello.nl, dhaval@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, ebiederm@xmission.com,
+       containers@lists.osdl.org, xemul@openvz.org
+In-Reply-To: <20070828083252.C7D5C1BFA2F@siro.lan>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708282100.41443.vda.linux@googlemail.com>
+References: <46D2A9D3.50703@linux.vnet.ibm.com>
+	 <20070828083252.C7D5C1BFA2F@siro.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 August 2007 01:10, Fengguang Wu wrote:
-> > > There is a nice LWN article on this issue:
-> > >         ELC: How much memory are applications really using?
-> > >         http://lwn.net/Articles/230975/
-> > >
-> > > Another helpful patch could be:
-> > >         maps: PSS(proportional set size) accounting in smaps
-> > >         http://lkml.org/lkml/2007/8/19/23
-> >
-> > Thanks a lot, very useful pages indeed.
-> >
-> > However they still don't explain how I can avoid counting memory
-> > twice for /proc/PID1 and /proc/PID2 when PID2 is a child of PID1,
-> > created with CLONE_VM.
-> >
-> > The example: I allocate 1234k, dirty it, then clone with CLONE_VM.
-> > I will seemingly have two processes, each using 1234k, _privately_
-> > (i.e., pages are not shown as shared in smaps) -
-> > which is technically correct, pages are not shared with other VMs,
-> > but they ARE shared by means of these two processes having the same VM!
-> >
-> > How userspace tools can figure out that these processes have shared VM?
-> >
-> > IOW: do we need "VMsharecount: N" in addition to "Threads: N"
-> > in /proc/PID/status?
+On 8/28/07, YAMAMOTO Takashi <yamamoto@valinux.co.jp> wrote:
 >
-> A full solution would require two parameters, i.e. VmUsers/VmMagic.
+> although i have no good idea right now, something which allows
+> to move a process with its thread group leader dead would be better.
 >
-> But please make sure the new lines won't break important tools like
-> ps/top/pmaps/...
 
-Should be safe - tools skip lines they do not recognize.
-Ok, we have "Threads: N".
+One way I was thinking of approaching this problem was slightly different:
 
-I can cook up a patch which adds count of processes
-which share VM with us - it's just atomic_read(&current->mm->mm_users).
+- every mm always has an "owning" task. Initially that will be the
+thread that creates the mm
 
-What name do you like? 
+- if the owning thread exits or execs and *isn't* the last user of the
+mm, then we may need to find a new owner for the mm:
 
-SharedVmCount: N
-VmUsers: N
-other?
+1) My guess is that typically the thread that created the mm will also
+be the last user of the mm - if this is the case, then in the normal
+case we don't need to find a new owner.
 
---
-vda
+2) If we do need a new owner, first look amongst the other threads in
+the process (cheap, should find another user of the mm quickly)
+
+3) next look in the child and parent threads (more expensive, but rarer)
+
+4) if necessary, scan the entire thread list (expensive, but should
+never be needed in general use)
+
+The advantage of this is that we don't then need to have a memory
+container pointer in the mm - we can just use the memory container of
+the mm's owner.
+
+With just a single container type needing to be tied to an mm, this
+isn't a huge advantage since we're just replacing one pointer (memory
+container) with another (owning task) and have similar levels of
+complexity for both. But if we have multiple container subsystems that
+need to be tied to a particular mm then they can both use the mm owner
+pointer.
+
+E.g. I want to add a swap container subsystem that restricts which
+swap devices a group of processes can swap to, and how many pages they
+can put into swap. And I want to be able to run this independently of
+the in-memory page accounting subsystem. Having a task owner pointer
+in the mm allows these to be indpendent subsystems, and (I believe)
+isn't any more complex than the work involved to support moving an mm
+whose thread group leader has exited or execd.
+
+Paul
