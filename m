@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760297AbXH1SlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760188AbXH1Snk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760297AbXH1SlY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 14:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbXH1SlI
+	id S1760188AbXH1Snk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 14:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbXH1Snd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 14:41:08 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:45340 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754389AbXH1SlH (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 14:41:07 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Andrew Morton <akpm@linux-foundation.org>, samuel@sortiz.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] sysctl: Properly register the irda binary sysctl numbers.
-In-Reply-To: Your message of "Sat, 25 Aug 2007 11:59:53 MDT."
-             <m1wsvjlckm.fsf@ebiederm.dsl.xmission.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <23568.1187876026@turing-police.cc.vt.edu> <20070823141652.d488a6e0.akpm@linux-foundation.org> <m1wsvlmvu6.fsf_-_@ebiederm.dsl.xmission.com> <6634.1188030574@turing-police.cc.vt.edu> <m16433n55e.fsf@ebiederm.dsl.xmission.com> <2371.1188050875@turing-police.cc.vt.edu>
-            <m1wsvjlckm.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1188330255_3159P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 28 Aug 2007 14:40:57 -0400
-Message-ID: <5846.1188326457@turing-police.cc.vt.edu>
+	Tue, 28 Aug 2007 14:43:33 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55099 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753197AbXH1Snc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 14:43:32 -0400
+Message-Id: <200708281843.l7SIhJ9D010636@terminus.zytor.com>
+MIME-Version: 1.0
+content-class: 
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: RE: ok to kill "ether=" kernel parm?
+Date: Tue, 28 Aug 2007 11:43:26 -0700
+Importance: normal
+X-Priority: 3
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1188330255_3159P
-Content-Type: text/plain; charset=us-ascii
+It changed to be more descriptive.  The old one is supported for backwards compatibility, just like we have sys_oldoldstat still.
 
-On Sat, 25 Aug 2007 11:59:53 MDT, Eric W. Biederman said:
+(sent front cellphone) 
 
-> It looks like you don't have CONFIG_SYSCTL_SYSCALL defined, and it
-> appears utsname_syscall and ipcdata_syscall both become NULL pointers
-> if they aren't needed.  So the complaint is a false positive.
+-----Original Message-----
+From: Jan Engelhardt <jengelh@computergmbh.de>
+Sent: Tuesday, August 28, 2007 11:12
+To: H. Peter Anvin <hpa@zytor.com>
+Cc: Robert P. J. Day <rpjday@mindspring.com>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: ok to kill "ether=" kernel parm?
 
-Yep. Nothing I actually use needs SYSCTL_SYSCALL, so I turned it off to
-see what breaks...
 
---==_Exmh_1188330255_3159P
-Content-Type: application/pgp-signature
+On Aug 28 2007 10:23, H. Peter Anvin wrote:
+>
+>What's the upside of changing?  What's the downside?  The upside is so
+>infinitesimal that that leaving "ether=" in indefinitely seems like a
+>good move to me.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Then why did it change to netdev= in the first place...
 
-iD8DBQFG1Gw4cC3lWbTT17ARAhPIAJ400NUcEZhFjHkcQwMmEKFAnaTGAwCg+KoU
-YbrOpsbiaiLquDTLGyDC+qU=
-=iQel
------END PGP SIGNATURE-----
 
---==_Exmh_1188330255_3159P--
+
+	Jan
+-- 
+
