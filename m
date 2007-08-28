@@ -1,74 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbXH1Ge6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751782AbXH1GfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430AbXH1Ge6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 02:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbXH1Gev
+	id S1751782AbXH1GfY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 02:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbXH1GfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 02:34:51 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:53903 "EHLO relay4.usu.ru"
+	Tue, 28 Aug 2007 02:35:03 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3260 "EHLO perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750988AbXH1Get (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 02:34:49 -0400
-Message-ID: <46D3C242.4090106@ums.usu.ru>
-Date: Tue, 28 Aug 2007 12:35:46 +0600
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); ru-RU; rv:1.8.0.13pre) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.10~pre070720-0etch3+lenny1) Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] V4L: stk11xx, add a new webcam driver
-References: <300725321593711206@pripojeni.net>
-In-Reply-To: <300725321593711206@pripojeni.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753600AbXH1GfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 02:35:00 -0400
+Subject: RE: Linux-Kernel MAINTAINERS - LSILOGIC MPT FUSION DRIVERS
+From: Joe Perches <joe@perches.com>
+To: "Moore, Eric" <Eric.Moore@lsi.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <664A4EBB07F29743873A87CF62C26D709409A0@NAMAIL4.ad.lsil.com>
+References: <664A4EBB07F29743873A87CF62C26D709409A0@NAMAIL4.ad.lsil.com>
+Content-Type: text/plain
+Date: Mon, 27 Aug 2007 23:34:55 -0700
+Message-Id: <1188282895.6062.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> +	/* From 80x60 to 640x480 */
-> +	const u8 values_1_204[] = {
-> +		0x12, 0x11, 0x3b, 0x6a, 0x13, 0x10, 0x00, 0x01, 0x02, 0x13,
-> +		0x39, 0x38, 0x37, 0x35, 0x0e, 0x12, 0x04, 0x0c, 0x0d, 0x17,
-> +		0x18, 0x32, 0x19, 0x1a, 0x03, 0x1b, 0x16, 0x33, 0x34, 0x41,
-> +		0x96, 0x3d, 0x69, 0x3a, 0x8e, 0x3c, 0x8f, 0x8b, 0x8c, 0x94,
-> +		0x95, 0x40, 0x29, 0x0f, 0xa5, 0x1e, 0xa9, 0xaa, 0xab, 0x90,
-> +		0x91, 0x9f, 0xa0, 0x24, 0x25, 0x26, 0x14, 0x2a, 0x2b
-> +	};
-> +	const u8 values_1_205[] = {
-> +		0x45, 0x80, 0x01, 0x7d, 0x80, 0x00, 0x00, 0x80, 0x80, 0x80,
-> +		0x50, 0x93, 0x00, 0x81, 0x20, 0x45, 0x00, 0x00, 0x00, 0x24,
-> +		0xc4, 0xb6, 0x00, 0x3c, 0x36, 0x00, 0x07, 0xe2, 0xbf, 0x00,
-> +		0x04, 0x19, 0x40, 0x0d, 0x00, 0x73, 0xdf, 0x06, 0x20, 0x88,
-> +		0x88, 0xc1, 0x3f, 0x42, 0x80, 0x04, 0xb8, 0x92, 0x0a, 0x00,
-> +		0x00, 0x00, 0x00, 0x68, 0x5c, 0xc3, 0x2e, 0x00, 0x00
-> +	};
-> +
-> +	/* From 800x600 to 1280x1024 */
-> +	const u8 values_2_204[] = {
-> +		0x12, 0x11, 0x3b, 0x6a, 0x13, 0x10, 0x00, 0x01, 0x02, 0x13,
-> +		0x39, 0x38, 0x37, 0x35, 0x0e, 0x12, 0x04, 0x0c, 0x0d, 0x17,
-> +		0x18, 0x32, 0x19, 0x1a, 0x03, 0x1b, 0x16, 0x33, 0x34, 0x41,
-> +		0x96, 0x3d, 0x69, 0x3a, 0x8e, 0x3c, 0x8f, 0x8b, 0x8c, 0x94,
-> +		0x95, 0x40, 0x29, 0x0f, 0xa5, 0x1e, 0xa9, 0xaa, 0xab, 0x90,
-> +		0x91, 0x9f, 0xa0, 0x24, 0x25, 0x26, 0x14, 0x2a, 0x2b
-> +	};
-> +	const u8 values_2_205[] = {
-> +		0x05, 0x80, 0x01, 0x7d, 0x80, 0x00, 0x00, 0x80, 0x80, 0x80,
-> +		0x50, 0x93, 0x00, 0x81, 0x20, 0x05, 0x00, 0x00, 0x00, 0x1b,
-> +		0xbb, 0xa4, 0x01, 0x81, 0x12, 0x00, 0x07, 0xe2, 0xbf, 0x00,
-> +		0x04, 0x19, 0x40, 0x0d, 0x00, 0x73, 0xdf, 0x06, 0x20, 0x88,
-> +		0x88, 0xc1, 0x3f, 0x42, 0x80, 0x04, 0xb8, 0x92, 0x0a, 0x00,
-> +		0x00, 0x00, 0x00, 0x68, 0x5c, 0xc3, 0x2e, 0x00, 0x00
-> +	};
+On Mon, 2007-08-27 at 15:59 -0600, Moore, Eric wrote:
+> Attached is my patch I posted on June 13, 2007, the same day as the
+> patch you found.
 
-How does one derive these values? At least Debian kernel people will 
-remove your driver from their tree because of this unexplained binary blob.
+Thanks.  This is what I have now too:
 
-> + * We don't know the meaning of these steps! We only replay the USB log.
+LSI MPT FUSION DRIVERS (FC/SAS/SPI)
+P:	MPT Fusion Linux Team
+M:	DL-MPTFusionLinux@lsi.com
+M:	support@lsi.com
+L:	linux-scsi@vger.kernel.org
+W:	http://www.lsilogic.com/support
+S:	Supported
+F:	drivers/message/fusion/
 
-Maybe it is a good idea to convert this blob, as well as others, into a 
-firmware request.
 
--- 
-Alexander E. Patrakov
