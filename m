@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760980AbXH1R2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbXH1Rmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760980AbXH1R2o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 13:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759152AbXH1R2b
+	id S1754583AbXH1Rmr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 13:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbXH1Rmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 13:28:31 -0400
-Received: from phunq.net ([64.81.85.152]:37025 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759183AbXH1R23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 13:28:29 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [1/1] Block device throttling [Re: Distributed storage.]
-Date: Tue, 28 Aug 2007 10:27:59 -0700
-User-Agent: KMail/1.9.5
-Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708271457.38100.phillips@phunq.net> <20070828093540.GB20534@2ka.mipt.ru>
-In-Reply-To: <20070828093540.GB20534@2ka.mipt.ru>
+	Tue, 28 Aug 2007 13:42:35 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:29176 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbXH1Rmd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 13:42:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EEpXWSLOGciey4z1tWDBnX4fnqxN8sDEj9OEHHEZlfDOPv/qlSIb5WBq3Fph4f5NKX8DrVSIgpqV/TzZLBeqpAW+s4eYR1ZLEZlvo6aZup3r5Ha3kocjrr2cpUqC9WR8o1GikFlBZGxpo87HGEAuf2Goy52yUX5hzwjl0WALUxE=
+Message-ID: <8bd0f97a0708281042w6d7e57abm179337b01c254afb@mail.gmail.com>
+Date: Tue, 28 Aug 2007 13:42:32 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [-mm patch] make types.h usable for non-gcc C parsers
+Cc: "Adrian Bunk" <bunk@stusta.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Adrian Bunk" <bunk@kernel.org>,
+       "Gabriel C" <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
+       "Olaf Hering" <olh@suse.de>, netdev@vger.kernel.org
+In-Reply-To: <20070828170604.GA31284@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708281027.59528.phillips@phunq.net>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	 <46CC3B27.10604@googlemail.com> <20070827212743.GN4121@stusta.de>
+	 <20070828003704.deed71ae.akpm@linux-foundation.org>
+	 <20070828144248.GR26410@stusta.de>
+	 <20070828170604.GA31284@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 August 2007 02:35, Evgeniy Polyakov wrote:
-> On Mon, Aug 27, 2007 at 02:57:37PM -0700, Daniel Phillips 
-(phillips@phunq.net) wrote:
-> > Say Evgeniy, something I was curious about but forgot to ask you
-> > earlier...
+On 8/28/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+> > > But I'd like a better description, please.  Which "non-gcc parser" are we
+> > > talking about here?  Something under ./scripts/.  Well, please identify it,
+> > > and describe what the problem is, and how the proposed patch will address
+> > > it.
+> > >...
 > >
-> > On Wednesday 08 August 2007 03:17, Evgeniy Polyakov wrote:
-> > > ...All oerations are not atomic, since we do not care about
-> > > precise number of bios, but a fact, that we are close or close
-> > > enough to the limit.
-> > > ... in bio->endio
-> > > +			q->bio_queued--;
-> >
-> > In your proposed patch, what prevents the race:
-> >
-> > 			cpu1						cpu2
-> >
-> > 	read q->bio_queued
-> > 									q->bio_queued--
-> > 	write q->bio_queued - 1
-> > 	Whoops! We leaked a throttle count.
+> > It's about parsers like the Sun C compiler and the C parser shipped
+> > with genksyms.
 >
-> We do not care about one cpu being able to increase its counter
-> higher than the limit, such inaccuracy (maximum bios in flight thus
-> can be more than limit, difference is equal to the number of CPUs -
-> 1) is a price for removing atomic operation. I thought I pointed it
-> in the original description, but might forget, that if it will be an
-> issue, that atomic operations can be introduced there. Any
-> uber-precise measurements in the case when we are close to the edge
-> will not give us any benefit at all, since were are already in the
-> grey area.
+> So it is about two bugs.
+> 1) kbuild (genksyms) fails to generate CRC for some symbols
+> 2) allow userspace to parse the header
+>
+> As for 2 we already use sed to remove a lot of stuff in our headers
+> so why do we use another approach here?
 
-This is not just inaccurate, it is suicide.  Keep leaking throttle 
-counts and eventually all of them will be gone.  No more IO
-on that block device!
-
-> Another possibility is to create a queue/device pointer in the bio
-> structure to hold original device and then in its backing dev
-> structure add a callback to recalculate the limit, but it increases
-> the size of the bio. Do we need this?
-
-Different issue.  Yes, I think we need a nice simple approach like
-that, and prove it is stable before worrying about the size cost.
-
-Regards,
-
-Daniel
+the sed removes things permanently and is designed for scrubbing
+things that are kernel-only ... in this case, these typedefs are not
+kernel only, but exposed conditionally when the compiler/standard
+allows for it
+-mike
