@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751560AbXH1FS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751499AbXH1FYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751560AbXH1FS4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 01:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbXH1FSs
+	id S1751499AbXH1FYm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 01:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750721AbXH1FYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 01:18:48 -0400
-Received: from [212.12.190.144] ([212.12.190.144]:32860 "EHLO raad.intranet"
+	Tue, 28 Aug 2007 01:24:32 -0400
+Received: from [212.12.190.25] ([212.12.190.25]:32877 "EHLO raad.intranet"
 	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750711AbXH1FSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 01:18:47 -0400
+	id S1750716AbXH1FYb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 01:24:31 -0400
 From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: oom-killer with 27G free swap and overcommit_memory=2
-Date: Tue, 28 Aug 2007 08:18:57 +0300
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: CFS review
+Date: Tue, 28 Aug 2007 08:23:53 +0300
 User-Agent: KMail/1.5
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200708111344.42934.a1426z@gawab.com> <200708280737.53439.a1426z@gawab.com> <alpine.LFD.0.999.0708272153530.25853@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708272153530.25853@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708280818.57608.a1426z@gawab.com>
+Message-Id: <200708280823.53663.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick J. LoPresti wrote:
-> My system is a SunFire x4100 (x86_64) with 16G of RAM and 32G of swap
-> in a single partition.  I have an application which consumes a lot of
-> memory, and after a few hours the oom-killer kills it.
-> 
-> This would not be surprising, except a) the machine still has 27G of
-> free swap at the time; and b) it happens even when I set
-> vm.overcommit_memory=2 (with overcommit_ratio=50).  It is
-> time-consuming to reproduce, but consistent.
-:
-:
-> 2) Is there any sysctl setting that might "avoid" this problem?  Or a
-> way to change my application to avoid it?
+Linus Torvalds wrote:
+> On Tue, 28 Aug 2007, Al Boldi wrote:
+> > No need for framebuffer.  All you need is X using the X.org vesa-driver.
+> > Then start gears like this:
+> >
+> >   # gears & gears & gears &
+> >
+> > Then lay them out side by side to see the periodic stallings for ~10sec.
+>
+> I don't think this is a good test.
+>
+> Why?
+>
+> If you're not using direct rendering, what you have is the X server doing
+> all the rendering, which in turn means that what you are testing is quite
+> possibly not so much about the *kernel* scheduling, but about *X-server*
+> scheduling!
+>
+> I'm sure the kernel scheduler has an impact, but what's more likely to be
+> going on is that you're seeing effects that are indirect, and not
+> necessarily at all even "good".
+>
+> For example, if the X server is the scheduling point, it's entirely
+> possible that it ends up showing effects that are more due to the queueing
+> of the X command stream than due to the scheduler - and that those
+> stalls are simply due to *that*.
+>
+> One thing to try is to run the X connection in synchronous mode, which
+> minimizes queueing issues. I don't know if gears has a flag to turn on
+> synchronous X messaging, though. Many X programs take the "[+-]sync" flag
+> to turn on synchronous mode, iirc.
 
-Try setting the overcommit_ratio=0.
+I like your analysis, but how do you explain that these stalls vanish when 
+__update_curr is disabled?
 
 
 Thanks!
