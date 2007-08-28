@@ -1,150 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758744AbXH1QJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbXH1QP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758744AbXH1QJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 12:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbXH1QJD
+	id S1757624AbXH1QP7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 12:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbXH1QPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 12:09:03 -0400
-Received: from styx.suse.cz ([82.119.242.94]:37863 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752372AbXH1QJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 12:09:01 -0400
-Date: Tue, 28 Aug 2007 18:28:02 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, xb <xavier.bru@bull.net>
-Subject: [PATCH] Fix infinite loop in quota
-Message-ID: <20070828162802.GE5869@duck.suse.cz>
+	Tue, 28 Aug 2007 12:15:48 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:32976 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751463AbXH1QPr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 12:15:47 -0400
+Message-ID: <46D44A09.5060901@oracle.com>
+Date: Tue, 28 Aug 2007 09:15:05 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8NvZYKFJsRX2Djef"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Michael Evans <mjevans1983@gmail.com>
+CC: Bill Davidsen <davidsen@tmr.com>,
+       "Michael J. Evans" <mjevans1983@comcast.net>,
+       Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@redhat.com>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch v3 1/1] md: Software Raid autodetect dev list not array
+References: <200708222058.45480.mjevans1983@comcast.net>	 <200708271516.21889.mjevans1983@comcast.net>	 <20070827153020.43788e21.randy.dunlap@oracle.com>	 <200708272138.19785.mjevans1983@comcast.net>	 <46D3A8AD.6000701@oracle.com>	 <4877c76c0708280608m529296edgd83f9c08e3918815@mail.gmail.com>	 <46D421F6.50205@tmr.com> <4877c76c0708280632t3eb40d01od1267c8c4a7d8de@mail.gmail.com>
+In-Reply-To: <4877c76c0708280632t3eb40d01od1267c8c4a7d8de@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Michael Evans wrote:
+> On 8/28/07, Bill Davidsen <davidsen@tmr.com> wrote:
+>> Michael Evans wrote:
+>>> Oh, I see.  I forgot about the changelogs.  I'd send out version 5
+>>> now, but I'm not sure what kernel version to make the patch against.
+>>> 2.6.23-rc4 is on kernel.org and I don't see any git snapshots.
+>>> Additionally I never could tell what git tree was the 'mainline' as it
+>>> isn't labeled with such a keyword (at least in the list of git trees I
+>>> saw).
+>> 
+>> I suspect you wait for 2.5.23 release, or send it to AKPM for inclusion
+>> in an "-mm" kernel. That's probably desirable, anyway.
+>>
+>> --
+> 
+> There's another list I should CC to?  Or does the section maintainer
+> do that when they're happy with the patch?
 
---8NvZYKFJsRX2Djef
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Not another list; just cc: akpm@linux-foundation.org so that he can merge
+it into the -mm kernel patches for testing.  Most patches cook in the -mm
+kernel(s) before they are merged into mainline.
 
-  Hi!
+Then generally the subsystem maintainer(s) are responsible for sending
+patches on to Linus for merging into mainline, if/when they are happy
+with the patch and they think that it has been tested enough.
 
-  Attached patch fixes possible infinite loop in dqput() when quota code
-fails to start a transaction on a filesystem. Andrew, please apply. Thanks.
+Mainline progresses (roughly, e.g.) like so:
 
-								Honza
+2.6.22
+then patches are applied and we get (possibly) daily snapshots from git, like
+2.6.22-git1, 2.6.22-git2, ...
 
-PS: Thanks goes to Xavier for spotting and analyzing the problem.
+After the primary 2-week merge window for new code (i.e., not just bug fixes),
+we get 2.6.23-rc1.
+Then as more patches are merged, we get 2.6.23-rc1-gitN...
+
+Then 2.6.23-rc2 ... 2.6.23-rc2-gitN...
+
+2.6.23-rc3 ... 2.6.23-rc3-gitN...
+
+blah blah blah
+
+You can use git to download and track the mainline kernel changes,
+or you can download tarballs + patches (patches for each -rc as well as
+for each -gitN snapshot) and apply the patches yourself or use a
+script to do it. (like 'ketchup': http://www.selenic.com/ketchup/wiki/;
+or like http://www.xenotime.net/linux/scripts/grab_kernel)
+
+In general, patches should be made against latest/recent kernels, either
+current git (cloned or updated via pull), or against recent patches
++ git snapshot if there is a git snapshot that is applicable.
+Immediately after 2.6.23-rcN, there is no applicable git snapshot to
+be applied (well, a few hours later there may be).
+
+Sometimes it is appropriate to make patches against the -mm kernel
+patchset, but only if the patch is for code that is only in that
+kernel patchset (or if Andrew asks for a patch to be updated against
+-mm).  [This is a mostly rough generalization.]  Andrew normally
+takes patches against mainline and coerces them into -mm if coercion
+is needed.
 
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
-
---8NvZYKFJsRX2Djef
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="quota-2.6.23-rc4-1-quotaoff_hang.diff"
-
-If we fail to start a transaction when releasing dquot, we have to call
-dquot_release() anyway to mark dquot structure as inactive. Otherwise
-we end in an infinite loop inside dqput().
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-rc4/fs/ext3/super.c linux-2.6.23-rc4-1-quotaoff_hang/fs/ext3/super.c
---- linux-2.6.23-rc4/fs/ext3/super.c	2007-08-28 14:08:51.000000000 +0200
-+++ linux-2.6.23-rc4-1-quotaoff_hang/fs/ext3/super.c	2007-08-28 18:21:38.000000000 +0200
-@@ -2578,8 +2578,11 @@ static int ext3_release_dquot(struct dqu
- 
- 	handle = ext3_journal_start(dquot_to_inode(dquot),
- 					EXT3_QUOTA_DEL_BLOCKS(dquot->dq_sb));
--	if (IS_ERR(handle))
-+	if (IS_ERR(handle)) {
-+		/* Release dquot anyway to avoid endless cycle in dqput() */
-+		dquot_release(dquot);
- 		return PTR_ERR(handle);
-+	}
- 	ret = dquot_release(dquot);
- 	err = ext3_journal_stop(handle);
- 	if (!ret)
-@@ -2712,6 +2715,12 @@ static ssize_t ext3_quota_write(struct s
- 	struct buffer_head *bh;
- 	handle_t *handle = journal_current_handle();
- 
-+	if (!handle) {
-+		printk(KERN_WARNING "EXT3-fs: Quota write (off=%Lu, len=%Lu)"
-+			" cancelled because transaction is not started.\n",
-+			(unsigned long long)off, (unsigned long long)len);
-+		return -EIO;
-+	}
- 	mutex_lock_nested(&inode->i_mutex, I_MUTEX_QUOTA);
- 	while (towrite > 0) {
- 		tocopy = sb->s_blocksize - offset < towrite ?
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-rc4/fs/ext4/super.c linux-2.6.23-rc4-1-quotaoff_hang/fs/ext4/super.c
---- linux-2.6.23-rc4/fs/ext4/super.c	2007-08-28 14:08:52.000000000 +0200
-+++ linux-2.6.23-rc4-1-quotaoff_hang/fs/ext4/super.c	2007-08-28 17:31:54.000000000 +0200
-@@ -2698,8 +2698,11 @@ static int ext4_release_dquot(struct dqu
- 
- 	handle = ext4_journal_start(dquot_to_inode(dquot),
- 					EXT4_QUOTA_DEL_BLOCKS(dquot->dq_sb));
--	if (IS_ERR(handle))
-+	if (IS_ERR(handle)) {
-+		/* Release dquot anyway to avoid endless cycle in dqput() */
-+		dquot_release(dquot);
- 		return PTR_ERR(handle);
-+	}
- 	ret = dquot_release(dquot);
- 	err = ext4_journal_stop(handle);
- 	if (!ret)
-@@ -2832,6 +2835,12 @@ static ssize_t ext4_quota_write(struct s
- 	struct buffer_head *bh;
- 	handle_t *handle = journal_current_handle();
- 
-+	if (!handle) {
-+		printk(KERN_WARNING "EXT4-fs: Quota write (off=%Lu, len=%Lu)"
-+			" cancelled because transaction is not started.\n",
-+			(unsigned long long)off, (unsigned long long)len);
-+		return -EIO;
-+	}
- 	mutex_lock_nested(&inode->i_mutex, I_MUTEX_QUOTA);
- 	while (towrite > 0) {
- 		tocopy = sb->s_blocksize - offset < towrite ?
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.23-rc4/fs/reiserfs/super.c linux-2.6.23-rc4-1-quotaoff_hang/fs/reiserfs/super.c
---- linux-2.6.23-rc4/fs/reiserfs/super.c	2007-08-28 14:08:54.000000000 +0200
-+++ linux-2.6.23-rc4-1-quotaoff_hang/fs/reiserfs/super.c	2007-08-28 17:41:07.000000000 +0200
-@@ -1915,8 +1915,11 @@ static int reiserfs_release_dquot(struct
- 	ret =
- 	    journal_begin(&th, dquot->dq_sb,
- 			  REISERFS_QUOTA_DEL_BLOCKS(dquot->dq_sb));
--	if (ret)
-+	if (ret) {
-+		/* Release dquot anyway to avoid endless cycle in dqput() */
-+		dquot_release(dquot);
- 		goto out;
-+	}
- 	ret = dquot_release(dquot);
- 	err =
- 	    journal_end(&th, dquot->dq_sb,
-@@ -2067,6 +2070,12 @@ static ssize_t reiserfs_quota_write(stru
- 	size_t towrite = len;
- 	struct buffer_head tmp_bh, *bh;
- 
-+	if (!current->journal_info) {
-+		printk(KERN_WARNING "reiserfs: Quota write (off=%Lu, len=%Lu)"
-+			" cancelled because transaction is not started.\n",
-+			(unsigned long long)off, (unsigned long long)len);
-+		return -EIO;
-+	}
- 	mutex_lock_nested(&inode->i_mutex, I_MUTEX_QUOTA);
- 	while (towrite > 0) {
- 		tocopy = sb->s_blocksize - offset < towrite ?
-@@ -2098,7 +2107,7 @@ static ssize_t reiserfs_quota_write(stru
- 		data += tocopy;
- 		blk++;
- 	}
--      out:
-+out:
- 	if (len == towrite)
- 		return err;
- 	if (inode->i_size < off + len - towrite)
-
---8NvZYKFJsRX2Djef--
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
