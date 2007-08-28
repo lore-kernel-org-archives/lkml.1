@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbXH1Lnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760783AbXH1LtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760922AbXH1Lnx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 07:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbXH1Lnp
+	id S1760783AbXH1LtO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 07:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbXH1Ls5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 07:43:45 -0400
-Received: from mail0.scram.de ([78.47.204.202]:50574 "EHLO mail0.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753088AbXH1Lno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 07:43:44 -0400
-X-Greylist: delayed 1357 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Aug 2007 07:43:43 EDT
-X-Spam-Score: -4.061
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.3 AWL AWL: From: address is in the auto white-list
-Message-ID: <46D40510.3060805@scram.de>
-Date: Tue, 28 Aug 2007 13:20:48 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: IceDove 1.5.0.10 (X11/20070329)
+	Tue, 28 Aug 2007 07:48:57 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:14061 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752753AbXH1Ls4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 07:48:56 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: James Chapman <jchapman@katalix.com>
+Subject: Re: RFC: issues concerning the next NAPI interface
+Date: Tue, 28 Aug 2007 13:48:20 +0200
+User-Agent: KMail/1.8.2
+Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
+       akepner@sgi.com, netdev@vger.kernel.org, raisch@de.ibm.com,
+       themann@de.ibm.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, meder@de.ibm.com, tklein@de.ibm.com,
+       stefan.roscher@de.ibm.com
+References: <46D2F301.7050105@katalix.com> <20070827.145600.102570576.davem@davemloft.net> <46D3E971.4010909@katalix.com>
+In-Reply-To: <46D3E971.4010909@katalix.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-CC: linux-kernel@vger.kernel.org, Marcelo Tosatti <marcelo@kvack.org>
-Subject: [PATCH] ppc32/8xx: Fix r3 trashing due to 8MB TLB page instantiation
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/mixed;
- boundary="------------000709070107090300080001"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708281348.21302.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000709070107090300080001
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On Tuesday 28 August 2007 11:22, James Chapman wrote:
+> > So in this scheme what runs ->poll() to process incoming packets?
+> > The hrtimer?
+> 
+> No, the regular NAPI networking core calls ->poll() as usual; no timers 
+> are involved. This scheme simply delays the napi_complete() from the 
+> driver so the device stays in the poll list longer. It means that its 
+> ->poll() will be called when there is no work to do for 1-2 jiffies, 
+> hence the optimization at the top of ->poll() to efficiently handle that 
+> case. The device's ->poll() is called by the NAPI core until it has 
+> continuously done no work for 1-2 jiffies, at which point it finally 
+> does the netif_rx_complete() and re-enables its interrupts.
+> 
+I'm not sure if I understand your approach correctly.
+This approach may reduce the number of interrupts, but it does so
+by blocking the CPU for up to 1 jiffy (that can be quite some time
+on some platforms). So no other application / tasklet / softIRQ type
+can do anything in between. The CPU utilization does not drop at all, 
+and I thought that is one reason why we try to reduce the number of interrupts.
 
-Instantiation of 8MB pages on the TLB cache for the kernel static
-mapping trashes r3 register on !CONFIG_8xx_CPU6 configurations.
-This ensures r3 gets saved and restored.
+> If people feel that holding the device in the poll list for 1-2 jiffies 
+> is too long (because there are too many wasted polls), a counter could 
+> be used to to delay the netif_rx_complete() by N polls instead. N would 
+> be a value depending on CPU speed. I use the jiffy sampling method 
+> because it results in some natural randomization of the actual delay 
+> depending on when the jiffy value was sampled in relation to the jiffy tick.
+> 
 
-This has been posted to linuxppc-embedded by Marcelo Tosatti
-<marcelo@kvack.org>, but only an incomplete version of the patch
-has been applied in c51e078f82096a7d35ac8ec2416272e843a0e1c4.
-This patch adds the rest of the fix.
+Waiting for N polls seems to make no sense if there are no further network adapters
+in that machine. It would take no time to call poll N times in a row when no
+new packets arrive. There is no real delay as the net_rx_action function will
+do nothing else between the poll calls.
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- arch/ppc/kernel/head_8xx.S |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+Please correct me if I'm wrong.
 
-This can be pulled from git://git.bocc.de/dbox2.git ppc-fixes
-
---------------000709070107090300080001
-Content-Type: text/x-patch;
- name="d14ebb1e9d133983252a14f2ef037f76969ab3c6.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="d14ebb1e9d133983252a14f2ef037f76969ab3c6.diff"
-
-diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
-index 944c35c..eb8d26f 100644
---- a/arch/ppc/kernel/head_8xx.S
-+++ b/arch/ppc/kernel/head_8xx.S
-@@ -495,9 +495,7 @@ LoadLargeDTLB:
- 	lwz	r11, 4(r0)
- 
- 	lwz	r12, 16(r0)
--#ifdef CONFIG_8xx_CPU6
- 	lwz	r3, 8(r0)
--#endif
- 	rfi
- 
- /* This is the data TLB error on the MPC8xx.  This could be due to
-
-
---------------000709070107090300080001--
+Regards,
+Jan-Bernd
