@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbXH1GoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbXH1GpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbXH1GoT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 02:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbXH1GoI
+	id S1756531AbXH1GpR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 02:45:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbXH1GpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 02:44:08 -0400
-Received: from mx1.rz.ruhr-uni-bochum.de ([134.147.32.86]:53671 "HELO
-	mx1.rz.ruhr-uni-bochum.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751392AbXH1GoG (ORCPT
+	Tue, 28 Aug 2007 02:45:03 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52680 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751274AbXH1GpB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 02:44:06 -0400
-Subject: Re: Problems with disc-performance and libata
-From: Oliver Janscheidt <oliver.janscheidt@rub.de>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-In-Reply-To: <1188197040.6622.21.camel@WG4>
-References: <1188158937.6896.4.camel@WG4>
-	 <6bffcb0e0708261659y15b344b7h783a1f5ea43a3899@mail.gmail.com>
-	 <1188197040.6622.21.camel@WG4>
-Content-Type: text/plain
-Date: Tue, 28 Aug 2007 08:44:00 +0200
-Message-Id: <1188283440.6606.14.camel@WG4>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Aug 2007 02:45:01 -0400
+Date: Tue, 28 Aug 2007 08:45:00 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Luka Napotnik <luka.napotnik@gmail.com>
+cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: division and cpu usage
+In-Reply-To: <46D34B19.6050006@gmail.com>
+Message-ID: <Pine.LNX.4.64.0708280843030.11442@fbirervta.pbzchgretzou.qr>
+References: <46CE1BA2.8070200@gmail.com> <Pine.LNX.4.61.0708240731130.8096@chaos.analogic.com>
+ <Pine.LNX.4.64.0708241442590.28540@fbirervta.pbzchgretzou.qr>
+ <46D34B19.6050006@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-yesterday I compiled a new kernel (2.6.23-rc3-git10) from Vanilla
-sources and it works!
+On Aug 28 2007 00:07, Luka Napotnik wrote:
+>>>> 2. I'm trying to get the percentage of CPU used for a certain
+>>>> task_struct and figured the following formula:
+>>>>
+>>>> (task->utime + task->stime) / jiffies
+>
+>This formula just doesn't work. I have a task with 99% CPU (top) but the
+>result of that formula is random (4, sometimes 8). What am I doing
+>wrong? Please help.
 
-sudo hdparm -t /dev/scd0 now gives:
-Timing buffered disk reads:   14 MB in  3.22 seconds =   4.34 MB/sec
-
-So, after crawling the web for more than three weeks, this is the
-solution. :) Therefore other things stop working, but these are another
-road works. 
-
-Thanks,
-
-Oli
+You are calculating the CPU time the process has used since the start.
+That is definitely not the same as the "%CPU" that top shows, more like
+the "TIME+" top shows by default.
 
