@@ -1,67 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756951AbXH1JH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbXH1JLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756951AbXH1JH3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 05:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbXH1JHT
+	id S1758046AbXH1JLX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 05:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbXH1JLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 05:07:19 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56885 "EHLO mx3.mail.elte.hu"
+	Tue, 28 Aug 2007 05:11:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39641 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751620AbXH1JHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 05:07:18 -0400
-Date: Tue, 28 Aug 2007 11:07:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: fix bogus hotplug cpu warning
-Message-ID: <20070828090709.GA24578@elte.hu>
+	id S1753034AbXH1JLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 05:11:15 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: Manfred Spraul <manfred@colorfullife.com>, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [PATCH] Use ERESTARTNOHAND if poll() is interrupted by a signal
+In-Reply-To: Andrew Morton's message of  Monday, 30 July 2007 16:35:38 -0700 <20070730163538.67b256da.akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Emacs: the road to Hell is paved with extensibility.
+Message-Id: <20070828091109.9E4E14D04CC@magilla.localdomain>
+Date: Tue, 28 Aug 2007 02:11:09 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In POSIX, select/pselect is specifically exempted from the usual SA_RESTART
+behavior.  I'm not really sure if that is entirely historical or because
+after a handler has run even an adjusted relative timeout may no longer be
+what you actually want.  There is no such exemption for poll/ppoll, though
+in general their behavior and specification are very parallel.  I wonder if
+they really should diverge.
 
-this commit:
 
- commit d243769d3f83b318813a04a9592bb7cfedc6c280
- Author: Hugh Dickins <hugh@veritas.com>
- Date:   Mon Aug 27 16:06:19 2007 +0100
-
-    fix bogus hotplug cpu warning
-
-    Fix bogus DEBUG_PREEMPT warning on x86_64, when cpu brought online 
-    after bootup: current_is_keventd is right to note its use of 
-    smp_processor_id is preempt-safe, but should use 
-    raw_smp_processor_id to avoid the warning.
-
--       int cpu = smp_processor_id();   /* preempt-safe: keventd is per-cpu */
-+       int cpu = raw_smp_processor_id(); /* preempt-safe: keventd is per-cpu */
-
-is incorrect. smp_processor_id() will _not_ warn about true per-cpu 
-tasks:
-
-        /*
-         * Kernel threads bound to a single CPU can safely use
-         * smp_processor_id():
-         */
-        this_mask = cpumask_of_cpu(this_cpu);
-
-        if (cpus_equal(current->cpus_allowed, this_mask))
-                goto out;
-
-so if this check triggered for the cpu-offline code it's because keventd 
-was _not_ per-cpu (perhaps because the cpu offline code broke its 
-affinity?). So your patch hides a real bug.
-
-	Ingo
+Thanks,
+Roland
