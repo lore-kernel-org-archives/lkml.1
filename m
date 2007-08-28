@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbXH1Ozh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbXH1O4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbXH1Ozh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 10:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbXH1OzH
+	id S1757618AbXH1O4H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 10:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbXH1Ozv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 10:55:07 -0400
-Received: from mail.gmx.net ([213.165.64.20]:38929 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752524AbXH1OzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 10:55:04 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/UyHF1XaTUkCgJc6Nnlk9UnobetNOyoJtjOdn1yZ
-	QiYFuRRmsYa/y4
-Subject: Re: [git pull request] scheduler updates
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20070828144604.GA13875@elte.hu>
-References: <20070828113259.GA7922@elte.hu>
-	 <1188310265.6336.5.camel@Homer.simpson.net>
-	 <20070828144604.GA13875@elte.hu>
-Content-Type: text/plain
-Date: Tue, 28 Aug 2007 16:55:00 +0200
-Message-Id: <1188312900.25496.1.camel@Homer.simpson.net>
+	Tue, 28 Aug 2007 10:55:51 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41488 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752655AbXH1Ozu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 10:55:50 -0400
+Date: Wed, 29 Aug 2007 00:55:30 +1000
+From: David Chinner <dgc@sgi.com>
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>
+Cc: David Chinner <dgc@sgi.com>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@osdl.org>, Ken Chen <kenchen@google.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0/6] writeback time order/delay fixes take 3
+Message-ID: <20070828145530.GD61154114@sgi.com>
+References: <386910467.21100@ustc.edu.cn> <20070821202314.335e86ec@think.oraclecorp.com> <20070822011841.GA8090@mail.ustc.edu.cn> <20070823023306.GM61154114@sgi.com> <20070824135504.GA9029@mail.ustc.edu.cn>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070824135504.GA9029@mail.ustc.edu.cn>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-28 at 16:46 +0200, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
-> 
-> > On Tue, 2007-08-28 at 13:32 +0200, Ingo Molnar wrote:
-> > > Linus, please pull the latest scheduler git tree from:
-> > > 
-> > >   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
-> > > 
-> > > no big changes - 5 small fixes and 1 small cleanup:
+On Fri, Aug 24, 2007 at 09:55:04PM +0800, Fengguang Wu wrote:
+> On Thu, Aug 23, 2007 at 12:33:06PM +1000, David Chinner wrote:
+> > On Wed, Aug 22, 2007 at 09:18:41AM +0800, Fengguang Wu wrote:
+> > > On Tue, Aug 21, 2007 at 08:23:14PM -0400, Chris Mason wrote:
+> > > Notes:
+> > > (1) I'm not sure inode number is correlated to disk location in
+> > >     filesystems other than ext2/3/4. Or parent dir?
 > > 
-> > FWIW, I spent a few hours testing these patches with various loads, 
-> > and all was peachy here.  No multimedia or interactivity aberrations 
-> > noted.
+> > The correspond to the exact location on disk on XFS. But, XFS has it's
+> > own inode clustering (see xfs_iflush) and it can't be moved up
+> > into the generic layers because of locking and integration into
+> > the transaction subsystem.
+> >
+> > > (2) It duplicates some function of elevators. Why is it necessary?
+> > 
+> > The elevators have no clue as to how the filesystem might treat adjacent
+> > inodes. In XFS, inode clustering is a fundamental feature of the inode
+> > reading and writing and that is something no elevator can hope to
+> > acheive....
+>  
+> Thank you. That explains the linear write curve(perfect!) in Chris' graph.
 > 
-> great! Btw., there's another refinement Peter and me are working on (see 
-> the patch below): to place new tasks into the existing 'scheduling flow' 
-> in a more seemless way. In practice this should mean less firefox spikes 
-> during a kbuild workload. If you have some time to try it, could you add 
-> the patch below to your tree too, and see what happens during fork-happy 
-> workloads? It does not seem to be overly urgent to apply at the moment, 
-> but it is a nice touch i think.
+> I wonder if XFS can benefit any more from the general writeback clustering.
+> How large would be a typical XFS cluster?
 
-Sure, I'll give it a try.  (i was just adding likely post 24 merge
-candidates to give them some runtime anyway, one more to the queue)
+Depends on inode size. typically they are 8k in size, so anything from 4-32
+inodes. The inode writeback clustering is pretty tightly integrated into the
+transaction subsystem and has some intricate locking, so it's not likely
+to be easy (or perhaps even possible) to make it more generic.
 
-	-Mike
+Cheers,
 
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
