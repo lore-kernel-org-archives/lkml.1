@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761519AbXH1TRG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762561AbXH1TRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761519AbXH1TRG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:17:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbXH1TI1
+	id S1762561AbXH1TRc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761349AbXH1TIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:08:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58794 "EHLO
+	Tue, 28 Aug 2007 15:08:30 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58809 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759409AbXH1THl (ORCPT
+	with ESMTP id S1759119AbXH1THl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Aug 2007 15:07:41 -0400
-Message-Id: <20070828190734.825652766@sgi.com>
+Message-Id: <20070828190728.141216711@sgi.com>
 References: <20070828190551.415127746@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 28 Aug 2007 12:06:20 -0700
+Date: Tue, 28 Aug 2007 12:05:53 -0700
 From: clameter@sgi.com
 To: torvalds@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -25,189 +25,116 @@ Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
 Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com,
        "H. Peter Anvin" <hpa@zytor.com>
 Cc: joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [29/36] Fix up reclaim counters
-Content-Disposition: inline; filename=0029-Fix-up-reclaim-counters.patch
+Subject: [02/36] Define functions for page cache handling
+Content-Disposition: inline; filename=0002-Define-functions-for-page-cache-handling.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Compound pages of an arbitrary order may now be on the LRU and
-may be reclaimed.
+We use the macros PAGE_CACHE_SIZE PAGE_CACHE_SHIFT PAGE_CACHE_MASK
+and PAGE_CACHE_ALIGN in various places in the kernel. Many times
+common operations like calculating the offset or the index are coded
+using shifts and adds. This patch provides inline functions to
+get the calculations accomplished without having to explicitly
+shift and add constants.
 
-Adjust the counting in vmscan.c to could the number of base
-pages.
+All functions take an address_space pointer. The address space pointer
+will be used in the future to eventually support a variable size
+page cache. Information reachable via the mapping may then determine
+page size.
 
-Also change the active and inactive accounting to do the same.
+New function                    Related base page constant
+====================================================================
+page_cache_shift(a)             PAGE_CACHE_SHIFT
+page_cache_size(a)              PAGE_CACHE_SIZE
+page_cache_mask(a)              PAGE_CACHE_MASK
+page_cache_index(a, pos)        Calculate page number from position
+page_cache_next(addr, pos)      Page number of next page
+page_cache_offset(a, pos)       Calculate offset into a page
+page_cache_pos(a, index, offset)
+                                Form position based on page number
+                                and an offset.
+
+This provides a basis that would allow the conversion of all page cache
+handling in the kernel and ultimately allow the removal of the PAGE_CACHE_*
+constants.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- include/linux/mm_inline.h |   36 +++++++++++++++++++++++++++---------
- mm/vmscan.c               |   22 ++++++++++++----------
- 2 files changed, 39 insertions(+), 19 deletions(-)
+ include/linux/pagemap.h |   54 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 54 insertions(+), 0 deletions(-)
 
-Index: linux-2.6/include/linux/mm_inline.h
-===================================================================
---- linux-2.6.orig/include/linux/mm_inline.h	2007-08-27 19:22:13.000000000 -0700
-+++ linux-2.6/include/linux/mm_inline.h	2007-08-27 21:08:27.000000000 -0700
-@@ -2,39 +2,57 @@ static inline void
- add_page_to_active_list(struct zone *zone, struct page *page)
- {
- 	list_add(&page->lru, &zone->active_list);
--	__inc_zone_state(zone, NR_ACTIVE);
-+	if (!PageHead(page))
-+		__inc_zone_state(zone, NR_ACTIVE);
-+	else
-+		__inc_zone_page_state(page, NR_ACTIVE);
- }
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index 8a83537..836e9dd 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -52,12 +52,66 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
+  * space in smaller chunks for same flexibility).
+  *
+  * Or rather, it _will_ be done in larger chunks.
++ *
++ * The following constants can be used if a filesystem only supports a single
++ * page size.
+  */
+ #define PAGE_CACHE_SHIFT	PAGE_SHIFT
+ #define PAGE_CACHE_SIZE		PAGE_SIZE
+ #define PAGE_CACHE_MASK		PAGE_MASK
+ #define PAGE_CACHE_ALIGN(addr)	(((addr)+PAGE_CACHE_SIZE-1)&PAGE_CACHE_MASK)
  
- static inline void
- add_page_to_inactive_list(struct zone *zone, struct page *page)
- {
- 	list_add(&page->lru, &zone->inactive_list);
--	__inc_zone_state(zone, NR_INACTIVE);
-+	if (!PageHead(page))
-+		__inc_zone_state(zone, NR_INACTIVE);
-+	else
-+		__inc_zone_page_state(page, NR_INACTIVE);
- }
- 
- static inline void
- del_page_from_active_list(struct zone *zone, struct page *page)
- {
- 	list_del(&page->lru);
--	__dec_zone_state(zone, NR_ACTIVE);
-+	if (!PageHead(page))
-+		__dec_zone_state(zone, NR_ACTIVE);
-+	else
-+		__dec_zone_page_state(page, NR_ACTIVE);
- }
- 
- static inline void
- del_page_from_inactive_list(struct zone *zone, struct page *page)
- {
- 	list_del(&page->lru);
--	__dec_zone_state(zone, NR_INACTIVE);
-+	if (!PageHead(page))
-+		__dec_zone_state(zone, NR_INACTIVE);
-+	else
-+		__dec_zone_page_state(page, NR_INACTIVE);
- }
- 
- static inline void
- del_page_from_lru(struct zone *zone, struct page *page)
- {
-+	enum zone_stat_item counter = NR_ACTIVE;
++/*
++ * Functions that are currently setup for a fixed PAGE_SIZEd. The use of
++ * these will allow a variable page size pagecache in the future.
++ */
++static inline int mapping_order(struct address_space *a)
++{
++	return 0;
++}
 +
- 	list_del(&page->lru);
--	if (PageActive(page)) {
-+	if (PageActive(page))
- 		__ClearPageActive(page);
--		__dec_zone_state(zone, NR_ACTIVE);
--	} else {
--		__dec_zone_state(zone, NR_INACTIVE);
--	}
-+	else
-+		counter = NR_INACTIVE;
++static inline int page_cache_shift(struct address_space *a)
++{
++	return PAGE_SHIFT;
++}
 +
-+	if (!PageHead(page))
-+		__dec_zone_state(zone, counter);
-+	else
-+		__dec_zone_page_state(page, counter);
- }
- 
++static inline unsigned int page_cache_size(struct address_space *a)
++{
++	return PAGE_SIZE;
++}
 +
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c	2007-08-27 19:22:13.000000000 -0700
-+++ linux-2.6/mm/vmscan.c	2007-08-27 21:08:27.000000000 -0700
-@@ -466,14 +466,14 @@ static unsigned long shrink_page_list(st
- 
- 		VM_BUG_ON(PageActive(page));
- 
--		sc->nr_scanned++;
-+		sc->nr_scanned += compound_pages(page);
- 
- 		if (!sc->may_swap && page_mapped(page))
- 			goto keep_locked;
- 
- 		/* Double the slab pressure for mapped and swapcache pages */
- 		if (page_mapped(page) || PageSwapCache(page))
--			sc->nr_scanned++;
-+			sc->nr_scanned += compound_pages(page);
- 
- 		may_enter_fs = (sc->gfp_mask & __GFP_FS) ||
- 			(PageSwapCache(page) && (sc->gfp_mask & __GFP_IO));
-@@ -590,7 +590,7 @@ static unsigned long shrink_page_list(st
- 
- free_it:
- 		unlock_page(page);
--		nr_reclaimed++;
-+		nr_reclaimed += compound_pages(page);
- 		if (!pagevec_add(&freed_pvec, page))
- 			__pagevec_release_nonlru(&freed_pvec);
- 		continue;
-@@ -682,22 +682,23 @@ static unsigned long isolate_lru_pages(u
- 	unsigned long nr_taken = 0;
- 	unsigned long scan;
- 
--	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
-+	for (scan = 0; scan < nr_to_scan && !list_empty(src); ) {
- 		struct page *page;
- 		unsigned long pfn;
- 		unsigned long end_pfn;
- 		unsigned long page_pfn;
-+		int pages;
- 		int zone_id;
- 
- 		page = lru_to_page(src);
- 		prefetchw_prev_lru_page(page, src, flags);
--
-+		pages = compound_pages(page);
- 		VM_BUG_ON(!PageLRU(page));
- 
- 		switch (__isolate_lru_page(page, mode)) {
- 		case 0:
- 			list_move(&page->lru, dst);
--			nr_taken++;
-+			nr_taken += pages;
- 			break;
- 
- 		case -EBUSY:
-@@ -743,8 +744,8 @@ static unsigned long isolate_lru_pages(u
- 			switch (__isolate_lru_page(cursor_page, mode)) {
- 			case 0:
- 				list_move(&cursor_page->lru, dst);
--				nr_taken++;
--				scan++;
-+				nr_taken += compound_pages(cursor_page);
-+				scan += compound_pages(cursor_page);
- 				break;
- 
- 			case -EBUSY:
-@@ -754,6 +755,7 @@ static unsigned long isolate_lru_pages(u
- 				break;
- 			}
- 		}
-+		scan += pages;
- 	}
- 
- 	*scanned = scan;
-@@ -1010,7 +1012,7 @@ force_reclaim_mapped:
- 		ClearPageActive(page);
- 
- 		list_move(&page->lru, &zone->inactive_list);
--		pgmoved++;
-+		pgmoved += compound_pages(page);
- 		if (!pagevec_add(&pvec, page)) {
- 			__mod_zone_page_state(zone, NR_INACTIVE, pgmoved);
- 			spin_unlock_irq(&zone->lru_lock);
-@@ -1038,7 +1040,7 @@ force_reclaim_mapped:
- 		SetPageLRU(page);
- 		VM_BUG_ON(!PageActive(page));
- 		list_move(&page->lru, &zone->active_list);
--		pgmoved++;
-+		pgmoved += compound_pages(page);
- 		if (!pagevec_add(&pvec, page)) {
- 			__mod_zone_page_state(zone, NR_ACTIVE, pgmoved);
- 			pgmoved = 0;
++static inline loff_t page_cache_mask(struct address_space *a)
++{
++	return (loff_t)PAGE_MASK;
++}
++
++static inline unsigned int page_cache_offset(struct address_space *a,
++		loff_t pos)
++{
++	return pos & ~PAGE_MASK;
++}
++
++static inline pgoff_t page_cache_index(struct address_space *a,
++		loff_t pos)
++{
++	return pos >> page_cache_shift(a);
++}
++
++/*
++ * Index of the page starting on or after the given position.
++ */
++static inline pgoff_t page_cache_next(struct address_space *a,
++		loff_t pos)
++{
++	return page_cache_index(a, pos + page_cache_size(a) - 1);
++}
++
++static inline loff_t page_cache_pos(struct address_space *a,
++		pgoff_t index, unsigned long offset)
++{
++	return ((loff_t)index << page_cache_shift(a)) + offset;
++}
++
+ #define page_cache_get(page)		get_page(page)
+ #define page_cache_release(page)	put_page(page)
+ void release_pages(struct page **pages, int nr, int cold);
+-- 
+1.5.2.4
 
 -- 
