@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbXH1Efl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753799AbXH1EjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbXH1Efl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 00:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbXH1Efd
+	id S1753799AbXH1EjR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 00:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbXH1EjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 00:35:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34211 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751173AbXH1Efc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 00:35:32 -0400
+	Tue, 28 Aug 2007 00:39:07 -0400
+Received: from [212.12.190.95] ([212.12.190.95]:32857 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751366AbXH1EjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 00:39:05 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: CFS review
+Date: Tue, 28 Aug 2007 07:37:53 +0300
+User-Agent: KMail/1.5
+Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <200708111344.42934.a1426z@gawab.com> <200708271746.47685.a1426z@gawab.com> <20070827204116.GA12495@elte.hu>
+In-Reply-To: <20070827204116.GA12495@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: SIGNAL_STOP_DEQUEUED
-In-Reply-To: Oleg Nesterov's message of  Monday, 13 August 2007 12:26:15 +0400 <20070813082615.GA90@tv-sign.ru>
-X-Zippy-Says: Life is selling REVOLUTIONARY HAIR PRODUCTS!
-Message-Id: <20070828043528.A86814D04CC@magilla.localdomain>
-Date: Mon, 27 Aug 2007 21:35:28 -0700 (PDT)
+Content-Disposition: inline
+Message-Id: <200708280737.53439.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> But SIGNAL_STOP_DEQUEUED code should be OK, afaics. We only need it to
-> make sure do_signal_stop() can't miss SIGNAL_STOP_CONTINUED/GROUP_EXIT.
-> 
-> Can't we remove SIGNAL_STOP_DEQUEUED, btw?
+Ingo Molnar wrote:
+> * Al Boldi <a1426z@gawab.com> wrote:
+> > > Could you try the patch below instead, does this make 3x glxgears
+> > > smooth again? (if yes, could you send me your Signed-off-by line as
+> > > well.)
+> >
+> > The task-startup stalling is still there for ~10sec.
+> >
+> > Can you see the problem on your machine?
+>
+> nope (i have no framebuffer setup)
 
-No, we can't.
+No need for framebuffer.  All you need is X using the X.org vesa-driver.  
+Then start gears like this:
 
-> 	dequeue_signal:
-> 
-> 		if (sig_kernel_stop(sig))
-> 			->flags &= ~SIGNAL_STOP_CONTINUED;
-> 
-> 	do_signal_stop:
-> 
-> 		if (flags & (SIGNAL_STOP_CONTINUED | SIGNAL_GROUP_EXIT))
-> 			return 0;
-> 
-> Possible?
+  # gears & gears & gears &
 
-SIGNAL_STOP_CONTINUED exists to keep track of whether CLD_CONTINUED has
-been reported to the parent's wait* call using the WCONTINUED flag.
-wait_task_continued (kernel/exit.c) clears it.  It should only be cleared
-by the signals code when a job control stop actually happens before a wait*
-call clears it.  In dequeue_signal, you do not yet know whether it will
-actually lead to a stop.
+Then lay them out side by side to see the periodic stallings for ~10sec.
 
-SIGNAL_STOP_DEQUEUED exists to fix a particular race, when we dequeue a
-signal and then unlock the siglock before acting on it.  This happens when
-we call is_current_pgrp_orphaned(), and there might be other cases that
-arise.  In the window while we do not hold the lock, a kill or suchlike can
-take the long to post a SIGCONT.  The generation of a SIGCONT must clear
-all pending stop signals from all the queues.  But, the thread that
-dequeued the signal and then released the lock effectively has that signal
-still "pending" in its stack state, where it cannot be cleared.  So, when
-clearing stop signals from queues, we also clear the SIGNAL_STOP_DEQUEUED
-flag.  After retaking the siglock and considering the previously dequeued
-stop signal, we check that SIGNAL_STOP_DEQUEUED is still set.  This way, if
-the stop signal had a handler, it runs, the stop signal having been
-considered logically delivered before the SIGCONT was generated.  The
-SIGKILL/group-exit case has the same need, where rather than needing to
-have stop signals cleared from queus, we need to make sure SIGKILL
-overrides any stop in progress just as it would wake up the stopped thread
-if it came after the race.
+> - but i can see some chew-max
+> latencies that occur when new tasks are started up. I _think_ it's
+> probably the same problem as yours.
+
+chew-max is great, but it's too accurate in that it exposes any scheduling 
+glitches and as such hides the startup glitch within the many glitches it 
+exposes.  For example, it fluctuates all over the place using this:
+
+  # for ((i=0;i<9;i++)); do chew-max 60 > /dev/shm/chew$i.log & done
+
+Also, chew-max locks-up when disabling __update_curr, which means that the 
+workload of chew-max is different from either the ping-startup loop or the 
+gears.  You really should try the gears test by any means, as the problem is 
+really pronounced there.
+
+> could you try the patch below (which is the combo patch of my current
+> queue), ontop of head 50c46637aa? This makes chew-max behave better
+> during task mass-startup here.
+
+Still no improvement.
 
 
-Thanks,
-Roland
+Thanks!
+
+--
+Al
+
