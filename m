@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759478AbXH1Szf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbXH1S4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759478AbXH1Szf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 14:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbXH1Sz2
+	id S1760601AbXH1S4h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 14:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbXH1S42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 14:55:28 -0400
-Received: from host-66-43-248-10 ([67.55.143.10]:35325 "EHLO albrecht.rdi1.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751274AbXH1Sz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 14:55:28 -0400
-Subject: Re: dm-crypt mount returns EINVAL
-From: Paul Albrecht <albrecht@rdi1.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Paul Albrecht <albrecht@rdi1.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.999.0708282042210.24588@enigma.security.iitk.ac.in>
-References: <1188307465.2653.12.camel@albrecht.rdi1.com>
-	 <alpine.LFD.0.999.0708282042210.24588@enigma.security.iitk.ac.in>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 28 Aug 2007 13:59:46 -0400
-Message-Id: <1188323986.5357.8.camel@albrecht.rdi1.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.2 (2.2.2-5) 
+	Tue, 28 Aug 2007 14:56:28 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:49674 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752917AbXH1S42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 14:56:28 -0400
+Date: Tue, 28 Aug 2007 14:56:21 -0400
+To: "Dr. David Alan Gilbert" <linux@treblig.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, neilb@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add source address to sunrpc svc errors
+Message-ID: <20070828185621.GD3764@fieldses.org>
+References: <20070825012630.GB5431@gallifrey> <20070824185621.3f16f7c9.randy.dunlap@oracle.com> <20070825150927.GA29335@gallifrey> <20070827214333.GM3118@fieldses.org> <20070828180306.GA25233@gallifrey>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070828180306.GA25233@gallifrey>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-28 at 20:45 +0530, Satyam Sharma wrote:
-> Hi Paul,
+On Tue, Aug 28, 2007 at 07:03:06PM +0100, Dr. David Alan Gilbert wrote:
+> * J. Bruce Fields (bfields@fieldses.org) wrote:
+> > I also wonder whether these shouldn't all be dprintk's instead of
+> > printk's.  One misbehaving client could create a lot of noise in the
+> > logs.
 > 
-> 
-> On Tue, 28 Aug 2007, Paul Albrecht wrote:
-> 
-> > Hi,
-> > 
-> > I have recently upgraded my kernel to 2.6.21 from 2.6.20 and that has
-> > caused a problem mounting an encrypted partition using dm-crypt.
-> > 
-> > In my init script, I use cryptsetup to create device which I use to
-> > mount an encrypted partition. Since I changed to 2.6.21 the mount fails
-> > returning an EINVAL status which doesn't make much sense because the
-> > init script is unchanged and works if reverted to 2.6.20.
-> > 
-> > Any ideas? How can I debug this problem? I'm not subscribed to lkml so
-> > please cc in your response.
-> 
-> What was the error you got from cryptsetup()? Also, please post the
-> kernel's dmesg log and the .config of the 2.6.21 kernel (new one).
-> 
-> Also, compare the .config's of the two kernels and ensure that
-> CONFIG_DM_CRYPT (or possibly one of the _CRYPTO_ config options)
-> didn't get lost or automatically unset during the upgrade/oldconfig.
-> 
+> Yeh; I wasn't going to change anything else about it;   the
+> rate limiting (that I think Neil put in a few months ago) means
+> that any one client doesn't get too noisy - I've got something
+> trying to do version 0 on nfs to a bunch of boxes and I do wonder
+> why; I suspect it's just a monitoring script - but it seems better
+> to know about it until I figure it out.
 
-Found the problem ... the pass phrase used in cryptsetup is incorrect
-for the partition I want to decrypt. Not sure why that is because I
-compute it at runtime. One of the parameters I use must have changed
-from 2.6.20 to 2.6.21. I'll have to sort that out myself. Thanks
-anyways!
+OK.
 
-Paul Albrecht
+> I'm not going to be able to recut the patch until the weekend;
+> do you just want to remove the 'err' in your copy and feed this
+> to the main tree with some of the rest of your patches?
 
+Done; result at
+
+	git://linux-nfs.org/~bfields/linux.git	nfs-server-stable
+
+if you'd like to check.
+
+--b.
