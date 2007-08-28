@@ -1,95 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbXH1PKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbXH1PKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbXH1PKT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 11:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbXH1PKF
+	id S1755181AbXH1PKy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 11:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbXH1PKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 11:10:05 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:43113 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752524AbXH1PKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 11:10:04 -0400
-Message-ID: <46D43ABE.2090701@free.fr>
-Date: Tue, 28 Aug 2007 17:09:50 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pdflush preemption
-References: <46D3FB7F.6060805@free.fr> <1188311169.2435.279.camel@dhcp193.mvista.com>
-In-Reply-To: <1188311169.2435.279.camel@dhcp193.mvista.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 28 Aug 2007 11:10:45 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:43173 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753274AbXH1PKo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 11:10:44 -0400
+Date: Tue, 28 Aug 2007 11:08:20 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: David Chinner <dgc@sgi.com>
+Cc: Fengguang Wu <wfg@mail.ustc.edu.cn>, Andrew Morton <akpm@osdl.org>,
+       Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0/6] writeback time order/delay fixes take 3
+Message-ID: <20070828110820.542bbd67@think.oraclecorp.com>
+In-Reply-To: <20070828145530.GD61154114@sgi.com>
+References: <386910467.21100@ustc.edu.cn>
+	<20070821202314.335e86ec@think.oraclecorp.com>
+	<20070822011841.GA8090@mail.ustc.edu.cn>
+	<20070823023306.GM61154114@sgi.com>
+	<20070824135504.GA9029@mail.ustc.edu.cn>
+	<20070828145530.GD61154114@sgi.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
+On Wed, 29 Aug 2007 00:55:30 +1000
+David Chinner <dgc@sgi.com> wrote:
 
-> John Sigler wrote:
+> On Fri, Aug 24, 2007 at 09:55:04PM +0800, Fengguang Wu wrote:
+> > On Thu, Aug 23, 2007 at 12:33:06PM +1000, David Chinner wrote:
+> > > On Wed, Aug 22, 2007 at 09:18:41AM +0800, Fengguang Wu wrote:
+> > > > On Tue, Aug 21, 2007 at 08:23:14PM -0400, Chris Mason wrote:
+> > > > Notes:
+> > > > (1) I'm not sure inode number is correlated to disk location in
+> > > >     filesystems other than ext2/3/4. Or parent dir?
+> > > 
+> > > The correspond to the exact location on disk on XFS. But, XFS has
+> > > it's own inode clustering (see xfs_iflush) and it can't be moved
+> > > up into the generic layers because of locking and integration into
+> > > the transaction subsystem.
+> > >
+> > > > (2) It duplicates some function of elevators. Why is it
+> > > > necessary?
+> > > 
+> > > The elevators have no clue as to how the filesystem might treat
+> > > adjacent inodes. In XFS, inode clustering is a fundamental
+> > > feature of the inode reading and writing and that is something no
+> > > elevator can hope to acheive....
+> >  
+> > Thank you. That explains the linear write curve(perfect!) in Chris'
+> > graph.
+> > 
+> > I wonder if XFS can benefit any more from the general writeback
+> > clustering. How large would be a typical XFS cluster?
 > 
->> Why does pdflush kick in to ruin my party? :-)
->> The expected latency is ~600 µs.
->> http://linux.kernel.free.fr/latency/pdflush.trace
->> Does ide_inb mean I'm reading from the disk?
-> 
-> Does your real time application lock its memory, or allow itself to be
-> swapped?
+> Depends on inode size. typically they are 8k in size, so anything
+> from 4-32 inodes. The inode writeback clustering is pretty tightly
+> integrated into the transaction subsystem and has some intricate
+> locking, so it's not likely to be easy (or perhaps even possible) to
+> make it more generic.
 
-Now that you mention it, I do remember reading this page:
-http://rt.wiki.kernel.org/index.php/HOWTO:_Build_an_RT-application
+When I talked to hch about this, he said the order file data pages got
+written in XFS was still dictated by the order the higher layers sent
+things down.  Shouldn't the clustering still help to have delalloc done
+in inode order instead of in whatever random order pdflush sends things
+down now?
 
-There is no swap configured on the system, and 90% of the 256 MB of RAM 
-are free, according to /proc/meminfo, and the system is otherwise idle.
-
-I don't think this is a major page fault. Am I wrong?
-
-# /bin/time ./check_dektec_output2 4140063957 38000000 2632 30
-0.02user 0.31system 0:20.02elapsed 1%CPU
-(0avgtext+0avgdata 0maxresident)k
-0inputs+0outputs (0major+270minor)pagefaults 0swaps
-                   ^^^^^^
-
-# cat /proc/vmstat
-nr_free_pages 59351
-nr_inactive 1465
-nr_active 1830
-nr_anon_pages 486
-nr_mapped 569
-nr_file_pages 2813
-nr_dirty 0
-nr_writeback 0
-nr_slab_reclaimable 449
-nr_slab_unreclaimable 663
-nr_page_table_pages 41
-nr_unstable 0
-nr_bounce 0
-nr_vmscan_write 0
-pgpgin 8197
-pgpgout 113
-pswpin 0
-pswpout 0
-pgalloc_dma 0
-pgalloc_normal 27260
-pgfree 86682
-pgactivate 1372
-pgdeactivate 0
-pgfault 77490
-pgmajfault 121
-pgrefill_dma 0
-pgrefill_normal 0
-pgsteal_dma 0
-pgsteal_normal 0
-pgscan_kswapd_dma 0
-pgscan_kswapd_normal 0
-pgscan_direct_dma 0
-pgscan_direct_normal 0
-pginodesteal 0
-slabs_scanned 0
-kswapd_steal 0
-kswapd_inodesteal 0
-pageoutrun 0
-allocstall 0
-pgrotated 0
-
-Regards.
+-chris
