@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758314AbXH1BNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbXH1BQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758314AbXH1BNy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 21:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbXH1BNp
+	id S1759383AbXH1BQL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 21:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbXH1BP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 21:13:45 -0400
-Received: from mga01.intel.com ([192.55.52.88]:9132 "EHLO mga01.intel.com"
+	Mon, 27 Aug 2007 21:15:58 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:56231 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753165AbXH1BNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 21:13:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,314,1183359600"; 
-   d="scan'208";a="289097373"
-Subject: Re: [RFC][PATCH 2/2 -mm] kexec based hibernation: kexec restore
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20070827213134.GE3398@elf.ucw.cz>
-References: <1188177296.3247.38.camel@caritas-dev.intel.com>
-	 <20070827213134.GE3398@elf.ucw.cz>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 28 Aug 2007 09:14:37 +0800
-Message-Id: <1188263677.2050.8.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 28 Aug 2007 01:13:38.0096 (UTC) FILETIME=[A9CE3300:01C7E910]
+	id S1752777AbXH1BP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 21:15:57 -0400
+Date: Mon, 27 Aug 2007 18:15:54 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       josh@kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] Make rcutorture RNG use temporal entropy
+Message-ID: <20070828011554.GB31860@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070816024904.GA5312@linux.vnet.ibm.com> <20070817115356.cb201e42.akpm@linux-foundation.org> <20070817200022.GH8464@linux.vnet.ibm.com> <20070823180658.GQ11166@waste.org> <20070823185830.GC8371@linux.vnet.ibm.com> <20070823194037.GW30556@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070823194037.GW30556@waste.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-27 at 23:31 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > This patch adds writing support for /dev/oldmem. This is used to
-> > restore the memory contents of hibernated system.
+On Thu, Aug 23, 2007 at 02:40:37PM -0500, Matt Mackall wrote:
+> On Thu, Aug 23, 2007 at 11:58:31AM -0700, Paul E. McKenney wrote:
+> > On Thu, Aug 23, 2007 at 01:06:58PM -0500, Matt Mackall wrote:
+> > > On Fri, Aug 17, 2007 at 01:00:22PM -0700, Paul E. McKenney wrote:
+> > > > On Fri, Aug 17, 2007 at 11:53:56AM -0700, Andrew Morton wrote:
+> > > > > On Wed, 15 Aug 2007 19:49:04 -0700
+> > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > 
+> > > > > > Repost of http://lkml.org/lkml/2007/8/10/472 made available by request.
+> > > > > > 
+> > > > > > The locking used by get_random_bytes() can conflict with the
+> > > > > > preempt_disable() and synchronize_sched() form of RCU.  This patch changes
+> > > > > > rcutorture's RNG to gather entropy from the new cpu_clock() interface
+> > > > > > (relying on interrupts, preemption, daemons, and rcutorture's reader
+> > > > > > thread's rock-bottom scheduling priority to provide useful entropy),
+> > > > > > and also adds and EXPORT_SYMBOL_GPL() to make that interface available
+> > > > > > to GPLed kernel modules such as rcutorture.
+> > > > > > 
+> > > > > > Passes several hours of rcutorture.
+> > > > > 
+> > > > > Please explain what "conflict with" means so that I can work out if
+> > > > > this is a needed-in-2.6.23 change, thanks.
+> > > > 
+> > > > Not needed in 2.6.23.  This change falls into the "preparation for -rt"
+> > > > category.  Also in the "don't unnecessarily eat entropy, leave some for
+> > > > the people needing crypographically secure randomness" category.
+> > > 
+> > > We've had several calls for a more fast and loose version of
+> > > get_random_bytes. Generalizing one of the cookie generation functions
+> > > is probably a good way to go.
 > > 
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> > Are you thinking in terms of secure_tcp_syn_cookie(), or did you have
+> > something else in mind?
 > 
-> > +ssize_t write_oldmem_page(unsigned long pfn, const char *buf,
-> > +			  size_t csize, unsigned long offset, int userbuf)
-> 
-> Hmm, int userbuf is only ever set to one... Does it make sense to have
-> write_oldmem_page in the separate file? The onl user is mem.c, perhaps
-> it should go there?
-> 
+> Yes. Using a hash function rather than a trivial LFSR is preferable.
+> But pulling the guts out and giving it an n-bytes interface like
+> get_random_bytes().
 
-write_oldmem_page is kept to be consistent with copy_oldmem_page as much
-as possible. The userbuf is used by copy_oldmem_page too, and
-write_oldmem_page is in the same file as copy_oldmem_page. I think the
-consistence between them is reasonable.
+OK.  But this cannot be the first discussion of getting a fast and loose
+version of get_random_bytes() into the kernel.  Anyplace I should look
+for cautionary tales?  A quick search located a spirited discussion of
+proposed kernel infrastructure for user-mode random number generation
+back in 2003, but...
 
-And the copy_oldmem_page/write_oldmem_page is considered to be
-architecture dependent. Now, there are different implementations for
-copy_oldmem_page on different architectures. So I think the
-copy_oldmem_page/write_oldmem_page should be kept in separate file
-instead of go mem.c.
+Also a 2006 proposal from Stephan Eranian: http://lkml.org/lkml/2006/8/23/41
+This appears to have gotten zero replies.  :-/  (Though not hash-based.)
 
-Best Regards,
-Huang Ying
+Other semi-related threads:
+
+	http://lkml.org/lkml/2005/3/15/102
+	http://lkml.org/lkml/2004/9/23/337
+
+Some years back, my reflexive design would have been per-CPU state,
+accessed with interrupts disabled.  Not so good for realtime usage,
+though.  One could go with per-task state in order to avoid the
+interrupt disabling, which might be OK if the state is quite small.
+
+							Thanx, Paul
