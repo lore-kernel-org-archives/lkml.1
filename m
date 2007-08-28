@@ -1,91 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbXH1NJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756372AbXH1NKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755551AbXH1NJE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 09:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbXH1NIv
+	id S1756372AbXH1NKz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 09:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbXH1NKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 09:08:51 -0400
-Received: from el-out-1112.google.com ([209.85.162.183]:33238 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752812AbXH1NIu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 09:08:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=M6uWJRSetyyXJpxbSkiV05wjODdPOZzmlvsH6LsqxdK1GyX3DYqwnErdlyw9KMwn+WRAscWh+bAFjwXnwve5syIS55sa/zFRQP1BJStCrz7tijfDwi/lDB3WpHUe7sSDr67YGufWZ3HLRM6+gAD1xNSQEfft0XLm1uTLFiwwuPU=
-Message-ID: <4877c76c0708280608m529296edgd83f9c08e3918815@mail.gmail.com>
-Date: Tue, 28 Aug 2007 06:08:45 -0700
-From: "Michael Evans" <mjevans1983@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [patch v3 1/1] md: Software Raid autodetect dev list not array
-Cc: "Michael J. Evans" <mjevans1983@comcast.net>, "Neil Brown" <neilb@suse.de>,
-       "Ingo Molnar" <mingo@redhat.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46D3A8AD.6000701@oracle.com>
+	Tue, 28 Aug 2007 09:10:48 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:33634 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752511AbXH1NKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 09:10:47 -0400
+From: "Paul Moore" <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: Joe Perches <joe@perches.com>
+Subject: Re: [NET]: Mark Paul Moore as maintainer of labelled networking.
+Date: Tue, 28 Aug 2007 08:46:13 -0400
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+References: <200708280001.l7S01Cxt004543@hera.kernel.org> <1188283579.6062.12.camel@localhost>
+In-Reply-To: <1188283579.6062.12.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200708222058.45480.mjevans1983@comcast.net>
-	 <200708271516.21889.mjevans1983@comcast.net>
-	 <20070827153020.43788e21.randy.dunlap@oracle.com>
-	 <200708272138.19785.mjevans1983@comcast.net>
-	 <46D3A8AD.6000701@oracle.com>
+Message-Id: <20070828130813.E6A1D39C199@ldl.fc.hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/27/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> Michael J. Evans wrote:
-> > On Monday 27 August 2007, Randy Dunlap wrote:
-> >> On Mon, 27 Aug 2007 15:16:21 -0700 Michael J. Evans wrote:
-> >>
-> >>> =============================================================
-> >>> --- linux/drivers/md/md.c.orig      2007-08-21 03:19:42.511576248 -0700
-> >>> +++ linux/drivers/md/md.c   2007-08-21 04:30:09.775525710 -0700
-> >>> @@ -24,4 +24,6 @@
-> >>>
-> >>> +   - autodetect dev list not array: Michael J. Evans
-> > <mjevans1983@gmail.com>
-> >>> +
-> >> Nowadays we use an SCM for such comments, not the source file(s).
-> >
-> > SCM?  Is this automatic, where do I go to see it?
+On Tuesday, August 28 2007 2:46:19 am Joe Perches wrote:
+> On Tue, 2007-08-28 at 00:01 +0000, Linux Kernel Mailing List wrote:
+> > +NETWORKING [LABELED] (NetLabel, CIPSO, Labeled IPsec, SECMARK)
+> > +P:	Paul Moore
+> > +M:	paul.moore@hp.com
+> > +L:	netdev@vger.kernel.org
+> > +S:	Maintained
+> > +
 >
-> See Documentation/SubmittingPatches:
-> 14) The canonical patch format:
+> Aren't there now 2 subsystems in MAINTAINERS for the same thing?
 >
-> The canonical patch message body contains the following:
->
->   - A "from" line specifying the patch author.
->
->   - An empty line.
->
->   - The body of the explanation, which will be copied to the
->     permanent changelog to describe this patch.
->
->   - The "Signed-off-by:" lines, described above, which will
->     also go in the changelog.
->
->   - A marker line containing simply "---".
->
->   - Any additional comments not suitable for the changelog.
->
->   - The actual patch (diff output).
->
->
-> so just put whatever you want to be in the permanent SCM logs
-> into the "body of the explanation" part of the email.
->
->
-> --
-> ~Randy
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
->
+> NETLABEL
+> P:	Paul Moore
+> M:	paul.moore@hp.com
+> W:	http://netlabel.sf.net
+> L:	netdev@vger.kernel.org
+> S:	Supported
 
-Oh, I see.  I forgot about the changelogs.  I'd send out version 5
-now, but I'm not sure what kernel version to make the patch against.
-2.6.23-rc4 is on kernel.org and I don't see any git snapshots.
-Additionally I never could tell what git tree was the 'mainline' as it
-isn't labeled with such a keyword (at least in the list of git trees I
-saw).
+Yes and no.  Labeled networking consists of several different subsystems
+because the term "labeled networking" can often mean several different
+things.  I'll spare everyone the gory details, but if you are interested in
+more information check out the SELinux mailing list archives from the past
+month; there has been a lot of discussion about the different types of
+labeled networking and the requirements/goals of each.
+
+NetLabel is just one subsystem that provides labeled networking
+functionality (CIPSO is provided through the NetLabel subsystem), Labeled
+IPsec and SECMARK also provide labeled networking functionality.  Originally
+I wrote/supported/maintained just NetLabel but over the past weekend James
+Morris asked me to look after all of the different labeled networking
+subsystems ... for better or worse I agreed :)
+
+If having both a labeled networking and NetLabel maintainer entry is a
+problem then how about the patch below?
+
+Index: linux-2.6_maintainers/MAINTAINERS
+===================================================================
+--- linux-2.6_maintainers.orig/MAINTAINERS
++++ linux-2.6_maintainers/MAINTAINERS
+@@ -2609,13 +2609,6 @@ W:	http://www.netfilter.org/
+ W:	http://www.iptables.org/
+ S:	Supported
+ 
+-NETLABEL
+-P:	Paul Moore
+-M:	paul.moore@hp.com
+-W:	http://netlabel.sf.net
+-L:	netdev@vger.kernel.org
+-S:	Supported
+-
+ NETROM NETWORK LAYER
+ P:	Ralf Baechle
+ M:	ralf@linux-mips.org
+@@ -2661,9 +2654,10 @@ L:	netdev@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git
+ S:	Maintained
+ 
+-NETWORKING [LABELED] (NetLabel, CIPSO, Labeled IPsec, SECMARK)
++NETWORKING [LABELED] (NetLabel/CIPSO, Labeled IPsec, SECMARK)
+ P:	Paul Moore
+ M:	paul.moore@hp.com
++W:	http://netlabel.sf.net (NetLabel/CIPSO)
+ L:	netdev@vger.kernel.org
+ S:	Maintained
+
+-- 
+paul moore
+linux security @ hp
+
