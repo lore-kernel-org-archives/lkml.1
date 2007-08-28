@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbXH1GpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbXH1Gqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756531AbXH1GpR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 02:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbXH1GpD
+	id S1756642AbXH1Gqb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 02:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbXH1GqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 02:45:03 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:52680 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751274AbXH1GpB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 02:45:01 -0400
-Date: Tue, 28 Aug 2007 08:45:00 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Luka Napotnik <luka.napotnik@gmail.com>
-cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: division and cpu usage
-In-Reply-To: <46D34B19.6050006@gmail.com>
-Message-ID: <Pine.LNX.4.64.0708280843030.11442@fbirervta.pbzchgretzou.qr>
-References: <46CE1BA2.8070200@gmail.com> <Pine.LNX.4.61.0708240731130.8096@chaos.analogic.com>
- <Pine.LNX.4.64.0708241442590.28540@fbirervta.pbzchgretzou.qr>
- <46D34B19.6050006@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 28 Aug 2007 02:46:22 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:3271 "EHLO perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751102AbXH1GqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 02:46:21 -0400
+Subject: Re: [NET]: Mark Paul Moore as maintainer of labelled networking.
+From: Joe Perches <joe@perches.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Paul.moore@hp.com, netdev@vger.kernel.org
+In-Reply-To: <200708280001.l7S01Cxt004543@hera.kernel.org>
+References: <200708280001.l7S01Cxt004543@hera.kernel.org>
+Content-Type: text/plain
+Date: Mon, 27 Aug 2007 23:46:19 -0700
+Message-Id: <1188283579.6062.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-08-28 at 00:01 +0000, Linux Kernel Mailing List wrote:
+> +NETWORKING [LABELED] (NetLabel, CIPSO, Labeled IPsec, SECMARK)
+> +P:	Paul Moore
+> +M:	paul.moore@hp.com
+> +L:	netdev@vger.kernel.org
+> +S:	Maintained
+> +
 
-On Aug 28 2007 00:07, Luka Napotnik wrote:
->>>> 2. I'm trying to get the percentage of CPU used for a certain
->>>> task_struct and figured the following formula:
->>>>
->>>> (task->utime + task->stime) / jiffies
->
->This formula just doesn't work. I have a task with 99% CPU (top) but the
->result of that formula is random (4, sometimes 8). What am I doing
->wrong? Please help.
+Aren't there now 2 subsystems in MAINTAINERS for the same thing?
 
-You are calculating the CPU time the process has used since the start.
-That is definitely not the same as the "%CPU" that top shows, more like
-the "TIME+" top shows by default.
+NETLABEL
+P:	Paul Moore
+M:	paul.moore@hp.com
+W:	http://netlabel.sf.net
+L:	netdev@vger.kernel.org
+S:	Supported
+
+
 
