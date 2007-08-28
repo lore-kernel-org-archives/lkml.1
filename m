@@ -1,113 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760872AbXH1BiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760960AbXH1Bkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760872AbXH1BiR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 21:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbXH1BiD
+	id S1760960AbXH1Bkk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 21:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbXH1Bkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 21:38:03 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56407 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752302AbXH1BiA (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 21:38:00 -0400
-Message-ID: <46D37C70.5070907@sgi.com>
-Date: Tue, 28 Aug 2007 11:37:52 +1000
-From: Timothy Shimmin <tes@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+	Mon, 27 Aug 2007 21:40:33 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:35512 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752302AbXH1Bkc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Aug 2007 21:40:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=uMHGn9FkT8V3LWYrMmld0Ypc7K8odYRBqyoBYbqmCVpeZso8z59ccRiC6PV7CtAGhFkmz8S/s2s0JBSBmorVp+jZeW3LMJluypcB5YIPeaGElya2kdW7Bx01KyPOq0ExfCVhmgLmRzyTeKEBSVvYVwb9aIDnHI48kv/KACA72Fo=  ;
+X-YMail-OSG: hY7KqI4VM1lQ_4nvbawTOd.Fhs1hlon0NTrNe1hZDo7grOlGfHXf2MnNkTOPo7YyhCjAMChsDA--
+Message-ID: <46D37D0A.905@yahoo.com.au>
+Date: Tue, 28 Aug 2007 11:40:26 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Jeff Layton <jlayton@redhat.com>
-CC: Josef Sipek <jsipek@fsl.cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, xfs-oss <xfs@oss.sgi.com>
-Subject: Re: [PATCH 2/4] Fix mainline filesystems to handle ATTR_KILL_ bits
- correctly
-References: <200708202053.l7KKrMYv017763@dantu.rdu.redhat.com>	<46CA798C.1020101@sgi.com>	<20070821073551.dac4a5dd.jlayton@redhat.com>	<20070821212128.GC1741@filer.fsl.cs.sunysb.edu> <20070821182305.7c0cb135.jlayton@redhat.com>
-In-Reply-To: <20070821182305.7c0cb135.jlayton@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, clameter@sgi.com,
+       mingo@redhat.com
+Subject: Re: [patch 01/28] Fall back on interrupt disable in cmpxchg8b on
+ 80386 and 80486
+References: <20070827155234.062715780@polymtl.ca> <20070827155523.916345864@polymtl.ca>
+In-Reply-To: <20070827155523.916345864@polymtl.ca>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Layton wrote:
-> On Tue, 21 Aug 2007 17:21:28 -0400
-> Josef Sipek <jsipek@fsl.cs.sunysb.edu> wrote:
-> 
->> On Tue, Aug 21, 2007 at 07:35:51AM -0400, Jeff Layton wrote:
->>> On Tue, 21 Aug 2007 15:35:08 +1000
->>> Timothy Shimmin <tes@sgi.com> wrote:
->>>
->>>> Jeff Layton wrote:
->>>>> This should fix all of the filesystems in the mainline kernels to handle
->>>>> ATTR_KILL_SUID and ATTR_KILL_SGID correctly. For most of them, this is
->>>>> just a matter of making sure that they call generic_attrkill early in
->>>>> the setattr inode op.
->>>>>
->>>>> Signed-off-by: Jeff Layton <jlayton@redhat.com>
->>>>> ---
->>>>>  fs/xfs/linux-2.6/xfs_iops.c               |    5 ++++-
->>>>> --- a/fs/xfs/linux-2.6/xfs_iops.c
->>>>> +++ b/fs/xfs/linux-2.6/xfs_iops.c
->>>>> @@ -651,12 +651,15 @@ xfs_vn_setattr(
->>>>>  	struct iattr	*attr)
->>>>>  {
->>>>>  	struct inode	*inode = dentry->d_inode;
->>>>> -	unsigned int	ia_valid = attr->ia_valid;
->>>>> +	unsigned int	ia_valid;
->>>>>  	bhv_vnode_t	*vp = vn_from_inode(inode);
->>>>>  	bhv_vattr_t	vattr = { 0 };
->>>>>  	int		flags = 0;
->>>>>  	int		error;
->>>>>  
->>>>> +	generic_attrkill(inode->i_mode, attr);
->>>>> +	ia_valid = attr->ia_valid;
->>>>> +
->>>>>  	if (ia_valid & ATTR_UID) {
->>>>>  		vattr.va_mask |= XFS_AT_UID;
->>>>>  		vattr.va_uid = attr->ia_uid;
->>>> Looks reasonable to me for XFS.
->>>> Acked-by: Tim Shimmin <tes@sgi.com>
->>>>
->>>> So before, this clearing would happen directly in notify_change()
->>>> and now this won't happen until notify_change() calls i_op->setattr
->>>> which for a particular fs it can call generic_attrkill() to do it.
->>>> So I guess for the cases where i_op->setattr is called outside of
->>>> via notify_change, we don't normally have ATTR_KILL_SUID/SGID
->>>> set so that nothing will happen there?
->>> Right. If neither ATTR_KILL bit is set then generic_attrkill is a
->>> noop.
->>>
->>>> I guess just wondering the effect with having the code on all
->>>> setattr's. (I'm not familiar with the code path)
->>>>
->>> These bits are referenced in very few places in the current kernel
->>> tree -- mostly in the VFS layer. The *only* place I see that they
->>> actually get interpreted into a mode change is in notify_change. So
->>> places that call setattr ops w/o going through notify_change are
->>> not likely to have those bits set.
->>>
->>> But hypothetically, if a fs did set ATTR_KILL_* and call setattr
->>> directly, then the setattr would now include a mode change that
->>> clears setuid or setgid bits where it may not have before.
-> 
-> I should probably clarify -- in the hypothetical situation above,
-> the setattr function would have to call generic_attrkill (as most
-> filesystems should do with this change).
-> 
-Thanks for the confirmation. That's what it looked like to me
-but I wanted to know explicitly what the thinking was.
+Mathieu Desnoyers wrote:
 
->> It almost sounds like an argument for a new inode op (NULL would use
->> generic_attr_kill).
->>
+> Q:
+> What's the reason to have cmpxchg64_local on 32 bit architectures?
+> Without that need all this would just be a few simple defines.
 > 
-> That's not a bad idea at all. I suppose that would be easier than
-> modifying every fs like this, and it does seem like it might be
-> cleaner. I need to mull it over, but that might be the best
-> solution.
+> A:
+> cmpxchg64_local on 32 bits architectures takes unsigned long long
+> parameters, but cmpxchg_local only takes longs. Since we have cmpxchg8b
+> to execute a 8 byte cmpxchg atomically on pentium and +, it makes sense
+> to provide a flavor of cmpxchg and cmpxchg_local using this instruction.
 > 
-Yeah, sounds a much more direct way of handling things and as you
-say wouldn't need most of the filesystems to all be modified calling
-generic_attrkill.
-Not sure what the ramifications of adding a new iop are though.
+> Also, for 32 bits architectures lacking the 64 bits atomic cmpxchg, it
+> makes sense _not_ to define cmpxchg64 while cmpxchg could still be
+> available.
+> 
+> Moreover, the fallback for cmpxchg8b on i386 for 386 and 486 is a
+> different case than cmpxchg (which is only required for 386). Using
+> different code makes this easier.
+> 
+> However, cmpxchg64_local will be emulated by disabling interrupts on all
+> architectures where it is not supported atomically.
+> 
+> Therefore, we *could* turn cmpxchg64_local into a cmpxchg_local, but it
+> would make the 386/486 fallbacks ugly, make its design different from
+> cmpxchg/cmpxchg64 (which really depends on atomic operations and cannot
+> be emulated) and require the __cmpxchg_local to be expressed as a macro
+> rather than an inline function so the parameters would not be fixed to
+> unsigned long long in every case.
+> 
+> So I think cmpxchg64_local makes sense there, but I am open to
+> suggestions.
 
-Cheers,
-Tim.
+Every new thing like this (especially 64 bit operation on 32 bit
+architectures) adds a tiny bit more burden for maintainers. Are
+there any callers? If not, don't add it. It's simple to add if we
+do get a good reason.
+
+-- 
+SUSE Labs, Novell Inc.
