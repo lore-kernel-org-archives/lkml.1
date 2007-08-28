@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761116AbXH1Tkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761411AbXH1Tm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761116AbXH1Tkl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbXH1Tkc
+	id S1761411AbXH1Tm7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbXH1Tmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:40:32 -0400
-Received: from 1wt.eu ([62.212.114.60]:2320 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750723AbXH1Tkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 15:40:31 -0400
-Date: Tue, 28 Aug 2007 21:19:25 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Xavier Bestel <xavier.bestel@free.fr>, Al Boldi <a1426z@gawab.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-Message-ID: <20070828191924.GT6002@1wt.eu>
-References: <200708111344.42934.a1426z@gawab.com> <200708271746.47685.a1426z@gawab.com> <20070827204116.GA12495@elte.hu> <200708280737.53439.a1426z@gawab.com> <1188287015.1131.232.camel@frg-rhel40-em64t-04> <20070828080218.GA12247@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070828080218.GA12247@elte.hu>
-User-Agent: Mutt/1.5.11
+	Tue, 28 Aug 2007 15:42:47 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33374 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751144AbXH1Tmq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 15:42:46 -0400
+Date: Tue, 28 Aug 2007 12:42:45 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@redhat.com,
+       linux-ia64@vger.kernel.org
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+In-Reply-To: <20070828120756.GD12241@Krystal>
+Message-ID: <Pine.LNX.4.64.0708281240260.16473@schroedinger.engr.sgi.com>
+References: <20070827202203.GB5653@Krystal> <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com>
+ <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com>
+ <20070827211003.GA10627@Krystal> <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com>
+ <20070827213845.GB9748@Krystal> <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com>
+ <20070827222715.GA16982@Krystal> <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com>
+ <20070828120756.GD12241@Krystal>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 28, 2007 at 10:02:18AM +0200, Ingo Molnar wrote:
-> 
-> * Xavier Bestel <xavier.bestel@free.fr> wrote:
-> 
-> > Are you sure they are stalled ? What you may have is simple gears 
-> > running at a multiple of your screen refresh rate, so they only appear 
-> > stalled.
-> > 
-> > Plus, as said Linus, you're not really testing the kernel scheduler. 
-> > gears is really bad benchmark, it should die.
-> 
-> i like glxgears as long as it runs on _real_ 3D hardware, because there 
-> it has minimal interaction with X and so it's an excellent visual test 
-> about consistency of scheduling. You can immediately see (literally) 
-> scheduling hickups down to a millisecond range (!). In this sense, if 
-> done and interpreted carefully, glxgears gives more feedback than many 
-> audio tests. (audio latency problems are audible, but on most sound hw 
-> it takes quite a bit of latency to produce an xrun.) So basically 
-> glxgears is the "early warning system" that tells us about the potential 
-> for xruns earlier than an xrun would happen for real.
-> 
-> [ of course you can also run all the other tools to get numeric results,
->   but glxgears is nice in that it gives immediate visual feedback. ]
+On Tue, 28 Aug 2007, Mathieu Desnoyers wrote:
 
-Al could also test ocbench, which brings visual feedback without harnessing
-the X server :  http://linux.1wt.eu/sched/
+> Ok, I just had a look at ia64 instruction set, and I fear that cmpxchg
+> must always come with the acquire or release semantic. Is there any
+> cmpxchg equivalent on ia64 that would be acquire and release semantic
+> free ? This implicit memory ordering in the instruction seems to be
+> responsible for the slowdown.
 
-I packaged it exactly for this problem and it has already helped. It uses
-X after each loop, so if you run it with large run time, X is nearly not
-sollicitated. 
+No. There is no cmpxchg used in the patches that I tested. The slowdown 
+seem to come from the need to serialize at barriers. Adding an interrupt
+enable/disable in the middle of the hot path creates another serialization 
+point.
 
-Willy
+> If such primitive does not exist, then we should think about an irq
+> disable fallback for this local atomic operation. However, I would
+> prefer to let the cmpxchg_local primitive be bound to the "slow"
+> cmpxchg_acq and create something like _cmpxchg_local that would be
+> interrupt-safe, but not reentrant wrt NMIs.
 
+Ummm... That is what I did. See the included patch that you quoted. The 
+measurements show that such a fallback is not preserving the performance 
+on IA64.
