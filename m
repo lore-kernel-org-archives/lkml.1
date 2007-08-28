@@ -1,103 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758361AbXH1Q3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbXH1Qdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758361AbXH1Q3L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 12:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755606AbXH1Q26
+	id S1758597AbXH1Qdg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 12:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbXH1Qd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 12:28:58 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:41437 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754947AbXH1Q25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 12:28:57 -0400
-Date: Tue, 28 Aug 2007 09:28:51 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [PATCH] v1 of IBM power meter driver
-Message-ID: <20070828162851.GJ32667@tree.beaverton.ibm.com>
-References: <20070827211446.GG32667@tree.beaverton.ibm.com> <20070828015029.GA10107@khazad-dum.debian.net> <20070828131942.18449886@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cDtQGJ/EJIRf/Cpq"
+	Tue, 28 Aug 2007 12:33:27 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47129 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754940AbXH1Qd0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 12:33:26 -0400
+Date: Wed, 29 Aug 2007 02:33:08 +1000
+From: David Chinner <dgc@sgi.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: David Chinner <dgc@sgi.com>, Fengguang Wu <wfg@mail.ustc.edu.cn>,
+       Andrew Morton <akpm@osdl.org>, Ken Chen <kenchen@google.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0/6] writeback time order/delay fixes take 3
+Message-ID: <20070828163308.GE61154114@sgi.com>
+References: <386910467.21100@ustc.edu.cn> <20070821202314.335e86ec@think.oraclecorp.com> <20070822011841.GA8090@mail.ustc.edu.cn> <20070823023306.GM61154114@sgi.com> <20070824135504.GA9029@mail.ustc.edu.cn> <20070828145530.GD61154114@sgi.com> <20070828110820.542bbd67@think.oraclecorp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070828131942.18449886@hyperion.delvare>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070828110820.542bbd67@think.oraclecorp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 28, 2007 at 11:08:20AM -0400, Chris Mason wrote:
+> On Wed, 29 Aug 2007 00:55:30 +1000
+> David Chinner <dgc@sgi.com> wrote:
+> > On Fri, Aug 24, 2007 at 09:55:04PM +0800, Fengguang Wu wrote:
+> > > On Thu, Aug 23, 2007 at 12:33:06PM +1000, David Chinner wrote:
+> > > > On Wed, Aug 22, 2007 at 09:18:41AM +0800, Fengguang Wu wrote:
+> > > > > On Tue, Aug 21, 2007 at 08:23:14PM -0400, Chris Mason wrote:
+> > > > > Notes:
+> > > > > (1) I'm not sure inode number is correlated to disk location in
+> > > > >     filesystems other than ext2/3/4. Or parent dir?
+> > > > 
+> > > > The correspond to the exact location on disk on XFS. But, XFS has
+> > > > it's own inode clustering (see xfs_iflush) and it can't be moved
+> > > > up into the generic layers because of locking and integration into
+> > > > the transaction subsystem.
+> > > >
+> > > > > (2) It duplicates some function of elevators. Why is it
+> > > > > necessary?
+> > > > 
+> > > > The elevators have no clue as to how the filesystem might treat
+> > > > adjacent inodes. In XFS, inode clustering is a fundamental
+> > > > feature of the inode reading and writing and that is something no
+> > > > elevator can hope to acheive....
+> > >  
+> > > Thank you. That explains the linear write curve(perfect!) in Chris'
+> > > graph.
+> > > 
+> > > I wonder if XFS can benefit any more from the general writeback
+> > > clustering. How large would be a typical XFS cluster?
+> > 
+> > Depends on inode size. typically they are 8k in size, so anything
+> > from 4-32 inodes. The inode writeback clustering is pretty tightly
+> > integrated into the transaction subsystem and has some intricate
+> > locking, so it's not likely to be easy (or perhaps even possible) to
+> > make it more generic.
+> 
+> When I talked to hch about this, he said the order file data pages got
+> written in XFS was still dictated by the order the higher layers sent
+> things down.
 
---cDtQGJ/EJIRf/Cpq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Sure, that's file data. I was talking about the inode writeback, not the
+data writeback.
 
-On Tue, Aug 28, 2007 at 01:19:42PM +0200, Jean Delvare wrote:
-> Hi Darrick, hi Henrique,
->=20
-> Good thing that manufacturers start including wattmeters in their
-> hardware. Hopefully this will help users better control their power
-> consumption in the long run.
+> Shouldn't the clustering still help to have delalloc done
+> in inode order instead of in whatever random order pdflush sends things
+> down now?
 
-Yes, we're working on that too. :)
+Depends on how things are being allocated. if you've got inode32 allocation
+and >1TB filesytsem, then data is nowhere near the inodes. If you've got large
+allocation groups, then data is typically nowhere near the inodes, either. If
+you've got full AGs, data will be nowehere near the inodes. If you've got
+large files and lots of data to write, then clustering multiple files together
+for writing is not needed.  So in many cases, clustering delalloc writes by
+inode number doesn't provide any better I/o patterns than not clustering...
 
-> > What unit should we use? Watts are way, way too big as there is no
-> > floating/fixed point in sysfs.  10^-6 W is probably what is called for,
-> > since we already need 10^-3 V and 10^-3 A.  Small portable devices can
-> > easily draw less than 10^-3 W nowadays.
->=20
-> Good point. The driver currently exports non-integer values, which is
-> not acceptable, so indeed it needs to be changed. We want at least a
+The only difference we may see is that if we flush all the data on inodes
+in a single cluster, we can get away with a single inode cluster write
+for all of the inodes....
 
-I had a feeling you might say that. :)  I'll post a follow-up patch that
-presents the power meters in mW instead of W.
+Cheers,
 
-> resolution of 10^-3 W. Not sure about 10^-6 W. I am surprised that
-> portable devices can really draw less than 1 mW, and be it the case, I
-
-Are there meters that can measure that small a quantity of power?  If
-so, then I'll vote for uW; otherwise, mW is fine enough for me.
-
-> doubt that manufacturers will embed a wattmetter: it would probably
-> draw more current than the rest of the device ;) so it may not be
-> relevant for our decision.
->=20
-> So I think I'd go with 10^-3 W, but I welcome diverging opinions. Out
-> of curiosity, what is the physical resolution of IBM's device?
-
-I don't know for sure, but my observation is that they're no more
-accurate than a Watt.  Some of those meters appear to be averages, which
-would explain why they occasionally have deciWatt components.
-
-> I see that the driver relies on IPMI. Can't it be merged with the
-> out-of-tree impisensors driver then? This would give that driver some
-> momentum so that it can finally be merged, and I would like to avoid
-> having two drivers if one is enough. Note though that I don't know
-> anything about IPMI so I might as well be totally wrong ;)
-
-The IBM PEx meters are accessible via custom IPMI commands, not the
-standard IPMI sensor interface.  I considered modifying the ipmisensors
-driver, but reached the opinion that it would clutter that driver
-unnecessarily, particularly since there are a lot of systems with IPMI
-BMCs, but most of them will not have this interface.
-
-That said, what is standing in the way of ipmisensors being merged?  I
-think I can shake out some free time to apply TLC.
-
---D
-
---cDtQGJ/EJIRf/Cpq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG1E1Da6vRYYgWQuURAtXxAJ9E68cYI9fX8CxGFhDb6rvwPL9PMQCdFykD
-MAzDePPYp9gm7YuuSAlE77s=
-=1CB4
------END PGP SIGNATURE-----
-
---cDtQGJ/EJIRf/Cpq--
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
