@@ -1,84 +1,754 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbXH1ISS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbXH1ISz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbXH1ISS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 04:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbXH1IR4
+	id S1754710AbXH1ISz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 04:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbXH1ISi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 04:17:56 -0400
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:45439 "EHLO
+	Tue, 28 Aug 2007 04:18:38 -0400
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:45447 "EHLO
 	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754220AbXH1IRy (ORCPT
+	with ESMTP id S1754296AbXH1ISf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 04:17:54 -0400
-Message-id: <54324564250413328@pripojeni.net>
+	Tue, 28 Aug 2007 04:18:35 -0400
+Message-id: <2680630254888919558@pripojeni.net>
 In-reply-to: <12315207221202319057@pripojeni.net>
-Subject: [PATCH 2/3] V4L: stk11xx, use retval from stk11xx_check_device
+Subject: [PATCH 3/3] V4L: stk11xx, add static to tables
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
-Date: Tue, 28 Aug 2007 04:17:54 -0400
+Date: Tue, 28 Aug 2007 04:18:35 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-stk11xx, use retval from stk11xx_check_device
+stk11xx, add static to tables
 
-stk11xx_check_device returns 0 for success of non-inited device, 1 for
-success of inited device and negative for error cases. bubble the negative
-value to the caller.
+ensure, that the compiler will put all the tables in static storage
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
 ---
-commit 95de679efc8c9fbd13121f3fbe4144196a66f387
-tree bdc82d59c4ea9ec96abdde81209cb319d71192b6
-parent addcd116df57eaca525a1c827efdd5bf3e61b7b5
-author Jiri Slaby <jirislaby@gmail.com> Tue, 28 Aug 2007 09:55:20 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Tue, 28 Aug 2007 09:55:20 +0200
+commit 49fa12761f1fef6f0e6bf7d8ef7e599c5eef6871
+tree 565c5d471c554349fafc4d3ba27553d2fc77c45d
+parent 95de679efc8c9fbd13121f3fbe4144196a66f387
+author Jiri Slaby <jirislaby@gmail.com> Tue, 28 Aug 2007 10:14:19 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Tue, 28 Aug 2007 10:14:19 +0200
 
- drivers/media/video/stk1125.c  |    2 +-
- drivers/media/video/stk1135.c  |    2 +-
- drivers/media/video/stkdcnew.c |    3 +--
- 3 files changed, 3 insertions(+), 4 deletions(-)
+ drivers/media/video/stk1125.c  |   58 +++++++++++++++++-----------------
+ drivers/media/video/stk1135.c  |   54 ++++++++++++++++----------------
+ drivers/media/video/stkdcnew.c |   68 ++++++++++++++++++++--------------------
+ 3 files changed, 90 insertions(+), 90 deletions(-)
 
 diff --git a/drivers/media/video/stk1125.c b/drivers/media/video/stk1125.c
-index 2429225..f12030d 100644
+index f12030d..d79c196 100644
 --- a/drivers/media/video/stk1125.c
 +++ b/drivers/media/video/stk1125.c
-@@ -91,7 +91,7 @@ static int stk1125_load_microcode(struct stk11xx *dev)
- 		retok = stk11xx_check_device(dev, 500);
- 		if (retok != 1) {
- 			dev_err(&dev->udev->dev, "load microcode fail\n");
--			return -EIO;
-+			return retok < 0 ? retok : -EIO;
- 		}
+@@ -26,7 +26,7 @@ static int stk1125_load_microcode(struct stk11xx *dev)
+ 	int retok;
  
- 		stk11xx_write_reg(dev, 0x02ff, 0x00);
+ 	/* From 80x60 to 640x480 */
+-	const u8 values_1_204[] = {
++	static const u8 values_1_204[] = {
+ 		0x12, 0x11, 0x3b, 0x6a, 0x13, 0x10, 0x00, 0x01, 0x02, 0x13,
+ 		0x39, 0x38, 0x37, 0x35, 0x0e, 0x12, 0x04, 0x0c, 0x0d, 0x17,
+ 		0x18, 0x32, 0x19, 0x1a, 0x03, 0x1b, 0x16, 0x33, 0x34, 0x41,
+@@ -34,7 +34,7 @@ static int stk1125_load_microcode(struct stk11xx *dev)
+ 		0x95, 0x40, 0x29, 0x0f, 0xa5, 0x1e, 0xa9, 0xaa, 0xab, 0x90,
+ 		0x91, 0x9f, 0xa0, 0x24, 0x25, 0x26, 0x14, 0x2a, 0x2b
+ 	};
+-	const u8 values_1_205[] = {
++	static const u8 values_1_205[] = {
+ 		0x45, 0x80, 0x01, 0x7d, 0x80, 0x00, 0x00, 0x80, 0x80, 0x80,
+ 		0x50, 0x93, 0x00, 0x81, 0x20, 0x45, 0x00, 0x00, 0x00, 0x24,
+ 		0xc4, 0xb6, 0x00, 0x3c, 0x36, 0x00, 0x07, 0xe2, 0xbf, 0x00,
+@@ -44,7 +44,7 @@ static int stk1125_load_microcode(struct stk11xx *dev)
+ 	};
+ 
+ 	/* From 800x600 to 1280x1024 */
+-	const u8 values_2_204[] = {
++	static const u8 values_2_204[] = {
+ 		0x12, 0x11, 0x3b, 0x6a, 0x13, 0x10, 0x00, 0x01, 0x02, 0x13,
+ 		0x39, 0x38, 0x37, 0x35, 0x0e, 0x12, 0x04, 0x0c, 0x0d, 0x17,
+ 		0x18, 0x32, 0x19, 0x1a, 0x03, 0x1b, 0x16, 0x33, 0x34, 0x41,
+@@ -52,7 +52,7 @@ static int stk1125_load_microcode(struct stk11xx *dev)
+ 		0x95, 0x40, 0x29, 0x0f, 0xa5, 0x1e, 0xa9, 0xaa, 0xab, 0x90,
+ 		0x91, 0x9f, 0xa0, 0x24, 0x25, 0x26, 0x14, 0x2a, 0x2b
+ 	};
+-	const u8 values_2_205[] = {
++	static const u8 values_2_205[] = {
+ 		0x05, 0x80, 0x01, 0x7d, 0x80, 0x00, 0x00, 0x80, 0x80, 0x80,
+ 		0x50, 0x93, 0x00, 0x81, 0x20, 0x05, 0x00, 0x00, 0x00, 0x1b,
+ 		0xbb, 0xa4, 0x01, 0x81, 0x12, 0x00, 0x07, 0xe2, 0xbf, 0x00,
+@@ -119,43 +119,43 @@ static int stk1125_dev_configure(struct stk11xx *dev, unsigned int step)
+ 	/*      0,    1,    2,    3,    4,    5,    6,    7,    8,    9,
+ 		10,   11 */
+ 
+-	const u8 vals_001B[] = {
++	static const u8 vals_001B[] = {
+ 		0x0e, 0x03, 0x0e, 0x0e, 0x0e, 0x0e, 0x0e, 0x0e, 0x0e, 0x0e,
+ 		0x0e, 0x0e
+ 	};
+-	const u8 vals_001C[] = {
++	static const u8 vals_001C[] = {
+ 		0x06, 0x02, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46,
+ 		0x46, 0x0e
+ 	};
+-	const u8 vals_0202[] = {
++	static const u8 vals_0202[] = {
+ 		0x1e, 0x0a, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e,
+ 		0x1e, 0x1e
+ 	};
+-	const u8 vals_0110[] = {
++	static const u8 vals_0110[] = {
+ 		0x07, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x3e, 0x00, 0x00, 0x00,
+ 		0x00, 0x00
+ 	};
+-	const u8 vals_0112[] = {
++	static const u8 vals_0112[] = {
+ 		0x07, 0x00, 0x00, 0x00, 0x00, 0x09, 0x09, 0x00, 0x00, 0x00,
+ 		0x00, 0x00
+ 	};
+-	const u8 vals_0114[] = {
++	static const u8 vals_0114[] = {
+ 		0x87, 0x80, 0x80, 0x80, 0x80, 0xbe, 0xbe, 0x80, 0x80, 0x80,
+ 		0x80, 0x00
+ 	};
+-	const u8 vals_0115[] = {
++	static const u8 vals_0115[] = {
+ 		0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+ 		0x02, 0x05
+ 	};
+-	const u8 vals_0116[] = {
++	static const u8 vals_0116[] = {
+ 		0xe7, 0xe0, 0xe0, 0xe0, 0xe0, 0xe9, 0xe9, 0xe0, 0xe0, 0xe0,
+ 		0xe0, 0x00
+ 	};
+-	const u8 vals_0117[] = {
++	static const u8 vals_0117[] = {
+ 		0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+ 		0x01, 0x04
+ 	};
+-	const u8 vals_0100[] = {
++	static const u8 vals_0100[] = {
+ 		0x20, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21,
+ 		0x21, 0x21
+ 	};
+@@ -190,7 +190,7 @@ static int stk1125_dev_configure(struct stk11xx *dev, unsigned int step)
+ 
+ 	switch (step) {
+ 	case 0: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x40, 2 }, { 0x0204, 0x41, 2 },
+ 			{ 0x0205, 0x01, 2 }, { 0x0204, 0x1c, 2 },
+ 			{ 0x0205, 0x02, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -200,7 +200,7 @@ static int stk1125_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 1: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x22, 2 }, { 0x0204, 0x27, 2 },
+ 			{ 0x0205, 0xa5, 2 }, { 0x0200, 0x05, 2 }, { }
+ 		};
+@@ -209,7 +209,7 @@ static int stk1125_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 2: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xbf, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -219,7 +219,7 @@ static int stk1125_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 3: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x42, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x24, 2 },
+ 			{ 0x0205, 0xa5, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -229,7 +229,7 @@ static int stk1125_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 4: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x42, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xe0, 2 }, { 0x0204, 0x24, 2 },
+@@ -240,7 +240,7 @@ static int stk1125_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 5: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xff, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -250,7 +250,7 @@ static int stk1125_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 6: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xff, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -260,7 +260,7 @@ static int stk1125_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 7: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xb7, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -294,7 +294,7 @@ static int stk1125_dev_configure(struct stk11xx *dev, unsigned int step)
+ 
+ 	case 10:
+ 	case 11: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0106, 0x00, 2 }, { 0x02ff, 0x00, 1 },
+ 			{ 0x02ff, 0x00, 2 }, { 0x0204, 0x2a, 2 },
+ 			{ 0x0205, 0x00, 2 }, { 0x0200, 0x01, 2 },
+@@ -322,7 +322,7 @@ err:
+ 
+ static int stk1125_cam_asleep(struct stk11xx *dev)
+ {
+-	const struct stk11xx_table table[] = {
++	static const struct stk11xx_table table[] = {
+ 		{ 0x0104, 0x00, 1 }, { 0x0105, 0x00, 1 }, { 0x0106, 0x00, 1 },
+ 		{ 0x0100, 0x21, 2 }, { 0x0116, 0x00, 2 }, { 0x0117, 0x00, 2 },
+ 		{ 0x0018, 0x00, 2 }, { 0x0000, 0x00, 1 }, { 0x0000, 0x4c, 2 },
+@@ -412,7 +412,7 @@ static int stk1125_cam_init(struct stk11xx *dev)
+ {
+ 	int ret;
+ 
+-	const struct stk11xx_table table[] = {
++	static const struct stk11xx_table table[] = {
+ 		{ 0x02ff, 0x00, 1 }, { 0x02ff, 0x00, 2 }, { 0x0204, 0x2a, 2 },
+ 		{ 0x0205, 0x00, 2 }, { 0x0200, 0x01, 2 }, {    500, 0x00, 3 },
+ 		{ 0x02ff, 0x00, 2 }, { 0x02ff, 0x00, 1 }, { 0x02ff, 0x00, 2 },
+@@ -500,7 +500,7 @@ static int stk1125_dev_init(struct stk11xx *dev)
+ 	int ret;
+ 	u8 value;
+ 
+-	const struct stk11xx_table table_1[] = {
++	static const struct stk11xx_table table_1[] = {
+ 		{ 0x0000, 0x24, 2 }, { 0x0002, 0x68, 2 }, { 0x0003, 0x80, 2 },
+ 		{ 0x0002, 0x6f, 2 }, { 0x0000, 0x24, 2 }, { 0x0000, 0x24, 2 },
+ 		{ 0x0000, 0x26, 2 }, { 0x0000, 0x27, 2 }, { 0x0000, 0x26, 2 },
+@@ -515,7 +515,7 @@ static int stk1125_dev_init(struct stk11xx *dev)
+ 		{ 0x0000, 0x24, 2 },
+ 		{ }
+ 	};
+-	const struct stk11xx_table table_2[] = {
++	static const struct stk11xx_table table_2[] = {
+ 		{ 0x0000, 0x25, 2 }, { 0x0000, 0x20, 2 }, { 0x0002, 0x6f, 2 },
+ 		{ 0x0000, 0x24, 2 }, { 0x0000, 0x24, 2 }, { 0x0000, 0x26, 2 },
+ 		{ 0x0000, 0x27, 2 }, { 0x0000, 0x26, 2 }, { 0x0000, 0x26, 2 },
+@@ -531,7 +531,7 @@ static int stk1125_dev_init(struct stk11xx *dev)
+ 		{ 0x0000, 0x25, 2 }, { 0x0002, 0x6d, 2 }, { 0x0000, 0x24, 2 },
+ 		{ }
+ 	};
+-	const struct stk11xx_table table_3[] = {
++	static const struct stk11xx_table table_3[] = {
+ 		{ 0x0000, 0x25, 2 }, { 0x0000, 0x20, 2 }, { 0x0002, 0x6f, 2 },
+ 		{ 0x0000, 0x24, 2 }, { 0x0000, 0x24, 2 }, { 0x0000, 0x26, 2 },
+ 		{ 0x0000, 0x27, 2 }, { 0x0000, 0x26, 2 }, { 0x0000, 0x26, 2 },
+@@ -549,7 +549,7 @@ static int stk1125_dev_init(struct stk11xx *dev)
+ 		{ 0x0000, 0x25, 2 }, { 0x0002, 0x6d, 2 }, { 0x0000, 0x24, 2 },
+ 		{ }
+ 	};
+-	const struct stk11xx_table table_4[] = {
++	static const struct stk11xx_table table_4[] = {
+ 		{ 0x0000, 0x25, 2 }, { 0x0000, 0x20, 2 }, { 0x0002, 0x6f, 2 },
+ 		{ 0x0000, 0x24, 2 }, { 0x0000, 0x20, 2 }, { 0x0117, 0x00, 2 },
+ 		{ 0x0103, 0x00, 1 }, { 0x0103, 0x01, 2 }, { 0x0103, 0x00, 1 },
 diff --git a/drivers/media/video/stk1135.c b/drivers/media/video/stk1135.c
-index 9acd951..cba95e0 100644
+index cba95e0..303215f 100644
 --- a/drivers/media/video/stk1135.c
 +++ b/drivers/media/video/stk1135.c
-@@ -64,7 +64,7 @@ static int stk1135_load_microcode(struct stk11xx *dev)
- 		retok = stk11xx_check_device(dev, 500);
- 		if (retok != 1) {
- 			dev_err(&dev->udev->dev, "load microcode failed\n");
--			return -EIO;
-+			return retok < 0 ? retok : -EIO;
- 		}
+@@ -24,7 +24,7 @@ static int stk1135_load_microcode(struct stk11xx *dev)
+ 	unsigned int i;
+ 	int retok;
  
- 		stk11xx_write_reg(dev, 0x02ff, 0x00);
+-	const u8 values_204[] = {
++	static const u8 values_204[] = {
+ 		0x17, 0x19, 0xb4, 0xa6, 0x12, 0x13, 0x1e, 0x21, 0x24, 0x32,
+ 		0x36, 0x39, 0x4d, 0x53, 0x5d, 0x5f, 0x60, 0x61, 0x62, 0x63,
+ 		0x64, 0x65, 0x66, 0x82, 0x83, 0x85, 0x86, 0x89, 0x97, 0x98,
+@@ -38,7 +38,7 @@ static int stk1135_load_microcode(struct stk11xx *dev)
+ 		0x4e, 0x4f, 0x49, 0x4a, 0x4b, 0x4c, 0x46, 0x06, 0x07, 0xb9,
+ 		0xba, 0xbb, 0xbc, 0x61, 0x62, 0x65, 0x66
+ 	};
+-	const u8 values_205[] = {
++	static const u8 values_205[] = {
+ 		0x41, 0x41, 0x03, 0x06, 0x06, 0x08, 0x06, 0x00, 0x02, 0x69,
+ 		0x35, 0x60, 0xfe, 0x1c, 0x04, 0x08, 0x08, 0x08, 0x08, 0x00,
+ 		0x00, 0x10, 0x14, 0x01, 0x80, 0x0c, 0xb6, 0x00, 0x25, 0x25,
+@@ -87,35 +87,35 @@ static int stk1135_dev_configure(struct stk11xx *dev, unsigned int step)
+ 	/*      0,    1,    2,    3,    4,    5,    6,    7,    8,    9,
+ 		10,   11,   12,   13 */
+ 
+-	const u8 vals_001B[] = {
++	static const u8 vals_001B[] = {
+ 		0x0e, 0x03, 0x0e, 0x0e, 0x0e, 0x0e, 0x0e, 0x0e, 0x0e, 0x07,
+ 		0x07, 0x07, 0x07, 0x07
+ 	};
+-	const u8 vals_001C[] = {
++	static const u8 vals_001C[] = {
+ 		0x06, 0x02, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x06, 0x06,
+ 		0x06, 0x06, 0x06, 0x06
+ 	};
+-	const u8 vals_0202[] = {
++	static const u8 vals_0202[] = {
+ 		0x1e, 0x0a, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e,
+ 		0x1e, 0x1e, 0x1e, 0x1e
+ 	};
+-	const u8 vals_0110[] = {
++	static const u8 vals_0110[] = {
+ 		0x07, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x3e, 0x00, 0x04, 0x00,
+ 		0x00, 0x00, 0x00, 0x00
+ 	};
+-	const u8 vals_0112[] = {
++	static const u8 vals_0112[] = {
+ 		0x07, 0x00, 0x00, 0x00, 0x00, 0x09, 0x09, 0x00, 0x04, 0x00,
+ 		0x00, 0x00, 0x00, 0x00
+ 	};
+-	const u8 vals_0114[] = {
++	static const u8 vals_0114[] = {
+ 		0x87, 0x80, 0x80, 0x80, 0x80, 0xbe, 0xbe, 0x80, 0x84, 0x80,
+ 		0x80, 0x80, 0x80, 0x80
+ 	};
+-	const u8 vals_0116[] = {
++	static const u8 vals_0116[] = {
+ 		0xe7, 0xe0, 0xe0, 0xe0, 0xe0, 0xe9, 0xe9, 0xe0, 0xe4, 0xe0,
+ 		0xe0, 0xe0, 0xe0, 0xe0
+ 	};
+-	const u8 vals_0100[] = {
++	static const u8 vals_0100[] = {
+ 		0x20, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x23, 0x20,
+ 		0x20, 0x20, 0x20, 0x20
+ 	};
+@@ -149,7 +149,7 @@ static int stk1135_dev_configure(struct stk11xx *dev, unsigned int step)
+ 
+ 	switch (step) {
+ 	case 0: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x40, 2 }, { 0x0204, 0x41, 2 },
+ 			{ 0x0205, 0x01, 2 }, { 0x0204, 0x1c, 2 },
+ 			{ 0x0205, 0x02, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -159,7 +159,7 @@ static int stk1135_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 1: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x22, 2 }, { 0x0204, 0x27, 2 },
+ 			{ 0x0205, 0xa5, 2 }, { 0x0200, 0x05, 2 }, { }
+ 		};
+@@ -168,7 +168,7 @@ static int stk1135_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 2: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xbf, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -178,7 +178,7 @@ static int stk1135_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 3: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x42, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x24, 2 },
+ 			{ 0x0205, 0xa5, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -188,7 +188,7 @@ static int stk1135_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 4: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x42, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xe0, 2 }, { 0x0204, 0x24, 2 },
+@@ -199,7 +199,7 @@ static int stk1135_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 5: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xff, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -209,7 +209,7 @@ static int stk1135_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 6: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xff, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -219,7 +219,7 @@ static int stk1135_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 7: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xb7, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -229,7 +229,7 @@ static int stk1135_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 8: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x80, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x0a, 2 },
+ 			{ 0x0205, 0xff, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -239,7 +239,7 @@ static int stk1135_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 9: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0xdc, 2 }, { 0x0204, 0x15, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0200, 0x05, 2 },
+ 			{    500, 0x00, 3 }, { 0x02ff, 0x00, 1 },
+@@ -304,7 +304,7 @@ err:
+ 
+ static int stk1135_cam_asleep(struct stk11xx *dev)
+ {
+-	const struct stk11xx_table table[] = {
++	static const struct stk11xx_table table[] = {
+ 		{ 0x0104, 0x00, 1 }, { 0x0105, 0x00, 1 }, { 0x0106, 0x00, 1 },
+ 		{ 0x0100, 0x21, 2 }, { 0x0116, 0x00, 2 }, { 0x0117, 0x00, 2 },
+ 		{ 0x0018, 0x00, 2 }, { 0x0000, 0x00, 1 }, { 0x0000, 0x49, 2 },
+@@ -318,11 +318,11 @@ static int stk1135_cam_setting(struct stk11xx *dev)
+ {
+ 	unsigned int i;
+ 
+-	const u8 values_204[] = {
++	static const u8 values_204[] = {
+ 		0xb3, 0x73, 0x46, 0x06, 0x07, 0xb9, 0xba, 0xbb, 0xbc, 0x61,
+ 		0x62, 0x65, 0x66
+ 	};
+-	const u8 values_205[] = {
++	static const u8 values_205[] = {
+ 		0x76, 0x76, 0x20, 0x01, 0xf3, 0x04, 0xe4, 0x09, 0xc8, 0x08,
+ 		0x08, 0x10, 0x14
+ 	};
+@@ -415,7 +415,7 @@ static int stk1135_dev_init(struct stk11xx *dev)
+ 	int ret;
+ 	u8 value;
+ 
+-	const struct stk11xx_table table_1[] = {
++	static const struct stk11xx_table table_1[] = {
+ 		{ 0x0000, 0x24, 2 }, { 0x0002, 0x68, 2 }, { 0x0003, 0x80, 2 },
+ 		{ 0x0002, 0x6f, 2 }, { 0x0000, 0x24, 2 }, { 0x0000, 0x24, 2 },
+ 		{ 0x0000, 0x26, 2 }, { 0x0000, 0x27, 2 }, { 0x0000, 0x26, 2 },
+@@ -430,7 +430,7 @@ static int stk1135_dev_init(struct stk11xx *dev)
+ 		{ 0x0000, 0x24, 2 },
+ 		{ }
+ 	};
+-	const struct stk11xx_table table_2[] = {
++	static const struct stk11xx_table table_2[] = {
+ 		{ 0x0000, 0x25, 2 }, { 0x0000, 0x20, 2 }, { 0x0002, 0x6f, 2 },
+ 		{ 0x0000, 0x24, 2 }, { 0x0000, 0x24, 2 }, { 0x0000, 0x26, 2 },
+ 		{ 0x0000, 0x27, 2 }, { 0x0000, 0x26, 2 }, { 0x0000, 0x26, 2 },
+@@ -446,7 +446,7 @@ static int stk1135_dev_init(struct stk11xx *dev)
+ 		{ 0x0000, 0x25, 2 }, { 0x0002, 0x6d, 2 }, { 0x0000, 0x24, 2 },
+ 		{ }
+ 	};
+-	const struct stk11xx_table table_3[] = {
++	static const struct stk11xx_table table_3[] = {
+ 		{ 0x0000, 0x25, 2 }, { 0x0000, 0x20, 2 }, { 0x0002, 0x6f, 2 },
+ 		{ 0x0000, 0x24, 2 }, { 0x0000, 0x24, 2 }, { 0x0000, 0x26, 2 },
+ 		{ 0x0000, 0x27, 2 }, { 0x0000, 0x26, 2 }, { 0x0000, 0x26, 2 },
+@@ -464,7 +464,7 @@ static int stk1135_dev_init(struct stk11xx *dev)
+ 		{ 0x0000, 0x25, 2 }, { 0x0002, 0x6d, 2 }, { 0x0000, 0x24, 2 },
+ 		{ }
+ 	};
+-	const struct stk11xx_table table_4[] = {
++	static const struct stk11xx_table table_4[] = {
+ 		{ 0x0000, 0x25, 2 }, { 0x0000, 0x20, 2 }, { 0x0002, 0x6f, 2 },
+ 		{ 0x0000, 0x24, 2 }, { 0x0000, 0x20, 2 }, { 0x0117, 0x00, 2 },
+ 		{ 0x0103, 0x00, 1 }, { 0x0103, 0x01, 2 }, { 0x0103, 0x00, 1 },
 diff --git a/drivers/media/video/stkdcnew.c b/drivers/media/video/stkdcnew.c
-index 52513e2..00176f2 100644
+index 00176f2..f9720a8 100644
 --- a/drivers/media/video/stkdcnew.c
 +++ b/drivers/media/video/stkdcnew.c
-@@ -102,10 +102,9 @@ static int stkdcnew_load_microcode(struct stk11xx *dev)
- 		stk11xx_write_reg(dev, 0x0200, 0x01);
+@@ -27,7 +27,7 @@ static int stkdcnew_load_microcode(struct stk11xx *dev)
+ 	unsigned int i;
+ 	int retok;
  
- 		retok = stk11xx_check_device(dev, 500);
--
- 		if (retok != 1) {
- 			dev_err(&dev->udev->dev, "load microcode fail!\n");
--			return -EIO;
-+			return retok < 0 ? retok : -EIO;
- 		}
+-	const u8 values_204[] = {
++	static const u8 values_204[] = {
+ 		0xf0, 0xf1, 0x0d, 0xf1, 0x0d, 0xf1, 0xf0, 0xf1, 0x35, 0xf1,
+ 		0xf0, 0xf1, 0x06, 0xf1, 0xf0, 0xf1, 0xdd, 0xf1, 0xf0, 0xf1,
+ 		0x1f, 0xf1, 0x20, 0xf1, 0x21, 0xf1, 0x22, 0xf1, 0x23, 0xf1,
+@@ -58,7 +58,7 @@ static int stkdcnew_load_microcode(struct stk11xx *dev)
+ 		0x64, 0xf1, 0xf0, 0xf1, 0x5b, 0xf1, 0xf0, 0xf1, 0x36, 0xf1,
+ 		0x37, 0xf1, 0xf0, 0xf1, 0x08, 0xf1
+ 	};
+-	const u8 values_205[] = {
++	static const u8 values_205[] = {
+ 		0x00, 0x00, 0x00, 0x0b, 0x00, 0x08, 0x00, 0x00, 0x00, 0x22,
+ 		0x00, 0x01, 0x70, 0x0e, 0x00, 0x02, 0x18, 0xe0, 0x00, 0x02,
+ 		0x01, 0x80, 0xc8, 0x14, 0x80, 0x80, 0xa0, 0x78, 0xa0, 0x78,
+@@ -124,43 +124,43 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
  
- 		stk11xx_write_reg(dev, 0x02ff, 0x00);
+ 	/*      0,    1,    2,    3,    4,    5,    6,    7,    8,    9,
+ 		10,   11,   12,   13,   14,   15,   16 */
+-	const u8 vals_001B[] = {
++	static const u8 vals_001B[] = {
+ 		0x03, 0x0e, 0x0e, 0x0e, 0x0e, 0x0e, 0x0e, 0x0e, 0x0e, 0x07,
+ 		0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07
+ 	};
+-	const u8 vals_001C[] = {
++	static const u8 vals_001C[] = {
+ 		0x02, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x46, 0x06,
+ 		0x06, 0x06, 0x06, 0x06, 0x06, 0x06, 0x06
+ 	};
+-	const u8 vals_0202[] = {
++	static const u8 vals_0202[] = {
+ 		0x0a, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e,
+ 		0x1e, 0x0a, 0x1e, 0x1f, 0x1f, 0x1f, 0x1f
+ 	};
+-	const u8 vals_0110[] = {
++	static const u8 vals_0110[] = {
+ 		0x00, 0x00, 0x00, 0x00, 0x00, 0x3e, 0x00, 0x00, 0x00, 0x00,
+ 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+ 	};
+-	const u8 vals_0112[] = {
++	static const u8 vals_0112[] = {
+ 		0x00, 0x00, 0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x00,
+ 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+ 	};
+-	const u8 vals_0114[] = {
++	static const u8 vals_0114[] = {
+ 		0x80, 0x80, 0x80, 0x80, 0x00, 0xbe, 0x80, 0x80, 0x00, 0x80,
+ 		0x80, 0x80, 0x00, 0x80, 0x80, 0x80, 0x80
+ 	};
+-	const u8 vals_0115[] = {
++	static const u8 vals_0115[] = {
+ 		0x02, 0x02, 0x02, 0x02, 0x05, 0x02, 0x02, 0x02, 0x00, 0x02,
+ 		0x02, 0x02, 0x05, 0x02, 0x02, 0x02, 0x02
+ 	};
+-	const u8 vals_0116[] = {
++	static const u8 vals_0116[] = {
+ 		0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe9, 0xe0, 0xe0, 0x00, 0xe0,
+ 		0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0
+ 	};
+-	const u8 vals_0117[] = {
++	static const u8 vals_0117[] = {
+ 		0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x01,
+ 		0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01
+ 	};
+-	const u8 vals_0100[] = {
++	static const u8 vals_0100[] = {
+ 		0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x20,
+ 		0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20
+ 	};
+@@ -190,7 +190,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 
+ 	switch (step) {
+ 	case 0: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x22, 2 }, { 0x0204, 0x27, 2 },
+ 			{ 0x0205, 0xa5, 2 }, { 0x0200, 0x05, 2 }, { }
+ 		};
+@@ -199,7 +199,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 1: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xbf, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -209,7 +209,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 2: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x42, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x24, 2 },
+ 			{ 0x0205, 0xa5, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -219,7 +219,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 3: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x42, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xe0, 2 }, { 0x0204, 0x24, 2 },
+@@ -230,7 +230,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 4: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x42, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xbf, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -240,7 +240,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 5: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xff, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -250,7 +250,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 6: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xB7, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -259,7 +259,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 7: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x0204, 0x12, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0204, 0x13, 2 },
+ 			{ 0x0205, 0xb7, 2 }, { 0x0200, 0x05, 2 }, { }
+@@ -269,7 +269,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 8: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0x60, 2 }, { 0x02ff, 0x00, 1 },
+ 			{ 0x02ff, 0x00, 2 }, { 0x0203, 0x60, 2 },
+ 			{ 0x0204, 0xff, 2 }, { 0x0205, 0x01, 2 },
+@@ -298,7 +298,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 9: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0xdc, 2 }, { 0x0204, 0x15, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0200, 0x05, 2 }, { }
+ 		};
+@@ -307,7 +307,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 10: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0xec, 2 }, { 0x0204, 0x15, 2 },
+ 			{ 0x0205, 0x80, 2 }, { 0x0200, 0x05, 2 }, { }
+ 		};
+@@ -316,7 +316,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 11: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0xba, 2 }, { 0x0208, 0x00, 2 },
+ 			{ 0x0200, 0x20, 2 }, {    500, 0x00, 3 },
+ 			{ 0x0209, 0x00, 1 }, { 0x02ff, 0x00, 2 }, { }
+@@ -326,7 +326,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 12: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0xba, 2 }, { 0x0204, 0xf0, 2 },
+ 			{ 0x0205, 0x00, 2 }, { 0x0200, 0x05, 2 },
+ 			{    500, 0x00, 3 }, { 0x0204, 0xf1, 2 },
+@@ -346,7 +346,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 13: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0xba, 2 }, { 0x02ff, 0x00, 1 },
+ 			{ 0x02ff, 0x00, 2 }, { 0x0203, 0xba, 2 },
+ 			{ 0x0208, 0x00, 2 }, { 0x0200, 0x20, 2 },
+@@ -362,7 +362,7 @@ static int stkdcnew_dev_configure(struct stk11xx *dev, unsigned int step)
+ 		break;
+ 	}
+ 	case 14: {
+-		const struct stk11xx_table table[] = {
++		static const struct stk11xx_table table[] = {
+ 			{ 0x0203, 0xba, 2 }, { 0x0204, 0x01, 2 },
+ 			{ 0x0205, 0x00, 2 }, { 0x0200, 0x05, 2 },
+ 			{    500, 0x00, 3 }, { 0x0204, 0xf1, 2 },
+@@ -409,7 +409,7 @@ end:
+ 
+ static int stkdcnew_cam_asleep(struct stk11xx *dev)
+ {
+-	const struct stk11xx_table table[] = {
++	static const struct stk11xx_table table[] = {
+ 		{ 0x0104, 0x00, 1 }, { 0x0105, 0x00, 1 }, { 0x0106, 0x00, 1 },
+ 		{ 0x0100, 0x21, 2 }, { 0x0116, 0x00, 2 }, { 0x0117, 0x00, 2 },
+ 		{ 0x0018, 0x00, 2 }, { 0x0000, 0x00, 1 }, { 0x0000, 0x49, 2 },
+@@ -451,11 +451,11 @@ static int stkdcnew_cam_setting(struct stk11xx *dev)
+ 	unsigned int i;
+ 	int ret;
+ 
+-	const u8 values_204[] = {
++	static const u8 values_204[] = {
+ 		0xf0, 0xf1, 0x2e, 0xf1, 0xf0, 0xf1, 0x5b, 0xf1, 0xf0, 0xf1,
+ 		0x36, 0xf1, 0x37, 0xf1, 0xf0, 0xf1, 0x08, 0xf1
+ 	};
+-	const u8 values_205[] = {
++	static const u8 values_205[] = {
+ 		0x00, 0x02, 0x0c, 0x3c, 0x00, 0x02, 0x00, 0x03, 0x00, 0x02,
+ 		0x78, 0x10, 0x83, 0x04, 0x00, 0x00, 0x00, 0x21
+ 	};
+@@ -534,7 +534,7 @@ static int stkdcnew_dev_init(struct stk11xx *dev)
+ 	int value;*/
+ 	int ret;
+ 
+-/*	const struct stk11xx_table table_1[] = {
++/*	static const struct stk11xx_table table_1[] = {
+ 		{ 0x0000, 0x24, 2 }, { 0x0002, 0x78, 2 }, { 0x0003, 0x80, 2 },
+ 		{ 0x0002, 0x7f, 2 }, { 0x0000, 0x24, 2 }, { 0x0000, 0x24, 2 },
+ 		{ 0x0000, 0x26, 2 }, { 0x0000, 0x27, 2 }, { 0x0000, 0x26, 2 },
+@@ -549,7 +549,7 @@ static int stkdcnew_dev_init(struct stk11xx *dev)
+ 		{ 0x0000, 0x24, 2 },
+ 		{ }
+ 	};
+-	const struct stk11xx_table table_2[] = {
++	static const struct stk11xx_table table_2[] = {
+ 		{ 0x0000, 0x25, 2 }, { 0x0000, 0x20, 2 }, { 0x0002, 0x7f, 2 },
+ 		{ 0x0000, 0x24, 2 }, { 0x0000, 0x24, 2 }, { 0x0000, 0x26, 2 },
+ 		{ 0x0000, 0x27, 2 }, { 0x0000, 0x26, 2 }, { 0x0000, 0x26, 2 },
+@@ -565,7 +565,7 @@ static int stkdcnew_dev_init(struct stk11xx *dev)
+ 		{ 0x0000, 0x25, 2 }, { 0x0002, 0x7d, 2 }, { 0x0000, 0x24, 2 },
+ 		{ }
+ 	};
+-	const struct stk11xx_table table_3[] = {
++	static const struct stk11xx_table table_3[] = {
+ 		{ 0x0000, 0x25, 2 }, { 0x0000, 0x20, 2 }, { 0x0002, 0x7f, 2 },
+ 		{ 0x0000, 0x24, 2 }, { 0x0000, 0x24, 2 }, { 0x0000, 0x26, 2 },
+ 		{ 0x0000, 0x27, 2 }, { 0x0000, 0x26, 2 }, { 0x0000, 0x26, 2 },
+@@ -583,7 +583,7 @@ static int stkdcnew_dev_init(struct stk11xx *dev)
+ 		{ 0x0000, 0x25, 2 }, { 0x0002, 0x7d, 2 }, { 0x0000, 0x24, 2 },
+ 		{ }
+ 	};*/
+-	const struct stk11xx_table table_4[] = {
++	static const struct stk11xx_table table_4[] = {
+ /*		{ 0x0000, 0x25, 2 }, { 0x0000, 0x20, 2 }, { 0x0002, 0x7f, 2 },
+ 		{ 0x0000, 0x24, 2 }, { 0x0000, 0x20, 2 }, { 0x0117, 0x00, 2 },
+ 		{ 0x0103, 0x00, 1 }, { 0x0103, 0x01, 2 }, { 0x0103, 0x00, 1 },
