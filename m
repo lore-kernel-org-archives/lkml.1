@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762113AbXH1UKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762892AbXH1ULX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762113AbXH1UKa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 16:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbXH1UKV
+	id S1762892AbXH1ULX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 16:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbXH1ULI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 16:10:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47292 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752387AbXH1UKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 16:10:20 -0400
-Date: Tue, 28 Aug 2007 16:09:51 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       nfs@lists.sourceforge.net, linux-cifs-client@lists.samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [NFS] [PATCH 0/4] add killattr inode operation to allow
- filesystems to interpret ATTR_KILL_S*ID bits
-Message-Id: <20070828160951.1a7d84fa.jlayton@redhat.com>
-In-Reply-To: <1188330591.6701.202.camel@heimdal.trondhjem.org>
-References: <200708271727.l7RHR36m007248@dantu.rdu.redhat.com>
-	<20070828191114.GA3419@infradead.org>
-	<1188330591.6701.202.camel@heimdal.trondhjem.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 28 Aug 2007 16:11:08 -0400
+Received: from wx-out-0506.google.com ([66.249.82.235]:18592 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753346AbXH1ULE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 16:11:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MKxuIuuOWVN00xzP6LbY17NJ5PCsdFdLFOXcLUZ3EILSBDsJta3aw2/5lpDanISdAgtT3UEO17O2mbmr6QomgeGcPzTpbNfYcl/qkZ9LyMK+YF5jE1/Xi0ZRkknosM7u6SqCSF2j3fbBo+jaNLYveV2bM8yV2Hw6mhe1SyNmRQE=
+Message-ID: <43e72e890708281311y630b85fcjb132bd065478d760@mail.gmail.com>
+Date: Tue, 28 Aug 2007 16:11:03 -0400
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "Christoph Hellwig" <hch@infradead.org>,
+       "Jiri Slaby" <jirislaby@gmail.com>, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
+In-Reply-To: <20070828171155.GC29343@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2713029743177393055@pripojeni.net>
+	 <7515194658758617@pripojeni.net>
+	 <20070828171155.GC29343@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Aug 2007 15:49:51 -0400
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+On 8/28/07, Christoph Hellwig <hch@infradead.org> wrote:
+> On Tue, Aug 28, 2007 at 12:00:50PM -0400, Jiri Slaby wrote:
+> > ath5k, license is GPLv2
+> >
+> > The files are available only under GPLv2 since now.
+>
+> Is this really a good idea?  Most of the reverse-engineering was
+> done by the OpenBSD folks, and it would certainly be helpful to
+> work together with them on new hardware revisions, etc..
 
-> On Tue, 2007-08-28 at 20:11 +0100, Christoph Hellwig wrote:
-> > Sorry for not replying to the previsious revisions, but I've been out
-> > for on vacation.
-> > 
-> > I can't say I like this version.  Now we've got callouts at two rather close
-> > levels which is not very nice from the interface POV.
-> 
-> Agreed.
-> 
-> > Maybe preference is for the first scheme where we simply move interpreation
-> > of the ATTR_KILL_SUID/ATTR_KILL_SGID into the setattr routine and provide
-> > a nice helper for the normal filesystem to use.
-> > 
-> > If people are really concerned about adding two lines of code to the
-> > handfull of setattr operation there's a variant of this scheme that can
-> > avoid it:
-> > 
-> >  - notify_change is modified to not clear the ATTR_KILL_SUID/ATTR_KILL_SGID
-> >    but update ia_mode and the ia_valid flag to include ATTR_MODE.
-> >  - disk filesystems stay unchanged and never look at
-> >    ATTR_KILL_SUID/ATTR_KILL_SGID, but nfs can check for it and ignore
-> >    the ATTR_MODE flags and ia_valid in this case and do the right thing
-> >    on the server side.
-> 
-> Hmm... There has to be an implicit promise here that nobody else will
-> ever try to set ATTR_KILL_SUID/ATTR_KILL_SGID and ATTR_MODE at the same
-> time. Currently, that assumption is not there:
-> 
+Technically the best we can do is to leave the license as dual
+licensed, but keep in that technically that means nothing and is just
+for show, the GPL is what would apply as its derivative work and is
+the most restrictive license. This applies to any other driver in the
+kernel right now with a dual license tag.
 
-That was my concern with this scheme as well...
-
-> 
-> > 	if (ia_valid & ATTR_KILL_SGID) {
-> > 		attr->ia_valid &= ~ ATTR_KILL_SGID;
-> > 		if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
-> > 			if (!(ia_valid & ATTR_MODE)) {
-> > 				ia_valid = attr->ia_valid |= ATTR_MODE;
-> > 				attr->ia_mode = inode->i_mode;
-> > 			}
-> > 			attr->ia_mode &= ~S_ISGID;
-> > 		}
-> > 	}
-> 
-> Should we perhaps just convert the above 'if (!(ia_valid & ATTR_MODE))'
-> into a 'BUG_ON(ia_valid & ATTR_MODE)'?
-> 
-
-Sounds reasonable. I'll also throw in a comment that explains this
-reasoning...
-
--- 
-Jeff Layton <jlayton@redhat.com>
+  Luis
