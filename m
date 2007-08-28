@@ -1,123 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752289AbXH1GHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbXH1GMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752289AbXH1GHK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 02:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbXH1GG5
+	id S1752743AbXH1GMr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 02:12:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbXH1GMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 02:06:57 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:49021 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750772AbXH1GGu (ORCPT
+	Tue, 28 Aug 2007 02:12:39 -0400
+Received: from aa011msr.fastwebnet.it ([85.18.95.71]:47014 "EHLO
+	aa011msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751071AbXH1GMj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 02:06:50 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Tue, 28 Aug 2007 01:56:24 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: trivial@kernel.org
-Subject: [PATCH] Add documentation to some preprocessor directives in init/*.c.
-Message-ID: <Pine.LNX.4.64.0708280153050.28330@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Tue, 28 Aug 2007 02:12:39 -0400
+Date: Tue, 28 Aug 2007 08:07:00 +0200
+From: Paolo Ornati <ornati@fastwebnet.it>
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Cc: john stultz <johnstul@us.ibm.com>, Bob Picco <bob.picco@hp.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: "double" hpet clocksource && hard freeze [bisected]
+Message-ID: <20070828080700.42234a99@localhost>
+In-Reply-To: <20070827173458.5a1ffed1@localhost>
+References: <20070823222115.122a37ca@localhost>
+	<617E1C2C70743745A92448908E030B2A023EB2E1@scsmsx411.amr.corp.intel.com>
+	<1187903135.6024.18.camel@localhost.localdomain>
+	<1187905306.6024.24.camel@localhost.localdomain>
+	<20070824124631.GF10594@localhost>
+	<1187979454.6163.2.camel@localhost.localdomain>
+	<20070827173458.5a1ffed1@localhost>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 27 Aug 2007 17:34:58 -0300
+"Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br> wrote:
 
-Add some documentation to potentially confusing preprocessor
-directives in some source files in the init/ directory to show their
-proper association and nesting.
+> | Yea. While I'm still not completely comfortable leaving this up to boot
+> | order alone (the ia64 hpet clocksource is clearly causing issues on
+> | x86_64), I think this patch is something we need as well.
+> 
+>  Does -stable need this too?
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+No  :)
 
----
-
-  not all of them, just those that are sufficiently distant from their
-initial tests or are nested, to make perusing the code easier.
-
- init/calibrate.c |    2 +-
- init/initramfs.c |    4 ++--
- init/main.c      |    6 +++---
- 3 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/init/calibrate.c b/init/calibrate.c
-index 40ff3b4..783a907 100644
---- a/init/calibrate.c
-+++ b/init/calibrate.c
-@@ -101,7 +101,7 @@ static unsigned long __devinit calibrate_delay_direct(void)
- 	       "estimate for loops_per_jiffy.\nProbably due to long platform interrupts. Consider using \"lpj=\" boot option.\n");
- 	return 0;
- }
--#else
-+#else /* !ARCH_HAS_READ_CURRENT_TIMER */
- static unsigned long __devinit calibrate_delay_direct(void) {return 0;}
- #endif
-
-diff --git a/init/initramfs.c b/init/initramfs.c
-index 1db02a0..2493c5b 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -539,7 +539,7 @@ skip:
- 	initrd_end = 0;
- }
-
--#endif
-+#endif /* CONFIG_BLK_DEV_INITRD */
-
- static int __init populate_rootfs(void)
- {
-@@ -579,7 +579,7 @@ static int __init populate_rootfs(void)
- 		free_initrd();
- #endif
- 	}
--#endif
-+#endif /* CONFIG_BLK_DEV_INITRD */
- 	return 0;
- }
- rootfs_initcall(populate_rootfs);
-diff --git a/init/main.c b/init/main.c
-index 450e6ee..781b1fb 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -169,7 +169,7 @@ static int __init maxcpus(char *str)
- }
-
- early_param("maxcpus", maxcpus);
--#else
-+#else /* !CONFIG_SMP */
- #define max_cpus NR_CPUS
- #endif
-
-@@ -367,7 +367,7 @@ static void __init smp_init(void)
- static inline void setup_per_cpu_areas(void) { }
- static inline void smp_prepare_cpus(unsigned int maxcpus) { }
-
--#else
-+#else /* CONFIG_SMP */
-
- #ifdef __GENERIC_PER_CPU
- unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
-@@ -414,7 +414,7 @@ static void __init smp_init(void)
- 	smp_cpus_done(max_cpus);
- }
-
--#endif
-+#endif /* CONFIG_SMP */
-
- /*
-  * We need to store the untouched command line for future reference.
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+	Paolo Ornati
+	Linux 2.6.22.5 on x86_64
