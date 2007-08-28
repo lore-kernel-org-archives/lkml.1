@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbXH1TF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761027AbXH1THz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758671AbXH1TF1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbXH1TFS
+	id S1761027AbXH1THz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbXH1THd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:05:18 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55862 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750952AbXH1TFQ (ORCPT
+	Tue, 28 Aug 2007 15:07:33 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58313 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753085AbXH1THb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 15:05:16 -0400
-Date: Tue, 28 Aug 2007 20:05:10 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Robin Holt <holt@sgi.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Dean Nelson <dcn@sgi.com>,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, jes@sgi.com
-Subject: Re: [PATCH 4/4] add SGI Altix cross partition memory (XPMEM) driver
-Message-ID: <20070828190510.GA3256@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Robin Holt <holt@sgi.com>, Dean Nelson <dcn@sgi.com>,
-	tony.luck@intel.com, linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	akpm@linux-foundation.org, jes@sgi.com
-References: <20070827155622.GA25589@sgi.com> <20070827164112.GF25589@sgi.com> <20070828180235.GB32585@infradead.org> <20070828190043.GB7140@lnx-holt.americas.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070828190043.GB7140@lnx-holt.americas.sgi.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 28 Aug 2007 15:07:31 -0400
+Message-Id: <20070828190728.601213915@sgi.com>
+References: <20070828190551.415127746@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 28 Aug 2007 12:05:55 -0700
+From: clameter@sgi.com
+To: torvalds@linux-foundation.org
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
+Cc: William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Badari Pulavarty <pbadari@gmail.com>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>
+Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [04/36] Use page_cache_xxx in mm/page-writeback.c
+Content-Disposition: inline; filename=0004-Use-page_cache_xxx-in-mm-page-writeback.c.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 28, 2007 at 02:00:43PM -0500, Robin Holt wrote:
-> The ioctl is sort of historical.  IIRC, in ProPack 3 (RHEL4 based 2.4
-> kernel), we added system calls.  When the community started making noise
-> about system calls being bad, we went to a device special file with a
-> read/write (couldn't get the needed performance from the ioctl() interface
-> which used to acquire the BKL).  Now that the community fixed the ioctl
-> issues, we went to using an ioctl, but are completely open to change.
-> 
-> If you want to introduce system calls, we would expect to need, IIRC, 8.
-> We also pondered an xpmem filesystem today.  It really felt wrong,
-> but we could pursue that as an alternative.
+Use page_cache_xxx in mm/page-writeback.c
 
-The problem is not ioctls per sæ, but the kind of operation you
-export.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+---
+ mm/page-writeback.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-> What is the correct direction to go with this?  get_user_pages() does
-> currently require the task_struct.  Are you proposing we develop a way
-> to fault pages without the task_struct of the owning process/thread group?
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 63512a9..ebe76e3 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -624,8 +624,8 @@ int write_cache_pages(struct address_space *mapping,
+ 		index = mapping->writeback_index; /* Start from prev offset */
+ 		end = -1;
+ 	} else {
+-		index = wbc->range_start >> PAGE_CACHE_SHIFT;
+-		end = wbc->range_end >> PAGE_CACHE_SHIFT;
++		index = page_cache_index(mapping, wbc->range_start);
++		end = page_cache_index(mapping, wbc->range_end);
+ 		if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
+ 			range_whole = 1;
+ 		scanned = 1;
+@@ -827,7 +827,7 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+ 			if (mapping_cap_account_dirty(mapping)) {
+ 				__inc_zone_page_state(page, NR_FILE_DIRTY);
+-				task_io_account_write(PAGE_CACHE_SIZE);
++				task_io_account_write(page_cache_size(mapping));
+ 			}
+ 			radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+-- 
+1.5.2.4
 
-Stop trying to mess with vmas and get_user_pages on processes entirely.
-The only region of virtual memory a driver can deal with is the one it
-got a mmap request for, or when using get_user_pages the one it's got
-a read/write request for.  You're doing a worse variant of the rdma page
-pinning scheme we're rejected countless times.
+-- 
