@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764729AbXH1Teu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764766AbXH1Tf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764729AbXH1Teu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 15:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932571AbXH1TcS
+	id S1764766AbXH1Tf2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 15:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761259AbXH1Tc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 15:32:18 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35937 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932559AbXH1TcP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 15:32:15 -0400
-Date: Tue, 28 Aug 2007 15:31:26 -0400
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Christoph Hellwig <hch@infradead.org>, Jeff Layton <jlayton@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net
-Subject: Re: [PATCH 0/4] add killattr inode operation to allow filesystems
-	to interpret ATTR_KILL_S*ID bits
-Message-ID: <20070828193125.GA27309@filer.fsl.cs.sunysb.edu>
-References: <200708271727.l7RHR36m007248@dantu.rdu.redhat.com> <20070828191114.GA3419@infradead.org>
-MIME-Version: 1.0
+	Tue, 28 Aug 2007 15:32:57 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41468 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761332AbXH1Tc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 15:32:56 -0400
+Date: Tue, 28 Aug 2007 21:34:16 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tom <fivemiletom@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH 2.6.21.3] kbuild: fix build for cygwin
+Message-ID: <20070828193416.GB32202@uranus.ravnborg.org>
+References: <4660971E.5020609@gmail.com> <12D4B80525C5B744A216276E209921D9CE8016@MIAMI.xi-lite.lan> <46645DC9.8080003@gmail.com> <20070607204707.GB16634@uranus.ravnborg.org> <4669A0BD.8050104@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070828191114.GA3419@infradead.org>
-User-Agent: Mutt/1.5.16 (2007-07-16)
+In-Reply-To: <4669A0BD.8050104@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 28, 2007 at 08:11:14PM +0100, Christoph Hellwig wrote:
+On Fri, Jun 08, 2007 at 11:32:29AM -0700, Tom wrote:
+> From: Tom Enderes <enderes@gmail.com>
 > 
-> Sorry for not replying to the previsious revisions, but I've been out
-> for on vacation.
-> 
-> I can't say I like this version.  Now we've got callouts at two rather close
-> levels which is not very nice from the interface POV.
-> 
-> Maybe preference is for the first scheme where we simply move interpreation
-> of the ATTR_KILL_SUID/ATTR_KILL_SGID into the setattr routine and provide
-> a nice helper for the normal filesystem to use.
-> 
-> If people are really concerned about adding two lines of code to the
-> handfull of setattr operation there's a variant of this scheme that can
-> avoid it:
- 
-It's not about adding 2 lines of code - it's about adding the requirement
-for the fs to call a function.
+> The kernel build failed on cygwin hosts, because cygwin has slightly 
+> different typedefs compared to linux:
+> scripts/mod/file2alias.c:518: error: dereferencing pointer to incomplete
+> type
+> Two files, scripts/mod/file2alias.c and scripts/mod/modpost.h, were 
+> modified as follows:
+> Whever __CYGWIN__ is defined, __uint32 is defined as __uint32_t (instead 
+> of uint_32_t) and the missing ElfxxSection definitions are added.
+> These changes have been tested both on cygwin 1.5.24, hostcc=gcc 3.4.4 
+> and on FC5, hostcc=gcc 4.1.1-1. Any tests on cygwin, with and without 
+> this change, were executed with the following set for make: 
+> HOST_LOADLIBES="-lcurses -lintl".
 
->  - notify_change is modified to not clear the ATTR_KILL_SUID/ATTR_KILL_SGID
->    but update ia_mode and the ia_valid flag to include ATTR_MODE.
->  - disk filesystems stay unchanged and never look at
->    ATTR_KILL_SUID/ATTR_KILL_SGID, but nfs can check for it and ignore
->    the ATTR_MODE flags and ia_valid in this case and do the right thing
->    on the server side.
+Hi Tom.
 
-Sounds reasonable.
+I have revisited this and have made a successfull kernel build on a
+windows/cygwin box now.
 
-Josef 'Jeff' Sipek.
+I had to change two things only:
+1) The -lintl workaround was fixed by introducing a little script.
+   If gcc cannot link a program that sues gettext then NLS is disabled.
 
--- 
-I abhor a system designed for the "user", if that word is a coded pejorative
-meaning "stupid and unsophisticated."
-		- Ken Thompson
+2) Elf32_Section and Elf64_Section was replaced by Elfnn_Half
+
+The build succeeds with a number of warnings that I just ignored.
+fixdep and friends always get rebuild because kbuild does
+not know about the .exe suffix so it does not
+see that the binaries exists.
+This is annoying and I hope to fix it before the merge.
+
+These change will hit mainline during next merge window
+so it will take a while before you can benefit.
+
+For now they are in the kbuild.git tree at git.kernel.org
+and will soon be part of -mm.
+
+	Sam
