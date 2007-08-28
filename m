@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbXH1NcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbXH1NqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758849AbXH1NcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 09:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbXH1NcI
+	id S1756152AbXH1NqJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 09:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbXH1Np6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 09:32:08 -0400
-Received: from el-out-1112.google.com ([209.85.162.179]:46907 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752217AbXH1NcG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 09:32:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=M/AK2y0xVK0ucI5UvRTnTv0rj81ytSMMZHncSC6AiBDIf87erkfNMevwSqm7mYFPMzSKmes/07bM7fhrhnaVUOuhyR2KQfupJyYfY+J4KKVkJQuHA1nlDnTVikqhlYsaEz8IqInJgCJ7h/ZTcsjlZoSX5sXpQUBb+kUUTx4XTrs=
-Message-ID: <4877c76c0708280632t3eb40d01od1267c8c4a7d8de@mail.gmail.com>
-Date: Tue, 28 Aug 2007 06:32:04 -0700
-From: "Michael Evans" <mjevans1983@gmail.com>
-To: "Bill Davidsen" <davidsen@tmr.com>
-Subject: Re: [patch v3 1/1] md: Software Raid autodetect dev list not array
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Michael J. Evans" <mjevans1983@comcast.net>,
-       "Neil Brown" <neilb@suse.de>, "Ingo Molnar" <mingo@redhat.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <46D421F6.50205@tmr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Aug 2007 09:45:58 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:36477 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753462AbXH1Np5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 09:45:57 -0400
+Date: Tue, 28 Aug 2007 17:48:53 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Cliff Wickman <cpw@sgi.com>, Paul Jackson <pj@sgi.com>,
+       Paul Menage <menage@google.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: cpusets vs cpu-hotplug interaction is broken?
+Message-ID: <20070828134853.GA204@tv-sign.ru>
+References: <20070825162606.GA2630@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200708222058.45480.mjevans1983@comcast.net>
-	 <200708271516.21889.mjevans1983@comcast.net>
-	 <20070827153020.43788e21.randy.dunlap@oracle.com>
-	 <200708272138.19785.mjevans1983@comcast.net>
-	 <46D3A8AD.6000701@oracle.com>
-	 <4877c76c0708280608m529296edgd83f9c08e3918815@mail.gmail.com>
-	 <46D421F6.50205@tmr.com>
+In-Reply-To: <20070825162606.GA2630@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/28/07, Bill Davidsen <davidsen@tmr.com> wrote:
-> Michael Evans wrote:
-> > Oh, I see.  I forgot about the changelogs.  I'd send out version 5
-> > now, but I'm not sure what kernel version to make the patch against.
-> > 2.6.23-rc4 is on kernel.org and I don't see any git snapshots.
-> > Additionally I never could tell what git tree was the 'mainline' as it
-> > isn't labeled with such a keyword (at least in the list of git trees I
-> > saw).
->
-> I suspect you wait for 2.5.23 release, or send it to AKPM for inclusion
-> in an "-mm" kernel. That's probably desirable, anyway.
->
-> --
-> bill davidsen <davidsen@tmr.com>
->   CTO TMR Associates, Inc
->   Doing interesting things with small computers since 1979
->
->
+(cpu-hotplug experts cc'ed)
 
-There's another list I should CC to?  Or does the section maintainer
-do that when they're happy with the patch?
+On 08/25, Oleg Nesterov wrote:
+>
+> After the brief look at kernel/cpuset.c, it seems that attach_task() should
+> guarantee that the task can't use CPUs outside of cpuset->cpus_allowed.
+> 
+> But this looks racy wrt sched_setaffinity() which does
+> 
+> 	cpus_allowed = cpuset_cpus_allowed(p);
+> 	// callback_mutex is free
+> 	set_cpus_allowed(p);
+> 
+> What if attach_task()->set_cpus_allowed() happens in between?
+
+Actually, I think there is another problem, and cpuset_cpus_allowed() is
+just broken wrt CONFIG_HOTPLUG_CPU.
+
+Suppose that CONFIG_CPUSETS is true, but we don't use cpusets. In that
+case all tasks in system belong to the top_cpuset (btw, why cpuset_init()
+sets init_task.cpuset? this was already done by cpuset_init_early()), and
+we should have the same behaviour as without CONFIG_CPUSETS.
+
+By default, all tasks have ->cpus_allowed = CPU_MASK_ALL inherited from
+kernel_init(). This means that the task can use the new CPU right after
+cpu_up().
+
+Now let's suppose that some task does sched_setaffinity(0, CPU_MASK_ALL).
+In that case, cpuset_cpus_allowed() sets ->cpus_allowed = cpu_online_map,
+and I think this is just wrong. Now that task doesn't see the new CPUs.
+
+Of course, we have the similar problem with cpusets other than top_cpuset.
+
+In short, unless I missed something, top_cpuset.cpus_allowed should be
+cpu_possible_map, guarantee_online_cpus() shouldn't mix "allowed" and
+"online" masks.
+
+Oleg.
+
