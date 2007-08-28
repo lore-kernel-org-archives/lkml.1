@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbXH1XnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbXH1Xov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757864AbXH1XnS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 19:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbXH1XnH
+	id S1758239AbXH1Xov (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 19:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbXH1Xon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 19:43:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46186 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750990AbXH1XnG (ORCPT
+	Tue, 28 Aug 2007 19:44:43 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:27711 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752401AbXH1Xom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 19:43:06 -0400
-Date: Tue, 28 Aug 2007 16:42:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
-cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.23-rc4: BAD regression
-In-Reply-To: <200708290129.57243.daniel.ritz-ml@swissonline.ch>
-Message-ID: <alpine.LFD.0.999.0708281636380.25853@woody.linux-foundation.org>
-References: <200708290129.57243.daniel.ritz-ml@swissonline.ch>
+	Tue, 28 Aug 2007 19:44:42 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=yT/oA6Dgj2hAQjP1ifMzRUznQTw+Fy3S9xCRUxFKX5VELcbjDy68oKrtWKAlJCGgPAPcHE5O5oAqgG9AIaddB+gnkfH6s/0OLaFXpUXMxeMxnla4elqgrTtCL4HcCtSPEj/n3agGUgYcoO9nAvEcaR3CF0fyJdOR01v+fiSoxfM=  ;
+X-YMail-OSG: GFnmXs8VM1kQofsortyn2wAPWHGGWLabytDKGt7_XcpbckwXYRUsvigACfBmAdXNwqmitCkIdQ--
+Message-ID: <46D4B356.7060604@yahoo.com.au>
+Date: Wed, 29 Aug 2007 09:44:22 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Daniel Walker <dwalker@mvista.com>
+CC: mingo@elte.hu, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH -rt 1/8] introduce PICK_FUNCTION
+References: <20070828213748.790253419@mvista.com>
+In-Reply-To: <20070828213748.790253419@mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Daniel Walker wrote:
+> PICK_FUNCTION() is similar to the other PICK_OP style macros, and was
+> created to replace them all. I used variable argument macros to handle
+> PICK_FUNC_2ARG/PICK_FUNC_1ARG. Otherwise the marcos are similar to the
+> original macros used for semaphores. The entire system is used to do a
+> compile time switch between two different locking APIs. For example,
+> real spinlocks (raw_spinlock_t) and mutexes (or sleeping spinlocks).
+> 
+> This new macro replaces all the duplication from lock type to lock type.
+> The result of this patch, and the next two, is a fairly nice simplification,
+> and consolidation. Although the seqlock changes are larger than the originals
+> I think over all the patchset is worth while.
+> 
+> Incorporated peterz's suggestion to not require TYPE_EQUAL() to only
+> use pointers.
 
-Len? Should we just revert it?
+How come this is cc'ed to lkml? Is it something that is relevant to
+the mainline kernel... or?
 
-That commit has been very painful. First it lost all registration of the 
-query methods, and now this.
-
-Daniel - can we please have a before/after dmesg on your machine, 
-preferably with ACPI debugging enabled? And for ACPI stuff, it usually 
-does help to fill in a bugzilla entry, since the ACPI people actually do 
-track things there...
-
-		Linus
-
-On Wed, 29 Aug 2007, Daniel Ritz wrote:
->
-> tried that one on my old toshiba tecra 8000 laptop, almost killing it.
-> the fan doesn't work any more...type 'make' and see the box dying.
-> luckily my CPU doesn't commit suicide...bisected it to that one:
-> 
-> cd8c93a4e04dce8f00d1ef3a476aac8bd65ae40b is first bad commit
-> commit cd8c93a4e04dce8f00d1ef3a476aac8bd65ae40b
-> Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-> Date:   Fri Aug 3 17:52:48 2007 -0400
-> 
->     ACPI: EC: If ECDT is not found, look up EC in DSDT.
-> 
->     Some ASUS laptops access EC space from device _INI methods, but do not
->     provide ECDT for early EC setup. In order to make them function properly,
->     there is a need to find EC is DSDT before any _INI is called.
-> 
->     Similar functionality was turned on by acpi_fake_ecdt=1 command line
->     before. Now it is on all the time.
-> 
->     http://bugzilla.kernel.org/show_bug.cgi?id=8598
-> 
->     Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
->     Signed-off-by: Len Brown <len.brown@intel.com>
-> 
+-- 
+SUSE Labs, Novell Inc.
