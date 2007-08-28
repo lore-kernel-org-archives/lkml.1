@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbXH1Nzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbXH1N5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757973AbXH1Nzu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 09:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbXH1Nzo
+	id S1757527AbXH1N5q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 09:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbXH1N5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 09:55:44 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:45907 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753564AbXH1Nzn (ORCPT
+	Tue, 28 Aug 2007 09:57:40 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45749 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752673AbXH1N5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 09:55:43 -0400
-Message-ID: <46D427E7.5030106@linux.vnet.ibm.com>
-Date: Tue, 28 Aug 2007 19:19:27 +0530
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
-MIME-Version: 1.0
-To: ltp-list@lists.sourceforge.net
-CC: "Serge E. Hallyn" <serue@us.ibm.com>, risrajak@in.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Containers Testcases Plan
-Content-Type: multipart/mixed;
- boundary="------------040701030409060808050900"
+	Tue, 28 Aug 2007 09:57:39 -0400
+Date: Tue, 28 Aug 2007 06:57:06 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] i386: unexport machine_id
+Message-ID: <20070828065706.50a3eba4@laptopd505.fenrus.org>
+In-Reply-To: <20070828010741.19fccb06.akpm@linux-foundation.org>
+References: <20070827212808.GT4121@stusta.de>
+	<20070828010741.19fccb06.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040701030409060808050900
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 28 Aug 2007 01:07:41 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> You know my position on removal of exports with no warning.
 
-Please find attached the Tentative CONTAINER Test case Plan, depicting 
-the future testcases that will be merged to LTP.
-Regards--
-Subrata
+I know it (and don't quite agree but ok)
+> 
+> If the relevant maintainer chooses to apply the patch then ho hum I
+> have other things to think about.  Your best shot at getting this
+> sort of thing merged would be to cc the appropriate maintainer.
+> 
+> Or, better, use __deprecated_for_modules.  That's what it was added
+> for. -
 
---------------040701030409060808050900
-Content-Type: text/plain;
- name="TEST_PLAN.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="TEST_PLAN.txt"
-
-Following are tentative Testcases to be included into LTP-Containers in future:
-
-NAME						TENTATIVE-TIME
-=================================================================================
-PID NAMESPACES					(NEAR FUTURE)
-NETWROK NAMESPACES				(NEAR FUTURE)
-POSIX IPC NAMESPACES				(NEAR FUTURE)
-TTY+CONSOLE+DEVPTS NAMESPACES			(NEAR FUTURE)
-PROC+SYSFS ISOLATION				(NEAR FUTURE)
-PER-CONTAINER CAPABILITY/SECURITY TESTS		(NEAR FUTURE)
-=================================================================================
-
---------------040701030409060808050900--
+and/or use EXPORT_UNUSED_SYMBOL so that people at least have the option
+to not suffer the overhead *now*.
