@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbXH1RG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbXH1RKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbXH1RG2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 13:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbXH1RGV
+	id S1753858AbXH1RKX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 13:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbXH1RKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 13:06:21 -0400
-Received: from madara.hpl.hp.com ([192.6.19.124]:57479 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750878AbXH1RGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 13:06:20 -0400
-Date: Tue, 28 Aug 2007 10:05:56 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>, ak@suse.de,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: nmi_watchdog=2 regression in 2.6.21
-Message-ID: <20070828170556.GI1645@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <1186531609.22044.50.camel@imap.mvista.com> <20070808142059.GF30805@atjola.homenet> <20070827175431.GD784@frankl.hpl.hp.com> <1188237331.2435.255.camel@dhcp193.mvista.com> <20070827225555.GI784@frankl.hpl.hp.com> <1188256074.2435.272.camel@dhcp193.mvista.com> <20070828091217.GA1645@frankl.hpl.hp.com> <1188311684.2435.288.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 28 Aug 2007 13:10:09 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:44718 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbXH1RKH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 13:10:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Mk7K9EMokZJm9lN9X/7YEkOMQj65OFLFUCBnKImWOgnpDE07IX5JsnC1cjcsgnaKKIbcLOegsS6HRgGjq8FNNGg1OcqEbFyjvFO/E0/d2BYnnBsBzXFS6+xGc9W7BgUdd8GrDmNw8tWf4uPTQtepG7gSM4B3xGNtoUKZFu7ONsg=
+Message-ID: <4877c76c0708281010x4597a9cfpc252dc4ee2a0ef9e@mail.gmail.com>
+Date: Tue, 28 Aug 2007 10:10:05 -0700
+From: "Michael Evans" <mjevans1983@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [patch v3 1/1] md: Software Raid autodetect dev list not array
+Cc: "Bill Davidsen" <davidsen@tmr.com>,
+       "Michael J. Evans" <mjevans1983@comcast.net>,
+       "Neil Brown" <neilb@suse.de>, "Ingo Molnar" <mingo@redhat.com>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <46D44A09.5060901@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1188311684.2435.288.camel@dhcp193.mvista.com>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+References: <200708222058.45480.mjevans1983@comcast.net>
+	 <200708271516.21889.mjevans1983@comcast.net>
+	 <20070827153020.43788e21.randy.dunlap@oracle.com>
+	 <200708272138.19785.mjevans1983@comcast.net>
+	 <46D3A8AD.6000701@oracle.com>
+	 <4877c76c0708280608m529296edgd83f9c08e3918815@mail.gmail.com>
+	 <46D421F6.50205@tmr.com>
+	 <4877c76c0708280632t3eb40d01od1267c8c4a7d8de@mail.gmail.com>
+	 <46D44A09.5060901@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel,
+On 8/28/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> Michael Evans wrote:
+> > On 8/28/07, Bill Davidsen <davidsen@tmr.com> wrote:
+> >> Michael Evans wrote:
+> >>> Oh, I see.  I forgot about the changelogs.  I'd send out version 5
+> >>> now, but I'm not sure what kernel version to make the patch against.
+> >>> 2.6.23-rc4 is on kernel.org and I don't see any git snapshots.
+> >>> Additionally I never could tell what git tree was the 'mainline' as it
+> >>> isn't labeled with such a keyword (at least in the list of git trees I
+> >>> saw).
+> >>
+> >> I suspect you wait for 2.5.23 release, or send it to AKPM for inclusion
+> >> in an "-mm" kernel. That's probably desirable, anyway.
+> >>
+> >> --
+> >
+> > There's another list I should CC to?  Or does the section maintainer
+> > do that when they're happy with the patch?
+>
+> Not another list; just cc: akpm@linux-foundation.org so that he can merge
+> it into the -mm kernel patches for testing.  Most patches cook in the -mm
+> kernel(s) before they are merged into mainline.
+>
+> Then generally the subsystem maintainer(s) are responsible for sending
+> patches on to Linus for merging into mainline, if/when they are happy
+> with the patch and they think that it has been tested enough.
+>
 
-On Tue, Aug 28, 2007 at 07:34:44AM -0700, Daniel Walker wrote:
-> On Tue, 2007-08-28 at 02:12 -0700, Stephane Eranian wrote:
-> > Daniel,
-> > 
-> > On Mon, Aug 27, 2007 at 04:07:54PM -0700, Daniel Walker wrote:
-> > > On Mon, 2007-08-27 at 15:55 -0700, Stephane Eranian wrote:
-> > > 
-> > > > Yet the model name looks strange. So we need to run one more test,
-> > > > as the fam/model is not enough. What we need to check is whether or
-> > > > not this processor implements architectural perfmon or not.
-> > > > 
-> > > > Could you please compile and run the attached program and send me 
-> > > > the output?
-> > > 
-> > > The output below is all the output ..
-> > > 
-> > > eax=0x7280201: version=1  num_cnt=2
-> > > 
-> > Then you have a Core Duo processor and the commit from Bjorn should
-> > fix the problem. If it does not, then there is something else wrong.
-> > Unfortunately, I do not have a Core Duo machine to try and reproduce.
-> 
-> There must be something else wrong, cause the problem persists .. As I
-> said in past emails to Bjorn, I tested his commit in git, as well as the
-> latest git all with the same issue (as well as bisecting git)..
-> 
-> If the hardware is buggy then we need some way to determine that..
-> 
-Could you instrument check_nmi_watchdog() to verify that you terminate
-this function? Normally there is a safety mechanism in there.
+So I should look at the git documentation again, try to pull down
+Andrew's latest -mm, and see what I need to change (if anything) to
+patch against it?  (I would probably only verify that boots once my
+self given the other testing this has already seen and how often mm
+breaks things my mythtv box likes, such as nvidia-drivers, etc,)
 
-Another  possibility is that you get flooded with NMI interrupts and
-do not make forward progress.
+> Mainline progresses (roughly, e.g.) like so:
+>
 
-> If this machine didn't support performance counters, what would happen
-> then?
-> 
-
-If you have an Local APIC and performance counters, then it will try and use it.
-Otherwise, I suspect it tries the NMI_IO_APIC (nmi_watchdog=1).
-
--- 
--Stephane
+I knew about the progression order (but not timing) of the non-git
+side of it, but it was helpful to have the whole thing spelled out,
+thank you.
