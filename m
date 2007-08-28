@@ -1,82 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbXH1ByR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753014AbXH1B6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759506AbXH1ByR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Aug 2007 21:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbXH1ByE
+	id S1753014AbXH1B6W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Aug 2007 21:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbXH1B6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Aug 2007 21:54:04 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:43392 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752175AbXH1ByB (ORCPT
+	Mon, 27 Aug 2007 21:58:14 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57916 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752302AbXH1B6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Aug 2007 21:54:01 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=WwDaGP6Lu52ReNAzFY4xTLGGxtDDxP0DGnzZN4F46s0wK9Q/E2xGU+p+B/0SXxphvhMMgnM1kY4u6Hxa7xX/TCECOItgPfMy2cGjO7KMcbPFgdB029e940N3vc2pHj+UyC6lCHAeXqlswl3s5r22tV6r+UJlyZtTSNkVShVPFpw=  ;
-X-YMail-OSG: KY9AnPYVM1kGhg9eX_9Rkj3QHEdhgaU9coDGyvUMPW2phBdLyU9YEyP.oFgriMqmlelJ2xAK9RzkpuN7zEeTICgmLixZ.gRnuCwt9UoWuevTfaNhSfkqFQVQtww_zA--
-Message-ID: <46D38035.1010707@yahoo.com.au>
-Date: Tue, 28 Aug 2007 11:53:57 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Mon, 27 Aug 2007 21:58:13 -0400
+Date: Mon, 27 Aug 2007 18:58:08 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.23-rc4
+Message-ID: <alpine.LFD.0.999.0708271847560.25853@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: "Patrick J. LoPresti" <lopresti@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: oom-killer with 27G free swap and overcommit_memory=2
-References: <23986fd90708271103r8f0ef68j86f85a6039be2f54@mail.gmail.com>
-In-Reply-To: <23986fd90708271103r8f0ef68j86f85a6039be2f54@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick J. LoPresti wrote:
-> I am using Linux 2.6.16.46-0.12-smp (SUSE 10 SP1 stock kernel).
-> I do intend to bother SUSE, but I am hoping some kind kernel savant
-> can help me interpret these log messages and/or give me some
-> suggestions for how to proceed.
-> 
-> My system is a SunFire x4100 (x86_64) with 16G of RAM and 32G of swap
-> in a single partition.  I have an application which consumes a lot of
-> memory, and after a few hours the oom-killer kills it.
-> 
-> This would not be surprising, except a) the machine still has 27G of
-> free swap at the time; and b) it happens even when I set
-> vm.overcommit_memory=2 (with overcommit_ratio=50).  It is
-> time-consuming to reproduce, but consistent.
-> 
-> Below is the first batch of messages from the oom-killer.  In this
-> case, overcommit_memory was set to 2, and the application
-> received no failures from malloc() or new.
-> 
-> 9-10 more such batches appear in the log in rapid succession before
-> I get the "Kill process XXXX ... Killed process XXXX" pair of messages.
-> 
-> Here are my questions.  I realize these log messages may be insufficient
-> to answer them, and I am ready to provide more information upon
-> request.  (Unfortunately I cannot provide the application itself.  But
-> I can perform tests and provide logs.)
-> 
-> 1) Does this behavior definitely indicate a kernel bug?  If not, what
-> could my application possibly be doing to cause it?
-> 
-> 2) Is there any sysctl setting that might "avoid" this problem?  Or a
-> way to change my application to avoid it?
-> 
-> 3) Should I attempt to reproduce this problem on the stock kernel.org
-> kernel?
 
-Hi,
+Ok, I lost it, and let two weeks pass between -rc releases. My bad.
 
-Yeah it doesn't seem like the right behaviour. Your app isn't allocating
-mlocked memory, is it? What is the value of your /proc/sys/vm/swappiness
-sysctl? (increasing it may help).
+As a result, -rc4 is a bit bigger than it would/should have been, but 
+hopefully it's all good, and we've fixed most regressions. There's some 
+arch updates (MIPS, power, sparc64, s390) and an ACPI update, but the 
+rest of it is mainly lots of small fixes (mostly to various random 
+drivers). With some scheduler and networking noise.
 
-I'll take a look at the SLES kernel and see whether we can do better
-there. Thanks.
+I think the shortlog is _just_ too big to be posted on the kernel mailing 
+list, but since it can mostly be described with the one word "boring", 
+it's not a huge loss. As usual, just do
 
-Nick
+	git shortlog v2.6.23-rc3..v2.6.23-rc4
 
--- 
-SUSE Labs, Novell Inc.
+if you have the git trees to get the all the details on extraneous 
+semicolons, missed or duplicate include files, kzalloc conversions, new 
+PCI ID's etc etc.
+
+		Linus
