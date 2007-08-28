@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbXH1RXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760768AbXH1RYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760608AbXH1RXn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 13:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757766AbXH1RXF
+	id S1760768AbXH1RYA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 13:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759707AbXH1RXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 13:23:05 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:10780 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753037AbXH1RXD (ORCPT
+	Tue, 28 Aug 2007 13:23:19 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55222 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759597AbXH1RXR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 13:23:03 -0400
-Message-ID: <46D459C9.9050709@oracle.com>
-Date: Tue, 28 Aug 2007 10:22:17 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Tue, 28 Aug 2007 13:23:17 -0400
+Message-ID: <46D45A02.6010306@zytor.com>
+Date: Tue, 28 Aug 2007 10:23:14 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Michael Evans <mjevans1983@gmail.com>
-CC: Bill Davidsen <davidsen@tmr.com>,
-       "Michael J. Evans" <mjevans1983@comcast.net>,
-       Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@redhat.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch v3 1/1] md: Software Raid autodetect dev list not array
-References: <200708222058.45480.mjevans1983@comcast.net>	 <200708271516.21889.mjevans1983@comcast.net>	 <20070827153020.43788e21.randy.dunlap@oracle.com>	 <200708272138.19785.mjevans1983@comcast.net>	 <46D3A8AD.6000701@oracle.com>	 <4877c76c0708280608m529296edgd83f9c08e3918815@mail.gmail.com>	 <46D421F6.50205@tmr.com>	 <4877c76c0708280632t3eb40d01od1267c8c4a7d8de@mail.gmail.com>	 <46D44A09.5060901@oracle.com> <4877c76c0708281010x4597a9cfpc252dc4ee2a0ef9e@mail.gmail.com>
-In-Reply-To: <4877c76c0708281010x4597a9cfpc252dc4ee2a0ef9e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: ok to kill "ether=" kernel parm?
+References: <Pine.LNX.4.64.0708280307350.3354@localhost.localdomain> <46D45111.2040600@zytor.com> <Pine.LNX.4.64.0708281300030.18151@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0708281300030.18151@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Evans wrote:
-> On 8/28/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->> Michael Evans wrote:
->>> On 8/28/07, Bill Davidsen <davidsen@tmr.com> wrote:
->>>> Michael Evans wrote:
->>>>> Oh, I see.  I forgot about the changelogs.  I'd send out version 5
->>>>> now, but I'm not sure what kernel version to make the patch against.
->>>>> 2.6.23-rc4 is on kernel.org and I don't see any git snapshots.
->>>>> Additionally I never could tell what git tree was the 'mainline' as it
->>>>> isn't labeled with such a keyword (at least in the list of git trees I
->>>>> saw).
->>>> I suspect you wait for 2.5.23 release, or send it to AKPM for inclusion
->>>> in an "-mm" kernel. That's probably desirable, anyway.
->>>>
->>>> --
->>> There's another list I should CC to?  Or does the section maintainer
->>> do that when they're happy with the patch?
->> Not another list; just cc: akpm@linux-foundation.org so that he can merge
->> it into the -mm kernel patches for testing.  Most patches cook in the -mm
->> kernel(s) before they are merged into mainline.
->>
->> Then generally the subsystem maintainer(s) are responsible for sending
->> patches on to Linus for merging into mainline, if/when they are happy
->> with the patch and they think that it has been tested enough.
->>
+Robert P. J. Day wrote:
+> On Tue, 28 Aug 2007, H. Peter Anvin wrote:
 > 
-> So I should look at the git documentation again, try to pull down
-> Andrew's latest -mm, and see what I need to change (if anything) to
-> patch against it?  (I would probably only verify that boots once my
-> self given the other testing this has already seen and how often mm
-> breaks things my mythtv box likes, such as nvidia-drivers, etc,)
+>> Robert P. J. Day wrote:
+>>>   given that "ether=" has been officially obsolete since 2.6.18
+>>> (replaced by "netdev="), is there any reason to keep it around?
+>>> or can it be blasted?
+>> That sounds like way too short of a timeline for breaking people's
+>> working boot setup.  For a lot of people, 2.6.18->current is going
+>> to be a single step.
+> 
+> actually, now that i look more closely at the code browser at
+> lxr.linux.no, "ether=" has been listed as "obsolete" since *at least*
+> 2.6.10.  not to sound unsympathetic but anyone who tries to jump from
+> 2.6.10 to 2.6.24 in one step deserves what they get.  :-)
+> 
+> ok, that was cruel, but you see my point, right?
 
--mm is available only as a patchset, not via git.
-There has been a git version of it, but it's not currently working and
-hasn't been for 2 months or so.
+Yes, and I think it's quite pointless.
 
-I mostly use the grab_kernel script that I mentioned.  It knows how
-to download linux-2.6.M and how to apply -rcN, -gitN, and/or -mmN
-patches to the base (linux-2.6.M).
+The thing is, people's boot setups have probably been that way since
+*long* before 2.6.9.  They continue to work, as they should, so they
+aren't changed.  This is why we very rarely break boot interfaces (and
+this is a user-visible interface you're talking about); we're still
+supporting interfaces that have been obsolete *SINCE BEFORE 1.0 WAS
+RELEASED.*
 
-E.g.:
-grab_kernel 2.6.23-rc3-git6 $PWD
-or
-grab_kernel 2.6.23-rc3-mm1 $PWD
+What's the upside of changing?  What's the downside?  The upside is so
+infinitesimal that that leaving "ether=" in indefinitely seems like a
+good move to me.
 
+	-hpa
 
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
