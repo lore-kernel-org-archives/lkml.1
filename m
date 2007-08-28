@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760188AbXH1Snk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760587AbXH1Soq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760188AbXH1Snk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 14:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbXH1Snd
+	id S1760587AbXH1Soq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 14:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXH1Soh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 14:43:33 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55099 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753197AbXH1Snc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 14:43:32 -0400
-Message-Id: <200708281843.l7SIhJ9D010636@terminus.zytor.com>
-MIME-Version: 1.0
-content-class: 
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: RE: ok to kill "ether=" kernel parm?
-Date: Tue, 28 Aug 2007 11:43:26 -0700
-Importance: normal
-X-Priority: 3
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 28 Aug 2007 14:44:37 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:45346 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbXH1Soh (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 14:44:37 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysctl: Update sysctl_check to handle compiled out code.
+In-Reply-To: Your message of "Sat, 25 Aug 2007 12:03:19 MDT."
+             <m1sl67lcew.fsf_-_@ebiederm.dsl.xmission.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <23568.1187876026@turing-police.cc.vt.edu> <20070823141652.d488a6e0.akpm@linux-foundation.org> <m1wsvlmvu6.fsf_-_@ebiederm.dsl.xmission.com> <6634.1188030574@turing-police.cc.vt.edu> <m16433n55e.fsf@ebiederm.dsl.xmission.com> <2371.1188050875@turing-police.cc.vt.edu>
+            <m1sl67lcew.fsf_-_@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1188330469_3159P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 28 Aug 2007 14:44:31 -0400
+Message-ID: <6090.1188326671@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It changed to be more descriptive.  The old one is supported for backwards compatibility, just like we have sys_oldoldstat still.
+--==_Exmh_1188330469_3159P
+Content-Type: text/plain; charset=us-ascii
 
-(sent front cellphone) 
+On Sat, 25 Aug 2007 12:03:19 MDT, Eric W. Biederman said:
 
------Original Message-----
-From: Jan Engelhardt <jengelh@computergmbh.de>
-Sent: Tuesday, August 28, 2007 11:12
-To: H. Peter Anvin <hpa@zytor.com>
-Cc: Robert P. J. Day <rpjday@mindspring.com>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: ok to kill "ether=" kernel parm?
+> So don't worry about missing strategy routines, or missing proc_handler
+> routines when they will never be called.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
+I'm not seeing the false-positive msgs after applying this patch...
 
-On Aug 28 2007 10:23, H. Peter Anvin wrote:
->
->What's the upside of changing?  What's the downside?  The upside is so
->infinitesimal that that leaving "ether=" in indefinitely seems like a
->good move to me.
+Tested-By: Valdis Kletnieks <valdis.kletnieks@vt.edu>
 
-Then why did it change to netdev= in the first place...
+--==_Exmh_1188330469_3159P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFG1G0PcC3lWbTT17ARAn6XAKD73+5zyHYQDEFOZ1xC/wxd1kYaaQCff62L
+a+mQBEnWNaDP4W80fbQn640=
+=z8nM
+-----END PGP SIGNATURE-----
 
-	Jan
--- 
-
+--==_Exmh_1188330469_3159P--
