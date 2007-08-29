@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759838AbXH2TMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760579AbXH2TNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759838AbXH2TMf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 15:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbXH2TM1
+	id S1760579AbXH2TNe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 15:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbXH2TN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 15:12:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35018 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754982AbXH2TM0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 15:12:26 -0400
-Date: Wed, 29 Aug 2007 20:12:25 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       John Johansen <jjohansen@suse.de>, Jan Blunck <jblunck@suse.de>,
-       Erez Zadok <ezk@cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: Re: [patch 4/4] Switch to struct path in fs_struct
-Message-ID: <20070829191225.GD28028@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andreas Gruenbacher <agruen@suse.de>, linux-kernel@vger.kernel.org,
-	John Johansen <jjohansen@suse.de>, Jan Blunck <jblunck@suse.de>,
-	Erez Zadok <ezk@cs.sunysb.edu>,
-	Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
-References: <20070808171622.632749741@suse.de> <20070808171643.542685765@suse.de> <20070808193209.GA31354@infradead.org> <20070810142208.827949199@suse.de> <20070810143847.174567467@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070810143847.174567467@suse.de>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 29 Aug 2007 15:13:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33086 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755119AbXH2TNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 15:13:25 -0400
+Message-ID: <46D5C552.1060307@redhat.com>
+Date: Wed, 29 Aug 2007 15:13:22 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Clark Cooper <clark.cooper@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: Caught SIGFPE exceptions aren't reset
+References: <e21d91280708242140i2e6223a4v51ba016837b74be8@mail.gmail.com>	 <18128.322.59087.367556@alkaid.it.uu.se>	 <e21d91280708251018l4904b6bcm5b40e22b6b2cbedc@mail.gmail.com> <e21d91280708251031k5e3bd962o6a268e6506696a8c@mail.gmail.com>
+In-Reply-To: <e21d91280708251031k5e3bd962o6a268e6506696a8c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 04:22:12PM +0200, Andreas Gruenbacher wrote:
-> * Move the definition of struct path into <linux/path.h>.
+On 08/25/2007 01:31 PM, Clark Cooper wrote:
+>> Your handler can do this by masking
+>>  exceptions, changing the operands of the failed FP instruction,
+>> or by changing the PC so that the failed instruction is skipped
+>> (your handler may want to emulate the instruction in this case).
 > 
-> * Use struct path in fs_struct. This allows to use pathget and
->   pathput on a fs_struct.
+> Given the current SIGFPE handling in the kernel, a userland handler
+> CAN'T mask the exceptions or clear the exception flags. This is
+> demonstrated in my example program where I call both feclearexception
+> and fedisableexception in the handler. The reason these don't work is
+> that any change you make to these FPU registers is overwritten with
+> the saved FPU context on return from the signal handler. Changing the
+> PC won't help since the exception flag is still set and unmasked on
+> signal return.
 
-Looks good.
-
-Btw, WTF are pnpbios and sound looking at fs_struct?  They have no
-right to poke there at all.
-
-> --- /dev/null
-> +++ b/include/linux/path.h
-> @@ -0,0 +1,12 @@
-> +#ifndef _LINUX_PATH_H
-> +#define _LINUX_PATH_H
-> +
-> +struct dentry;
-> +struct vfsmount;
-> +
-> +struct path {
-> +	struct vfsmount *mnt;
-> +	struct dentry *dentry;
-> +};
-> +
-> +#endif  /* _LINUX_PATH_H */
-
-This header should probably also have the prototypes for pathget/pathput
-
+Just change the saved FPU context before returning. (It's on the stack
+when your handler is running.)
