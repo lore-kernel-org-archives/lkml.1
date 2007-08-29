@@ -1,175 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbXH2IHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932718AbXH2IJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932659AbXH2IHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 04:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbXH2IG5
+	id S932718AbXH2IJE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 04:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbXH2IIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 04:06:57 -0400
-Received: from rwcrmhc13.comcast.net ([204.127.192.83]:56840 "EHLO
-	rwcrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754539AbXH2IGy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 04:06:54 -0400
-From: "Michael J. Evans" <mjevans1983@comcast.net>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [patch v5 1/1] md: Software Raid autodetect dev list not array
-Date: Wed, 29 Aug 2007 01:06:06 -0700
-User-Agent: KMail/1.9.7
-Cc: Michael Evans <mjevans1983@gmail.com>, Bill Davidsen <davidsen@tmr.com>,
-       Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@redhat.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <200708222058.45480.mjevans1983@comcast.net> <4877c76c0708281211s55aded4ajceb283da25223659@mail.gmail.com> <46D4748A.4070909@oracle.com>
-In-Reply-To: <46D4748A.4070909@oracle.com>
+	Wed, 29 Aug 2007 04:08:49 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:42719 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751359AbXH2IIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 04:08:47 -0400
+Date: Wed, 29 Aug 2007 13:38:27 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: cpu hotplug support broken in 2.6.23-rc3
+Message-ID: <20070829080827.GD6832@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070827104350.GA2073@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708290106.06945.mjevans1983@comcast.net>
+In-Reply-To: <20070827104350.GA2073@elf.ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael J. Evans <mjevans1983@gmail.com>
+Hi Pavel,
+On Mon, Aug 27, 2007 at 12:43:50PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> Trying to do few onlines/offlines reliably hangs my machine (thinkpad
+> x60, i386 architecture).
+> 
 
-In current release kernels the md module (Software RAID) uses a static array
- (dev_t[128]) to store partition/device info temporarily for autostart.
+That's strange. 
 
-This patch replaces that static array with a list.
+I've been running cpu offline/online tests with kern bench, 
+cpufreq-ondemand and a few rt-tasks running in the background
+and it has worked for me. 
+Something like 100 iterations without a problem. But these were on
+machines with 4-8 cpus.  So may be this could be something specific to
+the dual cpu machine.
 
-Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
---- 
-CCing akpm@linux-foundation.org
+Can you post the .config? I'll try to recreate it?
 
-Version 5:
-patched modified to cleanly patch against 2.6.23-rc4 (Offsets only)
-Removed credit from head of file since the changelogs are archived.
+It's really strange since you mention that it tooks was  
+an echo 1/0 into the sysfs file to break it. 
 
-Version 4:
-Minor formatting cleanup for kzAlloc error message.
-Should I remove the first patch section in version 5?
+> Plus I guess it would be nice to add CPU HOTPLUG into MAINTAINERS
+> file:
+> 
 
-Version 3:
-md_autodetect_dev failure message is now more usefully verbose.
-removed unused i_found that was leftover from initial verification.
-Thank you Randy Dunlap for pointing where INT_MAX was, fixme fixed.
+There is a list of maintainers in the Documentation/cpu-hotplug.txt, 
+which includes maintainers for different platforms as well.
 
-Version 2:
-using list_add_tail, and corrected missing i_passed++;.
-removed sections of code that would never be reached.
+It's a good idea to add that info to the MAINTAINERS file as well.
 
-Version 1:
-The data/structures are only used within md.c, and very close together.
-However I wonder if the structural information shouldn't go in to...
-../../include/linux/raid/md_k.h instead.
-
-
-I discovered this (and that the devices are added as disks/partitions are
-discovered at boot) while I was debugging why only one of my MD arrays would
-come up whole, while all the others were short a disk.
-
-I eventually discovered that it was enumerating through all of 9 of my 11 hds
-(2 had only 4 partitions apiece) while the other 9 have 15 partitions
-(I wanted 64 per drive...). The last partition of the 8th drive in my 9 drive
-raid 5 sets wasn't added, thus making the final md array short both a parity
-and data disk, and it was started later, elsewhere.
-
-Subject: [patch 1/1] md: Software Raid autodetect dev list not array
-
-SOFTWARE RAID (Multiple Disks) SUPPORT
-P:	Ingo Molnar
-M:	mingo@redhat.com
-P:	Neil Brown
-M:	neilb@suse.de
-L:	linux-raid@vger.kernel.org
-S:	Supported
-Unless you have a reason NOT to do so, CC linux-kernel@vger.kernel.org.
-
-12: Has been tested with CONFIG_PREEMPT, CONFIG_DEBUG_PREEMPT,
-    CONFIG_DEBUG_SLAB, CONFIG_DEBUG_PAGEALLOC, CONFIG_DEBUG_MUTEXES,
-    CONFIG_DEBUG_SPINLOCK, CONFIG_DEBUG_SPINLOCK_SLEEP all simultaneously
-    enabled.
-
-It has been tested with CONFIG_SMP set and unset (Different x86_64 systems).
-It has been tested with CONFIG_PREEMPT set and unset (same system).
-CONFIG_LBD isn't even an option in my .config file.
-
-Note: between 2.6.22 and 2.6.23-rc3-git5
-                rdev = md_import_device(dev,0, 0);
-became
-                rdev = md_import_device(dev,0, 90);
-So the patch has been edited to patch around that line.
-
-Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
-=============================================================
---- linux/drivers/md/md.c.orig	2007-08-21 03:19:42.511576248 -0700
-+++ linux/drivers/md/md.c	2007-08-21 04:30:09.775525710 -0700
-@@ -5781,13 +5781,26 @@ void md_autodetect_dev(dev_t dev)
-  * Searches all registered partitions for autorun RAID arrays
-  * at boot time.
-  */
--static dev_t detected_devices[128];
--static int dev_cnt;
-+
-+static LIST_HEAD(all_detected_devices);
-+struct detected_devices_node {
-+	struct list_head list;
-+	dev_t dev;
-+};
- 
- void md_autodetect_dev(dev_t dev)
- {
--	if (dev_cnt >= 0 && dev_cnt < 127)
--		detected_devices[dev_cnt++] = dev;
-+	struct detected_devices_node *node_detected_dev;
-+	char strbuf[BDEVNAME_SIZE];
-+
-+	node_detected_dev = kzalloc(sizeof(*node_detected_dev), GFP_KERNEL);
-+	if (node_detected_dev) {
-+		node_detected_dev->dev = dev;
-+		list_add_tail(&node_detected_dev->list, &all_detected_devices);
-+	} else {
-+		printk(KERN_CRIT "md: md_autodetect_dev: kzAlloc node failed"
-+			", skipping dev(%d,%d)\n", MAJOR(dev), MINOR(dev));
-+	}
- }
- 
- 
-@@ -5794,7 +5787,12 @@ static void autostart_arrays(int part)
- static void autostart_arrays(int part)
- {
- 	mdk_rdev_t *rdev;
--	int i;
-+	struct detected_devices_node *node_detected_dev;
-+	dev_t dev;
-+	int i_scanned, i_passed;
-+
-+	i_scanned = 0;
-+	i_passed = 0;
- 
- 	printk(KERN_INFO "md: Autodetecting RAID arrays.\n");
- 
-@@ -5801,3 +5821,7 @@ static void autostart_arrays(int part)
--	for (i = 0; i < dev_cnt; i++) {
--		dev_t dev = detected_devices[i];
--
-+	while (!list_empty(&all_detected_devices) && i_scanned < INT_MAX) {
-+		i_scanned++;
-+		node_detected_dev = list_entry(all_detected_devices.next,
-+					struct detected_devices_node, list);
-+		list_del(&node_detected_dev->list);
-+		dev = node_detected_dev->dev;
-+		kfree(node_detected_dev);
-@@ -5810,8 +5834,11 @@ static void autostart_arrays(int part)
- 			continue;
- 		}
- 		list_add(&rdev->same_set, &pending_raid_disks);
-+		i_passed++;
- 	}
--	dev_cnt = 0;
-+
-+	printk(KERN_INFO "md: Scanned %d and added %d devices.\n",
-+						i_scanned, i_passed);
- 
- 	autorun_devices(part);
- }
+Thanks and Regards
+gautham.
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
