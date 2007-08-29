@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbXH2SBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbXH2SEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755230AbXH2SBs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 14:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbXH2SBh
+	id S1754905AbXH2SEu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 14:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbXH2SEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 14:01:37 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:40414 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751145AbXH2SBg (ORCPT
+	Wed, 29 Aug 2007 14:04:44 -0400
+Received: from main.carme.maven.pl ([193.239.45.138]:17373 "EHLO
+	main.carme.maven.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751163AbXH2SEn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 14:01:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lnoBD/Y1gxATbAc7FrFXqA7lP5550vwg6J+CrFYejDvKDbZ9VkIysrX6bRAA/+0mvl6hCF0qT1iEJcLvl7YYbvLWHBUcOikIMgOWBt1BRDWr0eccFk/j6SoduXUD4XZKmF7q0HlEUwEhL9NYaKYe6cFJb+yvYo+QlHJmVdaHfG0=
-Message-ID: <9e4733910708291101i3783a8b1l38f0d5cfb0c2863d@mail.gmail.com>
-Date: Wed, 29 Aug 2007 14:01:34 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
-Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
-Cc: "Christoph Hellwig" <hch@infradead.org>,
-       "Jiri Slaby" <jirislaby@gmail.com>, linville@tuxdriver.com,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <3208.1188408545@turing-police.cc.vt.edu>
+	Wed, 29 Aug 2007 14:04:43 -0400
+From: Arkadiusz Miskiewicz <arekm@maven.pl>
+Organization: SelfOrganizing
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: 2.6.22 oops kernel BUG at block/elevator.c:366!
+Date: Wed, 29 Aug 2007 20:04:36 +0200
+User-Agent: PLD Linux KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200708291950.14513.arekm@maven.pl> <20070829175458.GA7932@kernel.dk>
+In-Reply-To: <20070829175458.GA7932@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <2713029743177393055@pripojeni.net>
-	 <7515194658758617@pripojeni.net>
-	 <20070828171155.GC29343@infradead.org>
-	 <3208.1188408545@turing-police.cc.vt.edu>
+Message-Id: <200708292004.36426.arekm@maven.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/29/07, Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
-> The heck with "good idea" - it's unclear to me if Jiri is even *allowed*
-> to remove the BSD/other license.   Jiri can release *his* code as GPLv2
-> only, but I suspect the files as a whole really should be dual BSD/GPLv2,
-> due to the numerous other stakeholders in those files.
+On Wednesday 29 of August 2007, Jens Axboe wrote:
+> On Wed, Aug 29 2007, Arkadiusz Miskiewicz wrote:
+> > I guess I should sent these here since it looks like not scsi bug anyway.
+>
+> It's stex, right? It seems to have some issues with multiple completions
+> of commands, which craps out the block layer of course.
 
-This mess has been occurring in the kernel for years. The DRM graphics
-drivers are used in both BSD and Linux. It is quite easy to contribute
-something to this code via LKML and think you are doing it under the
-GPL. Doesn't a patch against the kernel have to be GPL? When these
-patches get pulled back into BSD and distributed with it, did BSD get
-infected with the GPL? AFAIK this has never been legally sorted out.
+Yes, stex. I'm staying with 2.6.19 in that case since it works fine in that 
+version.
 
+So scsi bug ... 8-)
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Arkadiusz Mi¶kiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
