@@ -1,122 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbXH2PVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbXH2P0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbXH2PVG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 11:21:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXH2PUz
+	id S1756842AbXH2P0d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 11:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbXH2P00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 11:20:55 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:33448 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752714AbXH2PUy (ORCPT
+	Wed, 29 Aug 2007 11:26:26 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:43396 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752060AbXH2P0Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 11:20:54 -0400
-Message-ID: <46D58E3A.9000704@oracle.com>
-Date: Wed, 29 Aug 2007 08:18:18 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Wed, 29 Aug 2007 11:26:25 -0400
+Date: Wed, 29 Aug 2007 17:26:24 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+cc: DervishD <lkml@dervishd.net>, Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: cpufreq affects traffic control rates
+In-Reply-To: <20070828152309.7fe1ce91@freepuppy.rosehill.hemminger.net>
+Message-ID: <Pine.LNX.4.64.0708291725000.24730@fbirervta.pbzchgretzou.qr>
+References: <20070828075155.GG17475@DervishD> <20070828152309.7fe1ce91@freepuppy.rosehill.hemminger.net>
 MIME-Version: 1.0
-To: "Michael J. Evans" <mjevans1983@comcast.net>
-CC: Michael Evans <mjevans1983@gmail.com>, Bill Davidsen <davidsen@tmr.com>,
-       Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@redhat.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch v5 1/1] md: Software Raid autodetect dev list not array
-References: <200708222058.45480.mjevans1983@comcast.net> <4877c76c0708281211s55aded4ajceb283da25223659@mail.gmail.com> <46D4748A.4070909@oracle.com> <200708290106.06945.mjevans1983@comcast.net>
-In-Reply-To: <200708290106.06945.mjevans1983@comcast.net>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael J. Evans wrote:
-> From: Michael J. Evans <mjevans1983@gmail.com>
-> 
-> In current release kernels the md module (Software RAID) uses a static array
->  (dev_t[128]) to store partition/device info temporarily for autostart.
-> 
-> This patch replaces that static array with a list.
-> 
-> Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
-> --- 
 
-So only the text above goes into the permanent changelog (if it's
-used as is).  That text tells what the patch does but not why it
-does it.  Telling why is more important.  Some of the text below
-should be moved up to the changelog area, possibly with some other
-editing for readability (see BEGIN/END below).
+On Aug 28 2007 15:23, Stephen Hemminger wrote:
+>>     I noticed lately that my traffic control rates were being very slow,
+>> about 40% less than expected, and finally spotted the problem: cpufreq.
+>> 
+>>     Looks like HTB puts buckets according to the requested rate but
+>> assuming that the CPU is running at its default clock or something like
+>> that.
+>> 
+>Is the problem configuration of network scheduler clock? In 2.6.20 and earlier, you
+>could use CPU cycle counter (later kernels only use time of day).  So try
+>switching to jiffies or gettimeofday.
 
-> CCing akpm@linux-foundation.org
-> 
-> Version 5:
-> patched modified to cleanly patch against 2.6.23-rc4 (Offsets only)
-> Removed credit from head of file since the changelogs are archived.
-> 
-> Version 4:
-> Minor formatting cleanup for kzAlloc error message.
-> Should I remove the first patch section in version 5?
-> 
-> Version 3:
-> md_autodetect_dev failure message is now more usefully verbose.
-> removed unused i_found that was leftover from initial verification.
-> Thank you Randy Dunlap for pointing where INT_MAX was, fixme fixed.
-> 
-> Version 2:
-> using list_add_tail, and corrected missing i_passed++;.
-> removed sections of code that would never be reached.
-> 
-> Version 1:
-> The data/structures are only used within md.c, and very close together.
-> However I wonder if the structural information shouldn't go in to...
-> ../../include/linux/raid/md_k.h instead.
-> 
-
-BEGIN
-
-> I discovered this (and that the devices are added as disks/partitions are
-> discovered at boot) while I was debugging why only one of my MD arrays would
-> come up whole, while all the others were short a disk.
-> 
-> I eventually discovered that it was enumerating through all of 9 of my 11 hds
-> (2 had only 4 partitions apiece) while the other 9 have 15 partitions
-> (I wanted 64 per drive...). The last partition of the 8th drive in my 9 drive
-> raid 5 sets wasn't added, thus making the final md array short both a parity
-> and data disk, and it was started later, elsewhere.
-
-END
-
-> Subject: [patch 1/1] md: Software Raid autodetect dev list not array
-> 
-> SOFTWARE RAID (Multiple Disks) SUPPORT
-> P:	Ingo Molnar
-> M:	mingo@redhat.com
-> P:	Neil Brown
-> M:	neilb@suse.de
-> L:	linux-raid@vger.kernel.org
-> S:	Supported
-> Unless you have a reason NOT to do so, CC linux-kernel@vger.kernel.org.
-> 
-> 12: Has been tested with CONFIG_PREEMPT, CONFIG_DEBUG_PREEMPT,
->     CONFIG_DEBUG_SLAB, CONFIG_DEBUG_PAGEALLOC, CONFIG_DEBUG_MUTEXES,
->     CONFIG_DEBUG_SPINLOCK, CONFIG_DEBUG_SPINLOCK_SLEEP all simultaneously
->     enabled.
-> 
-> It has been tested with CONFIG_SMP set and unset (Different x86_64 systems).
-> It has been tested with CONFIG_PREEMPT set and unset (same system).
-> CONFIG_LBD isn't even an option in my .config file.
-> 
-> Note: between 2.6.22 and 2.6.23-rc3-git5
->                 rdev = md_import_device(dev,0, 0);
-> became
->                 rdev = md_import_device(dev,0, 90);
-> So the patch has been edited to patch around that line.
-> 
-> Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
+This should not have been removed. CPUs with constant_tsc
+could still be used with "CPU cycle counter" method.
 
 
+	Jan
 -- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
