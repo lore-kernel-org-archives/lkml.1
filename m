@@ -1,122 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbXH2EOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751549AbXH2ESs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756826AbXH2EOX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 00:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbXH2EOP
+	id S1751549AbXH2ESs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 00:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbXH2ESl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 00:14:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34906 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750705AbXH2EON (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 00:14:13 -0400
-Date: Tue, 28 Aug 2007 21:13:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, Balbir Singh <balbir@in.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-Id: <20070828211335.37fce4c9.akpm@linux-foundation.org>
-In-Reply-To: <20070828141318.GC5869@duck.suse.cz>
-References: <20070828141318.GC5869@duck.suse.cz>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Aug 2007 00:18:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48084 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752043AbXH2ESk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 00:18:40 -0400
+Date: Wed, 29 Aug 2007 06:18:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Keith Packard <keith.packard@intel.com>
+Subject: Re: CFS review
+Message-ID: <20070829041827.GA8733@elte.hu>
+References: <200708111344.42934.a1426z@gawab.com> <200708271746.47685.a1426z@gawab.com> <20070827204116.GA12495@elte.hu> <200708280737.53439.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708280737.53439.a1426z@gawab.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Aug 2007 16:13:18 +0200 Jan Kara <jack@suse.cz> wrote:
 
->   Hello,
+* Al Boldi <a1426z@gawab.com> wrote:
+
+> No need for framebuffer.  All you need is X using the X.org 
+> vesa-driver.  Then start gears like this:
 > 
->   I'm sending rediffed patch implementing sending of quota messages via netlink
-> interface (some rationale in patch description). I've already posted it to
-> LKML some time ago and there were no objections, so I guess it's fine to put
-> it to -mm. Andrew, would you be so kind? Thanks.
->   Userspace deamon reading the messages from the kernel and sending them to
-> dbus and/or user console is also written (it's part of quota-tools). The
-> only remaining problem is there are a few changes needed to libnl needed for
-> the userspace daemon. They were basically acked by the maintainer but it
-> seems he has not merged the patches yet. So this will take a bit more time.
+>   # gears & gears & gears &
 > 
+> Then lay them out side by side to see the periodic stallings for 
+> ~10sec.
 
-So it's a new kernel->userspace interface.
+i just tried something similar (by adding Option "NoDRI" to xorg.conf) 
+and i'm wondering how it can be smooth on vesa-driver at all. I tested 
+it on a Core2Duo box and software rendering manages to do about 3 frames 
+per second. (although glxgears itself thinks it does ~600 fps) If i 
+start 3 glxgears then they do ~1 frame per second each. This is on 
+Fedora 7 with xorg-x11-server-Xorg-1.3.0.0-9.fc7 and 
+xorg-x11-drv-i810-2.0.0-4.fc7.
 
-But we have no description of the interface :(
-
-> +/* Send warning to userspace about user which exceeded quota */
-> +static void send_warning(const struct dquot *dquot, const char warntype)
-> +{
-> +	static unsigned long seq;
-> +	struct sk_buff *skb;
-> +	void *msg_head;
-> +	int ret;
-> +
-> +	skb = genlmsg_new(QUOTA_NL_MSG_SIZE, GFP_NOFS);
-> +	if (!skb) {
-> +		printk(KERN_ERR
-> +		  "VFS: Not enough memory to send quota warning.\n");
-> +		return;
-> +	}
-> +	msg_head = genlmsg_put(skb, 0, seq++, &quota_genl_family, 0, QUOTA_NL_C_WARNING);
-> +	if (!msg_head) {
-> +		printk(KERN_ERR
-> +		  "VFS: Cannot store netlink header in quota warning.\n");
-> +		goto err_out;
-> +	}
-> +	ret = nla_put_u32(skb, QUOTA_NL_A_QTYPE, dquot->dq_type);
-> +	if (ret)
-> +		goto attr_err_out;
-> +	ret = nla_put_u64(skb, QUOTA_NL_A_EXCESS_ID, dquot->dq_id);
-> +	if (ret)
-> +		goto attr_err_out;
-> +	ret = nla_put_u32(skb, QUOTA_NL_A_WARNING, warntype);
-> +	if (ret)
-> +		goto attr_err_out;
-> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MAJOR,
-> +		MAJOR(dquot->dq_sb->s_dev));
-> +	if (ret)
-> +		goto attr_err_out;
-> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MINOR,
-> +		MINOR(dquot->dq_sb->s_dev));
-> +	if (ret)
-> +		goto attr_err_out;
-> +	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current->user->uid);
-> +	if (ret)
-> +		goto attr_err_out;
-> +	genlmsg_end(skb, msg_head);
-> +
-> +	ret = genlmsg_multicast(skb, 0, quota_genl_family.id, GFP_NOFS);
-> +	if (ret < 0 && ret != -ESRCH)
-> +		printk(KERN_ERR
-> +			"VFS: Failed to send notification message: %d\n", ret);
-> +	return;
-> +attr_err_out:
-> +	printk(KERN_ERR "VFS: Failed to compose quota message: %d\n", ret);
-> +err_out:
-> +	kfree_skb(skb);
-> +}
-> +#endif
-
-This is it.  Normally netlink payloads are represented as a struct.  How
-come this one is built-by-hand?
-
-It doesn't appear to be versioned.  Should it be?
-
-Does it have (or need) reserved-set-to-zero space for expansion?  Again,
-hard to tell..
-
-I guess it's OK to send a major and minor out of the kernel like this. 
-What's it for?  To represent a filesytem?  I wonder if there's a more
-modern and useful way of describing the fs.  Path to mountpoint or
-something?
-
-I suspect the namespace virtualisation guys would be interested in a new
-interface which is sending current->user->uid up to userspace.  uids are
-per-namespace now.  What are the implications?  (cc's added)
-
-Is it worth adding a comment explaining why GFP_NOFS is used here?
-
-
+	Ingo
