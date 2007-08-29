@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760332AbXH2VvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760814AbXH2Vvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760332AbXH2VvQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 17:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbXH2Vu6
+	id S1760814AbXH2Vvd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 17:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759754AbXH2VvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 17:50:58 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:43403 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754615AbXH2Vu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 17:50:57 -0400
-Date: Wed, 29 Aug 2007 14:50:55 -0700
-From: sukadev@us.ibm.com
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] Use task_pid_nr() in ip_vs_sync.c
-Message-ID: <20070829215055.GD18542@us.ibm.com>
-References: <46D57508.9040401@openvz.org>
+	Wed, 29 Aug 2007 17:51:12 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55549 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759568AbXH2VvK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 17:51:10 -0400
+Date: Wed, 29 Aug 2007 22:59:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: webmaster@dragonslave.de
+Cc: dex@dragonslave.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Override 80-wire cable detection for Toshiba S1800-814
+Message-ID: <20070829225921.6ffd5f98@the-village.bc.nu>
+In-Reply-To: <200708292341.14212.dex@dragonslave.de>
+References: <200708292341.14212.dex@dragonslave.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46D57508.9040401@openvz.org>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov [xemul@openvz.org] wrote:
-| The sync_master_pid and sync_backup_pid are set in set_sync_pid()
-| and are used later for set/not-set checks and in printk. So it
-| is safe to use the global pid value in this case.
-| 
-| Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+On Wed, 29 Aug 2007 23:41:13 +0200
+Daniel Exner <dex@dragonslave.de> wrote:
 
-Acked-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-| 
-| ---
-| 
-| diff --git a/net/ipv4/ipvs/ip_vs_sync.c b/net/ipv4/ipvs/ip_vs_sync.c
-| index 959c08d..d0798a5 100644
-| --- a/net/ipv4/ipvs/ip_vs_sync.c
-| +++ b/net/ipv4/ipvs/ip_vs_sync.c
-| @@ -794,7 +794,7 @@ static int sync_thread(void *startup)
-| 
-| 	add_wait_queue(&sync_wait, &wait);
-| 
-| -	set_sync_pid(state, current->pid);
-| +	set_sync_pid(state, task_pid_nr(current));
-| 	complete(tinfo->startup);
-| 
-| 	/*
+> Hi!
+> 
+> Please CC me, as I'm currently not subscribed to this list, thx.
+> 
+> Attached patch will add above mentioned Laptop Model to whitelist for both 
+> pata_ali and alim15x3, as it is correctly detected as 40-wire connected but 
+> this cable is short enough to still do transfers higher than UDMA33.
+> Don't know if this is also true for other S1800 Laptops cause I own only one.
+
+Looks good to me - does need a Signed-off-by: line however
