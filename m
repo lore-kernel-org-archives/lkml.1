@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbXH2TaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbXH2Tca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757624AbXH2TaH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 15:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbXH2T3w
+	id S1758718AbXH2Tca (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 15:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXH2TcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 15:29:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55346 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752438AbXH2T3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 15:29:51 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Moore, Robert" <robert.moore@intel.com>
-Subject: Re: [PATCH -mm 3/3] PM: Improve handling of ACPI system state indicator (rev. 3)
-Date: Wed, 29 Aug 2007 21:40:24 +0200
-User-Agent: KMail/1.9.5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>,
-       "Len Brown" <lenb@kernel.org>, "LKML" <linux-kernel@vger.kernel.org>,
-       "Pavel Machek" <pavel@ucw.cz>,
-       "pm list" <linux-pm@lists.linux-foundation.org>
-References: <200708272347.45438.rjw@sisk.pl> <200708290005.12323.rjw@sisk.pl> <B28E9812BAF6E2498B7EC5C427F293A4031EFC32@orsmsx415.amr.corp.intel.com>
-In-Reply-To: <B28E9812BAF6E2498B7EC5C427F293A4031EFC32@orsmsx415.amr.corp.intel.com>
+	Wed, 29 Aug 2007 15:32:23 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:15307 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753721AbXH2TcX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 15:32:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=aJVokC2Wnv+oSJmxOtZEGngJQwxRZGf8mZZrJv5ioDwDz9obSa2WNYsyuNgRyvx+xZfrZIB3G/pX5aDmQ+pndXe7MWcjg8gzxcDzhe2/9wBJ0VZ/vzpuflA624bC4okTIH8uc1r0zv5IW6cu5elYsQLYVjwTBF9UVqpFI+WcYPI=
+Message-ID: <dda83e780708291232h6ced720fy437c9ebf6bba2f3c@mail.gmail.com>
+Date: Wed, 29 Aug 2007 12:32:20 -0700
+From: "Bret Towe" <magnade@gmail.com>
+To: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
+Subject: Re: linux-2.6.23-rc4 ppc build failure
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <31e679430708291000n64a4e97aq5e326678a1fe9827@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708292140.25212.rjw@sisk.pl>
+References: <dda83e780708290941g1685879bned63a77d6b0fd242@mail.gmail.com>
+	 <31e679430708291000n64a4e97aq5e326678a1fe9827@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 29 August 2007 18:54, Moore, Robert wrote:
-> No, it's not safe to run the AML interpreter with interrupts disabled.
+On 8/29/07, Felipe Balbi <felipebalbi@users.sourceforge.net> wrote:
+> Hi,
+>
+> On 8/29/07, Bret Towe <magnade@gmail.com> wrote:
+> > while trying to build a fresh kernel for my mini after upgrading from gutsy
+> > (and forgetting to save my .config) I hit the below build error
+>
+> The .config you can get from /boot/config-`uname -r`
 
-OK
+yes I know the one thats attached is based off that
+just slimed down trying to keep the compile time down as much as possable
 
-> I don't have any problem with introducing finer granularity enter/exit
-> sleep interfaces if they are required.
-> 
-> I would suggest that we rename things a bit however.
-> 
-> Currently:
-> acpi_enter_sleep_state_prep
-> acpi_enter_sleep_state_prep_late
-> acpi_enter_sleep_state
-> 
-> acpi_leave_sleep_state_prep
-> acpi_leave_sleep_state
-> 
-> I think we can truncate and clarify:
-> 
-> acpi_sleep_setup1
-> acpi_sleep_setup2
-> acpi_sleep
-> 
-> acpi_wake_setup1
-> acpi_wake
-
-That's perfectly fine by me.  I'll update the 2/3 patch to use these names.
-
-Also, I think we can remove acpi_enter_sleep_state_s4bios() entirely (in a
-separate patch).
-
-> acpi_set_sleep_state_indicator:
-> 
-> I'm not sure if we have any external interfaces that simply execute a
-> control method, seems like overkill.
-> 
-> Please give me more information as to why _SSI needs to be moved (other
-> than executing it after _BFS)
-
-The _SST after _BFS is okay, but the invocation of _SST in acpi_wake()
-(currently acpi_leave_sleep_state) is problematic, since it causes the
-indicator to be set to "working" during hibernation, before the image is
-saved.  Thus, during hibernation _SST shouldn't be called from acpi_wake().
-
-For this reason, I thought it would be a good idea to call _SST from a separate
-routine that might be invoked by higher level functions as desired.
-
-Greetings,
-Rafael
+> > 2.6.23-rc3 I did work under feisty but that is with a different .config
+> > so not sure if that makes any difference or not
+> > I've not bisected cause it takes so long on this computer...
+> > attached is the config I'm working off now
+> >
+> > arch/powerpc/platforms/built-in.o: In function `pmac_probe':
+> > setup.c:(.init.text+0xbba): undefined reference to `pmac_ide_get_base'
+> > setup.c:(.init.text+0xbbe): undefined reference to `pmac_ide_init_hwif_ports'
+> > setup.c:(.init.text+0xbc6): undefined reference to `pmac_ide_get_base'
+> > setup.c:(.init.text+0xbca): undefined reference to `pmac_ide_init_hwif_ports'
+> > make[1]: *** [.tmp_vmlinux1] Error 1
+> > make[1]: Leaving directory `/usr/src/linux-2.6'
+> >
+> >
+>
+>
+> --
+> Best Regards,
+>
+> Felipe Balbi
+> felipebalbi@users.sourceforge.net
+>
