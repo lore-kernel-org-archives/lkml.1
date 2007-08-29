@@ -1,138 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbXH2Fnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbXH2Fv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758880AbXH2Fnp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 01:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbXH2Fng
+	id S1759441AbXH2Fv1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 01:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbXH2FvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 01:43:36 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:60860 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751953AbXH2Fnf (ORCPT
+	Wed, 29 Aug 2007 01:51:17 -0400
+Received: from wr-out-0506.google.com ([64.233.184.236]:33298 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751407AbXH2FvQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 01:43:35 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-References: <20070828141318.GC5869@duck.suse.cz>
-	<20070828211335.37fce4c9.akpm@linux-foundation.org>
-Date: Tue, 28 Aug 2007 23:41:42 -0600
-In-Reply-To: <20070828211335.37fce4c9.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Tue, 28 Aug 2007 21:13:35 -0700")
-Message-ID: <m14piic2y1.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 29 Aug 2007 01:51:16 -0400
+Subject: Re: [kvm-devel] [PATCH 2/3] Refactor hypercall infrastructure
+From: Anthony Liguori <anthony@codemonkey.ws>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1188324777.5531.73.camel@localhost.localdomain>
+References: <11882278064002-git-send-email-aliguori@us.ibm.com>
+	 <1188227808405-git-send-email-aliguori@us.ibm.com>
+	 <11882278082826-git-send-email-aliguori@us.ibm.com>
+	 <1188324777.5531.73.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 29 Aug 2007 00:51:10 -0500
+Message-Id: <1188366670.6337.5.camel@squirrel>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Wed, 2007-08-29 at 04:12 +1000, Rusty Russell wrote:
+> On Mon, 2007-08-27 at 10:16 -0500, Anthony Liguori wrote:
+> > This patch refactors the current hypercall infrastructure to better support live
+> > migration and SMP.  It eliminates the hypercall page by trapping the UD
+> > exception that would occur if you used the wrong hypercall instruction for the
+> > underlying architecture and replacing it with the right one lazily.
+> 
+> It also reduces the number of hypercall args, which you don't mention
+> here.
 
-> On Tue, 28 Aug 2007 16:13:18 +0200 Jan Kara <jack@suse.cz> wrote:
->
->>   Hello,
->> 
->> I'm sending rediffed patch implementing sending of quota messages via netlink
->> interface (some rationale in patch description). I've already posted it to
->> LKML some time ago and there were no objections, so I guess it's fine to put
->> it to -mm. Andrew, would you be so kind? Thanks.
->>   Userspace deamon reading the messages from the kernel and sending them to
->> dbus and/or user console is also written (it's part of quota-tools). The
->> only remaining problem is there are a few changes needed to libnl needed for
->> the userspace daemon. They were basically acked by the maintainer but it
->> seems he has not merged the patches yet. So this will take a bit more time.
->> 
->
-> So it's a new kernel->userspace interface.
->
-> But we have no description of the interface :(
->
->> +/* Send warning to userspace about user which exceeded quota */
->> +static void send_warning(const struct dquot *dquot, const char warntype)
->> +{
->> +	static unsigned long seq;
->> +	struct sk_buff *skb;
->> +	void *msg_head;
->> +	int ret;
->> +
->> +	skb = genlmsg_new(QUOTA_NL_MSG_SIZE, GFP_NOFS);
->> +	if (!skb) {
->> +		printk(KERN_ERR
->> +		  "VFS: Not enough memory to send quota warning.\n");
->> +		return;
->> +	}
->> + msg_head = genlmsg_put(skb, 0, seq++, &quota_genl_family, 0,
-> QUOTA_NL_C_WARNING);
->> +	if (!msg_head) {
->> +		printk(KERN_ERR
->> +		  "VFS: Cannot store netlink header in quota warning.\n");
->> +		goto err_out;
->> +	}
->> +	ret = nla_put_u32(skb, QUOTA_NL_A_QTYPE, dquot->dq_type);
->> +	if (ret)
->> +		goto attr_err_out;
->> +	ret = nla_put_u64(skb, QUOTA_NL_A_EXCESS_ID, dquot->dq_id);
->> +	if (ret)
->> +		goto attr_err_out;
->> +	ret = nla_put_u32(skb, QUOTA_NL_A_WARNING, warntype);
->> +	if (ret)
->> +		goto attr_err_out;
->> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MAJOR,
->> +		MAJOR(dquot->dq_sb->s_dev));
->> +	if (ret)
->> +		goto attr_err_out;
->> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MINOR,
->> +		MINOR(dquot->dq_sb->s_dev));
->> +	if (ret)
->> +		goto attr_err_out;
->> +	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current->user->uid);
->> +	if (ret)
->> +		goto attr_err_out;
->> +	genlmsg_end(skb, msg_head);
->> +
->> +	ret = genlmsg_multicast(skb, 0, quota_genl_family.id, GFP_NOFS);
->> +	if (ret < 0 && ret != -ESRCH)
->> +		printk(KERN_ERR
->> +			"VFS: Failed to send notification message: %d\n", ret);
->> +	return;
->> +attr_err_out:
->> +	printk(KERN_ERR "VFS: Failed to compose quota message: %d\n", ret);
->> +err_out:
->> +	kfree_skb(skb);
->> +}
->> +#endif
->
-> This is it.  Normally netlink payloads are represented as a struct.  How
-> come this one is built-by-hand?
+Oh yes, sorry.
+	
+> > +	er = emulate_instruction(&svm->vcpu, kvm_run, 0, 0);
+> > +
+> > +	/* we should only succeed here in the case of hypercalls which
+> > +	   cannot generate an MMIO event.  MMIO means that the emulator
+> > +	   is mistakenly allowing an instruction that should generate
+> > +	   a UD fault so it's a bug. */
+> > +	BUG_ON(er == EMULATE_DO_MMIO);
+> 
+> This seems... unwise.  Firstly we know our emulator is incomplete.
+> Secondly an SMP guest can exploit this to crash the host.
 
-No netlink fields (unless I'm confused) are represented as a struct,
-not the entire netlink payload.
+This code is gone in v2.
 
-> It doesn't appear to be versioned.  Should it be?
+> (Code is in two places).
+> 
+> > +#define KVM_HYPERCALL ".byte 0x0f,0x01,0xc1"
 
-Well.  If it is using netlink properly each field should have a tag.
-So it should not need to be versioned, because each field is strictly
-controlled.
+Good point.
 
-> Does it have (or need) reserved-set-to-zero space for expansion?  Again,
-> hard to tell..
+> A nice big comment would be nice here, I think.  Note that this is big
+> enough for both "int $0x1f" and "sysenter", so I'm happy.
 
-Not if netlink is used properly.  Just another nested tag.
+I need to add a comment somewhere mentioning that if you patch with
+something less than 3 bytes, then you should pad with nop but the
+hypervisor must treat the whole instruction (including the padding) as
+atomic (that is, regardless of hypercall size, eip += 3) or you run the
+risk of breakage during migration.
 
-> I guess it's OK to send a major and minor out of the kernel like this. 
-> What's it for?  To represent a filesytem?  I wonder if there's a more
-> modern and useful way of describing the fs.  Path to mountpoint or
-> something?
+Regards,
 
-Or perhaps the string the fs was mounted with.
+Anthony Liguori
 
-> I suspect the namespace virtualisation guys would be interested in a new
-> interface which is sending current->user->uid up to userspace.  uids are
-> per-namespace now.  What are the implications?  (cc's added)
+> Cheers,
+> Rusty.
+> 
+> 
+> -------------------------------------------------------------------------
+> This SF.net email is sponsored by: Splunk Inc.
+> Still grepping through log files to find problems?  Stop.
+> Now Search log events and configuration files using AJAX and a browser.
+> Download your FREE copy of Splunk now >>  http://get.splunk.com/
+> _______________________________________________
+> kvm-devel mailing list
+> kvm-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/kvm-devel
 
-That we definitely would be.  Although the user namespaces is rather
-strongly incomplete at the moment.
-
-> Is it worth adding a comment explaining why GFP_NOFS is used here?
