@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932385AbXH2VxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760726AbXH2V4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932385AbXH2VxE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 17:53:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbXH2Vwy
+	id S1760726AbXH2V4W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 17:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757176AbXH2V4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 17:52:54 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:34326 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751142AbXH2Vwx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 17:52:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=h/gBW7X//ayBuMyEUXtVD7NsG8h0RvqMGUJrJXDXxdN2tXp/BVRcgmDXTMbEqAf0ka15AeeD70p1nLlvdspgwm4tnLZyF1rEXdFpvzT37L6g2muzygysebvr0OqUn1HJsPaIufJ0/PQuwtQqir/ogLWUzGjhNGbi1RueDcMTWGM=
-Subject: Possible kernel lock in semaphore's __down()
-From: Aleksandar Dezelin <dezelin@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Wed, 29 Aug 2007 23:52:51 +0200
-Message-Id: <1188424371.8853.9.camel@synaptical>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Aug 2007 17:56:08 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:54966 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756257AbXH2V4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 17:56:05 -0400
+Date: Wed, 29 Aug 2007 17:54:36 -0400
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-wireless@vger.kernel.org, Michael Buesch <mbuesch@freenet.de>,
+       Stefano Brivio <st3@riseup.net>,
+       Andrew Clayton <andrew@digital-domain.net>, Shish <shish@shishnet.org>,
+       Roman Zippel <zippel@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Karl Meyer <adhocrocker@gmail.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christian Casteyde <casteyde.christian@free.fr>,
+       Francois Romieu <romieu@fr.zoreil.com>, nfs@lists.sourceforge.net,
+       Netdev <netdev@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kbuild-devel@lists.sourceforge.net,
+       Martin Langer <martin-langer@gmx.de>,
+       Andreas Jaggi <andreas.jaggi@waterwave.ch>,
+       Danny van Dyk <kugelfang@gentoo.org>
+Subject: Re: [NFS] [3/4] 2.6.23-rc4: known regressions
+Message-ID: <20070829215436.GB9731@fieldses.org>
+References: <46D58CC6.4020605@googlemail.com> <46D5906B.1030701@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46D5906B.1030701@googlemail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-I'm a newbie here on the list and also as a "kernel hacker". There's a
-bug reported in bugzilla (Bug 7927), cite:
-
-
-> In the function __down
->  
-> fastcall void __sched __down(struct semaphore * sem)
-> {
->  struct task_struct *tsk = current;
->  DECLARE_WAITQUEUE(wait, tsk);
->  unsigned long flags;
->  
->  tsk->state = TASK_UNINTERRUPTIBLE;
->  spin_lock_irqsave(&sem->wait.lock, flags);
->  add_wait_queue_exclusive_locked(&sem->wait, &wait);
->  ...
-> }
->  
+On Wed, Aug 29, 2007 at 05:27:39PM +0200, Michal Piotrowski wrote:
+> FS
 > 
-> From this code fragment, it sets the tsk->state to TASK_UNINTERRUPTIBLE before 
-> gets the spinlock. Assume at that moment, a interrupt ocuur and and after the 
-> interrupt handle ends, an other process is scheduled to run (assume the kernel 
-> is preemptalbe). In this case, the previous process ( its state has set to 
-> TASK_UNINTERRUPTIBLE) has been picked off the run queue, and it has not yet add 
-> to the wait queue( sem->wait ), so it may be never waited up forever. 
-> 
+> Subject         : [NFSD OOPS] 2.6.23-rc1-git10
+> References      : http://lkml.org/lkml/2007/8/2/462
+> Last known good : ?
+> Submitter       : Andrew Clayton <andrew@digital-domain.net>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : unknown
 
-I have marked it as rejected as as I can see at the time this function is called,
-it is guaranteed that ret_from_intr() will not call schedule() on return from an 
-interrupt handler to either kernel space or user space because of the call 
-to macro might_sleep() in semaphore's down(). Am I wrong?
-
-Thanks and best regards,
-Aleksandar Dezelin
-
-
-
+This is a bug, but (alas) appears to be a preexisting bug, so may not
+belong on this list.--b.
