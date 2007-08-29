@@ -1,100 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbXH2SFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbXH2SIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755925AbXH2SFV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 14:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbXH2SFE
+	id S1755374AbXH2SIR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 14:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXH2SIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 14:05:04 -0400
-Received: from mail.trixing.net ([87.230.125.58]:59892 "EHLO mail.trixing.net"
+	Wed, 29 Aug 2007 14:08:05 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:5378 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751788AbXH2SFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 14:05:01 -0400
-Message-ID: <46D5B544.4030708@l4x.org>
-Date: Wed, 29 Aug 2007 20:04:52 +0200
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070329 Thunderbird/1.5.0.10 Mnenhy/0.7.4.666
+	id S1751362AbXH2SID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 14:08:03 -0400
+Date: Wed, 29 Aug 2007 20:08:01 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22 oops kernel BUG at block/elevator.c:366!
+Message-ID: <20070829180800.GC7932@kernel.dk>
+References: <200708291950.14513.arekm@maven.pl> <20070829175458.GA7932@kernel.dk> <200708292004.36426.arekm@maven.pl>
 MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christian Zankel <chris@zankel.net>, linux-alpha@vger.kernel.org
-References: <46D5902C.1040905@googlemail.com>
-In-Reply-To: <46D5902C.1040905@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.195
-X-SA-Exim-Mail-From: jdi@l4x.org
-Subject: Re: [1/4] 2.6.23-rc4: known regressions
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on mail.trixing.net)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708292004.36426.arekm@maven.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski wrote:
-> Subject         : 2.6.23-rc2 cross compile regressions (alpha,xtensa)
-> References      : http://lkml.org/lkml/2007/8/6/43 
-> Last known good : alpha: 2.6.22-git8 xtensa: 2.6.22-git6
-> Submitter       : Jan Dittmer <jdi@l4x.org>
-> Caused-By       : ?
-> Handled-By      : xtensa: Christian Zankel <chris@zankel.net>
-> Status          : unknown
+On Wed, Aug 29 2007, Arkadiusz Miskiewicz wrote:
+> On Wednesday 29 of August 2007, Jens Axboe wrote:
+> > On Wed, Aug 29 2007, Arkadiusz Miskiewicz wrote:
+> > > I guess I should sent these here since it looks like not scsi bug anyway.
+> >
+> > It's stex, right? It seems to have some issues with multiple completions
+> > of commands, which craps out the block layer of course.
+> 
+> Yes, stex. I'm staying with 2.6.19 in that case since it works fine in that 
+> version.
+> 
+> So scsi bug ... 8-)
 
-Status: Unfixed
+And you based that conclusion on what exactly?
 
-alpha:  http://l4x.org/k/?d=33700
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-arch/alpha/kernel/built-in.o(.text+0xaaa8): In function `pdev_save_srm_config':
-include/linux/slub_def.h:154: undefined reference to `__kmalloc_size_too_large'
-arch/alpha/kernel/built-in.o(.text+0xaaac):include/linux/slub_def.h:154: undefined reference to `__kmalloc_size_too_large'
-arch/alpha/kernel/built-in.o(.text+0xd0a8): In function `module_frob_arch_sections':
-include/linux/slub_def.h:154: undefined reference to `__kmalloc_size_too_large'
-arch/alpha/kernel/built-in.o(.text+0xd0ac):include/linux/slub_def.h:154: undefined reference to `__kmalloc_size_too_large'
-arch/alpha/kernel/built-in.o(.text+0x19388): In function `srmcons_get_private_struct':
-include/linux/slub_def.h:154: undefined reference to `__kmalloc_size_too_large'
-arch/alpha/kernel/built-in.o(.text+0x1938c):include/linux/slub_def.h:154: more undefined references to `__kmalloc_size_too_large' follow
-make[1]: *** [.tmp_vmlinux1] Error 1
-make: *** [_all] Error 2
-
-
-xtensa: http://l4x.org/k/?d=33728
-  CC      arch/xtensa/kernel/process.o
-arch/xtensa/kernel/process.c:50: error: `INR_OPEN' undeclared here (not in a function)
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.rlim[7].rlim_cur')
-arch/xtensa/kernel/process.c:50: error: `INR_OPEN' undeclared here (not in a function)
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.rlim[7].rlim_max')
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.rlim[7]')
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.rlim[8]')
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.rlim[9]')
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.rlim[10]')
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.rlim[11]')
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.rlim[12]')
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.rlim[13]')
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.rlim[14]')
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.rlim')
-arch/xtensa/kernel/process.c:50: error: initializer element is not constant
-arch/xtensa/kernel/process.c:50: error: (near initialization for `init_signals.<anonymous>')
-arch/xtensa/kernel/process.c: In function `xtensa_execve':
-arch/xtensa/kernel/process.c:449: error: implicit declaration of function `getname'
-arch/xtensa/kernel/process.c:449: warning: assignment makes pointer from integer without a cast
-arch/xtensa/kernel/process.c:460: error: implicit declaration of function `putname'
-make[2]: *** [arch/xtensa/kernel/process.o] Error 1
-make[1]: *** [arch/xtensa/kernel] Error 2
-make: *** [_all] Error 2
-
-
-Jan
+-- 
+Jens Axboe
 
