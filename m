@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758431AbXH2FZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbXH2Fff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758431AbXH2FZo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 01:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbXH2FZf
+	id S1758161AbXH2Fff (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 01:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbXH2FfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 01:25:35 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48233 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbXH2FZe (ORCPT
+	Wed, 29 Aug 2007 01:35:25 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:1374 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751463AbXH2FfY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 01:25:34 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible fashion.
-References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
-	<20070828214956.5f3020ef.akpm@linux-foundation.org>
-Date: Tue, 28 Aug 2007 23:24:55 -0600
-In-Reply-To: <20070828214956.5f3020ef.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Tue, 28 Aug 2007 21:49:56 -0700")
-Message-ID: <m18x7uc3q0.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 29 Aug 2007 01:35:24 -0400
+X-IronPort-AV: i="4.19,320,1183359600"; 
+   d="scan'208"; a="518219714:sNHT46367846"
+To: Divy Le Ray <divy@chelsio.com>
+Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Steve Wise <swise@opengridcomputing.com>
+Subject: Re: [PATCH 2.6.23 0/2] cxgb3 - Fix dev->priv usage
+X-Message-Flag: Warning: May contain useful information
+References: <46D4F12C.7090409@chelsio.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 28 Aug 2007 22:35:23 -0700
+In-Reply-To: <46D4F12C.7090409@chelsio.com> (Divy Le Ray's message of "Tue, 28 Aug 2007 21:08:12 -0700")
+Message-ID: <ada3ay26gys.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 29 Aug 2007 05:35:23.0588 (UTC) FILETIME=[656BD840:01C7E9FE]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Looks OK to me but I would just roll up the second patch into the
+first patch and let Jeff merge it as one commit.  There's no point in
+creating an intermediate tree that doesn't build -- it just breaks git
+bisect for no useful purpose.
 
-> On Tue, 28 Aug 2007 16:40:15 -0600 ebiederm@xmission.com (Eric W. Biederman)
-> wrote:
->
->> +static int deprecated_sysctl_warning(struct __sysctl_args *args)
->> +{
->> +	static int msg_count;
->> +	int name[CTL_MAXNAME];
->> +	int i;
->> +
->> +	/* Read in the sysctl name for better debug message logging */
->> +	for (i = 0; i < args->nlen; i++)
->> +		if (get_user(name[i], args->name + i))
->> +			return -EFAULT;
->> +
->> +	/* Ignore accesses to kernel.version */
->> + if ((args->nlen == 2) && (name[0] == CTL_KERN) && (name[1] == KERN_VERSION))
->> +		return 0;
->
-> Do we want to do all the above if msg_count>=5?
+Also as a side note, when trying to test this I got the message
 
-Well.  It won't really change order of the algorithm because we have
-to read the data in any way.  So an earlier short circuit exit
-would speed things up by a little bit, but it really shouldn't
-matter either way.
+    could not load TP SRAM: unable to load t3a_protocol_sram-1.0.44.bin
 
-Eric
+and you guys seem to only have t3b protocol sram images on your web
+site.  Could you send me the t3a file (or swap out my T3A boards for
+T3B boards ;)?
+
+Thanks,
+  Roland
