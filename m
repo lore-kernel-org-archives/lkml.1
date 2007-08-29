@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761093AbXH2NvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbXH2NxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761093AbXH2NvU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 09:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbXH2NvM
+	id S1761366AbXH2NxM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 09:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758945AbXH2Nw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 09:51:12 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:46216 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756452AbXH2NvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 09:51:11 -0400
-Date: Wed, 29 Aug 2007 09:50:58 -0400
-To: Peter Staubach <staubach@redhat.com>
-Cc: Valdis.Kletnieks@vt.edu, "Dr. David Alan Gilbert" <linux@treblig.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, neilb@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add source address to sunrpc svc errors
-Message-ID: <20070829135058.GA13803@fieldses.org>
-References: <20070825012630.GB5431@gallifrey> <20070824185621.3f16f7c9.randy.dunlap@oracle.com> <20070825150927.GA29335@gallifrey> <20070827214333.GM3118@fieldses.org> <7788.1188328346@turing-police.cc.vt.edu> <46D5767C.9050206@redhat.com>
-MIME-Version: 1.0
+	Wed, 29 Aug 2007 09:52:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41152 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756137AbXH2Nw6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 09:52:58 -0400
+Date: Wed, 29 Aug 2007 14:52:05 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Switch nfs/callback.c to using struct pid, not pid_t
+Message-ID: <20070829135205.GA13879@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+	Trond Myklebust <trond.myklebust@fys.uio.no>,
+	Oleg Nesterov <oleg@tv-sign.ru>,
+	Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+	Linux Containers <containers@lists.osdl.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <46D57658.2040704@openvz.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46D5767C.9050206@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <46D57658.2040704@openvz.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 29, 2007 at 09:37:00AM -0400, Peter Staubach wrote:
-> There are a lot of ways to discover who is throwing trash
-> at your system other than the kernel printing messages.
->
-> Tools such as tcpdump and tethereal/wireshark make much better
-> tools for this purpose.
+On Wed, Aug 29, 2007 at 05:36:24PM +0400, Pavel Emelyanov wrote:
+> Pid namespaces make it dangerous to use pid and tgid values
+> when run in some namespace. The struct pid itself is going
+> to be the only way for working with task pids, so make the
+> nfs callback thread use it.
+> 
+> Since nfs_callback_info.pid is set to current's one and reset
+> on the thread exit, it is safe not to get the struct pid. 
+> 
+> Since this pid is used later under lock_kernel() w/o sleeping 
+> operations, checking for i to be not NULL and killing the 
+> thread with kill_pid() is safe.
 
-The use of printk's and dprintk's in the rpc and nfsd code seems a
-little arbitrary in places.  It would be worth grepping for them all,
-figuring out how they're currently used, thinking about what we need
-them for (to help administrators identify problems?  to help testers
-provide debugging information to developers?), and how they might be
-abused (remote hosts and unprivileged local users shouldn't be able to
-spam the logs), developing some uniform policies, and submitting
-patches.
+NACK.  This just makes the code even more obscure.  Please get rid
+of the pid references entirely and convert the code to the kthread
+API.
 
-I'm not volunteering, but if someone's interested I think it could be
-really helpful, especially if it helps increase the usefulness of bug
-reports.
-
---b.
