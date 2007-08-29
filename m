@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760430AbXH2WeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbXH2Wec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760430AbXH2WeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 18:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1749667AbXH2WeB
+	id S1757105AbXH2Wec (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 18:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760272AbXH2WeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 18:34:01 -0400
-Received: from mail.tmr.com ([64.65.253.246]:35835 "EHLO gaimboi.tmr.com"
+	Wed, 29 Aug 2007 18:34:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43666 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbXH2WeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 18:34:00 -0400
-Message-ID: <46D5F45C.7020800@tmr.com>
-Date: Wed, 29 Aug 2007 18:34:04 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1759905AbXH2WeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 18:34:14 -0400
+Message-ID: <46D5F462.9010401@redhat.com>
+Date: Wed, 29 Aug 2007 17:34:10 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: "Ivan N. Zlatev" <contact@i-nz.net>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Thomas Meyer <thomas@m3y3r.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [2/4] 2.6.23-rc4: known regressions
-References: <46D58CC6.4020605@googlemail.com>	<46D59052.6040609@googlemail.com>	<3db1ec7f0708290842y176c48eck9f39131a107756f9@mail.gmail.com> <s5hodgqibf8.wl%tiwai@suse.de>
-In-Reply-To: <s5hodgqibf8.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Jesper Juhl <jesper.juhl@gmail.com>
+Subject: 4KSTACKS + DEBUG_STACKOVERFLOW harmful
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai wrote:
-> At Wed, 29 Aug 2007 18:42:56 +0300,
-> Ivan N. Zlatev wrote:
->> On 8/29/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
->>> ALSA
->>>
->>> Subject         : Master volume control broken
->>> References      : http://lkml.org/lkml/2007/8/18/46
->>> Last known good : ?
->>> Submitter       : Thomas Meyer <thomas@m3y3r.de>
->>> Caused-By       : Ivan N. Zlatev <contact@i-nz.net>
->>>                   commit 5d5d3bc3eddf2ad97b2cb090b92580e7fed6cee1
->>> Handled-By      : Ivan N. Zlatev <contact@i-nz.net>
->>> Status          : problem is being debugged
->>>
->>>
->> Hello,
->>
->> I am not the one to handle the issue. I have just supplied the
->> pinconfigs for the intel mac cards and assisted with logs/debug
->> information, so I happen to be more of an end user. I am not familiar
->> with the code base of the Intel HDA Codec. Takashi Iwai is the one
->> with the knowledge to fix the problem.
-> 
-> ... but without the hardware :-<
-> 
-> IMO, this is actually no real regression.  In the earlier verison, you
-> didn't have controls for multiple outputs, thus the mixer control was
-> named as Master.  Now you do have multiple individual controls, and
-> thus there is no master any more, instead.  That's the trade-off.
-> 
-Would you buy or use a stand-alone mixer where the only way to control 
-total output would be to change the setting for one output, then 
-rebalance all the others against it, and then iterate until the result 
-is correct?
+Noticed today that the combination of 4KSTACKS and DEBUG_STACKOVERFLOW
+config options is a bit deadly.
 
-Is this an intermediate step to the full functionality of a $29 Radio 
-Shack mixer, or a limitation of just one audio driver, or maybe the user 
-interface for ALSA is broken right now?
+DEBUG_STACKOVERFLOW warns in do_IRQ if we're within THREAD_SIZE/8 of the
+end of useable stack space, or 512 bytes on a 4k stack.
 
-Is it planned to leave Linux audio in this state?
+If we are, then it goes down the dump_stack path, which uses most, if
+not all, of the remaining stack, thereby turning a well-intentioned
+warning into a full-blown catastrophe.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+The callchain from the warning looks something like this, with stack
+usage shown as found on my x86 box:
+
+4 dump_stack
+4   show_trace
+8     show_trace_log_lvl
+4       dump_trace
+          print_context_stack
+12          print_trace_address
+              print_symbol
+232             __print_symbol
+164               sprint_symbol
+20                  printk
+___
+448
+
+448 bytes to tell us that we're within 512 bytes (or less) of certain
+doom... and I think there's call overhead on top of that?
+
+The large stack usage in those 2 functions is due to big char arrays, of
+size KSYM_NAME_LEN (128 bytes) and KSYM_SYMBOL_LEN (223 bytes).
+
+IOW, the stack warning effectively reduces useful stack left in our itty
+bitty 4k stacks by over 10%.
+
+Any suggestions for ways around this?  The warning is somewhat helpful,
+and I guess the obvious option is to lighten up the dump_stack path, but
+it's still effectively reducing precious available stack space by some
+amount.
+
+With CONFIG_DEBUG_STACK_USAGE, we could print at oops time: "oh, and by
+the way, you blew your stack" if there is no zeroed stack space left, as
+a post-mortem.  Even without that option, I think we could still check
+whether the *current* %esp at oops time has gone too far?  But if we
+blew the stack, returned, and *then* oops, I think it'd be hard to know
+without the DEBUG_STACK_USAGE option that we ran out of room.
+
+-Eric
