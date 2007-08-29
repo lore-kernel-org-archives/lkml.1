@@ -1,155 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbXH2M1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbXH2Mej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933020AbXH2M1U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 08:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757027AbXH2M1L
+	id S1757486AbXH2Mej (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 08:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbXH2Mea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 08:27:11 -0400
-Received: from styx.suse.cz ([82.119.242.94]:42832 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756027AbXH2M1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 08:27:10 -0400
-Date: Wed, 29 Aug 2007 14:46:15 +0200
-From: Jan Kara <jack@suse.cz>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-ID: <20070829124615.GC7814@duck.suse.cz>
-References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org> <46D5126F.9000405@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46D5126F.9000405@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 29 Aug 2007 08:34:30 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:60904 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753990AbXH2Me3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 08:34:29 -0400
+Subject: [PATCH] avoid negative shifts in radix-tree.c, take 2
+From: Peter Lund <firefly@vax64.dk>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Christoph Hellwig <hch@infradead.org>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, Momchil Velikov <velco@fadata.bg>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Content-Type: text/plain
+Date: Wed, 29 Aug 2007 14:34:25 +0200
+Message-Id: <1188390865.7216.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 29-08-07 12:00:07, Balbir Singh wrote:
-> Andrew Morton wrote:
-> > On Tue, 28 Aug 2007 16:13:18 +0200 Jan Kara <jack@suse.cz> wrote:
-> >>   I'm sending rediffed patch implementing sending of quota messages via netlink
-> >> interface (some rationale in patch description). I've already posted it to
-> >> LKML some time ago and there were no objections, so I guess it's fine to put
-> >> it to -mm. Andrew, would you be so kind? Thanks.
-> >>   Userspace deamon reading the messages from the kernel and sending them to
-> >> dbus and/or user console is also written (it's part of quota-tools). The
-> >> only remaining problem is there are a few changes needed to libnl needed for
-> >> the userspace daemon. They were basically acked by the maintainer but it
-> >> seems he has not merged the patches yet. So this will take a bit more time.
-> >>
-> > 
-> > So it's a new kernel->userspace interface.
-> > 
-> > But we have no description of the interface :(
-> > 
-> 
-> And could we have some description of the context under which all the message
-> exchanges take place. When are these messages sent out -- what event
-> is the user space notified of?
-  The user is notified about either exceeding his quota softlimit or
-reaching hardlimit. If you are interested in more details, please ask.
+From: Peter Lund <firefly@vax64.dk>
 
-> >> +/* Send warning to userspace about user which exceeded quota */
-> >> +static void send_warning(const struct dquot *dquot, const char warntype)
-> >> +{
-> >> +	static unsigned long seq;
-> >> +	struct sk_buff *skb;
-> >> +	void *msg_head;
-> >> +	int ret;
-> >> +
-> >> +	skb = genlmsg_new(QUOTA_NL_MSG_SIZE, GFP_NOFS);
-> >> +	if (!skb) {
-> >> +		printk(KERN_ERR
-> >> +		  "VFS: Not enough memory to send quota warning.\n");
-> >> +		return;
-> >> +	}
-> >> +	msg_head = genlmsg_put(skb, 0, seq++, &quota_genl_family, 0, QUOTA_NL_C_WARNING);
-> >> +	if (!msg_head) {
-> >> +		printk(KERN_ERR
-> >> +		  "VFS: Cannot store netlink header in quota warning.\n");
-> >> +		goto err_out;
-> 
-> One problem, we've been is losing notifications. It does not happen for us
-> due to the cpumask interface (which allows us to have parallel sockets
-> for each cpu or a set of cpus). How frequent are your notifications?
-  Quite infrequent... Users won't exceed their quotas too often :).
+Negative shifts are not allowed in C (the result is undefined).
 
-> >> +	}
-> >> +	ret = nla_put_u32(skb, QUOTA_NL_A_QTYPE, dquot->dq_type);
-> >> +	if (ret)
-> >> +		goto attr_err_out;
-> >> +	ret = nla_put_u64(skb, QUOTA_NL_A_EXCESS_ID, dquot->dq_id);
-> >> +	if (ret)
-> >> +		goto attr_err_out;
-> >> +	ret = nla_put_u32(skb, QUOTA_NL_A_WARNING, warntype);
-> >> +	if (ret)
-> >> +		goto attr_err_out;
-> >> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MAJOR,
-> >> +		MAJOR(dquot->dq_sb->s_dev));
-> >> +	if (ret)
-> >> +		goto attr_err_out;
-> >> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MINOR,
-> >> +		MINOR(dquot->dq_sb->s_dev));
-> >> +	if (ret)
-> >> +		goto attr_err_out;
-> >> +	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current->user->uid);
-> >> +	if (ret)
-> >> +		goto attr_err_out;
-> >> +	genlmsg_end(skb, msg_head);
-> >> +
-> 
-> Have you looked at ensuring that the data structure works across 32 bit
-> and 64 bit systems (in terms of binary compatibility)? That's usually
-> a nice to have feature.
-  Generic netlink should take care of this - arguments are typed so it
-knows how much bits numbers have. So this should be no issue. Are there any
-other problems that you have in mind?
+It works on most platforms but not on the VAX with gcc 4.0.1 (it results in an
+"operand reserved" fault).
 
-> >> +	ret = genlmsg_multicast(skb, 0, quota_genl_family.id, GFP_NOFS);
-> >> +	if (ret < 0 && ret != -ESRCH)
-> >> +		printk(KERN_ERR
-> >> +			"VFS: Failed to send notification message: %d\n", ret);
-> >> +	return;
-> >> +attr_err_out:
-> >> +	printk(KERN_ERR "VFS: Failed to compose quota message: %d\n", ret);
-> >> +err_out:
-> >> +	kfree_skb(skb);
-> >> +}
-> >> +#endif
-> > 
-> > This is it.  Normally netlink payloads are represented as a struct.  How
-> > come this one is built-by-hand?
-> > 
-> > It doesn't appear to be versioned.  Should it be?
-> > 
-> 
-> Yes, versioning is always nice and genetlink supports it.
-> 
-> > Does it have (or need) reserved-set-to-zero space for expansion?  Again,
-> > hard to tell..
-> > 
-> > I guess it's OK to send a major and minor out of the kernel like this. 
-> > What's it for?  To represent a filesytem?  I wonder if there's a more
-> > modern and useful way of describing the fs.  Path to mountpoint or
-> > something?
-> > 
-> > I suspect the namespace virtualisation guys would be interested in a new
-> > interface which is sending current->user->uid up to userspace.  uids are
-> > per-namespace now.  What are the implications?  (cc's added)
-> 
-> The memory controller or VM would also be interested in notifications
-> of OOM. At OLS this year interest was shown in getting OOM notifications
-> and allow the user space a chance to handle the notification and take
-> action (especially for containers). We already have containerstats for
-> containers (which I was planning to reuse), but I was told that we would
-> be interested in user space OOM notifications in general.
-  Generic netlink can be used to pass this information (although in OOM
-situation, it may be a bit hairy to get the network stack working...). But
-I guess it's not related to my patch.
+Applies to Linux 2.6.22.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Signed-off-by: Peter Lund <firefly@vax64.dk>
+---
+Shifting by more than the width of the value on the left is also not allowed.
+I think the extra '>> 1' tacked on at the end in the original code was an attempt
+to work around that.  Getting rid of that is an extra feature of this patch.
+Since the shift amount is what causes the trouble, I felt it was better to name that
+value than the return value, which in any case becames much easier to read after
+removal of ' - 1' and '>> 1' and naming of the shift amount.
+
+Here's the chapter and verse, taken from the final draft of the C99 standard
+("6.5.7 Bitwise shift operators", paragraph 3):
+
+  "The integer promotions are performed on each of the operands. The
+  type of the result is that of the promoted left operand. If the
+  value of the right operand is negative or is greater than or equal
+  to the width of the promoted left operand, the behavior is
+  undefined."
+
+Thank you to Jan-Benedict Glaw and Christoph Hellwig for review.
+
+I could change the indentation so the variables and equal signs no longer line up but
+I'm pretty sure that would not be an improvement.
+
+I could also remove the else and unindent the second return statement but isn't that
+just a matter of personal taste?
+
+--- linux-2.6.22/lib/radix-tree.c.orig	2007-08-27 15:42:37.000000000 +0200
++++ linux-2.6.22/lib/radix-tree.c	2007-08-29 13:19:19.000000000 +0200
+@@ -980,12 +980,13 @@
+ 
+ static __init unsigned long __maxindex(unsigned int height)
+ {
+-	unsigned int tmp = height * RADIX_TREE_MAP_SHIFT;
+-	unsigned long index = (~0UL >> (RADIX_TREE_INDEX_BITS - tmp - 1)) >> 1;
++	unsigned int width = height * RADIX_TREE_MAP_SHIFT;
++	int          shift = RADIX_TREE_INDEX_BITS - width;
+ 
+-	if (tmp >= RADIX_TREE_INDEX_BITS)
+-		index = ~0UL;
+-	return index;
++	if (shift < 0)
++		return ~0UL;
++	else
++		return ~0UL >> shift;
+ }
+ 
+ static __init void radix_tree_init_maxindex(void)
+
+
