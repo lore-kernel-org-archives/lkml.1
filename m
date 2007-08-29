@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757976AbXH2DEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbXH2D1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757976AbXH2DEn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 23:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXH2DEe
+	id S1757520AbXH2D1S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 23:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbXH2D1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 23:04:34 -0400
-Received: from thunk.org ([69.25.196.29]:44444 "EHLO thunker.thunk.org"
+	Tue, 28 Aug 2007 23:27:07 -0400
+Received: from iucha.net ([209.98.146.184]:33513 "EHLO mail.iucha.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751786AbXH2DEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 23:04:32 -0400
-Date: Tue, 28 Aug 2007 23:04:10 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Matthew Wilcox <matthew@wil.cx>, Matt Mackall <mpm@selenic.com>,
-       Josh Boyer <jwboyer@gmail.com>, Andy Isaacson <adi@hexapodia.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ksummit-2007-discuss@thunk.org
-Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
-Message-ID: <20070829030410.GC29615@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Daniel Phillips <phillips@phunq.net>,
-	Matthew Wilcox <matthew@wil.cx>, Matt Mackall <mpm@selenic.com>,
-	Josh Boyer <jwboyer@gmail.com>, Andy Isaacson <adi@hexapodia.org>,
-	James Bottomley <James.Bottomley@hansenpartnership.com>,
-	Matthew Garrett <mjg59@srcf.ucam.org>,
-	Tech Board Discuss <Tech-board-discuss@lists.linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	ksummit-2007-discuss@thunk.org
-References: <20070822224400.GA17255@srcf.ucam.org> <20070824025504.GT9163@parisc-linux.org> <20070824104538.GA31344@thunk.org> <200708281559.11181.phillips@phunq.net>
+	id S1753544AbXH2D1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 23:27:06 -0400
+Date: Tue, 28 Aug 2007 22:27:05 -0500
+From: Florin Iucha <florin@iucha.net>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Bret Towe <magnade@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: NFS woes again
+Message-ID: <20070829032705.GD7067@iucha.net>
+References: <20070821132704.GJ10422@iucha.net> <Pine.LNX.4.64.0708211536560.2460@twin.jikos.cz> <20070822132200.GO10422@iucha.net> <20070823125210.GQ10422@iucha.net> <dda83e780708231014x66093dafj83263a2a1c8203bb@mail.gmail.com> <20070823173637.GS10422@iucha.net> <1188220651.6701.32.camel@heimdal.trondhjem.org> <dda83e780708271819x247ac49dx981c49a80ed6a999@mail.gmail.com> <20070828013541.GA10422@iucha.net> <1188307723.6701.138.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="jy6Sn24JjFx/iggw"
 Content-Disposition: inline
-In-Reply-To: <200708281559.11181.phillips@phunq.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1188307723.6701.138.camel@heimdal.trondhjem.org>
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 28, 2007 at 03:59:09PM -0700, Daniel Phillips wrote:
-> Ever watched a legislative assembly at work?  A bad idea perhaps, but 
-> the best that has been discovered so far.
 
-Sure, but a Debian mailing list where fanatics who have no job, no
-life, but huge amounts of free time to post literally hundreds of
-messages a day indulging in Debian's "last post wins" style of
-argumentation have far more power to influence the decision making
-process than those who have to work at a real job has very little in
-common with a legislative assembly.
+--jy6Sn24JjFx/iggw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That's why any kind of election for the TAB should happen, IMHO, in
-"real space", at some conference where there is a gross filter of
-people being able to afford travel expenses or be paid by some company
-for their expenses (thus showing that someone felt that they were
-doing enough good work that they should be given the resources to pay
-for travel expenses and the conference registration fees).
+On Tue, Aug 28, 2007 at 09:28:43AM -0400, Trond Myklebust wrote:
+> Doh! I see the problem: cancel_delayed_work_sync() shouldn't ever be
+> called recursively.
+>=20
+> The following patch should be correct. Please just discard the previous
+> one...
 
-If that's an elitist attitude; I plead guilty --- Linux and OSS is
-*not* a democracy.  Linus doesn't obey the whims of majority voting to
-decide which patches to accept or reject.  The Linux kernel community
-is very much a meritocracy, which is why I don't believe that some
-kind of pure democracy such as using the SPI voting membership is the
-right thing for electing the TAB.  Just remember, in the United
-States, a democracy where around 50% of Americans believe that Saddam
-Hussein was personally responsible for 9/11 elected George W. Bush to
-the US presidency.  It's statistics like that which make you want to
-impose some kind of comptency test on who is allowed to vote.
+So far so good.  This patch got one hour uptime...  I'll stay with
+this kernel for a few days, to keep an eye on it.
 
-The kernel summit is one such place where we can hold such a vote, and
-if people thought that a BOF at some conference like Linux.conf.au or
-OLS would be a better place, those might be other alternatives.  I'll
-note that most of this discussion is mostly moot, though, given that
-at this point we have 5 candidates for 5 slots, for positions which is
-really more about service than about any kind of power or benefits.
+Thanks,
+florin
 
-       	    	    	      	      	     - Ted
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
+
+--jy6Sn24JjFx/iggw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG1OeJND0rFCN2b1sRAsEJAJsG03kqkwZibujkR57HJfbhW2URJACeI9uT
+KVXRCwmKnBxuK//q9d2SPp4=
+=HiEj
+-----END PGP SIGNATURE-----
+
+--jy6Sn24JjFx/iggw--
