@@ -1,103 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbXH2Sce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758374AbXH2Sdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbXH2Sce (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 14:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbXH2Sc1
+	id S1758374AbXH2Sdl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 14:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbXH2Sde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 14:32:27 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48909 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751675AbXH2Sc1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 14:32:27 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-References: <20070828141318.GC5869@duck.suse.cz>
-	<20070828211335.37fce4c9.akpm@linux-foundation.org>
-	<20070829122647.GB7814@duck.suse.cz>
-Date: Wed, 29 Aug 2007 12:31:52 -0600
-In-Reply-To: <20070829122647.GB7814@duck.suse.cz> (Jan Kara's message of "Wed,
-	29 Aug 2007 14:26:47 +0200")
-Message-ID: <m1mywa42g7.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 29 Aug 2007 14:33:34 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:34470 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753006AbXH2Sde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 14:33:34 -0400
+Message-ID: <46D5BBFA.5060200@austin.ibm.com>
+Date: Wed, 29 Aug 2007 13:33:30 -0500
+From: jschopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Joachim Fenkes <fenkes@de.ibm.com>
+CC: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+       Thomas Klein <tklein@de.ibm.com>, Paul Mackerras <pmac@au1.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Nathan Lynch <ntl@pobox.com>
+Subject: Re: [PATCH 2.6.23] ibmebus: Prevent bus_id collisions
+References: <200708291815.18197.fenkes@de.ibm.com>
+In-Reply-To: <200708291815.18197.fenkes@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara <jack@suse.cz> writes:
+> +	len = strlen(dn->full_name + 1);
+> +	bus_len = min(len, BUS_ID_SIZE - 1);
+> +	memcpy(dev->ofdev.dev.bus_id, dn->full_name + 1
+> +	       + (len - bus_len), bus_len);
+> +	for (i = 0; i < bus_len; i++)
+> +		if (dev->ofdev.dev.bus_id[i] == '/')
+> +			dev->ofdev.dev.bus_id[i] = '_';
+>  
+>  	/* Register with generic device framework. */
+>  	if (ibmebus_register_device_common(dev, dn->name) != 0) {
 
->> I suspect the namespace virtualisation guys would be interested in a new
->> interface which is sending current->user->uid up to userspace.  uids are
->> per-namespace now.  What are the implications?  (cc's added)
+What happens when the full name is > 31 characters?  It looks to me that it 
+will be truncated, which takes away the uniqueness guarantee.
 
->   I know there's something going on in this area but I don't know any
-> details. If somebody has some advice what should be passed into userspace
-> so that user/group can be idenitified, it is welcome.
-
-For non networking stuff netlink is a pain to use in this area.
-
-Although if we are very careful we may be ok.  But this requires
-some thinking through.
-
-In principle the uid that corresponds to a struct user depends
-on which user namespace you are in.
-
-Now there is a cheap trick we can play.  A traditional filesystem
-belongs to exactly one user namespace. So we can return the uid
-in the filesystems user namespace.
-
-Wait you are returning current->user->uid?  Shouldn't we return
-the user who's quota is exceeded?  I.e. if alice owns a file
-and makes it world writable.  And bob writes to the file wouldn't
-that file still be billed to alice's quota?  So shouldn't we complain
-about alice and not bob?
-
-Anyway if the goal is to return a user who maps to the filesystem we
-can just always return uids in the filesystems uid namespace.
-
-Although if filesystems start supporting multiple user namespaces
-natively we might have a challenge on our hands.
-
-Let me see if I can think of a concrete example here.
-
-We have a nfs server with quotas.
-We have clients who mount the nfs filesystem without synchronizing
-their /etc/password files, so we have separate user namespaces.
-
-What are the ways to make this work?
-- Everyone who has right access to the NFS mount on all
-  machines must have their uid synchronized across all machines
-  (the easiest case).
-
-- Each different kernel has a mapping from it's local uids to
-  the uids of the nfs filesystem. (ick if we do much more the
-  root squash).
-
-- The nfs filesystem knows about the situation and remembers the
-  uid source (the uid namespace) as well as the uid when storing
-  owners of files.  NFSv4 allows for this by treating users
-  as user@domain.
-
-Generally synchronizing uid namespaces (with possibly a root squash
-exception) is the sanest and simplest thing to do in a case like this,
-but it isn't always what is done.
-
-As long as we are returning the filesystems idea of users we
-shouldn't have to worry much about uid namespaces.  However
-for non-traditional filesystems that don't store the user
-as just a uid, say 9p and NFSv4, this implies that we want
-to use the filesystems string identifier.  However I don't think
-the quota system supports these filesystems yet.  So that
-isn't an issue just yet.
-
-However I'm still confused about the use of current->user.  If that
-is what we really want and not the user who's quota will be charged
-it gets to be a really trick business, because potentially the uid
-we want to deliver varies depending on who opened the netlink socket.
-
-Eric
+There must be an individual property that is guaranteed to be unique and 
+less than 32 characters.  How about "ibm,my-drc-index"?  That looks like a 
+good candidate.
