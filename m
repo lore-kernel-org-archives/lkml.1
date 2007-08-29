@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932574AbXH2QCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932768AbXH2QF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932574AbXH2QCf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 12:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbXH2QC1
+	id S932768AbXH2QF1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 12:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbXH2QFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 12:02:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55533 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752666AbXH2QC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 12:02:27 -0400
-Message-ID: <46D59890.3020508@redhat.com>
-Date: Wed, 29 Aug 2007 12:02:24 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Wed, 29 Aug 2007 12:05:18 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:41284 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754107AbXH2QFR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 12:05:17 -0400
+Date: Wed, 29 Aug 2007 17:04:26 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Oliver Neukum <oliver@neukum.org>
+cc: Arjan van de Ven <arjan@infradead.org>,
+       Daniel Drake <ddrake@brontes3d.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: speeding up swapoff
+In-Reply-To: <200708291636.48323.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.64.0708291701140.617@blonde.wat.veritas.com>
+References: <1188394172.22156.67.camel@localhost> <20070829073040.1ec35176@laptopd505.fenrus.org>
+ <200708291636.48323.oliver@neukum.org>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Jakub Jelinek <jakub@redhat.com>
-Subject: x86_64 vdso patch is broken somehow?
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit:     2aae950b21e4bc789d1fc6668faf67e8748300b7
+On Wed, 29 Aug 2007, Oliver Neukum wrote:
+> Am Mittwoch 29 August 2007 schrieb Arjan van de Ven:
+> > Another question, if this is during system shutdown, maybe that's a
+> > valid case for flushing most of the pagecache first (from userspace)
+> > since most of what's there won't be used again anyway. If that's enough
+> > to make this go faster...
+> 
+> Is there a good reason to swapoff during shutdown?
 
-With new vdso gettimeofday support in glibc:
+Three reasons, I think, only one of them compelling:
 
+1. Tidiness.
+2. So swapoff gets testing and I get to hear of any bugs in it.
+3. If a regular swapfile is used instead of a disk partition, you
+   need to swapoff before its filesystem can be unmounted cleanly.
 
-
-[https://bugzilla.redhat.com/show_bug.cgi?id=262481]
-
-After 5 minutes of uptime, the system clock goes screwy.
-
-When running a simple 'while /bin/true ; date ; uptime ; sleep 2 ; done' loop:
-
-
-Wed Aug 29 01:01:14 EDT 2007
- 01:01:14 up 4 min,  4 users,  load average: 0.13, 0.40, 0.21
-Wed Aug 29 01:01:16 EDT 2007
- 01:01:16 up 4 min,  4 users,  load average: 0.13, 0.40, 0.21
-Wed Aug 29 02:09:36 EDT 2007
- 01:01:18 up 5 min,  4 users,  load average: 0.12, 0.39, 0.21
-Wed Aug 29 02:09:38 EDT 2007
- 01:01:20 up 5 min,  4 users,  load average: 0.12, 0.39, 0.21
-Wed Aug 29 02:09:40 EDT 2007
- 01:01:22 up 5 min,  4 users,  load average: 0.19, 0.40, 0.22
-
-At the 5 minute mark, the time jumps forward an hour as reported by date, *even
-though the kernel variant appears to be unchanged*.
-
-If you then try and reset the time (with 'date -s "01:04"):
-
-Wed Aug 29 02:11:06 EDT 2007
- 01:02:48 up 6 min,  4 users,  load average: 0.99, 0.60, 0.30
-Wed Aug 29 02:12:19 EDT 2007
- 01:04:01 up 6 min,  4 users,  load average: 0.99, 0.60, 0.30
-Wed Aug 29 02:12:21 EDT 2007
- 01:04:03 up 6 min,  4 users,  load average: 0.99, 0.61, 0.30
-
-the kernel's date (as seen by uptime) is correctly set, but the date as returned
-by /bin/date remains wrong (although it changes by the same amount.)
-
+Hugh
