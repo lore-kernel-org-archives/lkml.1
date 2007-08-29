@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbXH2SvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbXH2TAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757873AbXH2SvJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 14:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbXH2Su5
+	id S1755792AbXH2TAn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 15:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbXH2TAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 14:50:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50854 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753517AbXH2Su4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 14:50:56 -0400
-Message-ID: <46D5BF7D.10706@redhat.com>
-Date: Wed, 29 Aug 2007 14:48:29 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Wed, 29 Aug 2007 15:00:34 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54025 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752460AbXH2TAd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 15:00:33 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible fashion.
+References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
+	<20070828230459.GA15937@infradead.org>
+	<m1r6lnb4ha.fsf@ebiederm.dsl.xmission.com>
+	<46D4CC81.4060400@zytor.com>
+	<m1d4x7aysz.fsf@ebiederm.dsl.xmission.com>
+	<20070829114604.242b976c@the-village.bc.nu>
+	<m1absa5kid.fsf@ebiederm.dsl.xmission.com>
+	<46D5ACA1.3090503@zytor.com>
+Date: Wed, 29 Aug 2007 13:00:07 -0600
+In-Reply-To: <46D5ACA1.3090503@zytor.com> (H. Peter Anvin's message of "Wed,
+	29 Aug 2007 10:28:01 -0700")
+Message-ID: <m18x7u4154.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       Oliver Neukum <oneukum@suse.de>, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [stable] [patch 25/28] USB: cdc-acm: fix sysfs attribute	registration
- bug
-References: <20070824154906.GA19239@kroah.com> <Pine.LNX.4.44L0.0708241349240.3862-100000@iolanthe.rowland.org> <20070824180423.GA5458@suse.de>
-In-Reply-To: <20070824180423.GA5458@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/24/2007 02:04 PM, Greg KH wrote:
-> 
-> I'm starting to really appreciate Linus's hate for patch-fuzz :)
-> 
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-If you're using quilt, add this to .quiltrc:
+> Eric W. Biederman wrote:
+>>
+>> My hypothesis.  No one cares now.
+>>
+>> My observation. The way we have been maintaining the binary sysctl
+>> side of things using it is asking for your application to be broken in
+>> subtle and nasty ways.
+>>
+>
+> I suspect the right thing to do is simply to make a list of the supported binary
+> sysctls, and automatically verify those numbers.  Doing that would alleviate
+> these concerns, wouldn't break anything, and isn't really that hard to do.
 
-QUILT_PATCH_OPTS="--fuzz=1"
+Well the list is currently 1200 lines long, with wild cards in it.
+See sysctl_check.c in the -mm tree.  I think I have finally found
+all of the binary sysctl numbers that are currently in use but I may
+have missed something.  Although that can probably be trimmed a bit
+now that a number of those sysctls have been identified as impossibly
+and always broken
 
+The real problem is that sysctl uses different functions for the
+binary path and the proc path.  Those functions return the same
+data in two different forms.  When those functions diverge we
+have problems.  As I recently found with about 42 of the netfilter
+sysctls.
+
+The concern is that no one uses these things so no one tests these
+things, and no one complains about these things so the code bit rots.
+When the code bit rots we can return the wrong value or set the
+wrong value in the kernel or skip locking or skip permission checks
+or various other nasty things.
+
+Hmm.  Thinking about it I guess so far I have found about 10% of
+the binary sysctls to have actual implementation problems.  Not my
+idea of well maintained code.
+
+Eric
