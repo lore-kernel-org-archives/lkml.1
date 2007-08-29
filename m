@@ -1,115 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932414AbXH2HmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932465AbXH2Hxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932414AbXH2HmQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 03:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbXH2HmF
+	id S932465AbXH2Hxq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 03:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbXH2Hxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 03:42:05 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:24307 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753197AbXH2HmD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 03:42:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sD/r7tF5RSTnPgKH8byBMyVL3kMteOsXQ0Fb5cpCB81WbLClkPsMpmHgSkJ0vs6YqIDLap4dHn5wrxGgcUM/E3idA7gMD61tuEXEfXTrLyBAyWTUUX1JJ11GypCepgiWRcJWS1rHjRZmn/klpRQ2wBTMj4NqXGN70YknjzDC0ig=
-Message-ID: <32209efe0708290042g362fbfadj38fe57e0de7f3af@mail.gmail.com>
-Date: Wed, 29 Aug 2007 00:42:02 -0700
-From: "Natalie Protasevich" <protasnb@gmail.com>
-To: "David Rees" <drees76@gmail.com>
-Subject: Re: Who wants to maintain KR list for stable releases? (was Re: nmi_watchdog=2 regression in 2.6.21)
-Cc: "Daniel Walker" <dwalker@mvista.com>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "=?ISO-8859-1?Q?Bj=F6rn_Steinbrink?=" <B.Steinbrink@gmx.de>,
-       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org
-In-Reply-To: <72dbd3150708271212w6bcca4c4web26d7cb25892afc@mail.gmail.com>
+	Wed, 29 Aug 2007 03:53:35 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:36089 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751359AbXH2Hxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 03:53:34 -0400
+Message-ID: <388374011.01681@ustc.edu.cn>
+X-EYOUMAIL-SMTPAUTH: wfg@mail.ustc.edu.cn
+Date: Wed, 29 Aug 2007 15:53:30 +0800
+From: Fengguang Wu <wfg@mail.ustc.edu.cn>
+To: David Chinner <dgc@sgi.com>
+Cc: Chris Mason <chris.mason@oracle.com>, Andrew Morton <akpm@osdl.org>,
+       Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 0/6] writeback time order/delay fixes take 3
+Message-ID: <20070829075330.GA5960@mail.ustc.edu.cn>
+References: <386910467.21100@ustc.edu.cn> <20070821202314.335e86ec@think.oraclecorp.com> <20070822011841.GA8090@mail.ustc.edu.cn> <20070823023306.GM61154114@sgi.com> <20070824135504.GA9029@mail.ustc.edu.cn> <20070828145530.GD61154114@sgi.com> <20070828110820.542bbd67@think.oraclecorp.com> <20070828163308.GE61154114@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1186531609.22044.50.camel@imap.mvista.com>
-	 <46CDE94A.7000600@googlemail.com>
-	 <1187904169.2435.83.camel@dhcp193.mvista.com>
-	 <46D21E8E.4000003@googlemail.com>
-	 <20070827005131.b93f5935.akpm@linux-foundation.org>
-	 <6bffcb0e0708270438j4c92a0b4m1396b4010f25bfb5@mail.gmail.com>
-	 <1188227585.2435.192.camel@dhcp193.mvista.com>
-	 <6bffcb0e0708270826p7a7fb044re53d0db4094bc3d5@mail.gmail.com>
-	 <1188229197.2435.207.camel@dhcp193.mvista.com>
-	 <72dbd3150708271212w6bcca4c4web26d7cb25892afc@mail.gmail.com>
+In-Reply-To: <20070828163308.GE61154114@sgi.com>
+X-GPG-Fingerprint: 53D2 DDCE AB5C 8DC6 188B  1CB1 F766 DA34 8D8B 1C6D
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-n 8/27/07, David Rees <drees76@gmail.com> wrote:
-> On 8/27/07, Daniel Walker <dwalker@mvista.com> wrote:
-> > Now that I'm looking at the kernel bugzilla .. If you set the kernel
-> > version to 2.6.22 and set the "Regression" check box you could denote
-> > the fact that it's a regression in that kernel version ..
-> >
-> > I don't know if this URL is going to come out right,
-> >
-> > <snip url>
-> >
-> > That should be open bugs , kernel version 2.6.22, with the regression
-> > check box set ..
-> >
-> > So you may not need a master tracking bug ..
->
-> Yep, that's another way to do it. The method I described earlier is
-> commonly used when you don't have the handy regression field in
-> bugzilla. The technique is handy for creating lists for tracking other
-> types of issues which don't necessarily fall into a component and you
-> don't want to bother customizing bugzilla.
->
-> I also suspect that there will be a number of common searches that
-> many people will find useful. With recent versions of bugzilla (3.0+)
-> you can share searches within groups, but it may be helpful to have a
-> wiki or some other page where useful searches can be stored, or one of
-> the templates edited to include those common searches.
->
-> -Dave
->
+On Wed, Aug 29, 2007 at 02:33:08AM +1000, David Chinner wrote:
+> On Tue, Aug 28, 2007 at 11:08:20AM -0400, Chris Mason wrote:
+> > On Wed, 29 Aug 2007 00:55:30 +1000
+> > David Chinner <dgc@sgi.com> wrote:
+> > > On Fri, Aug 24, 2007 at 09:55:04PM +0800, Fengguang Wu wrote:
+> > > > On Thu, Aug 23, 2007 at 12:33:06PM +1000, David Chinner wrote:
+> > > > > On Wed, Aug 22, 2007 at 09:18:41AM +0800, Fengguang Wu wrote:
+> > > > > > On Tue, Aug 21, 2007 at 08:23:14PM -0400, Chris Mason wrote:
+> > > > > > Notes:
+> > > > > > (1) I'm not sure inode number is correlated to disk location in
+> > > > > >     filesystems other than ext2/3/4. Or parent dir?
+> > > > > 
+> > > > > The correspond to the exact location on disk on XFS. But, XFS has
+> > > > > it's own inode clustering (see xfs_iflush) and it can't be moved
+> > > > > up into the generic layers because of locking and integration into
+> > > > > the transaction subsystem.
+> > > > >
+> > > > > > (2) It duplicates some function of elevators. Why is it
+> > > > > > necessary?
+> > > > > 
+> > > > > The elevators have no clue as to how the filesystem might treat
+> > > > > adjacent inodes. In XFS, inode clustering is a fundamental
+> > > > > feature of the inode reading and writing and that is something no
+> > > > > elevator can hope to acheive....
+> > > >  
+> > > > Thank you. That explains the linear write curve(perfect!) in Chris'
+> > > > graph.
+> > > > 
+> > > > I wonder if XFS can benefit any more from the general writeback
+> > > > clustering. How large would be a typical XFS cluster?
+> > > 
+> > > Depends on inode size. typically they are 8k in size, so anything
+> > > from 4-32 inodes. The inode writeback clustering is pretty tightly
+> > > integrated into the transaction subsystem and has some intricate
+> > > locking, so it's not likely to be easy (or perhaps even possible) to
+> > > make it more generic.
+> > 
+> > When I talked to hch about this, he said the order file data pages got
+> > written in XFS was still dictated by the order the higher layers sent
+> > things down.
+> 
+> Sure, that's file data. I was talking about the inode writeback, not the
+> data writeback.
+> 
+> > Shouldn't the clustering still help to have delalloc done
+> > in inode order instead of in whatever random order pdflush sends things
+> > down now?
+> 
+> Depends on how things are being allocated. if you've got inode32 allocation
+> and >1TB filesytsem, then data is nowhere near the inodes. If you've got large
+> allocation groups, then data is typically nowhere near the inodes, either. If
+> you've got full AGs, data will be nowehere near the inodes. If you've got
+> large files and lots of data to write, then clustering multiple files together
+> for writing is not needed.  So in many cases, clustering delalloc writes by
+> inode number doesn't provide any better I/o patterns than not clustering...
+> 
+> The only difference we may see is that if we flush all the data on inodes
+> in a single cluster, we can get away with a single inode cluster write
+> for all of the inodes....
 
-What David suggested - is exactly what I was going to do, checking out
-3.0 etc. Pretty much every post from everyone in this thread is an
-action item.
+So we end up with two major cases:
 
-I think we should start getting unsolved regressions in bugzilla, as a
-"natural process". And maybe throwing them all in there even those
-that got immediately resolved is probably a good thing - better than
-to miss one. Either you do it Michal or dump it on me (I'm still doing
-sorting out and cleaning things up, actually myself and Adrian - are
-re-basing everything and getting rid of stale stuff).
-Then I think bugzilla needs:
-     adding more categories such as security, system calls (lots of
-implementation suggestions for posix and non-posix ones), locking,
-etc;
-     improved searches - for sure, for example in addition to
-pre-cooked queries make possible using "raw" queries directly on sql,
-which will address misplaced bugs and will make categories more
-dynamic;
-    recipe database, for standard debugging requests and procedures
-(serial console, getting sysreq traces, bisecting etc. - things to cut
-and paste)
-    user modifiable personal environment ("my bugzilla"), more of
-morph type interface around the database.
-... not mentioning all flaws and problems with current one (cannot get
-back to home page, clear previous search, do certain updates in one
-step and so on)
+- small files: inode and its data are expected to be close enough,
+  hence it can help I_DIRTY_SYNC and/or I_DIRTY_PAGES
 
-Regressions need to be tracked in effective manner, and I also noticed
-counter intuitive question that we have now (the infamous "last
-release when it _didn't_ happen") is clearly not the way to go, rather
- adding simple boxes "Was working in XX" and "Not working in XX" or
-similar straightforward question.
+- big files: inode and its data may or may not be separated
+        - I_DIRTY_SYNC:  could be improved
+        - I_DIRTY_PAGES: no better, no worse(it's big I/O, the seek
+          cost is not relevant in any case)
 
-In my opinion bugzilla is far from being a convenient tool. I suspect
-that hating bugzilla comes down to having to deal with no
-sophisticated interface that is inadequate - when so many nice and
-slick tools and sites are around that we all used to.  I am also
-investigating and checking out other bugzillas looking for good ideas.
+Conclusion: _inode_ writeback clustering is enough.
 
-Thanks,
---Natalie
+Isn't it simple? ;-)
+
+Fengguang
+
