@@ -1,68 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932718AbXH2IJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932757AbXH2IPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932718AbXH2IJE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 04:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbXH2IIt
+	id S932757AbXH2IPj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 04:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbXH2IP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 04:08:49 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:42719 "EHLO e4.ny.us.ibm.com"
+	Wed, 29 Aug 2007 04:15:29 -0400
+Received: from s36.avahost.net ([74.53.95.194]:55287 "EHLO s36.avahost.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751359AbXH2IIr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 04:08:47 -0400
-Date: Wed, 29 Aug 2007 13:38:27 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: cpu hotplug support broken in 2.6.23-rc3
-Message-ID: <20070829080827.GD6832@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070827104350.GA2073@elf.ucw.cz>
+	id S1754893AbXH2IP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 04:15:26 -0400
+Message-ID: <46D52B14.8010508@katalix.com>
+Date: Wed, 29 Aug 2007 09:15:16 +0100
+From: James Chapman <jchapman@katalix.com>
+Organization: Katalix Systems Ltd
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070827104350.GA2073@elf.ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+CC: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
+       akepner@sgi.com, netdev@vger.kernel.org, raisch@de.ibm.com,
+       themann@de.ibm.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, meder@de.ibm.com, tklein@de.ibm.com,
+       stefan.roscher@de.ibm.com
+Subject: Re: RFC: issues concerning the next NAPI interface
+References: <200708271147.01890.ossthema@de.ibm.com> <20070827.133721.59473971.davem@davemloft.net> <200708281319.03903.ossthema@de.ibm.com> <20070828.132152.38706038.davem@davemloft.net> <46D51BD7.6040904@de.ibm.com>
+In-Reply-To: <46D51BD7.6040904@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - s36.avahost.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - katalix.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
-On Mon, Aug 27, 2007 at 12:43:50PM +0200, Pavel Machek wrote:
-> Hi!
+Jan-Bernd Themann wrote:
+> Hi David
 > 
-> Trying to do few onlines/offlines reliably hangs my machine (thinkpad
-> x60, i386 architecture).
+> David Miller schrieb:
+>> Interrupt mitigation only works if it helps you avoid interrupts.
+>> This scheme potentially makes more of them happen.
+>>
+>> The hrtimer is just another interrupt, a cpu locally triggered one,
+>> but it has much of the same costs nonetheless.
+>>
+>> So if you set this timer, it triggers, and no packets arrive, you are
+>> taking more interrupts and doing more work than if you had disabled
+>> NAPI.
+>>
+>> In fact, for certain packet rates, your scheme would result in
+>> twice as many interrupts than the current scheme
+>>   
+> That depends how smart the driver switches between timer
+> polling and plain NAPI (depending on load situation).
+>> This is one of several reasons why hardware is the only truly proper
+>> place for this kind of logic.  Only the hardware can see the packet
+>> arrive, and do the interrupt deferral without any cpu intervention
+>> whatsoever.
+>>   
+> What I'm trying to improve with this approach is interrupt
+> mitigation for NICs where the hardware support for interrupt
+> mitigation is limited. I'm not trying to improve this for NICs
+> that work well with the means their HW provides. I'm aware of
+> the fact that this scheme has it's tradeoffs and certainly
+> can not be as good as a HW approach.
+> So I'm grateful for any ideas that do have less tradeoffs and
+> provide a mechanism to reduce interrupts without depending on
+> HW support of the NIC.
 > 
+> In the end I want to reduce the CPU utilization. And one way
+> to do that is LRO which also works only well if there are more
+> then just a very few packets to aggregate. So at least our
+> driver (eHEA) would benefit from a mix of timer based polling
+> and plain NAPI (depending on load situations).
 
-That's strange. 
+Wouldn't you achieve the same result by enabling hardware interrupt 
+mitigation in eHEA in combination with NAPI? Presumably a 10G interface 
+has hardware mitigation features?
 
-I've been running cpu offline/online tests with kern bench, 
-cpufreq-ondemand and a few rt-tasks running in the background
-and it has worked for me. 
-Something like 100 iterations without a problem. But these were on
-machines with 4-8 cpus.  So may be this could be something specific to
-the dual cpu machine.
+> If there is no need for a generic mechanism for this kind of
+> network adapters, then we can just leave this to each device
+> driver.
 
-Can you post the .config? I'll try to recreate it?
+I've been looking at this from a different angle. My goal is to optimize 
+NAPI packet forwarding rates while minimizing packet latency. Using 
+hardware interrupt mitigation hurts latency so I'm investigating ways to 
+turn it off without risking NAPI poll on/off thrashing at certain packet 
+rates.
 
-It's really strange since you mention that it tooks was  
-an echo 1/0 into the sysfs file to break it. 
+Jan-Bernd, I think I've found a solution to the issue that you 
+highlighted with my scheme yesterday and it doesn't involve generating 
+other interrupts using hrtimers etc. :) Initial results are very 
+encouraging in my setups. Would you be willing to test it with eHEA? I 
+don't have a 10G setup. If results are encouraging, I'll post an RFC to 
+ask for review / feedback from the NAPI experts here. What do you think?
 
-> Plus I guess it would be nice to add CPU HOTPLUG into MAINTAINERS
-> file:
-> 
-
-There is a list of maintainers in the Documentation/cpu-hotplug.txt, 
-which includes maintainers for different platforms as well.
-
-It's a good idea to add that info to the MAINTAINERS file as well.
-
-Thanks and Regards
-gautham.
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+James Chapman
+Katalix Systems Ltd
+http://www.katalix.com
+Catalysts for your Embedded Linux software development
+
