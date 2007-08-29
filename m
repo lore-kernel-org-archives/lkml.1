@@ -1,132 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758355AbXH2TIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760528AbXH2TIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758355AbXH2TIA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 15:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbXH2THs
+	id S1760528AbXH2TIg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 15:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756699AbXH2TI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 15:07:48 -0400
-Received: from styx.suse.cz ([82.119.242.94]:42663 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758616AbXH2THr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 15:07:47 -0400
-Date: Wed, 29 Aug 2007 21:26:53 +0200
-From: Jan Kara <jack@suse.cz>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-ID: <20070829192653.GD7814@duck.suse.cz>
-References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org> <20070829122647.GB7814@duck.suse.cz> <m1mywa42g7.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
+	Wed, 29 Aug 2007 15:08:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34954 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755854AbXH2TIY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 15:08:24 -0400
+Date: Wed, 29 Aug 2007 20:08:23 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       John Johansen <jjohansen@suse.de>, Jan Blunck <jblunck@suse.de>,
+       Erez Zadok <ezk@cs.sunysb.edu>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>, dhowells@redhat.com
+Subject: Re: [patch 2/4] Use pathput in a few more places
+Message-ID: <20070829190823.GB28028@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andreas Gruenbacher <agruen@suse.de>, linux-kernel@vger.kernel.org,
+	John Johansen <jjohansen@suse.de>, Jan Blunck <jblunck@suse.de>,
+	Erez Zadok <ezk@cs.sunysb.edu>,
+	Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>, dhowells@redhat.com
+References: <20070808171622.632749741@suse.de> <20070808171643.542685765@suse.de> <20070808193209.GA31354@infradead.org> <20070810142208.827949199@suse.de> <20070810143846.930027497@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1mywa42g7.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070810143846.930027497@suse.de>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 29-08-07 12:31:52, Eric W. Biederman wrote:
-> Jan Kara <jack@suse.cz> writes:
-> 
-> >> I suspect the namespace virtualisation guys would be interested in a new
-> >> interface which is sending current->user->uid up to userspace.  uids are
-> >> per-namespace now.  What are the implications?  (cc's added)
-> 
-> >   I know there's something going on in this area but I don't know any
-> > details. If somebody has some advice what should be passed into userspace
-> > so that user/group can be idenitified, it is welcome.
-> 
-> For non networking stuff netlink is a pain to use in this area.
-> 
-> Although if we are very careful we may be ok.  But this requires
-> some thinking through.
-> 
-> In principle the uid that corresponds to a struct user depends
-> on which user namespace you are in.
-> 
-> Now there is a cheap trick we can play.  A traditional filesystem
-> belongs to exactly one user namespace. So we can return the uid
-> in the filesystems user namespace.
-> 
-> Wait you are returning current->user->uid?  Shouldn't we return
-> the user who's quota is exceeded?  I.e. if alice owns a file
-> and makes it world writable.  And bob writes to the file wouldn't
-> that file still be billed to alice's quota?  So shouldn't we complain
-> about alice and not bob?
-  Yes, the quota will still be billed to Alice and originally we complained
-only about Alice. Now, we are actually passing identities of two users: The
-one who actually caused the quota to be exceeded and the one whose quota is
-exceeded. Userspace app can then decide what to do with the information...
-For example it makes sence to display the message to both Alice and Bob in
-the case you've described...
+On Fri, Aug 10, 2007 at 04:22:10PM +0200, Andreas Gruenbacher wrote:
+> afs_mntpt_follow_link() actually does mntput before dput, which is wrong.
 
-> Anyway if the goal is to return a user who maps to the filesystem we
-> can just always return uids in the filesystems uid namespace.
-> 
-> Although if filesystems start supporting multiple user namespaces
-> natively we might have a challenge on our hands.
-> 
-> Let me see if I can think of a concrete example here.
-> 
-> We have a nfs server with quotas.
-> We have clients who mount the nfs filesystem without synchronizing
-> their /etc/password files, so we have separate user namespaces.
-> 
-> What are the ways to make this work?
-> - Everyone who has right access to the NFS mount on all
->   machines must have their uid synchronized across all machines
->   (the easiest case).
-> 
-> - Each different kernel has a mapping from it's local uids to
->   the uids of the nfs filesystem. (ick if we do much more the
->   root squash).
-> 
-> - The nfs filesystem knows about the situation and remembers the
->   uid source (the uid namespace) as well as the uid when storing
->   owners of files.  NFSv4 allows for this by treating users
->   as user@domain.
-> 
-> Generally synchronizing uid namespaces (with possibly a root squash
-> exception) is the sanest and simplest thing to do in a case like this,
-> but it isn't always what is done.
-> 
-> As long as we are returning the filesystems idea of users we
-> shouldn't have to worry much about uid namespaces.  However
-> for non-traditional filesystems that don't store the user
-> as just a uid, say 9p and NFSv4, this implies that we want
-> to use the filesystems string identifier.  However I don't think
-> the quota system supports these filesystems yet.  So that
-> isn't an issue just yet.
-  OK, quota kind of works for NFSv4 - we simply enforce quotas on the
-server on a traditional filesystem and there are some RPC calls to get
-quota status. For 9p, it does not work. But we should probably design the
-interface generic enough so that it accommodates those untraditional
-cases anyway.
+Please send a fix to Dave to fix this for 2.6.24 and stable even without
+introducing pathput just yet.
 
-> However I'm still confused about the use of current->user.  If that
-> is what we really want and not the user who's quota will be charged
-> it gets to be a really trick business, because potentially the uid
-> we want to deliver varies depending on who opened the netlink socket.
-  I see it's a complicated matter :). What I need to somehow pass to
-userspace is something (and I don't really care whether it will be number,
-string or whatever) that userspace can read and e.g. find a terminal
-window or desktop the affected user has open and also translate the
-identity to some user-understandable name (average user Joe has to
-understand that he should quickly cleanup his home directory ;).
-  Thinking more about it, we could probably pass a string to userspace in
-the format:
-  <namespace type>:<user identification>
-
-So for example we can have something like:
-  unix:1000 (traditional unix UIDs)
-  nfs4:joe@machine
-
-The problem is: Are we able to find out in which "namespace type" we are
-and send enough identifying information from a context of unpriviledged
-user?
-
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+The actual patch is fine.
