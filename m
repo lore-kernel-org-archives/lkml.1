@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760768AbXH2VnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760332AbXH2VvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760768AbXH2VnY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 17:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760430AbXH2VnL
+	id S1760332AbXH2VvQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 17:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbXH2Vu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 17:43:11 -0400
-Received: from web32611.mail.mud.yahoo.com ([68.142.207.238]:30972 "HELO
-	web32611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751896AbXH2VnK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 17:43:10 -0400
-X-YMail-OSG: BaaonMcVM1lfGO1tNDpqOkbhXOX7kcfAxEJXRnx.g1KpSqWyhVPiVI1HhS42zVBjUAAj21UbYG6Txc8SpWvJVy3AJw--
-X-RocketYMMF: knobi.rm
-Date: Wed, 29 Aug 2007 14:43:08 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Reply-To: spamtrap@knobisoft.de
-Subject: Re: Understanding I/O behaviour - next try
-To: Chuck Ebbert <cebbert@redhat.com>, spamtrap@knobisoft.de
-Cc: linux-kernel@vger.kernel.org, Peter zijlstra <a.p.zijlstra@chello.nl>,
-       mingo@redhat.com
-In-Reply-To: <46D59DE2.2070405@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <856205.2054.qm@web32611.mail.mud.yahoo.com>
+	Wed, 29 Aug 2007 17:50:58 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:43403 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754615AbXH2Vu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 17:50:57 -0400
+Date: Wed, 29 Aug 2007 14:50:55 -0700
+From: sukadev@us.ibm.com
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] Use task_pid_nr() in ip_vs_sync.c
+Message-ID: <20070829215055.GD18542@us.ibm.com>
+References: <46D57508.9040401@openvz.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46D57508.9040401@openvz.org>
+User-Agent: Mutt/1.4.2.2i
+X-Operating-System: Linux 2.0.32 on an i486
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Emelianov [xemul@openvz.org] wrote:
+| The sync_master_pid and sync_backup_pid are set in set_sync_pid()
+| and are used later for set/not-set checks and in printk. So it
+| is safe to use the global pid value in this case.
+| 
+| Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
---- Chuck Ebbert <cebbert@redhat.com> wrote:
-
-> On 08/28/2007 11:53 AM, Martin Knoblauch wrote:
-> > 
-> >  The basic setup is a dual x86_64 box with 8 GB of memory. The
-> DL380
-> > has a HW RAID5, made from 4x72GB disks and about 100 MB write
-> cache.
-> > The performance of the block device with O_DIRECT is about 90
-> MB/sec.
-> > 
-> >  The problematic behaviour comes when we are moving large files
-> through
-> > the system. The file usage in this case is mostly "use once" or
-> > streaming. As soon as the amount of file data is larger than 7.5
-> GB, we
-> > see occasional unresponsiveness of the system (e.g. no more ssh
-> > connections into the box) of more than 1 or 2 minutes (!) duration
-> > (kernels up to 2.6.19). Load goes up, mainly due to pdflush threads
-> and
-> > some other poor guys being in "D" state.
-> 
-> Try booting with "mem=4096M", "mem=2048M", ...
-> 
-> 
-
- hmm. I tried 1024M a while ago and IIRC did not see a lot [any]
-difference. But as it is no big deal, I will repeat it tomorrow.
-
- Just curious - what are you expecting? Why should it help?
-
-Thanks
-Martin
-
-
-------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
+Acked-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+| 
+| ---
+| 
+| diff --git a/net/ipv4/ipvs/ip_vs_sync.c b/net/ipv4/ipvs/ip_vs_sync.c
+| index 959c08d..d0798a5 100644
+| --- a/net/ipv4/ipvs/ip_vs_sync.c
+| +++ b/net/ipv4/ipvs/ip_vs_sync.c
+| @@ -794,7 +794,7 @@ static int sync_thread(void *startup)
+| 
+| 	add_wait_queue(&sync_wait, &wait);
+| 
+| -	set_sync_pid(state, current->pid);
+| +	set_sync_pid(state, task_pid_nr(current));
+| 	complete(tinfo->startup);
+| 
+| 	/*
