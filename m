@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760476AbXH2Xas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760077AbXH2Xe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760476AbXH2Xas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 19:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbXH2Xah
+	id S1760077AbXH2Xe7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 19:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbXH2Xew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 19:30:37 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:51691 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753509AbXH2Xag (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 19:30:36 -0400
-X-Sasl-enc: 8ugo5J2I5mswOka1B99FAQrWQJIXbdDIc/ZXYASbnO2w 1188430234
-Date: Wed, 29 Aug 2007 20:30:24 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Yan Burman <burman.yan@gmail.com>
-Cc: hdaps-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Hdaps-devel] [PATCH 2.6.23-rc2] hwmon: HP Mobile Data
-	Protection System 3D ACPI driver (resend)
-Message-ID: <20070829233024.GA7433@khazad-dum.debian.net>
-References: <1186831562.6452.10.camel@localhost> <20070825102512.GA5850@ucw.cz> <46D01420.3070400@gmail.com> <20070827171107.GA15647@khazad-dum.debian.net> <46D5A742.8090201@gmail.com>
+	Wed, 29 Aug 2007 19:34:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58649 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752549AbXH2Xev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 19:34:51 -0400
+Message-ID: <46D60255.2000606@redhat.com>
+Date: Wed, 29 Aug 2007 19:33:41 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Oliver Neukum <oneukum@suse.de>, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [stable] [patch 25/28] USB: cdc-acm: fix sysfs attribute	registration
+ bug
+References: <20070824154906.GA19239@kroah.com> <Pine.LNX.4.44L0.0708241349240.3862-100000@iolanthe.rowland.org> <20070824180423.GA5458@suse.de>
+In-Reply-To: <20070824180423.GA5458@suse.de>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46D5A742.8090201@gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Aug 2007, Yan Burman wrote:
-> I don't mind doing it this way, it's just that from what I saw all 
-> current applications use the sys interface, so I figured that people
-> would like to be able to use those.
+On 08/24/2007 02:04 PM, Greg KH wrote:
+>> I don't understand.  The history for stable/linux-2.6.22.y.git at
+>> http://git.kernel.org shows that the commit for my patch, labelled
+>>
+>> 	6b30a4e1c357410a78d7bcb831743b0e99bab4ad,
+>>
+>> includes both hunks.  And patch-2.6.22.5.bz2 includes both as well.  
+>> Something's fishy.
+> 
 
-Well, they will have to fix their applications to use the input device, if
-the other drivers do all of us a big favour and NOT implement that hideous
-crap HDAPS unforunately started with.
 
-That said, if you decide to implement it, we can also live with that.  It
-just takes one warning on the driver to the likes of "warning: application
-with pid foo is using an outdated, power-wasting interface, please port it
-to the accelerometer input device" to syslog anytime you notice someone is
-trying to read it often enough.
+*sigh*
 
-HDAPS with input device support is quite new.  hdapsd was patched to talk to
-it, too.  I suppose we should port the input device support to the driver
-in-tree just so that we get it in tree as well.  Sounds like an useful
-reason to bother with in-tree hdaps.  Not that it will save much power with
-the in-tree driver, but at least it will be widely available from there.
+The stable-queue tree does not match what got released for 2.6.22.5.
 
-> Debian/Ubuntu also have some stuff for hdaps in their repositories. So 
-> it seems to me that people are using the sys interface.
+$ pwd
+/home/me/git/stable-queue
+$ grep cdc releases/2.6.22.5/*
+$ 
 
-They didn't have a choice until a few weeks ago... not for HDAPS, at least.
+$ bzcat patch-2.6.22.5.bz2 | grep cdc
+index acdc3be..e2b9ca4 100644
+diff --git a/drivers/usb/class/cdc-acm.c b/drivers/usb/class/cdc-acm.c
+--- a/drivers/usb/class/cdc-acm.c
++++ b/drivers/usb/class/cdc-acm.c
 
-> > driver gets the dibs on how to implement those interfaces in a proper
-> > generic way.  Want to be the one? Please?  We in hdaps-devel can certainly
-> > help with ideas and fix out-of-tree hdaps to also implement the interface.
-> >   
-> I agree that the sys interface is probably not the best choice, but the 
-> accelerometer data should provide not only position, but also generate 
-> an event when it detects
-> that it's falling. From what I understood hdaps does not have that info, 
-
-You can generate events on input devices, but I am not sure that's the best
-way to go about it for this.  Things that block on read until an interrupt
-happens might work better.  And there is also netlink sockets, and other
-ways to send events to user space.  I don't know which way would be best,
-this is something to ask in LKML.
-
-I'd suggest an accelerometer sysfs interface, that we implement in hdaps
-(in and out-of-tree), ams and hpmdp.  One input device for joystick
-emulation (optional), one input device with accelerometer data in mg or ug,
-and an optional one with the raw accelerometer data.  Also, an optional way
-to send events notifying of free-fall to userspace *and* to other kernel
-drivers (so that you can actually hook it to the queue-freeze engine
-in-kernel, I fail to see why ams and hpmdp should need userspace at all,
-unless someone wants to implement their own free-fall algorithms instead of
-using whatever is in the firmware).
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
