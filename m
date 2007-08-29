@@ -1,134 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760338AbXH2Vjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760590AbXH2Vm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760338AbXH2Vjf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 17:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbXH2Vj2
+	id S1760590AbXH2Vm5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 17:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbXH2Vmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 17:39:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57144 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751013AbXH2Vj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 17:39:27 -0400
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [patch] fix the max path calculation in radix-tree.c
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-References: <x49d4xgy8h1.fsf@segfault.boston.devel.redhat.com>
-	<20070822013546.GB6799@wotan.suse.de>
-From: Jeff Moyer <jmoyer@redhat.com>
-Date: Wed, 29 Aug 2007 17:39:18 -0400
-In-Reply-To: <20070822013546.GB6799@wotan.suse.de> (Nick Piggin's message of "Wed\, 22 Aug 2007 03\:35\:46 +0200")
-Message-ID: <x49r6lmkol5.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Wed, 29 Aug 2007 17:42:49 -0400
+Received: from server009.webpack.hosteurope.de ([80.237.130.17]:47899 "EHLO
+	server009.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751881AbXH2Vmt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 17:42:49 -0400
+From: Daniel Exner <dex@dragonslave.de>
+Reply-To: webmaster@dragonslave.de
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Override 80-wire cable detection for Toshiba S1800-814
+Date: Wed, 29 Aug 2007 23:41:13 +0200
+User-Agent: KMail/1.9.7
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_6fe1GGdpei/6Uik"
+Message-Id: <200708292341.14212.dex@dragonslave.de>
+X-bounce-key: webpack.hosteurope.de;dex@dragonslave.de;1188423769;5ba136d3;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <npiggin@suse.de> writes:
+--Boundary-00=_6fe1GGdpei/6Uik
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> On Tue, Aug 21, 2007 at 03:48:42PM -0400, Jeff Moyer wrote:
->> Hi,
->> 
->> A while back, Nick Piggin introduced a patch to reduce the node memory
->> usage for small files (commit cfd9b7df4abd3257c9e381b0e445817b26a51c0c):
->> 
->> -#define RADIX_TREE_MAP_SHIFT	6
->> +#define RADIX_TREE_MAP_SHIFT	(CONFIG_BASE_SMALL ? 4 : 6)
->> 
->> Unfortunately, he didn't take into account the fact that the
->> calculation of the maximum path was based on an assumption of having
->> to round up:
->> 
->> #define RADIX_TREE_MAX_PATH (RADIX_TREE_INDEX_BITS/RADIX_TREE_MAP_SHIFT + 2)
->> 
->> So, if CONFIG_BASE_SMALL is set, you will end up with a
->> RADIX_TREE_MAX_PATH that is one greater than necessary.  The practical
->> upshot of this is just a bit of wasted memory (one long in the
->> height_to_maxindex array, an extra pre-allocated radix tree node per
->> cpu, and extra stack usage in a couple of functions), but it seems
->> worth getting right.
->> 
->> It's also worth noting that I never build with CONFIG_BASE_SMALL.
->> What I did to test this was duplicate the code in a small user-space
->> program and check the results of the calculations for max path and the
->> contents of the height_to_maxindex array.
->> 
->
-> OK, after you DIV_ROUND_UP, what is the extra 1 for? For paths, it is because
-> they are NULL terminated paths I guess (without remembering too hard), and for
-> height_to_maxindex array it is needed for 0-height trees I think. So it would
-> be kinda cleaner to have the _real_ MAX_PATH, and two other constants for
-> this array and the paths arrays (that just happen to be identical due to
-> implementation). Don't you think?
->
-> But that's not to nack this patch. On the contrary I think your logic is
-> correct, and it should be fixed. I didn't check the maths myself but I trust
-> you :)
+Hi!
 
-Hi, Nick,
+Please CC me, as I'm currently not subscribed to this list, thx.
 
-As I said, I wasn't sure what to name the constants for the path and
-height arrays, so I just commented the +1 there.  I've been running
-this on one of my 64bit test systems successfully for about a day,
-now.  The one code path I was concerned about was
-radix_tree_node_alloc, since the prealloc array changes size with this
-patch.  I stepped through the code by hand and it looks right to me.
-Additionally, I wrote a kprobe that would simulate the
-kmem_cache_alloc failure.  I then inserted a node at max height into
-an empty tree with preemption disabled.  I verified, using the crash
-utility, that the tree was constructed and filled in properly.
+Attached patch will add above mentioned Laptop Model to whitelist for both 
+pata_ali and alim15x3, as it is correctly detected as 40-wire connected but 
+this cable is short enough to still do transfers higher than UDMA33.
+Don't know if this is also true for other S1800 Laptops cause I own only one.
 
-You can find the kprobe at http://people.redhat.com/jmoyer/radix-tree/.
+I hope I did this correctly as this is my first Patch Mail to LKML :)
+-- 
+Greetings
+Daniel Exner
 
-Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+--Boundary-00=_6fe1GGdpei/6Uik
+Content-Type: text/x-diff;
+  charset="utf-8";
+  name="patchAli_pata.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="patchAli_pata.patch"
 
-diff --git a/lib/radix-tree.c b/lib/radix-tree.c
-index 514efb2..d2655cb 100644
---- a/lib/radix-tree.c
-+++ b/lib/radix-tree.c
-@@ -60,9 +60,14 @@ struct radix_tree_path {
+--- linux-2.6.22.old/drivers/ata/pata_ali.c	2007-08-29 23:27:53.000000000 +0200
++++ linux-2.6.22/drivers/ata/pata_ali.c	2007-08-29 23:14:37.000000000 +0200
+@@ -48,6 +48,13 @@
+ 			DMI_MATCH(DMI_BOARD_VERSION, "OmniBook N32N-736"),
+ 		},
+ 	},
++	{
++		.ident = "Toshiba Satelite S1800-814",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "S1800-814"),
++		},
++	}, 
+ 	{ }
  };
  
- #define RADIX_TREE_INDEX_BITS  (8 /* CHAR_BIT */ * sizeof(unsigned long))
--#define RADIX_TREE_MAX_PATH (RADIX_TREE_INDEX_BITS/RADIX_TREE_MAP_SHIFT + 2)
-+#define RADIX_TREE_MAX_PATH (DIV_ROUND_UP(RADIX_TREE_INDEX_BITS, \
-+					  RADIX_TREE_MAP_SHIFT))
+--- linux-2.6.22.old/drivers/ide/pci/alim15x3.c	2007-08-29 22:17:14.000000000 +0200
++++ linux-2.6.22/drivers/ide/pci/alim15x3.c	2007-08-29 22:56:27.000000000 +0200
+@@ -596,6 +596,13 @@
+ 			DMI_MATCH(DMI_BOARD_VERSION, "OmniBook N32N-736"),
+ 		},
+ 	},
++	{
++		.ident = "Toshiba Satellite S1800-814",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "S1800-814"),
++		},
++	},
+ 	{ }
+ };
  
--static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH] __read_mostly;
-+/*
-+ * The height_to_maxindex array needs to be one deeper than the maximum
-+ * path as height 0 holds only 1 entry.
-+ */
-+static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH + 1] __read_mostly;
- 
- /*
-  * Radix tree node cache.
-@@ -487,7 +492,11 @@ EXPORT_SYMBOL(radix_tree_tag_set);
- void *radix_tree_tag_clear(struct radix_tree_root *root,
- 			unsigned long index, unsigned int tag)
- {
--	struct radix_tree_path path[RADIX_TREE_MAX_PATH], *pathp = path;
-+	/*
-+	 * The radix tree path needs to be one longer than the maximum path
-+	 * since the "list" is null terminated.
-+	 */
-+	struct radix_tree_path path[RADIX_TREE_MAX_PATH + 1], *pathp = path;
- 	struct radix_tree_node *slot = NULL;
- 	unsigned int height, shift;
- 
-@@ -882,7 +891,11 @@ static inline void radix_tree_shrink(struct radix_tree_root *root)
-  */
- void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
- {
--	struct radix_tree_path path[RADIX_TREE_MAX_PATH], *pathp = path;
-+	/*
-+	 * The radix tree path needs to be one longer than the maximum path
-+	 * since the "list" is null terminated.
-+	 */
-+	struct radix_tree_path path[RADIX_TREE_MAX_PATH + 1], *pathp = path;
- 	struct radix_tree_node *slot = NULL;
- 	struct radix_tree_node *to_free;
- 	unsigned int height, shift;
+
+--Boundary-00=_6fe1GGdpei/6Uik--
