@@ -1,75 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbXH2OS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbXH2O0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754540AbXH2OS5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 10:18:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbXH2OSs
+	id S1754689AbXH2O0b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 10:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbXH2O0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 10:18:48 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56258 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309AbXH2OSs (ORCPT
+	Wed, 29 Aug 2007 10:26:22 -0400
+Received: from web32605.mail.mud.yahoo.com ([68.142.207.232]:34847 "HELO
+	web32605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751936AbXH2O0W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 10:18:48 -0400
-Date: Wed, 29 Aug 2007 15:18:23 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Christoph Hellwig <hch@infradead.org>, Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Switch nfs/callback.c to using struct pid, not pid_t
-Message-ID: <20070829141823.GA15255@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Trond Myklebust <trond.myklebust@fys.uio.no>,
-	Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-	Oleg Nesterov <oleg@tv-sign.ru>,
-	Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-	Linux Containers <containers@lists.osdl.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <46D57658.2040704@openvz.org> <20070829135205.GA13879@infradead.org> <1188396641.6580.62.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1188396641.6580.62.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 29 Aug 2007 10:26:22 -0400
+X-YMail-OSG: 5.3m1AYVM1me_V_w9Agurbks8uwrJHmKnDkkmnyYAUyhWoHUVREME7q.2JAdd_.3cL4AJ6tpV3UG1Fj4bWRVJyljow--
+X-RocketYMMF: knobi.rm
+Date: Wed, 29 Aug 2007 07:26:21 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Reply-To: spamtrap@knobisoft.de
+Subject: Re: Understanding I/O behaviour - next try
+To: Jens Axboe <jens.axboe@oracle.com>,
+       Martin Knoblauch <spamtrap@knobisoft.de>
+Cc: linux-kernel@vger.kernel.org, Peter zijlstra <a.p.zijlstra@chello.nl>,
+       mingo@redhat.com
+In-Reply-To: <20070829094801.GK23758@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <318042.34559.qm@web32605.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 29, 2007 at 10:10:41AM -0400, Trond Myklebust wrote:
-> On Wed, 2007-08-29 at 14:52 +0100, Christoph Hellwig wrote:
-> > On Wed, Aug 29, 2007 at 05:36:24PM +0400, Pavel Emelyanov wrote:
-> > > Pid namespaces make it dangerous to use pid and tgid values
-> > > when run in some namespace. The struct pid itself is going
-> > > to be the only way for working with task pids, so make the
-> > > nfs callback thread use it.
-> > > 
-> > > Since nfs_callback_info.pid is set to current's one and reset
-> > > on the thread exit, it is safe not to get the struct pid. 
-> > > 
-> > > Since this pid is used later under lock_kernel() w/o sleeping 
-> > > operations, checking for i to be not NULL and killing the 
-> > > thread with kill_pid() is safe.
+
+--- Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Tue, Aug 28 2007, Martin Knoblauch wrote:
+> > Keywords: I/O, bdi-v9, cfs
 > > 
-> > NACK.  This just makes the code even more obscure.  Please get rid
-> > of the pid references entirely and convert the code to the kthread
-> > API.
 > 
-> That would require converting the full sunrpc server code to use
-> kthreads, which again means changing nfsd, and lockd too.
+> Try limiting the queue depth on the cciss device, some of those are
+> notoriously bad at starving commands. Something like the below hack,
+> see
+> if it makes a difference (and please verify in dmesg that it prints
+> the
+> message about limiting depth!):
 > 
-> I'm not saying that is a bad thing, but it is nontrivial to do. In
-> particular, kthread's abominable shutdown mechanism simply does not work
-> or scale when the thread is listening for new requests in svc_recv().
+> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+> index 084358a..257e1c3 100644
+> --- a/drivers/block/cciss.c
+> +++ b/drivers/block/cciss.c
+> @@ -2992,7 +2992,12 @@ static int cciss_pci_init(ctlr_info_t *c,
+> struct pci_dev *pdev)
+>  		if (board_id == products[i].board_id) {
+>  			c->product_name = products[i].product_name;
+>  			c->access = *(products[i].access);
+> +#if 0
+>  			c->nr_cmds = products[i].nr_cmds;
+> +#else
+> +			c->nr_cmds = 2;
+> +			printk("cciss: limited max commands to 2\n");
+> +#endif
+>  			break;
+>  		}
+>  	}
+> 
+> -- 
+> Jens Axboe
+> 
+> 
+>
+Hi Jens,
 
-Actually converting callback.c is not that bad, it just means splitting
-up svc_create_thread.  Only problem is whether we want to allow SIGKILL
-from serspace to terminate the thread aswell, in which case we still
-need changes to the core kthread code which I'm waiting for someone
-for the containers crowd to finally implement as it's needed in
-various other places.
+ thanks for the suggestion. Unfortunatelly the non-direct [parallel]
+writes to the device got considreably slower. I guess the "6i"
+controller copes better with higher values.
 
-I'll try to send out my svc_create_thread splitup soon because it's
-actually a nice cleanup all by itself.
+ Can nr_cmds be changed at runtime? Maybe there is a optimal setting.
+
+[   69.438851] SCSI subsystem initialized
+[   69.442712] HP CISS Driver (v 3.6.14)
+[   69.442871] ACPI: PCI Interrupt 0000:04:03.0[A] -> GSI 51 (level,
+low) -> IRQ 51
+[   69.442899] cciss: limited max commands to 2 (Smart Array 6i)
+[   69.482370] cciss0: <0x46> at PCI 0000:04:03.0 IRQ 51 using DAC
+[   69.494352]       blocks= 426759840 block_size= 512
+[   69.498350]       heads=255, sectors=32, cylinders=52299
+[   69.498352]
+[   69.498509]       blocks= 426759840 block_size= 512
+[   69.498602]       heads=255, sectors=32, cylinders=52299
+[   69.498604]
+[   69.498608]  cciss/c0d0: p1 p2
+
+Cheers
+Martin
+
+
+------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
