@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759170AbXH2KiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760128AbXH2KkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759170AbXH2KiB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 06:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbXH2Khz
+	id S1760128AbXH2KkM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 06:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbXH2Kj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 06:37:55 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56156 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753292AbXH2Khy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 06:37:54 -0400
-Date: Wed, 29 Aug 2007 11:46:04 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible
- fashion.
-Message-ID: <20070829114604.242b976c@the-village.bc.nu>
-In-Reply-To: <m1d4x7aysz.fsf@ebiederm.dsl.xmission.com>
-References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
-	<20070828230459.GA15937@infradead.org>
-	<m1r6lnb4ha.fsf@ebiederm.dsl.xmission.com>
-	<46D4CC81.4060400@zytor.com>
-	<m1d4x7aysz.fsf@ebiederm.dsl.xmission.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 29 Aug 2007 06:39:58 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38167 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751251AbXH2Kj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 06:39:57 -0400
+Message-ID: <46D54CF6.7060009@garzik.org>
+Date: Wed, 29 Aug 2007 06:39:50 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: HighPoint Linux Team <linux@highpoint-tech.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com
+Subject: Re: [PATCH] hptiop: adding new firmware interface and more PCI device
+ IDs
+References: <200605101704.27491.linux@highpoint-tech.com> <200605121107.48597.linux@highpoint-tech.com> <200605161438.09717.linux@highpoint-tech.com> <200708291510.53793.linux@highpoint-tech.com>
+In-Reply-To: <200708291510.53793.linux@highpoint-tech.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> adequate job of warning our users.  A printk when we run a program
-> >> that uses the binary interface and an long enough interval the warning
-> >> makes it to the Enterprise kernels before we remove the interface
-> >> should be sufficient.
+HighPoint Linux Team wrote:
+> +	if (hba->firmware_version > 0x01020000 || hba->interface_version > 0x01020000) {
+[...]
+> +	if (hba->firmware_version > 0x01020000 ||
+> +				hba->interface_version > 0x01020000) {
 
-The enterprise products will probably just remove the printk. Even if
-they didn't you are looking at ten years before things finish changing
-based on current experiences, probably longer as things stabilize.
+Rather than repeating this test, you should do it once at probe time, 
+and set a "new interface" single-bit flag in some hptiop_hba field.
 
-The whole "whine a bit" process simply doesn't work when you are trying
-to persuade people to move in a non-hobbyist context. They don't want to
-move, the message is simply an annoyance, their upstream huge package
-vendor won't change just to deal with it and they'll class it as a
-regression from previous releases, an incompatibility and file bugs until
-it goes away.
+Less maintenance intensive, less prone to error, and removes expensive 
+tests from the driver hotpath.
 
-Its user ABI and as Linus said - we don't break it. Trimming down all the
-crap that never worked via sysctl is one thing, not putting sysctl in new
-platforms likewise. Trying to undo it isn't going to work
 
-Alan
+>  static struct pci_device_id hptiop_id_table[] = {
+> -	{ PCI_DEVICE(0x1103, 0x3220) },
+> -	{ PCI_DEVICE(0x1103, 0x3320) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_TTI, 0x3220) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_TTI, 0x3320) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_TTI, 0x3520) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_TTI, 0x4320) },
+>  	{},
+
+Using the PCI_VDEVICE() macro can make this even shorter:
+
+	{ PCI_VDEVICE(TTI, 0x4320) }
+
+Regards,
+
+	Jeff
+
+
