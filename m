@@ -1,93 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbXH2UzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759567AbXH2U7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759253AbXH2UzZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 16:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbXH2UzM
+	id S1759567AbXH2U7S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 16:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbXH2U7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 16:55:12 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:14716 "EHLO
-	viefep28-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752345AbXH2UzL (ORCPT
+	Wed, 29 Aug 2007 16:59:11 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:1393 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752798AbXH2U7K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 16:55:11 -0400
-From: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: Linux 2.6.23-rc4: BAD regression
-Date: Wed, 29 Aug 2007 22:55:32 +0200
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-References: <200708290129.57243.daniel.ritz-ml@swissonline.ch> <200708292135.57584.daniel.ritz-ml@swissonline.ch> <46D5CCBD.5050103@suse.de>
-In-Reply-To: <46D5CCBD.5050103@suse.de>
+	Wed, 29 Aug 2007 16:59:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language:x-cr-hashedpuzzle:x-cr-puzzleid;
+        b=aMMXYr+CUIsSzfxRliJD26yI9pM0inSR59Bvbe0YaM37C8GyA0sgaYNj9E9PvOKYBV6X4cTbak5io6pD9nyLCaZVmlRFK1433BcB9OrXQ32mtKdXhooE2eA+yPrdAmRLBfy+zq3ceM0fg5wyM3rLGzPqfxh/CrDuPmlw9Bxs/y0=
+From: "Hua Zhong" <hzhong@gmail.com>
+To: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Subject: regression of autofs for current git?
+Date: Wed, 29 Aug 2007 13:58:58 -0700
+Message-ID: <00f401c7ea7f$6db9fc80$492df580$@com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708292255.33154.daniel.ritz-ml@swissonline.ch>
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: Acfqf2fhopQVT2kOSOCYqFO/cJ34rQ==
+Content-Language: en-us
+x-cr-hashedpuzzle: ANvO BIDZ CVr9 DCeL DKfU DNIn Dc+H FHg4 FPQQ F7Ss GXpM GYZH HvwW H8Uj H+/i KJK/;1;bABpAG4AdQB4AC0AawBlAHIAbgBlAGwAQAB2AGcAZQByAC4AawBlAHIAbgBlAGwALgBvAHIAZwA=;Sosha1_v1;7;{FE055F9B-8A1A-40DD-896D-B2A8423C5999};aAB6AGgAbwBuAGcAQABnAG0AYQBpAGwALgBjAG8AbQA=;Wed, 29 Aug 2007 20:58:52 GMT;cgBlAGcAcgBlAHMAcwBpAG8AbgAgAG8AZgAgAGEAdQB0AG8AZgBzACAAZgBvAHIAIABjAHUAcgByAGUAbgB0ACAAZwBpAHQAPwA=
+x-cr-puzzleid: {FE055F9B-8A1A-40DD-896D-B2A8423C5999}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 August 2007 21:45:01 Alexey Starikovskiy wrote:
-> If you could open a bugreport at bugzilla.kernel.org in ACPI category
-> and attach
-> dmesg and acpidump output, that would help a lot. (I hope :( )
-> 
+Hi,
 
-done. http://bugzilla.kernel.org/show_bug.cgi?id=8958
+I am wondering if this is a known issue, but I just built the current git
+and several autofs mounts mysteriously disappeared. Restarting autofs could
+fix some, but then lose others. 2.6.22 was fine.
 
-> Thanks,
-> Alex.
-> 
-> Daniel Ritz wrote:
-> > On Wednesday 29 August 2007 06:41:41 Alexey Starikovskiy wrote:
-> >   
-> >> Daniel,
-> >> Does this patch help you, or do we need to revert the whole thing?
-> >>
-> >>     
-> >
-> > yes, this does the trick. the fan goes on again. thanks.
-> > if you still need additional debug output or if you want me to test
-> > a different patch just let me know.
-> >
-> > rgds
-> > -daniel
-> >
-> >   
-> >> Sorry for the trouble,
-> >> Alex.
-> >> Daniel Ritz wrote:
-> >>     
-> >>> tried that one on my old toshiba tecra 8000 laptop, almost killing it.
-> >>> the fan doesn't work any more...type 'make' and see the box dying.
-> >>> luckily my CPU doesn't commit suicide...bisected it to that one:
-> >>>
-> >>> cd8c93a4e04dce8f00d1ef3a476aac8bd65ae40b is first bad commit
-> >>> commit cd8c93a4e04dce8f00d1ef3a476aac8bd65ae40b
-> >>> Author: Alexey Starikovskiy <astarikovskiy@suse.de>
-> >>> Date:   Fri Aug 3 17:52:48 2007 -0400
-> >>>
-> >>>     ACPI: EC: If ECDT is not found, look up EC in DSDT.
-> >>>
-> >>>     Some ASUS laptops access EC space from device _INI methods, but do not
-> >>>     provide ECDT for early EC setup. In order to make them function properly,
-> >>>     there is a need to find EC is DSDT before any _INI is called.
-> >>>
-> >>>     Similar functionality was turned on by acpi_fake_ecdt=1 command line
-> >>>     before. Now it is on all the time.
-> >>>
-> >>>     http://bugzilla.kernel.org/show_bug.cgi?id=8598
-> >>>
-> >>>     Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-> >>>     Signed-off-by: Len Brown <len.brown@intel.com>
-> >>>   
-> >>>       
-> >
-> >
-> >   
-> 
-> 
+Is there anything I could check other than bisect? (It may take some time
+for me to get to it)
 
+Thanks for your help.
+
+Hua
 
