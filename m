@@ -1,89 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760590AbXH2Vm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760768AbXH2VnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760590AbXH2Vm5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 17:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbXH2Vmt
+	id S1760768AbXH2VnY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 17:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760430AbXH2VnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 17:42:49 -0400
-Received: from server009.webpack.hosteurope.de ([80.237.130.17]:47899 "EHLO
-	server009.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751881AbXH2Vmt (ORCPT
+	Wed, 29 Aug 2007 17:43:11 -0400
+Received: from web32611.mail.mud.yahoo.com ([68.142.207.238]:30972 "HELO
+	web32611.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751896AbXH2VnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 17:42:49 -0400
-From: Daniel Exner <dex@dragonslave.de>
-Reply-To: webmaster@dragonslave.de
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Override 80-wire cable detection for Toshiba S1800-814
-Date: Wed, 29 Aug 2007 23:41:13 +0200
-User-Agent: KMail/1.9.7
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Wed, 29 Aug 2007 17:43:10 -0400
+X-YMail-OSG: BaaonMcVM1lfGO1tNDpqOkbhXOX7kcfAxEJXRnx.g1KpSqWyhVPiVI1HhS42zVBjUAAj21UbYG6Txc8SpWvJVy3AJw--
+X-RocketYMMF: knobi.rm
+Date: Wed, 29 Aug 2007 14:43:08 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Reply-To: spamtrap@knobisoft.de
+Subject: Re: Understanding I/O behaviour - next try
+To: Chuck Ebbert <cebbert@redhat.com>, spamtrap@knobisoft.de
+Cc: linux-kernel@vger.kernel.org, Peter zijlstra <a.p.zijlstra@chello.nl>,
+       mingo@redhat.com
+In-Reply-To: <46D59DE2.2070405@redhat.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_6fe1GGdpei/6Uik"
-Message-Id: <200708292341.14212.dex@dragonslave.de>
-X-bounce-key: webpack.hosteurope.de;dex@dragonslave.de;1188423769;5ba136d3;
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <856205.2054.qm@web32611.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_6fe1GGdpei/6Uik
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hi!
+--- Chuck Ebbert <cebbert@redhat.com> wrote:
 
-Please CC me, as I'm currently not subscribed to this list, thx.
+> On 08/28/2007 11:53 AM, Martin Knoblauch wrote:
+> > 
+> >  The basic setup is a dual x86_64 box with 8 GB of memory. The
+> DL380
+> > has a HW RAID5, made from 4x72GB disks and about 100 MB write
+> cache.
+> > The performance of the block device with O_DIRECT is about 90
+> MB/sec.
+> > 
+> >  The problematic behaviour comes when we are moving large files
+> through
+> > the system. The file usage in this case is mostly "use once" or
+> > streaming. As soon as the amount of file data is larger than 7.5
+> GB, we
+> > see occasional unresponsiveness of the system (e.g. no more ssh
+> > connections into the box) of more than 1 or 2 minutes (!) duration
+> > (kernels up to 2.6.19). Load goes up, mainly due to pdflush threads
+> and
+> > some other poor guys being in "D" state.
+> 
+> Try booting with "mem=4096M", "mem=2048M", ...
+> 
+> 
 
-Attached patch will add above mentioned Laptop Model to whitelist for both 
-pata_ali and alim15x3, as it is correctly detected as 40-wire connected but 
-this cable is short enough to still do transfers higher than UDMA33.
-Don't know if this is also true for other S1800 Laptops cause I own only one.
+ hmm. I tried 1024M a while ago and IIRC did not see a lot [any]
+difference. But as it is no big deal, I will repeat it tomorrow.
 
-I hope I did this correctly as this is my first Patch Mail to LKML :)
--- 
-Greetings
-Daniel Exner
+ Just curious - what are you expecting? Why should it help?
 
---Boundary-00=_6fe1GGdpei/6Uik
-Content-Type: text/x-diff;
-  charset="utf-8";
-  name="patchAli_pata.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="patchAli_pata.patch"
+Thanks
+Martin
 
---- linux-2.6.22.old/drivers/ata/pata_ali.c	2007-08-29 23:27:53.000000000 +0200
-+++ linux-2.6.22/drivers/ata/pata_ali.c	2007-08-29 23:14:37.000000000 +0200
-@@ -48,6 +48,13 @@
- 			DMI_MATCH(DMI_BOARD_VERSION, "OmniBook N32N-736"),
- 		},
- 	},
-+	{
-+		.ident = "Toshiba Satelite S1800-814",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "S1800-814"),
-+		},
-+	}, 
- 	{ }
- };
- 
---- linux-2.6.22.old/drivers/ide/pci/alim15x3.c	2007-08-29 22:17:14.000000000 +0200
-+++ linux-2.6.22/drivers/ide/pci/alim15x3.c	2007-08-29 22:56:27.000000000 +0200
-@@ -596,6 +596,13 @@
- 			DMI_MATCH(DMI_BOARD_VERSION, "OmniBook N32N-736"),
- 		},
- 	},
-+	{
-+		.ident = "Toshiba Satellite S1800-814",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "S1800-814"),
-+		},
-+	},
- 	{ }
- };
- 
 
---Boundary-00=_6fe1GGdpei/6Uik--
+------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
