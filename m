@@ -1,148 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbXH2X75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761229AbXH3AAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760198AbXH2X75 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 19:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXH2X7t
+	id S1761229AbXH3AAb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 20:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbXH3AAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 19:59:49 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:46146 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752549AbXH2X7s (ORCPT
+	Wed, 29 Aug 2007 20:00:21 -0400
+Received: from outbound.mse2.exchange.ms ([69.25.50.247]:1073 "EHLO
+	mse2fe1.mse2.exchange.ms" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752549AbXH3AAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 19:59:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WZtZfbnLQtpQa89E5+DiYOqqmEGCY8bVULrZqDyZrBfeGJ/UzOvbwuG78lZZxkuQLzkLhX57vdRM9iI1NZvlA9+sAOy7NG8ZeDrD6Rgbe+Ow99+Fbs+g3kQ3Fs3zbM9uTrUbKZgjreSI8UjxWKVAKaWPF1wC+GeGxQEwVlhy5pA=
-Message-ID: <32209efe0708291659w1f75adbcrf72e61a9325903da@mail.gmail.com>
-Date: Wed, 29 Aug 2007 16:59:47 -0700
-From: "Natalie Protasevich" <protasnb@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: Who wants to maintain KR list for stable releases? (was Re: nmi_watchdog=2 regression in 2.6.21)
-Cc: "David Rees" <drees76@gmail.com>, "Daniel Walker" <dwalker@mvista.com>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "=?ISO-8859-1?Q?Bj=F6rn_Steinbrink?=" <B.Steinbrink@gmx.de>,
-       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org
-In-Reply-To: <20070829222344.GV26410@stusta.de>
+	Wed, 29 Aug 2007 20:00:20 -0400
+X-Greylist: delayed 974 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Aug 2007 20:00:20 EDT
+Message-ID: <46D604BF.7090905@bluelane.com>
+Date: Wed, 29 Aug 2007 16:43:59 -0700
+From: Pete/Piet Delaney <pete@bluelane.com>
+Reply-To: pete@bluelane.com
+Organization: Bluelane
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
+To: Jason Wessel <jason.wessel@windriver.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>	<200708222104.29432.m.kozlowski@tuxland.pl>	<20070822124743.fc316963.akpm@linux-foundation.org>	<46CCBC3C.7010307@windriver.com> <20070822165318.b82da13c.akpm@linux-foundation.org> <46CCFE2C.4050306@windriver.com>
+In-Reply-To: <46CCFE2C.4050306@windriver.com>
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46CDE94A.7000600@googlemail.com> <46D21E8E.4000003@googlemail.com>
-	 <20070827005131.b93f5935.akpm@linux-foundation.org>
-	 <6bffcb0e0708270438j4c92a0b4m1396b4010f25bfb5@mail.gmail.com>
-	 <1188227585.2435.192.camel@dhcp193.mvista.com>
-	 <6bffcb0e0708270826p7a7fb044re53d0db4094bc3d5@mail.gmail.com>
-	 <1188229197.2435.207.camel@dhcp193.mvista.com>
-	 <72dbd3150708271212w6bcca4c4web26d7cb25892afc@mail.gmail.com>
-	 <32209efe0708290042g362fbfadj38fe57e0de7f3af@mail.gmail.com>
-	 <20070829222344.GV26410@stusta.de>
+X-OriginalArrivalTime: 29 Aug 2007 23:44:04.0847 (UTC) FILETIME=[7BECF7F0:01C7EA96]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Bugzilla is for tracking bugs, not for discussing possible
-> kernel features.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-True, but some of them are categorized as bugs from the reporter's
-prospective, when they say "man page says" or "according to POSIX it's
-wrong". I am going to push ones that are feature suggestions,
-re-design suggestions, and some way implementation related out to the
-site that Rick is going to help to maintain, which is more of
-suggested projects list.
->
-> Tracking feature or implementation suggestions wouldn't make sense.
-> Consider e.g. that there are several people on linux-kernel who often
-> write what they think the kernel should do but who never write a single
-> line of code themselves. There's no value in tracking such stuff.
+Jason Wessel wrote:
+> Andrew Morton wrote:
+>> On Wed, 22 Aug 2007 17:44:12 -0500
+>> Jason Wessel <jason.wessel@windriver.com> wrote:
+>>
+>>  
+>>> +    while (!atomic_read(&debugger_active));
+>>>     
+>>
+>> eek.  We're in the process of hunting down and eliminating exactly this
+>> construct.  There have been cases where the compiler cached the
+>> atomic_read() result in a register, turning the above into an infinite
+>> loop.
+>>
+>> Plus we should never add power-burners like that into the kernel
+>> anyway. That loop should have a cpu_relax() in it.  Which will also
+>> fix the
+>> compiler problem described above.
+>>
+>>   
+> Agreed, and fixed with a cpu_relax.
+> 
+>> Thirdly, please always add a newline when coding statements like that:
+>>
+>>     while (expr())
+>>         ;
+>>   
+> 
+> The other instances I found of the same problem in the kgdb core are
+> fixed too.
+> 
+> I merged all the changes into the for_mm branch in the kgdb git tree.
 
-Yes, but some suggestions seem to make sense. How about evaluating it?
-and if they are real making it a possible project for someone who
-would do appropriate research, etc. And we move them from bugzilla
-where they don't belong to a development arena.
+Where is the kgdb git tree?
 
-> >      improved searches - for sure, for example in addition to
-> > pre-cooked queries make possible using "raw" queries directly on sql,
-> > which will address misplaced bugs and will make categories more
-> > dynamic;
->
-> What do you have in mind?
+- -piet
 
-I am going to look into the bugzilla software to start with, and see
-if there is a way to expand it this way. we used to have such internal
-tracking (unix based) at work, where we could compose pretty much
-freelance queries, it is really not big deal for developers who script
-and write huge regular expressions for their convenience every
-day...just a vogue idea for now, trying to think how to minimize bugs
-that get lost because of wrong bucket. Going manually through all of
-them is not very effective.
+> 
+> Thanks,
+> Jason.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-> I've always been able to do any search I wanted using the "Advanced Search"
-> of Bugzilla. Well, just checking, it seems the search for the new
-> "regression" flag could be made easier, but that's not a general problem.
->
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-Yes but you have to assume that everything is in the right place from
-start, besides putting things into categories is often impossible
-before some exchange with reporter and initial diagnostics. The worst
-category so fas as I found is "other" (in every place where it
-exists). Most of the "other" bugs haven't been touched, and some have
-huge "SATA" letters in the description written in them :)
-
-> But what could be improved in the database would be to fix the
-> charset problems for getting the RSS feeds working (#8774).  ;-)
-
-I agree :)
-
-> Documentation makes sense, but it belongs into some place like the
-> kernelnewbies wiki, not the Bugzilla itself.
-
-Right, so there should be convenient links to such. I know people like
-Mauro maintains his own set of templates and he was the one to suggest
-it, but later I found out myself that looking for serial console or
-bisect instructions every time is cumbersome... I can't imagine
- making every maintainer to have to have his own, maybe some hate bug
-stuff for this ("oh, not that again...")
-
-> Preferences settings plus saved searches already work.
->
-> What is missing?
-
-I guess existing one is certainly good in many ways - just not good
-enough for people to love it ;) Frankly, I see so many other bugzillas
-that have better look and feel but there is no way we can change it
-overnight...improving things according to feedback from maintainers
-(after all the whole purpose is to give them what they need, even in
-case if they don't need bugzilla at all! then it should be best
-possible interface for bug maintainers ;), maybe try 3.0+ first and
-see how much better we get...
-
-> There's a "Home" link that does exactly this among the actions offered
-> at the bottom of all pages.
-
-Yea you can find many hidden buttons that you have to scroll down to
-:) A little more ergonomics wouldn't hurt though..
-
-> Bugzilla isn't that bad and it has the advantage of being the most
-> popular bug tracking system for open source projects, which means that
-> most likely every kernel developer and many submitters have already used
-> a Bugzilla at some other project.
->
-> From past discussions my impression was that several kernel developers
-> have an email based workflow and are reluctant to integrate web based
-> actions into their workflow.
-
-Yes, and we should cater to them as well. I am totally agree with you
-that tracking and fixing real bugs is the real goal, and interface is
-only important as long as it serves the purpose, and not being a
-culprit. We'll see how it will be evolving. (and I am evolving here
-too - trying to find what's missing and how to make things work :)
-
-> I'd say the success of any bigger Bugzilla change or switch to a
-> different or writing of a new bug tracking system could be measured
-> by answering the following question:
->   Will Linus Torvalds and David Miller use it?
-
-Heh, yes. This should be something really awesome don't you think :)
-
---Natalie
+iD8DBQFG1gS/JICwm/rv3hoRAhfRAJ42F3QlzGwG4aQbs9hHVMI4kJ9SWQCfXrku
+UGo97ByKsB9yhyIu5c+2Jh0=
+=welB
+-----END PGP SIGNATURE-----
