@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbXH2Wec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761225AbXH2Wgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757105AbXH2Wec (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 18:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760272AbXH2WeP
+	id S1761225AbXH2Wgw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 18:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbXH2Wgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 18:34:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43666 "EHLO mx1.redhat.com"
+	Wed, 29 Aug 2007 18:36:45 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:40584 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759905AbXH2WeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 18:34:14 -0400
-Message-ID: <46D5F462.9010401@redhat.com>
-Date: Wed, 29 Aug 2007 17:34:10 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Jesper Juhl <jesper.juhl@gmail.com>
-Subject: 4KSTACKS + DEBUG_STACKOVERFLOW harmful
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1756934AbXH2Wgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 18:36:44 -0400
+Subject: Re: [-mm PATCH]  Memory controller improve user interface
+From: Dave Hansen <haveblue@us.ibm.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       David Rientjes <rientjes@google.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>
+In-Reply-To: <46D5F2BB.8010203@linux.vnet.ibm.com>
+References: <20070829111030.9987.8104.sendpatchset@balbir-laptop>
+	 <1188413148.28903.113.camel@localhost>
+	 <46D5ED5C.9030405@linux.vnet.ibm.com>
+	 <1188425894.28903.140.camel@localhost>
+	 <46D5F2BB.8010203@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 29 Aug 2007 15:36:40 -0700
+Message-Id: <1188427000.28903.148.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noticed today that the combination of 4KSTACKS and DEBUG_STACKOVERFLOW
-config options is a bit deadly.
+On Thu, 2007-08-30 at 03:57 +0530, Balbir Singh wrote:
+> True, mmap() is a good example of such an interface for developers, I
+> am not sure about system admins though.
+> 
+> To quote Andrew
+> <quote>
+> Reporting tools could run getpagesize() and do the arithmetic, but we
+> generally try to avoid exposing PAGE_SIZE, HZ, etc to userspace in this
+> manner.
+> </quote>
 
-DEBUG_STACKOVERFLOW warns in do_IRQ if we're within THREAD_SIZE/8 of the
-end of useable stack space, or 512 bytes on a 4k stack.
+Well, rounding to PAGE_SIZE exposes PAGE_SIZE as well, just in a
+non-intuitive fashion. :)
 
-If we are, then it goes down the dump_stack path, which uses most, if
-not all, of the remaining stack, thereby turning a well-intentioned
-warning into a full-blown catastrophe.
+If we're going to modify what the user specifies, we should probably at
+least mandate that writes are only a "suggestion" and users must read
+back the value to ensure what actually got committed.
 
-The callchain from the warning looks something like this, with stack
-usage shown as found on my x86 box:
+If we're going to round in any direction, shouldn't we round up?  If a
+user specifies 4097 bytes and uses two pages, we don't want to complain
+when they hit that second page.  
 
-4 dump_stack
-4   show_trace
-8     show_trace_log_lvl
-4       dump_trace
-          print_context_stack
-12          print_trace_address
-              print_symbol
-232             __print_symbol
-164               sprint_symbol
-20                  printk
-___
-448
+-- Dave
 
-448 bytes to tell us that we're within 512 bytes (or less) of certain
-doom... and I think there's call overhead on top of that?
-
-The large stack usage in those 2 functions is due to big char arrays, of
-size KSYM_NAME_LEN (128 bytes) and KSYM_SYMBOL_LEN (223 bytes).
-
-IOW, the stack warning effectively reduces useful stack left in our itty
-bitty 4k stacks by over 10%.
-
-Any suggestions for ways around this?  The warning is somewhat helpful,
-and I guess the obvious option is to lighten up the dump_stack path, but
-it's still effectively reducing precious available stack space by some
-amount.
-
-With CONFIG_DEBUG_STACK_USAGE, we could print at oops time: "oh, and by
-the way, you blew your stack" if there is no zeroed stack space left, as
-a post-mortem.  Even without that option, I think we could still check
-whether the *current* %esp at oops time has gone too far?  But if we
-blew the stack, returned, and *then* oops, I think it'd be hard to know
-without the DEBUG_STACK_USAGE option that we ran out of room.
-
--Eric
