@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbXH2Dmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760316AbXH2Dmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757478AbXH2Dmg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 23:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbXH2Dm3
+	id S1760316AbXH2Dmu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 23:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757726AbXH2Dmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 23:42:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40106 "EHLO mx3.mail.elte.hu"
+	Tue, 28 Aug 2007 23:42:39 -0400
+Received: from mail.tmr.com ([64.65.253.246]:34883 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751786AbXH2Dm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 23:42:28 -0400
-Date: Wed, 29 Aug 2007 05:42:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch] sched: fix broken smt/mc optimizations with CFS
-Message-ID: <20070829034214.GA30551@elte.hu>
-References: <20070816010150.GG10033@linux-os.sc.intel.com> <20070823115416.GA31027@elte.hu> <20070823121341.GA5775@elte.hu> <20070827191905.GE1894@linux-os.sc.intel.com> <20070827192324.GA29441@elte.hu> <20070827193103.GF1894@linux-os.sc.intel.com> <20070828222718.GI1894@linux-os.sc.intel.com>
+	id S1759197AbXH2Dmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 23:42:38 -0400
+Message-ID: <46D4EB2E.9000300@tmr.com>
+Date: Tue, 28 Aug 2007 23:42:38 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070828222718.GI1894@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Al Boldi <a1426z@gawab.com>, Peter Zijlstra <peterz@infradead.org>,
+       Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+References: <200708111344.42934.a1426z@gawab.com> <200708220127.30698.a1426z@gawab.com> <20070824134510.GA21382@elte.hu> <200708260127.32238.a1426z@gawab.com> <20070825231525.GA334@elte.hu>
+In-Reply-To: <20070825231525.GA334@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
-
-> On Mon, Aug 27, 2007 at 12:31:03PM -0700, Siddha, Suresh B wrote:
-> > Essentially I observed that nice 0 tasks still endup on two cores of same
-> > package, with out getting spread out to two different packages. This behavior
-> > is same with out this fix and this fix doesn't help in any way.
+Ingo Molnar wrote:
+> * Al Boldi <a1426z@gawab.com> wrote:
 > 
-> Ingo, Appended patch seems to fix the issue and as far as I can test, 
-> seems ok to me.
-
-thanks! I've queued your fix up for .23 merge. I've done a quick test 
-and it indeed seems to work well.
-
-> This is a quick fix for .23. Peter Williams and myself plan to look at 
-> code cleanups in this area (HT/MC optimizations) post .23
+>>> ok. I think i might finally have found the bug causing this. Could 
+>>> you try the fix below, does your webserver thread-startup test work 
+>>> any better?
+>> It seems to help somewhat, but the problem is still visible.  Even 
+>> v20.3 on 2.6.22.5 didn't help.
+>>
+>> It does look related to ia-boosting, so I turned off __update_curr 
+>> like Roman mentioned, which had an enormous smoothing effect, but then 
+>> nice levels completely break down and lockup the system.
 > 
-> BTW, with this fix, do you want to retain the current FUZZ value?
+> you can turn sleeper-fairness off via:
+> 
+>    echo 28 > /proc/sys/kernel/sched_features
+> 
+> another thing to try would be:
+> 
+>    echo 12 > /proc/sys/kernel/sched_features
 
-what value would you suggest? I was thinking about using 
-busiest_rq->curr->load.weight instead, to always keep rotating tasks.
+14, and drop the granularity to 500000.
+> 
+> (that's the new-task penalty turned off.)
+> 
+> Another thing to try would be to edit this:
+> 
+>         if (sysctl_sched_features & SCHED_FEAT_START_DEBIT)
+>                 p->se.wait_runtime = -(sched_granularity(cfs_rq) / 2);
+> 
+> to:
+> 
+>         if (sysctl_sched_features & SCHED_FEAT_START_DEBIT)
+>                 p->se.wait_runtime = -(sched_granularity(cfs_rq);
+> 
+> and could you also check 20.4 on 2.6.22.5 perhaps, or very latest -git? 
+> (Peter has experienced smaller spikes with that.)
+> 
+> 	Ingo
 
-	Ingo
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
