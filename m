@@ -1,76 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbXH2S2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbXH2Sce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756949AbXH2S2T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 14:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbXH2S2J
+	id S1756821AbXH2Sce (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 14:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbXH2Sc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 14:28:09 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:44842 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751362AbXH2S2I (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 14:28:08 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: "Dr. David Alan Gilbert" <linux@treblig.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, neilb@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add source address to sunrpc svc errors
-In-Reply-To: Your message of "Tue, 28 Aug 2007 15:19:07 EDT."
-             <20070828191907.GE3764@fieldses.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070825012630.GB5431@gallifrey> <20070824185621.3f16f7c9.randy.dunlap@oracle.com> <20070825150927.GA29335@gallifrey> <20070827214333.GM3118@fieldses.org> <7788.1188328346@turing-police.cc.vt.edu>
-            <20070828191907.GE3764@fieldses.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1188411973_2981P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 29 Aug 2007 14:26:13 -0400
-Message-ID: <6938.1188411973@turing-police.cc.vt.edu>
+	Wed, 29 Aug 2007 14:32:27 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48909 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751675AbXH2Sc1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 14:32:27 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.osdl.org
+Subject: Re: [PATCH] Send quota messages via netlink
+References: <20070828141318.GC5869@duck.suse.cz>
+	<20070828211335.37fce4c9.akpm@linux-foundation.org>
+	<20070829122647.GB7814@duck.suse.cz>
+Date: Wed, 29 Aug 2007 12:31:52 -0600
+In-Reply-To: <20070829122647.GB7814@duck.suse.cz> (Jan Kara's message of "Wed,
+	29 Aug 2007 14:26:47 +0200")
+Message-ID: <m1mywa42g7.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1188411973_2981P
-Content-Type: text/plain; charset=us-ascii
+Jan Kara <jack@suse.cz> writes:
 
-On Tue, 28 Aug 2007 15:19:07 EDT, "J. Bruce Fields" said:
-> On Tue, Aug 28, 2007 at 03:12:26PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> > On Mon, 27 Aug 2007 17:43:33 EDT, "J. Bruce Fields" said:
-> > > I also wonder whether these shouldn't all be dprintk's instead of
-> > > printk's.  One misbehaving client could create a lot of noise in the
-> > > logs.
-> > 
-> > I shouldn't have to rebuild my kernel with debugging enabled just to see
-> > who is throwing trash at my machine.
-> 
-> Fair enough.
-> 
-> The dprintk's throughout the nfs and sunrpc server and client code can
-> be selectively enabled at runtime using a set of sysctls in
-> sys/sunrpc/*_debug; see
-> 
-> 	include/linux/lockd/debug.h
-> 	include/linux/nfsd/debug.h
+>> I suspect the namespace virtualisation guys would be interested in a new
+>> interface which is sending current->user->uid up to userspace.  uids are
+>> per-namespace now.  What are the implications?  (cc's added)
 
-I looked at nfsd/debug.h, and saw the NFSD_DEBUG usage, and thought "Wow, if I
-built it without RPC_DEBUG, I'm screwed". I didn't see where RPC_DEBUG was
-enabled if CONFIG_SYSCTL was defined - having "compile in debugging code"
-equated to "system has sysctl support" was as unexpected as the guy today who
-didn't realize you needed SCSI support for an IDE CD/ROM. ;)
+>   I know there's something going on in this area but I don't know any
+> details. If somebody has some advice what should be passed into userspace
+> so that user/group can be idenitified, it is welcome.
 
-"You are trapped in a twisty maze of little #ifdef's, all different"... ;)
+For non networking stuff netlink is a pain to use in this area.
 
+Although if we are very careful we may be ok.  But this requires
+some thinking through.
 
---==_Exmh_1188411973_2981P
-Content-Type: application/pgp-signature
+In principle the uid that corresponds to a struct user depends
+on which user namespace you are in.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Now there is a cheap trick we can play.  A traditional filesystem
+belongs to exactly one user namespace. So we can return the uid
+in the filesystems user namespace.
 
-iD8DBQFG1bpFcC3lWbTT17ARAgd/AKDXTUCI+sUq4+ZrDanKn544IyhpUQCffvxQ
-GcfHN/2BxGzgu+GYbuSRDuc=
-=lF9s
------END PGP SIGNATURE-----
+Wait you are returning current->user->uid?  Shouldn't we return
+the user who's quota is exceeded?  I.e. if alice owns a file
+and makes it world writable.  And bob writes to the file wouldn't
+that file still be billed to alice's quota?  So shouldn't we complain
+about alice and not bob?
 
---==_Exmh_1188411973_2981P--
+Anyway if the goal is to return a user who maps to the filesystem we
+can just always return uids in the filesystems uid namespace.
+
+Although if filesystems start supporting multiple user namespaces
+natively we might have a challenge on our hands.
+
+Let me see if I can think of a concrete example here.
+
+We have a nfs server with quotas.
+We have clients who mount the nfs filesystem without synchronizing
+their /etc/password files, so we have separate user namespaces.
+
+What are the ways to make this work?
+- Everyone who has right access to the NFS mount on all
+  machines must have their uid synchronized across all machines
+  (the easiest case).
+
+- Each different kernel has a mapping from it's local uids to
+  the uids of the nfs filesystem. (ick if we do much more the
+  root squash).
+
+- The nfs filesystem knows about the situation and remembers the
+  uid source (the uid namespace) as well as the uid when storing
+  owners of files.  NFSv4 allows for this by treating users
+  as user@domain.
+
+Generally synchronizing uid namespaces (with possibly a root squash
+exception) is the sanest and simplest thing to do in a case like this,
+but it isn't always what is done.
+
+As long as we are returning the filesystems idea of users we
+shouldn't have to worry much about uid namespaces.  However
+for non-traditional filesystems that don't store the user
+as just a uid, say 9p and NFSv4, this implies that we want
+to use the filesystems string identifier.  However I don't think
+the quota system supports these filesystems yet.  So that
+isn't an issue just yet.
+
+However I'm still confused about the use of current->user.  If that
+is what we really want and not the user who's quota will be charged
+it gets to be a really trick business, because potentially the uid
+we want to deliver varies depending on who opened the netlink socket.
+
+Eric
