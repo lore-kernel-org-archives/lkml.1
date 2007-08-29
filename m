@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932799AbXH2In3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757232AbXH2IwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932799AbXH2In3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 04:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbXH2InS
+	id S1757232AbXH2IwR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 04:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbXH2IwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 04:43:18 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:26258 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753407AbXH2InR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 04:43:17 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: James Chapman <jchapman@katalix.com>
-Subject: Re: RFC: issues concerning the next NAPI interface
-Date: Wed, 29 Aug 2007 10:43:13 +0200
-User-Agent: KMail/1.8.2
-Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
-       akepner@sgi.com, netdev@vger.kernel.org, raisch@de.ibm.com,
-       themann@de.ibm.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, meder@de.ibm.com, tklein@de.ibm.com,
-       stefan.roscher@de.ibm.com
-References: <200708271147.01890.ossthema@de.ibm.com> <46D51BD7.6040904@de.ibm.com> <46D52B14.8010508@katalix.com>
-In-Reply-To: <46D52B14.8010508@katalix.com>
+	Wed, 29 Aug 2007 04:52:08 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:60104 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752782AbXH2IwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 04:52:06 -0400
+Date: Wed, 29 Aug 2007 14:21:57 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Cliff Wickman <cpw@sgi.com>, Paul Jackson <pj@sgi.com>,
+       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: Re: cpusets vs cpu-hotplug interaction is broken?
+Message-ID: <20070829085157.GE6832@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070825162606.GA2630@tv-sign.ru> <20070828134853.GA204@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708291043.14380.ossthema@de.ibm.com>
+In-Reply-To: <20070828134853.GA204@tv-sign.ru>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 August 2007 10:15, James Chapman wrote:
-> Jan-Bernd Themann wrote:
-> > What I'm trying to improve with this approach is interrupt
-> > mitigation for NICs where the hardware support for interrupt
-> > mitigation is limited. I'm not trying to improve this for NICs
-> > that work well with the means their HW provides. I'm aware of
-> > the fact that this scheme has it's tradeoffs and certainly
-> > can not be as good as a HW approach.
-> > So I'm grateful for any ideas that do have less tradeoffs and
-> > provide a mechanism to reduce interrupts without depending on
-> > HW support of the NIC.
+On Tue, Aug 28, 2007 at 05:48:53PM +0400, Oleg Nesterov wrote:
+> (cpu-hotplug experts cc'ed)
+> 
+> On 08/25, Oleg Nesterov wrote:
+> >
+> > After the brief look at kernel/cpuset.c, it seems that attach_task() should
+> > guarantee that the task can't use CPUs outside of cpuset->cpus_allowed.
 > > 
-> > In the end I want to reduce the CPU utilization. And one way
-> > to do that is LRO which also works only well if there are more
-> > then just a very few packets to aggregate. So at least our
-> > driver (eHEA) would benefit from a mix of timer based polling
-> > and plain NAPI (depending on load situations).
+> > But this looks racy wrt sched_setaffinity() which does
+> > 
+> > 	cpus_allowed = cpuset_cpus_allowed(p);
+> > 	// callback_mutex is free
+> > 	set_cpus_allowed(p);
+> > 
+> > What if attach_task()->set_cpus_allowed() happens in between?
 > 
-> Wouldn't you achieve the same result by enabling hardware interrupt 
-> mitigation in eHEA in combination with NAPI? Presumably a 10G interface 
-> has hardware mitigation features?
-
-Quote from above: "What I'm trying to improve with this approach 
-is interrupt mitigation for NICs where the hardware support for
-interrupt mitigation is limited"
-
-So guess why I'm doing that ;-)
-
+> Actually, I think there is another problem, and cpuset_cpus_allowed() is
+> just broken wrt CONFIG_HOTPLUG_CPU.
 > 
-> > If there is no need for a generic mechanism for this kind of
-> > network adapters, then we can just leave this to each device
-> > driver.
+> Suppose that CONFIG_CPUSETS is true, but we don't use cpusets. In that
+> case all tasks in system belong to the top_cpuset (btw, why cpuset_init()
+> sets init_task.cpuset? this was already done by cpuset_init_early()), and
+> we should have the same behaviour as without CONFIG_CPUSETS.
 > 
-> I've been looking at this from a different angle. My goal is to optimize 
-> NAPI packet forwarding rates while minimizing packet latency. Using 
-> hardware interrupt mitigation hurts latency so I'm investigating ways to 
-> turn it off without risking NAPI poll on/off thrashing at certain packet 
-> rates.
+> By default, all tasks have ->cpus_allowed = CPU_MASK_ALL inherited from
+> kernel_init(). This means that the task can use the new CPU right after
+> cpu_up().
 > 
-> Jan-Bernd, I think I've found a solution to the issue that you 
-> highlighted with my scheme yesterday and it doesn't involve generating 
-> other interrupts using hrtimers etc. :) Initial results are very 
-> encouraging in my setups. Would you be willing to test it with eHEA? I 
-> don't have a 10G setup. If results are encouraging, I'll post an RFC to 
-> ask for review / feedback from the NAPI experts here. What do you think?
+> Now let's suppose that some task does sched_setaffinity(0, CPU_MASK_ALL).
+> In that case, cpuset_cpus_allowed() sets ->cpus_allowed = cpu_online_map,
+> and I think this is just wrong. Now that task doesn't see the new CPUs.
 > 
 
-I'm not sure which solution you mean. If you post your RFC, please create
-a new thread (other title)
+Good point! 
 
+A task's cpu_allowed mask can contain cpus which are offline.
+And if those cpus exist in the intersection of the task's requested mask
+and cpuset's cpu mask, why should we unset the offlined cpus from that 
+intersection? Either way the task is not going to run on the cpus while
+they are in the offlined state.  And on cpu_up, if the cpu is present in
+the task's allowed mask, it can run on that cpu, which is a good thing.
+
+The two users of cpuset_cpus_allowed - sched_setaffinity and pdflush
+don't seem to require the online cpu information.
+
+Paul, is there any particular reason why we need guarentee_online_cpus
+to be called in cpuset_cpus_allowed ? 
+
+Thanks and Regards
+gautham.
+
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
