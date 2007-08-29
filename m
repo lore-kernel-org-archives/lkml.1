@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbXH2CzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbXH2C5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756737AbXH2CzK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 22:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbXH2Cy6
+	id S1758142AbXH2C5R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 22:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbXH2C5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 22:54:58 -0400
-Received: from mail.tmr.com ([64.65.253.246]:34845 "EHLO gaimboi.tmr.com"
+	Tue, 28 Aug 2007 22:57:07 -0400
+Received: from thunk.org ([69.25.196.29]:52816 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751743AbXH2Cy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 22:54:58 -0400
-Message-ID: <46D4DFDF.6090301@tmr.com>
-Date: Tue, 28 Aug 2007 22:54:23 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1752390AbXH2C5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 22:57:06 -0400
+Date: Tue, 28 Aug 2007 22:56:55 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Jes Sorensen <jes@sgi.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andy Isaacson <adi@hexapodia.org>, Josh Boyer <jwboyer@gmail.com>,
+       ksummit-2007-discuss@thunk.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
+Message-ID: <20070829025655.GB29615@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Daniel Walker <dwalker@mvista.com>, Jes Sorensen <jes@sgi.com>,
+	Matthew Garrett <mjg59@srcf.ucam.org>,
+	Tech Board Discuss <Tech-board-discuss@lists.linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Andy Isaacson <adi@hexapodia.org>, Josh Boyer <jwboyer@gmail.com>,
+	ksummit-2007-discuss@thunk.org,
+	Arjan van de Ven <arjan@infradead.org>
+References: <20070824025504.GT9163@parisc-linux.org> <20070824032228.GJ21720@waste.org> <20070824155735.GA14978@kroah.com> <20070824234840.GC19595@kroah.com> <20070825010329.6f5bc47c@the-village.bc.nu> <46D2A113.2030403@sgi.com> <20070827050432.06f9590f@laptopd505.fenrus.org> <46D2BFC8.7000904@sgi.com> <20070829021854.GA29615@thunk.org> <1188353916.2435.347.camel@dhcp193.mvista.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Clements <paul.clements@steeleye.com>, linux-kernel@vger.kernel.org,
-       david@dgreaves.com, Wouter Verhelst <w@uter.be>,
-       Corey Minyard <cminyard@mvista.com>
-Subject: Re: [PATCH 1/2] NBD: set uninitialized devices to size 0
-References: <46CF101F.4050603@steeleye.com> <20070824164856.7024a95b.akpm@linux-foundation.org>
-In-Reply-To: <20070824164856.7024a95b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1188353916.2435.347.camel@dhcp193.mvista.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 24 Aug 2007 13:06:39 -0400
-> Paul Clements <paul.clements@steeleye.com> wrote:
-> 
->> This fixes errors with utilities (such as LVM's vgscan) that try to scan 
->> all devices. Previously this would generate read errors when 
->> uninitialized nbd devices were scanned:
-> 
-> I somewhat randomly marked both these as 2.6.24 material.  If you think
-> that was incorrect, please shout out.
+On Tue, Aug 28, 2007 at 07:18:36PM -0700, Daniel Walker wrote:
+> Just out of curiosity , have you had anyone nominate a really really
+> large group ? Like say, anyone that has every send an email to lkml ? 
 
-I have the feeling that I mentioned nbd issues several releases ago, but 
-never got to getting more info on reproducing them. I try not to submit 
-bugs I can't reproduce, oftem they're my fault :-(
+Nope; I suspect someone who did that would just be ignored by the
+program committee.  We might publically mock someone who did that,
+just to discourage that kind of behavior, but it's wouldn't be a
+particularly effective denial of service attack, precisely because the
+program committee has discretion about how to handle that sort of
+thing.  
 
+There have been people nominating 5-10 people in previous years, and
+in general the set of people that were nominated overlapped with
+suggestions made by others --- and that's the process working as it's
+supposed to.  But that's not a "really, really large group".
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+						- Ted
