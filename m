@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbXH2XCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761475AbXH2XFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761371AbXH2XCR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 19:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758732AbXH2XCD
+	id S1761475AbXH2XFx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 19:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757895AbXH2XFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 19:02:03 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50550 "EHLO mx1.redhat.com"
+	Wed, 29 Aug 2007 19:05:47 -0400
+Received: from gate.crashing.org ([63.228.1.57]:45206 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756185AbXH2XCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 19:02:01 -0400
-Message-ID: <46D5FAE5.3020401@redhat.com>
-Date: Wed, 29 Aug 2007 18:01:57 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 4KSTACKS + DEBUG_STACKOVERFLOW harmful
-References: <46D5F462.9010401@redhat.com> <9a8748490708291553j4c21bdf0ueae0b51c99c8190a@mail.gmail.com>
-In-Reply-To: <9a8748490708291553j4c21bdf0ueae0b51c99c8190a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755790AbXH2XFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 19:05:46 -0400
+In-Reply-To: <46D40510.3060805@scram.de>
+References: <46D40510.3060805@scram.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <611B8BA7-89B3-4DA0-A248-0FB57E4654ED@kernel.crashing.org>
+Cc: linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] ppc32/8xx: Fix r3 trashing due to 8MB TLB page instantiation
+Date: Wed, 29 Aug 2007 18:08:00 -0500
+To: Jochen Friedrich <jochen@scram.de>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
 
->> Any suggestions for ways around this?  The warning is somewhat helpful,
->> and I guess the obvious option is to lighten up the dump_stack path, but
->> it's still effectively reducing precious available stack space by some
->> amount.
->>
-> A first step could be to allocate those two char arrays with kmalloc()
-> instead of on the stack, but then I guess that dump_stack() gets
-> called from places where we may not really want to be calling
-> kmalloc(). I guess we could allocate the buffers earlier (like at boot
-> time) and store pointers somewhere where dump stack can get to them
-> later when it needs them.
+On Aug 28, 2007, at 6:20 AM, Jochen Friedrich wrote:
 
-Yep, I thought about something like that... and I assume you'd need a
-bit of locking around them too.
+> Instantiation of 8MB pages on the TLB cache for the kernel static
+> mapping trashes r3 register on !CONFIG_8xx_CPU6 configurations.
+> This ensures r3 gets saved and restored.
+>
+> This has been posted to linuxppc-embedded by Marcelo Tosatti
+> <marcelo@kvack.org>, but only an incomplete version of the patch
+> has been applied in c51e078f82096a7d35ac8ec2416272e843a0e1c4.
+> This patch adds the rest of the fix.
+>
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+>  arch/ppc/kernel/head_8xx.S |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+>
+> This can be pulled from git://git.bocc.de/dbox2.git ppc-fixes
+> diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
+> index 944c35c..eb8d26f 100644
+> --- a/arch/ppc/kernel/head_8xx.S
+> +++ b/arch/ppc/kernel/head_8xx.S
+> @@ -495,9 +495,7 @@ LoadLargeDTLB:
+>  	lwz	r11, 4(r0)
+>
+>  	lwz	r12, 16(r0)
+> -#ifdef CONFIG_8xx_CPU6
+>  	lwz	r3, 8(r0)
+> -#endif
+>  	rfi
+>
+>  /* This is the data TLB error on the MPC8xx.  This could be due to
 
->> With CONFIG_DEBUG_STACK_USAGE, we could print at oops time: "oh, and by
->> the way, you blew your stack" if there is no zeroed stack space left, as
->> a post-mortem.  Even without that option, I think we could still check
->> whether the *current* %esp at oops time has gone too far?  But if we
->> blew the stack, returned, and *then* oops, I think it'd be hard to know
->> without the DEBUG_STACK_USAGE option that we ran out of room.
->>
-> 
-> We could also simply have it warn at a higher limit, like 1024 bytes
-> instead of 512. But I guess then we would get too many false positives
-> and make it less useful.
+do we need this in arch/powerpc as well?
 
-Yes, but if you happen to warn deeper anyway, just because you got
-"lucky" with IRQ timing, you'll still explode.  Regardless of where the
-threshold is, there's still a risk of starting the warning deeper than
-that.  Whatever stack the warning takes effectively reduces the useable
-stack size.
+- k
 
--Eric
