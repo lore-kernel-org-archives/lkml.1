@@ -1,103 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932757AbXH2IPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932846AbXH2IQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932757AbXH2IPj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 04:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbXH2IP3
+	id S932846AbXH2IQJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 04:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbXH2IPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 04:15:29 -0400
-Received: from s36.avahost.net ([74.53.95.194]:55287 "EHLO s36.avahost.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754893AbXH2IP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 04:15:26 -0400
-Message-ID: <46D52B14.8010508@katalix.com>
-Date: Wed, 29 Aug 2007 09:15:16 +0100
-From: James Chapman <jchapman@katalix.com>
-Organization: Katalix Systems Ltd
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 29 Aug 2007 04:15:49 -0400
+Received: from web32603.mail.mud.yahoo.com ([68.142.207.230]:39800 "HELO
+	web32603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754893AbXH2IPq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 04:15:46 -0400
+X-YMail-OSG: jzzHd.AVM1kO2TPhtsMpf7TPRquYVkdTmny3Cstof5.HCIEXc51899ZGt32zRx0k0MRaAsy2c5F9I2DPtSfj9MWXhA--
+X-RocketYMMF: knobi.rm
+Date: Wed, 29 Aug 2007 01:15:45 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Reply-To: spamtrap@knobisoft.de
+Subject: Re: Understanding I/O behaviour - next try
+To: Fengguang Wu <wfg@mail.ustc.edu.cn>,
+       Martin Knoblauch <spamtrap@knobisoft.de>
+Cc: linux-kernel@vger.kernel.org, Peter zijlstra <a.p.zijlstra@chello.nl>,
+       mingo@redhat.com
+In-Reply-To: <388351538.28936@ustc.edu.cn>
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-CC: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
-       akepner@sgi.com, netdev@vger.kernel.org, raisch@de.ibm.com,
-       themann@de.ibm.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, meder@de.ibm.com, tklein@de.ibm.com,
-       stefan.roscher@de.ibm.com
-Subject: Re: RFC: issues concerning the next NAPI interface
-References: <200708271147.01890.ossthema@de.ibm.com> <20070827.133721.59473971.davem@davemloft.net> <200708281319.03903.ossthema@de.ibm.com> <20070828.132152.38706038.davem@davemloft.net> <46D51BD7.6040904@de.ibm.com>
-In-Reply-To: <46D51BD7.6040904@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - s36.avahost.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - katalix.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <353439.71100.qm@web32603.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan-Bernd Themann wrote:
-> Hi David
+
+--- Fengguang Wu <wfg@mail.ustc.edu.cn> wrote:
+
+> On Tue, Aug 28, 2007 at 08:53:07AM -0700, Martin Knoblauch wrote:
+> [...]
+> >  The basic setup is a dual x86_64 box with 8 GB of memory. The
+> DL380
+> > has a HW RAID5, made from 4x72GB disks and about 100 MB write
+> cache.
+> > The performance of the block device with O_DIRECT is about 90
+> MB/sec.
+> > 
+> >  The problematic behaviour comes when we are moving large files
+> through
+> > the system. The file usage in this case is mostly "use once" or
+> > streaming. As soon as the amount of file data is larger than 7.5
+> GB, we
+> > see occasional unresponsiveness of the system (e.g. no more ssh
+> > connections into the box) of more than 1 or 2 minutes (!) duration
+> > (kernels up to 2.6.19). Load goes up, mainly due to pdflush threads
+> and
+> > some other poor guys being in "D" state.
+> [...]
+> >  Just by chance I found out that doing all I/O inc sync-mode does
+> > prevent the load from going up. Of course, I/O throughput is not
+> > stellar (but not much worse than the non-O_DIRECT case). But the
+> > responsiveness seem OK. Maybe a solution, as this can be controlled
+> via
+> > mount (would be great for O_DIRECT :-).
+> > 
+> >  In general 2.6.22 seems to bee better that 2.6.19, but this is
+> highly
+> > subjective :-( I am using the following setting in /proc. They seem
+> to
+> > provide the smoothest responsiveness:
+> > 
+> > vm.dirty_background_ratio = 1
+> > vm.dirty_ratio = 1
+> > vm.swappiness = 1
+> > vm.vfs_cache_pressure = 1
 > 
-> David Miller schrieb:
->> Interrupt mitigation only works if it helps you avoid interrupts.
->> This scheme potentially makes more of them happen.
->>
->> The hrtimer is just another interrupt, a cpu locally triggered one,
->> but it has much of the same costs nonetheless.
->>
->> So if you set this timer, it triggers, and no packets arrive, you are
->> taking more interrupts and doing more work than if you had disabled
->> NAPI.
->>
->> In fact, for certain packet rates, your scheme would result in
->> twice as many interrupts than the current scheme
->>   
-> That depends how smart the driver switches between timer
-> polling and plain NAPI (depending on load situation).
->> This is one of several reasons why hardware is the only truly proper
->> place for this kind of logic.  Only the hardware can see the packet
->> arrive, and do the interrupt deferral without any cpu intervention
->> whatsoever.
->>   
-> What I'm trying to improve with this approach is interrupt
-> mitigation for NICs where the hardware support for interrupt
-> mitigation is limited. I'm not trying to improve this for NICs
-> that work well with the means their HW provides. I'm aware of
-> the fact that this scheme has it's tradeoffs and certainly
-> can not be as good as a HW approach.
-> So I'm grateful for any ideas that do have less tradeoffs and
-> provide a mechanism to reduce interrupts without depending on
-> HW support of the NIC.
+> You are apparently running into the sluggish kupdate-style writeback
+> problem with large files: huge amount of dirty pages are getting
+> accumulated and flushed to the disk all at once when dirty background
+> ratio is reached. The current -mm tree has some fixes for it, and
+> there are some more in my tree. Martin, I'll send you the patch if
+> you'd like to try it out.
+>
+Hi Fengguang,
+
+ Yeah, that pretty much describes the situation we end up. Although
+"sluggish" is much to friendly if we hit the situation :-)
+
+ Yes, I am very interested  to check out your patch. I saw your
+postings on LKML already and was already curious. Any chance you have
+something agains 2.6.22-stable? I have reasons not to move to -23 or
+-mm.
+
+> >  Another thing I saw during my tests is that when writing to NFS,
+> the
+> > "dirty" or "nr_dirty" numbers are always 0. Is this a conceptual
+> thing,
+> > or a bug?
 > 
-> In the end I want to reduce the CPU utilization. And one way
-> to do that is LRO which also works only well if there are more
-> then just a very few packets to aggregate. So at least our
-> driver (eHEA) would benefit from a mix of timer based polling
-> and plain NAPI (depending on load situations).
+> What are the nr_unstable numbers?
+>
 
-Wouldn't you achieve the same result by enabling hardware interrupt 
-mitigation in eHEA in combination with NAPI? Presumably a 10G interface 
-has hardware mitigation features?
+ Ahh. Yes, they go up to 80-90k pages. Comparable to the nr_dirty
+numbers for the disk case. Good to know.
 
-> If there is no need for a generic mechanism for this kind of
-> network adapters, then we can just leave this to each device
-> driver.
+ For NFS, the nr_writeback numbers seem surprisingly high. They also go
+to 80-90k (pages ?). In the disk case they rarely go over 12k.
 
-I've been looking at this from a different angle. My goal is to optimize 
-NAPI packet forwarding rates while minimizing packet latency. Using 
-hardware interrupt mitigation hurts latency so I'm investigating ways to 
-turn it off without risking NAPI poll on/off thrashing at certain packet 
-rates.
+Cheers
+Martin
+> Fengguang
+> 
+> 
 
-Jan-Bernd, I think I've found a solution to the issue that you 
-highlighted with my scheme yesterday and it doesn't involve generating 
-other interrupts using hrtimers etc. :) Initial results are very 
-encouraging in my setups. Would you be willing to test it with eHEA? I 
-don't have a 10G setup. If results are encouraging, I'll post an RFC to 
-ask for review / feedback from the NAPI experts here. What do you think?
 
--- 
-James Chapman
-Katalix Systems Ltd
-http://www.katalix.com
-Catalysts for your Embedded Linux software development
-
+------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
