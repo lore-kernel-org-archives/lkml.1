@@ -1,101 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761330AbXH2WvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761525AbXH2Wv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761330AbXH2WvS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 18:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756973AbXH2WvK
+	id S1761525AbXH2Wv5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 18:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756839AbXH2Wvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 18:51:10 -0400
-Received: from 110.47.78.83.cust.bluewin.ch ([83.78.47.110]:52439 "EHLO
-	spock.one.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755639AbXH2WvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 18:51:09 -0400
-X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Aug 2007 18:51:08 EDT
-Date: Thu, 30 Aug 2007 00:41:16 +0200
-From: Michal Januszewski <spock@gentoo.org>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Ondrej Zajicek <santiago@crfreenet.org>
-Subject: [PATCH] fbdev: find mode with the highest/safest refresh rate in
-	fb_find_mode()
-Message-ID: <20070829224116.GA25106@spock.one.pl>
-Reply-To: spock@gentoo.org
-References: <20070718084102.GA22694@spock.one.pl> <20070718143803.GA5787@localhost.localdomain> <1184771895.4523.33.camel@daplas> <20070826190913.GA24286@spock.one.pl> <1188168573.4806.5.camel@daplas>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <1188168573.4806.5.camel@daplas>
-X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 29 Aug 2007 18:51:49 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40312 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756973AbXH2Wvs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 18:51:48 -0400
+Date: Wed, 29 Aug 2007 15:51:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: ebiederm@xmission.com (Eric W. Biederman),
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible
+ fashion.
+Message-Id: <20070829155136.966f5c8f.akpm@linux-foundation.org>
+In-Reply-To: <20070829114604.242b976c@the-village.bc.nu>
+References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
+	<20070828230459.GA15937@infradead.org>
+	<m1r6lnb4ha.fsf@ebiederm.dsl.xmission.com>
+	<46D4CC81.4060400@zytor.com>
+	<m1d4x7aysz.fsf@ebiederm.dsl.xmission.com>
+	<20070829114604.242b976c@the-village.bc.nu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, if the refresh rate is not specified, fb_find_mode() returns
-the first known video mode with the requested resolution, which provides
-no guarantees wrt the refresh rate.  Change this so that the mode with
-the highest refresh rate is returned when the driver provides a custom
-video mode database and the monitor limits, and a mode with the safe
-60 Hz refresh rate otherwise.
+On Wed, 29 Aug 2007 11:46:04 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
----
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 3741ad7..9598c46 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -606,26 +606,43 @@ done:
- 	DPRINTK("Trying specified video mode%s %ix%i\n",
- 	    refresh_specified ? "" : " (ignoring refresh rate)", xres, yres);
- 
--	diff = refresh;
-+	if (!refresh_specified) {
-+		/*
-+		 * If the caller has provided a custom mode database and a
-+		 * valid monspecs structure, we look for the mode with the
-+		 * highest refresh rate.  Otherwise we play it safe it and
-+		 * try to find a mode with a refresh rate closest to the
-+		 * standard 60 Hz.
-+		 */
-+		if (db != modedb &&
-+		    info->monspecs.vfmin && info->monspecs.vfmax &&
-+		    info->monspecs.hfmin && info->monspecs.hfmax &&
-+		    info->monspecs.dclkmax) {
-+			refresh = 1000;
-+		} else {
-+			refresh = 60;
-+		}
-+	}
-+
-+	diff = -1;
- 	best = -1;
- 	for (i = 0; i < dbsize; i++) {
--		if (name_matches(db[i], name, namelen) ||
--		    (res_specified && res_matches(db[i], xres, yres))) {
--			if(!fb_try_mode(var, info, &db[i], bpp)) {
--				if(!refresh_specified || db[i].refresh == refresh)
--					return 1;
--				else {
--					if(diff > abs(db[i].refresh - refresh)) {
--						diff = abs(db[i].refresh - refresh);
--						best = i;
--					}
-+		if ((name_matches(db[i], name, namelen) ||
-+		    (res_specified && res_matches(db[i], xres, yres))) &&
-+		    !fb_try_mode(var, info, &db[i], bpp)) {
-+			if (refresh_specified && db[i].refresh == refresh) {
-+				return 1;
-+			} else {
-+				if (abs(db[i].refresh - refresh) < diff) {
-+					diff = abs(db[i].refresh - refresh);
-+					best = i;
- 				}
- 			}
- 		}
- 	}
- 	if (best != -1) {
- 		fb_try_mode(var, info, &db[best], bpp);
--		return 2;
-+		return (refresh_specified) ? 2 : 1;
- 	}
- 
- 	diff = xres + yres;
+> > >> adequate job of warning our users.  A printk when we run a program
+> > >> that uses the binary interface and an long enough interval the warning
+> > >> makes it to the Enterprise kernels before we remove the interface
+> > >> should be sufficient.
+> 
+> The enterprise products will probably just remove the printk. Even if
+> they didn't you are looking at ten years before things finish changing
+> based on current experiences, probably longer as things stabilize.
 
+If that happens then the enterprise vendors will tell us (won't they).  We
+can then discuss it and we may well elect to do something different.
+
+But Eric is predicting that this probably _won't_ happen.  There's only one
+way to find out.
+
+> The whole "whine a bit" process simply doesn't work when you are trying
+> to persuade people to move in a non-hobbyist context.
+
+Eric thinks there will be little if any moving to be done.
+
+> They don't want to
+> move, the message is simply an annoyance, their upstream huge package
+> vendor won't change just to deal with it and they'll class it as a
+> regression from previous releases, an incompatibility and file bugs until
+> it goes away.
+> 
+> Its user ABI and as Linus said - we don't break it. Trimming down all the
+> crap that never worked via sysctl is one thing, not putting sysctl in new
+> platforms likewise. Trying to undo it isn't going to work
+> 
+
+We don't know that yet.  You may be right, or maybe Eric is right.  Let's
+find out.
