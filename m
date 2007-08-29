@@ -1,158 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbXH2O3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbXH2O3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbXH2O3D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 10:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbXH2O2z
+	id S1756258AbXH2O3b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 10:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbXH2O3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 10:28:55 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:54208 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752232AbXH2O2y (ORCPT
+	Wed, 29 Aug 2007 10:29:23 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:55270 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752060AbXH2O3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 10:28:54 -0400
-Message-ID: <46D5126F.9000405@linux.vnet.ibm.com>
-Date: Wed, 29 Aug 2007 12:00:07 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org>
-In-Reply-To: <20070828211335.37fce4c9.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Aug 2007 10:29:22 -0400
+Date: Wed, 29 Aug 2007 08:27:48 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Understanding I/O behaviour - next try
+In-reply-to: <fa.NN9klzYbZhoZ+YoOWgrMeLtzlHE@ifi.uio.no>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Martin Knoblauch <spamtrap@knobisoft.de>, linux-kernel@vger.kernel.org,
+       Peter zijlstra <a.p.zijlstra@chello.nl>, mingo@redhat.com
+Message-id: <46D58264.6050403@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.tV0SjP5wHRgCEzqJw2C8w4+Fh90@ifi.uio.no>
+ <fa.NN9klzYbZhoZ+YoOWgrMeLtzlHE@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 28 Aug 2007 16:13:18 +0200 Jan Kara <jack@suse.cz> wrote:
-> 
->>   Hello,
+Jens Axboe wrote:
+> On Tue, Aug 28 2007, Martin Knoblauch wrote:
+>> Keywords: I/O, bdi-v9, cfs
 >>
->>   I'm sending rediffed patch implementing sending of quota messages via netlink
->> interface (some rationale in patch description). I've already posted it to
->> LKML some time ago and there were no objections, so I guess it's fine to put
->> it to -mm. Andrew, would you be so kind? Thanks.
->>   Userspace deamon reading the messages from the kernel and sending them to
->> dbus and/or user console is also written (it's part of quota-tools). The
->> only remaining problem is there are a few changes needed to libnl needed for
->> the userspace daemon. They were basically acked by the maintainer but it
->> seems he has not merged the patches yet. So this will take a bit more time.
+>> Hi,
 >>
+>>  a while ago I asked a few questions on the Linux I/O behaviour,
+>> because I were (still am) fighting some "misbehaviour" related to heavy
+>> I/O.
+>>
+>>  The basic setup is a dual x86_64 box with 8 GB of memory. The DL380
+>> has a HW RAID5, made from 4x72GB disks and about 100 MB write cache.
+>> The performance of the block device with O_DIRECT is about 90 MB/sec.
+>>
+>>  The problematic behaviour comes when we are moving large files through
+>> the system. The file usage in this case is mostly "use once" or
+>> streaming. As soon as the amount of file data is larger than 7.5 GB, we
+>> see occasional unresponsiveness of the system (e.g. no more ssh
+>> connections into the box) of more than 1 or 2 minutes (!) duration
+>> (kernels up to 2.6.19). Load goes up, mainly due to pdflush threads and
+>> some other poor guys being in "D" state.
+>>
+>>  The data flows in basically three modes. All of them are affected:
+>>
+>> local-disk -> NFS
+>> NFS -> local-disk
+>> NFS -> NFS
+>>
+>>  NFS is V3/TCP.
+>>
+>>  So, I made a few experiments in the last few days, using three
+>> different kernels: 2.6.22.5, 2.6.22.5+cfs20.4 an 2.6.22.5+bdi-v9.
+>>
+>>  The first observation (independent of the kernel) is that we *should*
+>> use O_DIRECT, at least for output to the local disk. Here we see about
+>> 90 MB/sec write performance. A simple "dd" using 1,2 and 3 parallel
+>> threads to the same block device (through a ext2 FS) gives:
+>>
+>> O_Direct: 88 MB/s, 2x44, 3x29.5
+>> non-O_DIRECT: 51 MB/s, 2x19, 3x12.5
+>>
+>> - Observation 1a: IO schedulers are mostly equivalent, with CFQ
+>> slightly worse than AS and DEADLINE
+>> - Observation 1b: when using a 2.6.22.5+cfs20.4, the non-O_DIRECT
+>> performance goes [slightly] down. With three threads it is 3x10 MB/s.
+>> Ingo?
+>> - Observation 1c: bdi-v9 does not help in this case, which is not
+>> surprising.
+>>
+>>  The real question here is why the non-O_DIRECT case is so slow. Is
+>> this a general thing? Is this related to the CCISS controller? Using
+>> O_DIRECT is unfortunatelly not an option for us.
+>>
+>>  When using three different targets (local disk plus two different NFS
+>> Filesystems) bdi-v9 is a big winner. Without it, all threads are [seem
+>> to be] limited to the speed of the slowest FS. With bdi-v9 we see a
+>> considerable speedup.
+>>
+>>  Just by chance I found out that doing all I/O inc sync-mode does
+>> prevent the load from going up. Of course, I/O throughput is not
+>> stellar (but not much worse than the non-O_DIRECT case). But the
+>> responsiveness seem OK. Maybe a solution, as this can be controlled via
+>> mount (would be great for O_DIRECT :-).
+>>
+>>  In general 2.6.22 seems to bee better that 2.6.19, but this is highly
+>> subjective :-( I am using the following setting in /proc. They seem to
+>> provide the smoothest responsiveness:
+>>
+>> vm.dirty_background_ratio = 1
+>> vm.dirty_ratio = 1
+>> vm.swappiness = 1
+>> vm.vfs_cache_pressure = 1
+>>
+>>  Another thing I saw during my tests is that when writing to NFS, the
+>> "dirty" or "nr_dirty" numbers are always 0. Is this a conceptual thing,
+>> or a bug?
+>>
+>>  In any case, view this as a report for one specific loadcase that does
+>> not behave very well. It seems there are ways to make things better
+>> (sync, per device throttling, ...), but nothing "perfect yet. Use once
+>> does seem to be a problem.
 > 
-> So it's a new kernel->userspace interface.
-> 
-> But we have no description of the interface :(
-> 
+> Try limiting the queue depth on the cciss device, some of those are
+> notoriously bad at starving commands. Something like the below hack, see
+> if it makes a difference (and please verify in dmesg that it prints the
+> message about limiting depth!):
 
-And could we have some description of the context under which all the message
-exchanges take place. When are these messages sent out -- what event
-is the user space notified of?
-
->> +/* Send warning to userspace about user which exceeded quota */
->> +static void send_warning(const struct dquot *dquot, const char warntype)
->> +{
->> +	static unsigned long seq;
->> +	struct sk_buff *skb;
->> +	void *msg_head;
->> +	int ret;
->> +
->> +	skb = genlmsg_new(QUOTA_NL_MSG_SIZE, GFP_NOFS);
->> +	if (!skb) {
->> +		printk(KERN_ERR
->> +		  "VFS: Not enough memory to send quota warning.\n");
->> +		return;
->> +	}
->> +	msg_head = genlmsg_put(skb, 0, seq++, &quota_genl_family, 0, QUOTA_NL_C_WARNING);
->> +	if (!msg_head) {
->> +		printk(KERN_ERR
->> +		  "VFS: Cannot store netlink header in quota warning.\n");
->> +		goto err_out;
-
-One problem, we've been is losing notifications. It does not happen for us
-due to the cpumask interface (which allows us to have parallel sockets
-for each cpu or a set of cpus). How frequent are your notifications?
-
->> +	}
->> +	ret = nla_put_u32(skb, QUOTA_NL_A_QTYPE, dquot->dq_type);
->> +	if (ret)
->> +		goto attr_err_out;
->> +	ret = nla_put_u64(skb, QUOTA_NL_A_EXCESS_ID, dquot->dq_id);
->> +	if (ret)
->> +		goto attr_err_out;
->> +	ret = nla_put_u32(skb, QUOTA_NL_A_WARNING, warntype);
->> +	if (ret)
->> +		goto attr_err_out;
->> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MAJOR,
->> +		MAJOR(dquot->dq_sb->s_dev));
->> +	if (ret)
->> +		goto attr_err_out;
->> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MINOR,
->> +		MINOR(dquot->dq_sb->s_dev));
->> +	if (ret)
->> +		goto attr_err_out;
->> +	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current->user->uid);
->> +	if (ret)
->> +		goto attr_err_out;
->> +	genlmsg_end(skb, msg_head);
->> +
-
-Have you looked at ensuring that the data structure works across 32 bit
-and 64 bit systems (in terms of binary compatibility)? That's usually
-a nice to have feature.
-
->> +	ret = genlmsg_multicast(skb, 0, quota_genl_family.id, GFP_NOFS);
->> +	if (ret < 0 && ret != -ESRCH)
->> +		printk(KERN_ERR
->> +			"VFS: Failed to send notification message: %d\n", ret);
->> +	return;
->> +attr_err_out:
->> +	printk(KERN_ERR "VFS: Failed to compose quota message: %d\n", ret);
->> +err_out:
->> +	kfree_skb(skb);
->> +}
->> +#endif
-> 
-> This is it.  Normally netlink payloads are represented as a struct.  How
-> come this one is built-by-hand?
-> 
-> It doesn't appear to be versioned.  Should it be?
-> 
-
-Yes, versioning is always nice and genetlink supports it.
-
-> Does it have (or need) reserved-set-to-zero space for expansion?  Again,
-> hard to tell..
-> 
-> I guess it's OK to send a major and minor out of the kernel like this. 
-> What's it for?  To represent a filesytem?  I wonder if there's a more
-> modern and useful way of describing the fs.  Path to mountpoint or
-> something?
-> 
-> I suspect the namespace virtualisation guys would be interested in a new
-> interface which is sending current->user->uid up to userspace.  uids are
-> per-namespace now.  What are the implications?  (cc's added)
-> 
-
-The memory controller or VM would also be interested in notifications
-of OOM. At OLS this year interest was shown in getting OOM notifications
-and allow the user space a chance to handle the notification and take
-action (especially for containers). We already have containerstats for
-containers (which I was planning to reuse), but I was told that we would
-be interested in user space OOM notifications in general.
-
-> Is it worth adding a comment explaining why GFP_NOFS is used here?
-> 
-> 
-
+I saw a bulletin from HP recently that sugggested disabling the 
+write-back cache on some Smart Array controllers as a workaround because 
+it reduced performance in applications that did large bulk writes. 
+Presumably they are planning on releasing some updated firmware that 
+fixes this eventually..
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
