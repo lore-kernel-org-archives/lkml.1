@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbXH2Fxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759776AbXH2F7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932189AbXH2Fxe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 01:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbXH2Fx0
+	id S1759776AbXH2F7h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 01:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbXH2F73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 01:53:26 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:53734 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752104AbXH2FxZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 01:53:25 -0400
-Subject: Re: [kvm-devel] [PATCH 3/3] KVM paravirt-ops implementation
-From: Anthony Liguori <anthony@codemonkey.ws>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org
-In-Reply-To: <1188325890.5531.78.camel@localhost.localdomain>
-References: <11882278064002-git-send-email-aliguori@us.ibm.com>
-	 <1188227808405-git-send-email-aliguori@us.ibm.com>
-	 <11882278082826-git-send-email-aliguori@us.ibm.com>
-	 <11882278093751-git-send-email-aliguori@us.ibm.com>
-	 <1188325890.5531.78.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 29 Aug 2007 00:53:15 -0500
-Message-Id: <1188366795.6337.11.camel@squirrel>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.91 
+	Wed, 29 Aug 2007 01:59:29 -0400
+Received: from [212.12.190.209] ([212.12.190.209]:32816 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752101AbXH2F72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 01:59:28 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: CFS review
+Date: Wed, 29 Aug 2007 08:58:32 +0300
+User-Agent: KMail/1.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Keith Packard <keith.packard@intel.com>
+References: <200708111344.42934.a1426z@gawab.com> <200708290719.24422.a1426z@gawab.com> <20070829045316.GA15064@elte.hu>
+In-Reply-To: <20070829045316.GA15064@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708290858.32909.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-29 at 04:31 +1000, Rusty Russell wrote:
-> On Mon, 2007-08-27 at 10:16 -0500, Anthony Liguori wrote:
-> > @@ -569,6 +570,7 @@ asmlinkage void __init start_kernel(void)
-> >  	}
-> >  	sort_main_extable();
-> >  	trap_init();
-> > +	kvm_guest_init();
-> >  	rcu_init();
-> >  	init_IRQ();
-> >  	pidhash_init();
-> 
-> Hi Anthony,
-> 
-> 	This placement seems arbitrary.  Why not earlier from setup_arch, or as
-> a normal initcall?
+Ingo Molnar wrote:
+> * Al Boldi <a1426z@gawab.com> wrote:
+> > I have narrowed it down a bit to add_wait_runtime.
+>
+> the scheduler is a red herring here. Could you "strace -ttt -TTT" one of
+> the glxgears instances (and send us the cfs-debug-info.sh output, with
+> CONFIG_SCHED_DEBUG=y and CONFIG_SCHEDSTATS=y as requested before) so
+> that we can have a closer look?
+>
+> i reproduced something similar and there the stall is caused by 1+
+> second select() delays on the X client<->server socket. The scheduler
+> stats agree with that:
+>
+>  se.sleep_max             :          2194711437
+>  se.block_max             :                   0
+>  se.exec_max              :              977446
+>  se.wait_max              :             1912321
+>
+> the scheduler itself had a worst-case scheduling delay of 1.9
+> milliseconds for that glxgears instance (which is perfectly good - in
+> fact - excellent interactivity) - but the task had a maximum sleep time
+> of 2.19 seconds. So the 'glitch' was not caused by the scheduler.
 
-The placement is important if we wish to have a paravirt_ops hook for
-the interrupt controller.  This is the latest possible spot we can do
-it.  A comment is probably appropriate here.
+2.19sec is probably the time you need to lay them out side by side.  You see, 
+gears sleeps when it is covered by another window, so once you lay them out 
+it starts running, and that's when they start to stutter for about 10sec.  
+After that they should run smoothly, because they used up all the sleep 
+bonus.
 
-Regards,
+If you like, I can send you my straces, but they are kind of big though, and 
+you need to strace each gear, as stracing itself changes the workload 
+balance.
 
-Anthony Liguori
+Let's first make sure what we are looking for:
+1. start # gears & gears & gears &
+2. lay them out side by side, don't worry about sleep times yet.
+3. now they start stuttering for about 10sec
+4. now they run out of sleep bonuses and smooth out
 
-> Rusty.
-> 
-> 
-> 
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by: Splunk Inc.
-> Still grepping through log files to find problems?  Stop.
-> Now Search log events and configuration files using AJAX and a browser.
-> Download your FREE copy of Splunk now >>  http://get.splunk.com/
-> _______________________________________________
-> kvm-devel mailing list
-> kvm-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/kvm-devel
+If this is the sequence you get on your machine, then try disabling 
+add_wait_runtime to see the difference.
+
+
+Thanks!
+
+--
+Al
 
