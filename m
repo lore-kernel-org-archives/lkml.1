@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760197AbXH2NXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932946AbXH2NZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760197AbXH2NXp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 09:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbXH2NXg
+	id S932946AbXH2NZy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 09:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757291AbXH2NZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 09:23:36 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:20144 "EHLO relay.sw.ru"
+	Wed, 29 Aug 2007 09:25:44 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:38276 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756896AbXH2NXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 09:23:36 -0400
-Message-ID: <46D57274.3040802@openvz.org>
-Date: Wed, 29 Aug 2007 17:19:48 +0400
+	id S1757257AbXH2NZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 09:25:43 -0400
+Message-ID: <46D572FA.9090302@openvz.org>
+Date: Wed, 29 Aug 2007 17:22:02 +0400
 From: Pavel Emelyanov <xemul@openvz.org>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@osdl.org>
 CC: Oleg Nesterov <oleg@tv-sign.ru>, Sukadev Bhattiprolu <sukadev@us.ibm.com>,
        Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Use same_thread_group() in signalfd.c
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: [PATCH] Remove write-only variable from pktgen_thread
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a lost hunk of previous patch that isolated the
-explicit usage of task->tgid in some places. The signalfd
-code uses the tsk->tgid comparison.
+The pktgen_thread.pid is set to current->pid and is never used
+after this. So remove this at all.
+
+Found during isolating the explicit pid/tgid usage.
 
 Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
 ---
 
-diff --git a/fs/signalfd.c b/fs/signalfd.c
-index a8e293d..5bfd2c5 100644
---- a/fs/signalfd.c
-+++ b/fs/signalfd.c
-@@ -64,7 +64,7 @@ static int signalfd_lock(struct signalfd
- 		return 0;
- 	}
+diff --git a/net/core/pktgen.c b/net/core/pktgen.c
+index 3a3154e..93695c2 100644
+--- a/net/core/pktgen.c
++++ b/net/core/pktgen.c
+@@ -380,7 +380,6 @@ struct pktgen_thread {
+ 	/* Field for thread to receive "posted" events terminate, stop ifs etc. */
  
--	if (lk->tsk->tgid == current->tgid)
-+	if (same_thread_group(lk->tsk, current->tgid))
- 		lk->tsk = current;
+ 	u32 control;
+-	int pid;
+ 	int cpu;
  
- 	return 1;
+ 	wait_queue_head_t queue;
+@@ -3462,8 +3461,6 @@ static int pktgen_thread_worker(void *ar
+ 
+ 	init_waitqueue_head(&t->queue);
+ 
+-	t->pid = current->pid;
+-
+ 	pr_debug("pktgen: starting pktgen/%d:  pid=%d\n", cpu, task_pid_nr(current));
+ 
+ 	max_before_softirq = t->max_before_softirq;
