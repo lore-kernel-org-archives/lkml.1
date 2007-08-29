@@ -1,87 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757232AbXH2IwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbXH2Iyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757232AbXH2IwR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 04:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbXH2IwI
+	id S1758227AbXH2Iyc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 04:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbXH2IyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 04:52:08 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:60104 "EHLO e3.ny.us.ibm.com"
+	Wed, 29 Aug 2007 04:54:21 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:44677 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752782AbXH2IwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 04:52:06 -0400
-Date: Wed, 29 Aug 2007 14:21:57 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Cliff Wickman <cpw@sgi.com>, Paul Jackson <pj@sgi.com>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Subject: Re: cpusets vs cpu-hotplug interaction is broken?
-Message-ID: <20070829085157.GE6832@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070825162606.GA2630@tv-sign.ru> <20070828134853.GA204@tv-sign.ru>
-MIME-Version: 1.0
+	id S1751958AbXH2IyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 04:54:19 -0400
+Date: Wed, 29 Aug 2007 12:53:31 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [1/1] Block device throttling [Re: Distributed storage.]
+Message-ID: <20070829085331.GA16607@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708281027.59528.phillips@phunq.net> <20070828175403.GA28440@2ka.mipt.ru> <200708281408.06618.phillips@phunq.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070828134853.GA204@tv-sign.ru>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <200708281408.06618.phillips@phunq.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 28, 2007 at 05:48:53PM +0400, Oleg Nesterov wrote:
-> (cpu-hotplug experts cc'ed)
-> 
-> On 08/25, Oleg Nesterov wrote:
+On Tue, Aug 28, 2007 at 02:08:04PM -0700, Daniel Phillips (phillips@phunq.net) wrote:
+> On Tuesday 28 August 2007 10:54, Evgeniy Polyakov wrote:
+> > On Tue, Aug 28, 2007 at 10:27:59AM -0700, Daniel Phillips (phillips@phunq.net) wrote:
+> > > > We do not care about one cpu being able to increase its counter
+> > > > higher than the limit, such inaccuracy (maximum bios in flight
+> > > > thus can be more than limit, difference is equal to the number of
+> > > > CPUs - 1) is a price for removing atomic operation. I thought I
+> > > > pointed it in the original description, but might forget, that if
+> > > > it will be an issue, that atomic operations can be introduced
+> > > > there. Any uber-precise measurements in the case when we are
+> > > > close to the edge will not give us any benefit at all, since were
+> > > > are already in the grey area.
+> > >
+> > > This is not just inaccurate, it is suicide.  Keep leaking throttle
+> > > counts and eventually all of them will be gone.  No more IO
+> > > on that block device!
 > >
-> > After the brief look at kernel/cpuset.c, it seems that attach_task() should
-> > guarantee that the task can't use CPUs outside of cpuset->cpus_allowed.
-> > 
-> > But this looks racy wrt sched_setaffinity() which does
-> > 
-> > 	cpus_allowed = cpuset_cpus_allowed(p);
-> > 	// callback_mutex is free
-> > 	set_cpus_allowed(p);
-> > 
-> > What if attach_task()->set_cpus_allowed() happens in between?
+> > First, because number of increased and decreased operations are the
+> > same, so it will dance around limit in both directions.
 > 
-> Actually, I think there is another problem, and cpuset_cpus_allowed() is
-> just broken wrt CONFIG_HOTPLUG_CPU.
-> 
-> Suppose that CONFIG_CPUSETS is true, but we don't use cpusets. In that
-> case all tasks in system belong to the top_cpuset (btw, why cpuset_init()
-> sets init_task.cpuset? this was already done by cpuset_init_early()), and
-> we should have the same behaviour as without CONFIG_CPUSETS.
-> 
-> By default, all tasks have ->cpus_allowed = CPU_MASK_ALL inherited from
-> kernel_init(). This means that the task can use the new CPU right after
-> cpu_up().
-> 
-> Now let's suppose that some task does sched_setaffinity(0, CPU_MASK_ALL).
-> In that case, cpuset_cpus_allowed() sets ->cpus_allowed = cpu_online_map,
-> and I think this is just wrong. Now that task doesn't see the new CPUs.
-> 
+> No.  Please go and read it the description of the race again.  A count
+> gets irretrievably lost because the write operation of the first
+> decrement is overwritten by the second. Data gets lost.  Atomic 
+> operations exist to prevent that sort of thing.  You either need to use 
+> them or have a deep understanding of SMP read and write ordering in 
+> order to preserve data integrity by some equivalent algorithm.
 
-Good point! 
+I think you should complete your emotional email with decription of how
+atomic types are operated and how processors access data. Just to give a
+lesson to those who never knew how SMP works, but create patches and
+have the conscience to send them and even discuss.
+Then, if of course you will want, which I doubt, you can reread previous 
+mails and find that it was pointed to that race and possibilities to 
+solve it way too long ago. 
+Anyway, I prefer to look like I do not know how SMP and atomic operation
+work and thus stay away from this discussion.
 
-A task's cpu_allowed mask can contain cpus which are offline.
-And if those cpus exist in the intersection of the task's requested mask
-and cpuset's cpu mask, why should we unset the offlined cpus from that 
-intersection? Either way the task is not going to run on the cpus while
-they are in the offlined state.  And on cpu_up, if the cpu is present in
-the task's allowed mask, it can run on that cpu, which is a good thing.
+> --- 2.6.22.clean/block/ll_rw_blk.c	2007-07-08 16:32:17.000000000 -0700
+> +++ 2.6.22/block/ll_rw_blk.c	2007-08-24 12:07:16.000000000 -0700
+> @@ -3237,6 +3237,15 @@ end_io:
+>   */
+>  void generic_make_request(struct bio *bio)
+>  {
+> +	struct request_queue *q = bdev_get_queue(bio->bi_bdev);
+> +
+> +	if (q && q->metric) {
+> +		int need = bio->bi_reserved = q->metric(bio);
+> +		bio->queue = q;
 
-The two users of cpuset_cpus_allowed - sched_setaffinity and pdflush
-don't seem to require the online cpu information.
+In case you have stacked device, this entry will be rewritten and you
+will lost all your account data.
 
-Paul, is there any particular reason why we need guarentee_online_cpus
-to be called in cpuset_cpus_allowed ? 
-
-Thanks and Regards
-gautham.
+> +		wait_event_interruptible(q->throttle_wait, atomic_read(&q->available) >= need);
+> +		atomic_sub(&q->available, need);
+> +	}
 
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+	Evgeniy Polyakov
