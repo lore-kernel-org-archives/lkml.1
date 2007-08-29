@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbXH2AHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759603AbXH2AHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757639AbXH2AHP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 20:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbXH2AHA
+	id S1759603AbXH2AHl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 20:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbXH2AHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 28 Aug 2007 20:07:03 -0400
+Received: from mis011-1.exch011.intermedia.net ([64.78.21.128]:29632 "EHLO
+	mis011-1.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753307AbXH2AHA convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Aug 2007 20:07:00 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:17778 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752864AbXH2AG7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 20:06:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VFheM0Ytk5MjNLsKuo+Ema8imnM3+ba7wXuWciqyIHwRa8BDd1bIJ5znQAX0BEqSFQ7At9/XdtrvRrJicTPEwA5dw/JwCqjWCsTwrgC+n7n08H3UdPlrNgu+9oMnuCjqaNY+EuiWuHRMFiS82q9p0FSRxjxt+cd+oK/9J/pXYR4=
-Message-ID: <24c800fb0708281706n6d92d9d9w7c8defc4a884296b@mail.gmail.com>
-Date: Tue, 28 Aug 2007 17:06:58 -0700
-From: "Pete Monroe" <pizzlemonrizzle@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: Crash report 2.6.22.5
-Cc: linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       netfilter-devel@lists.netfilter.org
-In-Reply-To: <6bffcb0e0708281651g29729d6au6b40c0f9af5beed2@mail.gmail.com>
+X-Greylist: delayed 419 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Aug 2007 20:07:00 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <24c800fb0708281140r2c46e364i77e041b6c746b60d@mail.gmail.com>
-	 <6bffcb0e0708281651g29729d6au6b40c0f9af5beed2@mail.gmail.com>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [kvm-devel] [RFC] 9p: add KVM/QEMU pci transport
+Date: Tue, 28 Aug 2007 17:01:58 -0700
+Message-ID: <64F9B87B6B770947A9F8391472E032160D6557C9@ehost011-8.exch011.intermedia.net>
+In-Reply-To: <a4e6962a0708281356p2c808841ud486376974c94eff@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [kvm-devel] [RFC] 9p: add KVM/QEMU pci transport
+thread-index: Acfptf7/9ZSKlqIeQa2sgznQ0UkF3AAGbABw
+References: <11883271601857-git-send-email-ericvh@gmail.com><11883271601227-git-send-email-ericvh@gmail.com><11883271602233-git-send-email-ericvh@gmail.com><200708282208.52902.arnd@arndb.de> <a4e6962a0708281356p2c808841ud486376974c94eff@mail.gmail.com>
+From: "Dor Laor" <dor.laor@qumranet.com>
+To: "Eric Van Hensbergen" <ericvh@gmail.com>, "Arnd Bergmann" <arnd@arndb.de>
+Cc: <kvm-devel@lists.sourceforge.net>, <v9fs-developer@lists.sourceforge.net>,
+       <lguest@ozlabs.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 29 Aug 2007 00:02:11.0128 (UTC) FILETIME=[D8FC8B80:01C7E9CF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/28/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> Hi Pete,
+>> > This adds a shared memory transport for a synthetic 9p device for
+>> > paravirtualized file system support under KVM/QEMU.
+>>
+>> Nice driver. I'm hoping we can do a virtio driver using a similar
+>> concept.
+>>
 >
-> On 28/08/07, Pete Monroe <pizzlemonrizzle@gmail.com> wrote:
-> > Hi,
-> >
-> > Sorry there's not more to go on here.
-> >
-> > A 32-bit firewall running the kernel LVS virtual server to fan out to
-> > a dozen webservers ran fine for a year using  2.6.17.13, but won't
-> > last more than four hours or so with 2.6.22.5.  Another server,
-> > different hardware and vendor but same purpose, also crashed with
-> > 2.6.22.5 after a few hours.  It had previously run 2.6.20.11.  Nothing
-> > on the screen, nothing in the logs.
-> >
-> > I'm attaching zipped dmesg (both kernel versions),
+>Yes.  I'm looking at the patches from Dor now, it should be pretty
+>straight forward.  The PCI is interesting in its own right for other
+>(non-virtual) projects we've been playing with....
 >
-> Could you capture the bug with serial/netconsole etc.?
+>     -eric
 
-The servers are remote, production servers and it's a PITA when they
-crash.  But I'll see what I can do.  Thanks for the pointer.
-
---
-Pete
-
->
-> "Collecting kernel messages"
-> http://www.stardust.webpages.pl/files/handbook/handbook-en-0.3-rc1.pdf
-> for more info.
+Great, we can add lots of pci bus shared functionality into the
+kvm_pci_bus.c
+--Dor
