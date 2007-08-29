@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760814AbXH2Vvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932385AbXH2VxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760814AbXH2Vvd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 17:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759754AbXH2VvM
+	id S932385AbXH2VxE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 17:53:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbXH2Vwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 17:51:12 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55549 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759568AbXH2VvK (ORCPT
+	Wed, 29 Aug 2007 17:52:54 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:34326 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751142AbXH2Vwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 17:51:10 -0400
-Date: Wed, 29 Aug 2007 22:59:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: webmaster@dragonslave.de
-Cc: dex@dragonslave.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Override 80-wire cable detection for Toshiba S1800-814
-Message-ID: <20070829225921.6ffd5f98@the-village.bc.nu>
-In-Reply-To: <200708292341.14212.dex@dragonslave.de>
-References: <200708292341.14212.dex@dragonslave.de>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 29 Aug 2007 17:52:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=h/gBW7X//ayBuMyEUXtVD7NsG8h0RvqMGUJrJXDXxdN2tXp/BVRcgmDXTMbEqAf0ka15AeeD70p1nLlvdspgwm4tnLZyF1rEXdFpvzT37L6g2muzygysebvr0OqUn1HJsPaIufJ0/PQuwtQqir/ogLWUzGjhNGbi1RueDcMTWGM=
+Subject: Possible kernel lock in semaphore's __down()
+From: Aleksandar Dezelin <dezelin@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Wed, 29 Aug 2007 23:52:51 +0200
+Message-Id: <1188424371.8853.9.camel@synaptical>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Aug 2007 23:41:13 +0200
-Daniel Exner <dex@dragonslave.de> wrote:
+Hi!
 
-> Hi!
-> 
-> Please CC me, as I'm currently not subscribed to this list, thx.
-> 
-> Attached patch will add above mentioned Laptop Model to whitelist for both 
-> pata_ali and alim15x3, as it is correctly detected as 40-wire connected but 
-> this cable is short enough to still do transfers higher than UDMA33.
-> Don't know if this is also true for other S1800 Laptops cause I own only one.
+I'm a newbie here on the list and also as a "kernel hacker". There's a
+bug reported in bugzilla (Bug 7927), cite:
 
-Looks good to me - does need a Signed-off-by: line however
+
+> In the function __down
+>  
+> fastcall void __sched __down(struct semaphore * sem)
+> {
+>  struct task_struct *tsk = current;
+>  DECLARE_WAITQUEUE(wait, tsk);
+>  unsigned long flags;
+>  
+>  tsk->state = TASK_UNINTERRUPTIBLE;
+>  spin_lock_irqsave(&sem->wait.lock, flags);
+>  add_wait_queue_exclusive_locked(&sem->wait, &wait);
+>  ...
+> }
+>  
+> 
+> From this code fragment, it sets the tsk->state to TASK_UNINTERRUPTIBLE before 
+> gets the spinlock. Assume at that moment, a interrupt ocuur and and after the 
+> interrupt handle ends, an other process is scheduled to run (assume the kernel 
+> is preemptalbe). In this case, the previous process ( its state has set to 
+> TASK_UNINTERRUPTIBLE) has been picked off the run queue, and it has not yet add 
+> to the wait queue( sem->wait ), so it may be never waited up forever. 
+> 
+
+I have marked it as rejected as as I can see at the time this function is called,
+it is guaranteed that ret_from_intr() will not call schedule() on return from an 
+interrupt handler to either kernel space or user space because of the call 
+to macro might_sleep() in semaphore's down(). Am I wrong?
+
+Thanks and best regards,
+Aleksandar Dezelin
+
+
+
