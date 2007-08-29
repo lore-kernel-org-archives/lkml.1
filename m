@@ -1,138 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbXH2P3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759522AbXH2Paq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932320AbXH2P3j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 11:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758204AbXH2P26
+	id S1759522AbXH2Paq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 11:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759040AbXH2P3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 11:28:58 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:62735 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757217AbXH2P2z (ORCPT
+	Wed, 29 Aug 2007 11:29:17 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:62485 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756087AbXH2P3O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 11:28:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=NrRvpI4do/vXwEdW5a06bLh+UvnNKp5KsbMZ2ccqviKH/5NDodPTHkDq0t2DBUTdl/KP66e3SaGUB3fCPt8bkdl1CW1RgwWqfagpkFLYzcB0Kij2dwWywO7I3+yNg7kvu2R1DGVVEA95n/YpajoP9dZYlu+3A/5/UBYXmJBGCxs=
-Message-ID: <46D59081.2040605@googlemail.com>
-Date: Wed, 29 Aug 2007 17:28:01 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 29 Aug 2007 11:29:14 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=feQnPJLvAyQWSjMRoGotjkwd6br4u7iR//TbPDs2G1mY7bzGvarUkzQEyLqXGdOyn
+	l3xoItzdYZQyOKQVGK9Sg==
+Message-ID: <6599ad830708290828t5164260eid548757d404e31a5@mail.gmail.com>
+Date: Wed, 29 Aug 2007 08:28:56 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+Subject: Re: [-mm PATCH] Memory controller improve user interface
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linux Containers" <containers@lists.osdl.org>,
+       "Linux MM Mailing List" <linux-mm@kvack.org>,
+       "David Rientjes" <rientjes@google.com>
+In-Reply-To: <20070829111030.9987.8104.sendpatchset@balbir-laptop>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Vitaly Bordug <vitb@kernel.crashing.org>,
-       Andrey Borzenkov <arvidjaar@mail.ru>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Len Brown <len.brown@intel.com>,
-       linux-acpi@vger.kernel.org, Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Daniel Ritz <daniel.ritz-ml@swissonline.ch>,
-       Tony Luck <tony.luck@intel.com>, John Stultz <johnstul@us.ibm.com>,
-       Paolo Ornati <ornati@fastwebnet.it>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, Mikael Pettersson <mikpe@it.uu.se>,
-       Stephen Ziemba <sziemba@ecn.purdue.edu>
-Subject: [1/2] 2.6.23-rc3: known regressions with patches
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Disposition: inline
+References: <20070829111030.9987.8104.sendpatchset@balbir-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On 8/29/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+> Change the interface to use kilobytes instead of pages. Page sizes can vary
+> across platforms and configurations. A new strategy routine has been added
+> to the resource counters infrastructure to format the data as desired.
+>
+> Suggested by David Rientjes, Andrew Morton and Herbert Poetzl
+>
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+>
+>  Documentation/controllers/memory.txt |    7 +++--
+>  include/linux/res_counter.h          |    6 ++--
+>  kernel/res_counter.c                 |   24 +++++++++++++----
+>  mm/memcontrol.c                      |   47 +++++++++++++++++++++++++++--------
+>  4 files changed, 64 insertions(+), 20 deletions(-)
+>
+> diff -puN mm/memcontrol.c~mem-control-make-ui-use-kilobytes mm/memcontrol.c
+> --- linux-2.6.23-rc3/mm/memcontrol.c~mem-control-make-ui-use-kilobytes  2007-08-28 13:20:44.000000000 +0530
+> +++ linux-2.6.23-rc3-balbir/mm/memcontrol.c     2007-08-29 14:36:07.000000000 +0530
+> @@ -32,6 +32,7 @@
+>
+>  struct container_subsys mem_container_subsys;
+>  static const int MEM_CONTAINER_RECLAIM_RETRIES = 5;
+> +static const int MEM_CONTAINER_CHARGE_KB = (PAGE_SIZE >> 10);
+>
+>  /*
+>   * The memory controller data structure. The memory controller controls both
+> @@ -312,7 +313,7 @@ int mem_container_charge(struct page *pa
+>          * If we created the page_container, we should free it on exceeding
+>          * the container limit.
+>          */
+> -       while (res_counter_charge(&mem->res, 1)) {
+> +       while (res_counter_charge(&mem->res, MEM_CONTAINER_CHARGE_KB)) {
+>                 if (try_to_free_mem_container_pages(mem))
+>                         continue;
+>
+> @@ -352,7 +353,7 @@ int mem_container_charge(struct page *pa
+>                 kfree(pc);
+>                 pc = race_pc;
+>                 atomic_inc(&pc->ref_cnt);
+> -               res_counter_uncharge(&mem->res, 1);
+> +               res_counter_uncharge(&mem->res, MEM_CONTAINER_CHARGE_KB);
+>                 css_put(&mem->css);
+>                 goto done;
+>         }
+> @@ -417,7 +418,7 @@ void mem_container_uncharge(struct page_
+>                 css_put(&mem->css);
+>                 page_assign_page_container(page, NULL);
+>                 unlock_page_container(page);
+> -               res_counter_uncharge(&mem->res, 1);
+> +               res_counter_uncharge(&mem->res, MEM_CONTAINER_CHARGE_KB);
+>
+>                 spin_lock_irqsave(&mem->lru_lock, flags);
+>                 list_del_init(&pc->lru);
+> @@ -426,12 +427,37 @@ void mem_container_uncharge(struct page_
+>         }
+>  }
+>
+> -static ssize_t mem_container_read(struct container *cont, struct cftype *cft,
+> -                       struct file *file, char __user *userbuf, size_t nbytes,
+> -                       loff_t *ppos)
+> +int mem_container_read_strategy(unsigned long val, char *buf)
+> +{
+> +       return sprintf(buf, "%lu (kB)\n", val);
+> +}
+> +
+> +int mem_container_write_strategy(char *buf, unsigned long *tmp)
+> +{
+> +       *tmp = memparse(buf, &buf);
+> +       if (*buf != '\0')
+> +               return -EINVAL;
+> +
+> +       *tmp = *tmp >> 10;              /* convert to kilobytes */
+> +       return 0;
+> +}
 
-Here is a list of some known regressions in 2.6.23-rc4
-with patches available.
+This seems a bit inconsistent - if you write a value to a limit file,
+then the value that you read back is reduced by a factor of 1024?
+Having the "(kB)" suffix isn't really a big help to automated
+middleware.
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+I'd still be in favour of just reading/writing 64-bit values
+representing bytes - simple, and unambiguous for programmatic use, and
+not really any less user-friendly than kilobytes  for manual use
+(since the numbers involved are going to be unwieldly for manual use
+whether they're in bytes or kB).
 
-List of Aces
-
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            9
-Andi Kleen                             5
-Linus Torvalds                         5
-Andrew Morton                          4
-Hugh Dickins                           4
-Al Viro                                3
-Alan Stern                             3
-Cornelia Huck                          3
-Jens Axboe                             3
-Tejun Heo                              3
-
-
-
-Unclassified
-
-Subject         : 8250 claims non existing device blocking IO port
-References      : http://lkml.org/lkml/2007/8/18/20
-Last known good : ?
-Submitter       : Andrey Borzenkov <arvidjaar@mail.ru>
-Caused-By       : ?
-Handled-By      : Bjorn Helgaas <bjorn.helgaas@hp.com>
-Patch           : http://lkml.org/lkml/2007/8/21/291
-Status          : patch was suggested
-
-Subject         : Oops while modprobing phy fixed module
-References      : http://lkml.org/lkml/2007/7/14/63
-Last known good : ?
-Submitter       : Gabriel C <nix.or.die@googlemail.com>
-Caused-By       : ?
-Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
-                  Vitaly Bordug <vitb@kernel.crashing.org>
-Patch1          : http://lkml.org/lkml/2007/7/18/506
-Status          : patch available
-
-
-
-ACPI
-
-Subject         : the fan doesn't work any more
-References      : http://lkml.org/lkml/2007/8/28/359
-Last known good : ?
-Submitter       : Daniel Ritz <daniel.ritz-ml@swissonline.ch>
-Caused-By       : Alexey Starikovskiy <astarikovskiy@suse.de>
-                  commit cd8c93a4e04dce8f00d1ef3a476aac8bd65ae40b
-Handled-By      : Alexey Starikovskiy <astarikovskiy@suse.de>
-Patch           : http://lkml.org/lkml/2007/8/29/15
-Status          : patch was suggested
-
-
-
-Clocks & time
-
-Subject         : "double" hpet clocksource && hard freeze
-References      : http://lkml.org/lkml/2007/8/23/257
-Last known good : ?
-Submitter       : Paolo Ornati <ornati@fastwebnet.it>
-Caused-By       : Tony Luck <tony.luck@intel.com>
-                  commit 0aa366f351d044703e25c8425e508170e80d83b1
-Handled-By      : John Stultz <johnstul@us.ibm.com>
-                  Tony Luck <tony.luck@intel.com>
-Patch           : http://lkml.org/lkml/2007/8/23/285
-Status          : patch available
-
-
-
-SATA/PATA
-
-Subject         : sata_promise 2.09 fails to identify ST3400832AS
-References      : http://bugzilla.kernel.org/show_bug.cgi?id=8936
-Last known good : ?
-Submitter       : Stephen Ziemba <sziemba@ecn.purdue.edu>
-Caused-By       : Mikael Pettersson <mikpe@it.uu.se>
-                  commit a77720ad0a4049e4bc6355e4febf899966a48222
-Handled-By      : Mikael Pettersson <mikpe@it.uu.se>
-Patch           : http://bugzilla.kernel.org/show_bug.cgi?id=8936#c3
-Status          : patch available
-
-
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+Paul
