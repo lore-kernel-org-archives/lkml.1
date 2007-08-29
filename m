@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbXH2LXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932576AbXH2Lje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758346AbXH2LXK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 07:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbXH2LW4
+	id S932576AbXH2Lje (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 07:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbXH2Lj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 07:22:56 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:36664 "EHLO
+	Wed, 29 Aug 2007 07:39:26 -0400
+Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:33816 "EHLO
 	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754930AbXH2LWz (ORCPT
+	with ESMTP id S1755126AbXH2LjZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 07:22:55 -0400
-Date: Wed, 29 Aug 2007 12:22:41 +0100 (BST)
+	Wed, 29 Aug 2007 07:39:25 -0400
+Date: Wed, 29 Aug 2007 12:39:16 +0100 (BST)
 From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Mike Frysinger <vapier.adi@gmail.com>, Joe Perches <joe@perches.com>,
-       linux-kernel@vger.kernel.org, blinux-list@redhat.com,
-       cluster-devel@redhat.com, discuss@x86-64.org, jffs-dev@axis.com,
-       linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-mips@linux-mips.org, linux-mm@kvack.org,
-       linux-mtd@lists.infradead.org, linux-scsi@vger.kernel.org,
-       mpt_linux_developer@lsi.com, netdev@vger.kernel.org,
-       osst-users@lists.sourceforge.net, parisc-linux@parisc-linux.org,
-       tpmdd-devel@lists.sourceforge.net,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH] Prefix each line of multiline printk(KERN_<level>
- "foo\nbar") with KERN_<level>
-In-Reply-To: <Pine.LNX.4.64.0708261305020.31149@anakin>
-Message-ID: <Pine.LNX.4.64N.0708291205020.26167@blysk.ds.pg.gda.pl>
-References: <1187999098.32738.179.camel@localhost> <Pine.LNX.4.64.0708261028120.31149@anakin>
- <8bd0f97a0708260354xb4c8546od0cc19a590820f32@mail.gmail.com>
- <Pine.LNX.4.64.0708261305020.31149@anakin>
+To: Christoph Hellwig <hch@infradead.org>
+cc: Peter Firefly Lund <firefly@vax64.dk>,
+       Christoph Lameter <clameter@sgi.com>, Momchil Velikov <velco@fadata.bg>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] avoid negative shifts in radix-tree.c
+In-Reply-To: <20070827132843.GB21970@infradead.org>
+Message-ID: <Pine.LNX.4.64N.0708291232130.26167@blysk.ds.pg.gda.pl>
+References: <1188051967.18306.45.camel@ls-search> <20070827132843.GB21970@infradead.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Aug 2007, Geert Uytterhoeven wrote:
+On Mon, 27 Aug 2007, Christoph Hellwig wrote:
 
-> What I mean is that probably there used to be a printk() call starting with
-> `\n'. Then someone added a `KERN_ERR' in front of it.
+> The conceptual change looks fine to me, but the code looks a little odd,
+> what about:
+> 
+> static __init unsigned long __maxindex(unsigned int height)
+> {
+> 	unsigned int tmp = height * RADIX_TREE_MAP_SHIFT;
+> 	int shift = RADIX_TREE_INDEX_BITS - tmp;
+> 
+> 	if (shift < 0)
+> 		return ~0UL;
+> 	return ~0UL >> shift;
+> }
+> 
+> instead?
 
- I gather '\n' at the beginning is to assure the following line is output 
-on a separate line rather than as a continuation of another one which may 
-have been output without a trailing '\n'.  A situation where printk() is 
-called with a string containing no trailing '\n' may be discouraged, but 
-there are some more or less justified exceptions.  For example the SCSI 
-disk spin-up code is one.
-
- Therefore it may be reasonable for more critical messages -- perhaps not 
-ones at KERN_ERR, but certainly KERN_CRIT and higher ones -- that may 
-potentially happen asynchronously to start with '\n'.  In this case a call 
-would look like this:
-
-	printk("\n" KERN_CRIT "The actual message.\n");
-
-Of course based on "console_loglevel" and "default_message_level" the 
-leading '\n' may still get swallowed from what gets printed to the console 
-terminal, but in reality I do not think that poses a problem, as these 
-both can be set by a system administrator according to the local policy.
+ This patch has been successfully tested on actual hardware (VAXstation 
+4000/90).  If nobody objects, I'll push it to Andrew.
 
   Maciej
+
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+
+patch-vax-2.6.17-rc4-20070111-radix-maxindex-0
+diff -up --recursive --new-file linux-vax-2.6.17-rc4-20070111.macro/lib/radix-tree.c linux-vax-2.6.17-rc4-20070111/lib/radix-tree.c
+--- linux-vax-2.6.17-rc4-20070111.macro/lib/radix-tree.c	2006-10-31 19:05:50.000000000 +0000
++++ linux-vax-2.6.17-rc4-20070111/lib/radix-tree.c	2007-01-22 01:24:17.000000000 +0000
+@@ -825,9 +825,11 @@ radix_tree_node_ctor(void *node, kmem_ca
+ static __init unsigned long __maxindex(unsigned int height)
+ {
+ 	unsigned int tmp = height * RADIX_TREE_MAP_SHIFT;
+-	unsigned long index = (~0UL >> (RADIX_TREE_INDEX_BITS - tmp - 1)) >> 1;
++	unsigned long index;
+ 
+-	if (tmp >= RADIX_TREE_INDEX_BITS)
++	if (tmp < RADIX_TREE_INDEX_BITS)
++		index = (~0UL >> (RADIX_TREE_INDEX_BITS - tmp - 1)) >> 1;
++	else
+ 		index = ~0UL;
+ 	return index;
+ }
