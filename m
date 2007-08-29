@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751341AbXH2Rhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbXH2RtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751341AbXH2Rhw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 13:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbXH2Rho
+	id S1756205AbXH2RtW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 13:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbXH2RtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 13:37:44 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:39850 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbXH2Rhn (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 13:37:43 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>, jakub@redhat.com,
-       Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3-mm1 - vdso and gettimeofday issues with glibc
-In-Reply-To: Your message of "Wed, 29 Aug 2007 10:04:33 EDT."
-             <23252.1188396273@turing-police.cc.vt.edu>
-From: Valdis.Kletnieks@vt.edu
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-            <23252.1188396273@turing-police.cc.vt.edu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1188409058_2981P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 29 Aug 2007 13:37:38 -0400
-Message-ID: <3909.1188409058@turing-police.cc.vt.edu>
+	Wed, 29 Aug 2007 13:49:14 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42603 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754232AbXH2RtN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 13:49:13 -0400
+Date: Wed, 29 Aug 2007 10:49:12 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Lund <firefly@vax64.dk>
+cc: Christoph Hellwig <hch@infradead.org>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, Momchil Velikov <velco@fadata.bg>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] avoid negative (and full-width) shifts in radix-tree.c,
+ take 3
+In-Reply-To: <1188402291.7216.90.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0708291048250.21332@schroedinger.engr.sgi.com>
+References: <1188402291.7216.90.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1188409058_2981P
-Content-Type: text/plain; charset=us-ascii
+On Wed, 29 Aug 2007, Peter Lund wrote:
 
-On Wed, 29 Aug 2007 10:04:33 EDT, Valdis.Kletnieks@vt.edu said:
+>  
+> -	if (tmp >= RADIX_TREE_INDEX_BITS)
+> -		index = ~0UL;
+> -	return index;
+> +	if (shift < 0)
+> +		return ~0UL;
+> +	if (shift >= 8 * sizeof(unsigned long))
 
-(Fixing the Subject: and updating the info)
-
-> On Wed, 22 Aug 2007 02:06:48 PDT, Andrew Morton said:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
-
-> The issue:  vdso and gettimeofday seem to be having a quarrel.
-
-This is also open as a Fedora bug:
-https://bugzilla.redhat.com/show_bug.cgi?id=262481
-
---==_Exmh_1188409058_2981P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG1a7icC3lWbTT17ARAvxHAJ4+BZUAvLUA218Ij2z8MFq0Yc/6NQCeJA4N
-EtQu4oQU34Mg1CWwDIx2toQ=
-=a9kE
------END PGP SIGNATURE-----
-
---==_Exmh_1188409058_2981P--
+8* sizeof(unsigned long) is the constant BITS_PER_LONG.
