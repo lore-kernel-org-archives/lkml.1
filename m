@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbXH2WUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761123AbXH2WUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760876AbXH2WUf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 18:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbXH2WU1
+	id S1761123AbXH2WUv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 18:20:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760881AbXH2WUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 18:20:27 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:39714 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751881AbXH2WU0 (ORCPT
+	Wed, 29 Aug 2007 18:20:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55602 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760777AbXH2WUd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 18:20:26 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Xa2GBQTz4q4+uPTMeFlHvcQLjmOdtlzaHwFshF6OrIxM+MdHgi0BajwrCnpWdCEv0
-	OP9h9bVI93Su8g6zDq42A==
-Message-ID: <6599ad830708291520t2bc9ea20m2bdcd9e042b3a423@mail.gmail.com>
-Date: Wed, 29 Aug 2007 15:20:09 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Dave Hansen" <haveblue@us.ibm.com>
-Subject: Re: [-mm PATCH] Memory controller improve user interface
-Cc: balbir@linux.vnet.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linux MM Mailing List" <linux-mm@kvack.org>,
-       "David Rientjes" <rientjes@google.com>,
-       "Linux Containers" <containers@lists.osdl.org>
-In-Reply-To: <1188425894.28903.140.camel@localhost>
+	Wed, 29 Aug 2007 18:20:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] [PATCH -mm 0/3] PM: Improve ACPI handling during suspend and hibernation (rev. 3)
+Date: Thu, 30 Aug 2007 00:31:25 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-pm@lists.linux-foundation.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Moore, Robert" <robert.moore@intel.com>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+References: <200708272347.45438.rjw@sisk.pl>
+In-Reply-To: <200708272347.45438.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20070829111030.9987.8104.sendpatchset@balbir-laptop>
-	 <1188413148.28903.113.camel@localhost>
-	 <46D5ED5C.9030405@linux.vnet.ibm.com>
-	 <1188425894.28903.140.camel@localhost>
+Message-Id: <200708300031.26699.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/29/07, Dave Hansen <haveblue@us.ibm.com> wrote:
-> On Thu, 2007-08-30 at 03:34 +0530, Balbir Singh wrote:
-> > I've thought about this before. The problem is that a user could
-> > set his limit to 10000 bytes, but would then see the usage and
-> > limit round to the closest page boundary. This can be confusing
-> > to a user.
->
-> True, but we're lying if we allow a user to set their limit there,
-> because we can't actually enforce a limit at 8,192 bytes vs 10,000.
-> They're the same limit as far as the kernel is concerned.
->
-> Why not just -EINVAL if the value isn't page-aligned?  There are plenty
-> of interfaces in the kernel that require userspace to know the page
-> size, so this shouldn't be too difficult.
+On Monday, 27 August 2007 23:47, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> The patches in this series are intended to improve the handling of the ACPI
+> platform during suspend and hibernation.
+> 
+> They do the following things:
+> * make hibernation_platform_enter() consistent with the sleep state entering
+>   code in kernel/power/main.c
+> * introduce global platform callbacks allowing us to handle ACPI in a more fine
+>   grained way during suspend and hibernation
+> * improve the handling of the system status indicator during suspend and
+>   hibernation.
 
-I'd argue that having the user's specified limit be truncated to the
-page size is less confusing than giving an EINVAL if it's not page
-aligned.
+Please regard this patch series as withdrawn.
 
-Paul
+I have found a corner case that requires special treatment clashing with the
+2/3 and 3/3 patches and the 1/3 patch will be resubmitted separately.
+
+Greetings,
+Rafael
