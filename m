@@ -1,89 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbXH2Jsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932877AbXH2JtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978AbXH2Jsg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 05:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbXH2JsZ
+	id S932877AbXH2JtV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 05:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbXH2JtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 05:48:25 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:62026 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753473AbXH2JsY (ORCPT
+	Wed, 29 Aug 2007 05:49:12 -0400
+Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:2071 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753473AbXH2JtK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 05:48:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rwardBPaEsLS1iWm4cQ355aRpq2qMWIN6UtiluQK7prChohafzJet01824IhlHCChpwbZGwlfLByBYj5ljGEnIWd+KVvEif8P3uBt5fcH7+VL+fykoq1BDfmavrvqa9XzFxSOuleQqFjRm+GweVHlB3Ne4DiXctdY4UbGj2xEdo=
-Message-ID: <25ae38200708290248w2cdd152fpbdaa1b123de0b7ef@mail.gmail.com>
-Date: Wed, 29 Aug 2007 15:18:20 +0530
-From: "Anand Jahagirdar" <anandjigar@gmail.com>
-To: "Chris Snook" <csnook@redhat.com>
-Subject: Re: Fork Bombing Patch
-Cc: "Krzysztof Halasa" <khc@pm.waw.pl>, linux-kernel@vger.kernel.org
-In-Reply-To: <46CDD98F.2020208@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 29 Aug 2007 05:49:10 -0400
+Date: Wed, 29 Aug 2007 11:49:59 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+       "Yani Ioannou" <yani.ioannou@gmail.com>
+Subject: Re: [lm-sensors] [PATCH] v1 of IBM power meter driver
+Message-ID: <20070829114959.5ddb8d79@hyperion.delvare>
+In-Reply-To: <20070828162851.GJ32667@tree.beaverton.ibm.com>
+References: <20070827211446.GG32667@tree.beaverton.ibm.com>
+	<20070828015029.GA10107@khazad-dum.debian.net>
+	<20070828131942.18449886@hyperion.delvare>
+	<20070828162851.GJ32667@tree.beaverton.ibm.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com>
-	 <46C4BC46.7000305@redhat.com>
-	 <25ae38200708200724sbce2749m7eb27565d7c84e5e@mail.gmail.com>
-	 <46C9A867.6090509@redhat.com>
-	 <25ae38200708212317h7776768v33a82f646ac6b749@mail.gmail.com>
-	 <m3d4xeii2z.fsf@maximus.localdomain> <46CDD98F.2020208@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-                printk_ratelimit function takes care of flooding the
-syslog. due to printk_ratelimit function syslog will not be flooded
-anymore. as soon as administrator gets this message, he can take
-action against that user (may be block user's access on server). i
-think the my fork patch is very useful and helps administrator lot.
-                i would also like to mention that in some of the cases
-ulimit solution wont work. in that case fork bombing takes the machine
-and server needs a reboot. i am sure in that situation this printk
-statement helps administrator to know what has happened.
+Hi Darrick,
 
-Anand
+On Tue, 28 Aug 2007 09:28:51 -0700, Darrick J. Wong wrote:
+> On Tue, Aug 28, 2007 at 01:19:42PM +0200, Jean Delvare wrote:
+> > I see that the driver relies on IPMI. Can't it be merged with the
+> > out-of-tree impisensors driver then? This would give that driver some
+> > momentum so that it can finally be merged, and I would like to avoid
+> > having two drivers if one is enough. Note though that I don't know
+> > anything about IPMI so I might as well be totally wrong ;)
+> 
+> The IBM PEx meters are accessible via custom IPMI commands, not the
+> standard IPMI sensor interface.  I considered modifying the ipmisensors
+> driver, but reached the opinion that it would clutter that driver
+> unnecessarily, particularly since there are a lot of systems with IPMI
+> BMCs, but most of them will not have this interface.
 
-On 8/24/07, Chris Snook <csnook@redhat.com> wrote:
-> Krzysztof Halasa wrote:
-> > Hi,
-> >
-> > "Anand Jahagirdar" <anandjigar@gmail.com> writes:
-> >
-> >>    I am forwarding one more improved patch which i have modified as
-> >> per your suggestions. Insted of KERN_INFO i have used KERN_NOTICE and
-> >> i have added one more if block to check hard limit. how good it is?
-> >
-> > Not very, still lacks "#ifdef CONFIG_something" and the required
-> > Kconfig change (or other runtime thing defaulting to "no printk").
->
-> Wrapping a single printk that's unrelated to debugging in an #ifdef
-> CONFIG_* or a sysctl strikes me as abuse of those configuration
-> facilities.  Where would we draw the line for other patches wanting to
-> do similar things?
->
-> I realized that even checking the hard limit it insufficient, because
-> that can be lowered (but not raised) by unprivileged processes.  If we
-> can't do this unconditionally (and we can't, because the log pollution
-> would be intolerable for many people) then we shouldn't do it at all.
->
-> Anand -- I appreciate the effort, but I think you should reconsider
-> precisely what problem you're trying to solve here.  This approach can't
-> tell the difference between legitimate self-regulation of resource
-> utilization and a real attack.  Worse, in the event of a real attack, it
-> could be used to make it more difficult for the administrator to notice
-> something much more serious than a forkbomb.
->
-> I suspect that userspace might be a better place to solve this problem.
->  You could run your monitoring app with elevated or even realtime
-> priority to ensure it will still function, and you have much more
-> freedom in making the reporting configurable.  You can also look at much
-> more data than we could ever allow in fork.c, and possibly detect
-> attacks that this patch would miss if a clever attacker stayed just
-> below the limit.
->
->        -- Chris
->
+OK, fine with me then.
+
+> That said, what is standing in the way of ipmisensors being merged?  I
+> think I can shake out some free time to apply TLC.
+
+I don't know exactly, check out the website for details:
+  http://bmcsensors-26.sourceforge.net/
+
+It needs at least review and testing, but maybe there are a few more
+steps before merging can be considered. Adding Yani (the author) to Cc,
+please work with him if you're interested.
+
+-- 
+Jean Delvare
