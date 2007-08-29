@@ -1,68 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932604AbXH2IEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbXH2IHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932604AbXH2IEt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 04:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXH2IEe
+	id S932659AbXH2IHP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 04:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbXH2IG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 04:04:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51953 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753832AbXH2IEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 04:04:33 -0400
-Date: Wed, 29 Aug 2007 10:04:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Keith Packard <keith.packard@intel.com>
-Cc: Al Boldi <a1426z@gawab.com>, Peter Zijlstra <peterz@infradead.org>,
-       Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-Message-ID: <20070829080417.GB19386@elte.hu>
-References: <200708111344.42934.a1426z@gawab.com> <200708271746.47685.a1426z@gawab.com> <20070827204116.GA12495@elte.hu> <200708280737.53439.a1426z@gawab.com> <20070829041827.GA8733@elte.hu> <1188361749.21502.123.camel@koto.keithp.com> <20070829044614.GA13225@elte.hu> <1188374249.21502.155.camel@koto.keithp.com>
+	Wed, 29 Aug 2007 04:06:57 -0400
+Received: from rwcrmhc13.comcast.net ([204.127.192.83]:56840 "EHLO
+	rwcrmhc13.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754539AbXH2IGy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 04:06:54 -0400
+From: "Michael J. Evans" <mjevans1983@comcast.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [patch v5 1/1] md: Software Raid autodetect dev list not array
+Date: Wed, 29 Aug 2007 01:06:06 -0700
+User-Agent: KMail/1.9.7
+Cc: Michael Evans <mjevans1983@gmail.com>, Bill Davidsen <davidsen@tmr.com>,
+       Neil Brown <neilb@suse.de>, Ingo Molnar <mingo@redhat.com>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <200708222058.45480.mjevans1983@comcast.net> <4877c76c0708281211s55aded4ajceb283da25223659@mail.gmail.com> <46D4748A.4070909@oracle.com>
+In-Reply-To: <46D4748A.4070909@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1188374249.21502.155.camel@koto.keithp.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200708290106.06945.mjevans1983@comcast.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Michael J. Evans <mjevans1983@gmail.com>
 
-* Keith Packard <keith.packard@intel.com> wrote:
+In current release kernels the md module (Software RAID) uses a static array
+ (dev_t[128]) to store partition/device info temporarily for autostart.
 
-> Make sure the X server isn't running with the smart scheduler 
-> disabled; that will cause precisely the symptoms you're seeing here. 
-> In the normal usptream sources, you'd have to use '-dumbSched' as an X 
-> server command line option.
-> 
-> The old 'scheduler' would run an entire X client's input buffer dry 
-> before looking for requests from another client. Because glxgears 
-> requests are small but time consuming, this can cause very long delays 
-> between client switching.
+This patch replaces that static array with a list.
 
-on the old box where i've reproduced this i've got an ancient X version:
+Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
+--- 
+CCing akpm@linux-foundation.org
 
-  neptune:~> X -version
+Version 5:
+patched modified to cleanly patch against 2.6.23-rc4 (Offsets only)
+Removed credit from head of file since the changelogs are archived.
 
-  X Window System Version 6.8.2
-  Release Date: 9 February 2005
-  X Protocol Version 11, Revision 0, Release 6.8.2
-  Build Operating System: Linux 2.6.9-22.ELsmp i686 [ELF]
+Version 4:
+Minor formatting cleanup for kzAlloc error message.
+Should I remove the first patch section in version 5?
 
-is that old enough to not have the smart X scheduler?
+Version 3:
+md_autodetect_dev failure message is now more usefully verbose.
+removed unused i_found that was leftover from initial verification.
+Thank you Randy Dunlap for pointing where INT_MAX was, fixme fixed.
 
-on newer systems i dont see correctly updated glxgears output (probably 
-the GLX bug you mentioned) so i cannot reproduce the bug.
+Version 2:
+using list_add_tail, and corrected missing i_passed++;.
+removed sections of code that would never be reached.
 
-Al, could you send us your 'X -version' output?
+Version 1:
+The data/structures are only used within md.c, and very close together.
+However I wonder if the structural information shouldn't go in to...
+../../include/linux/raid/md_k.h instead.
 
-	Ingo
+
+I discovered this (and that the devices are added as disks/partitions are
+discovered at boot) while I was debugging why only one of my MD arrays would
+come up whole, while all the others were short a disk.
+
+I eventually discovered that it was enumerating through all of 9 of my 11 hds
+(2 had only 4 partitions apiece) while the other 9 have 15 partitions
+(I wanted 64 per drive...). The last partition of the 8th drive in my 9 drive
+raid 5 sets wasn't added, thus making the final md array short both a parity
+and data disk, and it was started later, elsewhere.
+
+Subject: [patch 1/1] md: Software Raid autodetect dev list not array
+
+SOFTWARE RAID (Multiple Disks) SUPPORT
+P:	Ingo Molnar
+M:	mingo@redhat.com
+P:	Neil Brown
+M:	neilb@suse.de
+L:	linux-raid@vger.kernel.org
+S:	Supported
+Unless you have a reason NOT to do so, CC linux-kernel@vger.kernel.org.
+
+12: Has been tested with CONFIG_PREEMPT, CONFIG_DEBUG_PREEMPT,
+    CONFIG_DEBUG_SLAB, CONFIG_DEBUG_PAGEALLOC, CONFIG_DEBUG_MUTEXES,
+    CONFIG_DEBUG_SPINLOCK, CONFIG_DEBUG_SPINLOCK_SLEEP all simultaneously
+    enabled.
+
+It has been tested with CONFIG_SMP set and unset (Different x86_64 systems).
+It has been tested with CONFIG_PREEMPT set and unset (same system).
+CONFIG_LBD isn't even an option in my .config file.
+
+Note: between 2.6.22 and 2.6.23-rc3-git5
+                rdev = md_import_device(dev,0, 0);
+became
+                rdev = md_import_device(dev,0, 90);
+So the patch has been edited to patch around that line.
+
+Signed-off-by: Michael J. Evans <mjevans1983@gmail.com>
+=============================================================
+--- linux/drivers/md/md.c.orig	2007-08-21 03:19:42.511576248 -0700
++++ linux/drivers/md/md.c	2007-08-21 04:30:09.775525710 -0700
+@@ -5781,13 +5781,26 @@ void md_autodetect_dev(dev_t dev)
+  * Searches all registered partitions for autorun RAID arrays
+  * at boot time.
+  */
+-static dev_t detected_devices[128];
+-static int dev_cnt;
++
++static LIST_HEAD(all_detected_devices);
++struct detected_devices_node {
++	struct list_head list;
++	dev_t dev;
++};
+ 
+ void md_autodetect_dev(dev_t dev)
+ {
+-	if (dev_cnt >= 0 && dev_cnt < 127)
+-		detected_devices[dev_cnt++] = dev;
++	struct detected_devices_node *node_detected_dev;
++	char strbuf[BDEVNAME_SIZE];
++
++	node_detected_dev = kzalloc(sizeof(*node_detected_dev), GFP_KERNEL);
++	if (node_detected_dev) {
++		node_detected_dev->dev = dev;
++		list_add_tail(&node_detected_dev->list, &all_detected_devices);
++	} else {
++		printk(KERN_CRIT "md: md_autodetect_dev: kzAlloc node failed"
++			", skipping dev(%d,%d)\n", MAJOR(dev), MINOR(dev));
++	}
+ }
+ 
+ 
+@@ -5794,7 +5787,12 @@ static void autostart_arrays(int part)
+ static void autostart_arrays(int part)
+ {
+ 	mdk_rdev_t *rdev;
+-	int i;
++	struct detected_devices_node *node_detected_dev;
++	dev_t dev;
++	int i_scanned, i_passed;
++
++	i_scanned = 0;
++	i_passed = 0;
+ 
+ 	printk(KERN_INFO "md: Autodetecting RAID arrays.\n");
+ 
+@@ -5801,3 +5821,7 @@ static void autostart_arrays(int part)
+-	for (i = 0; i < dev_cnt; i++) {
+-		dev_t dev = detected_devices[i];
+-
++	while (!list_empty(&all_detected_devices) && i_scanned < INT_MAX) {
++		i_scanned++;
++		node_detected_dev = list_entry(all_detected_devices.next,
++					struct detected_devices_node, list);
++		list_del(&node_detected_dev->list);
++		dev = node_detected_dev->dev;
++		kfree(node_detected_dev);
+@@ -5810,8 +5834,11 @@ static void autostart_arrays(int part)
+ 			continue;
+ 		}
+ 		list_add(&rdev->same_set, &pending_raid_disks);
++		i_passed++;
+ 	}
+-	dev_cnt = 0;
++
++	printk(KERN_INFO "md: Scanned %d and added %d devices.\n",
++						i_scanned, i_passed);
+ 
+ 	autorun_devices(part);
+ }
