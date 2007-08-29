@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759628AbXH2DpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760125AbXH2DqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759628AbXH2DpA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 23:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbXH2Dox
+	id S1760125AbXH2DqM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 23:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbXH2Dp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 23:44:53 -0400
-Received: from smtp28.orange.fr ([80.12.242.100]:41454 "EHLO smtp28.orange.fr"
+	Tue, 28 Aug 2007 23:45:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59352 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752165AbXH2Dow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 23:44:52 -0400
-X-ME-UUID: 20070828130206913.DF01770000CC@mwinf2819.orange.fr
-Message-ID: <46D41CCC.9040904@bachelot.org>
-Date: Tue, 28 Aug 2007 15:02:04 +0200
-From: Xavier Bachelot <xavier@bachelot.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S1751892AbXH2Dp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 23:45:57 -0400
+Date: Wed, 29 Aug 2007 05:45:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Al Boldi <a1426z@gawab.com>, Peter Zijlstra <peterz@infradead.org>,
+       Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+Message-ID: <20070829034542.GA32164@elte.hu>
+References: <200708111344.42934.a1426z@gawab.com> <200708220127.30698.a1426z@gawab.com> <20070824134510.GA21382@elte.hu> <200708260127.32238.a1426z@gawab.com> <46D4E9FE.6080306@tmr.com>
 MIME-Version: 1.0
-To: airlied@linux.ie, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: drm: VIA invalid device IDs removal
-Content-Type: multipart/mixed;
- boundary="------------010500060903060506060501"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46D4E9FE.6080306@tmr.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0325]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010500060903060506060501
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Remove 2 invalid device ids from in-kernel drm tree.
+* Bill Davidsen <davidsen@tmr.com> wrote:
 
-0x1106, 0x7204 is unknown and thus is not an IGP/GPU.
-0x1106, 0x3304 is K8M800 hostbridge, not an IGP/GPU.
-None of them are in drm git tree.
+> > There is another way to show the problem visually under X 
+> > (vesa-driver), by starting 3 gears simultaneously, which after 
+> > laying them out side-by-side need some settling time before 
+> > smoothing out.  Without __update_curr it's absolutely smooth from 
+> > the start.
+> 
+> I posted a LOT of stuff using the glitch1 script, and finally found a 
+> set of tuning values which make the test script run smooth. See back 
+> posts, I don't have them here.
 
+but you have real 3D hw and DRI enabled, correct? In that case X uses up 
+almost no CPU time and glxgears makes most of the processing. That is 
+quite different from the above software-rendering case, where X spends 
+most of the CPU time.
 
---------------010500060903060506060501
-Content-Type: text/x-patch;
- name="drm-via_invalid_ids_removal.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="drm-via_invalid_ids_removal.patch"
-
---- a/drivers/char/drm/drm_pciids.h	2007-08-28 14:08:27.000000000 +0200
-+++ b/drivers/char/drm/drm_pciids.h	2007-08-28 14:17:12.000000000 +0200
-@@ -236,10 +236,8 @@
- 	{0x1106, 0x3022, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
- 	{0x1106, 0x3118, PCI_ANY_ID, PCI_ANY_ID, 0, 0, VIA_PRO_GROUP_A}, \
- 	{0x1106, 0x3122, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
--	{0x1106, 0x7204, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
- 	{0x1106, 0x7205, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
- 	{0x1106, 0x3108, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
--	{0x1106, 0x3304, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
- 	{0x1106, 0x3344, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
- 	{0x1106, 0x3343, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0}, \
- 	{0x1106, 0x3230, PCI_ANY_ID, PCI_ANY_ID, 0, 0, VIA_DX9_0}, \
-
---------------010500060903060506060501--
-
+	Ingo
