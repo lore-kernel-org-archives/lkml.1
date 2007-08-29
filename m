@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbXH2ADR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbXH2AHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757439AbXH2ADR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 20:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbXH2ADH
+	id S1757639AbXH2AHP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 20:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbXH2AHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 20:03:07 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:45025 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbXH2ADF (ORCPT
+	Tue, 28 Aug 2007 20:07:00 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:17778 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbXH2AG7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 20:03:05 -0400
-Subject: Re: [PATCH -rt 1/8] introduce PICK_FUNCTION
-From: Daniel Walker <dwalker@mvista.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: mingo@elte.hu, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <46D4B356.7060604@yahoo.com.au>
-References: <20070828213748.790253419@mvista.com>
-	 <46D4B356.7060604@yahoo.com.au>
-Content-Type: text/plain
-Date: Tue, 28 Aug 2007 16:54:32 -0700
-Message-Id: <1188345272.2435.343.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Tue, 28 Aug 2007 20:06:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VFheM0Ytk5MjNLsKuo+Ema8imnM3+ba7wXuWciqyIHwRa8BDd1bIJ5znQAX0BEqSFQ7At9/XdtrvRrJicTPEwA5dw/JwCqjWCsTwrgC+n7n08H3UdPlrNgu+9oMnuCjqaNY+EuiWuHRMFiS82q9p0FSRxjxt+cd+oK/9J/pXYR4=
+Message-ID: <24c800fb0708281706n6d92d9d9w7c8defc4a884296b@mail.gmail.com>
+Date: Tue, 28 Aug 2007 17:06:58 -0700
+From: "Pete Monroe" <pizzlemonrizzle@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: Crash report 2.6.22.5
+Cc: linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       netfilter-devel@lists.netfilter.org
+In-Reply-To: <6bffcb0e0708281651g29729d6au6b40c0f9af5beed2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <24c800fb0708281140r2c46e364i77e041b6c746b60d@mail.gmail.com>
+	 <6bffcb0e0708281651g29729d6au6b40c0f9af5beed2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-29 at 09:44 +1000, Nick Piggin wrote:
-> Daniel Walker wrote:
-> > PICK_FUNCTION() is similar to the other PICK_OP style macros, and was
-> > created to replace them all. I used variable argument macros to handle
-> > PICK_FUNC_2ARG/PICK_FUNC_1ARG. Otherwise the marcos are similar to the
-> > original macros used for semaphores. The entire system is used to do a
-> > compile time switch between two different locking APIs. For example,
-> > real spinlocks (raw_spinlock_t) and mutexes (or sleeping spinlocks).
-> > 
-> > This new macro replaces all the duplication from lock type to lock type.
-> > The result of this patch, and the next two, is a fairly nice simplification,
-> > and consolidation. Although the seqlock changes are larger than the originals
-> > I think over all the patchset is worth while.
-> > 
-> > Incorporated peterz's suggestion to not require TYPE_EQUAL() to only
-> > use pointers.
-> 
-> How come this is cc'ed to lkml? Is it something that is relevant to
-> the mainline kernel... or?
+On 8/28/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> Hi Pete,
+>
+> On 28/08/07, Pete Monroe <pizzlemonrizzle@gmail.com> wrote:
+> > Hi,
+> >
+> > Sorry there's not more to go on here.
+> >
+> > A 32-bit firewall running the kernel LVS virtual server to fan out to
+> > a dozen webservers ran fine for a year using  2.6.17.13, but won't
+> > last more than four hours or so with 2.6.22.5.  Another server,
+> > different hardware and vendor but same purpose, also crashed with
+> > 2.6.22.5 after a few hours.  It had previously run 2.6.20.11.  Nothing
+> > on the screen, nothing in the logs.
+> >
+> > I'm attaching zipped dmesg (both kernel versions),
+>
+> Could you capture the bug with serial/netconsole etc.?
 
-The real time changes are usually developed on lkml , that's how it's
-been in the past. I personally like CC'ing lkml since real time can
-sometimes touch lots of different subsystems .. So it good to have a
-diverse set of people reviewing ..
+The servers are remote, production servers and it's a PITA when they
+crash.  But I'll see what I can do.  Thanks for the pointer.
 
-Daniel
+--
+Pete
 
+>
+> "Collecting kernel messages"
+> http://www.stardust.webpages.pl/files/handbook/handbook-en-0.3-rc1.pdf
+> for more info.
