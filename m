@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759603AbXH2Ti5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbXH2Tjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759603AbXH2Ti5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 15:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755854AbXH2Tir
+	id S1760003AbXH2Tjx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 15:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756374AbXH2Tjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 15:38:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35395 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755074AbXH2Tiq (ORCPT
+	Wed, 29 Aug 2007 15:39:43 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:56046
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755854AbXH2Tjl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 15:38:46 -0400
-Date: Wed, 29 Aug 2007 20:45:29 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Wed, 29 Aug 2007 15:39:41 -0400
+From: Michael Buesch <mb@bu3sch.de>
 To: "Jon Smirl" <jonsmirl@gmail.com>
-Cc: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
+Date: Wed, 29 Aug 2007 21:37:48 +0200
+User-Agent: KMail/1.9.6
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
        "Christoph Hellwig" <hch@infradead.org>,
        "Jiri Slaby" <jirislaby@gmail.com>, linville@tuxdriver.com,
        linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
        netdev@vger.kernel.org
-Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
-Message-ID: <20070829204529.66ce1bcb@the-village.bc.nu>
+References: <2713029743177393055@pripojeni.net> <20070829192858.75aa6542@the-village.bc.nu> <9e4733910708291233h3c4022a9n6e46733c5c50e222@mail.gmail.com>
 In-Reply-To: <9e4733910708291233h3c4022a9n6e46733c5c50e222@mail.gmail.com>
-References: <2713029743177393055@pripojeni.net>
-	<7515194658758617@pripojeni.net>
-	<20070828171155.GC29343@infradead.org>
-	<3208.1188408545@turing-police.cc.vt.edu>
-	<9e4733910708291101i3783a8b1l38f0d5cfb0c2863d@mail.gmail.com>
-	<20070829192858.75aa6542@the-village.bc.nu>
-	<9e4733910708291233h3c4022a9n6e46733c5c50e222@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708292137.48834.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Aren't patches made against the kernel GPL'd if the author doesn't
-> explicitly grant them more liberal BSD license in addition?
-
-That would be the normal assumption.
-
-> The problem then comes in taking the patches that were only made
-> available against GPL code and reshipping them under the BSD license
-> without the author explicitly agreeing to this.
-> 
+On Wednesday 29 August 2007 21:33:43 Jon Smirl wrote:
 > What if a patch spans both code that is pure GPL and code imported
 > from BSD, how do you license it?
 
-See the acpi codebase for a worked example.
+I think it's a valid assumption, if we say that the author
+of the patch read the license header of a file and agreed with it.
+So the patch is licensed to whatever the fileheader says. And if
+there's none, it's licensed with the COPYING terms.
+If a patch author likes some other license conditions, he must
+explicitely add them with the patch to the file, saying that this
+and that part have these and those conditions. Of course they must
+be compatible with the original license.
 
-Alan
+-- 
+Greetings Michael.
