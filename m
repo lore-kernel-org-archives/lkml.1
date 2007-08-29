@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760002AbXH2Dik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbXH2Dmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760002AbXH2Dik (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 23:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbXH2Dia
+	id S1757478AbXH2Dmg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 23:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbXH2Dm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 23:38:30 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:23417 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759102AbXH2DiM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 23:38:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=vDA9cTHXLMiCkTH2t/vD96s+ZVyXew5kfCvfXGP5MpQpIJl3N8e4jCKI6Db1B719qrXJFQxDVxjMhxWGFLt/H+FdVEK01xyK6ntd9dRHYD5X4+UwfPVBpkbP9dFk/ycLuL5OKk8MvIUe3etLVIwkKcZl+AbxTTGjMCWYPkqFFaQ=  ;
-Message-ID: <46D4EA1C.3080505@yahoo.com.au>
-Date: Wed, 29 Aug 2007 13:38:04 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 28 Aug 2007 23:42:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40106 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751786AbXH2Dm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 23:42:28 -0400
+Date: Wed, 29 Aug 2007 05:42:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [patch] sched: fix broken smt/mc optimizations with CFS
+Message-ID: <20070829034214.GA30551@elte.hu>
+References: <20070816010150.GG10033@linux-os.sc.intel.com> <20070823115416.GA31027@elte.hu> <20070823121341.GA5775@elte.hu> <20070827191905.GE1894@linux-os.sc.intel.com> <20070827192324.GA29441@elte.hu> <20070827193103.GF1894@linux-os.sc.intel.com> <20070828222718.GI1894@linux-os.sc.intel.com>
 MIME-Version: 1.0
-To: Daniel Phillips <phillips@phunq.net>
-CC: Theodore Tso <tytso@mit.edu>, Matthew Wilcox <matthew@wil.cx>,
-       Matt Mackall <mpm@selenic.com>, Josh Boyer <jwboyer@gmail.com>,
-       Andy Isaacson <adi@hexapodia.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ksummit-2007-discuss@thunk.org
-Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation
- Technical Advisory Board Elections
-References: <20070822224400.GA17255@srcf.ucam.org> <20070824025504.GT9163@parisc-linux.org> <20070824104538.GA31344@thunk.org> <200708281559.11181.phillips@phunq.net>
-In-Reply-To: <200708281559.11181.phillips@phunq.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070828222718.GI1894@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Phillips wrote:
-> On Friday 24 August 2007 03:45, Theodore Tso wrote:
-> 
->>>As I said; what's wrong with just using SPI membership?  It's not
->>>like it is remotely hard for kernel hackers to gain membership in
->>>SPI.  And somebody else takes care of the bureaucracy for you.
->>
->>Given the huge overlap between SPI membership and Debian membership,
->>and then taking a look at the craziness that takes place on various
->>Debian mailing lists, such as but not limited to debian-legal, I'm
->>quite convinced that this would be a baaaaaad idea.
-> 
-> 
-> Hi Ted,
-> 
-> Ever watched a legislative assembly at work?  A bad idea perhaps, but 
-> the best that has been discovered so far.
 
-Given that there is already some charter that says KS attendees vote...
-isn't it best to retain that? Directives from above aside, you need
-specifications on how to change voting procedure before changing it, no?
-If those don't exist, then something vaguely similar in my country would
-require a referendum I think.
+* Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
 
-Hasn't the KS committee / TAB board vote rigging conspiracy theory been
-raised yet? Given they're not running a country, it would be great fun
-to see the board getting corrupted and go off the rails ;) I'd vote for
-them because if Ted has anything to do with it, I *know* we'll be having
-KS in Hawaii ;)
+> On Mon, Aug 27, 2007 at 12:31:03PM -0700, Siddha, Suresh B wrote:
+> > Essentially I observed that nice 0 tasks still endup on two cores of same
+> > package, with out getting spread out to two different packages. This behavior
+> > is same with out this fix and this fix doesn't help in any way.
+> 
+> Ingo, Appended patch seems to fix the issue and as far as I can test, 
+> seems ok to me.
 
--- 
+thanks! I've queued your fix up for .23 merge. I've done a quick test 
+and it indeed seems to work well.
+
+> This is a quick fix for .23. Peter Williams and myself plan to look at 
+> code cleanups in this area (HT/MC optimizations) post .23
+> 
+> BTW, with this fix, do you want to retain the current FUZZ value?
+
+what value would you suggest? I was thinking about using 
+busiest_rq->curr->load.weight instead, to always keep rotating tasks.
+
+	Ingo
