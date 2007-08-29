@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbXH2Iyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbXH2Ize@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758227AbXH2Iyc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 04:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbXH2IyV
+	id S1760006AbXH2Ize (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 04:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbXH2Iz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 04:54:21 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:44677 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751958AbXH2IyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 04:54:19 -0400
-Date: Wed, 29 Aug 2007 12:53:31 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [1/1] Block device throttling [Re: Distributed storage.]
-Message-ID: <20070829085331.GA16607@2ka.mipt.ru>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708281027.59528.phillips@phunq.net> <20070828175403.GA28440@2ka.mipt.ru> <200708281408.06618.phillips@phunq.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708281408.06618.phillips@phunq.net>
-User-Agent: Mutt/1.5.9i
+	Wed, 29 Aug 2007 04:55:26 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:57707 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751200AbXH2IzZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 04:55:25 -0400
+Message-ID: <46D532E6.2020708@linux.vnet.ibm.com>
+Date: Wed, 29 Aug 2007 14:18:38 +0530
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20061215)
+MIME-Version: 1.0
+To: ltp-list@lists.sourceforge.net
+CC: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: LTP-KDUMP Test Plan
+Content-Type: multipart/mixed;
+ boundary="------------010807080803080503040909"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 28, 2007 at 02:08:04PM -0700, Daniel Phillips (phillips@phunq.net) wrote:
-> On Tuesday 28 August 2007 10:54, Evgeniy Polyakov wrote:
-> > On Tue, Aug 28, 2007 at 10:27:59AM -0700, Daniel Phillips (phillips@phunq.net) wrote:
-> > > > We do not care about one cpu being able to increase its counter
-> > > > higher than the limit, such inaccuracy (maximum bios in flight
-> > > > thus can be more than limit, difference is equal to the number of
-> > > > CPUs - 1) is a price for removing atomic operation. I thought I
-> > > > pointed it in the original description, but might forget, that if
-> > > > it will be an issue, that atomic operations can be introduced
-> > > > there. Any uber-precise measurements in the case when we are
-> > > > close to the edge will not give us any benefit at all, since were
-> > > > are already in the grey area.
-> > >
-> > > This is not just inaccurate, it is suicide.  Keep leaking throttle
-> > > counts and eventually all of them will be gone.  No more IO
-> > > on that block device!
-> >
-> > First, because number of increased and decreased operations are the
-> > same, so it will dance around limit in both directions.
-> 
-> No.  Please go and read it the description of the race again.  A count
-> gets irretrievably lost because the write operation of the first
-> decrement is overwritten by the second. Data gets lost.  Atomic 
-> operations exist to prevent that sort of thing.  You either need to use 
-> them or have a deep understanding of SMP read and write ordering in 
-> order to preserve data integrity by some equivalent algorithm.
+This is a multi-part message in MIME format.
+--------------010807080803080503040909
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I think you should complete your emotional email with decription of how
-atomic types are operated and how processors access data. Just to give a
-lesson to those who never knew how SMP works, but create patches and
-have the conscience to send them and even discuss.
-Then, if of course you will want, which I doubt, you can reread previous 
-mails and find that it was pointed to that race and possibilities to 
-solve it way too long ago. 
-Anyway, I prefer to look like I do not know how SMP and atomic operation
-work and thus stay away from this discussion.
+Please find attached the Tentative LTP-KDUMP Test case Plan, depicting 
+the future work that will be done on LTP-KDUMP.
+Regards--
+Subrata
 
-> --- 2.6.22.clean/block/ll_rw_blk.c	2007-07-08 16:32:17.000000000 -0700
-> +++ 2.6.22/block/ll_rw_blk.c	2007-08-24 12:07:16.000000000 -0700
-> @@ -3237,6 +3237,15 @@ end_io:
->   */
->  void generic_make_request(struct bio *bio)
->  {
-> +	struct request_queue *q = bdev_get_queue(bio->bi_bdev);
-> +
-> +	if (q && q->metric) {
-> +		int need = bio->bi_reserved = q->metric(bio);
-> +		bio->queue = q;
+--------------010807080803080503040909
+Content-Type: text/plain;
+ name="TEST_PLAN.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="TEST_PLAN.txt"
 
-In case you have stacked device, this entry will be rewritten and you
-will lost all your account data.
+Following is the Tentative plan for improving LTP-KDUMP Test-cases:
 
-> +		wait_event_interruptible(q->throttle_wait, atomic_read(&q->available) >= need);
-> +		atomic_sub(&q->available, need);
-> +	}
+===========================================================================================================
+||S.NO||                 ACTIVITY                                               ||  TENTATIVE-TIME       ||
+===========================================================================================================
+|| 1  ||      Test and integrate kdump's netdump patch to LTP                   ||   SEP/OCT-2007        ||
+|| 2  ||      Modify ltp-kdump to automate all usecases of                      ||   SEP/OCT-2007        ||
+||    ||        kdump-network dumping usecases                                  ||                       ||
+|| 3  ||      Enhance error handler for kdump test                              ||   OCT/NOV-2007        ||
+||    ||        automation script                                               ||                       ||
+|| 4  ||      Enhance result analysis module of ltp-kdump                       ||   OCT/NOV-2007        ||
+===========================================================================================================
 
--- 
-	Evgeniy Polyakov
+
+--------------010807080803080503040909--
