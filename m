@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759148AbXH2NLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932618AbXH2NOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759148AbXH2NLY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 09:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbXH2NLQ
+	id S932618AbXH2NOI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 09:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756790AbXH2NNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 09:11:16 -0400
-Received: from mail.tmr.com ([64.65.253.246]:34901 "EHLO gaimboi.tmr.com"
+	Wed, 29 Aug 2007 09:13:54 -0400
+Received: from smtp2f.orange.fr ([80.12.242.151]:9684 "EHLO smtp2f.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752308AbXH2NLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 09:11:15 -0400
-Message-ID: <46D5706E.4050002@tmr.com>
-Date: Wed, 29 Aug 2007 09:11:10 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Al Boldi <a1426z@gawab.com>, Peter Zijlstra <peterz@infradead.org>,
-       Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-References: <200708111344.42934.a1426z@gawab.com> <200708220127.30698.a1426z@gawab.com> <20070824134510.GA21382@elte.hu> <200708260127.32238.a1426z@gawab.com> <46D4E9FE.6080306@tmr.com> <20070829034542.GA32164@elte.hu>
-In-Reply-To: <20070829034542.GA32164@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1756415AbXH2NNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 09:13:53 -0400
+X-ME-UUID: 20070829131351465.719F57000100@mwinf2f11.orange.fr
+Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <4af2d03a0708290335x1a9aa38o566e9d416505f280@mail.gmail.com>
+References: <7515194658758617@pripojeni.net>
+	 <1188381582.19891.6.camel@johannes.berg>
+	 <4af2d03a0708290335x1a9aa38o566e9d416505f280@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 29 Aug 2007 15:13:46 +0200
+Message-Id: <1188393226.1131.319.camel@frg-rhel40-em64t-04>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Bill Davidsen <davidsen@tmr.com> wrote:
->
->   
->>> There is another way to show the problem visually under X 
->>> (vesa-driver), by starting 3 gears simultaneously, which after 
->>> laying them out side-by-side need some settling time before 
->>> smoothing out.  Without __update_curr it's absolutely smooth from 
->>> the start.
->>>       
->> I posted a LOT of stuff using the glitch1 script, and finally found a 
->> set of tuning values which make the test script run smooth. See back 
->> posts, I don't have them here.
->>     
->
-> but you have real 3D hw and DRI enabled, correct? In that case X uses up 
-> almost no CPU time and glxgears makes most of the processing. That is 
-> quite different from the above software-rendering case, where X spends 
-> most of the CPU time.
->   
+On Wed, 2007-08-29 at 08:35 -0200, Jiri Slaby wrote:
+> On 8/29/07, Johannes Berg <johannes@sipsolutions.net> wrote:
+> > On Tue, 2007-08-28 at 12:00 -0400, Jiri Slaby wrote:
+> >
+> > > The files are available only under GPLv2 since now.
+> >
+> > Since the BSD people are already getting upset about (for various
+> > reasons among which seem to be a clear non-understanding) I'd suggest
+> > changing it to:
+> 
+> yes, please. Can somebody do it, I'm away from my box.
+> 
+> > + * Parts of this file were originally licenced under the BSD licence:
+> > + *
+> > >  * Permission to use, copy, modify, and distribute this software for any
+> > >  * purpose with or without fee is hereby granted, provided that the above
+> > >  * copyright notice and this permission notice appear in all copies.
+> > >  *
+> > >  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
+> > WARRANTIES
+> > >  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+> > >  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+> > >  * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+> > >  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+> > >  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+> > >  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+> > + *
+> > + * Further changes to this file since the moment this notice was extended
+> > + * are now distributed under the terms of the GPL version two as published
+> > + * by the Free Software Foundation <yaddaya>
+> >
+> > johannes
 
-No, my test machine for that is a compile server, and uses the built-in 
-motherboard graphics which are very limited. This is not in any sense a 
-graphics powerhouse, it is used to build custom kernels and 
-applications, and for testing of kvm and xen, and I grabbed it because 
-it had the only Core2 CPU I could reboot to try new kernel versions and 
-"from cold boot" testing, discovered the graphics smoothness issue by 
-having several windows open on compiles, and developed the glitch1 
-script as a way to reproduce it.
+How about asking for changes to be dual-licenced too ?
 
-The settings I used, features=14, granularity=500000, work to improve 
-smoothness on other machines for other uses, but they do seem to impact 
-performance for compiles, video processing, etc, so they are not optimal 
-for general use. I regard the existence of these tuning knobs as one of 
-the real strengths of CFS, when you change the tuning it has a visible 
-effect.
+	Xav
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
 
