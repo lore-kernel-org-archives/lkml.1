@@ -1,87 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932937AbXH2MUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbXH2M1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932937AbXH2MUK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 08:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932070AbXH2MT6
+	id S933020AbXH2M1U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 08:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757027AbXH2M1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 08:19:58 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:52347 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756415AbXH2MT5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 08:19:57 -0400
-Date: Wed, 29 Aug 2007 08:19:53 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Grant Grundler <grundler@parisc-linux.org>
-Subject: [PATCH] local_t Documentation update 2
-Message-ID: <20070829121953.GB9734@Krystal>
-Mime-Version: 1.0
+	Wed, 29 Aug 2007 08:27:11 -0400
+Received: from styx.suse.cz ([82.119.242.94]:42832 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756027AbXH2M1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 08:27:10 -0400
+Date: Wed, 29 Aug 2007 14:46:15 +0200
+From: Jan Kara <jack@suse.cz>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org
+Subject: Re: [PATCH] Send quota messages via netlink
+Message-ID: <20070829124615.GC7814@duck.suse.cz>
+References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org> <46D5126F.9000405@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:18:43 up 30 days, 12:37,  5 users,  load average: 1.76, 1.61, 1.20
+In-Reply-To: <46D5126F.9000405@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-local_t Documentation update 2
+On Wed 29-08-07 12:00:07, Balbir Singh wrote:
+> Andrew Morton wrote:
+> > On Tue, 28 Aug 2007 16:13:18 +0200 Jan Kara <jack@suse.cz> wrote:
+> >>   I'm sending rediffed patch implementing sending of quota messages via netlink
+> >> interface (some rationale in patch description). I've already posted it to
+> >> LKML some time ago and there were no objections, so I guess it's fine to put
+> >> it to -mm. Andrew, would you be so kind? Thanks.
+> >>   Userspace deamon reading the messages from the kernel and sending them to
+> >> dbus and/or user console is also written (it's part of quota-tools). The
+> >> only remaining problem is there are a few changes needed to libnl needed for
+> >> the userspace daemon. They were basically acked by the maintainer but it
+> >> seems he has not merged the patches yet. So this will take a bit more time.
+> >>
+> > 
+> > So it's a new kernel->userspace interface.
+> > 
+> > But we have no description of the interface :(
+> > 
+> 
+> And could we have some description of the context under which all the message
+> exchanges take place. When are these messages sent out -- what event
+> is the user space notified of?
+  The user is notified about either exceeding his quota softlimit or
+reaching hardlimit. If you are interested in more details, please ask.
 
-Grant Grundler was asking for more detail about correct usage of local atomic
-operations and suggested adding the resulting summary to local_ops.txt.
+> >> +/* Send warning to userspace about user which exceeded quota */
+> >> +static void send_warning(const struct dquot *dquot, const char warntype)
+> >> +{
+> >> +	static unsigned long seq;
+> >> +	struct sk_buff *skb;
+> >> +	void *msg_head;
+> >> +	int ret;
+> >> +
+> >> +	skb = genlmsg_new(QUOTA_NL_MSG_SIZE, GFP_NOFS);
+> >> +	if (!skb) {
+> >> +		printk(KERN_ERR
+> >> +		  "VFS: Not enough memory to send quota warning.\n");
+> >> +		return;
+> >> +	}
+> >> +	msg_head = genlmsg_put(skb, 0, seq++, &quota_genl_family, 0, QUOTA_NL_C_WARNING);
+> >> +	if (!msg_head) {
+> >> +		printk(KERN_ERR
+> >> +		  "VFS: Cannot store netlink header in quota warning.\n");
+> >> +		goto err_out;
+> 
+> One problem, we've been is losing notifications. It does not happen for us
+> due to the cpumask interface (which allows us to have parallel sockets
+> for each cpu or a set of cpus). How frequent are your notifications?
+  Quite infrequent... Users won't exceed their quotas too often :).
 
-"Please add a bit more detail. If DaveM is correct (he normally is), then
-there must be limits on how the local_t can be used in the kernel process
-and interrupt contexts. I'd like those rules spelled out very clearly
-since it's easy to get wrong and tracking down such a bug is quite painful."
+> >> +	}
+> >> +	ret = nla_put_u32(skb, QUOTA_NL_A_QTYPE, dquot->dq_type);
+> >> +	if (ret)
+> >> +		goto attr_err_out;
+> >> +	ret = nla_put_u64(skb, QUOTA_NL_A_EXCESS_ID, dquot->dq_id);
+> >> +	if (ret)
+> >> +		goto attr_err_out;
+> >> +	ret = nla_put_u32(skb, QUOTA_NL_A_WARNING, warntype);
+> >> +	if (ret)
+> >> +		goto attr_err_out;
+> >> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MAJOR,
+> >> +		MAJOR(dquot->dq_sb->s_dev));
+> >> +	if (ret)
+> >> +		goto attr_err_out;
+> >> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MINOR,
+> >> +		MINOR(dquot->dq_sb->s_dev));
+> >> +	if (ret)
+> >> +		goto attr_err_out;
+> >> +	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current->user->uid);
+> >> +	if (ret)
+> >> +		goto attr_err_out;
+> >> +	genlmsg_end(skb, msg_head);
+> >> +
+> 
+> Have you looked at ensuring that the data structure works across 32 bit
+> and 64 bit systems (in terms of binary compatibility)? That's usually
+> a nice to have feature.
+  Generic netlink should take care of this - arguments are typed so it
+knows how much bits numbers have. So this should be no issue. Are there any
+other problems that you have in mind?
 
-It applies on top of 2.6.23-rc3-mm1.
+> >> +	ret = genlmsg_multicast(skb, 0, quota_genl_family.id, GFP_NOFS);
+> >> +	if (ret < 0 && ret != -ESRCH)
+> >> +		printk(KERN_ERR
+> >> +			"VFS: Failed to send notification message: %d\n", ret);
+> >> +	return;
+> >> +attr_err_out:
+> >> +	printk(KERN_ERR "VFS: Failed to compose quota message: %d\n", ret);
+> >> +err_out:
+> >> +	kfree_skb(skb);
+> >> +}
+> >> +#endif
+> > 
+> > This is it.  Normally netlink payloads are represented as a struct.  How
+> > come this one is built-by-hand?
+> > 
+> > It doesn't appear to be versioned.  Should it be?
+> > 
+> 
+> Yes, versioning is always nice and genetlink supports it.
+> 
+> > Does it have (or need) reserved-set-to-zero space for expansion?  Again,
+> > hard to tell..
+> > 
+> > I guess it's OK to send a major and minor out of the kernel like this. 
+> > What's it for?  To represent a filesytem?  I wonder if there's a more
+> > modern and useful way of describing the fs.  Path to mountpoint or
+> > something?
+> > 
+> > I suspect the namespace virtualisation guys would be interested in a new
+> > interface which is sending current->user->uid up to userspace.  uids are
+> > per-namespace now.  What are the implications?  (cc's added)
+> 
+> The memory controller or VM would also be interested in notifications
+> of OOM. At OLS this year interest was shown in getting OOM notifications
+> and allow the user space a chance to handle the notification and take
+> action (especially for containers). We already have containerstats for
+> containers (which I was planning to reuse), but I was told that we would
+> be interested in user space OOM notifications in general.
+  Generic netlink can be used to pass this information (although in OOM
+situation, it may be a bit hairy to get the network stack working...). But
+I guess it's not related to my patch.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Grant Grundler <grundler@parisc-linux.org>
----
- Documentation/local_ops.txt |   23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
-
-Index: linux-2.6-lttng/Documentation/local_ops.txt
-===================================================================
---- linux-2.6-lttng.orig/Documentation/local_ops.txt	2007-08-29 08:09:34.000000000 -0400
-+++ linux-2.6-lttng/Documentation/local_ops.txt	2007-08-29 08:15:37.000000000 -0400
-@@ -45,6 +45,29 @@ long fails. The definition looks like :
- typedef struct { atomic_long_t a; } local_t;
- 
- 
-+* Rules to follow when using local atomic operations
-+
-+- Variables touched by local ops must be per cpu variables.
-+- _Only_ the CPU owner of these variables must write to them.
-+- This CPU can use local ops from any context (process, irq, softirq, nmi, ...)
-+  to update its local_t variables.
-+- Preemption (or interrupts) must be disabled when using local ops in
-+  process context to   make sure the process won't be migrated to a
-+  different CPU between getting the per-cpu variable and doing the
-+  actual local op.
-+- When using local ops in interrupt context, no special care must be
-+  taken on a mainline kernel, since they will run on the local CPU with
-+  preemption already disabled. I suggest, however, to explicitly
-+  disable preemption anyway to make sure it will still work correctly on
-+  -rt kernels.
-+- Reading the local cpu variable will provide the current copy of the
-+  variable.
-+- Reads of these variables can be done from any CPU, because updates to
-+  "long", aligned, variables are always atomic. Since no memory
-+  synchronization is done by the writer CPU, an outdated copy of the
-+  variable can be read when reading some _other_ cpu's variables.
-+
-+
- * How to use local atomic operations
- 
- #include <linux/percpu.h>
-
+									Honza
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
