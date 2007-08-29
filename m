@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932429AbXH2Ppg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932773AbXH2Ppw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932429AbXH2Ppg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 11:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbXH2Pp2
+	id S932773AbXH2Ppw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 11:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbXH2Ppa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 29 Aug 2007 11:45:30 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:37414 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755398AbXH2Pp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 29 Aug 2007 11:45:28 -0400
-Received: from hydra.rus.uni-stuttgart.de ([129.69.1.55]:9881 "EHLO
-	hydra.rus.uni-stuttgart.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754090AbXH2Pp1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 11:45:27 -0400
-X-Greylist: delayed 670 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Aug 2007 11:45:26 EDT
-X-Spam-Flag: NO
-X-Spam-Score: -2.599
-Date: Wed, 29 Aug 2007 17:34:19 +0200
-From: Thomas Richter <rusricht@po2.uni-stuttgart.de>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] snd_hda_intel for F/S T4210
-Content-Type: text/plain; charset=ISO-8859-15
+Subject: [PATCH] avoid negative (and full-width) shifts in radix-tree.c,
+	take 3
+From: Peter Lund <firefly@vax64.dk>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Christoph Lameter <clameter@sgi.com>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, Momchil Velikov <velco@fadata.bg>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Content-Type: text/plain
+Date: Wed, 29 Aug 2007 17:44:51 +0200
+Message-Id: <1188402291.7216.90.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Message-ID: <auto-000088556249@uni-stuttgart.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+From: Peter Lund <firefly@vax64.dk>
 
-the patch below, to be applied to sound/pci/hda/patch_sigmatel.c fixes the audio
-output on the Fujiutsu/Siemens lifebook T4210 (and probably on others). It is
-suitable for the kernel 2.6.23-rc4 (and probably others).
+Negative shifts are not allowed in C (the result is undefined).
+Same thing with full-width shifts.
 
-Without the patch, audio fails and the hda driver fails to load with
+It works on most platforms but not on the VAX with gcc 4.0.1 (it results in an
+"operand reserved" fault).
 
-No available DAC for pin 0x0
+Applies to Linux 2.6.22.
 
-However, the indicated pin has no connections in first place and thus should be ignored.
-With the patch applied audio output works fine.
+Signed-off-by: Peter Lund <firefly@vax64.dk>
+---
+Shifting by more than the width of the value on the left is also not allowed.
+I think the extra '>> 1' tacked on at the end in the original code was an attempt
+to work around that.  Getting rid of that is an extra feature of this patch.
 
-Here's the patch:
+Here's the chapter and verse, taken from the final draft of the C99 standard
+("6.5.7 Bitwise shift operators", paragraph 3):
 
-/* snip */
---- patch_sigmatel_old.c        2007-08-29 17:17:51.000000000 +0200
-+++ patch_sigmatel.c    2007-08-29 17:21:25.000000000 +0200
-@@ -1250,6 +1250,16 @@
-                nid = cfg->line_out_pins[i];
-                conn_len = snd_hda_get_connections(codec, nid, conn,
-                                                   HDA_MAX_CONNECTIONS);
-+               /* FIX THOR: For some hardware (notably the Fujiutsu/Siemens T4210
-+               ** lifebook), we have nids with no pins whatsoever. Ignore
-+               ** them.
-+               */
-+               if (conn_len == 0) {
-+                 snd_printk(KERN_ERR "%s: Found zero connections for pin 0x%0x "
-+                            "ignoring it.\n",__func__,nid);
-+                 continue;
-+               }
-+
-                for (j = 0; j < conn_len; j++) {
-                        wcaps = snd_hda_param_read(codec, conn[j],
-                                                   AC_PAR_AUDIO_WIDGET_CAP);
-/* snip */
+  "The integer promotions are performed on each of the operands. The
+  type of the result is that of the promoted left operand. If the
+  value of the right operand is negative or is greater than or equal
+  to the width of the promoted left operand, the behavior is
+  undefined."
 
-Greetings,
-	Thomas
+Thank you to Jan-Benedict Glaw, Christoph Hellwig, Maciej Rozycki,
+Pekka Enberg, and Andreas Schwab for review.  Special thanks to Andreas for
+spotting something I knew but overlooked due to misfiring neurons.
+
+I have kept the spacing between the variables and their types so the variable
+names and the equal signs don't line up, which should keep the majority of my
+reviewers happy.
+
+--- linux-2.6.22/lib/radix-tree.c.orig	2007-07-09 01:32:17.000000000 +0200
++++ linux-2.6.22/lib/radix-tree.c	2007-08-29 17:32:00.000000000 +0200
+@@ -980,12 +980,14 @@
+ 
+ static __init unsigned long __maxindex(unsigned int height)
+ {
+-	unsigned int tmp = height * RADIX_TREE_MAP_SHIFT;
+-	unsigned long index = (~0UL >> (RADIX_TREE_INDEX_BITS - tmp - 1)) >> 1;
++	unsigned int width = height * RADIX_TREE_MAP_SHIFT;
++	int shift = RADIX_TREE_INDEX_BITS - width;
+ 
+-	if (tmp >= RADIX_TREE_INDEX_BITS)
+-		index = ~0UL;
+-	return index;
++	if (shift < 0)
++		return ~0UL;
++	if (shift >= 8 * sizeof(unsigned long))
++		return 0UL;
++	return ~0UL >> shift;
+ }
+ 
+ static __init void radix_tree_init_maxindex(void)
+
+
