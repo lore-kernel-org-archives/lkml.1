@@ -1,81 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbXH2DiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760002AbXH2Dik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756209AbXH2DiB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 23:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXH2Dhw
+	id S1760002AbXH2Dik (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 23:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbXH2Dia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 23:37:52 -0400
-Received: from mail.tmr.com ([64.65.253.246]:34875 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752037AbXH2Dhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 23:37:51 -0400
-Message-ID: <46D4E9FE.6080306@tmr.com>
-Date: Tue, 28 Aug 2007 23:37:34 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Tue, 28 Aug 2007 23:38:30 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:23417 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759102AbXH2DiM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 23:38:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=vDA9cTHXLMiCkTH2t/vD96s+ZVyXew5kfCvfXGP5MpQpIJl3N8e4jCKI6Db1B719qrXJFQxDVxjMhxWGFLt/H+FdVEK01xyK6ntd9dRHYD5X4+UwfPVBpkbP9dFk/ycLuL5OKk8MvIUe3etLVIwkKcZl+AbxTTGjMCWYPkqFFaQ=  ;
+Message-ID: <46D4EA1C.3080505@yahoo.com.au>
+Date: Wed, 29 Aug 2007 13:38:04 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-References: <200708111344.42934.a1426z@gawab.com> <200708220127.30698.a1426z@gawab.com> <20070824134510.GA21382@elte.hu> <200708260127.32238.a1426z@gawab.com>
-In-Reply-To: <200708260127.32238.a1426z@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Daniel Phillips <phillips@phunq.net>
+CC: Theodore Tso <tytso@mit.edu>, Matthew Wilcox <matthew@wil.cx>,
+       Matt Mackall <mpm@selenic.com>, Josh Boyer <jwboyer@gmail.com>,
+       Andy Isaacson <adi@hexapodia.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation
+ Technical Advisory Board Elections
+References: <20070822224400.GA17255@srcf.ucam.org> <20070824025504.GT9163@parisc-linux.org> <20070824104538.GA31344@thunk.org> <200708281559.11181.phillips@phunq.net>
+In-Reply-To: <200708281559.11181.phillips@phunq.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> Ingo Molnar wrote:
->> * Al Boldi <a1426z@gawab.com> wrote:
->>>>> The problem is that consecutive runs don't give consistent results
->>>>> and sometimes stalls.  You may want to try that.
->>>> well, there's a natural saturation point after a few hundred tasks
->>>> (depending on your CPU's speed), at which point there's no idle time
->>>> left. From that point on things get slower progressively (and the
->>>> ability of the shell to start new ping tasks is impacted as well),
->>>> but that's expected on an overloaded system, isnt it?
->>> Of course, things should get slower with higher load, but it should be
->>> consistent without stalls.
->>>
->>> To see this problem, make sure you boot into /bin/sh with the normal
->>> VGA console (ie. not fb-console).  Then try each loop a few times to
->>> show different behaviour; loops like:
->>>
->>> # for ((i=0; i<3333; i++)); do ping 10.1 -A > /dev/null & done
->>>
->>> # for ((i=0; i<3333; i++)); do nice -99 ping 10.1 -A > /dev/null & done
->>>
->>> # { for ((i=0; i<3333; i++)); do
->>>         ping 10.1 -A > /dev/null &
->>>     done } > /dev/null 2>&1
->>>
->>> Especially the last one sometimes causes a complete console lock-up,
->>> while the other two sometimes stall then surge periodically.
->> ok. I think i might finally have found the bug causing this. Could you
->> try the fix below, does your webserver thread-startup test work any
->> better?
+Daniel Phillips wrote:
+> On Friday 24 August 2007 03:45, Theodore Tso wrote:
 > 
-> It seems to help somewhat, but the problem is still visible.  Even v20.3 on 
-> 2.6.22.5 didn't help.
+>>>As I said; what's wrong with just using SPI membership?  It's not
+>>>like it is remotely hard for kernel hackers to gain membership in
+>>>SPI.  And somebody else takes care of the bureaucracy for you.
+>>
+>>Given the huge overlap between SPI membership and Debian membership,
+>>and then taking a look at the craziness that takes place on various
+>>Debian mailing lists, such as but not limited to debian-legal, I'm
+>>quite convinced that this would be a baaaaaad idea.
 > 
-> It does look related to ia-boosting, so I turned off __update_curr like Roman 
-> mentioned, which had an enormous smoothing effect, but then nice levels 
-> completely break down and lockup the system.
 > 
-> There is another way to show the problem visually under X (vesa-driver), by 
-> starting 3 gears simultaneously, which after laying them out side-by-side 
-> need some settling time before smoothing out.  Without __update_curr it's 
-> absolutely smooth from the start.
+> Hi Ted,
+> 
+> Ever watched a legislative assembly at work?  A bad idea perhaps, but 
+> the best that has been discovered so far.
 
-I posted a LOT of stuff using the glitch1 script, and finally found a 
-set of tuning values which make the test script run smooth. See back 
-posts, I don't have them here.
+Given that there is already some charter that says KS attendees vote...
+isn't it best to retain that? Directives from above aside, you need
+specifications on how to change voting procedure before changing it, no?
+If those don't exist, then something vaguely similar in my country would
+require a referendum I think.
+
+Hasn't the KS committee / TAB board vote rigging conspiracy theory been
+raised yet? Given they're not running a country, it would be great fun
+to see the board getting corrupted and go off the rails ;) I'd vote for
+them because if Ted has anything to do with it, I *know* we'll be having
+KS in Hawaii ;)
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
