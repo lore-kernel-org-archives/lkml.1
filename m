@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760765AbXH2Nhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760879AbXH2NkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760765AbXH2Nhq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 09:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbXH2Nhh
+	id S1760879AbXH2NkI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 09:40:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbXH2Nj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 09:37:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49215 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757275AbXH2Nhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 09:37:36 -0400
-Message-ID: <46D5767C.9050206@redhat.com>
-Date: Wed, 29 Aug 2007 09:37:00 -0400
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070718)
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: "J. Bruce Fields" <bfields@fieldses.org>,
-       "Dr. David Alan Gilbert" <linux@treblig.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, neilb@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add source address to sunrpc svc errors
-References: <20070825012630.GB5431@gallifrey> <20070824185621.3f16f7c9.randy.dunlap@oracle.com> <20070825150927.GA29335@gallifrey>            <20070827214333.GM3118@fieldses.org> <7788.1188328346@turing-police.cc.vt.edu>
-In-Reply-To: <7788.1188328346@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 29 Aug 2007 09:39:57 -0400
+Received: from smtp141.iad.emailsrvr.com ([207.97.245.141]:38599 "EHLO
+	smtp141.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758101AbXH2Nj5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 09:39:57 -0400
+X-Greylist: delayed 623 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Aug 2007 09:39:57 EDT
+Subject: speeding up swapoff
+From: Daniel Drake <ddrake@brontes3d.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Wed, 29 Aug 2007 09:29:32 -0400
+Message-Id: <1188394172.22156.67.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 27 Aug 2007 17:43:33 EDT, "J. Bruce Fields" said:
->
->   
->> Looks like a reasonable idea to me, thanks!  Any objection to just
->> calling it "svc_printk" instead of "svc_printkerr"?
->>
->> I also wonder whether these shouldn't all be dprintk's instead of
->> printk's.  One misbehaving client could create a lot of noise in the
->> logs.
->>     
->
-> I shouldn't have to rebuild my kernel with debugging enabled just to see
-> who is throwing trash at my machine.  printk(KERN_INFO maybe and/or using
-> a printk_ratelimit.
->   
+Hi,
 
-There are a lot of ways to discover who is throwing trash
-at your system other than the kernel printing messages.
+I've spent some time trying to understand why swapoff is such a slow
+operation.
 
-Tools such as tcpdump and tethereal/wireshark make much better
-tools for this purpose.
+My experiments show that when there is not much free physical memory,
+swapoff moves pages out of swap at a rate of approximately 5mb/sec. When
+there is a lot of free physical memory, it is faster but still a slow
+CPU-intensive operation, purging swap at about 20mb/sec.
 
-    Thanx...
+I've read into the swap code and I have some understanding that this is
+an expensive operation (and has to be). This page was very helpful and
+also agrees:
+http://kernel.org/doc/gorman/html/understand/understand014.html
 
-       ps
+After reading that, I have an idea for a possible optimization. If we
+were to create a system call to disable ALL swap partitions (or modify
+the existing one to accept NULL for that purpose), could this process be
+signficantly less complex?
+
+I'm thinking we could do something like this:
+ 1. Prevent any more pages from being swapped out from this point
+ 2. Iterate through all process page tables, paging all swapped
+    pages back into physical memory and updating PTEs
+ 3. Clear all swap tables and caches
+
+Due to only iterating through process page tables once, does this sound
+like it would increase performance non-trivially? Is it feasible?
+
+I'm happy to spend a few more hours looking into implementing this but
+would greatly appreciate any advice from those in-the-know on if my
+ideas are broken to start with...
+
+Thanks!
+-- 
+Daniel Drake
+Brontes Technologies, A 3M Company
+http://www.brontes3d.com/opensource
+
