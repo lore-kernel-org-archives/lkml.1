@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759645AbXH2I6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757795AbXH2JKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759645AbXH2I6K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 04:58:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbXH2I56
+	id S1757795AbXH2JKV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 05:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbXH2JKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 04:57:58 -0400
-Received: from [212.12.190.168] ([212.12.190.168]:32856 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753336AbXH2I54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 04:57:56 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Ingo Molnar <mingo@elte.hu>, Keith Packard <keith.packard@intel.com>
-Subject: Re: CFS review
-Date: Wed, 29 Aug 2007 11:53:30 +0300
-User-Agent: KMail/1.5
-Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <200708111344.42934.a1426z@gawab.com> <1188374249.21502.155.camel@koto.keithp.com> <20070829080417.GB19386@elte.hu>
-In-Reply-To: <20070829080417.GB19386@elte.hu>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 29 Aug 2007 05:10:08 -0400
+Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:1402 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751329AbXH2JKH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 05:10:07 -0400
+Date: Wed, 29 Aug 2007 11:10:52 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH] hwmon: Add power meters to
+ Documentation/hwmon/sysfs-interface
+Message-ID: <20070829111052.503a73a5@hyperion.delvare>
+In-Reply-To: <20070828164440.GL32667@tree.beaverton.ibm.com>
+References: <20070827211446.GG32667@tree.beaverton.ibm.com>
+	<20070828015029.GA10107@khazad-dum.debian.net>
+	<20070828131942.18449886@hyperion.delvare>
+	<20070828164440.GL32667@tree.beaverton.ibm.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708291153.30539.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Keith Packard <keith.packard@intel.com> wrote:
-> > Make sure the X server isn't running with the smart scheduler
-> > disabled; that will cause precisely the symptoms you're seeing here.
-> > In the normal usptream sources, you'd have to use '-dumbSched' as an X
-> > server command line option.
-> >
-> > The old 'scheduler' would run an entire X client's input buffer dry
-> > before looking for requests from another client. Because glxgears
-> > requests are small but time consuming, this can cause very long delays
-> > between client switching.
->
-> on the old box where i've reproduced this i've got an ancient X version:
->
->   neptune:~> X -version
->
->   X Window System Version 6.8.2
->   Release Date: 9 February 2005
->   X Protocol Version 11, Revision 0, Release 6.8.2
->   Build Operating System: Linux 2.6.9-22.ELsmp i686 [ELF]
->
-> is that old enough to not have the smart X scheduler?
->
-> on newer systems i dont see correctly updated glxgears output (probably
-> the GLX bug you mentioned) so i cannot reproduce the bug.
->
-> Al, could you send us your 'X -version' output?
+Hi Darrick,
 
-This is the one I have been talking about:
+On Tue, 28 Aug 2007 09:44:40 -0700, Darrick J. Wong wrote:
+> Update the hwmon sysfs interface documentation to include a specification
+> for power meters.
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
+> 
+>  Documentation/hwmon/sysfs-interface |   15 +++++++++++++++
+>  1 files changed, 15 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/hwmon/sysfs-interface b/Documentation/hwmon/sysfs-interface
+> index b3a9e1b..da546ce 100644
+> --- a/Documentation/hwmon/sysfs-interface
+> +++ b/Documentation/hwmon/sysfs-interface
+> @@ -304,6 +304,21 @@ curr[1-*]_input	Current input value
+>  		Unit: milliampere
+>  		RO
+>  
+> +*********
+> +* Power *
+> +*********
+> +
+> +power[1-*]_input	Current power use
+> +			Unit: milliWatt
+> +			RO
+> +
+> +power[1-*]_max_input	Historical maximum power use
+> +			Unit: milliWatt
+> +			RO
+> +
+> +power[1-*]_min_input	Historical minimum power use
+> +			Unit: milliWatt
+> +			RO
+>  
 
-XFree86 Version 4.3.0
-Release Date: 27 February 2003
-X Protocol Version 11, Revision 0, Release 6.6
-Build Operating System: Linux 2.4.21-0.13mdksmp i686 [ELF] 
+I'm not sure if we want these "historical" files. We don't have them for
+the other input types, and I believe that it's not the driver's job to
+compute and export these values. If anyone cares about the history of
+sensed values, that's something for a user-space application to
+implement. This will also be much more flexible in user-space, as it
+becomes possible to decide the exact time range to consider, to
+remember at which time the peak occurred, etc.
 
-
-I also tried the gears test just now on this:
-
-X Window System Version 6.8.1
-Release Date: 17 September 2004
-X Protocol Version 11, Revision 0, Release 6.8.1
-Build Operating System: Linux 2.6.9-1.860_ELsmp i686 [ELF] 
-
-but it completely locks up.  Disabling add_wait_runtime seems to fix it.
-
-
-Thanks!
-
---
-Al
-
+-- 
+Jean Delvare
