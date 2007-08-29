@@ -1,89 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932295AbXH2Gna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932069AbXH2HLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932295AbXH2Gna (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 02:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759915AbXH2GnU
+	id S932069AbXH2HLL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 03:11:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbXH2HK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 02:43:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53990 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759982AbXH2GnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 02:43:18 -0400
-Date: Wed, 29 Aug 2007 08:43:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Al Boldi <a1426z@gawab.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Keith Packard <keith.packard@intel.com>
-Subject: Re: CFS review
-Message-ID: <20070829064303.GA32371@elte.hu>
-References: <200708111344.42934.a1426z@gawab.com> <200708290719.24422.a1426z@gawab.com> <20070829045316.GA15064@elte.hu> <200708290858.32909.a1426z@gawab.com>
+	Wed, 29 Aug 2007 03:10:57 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:64811 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbXH2HK4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 03:10:56 -0400
+Message-ID: <46D51BD7.6040904@de.ibm.com>
+Date: Wed, 29 Aug 2007 09:10:15 +0200
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+User-Agent: Thunderbird 1.5.0.7 (Windows/20060909)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708290858.32909.a1426z@gawab.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: David Miller <davem@davemloft.net>
+CC: jchapman@katalix.com, shemminger@linux-foundation.org, akepner@sgi.com,
+       netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
+       tklein@de.ibm.com, stefan.roscher@de.ibm.com
+Subject: Re: RFC: issues concerning the next NAPI interface
+References: <200708271147.01890.ossthema@de.ibm.com> <20070827.133721.59473971.davem@davemloft.net> <200708281319.03903.ossthema@de.ibm.com> <20070828.132152.38706038.davem@davemloft.net>
+In-Reply-To: <20070828.132152.38706038.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi David
 
-* Al Boldi <a1426z@gawab.com> wrote:
+David Miller schrieb:
+> Interrupt mitigation only works if it helps you avoid interrupts.
+> This scheme potentially makes more of them happen.
+>
+> The hrtimer is just another interrupt, a cpu locally triggered one,
+> but it has much of the same costs nonetheless.
+>
+> So if you set this timer, it triggers, and no packets arrive, you are
+> taking more interrupts and doing more work than if you had disabled
+> NAPI.
+>
+> In fact, for certain packet rates, your scheme would result in
+> twice as many interrupts than the current scheme
+>   
+That depends how smart the driver switches between timer
+polling and plain NAPI (depending on load situation).
+> This is one of several reasons why hardware is the only truly proper
+> place for this kind of logic.  Only the hardware can see the packet
+> arrive, and do the interrupt deferral without any cpu intervention
+> whatsoever.
+>   
+What I'm trying to improve with this approach is interrupt
+mitigation for NICs where the hardware support for interrupt
+mitigation is limited. I'm not trying to improve this for NICs
+that work well with the means their HW provides. I'm aware of
+the fact that this scheme has it's tradeoffs and certainly
+can not be as good as a HW approach.
+So I'm grateful for any ideas that do have less tradeoffs and
+provide a mechanism to reduce interrupts without depending on
+HW support of the NIC.
 
-> >  se.sleep_max             :          2194711437
-> >  se.block_max             :                   0
-> >  se.exec_max              :              977446
-> >  se.wait_max              :             1912321
-> >
-> > the scheduler itself had a worst-case scheduling delay of 1.9
-> > milliseconds for that glxgears instance (which is perfectly good - in
-> > fact - excellent interactivity) - but the task had a maximum sleep time
-> > of 2.19 seconds. So the 'glitch' was not caused by the scheduler.
-> 
-> 2.19sec is probably the time you need to lay them out side by side. 
-> [...]
+In the end I want to reduce the CPU utilization. And one way
+to do that is LRO which also works only well if there are more
+then just a very few packets to aggregate. So at least our
+driver (eHEA) would benefit from a mix of timer based polling
+and plain NAPI (depending on load situations).
 
-nope, i cleared the stats after i laid the glxgears out, via:
+If there is no need for a generic mechanism for this kind of
+network adapters, then we can just leave this to each device
+driver.
 
-   for N in /proc/*/sched; do echo 0 > $N; done
 
-and i did the strace (which showed a 1+ seconds latency) while the 
-glxgears was not manipulated in any way.
 
-> [...]  You see, gears sleeps when it is covered by another window, 
-> [...]
 
-none of the gear windows in my test were overlaid...
-
-> [...] so once you lay them out it starts running, and that's when they 
-> start to stutter for about 10sec.  After that they should run 
-> smoothly, because they used up all the sleep bonus.
-
-that's plain wrong - at least in the test i've reproduced. In any case, 
-if that were the case then that would be visible in the stats. So please 
-send me your cfs-debug-info.sh output captured while the test is running 
-(with a CONFIG_SCHEDSTATS=y and CONFIG_SCHED_DEBUG=y kernel) - you can 
-download it from:
-
-   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
-
-for best data, execute this before running it:
-
-   for N in /proc/*/sched; do echo 0 > $N; done
-
-> If you like, I can send you my straces, but they are kind of big 
-> though, and you need to strace each gear, as stracing itself changes 
-> the workload balance.
-
-sure, send them along or upload them somewhere - but more importantly, 
-please send the cfs-debug-info.sh output.
-
-	Ingo
