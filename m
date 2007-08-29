@@ -1,44 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbXH2P0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbXH2P1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756842AbXH2P0d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 11:26:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbXH2P00
+	id S1757563AbXH2P1i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 11:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbXH2P13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 11:26:26 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:43396 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752060AbXH2P0Z (ORCPT
+	Wed, 29 Aug 2007 11:27:29 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:5323 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753558AbXH2P11 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 11:26:25 -0400
-Date: Wed, 29 Aug 2007 17:26:24 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-cc: DervishD <lkml@dervishd.net>, Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: cpufreq affects traffic control rates
-In-Reply-To: <20070828152309.7fe1ce91@freepuppy.rosehill.hemminger.net>
-Message-ID: <Pine.LNX.4.64.0708291725000.24730@fbirervta.pbzchgretzou.qr>
-References: <20070828075155.GG17475@DervishD> <20070828152309.7fe1ce91@freepuppy.rosehill.hemminger.net>
+	Wed, 29 Aug 2007 11:27:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=aQ0MPhXlaJGFSWvKenuStHBapXZmnYNr/ixFY6MBahVpPMy3ejjlFCeJ7nFETYnu1FPEDuuOQWmgLZpa3qDtJiyE93pclG9jzHySQj9comJSlPYYdLpRRFIj++ymmmAj1vB4I6yaxe17A2obxy93dVkZ3wUDPCQxnvbB/QaLPRQ=
+Message-ID: <46D5902C.1040905@googlemail.com>
+Date: Wed, 29 Aug 2007 17:26:36 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, Jan Dittmer <jdi@l4x.org>,
+       Christian Zankel <chris@zankel.net>, linux-alpha@vger.kernel.org,
+       Stefan Becker <Stefan.Becker@nokia.com>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <len.brown@intel.com>
+Subject: [1/4] 2.6.23-rc4: known regressions
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-On Aug 28 2007 15:23, Stephen Hemminger wrote:
->>     I noticed lately that my traffic control rates were being very slow,
->> about 40% less than expected, and finally spotted the problem: cpufreq.
->> 
->>     Looks like HTB puts buckets according to the requested rate but
->> assuming that the CPU is running at its default clock or something like
->> that.
->> 
->Is the problem configuration of network scheduler clock? In 2.6.20 and earlier, you
->could use CPU cycle counter (later kernels only use time of day).  So try
->switching to jiffies or gettimeofday.
+Here is a list of some known regressions in 2.6.23-rc4.
 
-This should not have been removed. CPUs with constant_tsc
-could still be used with "CPU cycle counter" method.
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
+List of Aces
 
-	Jan
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            9
+Andi Kleen                             5
+Linus Torvalds                         5
+Andrew Morton                          4
+Hugh Dickins                           4
+Al Viro                                3
+Alan Stern                             3
+Cornelia Huck                          3
+Jens Axboe                             3
+Tejun Heo                              3
+
+Unclassified
+
+Subject         : cpu hotplug support broken in 2.6.23-rc3
+References      : http://lkml.org/lkml/2007/8/27/58
+Last known good : ?
+Submitter       : Pavel Machek <pavel@ucw.cz>
+Caused-By       : ?
+Handled-By      : ?
+Status          : problem is being debugged
+
+Subject         : 2.6.23-rc3-git1 crash/stuck on VIA CN700 system
+References      : http://lkml.org/lkml/2007/8/20/174
+Last known good : ?
+Submitter       : Stefan Becker <Stefan.Becker@nokia.com>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+Subject         : 2.6.23-rc2 cross compile regressions (alpha,xtensa)
+References      : http://lkml.org/lkml/2007/8/6/43
+Last known good : alpha: 2.6.22-git8
+                  xtensa: 2.6.22-git6
+Submitter       : Jan Dittmer <jdi@l4x.org>
+Caused-By       : ?
+Handled-By      : xtensa: Christian Zankel <chris@zankel.net>
+Status          : unknown
+
+Subject         : console is messed up after resume from s2ram or switching to console from X
+References      : http://lkml.org/lkml/2007/8/4/6
+Last known good : ?
+Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+Caused-By       : ?
+Handled-By      : H. Peter Anvin <hpa@zytor.com>
+                  Antonino A. Daplas <adaplas@gmail.com>
+Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
+Status          : problem is being debugged
+
+Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
+References      : http://lkml.org/lkml/2007/7/22/86
+Last known good : ?
+Submitter       : Markus <lists4me@web.de>
+Caused-By       : ?
+Handled-By      : Ingo Molnar <mingo@elte.hu>
+Status          : problem is being debugged
+
+Regards,
+Michal
+
 -- 
+LOG
+http://www.stardust.webpages.pl/log/
