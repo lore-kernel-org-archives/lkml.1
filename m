@@ -1,66 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbXH2Tca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759291AbXH2Td5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbXH2Tca (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 15:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXH2TcX
+	id S1759291AbXH2Td5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 15:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754486AbXH2Tdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 15:32:23 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:15307 "EHLO
+	Wed, 29 Aug 2007 15:33:47 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:15896 "EHLO
 	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753721AbXH2TcX (ORCPT
+	with ESMTP id S1753651AbXH2Tdq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 15:32:23 -0400
+	Wed, 29 Aug 2007 15:33:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aJVokC2Wnv+oSJmxOtZEGngJQwxRZGf8mZZrJv5ioDwDz9obSa2WNYsyuNgRyvx+xZfrZIB3G/pX5aDmQ+pndXe7MWcjg8gzxcDzhe2/9wBJ0VZ/vzpuflA624bC4okTIH8uc1r0zv5IW6cu5elYsQLYVjwTBF9UVqpFI+WcYPI=
-Message-ID: <dda83e780708291232h6ced720fy437c9ebf6bba2f3c@mail.gmail.com>
-Date: Wed, 29 Aug 2007 12:32:20 -0700
-From: "Bret Towe" <magnade@gmail.com>
-To: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
-Subject: Re: linux-2.6.23-rc4 ppc build failure
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <31e679430708291000n64a4e97aq5e326678a1fe9827@mail.gmail.com>
+        b=no5MXKVwckUDuC02U2Brr+OqhHC+N0sEGChTT2DbyUaLHQHoITewwCT7oM7Ov3DsVt/t2XbiBKCTjbF5JerGacy6rCYpqsO5hVksOnEsDI2rB9sCj11v+1lrhFhk7KGEaH7Lw5kfDs3oOg6lHI3TZ9S5zw9UJFBDPxj+UUpC/ks=
+Message-ID: <9e4733910708291233h3c4022a9n6e46733c5c50e222@mail.gmail.com>
+Date: Wed, 29 Aug 2007 15:33:43 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
+Cc: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Jiri Slaby" <jirislaby@gmail.com>, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20070829192858.75aa6542@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <dda83e780708290941g1685879bned63a77d6b0fd242@mail.gmail.com>
-	 <31e679430708291000n64a4e97aq5e326678a1fe9827@mail.gmail.com>
+References: <2713029743177393055@pripojeni.net>
+	 <7515194658758617@pripojeni.net>
+	 <20070828171155.GC29343@infradead.org>
+	 <3208.1188408545@turing-police.cc.vt.edu>
+	 <9e4733910708291101i3783a8b1l38f0d5cfb0c2863d@mail.gmail.com>
+	 <20070829192858.75aa6542@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/29/07, Felipe Balbi <felipebalbi@users.sourceforge.net> wrote:
-> Hi,
+On 8/29/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > > to remove the BSD/other license.   Jiri can release *his* code as GPLv2
+> > > only, but I suspect the files as a whole really should be dual BSD/GPLv2,
+> > > due to the numerous other stakeholders in those files.
+> >
+> > This mess has been occurring in the kernel for years. The DRM graphics
+> > drivers are used in both BSD and Linux. It is quite easy to contribute
+> > something to this code via LKML and think you are doing it under the
+> > GPL. Doesn't a patch against the kernel have to be GPL? When these
+> > patches get pulled back into BSD and distributed with it, did BSD get
+> > infected with the GPL? AFAIK this has never been legally sorted out.
 >
-> On 8/29/07, Bret Towe <magnade@gmail.com> wrote:
-> > while trying to build a fresh kernel for my mini after upgrading from gutsy
-> > (and forgetting to save my .config) I hit the below build error
+> I'm not aware anyone has felt it needed "sorting out". Its not exactly
+> complicated.
 >
-> The .config you can get from /boot/config-`uname -r`
+>         BSD non advertising is compatible with GPL
+>
+> The GPL says:
+>         "when you distribute the same sections as part of a whole which
+>         is a work based on the Program, the distribution of the whole
+>         must be on the terms of this License, "
+>
+> The BSD license doesn't conflict with that
+>
+> The GPL (and copyright law also say)
+>
+> "If identifiable sections of that work are not derived from the Program,
+> and can be reasonably considered independent and separate works in
+> themselves, then this License, and its terms, do not apply to ..."
+>
+> All a bit irrelevant anyway as Ath5K code (not the .h file) say:
+>
+>  * Alternatively, this software may be distributed under the terms of the
+>  * GNU General Public License ("GPL") version 2 as published by the Free
+>  * Software Foundation.
+>
+> So Jiri is choosing to distribute it under the GPL, and with his changes
+> GPL only.
+>
+> So whats the problem ?
 
-yes I know the one thats attached is based off that
-just slimed down trying to keep the compile time down as much as possable
+BSD code can definitely be brought into a GPL project as you describe.
+The problem is the other direction.
 
-> > 2.6.23-rc3 I did work under feisty but that is with a different .config
-> > so not sure if that makes any difference or not
-> > I've not bisected cause it takes so long on this computer...
-> > attached is the config I'm working off now
-> >
-> > arch/powerpc/platforms/built-in.o: In function `pmac_probe':
-> > setup.c:(.init.text+0xbba): undefined reference to `pmac_ide_get_base'
-> > setup.c:(.init.text+0xbbe): undefined reference to `pmac_ide_init_hwif_ports'
-> > setup.c:(.init.text+0xbc6): undefined reference to `pmac_ide_get_base'
-> > setup.c:(.init.text+0xbca): undefined reference to `pmac_ide_init_hwif_ports'
-> > make[1]: *** [.tmp_vmlinux1] Error 1
-> > make[1]: Leaving directory `/usr/src/linux-2.6'
-> >
-> >
->
->
-> --
-> Best Regards,
->
-> Felipe Balbi
-> felipebalbi@users.sourceforge.net
->
+Aren't patches made against the kernel GPL'd if the author doesn't
+explicitly grant them more liberal BSD license in addition?
+
+The problem then comes in taking the patches that were only made
+available against GPL code and reshipping them under the BSD license
+without the author explicitly agreeing to this.
+
+What if a patch spans both code that is pure GPL and code imported
+from BSD, how do you license it?
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
