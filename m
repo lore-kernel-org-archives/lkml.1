@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbXH2TH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbXH2THm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759289AbXH2TH1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 15:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbXH2THO
+	id S1760032AbXH2THm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 15:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758616AbXH2THX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 15:07:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41574 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752438AbXH2THM (ORCPT
+	Wed, 29 Aug 2007 15:07:23 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:56083 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757608AbXH2THU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 15:07:12 -0400
-Date: Wed, 29 Aug 2007 20:07:10 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       John Johansen <jjohansen@suse.de>, Jan Blunck <jblunck@suse.de>,
-       Erez Zadok <ezk@cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: Re: [patch 1/4] Introduce pathput
-Message-ID: <20070829190710.GA28028@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andreas Gruenbacher <agruen@suse.de>, linux-kernel@vger.kernel.org,
-	John Johansen <jjohansen@suse.de>, Jan Blunck <jblunck@suse.de>,
-	Erez Zadok <ezk@cs.sunysb.edu>,
-	Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
-References: <20070808171622.632749741@suse.de> <20070808171643.542685765@suse.de> <20070808193209.GA31354@infradead.org> <20070810142208.827949199@suse.de> <20070810143846.804017666@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 29 Aug 2007 15:07:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pofUAGxpUxT3Es/xuwTydEPiUUTnKtkS2JYUu1QVedhXsprmPZnza+2JsucRBf7m1vOHkj24Y52ojGJFueBV85KOUOWJCnRM7LRDIwmwDyYHTQso7JmGdqMcXEuzZjbPTfg2f8GJEfRAI+zPCCnG3hlg7fd+6V4sENyv2HfcCFw=
+Message-ID: <b6a2187b0708291207tfbf9d6dr43661f15dce33e44@mail.gmail.com>
+Date: Thu, 30 Aug 2007 03:07:19 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [1/4] 2.6.23-rc4: known regressions
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       Markus <lists4me@web.de>, "Antonino A. Daplas" <adaplas@gmail.com>,
+       "Jan Dittmer" <jdi@l4x.org>, "Christian Zankel" <chris@zankel.net>,
+       linux-alpha@vger.kernel.org, "Stefan Becker" <Stefan.Becker@nokia.com>,
+       "Pavel Machek" <pavel@ucw.cz>, "Len Brown" <len.brown@intel.com>
+In-Reply-To: <46D5902C.1040905@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070810143846.804017666@suse.de>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <46D5902C.1040905@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 04:22:09PM +0200, Andreas Gruenbacher wrote:
-> * Add pathput() for releasing a reference to the dentry and vfsmount of a
->   struct path.
-> 
-> * Switch from path_release(nd) to pathget(&nd->path).
+On 8/29/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
-				^^^^^^^^^^^^^ pathput
+> Subject         : console is messed up after resume from s2ram or switching to console from X
+> References      : http://lkml.org/lkml/2007/8/4/6
+> Last known good : ?
+> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+> Caused-By       : ?
+> Handled-By      : H. Peter Anvin <hpa@zytor.com>
+>                   Antonino A. Daplas <adaplas@gmail.com>
+> Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
+> Status          : problem is being debugged
 
-> 
-> * Switch from path_release_on_umount(nd) to pathput_on_umount(&nd->path).
-> 
-> * Rename dput_path() to pathput_conditional().
+I'm satisfied with the workaround using "s2ram --force --acpi_sleep 1
+--vbe_mode", and so is H. Peter Anvin, and he uncovered a different
+bug while debugging this.
 
-The introduction of pathput is fine we me.  The removal of path_release
-doesn't make much sense.  We have tons of invocations of exactly that
-patter, and having keeping path_release for that makes a lot of sense.
+Please close the case.
 
-I also think there rename from dput_path to pathput_conditional is
-rather pointless.  Sure, that thing needs a better name, but
-pathput_conditional is not a better name.
-
-And all of the functions could use some kerneldoc comments describing them.
+Thanks,
+Jeff.
