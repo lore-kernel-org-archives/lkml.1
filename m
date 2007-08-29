@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbXH2EuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbXH2EwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbXH2EuL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 00:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbXH2Et7
+	id S1758155AbXH2EwP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 00:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbXH2Ev6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 00:49:59 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44903 "EHLO
+	Wed, 29 Aug 2007 00:51:58 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41772 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751579AbXH2Et6 (ORCPT
+	by vger.kernel.org with ESMTP id S1751822AbXH2Ev5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 00:49:58 -0400
-Date: Tue, 28 Aug 2007 21:49:56 -0700
+	Wed, 29 Aug 2007 00:51:57 -0400
+Date: Tue, 28 Aug 2007 21:51:28 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible
- fashion.
-Message-Id: <20070828214956.5f3020ef.akpm@linux-foundation.org>
-In-Reply-To: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
-References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Send quota messages via netlink
+Message-Id: <20070828215128.d8147a43.akpm@linux-foundation.org>
+In-Reply-To: <20070828141318.GC5869@duck.suse.cz>
+References: <20070828141318.GC5869@duck.suse.cz>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,33 +25,23 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Aug 2007 16:40:15 -0600 ebiederm@xmission.com (Eric W. Biederman) wrote:
+On Tue, 28 Aug 2007 16:13:18 +0200 Jan Kara <jack@suse.cz> wrote:
 
-> +static int deprecated_sysctl_warning(struct __sysctl_args *args)
+> +static void send_warning(const struct dquot *dquot, const char warntype)
 > +{
-> +	static int msg_count;
-> +	int name[CTL_MAXNAME];
-> +	int i;
+> +	static unsigned long seq;
+> +	struct sk_buff *skb;
+> +	void *msg_head;
+> +	int ret;
 > +
-> +	/* Read in the sysctl name for better debug message logging */
-> +	for (i = 0; i < args->nlen; i++)
-> +		if (get_user(name[i], args->name + i))
-> +			return -EFAULT;
-> +
-> +	/* Ignore accesses to kernel.version */
-> +	if ((args->nlen == 2) && (name[0] == CTL_KERN) && (name[1] == KERN_VERSION))
-> +		return 0;
-
-Do we want to do all the above if msg_count>=5?
-
-> +	if (msg_count < 5) {
-> +		msg_count++;
-> +		printk(KERN_INFO
-> +			"warning: process `%s' used the deprecated sysctl "
-> +			"system call with ", current->comm);
-> +		for (i = 0; i < args->nlen; i++)
-> +			printk("%d.", name[i]);
-> +		printk("\n");
+> +	skb = genlmsg_new(QUOTA_NL_MSG_SIZE, GFP_NOFS);
+> +	if (!skb) {
+> +		printk(KERN_ERR
+> +		  "VFS: Not enough memory to send quota warning.\n");
+> +		return;
 > +	}
-> +	return 0;
-> +}
+> +	msg_head = genlmsg_put(skb, 0, seq++, &quota_genl_family, 0, QUOTA_NL_C_WARNING);
+
+The access to seq is racy, isn't it?
+
+If so, that can be solved with a lock, or with atomic_add_return().
