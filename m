@@ -1,64 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbXH2LLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbXH2LMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756248AbXH2LLp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 07:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbXH2LLf
+	id S1758168AbXH2LMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 07:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbXH2LMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 07:11:35 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53469 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755280AbXH2LLL (ORCPT
+	Wed, 29 Aug 2007 07:12:07 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:59859 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754838AbXH2LMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 07:11:11 -0400
-Message-ID: <46D553CB.9020107@sgi.com>
-Date: Wed, 29 Aug 2007 13:08:59 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andy Isaacson <adi@hexapodia.org>, Josh Boyer <jwboyer@gmail.com>,
-       ksummit-2007-discuss@thunk.org
-Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation
- Technical Advisory Board Elections
-References: <20070823003748.GR30556@waste.org> <20070823004209.GP9163@parisc-linux.org> <20070823011953.GS30556@waste.org> <1187832907.3410.141.camel@localhost.localdomain> <20070824012730.GA1243@hexapodia.org> <625fc13d0708231934q5b369b4fh1a5c83def0e56a0d@mail.gmail.com> <20070824025254.GH21720@waste.org> <20070824025504.GT9163@parisc-linux.org> <20070824032228.GJ21720@waste.org> <20070824155735.GA14978@kroah.com> <20070824234840.GC19595@kroah.com> <20070825010329.6f5bc47c@the-village.bc.nu> <46D2A113.2030403@sgi.com> <Pine.LNX.4.64.0708281511590.17587@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0708281511590.17587@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Aug 2007 07:12:06 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       David Rientjes <rientjes@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Date: Wed, 29 Aug 2007 16:40:30 +0530
+Message-Id: <20070829111030.9987.8104.sendpatchset@balbir-laptop>
+Subject: [-mm PATCH]  Memory controller improve user interface
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Mon, 27 Aug 2007, Jes Sorensen wrote:
-> 
->> Right now it looks like we have a list of sane candidates up, which I
->> certainly would be willing to vote for. However, it would be a shame
->> that the credibility of the election is lost because of sticking to an
->> undemocratic voting procedure. A procedure which it in fact was stated
->> when the board was created last year, would be replaced this year.
-> 
-> Democracy is an ideal that is not attainable. A representative democracy 
-> is usually the best you can get. So you need people that have some 
-> competence to contribute to the endeavor. And AFAICT we approximate that 
-> reasonably. Many of the people that were not subject to the git commit 
-> quota are experienced hands that are valuable because of their experience 
-> with Linux and the Summit.
 
-Of course, total democracy is impractical and not attainable. However,
-in this particular situation we have something that is far from perfect,
-but which is also easy to improve significantly if there is willingness
-to do so.
 
-KS has been using the 'we can only fit in 50 people into our exclusive
-club because we have to include all of our program committee and the
-sold off seats so we can go collect money for a ridiculously huge
-budget for usenix' argument for years.
+Change the interface to use kilobytes instead of pages. Page sizes can vary
+across platforms and configurations. A new strategy routine has been added
+to the resource counters infrastructure to format the data as desired.
 
-I don't see why the TAB vote should lose it's credibility in order to
-satisfy a demand from a few people to enjoy their feel of exclusivity,
-in particular when it's so easy to fix.
+Suggested by David Rientjes, Andrew Morton and Herbert Poetzl
 
-Jes
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ Documentation/controllers/memory.txt |    7 +++--
+ include/linux/res_counter.h          |    6 ++--
+ kernel/res_counter.c                 |   24 +++++++++++++----
+ mm/memcontrol.c                      |   47 +++++++++++++++++++++++++++--------
+ 4 files changed, 64 insertions(+), 20 deletions(-)
+
+diff -puN mm/memcontrol.c~mem-control-make-ui-use-kilobytes mm/memcontrol.c
+--- linux-2.6.23-rc3/mm/memcontrol.c~mem-control-make-ui-use-kilobytes	2007-08-28 13:20:44.000000000 +0530
++++ linux-2.6.23-rc3-balbir/mm/memcontrol.c	2007-08-29 14:36:07.000000000 +0530
+@@ -32,6 +32,7 @@
+ 
+ struct container_subsys mem_container_subsys;
+ static const int MEM_CONTAINER_RECLAIM_RETRIES = 5;
++static const int MEM_CONTAINER_CHARGE_KB = (PAGE_SIZE >> 10);
+ 
+ /*
+  * The memory controller data structure. The memory controller controls both
+@@ -312,7 +313,7 @@ int mem_container_charge(struct page *pa
+ 	 * If we created the page_container, we should free it on exceeding
+ 	 * the container limit.
+ 	 */
+-	while (res_counter_charge(&mem->res, 1)) {
++	while (res_counter_charge(&mem->res, MEM_CONTAINER_CHARGE_KB)) {
+ 		if (try_to_free_mem_container_pages(mem))
+ 			continue;
+ 
+@@ -352,7 +353,7 @@ int mem_container_charge(struct page *pa
+ 		kfree(pc);
+ 		pc = race_pc;
+ 		atomic_inc(&pc->ref_cnt);
+-		res_counter_uncharge(&mem->res, 1);
++		res_counter_uncharge(&mem->res, MEM_CONTAINER_CHARGE_KB);
+ 		css_put(&mem->css);
+ 		goto done;
+ 	}
+@@ -417,7 +418,7 @@ void mem_container_uncharge(struct page_
+ 		css_put(&mem->css);
+ 		page_assign_page_container(page, NULL);
+ 		unlock_page_container(page);
+-		res_counter_uncharge(&mem->res, 1);
++		res_counter_uncharge(&mem->res, MEM_CONTAINER_CHARGE_KB);
+ 
+  		spin_lock_irqsave(&mem->lru_lock, flags);
+  		list_del_init(&pc->lru);
+@@ -426,12 +427,37 @@ void mem_container_uncharge(struct page_
+ 	}
+ }
+ 
+-static ssize_t mem_container_read(struct container *cont, struct cftype *cft,
+-			struct file *file, char __user *userbuf, size_t nbytes,
+-			loff_t *ppos)
++int mem_container_read_strategy(unsigned long val, char *buf)
++{
++	return sprintf(buf, "%lu (kB)\n", val);
++}
++
++int mem_container_write_strategy(char *buf, unsigned long *tmp)
++{
++	*tmp = memparse(buf, &buf);
++	if (*buf != '\0')
++		return -EINVAL;
++
++	*tmp = *tmp >> 10;		/* convert to kilobytes */
++	return 0;
++}
++
++static ssize_t mem_container_read_usage(struct container *cont,
++			struct cftype *cft, struct file *file,
++			char __user *userbuf, size_t nbytes, loff_t *ppos)
++{
++	return res_counter_read(&mem_container_from_cont(cont)->res,
++				cft->private, userbuf, nbytes, ppos,
++				mem_container_read_strategy);
++}
++
++static ssize_t mem_container_read(struct container *cont,
++			struct cftype *cft, struct file *file,
++			char __user *userbuf, size_t nbytes, loff_t *ppos)
+ {
+ 	return res_counter_read(&mem_container_from_cont(cont)->res,
+-				cft->private, userbuf, nbytes, ppos);
++				cft->private, userbuf, nbytes, ppos,
++				NULL);
+ }
+ 
+ static ssize_t mem_container_write(struct container *cont, struct cftype *cft,
+@@ -439,7 +465,8 @@ static ssize_t mem_container_write(struc
+ 				size_t nbytes, loff_t *ppos)
+ {
+ 	return res_counter_write(&mem_container_from_cont(cont)->res,
+-				cft->private, userbuf, nbytes, ppos);
++				cft->private, userbuf, nbytes, ppos,
++				mem_container_write_strategy);
+ }
+ 
+ static ssize_t mem_control_type_write(struct container *cont,
+@@ -500,13 +527,13 @@ static struct cftype mem_container_files
+ 	{
+ 		.name = "usage",
+ 		.private = RES_USAGE,
+-		.read = mem_container_read,
++		.read = mem_container_read_usage,
+ 	},
+ 	{
+ 		.name = "limit",
+ 		.private = RES_LIMIT,
+ 		.write = mem_container_write,
+-		.read = mem_container_read,
++		.read = mem_container_read_usage,
+ 	},
+ 	{
+ 		.name = "failcnt",
+diff -puN include/linux/memcontrol.h~mem-control-make-ui-use-kilobytes include/linux/memcontrol.h
+diff -puN include/linux/res_counter.h~mem-control-make-ui-use-kilobytes include/linux/res_counter.h
+--- linux-2.6.23-rc3/include/linux/res_counter.h~mem-control-make-ui-use-kilobytes	2007-08-28 13:21:36.000000000 +0530
++++ linux-2.6.23-rc3-balbir/include/linux/res_counter.h	2007-08-29 00:52:45.000000000 +0530
+@@ -52,9 +52,11 @@ struct res_counter {
+  */
+ 
+ ssize_t res_counter_read(struct res_counter *counter, int member,
+-		const char __user *buf, size_t nbytes, loff_t *pos);
++		const char __user *buf, size_t nbytes, loff_t *pos,
++		int (*read_strategy)(unsigned long val, char *s));
+ ssize_t res_counter_write(struct res_counter *counter, int member,
+-		const char __user *buf, size_t nbytes, loff_t *pos);
++		const char __user *buf, size_t nbytes, loff_t *pos,
++		int (*write_strategy)(char *buf, unsigned long *val));
+ 
+ /*
+  * the field descriptors. one for each member of res_counter
+diff -puN kernel/res_counter.c~mem-control-make-ui-use-kilobytes kernel/res_counter.c
+--- linux-2.6.23-rc3/kernel/res_counter.c~mem-control-make-ui-use-kilobytes	2007-08-28 13:21:41.000000000 +0530
++++ linux-2.6.23-rc3-balbir/kernel/res_counter.c	2007-08-29 14:54:04.000000000 +0530
+@@ -76,20 +76,25 @@ static inline unsigned long *res_counter
+ }
+ 
+ ssize_t res_counter_read(struct res_counter *counter, int member,
+-		const char __user *userbuf, size_t nbytes, loff_t *pos)
++		const char __user *userbuf, size_t nbytes, loff_t *pos,
++		int (*read_strategy)(unsigned long val, char *st_buf))
+ {
+ 	unsigned long *val;
+ 	char buf[64], *s;
+ 
+ 	s = buf;
+ 	val = res_counter_member(counter, member);
+-	s += sprintf(s, "%lu\n", *val);
++	if (read_strategy)
++		s += read_strategy(*val, s);
++	else
++		s += sprintf(s, "%lu\n", *val);
+ 	return simple_read_from_buffer((void __user *)userbuf, nbytes,
+ 			pos, buf, s - buf);
+ }
+ 
+ ssize_t res_counter_write(struct res_counter *counter, int member,
+-		const char __user *userbuf, size_t nbytes, loff_t *pos)
++		const char __user *userbuf, size_t nbytes, loff_t *pos,
++		int (*write_strategy)(char *st_buf, unsigned long *val))
+ {
+ 	int ret;
+ 	char *buf, *end;
+@@ -106,9 +111,16 @@ ssize_t res_counter_write(struct res_cou
+ 		goto out_free;
+ 
+ 	ret = -EINVAL;
+-	tmp = simple_strtoul(buf, &end, 10);
+-	if (*end != '\0')
+-		goto out_free;
++
++	if (write_strategy) {
++		if (write_strategy(buf, &tmp)) {
++			goto out_free;
++		}
++	} else {
++		tmp = simple_strtoul(buf, &end, 10);
++		if (*end != '\0')
++			goto out_free;
++	}
+ 
+ 	val = res_counter_member(counter, member);
+ 	*val = tmp;
+diff -puN Documentation/controllers/memory.txt~mem-control-make-ui-use-kilobytes Documentation/controllers/memory.txt
+--- linux-2.6.23-rc3/Documentation/controllers/memory.txt~mem-control-make-ui-use-kilobytes	2007-08-29 14:42:03.000000000 +0530
++++ linux-2.6.23-rc3-balbir/Documentation/controllers/memory.txt	2007-08-29 14:50:42.000000000 +0530
+@@ -165,11 +165,14 @@ c. Enable CONFIG_CONTAINER_MEM_CONT
+ 
+ Since now we're in the 0 container,
+ We can alter the memory limit:
+-# echo -n 6000 > /containers/0/memory.limit
++# echo -n 4000K > /containers/0/memory.limit
++
++NOTE: The interface has now changed to display the usage in kilobytes
++instead of pages
+ 
+ We can check the usage:
+ # cat /containers/0/memory.usage
+-25
++56 (kB)
+ 
+ The memory.failcnt field gives the number of times that the container limit was
+ exceeded.
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
