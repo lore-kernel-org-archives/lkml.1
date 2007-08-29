@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932772AbXH2KfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759170AbXH2KiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932772AbXH2KfX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 06:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbXH2KfI
+	id S1759170AbXH2KiB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 06:38:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbXH2Khz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 06:35:08 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:50266 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbXH2KfG (ORCPT
+	Wed, 29 Aug 2007 06:37:55 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56156 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753292AbXH2Khy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 06:35:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=r3Fl2Wp+pkL6JGns2dNJV36lTGwNGBf8a/jtja0HffFwCo/FK1Xvvh2L1jljKkHbBET9L/H/xaOw35tZtfJxNF1sPHdp/0O2SRrWr70dqkbIBR2trflrh3GIeQT1OXd6IrD6Fhc1jrLIrs8tOKjXVbjEeBdaeGZSDCDqHjpLnGs=
-Message-ID: <4af2d03a0708290335x1a9aa38o566e9d416505f280@mail.gmail.com>
-Date: Wed, 29 Aug 2007 08:35:05 -0200
-From: "Jiri Slaby" <jirislaby@gmail.com>
-To: "Johannes Berg" <johannes@sipsolutions.net>
-Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
-Cc: linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <1188381582.19891.6.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 29 Aug 2007 06:37:54 -0400
+Date: Wed, 29 Aug 2007 11:46:04 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible
+ fashion.
+Message-ID: <20070829114604.242b976c@the-village.bc.nu>
+In-Reply-To: <m1d4x7aysz.fsf@ebiederm.dsl.xmission.com>
+References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
+	<20070828230459.GA15937@infradead.org>
+	<m1r6lnb4ha.fsf@ebiederm.dsl.xmission.com>
+	<46D4CC81.4060400@zytor.com>
+	<m1d4x7aysz.fsf@ebiederm.dsl.xmission.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <7515194658758617@pripojeni.net>
-	 <1188381582.19891.6.camel@johannes.berg>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/29/07, Johannes Berg <johannes@sipsolutions.net> wrote:
-> On Tue, 2007-08-28 at 12:00 -0400, Jiri Slaby wrote:
->
-> > The files are available only under GPLv2 since now.
->
-> Since the BSD people are already getting upset about (for various
-> reasons among which seem to be a clear non-understanding) I'd suggest
-> changing it to:
+> >> adequate job of warning our users.  A printk when we run a program
+> >> that uses the binary interface and an long enough interval the warning
+> >> makes it to the Enterprise kernels before we remove the interface
+> >> should be sufficient.
 
-yes, please. Can somebody do it, I'm away from my box.
+The enterprise products will probably just remove the printk. Even if
+they didn't you are looking at ten years before things finish changing
+based on current experiences, probably longer as things stabilize.
 
-> + * Parts of this file were originally licenced under the BSD licence:
-> + *
-> >  * Permission to use, copy, modify, and distribute this software for any
-> >  * purpose with or without fee is hereby granted, provided that the above
-> >  * copyright notice and this permission notice appear in all copies.
-> >  *
-> >  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL
-> WARRANTIES
-> >  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-> >  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-> >  * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-> >  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-> >  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-> >  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-> + *
-> + * Further changes to this file since the moment this notice was extended
-> + * are now distributed under the terms of the GPL version two as published
-> + * by the Free Software Foundation <yaddaya>
->
-> johannes
->
+The whole "whine a bit" process simply doesn't work when you are trying
+to persuade people to move in a non-hobbyist context. They don't want to
+move, the message is simply an annoyance, their upstream huge package
+vendor won't change just to deal with it and they'll class it as a
+regression from previous releases, an incompatibility and file bugs until
+it goes away.
+
+Its user ABI and as Linus said - we don't break it. Trimming down all the
+crap that never worked via sysctl is one thing, not putting sysctl in new
+platforms likewise. Trying to undo it isn't going to work
+
+Alan
