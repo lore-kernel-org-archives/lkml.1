@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757147AbXH2P6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932534AbXH2P7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757147AbXH2P6p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 11:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbXH2P6e
+	id S932534AbXH2P7l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 11:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757088AbXH2P7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 11:58:34 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:40679 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753671AbXH2P6d (ORCPT
+	Wed, 29 Aug 2007 11:59:30 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:58497 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757053AbXH2P73 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 11:58:33 -0400
-Date: Wed, 29 Aug 2007 16:58:01 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Daniel Drake <ddrake@brontes3d.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: speeding up swapoff
-In-Reply-To: <20070829073040.1ec35176@laptopd505.fenrus.org>
-Message-ID: <Pine.LNX.4.64.0708291638550.30229@blonde.wat.veritas.com>
-References: <1188394172.22156.67.camel@localhost> <20070829073040.1ec35176@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 29 Aug 2007 11:59:29 -0400
+Date: Wed, 29 Aug 2007 08:57:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org
+Subject: Re: [PATCH] Send quota messages via netlink
+Message-Id: <20070829085709.8deaaa4e.randy.dunlap@oracle.com>
+In-Reply-To: <20070829122647.GB7814@duck.suse.cz>
+References: <20070828141318.GC5869@duck.suse.cz>
+	<20070828211335.37fce4c9.akpm@linux-foundation.org>
+	<20070829122647.GB7814@duck.suse.cz>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Aug 2007, Arjan van de Ven wrote:
-> On Wed, 29 Aug 2007 09:29:32 -0400
-> Daniel Drake <ddrake@brontes3d.com> wrote:
-> 
-> > I've spent some time trying to understand why swapoff is such a slow
-> > operation.
+On Wed, 29 Aug 2007 14:26:47 +0200 Jan Kara wrote:
+
+> On Tue 28-08-07 21:13:35, Andrew Morton wrote:
+> > On Tue, 28 Aug 2007 16:13:18 +0200 Jan Kara <jack@suse.cz> wrote:
 > > 
-> > My experiments show that when there is not much free physical memory,
-> > swapoff moves pages out of swap at a rate of approximately 5mb/sec.
-> 
-> sounds like about disk speed (at random-seek IO pattern)
+> > >   Hello,
+> > > 
+> > >   I'm sending rediffed patch implementing sending of quota messages via netlink
+> > > interface (some rationale in patch description). I've already posted it to
+> > > LKML some time ago and there were no objections, so I guess it's fine to put
+> > > it to -mm. Andrew, would you be so kind? Thanks.
+> > >   Userspace deamon reading the messages from the kernel and sending them to
+> > > dbus and/or user console is also written (it's part of quota-tools). The
+> > > only remaining problem is there are a few changes needed to libnl needed for
+> > > the userspace daemon. They were basically acked by the maintainer but it
+> > > seems he has not merged the patches yet. So this will take a bit more time.
+> > > 
+> > 
+> > So it's a new kernel->userspace interface.
+> > 
+> > But we have no description of the interface :(
+>   Oops, forgotten about it. I'll write one. Do we have some standard place
+> where to document such interfaces? I could create some file in
+> Documentation/filesystems/ but that seems a bit superfluous...
 
-The present method should be reading sequentially (with gaps),
-rather than randomly.  Perhaps we need to check what's happening
-in practice.
+It looks like other quota documentation is in Documentation/filesystems/,
+and that seems reasonable to me for the other quota docs & this one.
 
-(I've often dithered over whether we should be doing swap readahead
-there or not: at present it does not, preferring to assume buffering
-at the hardware level, and last time I checked that worked out a
-little better.)
-
-> Another question, if this is during system shutdown, maybe that's a
-> valid case for flushing most of the pagecache first (from userspace)
-> since most of what's there won't be used again anyway. If that's enough
-> to make this go faster...
-
-(I didn't understand your point there, but Daniel has replied that
-it's not at shutdown anyway.)
-
-> A third question, have you investigated what happens if a process gets
-> killed that has pages in swap; as long as we don't page those in but
-> just forget about them, that would solve the shutdown problem nicely
-> (since we kill stuff first anyway there)
-
-We definitely don't page those in, it would be a disaster for process
-exit if we did: they just get discarded.
-
-As you say, shutdown is rarely a big issue, because almost all the
-processes which had stuff in swap have already been killed.  tmpfs
-use of swap can be an issue there, but if the distro is wise, it'll
-do things in such an order that tmpfs'es are unmounted before swapoff
-(but may need two passes: the opposite case is a regular swapfile,
-where we need to swapoff before that partition can be unmounted).
-
-Hugh
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
