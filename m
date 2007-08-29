@@ -1,127 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932710AbXH2LzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbXH2Lzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932710AbXH2LzG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 07:55:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbXH2Lyz
+	id S933017AbXH2Lzx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 07:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbXH2Lzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 07:54:55 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:56087 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755083AbXH2Lyy (ORCPT
+	Wed, 29 Aug 2007 07:55:40 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:40152 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932821AbXH2LzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 07:54:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JMWeKgAvvCHOc8KJ48igXd1f5iYBi2Bwz+runPbAftaXiuD8cg4TQcJYugLJHNK5jELU7ac86dg0lWlg+wLDdgVA7lDUg/Y1dlZrR4ceMBmMQd7Wjl/p56GDIEek8us3YxTEjkpUnqdk1RyRE0vlX908qUFqpPaKQ3xijEKe/6o=
-Message-ID: <25ae38200708290454r5be02a2ct568260cb429e4f1a@mail.gmail.com>
-Date: Wed, 29 Aug 2007 17:24:53 +0530
-From: "Anand Jahagirdar" <anandjigar@gmail.com>
-To: "Simon Arlott" <simon@fire.lp0.eu>
-Subject: Re: Fork Bombing Patch
-Cc: "Chris Snook" <csnook@redhat.com>, "Krzysztof Halasa" <khc@pm.waw.pl>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <33633.simon.1188386980@5ec7c279.invalid>
+	Wed, 29 Aug 2007 07:55:21 -0400
+Date: Wed, 29 Aug 2007 05:55:16 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Daniel Phillips <phillips@phunq.net>, Theodore Tso <tytso@mit.edu>,
+       Matt Mackall <mpm@selenic.com>, Josh Boyer <jwboyer@gmail.com>,
+       Andy Isaacson <adi@hexapodia.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ksummit-2007-discuss@thunk.org
+Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux Foundation Technical Advisory Board Elections
+Message-ID: <20070829115516.GM14130@parisc-linux.org>
+References: <20070822224400.GA17255@srcf.ucam.org> <20070824025504.GT9163@parisc-linux.org> <20070824104538.GA31344@thunk.org> <200708281559.11181.phillips@phunq.net> <46D4EA1C.3080505@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <25ae38200708152324t4cbadc24ge05cd75f8f0e60e4@mail.gmail.com>
-	 <46C4BC46.7000305@redhat.com>
-	 <25ae38200708200724sbce2749m7eb27565d7c84e5e@mail.gmail.com>
-	 <46C9A867.6090509@redhat.com>
-	 <25ae38200708212317h7776768v33a82f646ac6b749@mail.gmail.com>
-	 <m3d4xeii2z.fsf@maximus.localdomain> <46CDD98F.2020208@redhat.com>
-	 <25ae38200708290248w2cdd152fpbdaa1b123de0b7ef@mail.gmail.com>
-	 <33633.simon.1188386980@5ec7c279.invalid>
+In-Reply-To: <46D4EA1C.3080505@yahoo.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-   consider a case:
-if non root user request admin for more number of processes than root
-user,admin needs to modify settings in /etc/security/limits.conf file
-and if that user is not trustworthy and if does fork bombing attack it
-will kill the box.
-(I have already tried this attack). in that case this loop will work,
-but by the time attack might have killed the box (Bcoz so many
-processes has already been created at that time) . so in that case
-admin wont come to know that what has happened.
+On Wed, Aug 29, 2007 at 01:38:04PM +1000, Nick Piggin wrote:
+> Hasn't the KS committee / TAB board vote rigging conspiracy theory been
+> raised yet?
 
-Like this there are many cases..(actually these cases has already been
-discussed On LKML 2 months before in my thread named "fork bombing
-attack").
-in all these cases this printk helps adminstrator a lot.
+It's too easy.  All you have to do is note the significant overlap
+between the KS program committee and the TAB.
 
+Program Committee
 
-Anand
+  Jens Axboe, Oracle
+* James Bottomley, SteelEye
+  Jonathon Corbet, LWN.net
+  Steve Hemminger, OSDL/The Linux Foundation
+  Dirk Hohndel, Intel
+  Gerrit Huizenga, IBM
+  Dave Jones, Red Hat
+  Andi Kleen, Novell
+* Greg Kroah-Hartman, Novell/SuSE Labs
+* Matthew Mackall, Selenic Consulting
+* Andrew Morton, Google
+* Theodore Ts'o, IBM
 
-On 8/29/07, Simon Arlott <simon@fire.lp0.eu> wrote:
-> On Wed, August 29, 2007 10:48, Anand Jahagirdar wrote:
-> > Hi
-> >                 printk_ratelimit function takes care of flooding the
-> > syslog. due to printk_ratelimit function syslog will not be flooded
-> > anymore. as soon as administrator gets this message, he can take
-> > action against that user (may be block user's access on server). i
-> > think the my fork patch is very useful and helps administrator lot.
-> >                 i would also like to mention that in some of the cases
-> > ulimit solution wont work. in that case fork bombing takes the machine
-> > and server needs a reboot. i am sure in that situation this printk
-> > statement helps administrator to know what has happened.
->
-> If ulimit "wont work" in some situations, how is it going to trigger this printk?
-> (When doesn't it work?)
->
-> > Anand
-> >
-> > On 8/24/07, Chris Snook <csnook@redhat.com> wrote:
-> >> Krzysztof Halasa wrote:
-> >> > Hi,
-> >> >
-> >> > "Anand Jahagirdar" <anandjigar@gmail.com> writes:
-> >> >
-> >> >>    I am forwarding one more improved patch which i have modified as
-> >> >> per your suggestions. Insted of KERN_INFO i have used KERN_NOTICE and
-> >> >> i have added one more if block to check hard limit. how good it is?
-> >> >
-> >> > Not very, still lacks "#ifdef CONFIG_something" and the required
-> >> > Kconfig change (or other runtime thing defaulting to "no printk").
-> >>
-> >> Wrapping a single printk that's unrelated to debugging in an #ifdef
-> >> CONFIG_* or a sysctl strikes me as abuse of those configuration
-> >> facilities.  Where would we draw the line for other patches wanting to
-> >> do similar things?
-> >>
-> >> I realized that even checking the hard limit it insufficient, because
-> >> that can be lowered (but not raised) by unprivileged processes.  If we
-> >> can't do this unconditionally (and we can't, because the log pollution
-> >> would be intolerable for many people) then we shouldn't do it at all.
-> >>
-> >> Anand -- I appreciate the effort, but I think you should reconsider
-> >> precisely what problem you're trying to solve here.  This approach can't
-> >> tell the difference between legitimate self-regulation of resource
-> >> utilization and a real attack.  Worse, in the event of a real attack, it
-> >> could be used to make it more difficult for the administrator to notice
-> >> something much more serious than a forkbomb.
-> >>
-> >> I suspect that userspace might be a better place to solve this problem.
-> >>  You could run your monitoring app with elevated or even realtime
-> >> priority to ensure it will still function, and you have much more
-> >> freedom in making the reporting configurable.  You can also look at much
-> >> more data than we could ever allow in fork.c, and possibly detect
-> >> attacks that this patch would miss if a clever attacker stayed just
-> >> below the limit.
-> >>
-> >>        -- Chris
-> >>
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
->
->
-> --
-> Simon Arlott
->
+TAB members:
+
+* James Bottomley
+  Wim Coekaerts
+  Randy Dunlap
+* Greg Kroah-Hartman
+  Christoph Lameter
+* Matt Mackall
+* Andrew Morton
+* Theodore Ts'o
+  Arjan van de Ven
+  Chris Wright
+
+There you have it.  Half of the board sit on the committee who decides
+who their electorate are!
+
+On a serious note, James, I think you mis-spoke when you said that
+Andrew Morton's term was up this year.,  My understanding is that people
+are elected for two years, and he was elected last year, so my list of
+people whose terms are up is:
+
+Wim Coekaerts
+Greg Kroah-Hartman
+Christoph Lameter
+Arjan van de Ven
+
+According to the August minutes, Randy was elected back to the TAB then,
+so there's actually only four slots up for re-election this year.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
