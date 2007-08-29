@@ -1,151 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932727AbXH2MHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932985AbXH2MI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932727AbXH2MHw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 08:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756500AbXH2MHn
+	id S932985AbXH2MI6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 08:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbXH2MIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 08:07:43 -0400
-Received: from styx.suse.cz ([82.119.242.94]:37354 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756475AbXH2MHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 08:07:42 -0400
-Date: Wed, 29 Aug 2007 14:26:47 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Balbir Singh <balbir@in.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-ID: <20070829122647.GB7814@duck.suse.cz>
-References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Wed, 29 Aug 2007 08:08:49 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:48270 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756857AbXH2MIr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 08:08:47 -0400
+Date: Wed, 29 Aug 2007 08:08:43 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Grant Grundler <grundler@parisc-linux.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       parisc-linux@parisc-linux.org, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [parisc-linux] [patch 15/23] Add cmpxchg_local to parisc
+Message-ID: <20070829120843.GA9734@Krystal>
+References: <20070812145434.520271946@polymtl.ca> <20070812145840.691277845@polymtl.ca> <20070827210432.GA22484@colo.lackof.org> <20070827211140.GB10627@Krystal> <20070828063905.GA3916@colo.lackof.org> <20070828115018.GB12241@Krystal> <20070828172745.GA19224@colo.lackof.org> <20070828183835.GB1280@Krystal> <20070829055955.GA24358@colo.lackof.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070828211335.37fce4c9.akpm@linux-foundation.org>
+In-Reply-To: <20070829055955.GA24358@colo.lackof.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:03:29 up 30 days, 12:22,  5 users,  load average: 0.32, 0.45, 0.58
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 28-08-07 21:13:35, Andrew Morton wrote:
-> On Tue, 28 Aug 2007 16:13:18 +0200 Jan Kara <jack@suse.cz> wrote:
+* Grant Grundler (grundler@parisc-linux.org) wrote:
+> [davem: patch for you at the bottom to Documentation/atomic_ops.txt ]
 > 
-> >   Hello,
+> On Tue, Aug 28, 2007 at 02:38:35PM -0400, Mathieu Desnoyers wrote:
+> > * Grant Grundler (grundler@parisc-linux.org) wrote:
+> > > On Tue, Aug 28, 2007 at 07:50:18AM -0400, Mathieu Desnoyers wrote:
+> ...
+> > > > So I don't expect to come with an "upper bound" about where it can be
+> > > > used...
+> > > 
+> > > Ok...so I'll try to find one in 2.6.22.5:
+> > > grundler <1855>find -name \*.c | xargs fgrep DEFINE_PER_CPU | fgrep atomic_t
+> > > ./arch/s390/kernel/time.c:static DEFINE_PER_CPU(atomic_t, etr_sync_word);
+> > > grundler <1856>find -name \*.c | xargs fgrep DEFINE_PER_CPU | fgrep local_t
+> > > ./arch/x86_64/kernel/nmi.c:static DEFINE_PER_CPU(local_t, alert_counter);
+> > > 
+> > > uhm, I was expecting more than that.  Maybe there is some other systemic
+> > > problem with how PER_CPU stuff is used/declared?
 > > 
-> >   I'm sending rediffed patch implementing sending of quota messages via netlink
-> > interface (some rationale in patch description). I've already posted it to
-> > LKML some time ago and there were no objections, so I guess it's fine to put
-> > it to -mm. Andrew, would you be so kind? Thanks.
-> >   Userspace deamon reading the messages from the kernel and sending them to
-> > dbus and/or user console is also written (it's part of quota-tools). The
-> > only remaining problem is there are a few changes needed to libnl needed for
-> > the userspace daemon. They were basically acked by the maintainer but it
-> > seems he has not merged the patches yet. So this will take a bit more time.
+> > the local ops has just been standardized in 2.6.22 though a patchset I
+> > did. I would not expect the code to start using them this quickly. Or
+> > maybe is it just that I am doing a terrible marketing job ;)
+> 
+> Yeah, I didn't expect many users of local_t.
+> 
+> The search for atomic_t usage in DEFINE_PER_CPU was an attempt to
+> find other potential candidates which could be local_t.
+> Is there any other programmatic way we could look for code which
+> could (or should) be using local_t?
+> 
+
+Yep.. atomic_t static variables used as counters are a perfect match:
+they are updated very often and read rarely. Therefore, it is
+preferable to have per cpu updates with very cheap locking and to
+iterate on all of them to sum them when they should be printed. That's
+just an example, but with it comes vmstat and all sorts of counters.
+
+> > > In any case, some references to LTT usage would be quite helpful.
+> > > E.g. a list of file and variable names at the end of local_ops.txt file.
+> > > 
 > > 
+> > LTT is not mainlined (yet!) ;)
 > 
-> So it's a new kernel->userspace interface.
+> Ok...probably not such a good example then. :)
 > 
-> But we have no description of the interface :(
-  Oops, forgotten about it. I'll write one. Do we have some standard place
-where to document such interfaces? I could create some file in
-Documentation/filesystems/ but that seems a bit superfluous...
-
-> > +/* Send warning to userspace about user which exceeded quota */
-> > +static void send_warning(const struct dquot *dquot, const char warntype)
-> > +{
-> > +	static unsigned long seq;
-> > +	struct sk_buff *skb;
-> > +	void *msg_head;
-> > +	int ret;
-> > +
-> > +	skb = genlmsg_new(QUOTA_NL_MSG_SIZE, GFP_NOFS);
-> > +	if (!skb) {
-> > +		printk(KERN_ERR
-> > +		  "VFS: Not enough memory to send quota warning.\n");
-> > +		return;
-> > +	}
-> > +	msg_head = genlmsg_put(skb, 0, seq++, &quota_genl_family, 0, QUOTA_NL_C_WARNING);
-> > +	if (!msg_head) {
-> > +		printk(KERN_ERR
-> > +		  "VFS: Cannot store netlink header in quota warning.\n");
-> > +		goto err_out;
-> > +	}
-> > +	ret = nla_put_u32(skb, QUOTA_NL_A_QTYPE, dquot->dq_type);
-> > +	if (ret)
-> > +		goto attr_err_out;
-> > +	ret = nla_put_u64(skb, QUOTA_NL_A_EXCESS_ID, dquot->dq_id);
-> > +	if (ret)
-> > +		goto attr_err_out;
-> > +	ret = nla_put_u32(skb, QUOTA_NL_A_WARNING, warntype);
-> > +	if (ret)
-> > +		goto attr_err_out;
-> > +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MAJOR,
-> > +		MAJOR(dquot->dq_sb->s_dev));
-> > +	if (ret)
-> > +		goto attr_err_out;
-> > +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MINOR,
-> > +		MINOR(dquot->dq_sb->s_dev));
-> > +	if (ret)
-> > +		goto attr_err_out;
-> > +	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current->user->uid);
-> > +	if (ret)
-> > +		goto attr_err_out;
-> > +	genlmsg_end(skb, msg_head);
-> > +
-> > +	ret = genlmsg_multicast(skb, 0, quota_genl_family.id, GFP_NOFS);
-> > +	if (ret < 0 && ret != -ESRCH)
-> > +		printk(KERN_ERR
-> > +			"VFS: Failed to send notification message: %d\n", ret);
-> > +	return;
-> > +attr_err_out:
-> > +	printk(KERN_ERR "VFS: Failed to compose quota message: %d\n", ret);
-> > +err_out:
-> > +	kfree_skb(skb);
-> > +}
-> > +#endif
+> ...
+> > > Sorry...the quoted text doesn't answer my question. It's a definition
+> > > of semantics, not an explanation of the "mechanics".
+> > > 
+> > > I want to know what happens when (if?) an interrupt occurs in the
+> > > middle of a read/modify/write sequence that isn't prefixed with LOCK
+> > > (or something similar for other arches like "store locked conditional" ops).
+> > > 
+> > > Stating the semantics is a good thing - but not a substitution for
+> > > describing how it works for a given architecture. Either in the code
+> > > or in local_ops.txt. Otherwise people like me won't use it because
+> > > we don't believe that (or understand how) it really works.
+> > > 
+> > 
+> > Quoting Intel 64 and IA-32 Architectures Software Developer's Manual
+> > 
+> > 3.2 Instructions
+> > LOCK - Assert LOCK# Signal Prefix
+> ...
 > 
-> This is it.  Normally netlink payloads are represented as a struct.  How
-> come this one is built-by-hand?
-  I use "generic netlink", which is in fact a layer built on top of
-netlink. As far as I've read it's documentation, creating a message
-argument by argument is the preferred way. As David writes, this way
-we can add new arguments without worries about backward compatibility,
-alignment issues or such things.
+> I've read this before and understand how LOCK works. This isn't helpful
+> since I want a description of the behavior without LOCK.
+> 
+> > And if we take a look at some of the atomic primitives which are used in
+> > i386 local.h:
+> > 
+> > add (for inc/dec/add/sub)
+> > xadd
+> > cmpxchg
+> > 
+> > All these instructions, just like any other, can be interrupted by an
+> > external interrupt or cause a trap, exception, or fault. Interrupt
+> > handler are executing between instructions and traps/exceptions/faults
+> > will either execute instead of the faulty instruction or after is has
+> > been executed. In all these cases, each instruction can be seen as
+> > executing atomically wrt the local CPU. This is exactly what permits
+> > asm-i386/local.h to define out the LOCK prefix for UP kernels.
+> 
+> I think what I'm looking for but don't know if it's true:
+>     The cmpxchg (for example) at the kernel process context will not
+>     clobber or be clobbered by a cmpxchg done to the same local_t
+>     performed at the kernel interrupt context by the same CPU.
+> 
+> If that's not true, then it would be good to add that as another
+> restriction to usage.
+> 
 
-> It doesn't appear to be versioned.  Should it be?
-  We don't need a version for future additions. Also each attribute sent
-has its identifier (e.g. QUOTA_NL_A_CAUSED_ID) and userspace checks these
-identifiers and unknown attributes are ignored. But in case we would like
-to remove some attribute, versioning would be probably useful so that
-userspace won't break silently... So I'll add it.
+Each of these cmpxchg will execute atomically wrt the local CPU, so
+there is no limitation there.
 
-> Does it have (or need) reserved-set-to-zero space for expansion?  Again,
-> hard to tell..
-  No, we don't need it as I wrote above.
+> > I use the same trick UP kernel are using, but I deploy it in SMP
+> > context, but I require the CPU to be the only one to access the memory
+> > locations written to by the local ops.
+> > 
+> > Basically, since the memory location is _not_ shared across CPUs for
+> > writing, we can safely write to it without holding the LOCK signal.
+> 
+> ok.
+> 
+> ...
+> > > Note: I already missed the one critical sentence about only the "owning"
+> > > CPU can write the value....there seem to be other limitations as well
+> > > with respect to interrupts.
+> > > 
+> > 
+> > Ok, let's give a try at a clear statement:
+> > 
+> > - Variables touched by local ops must be per cpu variables.
+> > - _Only_ the CPU owner of these variables must write to them.
+> > - This CPU can use local ops from any context (process, irq, softirq, nmi, ...)
+> >   to update its local_t variables.
+> > - Preemption (or interrupts) must be disabled when using local ops in
+> >   process context to   make sure the process won't be migrated to a
+> >   different CPU between getting the per-cpu variable and doing the
+> >   actual local op.
+> > - When using local ops in interrupt context, no special care must be
+> >   taken on a mainline kernel, since they will run on the local CPU with
+> >   preemption already disabled. I suggest, however, to explicitly
+> >   disable preemption anyway to make sure it will still work correctly on
+> >   -rt kernels.
+> > - Reading the local cpu variable will provide the current copy of the
+> >   variable.
+> > - Reads of these variables can be done from any CPU, because updates to
+> >   "long", aligned, variables are always atomic. Since no memory
+> >   synchronization is done by the writer CPU, an outdated copy of the
+> >   variable can be read when reading some _other_ cpu's variables.
+> 
+> Perfect! Ship it! ;)
+> Can you submit a patch to add the above to Documentation/local_ops.txt ?
+> 
 
-> I guess it's OK to send a major and minor out of the kernel like this. 
-> What's it for?  To represent a filesytem?  I wonder if there's a more
-> modern and useful way of describing the fs.  Path to mountpoint or
-> something?
-  I also find major/minor pair a bit old-fashioned. But the identifying it
-by a mountpoint is problematic - quota does not care about namespaces and
-such and so it works with superblocks. It's not trivial to get a mountpoint
-from a superblock (and generally it's frown upon, isn't it?). Also if a
-filesystem is mounted on several places, we have to pick one (OK, userspace
-has to do this choice anyway when displaying the message but still...).
+Hehe sure :) I'll prepare one.
 
-> I suspect the namespace virtualisation guys would be interested in a new
-> interface which is sending current->user->uid up to userspace.  uids are
-> per-namespace now.  What are the implications?  (cc's added)
-  I know there's something going on in this area but I don't know any
-details. If somebody has some advice what should be passed into userspace
-so that user/group can be idenitified, it is welcome.
-  
-> Is it worth adding a comment explaining why GFP_NOFS is used here?
-  Probably yes. Added.
+> ...
+> > > Looks fine to me. Add your "Signed-off-by" and submit to DaveM
+> > > since he seems to be the maintainer of atomic_ops.txt.
+> > 
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> 
+> heh...I think DaveM will want it in git or universal patch form. :)
+> Patch appended below.
+> 
+> thanks!
+> grant
+> 
+> Add document reference and simple use example of local_t.
+> 
+> Signed-off-by: Grant Grundler <grundler@parisc-linux.org>
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> 
+> --- linux-2.6.22.5-ORIG/Documentation/atomic_ops.txt	2007-08-22 16:23:54.000000000 -0700
+> +++ linux-2.6.22.5-ggg/Documentation/atomic_ops.txt	2007-08-28 22:57:26.000000000 -0700
+> @@ -7,6 +7,11 @@
+>  maintainers on how to implement atomic counter, bitops, and spinlock
+>  interfaces properly.
+>  
+> +	atomic_t should be used to provide a type with update primitives
+> +executed atomically from any CPU.  If the counter is per CPU and only
+> +updated by one CPU, local_t is probably more appropriate.  Please see
+> +Documentation/local_ops.txt for the semantics of local_t.
+> +
+>  	The atomic_t type should be defined as a signed integer.
+>  Also, it should be made opaque such that any kind of cast to a normal
+>  C integer type will fail.  Something like the following should
 
-  Thanks for all your comments.
-
-									Honza
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
