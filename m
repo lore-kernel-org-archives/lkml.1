@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbXH2SAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbXH2SBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbXH2SAt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 14:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbXH2SAn
+	id S1755230AbXH2SBs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 14:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbXH2SBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 14:00:43 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50860 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747AbXH2SAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 14:00:42 -0400
-Date: Wed, 29 Aug 2007 20:01:58 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       kbuild-devel@lists.sourceforge.net
-Subject: Re: CONFIG_HOTPLUG_CPU: kconfig bug?
-Message-ID: <20070829180158.GA7849@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0708271525400.21853@blonde.wat.veritas.com> <20070827172654.GA21871@uranus.ravnborg.org> <Pine.LNX.4.64.0708272143150.29594@blonde.wat.veritas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 29 Aug 2007 14:01:37 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:40414 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbXH2SBg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 14:01:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lnoBD/Y1gxATbAc7FrFXqA7lP5550vwg6J+CrFYejDvKDbZ9VkIysrX6bRAA/+0mvl6hCF0qT1iEJcLvl7YYbvLWHBUcOikIMgOWBt1BRDWr0eccFk/j6SoduXUD4XZKmF7q0HlEUwEhL9NYaKYe6cFJb+yvYo+QlHJmVdaHfG0=
+Message-ID: <9e4733910708291101i3783a8b1l38f0d5cfb0c2863d@mail.gmail.com>
+Date: Wed, 29 Aug 2007 14:01:34 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
+Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
+Cc: "Christoph Hellwig" <hch@infradead.org>,
+       "Jiri Slaby" <jirislaby@gmail.com>, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <3208.1188408545@turing-police.cc.vt.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708272143150.29594@blonde.wat.veritas.com>
-User-Agent: Mutt/1.4.2.1i
+References: <2713029743177393055@pripojeni.net>
+	 <7515194658758617@pripojeni.net>
+	 <20070828171155.GC29343@infradead.org>
+	 <3208.1188408545@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > I've noticed an oddity with CONFIG_HOTPLUG_CPU in 2.6.23-rc:
-> > > make oldconfig seems to turn it on even when nothing wants it,
-> > > increasing kernel size by about 10k; but if you then edit the
-> > > line out of .config and make oldconfig again, it correctly
-> > > offers the choice and lets it be turned off after all.
+On 8/29/07, Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
+> The heck with "good idea" - it's unclear to me if Jiri is even *allowed*
+> to remove the BSD/other license.   Jiri can release *his* code as GPLv2
+> only, but I suspect the files as a whole really should be dual BSD/GPLv2,
+> due to the numerous other stakeholders in those files.
 
-I have tried to track down what is happening here.
-The culprint is:
+This mess has been occurring in the kernel for years. The DRM graphics
+drivers are used in both BSD and Linux. It is quite easy to contribute
+something to this code via LKML and think you are doing it under the
+GPL. Doesn't a patch against the kernel have to be GPL? When these
+patches get pulled back into BSD and distributed with it, did BSD get
+infected with the GPL? AFAIK this has never been legally sorted out.
 
-config SUSPEND_SMP
-	bool
-	depends on SUSPEND_SMP_POSSIBLE && PM_SLEEP
-	select HOTPLUG_CPU
-	default y
-
-
-It seems that due to the fact that SUSPEND_SMP is default y
-then kconfig enforce the "select HOTPLUG_CPU".
-
-And this happens despite the fact that PM_SLEEP is 'n'
-(but SUSPEND_SMP_POSSIBLE is 'y').
-
-It is somewhere in sym_calc_value() or one of the childs that
-suddenly causes the change.
-But I find it hard to follow this part of the logic in kconfig.
-
-Roman - can you help here with what is going on?
-
-	Sam
+-- 
+Jon Smirl
+jonsmirl@gmail.com
