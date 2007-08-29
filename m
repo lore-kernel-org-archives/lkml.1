@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761471AbXH2Wzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbXH2XCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761471AbXH2Wzq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 18:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbXH2Wzi
+	id S1761371AbXH2XCR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 19:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758732AbXH2XCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 18:55:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55676 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751746AbXH2Wzh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 18:55:37 -0400
-Date: Wed, 29 Aug 2007 15:55:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andy Isaacson <adi@hexapodia.org>, Josh Boyer <jwboyer@gmail.com>,
-       ksummit-2007-discuss@thunk.org, Daniel Phillips <phillips@phunq.net>
-Subject: Re: [Tech-board-discuss] Re: [Ksummit-2007-discuss] Re: Linux
- Foundation Technical Advisory Board Elections
-Message-Id: <20070829155503.67f6b241.akpm@linux-foundation.org>
-In-Reply-To: <20070829115516.GM14130@parisc-linux.org>
-References: <20070822224400.GA17255@srcf.ucam.org>
-	<20070824025504.GT9163@parisc-linux.org>
-	<20070824104538.GA31344@thunk.org>
-	<200708281559.11181.phillips@phunq.net>
-	<46D4EA1C.3080505@yahoo.com.au>
-	<20070829115516.GM14130@parisc-linux.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 29 Aug 2007 19:02:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50550 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756185AbXH2XCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 19:02:01 -0400
+Message-ID: <46D5FAE5.3020401@redhat.com>
+Date: Wed, 29 Aug 2007 18:01:57 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+MIME-Version: 1.0
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 4KSTACKS + DEBUG_STACKOVERFLOW harmful
+References: <46D5F462.9010401@redhat.com> <9a8748490708291553j4c21bdf0ueae0b51c99c8190a@mail.gmail.com>
+In-Reply-To: <9a8748490708291553j4c21bdf0ueae0b51c99c8190a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Aug 2007 05:55:16 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
+Jesper Juhl wrote:
 
-> On a serious note, James, I think you mis-spoke when you said that
-> Andrew Morton's term was up this year.
+>> Any suggestions for ways around this?  The warning is somewhat helpful,
+>> and I guess the obvious option is to lighten up the dump_stack path, but
+>> it's still effectively reducing precious available stack space by some
+>> amount.
+>>
+> A first step could be to allocate those two char arrays with kmalloc()
+> instead of on the stack, but then I guess that dump_stack() gets
+> called from places where we may not really want to be calling
+> kmalloc(). I guess we could allocate the buffers earlier (like at boot
+> time) and store pointers somewhere where dump stack can get to them
+> later when it needs them.
 
-In that case I hereby quit ;)  My contribution to the TAB has been practically
-zero and I don't expect that to change.
+Yep, I thought about something like that... and I assume you'd need a
+bit of locking around them too.
+
+>> With CONFIG_DEBUG_STACK_USAGE, we could print at oops time: "oh, and by
+>> the way, you blew your stack" if there is no zeroed stack space left, as
+>> a post-mortem.  Even without that option, I think we could still check
+>> whether the *current* %esp at oops time has gone too far?  But if we
+>> blew the stack, returned, and *then* oops, I think it'd be hard to know
+>> without the DEBUG_STACK_USAGE option that we ran out of room.
+>>
+> 
+> We could also simply have it warn at a higher limit, like 1024 bytes
+> instead of 512. But I guess then we would get too many false positives
+> and make it less useful.
+
+Yes, but if you happen to warn deeper anyway, just because you got
+"lucky" with IRQ timing, you'll still explode.  Regardless of where the
+threshold is, there's still a risk of starting the warning deeper than
+that.  Whatever stack the warning takes effectively reduces the useable
+stack size.
+
+-Eric
