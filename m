@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbXH2BPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbXH2B3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757870AbXH2BPa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Aug 2007 21:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbXH2BPX
+	id S1758182AbXH2B3o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Aug 2007 21:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbXH2B3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Aug 2007 21:15:23 -0400
-Received: from pat.uio.no ([129.240.10.15]:52082 "EHLO pat.uio.no"
+	Tue, 28 Aug 2007 21:29:35 -0400
+Received: from mga11.intel.com ([192.55.52.93]:18934 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754420AbXH2BPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Aug 2007 21:15:22 -0400
-Subject: Re: NFSv4 client OOPS on 2.6.22-rc3 - I meant 2.6.23-rc3
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Harry Edmon <harry@atmos.washington.edu>, linux-kernel@vger.kernel.org
-In-Reply-To: <6bffcb0e0708281641y70261d83u9daf88727baa6149@mail.gmail.com>
-References: <46D463C0.6080106@atmos.washington.edu>
-	 <6bffcb0e0708281641y70261d83u9daf88727baa6149@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 28 Aug 2007 21:15:16 -0400
-Message-Id: <1188350116.6701.249.camel@heimdal.trondhjem.org>
+	id S1753753AbXH2B3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Aug 2007 21:29:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,319,1183359600"; 
+   d="scan'208";a="122746674"
+Date: Tue, 28 Aug 2007 18:29:34 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: ak@suse.de, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch] i386, apic: fix 4 bit apicid assumption of mach-default
+Message-ID: <20070829012934.GK1894@linux-os.sc.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.0, required=12.0, autolearn=disabled, AWL=-0.038)
-X-UiO-Scanned: DB4857E53CF23FF71F80B2D02B9E83D6545FD0F2
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 45 total 3524514 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-29 at 01:41 +0200, Michal Piotrowski wrote:
-> Hi Harry,
-> 
-> On 28/08/07, Harry Edmon <harry@atmos.washington.edu> wrote:
-> > Typo in my last message - I meant 2.6.23-rc3, not 2.6.22-rc3.  Here it
-> > is again with correction
-> >
-> > I had a kernel oops on my x86_64 dual quad-core Xeon system running
-> > 2.6.23-rc3.  The system is an NFSv4 client to another 2.6.23-rc3
-> > system.  The OOPS text is attached and the config file.
-> >
-> 
-> Is this a regression? Does 2.6.22 work fine?
+Andi/Andrew,
 
-Yes and yes. It is due to a typo when I was working on correcting the
-NFSv4 open() state tracking in 2.6.23-rc1. A patch is available and I'm
-planning on merging it soon.
+Can you pick this up for your trees and if there are no issues, can you please
+push it to mainline before .23 gets released.
 
-Trond
+We have seen a boot failure with fewer cpu sockets populated on a MP platform.
+Similar problem can happen on a fully populated system, if # of cpus <= 8
+and any of the apic id's is > 16
 
+thanks,
+suresh
+---
+Fix get_apic_id() in mach-default, so that it uses 8 bits incase of xAPIC case
+and 4 bits for legacy APIC case.
+
+This fixes the i386 kernel assumption that apic id is less than 16 for xAPIC
+platforms with 8 cpus or less and makes the kernel boot on such platforms.
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+diff --git a/include/asm-i386/mach-default/mach_apicdef.h b/include/asm-i386/mach-default/mach_apicdef.h
+index 7bcb350..ae98413 100644
+--- a/include/asm-i386/mach-default/mach_apicdef.h
++++ b/include/asm-i386/mach-default/mach_apicdef.h
+@@ -1,11 +1,17 @@
+ #ifndef __ASM_MACH_APICDEF_H
+ #define __ASM_MACH_APICDEF_H
+ 
++#include <asm/apic.h>
++
+ #define		APIC_ID_MASK		(0xF<<24)
+ 
+ static inline unsigned get_apic_id(unsigned long x) 
+ { 
+-	return (((x)>>24)&0xF);
++	unsigned int ver = GET_APIC_VERSION(apic_read(APIC_LVR));
++	if (APIC_XAPIC(ver))
++		return (((x)>>24)&0xFF);
++	else
++		return (((x)>>24)&0xF);
+ } 
+ 
+ #define		GET_APIC_ID(x)	get_apic_id(x)
