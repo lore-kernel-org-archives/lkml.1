@@ -1,83 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbXH3J0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbXH3Jt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758083AbXH3J0h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 05:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbXH3J03
+	id S1757405AbXH3Jt3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 05:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbXH3JtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 05:26:29 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:64141 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754650AbXH3J02 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 05:26:28 -0400
-Date: Thu, 30 Aug 2007 11:26:04 +0200
-From: Markus Dahms <mad@automagically.de>
-To: sparclinux@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix ALSA compilation on Sparc32
-Message-ID: <20070830092604.GA17041@vimes.madsworld.lan>
-MIME-Version: 1.0
+	Thu, 30 Aug 2007 05:49:20 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:40015 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753867AbXH3JtT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 05:49:19 -0400
+Date: Thu, 30 Aug 2007 13:49:31 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [PATCH 2.6.21] Return available first timeslice to the creator, not parent
+Message-ID: <20070830094931.GB316@tv-sign.ru>
+References: <m3fy21qx4p.fsf@dhcp-lab-143.englab.brq.redhat.com> <1188465056.6112.30.camel@twins>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Provags-ID: V01U2FsdGVkX18IDdyeI8tiiGrjcHYZAzIp+PO6VGn5/rTVyPg
- WJbq7hx4596dECxzCi69HG2Bd03e6MbZTs8kJUmAh+wb8A3bxG
- q4OrSs7HtRJNLZnOEE/Hw==
+In-Reply-To: <1188465056.6112.30.camel@twins>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The dma_alloc_coherent and dma_free_coherent function seem to be not
-available on sparc(32) architecture. It is not used by SBus sound
-drivers, so it's disabled via #ifndef for CONFIG_SPARC32.
+On 08/30, Peter Zijlstra wrote:
+>
+> On Thu, 2007-08-30 at 09:50 +0200, Vitaly Mayatskikh wrote:
+> > Short-living process returns its timeslice to the parent, this affects
+> > process that creates a lot of such short-living threads, because its
+> > not a parent for new threads. Patch fixes this issue and doesn't break
+> > kabi as does the patch from reporter: http://lkml.org/lkml/2007/4/7/21
+> 
+> > plain text document attachment (2.6.21-timeslice.patch), "proposed
+> > patch"
+> > diff -up -bB ./include/linux/sched.h.orig ./include/linux/sched.h
+> > --- ./include/linux/sched.h.orig	2007-08-21 09:20:22.000000000 +0200
+> > +++ ./include/linux/sched.h	2007-08-27 10:14:06.000000000 +0200
+> > @@ -827,7 +827,9 @@ struct task_struct {
+> >  
+> >  	unsigned long policy;
+> >  	cpumask_t cpus_allowed;
+> > -	unsigned int time_slice, first_time_slice;
+> > +	unsigned int time_slice;
+> > +	/* Pid of creator */
+> > +	unsigned int cpid;
+> 
+> might as well make that pid_t, or maybe even a struct pid* and keep a
+> reference on it - the struct pid police might have an opinion.
 
-Signed-off-by: Markus Dahms <mad@automagically.de>
+I agree, "struct pid*" is better, because
 
----
-It is tested on a SparcStation 5 with the cs4231 driver. The ALSA list
-should have been CCed, but as it is subscriber-only I skipped it.
+	1. we don't need a costly find_pid() in sched_exit()
+	2. we don't suffer from pid re-use problem
 
+> >  void fastcall sched_exit(struct task_struct *p)
+> >  {
+> >  	unsigned long flags;
+> >  	struct rq *rq;
+> > -
+> > +	struct task_struct* creator = NULL;
+> >  	/*
+> >  	 * If the child was a (relative-) CPU hog then decrease
+> > -	 * the sleep_avg of the parent as well.
+> > +	 * the sleep_avg of the creator as well.
+> >  	 */
+> > -	rq = task_rq_lock(p->parent, &flags);
+> > -	if (p->first_time_slice && task_cpu(p) == task_cpu(p->parent)) {
+> > -		p->parent->time_slice += p->time_slice;
+> > -		if (unlikely(p->parent->time_slice > task_timeslice(p)))
+> > -			p->parent->time_slice = task_timeslice(p);
+> > +	if (p->cpid) {
+> > +		struct pid *pid = find_get_pid((pid_t)p->cpid);
+> > +		if (pid) {
+> > +			creator = get_pid_task(pid, PIDTYPE_PID);
+> > +			put_pid(pid);
 
---- linux-2.6/sound/core/memalloc.c	2007-08-30 10:59:50.000000000 +0200
-+++ linux-2.6/sound/core/memalloc.c.patched	2007-08-23 18:41:41.000000000 +0200
-@@ -205,6 +205,8 @@ void snd_free_pages(void *ptr, size_t si
-  *
-  */
- 
-+#ifndef CONFIG_SPARC32
-+
- /* allocate the coherent DMA pages */
- static void *snd_malloc_dev_pages(struct device *dev, size_t size, dma_addr_t *dma)
- {
-@@ -239,6 +241,8 @@ static void snd_free_dev_pages(struct de
- 	dma_free_coherent(dev, PAGE_SIZE << pg, ptr, dma);
- }
- 
-+#endif
-+
- #ifdef CONFIG_SBUS
- 
- static void *snd_malloc_sbus_pages(struct device *dev, size_t size,
-@@ -311,9 +315,11 @@ int snd_dma_alloc_pages(int type, struct
- 		dmab->area = snd_malloc_sbus_pages(device, size, &dmab->addr);
- 		break;
- #endif
-+#ifndef CONFIG_SPARC32
- 	case SNDRV_DMA_TYPE_DEV:
- 		dmab->area = snd_malloc_dev_pages(device, size, &dmab->addr);
- 		break;
-+#endif
- 	case SNDRV_DMA_TYPE_DEV_SG:
- 		snd_malloc_sgbuf_pages(device, size, dmab, NULL);
- 		break;
-@@ -382,9 +388,11 @@ void snd_dma_free_pages(struct snd_dma_b
- 		snd_free_sbus_pages(dmab->dev.dev, dmab->bytes, dmab->area, dmab->addr);
- 		break;
- #endif
-+#ifndef CONFIG_SPARC32
- 	case SNDRV_DMA_TYPE_DEV:
- 		snd_free_dev_pages(dmab->dev.dev, dmab->bytes, dmab->area, dmab->addr);
- 		break;
-+#endif
- 	case SNDRV_DMA_TYPE_DEV_SG:
- 		snd_free_sgbuf_pages(dmab);
- 		break;
+sched_exit() was removed in 2.6.23-rc.
+
+If you are going to re-introduce this logic, please don't do sched_exit()
+from release_task(). It was done this way just because we can't access
+->parent after release_task(). But release_task() is called either too
+early, or too late for timeslice accounting, depending on ->exit_signal == -1.
+
+I'd suggest to do this in do_exit(), before the last schedule(). Without
+write_unlock_irq() the code above needs a couple of rcu_read_lock()'s.
+
+I am not sure Ingo will like this change though...
+
+Oleg.
+
