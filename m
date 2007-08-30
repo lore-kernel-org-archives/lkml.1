@@ -1,118 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933039AbXH3SzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933192AbXH3S4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933039AbXH3SzK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 14:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932662AbXH3Sy6
+	id S933192AbXH3S4k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 14:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932588AbXH3S4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 14:54:58 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:58926 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932616AbXH3Sy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 14:54:57 -0400
-Date: Thu, 30 Aug 2007 13:54:56 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@in.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-ID: <20070830185456.GA18816@sergelap.austin.ibm.com>
-References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org> <20070829122647.GB7814@duck.suse.cz> <m1mywa42g7.fsf@ebiederm.dsl.xmission.com> <20070829192653.GD7814@duck.suse.cz> <m1wsve2gpo.fsf@ebiederm.dsl.xmission.com> <20070830092548.GB16336@duck.suse.cz> <m1tzqh0vxm.fsf@ebiederm.dsl.xmission.com>
+	Thu, 30 Aug 2007 14:56:30 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52644 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932449AbXH3S43 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 14:56:29 -0400
+Date: Thu, 30 Aug 2007 20:56:28 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible
+ fashion.
+In-Reply-To: <20070828214900.5d4b47ad.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708302050270.24730@fbirervta.pbzchgretzou.qr>
+References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com> <20070828230459.GA15937@infradead.org>
+ <20070828214900.5d4b47ad.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1tzqh0vxm.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> Jan Kara <jack@suse.cz> writes:
-> >   There can be arbitrary number of listeners (potentially from different
-> > namespaces if I understand it correctly) listening to broadcasts. So I
-> > think we should pass some universal identifier rather than try to find out
-> > who is listening etc. I think such identifiers would be useful for other
-> > things too, won't they?
-> 
-> So internal to the kernel we have such a universal identifier.
-> struct user.
-> 
-> There are to practical questions.
-> 1) How do we present that information to user space?
-> 2) How does user space want to process this information?
-> 
-> If we only want user space to be able to look up a user and send
-> him a message.  It probably makes sense to do the struct user to
-> uid conversion in the proper context in the kernel because we have
-> that information.
-> 
-> If this is a general feature that happens to allows us to look up
-> the user given the filesystems view of what is going on would be
-> easier in the kernel, and not require translation.  But it means
-> that we can't support 9p and nfs for now.  But since we don't support
-> quotas on the client end anyway that doesn't sound like a big deal.
-> 
-> The problem with the filesystem view is that there will be occasions
-> where we simply can not map a user into it, because the filesystem
-> won't have a concept of that particular user.
-> 
-> So we could run into the situation where alice owns the file.  Bob
-> writes to the file and pushes it over quota.  But the filesystem
-> has no concept of who bob is.  So we won't be able to report that
-> it was bob that pushed things over the edge.
-> 
-> > BTW: Do you have some idea, when would be the infrastructure clearer?
-> 
-> So the plan is to get to the point where are uid comparisons in the
-> kernel are (user namespace, uid) comparisons.  Or possibly struct
-> user comparisons (depending on the context.  And struct mount will
-> contain the user namespace of whoever mounted the filesystem.
-> 
-> Adding infrastructure to netlink to allow us to do conversions 
-> as the packets are enqueued for a specific user is something I
-> would rather avoid, but that is a path we can go down if we have
-> to.
-> 
-> > Whether it makes sence to currently proceed with UIDs and later change it
-> > to something generic or whether I should wait before you sort it out :).
-> 
-> A good question.  I think things are clear enough that it at least
-> makes sense to sketch a solution to the problem even if we don't
-> implement it at this point.
-> 
-> I have been hoping Cedric or Serge would jump in because I think those
-> are the guys who have been working on the implementation. 
 
-Sorry, I've lost the original patch from two separate mailboxes...
+On Aug 28 2007 21:49, Andrew Morton wrote:
+>> 
+>> Umm, no way we're ever going to remove a syscall like this.  Please
+>> stop this deprecration crap.  Just make sure no ones adds more binary
+>> sysctls.
+>
+>I think it's worth a try.  It might take two, three or five years, who
+>knows?  If it turns out to be impractical then we we can just change our
+>minds later, no big loss.  It's just too early to say right now.
 
-The proper behavior depends on how we end up tying filesystems to user
-namespaces, which isn't actually decided yet.
+Great, why do not we remove all the things marked obsolete and
+start Linux 2.*newversionbeep*. Just rm, no add, and then tag.
 
-The way I was recommending doing that was:
+If we never start moving to get rid of the old stuff, we will be
+ending up where Microsoft is; though we won't get there as fast since
+Linux was designed carefully in the first place and did/does not
+collect as much compat dust.
 
-A filesystem is tied to a user namespace.  If a uid in another naemspace
-is to be allowed to access the filesystem, it will actually - through a
-key in it's keyring (which acts like a capability) - be mapped to a uid
-in the filesystem's uid namespace.  So in Eric's example, if Alice
-brings Bob over quota, Alice would have done so through some user
-Charlie who she is authorized to act as through her keyring.  So Charlie
-should be the id which would be logged over netlink.
 
-Of course there is currently no support for this.  So I'd recommend one
-of two options:  either just punt on uid namespace for now and we'll fix
-it when we improve user namespaces - so log Alice's userid.  Or we can
-try to do it somewhat correct now, which might be done as follows:
-
-	1. introduce get_uid_in_userns(tsk).  For now this just returns
-	   tsk->uid if current->userns == tsk->userns, else it returns
-	   0.
-	   This way in Eric's scenario, Bob would be told that root,
-	   not an invalid user (Alice) had brought him over quota.
-	   Eventually, this would walk tsk's keychain for a uid entry
-	   in current's active user namespace.
-	
-	2. Add the userns to the netlink message.
-
-Again I need to find Jan's orginal patch, but I'll take a look at this.
-
--serge
+	Jan
+-- 
