@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759635AbXH3OpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762056AbXH3Opi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759635AbXH3OpA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 10:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761833AbXH3Oo3
+	id S1762056AbXH3Opi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 10:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761997AbXH3Oon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 10:44:29 -0400
-Received: from mi1.bluebottle.com ([206.188.25.14]:46112 "EHLO
-	mi1.bluebottle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761810AbXH3Oo2 (ORCPT
+	Thu, 30 Aug 2007 10:44:43 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:46754 "EHLO
+	outbound4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761989AbXH3Ool (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 10:44:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=mail; d=bluebottle.com; c=nofws; q=dns;
-	h=received:message-id:from:to:subject:date:mime-version:
-	content-type:content-transfer-encoding:x-priority:
-	x-msmail-priority:x-mailer:x-mimeole:x-trusted-delivery;
-	b=jnwDULJyUZyG8zGYWStEjsP7P5KZj/lx3EdcfKU27OklhFFMFLXjbdAdIVMWuMe8P
-	Lf9N8e6/iPVzT3eTnDQmIBCdsgIuPMRK4MTHuNEze4aBMS8foekD5mBzYBLiIKn
-Message-ID: <002d01c7eb14$4b18fab0$0100a8c0@hak>
-From: "n" <xellos@bluebottle.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: Bug? Realtek RTL-8169 Gigabit Ethernet  and High Resolution Timers
-Date: Thu, 30 Aug 2007 07:44:38 -0700
+	Thu, 30 Aug 2007 10:44:41 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
+Date: Thu, 30 Aug 2007 08:45:02 -0600
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: "Andres Salomon" <dilinger@queued.net>
+cc: jayakumar.alsa@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, info-linux@geode.amd.com
+Subject: Re: ALSA: cs5535audio: fix ACC_BM[x]_CMD register handling
+Message-ID: <20070830144502.GK5851@cosmic.amd.com>
+References: <20070829233043.42d24ff7.dilinger@queued.net>
 MIME-Version: 1.0
+In-Reply-To: <20070829233043.42d24ff7.dilinger@queued.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 30 Aug 2007 14:43:54.0946 (UTC)
+ FILETIME=[30884A20:01C7EB14]
+X-WSS-ID: 6AC80839CG8894919-01-01
 Content-Type: text/plain;
-	format=flowed;
-	charset="Windows-1252";
-	reply-type=original
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-Trusted-Delivery: <34a6fd25be425b3e23aad1e9df483624>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I found a bug when using the Ethernet controller: Realtek Semiconductor Co., 
-Ltd. RTL-8169 Gigabit Ethernet (rev 10)  ethernet card and kernel High 
-Resolution Timers (menuconfig -> Processor type and features -> High 
-Resolution Timer Support )
-after about 20 kernel compiles i finnaly figured out this option was making 
-the ethernet card slow
-tested kernels 2.6.22,2.6.22.5, 2.6.23-rc4 (running now)
+On 29/08/07 23:30 -0400, Andres Salomon wrote:
+> 
+> ACcording to 6.3.2.7 of the cs5535/cs5536 data sheets, the ACC_BM[x]_CMD
+> registers are only 8 bits wide.  This driver treats them as 32 bits wide,
+> and also has bits in the wrong place.  Simple fix to the definitions.
+> 
+> Signed-off-by: Andres Salomon <dilinger@debian.org>
+Acked-by: Jordan Crouse <jordan.crouse@amd.com>
+> ---
+> 
+>  sound/pci/cs5535audio/cs5535audio.h |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/sound/pci/cs5535audio/cs5535audio.h b/sound/pci/cs5535audio/cs5535audio.h
+> index c7a2044..516219a 100644
+> --- a/sound/pci/cs5535audio/cs5535audio.h
+> +++ b/sound/pci/cs5535audio/cs5535audio.h
+> @@ -62,11 +62,11 @@
+>  #define EOP				(1<<0)
+>  #define BM_EOP_ERR			(1<<1)
+>  /* ACC_BMX_CTL */
+> -#define BM_CTL_EN			0x00000001
+> -#define BM_CTL_PAUSE			0x00000011
+> -#define BM_CTL_DIS			0x00000000
+> -#define BM_CTL_BYTE_ORD_LE		0x00000000
+> -#define BM_CTL_BYTE_ORD_BE		0x00000100
+> +#define BM_CTL_EN			0x01
+> +#define BM_CTL_PAUSE			0x03
+> +#define BM_CTL_DIS			0x00
+> +#define BM_CTL_BYTE_ORD_LE		0x00
+> +#define BM_CTL_BYTE_ORD_BE		0x04
+>  /* cs5535 specific ac97 codec register defines */
+>  #define CMD_MASK			0xFF00FFFF
+>  #define CMD_NEW				0x00010000
+> 
+> 
 
-the cpu is the pc is a p3 667 mhz so its cpu limited i guess and maxes at 
-400mbit~. (without High Resolution Timers )
-with High Resolution Timers off it would only do 50-70mbit.
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
 
-r8169 (compile as module + napi)
-High Resolution Timer Support (enabled)
-tested with iperf also system is very unresponsive i cant even open a ssh 
-session or type a command while the test ran
-[  5]  0.0-10.0 sec  64.5 MBytes  54.0 Mbits/sec
-
-r8169 (compile as module + napi)
-High Resolution Timer Support (disabled)
-[  3]  0.0-10.0 sec    552 MBytes    463 Mbits/sec
-
-as you can see with it disabled the speed really improved.
-but im wondering what does High Resolution Timer's do and what does it have 
-to do with a pci gigabit ethernet card that would slow it down
-maybe someone else could test and see if they get the same results
-
-this might solve alot of problems with this card since alot of distros 
-compile Resolution Timer default to enabled...
-
-----------------------------------------------------------------------
-Get a free email address with REAL anti-spam protection.
-http://www.bluebottle.com/tag/1
 
