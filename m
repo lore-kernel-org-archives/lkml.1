@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761018AbXH3ObR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761605AbXH3Obn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761018AbXH3ObR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 10:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758850AbXH3ObE
+	id S1761605AbXH3Obn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 10:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758949AbXH3Obb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 10:31:04 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:5906 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755499AbXH3ObD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 10:31:03 -0400
-Date: Thu, 30 Aug 2007 08:29:19 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] Override 80-wire cable detection for Toshiba S1800-814
-In-reply-to: <fa.xZcOyxsTcgfWflTXq8DY8M1ncqc@ifi.uio.no>
+	Thu, 30 Aug 2007 10:31:31 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:53803 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758850AbXH3Oba (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 10:31:30 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
 To: Al Boldi <a1426z@gawab.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       dex@dragonslave.de
-Message-id: <46D6D43F.8040803@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.aDOpPGIWVD3AP0+s8JbykPNWRao@ifi.uio.no>
- <fa.f0bdB2EM6R3BhlpkdSTPMRlJu9U@ifi.uio.no>
- <fa.xZcOyxsTcgfWflTXq8DY8M1ncqc@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Designers and Builders (was: Who wants to maintain KR list for stable releases?)
+In-Reply-To: Your message of "Thu, 30 Aug 2007 07:31:24 +0300."
+             <200708300731.24413.a1426z@gawab.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200708300731.24413.a1426z@gawab.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1188484286_2967P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 30 Aug 2007 10:31:26 -0400
+Message-ID: <26616.1188484286@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> Alan Cox wrote:
->>> Wow!  I have been running 80wire cable detection override on 40wire
->>> cables for quite some time without any problem, but I never thought it
->>> to be legal if the 40wire cable length is short enough.
->> Yes.
->>
->>> How short does it have to be, and can't we have a kernel bootparm to
->>> override the cable detection?
->> For most users the goal should be to automate behaviour. It should just
->> work.
+--==_Exmh_1188484286_2967P
+Content-Type: text/plain; charset=us-ascii
+
+On Thu, 30 Aug 2007 07:31:24 +0300, Al Boldi said:
+> Adrian Bunk wrote
+> > Tracking feature or implementation suggestions wouldn't make sense.
+> > Consider e.g. that there are several people on linux-kernel who often
+> > write what they think the kernel should do but who never write a single
+> > line of code themselves. There's no value in tracking such stuff.
 > 
-> What's the max length of a 40wire cable to sustain 80wire cable 
-> characteristics?
+> There are designers, and there are builders.
+> 
+> Can you tell me who is more important?
 
-This is normally only the case on a laptop, where the cable is 
-essentially just a tiny stub between the motherboard and the drive. I 
-suspect this is something that the system manufacturer has to validate 
-works properly, more than any hard and fast limit.
+The problem is not builders, or designers - this list has plenty of both.
 
-For a normal desktop PC, it would be far better to just use an 80-wire 
-cable.
+What Adrian is talking about are the people who go to designers and say
+"Build me something blue, with a design that doesn't work with the VFS".
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+--==_Exmh_1188484286_2967P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG1tS+cC3lWbTT17ARArmfAJ4nnEk+D2SdIrVCjqFX8Ow2jMpkZACeJSfJ
+asWNhiQ91QQdikz6tls2xKQ=
+=W1H7
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1188484286_2967P--
