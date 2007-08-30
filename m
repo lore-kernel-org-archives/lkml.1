@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763473AbXH3WXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763350AbXH3W3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763473AbXH3WXY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbXH3WXO
+	id S1763350AbXH3W3d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762584AbXH3W3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:23:14 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:54930
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757668AbXH3WXN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:23:13 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible fashion.
-Date: Thu, 30 Aug 2007 18:22:47 -0500
+	Thu, 30 Aug 2007 18:29:24 -0400
+Received: from mail.gmx.net ([213.165.64.20]:42683 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1762463AbXH3W3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 18:29:23 -0400
+X-Authenticated: #12383568
+X-Provags-ID: V01U2FsdGVkX19wHnEKCT1wZoJRguDB0IlTFXHMSpQByR9sM0aikA
+	ilpLL58ov1pY6J
+From: Clemens Kolbitsch <clemens.kol@gmx.at>
+To: linux-kernel@vger.kernel.org
+Subject: Copy large memory regions from & to userspace
+Date: Fri, 31 Aug 2007 00:29:20 +0200
 User-Agent: KMail/1.9.6
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com> <200708301432.11516.rob@landley.net> <20070830183402.GA17084@infradead.org>
-In-Reply-To: <20070830183402.GA17084@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708301822.47594.rob@landley.net>
+Message-Id: <200708310029.20734.clemens.kol@gmx.at>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 August 2007 1:34:02 pm Christoph Hellwig wrote:
-> On Thu, Aug 30, 2007 at 02:32:11PM -0500, Rob Landley wrote:
-> > (If sysctlfs wasn't part of proc, that would be less of an issue, but we
-> > need union mounts for that...)
->
-> Not at all.  all sysctls are under /proc/sys/
+Hi!
+Just a short question: What is the correct method of copying large areas of 
+memory from userspace into userspace when running in kernel-mode?
 
-Ah, right.  Good point.  (I was thinking of the problem of 
-splitting /proc/$PID directories from the rest of the stuff in /proc.)
+According to just about any type of documentation out there something like
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+unsigned long *from = 0x08000000;
+unsigned long *to = 0x09000000;
+memcpy(to, from, 0x1000);
+
+should be avoided as copy_from_user, put_user, etc. should be used instead...
+
+Is there a third set of functions for direct from-userspace-to-userspace 
+copying or is it legitimate to assure that the first bytes in the from & to 
+memory areas are available and then just do the plain memcpy?
+
+Maybe there is a simple "just use the xxx function-set" answer to that, that i 
+just have not ran into yet :-)
+
+Thanks!
