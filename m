@@ -1,93 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763960AbXH3WuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbXH3WxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763960AbXH3WuZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762054AbXH3WuH
+	id S1764101AbXH3WxX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762346AbXH3WxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:50:07 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:20133 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754817AbXH3WuF (ORCPT
+	Thu, 30 Aug 2007 18:53:10 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:35190 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759521AbXH3WxH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:50:05 -0400
-Date: Thu, 30 Aug 2007 15:42:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Joe Perches <joe@perches.com>, Daniel Drake <dsd@gentoo.org>,
+	Thu, 30 Aug 2007 18:53:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=aQFbSq+XB9W+WRxvD+dlB1FqJJ1RmB2xiQgltkvh7is4NmdYcRcrNw0InkERqGKlC3wX0qxO02tVziW2U+Yv1ix2Ai2XbVyQz9qouCl8/j3edUNK9LXYPycy8s0NBsCgu2nI0WnUR8+QOBaVECDWu+DKxIr76TRF8TRuqfv/HM8=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Satyam Sharma <satyam@infradead.org>
+Subject: Re: [PATCH] input: Silence 'unused variable' warning in iforce joystick driver
+Date: Fri, 31 Aug 2007 00:50:03 +0200
+User-Agent: KMail/1.9.7
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Ulrich Kunitz <kune@deine-taler.de>, linux-wireless@vger.kernel.org
-Subject: Re: [PATCH] Don't needlessly initialize variable to NULL in zd_chip
-   (was: Re: [PATCH 13/30] net: Don't do pointless kmalloc return value
- casts in zd1211 driver)
-Message-Id: <20070830154255.6a146c21.randy.dunlap@oracle.com>
-In-Reply-To: <200708310030.31713.jesper.juhl@gmail.com>
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-	<9a8748490708301320o49d8e794vc5c37ffc938006f1@mail.gmail.com>
-	<1188512393.6062.156.camel@localhost>
-	<200708310030.31713.jesper.juhl@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+       Vojtech Pavlik <vojtech@ucw.cz>,
+       Johann Deneux <johann.deneux@gmail.com>, dtor@mail.ru,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz
+References: <200708310013.12347.jesper.juhl@gmail.com> <alpine.LFD.0.999.0708310422200.31519@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0708310422200.31519@enigma.security.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200708310050.03786.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007 00:30:31 +0200 Jesper Juhl wrote:
-
-> On Friday 31 August 2007 00:19:53 Joe Perches wrote:
-> > On Thu, 2007-08-30 at 22:20 +0200, Jesper Juhl wrote:
-> > > Ok, I must admit I didn't check with sparse since it seemed pointless
-> > > - we usually never cast void pointers to other pointer types,
-> > > specifically because the C language nicely guarantees that the right
-> > > thing will happen without the cast.  Sometimes we have to cast them to
-> > > integer types, su sure we need the cast there.   But what on earth
-> > > makes a "zd_addr_t *" so special that we have to explicitly cast a
-> > > "void *" to that type?
-> > 
-> > http://marc.info/?l=linux-netdev&m=117113743902549&w=1
-> > 
+On 31/08/2007, Satyam Sharma <satyam@infradead.org> wrote:
+...
 > 
-> Thank you for that link Joe.
+> Hmm, would this not still give a warning when JOYSTICK_IFORCE_USB=y?
+
+Arrgh, I messed that one up real good...  Thank you for your keen eye Satyam :-)
+
+
+> [ I didn't know mixing code and declarations (not at top of statement
+>   block) was accepted style in the kernel ... ]
 > 
-> I'm not sure I agree with the __nocast, but I respect that this is 
-> the maintainers choice.
+It's not the common case, but this is certainly not the only place in the kernel where we do it.
+
+
+> IMHO either you should at least wrap that case inside a {} of its
+> own (so that the int status; is at top of a statement block), or else,
+
+Yeah, I should...
+
+> preferably, just add "__maybe_unused" to the first declaration that you
+> removed just now.
 > 
-> But, I still think the first chunk of the patch that removes the 
-> initial variable initialization makes sense. 
-> Initializing the variable to NULL is pointless since it'll never be
-> used before the kmalloc() call. So here's a revised patch that just
-> gets rid of that little detail.
+
+Here's an updated patch that actually works as intended.
 
 
-BTW:  http://marc.info/?l=linux-wireless&m=118831813500769&w=2
+
+In the iforce driver we currently get this warning
+
+  drivers/input/joystick/iforce/iforce-packets.c: In function 'iforce_get_id_packet':
+  drivers/input/joystick/iforce/iforce-packets.c:249: warning: unused variable 'status'
+
+if CONFIG_JOYSTICK_IFORCE_USB is not defined.
+
+The warning is easy to avoid by simply moving the variable inside
+the only case in the switch that actually use it.
 
 
-> No need to initialize to NULL when variable is never used before 
-> it's assigned the return value of a kmalloc() call.
-> 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> ---
-> 
-> diff --git a/drivers/net/wireless/zd1211rw/zd_chip.c b/drivers/net/wireless/zd1211rw/zd_chip.c
-> index c39f198..30872fe 100644
-> --- a/drivers/net/wireless/zd1211rw/zd_chip.c
-> +++ b/drivers/net/wireless/zd1211rw/zd_chip.c
-> @@ -106,7 +106,7 @@ int zd_ioread32v_locked(struct zd_chip *chip, u32 *values, const zd_addr_t *addr
->  {
->  	int r;
->  	int i;
-> -	zd_addr_t *a16 = (zd_addr_t *)NULL;
-> +	zd_addr_t *a16;
->  	u16 *v16;
->  	unsigned int count16;
-
-
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 ---
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+
+diff --git a/drivers/input/joystick/iforce/iforce-packets.c b/drivers/input/joystick/iforce/iforce-packets.c
+index 3154ccd..2731057 100644
+--- a/drivers/input/joystick/iforce/iforce-packets.c
++++ b/drivers/input/joystick/iforce/iforce-packets.c
+@@ -246,13 +246,12 @@ void iforce_process_packet(struct iforce *iforce, u16 cmd, unsigned char *data)
+ 
+ int iforce_get_id_packet(struct iforce *iforce, char *packet)
+ {
+-	int status;
+-
+ 	switch (iforce->bus) {
+ 
+-	case IFORCE_USB:
+-
++	case IFORCE_USB: {
+ #ifdef CONFIG_JOYSTICK_IFORCE_USB
++		int status;
++
+ 		iforce->cr.bRequest = packet[0];
+ 		iforce->ctrl->dev = iforce->usbdev;
+ 
+@@ -270,6 +269,7 @@ int iforce_get_id_packet(struct iforce *iforce, char *packet)
+ 			usb_unlink_urb(iforce->ctrl);
+ 			return -1;
+ 		}
++	}
+ #else
+ 		dbg("iforce_get_id_packet: iforce->bus = USB!");
+ #endif
+
+
