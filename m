@@ -1,78 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761800AbXH3A5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762032AbXH3BAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761800AbXH3A5Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 20:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXH3A5R
+	id S1762032AbXH3BAP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 21:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbXH3BAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 20:57:17 -0400
-Received: from h151.mvista.com ([63.81.120.158]:40137 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751712AbXH3A5Q (ORCPT
+	Wed, 29 Aug 2007 21:00:00 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51223 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757804AbXH3A77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 20:57:16 -0400
-Subject: Re: [PATCH 1/2] Adds full stack to critical-section tracing
-From: Daniel Walker <dwalker@mvista.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: mingo@elte.hu, linux-rt-users@vger.kernel.org,
+	Wed, 29 Aug 2007 20:59:59 -0400
+Date: Wed, 29 Aug 2007 17:59:58 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mingming Cao <cmm@us.ibm.com>
+cc: linux-fsdevel@vger.kernel.org, adilger@clusterfs.com, sho@tnes.nec.co.jp,
+       ext4 development <linux-ext4@vger.kernel.org>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20070810141413.12966.13475.stgit@lsg>
-References: <20070810140745.12966.8464.stgit@lsg>
-	 <20070810141413.12966.13475.stgit@lsg>
-Content-Type: text/plain
-Date: Wed, 29 Aug 2007 17:48:12 -0700
-Message-Id: <1188434892.26038.23.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [RFC 1/4] Large Blocksize support for Ext2/3/4
+In-Reply-To: <1188434857.3799.76.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0708291758520.4670@schroedinger.engr.sgi.com>
+References: <20070828190551.415127746@sgi.com>  <20070828190735.292638294@sgi.com>
+  <1188432669.3799.35.camel@localhost.localdomain> <1188434857.3799.76.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-10 at 08:14 -0600, Gregory Haskins wrote:
-> ---
-> 
->  include/linux/sched.h  |    7 +++++--
->  kernel/latency_trace.c |   18 +++++++++++-------
->  2 files changed, 16 insertions(+), 9 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 8ebb43c..233d26c 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1306,10 +1306,13 @@ struct task_struct {
->  #endif
->  
->  #define MAX_PREEMPT_TRACE 25
-> +#define MAX_PREEMPT_TRACE_DEPTH 5
->  
->  #ifdef CONFIG_PREEMPT_TRACE
-> -	unsigned long preempt_trace_eip[MAX_PREEMPT_TRACE];
-> -	unsigned long preempt_trace_parent_eip[MAX_PREEMPT_TRACE];
-> +	struct {
-> +		struct stack_trace trace;
-> +		unsigned long      data[MAX_PREEMPT_TRACE_DEPTH];
-> +	} preempt_trace[MAX_PREEMPT_TRACE];
+On Wed, 29 Aug 2007, Mingming Cao wrote:
 
-These changes need some fixing .. The "struct stack_trace"
-infrastructure is based on CONFIG_STACKTRACE , so at least you would
-want to ifdef your changes on that config options ..
+> It's quite simple to support large block size in ext2/3/4, mostly just
+> enlarge the block size limit.  But it is NOT possible to have 64kB
+> blocksize on ext2/3/4 without some changes to the directory handling
+> code.  The reason is that an empty 64kB directory block would have a
+> rec_len == (__u16)2^16 == 0, and this would cause an error to be hit in
+> the filesystem.  The proposed solution is to put 2 empty records in such
+> a directory, or to special-case an impossible value like rec_len =
+> 0xffff to handle this. 
 
-I modified you patch to include the ifdefs,
+Ahh. Good.
 
-ftp://source.mvista.com/pub/dwalker/misc/debug-preempt-5-levels-of-stack-frames.patch
-
-The other problem I noticed is that the save_stack_trace(trace); seems
-kind of heavy weight to be calling from inside add_preempt_count. If
-your only going to a depth of 5 you could potentially use there macros,
-
-#ifdef CONFIG_FRAME_POINTER
-# ifndef CONFIG_ARM
-#  define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
-#  define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
-#  define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
-#  define CALLER_ADDR3 ((unsigned long)__builtin_return_address(3))
-#  define CALLER_ADDR4 ((unsigned long)__builtin_return_address(4))
-#  define CALLER_ADDR5 ((unsigned long)__builtin_return_address(5))
-# else
-
-Daniel
+I could add the path to the large blocksize patchset?
 
