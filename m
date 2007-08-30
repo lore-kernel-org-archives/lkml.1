@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761036AbXH3OLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbXH3OMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761036AbXH3OLe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 10:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760623AbXH3OLW
+	id S932339AbXH3OMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 10:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbXH3OMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 10:11:22 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:39889 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760551AbXH3OLV (ORCPT
+	Thu, 30 Aug 2007 10:12:49 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:42081 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756756AbXH3OMs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 10:11:21 -0400
-Message-ID: <46D6CEF3.3070701@aitel.hist.no>
-Date: Thu, 30 Aug 2007 16:06:43 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Thu, 30 Aug 2007 10:12:48 -0400
+Date: Thu, 30 Aug 2007 16:12:47 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: NFS4 authentification / fsuid
+Message-ID: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-To: Xavier Bestel <xavier.bestel@free.fr>
-CC: Robert Hancock <hancockr@shaw.ca>, Daniel Drake <ddrake@brontes3d.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: speeding up swapoff
-References: <fa.j/pO3mTWDugTdvZ3XNr9XpvgzPQ@ifi.uio.no>	 <fa.ed9fasZXOwVCrbffkPQTX7G3a7g@ifi.uio.no>	 <fa./NZA3biuO1+qW5pW8ybdZMDWcZs@ifi.uio.no> <46D61F48.5090406@shaw.ca>	 <46D6CC35.90207@aitel.hist.no> <1188482815.1131.374.camel@frg-rhel40-em64t-04>
-In-Reply-To: <1188482815.1131.374.camel@frg-rhel40-em64t-04>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xavier Bestel wrote:
-> On Thu, 2007-08-30 at 15:55 +0200, Helge Hafting wrote:
->   
->> If the swap device is full, then there is no need for random
->> seeks as the swap pages can be read in disk order.
->>     
->
-> If the swap file is full, you probably have a machine dead into a swap
-> storm.
-Only if you have enough swap. :-)
+Hi,
 
-Helge Hafting
+
+with NFS3, there is this 'root hole', i.e. any person who has a root 
+account (perhaps by use of a laptop) can mount an export (let's say this 
+export had the "root_squash" option), and still have a look at the user 
+files, because he can locally setuid() into another user.
+
+So I was looking for alternatives. CIFS is my favorite candidate, but it 
+has a few issues right now. So does sshfs and about everything I have 
+come across. Since I remember NFS4 can use KRB5 authentification, my 
+question is, will the NFS(4) server process run with an fsuid equal to 
+the user that authenticated?
+
+
+thanks,
+	Jan
+-- 
