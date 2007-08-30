@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964901AbXH3TCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964937AbXH3TE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964901AbXH3TCr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 15:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932794AbXH3TCh
+	id S964937AbXH3TE2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 15:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932865AbXH3TEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 15:02:37 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:47893 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932635AbXH3TCg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 15:02:36 -0400
-Date: Thu, 30 Aug 2007 13:02:35 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@osdl.org>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hare@suse.de
-Subject: Re: [PATCH] debloat aic7xxx and aic79xx drivers by deinlining
-Message-ID: <20070830190235.GX14130@parisc-linux.org>
-References: <200708252257.07241.vda.linux@googlemail.com> <200708281256.35162.vda.linux@googlemail.com> <20070828081710.4687185c@laptopd505.fenrus.org> <200708282055.07411.vda.linux@googlemail.com> <Pine.LNX.4.64.0708302042260.24730@fbirervta.pbzchgretzou.qr>
+	Thu, 30 Aug 2007 15:04:21 -0400
+Received: from gw.goop.org ([64.81.55.164]:54939 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932794AbXH3TEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 15:04:20 -0400
+Message-ID: <46D714A9.4060103@goop.org>
+Date: Thu, 30 Aug 2007 12:04:09 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708302042260.24730@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Christian Ehrhardt <lk@c--e.de>
+CC: linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: New x886-Setup code breaks HVM-XEN boot
+References: <20070830141528.GA307@lisa.in-ulm.de>
+In-Reply-To: <20070830141528.GA307@lisa.in-ulm.de>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 30, 2007 at 08:43:24PM +0200, Jan Engelhardt wrote:
-> On Aug 28 2007 20:55, Denys Vlasenko wrote:
-> >> Fwiw I do like your debloat patch a lot; it's just only half the
-> >> equation ... if you also do the namespace fixes, I bet the driver
-> >> debloats even more...
-> >
-> >Yes, I know, and I am happy to do that too. I just don't know
-> >whether patches will be accepted.
-> >
-> >Why this patch is not commented on by scsi people?
-> >Am I sending patches to wrong people/lists?
-> 
-> Well, you can send it to Linus/Andrew, that will usually upset people and they
-> start commenting on it. Or they don't, and everything is fine.
-> (The "default y" approach so to speak ;-)
+Christian Ehrhardt wrote:
+> I am willing to do tests with the XEN guest and send any additional
+> information that might be helpful. However, I cannot change the XEN host
+> at this time.
+>   
 
-The problem is that we don't really have a maintainer for the aic7xyz
-drivers any more.  Volunteers welcome.  NOT IT!
+Are there any messages on the xen console ("xm dmesg")?  Or logs ("xm
+log")?  What version of Xen are you using?  What does your domain config
+file look like?
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+    J
