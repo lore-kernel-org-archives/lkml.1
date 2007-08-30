@@ -1,53 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932636AbXH3Q5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932623AbXH3RHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932636AbXH3Q5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 12:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758432AbXH3Q53
+	id S932623AbXH3RHV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 13:07:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbXH3RHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 12:57:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51300 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757532AbXH3Q52 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 12:57:28 -0400
-Date: Thu, 30 Aug 2007 09:56:22 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, bugme-daemon@kernel-bugs.osdl.org
-Subject: Re: [Bugme-new] [Bug 8957] New: Exported functions and variables
-Message-ID: <20070830095622.28504717@laptopd505.fenrus.org>
-In-Reply-To: <910709.35108.qm@web52002.mail.re2.yahoo.com>
-References: <910709.35108.qm@web52002.mail.re2.yahoo.com>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 30 Aug 2007 13:07:10 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:39840 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755221AbXH3RHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 13:07:09 -0400
+Date: Thu, 30 Aug 2007 19:07:05 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Clemens Kolbitsch <clemens.kol@gmx.at>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Forbid deletion of memory mappings
+In-Reply-To: <200708301844.10532.clemens.kol@gmx.at>
+Message-ID: <Pine.LNX.4.64.0708301906020.2460@twin.jikos.cz>
+References: <200708301844.10532.clemens.kol@gmx.at>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Aug 2007 09:41:41 -0700 (PDT)
-Matti Linnanvuori <mattilinnanvuori@yahoo.com> wrote:
+On Thu, 30 Aug 2007, Clemens Kolbitsch wrote:
 
-> I thought that the bug might happen when two kernel modules are being
-> loaded. If module A is loaded and its code includes references to
-> functions exported by module B, I thought module A could call those
-> functions before the module_init function of module B has finished. I
-> was not thinking about buggy calls to registering interface
-> functions. I just thought that the kernel should not allow symbols
-> exported by   EXPORT_SYMBOLto be visible to other modules before the
-> module_init function is finished. One could code the exported
-> functions so that they could be safely called by anyone while the
-> module_init function is being called but that would be an unnecessary
-> burden for coders. I think that a module should expose its functions
-> and variables only by calling registering interface  functions before
-> the module_init function is finished. So I think the design of the
-> kernel modules is flawed if it allows anyone to call exported
-> functions before the module_init function is finished.
-> 
+> It all works perfectly well (creating & deleting the additional 
+> mappings), however, when the kernel feels like it needs to allocate a 
+> mapping in user-space it sometimes deletes my mapping and overwrites it 
+> with the new one, although there is plenty of free memory at some other 
+> location.
 
-have you seen this?
-module loading is pretty much serialized, so that no 2 modules are
-being loaded in parallel...
+Hi Clemens,
+
+what do you mean by "overwrites it"? It just probably merges your vma with 
+the newly created one, right?
+
+-- 
+Jiri Kosina
