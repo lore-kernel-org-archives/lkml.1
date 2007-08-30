@@ -1,48 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762685AbXH3PHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762551AbXH3PKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762685AbXH3PHl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 11:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761410AbXH3PHI
+	id S1762551AbXH3PKS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 11:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758344AbXH3PKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 11:07:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44926 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760690AbXH3PHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 11:07:05 -0400
-Date: Thu, 30 Aug 2007 11:06:59 -0400
-Message-Id: <200708301506.l7UF6xHg002143@dantu.rdu.redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net
-From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 3/3] CIFS: ignore mode change if it's just for clearing setuid/setgid bits
+	Thu, 30 Aug 2007 11:10:06 -0400
+Received: from styx.suse.cz ([82.119.242.94]:35334 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757950AbXH3PKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 11:10:05 -0400
+Date: Thu, 30 Aug 2007 17:10:03 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386 and x86_64: randomize brk()
+In-Reply-To: <8bd0f97a0708300726h563808a6j2b2ef9adf805c109@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0708301708590.4135@jikos.suse.cz>
+References: <Pine.LNX.4.64.0708301545100.4135@jikos.suse.cz> 
+ <8bd0f97a0708300701r1f36bc0anc45b9cad4a11f2ef@mail.gmail.com> 
+ <Pine.LNX.4.64.0708301620010.4135@jikos.suse.cz>
+ <8bd0f97a0708300726h563808a6j2b2ef9adf805c109@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the ATTR_KILL_S*ID bits are set then any mode change is only for
-clearing the setuid/setgid bits. For CIFS, skip the mode change and
-let the server handle it.
+On Thu, 30 Aug 2007, Mike Frysinger wrote:
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/cifs/inode.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+> Blackfin too please :) i think v850 also falls into this category, but 
+> i'm not terribly familiar with it ...
 
-diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
-index dd41677..279f3c5 100644
---- a/fs/cifs/inode.c
-+++ b/fs/cifs/inode.c
-@@ -1538,6 +1538,11 @@ int cifs_setattr(struct dentry *direntry, struct iattr *attrs)
- 	}
- 
- 	time_buf.Attributes = 0;
-+
-+	/* skip mode change if it's just for clearing setuid/setgid */
-+	if (attrs->ia_valid & (ATTR_KILL_SUID|ATTR_KILL_SGID))
-+		attrs->ia_valid &= ~ATTR_MODE;
-+
- 	if (attrs->ia_valid & ATTR_MODE) {
- 		cFYI(1, ("Mode changed to 0x%x", attrs->ia_mode));
- 		mode = attrs->ia_mode;
+Andrew, do you still strongly oppose to having ARCH_HAS_RANDOMIZE_BRK 
+macro instead please?
+
+Thanks,
+
 -- 
-1.5.2.1
-
+Jiri Kosina
+SUSE Labs
