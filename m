@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761761AbXH3PdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbXH3PnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761761AbXH3PdU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 11:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbXH3PdN
+	id S1759505AbXH3PnY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 11:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753982AbXH3PnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 11:33:13 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:49678 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757621AbXH3PdM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 11:33:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=mmor2/EnfT8o8EV5eMMOsT86H/2OYIth1Of9jv1C5JY29TF1PDkWul4huN7mnoke1Q2VVLY97JJt/n+8eOv3zOL/xy/6Kb7u+JOKC+rNyyoLjGX1A5XFD9nAwU8rZWRkEuiAXlMPJjMa3p+RuRqthgHZieC05IcU/HKG0gzl11o=
-Message-ID: <46D6E32F.30204@gmail.com>
-Date: Thu, 30 Aug 2007 17:33:03 +0200
-From: Franck Bui-Huu <vagabon.xyz@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Mike Frysinger <vapier.adi@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386 and x86_64: randomize brk()
-References: <Pine.LNX.4.64.0708301545100.4135@jikos.suse.cz>  <8bd0f97a0708300701r1f36bc0anc45b9cad4a11f2ef@mail.gmail.com>  <Pine.LNX.4.64.0708301620010.4135@jikos.suse.cz> <8bd0f97a0708300726h563808a6j2b2ef9adf805c109@mail.gmail.com> <Pine.LNX.4.64.0708301708590.4135@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0708301708590.4135@jikos.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Aug 2007 11:43:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58495 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753638AbXH3PnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 11:43:12 -0400
+Date: Thu, 30 Aug 2007 11:06:28 -0400
+Message-Id: <200708301506.l7UF6Sad002128@dantu.rdu.redhat.com>
+From: Jeff Layton <jlayton@redhat.com>
+Subject: [PATCH 0/3] fix setuid/setgid clearing in networked filesystems (take 4)
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Thu, 30 Aug 2007, Mike Frysinger wrote:
-> 
->> Blackfin too please :) i think v850 also falls into this category, but 
->> i'm not terribly familiar with it ...
-> 
-> Andrew, do you still strongly oppose to having ARCH_HAS_RANDOMIZE_BRK 
-> macro instead please?
-> 
+When an unprivileged process attempts to modify a file that has the
+setuid or setgid bits set, the VFS will attempt to clear these bits. The
+VFS will set the ATTR_KILL_SUID or ATTR_KILL_SGID bits in the ia_valid
+mask, and then call notify_change to clear these bits and set the mode
+accordingly.
 
-you might want to use a weak function instead ?
+With a networked filesystem (NFS and CIFS in particular but likely
+others), the client machine or process may not have credentials that
+allow for setting the mode. In some situations, this can lead to file
+corruption, an operation failing outright because the setattr fails, or
+to races that lead to a mode change being reverted.
 
-void __weak arch_randomize_brk(void)
-{
-	/* nada by default */
-}
+In this situation, we'd like to just leave the handling of this to the
+server and ignore these bits. The problem is that by the time the
+setattr op is called, the VFS has already reinterpreted the ATTR_KILL_*
+bits into a mode change and the setattr operation has no way to
+know its intent.
 
-and overload it only for x86 architectures by now.
+The following patchset fixes this by making notify_change no longer
+clear the ATTR_KILL_SUID and ATTR_KILL_SGID bits in the ia_valid before
+handing it off to the setattr inode op. setattr can then check for the
+presence of these bits, and if they're set it can assume that the mode
+change was only for the purposes of clearing these bits.
 
-BTW, how about minimize the arch specific code by slighly changing its
-prototype  ?
+This means that we now have an implicit assumption that notify_change is
+never called with ATTR_MODE and either ATTR_KILL_S*ID bit set. Nothing
+currently enforces that, so the patch also adds a BUG_ON() if that
+occurs.
 
-unsigned long arch_randomize_brk(struct mm_struct *mm)
-{
-	unsigned long range_end = mm->brk + 0x02000000;
-	
-	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
-}
+The other two patches in the set fix up NFS and CIFS to ignore
+the mode change if either ATTR_KILL_S*ID bit is set.
 
-		Franck
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+
