@@ -1,161 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbXH3DGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbXH3DKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755392AbXH3DGL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 23:06:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbXH3DGA
+	id S1756097AbXH3DKG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 23:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbXH3DJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 23:06:00 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4584 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752288AbXH3DF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 23:05:59 -0400
-Date: Thu, 30 Aug 2007 05:06:17 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       kbuild-devel@lists.sourceforge.net
-Subject: Re: CONFIG_HOTPLUG_CPU: kconfig bug?
-In-Reply-To: <20070829180158.GA7849@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0708300235010.1817@scrub.home>
-References: <Pine.LNX.4.64.0708271525400.21853@blonde.wat.veritas.com>
- <20070827172654.GA21871@uranus.ravnborg.org> <Pine.LNX.4.64.0708272143150.29594@blonde.wat.veritas.com>
- <20070829180158.GA7849@uranus.ravnborg.org>
+	Wed, 29 Aug 2007 23:09:56 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:23757 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752762AbXH3DJz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 23:09:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:references:in-reply-to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
+        b=Vw4V3RjREnI4Ob2nKUohzA4mKH6P0GIwymf4lawI5FyrPwGZgUzQRPgz/ZoOHuglYOTGv3jPAUmO1SZU475cRFGCvK7xsLvpn6FcREYHfsJQiDGgvCilClfcjh3IT9bTzGK+G7MQW9w6JkXJSl1XSqW8Mrv0gONzYlrlHDn6heE=
+From: "Hua Zhong" <hzhong@gmail.com>
+To: "'Ian Kent'" <raven@themaw.net>
+Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       <autofs@linux.kernel.org>, "'Adrian Bunk'" <bunk@kernel.org>
+References: <00f401c7ea7f$6db9fc80$492df580$@com>	 <20070829224754.GW26410@stusta.de> <1188442804.4090.10.camel@raven.themaw.net>
+In-Reply-To: <1188442804.4090.10.camel@raven.themaw.net>
+Subject: RE: regression of autofs for current git?
+Date: Wed, 29 Aug 2007 20:09:36 -0700
+Message-ID: <010401c7eab3$38d16100$aa742300$@com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AcfqseJK+5ALv7R3StOP78+N7nT+NAAAM4cA
+Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I am in the process of bisecting now. It takes a while but the bad commit is
+between 2.6.22 and 13f9966b3ba5b45f47f2ea0eb0a90afceedfbb1f (June 28). I'll
+continue tomorrow.
 
-On Wed, 29 Aug 2007, Sam Ravnborg wrote:
+My system is FC4. 
 
-> > > > I've noticed an oddity with CONFIG_HOTPLUG_CPU in 2.6.23-rc:
-> > > > make oldconfig seems to turn it on even when nothing wants it,
-> > > > increasing kernel size by about 10k; but if you then edit the
-> > > > line out of .config and make oldconfig again, it correctly
-> > > > offers the choice and lets it be turned off after all.
+autofs-4.1.4-26
+nfs-utils-1.0.7-13.FC4
+
+By the way, the particular autofs commit Andrian sent is innocent. It's
+something else.
+
+It will still take me about 10 reboots to bisect. If anyone has a patch for
+me to try, I'll give it a shot tomorrow.
+
+> -----Original Message-----
+> From: Ian Kent [mailto:raven@themaw.net]
+> Sent: Wednesday, August 29, 2007 8:00 PM
+> To: Hua Zhong
+> Cc: 'Linux Kernel Mailing List'; autofs@linux.kernel.org; Adrian Bunk
+> Subject: Re: regression of autofs for current git?
 > 
-> I have tried to track down what is happening here.
-> The culprint is:
+> On Thu, 2007-08-30 at 00:47 +0200, Adrian Bunk wrote:
+> > On Wed, Aug 29, 2007 at 01:58:58PM -0700, Hua Zhong wrote:
+> >
+> > > Hi,
+> >
+> > Hi Hua,
+> >
+> > > I am wondering if this is a known issue, but I just built the
+> current git
+> > > and several autofs mounts mysteriously disappeared. Restarting
+> autofs could
+> > > fix some, but then lose others. 2.6.22 was fine.
+> > >
+> > > Is there anything I could check other than bisect? (It may take
+> some time
+> > > for me to get to it)
+> >
+> > the commit below is the only autofs4 patch that went into the git
+> tree
+> > since 2.6.22.
+> >
+> > Does reverting it fix your problems?
 > 
-> config SUSPEND_SMP
-> 	bool
-> 	depends on SUSPEND_SMP_POSSIBLE && PM_SLEEP
-> 	select HOTPLUG_CPU
-> 	default y
+> Maybe but there is an NFS change that appears to be in the current
+> 2.6.23-rc kernel and doesn't seem to be in 2.6.22 that is known to
+> break
+> some autofs maps and also breaks amd.
+> 
+> I can't seem to locate the commit just now.
+> In the meantime what version of user space autofs and nfs-utils are you
+> running?
+> And can you post your autofs maps please?
+> 
+> Ian
 > 
 > 
-> It seems that due to the fact that SUSPEND_SMP is default y
-> then kconfig enforce the "select HOTPLUG_CPU".
-
-It's somewhat a side effect of using select and defaults, the order of the 
-config symbols becomes significant for oldconfig, if you look at the 
-output you'll find:
-
-Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL) (HOTPLUG_CPU) [Y/?] y
-
-this sets it to 'y'. In this case one isn't asked about it, because there 
-is only one choice. The patch below avoids the setting of the value here.
-
-bye, Roman
 
 
-
-Avoid setting the value if the symbol doesn't need to be changed or can't 
-be changed. Later choices may change the dependencies and thus the 
-possible input range.
-
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
-
----
- scripts/kconfig/conf.c |   21 ++++++++++++---------
- 1 file changed, 12 insertions(+), 9 deletions(-)
-
-Index: linux-2.6/scripts/kconfig/conf.c
-===================================================================
---- linux-2.6.orig/scripts/kconfig/conf.c
-+++ linux-2.6/scripts/kconfig/conf.c
-@@ -72,7 +72,7 @@ static void check_stdin(void)
- 	}
- }
- 
--static void conf_askvalue(struct symbol *sym, const char *def)
-+static int conf_askvalue(struct symbol *sym, const char *def)
- {
- 	enum symbol_type type = sym_get_type(sym);
- 	tristate val;
-@@ -87,7 +87,7 @@ static void conf_askvalue(struct symbol 
- 		printf("%s\n", def);
- 		line[0] = '\n';
- 		line[1] = 0;
--		return;
-+		return 0;
- 	}
- 
- 	switch (input_mode) {
-@@ -97,23 +97,23 @@ static void conf_askvalue(struct symbol 
- 	case set_random:
- 		if (sym_has_value(sym)) {
- 			printf("%s\n", def);
--			return;
-+			return 0;
- 		}
- 		break;
- 	case ask_new:
- 	case ask_silent:
- 		if (sym_has_value(sym)) {
- 			printf("%s\n", def);
--			return;
-+			return 0;
- 		}
- 		check_stdin();
- 	case ask_all:
- 		fflush(stdout);
- 		fgets(line, 128, stdin);
--		return;
-+		return 1;
- 	case set_default:
- 		printf("%s\n", def);
--		return;
-+		return 1;
- 	default:
- 		break;
- 	}
-@@ -123,7 +123,7 @@ static void conf_askvalue(struct symbol 
- 	case S_HEX:
- 	case S_STRING:
- 		printf("%s\n", def);
--		return;
-+		return 1;
- 	default:
- 		;
- 	}
-@@ -174,6 +174,7 @@ static void conf_askvalue(struct symbol 
- 		break;
- 	}
- 	printf("%s", line);
-+	return 1;
- }
- 
- int conf_string(struct menu *menu)
-@@ -187,7 +188,8 @@ int conf_string(struct menu *menu)
- 		def = sym_get_string_value(sym);
- 		if (sym_get_string_value(sym))
- 			printf("[%s] ", def);
--		conf_askvalue(sym, def);
-+		if (!conf_askvalue(sym, def))
-+			return 0;
- 		switch (line[0]) {
- 		case '\n':
- 			break;
-@@ -240,7 +242,8 @@ static int conf_sym(struct menu *menu)
- 		if (menu_has_help(menu))
- 			printf("/?");
- 		printf("] ");
--		conf_askvalue(sym, sym_get_string_value(sym));
-+		if (!conf_askvalue(sym, sym_get_string_value(sym)))
-+			return 0;
- 		strip(line);
- 
- 		switch (line[0]) {
