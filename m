@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762206AbXH3UMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762558AbXH3UQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762206AbXH3UMA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 16:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbXH3ULs
+	id S1762558AbXH3UQT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 16:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbXH3UQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 16:11:48 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:49456 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751035AbXH3ULs (ORCPT
+	Thu, 30 Aug 2007 16:16:11 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:52462 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755204AbXH3UQJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 16:11:48 -0400
-Message-ID: <46D7231B.3080807@gmail.com>
-Date: Thu, 30 Aug 2007 22:05:47 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 30 Aug 2007 16:16:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qBKA9jgSl/djC/XJqkEB/UkNi2ffO87NvYyKo+8jPwU7PlqXUeYO4/3UXCez82xZ7MlzM0BBRDdrQLrIcLDLdW1U+9dScmvbRt9WUwc4vEGFlTKmr6KNX/Ny7erQres4vBpe0/YK/KLhdHseK9KJTN6MmPo8kDNDrEisEhrdVpM=
+Message-ID: <38b2ab8a0708301316h45d83d9bkf5ba9a47e7b7eb00@mail.gmail.com>
+Date: Thu, 30 Aug 2007 22:16:09 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: i2c transfers during interrupt context
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070830173232.270c6f70@hyperion.delvare>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: =?ISO-8859-15?Q?Jos=E9_Luis_Pati=F1o_Andr=E9s?= 
-	<jopan@alumni.uv.es>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
-Subject: Re: Problems with IDE on linux 2.6.22.X
-References: <200708212149.12912.jopan@alumni.uv.es> <20070822162312.GG9412@csclub.uwaterloo.ca> <46CC6A2F.5000406@gmail.com> <200708280044.34475.jopan@alumni.uv.es> <46D455DB.8000800@gmail.com> <Pine.LNX.4.64.0708302130210.24730@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0708302130210.24730@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <38b2ab8a0708300311x5479effn5999ba118221a47f@mail.gmail.com>
+	 <38b2ab8a0708300655n7ae6a445y84150ab1bdcdf2d4@mail.gmail.com>
+	 <20070830173232.270c6f70@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/30/2007 09:31 PM, Jan Engelhardt wrote:
+Bonjour Jean !
 
-> On Aug 28 2007 19:05, Rene Herman wrote:
+On 8/30/07, Jean Delvare <khali@linux-fr.org> wrote:
+> Non. Tu n'as pas le droit de dormir dans un gestionnaire
+> d'interruption, et la majorité des pilotes I2C dorment pendant les
+> transferts.
+>
 
->> Sheesh. How could anyone _not_ understand you need SCSI CD-ROM support
->> for your IDE DVD-RW drive...
-> 
-> Welcome to the wonderful world of SCSIfying ATA. (Don't talk about ATAPI,
-> USB/Firewire, it's a different matter.)
+Ok, c'est ce que je voulais savoir. Peut etre que cette regle pourrait
+etre renforce par un "might_sleep()" ajoute dans les fonctions de
+transfert de l'i2c-core ?
 
-Well -- the world where ATA, SCSI, USB, Firewire and what have you are 
-low-level drivers to a unifying storage layer is under non too obscure 
-definitions sort of not non-wonderful...
+D'ailleurs pourquoi certains pilotes i2c ne dorment pas pendant les
+transferts ? Qu'ont ils de different ?
 
-Admittedly, the unifying layer is a little SCSI inspired but so is a lot of 
-the hardware. As long as the users (the humans) resist SCSI inspiration, it 
-should be safe.
+> Si tu as besoin de faire ce genre de chose il faut typiquement passer
+> par une workqueue.
 
-Rene
+Malheureusement dans certains cas la workqueue est schedulee trop
+tardivement et le message i2c n'arrive pas a temps au device.
+
+Une autre question, j'espere que je n'abuse pas: Comment peut on
+changer la frequence du bus i2c depuis un driver ?
+
+Merci pour tes reponses.
+-- 
+Francis
