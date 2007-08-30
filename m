@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbXH3HQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXH3HUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbXH3HQU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 03:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbXH3HQM
+	id S1757213AbXH3HUo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 03:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbXH3HUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 03:16:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:46175 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754785AbXH3HQM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 03:16:12 -0400
-Subject: Re: Possible kernel lock in semaphore's __down()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Aleksandar Dezelin <dezelin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo <mingo@redhat.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <1188424371.8853.9.camel@synaptical>
-References: <1188424371.8853.9.camel@synaptical>
-Content-Type: text/plain
-Date: Thu, 30 Aug 2007 09:16:05 +0200
-Message-Id: <1188458165.6112.19.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Aug 2007 03:20:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47279 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754983AbXH3HUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 03:20:35 -0400
+Date: Thu, 30 Aug 2007 09:20:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: keith.packard@intel.com, Al Boldi <a1426z@gawab.com>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net
+Subject: Re: CFS review
+Message-ID: <20070830072014.GB507@elte.hu>
+References: <20070827204116.GA12495@elte.hu> <200708280737.53439.a1426z@gawab.com> <20070829041827.GA8733@elte.hu> <1188361749.21502.123.camel@koto.keithp.com> <20070829044614.GA13225@elte.hu> <1188374249.21502.155.camel@koto.keithp.com> <20070829080417.GB19386@elte.hu> <1188403075.21502.158.camel@koto.keithp.com> <46D5CF5F.6090505@gmail.com> <46D66C2D.3010900@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46D66C2D.3010900@gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-29 at 23:52 +0200, Aleksandar Dezelin wrote:
-> Hi!
-> 
-> I'm a newbie here on the list and also as a "kernel hacker". There's a
-> bug reported in bugzilla (Bug 7927), cite:
-> 
-> 
-> > In the function __down
-> >  
-> > fastcall void __sched __down(struct semaphore * sem)
-> > {
-> >  struct task_struct *tsk = current;
-> >  DECLARE_WAITQUEUE(wait, tsk);
-> >  unsigned long flags;
-> >  
-> >  tsk->state = TASK_UNINTERRUPTIBLE;
-> >  spin_lock_irqsave(&sem->wait.lock, flags);
-> >  add_wait_queue_exclusive_locked(&sem->wait, &wait);
-> >  ...
-> > }
-> >  
-> > 
-> > From this code fragment, it sets the tsk->state to TASK_UNINTERRUPTIBLE before 
-> > gets the spinlock. Assume at that moment, a interrupt ocuur and and after the 
-> > interrupt handle ends, an other process is scheduled to run (assume the kernel 
-> > is preemptalbe). In this case, the previous process ( its state has set to 
-> > TASK_UNINTERRUPTIBLE) has been picked off the run queue, and it has not yet add 
-> > to the wait queue( sem->wait ), so it may be never waited up forever. 
-> > 
-> 
-> I have marked it as rejected as as I can see at the time this function is called,
-> it is guaranteed that ret_from_intr() will not call schedule() on return from an 
-> interrupt handler to either kernel space or user space because of the call 
-> to macro might_sleep() in semaphore's down(). Am I wrong?
 
-I think the reported meant interrupt driven involuntary preemption. So
-ret_from_intr() is not the right place to look. But afaict you're still
-right, see how preempt_schedule*() adds PREEMPT_ACTIVE to the
-preempt_count, and how that makes the scheduler ignore the task state.
+* Rene Herman <rene.herman@gmail.com> wrote:
 
+> Realised the BUGs may mean the kernel DRM people could want to be in CC...
+
+and note that the schedule() call in there is not part of the crash 
+backtrace:
+
+> >Call Trace:
+> > [<c10fa54b>] drm_lock+0x255/0x2de
+> > [<c10ff28d>] mga_dma_buffers+0x0/0x2e3
+> > [<c10f87fc>] drm_ioctl+0x142/0x18a
+> > [<c1005973>] do_IRQ+0x97/0xb0
+> > [<c10f86ba>] drm_ioctl+0x0/0x18a
+> > [<c10f86ba>] drm_ioctl+0x0/0x18a
+> > [<c105b0d7>] do_ioctl+0x87/0x9f
+> > [<c105b32c>] vfs_ioctl+0x23d/0x250
+> > [<c11b533e>] schedule+0x2d0/0x2e6
+> > [<c105b372>] sys_ioctl+0x33/0x4d
+> > [<c1003d1e>] syscall_call+0x7/0xb
+
+it just happened to be on the kernel stack. Nor is the do_IRQ() entry 
+real. Both are frequent functions (and were executed recently) that's 
+why they were still in the stackframe.
+
+	Ingo
