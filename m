@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbXH3SnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933098AbXH3Snk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761567AbXH3SnV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 14:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759377AbXH3SnI
+	id S933098AbXH3Snk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 14:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761787AbXH3Sn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 14:43:08 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:9827 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759422AbXH3SnF (ORCPT
+	Thu, 30 Aug 2007 14:43:26 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:58278 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761772AbXH3SnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 14:43:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Vp8IiO9hCKTGITNHZK0nWcNcimT3vdkK5BKYvF+9VhMidYDDJQID2Ikmtk5DWb/18ZRUm1jKvX5pDvG2PJigZo+MAvCe5KnvgRFl/q9EMdNIJ6dmdqqrZN3dTp22m5i9da5+LPJEs5hQLIhR6iGdeO69mf6M1ngbN9bqkERKDuU=
-Message-ID: <c70ff3ad0708301143w55bf296p37b0991d7f099fd6@mail.gmail.com>
-Date: Thu, 30 Aug 2007 21:43:05 +0300
-From: "saeed bishara" <saeed.bishara@gmail.com>
-To: "Williams, Dan J" <dan.j.williams@intel.com>
-Subject: Re: [md-accel PATCH 16/19] dmaengine: driver for the iop32x, iop33x, and iop13xx raid engines
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de,
-       "Nelson, Shannon" <shannon.nelson@intel.com>
-In-Reply-To: <0C7297FA1D2D244A9C7F6959C0BF1E52025B10E4@azsmsx413.amr.corp.intel.com>
+	Thu, 30 Aug 2007 14:43:25 -0400
+Date: Thu, 30 Aug 2007 20:43:24 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+cc: Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@osdl.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hare@suse.de
+Subject: Re: [PATCH] debloat aic7xxx and aic79xx drivers by deinlining
+In-Reply-To: <200708282055.07411.vda.linux@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0708302042260.24730@fbirervta.pbzchgretzou.qr>
+References: <200708252257.07241.vda.linux@googlemail.com>
+ <200708281256.35162.vda.linux@googlemail.com> <20070828081710.4687185c@laptopd505.fenrus.org>
+ <200708282055.07411.vda.linux@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
-	 <20070627015155.18962.88413.stgit@dwillia2-linux.ch.intel.com>
-	 <c70ff3ad0708270611x5598fa9dlc3afa5f6fabd6563@mail.gmail.com>
-	 <c70ff3ad0708270614t6f17b38nfbdf84ace69b8d78@mail.gmail.com>
-	 <0C7297FA1D2D244A9C7F6959C0BF1E52025B10E4@azsmsx413.amr.corp.intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-you are right, I've another question regarding the function
-dma_wait_for_async_tx from async_tx.c, here is the body of the code:
-       /* poll through the dependency chain, return when tx is complete */
-1.        do {
-2.                 iter = tx;
-3.                 while (iter->cookie == -EBUSY)
-4.                         iter = iter->parent;
-5.
-6.                 status = dma_sync_wait(iter->chan, iter->cookie);
-7.         } while (status == DMA_IN_PROGRESS || (iter != tx));
 
-assume that:
-- The interrupt capability is not provided.
-- Request A was sent to chan 0
-- Request B that depends on A is sent to chan 1
-- Request C that depends on B is send to chan 2.
-- Also, assume that when C is handled by async_tx_submit(), B is still
-not queued to the dmaengine (cookie equals to -EBUSY).
+On Aug 28 2007 20:55, Denys Vlasenko wrote:
+>> Fwiw I do like your debloat patch a lot; it's just only half the
+>> equation ... if you also do the namespace fixes, I bet the driver
+>> debloats even more...
+>
+>Yes, I know, and I am happy to do that too. I just don't know
+>whether patches will be accepted.
+>
+>Why this patch is not commented on by scsi people?
+>Am I sending patches to wrong people/lists?
 
-In this case, dma_wait_for_async_tx will be called for C, now, it
-looks for me that the do while will loop forever, even when A gets
-completed. this is because the iter will point to B after line 4, thus
-the iter != tx (C) will always become true.
+Well, you can send it to Linus/Andrew, that will usually upset people and they
+start commenting on it. Or they don't, and everything is fine.
+(The "default y" approach so to speak ;-)
 
-saeed
+
+	Jan
+-- 
