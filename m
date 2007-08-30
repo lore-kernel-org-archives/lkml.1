@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932634AbXH3RHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761171AbXH3RJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932634AbXH3RHu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 13:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbXH3RHj
+	id S1761171AbXH3RJj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 13:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbXH3RJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 13:07:39 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:42771 "EHLO
-	viefep24-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932698AbXH3RHd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 13:07:33 -0400
-From: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Subject: Re: Linux 2.6.23-rc4: BAD regression
-Date: Thu, 30 Aug 2007 19:07:55 +0200
+	Thu, 30 Aug 2007 13:09:33 -0400
+Received: from mail.gmx.net ([213.165.64.20]:53606 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755564AbXH3RJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 13:09:32 -0400
+X-Authenticated: #12383568
+X-Provags-ID: V01U2FsdGVkX18VgAhesRsVlPXF3CDlrKOV/x0/y35AVrXzp5+aGh
+	xP065vk+kOh//o
+From: Clemens Kolbitsch <clemens.kol@gmx.at>
+To: Jiri Kosina <jikos@jikos.cz>
+Subject: Re: Forbid deletion of memory mappings
+Date: Thu, 30 Aug 2007 19:09:28 +0200
 User-Agent: KMail/1.9.6
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Len Brown <len.brown@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200708290129.57243.daniel.ritz-ml@swissonline.ch> <20070829232150.GA17467@dreamland.darkstar.lan>
-In-Reply-To: <20070829232150.GA17467@dreamland.darkstar.lan>
+Cc: linux-kernel@vger.kernel.org
+References: <200708301844.10532.clemens.kol@gmx.at> <Pine.LNX.4.64.0708301906020.2460@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0708301906020.2460@twin.jikos.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708301907.56561.daniel.ritz-ml@swissonline.ch>
+Message-Id: <200708301909.28894.clemens.kol@gmx.at>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 August 2007 01:21:50 Luca Tettamanti wrote:
-> Il Wed, Aug 29, 2007 at 01:29:56AM +0200, Daniel Ritz ha scritto: 
-> > tried that one on my old toshiba tecra 8000 laptop, almost killing it.
-> > the fan doesn't work any more...type 'make' and see the box dying.
-> > luckily my CPU doesn't commit suicide...bisected it to that one:
-> > 
-> > cd8c93a4e04dce8f00d1ef3a476aac8bd65ae40b is first bad commit
-> 
-> I've just bisected down to the same commit. In my case the fan is locked
-> at maximum speed and the system is *extremly* slow (some kind of
-> throttling?).
-> 
-> Alexey, I've seen the patch, I'll test it tomorrow and report back.
-> 
+On Thursday 30 August 2007 19:07:05 Jiri Kosina wrote:
+> On Thu, 30 Aug 2007, Clemens Kolbitsch wrote:
+> > It all works perfectly well (creating & deleting the additional
+> > mappings), however, when the kernel feels like it needs to allocate a
+> > mapping in user-space it sometimes deletes my mapping and overwrites it
+> > with the new one, although there is plenty of free memory at some other
+> > location.
+>
+> Hi Clemens,
+>
+> what do you mean by "overwrites it"? It just probably merges your vma with
+> the newly created one, right?
 
-i've just tested the minimal fix here:
-	http://bugzilla.kernel.org/show_bug.cgi?id=8958#c7
-works good so far. fan starts and system is responsive.
+that's exactly the problem... it replaces my mapping with the new one... i.e. 
+it first deletes my mapping and then creates the new one at the same 
+location.
 
-> Luca
+i *guess* this all happens in exec.c, lines 1033ff:
 
-rgds
--daniel
-
-
+munmap_back:
+	vma = find_vma_prepare(mm, addr, &prev, &rb_link, &rb_parent);
+	if (vma && vma->vm_start < addr + len) {
+		if (do_munmap(mm, addr, len))
+			return -ENOMEM;
+		goto munmap_back;
+	}
