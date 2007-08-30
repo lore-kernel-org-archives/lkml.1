@@ -1,94 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762651AbXH3VIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762790AbXH3VIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762651AbXH3VIK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 17:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758259AbXH3VHy
+	id S1762790AbXH3VIf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 17:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762657AbXH3VIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 17:07:54 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:64945 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755712AbXH3VHx (ORCPT
+	Thu, 30 Aug 2007 17:08:11 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51923 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762647AbXH3VIJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 17:07:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
-        b=OBZwb30hTnZ/Ll8Fv2JgJokl5luZBXMcp/oyEOPufjxRPtgJFyqWuUzLckTRZAU59NXiEy9lxPxyapMu0WcNzzIje7DbpiIG07VtaiOk/Aid2XoxE8I+EMCOBlAlatC1NDFMgYJUz4lDquJM24VXk56rasVyWSkmP4l5f1viCpo=
-From: "Hua Zhong" <hzhong@gmail.com>
-To: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Cc: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       <akpm@linux-foundation.org>
-Subject: recent nfs change causes autofs regression
-Date: Thu, 30 Aug 2007 14:07:43 -0700
-Message-ID: <000701c7eb49$cff701c0$6fe50540$@com>
+	Thu, 30 Aug 2007 17:08:09 -0400
+Date: Fri, 31 Aug 2007 02:51:09 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, Joe Perches <joe@perches.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] trivial - constify sched.h
+In-Reply-To: <Pine.LNX.4.64.0708302247070.10266@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LFD.0.999.0708310239340.31519@enigma.security.iitk.ac.in>
+References: <1188247231.18004.129.camel@localhost> <20070827213323.GA1759@martell.zuzino.mipt.ru>
+ <Pine.LNX.4.64.0708302120290.24730@fbirervta.pbzchgretzou.qr>
+ <alpine.LFD.0.999.0708310121121.28360@enigma.security.iitk.ac.in>
+ <Pine.LNX.4.64.0708302247070.10266@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acfqf2fhopQVT2kOSOCYqFO/cJ34rQAyPAGg
-Content-Language: en-us
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am re-sending this after help from Ian and git-bisect. To me it's a
-show-stopper: I cannot find an acceptable workaround that I can implement.
-
-The problem: upgrading to 2.6.23-rc4 from 2.6.22 causes several autofs
-mounts to fail silently - they just not appear when they should.
-
-I believe it's caused by the NFS change that forces multiple mounts from
-different directories under the same server side filesystem to have the same
-mount options by default, otherwise it returns EBUSY.
-
-For example, if server has a filesystem /a, and it exports /a/x and /a/y
-(maybe with rw or ro), and a client must mount /a/x and /a/y with the same
-mount options now.
-
-Since in my setup they are managed by autofs, and the autofs map is managed
-by nis, there is no way I could easily workaround it..
-
-If we have to live with this regression, I want to hear some suggestions
-about how to fix them realistically. Thanks.
-
-By the way, I am not sure if I did the bisect right, but FWIW, git-bisect
-says:
-
-c98451bdb2f3e6d6cc1e03adad641e9497512b49 is first bad commit
-commit c98451bdb2f3e6d6cc1e03adad641e9497512b49
-Author: Frank van Maarseveen <frankvm@frankvm.com>
-Date:   Mon Jul 9 22:25:29 2007 +0200
-
-    NLM: fix source address of callback to client
-
-    Use the destination address of the original NLM request as the
-    source address in callbacks to the client.
-
-    Signed-off-by: Frank van Maarseveen <frankvm@frankvm.com>
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-:040000 040000 675c84bd8b2c50744018becaa0db4aeca19b8f9f
-105fbd3cb3fa5e3019836b4b5268125d0181a72d M      fs
-:040000 040000 0138796e0806b4ebd1cc3850ed4e8c7ab24d2d41
-2fec08debe51c20423a88b1a0d4281c683ba5daf M      include
 
 
------Original Message-----
-From: Hua Zhong [mailto:hzhong@gmail.com] 
-Sent: Wednesday, August 29, 2007 1:59 PM
-To: 'Linux Kernel Mailing List'
-Subject: regression of autofs for current git?
+On Thu, 30 Aug 2007, Jan Engelhardt wrote:
+> 
+> On Aug 31 2007 02:11, Satyam Sharma wrote:
+> >> So that you can actually pass in a const struct task_struct * without having
+> >> to cast it back to [non-const].
+> >
+> >... which makes zero sense, because ...
+> >
+> >> Why one would have a const struct task_struct * in the first place
+> >> is a different matter.
+> >
+> >... exactly.
+> >
+> >> But see http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=77adbfbf4cf96fedf9b75bb330704828c187b190
+> >
+> >That commit const-ified struct timespec * or struct timeval * arguments,
+> >which made sense because: (1) those functions really did not modify the
+> >passed structs, and, (2) callers that pass in const struct timeval *
+> >or const struct timespec * are indeed plausible (because one can plausibly
+> >have const timeval/timespec structs). As the changelog suggested, those
+> >callers
+> >
+> >were having to cast away the const qualifier before passing to
+> >these functions to avoid seeing "passing argument discards qualifiers"
+> >warnings. While (1) holds true for the sched.h case here, (2) does not
+> >(and there are no warnings to shut up either).
+> 
+> "those callers". There was _exactly one_ caller, and that was an out-of-tree
+> module. There were not any in-kernel callers before, and it did not generate
+> any warning. That is perhaps why no one had constified it before me.
 
-Hi,
+You've completely missed the point -- it is _plausible_ that callers
+(even if just _one_) have const timespec/timeval structs, which is why
+that commit made sense as I mentioned above (to shut up the warning that
+would otherwise occur). This does not hold true for the sched.h / struct
+task_struct case here -- I cannot imagine a const task_struct.
 
-I am wondering if this is a known issue, but I just built the current git
-and several autofs mounts mysteriously disappeared. Restarting autofs could
-fix some, but then lose others. 2.6.22 was fine.
+> This does
+> not mean we should wait for a caller to pop up before constifying IMHO.
 
-Is there anything I could check other than bisect? (It may take some time
-for me to get to it)
+Going about const-ifying such function arguments as in here (for the sake
+of type safety, where the function does not modify that argument), could
+easily lead to *zillions* of patches such as this which would have
+absolutely _zero_ impact on the actual kernel that gets built.
 
-Thanks for your help.
-
-Hua
-
+As I said, if someone really wants to do this, please go about constifying
+_data_ instead -- that would make a (positive) difference.
