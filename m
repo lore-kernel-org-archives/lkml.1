@@ -1,95 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbXH3DKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbXH3DOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097AbXH3DKG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 23:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbXH3DJ4
+	id S1756404AbXH3DOj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 23:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbXH3DOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 23:09:56 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:23757 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752762AbXH3DJz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 23:09:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:references:in-reply-to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
-        b=Vw4V3RjREnI4Ob2nKUohzA4mKH6P0GIwymf4lawI5FyrPwGZgUzQRPgz/ZoOHuglYOTGv3jPAUmO1SZU475cRFGCvK7xsLvpn6FcREYHfsJQiDGgvCilClfcjh3IT9bTzGK+G7MQW9w6JkXJSl1XSqW8Mrv0gONzYlrlHDn6heE=
-From: "Hua Zhong" <hzhong@gmail.com>
-To: "'Ian Kent'" <raven@themaw.net>
-Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       <autofs@linux.kernel.org>, "'Adrian Bunk'" <bunk@kernel.org>
-References: <00f401c7ea7f$6db9fc80$492df580$@com>	 <20070829224754.GW26410@stusta.de> <1188442804.4090.10.camel@raven.themaw.net>
-In-Reply-To: <1188442804.4090.10.camel@raven.themaw.net>
-Subject: RE: regression of autofs for current git?
-Date: Wed, 29 Aug 2007 20:09:36 -0700
-Message-ID: <010401c7eab3$38d16100$aa742300$@com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Wed, 29 Aug 2007 23:14:31 -0400
+Received: from main.gmane.org ([80.91.229.2]:38563 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751410AbXH3DOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 23:14:30 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Salah Coronya <salahx@yahoo.com>
+Subject: Re: Forced unmounting for removable devices
+Date: Wed, 29 Aug 2007 22:14:04 -0500
+Message-ID: <fb5cls$geh$1@sea.gmane.org>
+References: <46D622A5.2000205@aladin.ro>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AcfqseJK+5ALv7R3StOP78+N7nT+NAAAM4cA
-Content-Language: en-us
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 75-132-102-43.dhcp.stls.mo.charter.com
+User-Agent: Thunderbird 2.0.0.6 (X11/20070804)
+In-Reply-To: <46D622A5.2000205@aladin.ro>
+X-Enigmail-Version: 0.95.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am in the process of bisecting now. It takes a while but the bad commit is
-between 2.6.22 and 13f9966b3ba5b45f47f2ea0eb0a90afceedfbb1f (June 28). I'll
-continue tomorrow.
-
-My system is FC4. 
-
-autofs-4.1.4-26
-nfs-utils-1.0.7-13.FC4
-
-By the way, the particular autofs commit Andrian sent is innocent. It's
-something else.
-
-It will still take me about 10 reboots to bisect. If anyone has a patch for
-me to try, I'll give it a shot tomorrow.
-
-> -----Original Message-----
-> From: Ian Kent [mailto:raven@themaw.net]
-> Sent: Wednesday, August 29, 2007 8:00 PM
-> To: Hua Zhong
-> Cc: 'Linux Kernel Mailing List'; autofs@linux.kernel.org; Adrian Bunk
-> Subject: Re: regression of autofs for current git?
+Eduard-Gabriel Munteanu wrote:
+> *This message was transferred with a trial version of CommuniGate(r) Pro*
+> This might have been discussed a few years ago, but things have changed.
+> I'm talking about patches like this one (I'm not the author):
+> http://developer.osdl.org/dev/fumount/#kernel1
 > 
-> On Thu, 2007-08-30 at 00:47 +0200, Adrian Bunk wrote:
-> > On Wed, Aug 29, 2007 at 01:58:58PM -0700, Hua Zhong wrote:
-> >
-> > > Hi,
-> >
-> > Hi Hua,
-> >
-> > > I am wondering if this is a known issue, but I just built the
-> current git
-> > > and several autofs mounts mysteriously disappeared. Restarting
-> autofs could
-> > > fix some, but then lose others. 2.6.22 was fine.
-> > >
-> > > Is there anything I could check other than bisect? (It may take
-> some time
-> > > for me to get to it)
-> >
-> > the commit below is the only autofs4 patch that went into the git
-> tree
-> > since 2.6.22.
-> >
-> > Does reverting it fix your problems?
+> The current situation requires a way to forcibly unmount removable
+> media. Consider the following (real) scenario. Someone has a box with
+> hald + dbus + ivman to support "supermounting" the CDROM drive. He has
+> to install a 2 CD application using Wine for example, but the setup
+> application prevents normal unmounting of the first one. Then he goes on
+> and pushes the button to eject the CD, lazy-unmounting the media. The
+> kernel goes mad and all attempts to load the second CD fail (the kernel
+> hasn't got rid of the first fs).
 > 
-> Maybe but there is an NFS change that appears to be in the current
-> 2.6.23-rc kernel and doesn't seem to be in 2.6.22 that is known to
-> break
-> some autofs maps and also breaks amd.
+> If there was anything like a real forced unmounting, things would have
+> worked well, as on MS Windows itself.
 > 
-> I can't seem to locate the commit just now.
-> In the meantime what version of user space autofs and nfs-utils are you
-> running?
-> And can you post your autofs maps please?
+> As far as I can see, there is no other sane way to solve such problems.
+> So, what's keeping such patches from making their way into the
+> mainstream kernel? All (but maybe I haven't searched enough) arguments
+> against such a feature that I've seen by now just say "it's not needed",
+> "it's not worth it" and so on, and many of them refer to network mounts.
 > 
-> Ian
-> 
-> 
+> P.S.: I'm not saying lazy unmounting should be replaced. They both make
+> sense, depending on the scenario.
 
+
+There are patches in -mm for revokeat()/frevoke(), which can be used to
+implement exactly that. If a device "vanishes" (CD is removed in the
+middle of loading, USB pend rive yanked out the middle of I/O, NFS
+server  thats gone MIA), A user-space program (maybe HAL) could iterate
+over the open files and revoke() them, at which point the system can be
+cleanly unmounted.
 
