@@ -1,97 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759262AbXH3QG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759766AbXH3QLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759262AbXH3QG6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 12:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbXH3QGv
+	id S1759766AbXH3QLL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 12:11:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757168AbXH3QK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 12:06:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37559 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751887AbXH3QGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 12:06:50 -0400
-Message-ID: <46D6EAFA.7070304@redhat.com>
-Date: Thu, 30 Aug 2007 12:06:18 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 30 Aug 2007 12:10:58 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:43798 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756821AbXH3QK5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 12:10:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CGl8HaRKzIWOTWb0qhIlfqvuSfK89/iC+AZWpEZrVs5InaMaQNHOMPDpKsMp7fhy3Nc/22JgArEkugAJV7+LSXrcZsFM3tQaoHhEK4aHz81vd+nNSoRg9P7F+CwCvIwK7DVGu6ePbAXphChg4UL93AokaHXD0T4V20wAajQyRkY=
+Message-ID: <ab40e9c0708300910m3cba4c7bie3f6c9d471a155ff@mail.gmail.com>
+Date: Thu, 30 Aug 2007 18:10:55 +0200
+From: "Xu Yang" <risingsunxy@googlemail.com>
+To: "Uli Luckas" <u.luckas@road.de>
+Subject: Re: parse_tag_ramdisk
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200708301806.42905.u.luckas@road.de>
 MIME-Version: 1.0
-To: Rene Herman <rene.herman@gmail.com>
-CC: keith.packard@intel.com, Ingo Molnar <mingo@elte.hu>,
-       Al Boldi <a1426z@gawab.com>, Peter Zijlstra <peterz@infradead.org>,
-       Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Dave Airlie <airlied@redhat.com>
-Subject: Re: CFS review
-References: <200708111344.42934.a1426z@gawab.com>	 <200708271746.47685.a1426z@gawab.com> <20070827204116.GA12495@elte.hu>	 <200708280737.53439.a1426z@gawab.com> <20070829041827.GA8733@elte.hu>	 <1188361749.21502.123.camel@koto.keithp.com>	 <20070829044614.GA13225@elte.hu>	 <1188374249.21502.155.camel@koto.keithp.com>	 <20070829080417.GB19386@elte.hu> <1188403075.21502.158.camel@koto.keithp.com> <46D5CF5F.6090505@gmail.com>
-In-Reply-To: <46D5CF5F.6090505@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <ab40e9c0708300707r2e6d2d71y42940084db5038ac@mail.gmail.com>
+	 <200708301806.42905.u.luckas@road.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/29/2007 03:56 PM, Rene Herman wrote:
-> 
-> Before people focuss on software rendering too much -- also with 1.3.0 (and
-> a Matrox Millenium G550 AGP, 32M) glxgears also works decidedly crummy
-> using
-> hardware rendering. While I can move the glxgears window itself, the actual
-> spinning wheels stay in the upper-left corner of the screen and the
-> movement
-> leaves a non-repainting trace on the screen. Running a second instance of
-> glxgears in addition seems to make both instances unkillable  -- and when
-> I just now forcefully killed X in this situation (the spinning wheels were
-> covering the upper left corner of all my desktops) I got the below.
-> 
-> Kernel is 2.6.22.5-cfs-v20.5, schedule() is in the traces (but that may be
-> expected anyway).
-> 
+Hi Uli,
 
-And this doesn't happen at all with the stock scheduler? (Just confirming,
-in case you didn't compare.)
 
-> BUG: unable to handle kernel NULL pointer dereference at virtual address
-> 00000010
->  printing eip:
-> c10ff416
-> *pde = 00000000
-> Oops: 0000 [#1]
-> PREEMPT
+thanks for your reply.
 
-Try it without preempt?
+just have a question, where is the tag list, how can i modify this?
 
-> Modules linked in: nfsd exportfs lockd nfs_acl sunrpc nls_iso8859_1
-> nls_cp437 vfat fat nls_base
-> CPU:    0
-> EIP:    0060:[<c10ff416>]    Not tainted VLI
-> EFLAGS: 00210246   (2.6.22.5-cfs-v20.5-local #5)
-> EIP is at mga_dma_buffers+0x189/0x2e3
-> eax: 00000000   ebx: efd07200   ecx: 00000001   edx: efc32c00
-> esi: 00000000   edi: c12756cc   ebp: dfea44c0   esp: dddaaec0
-> ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-> Process glxgears (pid: 1775, ti=dddaa000 task=e9daca60 task.ti=dddaa000)
-> Stack: efc32c00 00000000 00000004 e4c3bd20 c10fa54b e4c3bd20 efc32c00
-> 00000000
->        00000004 00000000 00000000 00000000 00000000 00000001 00010000
-> bfbdb8bc
->        bfbdb8b8 00000000 c10ff28d 00000029 c12756cc dfea44c0 c10f87fc
-> bfbdb844
-> Call Trace:
->  [<c10fa54b>] drm_lock+0x255/0x2de
->  [<c10ff28d>] mga_dma_buffers+0x0/0x2e3
->  [<c10f87fc>] drm_ioctl+0x142/0x18a
->  [<c1005973>] do_IRQ+0x97/0xb0
->  [<c10f86ba>] drm_ioctl+0x0/0x18a
->  [<c10f86ba>] drm_ioctl+0x0/0x18a
->  [<c105b0d7>] do_ioctl+0x87/0x9f
->  [<c105b32c>] vfs_ioctl+0x23d/0x250
->  [<c11b533e>] schedule+0x2d0/0x2e6
->  [<c105b372>] sys_ioctl+0x33/0x4d
->  [<c1003d1e>] syscall_call+0x7/0xb
->  =======================
-> Code: 9a 08 03 00 00 8b 73 30 74 14 c7 44 24 04 28 76 1c c1 c7 04 24 49
-> 51 23 c1 e8 b0 74 f1 ff 8b 83 d8 00 00 00 83 3d 1c 47 30 c1 00 <8b> 40
-> 10 8b a8 58 1e 00 00 8b 43 28 8b b8 64 01 00 00 74 32 8b
-> EIP: [<c10ff416>] mga_dma_buffers+0x189/0x2e3 SS:ESP 0068:dddaaec0
+regards,
+yang
 
-dev->dev_private->mmio is NULL when trying to access mmio.handle
+2007/8/30, Uli Luckas <u.luckas@road.de>:
+> On Thursday, 30. August 2007, Xu Yang wrote:
+> > Hi guys,
+> >
+> >
+> > I found that in the function parse_tag_ramdisk , the setup_ramdisk is
+> > called. is it true that in the setup_ramdisk the location ot the
+> > initrd is specified?
+> >
+> > it seems that in my case the parse_tag_ramdisk is never accessed. what
+> > might cause this?
+> >
+> Hi Xu,
+> I didn't get down to completely debugging this problem. But for no obvious
+> reason, parsing seems to ends after it hits a command line tag.
+> Try putting the command line tag last in the tag list and see if that helps.
+>
+> Regards
+> Uli
+>
+> --
+>
+> ------- ROAD ...the handyPC Company - - -  ) ) )
+>
+> Uli Luckas
+> Software Development
+>
+> ROAD GmbH
+> Bennigsenstr. 14 | 12159 Berlin | Germany
+> fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
+> url: www.road.de
+>
+> Amtsgericht Charlottenburg: HRB 96688 B
+> Managing directors: Hans-Peter Constien, Hubertus von Streit
+>
