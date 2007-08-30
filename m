@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762790AbXH3VIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762278AbXH3VQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762790AbXH3VIf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 17:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762657AbXH3VIL
+	id S1762278AbXH3VQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 17:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbXH3VQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 17:08:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51923 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762647AbXH3VIJ (ORCPT
+	Thu, 30 Aug 2007 17:16:49 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:55345 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753101AbXH3VQr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 17:08:09 -0400
-Date: Fri, 31 Aug 2007 02:51:09 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Alexey Dobriyan <adobriyan@gmail.com>, Joe Perches <joe@perches.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] trivial - constify sched.h
-In-Reply-To: <Pine.LNX.4.64.0708302247070.10266@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LFD.0.999.0708310239340.31519@enigma.security.iitk.ac.in>
-References: <1188247231.18004.129.camel@localhost> <20070827213323.GA1759@martell.zuzino.mipt.ru>
- <Pine.LNX.4.64.0708302120290.24730@fbirervta.pbzchgretzou.qr>
- <alpine.LFD.0.999.0708310121121.28360@enigma.security.iitk.ac.in>
- <Pine.LNX.4.64.0708302247070.10266@fbirervta.pbzchgretzou.qr>
+	Thu, 30 Aug 2007 17:16:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NbkrvAZX4g8Gzr+o2tujBy6ZqnhsHRlpr2pwpU1/0bRfdkibDoUsWVbfksoEOigkvq953iMZ8XTzytaqYb7ykTsMdkzVt9io/mQdoIQhxhVYmX9g27O2e6wl1w51JdBQT9o53+4EJJscI4J4DdhcdZKtrcXJ++BZJkCsk51+dvQ=
+Message-ID: <87f94c370708301416j2a7c000bscbaef593af004010@mail.gmail.com>
+Date: Thu, 30 Aug 2007 17:16:46 -0400
+From: "Greg Freemyer" <greg.freemyer@gmail.com>
+To: "Rene Herman" <rene.herman@gmail.com>
+Subject: Re: Problems with IDE on linux 2.6.22.X
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "=?ISO-8859-1?Q?Jos=E9_Luis_Pati=F1o_Andr=E9s?=" <jopan@alumni.uv.es>,
+       "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       "Jeff Garzik" <jgarzik@pobox.com>, linux-ide@vger.kernel.org
+In-Reply-To: <46D7231B.3080807@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200708212149.12912.jopan@alumni.uv.es>
+	 <20070822162312.GG9412@csclub.uwaterloo.ca>
+	 <46CC6A2F.5000406@gmail.com> <200708280044.34475.jopan@alumni.uv.es>
+	 <46D455DB.8000800@gmail.com>
+	 <Pine.LNX.4.64.0708302130210.24730@fbirervta.pbzchgretzou.qr>
+	 <46D7231B.3080807@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 30 Aug 2007, Jan Engelhardt wrote:
-> 
-> On Aug 31 2007 02:11, Satyam Sharma wrote:
-> >> So that you can actually pass in a const struct task_struct * without having
-> >> to cast it back to [non-const].
+On 8/30/07, Rene Herman <rene.herman@gmail.com> wrote:
+> On 08/30/2007 09:31 PM, Jan Engelhardt wrote:
+>
+> > On Aug 28 2007 19:05, Rene Herman wrote:
+>
+> >> Sheesh. How could anyone _not_ understand you need SCSI CD-ROM support
+> >> for your IDE DVD-RW drive...
 > >
-> >... which makes zero sense, because ...
-> >
-> >> Why one would have a const struct task_struct * in the first place
-> >> is a different matter.
-> >
-> >... exactly.
-> >
-> >> But see http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=77adbfbf4cf96fedf9b75bb330704828c187b190
-> >
-> >That commit const-ified struct timespec * or struct timeval * arguments,
-> >which made sense because: (1) those functions really did not modify the
-> >passed structs, and, (2) callers that pass in const struct timeval *
-> >or const struct timespec * are indeed plausible (because one can plausibly
-> >have const timeval/timespec structs). As the changelog suggested, those
-> >callers
-> >
-> >were having to cast away the const qualifier before passing to
-> >these functions to avoid seeing "passing argument discards qualifiers"
-> >warnings. While (1) holds true for the sched.h case here, (2) does not
-> >(and there are no warnings to shut up either).
-> 
-> "those callers". There was _exactly one_ caller, and that was an out-of-tree
-> module. There were not any in-kernel callers before, and it did not generate
-> any warning. That is perhaps why no one had constified it before me.
+> > Welcome to the wonderful world of SCSIfying ATA. (Don't talk about ATAPI,
+> > USB/Firewire, it's a different matter.)
+>
+> Well -- the world where ATA, SCSI, USB, Firewire and what have you are
+> low-level drivers to a unifying storage layer is under non too obscure
+> definitions sort of not non-wonderful...
+>
 
-You've completely missed the point -- it is _plausible_ that callers
-(even if just _one_) have const timespec/timeval structs, which is why
-that commit made sense as I mentioned above (to shut up the warning that
-would otherwise occur). This does not hold true for the sched.h / struct
-task_struct case here -- I cannot imagine a const task_struct.
+USB / Firewire / FC / iSCSI are all SCSI transports and fit within the
+SCSI subsystem by design.
 
-> This does
-> not mean we should wait for a caller to pop up before constifying IMHO.
+ie. Just like ethernet, DSL, T-1, etc can all carry IP traffic with no
+conceptual conflict, many media by design carry SCSI traffic.
 
-Going about const-ifying such function arguments as in here (for the sake
-of type safety, where the function does not modify that argument), could
-easily lead to *zillions* of patches such as this which would have
-absolutely _zero_ impact on the actual kernel that gets built.
+The PATA and SATA physical layer typically carry ATA commands and
+having them tied into the SCSI stack is an aberration that I hope will
+be eliminated some day.
 
-As I said, if someone really wants to do this, please go about constifying
-_data_ instead -- that would make a (positive) difference.
+ATAPI is an exception.  Not sure where that would end up in a perfect world.
+
+Greg
+-- 
+Greg Freemyer
+Litigation Triage Solutions Specialist
+http://www.linkedin.com/in/gregfreemyer
+
+The Norcross Group
+The Intersection of Evidence & Technology
+http://www.norcrossgroup.com
