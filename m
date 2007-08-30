@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932780AbXH3SeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933040AbXH3Sf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932780AbXH3SeY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 14:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758847AbXH3SeP
+	id S933040AbXH3Sf0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 14:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932393AbXH3SfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 14:34:15 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52498 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758744AbXH3SeP (ORCPT
+	Thu, 30 Aug 2007 14:35:15 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38780
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932350AbXH3SfN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 14:34:15 -0400
-Date: Thu, 30 Aug 2007 19:34:02 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Rob Landley <rob@landley.net>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible fashion.
-Message-ID: <20070830183402.GA17084@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Rob Landley <rob@landley.net>, "H. Peter Anvin" <hpa@zytor.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com> <m1r6lnb4ha.fsf@ebiederm.dsl.xmission.com> <46D4CC81.4060400@zytor.com> <200708301432.11516.rob@landley.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 30 Aug 2007 14:35:13 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Subject: [PATCH] Documentation/arm/00-INDEX add missing entries.
+Date: Thu, 30 Aug 2007 14:35:12 -0500
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200708301432.11516.rob@landley.net>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200708301435.13071.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 30, 2007 at 02:32:11PM -0500, Rob Landley wrote:
-> (If sysctlfs wasn't part of proc, that would be less of an issue, but we need 
-> union mounts for that...)
+Signed-off-by: Rob Landley <rob@landley.net>
 
-Not at all.  all sysctls are under /proc/sys/
+Index two unindexed documentation files.
+
+--- linux-2.6.23-rc4/Documentation/arm/00-INDEX	2007-08-27 20:32:35.000000000 -0500
++++ linux-new/Documentation/arm/00-INDEX	2007-08-30 14:27:15.000000000 -0500
+@@ -20,3 +20,7 @@
+ 	- description of the virtual memory layout
+ nwfpe
+ 	- NWFPE floating point emulator documentation
++Porting
++	- Symbol definitions for porting Linux to a new ARM machine.
++Setup
++	- Kernel initialization parameters on ARM Linux
+
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
