@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933240AbXH3S6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933241AbXH3TAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933240AbXH3S6W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 14:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932496AbXH3S6O
+	id S933241AbXH3TAy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 15:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932599AbXH3TAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 14:58:14 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48209 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932357AbXH3S6O (ORCPT
+	Thu, 30 Aug 2007 15:00:45 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:43163 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932496AbXH3TAo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 14:58:14 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Rob Landley <rob@landley.net>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible fashion.
-References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
-	<m1r6lnb4ha.fsf@ebiederm.dsl.xmission.com>
-	<46D4CC81.4060400@zytor.com> <200708301432.11516.rob@landley.net>
-	<20070830183402.GA17084@infradead.org>
-Date: Thu, 30 Aug 2007 12:57:29 -0600
-In-Reply-To: <20070830183402.GA17084@infradead.org> (Christoph Hellwig's
-	message of "Thu, 30 Aug 2007 19:34:02 +0100")
-Message-ID: <m17inczw86.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 30 Aug 2007 15:00:44 -0400
+Message-ID: <46D713D5.6030709@linux.vnet.ibm.com>
+Date: Fri, 31 Aug 2007 00:30:37 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       David Rientjes <rientjes@google.com>, Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [-mm PATCH]  Memory controller improve user interface (v2)
+References: <20070830185246.3170.74806.sendpatchset@balbir-laptop>
+In-Reply-To: <20070830185246.3170.74806.sendpatchset@balbir-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> writes:
+Balbir Singh wrote:
+> Change the interface to use kilobytes instead of pages. Page sizes can vary
+> across platforms and configurations. A new strategy routine has been added
+> to the resource counters infrastructure to format the data as desired.
+> 
 
-> On Thu, Aug 30, 2007 at 02:32:11PM -0500, Rob Landley wrote:
->> (If sysctlfs wasn't part of proc, that would be less of an issue, but we need
->> union mounts for that...)
->
-> Not at all.  all sysctls are under /proc/sys/
+Typo, the description should be
 
-Yes.  So all we really need to do is split them apart and do the nfs multiple
-mount thing to maintain backwards compatibility when mounting proc.
+Changelog for version 2
 
-The code is close enough to split apart now that it probably would not be
-to difficult to finish the job.
+1. Back end tracking is done in bytes, round up values of the limit if the
+   specified value is not a multiple of page size. Display memory.usage
+   and memory.limit in bytes (Dave Hansen, Paul Menage)
 
-Eric
+Change the interface to use bytes instead of pages. Page sizes can vary
+across platforms and configurations. A new strategy routine has been added
+to the resource counters infrastructure to format the data as desired.
+
+Suggested by David Rientjes, Andrew Morton and Herbert Poetzl
+
+Tested on a UML setup with the config for memory control enabled.
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
