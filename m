@@ -1,42 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932937AbXH3RYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932748AbXH3RfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932937AbXH3RYU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 13:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932282AbXH3RYJ
+	id S932748AbXH3RfA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 13:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932138AbXH3Reu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 13:24:09 -0400
-Received: from avexch2.qlogic.com ([198.70.193.116]:23783 "EHLO
-	avexch2.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932288AbXH3RYI (ORCPT
+	Thu, 30 Aug 2007 13:34:50 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46970 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753705AbXH3Ret (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 13:24:08 -0400
-Message-ID: <46D6FD83.4010708@qlogic.com>
-Date: Thu, 30 Aug 2007 10:25:23 -0700
-From: Seokmann Ju <seokmann.ju@qlogic.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 30 Aug 2007 13:34:49 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.osdl.org
+Subject: Re: [PATCH] Send quota messages via netlink
+References: <20070828141318.GC5869@duck.suse.cz>
+	<20070828211335.37fce4c9.akpm@linux-foundation.org>
+	<20070829122647.GB7814@duck.suse.cz>
+	<m1mywa42g7.fsf@ebiederm.dsl.xmission.com>
+	<20070829192653.GD7814@duck.suse.cz>
+	<m1wsve2gpo.fsf@ebiederm.dsl.xmission.com>
+	<20070830092548.GB16336@duck.suse.cz>
+Date: Thu, 30 Aug 2007 11:33:09 -0600
+In-Reply-To: <20070830092548.GB16336@duck.suse.cz> (Jan Kara's message of
+	"Thu, 30 Aug 2007 11:25:48 +0200")
+Message-ID: <m1tzqh0vxm.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Matthew Jacob <lydianconcepts@gmail.com>
-CC: Abhishek Kane <abhishek.kane@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-driver@qlogic.com, linux-scsi@vger.kernel.org
-Subject: Re: FC - NPIV in 2.6.23-rc2
-References: <c7d75baf0708300849g27a5e4c3wba73b960a89a85e5@mail.gmail.com>	 <46D6EFE7.40802@qlogic.com> <7579f7fb0708300947r4bae76a8j3715316741f3563f@mail.gmail.com>
-In-Reply-To: <7579f7fb0708300947r4bae76a8j3715316741f3563f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Aug 2007 17:22:58.0809 (UTC) FILETIME=[691E3690:01C7EB2A]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Jacob wrote:
->>> some sought of documentation for this, please let me know.
->> NPIV is a feature to provide multiple path available on one physical port and it has implemented based on the multiport ID (MID) capability on the switch.
->> So, you have to have the switch with MID capable on the configuration to support NPIV, besides the controller.
->>
-> 
-> No, if the switch doesn't suport NP-IV, the 24XX f/w will come up in
-> Public Loop mode (FL).
-That is correct. 
-As it should, the F/W with NPIV capability also works on the configuration with non-NPIV switches.
+Jan Kara <jack@suse.cz> writes:
+>   There can be arbitrary number of listeners (potentially from different
+> namespaces if I understand it correctly) listening to broadcasts. So I
+> think we should pass some universal identifier rather than try to find out
+> who is listening etc. I think such identifiers would be useful for other
+> things too, won't they?
 
-Thank you,
-Seokmann
+So internal to the kernel we have such a universal identifier.
+struct user.
+
+There are to practical questions.
+1) How do we present that information to user space?
+2) How does user space want to process this information?
+
+If we only want user space to be able to look up a user and send
+him a message.  It probably makes sense to do the struct user to
+uid conversion in the proper context in the kernel because we have
+that information.
+
+If this is a general feature that happens to allows us to look up
+the user given the filesystems view of what is going on would be
+easier in the kernel, and not require translation.  But it means
+that we can't support 9p and nfs for now.  But since we don't support
+quotas on the client end anyway that doesn't sound like a big deal.
+
+The problem with the filesystem view is that there will be occasions
+where we simply can not map a user into it, because the filesystem
+won't have a concept of that particular user.
+
+So we could run into the situation where alice owns the file.  Bob
+writes to the file and pushes it over quota.  But the filesystem
+has no concept of who bob is.  So we won't be able to report that
+it was bob that pushed things over the edge.
+
+> BTW: Do you have some idea, when would be the infrastructure clearer?
+
+So the plan is to get to the point where are uid comparisons in the
+kernel are (user namespace, uid) comparisons.  Or possibly struct
+user comparisons (depending on the context.  And struct mount will
+contain the user namespace of whoever mounted the filesystem.
+
+Adding infrastructure to netlink to allow us to do conversions 
+as the packets are enqueued for a specific user is something I
+would rather avoid, but that is a path we can go down if we have
+to.
+
+> Whether it makes sence to currently proceed with UIDs and later change it
+> to something generic or whether I should wait before you sort it out :).
+
+A good question.  I think things are clear enough that it at least
+makes sense to sketch a solution to the problem even if we don't
+implement it at this point.
+
+I have been hoping Cedric or Serge would jump in because I think those
+are the guys who have been working on the implementation. 
+
+Eric
