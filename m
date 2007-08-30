@@ -1,99 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbXH3TKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761885AbXH3TLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760953AbXH3TKZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 15:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbXH3TKP
+	id S1761885AbXH3TLG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 15:11:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759280AbXH3TKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 15:10:15 -0400
-Received: from smtp108.sbc.mail.re2.yahoo.com ([68.142.229.97]:25963 "HELO
-	smtp108.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755565AbXH3TKN (ORCPT
+	Thu, 30 Aug 2007 15:10:54 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:24931 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759034AbXH3TKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 15:10:13 -0400
-X-YMail-OSG: CNkQy9wVM1mccUvlglaGY2Srj9JRbkwvSYBymn4pfs_UEh.axrHGQV7XjVzUZTef8rRFGuXMZtWFBWA4uDYOls_TvfY1hJ2o7adYpj4ZHlPjiLB9JlU9ocmyFdJtjBsuDbMgSm0uS5iuqJ0-
-Date: Thu, 30 Aug 2007 14:10:10 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Jan Kara <jack@suse.cz>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-ID: <20070830191010.GA23464@vino.hallyn.com>
-References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org> <20070829122647.GB7814@duck.suse.cz> <m1mywa42g7.fsf@ebiederm.dsl.xmission.com> <20070829192653.GD7814@duck.suse.cz> <m1wsve2gpo.fsf@ebiederm.dsl.xmission.com> <20070830092548.GB16336@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070830092548.GB16336@duck.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 30 Aug 2007 15:10:53 -0400
+Date: Thu, 30 Aug 2007 12:04:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Rob Landley <rob@landley.net>
+Cc: linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Documentation/00-INDEX notice ecryptfs.txt moved.
+Message-Id: <20070830120437.6fe49cdc.randy.dunlap@oracle.com>
+In-Reply-To: <200708301446.18024.rob@landley.net>
+References: <200708301446.18024.rob@landley.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Jan Kara (jack@suse.cz):
-> On Wed 29-08-07 15:06:43, Eric W. Biederman wrote:
-> > Jan Kara <jack@suse.cz> writes:
-> > >> However I'm still confused about the use of current->user.  If that
-> > >> is what we really want and not the user who's quota will be charged
-> > >> it gets to be a really trick business, because potentially the uid
-> > >> we want to deliver varies depending on who opened the netlink socket.
-> > >   I see it's a complicated matter :). What I need to somehow pass to
-> > > userspace is something (and I don't really care whether it will be number,
-> > > string or whatever) that userspace can read and e.g. find a terminal
-> > > window or desktop the affected user has open and also translate the
-> > > identity to some user-understandable name (average user Joe has to
-> > > understand that he should quickly cleanup his home directory ;).
-> > >   Thinking more about it, we could probably pass a string to userspace in
-> > > the format:
-> > >   <namespace type>:<user identification>
-> > >
-> > > So for example we can have something like:
-> > >   unix:1000 (traditional unix UIDs)
-> > >   nfs4:joe@machine
-> > >
-> > > The problem is: Are we able to find out in which "namespace type" we are
-> > > and send enough identifying information from a context of unpriviledged
-> > > user?
-> > 
-> > Ok.  This provides enough context to understand what you are trying to do.
-> > You do want the unix user id, not the filesystem notion.  Because you
-> > are looking for the user.
-> > 
-> > So we have to figure out how to do the hard thing which is look at
-> > who opened our netlink broadcast see if they are in the same user
-> > namespace as current->user.  Which is a pain and we don't currently
-> > have the infrastructure for.
->   There can be arbitrary number of listeners (potentially from different
-> namespaces if I understand it correctly) listening to broadcasts. So I
+On Thu, 30 Aug 2007 14:46:17 -0500 Rob Landley wrote:
 
-Currently that is true, but i think isolating netlink sockets is going
-to have to be done pretty soon.
-
-On the one hand cloning a new netlink socket ns when you unshare
-CLONE_NEWNET may seem 'obvious', but I think doing so when you unshare
-CLONE_NEWUSER make much more sense considering netlink's use for audit
-and now for quota.
-
-> think we should pass some universal identifier rather than try to find out
-
-Even with isolating netlink we still may want to send out an identifier.
-However, just as with mounts extensions we're printing out the memory
-address of vfsmounts, we might just want to print out the memory address
-of the userns.  It's not universal, but should be good enough.
-
--serge
-
-> who is listening etc. I think such identifiers would be useful for other
-> things too, won't they?
->   BTW: Do you have some idea, when would be the infrastructure clearer?
-> Whether it makes sence to currently proceed with UIDs and later change it
-> to something generic or whether I should wait before you sort it out :).
+> Signed-off-by: Rob Landley <rob@landley.net>
 > 
-> 								Honza
-> -- 
-> Jan Kara <jack@suse.cz>
-> SuSE CR Labs
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> ecryptfs.txt moved into Documentation/filesystems, so move the 00-INDEX entry.
+
+Please use the expected (canonical) patch format.
+
+See Documentation/SubmittingPatches:
+  14) The canonical patch format
+
+Additional help:
+http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
+http://linux.yyz.us/patch-format.html
+
+Thanks.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
