@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763873AbXH3Wm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763747AbXH3WoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763873AbXH3Wm6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763165AbXH3Wmu
+	id S1763747AbXH3WoR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762899AbXH3WoC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:42:50 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34488 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763126AbXH3Wmt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:42:49 -0400
-Message-ID: <46D74797.4070105@zytor.com>
-Date: Thu, 30 Aug 2007 15:41:27 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       bos@serpentine.com, werner@almesberger.net
-Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
-References: <20070830112055.2b2c8985.randy.dunlap@oracle.com> <Pine.LNX.4.64.0708301426360.4088@localhost.localdomain> <200708301836.48707.rob@landley.net>
-In-Reply-To: <200708301836.48707.rob@landley.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 30 Aug 2007 18:44:02 -0400
+Received: from ozlabs.org ([203.10.76.45]:47195 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756354AbXH3WoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 18:44:00 -0400
+Subject: Re: [PATCH] Fix lguest page-pinning logic ("lguest: bad stack page
+	0xc057a000")
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Frederik Deweerdt <deweerdt@free.fr>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lguest <lguest@ozlabs.org>
+In-Reply-To: <20070830163812.GA22190@slug>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+	 <20070822202551.GB31846@slug>
+	 <20070823145038.9895784f.akpm@linux-foundation.org>
+	 <20070824060438.GE31846@slug> <46CE7EDC.9080007@goop.org>
+	 <20070824082249.GG31846@slug>
+	 <1188043649.20041.81.camel@localhost.localdomain>
+	 <20070825122324.GA6138@slug> <20070825211405.GA18217@slug>
+	 <1188230999.5531.15.camel@localhost.localdomain>
+	 <20070830163812.GA22190@slug>
+Content-Type: text/plain
+Date: Fri, 31 Aug 2007 08:12:55 +1000
+Message-Id: <1188511975.6353.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
-> On Thursday 30 August 2007 1:28:17 pm Robert P. J. Day wrote:
->> On Thu, 30 Aug 2007, Randy Dunlap wrote:
->>
->> ...
->>
->>> The old "ramdisk=<ram_size>" has been changed to
->>> "ramdisk_size=<ram_size>" to make it clearer.  The original
->>> "ramdisk=<ram_size>" has been kept around for compatibility reasons,
->>> but it may be removed in the future.
->> ...
->>
->> i just the other day submitted a patch to remove that backward
->> compatibility, and the m68k portion of it has already been acked by
->> geert uytterhoeven.
+On Thu, 2007-08-30 at 18:38 +0200, Frederik Deweerdt wrote: 
+> On Tue, Aug 28, 2007 at 02:09:59AM +1000, Rusty Russell wrote:
+> > If the stack pointer is 0xc057a000, then the first stack page is at
+> > 0xc0579000 (the stack pointer is decremented before use).  Not
+> > calculating this correctly caused guests with CONFIG_DEBUG_PAGEALLOC=y
+> > to be killed with a "bad stack page" message: the initial kernel stack
+> > was just preceeding the .smp_locks section which
+> > CONFIG_DEBUG_PAGEALLOC marks read-only when freeing.
+> > 
+> Hello Rusty,
 > 
-> Could you mention it in feature-removal-schedule.txt?  (People check that for 
-> warning of upcoming changes that impact existing code.  They may not notice 
-> something elsewhere after they've got it working...)
-> 
+> I just could try the patch, sorry for the delay. Albeit it allows to
+> progress a little further in the boot process, lguest seems to like that
+> "section that was just freed" :)
 
-The same objection applies to this as to the previous one.  In that 
-respect, an Ack from a maintainer of an almost unused architecture is 
-meaningless (sorry, Geert.)
+Yes, I got this too, then had to jump on a plane (and away from my test
+box).
 
-	-hpa
+Turns out this actually isn't my bug (yay!).
+
+See next patch...
+Rusty.
 
