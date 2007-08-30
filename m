@@ -1,40 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXH3Ter@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762191AbXH3Tic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762098AbXH3Ter (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 15:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759944AbXH3Tek
+	id S1762191AbXH3Tic (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 15:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760248AbXH3TiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 15:34:40 -0400
-Received: from hierophant.serpentine.com ([64.81.58.173]:38520 "EHLO
-	hierophant.serpentine.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759769AbXH3Tej (ORCPT
+	Thu, 30 Aug 2007 15:38:25 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37210 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760039AbXH3TiY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 15:34:39 -0400
-X-Greylist: delayed 1202 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 15:34:39 EDT
-Message-ID: <46D716D1.6070508@serpentine.com>
-Date: Thu, 30 Aug 2007 12:13:21 -0700
-From: "Bryan O'Sullivan" <bos@serpentine.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 30 Aug 2007 15:38:24 -0400
+Date: Thu, 30 Aug 2007 21:38:23 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Al Boldi <a1426z@gawab.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       dex@dragonslave.de
+Subject: Re: [PATCH] Override 80-wire cable detection for Toshiba S1800-814
+In-Reply-To: <200708301654.22346.a1426z@gawab.com>
+Message-ID: <Pine.LNX.4.64.0708302135560.24730@fbirervta.pbzchgretzou.qr>
+References: <200708300731.20336.a1426z@gawab.com> <20070830110144.1e8020ec@the-village.bc.nu>
+ <200708301654.22346.a1426z@gawab.com>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       rob@landley.net, werner@almesberger.net, hpa@zytor.com
-Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
-References: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
-In-Reply-To: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> initrd/initramfs/ramdisk docs:
-> - fix typos/spellos/grammar
-> - clarify RAM disk config location
-> - correct cpio option
-> 
-> Cc: Bryan O'Sullivan <bos@serpentine.com>
 
-Acked-by: Bryan O'Sullivan <bos@serpentine.com>
+On Aug 30 2007 16:54, Al Boldi wrote:
+>
+>What's the max length of a 40wire cable to sustain 80wire cable 
+>characteristics?
+
+Hard to tell, since some (most?) laptops have sort of a backplane and there
+might be no real cable you could see because it's all mainboard wire paths
+already.
+
+
+	Jan
+-- 
