@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763614AbXH3Wmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763873AbXH3Wm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763614AbXH3Wmb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763053AbXH3WmX
+	id S1763873AbXH3Wm6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763165AbXH3Wmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:42:23 -0400
-Received: from mga02.intel.com ([134.134.136.20]:54999 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762891AbXH3WmW convert rfc822-to-8bit (ORCPT
+	Thu, 30 Aug 2007 18:42:50 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:34488 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763126AbXH3Wmt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:42:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,327,1183359600"; 
-   d="scan'208";a="286228985"
-From: Jason Gaston <jason.d.gaston@intel.com>
-To: jgarzik@pobox.com, jason.d.gaston@intel.com
-Subject: [PATCH 2.6.23-rc4] ata_piix: IDE mode SATA patch for Intel Tolapai
-Date: Thu, 30 Aug 2007 15:44:32 -0700
-User-Agent: KMail/1.9.1
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, htejun@gmail.com
+	Thu, 30 Aug 2007 18:42:49 -0400
+Message-ID: <46D74797.4070105@zytor.com>
+Date: Thu, 30 Aug 2007 15:41:27 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708301544.32864.jason.d.gaston@intel.com>
+To: Rob Landley <rob@landley.net>
+CC: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       bos@serpentine.com, werner@almesberger.net
+Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
+References: <20070830112055.2b2c8985.randy.dunlap@oracle.com> <Pine.LNX.4.64.0708301426360.4088@localhost.localdomain> <200708301836.48707.rob@landley.net>
+In-Reply-To: <200708301836.48707.rob@landley.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This updated patch adds the Intel Tolapai IDE mode SATA controller DID.
+Rob Landley wrote:
+> On Thursday 30 August 2007 1:28:17 pm Robert P. J. Day wrote:
+>> On Thu, 30 Aug 2007, Randy Dunlap wrote:
+>>
+>> ...
+>>
+>>> The old "ramdisk=<ram_size>" has been changed to
+>>> "ramdisk_size=<ram_size>" to make it clearer.  The original
+>>> "ramdisk=<ram_size>" has been kept around for compatibility reasons,
+>>> but it may be removed in the future.
+>> ...
+>>
+>> i just the other day submitted a patch to remove that backward
+>> compatibility, and the m68k portion of it has already been acked by
+>> geert uytterhoeven.
+> 
+> Could you mention it in feature-removal-schedule.txt?  (People check that for 
+> warning of upcoming changes that impact existing code.  They may not notice 
+> something elsewhere after they've got it working...)
+> 
 
-Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+The same objection applies to this as to the previous one.  In that 
+respect, an Ack from a maintainer of an almost unused architecture is 
+meaningless (sorry, Geert.)
 
---- linux-2.6.23-rc4/drivers/ata/ata_piix.c.orig	2007-08-27 18:32:35.000000000 
--0700
-+++ linux-2.6.23-rc4/drivers/ata/ata_piix.c	2007-08-29 17:13:13.000000000 
--0700
-@@ -130,6 +130,7 @@
- 	ich6m_sata_ahci		= 8,
- 	ich8_sata_ahci		= 9,
- 	piix_pata_mwdma		= 10,	/* PIIX3 MWDMA only */
-+	tolapai_sata_ahci	= 11,
- 
- 	/* constants for mapping table */
- 	P0			= 0,  /* port 0 */
-@@ -253,6 +254,8 @@
- 	{ 0x8086, 0x292d, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
- 	/* SATA Controller IDE (ICH9M) */
- 	{ 0x8086, 0x292e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
-+	/* SATA Controller IDE (Tolapai) */
-+	{ 0x8086, 0x5028, PCI_ANY_ID, PCI_ANY_ID, 0, 0, tolapai_sata_ahci },
- 
- 	{ }	/* terminate list */
- };
-@@ -441,12 +444,25 @@
- 	},
- };
- 
-+static const struct piix_map_db tolapai_map_db = {
-+        .mask = 0x3,
-+        .port_enable = 0x3,
-+        .map = {
-+                /* PM   PS   SM   SS       MAP */
-+                {  P0,  NA,  P1,  NA }, /* 00b */
-+                {  RV,  RV,  RV,  RV }, /* 01b */
-+                {  RV,  RV,  RV,  RV }, /* 10b */
-+                {  RV,  RV,  RV,  RV },
-+        },
-+};
-+
- static const struct piix_map_db *piix_map_db_table[] = {
- 	[ich5_sata]		= &ich5_map_db,
- 	[ich6_sata]		= &ich6_map_db,
- 	[ich6_sata_ahci]	= &ich6_map_db,
- 	[ich6m_sata_ahci]	= &ich6m_map_db,
- 	[ich8_sata_ahci]	= &ich8_map_db,
-+	[tolapai_sata_ahci]	= &tolapai_map_db,
- };
- 
- static struct ata_port_info piix_port_info[] = {
-@@ -560,6 +576,17 @@
- 		.mwdma_mask	= 0x06, /* mwdma1-2 ?? CHECK 0 should be ok but slow */
- 		.port_ops	= &piix_pata_ops,
- 	},
-+
-+	/* tolapai_sata_ahci: 11: */
-+	{
-+		.sht		= &piix_sht,
-+		.flags		= PIIX_SATA_FLAGS | PIIX_FLAG_SCR |
-+				  PIIX_FLAG_AHCI,
-+		.pio_mask	= 0x1f,	/* pio0-4 */
-+		.mwdma_mask	= 0x07, /* mwdma0-2 */
-+		.udma_mask	= ATA_UDMA6,
-+		.port_ops	= &piix_sata_ops,
-+	},
- };
- 
- static struct pci_bits piix_enable_bits[] = {
+	-hpa
+
