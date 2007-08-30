@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933148AbXH3SlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbXH3SnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933148AbXH3SlB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 14:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932496AbXH3Skw
+	id S1761567AbXH3SnV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 14:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759377AbXH3SnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 14:40:52 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:60451 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759377AbXH3Skv (ORCPT
+	Thu, 30 Aug 2007 14:43:08 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:9827 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759422AbXH3SnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 14:40:51 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 30 Aug 2007 14:28:17 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       bos@serpentine.com, rob@landley.net, werner@almesberger.net,
-       hpa@zytor.com
-Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
-In-Reply-To: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0708301426360.4088@localhost.localdomain>
-References: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
+	Thu, 30 Aug 2007 14:43:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vp8IiO9hCKTGITNHZK0nWcNcimT3vdkK5BKYvF+9VhMidYDDJQID2Ikmtk5DWb/18ZRUm1jKvX5pDvG2PJigZo+MAvCe5KnvgRFl/q9EMdNIJ6dmdqqrZN3dTp22m5i9da5+LPJEs5hQLIhR6iGdeO69mf6M1ngbN9bqkERKDuU=
+Message-ID: <c70ff3ad0708301143w55bf296p37b0991d7f099fd6@mail.gmail.com>
+Date: Thu, 30 Aug 2007 21:43:05 +0300
+From: "saeed bishara" <saeed.bishara@gmail.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Subject: Re: [md-accel PATCH 16/19] dmaengine: driver for the iop32x, iop33x, and iop13xx raid engines
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de,
+       "Nelson, Shannon" <shannon.nelson@intel.com>
+In-Reply-To: <0C7297FA1D2D244A9C7F6959C0BF1E52025B10E4@azsmsx413.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
+	 <20070627015155.18962.88413.stgit@dwillia2-linux.ch.intel.com>
+	 <c70ff3ad0708270611x5598fa9dlc3afa5f6fabd6563@mail.gmail.com>
+	 <c70ff3ad0708270614t6f17b38nfbdf84ace69b8d78@mail.gmail.com>
+	 <0C7297FA1D2D244A9C7F6959C0BF1E52025B10E4@azsmsx413.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Aug 2007, Randy Dunlap wrote:
+you are right, I've another question regarding the function
+dma_wait_for_async_tx from async_tx.c, here is the body of the code:
+       /* poll through the dependency chain, return when tx is complete */
+1.        do {
+2.                 iter = tx;
+3.                 while (iter->cookie == -EBUSY)
+4.                         iter = iter->parent;
+5.
+6.                 status = dma_sync_wait(iter->chan, iter->cookie);
+7.         } while (status == DMA_IN_PROGRESS || (iter != tx));
 
-...
-> The old "ramdisk=<ram_size>" has been changed to
-> "ramdisk_size=<ram_size>" to make it clearer.  The original
-> "ramdisk=<ram_size>" has been kept around for compatibility reasons,
-> but it may be removed in the future.
-...
+assume that:
+- The interrupt capability is not provided.
+- Request A was sent to chan 0
+- Request B that depends on A is sent to chan 1
+- Request C that depends on B is send to chan 2.
+- Also, assume that when C is handled by async_tx_submit(), B is still
+not queued to the dmaengine (cookie equals to -EBUSY).
 
-i just the other day submitted a patch to remove that backward
-compatibility, and the m68k portion of it has already been acked by
-geert uytterhoeven.
+In this case, dma_wait_for_async_tx will be called for C, now, it
+looks for me that the do while will loop forever, even when A gets
+completed. this is because the iter will point to B after line 4, thus
+the iter != tx (C) will always become true.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+saeed
