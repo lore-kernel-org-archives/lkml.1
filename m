@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762892AbXH3WUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763473AbXH3WXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762892AbXH3WUV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762337AbXH3WUB
+	id S1763473AbXH3WXY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbXH3WXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:20:01 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1220 "EHLO perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762005AbXH3WT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:19:59 -0400
-Subject: Re: [PATCH 13/30] net: Don't do pointless kmalloc return value
-	casts in zd1211 driver
-From: Joe Perches <joe@perches.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Daniel Drake <dsd@gentoo.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Ulrich Kunitz <kune@deine-taler.de>, linux-wireless@vger.kernel.org
-In-Reply-To: <9a8748490708301320o49d8e794vc5c37ffc938006f1@mail.gmail.com>
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-	 <d551047daed1cb4d9de1eff956268a468c9837f6.1187912217.git.jesper.juhl@gmail.com>
-	 <46D70467.1040109@gentoo.org>
-	 <9a8748490708301320o49d8e794vc5c37ffc938006f1@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 30 Aug 2007 15:19:53 -0700
-Message-Id: <1188512393.6062.156.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+	Thu, 30 Aug 2007 18:23:14 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:54930
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757668AbXH3WXN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 18:23:13 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible fashion.
+Date: Thu, 30 Aug 2007 18:22:47 -0500
+User-Agent: KMail/1.9.6
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com> <200708301432.11516.rob@landley.net> <20070830183402.GA17084@infradead.org>
+In-Reply-To: <20070830183402.GA17084@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708301822.47594.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-30 at 22:20 +0200, Jesper Juhl wrote:
-> Ok, I must admit I didn't check with sparse since it seemed pointless
-> - we usually never cast void pointers to other pointer types,
-> specifically because the C language nicely guarantees that the right
-> thing will happen without the cast.  Sometimes we have to cast them to
-> integer types, su sure we need the cast there.   But what on earth
-> makes a "zd_addr_t *" so special that we have to explicitly cast a
-> "void *" to that type?
+On Thursday 30 August 2007 1:34:02 pm Christoph Hellwig wrote:
+> On Thu, Aug 30, 2007 at 02:32:11PM -0500, Rob Landley wrote:
+> > (If sysctlfs wasn't part of proc, that would be less of an issue, but we
+> > need union mounts for that...)
+>
+> Not at all.  all sysctls are under /proc/sys/
 
-http://marc.info/?l=linux-netdev&m=117113743902549&w=1
+Ah, right.  Good point.  (I was thinking of the problem of 
+splitting /proc/$PID directories from the rest of the stuff in /proc.)
 
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
