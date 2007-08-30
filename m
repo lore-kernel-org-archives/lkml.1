@@ -1,77 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761191AbXH3OPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbXH3ORx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761191AbXH3OPk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 10:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758785AbXH3OP0
+	id S1760918AbXH3ORx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 10:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758351AbXH3ORq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 10:15:26 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:41446 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756089AbXH3OPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 10:15:24 -0400
-Message-ID: <46D6D0F4.3090904@rfo.atmel.com>
-Date: Thu, 30 Aug 2007 16:15:16 +0200
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 30 Aug 2007 10:17:46 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:42690 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756921AbXH3ORq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 10:17:46 -0400
+Date: Thu, 30 Aug 2007 16:17:46 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Designers and Builders (was: Who wants to maintain KR list for
+	stable releases?)
+Message-ID: <20070830141746.GC9260@stusta.de>
+References: <200708300731.24413.a1426z@gawab.com> <20070830073226.GA9260@stusta.de> <200708301654.24516.a1426z@gawab.com>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus@drzeus.cx>
-CC: Andrew Victor <andrew@sanpeople.com>, Marc Pignat <marc.pignat@hevs.ch>,
-       anti.sullin@artecdesign.ee,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
-Subject: [PATCH] bug in AT91 MCI suspend routines
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200708301654.24516.a1426z@gawab.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Anti Sullin <anti.sullin@artecdesign.ee>
+On Thu, Aug 30, 2007 at 04:54:24PM +0300, Al Boldi wrote:
+> Adrian Bunk wrote:
+> > On Thu, Aug 30, 2007 at 07:31:24AM +0300, Al Boldi wrote:
+> > > Adrian Bunk wrote
+> > >
+> > > > Tracking feature or implementation suggestions wouldn't make sense.
+> > > > Consider e.g. that there are several people on linux-kernel who often
+> > > > write what they think the kernel should do but who never write a
+> > > > single line of code themselves. There's no value in tracking such
+> > > > stuff.
+> > >
+> > > There are designers, and there are builders.
+> > >
+> > > Can you tell me who is more important?
+> >
+> > That's a distinction that doesn't exist in practice:
+> >
+> > Designing kernel features requires good knowledge of the area of the
+> > kernel that should be changed.
+> >
+> > IOW: If you don't have the skills to implement it yourself you don't
+> > have the skills to do any good design.
+> 
+> I might agree with you on this wrt hacking around the kernel, but when it 
+> comes to introducing new subsystems, then we have a two fold situation:
+> 
+>   1.  Designing the internals of the new subsystem
+>   2.  Interfacing it with the rest of the kernel
+> 
+> Part 1 is completely independent of the implementation, it's part 2 that 
+> needs intricate implementation knowledge.
 
-This patch fixes a bug in AT91 mmc host driver, that enables the wakeup 
-from suspend on card detection pin even if the card detect pin is not 
-available (==0). If not card detection pin is defined, IRQ0 == FIQ gets 
-enabled and if some activity is present on that pin, the system gets a 
-FIQ request, that causes a crash.
+That's a perfect approach that works NOT.
 
-Signed-off-by: Anti Sullin <anti.sullin@artecdesign.ee>
-Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
----
+Your subsystem needs to interact with the VFS or the block layer or 
+whatever else parts of the kernel.
 
-Original patch from Anti Sullin reviewed by Andrew Victor and
-Marc Pignat ; thank you to all of you.
+If you had ever written kernel code you would have known that your 
+statement wasn't true.
 
- drivers/mmc/host/at91_mci.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+> We recently had an example of this:  kexec based hibernation
+> 
+> So, what's wrong with tapping into people's design suggestions, and allowing 
+> others to implement it?
 
-Index: linux-2.6-snapshot/drivers/mmc/host/at91_mci.c
-===================================================================
---- linux-2.6-snapshot.orig/drivers/mmc/host/at91_mci.c
-+++ linux-2.6-snapshot/drivers/mmc/host/at91_mci.c
-@@ -941,7 +941,7 @@ static int __exit at91_mci_remove(struct
- 
- 	host = mmc_priv(mmc);
- 
--	if (host->present != -1) {
-+	if (host->board->det_pin) {
- 		device_init_wakeup(&pdev->dev, 0);
- 		free_irq(host->board->det_pin, host);
- 		cancel_delayed_work(&host->mmc->detect);
-@@ -972,7 +972,7 @@ static int at91_mci_suspend(struct platf
- 	struct at91mci_host *host = mmc_priv(mmc);
- 	int ret = 0;
- 
--	if (device_may_wakeup(&pdev->dev))
-+	if (host->board->det_pin && device_may_wakeup(&pdev->dev))
- 		enable_irq_wake(host->board->det_pin);
- 
- 	if (mmc)
-@@ -987,7 +987,7 @@ static int at91_mci_resume(struct platfo
- 	struct at91mci_host *host = mmc_priv(mmc);
- 	int ret = 0;
- 
--	if (device_may_wakeup(&pdev->dev))
-+	if (host->board->det_pin && device_may_wakeup(&pdev->dev))
- 		disable_irq_wake(host->board->det_pin);
- 
- 	if (mmc)
+People soon realize that you are making a fool of yourself when your 
+suggestions show that you don't have a clue what you are talking about.
+
+There's nothing wrong if this is the desired effect...
+
+> Thanks!
+> Al
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
