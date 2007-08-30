@@ -1,92 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761714AbXH3BIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761633AbXH3BTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761714AbXH3BIu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 21:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbXH3BIl
+	id S1761633AbXH3BTo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 21:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXH3BTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 21:08:41 -0400
-Received: from colo.lackof.org ([198.49.126.79]:48215 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751762AbXH3BIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 21:08:41 -0400
-Date: Wed, 29 Aug 2007 19:08:22 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Grant Grundler <grundler@parisc-linux.org>
-Subject: Re: [PATCH] local_t Documentation update 2
-Message-ID: <20070830010822.GA29129@colo.lackof.org>
-References: <20070829121953.GB9734@Krystal>
+	Wed, 29 Aug 2007 21:19:36 -0400
+Received: from outbound.mse2.exchange.ms ([69.25.50.247]:1107 "EHLO
+	mse2fe1.mse2.exchange.ms" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754724AbXH3BTf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 21:19:35 -0400
+Message-ID: <46D61B21.1010703@bluelane.com>
+Date: Wed, 29 Aug 2007 18:19:29 -0700
+From: Pete/Piet Delaney <pete@bluelane.com>
+Reply-To: pete@bluelane.com
+Organization: Bluelane
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070829121953.GB9734@Krystal>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: pete@bluelane.com
+CC: Jason Wessel <jason.wessel@windriver.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>	<200708222104.29432.m.kozlowski@tuxland.pl>	<20070822124743.fc316963.akpm@linux-foundation.org>	<46CCBC3C.7010307@windriver.com> <20070822165318.b82da13c.akpm@linux-foundation.org> <46CCFE2C.4050306@windriver.com> <46D604BF.7090905@bluelane.com>
+In-Reply-To: <46D604BF.7090905@bluelane.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Aug 2007 01:19:34.0641 (UTC) FILETIME=[D3262610:01C7EAA3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 29, 2007 at 08:19:53AM -0400, Mathieu Desnoyers wrote:
-> local_t Documentation update 2
-> 
-> Grant Grundler was asking for more detail about correct usage of local atomic
-> operations and suggested adding the resulting summary to local_ops.txt.
-> 
-> "Please add a bit more detail. If DaveM is correct (he normally is), then
-> there must be limits on how the local_t can be used in the kernel process
-> and interrupt contexts. I'd like those rules spelled out very clearly
-> since it's easy to get wrong and tracking down such a bug is quite painful."
-> 
-> It applies on top of 2.6.23-rc3-mm1.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: Grant Grundler <grundler@parisc-linux.org>
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Signed-off-by: Grant Grundler <grundler@parisc-linux.org>
-
-thanks!
-grant
-
-> ---
->  Documentation/local_ops.txt |   23 +++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
+Pete/Piet Delaney wrote:
+> Jason Wessel wrote:
+>> Andrew Morton wrote:
+>>> On Wed, 22 Aug 2007 17:44:12 -0500
+>>> Jason Wessel <jason.wessel@windriver.com> wrote:
+>>>
+>>>  
+>>>> +    while (!atomic_read(&debugger_active));
+>>>>     
+>>> eek.  We're in the process of hunting down and eliminating exactly this
+>>> construct.  There have been cases where the compiler cached the
+>>> atomic_read() result in a register, turning the above into an infinite
+>>> loop.
+>>>
+>>> Plus we should never add power-burners like that into the kernel
+>>> anyway. That loop should have a cpu_relax() in it.  Which will also
+>>> fix the
+>>> compiler problem described above.
+>>>
+>>>   
+>> Agreed, and fixed with a cpu_relax.
 > 
-> Index: linux-2.6-lttng/Documentation/local_ops.txt
-> ===================================================================
-> --- linux-2.6-lttng.orig/Documentation/local_ops.txt	2007-08-29 08:09:34.000000000 -0400
-> +++ linux-2.6-lttng/Documentation/local_ops.txt	2007-08-29 08:15:37.000000000 -0400
-> @@ -45,6 +45,29 @@ long fails. The definition looks like :
->  typedef struct { atomic_long_t a; } local_t;
->  
->  
-> +* Rules to follow when using local atomic operations
-> +
-> +- Variables touched by local ops must be per cpu variables.
-> +- _Only_ the CPU owner of these variables must write to them.
-> +- This CPU can use local ops from any context (process, irq, softirq, nmi, ...)
-> +  to update its local_t variables.
-> +- Preemption (or interrupts) must be disabled when using local ops in
-> +  process context to   make sure the process won't be migrated to a
-> +  different CPU between getting the per-cpu variable and doing the
-> +  actual local op.
-> +- When using local ops in interrupt context, no special care must be
-> +  taken on a mainline kernel, since they will run on the local CPU with
-> +  preemption already disabled. I suggest, however, to explicitly
-> +  disable preemption anyway to make sure it will still work correctly on
-> +  -rt kernels.
-> +- Reading the local cpu variable will provide the current copy of the
-> +  variable.
-> +- Reads of these variables can be done from any CPU, because updates to
-> +  "long", aligned, variables are always atomic. Since no memory
-> +  synchronization is done by the writer CPU, an outdated copy of the
-> +  variable can be read when reading some _other_ cpu's variables.
-> +
-> +
->  * How to use local atomic operations
->  
->  #include <linux/percpu.h>
+>>> Thirdly, please always add a newline when coding statements like that:
+>>>
+>>>     while (expr())
+>>>         ;
+>>>   
+>> The other instances I found of the same problem in the kgdb core are
+>> fixed too.
 > 
-> -- 
-> Mathieu Desnoyers
-> Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+>> I merged all the changes into the for_mm branch in the kgdb git tree.
+> 
+> Where is the kgdb git tree?
+
+Why am I getting this when I do:
+
+git clone
+http://master.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git
+
+-
+----------------------------------------------------------------------------
+error: Couldn't get
+http://master.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git/refs/tags/v2.6.11
+for tags/v2.6.11
+The requested URL returned error: 404
+error: Could not interpret tags/v2.6.11 as something to pull
+rm: cannot remove directory
+`/nethome/piet/Src/linux/git/jwessel/linux-2.6-kgdb/.git/clone-tmp':
+Directory not empty
+/nethome/piet/Src/linux/git/jwessel$
+-
+----------------------------------------------------------------------------
+
+We are getting a problem with VMware where kernel text is the schedler
+is getting wacked with four null bytes into the code. Thought I'd use
+the current linux-2.6-kgdb.git tree and possible the CONFIG_DEBUG_RODATA
+patch to make kernel text readonly:
+
+ https://www.x86-64.org/pipermail/patches/2007-March/003666.html
+
+I thought the kernel text was RO and gdb had to disable it to
+insert a breakpoint.
+
+- -piet
+
+> 
+> -piet
+> 
+>> Thanks,
+>> Jason.
+>> -
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+- -
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFG1hshJICwm/rv3hoRAhTGAJ46pq69zYHqRmT+yTmRx+RVh8aBtgCfdyFM
+gl91xCFTy0NJxHalVXpd9Os=
+=c8FZ
+-----END PGP SIGNATURE-----
