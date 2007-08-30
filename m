@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964917AbXH3TtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933153AbXH3Tva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964917AbXH3TtX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 15:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760417AbXH3TtP
+	id S933153AbXH3Tva (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 15:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932708AbXH3TvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 15:49:15 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:55521 "EHLO
+	Thu, 30 Aug 2007 15:51:19 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:48836 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760304AbXH3TtP (ORCPT
+	with ESMTP id S932684AbXH3TvS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 15:49:15 -0400
-Date: Thu, 30 Aug 2007 21:49:13 +0200 (CEST)
+	Thu, 30 Aug 2007 15:51:18 -0400
+Date: Thu, 30 Aug 2007 21:51:17 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "J. Scott Kasten" <jscottkasten@yahoo.com>
-cc: Mohamed Bamakhrama <bamakhrama@gmail.com>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Average number of instructions per line of kernel code
-In-Reply-To: <Pine.LNX.4.64.0708301212030.14590@pixie.tetracon-eng.net>
-Message-ID: <Pine.LNX.4.64.0708302147450.24730@fbirervta.pbzchgretzou.qr>
-References: <40378e40708300600h5837d46ci5266b8ae62bbd46e@mail.gmail.com> 
- <9a8748490708300631o285fd31ch462199ec9535c6c2@mail.gmail.com>
- <40378e40708300648i4f016906v60f821bf182a5633@mail.gmail.com>
- <Pine.LNX.4.64.0708301212030.14590@pixie.tetracon-eng.net>
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Denys Vlasenko <vda.linux@googlemail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@osdl.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hare@suse.de
+Subject: Re: [PATCH] debloat aic7xxx and aic79xx drivers by deinlining
+In-Reply-To: <20070830190235.GX14130@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0708302150500.24730@fbirervta.pbzchgretzou.qr>
+References: <200708252257.07241.vda.linux@googlemail.com>
+ <200708281256.35162.vda.linux@googlemail.com> <20070828081710.4687185c@laptopd505.fenrus.org>
+ <200708282055.07411.vda.linux@googlemail.com>
+ <Pine.LNX.4.64.0708302042260.24730@fbirervta.pbzchgretzou.qr>
+ <20070830190235.GX14130@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Aug 30 2007 12:29, J. Scott Kasten wrote:
-> On Thu, 30 Aug 2007, Mohamed Bamakhrama wrote:
->> > > Hi all,
->> > > I have a question regarding the average number of assembly
->> > > instructions per line of kernel code. I know that this is a difficult
->> > > question since it depends on many factors such as the instruction set
+On Aug 30 2007 13:02, Matthew Wilcox wrote:
+>> 
+>> Well, you can send it to Linus/Andrew, that will usually upset people and they
+>> start commenting on it. Or they don't, and everything is fine.
+>> (The "default y" approach so to speak ;-)
 >
-> Here's a quick answer, not the best, but quick.
->
-> I took a user space flash memory driver I'm doing at work and compiled it on my
-> R5000 at home using gcc 4.1 and the MIPS3 abi, stopping with a .o file.  I also
-> ran the source through cpp and a couple of grep passes to strip out junk that
-> wasn't really code.  This driver may be somewhat typical of what you would run
-> into as it has quite a few inline functions and such.
->
-> The driver.o was about 23000 bytes.  Forgetting about the symboltables and just
-> dividing by 4 to estimate instructions and dividing by about 1650 net lines of
-> code, I got about 3.5 instructions per line of C code.
+>The problem is that we don't really have a maintainer for the aic7xyz
+>drivers any more.  Volunteers welcome.  NOT IT!
 
-objcopy -j .text input.o output.o
-objcopy -O binary output.o output2.o
-
-Then you can objdump -S output.o and count. output2.o has the ELF header
-stripped, so provides the raw size, but at the cost of not being able to run
-objdump. If you know that every instruction is fixed size, then of course
-output2.o is easy.
+Take it before someone else does!
 
 
 	Jan
