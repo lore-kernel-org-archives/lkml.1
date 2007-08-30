@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964902AbXH3UUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932512AbXH3U21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964902AbXH3UUj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 16:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759730AbXH3UU1
+	id S932512AbXH3U21 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 16:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbXH3U2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 16:20:27 -0400
-Received: from wx-out-0506.google.com ([66.249.82.229]:65416 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759500AbXH3UUZ (ORCPT
+	Thu, 30 Aug 2007 16:28:17 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38592 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751825AbXH3U2Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 16:20:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RFQUFCBOrhTPIe1O7Vc5qrgBHe7CmXCO5ocDuseCkylCBLJhEw17lpDsDLRTT54h8BZIw0ID4bKo0cIUjKrecCg9XpSA9/gNH9DA1esrGHZ8CpupBdUpCKjaFOSTGb6Hgews9DxPjNwm3zx/jR/SZuR9/RZApD4UBkvIfbuFrEI=
-Message-ID: <9a8748490708301320o49d8e794vc5c37ffc938006f1@mail.gmail.com>
-Date: Thu, 30 Aug 2007 22:20:23 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Daniel Drake" <dsd@gentoo.org>
-Subject: Re: [PATCH 13/30] net: Don't do pointless kmalloc return value casts in zd1211 driver
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       "Ulrich Kunitz" <kune@deine-taler.de>, linux-wireless@vger.kernel.org
-In-Reply-To: <46D70467.1040109@gentoo.org>
+	Thu, 30 Aug 2007 16:28:16 -0400
+Date: Fri, 31 Aug 2007 02:11:14 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Alexey Dobriyan <adobriyan@gmail.com>, Joe Perches <joe@perches.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] trivial - constify sched.h
+In-Reply-To: <Pine.LNX.4.64.0708302120290.24730@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LFD.0.999.0708310121121.28360@enigma.security.iitk.ac.in>
+References: <1188247231.18004.129.camel@localhost> <20070827213323.GA1759@martell.zuzino.mipt.ru>
+ <Pine.LNX.4.64.0708302120290.24730@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>
-	 <d551047daed1cb4d9de1eff956268a468c9837f6.1187912217.git.jesper.juhl@gmail.com>
-	 <46D70467.1040109@gentoo.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30/08/2007, Daniel Drake <dsd@gentoo.org> wrote:
-> Jesper Juhl wrote:
-> > Since kmalloc() returns a void pointer there is no reason to cast
-> > its return value.
-> > This patch also removes a pointless initialization of a variable.
->
-> NAK: adds a sparse warning
-> zd_chip.c:116:15: warning: implicit cast to nocast type
->
-Ok, I must admit I didn't check with sparse since it seemed pointless
-- we usually never cast void pointers to other pointer types,
-specifically because the C language nicely guarantees that the right
-thing will happen without the cast.  Sometimes we have to cast them to
-integer types, su sure we need the cast there.   But what on earth
-makes a "zd_addr_t *" so special that we have to explicitly cast a
-"void *" to that type?
-
-I see it's defined as
-  typedef u32 __nocast zd_addr_t;
-in drivers/net/wireless/zd1211rw/zd_types.h , but why the __nocast ?
-
-What would be wrong in applying my patch that removes the cast of the
-kmalloc() return value and then also remove the "__nocast" here?
 
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+On Thu, 30 Aug 2007, Jan Engelhardt wrote:
+> 
+> On Aug 28 2007 01:33, Alexey Dobriyan wrote:
+> >
+> >On Mon, Aug 27, 2007 at 01:40:31PM -0700, Joe Perches wrote:
+> >> Add const to some struct task_struct * uses
+> >
+> >Why, oh, why?
+> 
+> 
+> So that you can actually pass in a const struct task_struct * without having
+> to cast it back to [non-const].
+
+... which makes zero sense, because ...
+
+> Why one would have a const struct task_struct * in the first place
+> is a different matter.
+
+... exactly.
+
+> But see http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=77adbfbf4cf96fedf9b75bb330704828c187b190
+
+That commit const-ified struct timespec * or struct timeval * arguments,
+which made sense because: (1) those functions really did not modify the
+passed structs, and, (2) callers that pass in const struct timeval *
+or const struct timespec * are indeed plausible (because one can plausibly
+have const timeval/timespec structs). As the changelog suggested, those
+callers were having to cast away the const qualifier before passing to
+these functions to avoid seeing "passing argument discards qualifiers"
+warnings. While (1) holds true for the sched.h case here, (2) does not
+(and there are no warnings to shut up either).
+
+If one really wants to go about "constifying" the kernel, then I think
+there's a lot of _data_ out there that should first be made const-
+qualified. xxx_ops function tables, and the like.
