@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760529AbXH3Pbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761761AbXH3PdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760529AbXH3Pbr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 11:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757745AbXH3Pbj
+	id S1761761AbXH3PdU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 11:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbXH3PdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 11:31:39 -0400
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:2637 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757621AbXH3Pbi convert rfc822-to-8bit (ORCPT
+	Thu, 30 Aug 2007 11:33:13 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:49678 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757621AbXH3PdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 11:31:38 -0400
-Date: Thu, 30 Aug 2007 17:32:32 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Francis Moreau" <francis.moro@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: i2c transfers during interrupt context
-Message-ID: <20070830173232.270c6f70@hyperion.delvare>
-In-Reply-To: <38b2ab8a0708300655n7ae6a445y84150ab1bdcdf2d4@mail.gmail.com>
-References: <38b2ab8a0708300311x5479effn5999ba118221a47f@mail.gmail.com>
-	<38b2ab8a0708300655n7ae6a445y84150ab1bdcdf2d4@mail.gmail.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
+	Thu, 30 Aug 2007 11:33:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=mmor2/EnfT8o8EV5eMMOsT86H/2OYIth1Of9jv1C5JY29TF1PDkWul4huN7mnoke1Q2VVLY97JJt/n+8eOv3zOL/xy/6Kb7u+JOKC+rNyyoLjGX1A5XFD9nAwU8rZWRkEuiAXlMPJjMa3p+RuRqthgHZieC05IcU/HKG0gzl11o=
+Message-ID: <46D6E32F.30204@gmail.com>
+Date: Thu, 30 Aug 2007 17:33:03 +0200
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Mike Frysinger <vapier.adi@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386 and x86_64: randomize brk()
+References: <Pine.LNX.4.64.0708301545100.4135@jikos.suse.cz>  <8bd0f97a0708300701r1f36bc0anc45b9cad4a11f2ef@mail.gmail.com>  <Pine.LNX.4.64.0708301620010.4135@jikos.suse.cz> <8bd0f97a0708300726h563808a6j2b2ef9adf805c109@mail.gmail.com> <Pine.LNX.4.64.0708301708590.4135@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0708301708590.4135@jikos.suse.cz>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bonjour Francis ;)
-
-On Thu, 30 Aug 2007 15:55:49 +0200, Francis Moreau wrote:
-> I have a very simple question about i2c transfers.
+Jiri Kosina wrote:
+> On Thu, 30 Aug 2007, Mike Frysinger wrote:
 > 
-> I'm wondering if I'm allowed to initiate some very short i2c transfers
-> in an interrupt handler.
+>> Blackfin too please :) i think v850 also falls into this category, but 
+>> i'm not terribly familiar with it ...
+> 
+> Andrew, do you still strongly oppose to having ARCH_HAS_RANDOMIZE_BRK 
+> macro instead please?
+> 
 
-Non. Tu n'as pas le droit de dormir dans un gestionnaire
-d'interruption, et la majorité des pilotes I2C dorment pendant les
-transferts.
+you might want to use a weak function instead ?
 
-Si tu as besoin de faire ce genre de chose il faut typiquement passer
-par une workqueue.
+void __weak arch_randomize_brk(void)
+{
+	/* nada by default */
+}
 
--- 
-Jean Delvare
+and overload it only for x86 architectures by now.
+
+BTW, how about minimize the arch specific code by slighly changing its
+prototype  ?
+
+unsigned long arch_randomize_brk(struct mm_struct *mm)
+{
+	unsigned long range_end = mm->brk + 0x02000000;
+	
+	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
+}
+
+		Franck
