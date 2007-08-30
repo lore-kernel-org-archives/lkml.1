@@ -1,112 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763165AbXH3V7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762874AbXH3WGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763165AbXH3V7X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 17:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761243AbXH3V7P
+	id S1762874AbXH3WGI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:06:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbXH3WF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 17:59:15 -0400
-Received: from styx.suse.cz ([82.119.242.94]:43345 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760953AbXH3V7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 17:59:15 -0400
-Date: Fri, 31 Aug 2007 00:18:25 +0200
-From: Jan Kara <jack@suse.cz>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-ID: <20070830221825.GB21298@duck.suse.cz>
-References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org> <20070829122647.GB7814@duck.suse.cz> <m1mywa42g7.fsf@ebiederm.dsl.xmission.com> <20070829192653.GD7814@duck.suse.cz> <m1wsve2gpo.fsf@ebiederm.dsl.xmission.com> <20070830092548.GB16336@duck.suse.cz> <20070830191010.GA23464@vino.hallyn.com>
+	Thu, 30 Aug 2007 18:05:57 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35567 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754817AbXH3WF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 18:05:57 -0400
+X-Authenticated: #12383568
+X-Provags-ID: V01U2FsdGVkX19gZ+J7PhZgM1OQikvVBdq1zJci62nhuH2klJ3ktz
+	m0HXE7z+kgYTkd
+From: Clemens Kolbitsch <clemens.kol@gmx.at>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: Forbid deletion of memory mappings
+Date: Fri, 31 Aug 2007 00:05:53 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <200708301844.10532.clemens.kol@gmx.at> <200708302341.09459.clemens.kol@gmx.at> <30071.1188510621@turing-police.cc.vt.edu>
+In-Reply-To: <30071.1188510621@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070830191010.GA23464@vino.hallyn.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200708310005.53587.clemens.kol@gmx.at>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 30-08-07 14:10:10, Serge E. Hallyn wrote:
-> Quoting Jan Kara (jack@suse.cz):
-> > On Wed 29-08-07 15:06:43, Eric W. Biederman wrote:
-> > > Jan Kara <jack@suse.cz> writes:
-> > > >> However I'm still confused about the use of current->user.  If that
-> > > >> is what we really want and not the user who's quota will be charged
-> > > >> it gets to be a really trick business, because potentially the uid
-> > > >> we want to deliver varies depending on who opened the netlink socket.
-> > > >   I see it's a complicated matter :). What I need to somehow pass to
-> > > > userspace is something (and I don't really care whether it will be number,
-> > > > string or whatever) that userspace can read and e.g. find a terminal
-> > > > window or desktop the affected user has open and also translate the
-> > > > identity to some user-understandable name (average user Joe has to
-> > > > understand that he should quickly cleanup his home directory ;).
-> > > >   Thinking more about it, we could probably pass a string to userspace in
-> > > > the format:
-> > > >   <namespace type>:<user identification>
-> > > >
-> > > > So for example we can have something like:
-> > > >   unix:1000 (traditional unix UIDs)
-> > > >   nfs4:joe@machine
-> > > >
-> > > > The problem is: Are we able to find out in which "namespace type" we are
-> > > > and send enough identifying information from a context of unpriviledged
-> > > > user?
-> > > 
-> > > Ok.  This provides enough context to understand what you are trying to do.
-> > > You do want the unix user id, not the filesystem notion.  Because you
-> > > are looking for the user.
-> > > 
-> > > So we have to figure out how to do the hard thing which is look at
-> > > who opened our netlink broadcast see if they are in the same user
-> > > namespace as current->user.  Which is a pain and we don't currently
-> > > have the infrastructure for.
-> >   There can be arbitrary number of listeners (potentially from different
-> > namespaces if I understand it correctly) listening to broadcasts. So I
-> 
-> Currently that is true, but i think isolating netlink sockets is going
-> to have to be done pretty soon.
-> 
-> On the one hand cloning a new netlink socket ns when you unshare
-> CLONE_NEWNET may seem 'obvious', but I think doing so when you unshare
-> CLONE_NEWUSER make much more sense considering netlink's use for audit
-> and now for quota.
-> 
-> > think we should pass some universal identifier rather than try to find out
-> 
-> Even with isolating netlink we still may want to send out an identifier.
-> However, just as with mounts extensions we're printing out the memory
-> address of vfsmounts, we might just want to print out the memory address
-> of the userns.  It's not universal, but should be good enough.
-  Maybe before proceeding further with the discussion I'd like to
-understand following: What are these user namespaces supposed to be good
-for?
-  I imagine it so that you have a machine and on it several virtual
-machines which are sharing a filesystem (or it could be a cluster). Now you
-want UIDs to be independent between these virtual machines. That's it,
-right?
-  Now to continue the example: Alice has UID 100 on machineA, Bob has
- UID 100 on machineB. These translate to UIDs 1000 and 1001 on the common
-filesystem. Process of Alice writes to a file and Bob becomes to be over
-quota. In this situation, there would be probably two processes (from
-machineA and machineB) listening on the netlink socket. We want to send a
-message so that on Alice's desktop we can show a message: "You caused
-Bob to exceed his quotas" and of Bob's desktop: "Alice has caused that you
-are over quota.".
-  Because there may be is not a notion of Bob on machineA or of Alice on
-machineB, we are in trouble, right? What I like the most is to use the
-filesystem identities (as you suggested in some other email). I. e. because
-both Alice and Bob share a filesystem, identities of both have to make sense
-to it (for example for purposes of permission checking). So we can probably
-send via netlink these (in our example ids 1000 and 1001) and hope that
-inside machineA and machineB there will be a way to translate these
-identities to names "Alice" and "Bob". So that user can understand what
-is happenning. Does this sound plausible?
-  If we go this route, then we only need a kernel function, that will
-for a pair ($filesystem, $task) return indentity of that $task used
-for operations on $filesystem...
+On Thursday 30 August 2007 23:50:21 Valdis.Kletnieks@vt.edu wrote:
+> On Thu, 30 Aug 2007 23:41:09 +0200, Clemens Kolbitsch said:
+> > On Thursday 30 August 2007 23:34:52 you wrote:
+> > > On Thu, 30 Aug 2007, Clemens Kolbitsch wrote:
+> > > > is there no way to tell the kernel, that a certain mapping must not
+> > > > be removed, no matter what (except of course an explicit call to
+> > > > sys_unmap, of course)?
+> > >
+> > > I don't seem to get what is the issue here. Your mapping is not
+> > > removed, only the VMAs are merged together into one larger VMA if they
+> > > have neighbouring address ranges and compatible protection bits. See
+> > > vma_merge().
+> >
+> > the thing is that they are not. the kernel chooses to REPLACE my mapping.
+> >
+> > consider the user-space code:
+> >
+> > mmap(0xaaaa0000, 0x3000, MAP_FIXED, ...);
+> > mmap(0xaaaa1000, 0x4000, MAP_FIXED, ...);
+> >
+> > here, the second call to mmap will shorten the first mapping to 0x1000
+> > bytes and create one big vma with size 0x5000 bytes.
+> >
+> > is there a way to tell it that the second mmap MUST fail?
+>
+> There's an LSM exit point for mmap, you could perhaps do something there.
+>
+> What are you trying to achieve by forcing the second one to fail?
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+puh... that is a good question :-)
+
+I'm writing my master's thesis on a new model of memory protection and need to 
+have every memory mapping in userspace duplicated. I also have kind of a 
+second PGD/PTD that allows finding this mirrored mapping.
+
+However, as the number of original mappings grows, I suddenly have the problem 
+that the kernel tries to allocate a new mapping and picks the address of a 
+mirrored memory page, which it shouldn't.
+
+Honestly, I don't understand why it does so, but it simply does... so 
+basically I want these second mappings to stay in memory as long as the 
+original page.
+
+What do you mean exactly with
+
+> There's an LSM exit point for mmap, you could perhaps do something there.
+
+??
+
+By the way / @Jiri Kosina:
+
+> Which is exactly in compliance with what POSIX says about MAP_FIXED mmaps 
+> - see http://opengroup.org/onlinepubs/007908799/xsh/mmap.html
+
+I know... I'm not even saying that this is a bug... I just wonder if there is 
+some way to avoid this problem :-)
+
+Thanks for your help - i really appreciate that!!
