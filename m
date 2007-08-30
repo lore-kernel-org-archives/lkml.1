@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762525AbXH3QlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759653AbXH3Qlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762525AbXH3QlR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 12:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761253AbXH3Qk6
+	id S1759653AbXH3Qlu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 12:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759418AbXH3Qlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 12:40:58 -0400
-Received: from avexch2.qlogic.com ([198.70.193.116]:15440 "EHLO
-	avexch2.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758862AbXH3Qk6 (ORCPT
+	Thu, 30 Aug 2007 12:41:39 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58520 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759043AbXH3Qli (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 12:40:58 -0400
-X-Greylist: delayed 892 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 12:40:57 EDT
-Message-ID: <46D6EFE7.40802@qlogic.com>
-Date: Thu, 30 Aug 2007 09:27:19 -0700
-From: Seokmann Ju <seokmann.ju@qlogic.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 30 Aug 2007 12:41:38 -0400
+X-Sasl-enc: qiaSy+lOvKsBt28jX3d7Ht1NyRFEvnbn6x7Z5bI2nZQY 1188492097
+Date: Thu, 30 Aug 2007 13:41:32 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Yan Burman <burman.yan@gmail.com>
+Cc: Shem Multinymous <multinymous@gmail.com>,
+       hdaps-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Hdaps-devel] [PATCH 2.6.23-rc2] hwmon: HP Mobile Data
+	Protection System 3D ACPI driver (resend)
+Message-ID: <20070830164132.GA21023@khazad-dum.debian.net>
+References: <1186831562.6452.10.camel@localhost> <20070825102512.GA5850@ucw.cz> <46D01420.3070400@gmail.com> <20070827171107.GA15647@khazad-dum.debian.net> <46D5A742.8090201@gmail.com> <20070829233024.GA7433@khazad-dum.debian.net> <41840b750708291731w3fb5e673k3c1283e4a2fa82f0@mail.gmail.com> <46D6E5CD.4060807@gmail.com>
 MIME-Version: 1.0
-To: Abhishek Kane <abhishek.kane@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-driver@qlogic.com,
-       linux-scsi@vger.kernel.org
-Subject: Re: FC - NPIV in 2.6.23-rc2
-References: <c7d75baf0708300849g27a5e4c3wba73b960a89a85e5@mail.gmail.com>
-In-Reply-To: <c7d75baf0708300849g27a5e4c3wba73b960a89a85e5@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Aug 2007 16:24:55.0506 (UTC) FILETIME=[4CE85B20:01C7EB22]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46D6E5CD.4060807@gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Abhishek Kane wrote:
-> Hi,
-> 
-> With the NPIV support been merged into 2.6.23-rc2, i was interested in
-> trying it out on my setup. But i understand from the code that this support
-> (NPIV) is only for 24xx cards.
-> I need to undertand what are the problems in making it available for 23xx
-> cards.
-It is not supported. There is no technical issues, though, it won't be supported.
+On Thu, 30 Aug 2007, Yan Burman wrote:
+>>> You can generate events on input devices, but I am not sure that's the
+>>> best way to go about it for this.  Things that block on read until an
+>>> interrupt happens might work better.
+>>
+>> You can do the latter via another (4th) input device.
+>>
+> What's wrong with the stuff I did in mdps? a misc character device that
+> acts like /dev/rtc. Why does it have to be input device oriented?
 
-> Also, when going through various docs i came across these 2 terms related to
-> port virtualization, viz. NPIV & Multiport id. But i couldn't understand the
-> inherent difference in these 2 technologies. So if you guys are aware of
-> some sought of documentation for this, please let me know.
-NPIV is a feature to provide multiple path available on one physical port and it has implemented based on the multiport ID (MID) capability on the switch.
-So, you have to have the switch with MID capable on the configuration to support NPIV, besides the controller.
+I am fine with a char device that acts like /dev/rtc, but if we are doing
+something as heavyweight as a char device, I'd rather we go full generic
+netlink and send the various events over it.  We'd have a netlink device
+that sends everything over various "channels" and just one input device that
+does joystick emulation, then.
 
-Thank you,
-Seokmann
+Can we use a simple sysfs attribute that blocks the caller on write and
+returns immediately on read? If it has to be more complicated than that, I'd
+rather we go the netlink path. Any other ideas that are not a char device,
+not a netlink socket, not an input device node, and not a sysfs attribute?
+
+> I also looked at what you did in the patches as well as the modified 
+> hdapsd. I'm doing the raw input device right now in the mdps, but I have a 
+> suggestion.
+>
+> It seems to me that right now there are at least 3 drivers that provide the 
+> same functionality - hdaps, ams and mdps. Why not create the input device
+> that exports raw accelerometer data with a name that is generic - something 
+> like accel/input or something along those lines. This way hdapsd could work
+> with any driver that provides the functionality without being hdaps 
+> specific.
+
+THAT is the idea, IMO.  But the naming is userspace's problem (thorugh
+udev), not ours :-)
+
+Or do you mean the "hardware port" part of the input device? If so, yes, we
+should try to make standard names for those as that makes it easier for
+userspace.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
