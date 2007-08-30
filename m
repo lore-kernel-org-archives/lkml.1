@@ -1,71 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763350AbXH3WSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762594AbXH3WTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763350AbXH3WSr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762210AbXH3WSe
+	id S1762594AbXH3WTH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:19:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762535AbXH3WSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:18:34 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:32674 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758895AbXH3WSc (ORCPT
+	Thu, 30 Aug 2007 18:18:40 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:61083 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762383AbXH3WSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:18:32 -0400
+	Thu, 30 Aug 2007 18:18:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jlpUgwZmyh/Ae2Y9UXK2rch6QdqpdOPp/QxJdiFClOszU6bP3yGYD5kbDFm2pqqp/+r47eouCvyFbnRg8IaORwOTqsQhU0/F+15+0AJRml+SL457RSkx0ThcPpx7oGJSCPkcgNgwyYUPX3nLCJ9rcwe+eTL3B0phhiTXD20euh4=
-Message-ID: <40f31dec0708301518u5ef32d13jfe1cce09656bf77d@mail.gmail.com>
-Date: Fri, 31 Aug 2007 01:18:31 +0300
-From: "Nick Kossifidis" <mickflemm@gmail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [PATCH 5/5] Net: ath5k, kconfig changes
-Cc: "Christoph Hellwig" <hch@infradead.org>,
-       "Jiri Slaby" <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20070830123609.GA5140@tuxdriver.com>
+        b=TxI5fSVIhLul+mMS5QGPZ153BoaVCj+YYbPJZ+9O58F2q2MfM/F4T4FG3851YE9qKqQs1c+P0pP/b2Chn5uBS6bx1sAJALhA+fK2bM6YDiEQZECuJdTWxalsEPwY9ZLcFdS82PYP23kxx9yNvdt59lwPAvyfkIHHvUoxVTGV88Q=
+Message-ID: <dda83e780708301518i52a5769coa56dc93c1b9d1848@mail.gmail.com>
+Date: Thu, 30 Aug 2007 15:18:37 -0700
+From: "Bret Towe" <magnade@gmail.com>
+To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
+Subject: Re: NFS woes again
+Cc: "Florin Iucha" <florin@iucha.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <dda83e780708282252s759a0b85o6562393bd9fca54f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <2713029743177393055@pripojeni.net>
-	 <280951420471148977@pripojeni.net>
-	 <20070828171330.GD29343@infradead.org>
-	 <40f31dec0708291838p5d33eb34p3b4432d9d270841a@mail.gmail.com>
-	 <20070830123609.GA5140@tuxdriver.com>
+References: <Pine.LNX.4.64.0708211502330.2460@twin.jikos.cz>
+	 <20070822132200.GO10422@iucha.net> <20070823125210.GQ10422@iucha.net>
+	 <dda83e780708231014x66093dafj83263a2a1c8203bb@mail.gmail.com>
+	 <20070823173637.GS10422@iucha.net>
+	 <1188220651.6701.32.camel@heimdal.trondhjem.org>
+	 <dda83e780708271819x247ac49dx981c49a80ed6a999@mail.gmail.com>
+	 <20070828013541.GA10422@iucha.net>
+	 <1188307723.6701.138.camel@heimdal.trondhjem.org>
+	 <dda83e780708282252s759a0b85o6562393bd9fca54f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/8/30, John W. Linville <linville@tuxdriver.com>:
-> On Thu, Aug 30, 2007 at 04:38:09AM +0300, Nick Kossifidis wrote:
-> > 2007/8/28, Christoph Hellwig <hch@infradead.org>:
+On 8/28/07, Bret Towe <magnade@gmail.com> wrote:
+> On 8/28/07, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> > On Mon, 2007-08-27 at 20:35 -0500, Florin Iucha wrote:
+> > > On Mon, Aug 27, 2007 at 06:19:29PM -0700, Bret Towe wrote:
+> > > > On 8/27/07, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> > > > > > > this sounds alot like the post i did yesterday titled 'nfs4 hang regression'
+> > > > > > > i tracked it down to commit 3d39c691ff486142dd9aaeac12f553f4476b7a6
+> > > > > >
+> > > > > > Yes, it certainly does -- all the symptoms match!
+> > > > >
+> > > > > Could you and Bret please check if the attached patch fixes the hang?
+> > > >
+> > > > no good for me still hangs after ~30minutes
+> > >
+> > > I just booted into the new kernel
+> > > (3d39c691ff486142dd9aaeac12f553f4476b7a6 + Trond's patch) and it hangs
+> > > in 10-15 minutes.
+> > >
+> > > Process traces available at http://iucha.net/nfs/23-rc2-nfs-fix-1/kernel.log.gz
+> > >
+> > > Regards,
+> > > florin
+> >
+> > Doh! I see the problem: cancel_delayed_work_sync() shouldn't ever be
+> > called recursively.
+> >
+> > The following patch should be correct. Please just discard the previous
+> > one...
+> >
+> > Trond
+> >
 >
-> > > Also this whole patch seems rather pointless.  It saves only
-> > > very little and turns the driver into a complete ifdef maze.
->
-> > Also most
-> > people will use 5212 code only, 5211 cards are on some old laptops and
-> > 5210, well i couldn't even find  a 5210 for actual testing :P
->
-> FWIW, I'd bet dollars to donuts that distros will enable them all
-> together.
->
-> Is saving code space the only reason to turn these off?  How much
-> space do you save?
->
-> Is there some way you can isolate and/or limit the number of ifdef
-> blocks further?  If so, we might consider a version of this patch
-> that depends on EMBEDDED or somesuch...?
->
-> John
+> uptime of 3 hours and keyboard is still working fine
+> I'll hopefully get to test this on the mini tomorrow for at least 3 hours also
 
-O.K. as a first step i'll limit 5210 code only then, just an option
-like "support older 5210 chipsets" which is going to be off by default
-instead of 3 options. It's not just saving space, it's also saving
-some runtime checks. It's not really a gain in performance though,
-most checks are done during initialization and dfs setup, i just
-thought it would be usefull to save as much cpu as possible.
+got 45min on mini before I had to go elsewhere
+the amd64 shutdown fine and has been up for more than 3 hours
+I'd say the patch does it
 
--- 
-GPG ID: 0xD21DB2DB
-As you read this post global entropy rises. Have Fun ;-)
-Nick
+> >
+> > ---------- Forwarded message ----------
+> > From: Trond Myklebust <Trond.Myklebust@netapp.com>
+> > To:
+> > Date: Mon, 27 Aug 2007 09:14:56 -0400
+> > Subject: No Subject
+> > Doh! We can't use cancel_delayed_work_sync because we may have been called
+> > from an unmount that was being performed by nfs_automount_task.
+> >
+> > Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> > ---
+> >
+> >  fs/nfs/namespace.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/fs/nfs/namespace.c b/fs/nfs/namespace.c
+> > index aea76d0..acfc56f 100644
+> > --- a/fs/nfs/namespace.c
+> > +++ b/fs/nfs/namespace.c
+> > @@ -176,7 +176,7 @@ static void nfs_expire_automounts(struct work_struct *work)
+> >  void nfs_release_automount_timer(void)
+> >  {
+> >         if (list_empty(&nfs_automount_list))
+> > -               cancel_delayed_work_sync(&nfs_automount_task);
+> > +               cancel_delayed_work(&nfs_automount_task);
+> >  }
+> >
+> >  /*
+> >
+> >
+>
