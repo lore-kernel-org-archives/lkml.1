@@ -1,67 +1,292 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933033AbXH3Sro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964817AbXH3SxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933033AbXH3Sro (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 14:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759481AbXH3Srf
+	id S964817AbXH3SxK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 14:53:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932565AbXH3Sw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 14:47:35 -0400
-Received: from mail.trixing.net ([87.230.125.58]:54590 "EHLO mail.trixing.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753974AbXH3Srd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 14:47:33 -0400
-Message-ID: <46D7108D.9090104@l4x.org>
-Date: Thu, 30 Aug 2007 20:46:37 +0200
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070329 Thunderbird/1.5.0.10 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Adrian Bunk <bunk@kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org
-References: <46D5902C.1040905@googlemail.com> <46D5B544.4030708@l4x.org> <20070829234734.GA26410@stusta.de> <Pine.LNX.4.64.0708291736010.4526@schroedinger.engr.sgi.com> <46D66D49.20300@l4x.org> <Pine.LNX.4.64.0708301112030.7975@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0708301112030.7975@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.195
-X-SA-Exim-Mail-From: jdi@l4x.org
-Subject: Re: [1/4] 2.6.23-rc4: known regressions
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on mail.trixing.net)
+	Thu, 30 Aug 2007 14:52:56 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:44784 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932472AbXH3Swz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 14:52:55 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       David Rientjes <rientjes@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dave Hansen <haveblue@us.ibm.com>
+Date: Fri, 31 Aug 2007 00:22:46 +0530
+Message-Id: <20070830185246.3170.74806.sendpatchset@balbir-laptop>
+Subject: [-mm PATCH]  Memory controller improve user interface (v2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Thu, 30 Aug 2007, Jan Dittmer wrote:
-> 
->> Christoph Lameter wrote:
->>> On Thu, 30 Aug 2007, Adrian Bunk wrote:
->>>
->>>> Christoph, is your fix in -mm suitable for 2.6.23, or how else should this
->>>> regression be fixed for 2.6.23?
->>> Looks like this is just alpha and a certain particular compiler version? 
->> binutils 2.15.95, gcc 3.3.6 and I could update to 4.0.4 or something
->> more recent I guess. And yes, it's only alpha.
->>
->> Of which file do you want the objdump?
-> 
-> The one where the link fails. Dump the code around the unresolved symbol.
 
-Here is one of them:
 
-   19380:       10 00 1f 20     lda     v0,16
-   19384:       e6 ff ff c3     br      19320 <srmcons_get_private_struct+0x90>
-                 * Generate a link failure. Would be great if we could
-                 * do something to stop the compile here.
-                 */
-                extern void __kmalloc_size_too_large(void);
-                __kmalloc_size_too_large();
-   19388:       00 00 7d a7     ldq     t12,0(gp)
-   1938c:       00 40 5b 6b     jsr     ra,(t12),19390 <srmcons_get_private_struct+0x100>
-   19390:       00 00 ba 27     ldah    gp,0(ra)
-   19394:       00 00 bd 23     lda     gp,0(gp)
-   19398:       d6 ff ff c3     br      192f4 <srmcons_get_private_struct+0x64>
-   1939c:       00 00 fe 2f     unop
+Change the interface to use kilobytes instead of pages. Page sizes can vary
+across platforms and configurations. A new strategy routine has been added
+to the resource counters infrastructure to format the data as desired.
 
-Jan
+Suggested by David Rientjes, Andrew Morton and Herbert Poetzl
+
+Tested on a UML setup with the config for memory control enabled.
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ Documentation/controllers/memory.txt |   22 +++++++++++++-
+ include/linux/res_counter.h          |   10 +++---
+ kernel/res_counter.c                 |   30 +++++++++++++------
+ mm/memcontrol.c                      |   53 ++++++++++++++++++++++++++++-------
+ 4 files changed, 90 insertions(+), 25 deletions(-)
+
+diff -puN mm/memcontrol.c~mem-control-make-ui-more-usable mm/memcontrol.c
+--- linux-2.6.23-rc3/mm/memcontrol.c~mem-control-make-ui-more-usable	2007-08-29 16:18:39.000000000 +0530
++++ linux-2.6.23-rc3-balbir/mm/memcontrol.c	2007-08-31 00:09:51.000000000 +0530
+@@ -312,7 +312,7 @@ int mem_container_charge(struct page *pa
+ 	 * If we created the page_container, we should free it on exceeding
+ 	 * the container limit.
+ 	 */
+-	while (res_counter_charge(&mem->res, 1)) {
++	while (res_counter_charge(&mem->res, PAGE_SIZE)) {
+ 		if (try_to_free_mem_container_pages(mem))
+ 			continue;
+ 
+@@ -352,7 +352,7 @@ int mem_container_charge(struct page *pa
+ 		kfree(pc);
+ 		pc = race_pc;
+ 		atomic_inc(&pc->ref_cnt);
+-		res_counter_uncharge(&mem->res, 1);
++		res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 		css_put(&mem->css);
+ 		goto done;
+ 	}
+@@ -417,7 +417,7 @@ void mem_container_uncharge(struct page_
+ 		css_put(&mem->css);
+ 		page_assign_page_container(page, NULL);
+ 		unlock_page_container(page);
+-		res_counter_uncharge(&mem->res, 1);
++		res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 
+  		spin_lock_irqsave(&mem->lru_lock, flags);
+  		list_del_init(&pc->lru);
+@@ -426,12 +426,44 @@ void mem_container_uncharge(struct page_
+ 	}
+ }
+ 
+-static ssize_t mem_container_read(struct container *cont, struct cftype *cft,
+-			struct file *file, char __user *userbuf, size_t nbytes,
+-			loff_t *ppos)
++/*
++ * Strategy routines for formating read/write data
++ */
++int mem_container_read_strategy(unsigned long long val, char *buf)
++{
++	return sprintf(buf, "%llu Bytes\n", val);
++}
++
++int mem_container_write_strategy(char *buf, unsigned long long *tmp)
++{
++	*tmp = memparse(buf, &buf);
++	if (*buf != '\0')
++		return -EINVAL;
++
++	printk("tmp is %llu\n", *tmp);
++	/*
++	 * Round up the value to the closest page size
++	 */
++	*tmp = ((*tmp + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
++	return 0;
++}
++
++static ssize_t mem_container_read_usage(struct container *cont,
++			struct cftype *cft, struct file *file,
++			char __user *userbuf, size_t nbytes, loff_t *ppos)
++{
++	return res_counter_read(&mem_container_from_cont(cont)->res,
++				cft->private, userbuf, nbytes, ppos,
++				mem_container_read_strategy);
++}
++
++static ssize_t mem_container_read(struct container *cont,
++			struct cftype *cft, struct file *file,
++			char __user *userbuf, size_t nbytes, loff_t *ppos)
+ {
+ 	return res_counter_read(&mem_container_from_cont(cont)->res,
+-				cft->private, userbuf, nbytes, ppos);
++				cft->private, userbuf, nbytes, ppos,
++				NULL);
+ }
+ 
+ static ssize_t mem_container_write(struct container *cont, struct cftype *cft,
+@@ -439,7 +471,8 @@ static ssize_t mem_container_write(struc
+ 				size_t nbytes, loff_t *ppos)
+ {
+ 	return res_counter_write(&mem_container_from_cont(cont)->res,
+-				cft->private, userbuf, nbytes, ppos);
++				cft->private, userbuf, nbytes, ppos,
++				mem_container_write_strategy);
+ }
+ 
+ static ssize_t mem_control_type_write(struct container *cont,
+@@ -500,13 +533,13 @@ static struct cftype mem_container_files
+ 	{
+ 		.name = "usage",
+ 		.private = RES_USAGE,
+-		.read = mem_container_read,
++		.read = mem_container_read_usage,
+ 	},
+ 	{
+ 		.name = "limit",
+ 		.private = RES_LIMIT,
+ 		.write = mem_container_write,
+-		.read = mem_container_read,
++		.read = mem_container_read_usage,
+ 	},
+ 	{
+ 		.name = "failcnt",
+diff -puN include/linux/memcontrol.h~mem-control-make-ui-more-usable include/linux/memcontrol.h
+diff -puN include/linux/res_counter.h~mem-control-make-ui-more-usable include/linux/res_counter.h
+--- linux-2.6.23-rc3/include/linux/res_counter.h~mem-control-make-ui-more-usable	2007-08-29 16:18:39.000000000 +0530
++++ linux-2.6.23-rc3-balbir/include/linux/res_counter.h	2007-08-30 23:48:49.000000000 +0530
+@@ -23,11 +23,11 @@ struct res_counter {
+ 	/*
+ 	 * the current resource consumption level
+ 	 */
+-	unsigned long usage;
++	unsigned long long usage;
+ 	/*
+ 	 * the limit that usage cannot exceed
+ 	 */
+-	unsigned long limit;
++	unsigned long long limit;
+ 	/*
+ 	 * the number of unsuccessful attempts to consume the resource
+ 	 */
+@@ -52,9 +52,11 @@ struct res_counter {
+  */
+ 
+ ssize_t res_counter_read(struct res_counter *counter, int member,
+-		const char __user *buf, size_t nbytes, loff_t *pos);
++		const char __user *buf, size_t nbytes, loff_t *pos,
++		int (*read_strategy)(unsigned long long val, char *s));
+ ssize_t res_counter_write(struct res_counter *counter, int member,
+-		const char __user *buf, size_t nbytes, loff_t *pos);
++		const char __user *buf, size_t nbytes, loff_t *pos,
++		int (*write_strategy)(char *buf, unsigned long long *val));
+ 
+ /*
+  * the field descriptors. one for each member of res_counter
+diff -puN kernel/res_counter.c~mem-control-make-ui-more-usable kernel/res_counter.c
+--- linux-2.6.23-rc3/kernel/res_counter.c~mem-control-make-ui-more-usable	2007-08-29 16:18:39.000000000 +0530
++++ linux-2.6.23-rc3-balbir/kernel/res_counter.c	2007-08-30 23:49:52.000000000 +0530
+@@ -16,7 +16,7 @@
+ void res_counter_init(struct res_counter *counter)
+ {
+ 	spin_lock_init(&counter->lock);
+-	counter->limit = (unsigned long)LONG_MAX;
++	counter->limit = (unsigned long long)LLONG_MAX;
+ }
+ 
+ int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
+@@ -76,24 +76,29 @@ static inline unsigned long *res_counter
+ }
+ 
+ ssize_t res_counter_read(struct res_counter *counter, int member,
+-		const char __user *userbuf, size_t nbytes, loff_t *pos)
++		const char __user *userbuf, size_t nbytes, loff_t *pos,
++		int (*read_strategy)(unsigned long long val, char *st_buf))
+ {
+-	unsigned long *val;
++	unsigned long long *val;
+ 	char buf[64], *s;
+ 
+ 	s = buf;
+ 	val = res_counter_member(counter, member);
+-	s += sprintf(s, "%lu\n", *val);
++	if (read_strategy)
++		s += read_strategy(*val, s);
++	else
++		s += sprintf(s, "%lu\n", *val);
+ 	return simple_read_from_buffer((void __user *)userbuf, nbytes,
+ 			pos, buf, s - buf);
+ }
+ 
+ ssize_t res_counter_write(struct res_counter *counter, int member,
+-		const char __user *userbuf, size_t nbytes, loff_t *pos)
++		const char __user *userbuf, size_t nbytes, loff_t *pos,
++		int (*write_strategy)(char *st_buf, unsigned long long *val))
+ {
+ 	int ret;
+ 	char *buf, *end;
+-	unsigned long tmp, *val;
++	unsigned long long tmp, *val;
+ 
+ 	buf = kmalloc(nbytes + 1, GFP_KERNEL);
+ 	ret = -ENOMEM;
+@@ -106,9 +111,16 @@ ssize_t res_counter_write(struct res_cou
+ 		goto out_free;
+ 
+ 	ret = -EINVAL;
+-	tmp = simple_strtoul(buf, &end, 10);
+-	if (*end != '\0')
+-		goto out_free;
++
++	if (write_strategy) {
++		if (write_strategy(buf, &tmp)) {
++			goto out_free;
++		}
++	} else {
++		tmp = simple_strtoul(buf, &end, 10);
++		if (*end != '\0')
++			goto out_free;
++	}
+ 
+ 	val = res_counter_member(counter, member);
+ 	*val = tmp;
+diff -puN Documentation/controllers/memory.txt~mem-control-make-ui-more-usable Documentation/controllers/memory.txt
+--- linux-2.6.23-rc3/Documentation/controllers/memory.txt~mem-control-make-ui-more-usable	2007-08-29 16:18:39.000000000 +0530
++++ linux-2.6.23-rc3-balbir/Documentation/controllers/memory.txt	2007-08-31 00:19:31.000000000 +0530
+@@ -165,11 +165,29 @@ c. Enable CONFIG_CONTAINER_MEM_CONT
+ 
+ Since now we're in the 0 container,
+ We can alter the memory limit:
+-# echo -n 6000 > /containers/0/memory.limit
++# echo -n 4M > /containers/0/memory.limit
++
++NOTE: We can use a suffix (k, K, m, M, g or G) to indicate values in kilo,
++mega or gigabytes.
++
++# cat /containers/0/memory.limit
++4194304 Bytes
++
++NOTE: The interface has now changed to display the usage in bytes
++instead of pages
+ 
+ We can check the usage:
+ # cat /containers/0/memory.usage
+-25
++1216512 Bytes
++
++Setting a limit to a number that is not a multiple of page size causes
++rounding up of the value. The user must check back to see (by reading
++memory.limit), to check for differences between desired values and committed
++values. Currently, all accounting is done in multiples of PAGE_SIZE
++
++# echo -n 1 > memory.limit
++# cat memory.limit
++4096 Bytes
+ 
+ The memory.failcnt field gives the number of times that the container limit was
+ exceeded.
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
