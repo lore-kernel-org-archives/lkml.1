@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbXH3QVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761062AbXH3QYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761417AbXH3QVr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 12:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbXH3QVh
+	id S1761062AbXH3QYS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 12:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbXH3QYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 12:21:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42455 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757776AbXH3QVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 12:21:36 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] MTD: Initialise s_flags in get_sb_mtd_aux()
-To: dwmw2@infradead.org
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com
-Date: Thu, 30 Aug 2007 17:21:19 +0100
-Message-ID: <20070830162119.28355.70078.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Aug 2007 12:24:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35339 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756110AbXH3QYJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 12:24:09 -0400
+Date: Thu, 30 Aug 2007 17:24:00 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Kristian H?gsberg <krh@redhat.com>
+Cc: Dave Airlie <airlied@linux.ie>, Christoph Hellwig <hch@infradead.org>,
+       m.kozlowski@tuxland.pl, akpm@linux-foundation.org,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/23] drm: introduce drm_zalloc
+Message-ID: <20070830162400.GA12108@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Kristian H?gsberg <krh@redhat.com>, Dave Airlie <airlied@linux.ie>,
+	m.kozlowski@tuxland.pl, akpm@linux-foundation.org,
+	dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20070827205750.514001000@tuxland.pl> <20070828200821.GA7998@infradead.org> <Pine.LNX.4.64.0708282149180.15296@skynet.skynet.ie> <1188490832.7269.6.camel@hinata.boston.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1188490832.7269.6.camel@hinata.boston.redhat.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+On Thu, Aug 30, 2007 at 12:20:32PM -0400, Kristian H?gsberg wrote:
+> > The wrappers aren't useless the drm alloc/free passes in a memory space 
+> > for debugging purposes so we can track memory abuse when developing,
+> 
+> Do we ever use that, though?  Having to pass in the pointer, the size
+> and the area just to free memory, sure is a bitch.
 
-Initialise s_flags in get_sb_mtd_aux() from the flags parameter.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- drivers/mtd/mtdsuper.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/mtd/mtdsuper.c b/drivers/mtd/mtdsuper.c
-index aca3319..9b430f2 100644
---- a/drivers/mtd/mtdsuper.c
-+++ b/drivers/mtd/mtdsuper.c
-@@ -70,6 +70,8 @@ static int get_sb_mtd_aux(struct file_system_type *fs_type, int flags,
- 	DEBUG(1, "MTDSB: New superblock for device %d (\"%s\")\n",
- 	      mtd->index, mtd->name);
- 
-+	sb->s_flags = flags;
-+
- 	ret = fill_super(sb, data, flags & MS_SILENT ? 1 : 0);
- 	if (ret < 0) {
- 		up_write(&sb->s_umount);
+Note the slab has a memory tracking feature that accounts memory to
+callers of the allocator.  IF that's not enough for you please help
+improving the common code instead of inventing your own.
 
