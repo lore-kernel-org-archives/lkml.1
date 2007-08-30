@@ -1,101 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762866AbXH3WOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762346AbXH3WPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762866AbXH3WOz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757787AbXH3WOo
+	id S1762346AbXH3WPX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762766AbXH3WOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:14:44 -0400
-Received: from [212.12.190.123] ([212.12.190.123]:33122 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755093AbXH3WOd convert rfc822-to-8bit (ORCPT
+	Thu, 30 Aug 2007 18:14:54 -0400
+Received: from smtp103.sbc.mail.mud.yahoo.com ([68.142.198.202]:32827 "HELO
+	smtp103.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1762654AbXH3WOx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:14:33 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: "Natalie Protasevich" <protasnb@gmail.com>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: Who wants to maintain KR list for stable releases?
-Date: Fri, 31 Aug 2007 01:11:32 +0300
-User-Agent: KMail/1.5
-Cc: "Adrian Bunk" <bunk@kernel.org>, "David Rees" <drees76@gmail.com>,
-       "Daniel Walker" <dwalker@mvista.com>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "=?iso-8859-1?q?Bj=F6rn?= Steinbrink" <B.Steinbrink@gmx.de>,
-       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org
-References: <46CDE94A.7000600@googlemail.com> <46D6E135.8000203@s5r6.in-berlin.de> <32209efe0708300950r5787402l4d02cedd862314fd@mail.gmail.com>
-In-Reply-To: <32209efe0708300950r5787402l4d02cedd862314fd@mail.gmail.com>
+	Thu, 30 Aug 2007 18:14:53 -0400
+X-YMail-OSG: ksgIB2oVM1khsY3doyGTzUTZ_ItBME269fMBWNFrZaQPVRVSwvK3NxOjgGodpefmjdTEL1QlcQ--
+Date: Thu, 30 Aug 2007 17:14:47 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Jan Kara <jack@suse.cz>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.osdl.org
+Subject: Re: [PATCH] Send quota messages via netlink
+Message-ID: <20070830221447.GA25675@vino.hallyn.com>
+References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org> <20070829122647.GB7814@duck.suse.cz> <m1mywa42g7.fsf@ebiederm.dsl.xmission.com> <20070829192653.GD7814@duck.suse.cz> <m1wsve2gpo.fsf@ebiederm.dsl.xmission.com> <20070830092548.GB16336@duck.suse.cz> <20070830191010.GA23464@vino.hallyn.com> <20070830221825.GB21298@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-7"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708310111.32132.a1426z@gawab.com>
+In-Reply-To: <20070830221825.GB21298@duck.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Natalie Protasevich wrote:
-> On 8/30/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> > Al Boldi wrote in "Designers and Builders (was: Who wants to maintain KR
-> > list for stable releases?)":
-> > | So, what's wrong with tapping into people's design suggestions, and
-> > | allowing others to implement it?
-> >
-> > Design suggestions should really come from people who also know a lot
-> > about the how-to.  This is even true to some degree about feature
-> > requests.  Besides, I've got a feeling that regardless of the field of
-> > τεχνη one works in, someone can only be a truly good designer if she or
-> > he has also been a builder.
->
-> Sometimes you can feel that the suggestion comes from Unix veteran, or
-> one who does a lot of linux programming in user land. Their opinion is
-> often valuable.
+Quoting Jan Kara (jack@suse.cz):
+> On Thu 30-08-07 14:10:10, Serge E. Hallyn wrote:
+> > Quoting Jan Kara (jack@suse.cz):
+> > > On Wed 29-08-07 15:06:43, Eric W. Biederman wrote:
+> > > > Jan Kara <jack@suse.cz> writes:
+> > > > >> However I'm still confused about the use of current->user.  If that
+> > > > >> is what we really want and not the user who's quota will be charged
+> > > > >> it gets to be a really trick business, because potentially the uid
+> > > > >> we want to deliver varies depending on who opened the netlink socket.
+> > > > >   I see it's a complicated matter :). What I need to somehow pass to
+> > > > > userspace is something (and I don't really care whether it will be number,
+> > > > > string or whatever) that userspace can read and e.g. find a terminal
+> > > > > window or desktop the affected user has open and also translate the
+> > > > > identity to some user-understandable name (average user Joe has to
+> > > > > understand that he should quickly cleanup his home directory ;).
+> > > > >   Thinking more about it, we could probably pass a string to userspace in
+> > > > > the format:
+> > > > >   <namespace type>:<user identification>
+> > > > >
+> > > > > So for example we can have something like:
+> > > > >   unix:1000 (traditional unix UIDs)
+> > > > >   nfs4:joe@machine
+> > > > >
+> > > > > The problem is: Are we able to find out in which "namespace type" we are
+> > > > > and send enough identifying information from a context of unpriviledged
+> > > > > user?
+> > > > 
+> > > > Ok.  This provides enough context to understand what you are trying to do.
+> > > > You do want the unix user id, not the filesystem notion.  Because you
+> > > > are looking for the user.
+> > > > 
+> > > > So we have to figure out how to do the hard thing which is look at
+> > > > who opened our netlink broadcast see if they are in the same user
+> > > > namespace as current->user.  Which is a pain and we don't currently
+> > > > have the infrastructure for.
+> > >   There can be arbitrary number of listeners (potentially from different
+> > > namespaces if I understand it correctly) listening to broadcasts. So I
+> > 
+> > Currently that is true, but i think isolating netlink sockets is going
+> > to have to be done pretty soon.
+> > 
+> > On the one hand cloning a new netlink socket ns when you unshare
+> > CLONE_NEWNET may seem 'obvious', but I think doing so when you unshare
+> > CLONE_NEWUSER make much more sense considering netlink's use for audit
+> > and now for quota.
+> > 
+> > > think we should pass some universal identifier rather than try to find out
+> > 
+> > Even with isolating netlink we still may want to send out an identifier.
+> > However, just as with mounts extensions we're printing out the memory
+> > address of vfsmounts, we might just want to print out the memory address
+> > of the userns.  It's not universal, but should be good enough.
+>   Maybe before proceeding further with the discussion I'd like to
+> understand following: What are these user namespaces supposed to be good
+> for?
 
-Exactly right.
+(Please skip to the message end first, as I think you may not care about
+the next bit of my blathering)
 
-The important part in designing isn't the how-to but rather understanding the 
-concepts involved.  Once you have the concepts straight, implementation 
-becomes a matter of which path to take.
+Right now they are only good for providing some separate accounting for
+uid 1000 in one user namespace versus uid 1000 in another namespace.
+All security enforcement must be done by actually providing separate
+filesystems and separate pid namespaces and, hopefully, with a selinux
+policy.
 
-> > But back to the discussion.  A tracker is not a good tool for
-> > brainstorming sessions, except perhaps for capturing conclusions after
-> > the brainstorm, as far as they are suitable as input for actual work.
-> >
-> > Also, "*allowing* others to implement it" has a strange ring to me.
-> > Where I am around, there are always far too few people who fix things
-> > and build things.  But very, very occasionally there is someone new who
-> > wonders if there is an interesting TODO item which is perhaps in the
-> > reach of his abilities.  Contributing a cleanup or an actual feature is
-> > typically much easier than fixing an open, tracked bug.  (The bugs which
-> > end up in the bugtracker are usually the difficult ones.)  The
-> > contributor learns something and, in a rare turn of events, may
-> > eventually become able and willing to join the bugfixing.
->
-> Yes, indeed, one should really know the code in and out to do things
-> right. OTOH, not everyone has time to fix bugs in his department, or
-> it's just single person trying to handle all work. I suggest that in
-> this case our masters could first outline what needs to be done and
-> write it down in the bugzilla. This will 1) give a warm feeling to
-> reporter and everyone else that the problem is noticed and not taken
-> lightly and 2) give people with active and curious minds chance to try
-> solving a problem (my guess that would be many reporters themselves,
-> they often ask "what can I do and how can I fix this" and some more
-> junior developers looking for useful exercise and just need
-> directions.) At least some good debugging will come out of it, and no
-> harm...
+Eventually the idea will be that uid 1000 in one user namespace and uid
+1000 in another namespace will be completely separate entities.  A
+mounted filesystem will be tied to a particuler user namespace, and
+the kernel will provide any cross-userns access perhaps the way I
+described, with uid equivalence implemented through the keyring.
 
-Agreed.  But when I responded to this thread by changing the subject, because 
-I felt it was somewhat OT to tracking, I meant to question the mentality of 
-trying to nullify design suggestions for the mere reason of not submitting a 
-prototype.  Now, prototyping is a great way to refine your end-product, but 
-it's a terrible waste of time in terms of articulating design-goals.
+But note that this isn't really relevant when we get to NFS.  Two user
+namespaces on one machine should have different network namespaces and
+network addresses as well, and so should look to the NFS server like two
+separate machines.
 
-IMHO, in the interest of keeping ahead of the competition, we should 
-encourage people to express their design suggestions instead of discouraging 
-them.
+So the user namespaces are only really relevant when talking about local
+filesystems.
 
+>   I imagine it so that you have a machine and on it several virtual
+> machines which are sharing a filesystem (or it could be a cluster). Now you
+> want UIDs to be independent between these virtual machines. That's it,
+> right?
+>   Now to continue the example: Alice has UID 100 on machineA, Bob has
+>  UID 100 on machineB. These translate to UIDs 1000 and 1001 on the common
+> filesystem. Process of Alice writes to a file and Bob becomes to be over
+> quota. In this situation, there would be probably two processes (from
+> machineA and machineB) listening on the netlink socket. We want to send a
+> message so that on Alice's desktop we can show a message: "You caused
+> Bob to exceed his quotas" and of Bob's desktop: "Alice has caused that you
+> are over quota.".
 
-Thanks!
+Since this is over NFS, you handle it the way you would any other time
+that user Alice on some other machine managed to do this.
 
---
-Al
+>   Because there may be is not a notion of Bob on machineA or of Alice on
+> machineB, we are in trouble, right? What I like the most is to use the
+> filesystem identities (as you suggested in some other email). I. e. because
+> both Alice and Bob share a filesystem, identities of both have to make sense
+> to it (for example for purposes of permission checking). So we can probably
 
+Right, so long as we're talking about local filesystems that's the way
+to go.  If a file write was allowed which brought bob over quota,
+clearly the person responsible had some uid valid on the filesystem to
+allow him to do so.
+
+> send via netlink these (in our example ids 1000 and 1001) and hope that
+> inside machineA and machineB there will be a way to translate these
+> identities to names "Alice" and "Bob". So that user can understand what
+> is happenning. Does this sound plausible?
+>   If we go this route, then we only need a kernel function, that will
+> for a pair ($filesystem, $task) return indentity of that $task used
+> for operations on $filesystem...
+
+Ok, now I see.  This is again unrelated to user namespaces, it's an
+issue regardless.
+
+Is there no way to just report Alice as the guilty party to Bob on his
+machine as (host=nfsserver,uid=1000)?
+
+-serge
