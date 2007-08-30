@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762703AbXH3QqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762777AbXH3Qrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762703AbXH3QqX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 12:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbXH3QqP
+	id S1762777AbXH3Qrb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 12:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760136AbXH3QrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 12:46:15 -0400
-Received: from 85-10-209-111.clients.your-server.de ([85.10.209.111]:55508
-	"EHLO mail.road.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759607AbXH3QqO (ORCPT
+	Thu, 30 Aug 2007 12:47:21 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:30997 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758176AbXH3QrU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 12:46:14 -0400
-From: Uli Luckas <u.luckas@road.de>
-Organization: Road GmbH
-To: "Xu Yang" <risingsunxy@googlemail.com>
-Subject: Re: parse_tag_ramdisk
-Date: Thu, 30 Aug 2007 18:46:08 +0200
-User-Agent: KMail/1.9.7
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <ab40e9c0708300707r2e6d2d71y42940084db5038ac@mail.gmail.com> <200708301806.42905.u.luckas@road.de> <ab40e9c0708300910m3cba4c7bie3f6c9d471a155ff@mail.gmail.com>
-In-Reply-To: <ab40e9c0708300910m3cba4c7bie3f6c9d471a155ff@mail.gmail.com>
+	Thu, 30 Aug 2007 12:47:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=j7cqDEtKtJr/hI/uGQkCOOEAHkZYF+K2lzArSV2z7GHLOZFbJohhBMWDX5AXcCBJH9UZdKbHbylyUmBfk3KKWA9nIrgXb0wa0Z9YBHM02vNsoToVtqC2RlkcFBd1cEAO/APIZ1uSSOZT98zkyZCRHXnc9vqQkFgGujj3OpD7Y2U=
+Message-ID: <7579f7fb0708300947r4bae76a8j3715316741f3563f@mail.gmail.com>
+Date: Thu, 30 Aug 2007 09:47:19 -0700
+From: "Matthew Jacob" <lydianconcepts@gmail.com>
+To: "Seokmann Ju" <seokmann.ju@qlogic.com>
+Subject: Re: FC - NPIV in 2.6.23-rc2
+Cc: "Abhishek Kane" <abhishek.kane@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-driver@qlogic.com, linux-scsi@vger.kernel.org
+In-Reply-To: <46D6EFE7.40802@qlogic.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708301846.09669.u.luckas@road.de>
+References: <c7d75baf0708300849g27a5e4c3wba73b960a89a85e5@mail.gmail.com>
+	 <46D6EFE7.40802@qlogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 30. August 2007, Xu Yang wrote:
-> Hi Uli,
+> > some sought of documentation for this, please let me know.
+> NPIV is a feature to provide multiple path available on one physical port and it has implemented based on the multiport ID (MID) capability on the switch.
+> So, you have to have the switch with MID capable on the configuration to support NPIV, besides the controller.
 >
->
-> thanks for your reply.
->
-> just have a question, where is the tag list, how can i modify this?
->
-If you don't know where the list is created, how do you now that it contains a 
-ramdisk tag? There is a chance, that the kernel does not even get a ram disk 
-tag at all. This would also explain, why it is not parsed ;-)
 
-The tag list is supplied by your bootloader. How the bootloader creates the 
-list and how to change the order depends on your bootloader. You probably 
-have to read (and patch) it's source code.
-
-regards,
-Uli
-
--- 
-
-------- ROAD ...the handyPC Company - - -  ) ) )
-
-Uli Luckas
-Software Development
-
-ROAD GmbH
-Bennigsenstr. 14 | 12159 Berlin | Germany
-fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
-url: www.road.de
-
-Amtsgericht Charlottenburg: HRB 96688 B
-Managing directors: Hans-Peter Constien, Hubertus von Streit
+No, if the switch doesn't suport NP-IV, the 24XX f/w will come up in
+Public Loop mode (FL).
