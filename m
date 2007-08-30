@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762423AbXH3QoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762703AbXH3QqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762423AbXH3QoW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 12:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759412AbXH3QoO
+	id S1762703AbXH3QqX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 12:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbXH3QqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 12:44:14 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39469 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1759340AbXH3QoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 12:44:13 -0400
-X-Authenticated: #12383568
-X-Provags-ID: V01U2FsdGVkX1+Awrd/ayKAqgtLM9rET1raomxehknIebbYmjvEve
-	qlhsTUjHswOErR
-From: Clemens Kolbitsch <clemens.kol@gmx.at>
-To: linux-kernel@vger.kernel.org
-Subject: Forbid deletion of memory mappings
-Date: Thu, 30 Aug 2007 18:44:10 +0200
-User-Agent: KMail/1.9.6
+	Thu, 30 Aug 2007 12:46:15 -0400
+Received: from 85-10-209-111.clients.your-server.de ([85.10.209.111]:55508
+	"EHLO mail.road.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759607AbXH3QqO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 12:46:14 -0400
+From: Uli Luckas <u.luckas@road.de>
+Organization: Road GmbH
+To: "Xu Yang" <risingsunxy@googlemail.com>
+Subject: Re: parse_tag_ramdisk
+Date: Thu, 30 Aug 2007 18:46:08 +0200
+User-Agent: KMail/1.9.7
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <ab40e9c0708300707r2e6d2d71y42940084db5038ac@mail.gmail.com> <200708301806.42905.u.luckas@road.de> <ab40e9c0708300910m3cba4c7bie3f6c9d471a155ff@mail.gmail.com>
+In-Reply-To: <ab40e9c0708300910m3cba4c7bie3f6c9d471a155ff@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708301844.10532.clemens.kol@gmx.at>
-X-Y-GMX-Trusted: 0
+Message-Id: <200708301846.09669.u.luckas@road.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone!
-I have a strange problem where I don't even know if there is a solution to it 
-at the moment:
+On Thursday, 30. August 2007, Xu Yang wrote:
+> Hi Uli,
+>
+>
+> thanks for your reply.
+>
+> just have a question, where is the tag list, how can i modify this?
+>
+If you don't know where the list is created, how do you now that it contains a 
+ramdisk tag? There is a chance, that the kernel does not even get a ram disk 
+tag at all. This would also explain, why it is not parsed ;-)
 
-I'm working on a new way of doing memory-management and currently I allocate 
-memory mappings (at non-fixed locations) in user-memory (i.e. < TASK_SIZE) in 
-addition to the regular pages mapped for the apps (e.g. heap memory, etc.)
+The tag list is supplied by your bootloader. How the bootloader creates the 
+list and how to change the order depends on your bootloader. You probably 
+have to read (and patch) it's source code.
 
-It all works perfectly well (creating & deleting the additional mappings), 
-however, when the kernel feels like it needs to allocate a mapping in 
-user-space it sometimes deletes my mapping and overwrites it with the new 
-one, although there is plenty of free memory at some other location.
+regards,
+Uli
 
-typically my mappings are (automatically chosen) located somewhere around 
-0xb7xxxxxx although there's plenty free space around 0xayyyyyyy. (i know that 
-this is a bad location because of stack, etc.) but i need the kernel to 
-choose a good location for me...
+-- 
 
-is there a way to make sure my mappings are not removed from memory?? or is 
-there a location where i can put my mappings that they will not be removed 
-(i.e. by using MAP_FIXED)?
-Note that i need a big amount of memory so the range will have to be fairly 
-big (to be precise: i need a lot of 0x1000byte mappings - they are always 
-page-sized, not bigger, not smaller, but A LOT of them :-/ )
+------- ROAD ...the handyPC Company - - -  ) ) )
 
-hope someone can help me with this!
-thanks & greets,
-  Clemens
+Uli Luckas
+Software Development
+
+ROAD GmbH
+Bennigsenstr. 14 | 12159 Berlin | Germany
+fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
+url: www.road.de
+
+Amtsgericht Charlottenburg: HRB 96688 B
+Managing directors: Hans-Peter Constien, Hubertus von Streit
