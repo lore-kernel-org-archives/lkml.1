@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763414AbXH3XbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763534AbXH3XiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763414AbXH3XbT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 19:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbXH3XbK
+	id S1763534AbXH3XiK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 19:38:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758753AbXH3Xhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 19:31:10 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:16135 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754597AbXH3XbI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 19:31:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:references:in-reply-to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
-        b=OM43Uc7gC6t6Ckubg31vs6X7a2ym76ruMBXceg7tvtNNiqUY0xW1CQ4xrTTV0Ffg5kOj8MGSkmkpUyR+CSKO/JVzoNJtqBScJP1swu8e14r4L8ZWL4pDOWBe9GST1UOFW/peJxLg7bWZzHEFDIocpUo16JQYRxjImILE2XinLgY=
-From: "Hua Zhong" <hzhong@gmail.com>
-To: "'Trond Myklebust'" <trond.myklebust@fys.uio.no>
+	Thu, 30 Aug 2007 19:37:55 -0400
+Received: from pat.uio.no ([129.240.10.15]:45727 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759087AbXH3Xhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 19:37:54 -0400
+Subject: RE: recent nfs change causes autofs regression
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Hua Zhong <hzhong@gmail.com>
 Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
        "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       <akpm@linux-foundation.org>
-References: <000701c7eb49$cff701c0$6fe50540$@com>	 <1188513433.6626.24.camel@heimdal.trondhjem.org>	 <001001c7eb57$afd2d320$0f787960$@com> <1188516173.6626.46.camel@heimdal.trondhjem.org>
-In-Reply-To: <1188516173.6626.46.camel@heimdal.trondhjem.org>
-Subject: RE: recent nfs change causes autofs regression
-Date: Thu, 30 Aug 2007 16:30:57 -0700
-Message-ID: <001501c7eb5d$d295d870$77c18950$@com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
+       akpm@linux-foundation.org
+In-Reply-To: <001501c7eb5d$d295d870$77c18950$@com>
+References: <000701c7eb49$cff701c0$6fe50540$@com>
+	 <1188513433.6626.24.camel@heimdal.trondhjem.org>
+	 <001001c7eb57$afd2d320$0f787960$@com>
+	 <1188516173.6626.46.camel@heimdal.trondhjem.org>
+	 <001501c7eb5d$d295d870$77c18950$@com>
+Content-Type: text/plain
+Date: Thu, 30 Aug 2007 19:37:50 -0400
+Message-Id: <1188517070.6626.54.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AcfrXLIM3BURGc1XTOGI3dO6ZO+FkgAAFyMA
-Content-Language: en-us
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.058)
+X-UiO-Scanned: 1B9D6F2BC340E475233EA79478CC74D3B4409193
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 147 total 3573335 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 2007-08-30 at 15:47 -0700, Hua Zhong wrote:
-> > >
-> > > Which is better than having it fail silently, or giving you a mount
-> > > with the wrong mount options.
-> >
-> > Well, it depends on how you define "better".
-> 
-> "better" as in: "I now have a chance to notice, when my 'read-only
-> mount' is actually 'read-write'".
-> 
-> > In this particular scenario, the maps read as follows:
-> >
-> > tools
-> > -
-> fstype=nfs,udp,rw,intr,nosuid,nodev,rsize=8192,wsize=8192,mountvers=3,n
-> fsve
-> > rs=3,actimeo=600 fs1.domain.com:/a/tools
-> > share
-> > -
-> fstype=nfs,udp,rw,intr,nosuid,nodev,rsize=8192,wsize=8192,mountvers=3,n
-> fsve
-> > rs=3 fs1.domain.com:/a/share
-> >
-> > The only difference is in the actimeo (I don't even know what it
-> > means). Is this enough to fail a mount?
-> 
-> Yes. The default values for acregmin, acregmax, acdirmin, acdirmax are
-> not 600. If /a/tools and /a/share are on the same filesystem on the
-> server, then the NFS client should warn you that you are about to do
-> something that may result in cache coherency problems instead of
-> silently allowing it, and then leaving you to debug the coherency issue.
+On Thu, 2007-08-30 at 16:30 -0700, Hua Zhong wrote:
 
-There are two disjoint directories. I am wondering why there would be cache
-coherency issues in this case? Is this Linus nfs implementation specific or
-all other Unix systems all have the same issue?
+> There are two disjoint directories. I am wondering why there would be cache
+> coherency issues in this case? Is this Linus nfs implementation specific or
+> all other Unix systems all have the same issue?
 
-> If you know what you are doing, then there is an option which allows
-> you to override the default behaviour.
+How is the NFS client to know that these directories are disjoint, or
+that no-one will ever create a hard link from one directory to another?
+To my knowledge, the only way to ensure this is to put them on different
+disk partitions.
+
+I don't know if all Unix systems have this issue, but I have been told
+that Solaris at least has it.
+
+> > If you know what you are doing, then there is an option which allows
+> > you to override the default behaviour.
+> > 
+> > > More importantly, it is a regression. My understanding is that unless
+> > > absolutely necessary we do not introduce a "feature" that breaks
+> > > working setups.
+> > 
+> > Your turn to define what you mean by "working"? In my book that means
+> > "a setup that doesn't include unexpected or unintended behaviour".
 > 
-> > More importantly, it is a regression. My understanding is that unless
-> > absolutely necessary we do not introduce a "feature" that breaks
-> > working setups.
+> "working" as in "I can mount the directory and do my work". And there has
+> never been any problems as far as I know.
+
+That is too narrow a definition: the minimum should be "everyone can
+mount their directories and do their work". Your particular setup may be
+safe, but that is why we have overrides: the default should be for the
+kernel to be conservative, and to _tell_ users what it thinks is wrong.
+
+> > Not being able to notice cache coherency failures on a file that is
+> > mounted in two different places with two different sets of mount
+> > options counts as "unexpected behaviour".
+> > 
+> > Not being able to notice that your mount options have been overridden
+> > by the kernel also counts as "unexpected behaviour".
 > 
-> Your turn to define what you mean by "working"? In my book that means
-> "a setup that doesn't include unexpected or unintended behaviour".
+> Fine. These are all very nice theories, but I just want to report this
+> regression and hope it won't cause any big problems for any users out there.
+> In the mean time, I am returning to 2.6.22.
 
-"working" as in "I can mount the directory and do my work". And there has
-never been any problems as far as I know.
+Your choice.
 
-> Not being able to notice cache coherency failures on a file that is
-> mounted in two different places with two different sets of mount
-> options counts as "unexpected behaviour".
-> 
-> Not being able to notice that your mount options have been overridden
-> by the kernel also counts as "unexpected behaviour".
-
-Fine. These are all very nice theories, but I just want to report this
-regression and hope it won't cause any big problems for any users out there.
-In the mean time, I am returning to 2.6.22.
-
-> Trond
+Trond
 
