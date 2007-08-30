@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXH3HUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbXH3HXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbXH3HUo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 03:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbXH3HUg
+	id S1757373AbXH3HXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 03:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755180AbXH3HXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 03:20:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47279 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754983AbXH3HUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 03:20:35 -0400
-Date: Thu, 30 Aug 2007 09:20:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: keith.packard@intel.com, Al Boldi <a1426z@gawab.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net
-Subject: Re: CFS review
-Message-ID: <20070830072014.GB507@elte.hu>
-References: <20070827204116.GA12495@elte.hu> <200708280737.53439.a1426z@gawab.com> <20070829041827.GA8733@elte.hu> <1188361749.21502.123.camel@koto.keithp.com> <20070829044614.GA13225@elte.hu> <1188374249.21502.155.camel@koto.keithp.com> <20070829080417.GB19386@elte.hu> <1188403075.21502.158.camel@koto.keithp.com> <46D5CF5F.6090505@gmail.com> <46D66C2D.3010900@gmail.com>
+	Thu, 30 Aug 2007 03:23:10 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:33318 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754983AbXH3HXI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 03:23:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=Bx1agZ0JHK0Hq9hsfqSsrclEL0Hmn4KHwblXcoXdJdgawlPuyS78ZHE4UGu07fMGUySTMy68SLllO1j7rCD5M5n+goNKnDN3a6qJc8Rop4yA7UCN5yMJY78q8ZfpnPD7TgFWk7UiRvZBULJzOm4QpPQ07w7mtG+HSbj1U+brI0I=  ;
+X-YMail-OSG: DLg1BA4VM1kagmPxl0nJ4LMmB9uWmSPoRbeBLZhy9rdZtiZL
+Message-ID: <46D67057.9030905@yahoo.com.au>
+Date: Thu, 30 Aug 2007 17:23:03 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46D66C2D.3010900@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Dave Airlie <airlied@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       dri-devel <dri-devel@lists.sourceforge.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+Subject: Re: uncached page allocator
+References: <21d7e9970708191745h3b579f3bp72f138e089c624da@mail.gmail.com>	 <20070820094125.209e0811@the-village.bc.nu>	 <21d7e9970708202305h5128aa5cy847dafe033b00742@mail.gmail.com> <1187708165.6114.256.camel@twins>
+In-Reply-To: <1187708165.6114.256.camel@twins>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Peter Zijlstra wrote:
+> On Tue, 2007-08-21 at 16:05 +1000, Dave Airlie wrote:
+> 
+> 
+>>So you can see why some sort of uncached+writecombined page cache
+>>would be useful, I could just allocate a bunch of pages at startup as
+>>uncached+writecombined, and allocate pixmaps from them and when I
+>>bind/free the pixmap I don't need the flush at all, now I'd really
+>>like this to be part of the VM so that under memory pressure it can
+>>just take the pages I've got in my cache back and after flushing turn
+>>them back into cached pages, the other option is for the DRM to do
+>>this on its own and penalise the whole system.
+> 
+> 
+> Can't you make these pages part of the regular VM by sticking them all
+> into an address_space.
+> 
+> And for this reclaim behaviour you'd only need to set PG_private and
+> have a_ops->releasepage() dtrt.
 
-* Rene Herman <rene.herman@gmail.com> wrote:
+I'd just suggest Dave just registers a shrinker to start with.
 
-> Realised the BUGs may mean the kernel DRM people could want to be in CC...
+You really want to be able to batch TLB flushes as well, which
+->releasepage may not be so good at (you could add more machinery
+behind the releasepage to build batches and so on, but anyway, a
+shrinker might be the quickest way to get something working).
 
-and note that the schedule() call in there is not part of the crash 
-backtrace:
-
-> >Call Trace:
-> > [<c10fa54b>] drm_lock+0x255/0x2de
-> > [<c10ff28d>] mga_dma_buffers+0x0/0x2e3
-> > [<c10f87fc>] drm_ioctl+0x142/0x18a
-> > [<c1005973>] do_IRQ+0x97/0xb0
-> > [<c10f86ba>] drm_ioctl+0x0/0x18a
-> > [<c10f86ba>] drm_ioctl+0x0/0x18a
-> > [<c105b0d7>] do_ioctl+0x87/0x9f
-> > [<c105b32c>] vfs_ioctl+0x23d/0x250
-> > [<c11b533e>] schedule+0x2d0/0x2e6
-> > [<c105b372>] sys_ioctl+0x33/0x4d
-> > [<c1003d1e>] syscall_call+0x7/0xb
-
-it just happened to be on the kernel stack. Nor is the do_IRQ() entry 
-real. Both are frequent functions (and were executed recently) that's 
-why they were still in the stackframe.
-
-	Ingo
+-- 
+SUSE Labs, Novell Inc.
