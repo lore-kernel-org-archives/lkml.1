@@ -1,40 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760976AbXH3RvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbXH3R4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760976AbXH3RvH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 13:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758743AbXH3Ru4
+	id S1761467AbXH3R4j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 13:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759215AbXH3R4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 13:50:56 -0400
-Received: from web52012.mail.re2.yahoo.com ([206.190.48.28]:25601 "HELO
-	web52012.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758284AbXH3Ru4 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 13:50:56 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 13:50:55 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=1j7b8+mdVnB1umFk21P1yIoVoxY3KCmdUwHRst55SsrqPac7rHF8sXhhP2j1F/wNQf2gTwDf+gemAtzhB323INZjdXaKD41wOdCDPqxWIS7T5/WP1vOOboVVpoxdQ1YqpYbnwfxvGaVA+ZBtG5Q7y2m5s3zikkacnqgNZJOLQmQ=;
-X-YMail-OSG: iLxRIVsVM1knZJzPXK5Q58mEbKIfWZPFesZ19lEx.BntUvkbtFSYG4d9IGTV5_Fckkg9IMtYl0XB68rCJtDPc12fFWcACUo.Qgw54AosEdToVOov.LwPsc8mdnmR2g--
-X-Mailer: YahooMailRC/651.48 YahooMailWebService/0.7.134
-Date: Thu, 30 Aug 2007 10:44:15 -0700 (PDT)
-From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Subject: [Bugme-new] [Bug 8957] New: Exported functions and variables
-To: linux-kernel@vger.kernel.org
-Cc: bugme-daemon@kernel-bugs.osdl.org
+	Thu, 30 Aug 2007 13:56:31 -0400
+Received: from smtp141.iad.emailsrvr.com ([207.97.245.141]:50001 "EHLO
+	smtp141.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759076AbXH3R4a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 13:56:30 -0400
+Message-ID: <46D70467.1040109@gentoo.org>
+Date: Thu, 30 Aug 2007 13:54:47 -0400
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070805)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <469780.175.qm@web52012.mail.re2.yahoo.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Ulrich Kunitz <kune@deine-taler.de>, linux-wireless@vger.kernel.org
+Subject: Re: [PATCH 13/30] net: Don't do pointless kmalloc return value casts
+ in zd1211 driver
+References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com> <d551047daed1cb4d9de1eff956268a468c9837f6.1187912217.git.jesper.juhl@gmail.com>
+In-Reply-To: <d551047daed1cb4d9de1eff956268a468c9837f6.1187912217.git.jesper.juhl@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I thought I had seen that bug. Module init function execution does not seem serialized enough, so the init function of one module seems to be able to be called in parallel with several other modules in turn being loaded, executing their init functions and even becoming live first class citizens.
-Function sys_init_module in 
-Linux 2.6.22.x and 2.6.23-rc4 kernel/module.c does not hold module_mutex when executing the init functions of the modules.
+Jesper Juhl wrote:
+> Since kmalloc() returns a void pointer there is no reason to cast
+> its return value.
+> This patch also removes a pointless initialization of a variable.
 
+NAK: adds a sparse warning
+zd_chip.c:116:15: warning: implicit cast to nocast type
 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+>  drivers/net/wireless/zd1211rw/zd_chip.c |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/wireless/zd1211rw/zd_chip.c b/drivers/net/wireless/zd1211rw/zd_chip.c
+> index c39f198..4942e5c 100644
+> --- a/drivers/net/wireless/zd1211rw/zd_chip.c
+> +++ b/drivers/net/wireless/zd1211rw/zd_chip.c
+> @@ -106,8 +106,8 @@ int zd_ioread32v_locked(struct zd_chip *chip, u32 *values, const zd_addr_t *addr
+>  {
+>  	int r;
+>  	int i;
+> -	zd_addr_t *a16 = (zd_addr_t *)NULL;
+>  	u16 *v16;
+> +	zd_addr_t *a16;
+>  	unsigned int count16;
+>  
+>  	if (count > USB_MAX_IOREAD32_COUNT)
+> @@ -115,8 +115,7 @@ int zd_ioread32v_locked(struct zd_chip *chip, u32 *values, const zd_addr_t *addr
+>  
+>  	/* Allocate a single memory block for values and addresses. */
+>  	count16 = 2*count;
+> -	a16 = (zd_addr_t *) kmalloc(count16 * (sizeof(zd_addr_t) + sizeof(u16)),
+> -		                   GFP_KERNEL);
+> +	a16 = kmalloc(count16 * (sizeof(zd_addr_t) + sizeof(u16)), GFP_KERNEL);
+>  	if (!a16) {
+>  		dev_dbg_f(zd_chip_dev(chip),
+>  			  "error ENOMEM in allocation of a16\n");
 
-
-      __________________________________  
-Alles was der Gesundheit und Entspannung dient. BE A BETTER MEDIZINMANN! www.yahoo.de/clever
