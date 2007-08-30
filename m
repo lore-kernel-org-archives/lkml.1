@@ -1,37 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762211AbXH3PPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761334AbXH3PWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762211AbXH3PPq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 11:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760158AbXH3PPi
+	id S1761334AbXH3PWv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 11:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756827AbXH3PWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 11:15:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48664 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760043AbXH3PPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 11:15:38 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200708301701.36533.agruen@suse.de>
-References: <200708301701.36533.agruen@suse.de> <20070808171622.632749741@suse.de> <20070810143846.930027497@suse.de> <20070829190823.GB28028@infradead.org>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: dhowells@redhat.com, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [FIX] mntput called before dput in afs
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Thu, 30 Aug 2007 16:15:26 +0100
-Message-ID: <10812.1188486926@redhat.com>
+	Thu, 30 Aug 2007 11:22:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46100 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756289AbXH3PWl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 11:22:41 -0400
+Date: Thu, 30 Aug 2007 08:21:37 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Santiago L Hasenclever <tuxpoweruser@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: probable kernel Bug
+Message-ID: <20070830082137.08efcd32@laptopd505.fenrus.org>
+In-Reply-To: <46D6D85A.30003@gmail.com>
+References: <46D6D85A.30003@gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Gruenbacher <agruen@suse.de> wrote:
+On Thu, 30 Aug 2007 11:46:50 -0300
+Santiago L Hasenclever <tuxpoweruser@gmail.com> wrote:
 
-> dput must be called before mntput here. Please consider for 2.6.24 and stable.
-> 
-> Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+> 0c:00.0 Network controller: Broadcom Corporation Unknown device 4311
+> (rev 01)
 
-Fine by me.
-
-Acked-By: David Howells <dhowells@redhat.com>
+any specific reason you're using ndiswrapper rather than the native
+linux driver for this device? Your oops is all over the ndiswrapper
+code.....
