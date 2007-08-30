@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762629AbXH3Var@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762742AbXH3Vct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762629AbXH3Var (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 17:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbXH3Vak
+	id S1762742AbXH3Vct (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 17:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759812AbXH3Vcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 17:30:40 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:38906 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756569AbXH3Vaj (ORCPT
+	Thu, 30 Aug 2007 17:32:41 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:37682 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755705AbXH3Vck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 17:30:39 -0400
-X-Greylist: delayed 1460 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 17:30:39 EDT
-Date: Wed, 29 Aug 2007 18:50:47 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: resume failing on ATA controller
-Message-ID: <20070829185047.GA3031@toy.ucw.cz>
-References: <21d7e9970708270129u2a619b8dx79fbdaddc55fa16f@mail.gmail.com>
+	Thu, 30 Aug 2007 17:32:40 -0400
+Date: Thu, 30 Aug 2007 17:32:39 -0400
+To: Greg Freemyer <greg.freemyer@gmail.com>
+Cc: Rene Herman <rene.herman@gmail.com>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Jos? Luis Pati?o Andr?s <jopan@alumni.uv.es>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
+Subject: Re: Problems with IDE on linux 2.6.22.X
+Message-ID: <20070830213239.GJ11128@csclub.uwaterloo.ca>
+References: <200708212149.12912.jopan@alumni.uv.es> <20070822162312.GG9412@csclub.uwaterloo.ca> <46CC6A2F.5000406@gmail.com> <200708280044.34475.jopan@alumni.uv.es> <46D455DB.8000800@gmail.com> <Pine.LNX.4.64.0708302130210.24730@fbirervta.pbzchgretzou.qr> <46D7231B.3080807@gmail.com> <87f94c370708301416j2a7c000bscbaef593af004010@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <21d7e9970708270129u2a619b8dx79fbdaddc55fa16f@mail.gmail.com>
+In-Reply-To: <87f94c370708301416j2a7c000bscbaef593af004010@mail.gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, Aug 30, 2007 at 05:16:46PM -0400, Greg Freemyer wrote:
+> USB / Firewire / FC / iSCSI are all SCSI transports and fit within the
+> SCSI subsystem by design.
 > 
-> I've got an HP 2510p with a 965 mobile chipset and ICH8, lspci is at
+> ie. Just like ethernet, DSL, T-1, etc can all carry IP traffic with no
+> conceptual conflict, many media by design carry SCSI traffic.
 > 
-> http://people.freedesktop.org/~airlied/hp2510p/hp-lspci-vv.txt
+> The PATA and SATA physical layer typically carry ATA commands and
+> having them tied into the SCSI stack is an aberration that I hope will
+> be eliminated some day.
 > 
-> Resume is failing on the hard disk resume by the looks of it (no video
-> to prove it..) but I've rmmod nearly everything and my network
-> interface comes back and I can ping it but anything that tries to
-> access the disk looks stuck...
-> 
-> I also know someone running the same laptop using drivers/ide drivers
-> whose suspend/resume works properly....
+> ATAPI is an exception.  Not sure where that would end up in a perfect world.
 
-Do you use power-on password by chance?
+But isn't SATA related to SAS?  And isn't SAS using SCSI commands?  And
+if ATAPI is essentially SCSI commands, and everything other then disks
+use ATAPI on ATA, then that makes ATA disks the odd ball, and mangling
+it into line with everything else isn't that bad (since all other ATA
+devices are close to SCSI already).
 
-> I'm running the latest Fedora rawhide kernel based on -rc3-git7
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--
+Len Sorensen
