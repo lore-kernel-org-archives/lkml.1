@@ -1,130 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761633AbXH3BTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761877AbXH3BZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761633AbXH3BTo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 21:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXH3BTg
+	id S1761877AbXH3BZR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 21:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbXH3BZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 21:19:36 -0400
-Received: from outbound.mse2.exchange.ms ([69.25.50.247]:1107 "EHLO
-	mse2fe1.mse2.exchange.ms" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754724AbXH3BTf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 21:19:35 -0400
-Message-ID: <46D61B21.1010703@bluelane.com>
-Date: Wed, 29 Aug 2007 18:19:29 -0700
-From: Pete/Piet Delaney <pete@bluelane.com>
-Reply-To: pete@bluelane.com
-Organization: Bluelane
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: pete@bluelane.com
-CC: Jason Wessel <jason.wessel@windriver.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>	<200708222104.29432.m.kozlowski@tuxland.pl>	<20070822124743.fc316963.akpm@linux-foundation.org>	<46CCBC3C.7010307@windriver.com> <20070822165318.b82da13c.akpm@linux-foundation.org> <46CCFE2C.4050306@windriver.com> <46D604BF.7090905@bluelane.com>
-In-Reply-To: <46D604BF.7090905@bluelane.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Aug 2007 01:19:34.0641 (UTC) FILETIME=[D3262610:01C7EAA3]
+	Wed, 29 Aug 2007 21:25:06 -0400
+Received: from ns.suse.de ([195.135.220.2]:36543 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751247AbXH3BZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 21:25:05 -0400
+Date: Thu, 30 Aug 2007 03:25:03 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [patch] fix the max path calculation in radix-tree.c
+Message-ID: <20070830012503.GB19405@wotan.suse.de>
+References: <x49d4xgy8h1.fsf@segfault.boston.devel.redhat.com> <20070822013546.GB6799@wotan.suse.de> <x49r6lmkol5.fsf@segfault.boston.devel.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49r6lmkol5.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Pete/Piet Delaney wrote:
-> Jason Wessel wrote:
->> Andrew Morton wrote:
->>> On Wed, 22 Aug 2007 17:44:12 -0500
->>> Jason Wessel <jason.wessel@windriver.com> wrote:
->>>
->>>  
->>>> +    while (!atomic_read(&debugger_active));
->>>>     
->>> eek.  We're in the process of hunting down and eliminating exactly this
->>> construct.  There have been cases where the compiler cached the
->>> atomic_read() result in a register, turning the above into an infinite
->>> loop.
->>>
->>> Plus we should never add power-burners like that into the kernel
->>> anyway. That loop should have a cpu_relax() in it.  Which will also
->>> fix the
->>> compiler problem described above.
->>>
->>>   
->> Agreed, and fixed with a cpu_relax.
+On Wed, Aug 29, 2007 at 05:39:18PM -0400, Jeff Moyer wrote:
+> Nick Piggin <npiggin@suse.de> writes:
 > 
->>> Thirdly, please always add a newline when coding statements like that:
->>>
->>>     while (expr())
->>>         ;
->>>   
->> The other instances I found of the same problem in the kgdb core are
->> fixed too.
+> > On Tue, Aug 21, 2007 at 03:48:42PM -0400, Jeff Moyer wrote:
+> >> Hi,
+> >> 
+> >> A while back, Nick Piggin introduced a patch to reduce the node memory
+> >> usage for small files (commit cfd9b7df4abd3257c9e381b0e445817b26a51c0c):
+> >> 
+> >> -#define RADIX_TREE_MAP_SHIFT	6
+> >> +#define RADIX_TREE_MAP_SHIFT	(CONFIG_BASE_SMALL ? 4 : 6)
+> >> 
+> >> Unfortunately, he didn't take into account the fact that the
+> >> calculation of the maximum path was based on an assumption of having
+> >> to round up:
+> >> 
+> >> #define RADIX_TREE_MAX_PATH (RADIX_TREE_INDEX_BITS/RADIX_TREE_MAP_SHIFT + 2)
+> >> 
+> >> So, if CONFIG_BASE_SMALL is set, you will end up with a
+> >> RADIX_TREE_MAX_PATH that is one greater than necessary.  The practical
+> >> upshot of this is just a bit of wasted memory (one long in the
+> >> height_to_maxindex array, an extra pre-allocated radix tree node per
+> >> cpu, and extra stack usage in a couple of functions), but it seems
+> >> worth getting right.
+> >> 
+> >> It's also worth noting that I never build with CONFIG_BASE_SMALL.
+> >> What I did to test this was duplicate the code in a small user-space
+> >> program and check the results of the calculations for max path and the
+> >> contents of the height_to_maxindex array.
+> >> 
+> >
+> > OK, after you DIV_ROUND_UP, what is the extra 1 for? For paths, it is because
+> > they are NULL terminated paths I guess (without remembering too hard), and for
+> > height_to_maxindex array it is needed for 0-height trees I think. So it would
+> > be kinda cleaner to have the _real_ MAX_PATH, and two other constants for
+> > this array and the paths arrays (that just happen to be identical due to
+> > implementation). Don't you think?
+> >
+> > But that's not to nack this patch. On the contrary I think your logic is
+> > correct, and it should be fixed. I didn't check the maths myself but I trust
+> > you :)
 > 
->> I merged all the changes into the for_mm branch in the kgdb git tree.
+> Hi, Nick,
 > 
-> Where is the kgdb git tree?
+> As I said, I wasn't sure what to name the constants for the path and
+> height arrays, so I just commented the +1 there.  I've been running
 
-Why am I getting this when I do:
+Hi Jeff,
 
-git clone
-http://master.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git
+That looks really nice, thanks. No complaints from me.
 
--
-----------------------------------------------------------------------------
-error: Couldn't get
-http://master.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git/refs/tags/v2.6.11
-for tags/v2.6.11
-The requested URL returned error: 404
-error: Could not interpret tags/v2.6.11 as something to pull
-rm: cannot remove directory
-`/nethome/piet/Src/linux/git/jwessel/linux-2.6-kgdb/.git/clone-tmp':
-Directory not empty
-/nethome/piet/Src/linux/git/jwessel$
--
-----------------------------------------------------------------------------
+Acked-by: Nick Piggin <npiggin@suse.de>
 
-We are getting a problem with VMware where kernel text is the schedler
-is getting wacked with four null bytes into the code. Thought I'd use
-the current linux-2.6-kgdb.git tree and possible the CONFIG_DEBUG_RODATA
-patch to make kernel text readonly:
-
- https://www.x86-64.org/pipermail/patches/2007-March/003666.html
-
-I thought the kernel text was RO and gdb had to disable it to
-insert a breakpoint.
-
-- -piet
-
+> this on one of my 64bit test systems successfully for about a day,
+> now.  The one code path I was concerned about was
+> radix_tree_node_alloc, since the prealloc array changes size with this
+> patch.  I stepped through the code by hand and it looks right to me.
+> Additionally, I wrote a kprobe that would simulate the
+> kmem_cache_alloc failure.  I then inserted a node at max height into
+> an empty tree with preemption disabled.  I verified, using the crash
+> utility, that the tree was constructed and filled in properly.
 > 
-> -piet
+> You can find the kprobe at http://people.redhat.com/jmoyer/radix-tree/.
 > 
->> Thanks,
->> Jason.
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
+> Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
 > 
-> 
-- -
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFG1hshJICwm/rv3hoRAhTGAJ46pq69zYHqRmT+yTmRx+RVh8aBtgCfdyFM
-gl91xCFTy0NJxHalVXpd9Os=
-=c8FZ
------END PGP SIGNATURE-----
+> diff --git a/lib/radix-tree.c b/lib/radix-tree.c
+> index 514efb2..d2655cb 100644
+> --- a/lib/radix-tree.c
+> +++ b/lib/radix-tree.c
+> @@ -60,9 +60,14 @@ struct radix_tree_path {
+>  };
+>  
+>  #define RADIX_TREE_INDEX_BITS  (8 /* CHAR_BIT */ * sizeof(unsigned long))
+> -#define RADIX_TREE_MAX_PATH (RADIX_TREE_INDEX_BITS/RADIX_TREE_MAP_SHIFT + 2)
+> +#define RADIX_TREE_MAX_PATH (DIV_ROUND_UP(RADIX_TREE_INDEX_BITS, \
+> +					  RADIX_TREE_MAP_SHIFT))
+>  
+> -static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH] __read_mostly;
+> +/*
+> + * The height_to_maxindex array needs to be one deeper than the maximum
+> + * path as height 0 holds only 1 entry.
+> + */
+> +static unsigned long height_to_maxindex[RADIX_TREE_MAX_PATH + 1] __read_mostly;
+>  
+>  /*
+>   * Radix tree node cache.
+> @@ -487,7 +492,11 @@ EXPORT_SYMBOL(radix_tree_tag_set);
+>  void *radix_tree_tag_clear(struct radix_tree_root *root,
+>  			unsigned long index, unsigned int tag)
+>  {
+> -	struct radix_tree_path path[RADIX_TREE_MAX_PATH], *pathp = path;
+> +	/*
+> +	 * The radix tree path needs to be one longer than the maximum path
+> +	 * since the "list" is null terminated.
+> +	 */
+> +	struct radix_tree_path path[RADIX_TREE_MAX_PATH + 1], *pathp = path;
+>  	struct radix_tree_node *slot = NULL;
+>  	unsigned int height, shift;
+>  
+> @@ -882,7 +891,11 @@ static inline void radix_tree_shrink(struct radix_tree_root *root)
+>   */
+>  void *radix_tree_delete(struct radix_tree_root *root, unsigned long index)
+>  {
+> -	struct radix_tree_path path[RADIX_TREE_MAX_PATH], *pathp = path;
+> +	/*
+> +	 * The radix tree path needs to be one longer than the maximum path
+> +	 * since the "list" is null terminated.
+> +	 */
+> +	struct radix_tree_path path[RADIX_TREE_MAX_PATH + 1], *pathp = path;
+>  	struct radix_tree_node *slot = NULL;
+>  	struct radix_tree_node *to_free;
+>  	unsigned int height, shift;
