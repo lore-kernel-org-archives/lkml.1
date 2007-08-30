@@ -1,93 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbXH3Jt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbXH3Jtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405AbXH3Jt3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 05:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbXH3JtU
+	id S1759311AbXH3Jtt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 05:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384AbXH3Jtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 05:49:20 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:40015 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753867AbXH3JtT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 05:49:19 -0400
-Date: Thu, 30 Aug 2007 13:49:31 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [PATCH 2.6.21] Return available first timeslice to the creator, not parent
-Message-ID: <20070830094931.GB316@tv-sign.ru>
-References: <m3fy21qx4p.fsf@dhcp-lab-143.englab.brq.redhat.com> <1188465056.6112.30.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1188465056.6112.30.camel@twins>
-User-Agent: Mutt/1.5.11
+	Thu, 30 Aug 2007 05:49:39 -0400
+Received: from web32615.mail.mud.yahoo.com ([68.142.207.242]:32898 "HELO
+	web32615.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757373AbXH3Jti (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 05:49:38 -0400
+X-YMail-OSG: _EkXCr0VM1mr_heLgPLScSVZaTwlelR_1FoCqcAN6GJVQben_CE4GntA74HDZ5Bng_idVaN6_iiDhWgYvFcKa1Ao3A--
+X-RocketYMMF: knobi.rm
+Date: Thu, 30 Aug 2007 02:49:37 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Reply-To: spamtrap@knobisoft.de
+Subject: RE: regression of autofs for current git?
+To: linux-kernel@vger.kernel.org
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <777806.79381.qm@web32615.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/30, Peter Zijlstra wrote:
+On Wed, 2007-08-29 at 20:09 -0700, Ian Kent wrote:
 >
-> On Thu, 2007-08-30 at 09:50 +0200, Vitaly Mayatskikh wrote:
-> > Short-living process returns its timeslice to the parent, this affects
-> > process that creates a lot of such short-living threads, because its
-> > not a parent for new threads. Patch fixes this issue and doesn't break
-> > kabi as does the patch from reporter: http://lkml.org/lkml/2007/4/7/21
-> 
-> > plain text document attachment (2.6.21-timeslice.patch), "proposed
-> > patch"
-> > diff -up -bB ./include/linux/sched.h.orig ./include/linux/sched.h
-> > --- ./include/linux/sched.h.orig	2007-08-21 09:20:22.000000000 +0200
-> > +++ ./include/linux/sched.h	2007-08-27 10:14:06.000000000 +0200
-> > @@ -827,7 +827,9 @@ struct task_struct {
-> >  
-> >  	unsigned long policy;
-> >  	cpumask_t cpus_allowed;
-> > -	unsigned int time_slice, first_time_slice;
-> > +	unsigned int time_slice;
-> > +	/* Pid of creator */
-> > +	unsigned int cpid;
-> 
-> might as well make that pid_t, or maybe even a struct pid* and keep a
-> reference on it - the struct pid police might have an opinion.
+>http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=75180df2ed467866ada839fe73cf7cc7d75c0a22
+>
+>This (and it's related patches) may be the problem.
+>I can probably tell if you post your map or if you strace the
+automount
+>process managing the a problem mount point and look for mount
+returning
+>EBUSY when it should succeed.
 
-I agree, "struct pid*" is better, because
+ Likely. That is the one that will break the user-space automounter as
+well (and keeps me from .23). I don't care very much about what the
+default is, but it would be great if the new behaviour could be
+globally changed at run- (or boot-) time. It will be some time until
+the new mount option makes it into the distros.
 
-	1. we don't need a costly find_pid() in sched_exit()
-	2. we don't suffer from pid re-use problem
+Cheers
+Martin
+PS: Sorry, but I likely killed the CC list
 
-> >  void fastcall sched_exit(struct task_struct *p)
-> >  {
-> >  	unsigned long flags;
-> >  	struct rq *rq;
-> > -
-> > +	struct task_struct* creator = NULL;
-> >  	/*
-> >  	 * If the child was a (relative-) CPU hog then decrease
-> > -	 * the sleep_avg of the parent as well.
-> > +	 * the sleep_avg of the creator as well.
-> >  	 */
-> > -	rq = task_rq_lock(p->parent, &flags);
-> > -	if (p->first_time_slice && task_cpu(p) == task_cpu(p->parent)) {
-> > -		p->parent->time_slice += p->time_slice;
-> > -		if (unlikely(p->parent->time_slice > task_timeslice(p)))
-> > -			p->parent->time_slice = task_timeslice(p);
-> > +	if (p->cpid) {
-> > +		struct pid *pid = find_get_pid((pid_t)p->cpid);
-> > +		if (pid) {
-> > +			creator = get_pid_task(pid, PIDTYPE_PID);
-> > +			put_pid(pid);
 
-sched_exit() was removed in 2.6.23-rc.
-
-If you are going to re-introduce this logic, please don't do sched_exit()
-from release_task(). It was done this way just because we can't access
-->parent after release_task(). But release_task() is called either too
-early, or too late for timeslice accounting, depending on ->exit_signal == -1.
-
-I'd suggest to do this in do_exit(), before the last schedule(). Without
-write_unlock_irq() the code above needs a couple of rcu_read_lock()'s.
-
-I am not sure Ingo will like this change though...
-
-Oleg.
-
+------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
