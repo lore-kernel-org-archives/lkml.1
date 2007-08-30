@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759313AbXH3MgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758971AbXH3Mlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759313AbXH3MgR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 08:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756447AbXH3MgB
+	id S1758971AbXH3Mlw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 08:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbXH3Mln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 08:36:01 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36169 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756387AbXH3Mf7 (ORCPT
+	Thu, 30 Aug 2007 08:41:43 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:47500 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752871AbXH3Mlm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 08:35:59 -0400
-Date: Thu, 30 Aug 2007 13:35:54 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Nick Kossifidis <mickflemm@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Jiri Slaby <jirislaby@gmail.com>,
-       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 5/5] Net: ath5k, kconfig changes
-Message-ID: <20070830123554.GA2176@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Nick Kossifidis <mickflemm@gmail.com>,
-	Jiri Slaby <jirislaby@gmail.com>, linville@tuxdriver.com,
-	linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-	netdev@vger.kernel.org
-References: <2713029743177393055@pripojeni.net> <280951420471148977@pripojeni.net> <20070828171330.GD29343@infradead.org> <40f31dec0708291838p5d33eb34p3b4432d9d270841a@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <40f31dec0708291838p5d33eb34p3b4432d9d270841a@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 30 Aug 2007 08:41:42 -0400
+Date: Thu, 30 Aug 2007 13:40:25 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Roman Zippel <zippel@linux-m68k.org>
+cc: Sam Ravnborg <sam@ravnborg.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, kbuild-devel@lists.sourceforge.net
+Subject: Re: CONFIG_HOTPLUG_CPU: kconfig bug?
+In-Reply-To: <Pine.LNX.4.64.0708300235010.1817@scrub.home>
+Message-ID: <Pine.LNX.4.64.0708301319590.32332@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0708271525400.21853@blonde.wat.veritas.com>
+ <20070827172654.GA21871@uranus.ravnborg.org> <Pine.LNX.4.64.0708272143150.29594@blonde.wat.veritas.com>
+ <20070829180158.GA7849@uranus.ravnborg.org> <Pine.LNX.4.64.0708300235010.1817@scrub.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 30, 2007 at 04:38:09AM +0300, Nick Kossifidis wrote:
-> It saves big chunks of code (not only initial register settings
-> arrays) and we'll extend it's use more inside ath5k_hw.c Trust me this
-> is a very useful step, eg. check out descriptor processing / setup or
-> PHY functions (calibrate/channel set etc). For example AR5210 mac chip
-> only comes with RF5110 phy chip so we can get rid of RF5111/RF5112
-> code, AR5211 comes with RF5111 so we can get rid of RF5110 and RF5112
-> code and AR5212 comes with RF5111 or RF5112 so we get rid of RF5110.
-> This thing also saves lots of checks during runtime (some of them
-> happen verry frequently, eg. durring descriptor processing). Also most
-> people will use 5212 code only, 5211 cards are on some old laptops and
-> 5210, well i couldn't even find  a 5210 for actual testing :P
+On Thu, 30 Aug 2007, Roman Zippel wrote:
+> 
+> > > > > I've noticed an oddity with CONFIG_HOTPLUG_CPU in 2.6.23-rc:
+> > > > > make oldconfig seems to turn it on even when nothing wants it,
+> > > > > increasing kernel size by about 10k; but if you then edit the
+> > > > > line out of .config and make oldconfig again, it correctly
+> > > > > offers the choice and lets it be turned off after all.
+> 
+> It's somewhat a side effect of using select and defaults, the order of the 
+> config symbols becomes significant for oldconfig, if you look at the 
+> output you'll find:
+> 
+> Support for suspend on SMP and hot-pluggable CPUs (EXPERIMENTAL) (HOTPLUG_CPU) [Y/?] y
+> 
+> this sets it to 'y'. In this case one isn't asked about it, because there 
+> is only one choice. The patch below avoids the setting of the value here.
 
-If you're doing these checks in a hotpath something is badly wrong with
-your architecture.
+Thanks for working that out: your patch certainly works for me,
+and would be good to see in 2.6.23, to prevent lots of users getting
+an unnecessary CONFIG_HOTPLUG_CPU forever after.  I wonder what config
+options this might have forced in the past.
+
+> 
+> Avoid setting the value if the symbol doesn't need to be changed or can't 
+> be changed. Later choices may change the dependencies and thus the 
+> possible input range.
+> 
+> Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+
+But please add a sentence to your patch description, something like:
+
+make oldconfig from a 2.6.22 .config with CONFIG_HOTPLUG_CPU not set
+was in some configurations setting CONFIG_HOTPLUG_CPU=y without asking,
+even when there was no actual requirement for CONFIG_HOTPLUG_CPU.
+
+Thanks,
+Hugh
