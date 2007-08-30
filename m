@@ -1,38 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758767AbXH3Ibf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbXH3Ih0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758767AbXH3Ibf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 04:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbXH3Ib0
+	id S1758196AbXH3Ih0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 04:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbXH3IhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 04:31:26 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:52455 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755941AbXH3IbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 04:31:25 -0400
-X-Greylist: delayed 353 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 04:31:25 EDT
-Date: Thu, 30 Aug 2007 10:32:46 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: netdev@vger.kernel.org
-Cc: Jon Smirl <jonsmirl@gmail.com>,
-       "Valdis\.Kletnieks\@vt\.edu" <Valdis.Kletnieks@vt.edu>,
-       Christoph Hellwig <hch@infradead.org>, Jiri Slaby <jirislaby@gmail.com>,
-       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
-Message-ID: <20070830083246.GA2738@ff.dom.local>
-References: <200708292137.48834.mb@bu3sch.de> <20070830082652.GA2669@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070830082652.GA2669@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 30 Aug 2007 04:37:17 -0400
+Received: from mx0.karneval.cz ([81.27.192.123]:5039 "EHLO av1.karneval.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755528AbXH3IhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 04:37:16 -0400
+Message-ID: <46D681B4.90401@stud.feec.vutbr.cz>
+Date: Thu, 30 Aug 2007 10:37:08 +0200
+From: Michal Schmidt <xschmi00@stud.feec.vutbr.cz>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Vitaly Mayatskikh <vmayatsk@redhat.com>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH 2.6.21] Return available first timeslice to the creator,
+ not parent
+References: <m3fy21qx4p.fsf@dhcp-lab-143.englab.brq.redhat.com>
+In-Reply-To: <m3fy21qx4p.fsf@dhcp-lab-143.englab.brq.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 30, 2007 at 10:26:52AM +0200, Jarek Poplawski wrote:
-...
-> PS: there is probably some mess with gmail addresses in this thread.
+Vitaly Mayatskikh skrev:
+> Short-living process returns its timeslice to the parent, this
+> affects process that creates a lot of such short-living threads,
+> because its not a parent for new threads.
 
-...or maybe it's OK...  Sorry.
+I don't see the point of sending patches for old Linux versions such as 
+2.6.21, unless it's something applicable to the -stable tree.
+Do recent kernels with CFS have the same problem?
 
-Jarek P.
+> Patch fixes this issue and
+> doesn't break kabi as does the patch from reporter:
+> http://lkml.org/lkml/2007/4/7/21
+
+There's no kabi.
+
+Michal
+
