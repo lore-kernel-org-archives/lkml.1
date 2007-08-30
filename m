@@ -1,148 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbXH3JLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbXH3JMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758615AbXH3JLP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 05:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbXH3JLA
+	id S1758977AbXH3JMj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 05:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbXH3JMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 05:11:00 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39976 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755906AbXH3JK7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 05:10:59 -0400
-Subject: Re: [PATCH 2.6.21] Return available first timeslice to the
-	creator, not parent
-From: Peter Zijlstra <peterz@infradead.org>
-To: Vitaly Mayatskikh <vmayatsk@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Emelianov <xemul@openvz.org>
-In-Reply-To: <m3fy21qx4p.fsf@dhcp-lab-143.englab.brq.redhat.com>
-References: <m3fy21qx4p.fsf@dhcp-lab-143.englab.brq.redhat.com>
-Content-Type: text/plain
-Date: Thu, 30 Aug 2007 11:10:56 +0200
-Message-Id: <1188465056.6112.30.camel@twins>
+	Thu, 30 Aug 2007 05:12:32 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:43687 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755941AbXH3JMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 05:12:31 -0400
+Date: Thu, 30 Aug 2007 13:12:54 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Aleksandar Dezelin <dezelin@gmail.com>, linux-kernel@vger.kernel.org,
+       mingo <mingo@redhat.com>
+Subject: Re: Possible kernel lock in semaphore's __down()
+Message-ID: <20070830091254.GA303@tv-sign.ru>
+References: <1188424371.8853.9.camel@synaptical> <1188458165.6112.19.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1188458165.6112.19.camel@twins>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-30 at 09:50 +0200, Vitaly Mayatskikh wrote:
-> Short-living process returns its timeslice to the parent, this affects
-> process that creates a lot of such short-living threads, because its
-> not a parent for new threads. Patch fixes this issue and doesn't break
-> kabi as does the patch from reporter: http://lkml.org/lkml/2007/4/7/21
+(just in case Peter's explanation was too concise)
 
-> plain text document attachment (2.6.21-timeslice.patch), "proposed
-> patch"
-> diff -up -bB ./include/linux/sched.h.orig ./include/linux/sched.h
-> --- ./include/linux/sched.h.orig	2007-08-21 09:20:22.000000000 +0200
-> +++ ./include/linux/sched.h	2007-08-27 10:14:06.000000000 +0200
-> @@ -827,7 +827,9 @@ struct task_struct {
->  
->  	unsigned long policy;
->  	cpumask_t cpus_allowed;
-> -	unsigned int time_slice, first_time_slice;
-> +	unsigned int time_slice;
-> +	/* Pid of creator */
-> +	unsigned int cpid;
+On 08/30, Peter Zijlstra wrote:
+>
+> On Wed, 2007-08-29 at 23:52 +0200, Aleksandar Dezelin wrote:
+> > Hi!
+> > 
+> > I'm a newbie here on the list and also as a "kernel hacker". There's a
+> > bug reported in bugzilla (Bug 7927), cite:
+> > 
+> > 
+> > > In the function __down
+> > >  
+> > > fastcall void __sched __down(struct semaphore * sem)
+> > > {
+> > >  struct task_struct *tsk = current;
+> > >  DECLARE_WAITQUEUE(wait, tsk);
+> > >  unsigned long flags;
+> > >  
+> > >  tsk->state = TASK_UNINTERRUPTIBLE;
+> > >  spin_lock_irqsave(&sem->wait.lock, flags);
+> > >  add_wait_queue_exclusive_locked(&sem->wait, &wait);
+> > >  ...
+> > > }
+> > >  
+> > > 
+> > > From this code fragment, it sets the tsk->state to TASK_UNINTERRUPTIBLE before 
+> > > gets the spinlock. Assume at that moment, a interrupt ocuur and and after the 
+> > > interrupt handle ends, an other process is scheduled to run (assume the kernel 
+> > > is preemptalbe). In this case, the previous process ( its state has set to 
+> > > TASK_UNINTERRUPTIBLE) has been picked off the run queue,
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+please see below,
 
-might as well make that pid_t, or maybe even a struct pid* and keep a
-reference on it - the struct pid police might have an opinion.
+>                                                               and it has not yet add 
+> > > to the wait queue( sem->wait ), so it may be never waited up forever. 
+> > > 
+> > 
+> > I have marked it as rejected as as I can see at the time this function is called,
+> > it is guaranteed that ret_from_intr() will not call schedule() on return from an 
+> > interrupt handler to either kernel space or user space because of the call 
+> > to macro might_sleep() in semaphore's down(). Am I wrong?
 
->  #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
->  	struct sched_info sched_info;
-> diff -up -bB ./kernel/sched.c.orig ./kernel/sched.c
-> --- ./kernel/sched.c.orig	2007-08-21 09:20:22.000000000 +0200
-> +++ ./kernel/sched.c	2007-08-27 10:18:44.000000000 +0200
-> @@ -1626,9 +1626,9 @@ void fastcall sched_fork(struct task_str
->  	p->time_slice = (current->time_slice + 1) >> 1;
->  	/*
->  	 * The remainder of the first timeslice might be recovered by
-> -	 * the parent if the child exits early enough.
-> +	 * the creator (not parent!) if the child exits early enough.
->  	 */
-> -	p->first_time_slice = 1;
-> +	p->cpid = current->pid;
->  	current->time_slice >>= 1;
->  	p->timestamp = sched_clock();
->  	if (unlikely(!current->time_slice)) {
-> @@ -1728,33 +1728,46 @@ void fastcall wake_up_new_task(struct ta
->  
->  /*
->   * Potentially available exiting-child timeslices are
-> - * retrieved here - this way the parent does not get
-> + * retrieved here - this way the creator does not get
->   * penalized for creating too many threads.
->   *
->   * (this cannot be used to 'generate' timeslices
->   * artificially, because any timeslice recovered here
-> - * was given away by the parent in the first place.)
-> + * was given away by the creator in the first place.)
->   */
->  void fastcall sched_exit(struct task_struct *p)
->  {
->  	unsigned long flags;
->  	struct rq *rq;
-> -
-> +	struct task_struct* creator = NULL;
->  	/*
->  	 * If the child was a (relative-) CPU hog then decrease
-> -	 * the sleep_avg of the parent as well.
-> +	 * the sleep_avg of the creator as well.
->  	 */
-> -	rq = task_rq_lock(p->parent, &flags);
-> -	if (p->first_time_slice && task_cpu(p) == task_cpu(p->parent)) {
-> -		p->parent->time_slice += p->time_slice;
-> -		if (unlikely(p->parent->time_slice > task_timeslice(p)))
-> -			p->parent->time_slice = task_timeslice(p);
-> +	if (p->cpid) {
-> +		struct pid *pid = find_get_pid((pid_t)p->cpid);
-> +		if (pid) {
-> +			creator = get_pid_task(pid, PIDTYPE_PID);
-> +			put_pid(pid);
->  	}
-> -	if (p->sleep_avg < p->parent->sleep_avg)
-> -		p->parent->sleep_avg = p->parent->sleep_avg /
-> +
-> +		if (creator) {
-> +			if (task_cpu(p) == task_cpu(creator)) {
-> +				rq = task_rq_lock(creator, &flags);
-> +
-> +				creator->time_slice += p->time_slice;
-> +				if (unlikely(creator->time_slice > task_timeslice(p)))
-> +					creator->time_slice = task_timeslice(p);
-> +
-> +				if (p->sleep_avg < creator->sleep_avg)
-> +					creator->sleep_avg = creator->sleep_avg /
->  		(EXIT_WEIGHT + 1) * EXIT_WEIGHT + p->sleep_avg /
->  		(EXIT_WEIGHT + 1);
->  	task_rq_unlock(rq, &flags);
-> +			}
-> +			put_task_struct(creator);
-> +		}
-> +	}
->  }
->  
->  /**
-> @@ -3153,7 +3166,7 @@ static void task_running_tick(struct rq 
->  		 */
->  		if ((p->policy == SCHED_RR) && !--p->time_slice) {
->  			p->time_slice = task_timeslice(p);
-> -			p->first_time_slice = 0;
-> +			p->cpid = 0;
->  			set_tsk_need_resched(p);
->  
->  			/* put it at the end of the queue: */
-> @@ -3166,7 +3179,7 @@ static void task_running_tick(struct rq 
->  		set_tsk_need_resched(p);
->  		p->prio = effective_prio(p);
->  		p->time_slice = task_timeslice(p);
-> -		p->first_time_slice = 0;
-> +		p->cpid = 0;
->  
->  		if (!rq->expired_timestamp)
->  			rq->expired_timestamp = jiffies;
+No, ret_from_intr() still can schedule(). Actually it does preempt_schedule_irq()
+which sets PREEMPT_ACTIVE.
 
-Other than that it looks good, pretty much what I suggested :-)
+And, as Peter explained,
+
+> I think the reported meant interrupt driven involuntary preemption. So
+> ret_from_intr() is not the right place to look. But afaict you're still
+> right, see how preempt_schedule*() adds PREEMPT_ACTIVE to the
+> preempt_count, and how that makes the scheduler ignore the task state.
+
+this is OK, because in this case schedule() doesn't remove the task from
+run queue even if its state is TASK_UNINTERRUPTIBLE,
+
+		if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+			...
+			deactivate_task();
+		}
+
+note the "!(preempt_count() & PREEMPT_ACTIVE))" check. So the task is still
+runnable, we don't need to wake it, it will get CPU eventually.
+
+Oleg.
 
