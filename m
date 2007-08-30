@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932090AbXH3L6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbXH3MJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932090AbXH3L6q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 07:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbXH3L6g
+	id S1757948AbXH3MJp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 08:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755670AbXH3MJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 07:58:36 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:33633 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754801AbXH3L6f (ORCPT
+	Thu, 30 Aug 2007 08:09:35 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:4381 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755632AbXH3MJe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 07:58:35 -0400
-Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linville@tuxdriver.com,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <1188393226.1131.319.camel@frg-rhel40-em64t-04>
-References: <7515194658758617@pripojeni.net>
-	 <1188381582.19891.6.camel@johannes.berg>
-	 <4af2d03a0708290335x1a9aa38o566e9d416505f280@mail.gmail.com>
-	 <1188393226.1131.319.camel@frg-rhel40-em64t-04>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Zf9TLLgNQLJ4S02+oWrc"
-Date: Thu, 30 Aug 2007 13:59:42 +0200
-Message-Id: <1188475182.2963.15.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Thu, 30 Aug 2007 08:09:34 -0400
+X-Greylist: delayed 488 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 08:09:34 EDT
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 30 Aug 2007 05:01:23 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+cc: Randy Dunlap <rdunlap@xenotime.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Linux Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, stable@kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH] Revised timerfd() interface
+In-Reply-To: <20070825064114.107820@gmx.net>
+Message-ID: <Pine.LNX.4.64.0708300458120.7717@alien.or.mcafeemobile.com>
+References: <20070825064114.107820@gmx.net>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 25 Aug 2007, Michael Kerrisk wrote:
 
---=-Zf9TLLgNQLJ4S02+oWrc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Davide -- ping!  Can you please offer your comments about this change, and
+> also thoughts on Jon's and my comments about a more radical API change
+> later  in this thread.
 
-On Wed, 2007-08-29 at 15:13 +0200, Xavier Bestel wrote:
+IMO the complexity of the resulting API (and resulting patch), and the ABI 
+change, is not justified by the added value.
 
-> How about asking for changes to be dual-licenced too ?
 
-In theory, that could work, but in practice relying on functions that
-the Linux kernel offers in GPLv2-only headers etc. will make the result
-GPLv2 anyway, and disentangling it would be a nightmare.
 
-johannes
+- Davide
 
---=-Zf9TLLgNQLJ4S02+oWrc
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBG1rEu/ETPhpq3jKURAiKOAJ9rw7sEJXX/abTtkYC4KuQg1SV8iQCgj512
-JWtOtMI9iI6sDtJc6l5xv3k=
-=s6+I
------END PGP SIGNATURE-----
-
---=-Zf9TLLgNQLJ4S02+oWrc--
 
