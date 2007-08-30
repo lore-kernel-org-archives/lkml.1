@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763510AbXH3Wdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763569AbXH3Wg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763510AbXH3Wdt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762766AbXH3Wdl
+	id S1763569AbXH3Wg5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:36:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762829AbXH3Wgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:33:41 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:9009 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762679AbXH3Wdj (ORCPT
+	Thu, 30 Aug 2007 18:36:49 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:39952
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1762469AbXH3Wgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:33:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=HSSY5wR4BY2xD6QoddZV451jMiokXPZPoxGNoSdUsMawWqbo3srHTIGVJ647vWNaqkwOSIBaAiLG6YTCRKng4eMp4Qm5sXaoUDq+lkwqhG/P+dNjrGFLhK/NaDsg2GGgH2wjL5XFHkELcnFh9PHPoFLbIhMsGHkHlrBaDkbUHOI=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Joe Perches <joe@perches.com>
-Subject: [PATCH] Don't needlessly initialize variable to NULL in zd_chip   (was: Re: [PATCH 13/30] net: Don't do pointless kmalloc return value casts in zd1211 driver)
-Date: Fri, 31 Aug 2007 00:30:31 +0200
-User-Agent: KMail/1.9.7
-Cc: Daniel Drake <dsd@gentoo.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Ulrich Kunitz <kune@deine-taler.de>, linux-wireless@vger.kernel.org,
-       Jesper Juhl <jesper.juhl@gmail.com>
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com> <9a8748490708301320o49d8e794vc5c37ffc938006f1@mail.gmail.com> <1188512393.6062.156.camel@localhost>
-In-Reply-To: <1188512393.6062.156.camel@localhost>
+	Thu, 30 Aug 2007 18:36:49 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
+Date: Thu, 30 Aug 2007 18:36:48 -0500
+User-Agent: KMail/1.9.6
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       bos@serpentine.com, werner@almesberger.net, hpa@zytor.com
+References: <20070830112055.2b2c8985.randy.dunlap@oracle.com> <Pine.LNX.4.64.0708301426360.4088@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0708301426360.4088@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708310030.31713.jesper.juhl@gmail.com>
+Message-Id: <200708301836.48707.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 31 August 2007 00:19:53 Joe Perches wrote:
-> On Thu, 2007-08-30 at 22:20 +0200, Jesper Juhl wrote:
-> > Ok, I must admit I didn't check with sparse since it seemed pointless
-> > - we usually never cast void pointers to other pointer types,
-> > specifically because the C language nicely guarantees that the right
-> > thing will happen without the cast.  Sometimes we have to cast them to
-> > integer types, su sure we need the cast there.   But what on earth
-> > makes a "zd_addr_t *" so special that we have to explicitly cast a
-> > "void *" to that type?
-> 
-> http://marc.info/?l=linux-netdev&m=117113743902549&w=1
-> 
+On Thursday 30 August 2007 1:28:17 pm Robert P. J. Day wrote:
+> On Thu, 30 Aug 2007, Randy Dunlap wrote:
+>
+> ...
+>
+> > The old "ramdisk=<ram_size>" has been changed to
+> > "ramdisk_size=<ram_size>" to make it clearer.  The original
+> > "ramdisk=<ram_size>" has been kept around for compatibility reasons,
+> > but it may be removed in the future.
+>
+> ...
+>
+> i just the other day submitted a patch to remove that backward
+> compatibility, and the m68k portion of it has already been acked by
+> geert uytterhoeven.
 
-Thank you for that link Joe.
+Could you mention it in feature-removal-schedule.txt?  (People check that for 
+warning of upcoming changes that impact existing code.  They may not notice 
+something elsewhere after they've got it working...)
 
-I'm not sure I agree with the __nocast, but I respect that this is 
-the maintainers choice.
+(Also, sorting feature-removal-schedule.txt by date would be really nice.  The 
+sucker's gotten huge...)
 
-But, I still think the first chunk of the patch that removes the 
-initial variable initialization makes sense. 
-Initializing the variable to NULL is pointless since it'll never be
-used before the kmalloc() call. So here's a revised patch that just
-gets rid of that little detail.
+And while I'm looking at this, is there some other place that entries in this 
+file go once they _have_ been removed, so people can see "oh yeah, that went 
+away in 2.6.23) when they try to install 2.6.25?  If there is, I missed it.  
+Maybe http://lwn.net/Articles/2.6-kernel-api/ is good enough, but this seems 
+easy to do in Documentation...
 
+Thanks,
 
-
-No need to initialize to NULL when variable is never used before 
-it's assigned the return value of a kmalloc() call.
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
-diff --git a/drivers/net/wireless/zd1211rw/zd_chip.c b/drivers/net/wireless/zd1211rw/zd_chip.c
-index c39f198..30872fe 100644
---- a/drivers/net/wireless/zd1211rw/zd_chip.c
-+++ b/drivers/net/wireless/zd1211rw/zd_chip.c
-@@ -106,7 +106,7 @@ int zd_ioread32v_locked(struct zd_chip *chip, u32 *values, const zd_addr_t *addr
- {
- 	int r;
- 	int i;
--	zd_addr_t *a16 = (zd_addr_t *)NULL;
-+	zd_addr_t *a16;
- 	u16 *v16;
- 	unsigned int count16;
- 
-
-
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
