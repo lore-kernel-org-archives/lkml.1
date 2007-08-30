@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760742AbXH3OPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761191AbXH3OPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760742AbXH3OPQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 10:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756089AbXH3OPE
+	id S1761191AbXH3OPk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 10:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758785AbXH3OP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 10:15:04 -0400
-Received: from smtp2a.orange.fr ([80.12.242.139]:20060 "EHLO smtp2a.orange.fr"
+	Thu, 30 Aug 2007 10:15:26 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:41446 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754981AbXH3OPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 10:15:01 -0400
-X-ME-UUID: 20070830141501276.06BE97000098@mwinf2a07.orange.fr
-Subject: Re: speeding up swapoff
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: Robert Hancock <hancockr@shaw.ca>, Daniel Drake <ddrake@brontes3d.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46D6CEF3.3070701@aitel.hist.no>
-References: <fa.j/pO3mTWDugTdvZ3XNr9XpvgzPQ@ifi.uio.no>
-	 <fa.ed9fasZXOwVCrbffkPQTX7G3a7g@ifi.uio.no>
-	 <fa./NZA3biuO1+qW5pW8ybdZMDWcZs@ifi.uio.no> <46D61F48.5090406@shaw.ca>
-	 <46D6CC35.90207@aitel.hist.no>
-	 <1188482815.1131.374.camel@frg-rhel40-em64t-04>
-	 <46D6CEF3.3070701@aitel.hist.no>
-Content-Type: text/plain
-Date: Thu, 30 Aug 2007 16:14:57 +0200
-Message-Id: <1188483297.1131.377.camel@frg-rhel40-em64t-04>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+	id S1756089AbXH3OPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 10:15:24 -0400
+Message-ID: <46D6D0F4.3090904@rfo.atmel.com>
+Date: Thu, 30 Aug 2007 16:15:16 +0200
+From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus@drzeus.cx>
+CC: Andrew Victor <andrew@sanpeople.com>, Marc Pignat <marc.pignat@hevs.ch>,
+       anti.sullin@artecdesign.ee,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
+Subject: [PATCH] bug in AT91 MCI suspend routines
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-30 at 16:06 +0200, Helge Hafting wrote:
-> Xavier Bestel wrote:
-> > On Thu, 2007-08-30 at 15:55 +0200, Helge Hafting wrote:
-> >   
-> >> If the swap device is full, then there is no need for random
-> >> seeks as the swap pages can be read in disk order.
-> >>     
-> >
-> > If the swap file is full, you probably have a machine dead into a swap
-> > storm.
-> Only if you have enough swap. :-)
+From: Anti Sullin <anti.sullin@artecdesign.ee>
 
-Yeah, sure. But these days disk space is cheap and I tend to put too big
-swap partitions, and I always regret it later ...
+This patch fixes a bug in AT91 mmc host driver, that enables the wakeup 
+from suspend on card detection pin even if the card detect pin is not 
+available (==0). If not card detection pin is defined, IRQ0 == FIQ gets 
+enabled and if some activity is present on that pin, the system gets a 
+FIQ request, that causes a crash.
 
-	Xav
+Signed-off-by: Anti Sullin <anti.sullin@artecdesign.ee>
+Signed-off-by: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+---
 
+Original patch from Anti Sullin reviewed by Andrew Victor and
+Marc Pignat ; thank you to all of you.
 
+ drivers/mmc/host/at91_mci.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-2.6-snapshot/drivers/mmc/host/at91_mci.c
+===================================================================
+--- linux-2.6-snapshot.orig/drivers/mmc/host/at91_mci.c
++++ linux-2.6-snapshot/drivers/mmc/host/at91_mci.c
+@@ -941,7 +941,7 @@ static int __exit at91_mci_remove(struct
+ 
+ 	host = mmc_priv(mmc);
+ 
+-	if (host->present != -1) {
++	if (host->board->det_pin) {
+ 		device_init_wakeup(&pdev->dev, 0);
+ 		free_irq(host->board->det_pin, host);
+ 		cancel_delayed_work(&host->mmc->detect);
+@@ -972,7 +972,7 @@ static int at91_mci_suspend(struct platf
+ 	struct at91mci_host *host = mmc_priv(mmc);
+ 	int ret = 0;
+ 
+-	if (device_may_wakeup(&pdev->dev))
++	if (host->board->det_pin && device_may_wakeup(&pdev->dev))
+ 		enable_irq_wake(host->board->det_pin);
+ 
+ 	if (mmc)
+@@ -987,7 +987,7 @@ static int at91_mci_resume(struct platfo
+ 	struct at91mci_host *host = mmc_priv(mmc);
+ 	int ret = 0;
+ 
+-	if (device_may_wakeup(&pdev->dev))
++	if (host->board->det_pin && device_may_wakeup(&pdev->dev))
+ 		disable_irq_wake(host->board->det_pin);
+ 
+ 	if (mmc)
