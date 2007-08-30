@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbXH3L3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbXH3LoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756933AbXH3L3w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 07:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbXH3L3n
+	id S1756919AbXH3LoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 07:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbXH3LoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 07:29:43 -0400
-Received: from main.carme.maven.pl ([193.239.45.138]:58014 "EHLO
-	main.carme.maven.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbXH3L3m convert rfc822-to-8bit (ORCPT
+	Thu, 30 Aug 2007 07:44:08 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:29769 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752929AbXH3LoG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 07:29:42 -0400
-From: Arkadiusz Miskiewicz <arekm@maven.pl>
-Organization: SelfOrganizing
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.22 oops kernel BUG at block/elevator.c:366!
-Date: Thu, 30 Aug 2007 13:29:37 +0200
-User-Agent: PLD Linux KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       "Ed Lin" <ed.lin@promise.com>
-References: <200708291950.14513.arekm@maven.pl> <200708292011.47134.arekm@maven.pl> <20070829181648.GD7932@kernel.dk>
-In-Reply-To: <20070829181648.GD7932@kernel.dk>
+	Thu, 30 Aug 2007 07:44:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=L/WoPafC+VGL/n4SS596+s7ZwTH/B19Wo1YWZ6xSyu0JIgJ/LKjSn0wSaIZwal/8pUfCwqDcrGbhs+qd4NLpz3i8e8oRHNndRVeI/E8bUqT+9O0iIBDg54lt4E70xkl9SsNq0iiuHDNCJt71yjE4HXK7BMQ4AIp5uvJwtY2VqQw=
+Message-ID: <ab40e9c0708300444h248a6584v49e250e4545da45a@mail.gmail.com>
+Date: Thu, 30 Aug 2007 13:44:04 +0200
+From: "Xu Yang" <risingsunxy@googlemail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: from which address does the kernel load initrd?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46D5DF7F.9030805@zytor.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200708301329.37396.arekm@maven.pl>
+References: <ab40e9c0708291348u3c4ee095r20cd20dd090c23aa@mail.gmail.com>
+	 <46D5DF7F.9030805@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 of August 2007, Jens Axboe wrote:
-> On Wed, Aug 29 2007, Arkadiusz Miskiewicz wrote:
-> > On Wednesday 29 of August 2007, Jens Axboe wrote:
-> > > On Wed, Aug 29 2007, Arkadiusz Miskiewicz wrote:
-> > > > On Wednesday 29 of August 2007, Jens Axboe wrote:
-> > > > > On Wed, Aug 29 2007, Arkadiusz Miskiewicz wrote:
-> > > > > > I guess I should sent these here since it looks like not scsi bug
-> > > > > > anyway.
-> > > > >
-> > > > > It's stex, right? It seems to have some issues with multiple
-> > > > > completions of commands, which craps out the block layer of course.
-> > > >
-> > > > Yes, stex. I'm staying with 2.6.19 in that case since it works fine
-> > > > in that version.
-> > > >
-> > > > So scsi bug ... 8-)
-> > >
-> > > And you based that conclusion on what exactly?
+hi peter,
+
+thanks for your reply.
+
+my platform is realview_eb_mpcore. the cpu is arm. not i386. and I
+check the booting file in the documentation /arm , it is not
+specified.
+
+do you have any idea about that?
+
+anyone knows?
+
+thanks,
+
+regards,
+
+
+2007/8/29, H. Peter Anvin <hpa@zytor.com>:
+> Xu Yang wrote:
+> > does anyone know from which address does the kernel load the initrd? I
+> > mean the default value?
 > >
-> > Isn't drivers/scsi/* handled by linux-scsi@? (that's what I mean)
+> > I want to boot the filesystem using a ramdisk. but the I don't know
+> > where to put it in my ram? as I don't have flash , I can only load the
+> > ramdisk into the ram.
+> >
+> > and which boot option should I use?
 >
-> Yep indeed, I thought you meant that it was a scsi bug (and not an stex
-> one). You could try and copy the 2.6.19 stex driver into 2.6.20 and see
-> if that works, though.
-
-Looks like this bug is known for months :-(
-
-Ed Lin pointed to http://lkml.org/lkml/2007/1/23/268 with possible patch (that 
-unfortunately serialises access to storage devices, well...)
-
-There is also: http://bugzilla.kernel.org/show_bug.cgi?id=7842
-
-I'm running 2.6.22 with that patch now, did huge (few hours) rsync that 
-previously caused oopses and now everything works properly.
-
-Can we get some form of this patch into Linus tree?
-
--- 
-Arkadiusz Mi¶kiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+> See Documentation/i386/boot.txt
+>
+>        -hpa
+>
+>
