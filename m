@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbXH3XVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764083AbXH3XWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764001AbXH3XVK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 19:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761529AbXH3XUv
+	id S1764083AbXH3XWb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 19:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761529AbXH3XWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 19:20:51 -0400
-Received: from phunq.net ([64.81.85.152]:57477 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754716AbXH3XUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 19:20:49 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [1/1] Block device throttling [Re: Distributed storage.]
-Date: Thu, 30 Aug 2007 16:20:35 -0700
-User-Agent: KMail/1.9.5
-Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708281408.06618.phillips@phunq.net> <20070829085331.GA16607@2ka.mipt.ru>
-In-Reply-To: <20070829085331.GA16607@2ka.mipt.ru>
+	Thu, 30 Aug 2007 19:22:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59406 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752198AbXH3XWX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 19:22:23 -0400
+Message-ID: <46D750E3.2060605@zytor.com>
+Date: Thu, 30 Aug 2007 16:21:07 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Rob Landley <rob@landley.net>, "Robert P. J. Day" <rpjday@mindspring.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       bos@serpentine.com, werner@almesberger.net
+Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
+References: <20070830112055.2b2c8985.randy.dunlap@oracle.com>	<Pine.LNX.4.64.0708301426360.4088@localhost.localdomain>	<200708301836.48707.rob@landley.net>	<46D74797.4070105@zytor.com> <20070830161316.b04f041d.randy.dunlap@oracle.com>
+In-Reply-To: <20070830161316.b04f041d.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708301620.37965.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 August 2007 01:53, Evgeniy Polyakov wrote:
-> Then, if of course you will want, which I doubt, you can reread
-> previous mails and find that it was pointed to that race and
-> possibilities to solve it way too long ago.
+Randy Dunlap wrote:
+> On Thu, 30 Aug 2007 15:41:27 -0700 H. Peter Anvin wrote:
+> 
+>> Rob Landley wrote:
+>>> On Thursday 30 August 2007 1:28:17 pm Robert P. J. Day wrote:
+>>>> On Thu, 30 Aug 2007, Randy Dunlap wrote:
+>>>>
+>>>> ...
+>>>>
+>>>>> The old "ramdisk=<ram_size>" has been changed to
+>>>>> "ramdisk_size=<ram_size>" to make it clearer.  The original
+>>>>> "ramdisk=<ram_size>" has been kept around for compatibility reasons,
+>>>>> but it may be removed in the future.
+>>>> ...
+>>>>
+>>>> i just the other day submitted a patch to remove that backward
+>>>> compatibility, and the m68k portion of it has already been acked by
+>>>> geert uytterhoeven.
+> 
+> I couldn't find it.  Can you provide a pointer to it?
+> 
+>>> Could you mention it in feature-removal-schedule.txt?  (People check that for 
+>>> warning of upcoming changes that impact existing code.  They may not notice 
+>>> something elsewhere after they've got it working...)
+>>>
+>> The same objection applies to this as to the previous one.  In that 
+>> respect, an Ack from a maintainer of an almost unused architecture is 
+>> meaningless (sorry, Geert.)
+> 
+> Peter, what are you objecting to, Rob's comment, Robert's comment,
+> Robert's patch, or my patch?
+> 
 
-What still bothers me about your response is that, while you know the 
-race exists and do not disagree with my example, you don't seem to see 
-that that race can eventually lock up the block device by repeatedly 
-losing throttle counts which are never recovered.  What prevents that?
+Robert's patch.
 
-> > --- 2.6.22.clean/block/ll_rw_blk.c	2007-07-08 16:32:17.000000000
-> > -0700 +++ 2.6.22/block/ll_rw_blk.c	2007-08-24 12:07:16.000000000
-> > -0700 @@ -3237,6 +3237,15 @@ end_io:
-> >   */
-> >  void generic_make_request(struct bio *bio)
-> >  {
-> > +	struct request_queue *q = bdev_get_queue(bio->bi_bdev);
-> > +
-> > +	if (q && q->metric) {
-> > +		int need = bio->bi_reserved = q->metric(bio);
-> > +		bio->queue = q;
->
-> In case you have stacked device, this entry will be rewritten and you
-> will lost all your account data.
+	-hpa
 
-It is a weakness all right.  Well,
-
--	if (q && q->metric) {
-+	if (q && q->metric && !bio->queue) {
-
-which fixes that problem.  Maybe there is a better fix possible.  Thanks 
-for the catch!
-
-The original conception was that this block throttling would apply only 
-to the highest level submission of the bio, the one that crosses the 
-boundary between filesystem (or direct block device application) and 
-block layer.  Resubmitting a bio or submitting a dependent bio from 
-inside a block driver does not need to be throttled because all 
-resources required to guarantee completion must have been obtained 
-_before_ the bio was allowed to proceed into the block layer.
-
-The other principle we are trying to satisfy is that the throttling 
-should not be released until bio->endio, which I am not completely sure 
-about with the patch as modified above.  Your earlier idea of having 
-the throttle protection only cover the actual bio submission is 
-interesting and may be effective in some cases, in fact it may cover 
-the specific case of ddsnap.  But we don't have to look any further 
-than ddraid (distributed raid) to find a case it doesn't cover - the 
-additional memory allocated to hold parity data has to be reserved 
-until parity data is deallocated, long after the submission completes.
-So while you manage to avoid some logistical difficulties, it also looks 
-like you didn't solve the general problem.
-
-Hopefully I will be able to report on whether my patch actually works 
-soon, when I get back from vacation.  The mechanism in ddsnap this is 
-supposed to replace is effective, it is just ugly and tricky to verify.
-
-Regards,
-
-Daniel
