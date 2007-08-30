@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761789AbXH3CL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbXH3CNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761789AbXH3CL0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 22:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXH3CLT
+	id S1762038AbXH3CNS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 22:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXH3CNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 22:11:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38024 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756046AbXH3CLT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 22:11:19 -0400
-Date: Wed, 29 Aug 2007 19:10:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org, mattilinnanvuori@yahoo.com
-Subject: Re: [Bugme-new] [Bug 8957] New: Exported functions and variables
- should not be reachable by the outside of the module until module_init
- finishes
-Message-Id: <20070829191043.91616ca7.akpm@linux-foundation.org>
-In-Reply-To: <46D61E7C.20304@shaw.ca>
-References: <fa.fGbKfAxvHbZD1OUm5bpknraMlkQ@ifi.uio.no>
-	<fa.+esfGGdgETnuZiuGXcL9U8IpoNM@ifi.uio.no>
-	<46D61E7C.20304@shaw.ca>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 29 Aug 2007 22:13:11 -0400
+Received: from mail.windriver.com ([147.11.1.11]:47165 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756047AbXH3CNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 22:13:10 -0400
+Message-ID: <46D627B6.9060208@windriver.com>
+Date: Wed, 29 Aug 2007 21:13:10 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: pete@bluelane.com
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>	<200708222104.29432.m.kozlowski@tuxland.pl>	<20070822124743.fc316963.akpm@linux-foundation.org>	<46CCBC3C.7010307@windriver.com> <20070822165318.b82da13c.akpm@linux-foundation.org> <46CCFE2C.4050306@windriver.com> <46D604BF.7090905@bluelane.com> <46D61B21.1010703@bluelane.com>
+In-Reply-To: <46D61B21.1010703@bluelane.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Aug 2007 02:12:48.0452 (UTC) FILETIME=[42CF0840:01C7EAAB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Aug 2007 19:33:48 -0600 Robert Hancock <hancockr@shaw.ca> wrote:
+Pete/Piet Delaney wrote:
+> We are getting a problem with VMware where kernel text is the schedler
+> is getting wacked with four null bytes into the code. Thought I'd use
+> the current linux-2.6-kgdb.git tree and possible the CONFIG_DEBUG_RODATA
+> patch to make kernel text readonly:
+>
+>  https://www.x86-64.org/pipermail/patches/2007-March/003666.html
+>
+> I thought the kernel text was RO and gdb had to disable it to
+> insert a breakpoint.
+>
+>   
 
-> Andrew Morton wrote:
-> > On Wed, 29 Aug 2007 11:33:06 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
-> > 
-> >> http://bugzilla.kernel.org/show_bug.cgi?id=8957
-> >>
-> >>            Summary: Exported functions and variables should not be reachable
-> >>                     by the outside of the module until module_init finishes
-> >>            Product: Other
-> >>            Version: 2.5
-> >>      KernelVersion: 2.6.23-rc4
-> >>           Platform: All
-> >>         OS/Version: Linux
-> >>               Tree: Mainline
-> >>             Status: NEW
-> >>           Severity: normal
-> >>           Priority: P1
-> >>          Component: Modules
-> >>         AssignedTo: other_modules@kernel-bugs.osdl.org
-> >>         ReportedBy: mattilinnanvuori@yahoo.com
-> >>
-> >>
-> >> Problem Description: a module's exported functions can be called before before
-> >> they are properly initialized by the module_init function.
-> >>
-> >> Steps to reproduce: write a module that exports functions that require
-> >> initialization by the module_init function to work correctly.
-> >>
-> >> E.g. spin lock variables are no longer allowed to be initialized by C
-> >> initializers of the module but only by spin_lock_init that can be called by the
-> >> module_init function. If an exported function calls spin_lock before it is
-> >> initialized, it deadlocks.
-> >>
-> > 
-> > ooh, nice bug ;)
-> 
-> Under what circumstances is this actually happening? What are these 
-> functions that are being called?
-> 
-> Normally things are set up such that this isn't a problem, i.e. if 
-> module A depends on module B, module A can't load until module B is 
-> finished loading.
-> 
+If you are going to make all the kernel text RO, then you are going to 
+have to add some code to the kgdb write memory so as to unprotect a 
+given page or all the breakpoint writes are going to fail.  
+Alternatively you can use HW breakpoints.  But, I have no idea if your 
+VM Ware simulated HW emulate HW breakpoint registers or not.
 
-Good point.
-
-This thus-far-undescribed module could make its internals externally
-visible via one of the kernel's many register_foo() interfaces, but it
-would be a buggy module if it was doing register_foo(my_foo) before
-my_foo() was ready to be called.
+Jason.
