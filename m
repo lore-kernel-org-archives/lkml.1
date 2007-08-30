@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761965AbXH3Sc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760843AbXH3ScW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761965AbXH3Sc7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 14:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761385AbXH3Sci
+	id S1760843AbXH3ScW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 14:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757938AbXH3ScN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 14:32:38 -0400
-Received: from corky.net ([212.150.53.130]:38817 "EHLO zebday.corky.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761010AbXH3ScX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 14:32:23 -0400
-Message-ID: <46D70BE7.2020503@corky.net>
-Date: Thu, 30 Aug 2007 19:26:47 +0100
-From: Just Marc <marc@corky.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
+	Thu, 30 Aug 2007 14:32:13 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38771
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755492AbXH3ScM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 14:32:12 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible fashion.
+Date: Thu, 30 Aug 2007 14:32:11 -0500
+User-Agent: KMail/1.9.6
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com> <m1r6lnb4ha.fsf@ebiederm.dsl.xmission.com> <46D4CC81.4060400@zytor.com>
+In-Reply-To: <46D4CC81.4060400@zytor.com>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: file system for solid state disks
-References: <46CFEB36.9020806@corky.net> <Pine.LNX.4.64.0708302024320.24730@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0708302024320.24730@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP on CorKy.NeT
+Content-Disposition: inline
+Message-Id: <200708301432.11516.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One must consult the documentation of that device.   This wear leveling 
-is low level and most devices do not export any information about it.  
-Recent SSDs start to export some values through SMART that let you 
-monitor the state.
-
-Some companies think that hiding is better than exposing...
-
-
-Jan Engelhardt wrote:
-> On Aug 25 2007 09:41, Just Marc wrote:
->   
->> On SSDs which contain built in wear leveling, pretty much any file 
->> system can be used.  For SSDs that lack such low level housekeeping, 
->> use stuff like JFFS2.
->>     
+On Tuesday 28 August 2007 8:31:45 pm H. Peter Anvin wrote:
+> Eric W. Biederman wrote:
+> > Christoph Hellwig <hch@infradead.org> writes:
+> >> Umm, no way we're ever going to remove a syscall like this.
+> >
+> > If someone besides me cares about more then rhetoric I will be happy
+> > to reconsider and several years is plenty of time to find that out.
+> >
+> > I aborted the removal last time precisely because we had not done an
+> > adequate job of warning our users.  A printk when we run a program
+> > that uses the binary interface and an long enough interval the warning
+> > makes it to the Enterprise kernels before we remove the interface
+> > should be sufficient.
 >
-> The question is, how can you find out whether it does automatic 
-> wear-leveling? (Perhaps when a CF is advertised as "holds 10 years!"?)
->
->
-> 	Jan
->   
+> glibc uses it, and it uses it in contexts where access to the filesystem
+> isn't functional (e.g. in chroot.)
 
+A lot of embedded people like to configure /proc out of the kernel for space 
+reasons.  This would make that noticeably more painful.
+
+(If sysctlfs wasn't part of proc, that would be less of an issue, but we need 
+union mounts for that...)
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
