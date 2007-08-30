@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbXH3AwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761800AbXH3A5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761910AbXH3AwS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 20:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758599AbXH3AwJ
+	id S1761800AbXH3A5Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 20:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXH3A5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 20:52:09 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:40180 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758101AbXH3AwH (ORCPT
+	Wed, 29 Aug 2007 20:57:17 -0400
+Received: from h151.mvista.com ([63.81.120.158]:40137 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751712AbXH3A5Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 20:52:07 -0400
-Message-ID: <46D614AF.8070206@kernel.org>
-Date: Wed, 29 Aug 2007 17:51:59 -0700
-From: Andrew Morgan <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serge@hallyn.com>
-CC: Adrian Bunk <bunk@kernel.org>, sds@tycho.nsa.gov, chrisw@sous-sol.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [2.6 patch] remove securebits
-References: <20070824210649.GG30705@stusta.de> <20070824211942.GA24478@vino.hallyn.com> <46CFA6F2.9030209@kernel.org> <20070825182846.GN30705@stusta.de> <20070827150941.GA31042@vino.hallyn.com> <20070827151751.GD4121@stusta.de> <20070827152817.GA31632@vino.hallyn.com> <20070827155855.GE4121@stusta.de> <46D3CCBA.1020204@kernel.org> <20070828181959.GA24270@vino.hallyn.com>
-In-Reply-To: <20070828181959.GA24270@vino.hallyn.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 29 Aug 2007 20:57:16 -0400
+Subject: Re: [PATCH 1/2] Adds full stack to critical-section tracing
+From: Daniel Walker <dwalker@mvista.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: mingo@elte.hu, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070810141413.12966.13475.stgit@lsg>
+References: <20070810140745.12966.8464.stgit@lsg>
+	 <20070810141413.12966.13475.stgit@lsg>
+Content-Type: text/plain
+Date: Wed, 29 Aug 2007 17:48:12 -0700
+Message-Id: <1188434892.26038.23.camel@dhcp193.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Fri, 2007-08-10 at 08:14 -0600, Gregory Haskins wrote:
+> ---
+> 
+>  include/linux/sched.h  |    7 +++++--
+>  kernel/latency_trace.c |   18 +++++++++++-------
+>  2 files changed, 16 insertions(+), 9 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 8ebb43c..233d26c 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1306,10 +1306,13 @@ struct task_struct {
+>  #endif
+>  
+>  #define MAX_PREEMPT_TRACE 25
+> +#define MAX_PREEMPT_TRACE_DEPTH 5
+>  
+>  #ifdef CONFIG_PREEMPT_TRACE
+> -	unsigned long preempt_trace_eip[MAX_PREEMPT_TRACE];
+> -	unsigned long preempt_trace_parent_eip[MAX_PREEMPT_TRACE];
+> +	struct {
+> +		struct stack_trace trace;
+> +		unsigned long      data[MAX_PREEMPT_TRACE_DEPTH];
+> +	} preempt_trace[MAX_PREEMPT_TRACE];
 
-Serge E. Hallyn wrote:
-> To summarize more clearly, I think that so long as we support
-> process trees with a sort of !SECURE_NOROOT support, that
-> support should include the ability to use prctl(KEEP_CAPS) the
-> way one uses it now.
+These changes need some fixing .. The "struct stack_trace"
+infrastructure is based on CONFIG_STACKTRACE , so at least you would
+want to ifdef your changes on that config options ..
 
-> When a process tree is in strict capability mode,
-> prctl(PR_{G,S}ET_KEEP_CAPS) should return -EINVAL.
+I modified you patch to include the ifdefs,
 
-I agree. I'll try to code it up in a way that its clear how to delete
-this functionality when folk realize they no longer need it...
+ftp://source.mvista.com/pub/dwalker/misc/debug-preempt-5-levels-of-stack-frames.patch
 
-- -static inline int get_file_caps(struct linux_binprm *bprm)
-+int cap_bprm_set_security(struct linux_binprm *bprm)
- {
- 	bprm_clear_caps(bprm);
-+	bprm_force_uid0_caps(bprm);
-+	current->keep_capabilities = 0;
+The other problem I noticed is that the save_stack_trace(trace); seems
+kind of heavy weight to be calling from inside add_preempt_count. If
+your only going to a depth of 5 you could potentially use there macros,
 
-> This is being moved from bprm_apply to bprm_set, which moves it
-> earlier.  If exec fails later on, keep_capabilities might be set
-> to 0 even though exec failed.
+#ifdef CONFIG_FRAME_POINTER
+# ifndef CONFIG_ARM
+#  define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
+#  define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
+#  define CALLER_ADDR2 ((unsigned long)__builtin_return_address(2))
+#  define CALLER_ADDR3 ((unsigned long)__builtin_return_address(3))
+#  define CALLER_ADDR4 ((unsigned long)__builtin_return_address(4))
+#  define CALLER_ADDR5 ((unsigned long)__builtin_return_address(5))
+# else
 
-I'll look at it again, but I had thought I had preserved the previous
-behavior with this condensed version of the code. Are you suggesting an
-improvement to what was there, or pointing out I'm inadvertently
-breaking the old behavior?
+Daniel
 
-Thanks
-
-Andrew
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFG1hSu+bHCR3gb8jsRAhHJAJ9Pn8w2InrhbNjBjpqT9NEE0HX61QCgkBR8
-Bo1xJcZGqbsr+IhQ+DDyENA=
-=PKx4
------END PGP SIGNATURE-----
