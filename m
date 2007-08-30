@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbXH3N0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbXH3NbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758850AbXH3N0a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 09:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbXH3N0V
+	id S1759505AbXH3NbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 09:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbXH3NbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 09:26:21 -0400
-Received: from smtp104.sbc.mail.re2.yahoo.com ([68.142.229.101]:36634 "HELO
-	smtp104.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751797AbXH3N0U (ORCPT
+	Thu, 30 Aug 2007 09:31:14 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:52156 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750982AbXH3NbN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 09:26:20 -0400
-X-YMail-OSG: MVb8HcEVM1lG5IQnru0fy8Z6oK7nVbZGJYPvMonB_idT551e0s7LClSXA1V.SmkPRY7AZJPUCw--
-Date: Thu, 30 Aug 2007 08:26:13 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Andrew Morgan <morgan@kernel.org>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, Adrian Bunk <bunk@kernel.org>,
-       sds@tycho.nsa.gov, chrisw@sous-sol.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [2.6 patch] remove securebits
-Message-ID: <20070830132613.GA20536@vino.hallyn.com>
-References: <20070824211942.GA24478@vino.hallyn.com> <46CFA6F2.9030209@kernel.org> <20070825182846.GN30705@stusta.de> <20070827150941.GA31042@vino.hallyn.com> <20070827151751.GD4121@stusta.de> <20070827152817.GA31632@vino.hallyn.com> <20070827155855.GE4121@stusta.de> <46D3CCBA.1020204@kernel.org> <20070828181959.GA24270@vino.hallyn.com> <46D614AF.8070206@kernel.org>
+	Thu, 30 Aug 2007 09:31:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Tbf/1dqadHJfjHu2WgCOHDNLGiBeBUtJDhp2bNz7IV7H21AafjbaK8rSlgTLKFCbtGAnzwZxBGHQyNeGhLHIvWQt7d/rh3c9cexxbwa+c1RLyKeJf1SeDKUV7/+tvKOaFo7eh640/ZTZrOs5umhAhDK39wTGWYNEfW+DgmW1ZU0=
+Message-ID: <9a8748490708300631o285fd31ch462199ec9535c6c2@mail.gmail.com>
+Date: Thu, 30 Aug 2007 15:31:12 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: bamakhrama@gmail.com
+Subject: Re: Average number of instructions per line of kernel code
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+In-Reply-To: <40378e40708300600h5837d46ci5266b8ae62bbd46e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46D614AF.8070206@kernel.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <40378e40708300600h5837d46ci5266b8ae62bbd46e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morgan (morgan@kernel.org):
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Serge E. Hallyn wrote:
-> > To summarize more clearly, I think that so long as we support
-> > process trees with a sort of !SECURE_NOROOT support, that
-> > support should include the ability to use prctl(KEEP_CAPS) the
-> > way one uses it now.
-> 
-> > When a process tree is in strict capability mode,
-> > prctl(PR_{G,S}ET_KEEP_CAPS) should return -EINVAL.
-> 
-> I agree. I'll try to code it up in a way that its clear how to delete
-> this functionality when folk realize they no longer need it...
-> 
-> - -static inline int get_file_caps(struct linux_binprm *bprm)
-> +int cap_bprm_set_security(struct linux_binprm *bprm)
->  {
->  	bprm_clear_caps(bprm);
-> +	bprm_force_uid0_caps(bprm);
-> +	current->keep_capabilities = 0;
-> 
-> > This is being moved from bprm_apply to bprm_set, which moves it
-> > earlier.  If exec fails later on, keep_capabilities might be set
-> > to 0 even though exec failed.
-> 
-> I'll look at it again, but I had thought I had preserved the previous
-> behavior with this condensed version of the code. Are you suggesting an
-> improvement to what was there, or pointing out I'm inadvertently
-> breaking the old behavior?
+On 30/08/2007, Mohamed Bamakhrama <bamakhrama@gmail.com> wrote:
+> Hi all,
+> I have a question regarding the average number of assembly
+> instructions per line of kernel code. I know that this is a difficult
+> question since it depends on many factors such as the instruction set
+> architecture, compiler used, optimizations used, type of code, coding
+> style, etc...
+> I would like to know a rough estimate for such a quantity for the
+> kernel 2.4/2.6 code running on MIPS32 architecture.
+> My estimate is between 5-10 instructions. I googled for such a thing
+> but couldn't find any useful papers/resources.
+>
 
-Well it's just 'breaking' old behavior in certain error cases.  I.e. if
-audit fails, or no handler is found for the binary, we never reach
-compute_creds (which is called from within the binary loader), so in 
-the past keep_capabilities would have remained 1 until something was
-actually executed.  Now in all likelyhood the process would try to
-exec something else, but if it should happen to decide to setuid()
-instead, with your patch keep_capabilities will have been unexpectedly
-set to 0 during the failed exec attempt.
+Why don't you simply count the number of non-blank non-comment lines
+in the source files that you are building, build the kernel and then
+count the number of instructions in the resulting binary ?
 
--serge
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
