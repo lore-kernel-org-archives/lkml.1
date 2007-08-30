@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbXH3IZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758628AbXH3I15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758284AbXH3IZn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 04:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXH3IZd
+	id S1758628AbXH3I15 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 04:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756034AbXH3I1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 04:25:33 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:35441 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755458AbXH3IZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 04:25:32 -0400
-Date: Thu, 30 Aug 2007 10:26:53 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: netdev@vger.kernel.org
-Cc: Jon Smirl <jonsmirl@gmail.com>,
-       "Valdis\.Kletnieks\@vt\.edu" <Valdis.Kletnieks@vt.edu>,
-       Christoph Hellwig <hch@infradead.org>, Jiri Slaby <jirislaby@gmail.com>,
-       linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
-Message-ID: <20070830082652.GA2669@ff.dom.local>
-Mime-Version: 1.0
+	Thu, 30 Aug 2007 04:27:50 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41026 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755906AbXH3I1u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 04:27:50 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Daniel Drake <ddrake@brontes3d.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: speeding up swapoff
+References: <1188394172.22156.67.camel@localhost>
+	<Pine.LNX.4.64.0708291558480.27467@blonde.wat.veritas.com>
+Date: Thu, 30 Aug 2007 02:27:29 -0600
+In-Reply-To: <Pine.LNX.4.64.0708291558480.27467@blonde.wat.veritas.com> (Hugh
+	Dickins's message of "Wed, 29 Aug 2007 16:36:37 +0100 (BST)")
+Message-ID: <m1d4x52zri.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708292137.48834.mb@bu3sch.de>
-User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29-08-2007 21:37, Michael Buesch wrote:
-> On Wednesday 29 August 2007 21:33:43 Jon Smirl wrote:
->> What if a patch spans both code that is pure GPL and code imported
->> from BSD, how do you license it?
-> 
-> I think it's a valid assumption, if we say that the author
-> of the patch read the license header of a file and agreed with it.
-> So the patch is licensed to whatever the fileheader says. And if
-> there's none, it's licensed with the COPYING terms.
-> If a patch author likes some other license conditions, he must
-> explicitely add them with the patch to the file, saying that this
-> and that part have these and those conditions. Of course they must
-> be compatible with the original license.
-> 
+Hugh Dickins <hugh@veritas.com> writes:
 
-I didn't track this thread from the beginning, so maybe I repeat
-somebody's ideas (probably like above), but IMHO: do we have to be
-so selfish/pedantic? Can't we sometimes 'donate' a little bit to our
-'older' bsd cousins or half-brothers? I think, it could be like this:
+> The speedups I've imagined making, were a need demonstrated, have
+> been more on the lines of batching (dealing with a range of pages
+> in one go) and hashing (using the swapmap's ushort, so often 1 or
+> 2 or 3, to hold an indicator of where to look for its references).
 
-- if our changes are minor and authors of these changes don't mind
-the file could stay BSD licensed only; plus we ask BSD to let it be
-dual licensed (but no big hassle);
+There is one other possibility.  Typically the swap code is using
+compatibility disk I/O functions instead of the best the kernel
+can offer.  I haven't looked recently but it might be worth just
+making certain that there isn't some low-level optimization or
+cleanup possible on that path.  Although I may just be thinking
+of swapfiles.
 
-- otherwise, we should always distinctly mark all GPL parts.
+I know there were tremendous gains ago when I removed the functions
+that wrote pages synchronously to swapfiles.
 
-Regards,
-Jarek P.
-
-PS: there is probably some mess with gmail addresses in this thread.
+Eric
