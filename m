@@ -1,42 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbXH3LR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbXH3LZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759552AbXH3LR5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 07:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755670AbXH3LRt
+	id S1757457AbXH3LZI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 07:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbXH3LY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 07:17:49 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:60032 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755560AbXH3LRs (ORCPT
+	Thu, 30 Aug 2007 07:24:56 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42127 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750958AbXH3LYz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 07:17:48 -0400
-Date: Thu, 30 Aug 2007 05:17:47 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: andre@finow14.de
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rmk@arm.linux.org.uk
-Subject: Re: [KJ][patch 3/3] VIDC20: use abs() from kernel.h instead of own definition
-Message-ID: <20070830111746.GS14130@parisc-linux.org>
-References: <20070830102551.131398783@finow14.de> <20070830104038.GD14925@ahaupt-debian-vm.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 30 Aug 2007 07:24:55 -0400
+Message-Id: <1188473093.28603.1208050067@webmail.messagingengine.com>
+X-Sasl-Enc: ctJ7V1Qd5KGB6hsJpy1eR3bIL6oMPOZR2uUo566EEXU1 1188473093
+From: "Harsha" <hlforums@fmguy.com>
+To: linux-kernel@vger.kernel.org
 Content-Disposition: inline
-In-Reply-To: <20070830104038.GD14925@ahaupt-debian-vm.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: ethernet driver: hard_start_xmit
+Date: Thu, 30 Aug 2007 04:24:53 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 30, 2007 at 12:40:38PM +0200, andre@finow14.de wrote:
-> -		diff_int = my_abs(rate_ext-rate);
-> -		diff_ext = my_abs(rate_int-rate);
-> +		diff_int = abs(rate_ext-rate);
-> +		diff_ext = abs(rate_int-rate);
+Hi,
 
-Nothing to do with the patch, but is this really correct?  Surely it
-should be diff_ext = abs(rate_ext-rate) ?
+I have written a network device driver (Linux kernel: 2.6.20.1) on ARM
+based target board.
+I have implemented ether_tx, which is called whenever hard_start_xmit is
+called.
+
+--------------------------------------
+[ PINGing from BOARD TO OTHER HOST ]
+
+The network driver is working.  I am able to ping to other hosts and i
+am able to get the reply without any problem
+
+Q1.  For large packet size say (2048, 4096) after sometime ping exits
+saying "sendto: buffer space unavailable"
+
+---------------------------------------
+[ PINGing from other HOST to BOARD ]
+
+ping works but only for some time.  It stops working by saying "Request
+timed out" after some successful pinging.
+The number of times ping succeeds depend on the packet size
+
+Packet size = 64, ping stops working exactly after 449 times
+Packet size = 4096, ping stops working exactly after 28 times.
+
+I did some digging and found that when ping stops working, ether_tx(or
+hard_start_xmit) is not called at all.  Though the packets are recieved
+correctly by ether_rx.  After ping stops, any more ping of any packet
+size does not work. Also i found that at this stage if i ping from board
+to host it works.
+
+Q2.  What might be the reason for ping to stop?
+
+Regards
+harsha
+
+
+
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+  Harsha
+  hlforums@fmguy.com
+
+-- 
+http://www.fastmail.fm - Accessible with your email software
+                          or over the web
+
