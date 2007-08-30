@@ -1,53 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763115AbXH3V5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763165AbXH3V7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763115AbXH3V5A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 17:57:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757393AbXH3V4w
+	id S1763165AbXH3V7X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 17:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761243AbXH3V7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 17:56:52 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:9786 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbXH3V4v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 17:56:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XndawJRqV+C0rHkxA/LAXtLGPcbhDRCEHxzScb9BQDblX+hxplios5ojHSndKYvuM3XcAfpC6pQPrkQmRqr4XnVUXmKl1dwMB+8lz3Ucggh2ShbIy2UzT7+2K7xQy/feB8WwNzAGUGVOo86cHHfBZmjG8vEyiIAfgiX3ahtJ5vk=
-Message-ID: <dda83e780708301456y72bc4080qc994f4797a5fefd1@mail.gmail.com>
-Date: Thu, 30 Aug 2007 14:56:50 -0700
-From: "Bret Towe" <magnade@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: linux-2.6.23-rc4 ppc build failure
-In-Reply-To: <dda83e780708290941g1685879bned63a77d6b0fd242@mail.gmail.com>
+	Thu, 30 Aug 2007 17:59:15 -0400
+Received: from styx.suse.cz ([82.119.242.94]:43345 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760953AbXH3V7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 17:59:15 -0400
+Date: Fri, 31 Aug 2007 00:18:25 +0200
+From: Jan Kara <jack@suse.cz>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.osdl.org
+Subject: Re: [PATCH] Send quota messages via netlink
+Message-ID: <20070830221825.GB21298@duck.suse.cz>
+References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org> <20070829122647.GB7814@duck.suse.cz> <m1mywa42g7.fsf@ebiederm.dsl.xmission.com> <20070829192653.GD7814@duck.suse.cz> <m1wsve2gpo.fsf@ebiederm.dsl.xmission.com> <20070830092548.GB16336@duck.suse.cz> <20070830191010.GA23464@vino.hallyn.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <dda83e780708290941g1685879bned63a77d6b0fd242@mail.gmail.com>
+In-Reply-To: <20070830191010.GA23464@vino.hallyn.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/29/07, Bret Towe <magnade@gmail.com> wrote:
-> while trying to build a fresh kernel for my mini after upgrading from gutsy
-> (and forgetting to save my .config) I hit the below build error
-> 2.6.23-rc3 I did work under feisty but that is with a different .config
-> so not sure if that makes any difference or not
-> I've not bisected cause it takes so long on this computer...
-> attached is the config I'm working off now
->
-> arch/powerpc/platforms/built-in.o: In function `pmac_probe':
-> setup.c:(.init.text+0xbba): undefined reference to `pmac_ide_get_base'
-> setup.c:(.init.text+0xbbe): undefined reference to `pmac_ide_init_hwif_ports'
-> setup.c:(.init.text+0xbc6): undefined reference to `pmac_ide_get_base'
-> setup.c:(.init.text+0xbca): undefined reference to `pmac_ide_init_hwif_ports'
-> make[1]: *** [.tmp_vmlinux1] Error 1
-> make[1]: Leaving directory `/usr/src/linux-2.6'
->
->
+On Thu 30-08-07 14:10:10, Serge E. Hallyn wrote:
+> Quoting Jan Kara (jack@suse.cz):
+> > On Wed 29-08-07 15:06:43, Eric W. Biederman wrote:
+> > > Jan Kara <jack@suse.cz> writes:
+> > > >> However I'm still confused about the use of current->user.  If that
+> > > >> is what we really want and not the user who's quota will be charged
+> > > >> it gets to be a really trick business, because potentially the uid
+> > > >> we want to deliver varies depending on who opened the netlink socket.
+> > > >   I see it's a complicated matter :). What I need to somehow pass to
+> > > > userspace is something (and I don't really care whether it will be number,
+> > > > string or whatever) that userspace can read and e.g. find a terminal
+> > > > window or desktop the affected user has open and also translate the
+> > > > identity to some user-understandable name (average user Joe has to
+> > > > understand that he should quickly cleanup his home directory ;).
+> > > >   Thinking more about it, we could probably pass a string to userspace in
+> > > > the format:
+> > > >   <namespace type>:<user identification>
+> > > >
+> > > > So for example we can have something like:
+> > > >   unix:1000 (traditional unix UIDs)
+> > > >   nfs4:joe@machine
+> > > >
+> > > > The problem is: Are we able to find out in which "namespace type" we are
+> > > > and send enough identifying information from a context of unpriviledged
+> > > > user?
+> > > 
+> > > Ok.  This provides enough context to understand what you are trying to do.
+> > > You do want the unix user id, not the filesystem notion.  Because you
+> > > are looking for the user.
+> > > 
+> > > So we have to figure out how to do the hard thing which is look at
+> > > who opened our netlink broadcast see if they are in the same user
+> > > namespace as current->user.  Which is a pain and we don't currently
+> > > have the infrastructure for.
+> >   There can be arbitrary number of listeners (potentially from different
+> > namespaces if I understand it correctly) listening to broadcasts. So I
+> 
+> Currently that is true, but i think isolating netlink sockets is going
+> to have to be done pretty soon.
+> 
+> On the one hand cloning a new netlink socket ns when you unshare
+> CLONE_NEWNET may seem 'obvious', but I think doing so when you unshare
+> CLONE_NEWUSER make much more sense considering netlink's use for audit
+> and now for quota.
+> 
+> > think we should pass some universal identifier rather than try to find out
+> 
+> Even with isolating netlink we still may want to send out an identifier.
+> However, just as with mounts extensions we're printing out the memory
+> address of vfsmounts, we might just want to print out the memory address
+> of the userns.  It's not universal, but should be good enough.
+  Maybe before proceeding further with the discussion I'd like to
+understand following: What are these user namespaces supposed to be good
+for?
+  I imagine it so that you have a machine and on it several virtual
+machines which are sharing a filesystem (or it could be a cluster). Now you
+want UIDs to be independent between these virtual machines. That's it,
+right?
+  Now to continue the example: Alice has UID 100 on machineA, Bob has
+ UID 100 on machineB. These translate to UIDs 1000 and 1001 on the common
+filesystem. Process of Alice writes to a file and Bob becomes to be over
+quota. In this situation, there would be probably two processes (from
+machineA and machineB) listening on the netlink socket. We want to send a
+message so that on Alice's desktop we can show a message: "You caused
+Bob to exceed his quotas" and of Bob's desktop: "Alice has caused that you
+are over quota.".
+  Because there may be is not a notion of Bob on machineA or of Alice on
+machineB, we are in trouble, right? What I like the most is to use the
+filesystem identities (as you suggested in some other email). I. e. because
+both Alice and Bob share a filesystem, identities of both have to make sense
+to it (for example for purposes of permission checking). So we can probably
+send via netlink these (in our example ids 1000 and 1001) and hope that
+inside machineA and machineB there will be a way to translate these
+identities to names "Alice" and "Bob". So that user can understand what
+is happenning. Does this sound plausible?
+  If we go this route, then we only need a kernel function, that will
+for a pair ($filesystem, $task) return indentity of that $task used
+for operations on $filesystem...
 
-turns out the issue was I didn't have 'Enhanced IDE/MFM/RLL
-disk/cdrom/tape/floppy support' selected (symbol BLK_DEV_IDE) it was
-set as module
-current code requires it to be built in
-guess drivers/ide/Kconfig needs a touch up?
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
