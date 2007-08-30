@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762980AbXH3VlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762906AbXH3Vou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762980AbXH3VlW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 17:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760439AbXH3VlN
+	id S1762906AbXH3Vou (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 17:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbXH3Vom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 17:41:13 -0400
-Received: from mail.gmx.net ([213.165.64.20]:44178 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758131AbXH3VlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 17:41:12 -0400
-X-Authenticated: #12383568
-X-Provags-ID: V01U2FsdGVkX18Afp1GTXAA2omYR3A+EuTHE/ZdazlYMuyWZv5zzC
-	OFxnc5CeEbwJTm
-From: Clemens Kolbitsch <clemens.kol@gmx.at>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Forbid deletion of memory mappings
-Date: Thu, 30 Aug 2007 23:41:09 +0200
-User-Agent: KMail/1.9.6
-References: <200708301844.10532.clemens.kol@gmx.at> <200708302332.42744.clemens.kol@gmx.at> <Pine.LNX.4.64.0708302333320.2460@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0708302333320.2460@twin.jikos.cz>
+	Thu, 30 Aug 2007 17:44:42 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:57907 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754269AbXH3Vol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 17:44:41 -0400
+Date: Thu, 30 Aug 2007 17:44:31 -0400
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: NFS4 authentification / fsuid
+Message-ID: <20070830214431.GF10808@fieldses.org>
+References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr> <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr> <1188486240.6755.51.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708302341.09459.clemens.kol@gmx.at>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+In-Reply-To: <1188486240.6755.51.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 August 2007 23:34:52 you wrote:
-> On Thu, 30 Aug 2007, Clemens Kolbitsch wrote:
-> > is there no way to tell the kernel, that a certain mapping must not be
-> > removed, no matter what (except of course an explicit call to sys_unmap,
-> > of course)?
->
-> I don't seem to get what is the issue here. Your mapping is not removed,
-> only the VMAs are merged together into one larger VMA if they have
-> neighbouring address ranges and compatible protection bits. See
-> vma_merge().
+On Thu, Aug 30, 2007 at 11:04:00AM -0400, Trond Myklebust wrote:
+> With CIFS or other password based protocols (including RPCSEC_GSS)
 
-the thing is that they are not. the kernel chooses to REPLACE my mapping.
+Well, rpcsec_gss isn't inherently password based, and you can
+authenticate in some way that doesn't actually give away your password
+(or other long-lived credential).
 
-consider the user-space code:
+> What I'm saying is that the superuser can pretty much do whatever it
+> takes to grab either your kerberos password (e.g. install a keyboard
+> listener), a stored credential (read the contents of your kerberos
+> on-disk credential cache), or s/he can access the cached contents of the
+> file by hunting through /dev/kmem.
+> 
+> IOW: There is no such thing as security on a root-compromised machine.
 
-mmap(0xaaaa0000, 0x3000, MAP_FIXED, ...);
-mmap(0xaaaa1000, 0x4000, MAP_FIXED, ...);
+And in theory a kernel could provide *some* guarantees against root,
+right?  (Is there some reason a unix-like kernel must provide such
+things as /dev/kmem?)
 
-here, the second call to mmap will shorten the first mapping to 0x1000 bytes 
-and create one big vma with size 0x5000 bytes.
-
-is there a way to tell it that the second mmap MUST fail?
-
-
+--b.
