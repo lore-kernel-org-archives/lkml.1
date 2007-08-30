@@ -1,70 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762299AbXH3Uz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761483AbXH3VGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762299AbXH3Uz7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 16:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756087AbXH3Uzv
+	id S1761483AbXH3VGs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 17:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbXH3VGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 16:55:51 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:35150 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752982AbXH3Uzu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 16:55:50 -0400
-Date: Thu, 30 Aug 2007 22:55:49 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Satyam Sharma <satyam@infradead.org>
-cc: Alexey Dobriyan <adobriyan@gmail.com>, Joe Perches <joe@perches.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] trivial - constify sched.h
-In-Reply-To: <alpine.LFD.0.999.0708310121121.28360@enigma.security.iitk.ac.in>
-Message-ID: <Pine.LNX.4.64.0708302247070.10266@fbirervta.pbzchgretzou.qr>
-References: <1188247231.18004.129.camel@localhost> <20070827213323.GA1759@martell.zuzino.mipt.ru>
- <Pine.LNX.4.64.0708302120290.24730@fbirervta.pbzchgretzou.qr>
- <alpine.LFD.0.999.0708310121121.28360@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 30 Aug 2007 17:06:39 -0400
+Received: from madara.hpl.hp.com ([192.6.19.124]:64892 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756642AbXH3VGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 17:06:35 -0400
+Date: Thu, 30 Aug 2007 14:05:55 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: B.Steinbrink@gmx.de, ak@suse.de, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: nmi_watchdog=2 regression in 2.6.21
+Message-ID: <20070830210555.GA6635@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070827225555.GI784@frankl.hpl.hp.com> <1188256074.2435.272.camel@dhcp193.mvista.com> <20070828091217.GA1645@frankl.hpl.hp.com> <1188311684.2435.288.camel@dhcp193.mvista.com> <20070828170556.GI1645@frankl.hpl.hp.com> <1188325835.2435.317.camel@dhcp193.mvista.com> <20070828194636.GB2814@frankl.hpl.hp.com> <1188332024.2435.328.camel@dhcp193.mvista.com> <20070829212451.GC4810@frankl.hpl.hp.com> <1188436919.26038.27.camel@dhcp193.mvista.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="EeQfGwPcQSOJBaQU"
+Content-Disposition: inline
+In-Reply-To: <1188436919.26038.27.camel@dhcp193.mvista.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Aug 31 2007 02:11, Satyam Sharma wrote:
->> So that you can actually pass in a const struct task_struct * without having
->> to cast it back to [non-const].
->
->... which makes zero sense, because ...
->
->> Why one would have a const struct task_struct * in the first place
->> is a different matter.
->
->... exactly.
->
->> But see http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=77adbfbf4cf96fedf9b75bb330704828c187b190
->
->That commit const-ified struct timespec * or struct timeval * arguments,
->which made sense because: (1) those functions really did not modify the
->passed structs, and, (2) callers that pass in const struct timeval *
->or const struct timespec * are indeed plausible (because one can plausibly
->have const timeval/timespec structs). As the changelog suggested, those
->callers
->
->were having to cast away the const qualifier before passing to
->these functions to avoid seeing "passing argument discards qualifiers"
->warnings. While (1) holds true for the sched.h case here, (2) does not
->(and there are no warnings to shut up either).
+--EeQfGwPcQSOJBaQU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-"those callers". There was _exactly one_ caller, and that was an out-of-tree
-module. There were not any in-kernel callers before, and it did not generate
-any warning. That is perhaps why no one had constified it before me. This does
-not mean we should wait for a caller to pop up before constifying IMHO.
+Daniel,
 
->If one really wants to go about "constifying" the kernel, then I think
->there's a lot of _data_ out there that should first be made const-
->qualified. xxx_ops function tables, and the like.
+On Wed, Aug 29, 2007 at 06:21:59PM -0700, Daniel Walker wrote:
+> On Wed, 2007-08-29 at 14:24 -0700, Stephane Eranian wrote:
+> 
+> 
+> > Now on Core Duo, there is no PEBS anyway, so it is okay to use counter 0
+> > for NMI. The problem is that the detection code in perfctr-watchdog.c
+> > treats a Core Duo and a Core 2 Duo the same way as they both have the
+> > X86_FEATURE_ARCH_PERFMON bit set.
+> > 
+> > I have attached a patch with handle the case of the Core Duo. Unfortunately,
+> > I do not own one so I cannot test it. I would appreciate if you could
+> > try re-applying my counter 0 -> 1 patch + this new one to see if you
+> > have the problem with the NMI getting stuck.
+> 
+> I tested your patch .. The system doesn't hang, but the NMI seems to
+> disappear .. The check_nmi_watchdog() is not called, and the NMI never
+> actually starts firing .. Is that what you had intended?
+> 
+Yes, I realized I missed a small detail in the switch statement.
+Could you try the new version?
 
-I think it is equally 'necessary'.
+Thanks.
 
-
-
-	Jan
 -- 
+-Stephane
+
+--EeQfGwPcQSOJBaQU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="coreduo.diff"
+
+diff --git a/arch/i386/kernel/cpu/perfctr-watchdog.c b/arch/i386/kernel/cpu/perfctr-watchdog.c
+index 9b5d6af..3a945f0 100644
+--- a/arch/i386/kernel/cpu/perfctr-watchdog.c
++++ b/arch/i386/kernel/cpu/perfctr-watchdog.c
+@@ -613,6 +613,17 @@ static struct wd_ops intel_arch_wd_ops = {
+ 	.evntsel = MSR_ARCH_PERFMON_EVENTSEL1,
+ };
+ 
++/*
++ * Check for Intel Core Duo because it has a bug with PERFEVTSEL1
++ * (see Spefication Update bug AE49) and must use PERFEVTSEL0. We cannot
++ * use this counter on other processors supporting X86_FEATURE_ARCH_PERFMON
++ * because PEBS requires it.
++ */
++static inline int is_coreduo(void)
++{
++	return boot_cpu_data.x86 == 6 && boot_cpu_data.x86_model == 14;
++}
++
+ static void probe_nmi_watchdog(void)
+ {
+ 	switch (boot_cpu_data.x86_vendor) {
+@@ -623,13 +634,14 @@ static void probe_nmi_watchdog(void)
+ 		wd_ops = &k7_wd_ops;
+ 		break;
+ 	case X86_VENDOR_INTEL:
+-		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)) {
++		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)
++		    && !is_coreduo()) {
+ 			wd_ops = &intel_arch_wd_ops;
+ 			break;
+ 		}
+ 		switch (boot_cpu_data.x86) {
+ 		case 6:
+-			if (boot_cpu_data.x86_model > 0xd)
++			if (boot_cpu_data.x86_model > 0xe)
+ 				return;
+ 
+ 			wd_ops = &p6_wd_ops;
+
+--EeQfGwPcQSOJBaQU--
