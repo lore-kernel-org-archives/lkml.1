@@ -1,185 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbXH3J5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760400AbXH3J5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760095AbXH3J5S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 05:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXH3J5B
+	id S1760400AbXH3J5e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 05:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759960AbXH3J5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 05:57:01 -0400
-Received: from smtp-0-2.linuxrulz.org ([66.197.170.246]:50353 "EHLO
-	smtp-0-2.linuxrulz.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759838AbXH3J47 (ORCPT
+	Thu, 30 Aug 2007 05:57:06 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50676 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759897AbXH3J5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 05:56:59 -0400
-X-Greylist: delayed 1934 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 05:56:59 EDT
-Message-ID: <46D68CC2.3030206@lbsd.net>
-Date: Thu, 30 Aug 2007 09:24:18 +0000
-From: Nigel Kukard <nkukard@lbsd.net>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070727)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: SATA problems
-References: <4671366B.7090702@lbsd.net> <46716B1D.1070902@garzik.org> <20070614182854.GC1223@redhat.com> <20070618200703.GB13344@redhat.com> <46776223.3050402@lbsd.net>
-In-Reply-To: <46776223.3050402@lbsd.net>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=27702C4E;
-	url=pgpkeys.mit.edu
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigAA5719806CF6555309CD603D"
+	Thu, 30 Aug 2007 05:57:04 -0400
+Subject: Re: [PATCH 2.6.21] Return available first timeslice to the
+	creator, not parent
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Pavel Emelianov <xemul@openvz.org>
+In-Reply-To: <20070830094931.GB316@tv-sign.ru>
+References: <m3fy21qx4p.fsf@dhcp-lab-143.englab.brq.redhat.com>
+	 <1188465056.6112.30.camel@twins>  <20070830094931.GB316@tv-sign.ru>
+Content-Type: text/plain
+Date: Thu, 30 Aug 2007 11:56:56 +0200
+Message-Id: <1188467816.6112.36.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigAA5719806CF6555309CD603D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2007-08-30 at 13:49 +0400, Oleg Nesterov wrote:
+> On 08/30, Peter Zijlstra wrote:
+> >
+> > On Thu, 2007-08-30 at 09:50 +0200, Vitaly Mayatskikh wrote:
+> > > Short-living process returns its timeslice to the parent, this affects
+> > > process that creates a lot of such short-living threads, because its
+> > > not a parent for new threads. Patch fixes this issue and doesn't break
+> > > kabi as does the patch from reporter: http://lkml.org/lkml/2007/4/7/21
+> > 
+> > > plain text document attachment (2.6.21-timeslice.patch), "proposed
+> > > patch"
+> > > diff -up -bB ./include/linux/sched.h.orig ./include/linux/sched.h
+> > > --- ./include/linux/sched.h.orig	2007-08-21 09:20:22.000000000 +0200
+> > > +++ ./include/linux/sched.h	2007-08-27 10:14:06.000000000 +0200
+> > > @@ -827,7 +827,9 @@ struct task_struct {
+> > >  
+> > >  	unsigned long policy;
+> > >  	cpumask_t cpus_allowed;
+> > > -	unsigned int time_slice, first_time_slice;
+> > > +	unsigned int time_slice;
+> > > +	/* Pid of creator */
+> > > +	unsigned int cpid;
+> > 
+> > might as well make that pid_t, or maybe even a struct pid* and keep a
+> > reference on it - the struct pid police might have an opinion.
+> 
+> I agree, "struct pid*" is better, because
+> 
+> 	1. we don't need a costly find_pid() in sched_exit()
+> 	2. we don't suffer from pid re-use problem
 
-Hrmmm,
+Ah, good arguments indeed.
 
->>  >=20
->>  >  > > Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on=
- port
->>  >  > > 0x0001c807
->>  >  > > Jun 14 07:55:52 nigel-m2v kernel: ATA: abnormal status 0x7F on=
- port
->>  >  > > 0x0001c807
->>  >=20
->>  > Unrelated to the other error, but I've been meaning to ask for a wh=
-ile..
->>  > If this is 'abnormal', why does every SATA box I've seen do it?
->>
->> *crickets*
->>
->> Should we check for this case explicitly, and not print this?
->>
->>  =20
->>    =20
-> After I get the above errors, my entire SATA bus crashes and I need to
-> hard reset the box ... not sure we can just ignore the errors?
->
->  =20
+> > >  void fastcall sched_exit(struct task_struct *p)
+> > >  {
+> > >  	unsigned long flags;
+> > >  	struct rq *rq;
+> > > -
+> > > +	struct task_struct* creator = NULL;
+> > >  	/*
+> > >  	 * If the child was a (relative-) CPU hog then decrease
+> > > -	 * the sleep_avg of the parent as well.
+> > > +	 * the sleep_avg of the creator as well.
+> > >  	 */
+> > > -	rq = task_rq_lock(p->parent, &flags);
+> > > -	if (p->first_time_slice && task_cpu(p) == task_cpu(p->parent)) {
+> > > -		p->parent->time_slice += p->time_slice;
+> > > -		if (unlikely(p->parent->time_slice > task_timeslice(p)))
+> > > -			p->parent->time_slice = task_timeslice(p);
+> > > +	if (p->cpid) {
+> > > +		struct pid *pid = find_get_pid((pid_t)p->cpid);
+> > > +		if (pid) {
+> > > +			creator = get_pid_task(pid, PIDTYPE_PID);
+> > > +			put_pid(pid);
+> 
+> sched_exit() was removed in 2.6.23-rc.
+> 
+> If you are going to re-introduce this logic, please don't do sched_exit()
+> from release_task(). It was done this way just because we can't access
+> ->parent after release_task(). But release_task() is called either too
+> early, or too late for timeslice accounting, depending on ->exit_signal == -1.
+> 
+> I'd suggest to do this in do_exit(), before the last schedule(). Without
+> write_unlock_irq() the code above needs a couple of rcu_read_lock()'s.
+> 
+> I am not sure Ingo will like this change though...
 
-Appears even with the patch provided a few months ago I'm getting
-freezes. Replaced the HDD & all cables, same errors ... especially
-whilst doing heavy IO.
+This is not intended as re-introduction of the feature, this stems from
+fixing this issue in older (read distro) kernels.
 
-Can anyone shed some light?
-
-
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd c8/00:00:9f:c9:cb/00:00:00:00:00/e1 tag 0 cdb 0x0 data
-131072 in
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata2: soft resetting port
-ATA: abnormal status 0x7F on port 0x0001c807
-ATA: abnormal status 0x7F on port 0x0001c807
-ata2.00: configured for UDMA/133
-ata2: EH complete
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd c8/00:00:9f:c9:cb/00:00:00:00:00/e1 tag 0 cdb 0x0 data
-131072 in
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata2: soft resetting port
-ATA: abnormal status 0x7F on port 0x0001c807
-ATA: abnormal status 0x7F on port 0x0001c807
-ata2.00: configured for UDMA/133
-ata2: EH complete
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd c8/00:00:9f:c9:cb/00:00:00:00:00/e1 tag 0 cdb 0x0 data
-131072 in
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata2: soft resetting port
-ATA: abnormal status 0x7F on port 0x0001c807
-ATA: abnormal status 0x7F on port 0x0001c807
-ata2.00: configured for UDMA/133
-ata2: EH complete
-ata2.00: limiting speed to UDMA/100:PIO4
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd c8/00:00:9f:c9:cb/00:00:00:00:00/e1 tag 0 cdb 0x0 data
-131072 in
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata2: soft resetting port
-ATA: abnormal status 0x7F on port 0x0001c807
-ATA: abnormal status 0x7F on port 0x0001c807
-ata2.00: configured for UDMA/100
-ata2: EH complete
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd c8/00:00:9f:c9:cb/00:00:00:00:00/e1 tag 0 cdb 0x0 data
-131072 in
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata2: soft resetting port
-ATA: abnormal status 0x7F on port 0x0001c807
-ATA: abnormal status 0x7F on port 0x0001c807
-ata2.00: configured for UDMA/100
-ata2: EH complete
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd c8/00:00:9f:c9:cb/00:00:00:00:00/e1 tag 0 cdb 0x0 data
-131072 in
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata2: soft resetting port
-ATA: abnormal status 0x7F on port 0x0001c807
-ATA: abnormal status 0x7F on port 0x0001c807
-ata2.00: configured for UDMA/100
-sd 3:0:0:0: SCSI error: return code =3D 0x08000002
-sda: Current [descriptor]: sense key=3D0xb
-    ASC=3D0x0 ASCQ=3D0x0
-Descriptor sense data with sense descriptors (in hex):
-        72 0b 00 00 00 00 00 0c 00 0a 80 00 00 00 00 00
-        00 00 00 00
-end_request: I/O error, dev sda, sector 30132639
-ata2: EH complete
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd c8/00:00:9f:ca:cb/00:00:00:00:00/e1 tag 0 cdb 0x0 data
-131072 in
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata2: soft resetting port
-ATA: abnormal status 0x7F on port 0x0001c807
-ATA: abnormal status 0x7F on port 0x0001c807
-ata2.00: configured for UDMA/100
-ata2: EH complete
-ata2.00: limiting speed to UDMA/33:PIO4
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd c8/00:00:9f:ca:cb/00:00:00:00:00/e1 tag 0 cdb 0x0 data
-131072 in
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata2: soft resetting port
-ATA: abnormal status 0x7F on port 0x0001c807
-ATA: abnormal status 0x7F on port 0x0001c807
-ata2.00: configured for UDMA/33
-ata2: EH complete
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd c8/00:00:9f:ca:cb/00:00:00:00:00/e1 tag 0 cdb 0x0 data
-131072 in
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata2: soft resetting port
-ATA: abnormal status 0x7F on port 0x0001c807
-ATA: abnormal status 0x7F on port 0x0001c807
-ata2.00: configured for UDMA/33
-ata2: EH complete
-ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-ata2.00: cmd c8/00:00:9f:ca:cb/00:00:00:00:00/e1 tag 0 cdb 0x0 data
-131072 in
-         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata2: soft resetting port
-ATA: abnormal status 0x7F on port 0x0001c807
-ATA: abnormal status 0x7F on port 0x0001c807
-ata2.00: configured for UDMA/33
-ata2: EH complete
-
-
-
---------------enigAA5719806CF6555309CD603D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFG1ozCKoUGSidwLE4RAliCAJkBTDag2fxG9JsMIsHx2sZsb7ZcnACfam1I
-Iln1kIVevBQZ5EW9vwZZ7HA=
-=lVvu
------END PGP SIGNATURE-----
-
---------------enigAA5719806CF6555309CD603D--
