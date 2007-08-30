@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761431AbXH3O0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760611AbXH3O31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761431AbXH3O0c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 10:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756957AbXH3O0X
+	id S1760611AbXH3O31 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 10:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbXH3O3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 10:26:23 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:7197 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756726AbXH3O0W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 10:26:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ON4Xtdl8giQjzaPsb/X3T/Rvl2cgOtrjlLadF/8dOW7cBrVKIzrR936WqXH2TUVU58vyrxQH82JSB0FD8riQIu1SYEkyuijXHfQR+0zCIlQCMuydPHX1y/AsuAIdtiXKl4CXKT8vAndO/6KsYV5Xm+e4oIv2zQO1L9oKKj+2Qx8=
-Message-ID: <8bd0f97a0708300726h563808a6j2b2ef9adf805c109@mail.gmail.com>
-Date: Thu, 30 Aug 2007 10:26:22 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: [PATCH] i386 and x86_64: randomize brk()
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708301620010.4135@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 30 Aug 2007 10:29:19 -0400
+Received: from pat.uio.no ([129.240.10.15]:54882 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756461AbXH3O3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 10:29:18 -0400
+Subject: Re: NFS4 authentification / fsuid
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain
+Date: Thu, 30 Aug 2007 10:29:15 -0400
+Message-Id: <1188484155.6755.38.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0708301545100.4135@jikos.suse.cz>
-	 <8bd0f97a0708300701r1f36bc0anc45b9cad4a11f2ef@mail.gmail.com>
-	 <Pine.LNX.4.64.0708301620010.4135@jikos.suse.cz>
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.093)
+X-UiO-Scanned: 3C9D530EFF8EB52FA153EB616EA2B664A19C1D8D
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 704 total 3566749 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/30/07, Jiri Kosina <jkosina@suse.cz> wrote:
-> On Thu, 30 Aug 2007, Mike Frysinger wrote:
-> > does it really make sense to stick stubs into no-mmu ports which cannot
-> > utilize the ELF binfmt ?
->
-> Good point, thanks. I have removed the stubs for h8300 and m68knommu.
+On Thu, 2007-08-30 at 16:12 +0200, Jan Engelhardt wrote:
+> Hi,
+> 
+> 
+> with NFS3, there is this 'root hole', i.e. any person who has a root 
+> account (perhaps by use of a laptop) can mount an export (let's say this 
+> export had the "root_squash" option), and still have a look at the user 
+> files, because he can locally setuid() into another user.
+> 
+> So I was looking for alternatives. CIFS is my favorite candidate, but it 
+> has a few issues right now. So does sshfs and about everything I have 
+> come across. Since I remember NFS4 can use KRB5 authentification, my 
+> question is, will the NFS(4) server process run with an fsuid equal to 
+> the user that authenticated?
+> 
+> 
+> thanks,
+> 	Jan
 
-Blackfin too please :)
+NFSv3 should work fine with krb5 too, but that won't solve your problem
+with setuid: kerberos saves the TGT in a file on /tmp, so root can still
+suid and grab your cred (and the same goes for CIFS).
 
-i think v850 also falls into this category, but i'm not terribly
-familiar with it ...
--mike
+We've got people working on fixing this problem using David Howells'
+keyrings, but it will probably be a while until we've solved all the
+upcall issues, and it will probably take even longer to push the
+kerberos changes back to the official MIT etc distros.
+
+Cheers
+  Trond
+
