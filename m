@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763451AbXH3Wox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763968AbXH3Wpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763451AbXH3Wox (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763468AbXH3WoO
+	id S1763968AbXH3Wpe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763214AbXH3Wos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:44:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52216 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763408AbXH3WoM (ORCPT
+	Thu, 30 Aug 2007 18:44:48 -0400
+Received: from mga02.intel.com ([134.134.136.20]:30111 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763373AbXH3Woq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:44:12 -0400
-Date: Fri, 31 Aug 2007 04:27:13 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Jesper Juhl <jesper.juhl@gmail.com>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Vojtech Pavlik <vojtech@ucw.cz>,
-       Johann Deneux <johann.deneux@gmail.com>, dtor@mail.ru,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH] input: Silence 'unused variable' warning in iforce
- joystick driver
-In-Reply-To: <200708310013.12347.jesper.juhl@gmail.com>
-Message-ID: <alpine.LFD.0.999.0708310422200.31519@enigma.security.iitk.ac.in>
-References: <200708310013.12347.jesper.juhl@gmail.com>
+	Thu, 30 Aug 2007 18:44:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,327,1183359600"; 
+   d="scan'208";a="286229819"
+From: Jason Gaston <jason.d.gaston@intel.com>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, khali@linux-fr.org,
+       i2c@lm-sensors.nu, jason.d.gaston@intel.com
+Subject: [PATCH 2.6.23-rc4] irq: irq and pci_ids patch for Intel Tolapai
+Date: Thu, 30 Aug 2007 15:46:56 -0700
+User-Agent: KMail/1.9.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200708301546.56998.jason.d.gaston@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This updated patch adds the Intel Tolapai LPC and SMBus Controller DID's.
 
+Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
 
-On Fri, 31 Aug 2007, Jesper Juhl wrote:
-
-> In the iforce driver we currently get this warning
-> 
->  drivers/input/joystick/iforce/iforce-packets.c: In function 'iforce_get_id_packet':
->  drivers/input/joystick/iforce/iforce-packets.c:249: warning: unused variable 'status'
-> 
-> if CONFIG_JOYSTICK_IFORCE_USB is not defined.
-> 
-> The warning is easy to avoid by simply moving the variable inside 
-> the only case in the switch that actually use it.
-> 
-> 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> ---
-> 
-> diff --git a/drivers/input/joystick/iforce/iforce-packets.c b/drivers/input/joystick/iforce/iforce-packets.c
-> index 3154ccd..48d4a86 100644
-> --- a/drivers/input/joystick/iforce/iforce-packets.c
-> +++ b/drivers/input/joystick/iforce/iforce-packets.c
-> @@ -246,13 +246,12 @@ void iforce_process_packet(struct iforce *iforce, u16 cmd, unsigned char *data)
->  
->  int iforce_get_id_packet(struct iforce *iforce, char *packet)
->  {
-> -	int status;
-> -
->  	switch (iforce->bus) {
->  
->  	case IFORCE_USB:
-> -
->  #ifdef CONFIG_JOYSTICK_IFORCE_USB
-> +		int status;
-> +
->  		iforce->cr.bRequest = packet[0];
->  		iforce->ctrl->dev = iforce->usbdev;
-
-Hmm, would this not still give a warning when JOYSTICK_IFORCE_USB=y?
-[ I didn't know mixing code and declarations (not at top of statement
-  block) was accepted style in the kernel ... ]
-
-IMHO either you should at least wrap that case inside a {} of its
-own (so that the int status; is at top of a statement block), or else,
-preferably, just add "__maybe_unused" to the first declaration that you
-removed just now.
-
-
-Satyam
+--- linux-2.6.23-rc4/arch/i386/pci/irq.c.orig	2007-08-27 18:32:35.000000000 
+-0700
++++ linux-2.6.23-rc4/arch/i386/pci/irq.c	2007-08-28 16:58:31.000000000 -0700
+@@ -550,6 +550,7 @@
+ 		case PCI_DEVICE_ID_INTEL_ICH9_3:
+ 		case PCI_DEVICE_ID_INTEL_ICH9_4:
+ 		case PCI_DEVICE_ID_INTEL_ICH9_5:
++		case PCI_DEVICE_ID_INTEL_Tolapai_0:
+ 			r->name = "PIIX/ICH";
+ 			r->get = pirq_piix_get;
+ 			r->set = pirq_piix_set;
+--- linux-2.6.23-rc4/include/linux/pci_ids.h.orig	2007-08-27 
+18:32:35.000000000 -0700
++++ linux-2.6.23-rc4/include/linux/pci_ids.h	2007-08-28 16:58:31.000000000 
+-0700
+@@ -2293,6 +2293,8 @@
+ #define PCI_DEVICE_ID_INTEL_MCH_PC	0x3599
+ #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
+ #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
++#define PCI_DEVICE_ID_INTEL_Tolapai_0	0x5031
++#define PCI_DEVICE_ID_INTEL_Tolapai_1	0x5032
+ #define PCI_DEVICE_ID_INTEL_82371SB_0	0x7000
+ #define PCI_DEVICE_ID_INTEL_82371SB_1	0x7010
+ #define PCI_DEVICE_ID_INTEL_82371SB_2	0x7020
