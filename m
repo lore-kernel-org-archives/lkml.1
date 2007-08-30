@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763350AbXH3W3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763558AbXH3W3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763350AbXH3W3d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762584AbXH3W3Y
+	id S1763558AbXH3W3u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763295AbXH3W3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:29:24 -0400
-Received: from mail.gmx.net ([213.165.64.20]:42683 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1762463AbXH3W3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:29:23 -0400
-X-Authenticated: #12383568
-X-Provags-ID: V01U2FsdGVkX19wHnEKCT1wZoJRguDB0IlTFXHMSpQByR9sM0aikA
-	ilpLL58ov1pY6J
-From: Clemens Kolbitsch <clemens.kol@gmx.at>
-To: linux-kernel@vger.kernel.org
-Subject: Copy large memory regions from & to userspace
-Date: Fri, 31 Aug 2007 00:29:20 +0200
+	Thu, 30 Aug 2007 18:29:32 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:48936
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1763264AbXH3W3b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 18:29:31 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
+Date: Thu, 30 Aug 2007 18:29:28 -0500
 User-Agent: KMail/1.9.6
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       bos@serpentine.com, werner@almesberger.net, hpa@zytor.com
+References: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
+In-Reply-To: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708310029.20734.clemens.kol@gmx.at>
-X-Y-GMX-Trusted: 0
+Message-Id: <200708301829.29016.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-Just a short question: What is the correct method of copying large areas of 
-memory from userspace into userspace when running in kernel-mode?
+On Thursday 30 August 2007 1:20:55 pm Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> initrd/initramfs/ramdisk docs:
+> - fix typos/spellos/grammar
+> - clarify RAM disk config location
+> - correct cpio option
+>
+> Cc: Bryan O'Sullivan <bos@serpentine.com>
+> Cc: Rob Landley <rob@landley.net>
+> Cc: Werner Almesberger <werner@almesberger.net>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-According to just about any type of documentation out there something like
+Acked-by: Rob Landley <rob@landley.net>
 
-unsigned long *from = 0x08000000;
-unsigned long *to = 0x09000000;
-memcpy(to, from, 0x1000);
-
-should be avoided as copy_from_user, put_user, etc. should be used instead...
-
-Is there a third set of functions for direct from-userspace-to-userspace 
-copying or is it legitimate to assure that the first bytes in the from & to 
-memory areas are available and then just do the plain memcpy?
-
-Maybe there is a simple "just use the xxx function-set" answer to that, that i 
-just have not ran into yet :-)
-
-Thanks!
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
