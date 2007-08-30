@@ -1,68 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761430AbXH3A0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760939AbXH3AbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761430AbXH3A0p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 20:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbXH3A0f
+	id S1760939AbXH3AbS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 20:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbXH3AbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 20:26:35 -0400
-Received: from h151.mvista.com ([63.81.120.158]:34289 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1755045AbXH3A0e (ORCPT
+	Wed, 29 Aug 2007 20:31:09 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:35659 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754539AbXH3AbH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 20:26:34 -0400
-Subject: 2.6.23-rc4-dw1
-From: Daniel Walker <dwalker@mvista.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, mingo@redhat.com, linux-rt-users@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 29 Aug 2007 17:17:29 -0700
-Message-Id: <1188433049.26038.15.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Aug 2007 20:31:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=nHJYhuf1z5Px1bvgdvW1C7ugmlmNF2I1dOnFORaAJOE35ma9pjeuTmo4p+83RCWMh9Sf173u8rkFbuwRcZJiSmHQmj+qE6zb/VAFCZ920EY+K0cm5FormVdfuVdpN7yH4OlhEMijNEqUcYqRC08sMgwSOvC9CDHu0MZyxC3I7xI=
+Message-ID: <41840b750708291731w3fb5e673k3c1283e4a2fa82f0@mail.gmail.com>
+Date: Wed, 29 Aug 2007 20:31:04 -0400
+From: "Shem Multinymous" <multinymous@gmail.com>
+To: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
+Subject: Re: [Hdaps-devel] [PATCH 2.6.23-rc2] hwmon: HP Mobile Data Protection System 3D ACPI driver (resend)
+Cc: "Yan Burman" <burman.yan@gmail.com>, hdaps-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, "Pavel Machek" <pavel@ucw.cz>
+In-Reply-To: <20070829233024.GA7433@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_5807_8854363.1188433864989"
+References: <1186831562.6452.10.camel@localhost> <20070825102512.GA5850@ucw.cz>
+	 <46D01420.3070400@gmail.com>
+	 <20070827171107.GA15647@khazad-dum.debian.net>
+	 <46D5A742.8090201@gmail.com>
+	 <20070829233024.GA7433@khazad-dum.debian.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_5807_8854363.1188433864989
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I've updated to 2.6.23-rc4 .. This is an "Ingo appears to be busy.."
-release .. I've been waiting for a -rt update , but there hasn't been
-one for a while. So my tree is the best everyone will get for now.
+On 8/29/07, Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+> On Wed, 29 Aug 2007, Yan Burman wrote:
 
-ftp://source.mvista.com/pub/dwalker/rt/patch-2.6.23-rc4-dw1
-ftp://source.mvista.com/pub/dwalker/rt/patch-2.6.23-rc4-dw1.tar.bz2
+> HDAPS with input device support is quite new.  hdapsd was patched to talk to
+> it, too.  I suppose we should port the input device support to the driver
+> in-tree just so that we get it in tree as well.  Sounds like an useful
+> reason to bother with in-tree hdaps.  Not that it will save much power with
+> the in-tree driver, but at least it will be widely available from there.
 
-The patches follow the release style of Ingo's tree, and his release
-notes also apply to my patch as well.
+In case they'll be of help for such porting, the relevant hdaps
+patches from my tp_smapi patch series are attached.
 
-I included a fresh git-acpi pull. I also included all the patches I've
-submitted to Ingo, and the following patches that got submitting to lkml
-and the linux-rt-users list,
 
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH RT] fix non SMP compile smp stubs
+> > I agree that the sys interface is probably not the best choice, but the
+> > accelerometer data should provide not only position, but also generate
+> > an event when it detects
+> > that it's falling. From what I understood hdaps does not have that info,
+>
+> You can generate events on input devices, but I am not sure that's the best
+> way to go about it for this.  Things that block on read until an interrupt
+> happens might work better.
 
-From: Sven-Thorsten Dietrich <sdietrich@novell.com>
-Subject: [PATCH RT] - Mellanox IB driver patch
+You can do the latter via another (4th) input device.
 
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH RT] Add missing semicolon in percpu_list.h
 
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH RFC -rt] synchronize_sched() without migration
+> I'd suggest an accelerometer sysfs interface, that we implement in hdaps
+> (in and out-of-tree), ams and hpmdp.  One input device for joystick
+> emulation (optional), one input device with accelerometer data in mg or ug,
 
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH RFC -rt] Allow rcutorture to handle synchronize_sched()
+Is any of the accelerometer drivers currently capable of computing the
+physical acceleration? Also, is there an issue of linear vs. angular
+acceleration?
 
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH RT] Only run softirqs from the irq thread if the irq
 
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH RT 2/3] initialize the clock source to jiffies clock.
+> and an optional one with the raw accelerometer data.
 
-Enjoy,
+Before or after axis inversion/swapping? The tp_smapi hdaps driver
+(losslessly) inverts the raw data too, to avoid duplication of
+model-specific orientation logic.
 
-Daniel
 
+> unless someone wants to implement their own free-fall algorithms instead of
+> using whatever is in the firmware).
+
+The term "free-fall" is dangerously misleading, for the reasons
+explained in the IBM APS whitepaper.
+
+  Shem
+
+------=_Part_5807_8854363.1188433864989
+Content-Type: text/x-patch;
+ name="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch"; filename="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch"; filename="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch"; filename="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch"; filename="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch"; filename="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch"; filename="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch"; filename="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch"; filename="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch"; filename="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch";
+ filename="0001-hdaps-Add-ID-fields-to-the-hdaps-joystick-emulation.patch"
+X-Attachment-Id: f_f5yia558
+
+aGRhcHM6IEFkZCBJRCBmaWVsZHMgdG8gdGhlIGhkYXBzIGpveXN0aWNrLWVtdWxhdGlvbiBpbnB1
+dCBkZXZpY2UKCk1pbm9yIEFCSSBicmVhazogdGhlIGlucHV0IGRldiBuYW1lIGNoYW5nZXMgZnJv
+bSAiaGRhcHMiIHRvIGEgbW9yZQptZWFuaW5nZnVsICJUaGlua1BhZCBIREFQUyBqb3lzdGljayBl
+bXVsYXRpb24iLCBmb2xsb3dpbmcKRG9jdW1lbnRhdGlvbi9pbnB1dC9pbnB1dC1wcm9ncmFtbWlu
+Zy50eHQuIFRoZQpidXMvdmVuZG9yL3Byb2R1Y3QvdmVyc2lvbiBoYXZlIGJlZW4gY29vcmRpbmF0
+ZWQgd2l0aCB0aGUgbWFpbnRhaW5lcgpvZiB0aGlua3BhZF9hY3BpICh0aGUgb3RoZXIgdXNlciBv
+ZiB0aGlzIGJ1cy92ZW5kb3IgbmFtZXNwYWNlKS4KClNpZ25lZC1vZmYtYnk6IFNoZW0gTXVsdGlu
+eW1vdXMgPG11bHRpbnltb3VzQGdtYWlsLmNvbT4KLS0tCiBkcml2ZXJzL2h3bW9uL2hkYXBzLmMg
+fCAgIDE3ICsrKysrKysrKysrKysrLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDE0IGluc2VydGlvbnMo
+KyksIDMgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9od21vbi9oZGFwcy5jIGIv
+ZHJpdmVycy9od21vbi9oZGFwcy5jCmluZGV4IGFkOTJjMGEuLjQyM2YzNDggMTAwNjQ0Ci0tLSBh
+L2RyaXZlcnMvaHdtb24vaGRhcHMuYworKysgYi9kcml2ZXJzL2h3bW9uL2hkYXBzLmMKQEAgLTM1
+LDYgKzM1LDcgQEAKICNpbmNsdWRlIDxsaW51eC9kbWkuaD4KICNpbmNsdWRlIDxsaW51eC9qaWZm
+aWVzLmg+CiAjaW5jbHVkZSA8bGludXgvdGhpbmtwYWRfZWMuaD4KKyNpbmNsdWRlIDxsaW51eC9w
+Y2lfaWRzLmg+CiAKIC8qIEVtYmVkZGVkIGNvbnRyb2xsZXIgYWNjZWxlcm9tZXRlciByZWFkIGNv
+bW1hbmQgYW5kIGl0cyByZXN1bHQ6ICovCiBzdGF0aWMgY29uc3Qgc3RydWN0IHRoaW5rcGFkX2Vj
+X3JvdyBlY19hY2NlbF9hcmdzID0KQEAgLTYyLDkgKzYzLDE0IEBAIHN0YXRpYyBjb25zdCBzdHJ1
+Y3QgdGhpbmtwYWRfZWNfcm93IGVjX2FjY2VsX2FyZ3MgPQogI2RlZmluZSBIREFQU19JTlBVVF9G
+TEFUCTQKICNkZWZpbmUgS01BQ1RfUkVNRU1CRVJfUEVSSU9EICAgKEhaLzEwKSAvKiBrZXlib2Fy
+ZC9tb3VzZSBwZXJzaXN0YW5jZSAqLwogCisvKiBJbnB1dCBJRHMgKi8KKyNkZWZpbmUgSERBUFNf
+SU5QVVRfVkVORE9SCVBDSV9WRU5ET1JfSURfSUJNCisjZGVmaW5lIEhEQVBTX0lOUFVUX1BST0RV
+Q1QJMHg1MDU0IC8qICJUUCIsIHNoYXJlZCB3aXRoIHRoaW5rcGFkX2FjcGkgKi8KKyNkZWZpbmUg
+SERBUFNfSU5QVVRfSlNfVkVSU0lPTgkweDY4MDEgLyogSm95c3RpY2sgZW11bGF0aW9uIGlucHV0
+IGRldmljZSAqLworCiBzdGF0aWMgc3RydWN0IHRpbWVyX2xpc3QgaGRhcHNfdGltZXI7CiBzdGF0
+aWMgc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldjsKLXN0YXRpYyBzdHJ1Y3QgaW5wdXRfZGV2
+ICpoZGFwc19pZGV2Oworc3RhdGljIHN0cnVjdCBpbnB1dF9kZXYgKmhkYXBzX2lkZXY7ICAgICAv
+KiBqb3lzdGljay1saWtlIGRldmljZSB3aXRoIGZ1enogKi8KIHN0YXRpYyB1bnNpZ25lZCBpbnQg
+aGRhcHNfaW52ZXJ0Owogc3RhdGljIGludCBuZWVkc19jYWxpYnJhdGlvbjsKIApAQCAtNzQ0LDgg
+Kzc1MCwxMyBAQCBzdGF0aWMgaW50IF9faW5pdCBoZGFwc19pbml0KHZvaWQpCiAJLyogY2FsaWJy
+YXRpb24gZm9yIHRoZSBpbnB1dCBkZXZpY2UgKGRlZmVycmVkIHRvIGF2b2lkIGRlbGF5KSAqLwog
+CW5lZWRzX2NhbGlicmF0aW9uID0gMTsKIAotCS8qIGluaXRpYWxpemUgdGhlIGlucHV0IGNsYXNz
+ICovCi0JaGRhcHNfaWRldi0+bmFtZSA9ICJoZGFwcyI7CisJLyogaW5pdGlhbGl6ZSB0aGUgam95
+c3RpY2stbGlrZSBmdXp6ZWQgaW5wdXQgZGV2aWNlICovCisJaGRhcHNfaWRldi0+bmFtZSA9ICJU
+aGlua1BhZCBIREFQUyBqb3lzdGljayBlbXVsYXRpb24iOworCWhkYXBzX2lkZXYtPnBoeXMgPSAi
+aGRhcHMvaW5wdXQwIjsKKwloZGFwc19pZGV2LT5pZC5idXN0eXBlID0gQlVTX0hPU1Q7CisJaGRh
+cHNfaWRldi0+aWQudmVuZG9yICA9IEhEQVBTX0lOUFVUX1ZFTkRPUjsKKwloZGFwc19pZGV2LT5p
+ZC5wcm9kdWN0ID0gSERBUFNfSU5QVVRfUFJPRFVDVDsKKwloZGFwc19pZGV2LT5pZC52ZXJzaW9u
+ID0gSERBUFNfSU5QVVRfSlNfVkVSU0lPTjsKIAloZGFwc19pZGV2LT5kZXYucGFyZW50ID0gJnBk
+ZXYtPmRldjsKIAloZGFwc19pZGV2LT5ldmJpdFswXSA9IEJJVChFVl9BQlMpOwogCWlucHV0X3Nl
+dF9hYnNfcGFyYW1zKGhkYXBzX2lkZXYsIEFCU19YLAotLSAKMS41LjIuNAoK
+------=_Part_5807_8854363.1188433864989
+Content-Type: text/x-patch;
+ name="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch"; filename="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch"; filename="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch"; filename="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch"; filename="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch"; filename="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch"; filename="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch"; filename="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch"; filename="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch"; filename="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch";
+ filename="0002-hdaps-Add-a-2nd-input-device-for-raw-accelerometer.patch"
+X-Attachment-Id: f_f5yiai5i
+
+aGRhcHM6IEFkZCBhIDJuZCBpbnB1dCBkZXZpY2UgZm9yIHJhdyBhY2NlbGVyb21ldGVyIGRhdGEK
+ClRoZSBjdXJyZW50IGludGVyZmFjZSB1c2VkIGZvciByZWFkaW5nIHRoZSBIREFQUyBhY2NlbGVy
+b21ldGVyCnJlcXVpcmVzIHVzZXJzcGFjZSBkYWVtb25zIHRvIHBvbGwgYSBzeXNmcyBhdHRyaWJ1
+dGUuIFRoaXMgY2F1c2VzCmludGVycnVwdHMgb24gdGlja2xlc3Mga2VybmVscywgYW5kIGludHJv
+ZHVjZXMgYSBwaGFzZSBkaWZmZXJlbmNlCmJldHdlZW4gdGhlIHVzZXJzcGFjZS0+a2VybmVsIHBv
+bGxpbmcgYW5kIGtlcm5lbC0+aGFyZHdhcmUgcG9sbGluZy4KClRvIHNvbHZlIHRoaXMsIHRoaXMg
+cGF0Y2ggaW50cm9kdWNlcyBhbiBpbnB1dCBkZXYgaW50ZXJmYWNlIHRvIHRoZQphY2NlbGVyb21l
+dGVyIGRhdGEuIEl0IGRpZmZlcnMgZnJvbSB0aGUgZXhpc3RpbmcgaGRhcHMgaW5wdXQgZGV2IGlu
+CnRoYXQgaXQgcHJvZHVjZXMgcmF3IG1lYXN1cmVtZW50cywgd2l0aG91dCBmdXp6aW5nIG9yIGNh
+bGlicmF0aW9uIChidXQKd2l0aCBheGlzIHJldmVyc2FsLCB0aGlzIHRoZSBtb2RlbC1zcGVjaWZp
+YyBrbm93bGVkZ2UgaXMgYWxyZWFkeQplbmNvZGVkIGluIHRoZSBkcml2ZXIpLgoKU2lnbmVkLW9m
+Zi1ieTogU2hlbSBNdWx0aW55bW91cyA8bXVsdGlueW1vdXNAZ21haWwuY29tPgotLS0KIGRyaXZl
+cnMvaHdtb24vS2NvbmZpZyB8ICAgIDcgKysrKy0tLQogZHJpdmVycy9od21vbi9oZGFwcy5jIHwg
+ICAzMiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwogMiBmaWxlcyBjaGFuZ2VkLCAz
+NiBpbnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvaHdt
+b24vS2NvbmZpZyBiL2RyaXZlcnMvaHdtb24vS2NvbmZpZwppbmRleCAwNzgwMjU1Li5hYjk5M2Zj
+IDEwMDY0NAotLS0gYS9kcml2ZXJzL2h3bW9uL0tjb25maWcKKysrIGIvZHJpdmVycy9od21vbi9L
+Y29uZmlnCkBAIC02MDgsMTAgKzYwOCwxMSBAQCBjb25maWcgU0VOU09SU19IREFQUwogCSAgVGhp
+cyBkcml2ZXIgcHJvdmlkZXMgc3VwcG9ydCBmb3IgdGhlIElCTSBIYXJkIERyaXZlIEFjdGl2ZSBQ
+cm90ZWN0aW9uCiAJICBTeXN0ZW0gKGhkYXBzKSwgd2hpY2ggcHJvdmlkZXMgYW4gYWNjZWxlcm9t
+ZXRlciBhbmQgb3RoZXIgbWlzYy4gZGF0YS4KIAkgIFRoaW5rUGFkcyBzdGFydGluZyB3aXRoIHRo
+ZSBSNTAsIFQ0MSwgYW5kIFg0MCBhcmUgc3VwcG9ydGVkLiAgVGhlCi0JICBhY2NlbGVyb21ldGVy
+IGRhdGEgaXMgcmVhZGFibGUgdmlhIHN5c2ZzLgorCSAgYWNjZWxlcm9tZXRlciBkYXRhIGlzIHJl
+YWRhYmxlIHZpYSBzeXNmcyBhbmQgdmlhIGFuIGlucHV0IGRldmljZS4KIAotCSAgVGhpcyBkcml2
+ZXIgYWxzbyBwcm92aWRlcyBhbiBhYnNvbHV0ZSBpbnB1dCBjbGFzcyBkZXZpY2UsIGFsbG93aW5n
+Ci0JICB0aGUgbGFwdG9wIHRvIGFjdCBhcyBhIHBpbmJhbGwgbWFjaGluZS1lc3F1ZSBqb3lzdGlj
+ay4KKwkgIFRoaXMgZHJpdmVyIGFsc28gcHJvdmlkZXMgYW5vdGhlciBhYnNvbHV0ZSBpbnB1dCBj
+bGFzcyBkZXZpY2Ugd2l0aAorCSAgY2FsaWJyYXRpb24gYW5kIGZ1enppbmcsIGFsbG93aW5nIHRo
+ZSBsYXB0b3AgdG8gYWN0IGFzIGEgcGluYmFsbAorCSAgbWFjaGluZS1lc3F1ZSBqb3lzdGljay4K
+IAogCSAgU2F5IFkgaGVyZSBpZiB5b3UgaGF2ZSBhbiBhcHBsaWNhYmxlIGxhcHRvcCBhbmQgd2Fu
+dCB0byBleHBlcmllbmNlCiAJICB0aGUgYXdlc29tZSBwb3dlciBvZiBoZGFwcy4KZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvaHdtb24vaGRhcHMuYyBiL2RyaXZlcnMvaHdtb24vaGRhcHMuYwppbmRleCA0
+MjNmMzQ4Li40N2VlM2YxIDEwMDY0NAotLS0gYS9kcml2ZXJzL2h3bW9uL2hkYXBzLmMKKysrIGIv
+ZHJpdmVycy9od21vbi9oZGFwcy5jCkBAIC02NywxMCArNjcsMTIgQEAgc3RhdGljIGNvbnN0IHN0
+cnVjdCB0aGlua3BhZF9lY19yb3cgZWNfYWNjZWxfYXJncyA9CiAjZGVmaW5lIEhEQVBTX0lOUFVU
+X1ZFTkRPUglQQ0lfVkVORE9SX0lEX0lCTQogI2RlZmluZSBIREFQU19JTlBVVF9QUk9EVUNUCTB4
+NTA1NCAvKiAiVFAiLCBzaGFyZWQgd2l0aCB0aGlua3BhZF9hY3BpICovCiAjZGVmaW5lIEhEQVBT
+X0lOUFVUX0pTX1ZFUlNJT04JMHg2ODAxIC8qIEpveXN0aWNrIGVtdWxhdGlvbiBpbnB1dCBkZXZp
+Y2UgKi8KKyNkZWZpbmUgSERBUFNfSU5QVVRfUkFXX1ZFUlNJT04JMHg0ODAxIC8qIFJhdyBhY2Nl
+bGVyb21ldGVyIGlucHV0IGRldmljZSAqLwogCiBzdGF0aWMgc3RydWN0IHRpbWVyX2xpc3QgaGRh
+cHNfdGltZXI7CiBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldjsKIHN0YXRpYyBz
+dHJ1Y3QgaW5wdXRfZGV2ICpoZGFwc19pZGV2OyAgICAgLyogam95c3RpY2stbGlrZSBkZXZpY2Ug
+d2l0aCBmdXp6ICovCitzdGF0aWMgc3RydWN0IGlucHV0X2RldiAqaGRhcHNfaWRldl9yYXc7IC8q
+IHJhdyBoZGFwcyBzZW5zb3IgcmVhZG91dHMgKi8KIHN0YXRpYyB1bnNpZ25lZCBpbnQgaGRhcHNf
+aW52ZXJ0Owogc3RhdGljIGludCBuZWVkc19jYWxpYnJhdGlvbjsKIApAQCAtNDc3LDYgKzQ3OSw5
+IEBAIGtlZXBfYWN0aXZlOgogCWlucHV0X3JlcG9ydF9hYnMoaGRhcHNfaWRldiwgQUJTX1gsIHBv
+c194IC0gcmVzdF94KTsKIAlpbnB1dF9yZXBvcnRfYWJzKGhkYXBzX2lkZXYsIEFCU19ZLCBwb3Nf
+eSAtIHJlc3RfeSk7CiAJaW5wdXRfc3luYyhoZGFwc19pZGV2KTsKKwlpbnB1dF9yZXBvcnRfYWJz
+KGhkYXBzX2lkZXZfcmF3LCBBQlNfWCwgcG9zX3gpOworCWlucHV0X3JlcG9ydF9hYnMoaGRhcHNf
+aWRldl9yYXcsIEFCU19ZLCBwb3NfeSk7CisJaW5wdXRfc3luYyhoZGFwc19pZGV2X3Jhdyk7CiAJ
+bW9kX3RpbWVyKCZoZGFwc190aW1lciwgamlmZmllcyArIEhaL3NhbXBsaW5nX3JhdGUpOwogfQog
+CkBAIC03NDcsNiArNzUyLDEyIEBAIHN0YXRpYyBpbnQgX19pbml0IGhkYXBzX2luaXQodm9pZCkK
+IAkJZ290byBvdXRfZ3JvdXA7CiAJfQogCisJaGRhcHNfaWRldl9yYXcgPSBpbnB1dF9hbGxvY2F0
+ZV9kZXZpY2UoKTsKKwlpZiAoIWhkYXBzX2lkZXZfcmF3KSB7CisJCXJldCA9IC1FTk9NRU07CisJ
+CWdvdG8gb3V0X2lkZXZfZmlyc3Q7CisJfQorCiAJLyogY2FsaWJyYXRpb24gZm9yIHRoZSBpbnB1
+dCBkZXZpY2UgKGRlZmVycmVkIHRvIGF2b2lkIGRlbGF5KSAqLwogCW5lZWRzX2NhbGlicmF0aW9u
+ID0gMTsKIApAQCAtNzY4LDEyICs3NzksMzIgQEAgc3RhdGljIGludCBfX2luaXQgaGRhcHNfaW5p
+dCh2b2lkKQogCWlmIChyZXQpCiAJCWdvdG8gb3V0X2lkZXY7CiAKKwkvKiBpbml0aWFsaXplIHRo
+ZSByYXcgZGF0YSBpbnB1dCBkZXZpY2UgKi8KKwloZGFwc19pZGV2X3Jhdy0+bmFtZSA9ICJUaGlu
+a1BhZCBIREFQUyBhY2NlbGVyb21ldGVyIGRhdGEiOworCWhkYXBzX2lkZXZfcmF3LT5waHlzID0g
+ImhkYXBzL2lucHV0MSI7CisJaGRhcHNfaWRldl9yYXctPmlkLmJ1c3R5cGUgPSBCVVNfSE9TVDsK
+KwloZGFwc19pZGV2X3Jhdy0+aWQudmVuZG9yICA9IEhEQVBTX0lOUFVUX1ZFTkRPUjsKKwloZGFw
+c19pZGV2X3Jhdy0+aWQucHJvZHVjdCA9IEhEQVBTX0lOUFVUX1BST0RVQ1Q7CisJaGRhcHNfaWRl
+dl9yYXctPmlkLnZlcnNpb24gPSBIREFQU19JTlBVVF9SQVdfVkVSU0lPTjsKKwloZGFwc19pZGV2
+X3Jhdy0+ZGV2LnBhcmVudCA9ICZwZGV2LT5kZXY7CisJaGRhcHNfaWRldl9yYXctPmV2Yml0WzBd
+ID0gQklUKEVWX0FCUyk7CisJaW5wdXRfc2V0X2Fic19wYXJhbXMoaGRhcHNfaWRldl9yYXcsIEFC
+U19YLCAtMzI3NjgsIDMyNzY3LCAwLCAwKTsKKwlpbnB1dF9zZXRfYWJzX3BhcmFtcyhoZGFwc19p
+ZGV2X3JhdywgQUJTX1ksIC0zMjc2OCwgMzI3NjcsIDAsIDApOworCisJcmV0ID0gaW5wdXRfcmVn
+aXN0ZXJfZGV2aWNlKGhkYXBzX2lkZXZfcmF3KTsKKwlpZiAocmV0KQorCQlnb3RvIG91dF9pZGV2
+X3JlZ19maXJzdDsKKwogCW1vZF90aW1lcigmaGRhcHNfdGltZXIsIGppZmZpZXMgKyBIWi9zYW1w
+bGluZ19yYXRlKTsKIAogCXByaW50ayhLRVJOX0lORk8gImhkYXBzOiBkcml2ZXIgc3VjY2Vzc2Z1
+bGx5IGxvYWRlZC5cbiIpOwogCXJldHVybiAwOwogCitvdXRfaWRldl9yZWdfZmlyc3Q6CisJaW5w
+dXRfdW5yZWdpc3Rlcl9kZXZpY2UoaGRhcHNfaWRldik7CiBvdXRfaWRldjoKKwlpbnB1dF9mcmVl
+X2RldmljZShoZGFwc19pZGV2X3Jhdyk7CitvdXRfaWRldl9maXJzdDoKIAlpbnB1dF9mcmVlX2Rl
+dmljZShoZGFwc19pZGV2KTsKIG91dF9ncm91cDoKIAlzeXNmc19yZW1vdmVfZ3JvdXAoJnBkZXYt
+PmRldi5rb2JqLCAmaGRhcHNfYXR0cmlidXRlX2dyb3VwKTsKQEAgLTc5MCw2ICs4MjEsNyBAQCBv
+dXQ6CiBzdGF0aWMgdm9pZCBfX2V4aXQgaGRhcHNfZXhpdCh2b2lkKQogewogCWRlbF90aW1lcl9z
+eW5jKCZoZGFwc190aW1lcik7CisJaW5wdXRfdW5yZWdpc3Rlcl9kZXZpY2UoaGRhcHNfaWRldl9y
+YXcpOwogCWlucHV0X3VucmVnaXN0ZXJfZGV2aWNlKGhkYXBzX2lkZXYpOwogCWhkYXBzX2Rldmlj
+ZV9zaHV0ZG93bigpOyAvKiBpZ25vcmUgZXJyb3JzLCBlZmZlY3QgaXMgbmVnbGlnaWJsZSAqLwog
+CXN5c2ZzX3JlbW92ZV9ncm91cCgmcGRldi0+ZGV2LmtvYmosICZoZGFwc19hdHRyaWJ1dGVfZ3Jv
+dXApOwotLSAKMS41LjIuNAoK
+------=_Part_5807_8854363.1188433864989--
