@@ -1,60 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763007AbXH3Vvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763011AbXH3Vzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763007AbXH3Vvy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 17:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761304AbXH3Vvq
+	id S1763011AbXH3Vzv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 17:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757393AbXH3Vzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 17:51:46 -0400
-Received: from web36602.mail.mud.yahoo.com ([209.191.85.19]:30239 "HELO
-	web36602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760372AbXH3Vvp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 17:51:45 -0400
-X-YMail-OSG: EhC7awsVM1nDSkRjFwCv9_RoiEUY9Hp5_R0lBC2lmnn087q_MGOGgoAuhuyfPO94nQ--
-X-RocketYMMF: rancidfat
-Date: Thu, 30 Aug 2007 14:51:44 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] Version2 Smack: Simplified Mandatory Access Control Kernel
-To: Jan Engelhardt <jengelh@computergmbh.de>,
-       Thomas Bleher <ThomasBleher@gmx.de>
-Cc: Casey Schaufler <casey@schaufler-ca.com>, torvalds@osdl.org, akpm@osdl.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708302059270.24730@fbirervta.pbzchgretzou.qr>
+	Thu, 30 Aug 2007 17:55:42 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:34241 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756657AbXH3Vzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 17:55:41 -0400
+Date: Thu, 30 Aug 2007 23:55:37 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Clemens Kolbitsch <clemens.kol@gmx.at>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Forbid deletion of memory mappings
+In-Reply-To: <200708302341.09459.clemens.kol@gmx.at>
+Message-ID: <Pine.LNX.4.64.0708302354240.2460@twin.jikos.cz>
+References: <200708301844.10532.clemens.kol@gmx.at> <200708302332.42744.clemens.kol@gmx.at>
+ <Pine.LNX.4.64.0708302333320.2460@twin.jikos.cz> <200708302341.09459.clemens.kol@gmx.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <167655.10399.qm@web36602.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 30 Aug 2007, Clemens Kolbitsch wrote:
 
---- Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> the thing is that they are not. the kernel chooses to REPLACE my 
+> mapping.
+> consider the user-space code:
+> mmap(0xaaaa0000, 0x3000, MAP_FIXED, ...);
+> mmap(0xaaaa1000, 0x4000, MAP_FIXED, ...);
+> here, the second call to mmap will shorten the first mapping to 0x1000 bytes 
+> and create one big vma with size 0x5000 bytes.
 
-> 
-> On Aug 27 2007 23:59, Thomas Bleher wrote:
-> 
-> >> +       for (cp = data - 1; cp != NULL; cp = strchr(cp + 1, '\n')) {
-> >> +               if (*++cp == '\0')
-> >> +                       break;
-> >> +               if (sscanf(cp, "%14s %30s\n", name, target) != 2) {
-> >> +                       printk("%s:%d bad scan\n",
-> >> +                               __func__, __LINE__);
-> >
-> >Leftover debugging printk? Otherwise, a level would be nice.
-> 
-> Or even pr_debug.
-> 
-> (pr_debug("%s...
+Which is exactly in compliance with what POSIX says about MAP_FIXED mmaps 
+- see http://opengroup.org/onlinepubs/007908799/xsh/mmap.html
 
-I'm taking out the printk.
-
-> >> +	static struct tree_descr smack_files[] = {
-> 
-> Hey, can we make this const, if it does not change at runtime?
-
-simple_fill_super() is unhappy with a const.
- 
-
-Casey Schaufler
-casey@schaufler-ca.com
+-- 
+Jiri Kosina
