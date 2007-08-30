@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763311AbXH3Wob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763451AbXH3Wox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763311AbXH3Wob (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763375AbXH3WoL
+	id S1763451AbXH3Wox (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763468AbXH3WoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:44:11 -0400
-Received: from ozlabs.org ([203.10.76.45]:47250 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763343AbXH3WoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:44:10 -0400
-Subject: [PATCH] Fix out-by-one error in traps.c
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lguest <lguest@ozlabs.org>, Frederik Deweerdt <deweerdt@free.fr>,
-       Andi Kleen <ak@muc.de>
-In-Reply-To: <20070830163812.GA22190@slug>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	 <20070822202551.GB31846@slug>
-	 <20070823145038.9895784f.akpm@linux-foundation.org>
-	 <20070824060438.GE31846@slug> <46CE7EDC.9080007@goop.org>
-	 <20070824082249.GG31846@slug>
-	 <1188043649.20041.81.camel@localhost.localdomain>
-	 <20070825122324.GA6138@slug> <20070825211405.GA18217@slug>
-	 <1188230999.5531.15.camel@localhost.localdomain>
-	 <20070830163812.GA22190@slug>
-Content-Type: text/plain
-Date: Fri, 31 Aug 2007 08:14:26 +1000
-Message-Id: <1188512066.6353.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Aug 2007 18:44:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52216 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763408AbXH3WoM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 18:44:12 -0400
+Date: Fri, 31 Aug 2007 04:27:13 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Jesper Juhl <jesper.juhl@gmail.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Vojtech Pavlik <vojtech@ucw.cz>,
+       Johann Deneux <johann.deneux@gmail.com>, dtor@mail.ru,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH] input: Silence 'unused variable' warning in iforce
+ joystick driver
+In-Reply-To: <200708310013.12347.jesper.juhl@gmail.com>
+Message-ID: <alpine.LFD.0.999.0708310422200.31519@enigma.security.iitk.ac.in>
+References: <200708310013.12347.jesper.juhl@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We don't care if ebp is on the stack, we care about ebp + 4.  Without
-this, lguest (with CONFIG_DEBUG_LOCKDEP) can touch a page unmapped by
-CONFIG_DEBUG_PAGEALLOC.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff -r b0b1ab8ecf48 arch/i386/kernel/traps.c
---- a/arch/i386/kernel/traps.c	Fri Aug 31 03:25:06 2007 +1000
-+++ b/arch/i386/kernel/traps.c	Fri Aug 31 07:57:35 2007 +1000
-@@ -100,7 +100,7 @@ print_context_stack(struct thread_info *tinfo,
- 	unsigned long addr;
- 
- #ifdef	CONFIG_FRAME_POINTER
--	while (valid_stack_ptr(tinfo, (void *)ebp)) {
-+	while (valid_stack_ptr(tinfo, (void *)ebp + 4)) {
- 		unsigned long new_ebp;
- 		addr = *(unsigned long *)(ebp + 4);
- 		ops->address(data, addr);
+Hi,
 
 
+On Fri, 31 Aug 2007, Jesper Juhl wrote:
+
+> In the iforce driver we currently get this warning
+> 
+>  drivers/input/joystick/iforce/iforce-packets.c: In function 'iforce_get_id_packet':
+>  drivers/input/joystick/iforce/iforce-packets.c:249: warning: unused variable 'status'
+> 
+> if CONFIG_JOYSTICK_IFORCE_USB is not defined.
+> 
+> The warning is easy to avoid by simply moving the variable inside 
+> the only case in the switch that actually use it.
+> 
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> ---
+> 
+> diff --git a/drivers/input/joystick/iforce/iforce-packets.c b/drivers/input/joystick/iforce/iforce-packets.c
+> index 3154ccd..48d4a86 100644
+> --- a/drivers/input/joystick/iforce/iforce-packets.c
+> +++ b/drivers/input/joystick/iforce/iforce-packets.c
+> @@ -246,13 +246,12 @@ void iforce_process_packet(struct iforce *iforce, u16 cmd, unsigned char *data)
+>  
+>  int iforce_get_id_packet(struct iforce *iforce, char *packet)
+>  {
+> -	int status;
+> -
+>  	switch (iforce->bus) {
+>  
+>  	case IFORCE_USB:
+> -
+>  #ifdef CONFIG_JOYSTICK_IFORCE_USB
+> +		int status;
+> +
+>  		iforce->cr.bRequest = packet[0];
+>  		iforce->ctrl->dev = iforce->usbdev;
+
+Hmm, would this not still give a warning when JOYSTICK_IFORCE_USB=y?
+[ I didn't know mixing code and declarations (not at top of statement
+  block) was accepted style in the kernel ... ]
+
+IMHO either you should at least wrap that case inside a {} of its
+own (so that the int status; is at top of a statement block), or else,
+preferably, just add "__maybe_unused" to the first declaration that you
+removed just now.
+
+
+Satyam
