@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964847AbXH3TQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932992AbXH3TRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964847AbXH3TQF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 15:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759698AbXH3TPy
+	id S932992AbXH3TRR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 15:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759790AbXH3TRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 15:15:54 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56558 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759538AbXH3TPw (ORCPT
+	Thu, 30 Aug 2007 15:17:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:5724 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755138AbXH3TRE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 15:15:52 -0400
-Date: Thu, 30 Aug 2007 21:15:51 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-cc: Andreas Schwab <schwab@suse.de>, Esteban Fernandez <estfern@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Pausing kernel boot messages
-In-Reply-To: <200708271413.51368.hjk@linutronix.de>
-Message-ID: <Pine.LNX.4.64.0708302115020.24730@fbirervta.pbzchgretzou.qr>
-References: <179e6e720708270421r5f07f9dfp434077f6a106d2d7@mail.gmail.com>
- <200708271353.22665.hjk@linutronix.de> <jesl6542a2.fsf@sykes.suse.de>
- <200708271413.51368.hjk@linutronix.de>
+	Thu, 30 Aug 2007 15:17:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=P4xSLgmq2squSbAYKgWaFoFyV3L9oRy0jy/B9DjPsdMVR0Kd+65eL31plrjfcGpdbEXBvb/4olrZvaLY3yXV/LMZXAVVVRNflIzsZDa93GlQTpTNo3JnQ2wCpsofYyBHYmFwe6QfRTo7PVxBa8Dpgad5g+7Ku/a2NBBJ4/M8CZ8=
+Message-ID: <68676e00708301217k7e0cf0edl4526bd79536ac065@mail.gmail.com>
+Date: Thu, 30 Aug 2007 21:17:03 +0200
+From: Luca <kronos.it@gmail.com>
+To: "Alexey Starikovskiy" <astarikovskiy@suse.de>
+Subject: Re: Linux 2.6.23-rc4: BAD regression
+Cc: "Daniel Ritz" <daniel.ritz-ml@swissonline.ch>,
+       linux-kernel@vger.kernel.org, "Len Brown" <len.brown@intel.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708301020410.25853@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200708290129.57243.daniel.ritz-ml@swissonline.ch>
+	 <20070829232150.GA17467@dreamland.darkstar.lan>
+	 <200708301907.56561.daniel.ritz-ml@swissonline.ch>
+	 <alpine.LFD.0.999.0708301020410.25853@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Aug 27 2007 14:13, Hans-Jürgen Koch wrote:
->> >> How do you pause the kernel boot messages ?
->> >> 
->> >> ^S, Pause and Scroll lock do nothing and you can't Shift-Page-Up  after a
->> >> kernel panic.
->> >
->> > These are functions of a shell (like bash),
->> 
->> Definitely not.  The shell is not a console driver, it only uses it.
+On 8/30/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 >
->Right, I wasn't precise. But it's still possible that you don't have your
->keyboard available during early parts of the boot process.
+>
+> On Thu, 30 Aug 2007, Daniel Ritz wrote:
+> >
+> > i've just tested the minimal fix here:
+> >       http://bugzilla.kernel.org/show_bug.cgi?id=8958#c7
+> > works good so far. fan starts and system is responsive.
+>
+> Alexey, Len, can we get this fix integrated asap?
 
-Yes, but a common error is "could not mount root", which is way after the
-keyboard has been initialized. *In fact*, you can start initramfs, have your
-PgUp/PgDown keys available, and when you exit out of initramfs without a valid
-root filesystem, you lose the keys again.
+Tested here, works fine.
 
-
-	Jan
--- 
+Luca
