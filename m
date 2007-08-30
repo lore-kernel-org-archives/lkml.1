@@ -1,52 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760881AbXH3Aqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761698AbXH3Ari@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760881AbXH3Aqo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 20:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbXH3Aqf
+	id S1761698AbXH3Ari (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 20:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbXH3Ar1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 20:46:35 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34556 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753701AbXH3Aqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 20:46:34 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX19omARYZ0BobJTX1HV4Tl2TGiwSyN8xmQ8SAKTy2X
-	RwGDZbG2dku5Qs
-Date: Thu, 30 Aug 2007 02:46:41 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Peter Lund <firefly@vax64.dk>, Christoph Hellwig <hch@infradead.org>,
-       trivial@kernel.org, linux-kernel@vger.kernel.org,
-       Momchil Velikov <velco@fadata.bg>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] avoid negative (and full-width) shifts in
-	radix-tree.c, take 3
-Message-ID: <20070830004641.GA26580@atjola.homenet>
-References: <1188402291.7216.90.camel@localhost.localdomain> <Pine.LNX.4.64.0708291048250.21332@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0708291048250.21332@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Y-GMX-Trusted: 0
+	Wed, 29 Aug 2007 20:47:27 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:53287 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753852AbXH3ArY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Aug 2007 20:47:24 -0400
+Subject: [RFC 1/4] Large Blocksize support for Ext2/3/4
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: clameter@sgi.com, linux-fsdevel@vger.kernel.org
+Cc: adilger@clusterfs.com, sho@tnes.nec.co.jp,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1188432669.3799.35.camel@localhost.localdomain>
+References: <20070828190551.415127746@sgi.com>
+	 <20070828190735.292638294@sgi.com>
+	 <1188432669.3799.35.camel@localhost.localdomain>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Wed, 29 Aug 2007 17:47:37 -0700
+Message-Id: <1188434857.3799.76.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.08.29 10:49:12 -0700, Christoph Lameter wrote:
-> On Wed, 29 Aug 2007, Peter Lund wrote:
-> 
-> >  
-> > -	if (tmp >= RADIX_TREE_INDEX_BITS)
-> > -		index = ~0UL;
-> > -	return index;
-> > +	if (shift < 0)
-> > +		return ~0UL;
-> > +	if (shift >= 8 * sizeof(unsigned long))
-> 
-> 8* sizeof(unsigned long) is the constant BITS_PER_LONG.
+The next 4 patches support large block size (up to PAGESIZE, max 64KB)
+for ext2/3/4, originally from Takashi Sato.
+http://marc.info/?l=linux-ext4&m=115768873518400&w=2
 
-Or in this context: RADIX_TREE_INDEX_BITS, which happens to be the old
-check, which just needed to be extended to cover negative shifts.
 
-Björn
+It's quite simple to support large block size in ext2/3/4, mostly just
+enlarge the block size limit.  But it is NOT possible to have 64kB
+blocksize on ext2/3/4 without some changes to the directory handling
+code.  The reason is that an empty 64kB directory block would have a
+rec_len == (__u16)2^16 == 0, and this would cause an error to be hit in
+the filesystem.  The proposed solution is to put 2 empty records in such
+a directory, or to special-case an impossible value like rec_len =
+0xffff to handle this. 
+
+
+The Patch-set consists of the following 4 patches.
+  [1/4]  ext2/3/4: enlarge blocksize
+         - Allow blocksize up to pagesize
+
+  [2/4]  ext2: fix rec_len overflow
+         - prevent rec_len from overflow with 64KB blocksize
+
+  [3/4]  ext3: fix rec_len overflow
+         - prevent rec_len from overflow with 64KB blocksize
+
+  [4/4]  ext4: fix rec_len overflow
+         - prevent rec_len from overflow with 64KB blocksize
+
+Just rebase to 2.6.23-rc4 and against the ext4 patch queue. Compile tested only. 
+
+Next steps:
+Need a e2fsprogs changes to able test this feature. As mkfs needs to be
+educated not assuming rec_len to be blocksize all the time.
+Will try it with Christoph Lameter's large block patch next.
+
+
+Signed-off-by: Takashi Sato <sho@tnes.nec.co.jp>
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+---
+---
+ fs/ext2/super.c         |    2 +-
+ fs/ext3/super.c         |    5 ++++-
+ fs/ext4/super.c         |    5 +++++
+ include/linux/ext2_fs.h |    4 ++--
+ include/linux/ext3_fs.h |    4 ++--
+ include/linux/ext4_fs.h |    4 ++--
+ 6 files changed, 16 insertions(+), 8 deletions(-)
+
+Index: linux-2.6.23-rc3/fs/ext2/super.c
+===================================================================
+--- linux-2.6.23-rc3.orig/fs/ext2/super.c	2007-08-12 21:25:24.000000000 -0700
++++ linux-2.6.23-rc3/fs/ext2/super.c	2007-08-29 15:22:29.000000000 -0700
+@@ -775,7 +775,7 @@ static int ext2_fill_super(struct super_
+ 		brelse(bh);
+ 
+ 		if (!sb_set_blocksize(sb, blocksize)) {
+-			printk(KERN_ERR "EXT2-fs: blocksize too small for device.\n");
++			printk(KERN_ERR "EXT2-fs: bad blocksize %d.\n", blocksize);
+ 			goto failed_sbi;
+ 		}
+ 
+Index: linux-2.6.23-rc3/fs/ext3/super.c
+===================================================================
+--- linux-2.6.23-rc3.orig/fs/ext3/super.c	2007-08-12 21:25:24.000000000 -0700
++++ linux-2.6.23-rc3/fs/ext3/super.c	2007-08-29 15:22:29.000000000 -0700
+@@ -1549,7 +1549,10 @@ static int ext3_fill_super (struct super
+ 		}
+ 
+ 		brelse (bh);
+-		sb_set_blocksize(sb, blocksize);
++		if (!sb_set_blocksize(sb, blocksize)) {
++			printk(KERN_ERR "EXT3-fs: bad blocksize %d.\n", blocksize);
++			goto out_fail;
++		}
+ 		logic_sb_block = (sb_block * EXT3_MIN_BLOCK_SIZE) / blocksize;
+ 		offset = (sb_block * EXT3_MIN_BLOCK_SIZE) % blocksize;
+ 		bh = sb_bread(sb, logic_sb_block);
+Index: linux-2.6.23-rc3/fs/ext4/super.c
+===================================================================
+--- linux-2.6.23-rc3.orig/fs/ext4/super.c	2007-08-28 11:09:40.000000000 -0700
++++ linux-2.6.23-rc3/fs/ext4/super.c	2007-08-29 15:24:08.000000000 -0700
+@@ -1626,6 +1626,11 @@ static int ext4_fill_super (struct super
+ 		goto out_fail;
+ 	}
+ 
++	if (!sb_set_blocksize(sb, blocksize)) {
++		printk(KERN_ERR "EXT4-fs: bad blocksize %d.\n", blocksize);
++		goto out_fail;
++	}
++
+ 	/*
+ 	 * The ext4 superblock will not be buffer aligned for other than 1kB
+ 	 * block sizes.  We need to calculate the offset from buffer start.
+Index: linux-2.6.23-rc3/include/linux/ext2_fs.h
+===================================================================
+--- linux-2.6.23-rc3.orig/include/linux/ext2_fs.h	2007-08-12 21:25:24.000000000 -0700
++++ linux-2.6.23-rc3/include/linux/ext2_fs.h	2007-08-29 15:22:29.000000000 -0700
+@@ -86,8 +86,8 @@ static inline struct ext2_sb_info *EXT2_
+  * Macro-instructions used to manage several block sizes
+  */
+ #define EXT2_MIN_BLOCK_SIZE		1024
+-#define	EXT2_MAX_BLOCK_SIZE		4096
+-#define EXT2_MIN_BLOCK_LOG_SIZE		  10
++#define EXT2_MAX_BLOCK_SIZE		65536
++#define EXT2_MIN_BLOCK_LOG_SIZE		10
+ #ifdef __KERNEL__
+ # define EXT2_BLOCK_SIZE(s)		((s)->s_blocksize)
+ #else
+Index: linux-2.6.23-rc3/include/linux/ext3_fs.h
+===================================================================
+--- linux-2.6.23-rc3.orig/include/linux/ext3_fs.h	2007-08-12 21:25:24.000000000 -0700
++++ linux-2.6.23-rc3/include/linux/ext3_fs.h	2007-08-29 15:22:29.000000000 -0700
+@@ -76,8 +76,8 @@
+  * Macro-instructions used to manage several block sizes
+  */
+ #define EXT3_MIN_BLOCK_SIZE		1024
+-#define	EXT3_MAX_BLOCK_SIZE		4096
+-#define EXT3_MIN_BLOCK_LOG_SIZE		  10
++#define	EXT3_MAX_BLOCK_SIZE		65536
++#define EXT3_MIN_BLOCK_LOG_SIZE		10
+ #ifdef __KERNEL__
+ # define EXT3_BLOCK_SIZE(s)		((s)->s_blocksize)
+ #else
+Index: linux-2.6.23-rc3/include/linux/ext4_fs.h
+===================================================================
+--- linux-2.6.23-rc3.orig/include/linux/ext4_fs.h	2007-08-28 11:09:40.000000000 -0700
++++ linux-2.6.23-rc3/include/linux/ext4_fs.h	2007-08-29 15:22:29.000000000 -0700
+@@ -104,8 +104,8 @@ struct ext4_allocation_request {
+  * Macro-instructions used to manage several block sizes
+  */
+ #define EXT4_MIN_BLOCK_SIZE		1024
+-#define	EXT4_MAX_BLOCK_SIZE		4096
+-#define EXT4_MIN_BLOCK_LOG_SIZE		  10
++#define	EXT4_MAX_BLOCK_SIZE		65536
++#define EXT4_MIN_BLOCK_LOG_SIZE		10
+ #ifdef __KERNEL__
+ # define EXT4_BLOCK_SIZE(s)		((s)->s_blocksize)
+ #else
+
+
