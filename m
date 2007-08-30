@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932748AbXH3RfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760400AbXH3RlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932748AbXH3RfA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 13:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932138AbXH3Reu
+	id S1760400AbXH3RlS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 13:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758518AbXH3RlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 13:34:50 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46970 "EHLO
+	Thu, 30 Aug 2007 13:41:06 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44327 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753705AbXH3Ret (ORCPT
+	with ESMTP id S1757675AbXH3RlC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 13:34:49 -0400
+	Thu, 30 Aug 2007 13:41:02 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-References: <20070828141318.GC5869@duck.suse.cz>
-	<20070828211335.37fce4c9.akpm@linux-foundation.org>
-	<20070829122647.GB7814@duck.suse.cz>
-	<m1mywa42g7.fsf@ebiederm.dsl.xmission.com>
-	<20070829192653.GD7814@duck.suse.cz>
-	<m1wsve2gpo.fsf@ebiederm.dsl.xmission.com>
-	<20070830092548.GB16336@duck.suse.cz>
-Date: Thu, 30 Aug 2007 11:33:09 -0600
-In-Reply-To: <20070830092548.GB16336@duck.suse.cz> (Jan Kara's message of
-	"Thu, 30 Aug 2007 11:25:48 +0200")
-Message-ID: <m1tzqh0vxm.fsf@ebiederm.dsl.xmission.com>
+To: David Newall <david@davidnewall.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible fashion.
+References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
+	<20070828230459.GA15937@infradead.org>
+	<m1r6lnb4ha.fsf@ebiederm.dsl.xmission.com>
+	<46D4CC81.4060400@zytor.com>
+	<m1d4x7aysz.fsf@ebiederm.dsl.xmission.com>
+	<20070829114604.242b976c@the-village.bc.nu>
+	<m1absa5kid.fsf@ebiederm.dsl.xmission.com>
+	<46D6C40A.9090504@davidnewall.com>
+Date: Thu, 30 Aug 2007 11:40:51 -0600
+In-Reply-To: <46D6C40A.9090504@davidnewall.com> (David Newall's message of
+	"Thu, 30 Aug 2007 22:50:10 +0930")
+Message-ID: <m18x7s2a58.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara <jack@suse.cz> writes:
->   There can be arbitrary number of listeners (potentially from different
-> namespaces if I understand it correctly) listening to broadcasts. So I
-> think we should pass some universal identifier rather than try to find out
-> who is listening etc. I think such identifiers would be useful for other
-> things too, won't they?
+David Newall <david@davidnewall.com> writes:
 
-So internal to the kernel we have such a universal identifier.
-struct user.
+> Eric W. Biederman wrote:
+>> This isn't "Oh some apps are using it let's get them to stop, because
+>> it is inconvenient".  This is  "No apps seems to be using this, we
+>> keep goofing up the maintenance and no one notices, and so it is
+>> likely a source of security problems and other nasties"
+>>
+>
+> This first claim is not consistent with the next claim:
+>
+>> I have evidence that there are 1 or 2 open source applications using
+>> this (not counting the glibc weirdness).
+>
+> If may be unmaintainable but, apparently, it's not really unused.
 
-There are to practical questions.
-1) How do we present that information to user space?
-2) How does user space want to process this information?
-
-If we only want user space to be able to look up a user and send
-him a message.  It probably makes sense to do the struct user to
-uid conversion in the proper context in the kernel because we have
-that information.
-
-If this is a general feature that happens to allows us to look up
-the user given the filesystems view of what is going on would be
-easier in the kernel, and not require translation.  But it means
-that we can't support 9p and nfs for now.  But since we don't support
-quotas on the client end anyway that doesn't sound like a big deal.
-
-The problem with the filesystem view is that there will be occasions
-where we simply can not map a user into it, because the filesystem
-won't have a concept of that particular user.
-
-So we could run into the situation where alice owns the file.  Bob
-writes to the file and pushes it over quota.  But the filesystem
-has no concept of who bob is.  So we won't be able to report that
-it was bob that pushed things over the edge.
-
-> BTW: Do you have some idea, when would be the infrastructure clearer?
-
-So the plan is to get to the point where are uid comparisons in the
-kernel are (user namespace, uid) comparisons.  Or possibly struct
-user comparisons (depending on the context.  And struct mount will
-contain the user namespace of whoever mounted the filesystem.
-
-Adding infrastructure to netlink to allow us to do conversions 
-as the packets are enqueued for a specific user is something I
-would rather avoid, but that is a path we can go down if we have
-to.
-
-> Whether it makes sence to currently proceed with UIDs and later change it
-> to something generic or whether I should wait before you sort it out :).
-
-A good question.  I think things are clear enough that it at least
-makes sense to sketch a solution to the problem even if we don't
-implement it at this point.
-
-I have been hoping Cedric or Serge would jump in because I think those
-are the guys who have been working on the implementation. 
+Only in a strict mathematical sense.  I seem to recall patches to
+those programs or seeing that it doesn't matter.  Things are sufficient
+that I expect that in 2 years time when we revisit this.  We won't
+be able to find anything that cares.
 
 Eric
