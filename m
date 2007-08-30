@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763011AbXH3Vzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763115AbXH3V5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763011AbXH3Vzv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 17:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757393AbXH3Vzm
+	id S1763115AbXH3V5A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 17:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757393AbXH3V4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 17:55:42 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:34241 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756657AbXH3Vzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 17:55:41 -0400
-Date: Thu, 30 Aug 2007 23:55:37 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Clemens Kolbitsch <clemens.kol@gmx.at>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Forbid deletion of memory mappings
-In-Reply-To: <200708302341.09459.clemens.kol@gmx.at>
-Message-ID: <Pine.LNX.4.64.0708302354240.2460@twin.jikos.cz>
-References: <200708301844.10532.clemens.kol@gmx.at> <200708302332.42744.clemens.kol@gmx.at>
- <Pine.LNX.4.64.0708302333320.2460@twin.jikos.cz> <200708302341.09459.clemens.kol@gmx.at>
+	Thu, 30 Aug 2007 17:56:52 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:9786 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751473AbXH3V4v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 17:56:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XndawJRqV+C0rHkxA/LAXtLGPcbhDRCEHxzScb9BQDblX+hxplios5ojHSndKYvuM3XcAfpC6pQPrkQmRqr4XnVUXmKl1dwMB+8lz3Ucggh2ShbIy2UzT7+2K7xQy/feB8WwNzAGUGVOo86cHHfBZmjG8vEyiIAfgiX3ahtJ5vk=
+Message-ID: <dda83e780708301456y72bc4080qc994f4797a5fefd1@mail.gmail.com>
+Date: Thu, 30 Aug 2007 14:56:50 -0700
+From: "Bret Towe" <magnade@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-2.6.23-rc4 ppc build failure
+In-Reply-To: <dda83e780708290941g1685879bned63a77d6b0fd242@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dda83e780708290941g1685879bned63a77d6b0fd242@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Aug 2007, Clemens Kolbitsch wrote:
+On 8/29/07, Bret Towe <magnade@gmail.com> wrote:
+> while trying to build a fresh kernel for my mini after upgrading from gutsy
+> (and forgetting to save my .config) I hit the below build error
+> 2.6.23-rc3 I did work under feisty but that is with a different .config
+> so not sure if that makes any difference or not
+> I've not bisected cause it takes so long on this computer...
+> attached is the config I'm working off now
+>
+> arch/powerpc/platforms/built-in.o: In function `pmac_probe':
+> setup.c:(.init.text+0xbba): undefined reference to `pmac_ide_get_base'
+> setup.c:(.init.text+0xbbe): undefined reference to `pmac_ide_init_hwif_ports'
+> setup.c:(.init.text+0xbc6): undefined reference to `pmac_ide_get_base'
+> setup.c:(.init.text+0xbca): undefined reference to `pmac_ide_init_hwif_ports'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> make[1]: Leaving directory `/usr/src/linux-2.6'
+>
+>
 
-> the thing is that they are not. the kernel chooses to REPLACE my 
-> mapping.
-> consider the user-space code:
-> mmap(0xaaaa0000, 0x3000, MAP_FIXED, ...);
-> mmap(0xaaaa1000, 0x4000, MAP_FIXED, ...);
-> here, the second call to mmap will shorten the first mapping to 0x1000 bytes 
-> and create one big vma with size 0x5000 bytes.
-
-Which is exactly in compliance with what POSIX says about MAP_FIXED mmaps 
-- see http://opengroup.org/onlinepubs/007908799/xsh/mmap.html
-
--- 
-Jiri Kosina
+turns out the issue was I didn't have 'Enhanced IDE/MFM/RLL
+disk/cdrom/tape/floppy support' selected (symbol BLK_DEV_IDE) it was
+set as module
+current code requires it to be built in
+guess drivers/ide/Kconfig needs a touch up?
