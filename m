@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760727AbXH3OXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761323AbXH3OYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760727AbXH3OXP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 10:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbXH3OXB
+	id S1761323AbXH3OYR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 10:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbXH3OYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 10:23:01 -0400
-Received: from lisa.in-ulm.de ([217.10.8.8]:56079 "HELO mail.in-ulm.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1756461AbXH3OXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 10:23:00 -0400
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 10:23:00 EDT
-Date: Thu, 30 Aug 2007 16:15:28 +0200
-From: Christian Ehrhardt <lk@c--e.de>
-To: linux-kernel@vger.kernel.org, hpa@zytor.com
-Subject: New x886-Setup code breaks HVM-XEN boot
-Message-ID: <20070830141528.GA307@lisa.in-ulm.de>
+	Thu, 30 Aug 2007 10:24:05 -0400
+Received: from mpc-26.sohonet.co.uk ([193.203.82.251]:43736 "EHLO
+	moving-picture.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752378AbXH3OYD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 10:24:03 -0400
+X-Greylist: delayed 1810 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 10:24:03 EDT
+Message-ID: <46D6CBED.4040301@moving-picture.com>
+Date: Thu, 30 Aug 2007 14:53:49 +0100
+From: James Pearson <james-p@moving-picture.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040524
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Guy Streeter <guy.streeter@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 4096 byte limit to /proc/PID/environ ?
+References: <4474B7DB.8000304@moving-picture.com>	 <200605242029.k4OKTn9C031700@terminus.zytor.com>	 <447EF58C.6000605@moving-picture.com> <52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com> <46C33700.1060605@zytor.com>
+In-Reply-To: <46C33700.1060605@zytor.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Disclaimer: This email and any attachments are confidential, may be legally
+X-Disclaimer: privileged and intended solely for the use of addressee. If you
+X-Disclaimer: are not the intended recipient of this message, any disclosure,
+X-Disclaimer: copying, distribution or any action taken in reliance on it is
+X-Disclaimer: strictly prohibited and may be unlawful. If you have received
+X-Disclaimer: this message in error, please notify the sender and delete all
+X-Disclaimer: copies from your system.
+X-Disclaimer: 
+X-Disclaimer: Email may be susceptible to data corruption, interception and
+X-Disclaimer: unauthorised amendment, and we do not accept liability for any
+X-Disclaimer: such corruption, interception or amendment or the consequences
+X-Disclaimer: thereof.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+> Guy Streeter wrote:
+> 
+>>On 6/1/06, James Pearson <james-p@moving-picture.com> wrote:
+>>
+>>>H. Peter Anvin wrote:
+>>>
+>>>>I think this is the wrong approach.
+>>>>
+>>>>Many of these should probably be converted to seq_file, but in the
+>>>>particular case of environ, the right approach is to observe the fact
+>>>>that reading environ is just like reading /proc/PID/mem, except:
+>>>>
+>>>> a. the access restrictions are less strict, and
+>>>> b. there is a range restriction, which needs to be enforced, and
+>>>> c. there is an offset.
+>>>>
+>>>>Pretty much, take the guts from /proc/PID/mem and generalize it
+>>>>slightly, and you have the code that can run either /proc/PID/mem or
+>>>>/proc/PID/environ.
+>>>
+>>>The following patch is based on the /proc/PID/mem code appears to work fine.
+>>>
+>>
+>>This thread has gone stale. The PAGE_SIZE limit still exists. Is this
+>>solution acceptable?
+>>
+> 
+> 
+> Can we avoid the code duplication?
 
-Hi,
+There isn't that much that is duplicated - and there are also bits of 
+the /proc/PID/mem code that are not needed in this case, so I'm not 
+really sure if it is worth doing.
 
-I am trying to boot a current 2.6 kernel as a guest under XEN in HVM mode.
-With linux-2.6.22.(5) as the guest this works fine but current git kernels
-fail very early in the boot process.
+I did submit a patch a few months ago - see:
 
-The XEN host is a debian kernel with XEN enabled (2.6.18-4-xen-686).
-The XEN guest is a vanilla kernel from kernel org booting with LILO
-22.6.1 in HVM mode.
+<http://marc.info/?l=linux-kernel&m=117862109623007&w=2>
 
-I bisected the problem and the bisection points at this commit:
-| # bad: [4fd06960f120e02e9abc802a09f9511c400042a5] Use the new x86 setup code for i386
-| git-bisect bad 4fd06960f120e02e9abc802a09f9511c400042a5
-
-The boot of a current git snapshot fails as follows:
-bash$ sudo xm console guest
-LILO 22.6.1 boot: lkcur
-Loading lkcur.........................
-BIOS data check bypassed
-bash$
-
-Note the the xm console command terminates on its own, i.e. the guest
-machine seems to halt and not hang somewhere.
-
-I could verify that the real mode code up to the assembly code in
-pmjump.S is in fact executed. The problem appears to occur while
-enabling protected mode. I tried to put endless loops into the 32-bit
-setup code but these were apparently not reached. As far as I understand
-this, the protected mode jump in pmjump.S seems to jump into nowhere.
-
-I am willing to do tests with the XEN guest and send any additional
-information that might be helpful. However, I cannot change the XEN host
-at this time.
-
-Any suggestions? 
-
-     regards  Christian
+James Pearson
