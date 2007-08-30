@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761888AbXH3UDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762261AbXH3UHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761888AbXH3UDv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 16:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbXH3UDn
+	id S1762261AbXH3UHF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 16:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757033AbXH3UG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 16:03:43 -0400
-Received: from tool.snarl.nl ([82.95.241.19]:3608 "EHLO tool.snarl.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754232AbXH3UDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 16:03:42 -0400
-X-Greylist: delayed 434 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 16:03:42 EDT
-Date: Thu, 30 Aug 2007 21:56:25 +0200
-From: Freddy Spierenburg <freddy@dusktilldawn.nl>
-To: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: Average number of instructions per line of kernel code
-Message-ID: <20070830195625.GN16028@dusktilldawn.nl>
-References: <40378e40708300600h5837d46ci5266b8ae62bbd46e@mail.gmail.com> <9a8748490708300631o285fd31ch462199ec9535c6c2@mail.gmail.com> <40378e40708300648i4f016906v60f821bf182a5633@mail.gmail.com> <Pine.LNX.4.64.0708301212030.14590@pixie.tetracon-eng.net> <Pine.LNX.4.64.0708302147450.24730@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="KbI68ipL6xvRMBYq"
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708302147450.24730@fbirervta.pbzchgretzou.qr>
-X-User-Agent-Feature: All mail clients suck. This one just sucks less.
-X-GPG-Key: http://snarl.nl/~freddy/keys/freddyPublicKey.gpg
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 30 Aug 2007 16:06:56 -0400
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:54850 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754261AbXH3UGz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 16:06:55 -0400
+Subject: [PATCH] Add parenthesis to IRQ vector macros
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Andi Kleen <ak@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Content-Type: text/plain
+Date: Thu, 30 Aug 2007 16:06:34 -0400
+Message-Id: <1188504394.912.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It is not good taste to have macros with additions that do not have
+parenthesis's around them.  This patch parethesizes the IRQ vector
+macros for x86_64 arch.
 
---KbI68ipL6xvRMBYq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Note, this caused me a bit of heart-ache debugging lguest64.
 
-Hi all,
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-On Thu, 30 Aug 2007, Mohamed Bamakhrama wrote:
-> I have a question regarding the average number of assembly
-> instructions per line of kernel code.
+diff --git a/include/asm-x86_64/hw_irq.h b/include/asm-x86_64/hw_irq.h
+index 09dfc18..9f00f69 100644
+--- a/include/asm-x86_64/hw_irq.h
++++ b/include/asm-x86_64/hw_irq.h
+@@ -40,22 +40,22 @@
+ /*
+  * Vectors 0x30-0x3f are used for ISA interrupts.
+  */
+-#define IRQ0_VECTOR		FIRST_EXTERNAL_VECTOR + 0x10
+-#define IRQ1_VECTOR		IRQ0_VECTOR + 1
+-#define IRQ2_VECTOR		IRQ0_VECTOR + 2
+-#define IRQ3_VECTOR		IRQ0_VECTOR + 3
+-#define IRQ4_VECTOR		IRQ0_VECTOR + 4
+-#define IRQ5_VECTOR		IRQ0_VECTOR + 5 
+-#define IRQ6_VECTOR		IRQ0_VECTOR + 6
+-#define IRQ7_VECTOR		IRQ0_VECTOR + 7
+-#define IRQ8_VECTOR		IRQ0_VECTOR + 8
+-#define IRQ9_VECTOR		IRQ0_VECTOR + 9
+-#define IRQ10_VECTOR		IRQ0_VECTOR + 10
+-#define IRQ11_VECTOR		IRQ0_VECTOR + 11
+-#define IRQ12_VECTOR		IRQ0_VECTOR + 12
+-#define IRQ13_VECTOR		IRQ0_VECTOR + 13
+-#define IRQ14_VECTOR		IRQ0_VECTOR + 14
+-#define IRQ15_VECTOR		IRQ0_VECTOR + 15
++#define IRQ0_VECTOR		(FIRST_EXTERNAL_VECTOR + 0x10)
++#define IRQ1_VECTOR		(IRQ0_VECTOR + 1)
++#define IRQ2_VECTOR		(IRQ0_VECTOR + 2)
++#define IRQ3_VECTOR		(IRQ0_VECTOR + 3)
++#define IRQ4_VECTOR		(IRQ0_VECTOR + 4)
++#define IRQ5_VECTOR		(IRQ0_VECTOR + 5)
++#define IRQ6_VECTOR		(IRQ0_VECTOR + 6)
++#define IRQ7_VECTOR		(IRQ0_VECTOR + 7)
++#define IRQ8_VECTOR		(IRQ0_VECTOR + 8)
++#define IRQ9_VECTOR		(IRQ0_VECTOR + 9)
++#define IRQ10_VECTOR		(IRQ0_VECTOR + 10)
++#define IRQ11_VECTOR		(IRQ0_VECTOR + 11)
++#define IRQ12_VECTOR		(IRQ0_VECTOR + 12)
++#define IRQ13_VECTOR		(IRQ0_VECTOR + 13)
++#define IRQ14_VECTOR		(IRQ0_VECTOR + 14)
++#define IRQ15_VECTOR		(IRQ0_VECTOR + 15)
+ 
+ /*
+  * Special IRQ vectors used by the SMP architecture, 0xf0-0xff
+diff --git a/kernel/fork.c b/kernel/fork.c
 
-I may completely miss out on this one, but what's the point in
-knowing?
 
-
---=20
-$ cat ~/.signature
-Freddy Spierenburg <freddy@dusktilldawn.nl>  http://freddy.snarl.nl/
-GnuPG: 0x7941D1E1=3DC948 5851 26D2 FA5C 39F1  E588 6F17 FD5D 7941 D1E1
-$ # Please read http://www.ietf.org/rfc/rfc2015.txt before complain!
-
---KbI68ipL6xvRMBYq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG1yDpbxf9XXlB0eERAmmoAKCQBfZ6VtYVi06o3XqM3y/k613irwCg6/PJ
-ru/mXsL4sZA5uywduvBiXqo=
-=OWT7
------END PGP SIGNATURE-----
-
---KbI68ipL6xvRMBYq--
