@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763747AbXH3WoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763311AbXH3Wob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763747AbXH3WoR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 18:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762899AbXH3WoC
+	id S1763311AbXH3Wob (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 18:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763375AbXH3WoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 18:44:02 -0400
-Received: from ozlabs.org ([203.10.76.45]:47195 "EHLO ozlabs.org"
+	Thu, 30 Aug 2007 18:44:11 -0400
+Received: from ozlabs.org ([203.10.76.45]:47250 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756354AbXH3WoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 18:44:00 -0400
-Subject: Re: [PATCH] Fix lguest page-pinning logic ("lguest: bad stack page
-	0xc057a000")
+	id S1763343AbXH3WoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 18:44:10 -0400
+Subject: [PATCH] Fix out-by-one error in traps.c
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Frederik Deweerdt <deweerdt@free.fr>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lguest <lguest@ozlabs.org>
+       lguest <lguest@ozlabs.org>, Frederik Deweerdt <deweerdt@free.fr>,
+       Andi Kleen <ak@muc.de>
 In-Reply-To: <20070830163812.GA22190@slug>
 References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
 	 <20070822202551.GB31846@slug>
@@ -27,34 +26,31 @@ References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
 	 <1188230999.5531.15.camel@localhost.localdomain>
 	 <20070830163812.GA22190@slug>
 Content-Type: text/plain
-Date: Fri, 31 Aug 2007 08:12:55 +1000
-Message-Id: <1188511975.6353.2.camel@localhost.localdomain>
+Date: Fri, 31 Aug 2007 08:14:26 +1000
+Message-Id: <1188512066.6353.5.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-30 at 18:38 +0200, Frederik Deweerdt wrote: 
-> On Tue, Aug 28, 2007 at 02:09:59AM +1000, Rusty Russell wrote:
-> > If the stack pointer is 0xc057a000, then the first stack page is at
-> > 0xc0579000 (the stack pointer is decremented before use).  Not
-> > calculating this correctly caused guests with CONFIG_DEBUG_PAGEALLOC=y
-> > to be killed with a "bad stack page" message: the initial kernel stack
-> > was just preceeding the .smp_locks section which
-> > CONFIG_DEBUG_PAGEALLOC marks read-only when freeing.
-> > 
-> Hello Rusty,
-> 
-> I just could try the patch, sorry for the delay. Albeit it allows to
-> progress a little further in the boot process, lguest seems to like that
-> "section that was just freed" :)
+We don't care if ebp is on the stack, we care about ebp + 4.  Without
+this, lguest (with CONFIG_DEBUG_LOCKDEP) can touch a page unmapped by
+CONFIG_DEBUG_PAGEALLOC.
 
-Yes, I got this too, then had to jump on a plane (and away from my test
-box).
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Turns out this actually isn't my bug (yay!).
+diff -r b0b1ab8ecf48 arch/i386/kernel/traps.c
+--- a/arch/i386/kernel/traps.c	Fri Aug 31 03:25:06 2007 +1000
++++ b/arch/i386/kernel/traps.c	Fri Aug 31 07:57:35 2007 +1000
+@@ -100,7 +100,7 @@ print_context_stack(struct thread_info *tinfo,
+ 	unsigned long addr;
+ 
+ #ifdef	CONFIG_FRAME_POINTER
+-	while (valid_stack_ptr(tinfo, (void *)ebp)) {
++	while (valid_stack_ptr(tinfo, (void *)ebp + 4)) {
+ 		unsigned long new_ebp;
+ 		addr = *(unsigned long *)(ebp + 4);
+ 		ops->address(data, addr);
 
-See next patch...
-Rusty.
 
