@@ -1,44 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763630AbXH3XUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbXH3XVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763630AbXH3XUa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 19:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbXH3XUX
+	id S1764001AbXH3XVK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 19:21:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761529AbXH3XUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 19:20:23 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43440 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753570AbXH3XUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 19:20:22 -0400
-Date: Fri, 31 Aug 2007 00:20:20 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Christoph Hellwig <hch@infradead.org>
-cc: Kristian H?gsberg <krh@redhat.com>, linux-kernel@vger.kernel.org,
-       m.kozlowski@tuxland.pl, akpm@linux-foundation.org,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [PATCH 00/23] drm: introduce drm_zalloc
-In-Reply-To: <20070830162400.GA12108@infradead.org>
-Message-ID: <Pine.LNX.4.64.0708310013460.23110@skynet.skynet.ie>
-References: <20070827205750.514001000@tuxland.pl> <20070828200821.GA7998@infradead.org>
- <Pine.LNX.4.64.0708282149180.15296@skynet.skynet.ie>
- <1188490832.7269.6.camel@hinata.boston.redhat.com> <20070830162400.GA12108@infradead.org>
+	Thu, 30 Aug 2007 19:20:51 -0400
+Received: from phunq.net ([64.81.85.152]:57477 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754716AbXH3XUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 19:20:49 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [1/1] Block device throttling [Re: Distributed storage.]
+Date: Thu, 30 Aug 2007 16:20:35 -0700
+User-Agent: KMail/1.9.5
+Cc: Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708281408.06618.phillips@phunq.net> <20070829085331.GA16607@2ka.mipt.ru>
+In-Reply-To: <20070829085331.GA16607@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708301620.37965.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 29 August 2007 01:53, Evgeniy Polyakov wrote:
+> Then, if of course you will want, which I doubt, you can reread
+> previous mails and find that it was pointed to that race and
+> possibilities to solve it way too long ago.
+
+What still bothers me about your response is that, while you know the 
+race exists and do not disagree with my example, you don't seem to see 
+that that race can eventually lock up the block device by repeatedly 
+losing throttle counts which are never recovered.  What prevents that?
+
+> > --- 2.6.22.clean/block/ll_rw_blk.c	2007-07-08 16:32:17.000000000
+> > -0700 +++ 2.6.22/block/ll_rw_blk.c	2007-08-24 12:07:16.000000000
+> > -0700 @@ -3237,6 +3237,15 @@ end_io:
+> >   */
+> >  void generic_make_request(struct bio *bio)
+> >  {
+> > +	struct request_queue *q = bdev_get_queue(bio->bi_bdev);
+> > +
+> > +	if (q && q->metric) {
+> > +		int need = bio->bi_reserved = q->metric(bio);
+> > +		bio->queue = q;
 >
-> Note the slab has a memory tracking feature that accounts memory to
-> callers of the allocator.  IF that's not enough for you please help
-> improving the common code instead of inventing your own.
+> In case you have stacked device, this entry will be rewritten and you
+> will lost all your account data.
 
-Christoph that code was written over 6-7 years ago, feel free to provide a 
-patch for it to use the slab allocator, we only turn this code on though 
-when developing new drivers, I don't think it ever gets used outside of 
-that.. we don't need the overhead of the memory tracking in normal use..
+It is a weakness all right.  Well,
 
-Please stop implying that all the code in the drm is magically new and 
-that we should be reusing kernel infrastructure that wasn't even written 
-when the code first appeared.. or provide patches...
+-	if (q && q->metric) {
++	if (q && q->metric && !bio->queue) {
 
-Dave.
+which fixes that problem.  Maybe there is a better fix possible.  Thanks 
+for the catch!
+
+The original conception was that this block throttling would apply only 
+to the highest level submission of the bio, the one that crosses the 
+boundary between filesystem (or direct block device application) and 
+block layer.  Resubmitting a bio or submitting a dependent bio from 
+inside a block driver does not need to be throttled because all 
+resources required to guarantee completion must have been obtained 
+_before_ the bio was allowed to proceed into the block layer.
+
+The other principle we are trying to satisfy is that the throttling 
+should not be released until bio->endio, which I am not completely sure 
+about with the patch as modified above.  Your earlier idea of having 
+the throttle protection only cover the actual bio submission is 
+interesting and may be effective in some cases, in fact it may cover 
+the specific case of ddsnap.  But we don't have to look any further 
+than ddraid (distributed raid) to find a case it doesn't cover - the 
+additional memory allocated to hold parity data has to be reserved 
+until parity data is deallocated, long after the submission completes.
+So while you manage to avoid some logistical difficulties, it also looks 
+like you didn't solve the general problem.
+
+Hopefully I will be able to report on whether my patch actually works 
+soon, when I get back from vacation.  The mechanism in ddsnap this is 
+supposed to replace is effective, it is just ugly and tricky to verify.
+
+Regards,
+
+Daniel
