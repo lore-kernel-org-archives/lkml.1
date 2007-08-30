@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761659AbXH3Tb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXH3Ter@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761659AbXH3Tb1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 15:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757537AbXH3TbQ
+	id S1762098AbXH3Ter (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 15:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759944AbXH3Tek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 15:31:16 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:44224 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755546AbXH3TbP (ORCPT
+	Thu, 30 Aug 2007 15:34:40 -0400
+Received: from hierophant.serpentine.com ([64.81.58.173]:38520 "EHLO
+	hierophant.serpentine.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759769AbXH3Tej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 15:31:15 -0400
-Date: Thu, 30 Aug 2007 21:31:14 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Rene Herman <rene.herman@gmail.com>
-cc: =?ISO-8859-15?Q?Jos=E9_Luis_Pati=F1o_Andr=E9s?= 
-	<jopan@alumni.uv.es>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
-Subject: Re: Problems with IDE on linux 2.6.22.X
-In-Reply-To: <46D455DB.8000800@gmail.com>
-Message-ID: <Pine.LNX.4.64.0708302130210.24730@fbirervta.pbzchgretzou.qr>
-References: <200708212149.12912.jopan@alumni.uv.es> <20070822162312.GG9412@csclub.uwaterloo.ca>
- <46CC6A2F.5000406@gmail.com> <200708280044.34475.jopan@alumni.uv.es>
- <46D455DB.8000800@gmail.com>
+	Thu, 30 Aug 2007 15:34:39 -0400
+X-Greylist: delayed 1202 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 15:34:39 EDT
+Message-ID: <46D716D1.6070508@serpentine.com>
+Date: Thu, 30 Aug 2007 12:13:21 -0700
+From: "Bryan O'Sullivan" <bos@serpentine.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       rob@landley.net, werner@almesberger.net, hpa@zytor.com
+Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
+References: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
+In-Reply-To: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> initrd/initramfs/ramdisk docs:
+> - fix typos/spellos/grammar
+> - clarify RAM disk config location
+> - correct cpio option
+> 
+> Cc: Bryan O'Sullivan <bos@serpentine.com>
 
-On Aug 28 2007 19:05, Rene Herman wrote:
->> Okay Rene, I activated SCSI CD-ROM support in kernel config and now all
->> works again. It's strange, because I never used this option to get my DVD
->> device on.
->
-> Sheesh. How could anyone _not_ understand you need SCSI CD-ROM support for your
-> IDE DVD-RW drive...
-
-Welcome to the wonderful world of SCSIfying ATA. (Don't talk about 
-ATAPI, USB/Firewire, it's a different matter.)
-
-
-	Jan
--- 
+Acked-by: Bryan O'Sullivan <bos@serpentine.com>
