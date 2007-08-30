@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964837AbXH3TBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964901AbXH3TCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964837AbXH3TBP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 15:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933096AbXH3TAw
+	id S964901AbXH3TCr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 15:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932794AbXH3TCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 15:00:52 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:52653 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932954AbXH3TAv (ORCPT
+	Thu, 30 Aug 2007 15:02:37 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:47893 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932635AbXH3TCg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 15:00:51 -0400
-Date: Thu, 30 Aug 2007 21:00:50 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Thomas Bleher <ThomasBleher@gmx.de>
-cc: Casey Schaufler <casey@schaufler-ca.com>, torvalds@osdl.org, akpm@osdl.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Version2 Smack: Simplified Mandatory Access Control
- Kernel
-In-Reply-To: <20070827215954.GA5979@thorium2.jmh.mhn.de>
-Message-ID: <Pine.LNX.4.64.0708302059270.24730@fbirervta.pbzchgretzou.qr>
-References: <46D0FF17.4020103@schaufler-ca.com> <20070827215954.GA5979@thorium2.jmh.mhn.de>
+	Thu, 30 Aug 2007 15:02:36 -0400
+Date: Thu, 30 Aug 2007 13:02:35 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@osdl.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hare@suse.de
+Subject: Re: [PATCH] debloat aic7xxx and aic79xx drivers by deinlining
+Message-ID: <20070830190235.GX14130@parisc-linux.org>
+References: <200708252257.07241.vda.linux@googlemail.com> <200708281256.35162.vda.linux@googlemail.com> <20070828081710.4687185c@laptopd505.fenrus.org> <200708282055.07411.vda.linux@googlemail.com> <Pine.LNX.4.64.0708302042260.24730@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708302042260.24730@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 30, 2007 at 08:43:24PM +0200, Jan Engelhardt wrote:
+> On Aug 28 2007 20:55, Denys Vlasenko wrote:
+> >> Fwiw I do like your debloat patch a lot; it's just only half the
+> >> equation ... if you also do the namespace fixes, I bet the driver
+> >> debloats even more...
+> >
+> >Yes, I know, and I am happy to do that too. I just don't know
+> >whether patches will be accepted.
+> >
+> >Why this patch is not commented on by scsi people?
+> >Am I sending patches to wrong people/lists?
+> 
+> Well, you can send it to Linus/Andrew, that will usually upset people and they
+> start commenting on it. Or they don't, and everything is fine.
+> (The "default y" approach so to speak ;-)
 
-On Aug 27 2007 23:59, Thomas Bleher wrote:
+The problem is that we don't really have a maintainer for the aic7xyz
+drivers any more.  Volunteers welcome.  NOT IT!
 
->> +       for (cp = data - 1; cp != NULL; cp = strchr(cp + 1, '\n')) {
->> +               if (*++cp == '\0')
->> +                       break;
->> +               if (sscanf(cp, "%14s %30s\n", name, target) != 2) {
->> +                       printk("%s:%d bad scan\n",
->> +                               __func__, __LINE__);
->
->Leftover debugging printk? Otherwise, a level would be nice.
-
-Or even pr_debug.
-
-(pr_debug("%s...
-
->> +	static struct tree_descr smack_files[] = {
-
-Hey, can we make this const, if it does not change at runtime?
-
-
-	Jan
 -- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
