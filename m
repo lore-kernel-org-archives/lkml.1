@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbXH3NbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758328AbXH3Nn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759505AbXH3NbW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 09:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbXH3NbO
+	id S1758328AbXH3Nn6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 09:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbXH3Nnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 09:31:14 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:52156 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750982AbXH3NbN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 09:31:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Tbf/1dqadHJfjHu2WgCOHDNLGiBeBUtJDhp2bNz7IV7H21AafjbaK8rSlgTLKFCbtGAnzwZxBGHQyNeGhLHIvWQt7d/rh3c9cexxbwa+c1RLyKeJf1SeDKUV7/+tvKOaFo7eh640/ZTZrOs5umhAhDK39wTGWYNEfW+DgmW1ZU0=
-Message-ID: <9a8748490708300631o285fd31ch462199ec9535c6c2@mail.gmail.com>
-Date: Thu, 30 Aug 2007 15:31:12 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: bamakhrama@gmail.com
-Subject: Re: Average number of instructions per line of kernel code
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-In-Reply-To: <40378e40708300600h5837d46ci5266b8ae62bbd46e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Aug 2007 09:43:47 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:38691 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754057AbXH3Nnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 09:43:45 -0400
+Date: Thu, 30 Aug 2007 15:45:06 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, Xavier Bestel <xavier.bestel@free.fr>,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 4/5] Net: ath5k, license is GPLv2
+Message-ID: <20070830134506.GB2778@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <40378e40708300600h5837d46ci5266b8ae62bbd46e@mail.gmail.com>
+In-Reply-To: <20070829204529.66ce1bcb@the-village.bc.nu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30/08/2007, Mohamed Bamakhrama <bamakhrama@gmail.com> wrote:
-> Hi all,
-> I have a question regarding the average number of assembly
-> instructions per line of kernel code. I know that this is a difficult
-> question since it depends on many factors such as the instruction set
-> architecture, compiler used, optimizations used, type of code, coding
-> style, etc...
-> I would like to know a rough estimate for such a quantity for the
-> kernel 2.4/2.6 code running on MIPS32 architecture.
-> My estimate is between 5-10 instructions. I googled for such a thing
-> but couldn't find any useful papers/resources.
->
+On 30-08-2007 13:59, Johannes Berg wrote:
+> On Wed, 2007-08-29 at 15:13 +0200, Xavier Bestel wrote:
+> 
+>> How about asking for changes to be dual-licenced too ?
+> 
+> In theory, that could work, but in practice relying on functions that
+> the Linux kernel offers in GPLv2-only headers etc. will make the result
+> GPLv2 anyway, and disentangling it would be a nightmare.
+> 
 
-Why don't you simply count the number of non-blank non-comment lines
-in the source files that you are building, build the kernel and then
-count the number of instructions in the resulting binary ?
+Why?
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Very good point, but, in my opinion, it should be still resonable for
+both sides: it simply means such changes are mostly unusable for the
+other side, but nobody is going to waste time for marking all these
+places, or care about suing if accidentally the changes, after some
+adaptation, are usable for the other side. Unless you think or know
+that "#include xyz" or "print_linux_way()" should add more than these
+(maybe unusable) words or lines only?
+
+Jarek P.
