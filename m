@@ -1,70 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbXH3IVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758176AbXH3IWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757898AbXH3IVu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 04:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbXH3IVm
+	id S1758176AbXH3IWu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 04:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbXH3IWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 04:21:42 -0400
-Received: from zaphod.dth.net ([85.159.112.68]:55778 "EHLO zaphod.dth.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755369AbXH3IVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 04:21:41 -0400
-Date: Thu, 30 Aug 2007 10:21:38 +0200
-From: Danny ter Haar <dth@dth.net>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [2/4] 2.6.23-rc4: known regressions
-Message-ID: <20070830082138.GA32165@dth.net>
-References: <46D58CC6.4020605@googlemail.com> <46D59052.6040609@googlemail.com>
+	Thu, 30 Aug 2007 04:22:43 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:15845 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753049AbXH3IWm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 04:22:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=dFW+8oEhzfoZKil357yban41JP65YpBCaOQzHzG57iWZ4Fc4hHj+W5MUFhkaBpCXBjVP/oxM96ayCBxAV7aHQDkPqb3TNHlLrtD7Ms+5iPlkwT7W49NPFAFM9WfoEardsOlOXGw5Di7x5u/bqVaFAZ1k9oOn+/IDWQg+bvuedhM=
+Message-ID: <46D67E43.9050704@gmail.com>
+Date: Thu, 30 Aug 2007 10:22:27 +0200
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46D59052.6040609@googlemail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: arch_align_stack() seems useless
+References: <46D2DADF.8060505@gmail.com> <20070827071413.736e3dcb@laptopd505.fenrus.org> <46D42057.9090507@gmail.com>
+In-Reply-To: <46D42057.9090507@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michal Piotrowski (michal.k.k.piotrowski@gmail.com):
-> Here is a list of some known regressions in 2.6.23-rc4.
-> CPUFREQ
-> Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-> References      : http://lkml.org/lkml/2007/7/27/298
->                   http://lkml.org/lkml/2007/7/29/371
-> Last known good : ?
-> Submitter       : dth <dth@dth.net>
-> Caused-By       : Len Brown <lenb@kernel.org>
->                   commit f79e3185dd0f8650022518d7624c876d8929061b
-> Handled-By      : Len Brown <lenb@kernel.org>
-> Status          : problem is being debugged
+Arjan,
 
-I just compiled 2.6.23-rc4 on this setup to check if we made any
-progress. After reboot i see:
+Franck Bui-Huu wrote:
+> Arjan van de Ven wrote:
+>> arch_align_stack aligns, on x86, within a 2 page range (this is for
+>> cache coloring).
+> 
+> OK, but for elf case this seems useless since the top of the stack is
+> already randomized.
+> 
+> It seems that the randomization stuff (top of the stack + stack
+> pointer inside a page) belongs to the elf binary format whereas it
+> could have been part of exec.c. Are there any reasons ?
+> 
+>> The other thing you missed is that arch_align_stack()
+>> is called in 2 locations, binfmt_elf.c is the primary location for
+>> inside-the-page randomization.
+>>
+> 
+> Well not really because for mips case, we have:
+> 
+> 	$ git grep ELF_PLATFORM include/asm-mips
+> 	include/asm-mips/elf.h:#define ELF_PLATFORM  (NULL)
+> 
+> So on mips, the stack pointer won't get the inside the page
+> randomization. Is that correct ?
+> 
+> If so, I'm wondering why this randomization must depend on that string
+> to be defined. I must admit that I'm not sure how it's used. I guess
+> it's used by ld.so and it could be set to "mips" for now...
+> 
 
-[SNIP]
-NET: Registered protocol family 17
-Using IPI Shortcut mode
-Freeing unused kernel memory: 148 freed
-init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
-init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
-init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
-init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
-init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
-init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
-init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
-init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
-init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
-init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
-input: AT Translated Set 2 keyboard as /devices/platform/i8042/
-printk: 7888020 messages suppressed
-init[1]: segfault at 85890000 eip 85890000 esp bfcfcb8c error 4
+Do you think that the diff below would be correct ? I tested it on
+mips and it seems to work fine but I can't really say if it's
+valid enough to submit it as a patch...
 
-[more of the last 2 lines repeated over and over]
+thanks
+		Franck
 
-Am i doing something wrong (very possible) or am i bitten by
-another/new phenomena ?
+---8<---
 
-Danny
--- 
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 4482a06..024006e 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -151,6 +151,13 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 	struct vm_area_struct *vma;
+ 
+ 	/*
++	 * In some cases (e.g. Hyper-Threading), we want to avoid L1
++	 * evictions by the processes running on the same package. One
++	 * thing we can do is to shuffle the initial stack for them.
++	 */
++	p = arch_align_stack(p);
++
++	/*
+ 	 * If this architecture has a platform capability string, copy it
+ 	 * to userspace.  In some cases (Sparc), this info is impossible
+ 	 * for userspace to get any other way, in others (i386) it is
+@@ -160,14 +167,6 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 	if (k_platform) {
+ 		size_t len = strlen(k_platform) + 1;
+ 
+-		/*
+-		 * In some cases (e.g. Hyper-Threading), we want to avoid L1
+-		 * evictions by the processes running on the same package. One
+-		 * thing we can do is to shuffle the initial stack for them.
+-		 */
+-
+-		p = arch_align_stack(p);
+-
+ 		u_platform = (elf_addr_t __user *)STACK_ALLOC(p, len);
+ 		if (__copy_to_user(u_platform, k_platform, len))
+ 			return -EFAULT;
