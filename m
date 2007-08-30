@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761504AbXH3AM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761430AbXH3A0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761504AbXH3AM7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Aug 2007 20:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbXH3AMu
+	id S1761430AbXH3A0p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Aug 2007 20:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbXH3A0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Aug 2007 20:12:50 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40045 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753655AbXH3AMt (ORCPT
+	Wed, 29 Aug 2007 20:26:35 -0400
+Received: from h151.mvista.com ([63.81.120.158]:34289 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755045AbXH3A0e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Aug 2007 20:12:49 -0400
-Date: Wed, 29 Aug 2007 17:12:48 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mingming Cao <cmm@us.ibm.com>
-cc: torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
-       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [31/36] Large Blocksize: Core piece
-In-Reply-To: <1188432669.3799.35.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0708291712020.4336@schroedinger.engr.sgi.com>
-References: <20070828190551.415127746@sgi.com>  <20070828190735.292638294@sgi.com>
- <1188432669.3799.35.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 29 Aug 2007 20:26:34 -0400
+Subject: 2.6.23-rc4-dw1
+From: Daniel Walker <dwalker@mvista.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, mingo@redhat.com, linux-rt-users@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 29 Aug 2007 17:17:29 -0700
+Message-Id: <1188433049.26038.15.camel@dhcp193.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Aug 2007, Mingming Cao wrote:
 
-> > Known internal limitations:
-> > 
-> > Ext2            64k
-> > XFS             64k
-> > Reiserfs        8k
-> > Ext3            4k (rumor has it that changing a constant can remove the limit)
-> > Ext4            4k
-> > 
-> 
-> There are patches original worked by Takashi Sato to support large block
-> size (up to 64k) in ext2/3/4, which addressed the directory issue as
-> well. I just forward ported. Will posted it in a separate thread.
-> Haven't get a chance to integrated with your patch yet (next step).
+I've updated to 2.6.23-rc4 .. This is an "Ingo appears to be busy.."
+release .. I've been waiting for a -rt update , but there hasn't been
+one for a while. So my tree is the best everyone will get for now.
 
-Ahh. Great. Keep me posted.
+ftp://source.mvista.com/pub/dwalker/rt/patch-2.6.23-rc4-dw1
+ftp://source.mvista.com/pub/dwalker/rt/patch-2.6.23-rc4-dw1.tar.bz2
+
+The patches follow the release style of Ingo's tree, and his release
+notes also apply to my patch as well.
+
+I included a fresh git-acpi pull. I also included all the patches I've
+submitted to Ingo, and the following patches that got submitting to lkml
+and the linux-rt-users list,
+
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH RT] fix non SMP compile smp stubs
+
+From: Sven-Thorsten Dietrich <sdietrich@novell.com>
+Subject: [PATCH RT] - Mellanox IB driver patch
+
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH RT] Add missing semicolon in percpu_list.h
+
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH RFC -rt] synchronize_sched() without migration
+
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH RFC -rt] Allow rcutorture to handle synchronize_sched()
+
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH RT] Only run softirqs from the irq thread if the irq
+
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH RT 2/3] initialize the clock source to jiffies clock.
+
+Enjoy,
+
+Daniel
 
