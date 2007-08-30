@@ -1,48 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760823AbXH3OCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbXH3OHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760823AbXH3OCQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 10:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756257AbXH3OCB
+	id S1760137AbXH3OHR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 10:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbXH3OHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 10:02:01 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:29335 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751251AbXH3OCA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 10:02:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hpdppS/SQSVqAjNzmPodjqVw8Ejvf2D9f0UcBp7DjVWyAsJ2jDtC3FVFveHQ+Gohxe32Ukzq3CoJhw+mWltVAceUGckVFG6RKW5hDi+7dqmsi4FRXWLukC/UjYJubyZOR/BNfz07kgdqWkUV3V3mn2fP0eNlvSov/mUXeBrqzhY=
-Message-ID: <8bd0f97a0708300701r1f36bc0anc45b9cad4a11f2ef@mail.gmail.com>
-Date: Thu, 30 Aug 2007 10:01:59 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: [PATCH] i386 and x86_64: randomize brk()
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708301545100.4135@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 30 Aug 2007 10:07:06 -0400
+Received: from smtp2a.orange.fr ([80.12.242.139]:1602 "EHLO smtp2a.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756770AbXH3OHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 10:07:04 -0400
+X-ME-UUID: 20070830140702486.76CC9700009F@mwinf2a07.orange.fr
+Subject: Re: speeding up swapoff
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: Robert Hancock <hancockr@shaw.ca>, Daniel Drake <ddrake@brontes3d.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46D6CC35.90207@aitel.hist.no>
+References: <fa.j/pO3mTWDugTdvZ3XNr9XpvgzPQ@ifi.uio.no>
+	 <fa.ed9fasZXOwVCrbffkPQTX7G3a7g@ifi.uio.no>
+	 <fa./NZA3biuO1+qW5pW8ybdZMDWcZs@ifi.uio.no> <46D61F48.5090406@shaw.ca>
+	 <46D6CC35.90207@aitel.hist.no>
+Content-Type: text/plain
+Date: Thu, 30 Aug 2007 16:06:55 +0200
+Message-Id: <1188482815.1131.374.camel@frg-rhel40-em64t-04>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0708301545100.4135@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/30/07, Jiri Kosina <jkosina@suse.cz> wrote:
-> From: Jiri Kosina <jkosina@suse.cz>
->
-> i386 and x86_64: randomize brk()
->
-> This patch randomizes the location of the heap (brk) for i386 and x86_64.
-> The range is randomized in the range starting at current brk location up
-> to 0x02000000 offset for both architectures. This, together with
-> pie-executable-randomization.patch and
-> pie-executable-randomization-fix.patch, should make the address space
-> randomization on i386 and x86_64 complete.
->
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+On Thu, 2007-08-30 at 15:55 +0200, Helge Hafting wrote:
+> If the swap device is full, then there is no need for random
+> seeks as the swap pages can be read in disk order.
 
-does it really make sense to stick stubs into no-mmu ports which
-cannot utilize the ELF binfmt ?
--mike
+If the swap file is full, you probably have a machine dead into a swap
+storm.
+
+
