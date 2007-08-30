@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbXH3KwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760162AbXH3Kxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759243AbXH3KwT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 06:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbXH3KwI
+	id S1760162AbXH3Kxb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 06:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbXH3KxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 06:52:08 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43347 "EHLO mx2.suse.de"
+	Thu, 30 Aug 2007 06:53:23 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43409 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752355AbXH3KwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 06:52:07 -0400
-Date: Thu, 30 Aug 2007 12:52:06 +0200
-Message-ID: <s5h7indi9bd.wl%tiwai@suse.de>
+	id S1754699AbXH3KxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 06:53:22 -0400
+Date: Thu, 30 Aug 2007 12:53:20 +0200
+Message-ID: <s5h642xi99b.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Markus Dahms <mad@automagically.de>, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix ALSA compilation on Sparc32
-In-Reply-To: <20070830110939.23146ea3@the-village.bc.nu>
-References: <20070830092604.GA17041@vimes.madsworld.lan>
-	<20070830110939.23146ea3@the-village.bc.nu>
+To: "Jaya Kumar" <jayakumar.alsa@gmail.com>
+Cc: "Andres Salomon" <dilinger@queued.net>, akpm@linux-foundation.org,
+       jordan.crouse@amd.com, linux-kernel@vger.kernel.org,
+       info-linux@geode.amd.com
+Subject: Re: [PATCH 0/5] ALSA: cs5535audio fixes
+In-Reply-To: <47f5dce30708292052v473336a1kbc386787debcbccd@mail.gmail.com>
+References: <20070829232745.5ea9ff3e.dilinger@queued.net>
+	<47f5dce30708292052v473336a1kbc386787debcbccd@mail.gmail.com>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -27,27 +28,24 @@ Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Thu, 30 Aug 2007 11:09:39 +0100,
-Alan Cox wrote:
+At Wed, 29 Aug 2007 23:52:08 -0400,
+Jaya Kumar wrote:
 > 
-> On Thu, 30 Aug 2007 11:26:04 +0200
-> Markus Dahms <mad@automagically.de> wrote:
+> On 8/29/07, Andres Salomon <dilinger@queued.net> wrote:
+> > Hi,
+> >
+> > Here are a bunch of fixes for the cs5535audio driver.  None of these are
+> > OLPC specific; generic chip and power management fixes, and one cleanup
+> > patch.  All have been tested on an OLPC (5536), so even though the 5535
+> > data sheet claims to be the same, it would be nice to hear success/failure
+> > reports from someone with a 5535.
 > 
-> > The dma_alloc_coherent and dma_free_coherent function seem to be not
-> > available on sparc(32) architecture. It is not used by SBus sound
-> > drivers, so it's disabled via #ifndef for CONFIG_SPARC32.
-> 
-> It would probably look a lot cleaner if you either provided dummy
-> dma_alloc_coherent/free coherent inlines for SPARC32, fixed it (if
-> sparc32 can do coherent DMA) or if you must ifdef it provide dummy
-> functions in the memalloc code so its a single ifdef
+> The patches look good. I'm traveling till Sep 2nd so can't test on
+> 5535 yet. Thanks very much for your efforts Andres.
 
-It's been indeed inline on 2.6.22 or ealier in
-include/asm-generic/dma-mapping.h, but it's changed to extern without
-defining functions.
+OK, let me know if it works for you.  Then I'll apply them to ALSA
+tree.
 
-I don't think it's a good idea to have function declarations even
-though we surely know that there are no real function definitions...
-
+Thanks,
 
 Takashi
