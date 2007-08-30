@@ -1,100 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbXH3Ula@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762190AbXH3Umz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761581AbXH3Ula (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 16:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbXH3UlV
+	id S1762190AbXH3Umz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 16:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759412AbXH3Ums
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 16:41:21 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:48257 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753684AbXH3UlU (ORCPT
+	Thu, 30 Aug 2007 16:42:48 -0400
+Received: from lilly.ping.de ([83.97.42.2]:4791 "HELO lilly.ping.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759262AbXH3Umr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 16:41:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=VCizB7ULTghBm4ZpCrmGI90AeB7mDeoefABHXMdQprrVrylqA54umjqsyME7dNZAMI5WY50C7qJDkferC46a8JkHImoN6CN5jtYZNxk8PBanRHcpgfSKCIKmNnacXIB4iP+w8lDYAT+GA+aPsCo92frj3DLv4XckWCVy1eC+pEU=
-Message-ID: <e9c3a7c20708301341r197fb401j17c07c733609c61a@mail.gmail.com>
-Date: Thu, 30 Aug 2007 13:41:18 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "saeed bishara" <saeed.bishara@gmail.com>
-Subject: Re: [md-accel PATCH 16/19] dmaengine: driver for the iop32x, iop33x, and iop13xx raid engines
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de,
-       "Nelson, Shannon" <shannon.nelson@intel.com>
-In-Reply-To: <c70ff3ad0708301143w55bf296p37b0991d7f099fd6@mail.gmail.com>
+	Thu, 30 Aug 2007 16:42:47 -0400
+Date: 30 Aug 2007 22:42:46 +0200
+Message-ID: <46D72BC6.3020809@edge.ping.de>
+From: "Tim Teulings" <rael@edge.ping.de>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@gmail.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       debian-powerpc@lists.debian.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070627014823.18962.96398.stgit@dwillia2-linux.ch.intel.com>
-	 <20070627015155.18962.88413.stgit@dwillia2-linux.ch.intel.com>
-	 <c70ff3ad0708270611x5598fa9dlc3afa5f6fabd6563@mail.gmail.com>
-	 <c70ff3ad0708270614t6f17b38nfbdf84ace69b8d78@mail.gmail.com>
-	 <0C7297FA1D2D244A9C7F6959C0BF1E52025B10E4@azsmsx413.amr.corp.intel.com>
-	 <c70ff3ad0708301143w55bf296p37b0991d7f099fd6@mail.gmail.com>
-X-Google-Sender-Auth: 412674f0d12e8bff
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com> <6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com> <20070827065246.GA21220@ime.usp.br> <46D279E8.10001@edge.ping.de>
+In-Reply-To: <46D279E8.10001@edge.ping.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/30/07, saeed bishara <saeed.bishara@gmail.com> wrote:
-> you are right, I've another question regarding the function
-> dma_wait_for_async_tx from async_tx.c, here is the body of the code:
->        /* poll through the dependency chain, return when tx is complete */
-> 1.        do {
-> 2.                 iter = tx;
-> 3.                 while (iter->cookie == -EBUSY)
-> 4.                         iter = iter->parent;
-> 5.
-> 6.                 status = dma_sync_wait(iter->chan, iter->cookie);
-> 7.         } while (status == DMA_IN_PROGRESS || (iter != tx));
->
-> assume that:
-> - The interrupt capability is not provided.
-> - Request A was sent to chan 0
-> - Request B that depends on A is sent to chan 1
-> - Request C that depends on B is send to chan 2.
-> - Also, assume that when C is handled by async_tx_submit(), B is still
-> not queued to the dmaengine (cookie equals to -EBUSY).
->
-> In this case, dma_wait_for_async_tx will be called for C, now, it
-> looks for me that the do while will loop forever, even when A gets
-> completed. this is because the iter will point to B after line 4, thus
-> the iter != tx (C) will always become true.
->
-You are right.  There are no drivers in the tree that can hit this,
-but it needs to be fixed up.
+Hello!
 
-I'll submit the following change:
+> I don't have traces at hand and due to lack of time cannot reproduce it 
+> up to tomorrow. However this hint may speed up your analysis!
 
-diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
-index 0350071..bc18cbb 100644
---- a/crypto/async_tx/async_tx.c
-+++ b/crypto/async_tx/async_tx.c
-@@ -80,6 +80,7 @@ dma_wait_for_async_tx(struct dma_async_tx_descriptor *tx)
- {
-        enum dma_status status;
-        struct dma_async_tx_descriptor *iter;
-+       struct dma_async_tx_descriptor *parent;
+Sorry for the delay, but my desktop PC had an urgent hard disk problem I 
+had to fix ASASP.
 
-        if (!tx)
-                return DMA_SUCCESS;
-@@ -87,8 +88,15 @@ dma_wait_for_async_tx(struct dma_async_tx_descriptor *tx)
-        /* poll through the dependency chain, return when tx is complete */
-        do {
-                iter = tx;
--               while (iter->cookie == -EBUSY)
--                       iter = iter->parent;
-+
-+               /* find the root of the unsubmitted dependency chain */
-+               while (iter->cookie == -EBUSY) {
-+                       parent = iter->parent;
-+                       if (parent && parent->cookie == -EBUSY)
-+                               iter = iter->parent;
-+                       else
-+                               break;
-+               }
+So here is the output from dmesg that suggested to me that firewire 
+might be a problem:
 
-> saeed
+> usb_endpoint usbdev2.2_ep81: PM: suspend 0->2, parent 2-1:1.0 already 2
+> usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
+> hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
+> eth2: Airport entering sleep mode
+> eth0: suspending, WakeOnLan disabled
+> pci_set_power_state(): 0002:20:0e.0: state=3, current state=5
+> firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+> suspend_device(): pci_device_suspend+0x0/0x98() returns -22
+> Could not suspend device 0002:20:0e.0: error -22
+> eth0: resuming
+> PHY ID: 4061e4, addr: 0
+> eth2: Airport waking up
+> eth2: New link status: Connected (0001)
+> hda: Enabling Ultra DMA 2
+> eth0: Link is up at 100 Mbps, full-duplex.
+> eth0: Pause is disabled
+> ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+> hdb: Enabling Ultra DMA 2
+> usb_endpoint usbdev1.1_ep00: PM: resume from 0, parent usb1 still 2
+> usb_endpoint usbdev1.1_ep81: PM: resume from 0, parent 1-0:1.0 still 2
+> usb_device usbdev1.1: PM: resume from 0, parent usb1 still 2
+> Driver sleep failed
+> Sleep rejected by devices
+> adb: starting probe task...
+> adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
+> ADB keyboard at 2, handler 1
+> ADB mouse at 3, handler set to 4 (trackpad)
+> adb: finished probe task...
+> usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
+> hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
+> eth2: Airport entering sleep mode
+> eth0: suspending, WakeOnLan disabled
+> Trying to free already-free IRQ 40
+> pci_set_power_state(): 0002:20:0e.0: state=3, current state=5
+> firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+> suspend_device(): pci_device_suspend+0x0/0x98() returns -22
+> Could not suspend device 0002:20:0e.0: error -22
+> eth0: resuming
+> PHY ID: 4061e4, addr: 0
+> eth2: Airport waking up
+> eth2: New link status: Connected (0001)
+> hda: Enabling Ultra DMA 2
+> hdb: Enabling Ultra DMA 2
+> eth0: Link is up at 100 Mbps, full-duplex.
+> eth0: Pause is disabled
 
-Regards,
-Dan
+The problem wa sinitiated by closing the lid. The iBook then seems to 
+permanetly try to go to sleep (I can hear the cd-rom drive get 
+periodically initialized). So above contains more than one iteration.
+
+The kernel is:
+> Linux kismet 2.6.22-1-powerpc #1 Sun Jul 29 13:58:06 CEST 2007 ppc GNU/Linux
+
+The relveant debian package:
+> linux-image-2.6.22-1-powerpc_2.6.22-3_powerpc.deb
+
+I'm running a mixture of debian testing/unstable.
+
+The firewire and the USB connector were unused, the network connector 
+was used.
+
+If there are questions regarding other packages, or somebody wants me to 
+test a fix (I would prever a debian package), don't hesitate - I would 
+like to get the bug fixed :-)
+
+-- 
+Gruﬂ...
+        Tim
+
