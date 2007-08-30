@@ -1,56 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760400AbXH3RlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760976AbXH3RvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760400AbXH3RlS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 13:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758518AbXH3RlG
+	id S1760976AbXH3RvH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 13:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758743AbXH3Ru4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 13:41:06 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44327 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757675AbXH3RlC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 13:41:02 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: David Newall <david@davidnewall.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible fashion.
-References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
-	<20070828230459.GA15937@infradead.org>
-	<m1r6lnb4ha.fsf@ebiederm.dsl.xmission.com>
-	<46D4CC81.4060400@zytor.com>
-	<m1d4x7aysz.fsf@ebiederm.dsl.xmission.com>
-	<20070829114604.242b976c@the-village.bc.nu>
-	<m1absa5kid.fsf@ebiederm.dsl.xmission.com>
-	<46D6C40A.9090504@davidnewall.com>
-Date: Thu, 30 Aug 2007 11:40:51 -0600
-In-Reply-To: <46D6C40A.9090504@davidnewall.com> (David Newall's message of
-	"Thu, 30 Aug 2007 22:50:10 +0930")
-Message-ID: <m18x7s2a58.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 30 Aug 2007 13:50:56 -0400
+Received: from web52012.mail.re2.yahoo.com ([206.190.48.28]:25601 "HELO
+	web52012.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758284AbXH3Ru4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 13:50:56 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 13:50:55 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=1j7b8+mdVnB1umFk21P1yIoVoxY3KCmdUwHRst55SsrqPac7rHF8sXhhP2j1F/wNQf2gTwDf+gemAtzhB323INZjdXaKD41wOdCDPqxWIS7T5/WP1vOOboVVpoxdQ1YqpYbnwfxvGaVA+ZBtG5Q7y2m5s3zikkacnqgNZJOLQmQ=;
+X-YMail-OSG: iLxRIVsVM1knZJzPXK5Q58mEbKIfWZPFesZ19lEx.BntUvkbtFSYG4d9IGTV5_Fckkg9IMtYl0XB68rCJtDPc12fFWcACUo.Qgw54AosEdToVOov.LwPsc8mdnmR2g--
+X-Mailer: YahooMailRC/651.48 YahooMailWebService/0.7.134
+Date: Thu, 30 Aug 2007 10:44:15 -0700 (PDT)
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Subject: [Bugme-new] [Bug 8957] New: Exported functions and variables
+To: linux-kernel@vger.kernel.org
+Cc: bugme-daemon@kernel-bugs.osdl.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <469780.175.qm@web52012.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall <david@davidnewall.com> writes:
+I thought I had seen that bug. Module init function execution does not seem serialized enough, so the init function of one module seems to be able to be called in parallel with several other modules in turn being loaded, executing their init functions and even becoming live first class citizens.
+Function sys_init_module in 
+Linux 2.6.22.x and 2.6.23-rc4 kernel/module.c does not hold module_mutex when executing the init functions of the modules.
 
-> Eric W. Biederman wrote:
->> This isn't "Oh some apps are using it let's get them to stop, because
->> it is inconvenient".  This is  "No apps seems to be using this, we
->> keep goofing up the maintenance and no one notices, and so it is
->> likely a source of security problems and other nasties"
->>
->
-> This first claim is not consistent with the next claim:
->
->> I have evidence that there are 1 or 2 open source applications using
->> this (not counting the glibc weirdness).
->
-> If may be unmaintainable but, apparently, it's not really unused.
 
-Only in a strict mathematical sense.  I seem to recall patches to
-those programs or seeing that it doesn't matter.  Things are sufficient
-that I expect that in 2 years time when we revisit this.  We won't
-be able to find anything that cares.
 
-Eric
+
+      __________________________________  
+Alles was der Gesundheit und Entspannung dient. BE A BETTER MEDIZINMANN! www.yahoo.de/clever
