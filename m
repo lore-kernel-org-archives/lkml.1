@@ -1,88 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966204AbXHaS4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966279AbXHaTAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966204AbXHaS4Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 14:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965634AbXHaS4P
+	id S966279AbXHaTAc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 15:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965984AbXHaTAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 14:56:15 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:52988
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965547AbXHaS4O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 14:56:14 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Satyam Sharma <satyam@infradead.org>
-Subject: Re: [PATCH] Documentation/00-INDEX notice ecryptfs.txt moved.
-Date: Fri, 31 Aug 2007 13:56:10 -0500
-User-Agent: KMail/1.9.6
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200708301446.18024.rob@landley.net> <200708302016.12133.rob@landley.net> <alpine.LFD.0.999.0708311705270.7173@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0708311705270.7173@enigma.security.iitk.ac.in>
+	Fri, 31 Aug 2007 15:00:23 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:21388 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965978AbXHaTAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 15:00:22 -0400
+Date: Fri, 31 Aug 2007 21:00:17 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Dmitry Monakhov <dmonakhov@sw.ru>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
+       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [11/36] Use page_cache_xxx in fs/buffer.c
+Message-ID: <20070831190017.GB29452@kernel.dk>
+References: <20070831065613.GH29452@kernel.dk> <Pine.LNX.4.64.0708310003280.14375@schroedinger.engr.sgi.com> <20070831071142.GI29452@kernel.dk> <Pine.LNX.4.64.0708310012370.14375@schroedinger.engr.sgi.com> <20070831072611.GK29452@kernel.dk> <Pine.LNX.4.64.0708310028160.14632@schroedinger.engr.sgi.com> <20070831074338.GL29452@kernel.dk> <Pine.LNX.4.64.0708310049110.14743@schroedinger.engr.sgi.com> <20070831081201.GO29452@kernel.dk> <Pine.LNX.4.64.0708310821140.16456@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708311356.10826.rob@landley.net>
+In-Reply-To: <Pine.LNX.4.64.0708310821140.16456@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 31 August 2007 7:10:00 am Satyam Sharma wrote:
-> Hi Rob,
->
-> On Thu, 30 Aug 2007, Rob Landley wrote:
-> > On Thursday 30 August 2007 2:04:37 pm Randy Dunlap wrote:
-> > > Please use the expected (canonical) patch format.
-> > >
-> > > See Documentation/SubmittingPatches:
-> > >   14) The canonical patch format
-> >
-> > from Rob Landley <rob@landley.net>
-> > Signed-off-by: Rob Landley <rob@landley.net>
-> >
-> > ecryptfs.txt moved into filesystems, make 00-INDEX follow.
->
-> That's still not quite right :-) What Randy meant is that the sign-off
-> must come /after/ the patch description:
+On Fri, Aug 31 2007, Christoph Lameter wrote:
+> On Fri, 31 Aug 2007, Jens Axboe wrote:
+> 
+> > > Ok. So another solution maybe to limit the blocksizes that can be used 
+> > > with a device?
+> > 
+> > That'd work for creation, but not for moving things around.
+> 
+> What do you mean by moving things around? Creation binds a filesystem to a 
+> device.
 
-Randy emailed me about it offline and I updated my wrapper script.
+Only the bottom part. Change controller, move disk, whatever. There are
+lots of ways to change part of the IO path.
 
-I've always had a bit of a blind spot when it comes to filling out forms (I 
-suck at bureaucracy), so I made a script to do it, currently:
+> > > Hmmmm.. We could keep the existing scheme too and check that device 
+> > > drivers split things up if they are too large? Isnt it possible today
+> > > to create a huge bio of 2M for huge pages and send it to a device?
+> > 
+> > Not sure, aren't the constituents of compound pages the basis for IO?
+> 
+> get_user_pages() serializes compound pages into the base pages. But doesnt 
+> the I/O layer coalesce these later into 2M chunks again?
 
-#!/bin/bash
+You pretty much hit the nail on the head there yourself. The io layer
+_may_ coalesce them all together, but it may also stop at am arbitrary
+point and put the remainder in another request.
 
-echo "From: Rob Landley <rob@landley.net>"
-echo
-echo "Signed-off-by: Rob Landley <rob@landley.net>"
-echo "---"
-echo
-cat $1 | diffstat
-echo
-cat $1
+This situation is different from submitting one huge piece, the above is
+what has always happened regardless of whether the origin happens to be
+a compound page or not.
 
-I note that the example uses "From:" but the summary refers to it as 
-the "from" line with no capital letter or colon, and unix being case 
-sensitive I reproduced the quoted string verbatim.  (See "I suck at 
-bureaucracy", above.)
-
-> [ All this is not too important, admittedly, but causes least amount of
->   processing time to be wasted on the recipient's end, and also does not
->   confuse scripts that may be used to extract patches (and git commit
->   command-line arguments) from mails automatically. ]
-
-If it's going to be parsed by a script, it might as well be generated by a 
-script...
-
-I've got another dozen of these patches to send, but I'm waiting to see which 
-ones Jesper Juhl has queued up first. :)
-
-(Between the two of us, we'll get this updated eventually...)
-
-Rob
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Jens Axboe
+
