@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760011AbXHaEFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbXHaEZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760011AbXHaEFY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 00:05:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbXHaEFM
+	id S1755204AbXHaEZU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 00:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbXHaEZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 00:05:12 -0400
-Received: from main.gmane.org ([80.91.229.2]:53781 "EHLO ciao.gmane.org"
+	Fri, 31 Aug 2007 00:25:10 -0400
+Received: from mga02.intel.com ([134.134.136.20]:57807 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750980AbXHaEFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 00:05:09 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Dan Stromberg <dstromberglists@gmail.com>
-Subject: ifconfig changing a routing table?
-Date: Fri, 31 Aug 2007 03:55:53 +0000 (UTC)
-Message-ID: <fb83g8$nac$1@sea.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: adsl-69-234-106-77.dsl.irvnca.pacbell.net
-X-Face: 7muj=^NJ4z|eE'nj&_M\3zqbh(dwtkA%Z{^'Cou0AFC9&[@R4!mMClzF!j0ZN|`7h/F1`Kgr$a[j^R+H:4DD}ra;@^Z7uIoqYRc\elYJ{)(sSy@%|eX\0WRNDj"W3rh{5%/ZQwnxeqA\({gn7O+7MF`"Tdl:.5U-{8n+OOjJo7(krf!d|tOMnmm"7MLYAwm':OjvlO|`\)N!q.ICnDJIMHv<j~'<i78LXT-cPluto:1-5?*=li=k1AY9"n~lMm.PSZiVf/UbMxH}OCQsE$`MO~gRn`=~%)bIP,^'R]g=L,^ot
-User-Agent: Pan/0.132 (Waxed in Black)
+	id S1750958AbXHaEZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 00:25:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,328,1183359600"; 
+   d="scan'208";a="286330364"
+From: Jason Gaston <jason.d.gaston@intel.com>
+To: jgarzik@pobox.com, jason.d.gaston@intel.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch for Intel Tolapai
+Date: Thu, 30 Aug 2007 21:27:19 -0700
+User-Agent: KMail/1.9.1
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708302127.19535.jason.d.gaston@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Resend trying to remove 8-bit characters in the email.
 
-If I "ifconfig eth1 down", a rogue route disappears.
+This patch adds the Intel Tolapai RAID controller DID's for SATA support.
 
-If I "ifconfig eth1 up" or "ip link set dev eth1 up", the rogue route 
-comes back.
+Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
 
-The route in question is for 10.3/16, and it's breaking some of my 
-communications that should be handled by my default route.
-
-I'm not accustomed to ifconfig changing the routing table.  Is this 
-normal?
-
-The kernel in question is 2.6.9-42.0.8.plus.c4smp.  It's a CentOSplus 
-kernel.
-
-The relevant syscalls in an strace of the above ip link command (which a 
-very short strace, BTW) appear to be:
-
-9992  socket(PF_INET, SOCK_DGRAM, IPPROTO_IP) = 3
-9992  ioctl(3, SIOCGIFFLAGS, {ifr_name="eth1", ifr_flags=IFF_BROADCAST|
-IFF_MULTICAST}) = 0
-9992  ioctl(3, SIOCSIFFLAGS, 0x7fbffff510) = 0
-9992  close(3)                          = 0
-
-The strace of ifconfig eth1 up is pretty similar, albeit with a slightly 
-different 3rd argument to the SIOCSIFFLAGS.
-
-I tracked the call chain to dev_change_flags(), but then things seemed to 
-start branching out pretty fast, so I thought it might be more productive 
-to ask around before continuing.
-
-Is anyone on the list familiar with ifconfig up and/or ip link up 
-changing a routing table?  How does the kernel decide what route to add 
-in such a circumstance?
-
-Thanks!
-
-
+--- linux-2.6.23-rc4/drivers/ata/ahci.c.orig	2007-08-27 18:32:35.000000000 -0700
++++ linux-2.6.23-rc4/drivers/ata/ahci.c	2007-08-28 16:58:11.000000000 -0700
+@@ -411,6 +411,8 @@
+ 	{ PCI_VDEVICE(INTEL, 0x292f), board_ahci_pi }, /* ICH9M */
+ 	{ PCI_VDEVICE(INTEL, 0x294d), board_ahci_pi }, /* ICH9 */
+ 	{ PCI_VDEVICE(INTEL, 0x294e), board_ahci_pi }, /* ICH9M */
++	{ PCI_VDEVICE(INTEL, 0x502a), board_ahci }, /* Tolapai */
++	{ PCI_VDEVICE(INTEL, 0x502b), board_ahci }, /* Tolapai */
+ 
+ 	/* JMicron 360/1/3/5/6, match class to avoid IDE function */
+ 	{ PCI_VENDOR_ID_JMICRON, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
