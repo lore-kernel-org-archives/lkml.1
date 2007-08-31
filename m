@@ -1,121 +1,350 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965454AbXHaQSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933224AbXHaQVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965454AbXHaQSY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 12:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932687AbXHaQSQ
+	id S933224AbXHaQVe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 12:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbXHaQV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 12:18:16 -0400
-Received: from orca.ele.uri.edu ([131.128.51.63]:43676 "EHLO orca.ele.uri.edu"
+	Fri, 31 Aug 2007 12:21:26 -0400
+Received: from pat.uio.no ([129.240.10.15]:49539 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932715AbXHaQSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 12:18:14 -0400
-Date: Fri, 31 Aug 2007 12:18:57 -0400
-From: Will Simoneau <simoneau@ele.uri.edu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] save registers around VESA BIOS calls
-Message-ID: <20070831161746.GA5459@ele.uri.edu>
-References: <20070831015620.GA6259@ele.uri.edu> <46D7AAF7.1030105@zytor.com> <46D7B817.3060304@zytor.com> <20070831150326.GA6003@ele.uri.edu>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ZmUaFz6apKcXQszQ"
-Content-Disposition: inline
-In-Reply-To: <20070831150326.GA6003@ele.uri.edu>
-User-Agent: Mutt/1.5.16 [Linux 2.6.23-rc4-hrt1-b0rg-ga9a820df-dirty i686]
+	id S932803AbXHaQVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 12:21:24 -0400
+Subject: Re: recent nfs change causes autofs regression
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Frank van Maarseveen <frankvm@frankvm.com>, Hua Zhong <hzhong@gmail.com>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org
+In-Reply-To: <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org>
+References: <000701c7eb49$cff701c0$6fe50540$@com>
+	 <1188513433.6626.24.camel@heimdal.trondhjem.org>
+	 <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org>
+Content-Type: multipart/mixed; boundary="=-jdoRLdAAt3pwuOl7DeGe"
+Date: Fri, 31 Aug 2007 12:21:15 -0400
+Message-Id: <1188577275.6649.133.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.072)
+X-UiO-Scanned: 7818E01830D41C80EC922FB05FD66AFFFC9337DB
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 211 total 3592334 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---ZmUaFz6apKcXQszQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--=-jdoRLdAAt3pwuOl7DeGe
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On 11:05 Fri 31 Aug     , Will Simoneau wrote:
-> On 23:41 Thu 30 Aug     , H. Peter Anvin wrote:
-> > H. Peter Anvin wrote:
-> >> Will Simoneau wrote:
-> >>> While trying to put together a new kernel for my laptop (Dell I5150, =
-as
-> >>> in subject) I found that recent kernels just don't boot. Right after
-> >>> grub loads the kernel, before the "Uncompressing Linux" message is
-> >>> shown, it hangs. The BIOS appears to still be alive (ctrl-alt-del wor=
-ks,
-> >>> keyboard lock LEDs respond). It seems to be caused by the new x86 set=
-up
-> >>> code.
-> >>>
-> >>> My kernel is Linus' git as of a1c582d0720f2eff61043e90711767decf37b91=
-7.
-> >>> I bisected and confirmed that 4fd06960f120e02e9abc802a09f9511c400042a5
-> >>> triggers a non-functioning boot.
-> >>>
-> >>> This system has Dell BIOS rev A38 and a P4 3.2 w/HT.
-> >>>
-> >>> What should I do next to debug this problem?
-> >> Can you put in some printf's in the code and see how far it gets?
-> >
-> > Specifically, the places to add printf's are to main() in main.c and=20
-> > go_to_protected_mode() in pm.c.
-> >
-> > 	-hpa
->=20
-> It dies in vesa_probe() right after calling int10 with ax=3D4f01 and
-> checking the return status, which was 0x004f (success). This happens on
-> the third iteration of the loop; the first two modes it finds are
-> framebuffer modes. This would be just after line 72 in video-vesa.c .
->=20
-> I have CONFIG_VIDEO_VESA=3Dy and CONFIG_FB=3Dy, but am not passing the
-> kernel options that would use vesafb as the console.
+On Thu, 2007-08-30 at 20:49 -0700, Linus Torvalds wrote:
+> Please send in a fix. If the fix involves making "nosharecache" the 
+> default, then that is better than making policy decisions like this in the 
+> kernel. The kernel should do what the user asks and not put in unnecessary 
+> roadblocks.
 
-Apparently some VESA BIOS implementations clobber our registers when called.
-Tell gcc about it.
+The best I can do given the constraints appears to be to have the kernel
+first look for a superblock that matches both the fsid and the
+user-specified mount options, and then spawn off a new superblock if
+that search fails. The attached patch does just that.
 
-This makes my Dell Inspiron 5150 boot correctly instead of hanging.
+Note that this is not the same as specifying nosharecache everywhere
+since nosharecache will never attempt to match an existing superblock.
 
-Signed-off-by: Will Simoneau <simoneau@ele.uri.edu>
+Finally, for the record: I still feel very uncomfortable about not being
+able to report the state of the client setup back to the sysadmin.
+AFAIK, the only way to do so is to stat the mountpoints, and compare the
+device ids.
 
+Trond
+
+
+--=-jdoRLdAAt3pwuOl7DeGe
+Content-Disposition: inline; filename=linux-2.6.23-009-nosharecache_is_default.dif
+Content-Type: message/rfc822; name=linux-2.6.23-009-nosharecache_is_default.dif
+
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: Fri, 31 Aug 2007 10:45:17 -0400
+NFS: Fix the mount regression
+Subject: No Subject
+Message-Id: <1188576086.6649.118.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 ---
 
---- linux-2.6/arch/i386/boot/video-vesa.c.old	2007-08-31 11:51:40.478575122=
- -0400
-+++ linux-2.6/arch/i386/boot/video-vesa.c	2007-08-31 11:51:10.980602450 -04=
-00
-@@ -39,9 +39,11 @@
-=20
- 	vginfo.signature =3D VBE2_MAGIC;
-=20
--	/* Optimistically assume a VESA BIOS is register-clean... */
- 	ax =3D 0x4f00;
--	asm("int $0x10" : "+a" (ax), "=3Dm" (vginfo) : "D" (&vginfo));
-+	asm("int $0x10"
-+	    : "+a" (ax), "=3Dm" (vginfo)
-+	    : "D" (&vginfo)
-+	    : "ebx", "ecx", "edx", "esi");
-=20
- 	if (ax !=3D 0x004f ||
- 	    vginfo.signature !=3D VESA_MAGIC ||
-@@ -66,7 +68,8 @@
- 		ax =3D 0x4f01;
- 		asm("int $0x10"
- 		    : "+a" (ax), "=3Dm" (vminfo)
--		    : "c" (mode), "D" (&vminfo));
-+		    : "c" (mode), "D" (&vminfo)
-+		    : "ebx", "edx", "esi");
-=20
- 		if (ax !=3D 0x004f)
- 			continue;
+ fs/nfs/super.c |  110 +++++++++++++++++++++++++++++++++-----------------------
+ 1 files changed, 64 insertions(+), 46 deletions(-)
 
---ZmUaFz6apKcXQszQ
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index c28f30d..8ed5937 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -1303,34 +1303,6 @@ static void nfs_clone_super(struct super_block *sb,
+  	nfs_initialise_sb(sb);
+ }
+ 
+-static int nfs_set_super(struct super_block *s, void *_server)
+-{
+-	struct nfs_server *server = _server;
+-	int ret;
+-
+-	s->s_fs_info = server;
+-	ret = set_anon_super(s, server);
+-	if (ret == 0)
+-		server->s_dev = s->s_dev;
+-	return ret;
+-}
+-
+-static int nfs_compare_super(struct super_block *sb, void *data)
+-{
+-	struct nfs_server *server = data, *old = NFS_SB(sb);
+-
+-	if (memcmp(&old->nfs_client->cl_addr,
+-				&server->nfs_client->cl_addr,
+-				sizeof(old->nfs_client->cl_addr)) != 0)
+-		return 0;
+-	/* Note: NFS_MOUNT_UNSHARED == NFS4_MOUNT_UNSHARED */
+-	if (old->flags & NFS_MOUNT_UNSHARED)
+-		return 0;
+-	if (memcmp(&old->fsid, &server->fsid, sizeof(old->fsid)) != 0)
+-		return 0;
+-	return 1;
+-}
+-
+ #define NFS_MS_MASK (MS_RDONLY|MS_NOSUID|MS_NODEV|MS_NOEXEC|MS_SYNCHRONOUS)
+ 
+ static int nfs_compare_mount_options(const struct super_block *s, const struct nfs_server *b, int flags)
+@@ -1359,9 +1331,46 @@ static int nfs_compare_mount_options(const struct super_block *s, const struct n
+ 		goto Ebusy;
+ 	if (clnt_a->cl_auth->au_flavor != clnt_b->cl_auth->au_flavor)
+ 		goto Ebusy;
+-	return 0;
++	return 1;
+ Ebusy:
+-	return -EBUSY;
++	return 0;
++}
++
++struct nfs_sb_mountdata {
++	struct nfs_server *server;
++	int mntflags;
++};
++
++static int nfs_set_super(struct super_block *s, void *data)
++{
++	struct nfs_sb_mountdata *sb_mntdata = data;
++	struct nfs_server *server = sb_mntdata->server;
++	int ret;
++
++	s->s_flags = sb_mntdata->mntflags;
++	s->s_fs_info = server;
++	ret = set_anon_super(s, server);
++	if (ret == 0)
++		server->s_dev = s->s_dev;
++	return ret;
++}
++
++static int nfs_compare_super(struct super_block *sb, void *data)
++{
++	struct nfs_sb_mountdata *sb_mntdata = data;
++	struct nfs_server *server = sb_mntdata->server, *old = NFS_SB(sb);
++	int mntflags = sb_mntdata->mntflags;
++
++	if (memcmp(&old->nfs_client->cl_addr,
++				&server->nfs_client->cl_addr,
++				sizeof(old->nfs_client->cl_addr)) != 0)
++		return 0;
++	/* Note: NFS_MOUNT_UNSHARED == NFS4_MOUNT_UNSHARED */
++	if (old->flags & NFS_MOUNT_UNSHARED)
++		return 0;
++	if (memcmp(&old->fsid, &server->fsid, sizeof(old->fsid)) != 0)
++		return 0;
++	return nfs_compare_mount_options(sb, server, mntflags);
+ }
+ 
+ static int nfs_get_sb(struct file_system_type *fs_type,
+@@ -1373,6 +1382,9 @@ static int nfs_get_sb(struct file_system_type *fs_type,
+ 	struct nfs_mount_data *data = raw_data;
+ 	struct dentry *mntroot;
+ 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
++	struct nfs_sb_mountdata sb_mntdata = {
++		.mntflags = flags,
++	};
+ 	int error;
+ 
+ 	/* Validate the mount data */
+@@ -1386,28 +1398,25 @@ static int nfs_get_sb(struct file_system_type *fs_type,
+ 		error = PTR_ERR(server);
+ 		goto out;
+ 	}
++	sb_mntdata.server = server;
+ 
+ 	if (server->flags & NFS_MOUNT_UNSHARED)
+ 		compare_super = NULL;
+ 
+ 	/* Get a superblock - note that we may end up sharing one that already exists */
+-	s = sget(fs_type, compare_super, nfs_set_super, server);
++	s = sget(fs_type, compare_super, nfs_set_super, &sb_mntdata);
+ 	if (IS_ERR(s)) {
+ 		error = PTR_ERR(s);
+ 		goto out_err_nosb;
+ 	}
+ 
+ 	if (s->s_fs_info != server) {
+-		error = nfs_compare_mount_options(s, server, flags);
+ 		nfs_free_server(server);
+ 		server = NULL;
+-		if (error < 0)
+-			goto error_splat_super;
+ 	}
+ 
+ 	if (!s->s_root) {
+ 		/* initial superblock/root creation */
+-		s->s_flags = flags;
+ 		nfs_fill_super(s, data);
+ 	}
+ 
+@@ -1460,6 +1469,9 @@ static int nfs_xdev_get_sb(struct file_system_type *fs_type, int flags,
+ 	struct nfs_server *server;
+ 	struct dentry *mntroot;
+ 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
++	struct nfs_sb_mountdata sb_mntdata = {
++		.mntflags = flags,
++	};
+ 	int error;
+ 
+ 	dprintk("--> nfs_xdev_get_sb()\n");
+@@ -1470,28 +1482,25 @@ static int nfs_xdev_get_sb(struct file_system_type *fs_type, int flags,
+ 		error = PTR_ERR(server);
+ 		goto out_err_noserver;
+ 	}
++	sb_mntdata.server = server;
+ 
+ 	if (server->flags & NFS_MOUNT_UNSHARED)
+ 		compare_super = NULL;
+ 
+ 	/* Get a superblock - note that we may end up sharing one that already exists */
+-	s = sget(&nfs_fs_type, compare_super, nfs_set_super, server);
++	s = sget(&nfs_fs_type, compare_super, nfs_set_super, &sb_mntdata);
+ 	if (IS_ERR(s)) {
+ 		error = PTR_ERR(s);
+ 		goto out_err_nosb;
+ 	}
+ 
+ 	if (s->s_fs_info != server) {
+-		error = nfs_compare_mount_options(s, server, flags);
+ 		nfs_free_server(server);
+ 		server = NULL;
+-		if (error < 0)
+-			goto error_splat_super;
+ 	}
+ 
+ 	if (!s->s_root) {
+ 		/* initial superblock/root creation */
+-		s->s_flags = flags;
+ 		nfs_clone_super(s, data->sb);
+ 	}
+ 
+@@ -1729,6 +1738,9 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
+ 	struct dentry *mntroot;
+ 	char *mntpath = NULL, *hostname = NULL, *ip_addr = NULL;
+ 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
++	struct nfs_sb_mountdata sb_mntdata = {
++		.mntflags = flags,
++	};
+ 	int error;
+ 
+ 	/* Validate the mount data */
+@@ -1744,12 +1756,13 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
+ 		error = PTR_ERR(server);
+ 		goto out;
+ 	}
++	sb_mntdata.server = server;
+ 
+ 	if (server->flags & NFS4_MOUNT_UNSHARED)
+ 		compare_super = NULL;
+ 
+ 	/* Get a superblock - note that we may end up sharing one that already exists */
+-	s = sget(fs_type, compare_super, nfs_set_super, server);
++	s = sget(fs_type, compare_super, nfs_set_super, &sb_mntdata);
+ 	if (IS_ERR(s)) {
+ 		error = PTR_ERR(s);
+ 		goto out_free;
+@@ -1762,7 +1775,6 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
+ 
+ 	if (!s->s_root) {
+ 		/* initial superblock/root creation */
+-		s->s_flags = flags;
+ 		nfs4_fill_super(s);
+ 	}
+ 
+@@ -1816,6 +1828,9 @@ static int nfs4_xdev_get_sb(struct file_system_type *fs_type, int flags,
+ 	struct nfs_server *server;
+ 	struct dentry *mntroot;
+ 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
++	struct nfs_sb_mountdata sb_mntdata = {
++		.mntflags = flags,
++	};
+ 	int error;
+ 
+ 	dprintk("--> nfs4_xdev_get_sb()\n");
+@@ -1826,12 +1841,13 @@ static int nfs4_xdev_get_sb(struct file_system_type *fs_type, int flags,
+ 		error = PTR_ERR(server);
+ 		goto out_err_noserver;
+ 	}
++	sb_mntdata.server = server;
+ 
+ 	if (server->flags & NFS4_MOUNT_UNSHARED)
+ 		compare_super = NULL;
+ 
+ 	/* Get a superblock - note that we may end up sharing one that already exists */
+-	s = sget(&nfs_fs_type, compare_super, nfs_set_super, server);
++	s = sget(&nfs_fs_type, compare_super, nfs_set_super, &sb_mntdata);
+ 	if (IS_ERR(s)) {
+ 		error = PTR_ERR(s);
+ 		goto out_err_nosb;
+@@ -1844,7 +1860,6 @@ static int nfs4_xdev_get_sb(struct file_system_type *fs_type, int flags,
+ 
+ 	if (!s->s_root) {
+ 		/* initial superblock/root creation */
+-		s->s_flags = flags;
+ 		nfs4_clone_super(s, data->sb);
+ 	}
+ 
+@@ -1887,6 +1902,9 @@ static int nfs4_referral_get_sb(struct file_system_type *fs_type, int flags,
+ 	struct dentry *mntroot;
+ 	struct nfs_fh mntfh;
+ 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
++	struct nfs_sb_mountdata sb_mntdata = {
++		.mntflags = flags,
++	};
+ 	int error;
+ 
+ 	dprintk("--> nfs4_referral_get_sb()\n");
+@@ -1897,12 +1915,13 @@ static int nfs4_referral_get_sb(struct file_system_type *fs_type, int flags,
+ 		error = PTR_ERR(server);
+ 		goto out_err_noserver;
+ 	}
++	sb_mntdata.server = server;
+ 
+ 	if (server->flags & NFS4_MOUNT_UNSHARED)
+ 		compare_super = NULL;
+ 
+ 	/* Get a superblock - note that we may end up sharing one that already exists */
+-	s = sget(&nfs_fs_type, compare_super, nfs_set_super, server);
++	s = sget(&nfs_fs_type, compare_super, nfs_set_super, &sb_mntdata);
+ 	if (IS_ERR(s)) {
+ 		error = PTR_ERR(s);
+ 		goto out_err_nosb;
+@@ -1915,7 +1934,6 @@ static int nfs4_referral_get_sb(struct file_system_type *fs_type, int flags,
+ 
+ 	if (!s->s_root) {
+ 		/* initial superblock/root creation */
+-		s->s_flags = flags;
+ 		nfs4_fill_super(s);
+ 	}
+ 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.6 (GNU/Linux)
+--=-jdoRLdAAt3pwuOl7DeGe--
 
-iD8DBQFG2D9xLYBaX8VDLLURAsgXAKCQwdisCb1hdmfKdm75Ax4r7XBGWwCfbVBu
-7HMiNOVnhm1w2F2pPsK92u0=
-=cYTZ
------END PGP SIGNATURE-----
-
---ZmUaFz6apKcXQszQ--
