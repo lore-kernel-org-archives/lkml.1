@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758332AbXHaWfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760826AbXHaWhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758332AbXHaWfa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 18:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXHaWfV
+	id S1760826AbXHaWhA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 18:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbXHaWgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 18:35:21 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48614 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751941AbXHaWfU (ORCPT
+	Fri, 31 Aug 2007 18:36:53 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:43875 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbXHaWgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 18:35:20 -0400
-Date: Fri, 31 Aug 2007 23:43:45 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] pci.h: Add PCI identifiers for mainpine cards
-Message-ID: <20070831234345.3c7a8a62@the-village.bc.nu>
-In-Reply-To: <20070831152058.92306a0c.akpm@linux-foundation.org>
-References: <20070822230527.649f3714@the-village.bc.nu>
-	<20070831152058.92306a0c.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 31 Aug 2007 18:36:52 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46D89800.8080701@s5r6.in-berlin.de>
+Date: Sat, 01 Sep 2007 00:36:48 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: maturity and status and attributes, oh my!
+References: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> drivers/serial/8250_pci.c:2584: error: 'PCI_VENDOR_ID_MAINPINE' undeclared here (not in a function)
-> drivers/serial/8250_pci.c:2584: error: 'PCI_DEVICE_ID_MAINPINE_PBRIDGE' undeclared here (not in a function)
+Robert P. J. Day wrote:
+...
+> attributes would have two critical and non-negotiable properties:
+> 
+> 1) they would be entirely orthogonal to one another, and
+> 2) they can be assigned at most one of a pre-defined set of values
 
-Doh.....
+If they are fully orthogonal to another, then they are also
+nonexclusive.  You want them to be mutual exclusive, not orthogonal.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+...
+>   experimental -> normal (stable) -> deprecated -> obsolete
+> 
+>   it's a natural progression and, at any point, a feature cannot
+> possibly have more than one maturity value.  it would be as absurd as
+> saying that someone was a teenager *and* was a twenty-something at the
+> same time.
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.23rc3-mm1/include/linux/pci_ids.h linux-2.6.23rc3-mm1/include/linux/pci_ids.h
---- linux.vanilla-2.6.23rc3-mm1/include/linux/pci_ids.h	2007-08-22 17:23:14.000000000 +0100
-+++ linux-2.6.23rc3-mm1/include/linux/pci_ids.h	2007-08-22 17:50:52.000000000 +0100
-@@ -1976,6 +1977,8 @@
- #define PCI_VENDOR_ID_TOPIC		0x151f
- #define PCI_DEVICE_ID_TOPIC_TP560	0x0000
- 
-+#define PCI_VENDOR_ID_MAINPINE		0x1522
-+#define PCI_DEVICE_ID_MAINPINE_PBRIDGE	0x0100
- #define PCI_VENDOR_ID_ENE		0x1524
- #define PCI_DEVICE_ID_ENE_CB712_SD	0x0550
- #define PCI_DEVICE_ID_ENE_CB712_SD_2	0x0551
-
-
+Keep in mind though that 'experimental', in the context of Linux kernel
+features, has nothing to do with the age of a feature.
+-- 
+Stefan Richter
+-=====-=-=== =--= ----=
+http://arcgraph.de/sr/
