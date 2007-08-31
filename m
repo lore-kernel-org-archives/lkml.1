@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965931AbXHaRaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965883AbXHaRgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965931AbXHaRaY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 13:30:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965423AbXHaRaO
+	id S965883AbXHaRgP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 13:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965405AbXHaRgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 13:30:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41347 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759765AbXHaRaN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 13:30:13 -0400
-Date: Fri, 31 Aug 2007 10:28:58 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bugme-daemon@kernel-bugs.osdl.org
-Subject: Re: [Bugme-new] [Bug 8957] New: Exported functions and variables
-Message-ID: <20070831102858.74ec512f@laptopd505.fenrus.org>
-In-Reply-To: <116718.45429.qm@web52005.mail.re2.yahoo.com>
-References: <116718.45429.qm@web52005.mail.re2.yahoo.com>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+	Fri, 31 Aug 2007 13:36:06 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:46795 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965146AbXHaRgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 13:36:05 -0400
+Date: Fri, 31 Aug 2007 19:37:27 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stefano Esposito <ragnarok@email.it>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Failed to build latest git revision
+Message-ID: <20070831173727.GB29304@uranus.ravnborg.org>
+References: <20070831141957.d60c209a.ragnarok@email.it>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070831141957.d60c209a.ragnarok@email.it>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007 10:14:27 -0700 (PDT)
-Matti Linnanvuori <mattilinnanvuori@yahoo.com> wrote:
+On Fri, Aug 31, 2007 at 02:19:57PM +0200, Stefano Esposito wrote:
+> I've just git pull git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+> 
+> after 
+> $ make clean
+> $ make menuconfig
+> 
+> make fails with: 
+> $ make
+> scripts/kconfig/conf -s arch/i386/Kconfig
+> 
+> *** Error during writing of the kernel configuration.
 
-> It seems to me that kernel/module.c allows the whole kernel to use
-> exported symbols during the execution of the init function if they
-> are weak: /* Ok if weak.  */ if (ELF_ST_BIND(sym[i].st_info) ==
-> STB_WEAK) break;
-> That seems a possible way to produce the scenario of this so-called
-> bug.
+Looks like you lack write access to either .config, include/config/auto.conf or
+a temporary file.
+Did you build the kernel as root previously?
 
-if you export weak symbols in your own module AND you have some
-piece of kernel that will start using the symbol (which means the
-kernel already needs to know about it) AND you don't know what you're
-doing you get shot in the foot... BFD
+To clean up all files you can do:
+copy .config save.config
+make mrproper
+mv save.confif .config
 
-maybe if you have such a case you should publish the source code of
-that case so that we can suggest alternative approaches of what you're
-trying to do..
+(And I use copy when backing up .config to avoid inherit
+permissions from original .config file
+
+	Sam
