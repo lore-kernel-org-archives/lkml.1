@@ -1,89 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966534AbXHaV0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966592AbXHaV1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966534AbXHaV0n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965674AbXHaV0A
+	id S966592AbXHaV1O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965674AbXHaV0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:26:00 -0400
-Received: from xenotime.net ([66.160.160.81]:58605 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S966490AbXHaVZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:25:58 -0400
-Date: Fri, 31 Aug 2007 14:25:53 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Simon Arlott <simon@fire.lp0.eu>,
-       sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Adrian Bunk <bunk@stusta.de>, Gabriel C <crazy@pimpmylinux.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-Message-Id: <20070831142553.541ade40.rdunlap@xenotime.net>
-In-Reply-To: <Pine.LNX.4.64.0708311656360.27345@localhost.localdomain>
-References: <469E75AA.7040109@pimpmylinux.org>
-	<Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
-	<20070718134012.cde2f956.randy.dunlap@oracle.com>
-	<469E7BE1.6090401@garzik.org>
-	<Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
-	<20070718210903.GM3801@stusta.de>
-	<Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
-	<20070719054742.GN3801@stusta.de>
-	<Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
-	<469F240E.9040205@s5r6.in-berlin.de>
-	<Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
-	<20070719083109.13b2ab56.rdunlap@xenotime.net>
-	<Pine.LNX.4.64.0707191213130.8844@localhost.localdomain>
-	<469FE045.3070403@simon.arlott.org.uk>
-	<20070831102527.09fb42c0.rdunlap@xenotime.net>
-	<Pine.LNX.4.64.0708311318220.18158@localhost.localdomain>
-	<46D858A9.4080506@garzik.org>
-	<20070831131612.312664ef.rdunlap@xenotime.net>
-	<Pine.LNX.4.64.0708311656360.27345@localhost.localdomain>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Aug 2007 17:26:53 -0400
+Received: from li6-103.members.linode.com ([66.160.141.103]:2555 "EHLO
+	smtp.falooley.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966491AbXHaV0w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 17:26:52 -0400
+Date: Fri, 31 Aug 2007 14:26:36 -0700
+From: Jason Lunz <lunz@falooley.org>
+To: jffs-dev@axis.com
+Cc: David Woodhouse <dwmw2@infradead.org>, stable@kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: jffs2 deadlock introduced in linux 2.6.22.5
+Message-ID: <20070831212636.GB12868@falooley.org>
+References: <20070830182354.GA25077@falooley.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070830182354.GA25077@falooley.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007 17:00:57 -0400 (EDT) Robert P. J. Day wrote:
+On Thu, Aug 30, 2007 at 11:23:55AM -0700, Jason Lunz wrote:
+> commit 1d8715b388c978b0f1b1bf4812fcee0e73b023d7 was added between
+> 2.6.22.4 and 2.6.22.5 to cure a locking problem, but it seems to have
+> introduced another (worse?) one.
 
-> On Fri, 31 Aug 2007, Randy Dunlap wrote:
-> 
-> > What I like about the patch is that it associates some kconfig
-> > symbol with prompt strings, so that we don't have to edit
-> > "(EXPERIMENTAL)" all the darn time (e.g.).
-> >
-> > I'd be quite happy with calling it "status" rather than "maturity",
-> > and with being able to use multiple of the status tags at one time,
-> > such as
-> >
-> > 	config FOO
-> > 	depends on BAR
-> > 	status OBSOLETE BROKEN
-> 
-> grrrrrrrr ... i already made my point in my earlier post.  i'd
-> really, really like it if *this* attribute remained as "maturity".  an
-> entirely *separate* attribute could be defined as a feature "status",
-> which would be entirely orthogonal to maturity level, so that the
-> above would be written as
-> 
-> 	maturity OBSOLETE
-> 	status BROKEN
-> 
-> there's a reason for this -- any feature should have exactly *one*
-> value for any attribute.  that is, in terms of maturity, a feature
-> could be EXPERIMENTAL *or* DEPRECATED *or* OBSOLETE.  it ***can't***
-> be more than one, as in both DEPRECATED *and* OBSOLETE.  to allow that
-> flexibility is to descend into absurdity.
+I spoke too soon. I checked more carefully, and this problem was
+introduced somewhere between 2.6.21 and 2.6.22. The jffs2 fix in
+2.6.22.5 isn't the culprit.
 
-
-If Simon (or anyone else) continues to work on it, I'll leave this
-decision up to them...
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Jason
