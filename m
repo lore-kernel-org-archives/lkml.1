@@ -1,90 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbXHaHsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbXHaHu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757871AbXHaHsz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 03:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbXHaHsq
+	id S1758052AbXHaHu5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 03:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXHaHus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 03:48:46 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34533 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753127AbXHaHsp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 03:48:45 -0400
-Date: Fri, 31 Aug 2007 00:48:45 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jan Dittmer <jdi@l4x.org>, Adrian Bunk <bunk@kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org
-Subject: Re: [1/4] 2.6.23-rc4: known regressions
-In-Reply-To: <46D7108D.9090104@l4x.org>
-Message-ID: <Pine.LNX.4.64.0708310043250.14694@schroedinger.engr.sgi.com>
-References: <46D5902C.1040905@googlemail.com> <46D5B544.4030708@l4x.org>
- <20070829234734.GA26410@stusta.de> <Pine.LNX.4.64.0708291736010.4526@schroedinger.engr.sgi.com>
- <46D66D49.20300@l4x.org> <Pine.LNX.4.64.0708301112030.7975@schroedinger.engr.sgi.com>
- <46D7108D.9090104@l4x.org>
+	Fri, 31 Aug 2007 03:50:48 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41932 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753445AbXHaHus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 03:50:48 -0400
+Message-ID: <46D7C856.5070901@garzik.org>
+Date: Fri, 31 Aug 2007 03:50:46 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jason Gaston <jason.d.gaston@intel.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, htejun@gmail.com
+Subject: Re: [PATCH 2.6.23-rc4][reRESEND] ata_piix: IDE mode SATA patch for
+ Intel Tolapai
+References: <200708302136.57215.jason.d.gaston@intel.com>
+In-Reply-To: <200708302136.57215.jason.d.gaston@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is the fix for alpha:
+Jason Gaston wrote:
+> Resend trying to remove 8-bit characters in the email.
+> 
+> This patch adds the Intel Tolapai IDE mode SATA controller DID's.
+> 
+> Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+
+applied
 
 
 
->From clameter@sgi.com Thu Aug 30 14:13:57 2007
-Subject: SLUB: Force inlining for functions in slub_def.h
-
-Some compilers (especially older gcc releases) may skip inlining sometimes 
-which will lead to link failures. Force the inlining of keyfunctions in 
-slub_def.h to avoid these issues.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Acked-by: Jan Dittmer <jdi@l4x.org>
-
----
- include/linux/slub_def.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/include/linux/slub_def.h
-===================================================================
---- linux-2.6.orig/include/linux/slub_def.h	2007-08-30 14:12:25.000000000 -0700
-+++ linux-2.6/include/linux/slub_def.h	2007-08-30 14:13:07.000000000 -0700
-@@ -78,7 +78,7 @@ extern struct kmem_cache kmalloc_caches[
-  * Sorry that the following has to be that ugly but some versions of GCC
-  * have trouble with constant propagation and loops.
-  */
--static inline int kmalloc_index(size_t size)
-+static __always_inline int kmalloc_index(size_t size)
- {
- 	if (!size)
- 		return 0;
-@@ -133,7 +133,7 @@ static inline int kmalloc_index(size_t s
-  * This ought to end up with a global pointer to the right cache
-  * in kmalloc_caches.
-  */
--static inline struct kmem_cache *kmalloc_slab(size_t size)
-+static __always_inline struct kmem_cache *kmalloc_slab(size_t size)
- {
- 	int index = kmalloc_index(size);
- 
-@@ -166,7 +166,7 @@ static inline struct kmem_cache *kmalloc
- void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
- void *__kmalloc(size_t size, gfp_t flags);
- 
--static inline void *kmalloc(size_t size, gfp_t flags)
-+static __always_inline void *kmalloc(size_t size, gfp_t flags)
- {
- 	if (__builtin_constant_p(size) && !(flags & SLUB_DMA)) {
- 		struct kmem_cache *s = kmalloc_slab(size);
-@@ -183,7 +183,7 @@ static inline void *kmalloc(size_t size,
- void *__kmalloc_node(size_t size, gfp_t flags, int node);
- void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
- 
--static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
-+static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- {
- 	if (__builtin_constant_p(size) && !(flags & SLUB_DMA)) {
- 		struct kmem_cache *s = kmalloc_slab(size);
