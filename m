@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965112AbXHaMEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965217AbXHaMFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965112AbXHaMEY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 08:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932756AbXHaMEF
+	id S965217AbXHaMFh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 08:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964879AbXHaMF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 08:04:05 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:52124 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932657AbXHaMD6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 08:03:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UyyhD2kDsdVmPtFDhAIOa1ytVsHsquNFY8UeLSlvyhUqQ+6C5QYdCNL1BVeiGmINk2YqFF5eBkmEJmw0hIwZ1J8gYnhA6w/RKshgf7z1OJMR572WC9Cvos5Ipxf7PvuLdcRXykiGfyfQV0A7SNR8h78xwktxjVdTpTuSDxct6uM=
-Message-ID: <a4e6962a0708310503q5ec65485gd9025a44a57f89e1@mail.gmail.com>
-Date: Fri, 31 Aug 2007 07:03:56 -0500
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: Re: [Lguest] [PATCH] modify lguest console to support multiple hvc's
-Cc: lguest@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1188519575.6004.15.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 31 Aug 2007 08:05:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58454 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932564AbXHaMFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 08:05:25 -0400
+Subject: Re: [PATCH 5/5] Net: ath5k, kconfig changes
+From: Dan Williams <dcbw@redhat.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Nick Kossifidis <mickflemm@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>, Jiri Slaby <jirislaby@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20070830123609.GA5140@tuxdriver.com>
+References: <2713029743177393055@pripojeni.net>
+	 <280951420471148977@pripojeni.net> <20070828171330.GD29343@infradead.org>
+	 <40f31dec0708291838p5d33eb34p3b4432d9d270841a@mail.gmail.com>
+	 <20070830123609.GA5140@tuxdriver.com>
+Content-Type: text/plain
+Date: Fri, 31 Aug 2007 07:58:51 -0400
+Message-Id: <1188561531.2668.7.camel@xo-3E-67-34.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11884991234068-git-send-email-ericvh@opteron.9grid.us>
-	 <1188519575.6004.15.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/30/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> On Thu, 2007-08-30 at 13:38 -0500, Eric Van Hensbergen wrote:
-> > From: Eric Van Hensbergen <ericvh@ericvh-desktop.austin.ibm.com>
-> >
-> > This was a quick modification I did of lguest to be able to support multiple
-> > HVC channels for some experiments I was doing.  I'm not sure if this is more
-> > generally useful, so I'm posting it to the list in case someone else has a
-> > need for it.
-> >
-> > Signed-off-by: Eric Van Hensbergen <ericvh@gmail.com>
->
->         This is cool!  Great that it's useful for you.  What do the other
-> consoles look like from inside the guest?
->
+On Thu, 2007-08-30 at 08:36 -0400, John W. Linville wrote:
+> On Thu, Aug 30, 2007 at 04:38:09AM +0300, Nick Kossifidis wrote:
+> > 2007/8/28, Christoph Hellwig <hch@infradead.org>:
+> 
+> > > Also this whole patch seems rather pointless.  It saves only
+> > > very little and turns the driver into a complete ifdef maze.
+> 
+> > Also most
+> > people will use 5212 code only, 5211 cards are on some old laptops and
+> > 5210, well i couldn't even find  a 5210 for actual testing :P
+> 
+> FWIW, I'd bet dollars to donuts that distros will enable them all
+> together.
 
-They just show up on other hvc device minor numbers.  I was running 9p
-over them, but I wanted a tighter coupling for v9fs so I could tune
-performance and incrementally optimize.
+I would certainly _hope_ that distros enable everything -that is in the
+kernel- that they can get their hands on, otherwise when you stick a
+card in, it doesn't just work.
 
-             -eric
+Dan
+
+> Is saving code space the only reason to turn these off?  How much
+> space do you save?
+> 
+> Is there some way you can isolate and/or limit the number of ifdef
+> blocks further?  If so, we might consider a version of this patch
+> that depends on EMBEDDED or somesuch...?
+> 
+> John
+
