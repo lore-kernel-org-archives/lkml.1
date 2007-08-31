@@ -1,115 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbXHaI0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbXHaI3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347AbXHaI0Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 04:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXHaI0R
+	id S1758264AbXHaI3N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 04:29:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbXHaI27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 04:26:17 -0400
-Received: from mga11.intel.com ([192.55.52.93]:35489 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752967AbXHaI0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 04:26:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,329,1183359600"; 
-   d="scan'208";a="291355578"
-Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation: kexec jump
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20070827184829.GB4104@ucw.cz>
-References: <1188177280.3247.37.camel@caritas-dev.intel.com>
-	 <20070827184829.GB4104@ucw.cz>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 31 Aug 2007 16:27:22 +0800
-Message-Id: <1188548842.1365.13.camel@caritas-dev.intel.com>
+	Fri, 31 Aug 2007 04:28:59 -0400
+Received: from frankvm.xs4all.nl ([80.126.170.174]:60211 "EHLO
+	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753797AbXHaI26 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 04:28:58 -0400
+X-Greylist: delayed 891 seconds by postgrey-1.27 at vger.kernel.org; Fri, 31 Aug 2007 04:28:58 EDT
+Date: Fri, 31 Aug 2007 10:28:56 +0200
+From: Frank van Maarseveen <frankvm@frankvm.com>
+To: Jakob Oestergaard <jakob@unthought.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Frank van Maarseveen <frankvm@frankvm.com>,
+       Hua Zhong <hzhong@gmail.com>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org
+Subject: Re: recent nfs change causes autofs regression
+Message-ID: <20070831082856.GB21499@janus>
+References: <000701c7eb49$cff701c0$6fe50540$@com> <1188513433.6626.24.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org> <1188535485.6626.85.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302157470.25853@woody.linux-foundation.org> <1188536658.6626.98.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302215280.25853@woody.linux-foundation.org> <20070831074028.GR21979@unthought.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 31 Aug 2007 08:26:14.0163 (UTC) FILETIME=[9810F630:01C7EBA8]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070831074028.GR21979@unthought.net>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-27 at 18:48 +0000, Pavel Machek wrote:
-> Hi!
-> 
-> > To support jumping back from kexeced kernel, before executing the new
-> > kernel, the devices are put into quiescent state (to be fully
-> > implemented), and the state of devices and CPU is saved. After jumping
-> > back from kexeced kernel, the state of devices and CPU are restored
-> > accordingly. The devices/CPU state save/restore code of software
-> > suspend is called to implement corresponding function.
+On Fri, Aug 31, 2007 at 09:40:28AM +0200, Jakob Oestergaard wrote:
+> On Thu, Aug 30, 2007 at 10:16:37PM -0700, Linus Torvalds wrote:
 > > 
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> ...
+> > > Why aren't we doing that for any other filesystem than NFS?
+> > 
+> > How hard is it to acknowledge the following little word:
+> > 
+> > 	"regression"
+> > 
+> > It's simple. You broke things. You may want to fix them, but you need to 
+> > fix them in a way that does not break user space.
 > 
-> Looks quite ok to me...
+> Trond has a point Linus.
 > 
+> What he "broke" is, for example, a ro mount being mounted as rw.
 > 
-> > Index: linux-2.6.23-rc3/include/asm-i386/kexec.h
-> > ===================================================================
-> > --- linux-2.6.23-rc3.orig/include/asm-i386/kexec.h	2007-08-25 21:56:54.000000000 +0800
-> > +++ linux-2.6.23-rc3/include/asm-i386/kexec.h	2007-08-25 21:57:00.000000000 +0800
-> > @@ -94,6 +94,10 @@
-> >  		unsigned long start_address,
-> >  		unsigned int has_pae) ATTRIB_NORET;
-> >  
-> > +#ifdef CONFIG_KEXEC_JUMP
-> > +extern asmlinkage int machine_kexec_real_jump(void *buf);
-> > +#endif
+> That *could* be a very serious security (etc.etc.) problem which he just fixed.
+> Anything depending on read-only not being enforced will cease to work, of
+> course, and that is what a few people complain about(!).
 > 
-> Is it really neccessery to have ifdef here?
-
-It is not necessary. I will fix it in the next version.
-
-> > +#ifdef CONFIG_KEXEC_JUMP
-> > +#define KEXEC_JUMP_FLAG_IS_KEXECED_KERNEL     0x1
-> > +#endif /* CONFIG_KEXEC_JUMP */
+> If ext3 in some rare case (which would still mean it hit a few thousand users)
+> failed to remember that a file had been marked read-only and allowed writes to
+> it, wouldn't we want to fix that too?  It would cause regressions, but we'd fix
+> it, right?
 > 
-> And here? ... It would be nice to use slightly shorter identifier.
-> 'KJUMP_IS_KEXECED' should be enough.
+> mount passes back the error code on a failed mount. autofs passes that error
+> along too (when people configure syslog correctly). In short; when these
+> serious mistakes are made and caught, the admin sees an error in his logs.
 
-Yes, that is nicer. I will fix it.
+Hua explained already that seeing the error is not the same as fixing
+the error: he cannot fix it because NFS implies other systems we _must_
+co-operate with.
 
-> > +/*
-> > + * Must be relocatable PIC code callable as a C function
-> > + */
-> > +#define HALF_PAGE_ALIGNED (1 << (PAGE_SHIFT-1))
-> > +
-> > +#define EBX	0x0
-> > +#define ESI	0x4
-> > +#define EDI	0x8
-> > +#define EBP	0xc
-> > +#define ESP	0x10
-> > +#define CR0	0x14
-> > +#define CR3	0x18
-> > +#define CR4	0x1c
-> > +#define FLAG	0x20
-> > +#define RET	0x24
-> 
-> Hmm, is this enough? Should it use struct ptregs for normal registers?
-> What about segment registers -- they could change between kernel
-> version. Should some kind of 'version of kjump protocol' be
-> introduced?
-
-All "preserve" registers defined in ABI are saved, I think that is
-sufficient. The "swsusp_arch_suspend" saves only these registers too.
-
-An extensible inter-kernel kjump protocol and corresponding version
-number seems sensible. I will work on this.
-
-> 
-> What about CX/DX/fpu state? GDT pointer?
-> 
-> Actually I think that you _do_ need to save FPU. You should probably
-> use relevant swsusp parts here.
-
-Before and after "machine_kexec_jump" is called, the
-save_processor_state() and restore_processor_state() are called, where
-the MTRR/FPU/GDT/IDT/TR/segments/cr are saved and restored. These two
-functions come from swsusp. Thanks swsusp guys. :)
-
-Best Regards,
-Huang Ying
+-- 
+Frank
