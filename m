@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966052AbXHaVWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933385AbXHaVWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966052AbXHaVWL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbXHaVV6
+	id S933385AbXHaVWe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965226AbXHaVWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:21:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32780 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760865AbXHaVV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:21:57 -0400
-Message-ID: <46D8864F.4020904@redhat.com>
-Date: Fri, 31 Aug 2007 17:21:19 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Fri, 31 Aug 2007 17:22:21 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:38924 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965166AbXHaVWU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 17:22:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=fsKwfPwrT1YHyF3Zc1QnDtXkf9ET0kNpR9BZLJLmtfm82kY0l2PwmDu/0wUy5pH6bOtCw4rP4yKLQFVMm6b8UFMTiUIfnbeNKniL38SAxZicnKoY4r96DBjBiMuu36MwoZ5qCjHIhX4dLVMAvB1mQClEGUGrEaddELvVF5pbrJk=
+Message-ID: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com>
+Date: Fri, 31 Aug 2007 17:22:19 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: the Linux kernel, testsuites, and maybe *you*
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Andrew Morton <akpm@linux-foundation.org>, jakub@redhat.com,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.23-rc3-mm1 - vdso and gettimeofday issues with glibc
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <23252.1188396273@turing-police.cc.vt.edu> <3909.1188409058@turing-police.cc.vt.edu>            <20070829161545.9fde1a5c.akpm@linux-foundation.org> <25082.1188482914@turing-police.cc.vt.edu>
-In-Reply-To: <25082.1188482914@turing-police.cc.vt.edu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/30/2007 10:08 AM, Valdis.Kletnieks@vt.edu wrote:
-> On Wed, 29 Aug 2007 16:15:45 PDT, Andrew Morton said:
-> 
->> So it's an interaction between the x86_64 vdso patches in Andi's tree and 
->> newer glibc, and we don't know which one is getting it wrong yet?
->>
->> If I ever get another -mm out the door (have been without electricity for
->> several days) I'll drop the vdso changes until this is sorted out.
-> 
-> Don't bother, I tested this last night against a vanilla 2.6.23-rc3 kernel
-> and it had the same issue as well.  So Andi's vdso patches in his tree and/or
-> the -mm kernel aren't to blame - it's in mainline as well.  And it's been
-> in for a while - I also hit it with a 2.6.22-rc6-mm1 kernel.
-> 
+is there any sort of standard for testing and integration into
+mainline ?  in the Blackfin world, we've been developing little
+external kernel modules and adding them to our own testsuite, but
+often times these things are not Blackfin specific.  case in point,
+we're integrating a string testsuite to make sure all of the fun str*
+and mem* functions are sane and operate as they expected, but rather
+than having just Blackfin benefit here, i'd like to see this pushed
+upstream ...
 
-We also have:
+i'm fully aware of LTP (as i work on it), but i feel that serves a
+great purpose for exercising the API/ABI exposed to userspace either
+directly through the kernel or indirectly through the system libc ...
+it isnt a very good tool for testing kernel internals, especially as
+the kernel changes and evolves.
 
-  http://lkml.org/lkml/2007/7/29/376
-
-(Time repeatedly jumps backwards ~4400 seconds.)
+is there a framework already in place i'm not aware of ?  should there
+be ?  should this all live in LTP ?  i wouldnt mind an option under
+kernel hacking "Enable testsuites" ... as far as i can tell, the
+testing process is really based extensively on feedback from people,
+nothing really automated.
+-mike
