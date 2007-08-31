@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965653AbXHaNwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965631AbXHaNxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965653AbXHaNwA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 09:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965074AbXHaNvw
+	id S965631AbXHaNxj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 09:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965290AbXHaNxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 09:51:52 -0400
-Received: from pat.uio.no ([129.240.10.15]:53103 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965041AbXHaNvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 09:51:51 -0400
-Subject: Re: recent nfs change causes autofs regression
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Frank van Maarseveen <frankvm@frankvm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jakob Oestergaard <jakob@unthought.net>, Hua Zhong <hzhong@gmail.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-In-Reply-To: <20070831131226.GA24084@janus>
-References: <000701c7eb49$cff701c0$6fe50540$@com>
-	 <1188513433.6626.24.camel@heimdal.trondhjem.org>
-	 <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org>
-	 <1188535485.6626.85.camel@heimdal.trondhjem.org>
-	 <alpine.LFD.0.999.0708302157470.25853@woody.linux-foundation.org>
-	 <1188536658.6626.98.camel@heimdal.trondhjem.org>
-	 <alpine.LFD.0.999.0708302215280.25853@woody.linux-foundation.org>
-	 <20070831074028.GR21979@unthought.net>
-	 <alpine.LFD.0.999.0708310055010.25853@woody.linux-foundation.org>
-	 <1188562298.6649.39.camel@heimdal.trondhjem.org>
-	 <20070831131226.GA24084@janus>
-Content-Type: text/plain
-Date: Fri, 31 Aug 2007 09:50:12 -0400
-Message-Id: <1188568212.6649.75.camel@heimdal.trondhjem.org>
+	Fri, 31 Aug 2007 09:53:30 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60362 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965285AbXHaNx3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 09:53:29 -0400
+Date: Fri, 31 Aug 2007 14:53:23 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Satyam Sharma <satyam@infradead.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Joe Perches <joe@perches.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] trivial - constify sched.h
+Message-ID: <20070831135323.GA24509@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jan Engelhardt <jengelh@computergmbh.de>,
+	Satyam Sharma <satyam@infradead.org>,
+	Alexey Dobriyan <adobriyan@gmail.com>,
+	Joe Perches <joe@perches.com>, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <1188247231.18004.129.camel@localhost> <20070827213323.GA1759@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0708302120290.24730@fbirervta.pbzchgretzou.qr> <alpine.LFD.0.999.0708310121121.28360@enigma.security.iitk.ac.in> <Pine.LNX.4.64.0708302247070.10266@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, AWL=0.041)
-X-UiO-Scanned: DC00E1F9ABD6CBC3DBBA06605C33F14BA3D5F570
-X-UiO-Ratelimit-Test: Ratelimit
-X-UiO-SPAM-Test: UIO-RATELIMIT remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1311 total 3589923 max/h 8345 blacklist 0 greylist 0 ratelimit 1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708302247070.10266@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-31 at 15:12 +0200, Frank van Maarseveen wrote:
+On Thu, Aug 30, 2007 at 10:55:49PM +0200, Jan Engelhardt wrote:
+> "those callers". There was _exactly one_ caller, and that was an out-of-tree
+> module. There were not any in-kernel callers before, and it did not generate
+> any warning. That is perhaps why no one had constified it before me. This does
+> not mean we should wait for a caller to pop up before constifying IMHO.
 
-> IMHO I'd only consider returning EBUSY when trying to mount _exactly_
-> the same directory with different flags, not for arbitrary subtrees. The
-> client should preferably not be bothered with server side disk
-> partitioning (at least not beyond the obvious such as df output).
-
-That is utterly inconsistent and confusing too.
-
-If you have a filesystem "/foo" exported on the server "remote", then
-why should
-
-        mount -oro remote:/foo
-        mount -orw remote:/foo/a
-
-be allowed, but
-
-        mount -oro remote:/foo
-        mount -orw remote:/foo
-
-be forbidden? The caching problems are the same. Telling the admin that
-one is safe and the other is not, is just messing with his mind.
-
-Trond
+In this case we should just kill it instead of messing with constness.
 
