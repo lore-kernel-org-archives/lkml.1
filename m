@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965209AbXHaNW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965288AbXHaNbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965209AbXHaNW1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 09:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964971AbXHaNWU
+	id S965288AbXHaNbV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 09:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965033AbXHaNbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 09:22:20 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:2235 "EHLO scrub.xs4all.nl"
+	Fri, 31 Aug 2007 09:31:04 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60062 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964879AbXHaNWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 09:22:19 -0400
-Date: Fri, 31 Aug 2007 15:22:52 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Mike Galbraith <efault@gmx.de>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org
-Subject: Re: [ANNOUNCE/RFC] Really Fair Scheduler
-In-Reply-To: <1188553015.8061.36.camel@Homer.simpson.net>
-Message-ID: <Pine.LNX.4.64.0708311520420.1817@scrub.home>
-References: <Pine.LNX.4.64.0708310139280.1817@scrub.home>
- <1188553015.8061.36.camel@Homer.simpson.net>
+	id S964957AbXHaNbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 09:31:01 -0400
+Message-ID: <46D8180A.5070902@garzik.org>
+Date: Fri, 31 Aug 2007 09:30:50 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dan Williams <dcbw@redhat.com>
+CC: "John W. Linville" <linville@tuxdriver.com>,
+       Nick Kossifidis <mickflemm@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>, Jiri Slaby <jirislaby@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 5/5] Net: ath5k, kconfig changes
+References: <2713029743177393055@pripojeni.net>	 <280951420471148977@pripojeni.net> <20070828171330.GD29343@infradead.org>	 <40f31dec0708291838p5d33eb34p3b4432d9d270841a@mail.gmail.com>	 <20070830123609.GA5140@tuxdriver.com> <1188561531.2668.7.camel@xo-3E-67-34.localdomain>
+In-Reply-To: <1188561531.2668.7.camel@xo-3E-67-34.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Dan Williams wrote:
+> On Thu, 2007-08-30 at 08:36 -0400, John W. Linville wrote:
+>> On Thu, Aug 30, 2007 at 04:38:09AM +0300, Nick Kossifidis wrote:
+>>> 2007/8/28, Christoph Hellwig <hch@infradead.org>:
+>>>> Also this whole patch seems rather pointless.  It saves only
+>>>> very little and turns the driver into a complete ifdef maze.
+>>> Also most
+>>> people will use 5212 code only, 5211 cards are on some old laptops and
+>>> 5210, well i couldn't even find  a 5210 for actual testing :P
+>> FWIW, I'd bet dollars to donuts that distros will enable them all
+>> together.
+> 
+> I would certainly _hope_ that distros enable everything -that is in the
+> kernel- that they can get their hands on, otherwise when you stick a
+> card in, it doesn't just work.
 
-On Fri, 31 Aug 2007, Mike Galbraith wrote:
+Distros definitely -do not- do this.  Plenty of ancient ISA drivers are 
+disabled at build time, for example, in many distros.
 
-> I plunked it into 2.6.23-rc4 to see how it reacts to various sleeper
-> loads, and hit some starvation.  If I got it in right (think so) there's
-> a bug lurking somewhere.  taskset -c 1 fairtest2 resulted in the below.
-> It starts up running both tasks at about 60/40 for hog/sleeper, then
-> after a short while goes nuts.  The hog component eats 100% cpu and
-> starves the sleeper (and events, forever).
+	Jeff
 
-Thanks for testing, although your test program does nothing unusual here.
-Can you please send me your .config?
-Were there some kernel messages while running it?
 
-bye, Roman
 
