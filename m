@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760734AbXHaP0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbXHaP2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760734AbXHaP0x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 11:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757270AbXHaP0p
+	id S1760559AbXHaP2u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 11:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbXHaP2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 11:26:45 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:55344 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756681AbXHaP0o (ORCPT
+	Fri, 31 Aug 2007 11:28:39 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59305 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757404AbXHaP2h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 11:26:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jsvaoBXfB2wnP1lA146WlVuU84v+LIHMLt2iqoyiQSPxFevjEGs53k7oAK6u0sl/F13jeFyXhFgsMlSHj3B7xR/5oe5gAbid3Y7Mn5os/YPk1bl98Liik7sBDicA7/VA02qhTuqRl69+L93LTCsh9+BLz4e4Tu/TmLKjs+4GR1U=
-Message-ID: <d120d5000708310826q7ddf3514w55b3f4f0cca599ca@mail.gmail.com>
-Date: Fri, 31 Aug 2007 11:26:42 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Subject: Re: [PATCH] input: Silence 'unused variable' warning in iforce joystick driver
-Cc: "Satyam Sharma" <satyam@infradead.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Vojtech Pavlik" <vojtech@ucw.cz>,
-       "Johann Deneux" <johann.deneux@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz,
-       linux-joystick@atrey.karlin.mff.cuni.cz
-In-Reply-To: <200708310050.03786.jesper.juhl@gmail.com>
+	Fri, 31 Aug 2007 11:28:37 -0400
+Date: Fri, 31 Aug 2007 08:28:36 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Dmitry Monakhov <dmonakhov@sw.ru>
+cc: Jens Axboe <jens.axboe@oracle.com>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
+       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [11/36] Use page_cache_xxx in fs/buffer.c
+In-Reply-To: <20070831083632.GA12619@dnb.acronis.ru>
+Message-ID: <Pine.LNX.4.64.0708310822570.16456@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0708301113170.7975@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0708301843280.13292@schroedinger.engr.sgi.com>
+ <20070831065613.GH29452@kernel.dk> <Pine.LNX.4.64.0708310003280.14375@schroedinger.engr.sgi.com>
+ <20070831071142.GI29452@kernel.dk> <Pine.LNX.4.64.0708310012370.14375@schroedinger.engr.sgi.com>
+ <20070831072611.GK29452@kernel.dk> <Pine.LNX.4.64.0708310028160.14632@schroedinger.engr.sgi.com>
+ <20070831074338.GL29452@kernel.dk> <Pine.LNX.4.64.0708310049110.14743@schroedinger.engr.sgi.com>
+ <20070831083632.GA12619@dnb.acronis.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200708310013.12347.jesper.juhl@gmail.com>
-	 <alpine.LFD.0.999.0708310422200.31519@enigma.security.iitk.ac.in>
-	 <200708310050.03786.jesper.juhl@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesper,
+On Fri, 31 Aug 2007, Dmitry Monakhov wrote:
 
-On 8/30/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
-> On 31/08/2007, Satyam Sharma <satyam@infradead.org> wrote:
-> ...
-> >
-> > Hmm, would this not still give a warning when JOYSTICK_IFORCE_USB=y?
->
-> Arrgh, I messed that one up real good...  Thank you for your keen eye Satyam :-)
->
->
-> > [ I didn't know mixing code and declarations (not at top of statement
-> >   block) was accepted style in the kernel ... ]
-> >
-> It's not the common case, but this is certainly not the only place in the kernel where we do it.
->
->
-> > IMHO either you should at least wrap that case inside a {} of its
-> > own (so that the int status; is at top of a statement block), or else,
->
-> Yeah, I should...
->
-> > preferably, just add "__maybe_unused" to the first declaration that you
-> > removed just now.
-> >
->
-> Here's an updated patch that actually works as intended.
->
+> > Ok. So another solution maybe to limit the blocksizes that can be used 
+> > with a device?
+> IMHO It is not good because after fs was created with big blksize it's image
+> cant be used on other devices. 
 
-I had a similar patch from Andrew Morton in my queue and it just got
-merged. There should be no warning anymore.
+Ok so a raw copy of the partition would do this?
 
--- 
-Dmitry
+> We may just rewrite submit_bh simular to drivers/md/dm-io.c:do_region
+> with following pseudocode:
+> 
+> remaning = super_page_size();
+
+That would be compound_size(page)
+
+> while (remaining) {
+> 	init_bio(bio);
+> 	/*Try and add as many pages as possible*/
+
+This seems to be doing the same as get_user_pages() serializing the 
+compound page.
+
+> 	while (remaining) {
+> 		dp->get_page(dp, &page, &len, &offset);
+> 		len = min(len,
+> 		to_bytes(remaining));
+>         	if(!bio_add_page(bio, page, len, offset))
+> 		break;
+>         	offset = 0;
+> 		remaining -= to_sector(len);
+> 		dp->next_page(dp);
+> 		}
+> 	atomic_inc(&io->count);
+> 	submit_bio(rw, bio);
+> }
+
+Another solution may be to not serialize but instead determine the maximum 
+segment length and generate bios that reference various subsection of the
+compound page of that length? That way you do not serialize and later 
+coalesce again.
