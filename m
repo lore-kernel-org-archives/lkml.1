@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763144AbXHaA3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763008AbXHaAoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763144AbXHaA3e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 20:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbXHaA3Z
+	id S1763008AbXHaAoe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 20:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXHaAoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 20:29:25 -0400
-Received: from cavan.codon.org.uk ([78.32.9.130]:50890 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757129AbXHaA3Z (ORCPT
+	Thu, 30 Aug 2007 20:44:25 -0400
+Received: from mga02.intel.com ([134.134.136.20]:25890 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752714AbXHaAoY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 20:29:25 -0400
-X-Greylist: delayed 2035 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 20:29:24 EDT
-Date: Fri, 31 Aug 2007 00:55:19 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Message-ID: <20070830235519.GA17098@srcf.ucam.org>
-References: <21d7e9970708270129u2a619b8dx79fbdaddc55fa16f@mail.gmail.com>
+	Thu, 30 Aug 2007 20:44:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,328,1183359600"; 
+   d="scan'208";a="286271466"
+From: Jason Gaston <jason.d.gaston@intel.com>
+To: khali@linux-fr.org, linux-kernel@vger.kernel.org, gregkh@suse.de,
+       jason.d.gaston@intel.com, i2c@lm-sensors.org
+Subject: [PATCH 2.6.23-rc4][RESEND] i2c-i801: Documentation patch for Intel Tolapai
+Date: Thu, 30 Aug 2007 17:46:34 -0700
+User-Agent: KMail/1.9.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <21d7e9970708270129u2a619b8dx79fbdaddc55fa16f@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: resume failing on ATA controller
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Message-Id: <200708301746.34986.jason.d.gaston@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 06:29:48PM +1000, Dave Airlie wrote:
+Resend without wordwrap.  
 
-(I've already mentioned this to Dave, but for the benefit of anyone 
-else)
+This patch adds the Intel Tolapai SMBus Controller text to i2c-i801 
+documentation.
 
-> I also know someone running the same laptop using drivers/ide drivers
-> whose suspend/resume works properly....
-> 
-> I'm running the latest Fedora rawhide kernel based on -rc3-git7
+Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
 
-libata doesn't enable ACPI support by default. It needs the libata_acpi 
-option enabled at boottime (libata.libata_acpi?) in order to execute the 
-ACPI methods that HPs seem to need to resume properly. With that change, 
-mine works fine.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+--- linux-2.6.23-rc4/Documentation/i2c/busses/i2c-i801.orig	2007-08-30 15:56:39.000000000 -0700
++++ linux-2.6.23-rc4/Documentation/i2c/busses/i2c-i801	2007-08-30 15:57:32.000000000 -0700
+@@ -13,7 +13,8 @@
+   * Intel 631xESB/632xESB (ESB2)
+   * Intel 82801H (ICH8)
+   * Intel ICH9
+-    Datasheets: Publicly available at the Intel website
++  * Intel Tolapai
++   Datasheets: Publicly available at the Intel website
+ 
+ Authors: 
+ 	Frodo Looijaard <frodol@dds.nl>, 
