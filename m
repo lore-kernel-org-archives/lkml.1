@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759606AbXHaP0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760734AbXHaP0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759606AbXHaP0P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 11:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbXHaP0B
+	id S1760734AbXHaP0x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 11:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757270AbXHaP0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 11:26:01 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:53982 "EHLO
+	Fri, 31 Aug 2007 11:26:45 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:55344 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756174AbXHaP0A (ORCPT
+	with ESMTP id S1756681AbXHaP0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 11:26:00 -0400
+	Fri, 31 Aug 2007 11:26:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=gjmpKgtAxOBvk7PdXdK2C4bAZPj0pTtISJfgPTG1UL1wUceumEgaP1XxcaZp8MFINTz/nqPWpLNpb3rBaSHWyH14VkwZi9kEk62S+zWSOGgwbH9AHK1NPU3GxjNeBPyjtAlNhcASVCy0hp+sXDxGC980lGQGjRHGhfxNGBnSIII=
-Message-ID: <379fb4870708310825o70509368l490ac9063ce09866@mail.gmail.com>
-Date: Fri, 31 Aug 2007 17:25:55 +0200
-From: "anon... anon.al" <anon.asdf@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: memory barrier to ensure copy_to_user() completes
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jsvaoBXfB2wnP1lA146WlVuU84v+LIHMLt2iqoyiQSPxFevjEGs53k7oAK6u0sl/F13jeFyXhFgsMlSHj3B7xR/5oe5gAbid3Y7Mn5os/YPk1bl98Liik7sBDicA7/VA02qhTuqRl69+L93LTCsh9+BLz4e4Tu/TmLKjs+4GR1U=
+Message-ID: <d120d5000708310826q7ddf3514w55b3f4f0cca599ca@mail.gmail.com>
+Date: Fri, 31 Aug 2007 11:26:42 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [PATCH] input: Silence 'unused variable' warning in iforce joystick driver
+Cc: "Satyam Sharma" <satyam@infradead.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Vojtech Pavlik" <vojtech@ucw.cz>,
+       "Johann Deneux" <johann.deneux@gmail.com>,
+       linux-input@atrey.karlin.mff.cuni.cz,
+       linux-joystick@atrey.karlin.mff.cuni.cz
+In-Reply-To: <200708310050.03786.jesper.juhl@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <200708310013.12347.jesper.juhl@gmail.com>
+	 <alpine.LFD.0.999.0708310422200.31519@enigma.security.iitk.ac.in>
+	 <200708310050.03786.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi Jesper,
 
-a)
-Which memory barrier do I require if I need to ensure that a
-copy_to_user(dest, src, len) completes before the next statement?
+On 8/30/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> On 31/08/2007, Satyam Sharma <satyam@infradead.org> wrote:
+> ...
+> >
+> > Hmm, would this not still give a warning when JOYSTICK_IFORCE_USB=y?
+>
+> Arrgh, I messed that one up real good...  Thank you for your keen eye Satyam :-)
+>
+>
+> > [ I didn't know mixing code and declarations (not at top of statement
+> >   block) was accepted style in the kernel ... ]
+> >
+> It's not the common case, but this is certainly not the only place in the kernel where we do it.
+>
+>
+> > IMHO either you should at least wrap that case inside a {} of its
+> > own (so that the int status; is at top of a statement block), or else,
+>
+> Yeah, I should...
+>
+> > preferably, just add "__maybe_unused" to the first declaration that you
+> > removed just now.
+> >
+>
+> Here's an updated patch that actually works as intended.
+>
 
-copy_to_user(dest, src, len) ;
-//rmb(); OR wmb(); OR barrier(); OR mb(); ??????
-//next statement;
+I had a similar patch from Andrew Morton in my queue and it just got
+merged. There should be no warning anymore.
 
-I'm guessing:
-Use rmb() to be sure that all of src is in registers, before continuing.
-Use wmb() to be sure that all of src is actually written to dest
-memory, before continuing.
-?
-
-b)
-
-If I'm writing to hardware, and need to ensure the correct order, I'll
-use wmb(), right?
-e.g.:
-
-#define HW_address1 20
-#define HW_address2 40
-
-*((int *)HW_address1) = 0x00000001;
-wmb();  // is this good???
-*((int *)HW_address2) = 0x00000010;
-
-
-Thanks - Albert
+-- 
+Dmitry
