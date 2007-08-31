@@ -1,72 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbXHaHwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbXHaHws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbXHaHwe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 03:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbXHaHwZ
+	id S1759314AbXHaHws (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 03:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbXHaHwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 03:52:25 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34797 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753445AbXHaHwX (ORCPT
+	Fri, 31 Aug 2007 03:52:31 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38058 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756602AbXHaHwa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 03:52:23 -0400
-Date: Fri, 31 Aug 2007 00:52:22 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Dmitry Monakhov <dmonakhov@sw.ru>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
-       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [11/36] Use page_cache_xxx in fs/buffer.c
-In-Reply-To: <20070831074338.GL29452@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0708310049110.14743@schroedinger.engr.sgi.com>
-References: <20070828190730.220393749@sgi.com> <20070830092038.GD22586@dnb.sw.ru>
- <Pine.LNX.4.64.0708301113170.7975@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0708301843280.13292@schroedinger.engr.sgi.com>
- <20070831065613.GH29452@kernel.dk> <Pine.LNX.4.64.0708310003280.14375@schroedinger.engr.sgi.com>
- <20070831071142.GI29452@kernel.dk> <Pine.LNX.4.64.0708310012370.14375@schroedinger.engr.sgi.com>
- <20070831072611.GK29452@kernel.dk> <Pine.LNX.4.64.0708310028160.14632@schroedinger.engr.sgi.com>
- <20070831074338.GL29452@kernel.dk>
+	Fri, 31 Aug 2007 03:52:30 -0400
+Date: Fri, 31 Aug 2007 00:51:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       lguest <lguest@ozlabs.org>, Frederik Deweerdt <deweerdt@free.fr>,
+       Andi Kleen <ak@muc.de>
+Subject: Re: [PATCH] Fix out-by-one error in traps.c
+In-Reply-To: <1188540238.6004.28.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.0.999.0708310044450.25853@woody.linux-foundation.org>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> 
+ <20070822202551.GB31846@slug>  <20070823145038.9895784f.akpm@linux-foundation.org>
+  <20070824060438.GE31846@slug> <46CE7EDC.9080007@goop.org> 
+ <20070824082249.GG31846@slug>  <1188043649.20041.81.camel@localhost.localdomain>
+  <20070825122324.GA6138@slug> <20070825211405.GA18217@slug> 
+ <1188230999.5531.15.camel@localhost.localdomain>  <20070830163812.GA22190@slug>
+  <1188512066.6353.5.camel@localhost.localdomain> 
+ <alpine.LFD.0.999.0708302140480.25853@woody.linux-foundation.org>
+ <1188540238.6004.28.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007, Jens Axboe wrote:
 
-> They have nothing to do with each other, you are mixing things up. It
-> has nothing to do with the device being able to dma into that memory or
-> not, we have fine existing infrastructure to handle that. But different
-> hardware have different characteristics on what a single segment is. You
-> can say "a single segment cannot cross a 32kb boundary". So from the
-> example above, your single 64k page may need to be split into two
-> segments. Or it could have a maximum segment size of 32k, in which case
-> it would have to be split as well.
+
+On Fri, 31 Aug 2007, Rusty Russell wrote:
+
+> On Thu, 2007-08-30 at 21:44 -0700, Linus Torvalds wrote:
+> > 
+> > Hmm.. This *really* cannot happen with a normal kernel - it implies that 
+> > the stack has crossed into an invalid page. 
 > 
-> Do you see what I mean now?
+> AFAICT, a corrupt stack could lead us to touch a page which isn't
+> mapped.  If we assume the stack isn't corrupt, we don't have to do the
+> valid_stack_ptr() check at all...
 
-Ok. So another solution maybe to limit the blocksizes that can be used 
-with a device?
+Fair enough. That said, you seem to see this even without a corrupt stack.
 
-> > How do we split that up today? We could add processing to submit_bio
-> > to check for the boundary and create two bios.
+> > Why is that allowed with lguest? What kind of code could validly *ever* 
+> > come in here and cause problems?
 > 
-> But we do not split them up today - see what I wrote! Today we impose
-> the restriction that a device must be able to handle a single "normal"
-> page, and if it can't do that, it has to split it up itself.
-> 
-> But yes, you would have to create some out-of-line function to use
-> bio_split() until you have chopped things down enough. It's not a good
-> thing for performance naturally, but if we consider this a "just make it
-> work" fallback, I don't think it's too bad. You want to make a note of
-> that it is happening though, so people realize that it is happening.
+> head.S pushes a "$0" on the stack to stop the unwinder, lguest doesn't.
 
-Hmmmm.. We could keep the existing scheme too and check that device 
-drivers split things up if they are too large? Isnt it possible today
-to create a huge bio of 2M for huge pages and send it to a device?
+The unwinder should stop when it sees an invalid frame pointer, and even 
+without the push 0 I'd have expected it to be invalid.
+
+But I suspect lguest triggers another thing: you actually make the stack 
+start at the *very*top* of the stack area. Afaik, normal x86 does not. A 
+normal x86 kernel will start off with a pt_regs[] setup, I think - ie the 
+kernel stack is always set up so that it has the "return to user mode" 
+information.
+
+And *that* difference may be what triggers this for lguest, even though it 
+can never trigger for a "real" kernel.
+
+But your patch does improve the sanity checking of the frame pointer. That 
+said, I think the following patch improves it more: does this also work 
+for you? (Totally untested, but it looks like the RightThing(tm) to do)
+
+		Linus
+
+---
+diff --git a/arch/i386/kernel/traps.c b/arch/i386/kernel/traps.c
+index cfffe3d..b9998f3 100644
+--- a/arch/i386/kernel/traps.c
++++ b/arch/i386/kernel/traps.c
+@@ -100,10 +100,10 @@ asmlinkage void machine_check(void);
+ int kstack_depth_to_print = 24;
+ static unsigned int code_bytes = 64;
+ 
+-static inline int valid_stack_ptr(struct thread_info *tinfo, void *p)
++static inline int valid_stack_ptr(struct thread_info *tinfo, void *p, unsigned size)
+ {
+ 	return	p > (void *)tinfo &&
+-		p < (void *)tinfo + THREAD_SIZE - 3;
++		p <= (void *)tinfo + THREAD_SIZE - size;
+ }
+ 
+ static inline unsigned long print_context_stack(struct thread_info *tinfo,
+@@ -113,7 +113,7 @@ static inline unsigned long print_context_stack(struct thread_info *tinfo,
+ 	unsigned long addr;
+ 
+ #ifdef	CONFIG_FRAME_POINTER
+-	while (valid_stack_ptr(tinfo, (void *)ebp)) {
++	while (valid_stack_ptr(tinfo, (void *)ebp, 2*sizeof(unsigned long))) {
+ 		unsigned long new_ebp;
+ 		addr = *(unsigned long *)(ebp + 4);
+ 		ops->address(data, addr);
+@@ -129,7 +129,7 @@ static inline unsigned long print_context_stack(struct thread_info *tinfo,
+ 		ebp = new_ebp;
+ 	}
+ #else
+-	while (valid_stack_ptr(tinfo, stack)) {
++	while (valid_stack_ptr(tinfo, stack, sizeof(*stack))) {
+ 		addr = *stack++;
+ 		if (__kernel_text_address(addr))
+ 			ops->address(data, addr);
