@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760826AbXHaWhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761646AbXHaWjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760826AbXHaWhA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 18:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbXHaWgx
+	id S1761646AbXHaWjN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 18:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbXHaWi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 18:36:53 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43875 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbXHaWgw (ORCPT
+	Fri, 31 Aug 2007 18:38:58 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48617 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753980AbXHaWi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 18:36:52 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46D89800.8080701@s5r6.in-berlin.de>
-Date: Sat, 01 Sep 2007 00:36:48 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: maturity and status and attributes, oh my!
-References: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 31 Aug 2007 18:38:56 -0400
+Date: Fri, 31 Aug 2007 23:47:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-serial@vger.kernel.org
+Subject: Re: Heads Up: Next Batch Of Serial/TTY Changes
+Message-ID: <20070831234721.5275f5d0@the-village.bc.nu>
+In-Reply-To: <20070831.152315.39158142.davem@davemloft.net>
+References: <20070831221105.2fce9023@the-village.bc.nu>
+	<20070831.144115.48807246.davem@davemloft.net>
+	<20070831231613.6b0fcdfd@the-village.bc.nu>
+	<20070831.152315.39158142.davem@davemloft.net>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-...
-> attributes would have two critical and non-negotiable properties:
+> Who knows what other gremlins like this now live in the tree :-)
 > 
-> 1) they would be entirely orthogonal to one another, and
-> 2) they can be assigned at most one of a pre-defined set of values
+> There was a similar spot a few lines down, both fixed
+> as follows:
 
-If they are fully orthogonal to another, then they are also
-nonexclusive.  You want them to be mutual exclusive, not orthogonal.
+Thanks I'll take a harder look over those. My test suite didn't check
+them just the main termios ioctls didn't scribble.
 
-...
->   experimental -> normal (stable) -> deprecated -> obsolete
+> And here is the sparc patch, could you please add it to
+> your serial queue?  Thanks Alan.
 > 
->   it's a natural progression and, at any point, a feature cannot
-> possibly have more than one maturity value.  it would be as absurd as
-> saying that someone was a teenager *and* was a twenty-something at the
-> same time.
+> [SPARC]: Add support for arbitrary serial speeds.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>cc[VEOF]); \
 
-Keep in mind though that 'experimental', in the context of Linux kernel
-features, has nothing to do with the age of a feature.
--- 
-Stefan Richter
--=====-=-=== =--= ----=
-http://arcgraph.de/sr/
+
+Thanks
+
+Alan
