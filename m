@@ -1,85 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761036AbXHaQIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXHaQRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761036AbXHaQIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 12:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbXHaQIJ
+	id S933084AbXHaQRq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 12:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932540AbXHaQRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 12:08:09 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:50790 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756835AbXHaQIG (ORCPT
+	Fri, 31 Aug 2007 12:17:36 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:51965 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932464AbXHaQRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 12:08:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bu8IPZ71jmqOaz9oR003OHbEHjxG8vrEVBVaGY5PyoU8o90fo/xUAsXs/IcZICwbKmcIVpjzvu5gqHZ6CL9FrEuvuaGqbIlINWRJKIk2C5d/cbz8zhsJAo47YAWe+o5pWjKVQX6+9Hx7wWupUpF8NRU5K3e7CkRKoOHHQb9WLNI=
-Message-ID: <ab40e9c0708310908o38633ecpdbcae78aca15946f@mail.gmail.com>
-Date: Fri, 31 Aug 2007 18:08:04 +0200
-From: "Xu Yang" <risingsunxy@googlemail.com>
-To: "Uli Luckas" <u.luckas@road.de>
-Subject: Re: parse_tag_ramdisk
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200708301846.09669.u.luckas@road.de>
+	Fri, 31 Aug 2007 12:17:35 -0400
+Date: Fri, 31 Aug 2007 10:17:33 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
+       Greg KH <greg@kroah.com>, alex@nibbles.it, dac@conglom-o.org,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-scsi@vger.kernel.org
+Subject: Re: [Bug 8942] dac960 driver stopped working with 2.6.22 kernel series
+Message-ID: <20070831161733.GC14130@parisc-linux.org>
+References: <bug-8942-27@http.bugzilla.kernel.org/> <20070831151748.37C39108012@picon.linux-foundation.org> <20070831084259.fc2fd903.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <ab40e9c0708300707r2e6d2d71y42940084db5038ac@mail.gmail.com>
-	 <200708301806.42905.u.luckas@road.de>
-	 <ab40e9c0708300910m3cba4c7bie3f6c9d471a155ff@mail.gmail.com>
-	 <200708301846.09669.u.luckas@road.de>
+In-Reply-To: <20070831084259.fc2fd903.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Uli,
+On Fri, Aug 31, 2007 at 08:42:59AM -0700, Andrew Morton wrote:
+> On Fri, 31 Aug 2007 08:17:48 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+> 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=8942
+> 
+> Seems that DAC960 broke in 2.6.22 - three people are reporting this.
 
-thanks ,
+Interesting.  Because nobody touched DAC960 since 2.6.20 ...
 
-I just found in the bootloader I used "go" to access the kernel, maybe
-the problem is caused by this, I will check it further.
-by the way, do you know how to setup the address of the ramdisk in the
-bootloader? I used bootm kernel_address ramdisk_address.
+git-log v2.6.21.. drivers/block/DAC960.[ch]
+(no output)
+The patches which touched it in 2.6.20 seem mechanical enough.
 
-is this enough?
+> - BIOS-e820: 0000000000000000 - 000000000009ec00 (usable)
+> - BIOS-e820: 000000000009ec00 - 00000000000a0000 (reserved)
+> + BIOS-e820: 0000000000000000 - 000000000009e400 (usable)
+> + BIOS-e820: 000000000009e400 - 00000000000a0000 (reserved)
+>   BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+>   BIOS-e820: 0000000000100000 - 000000007fee0000 (usable)
+>   BIOS-e820: 000000007fee0000 - 000000007fee3000 (ACPI NVS)
 
-regards,
+A little bit more memory has been reserved here.  Surely not enough to
+affect things.
 
-Yang
+> -Memory: 2072952k/2096000k available (3291k kernel code, 21964k reserved, 952k data, 192k init, 1178496k highmem)
+> +Memory: 2068056k/2096000k available (2176k kernel code, 26764k reserved, 784k data, 356k init, 1178496k highmem)
+>  virtual kernel memory layout:
+> -    fixmap  : 0xfffaa000 - 0xfffff000   ( 340 kB)
+> +    fixmap  : 0xfff4f000 - 0xfffff000   ( 704 kB)
+>      pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
+>      vmalloc : 0xf8800000 - 0xff7fe000   ( 111 MB)
+>      lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
+> -      .init : 0xc0528000 - 0xc0558000   ( 192 kB)
+> -      .data : 0xc0436cf1 - 0xc0524f7c   ( 952 kB)
+> -      .text : 0xc0100000 - 0xc0436cf1   (3291 kB)
+> +      .init : 0xc03eb000 - 0xc0444000   ( 356 kB)
+> +      .data : 0xc03202e1 - 0xc03e46c4   ( 784 kB)
+> +      .text : 0xc0100000 - 0xc03202e1   (2176 kB)
 
+Seems like quite the different configuration.  Maybe it'd be helpful if
+the bug reporter could try very similar configurations?
 
-2007/8/30, Uli Luckas <u.luckas@road.de>:
-> On Thursday, 30. August 2007, Xu Yang wrote:
-> > Hi Uli,
-> >
-> >
-> > thanks for your reply.
-> >
-> > just have a question, where is the tag list, how can i modify this?
-> >
-> If you don't know where the list is created, how do you now that it contains a
-> ramdisk tag? There is a chance, that the kernel does not even get a ram disk
-> tag at all. This would also explain, why it is not parsed ;-)
->
-> The tag list is supplied by your bootloader. How the bootloader creates the
-> list and how to change the order depends on your bootloader. You probably
-> have to read (and patch) it's source code.
->
-> regards,
-> Uli
->
-> --
->
-> ------- ROAD ...the handyPC Company - - -  ) ) )
->
-> Uli Luckas
-> Software Development
->
-> ROAD GmbH
-> Bennigsenstr. 14 | 12159 Berlin | Germany
-> fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
-> url: www.road.de
->
-> Amtsgericht Charlottenburg: HRB 96688 B
-> Managing directors: Hans-Peter Constien, Hubertus von Streit
->
+> +SLUB: Genslabs=22, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
+
+Could SLUB be causing this?  Seems unlikely, but you never know.
+
+> +EISA: Probing bus 0 at eisa.0
+> +Cannot allocate resource for EISA slot 4
+> +Cannot allocate resource for EISA slot 5
+> +EISA: Detected 0 cards.
+
+Might want to look into that too.
+
+> -ACPI: PCI Interrupt 0000:00:0b.0[A] -> GSI 19 (level, low) -> IRQ 16
+> +ACPI: PCI Interrupt 0000:00:0b.0[A] -> GSI 19 (level, low) -> IRQ 18
+>  DAC960: ***** DAC960 RAID Driver Version 2.5.48 of 14 May 2006 *****
+>  DAC960: Copyright 1998-2001 by Leonard N. Zubkoff <lnz@dandelion.com>
+> -DAC960#0: Configuring Mylex AcceleRAID 170 PCI RAID Controller
+> -DAC960#0:   Firmware Version: 7.02-00, Channels: 1, Memory Size: 64MB
+> -DAC960#0:   PCI Bus: 0, Device: 11, Function: 0, I/O Address: Unassigned
+> -DAC960#0:   PCI Address: 0xD8000000 mapped at 0xF8CB4000, IRQ Channel: 16
+> -DAC960#0:   Controller Queue Depth: 512, Maximum Blocks per Command: 2048
+> -DAC960#0:   Driver Queue Depth: 511, Scatter/Gather Limit: 128 of 257 Segments
+> -DAC960#0:   Physical Devices:
+> +DAC960#0: While configuring DAC960 PCI RAID Controller at
+> +DAC960#0: PCI Bus 0 Device 11 Function 0 I/O Address N/A PCI Address 0xD8000000
+> +DAC960#0: DMA mask out of range FAILED - DETACHING
+> +DAC960#0: Unable to Enable Memory Mailbox Interface for Controller at
+> +DAC960#0: PCI Bus 0 Device 11 Function 0 I/O Address N/A PCI Address 0xD8000000
+
+So anyway, what's actually failing is one of these:
+
+  if (pci_set_dma_mask(Controller->PCIDevice, DAC690_V1_PciDmaMask))
+          return DAC960_Failure(Controller, "DMA mask out of range");
+  if (pci_set_dma_mask(Controller->PCIDevice, DAC690_V2_PciDmaMask))
+          return DAC960_Failure(Controller, "DMA mask out of range");
+
+These are both defined in DAC960.h:
+
+#define DAC690_V1_PciDmaMask    0xffffffff
+#define DAC690_V2_PciDmaMask    0xffffffffffffffffULL
+
+Now, the only way for pci_set_dma_mask() to fail is if
+pci_dma_supported() fails.  On i386, pci_dma_supported just returns
+dma_supported.  i386's dma_supported fails in one of two ways:
+
+        if(mask < 0x00ffffff)
+		return 0;
+
+	/* Work around chipset bugs */
+	if (forbid_dac > 0 && mask > 0xffffffffULL)
+		return 0;
+
+The first can't fail for either adapter, but the second one can fail for
+the V2 adapters.
+
+Proceeding on that premise, how can forbid_dac be set?
+
+static __devinit void via_no_dac(struct pci_dev *dev)
+{
+        if ((dev->class >> 8) == PCI_CLASS_BRIDGE_PCI && forbid_dac == 0) {
+                printk(KERN_INFO "PCI: VIA PCI bridge detected. Disabling DAC.\n
+");
+                forbid_dac = 1;
+        }
+}
+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_ANY_ID, via_no_dac);
+
+And here's the offender in the diff:
+
++PCI: VIA PCI bridge detected. Disabling DAC.
+
+Now, DAC960 is at fault here; DMA-mapping.txt recommends the following
+sequence:
+
+        int using_dac;
+
+        if (!pci_set_dma_mask(pdev, DMA_64BIT_MASK)) {
+                using_dac = 1;
+        } else if (!pci_set_dma_mask(pdev, DMA_32BIT_MASK)) {
+                using_dac = 0;
+        } else {
+                printk(KERN_WARNING
+                       "mydev: No suitable DMA available.\n");
+                goto ignore_this_device;
+        }
+
+So I'll whip up a patch for DAC960, but in the meantime, these users
+can pass "iommu=usedac" as a kernel parameter.
+
+It seems a bit mean to write off *all* VIA bridges as data-corruptors.
+Maybe the people who haven't had problems before can help us start a
+white-list of VIA PCI bridges that don't have a problem with DAC.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
