@@ -1,41 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765830AbXHFN3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbXHaWBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765830AbXHFN3x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932245AbXHFNT2
+	id S1756726AbXHaWBt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 18:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbXHaWBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:19:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49628 "EHLO mx1.redhat.com"
+	Fri, 31 Aug 2007 18:01:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33037 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765427AbXHFNSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:18:18 -0400
-Message-Id: <200708061318.l76DIChP001736@dantu.rdu.redhat.com>
-From: Jeff Layton <jlayton@redhat.com>
-Date: Tue, 24 Jul 2007 13:00:41 -0400
-Subject: [PATCH 14/25] JFFS2: call attr_kill_to_mode from jffs2_do_setattr
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: jffs-dev@axis.com
+	id S1752302AbXHaWBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 18:01:37 -0400
+Message-ID: <46D88FB8.5000503@garzik.org>
+Date: Fri, 31 Aug 2007 18:01:28 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Randy Dunlap <rdunlap@xenotime.net>, Simon Arlott <simon@fire.lp0.eu>,
+       sam@ravnborg.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Adrian Bunk <bunk@stusta.de>, Gabriel C <crazy@pimpmylinux.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
+References: <469E75AA.7040109@pimpmylinux.org> <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain> <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org> <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain> <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain> <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain> <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain> <20070719083109.13b2ab56.rdunlap@xenotime.net> <Pine.LNX.4.64.0707191213130.8844@localhost.localdomain> <469FE045.3070403@simon.arlott.org.uk> <20070831102527.09fb42c0.rdunlap@xenotime.net> <Pine.LNX.4.64.0708311318220.18158@localhost.localdomain> <46D858A9.4080506@garzik.org> <Pine.LNX.4.64.0708311643080.27345@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0708311643080.27345@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Robert P. J. Day wrote:
+> On Fri, 31 Aug 2007, Jeff Garzik wrote:
+> 
+>> Robert P. J. Day wrote:
+> 
+>>> i'm sure i'm going to get shouted down here, but i really disagree
+>>> with "BROKEN" being considered a "maturity level".  IMHO, things
+>>> like EXPERIMENTAL, DEPRECATED and OBSOLETE represent maturity
+>>> levels, for what i think are obvious reasons.
+>>>
+>>> something like BROKEN, though, has *nothing* to do with maturity.
+>>> a feature can be any of those maturity levels, and simultaneously
+>>> be BROKEN.  i consider BROKEN to be what i call a "status", and
+>>> different status levels might be the default of normal, or
+>>> KIND_OF_FLAKY or TOTALLY_BORKED -- that's where BROKEN would fit
+>>> in.
+>> BROKEN is definitely a maturity level.
+> 
+> no.  it's not.  end of discussion.  you're wrong.
+> 
+> the concept of "maturity level" reflects where in the life cycle some
+> feature is.  it will typically start as "bleeding edge" or
+> "experimental" or something like that, eventually stabilize to be
+> normal (which would be the obvious default), after which, when its
+> value starts to run out and it begins showing its age, it becomes
+> "deprecated" and eventually "obsolete"  it's a natural and obvious
+> progression.
+> 
+> on the other hand, a feature can be "broken" at *any* point in that
+> life cycle -- that's why it is absolutely *not* a maturity level.
+> please don't fight with me on this, jeff.  you're simply wrong.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/jffs2/fs.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Get off your high horse and actually look at the patches that mark 
+things BROKEN.
 
-diff --git a/fs/jffs2/fs.c b/fs/jffs2/fs.c
-index 1d3b7a9..5218f04 100644
---- a/fs/jffs2/fs.c
-+++ b/fs/jffs2/fs.c
-@@ -37,6 +37,7 @@ static int jffs2_do_setattr (struct inode *inode, struct iattr *iattr)
- 	uint32_t alloclen;
- 	int ret;
- 	D1(printk(KERN_DEBUG "jffs2_setattr(): ino #%lu\n", inode->i_ino));
-+	attr_kill_to_mode(inode, iattr);
- 	ret = inode_change_ok(inode, iattr);
- 	if (ret)
- 		return ret;
--- 
-1.5.2.2
+'deprecrated' and 'obsolete' are matters of discussed opinion, 
+describing the utility of the code in question.  'broken' describes the 
+state of the code itself.
+
+Clear difference.
+
+	Jeff, one who actually marks this stuff as such
+
+
 
