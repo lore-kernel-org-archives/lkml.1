@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966052AbXHaVNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933321AbXHaVVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966052AbXHaVNy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761247AbXHaVNl
+	id S933321AbXHaVVN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932927AbXHaVU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:13:41 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:43921 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761114AbXHaVNk (ORCPT
+	Fri, 31 Aug 2007 17:20:56 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:34637 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932074AbXHaVUz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:13:40 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 31 Aug 2007 17:00:57 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Randy Dunlap <rdunlap@xenotime.net>
-cc: Jeff Garzik <jeff@garzik.org>, Simon Arlott <simon@fire.lp0.eu>,
-       sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Adrian Bunk <bunk@stusta.de>, Gabriel C <crazy@pimpmylinux.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-In-Reply-To: <20070831131612.312664ef.rdunlap@xenotime.net>
-Message-ID: <Pine.LNX.4.64.0708311656360.27345@localhost.localdomain>
-References: <469E75AA.7040109@pimpmylinux.org>
- <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
- <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
- <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
- <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
- <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
- <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
- <20070719083109.13b2ab56.rdunlap@xenotime.net>
- <Pine.LNX.4.64.0707191213130.8844@localhost.localdomain>
- <469FE045.3070403@simon.arlott.org.uk> <20070831102527.09fb42c0.rdunlap@xenotime.net>
- <Pine.LNX.4.64.0708311318220.18158@localhost.localdomain> <46D858A9.4080506@garzik.org>
- <20070831131612.312664ef.rdunlap@xenotime.net>
+	Fri, 31 Aug 2007 17:20:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=GMnre2Gn+WNw5iTi7N12LLUzFlrzIqetWhr2qV5NZHcK91G/nr2F59FwvAmd7pSsrjyGATawjWsqkF012aGZh3yv6+jI/hdEXPqWgv1bobZ7IcwcVSe3vAVdSIbAs7ZwDgpaZVoJHXpwMtK4UDUBO6XH91xVVwLKK4/UBhr1zWg=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: [PATCH 0/3] debloat aic7xxx and aic79xx drivers
+Date: Fri, 31 Aug 2007 22:20:36 +0100
+User-Agent: KMail/1.9.1
+Cc: Hannes Reinecke <hare@suse.de>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Matthew Wilcox <matthew@wil.cx>, Arjan van de Ven <arjan@infradead.org>,
+       Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@osdl.org>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200708311613.59666.vda.linux@googlemail.com> <31870.1188577642@turing-police.cc.vt.edu>
+In-Reply-To: <31870.1188577642@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708312220.36818.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007, Randy Dunlap wrote:
+On Friday 31 August 2007 17:27, Valdis.Kletnieks@vt.edu wrote:
+> On Fri, 31 Aug 2007 16:13:59 BST, Denys Vlasenko said:
+> >
+> >    text    data     bss     dec     hex filename
+> >  261433   50018    1172  312623   4c52f linux-2.6.23-rc1.org.t/drivers/scsi/aic7xxx/built-in.o
+> >  199654   50018    1172  250844   3d3dc linux-2.6.23-rc1.aic.t/drivers/scsi/aic7xxx/built-in.o
+> >  184014   21314    1172  206500   326a4 linux-2.6.23-rc1.aic1.t/drivers/scsi/aic7xxx/built-in.o
+> >  202378    2850    1172  206400   32640 linux-2.6.23-rc1.aic2.t/drivers/scsi/aic7xxx/built-in.o
+> > 
+> > 1-debloat.patch    deinlines a lot of functions
+> > 2-addstatic.patch  adds statics, #ifdefs out huge amount of unused code, adds consts
+> > 3-addconst.patch   adds more consts
+> 
+> Yowza.  Looking at aic1->aic2, it looks like 20K became 'const', and only
+> 3K *wasn't* 'const'?  
 
-> What I like about the patch is that it associates some kconfig
-> symbol with prompt strings, so that we don't have to edit
-> "(EXPERIMENTAL)" all the darn time (e.g.).
->
-> I'd be quite happy with calling it "status" rather than "maturity",
-> and with being able to use multiple of the status tags at one time,
-> such as
->
-> 	config FOO
-> 	depends on BAR
-> 	status OBSOLETE BROKEN
+Exactly. There are firmware images/patches and a lot of structures
+with char* members pointing to text/messages.
 
-grrrrrrrr ... i already made my point in my earlier post.  i'd
-really, really like it if *this* attribute remained as "maturity".  an
-entirely *separate* attribute could be defined as a feature "status",
-which would be entirely orthogonal to maturity level, so that the
-above would be written as
-
-	maturity OBSOLETE
-	status BROKEN
-
-there's a reason for this -- any feature should have exactly *one*
-value for any attribute.  that is, in terms of maturity, a feature
-could be EXPERIMENTAL *or* DEPRECATED *or* OBSOLETE.  it ***can't***
-be more than one, as in both DEPRECATED *and* OBSOLETE.  to allow that
-flexibility is to descend into absurdity.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+Btw, aic94xx driver needs the same treatment.
+--
+vda
