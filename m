@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966238AbXHaSsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966204AbXHaS4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966238AbXHaSsR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 14:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965954AbXHaSsH
+	id S966204AbXHaS4Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 14:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965634AbXHaS4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 14:48:07 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:11293 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965945AbXHaSsD (ORCPT
+	Fri, 31 Aug 2007 14:56:15 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:52988
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965547AbXHaS4O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 14:48:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:references:in-reply-to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
-        b=W7OpdyzizDmweEeevDy5N1e4RcOd/Abu3c9sO8zRVYiZJJRMz5q7zm5HrGHWb3t56BqXC+d+Uf13GYxueb/AGYcUZBEE1jYGrlayJGAZV5UdV3pqIK5ooD5X7ugIrECq513fbSjNwJeOagSIw+VwFYOBELujrtcGgUmpvtnzDA0=
-From: "Hua Zhong" <hzhong@gmail.com>
-To: "'Trond Myklebust'" <trond.myklebust@fys.uio.no>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>
-Cc: "'Frank van Maarseveen'" <frankvm@frankvm.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>
-References: <000701c7eb49$cff701c0$6fe50540$@com>	 <1188513433.6626.24.camel@heimdal.trondhjem.org>	 <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org> <1188577275.6649.133.camel@heimdal.trondhjem.org>
-In-Reply-To: <1188577275.6649.133.camel@heimdal.trondhjem.org>
-Subject: RE: recent nfs change causes autofs regression
-Date: Fri, 31 Aug 2007 11:47:52 -0700
-Message-ID: <006a01c7ebff$709354c0$51b9fe40$@com>
+	Fri, 31 Aug 2007 14:56:14 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Satyam Sharma <satyam@infradead.org>
+Subject: Re: [PATCH] Documentation/00-INDEX notice ecryptfs.txt moved.
+Date: Fri, 31 Aug 2007 13:56:10 -0500
+User-Agent: KMail/1.9.6
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200708301446.18024.rob@landley.net> <200708302016.12133.rob@landley.net> <alpine.LFD.0.999.0708311705270.7173@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0708311705270.7173@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acfr6vnZDkrKhs2lRVmpchuW/awT/QAE9vrg
-Content-Language: en-us
+Content-Disposition: inline
+Message-Id: <200708311356.10826.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the problem for me, thanks.
+On Friday 31 August 2007 7:10:00 am Satyam Sharma wrote:
+> Hi Rob,
+>
+> On Thu, 30 Aug 2007, Rob Landley wrote:
+> > On Thursday 30 August 2007 2:04:37 pm Randy Dunlap wrote:
+> > > Please use the expected (canonical) patch format.
+> > >
+> > > See Documentation/SubmittingPatches:
+> > >   14) The canonical patch format
+> >
+> > from Rob Landley <rob@landley.net>
+> > Signed-off-by: Rob Landley <rob@landley.net>
+> >
+> > ecryptfs.txt moved into filesystems, make 00-INDEX follow.
+>
+> That's still not quite right :-) What Randy meant is that the sign-off
+> must come /after/ the patch description:
 
-Is this patch changing the behavior of "sharecache" to
-"try-to-share-cache-if-possible", or adding a third behavior? If the user
-explicitly asks for "-o sharecache", does he get an error back if the mount
-options mismatch?
- 
-> The best I can do given the constraints appears to be to have the
-> kernel first look for a superblock that matches both the fsid and the
-> user-specified mount options, and then spawn off a new superblock if
-> that search fails. The attached patch does just that.
-> 
-> Note that this is not the same as specifying nosharecache everywhere
-> since nosharecache will never attempt to match an existing superblock.
-> 
-> Finally, for the record: I still feel very uncomfortable about not
-> being able to report the state of the client setup back to the sysadmin.
-> AFAIK, the only way to do so is to stat the mountpoints, and compare
-> the device ids.
-> 
-> Trond
+Randy emailed me about it offline and I updated my wrapper script.
 
+I've always had a bit of a blind spot when it comes to filling out forms (I 
+suck at bureaucracy), so I made a script to do it, currently:
 
+#!/bin/bash
+
+echo "From: Rob Landley <rob@landley.net>"
+echo
+echo "Signed-off-by: Rob Landley <rob@landley.net>"
+echo "---"
+echo
+cat $1 | diffstat
+echo
+cat $1
+
+I note that the example uses "From:" but the summary refers to it as 
+the "from" line with no capital letter or colon, and unix being case 
+sensitive I reproduced the quoted string verbatim.  (See "I suck at 
+bureaucracy", above.)
+
+> [ All this is not too important, admittedly, but causes least amount of
+>   processing time to be wasted on the recipient's end, and also does not
+>   confuse scripts that may be used to extract patches (and git commit
+>   command-line arguments) from mails automatically. ]
+
+If it's going to be parsed by a script, it might as well be generated by a 
+script...
+
+I've got another dozen of these patches to send, but I'm waiting to see which 
+ones Jesper Juhl has queued up first. :)
+
+(Between the two of us, we'll get this updated eventually...)
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
