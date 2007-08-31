@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761707AbXHaVnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbXHaVqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761707AbXHaVnz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbXHaVne
+	id S1756128AbXHaVqG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbXHaVpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:43:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37832 "EHLO mx1.redhat.com"
+	Fri, 31 Aug 2007 17:45:54 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:52966 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756717AbXHaVnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:43:32 -0400
-Date: Fri, 31 Aug 2007 22:41:37 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Jens Axboe <jens.axboe@oracle.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: [1/1] Block device throttling [Re: Distributed storage.]
-Message-ID: <20070831214137.GD30122@agk.fab.redhat.com>
-Mail-Followup-To: Daniel Phillips <phillips@phunq.net>,
-	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-	Jens Axboe <jens.axboe@oracle.com>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	Peter Zijlstra <peterz@infradead.org>, Neil Brown <neilb@suse.de>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708281408.06618.phillips@phunq.net> <20070829085331.GA16607@2ka.mipt.ru> <200708301620.37965.phillips@phunq.net>
-Mime-Version: 1.0
+	id S1751887AbXHaVpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 17:45:53 -0400
+Date: Fri, 31 Aug 2007 17:45:51 -0400
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: Follow up to: NFS/RPC Hangs after updating time...
+Message-ID: <20070831214551.GP11165@fieldses.org>
+References: <BD261180E6D35F4D9D32F3E44FD3D90108F975FB@EMPBEDEX.empirix.com> <20070822202639.GL20946@fieldses.org> <BD261180E6D35F4D9D32F3E44FD3D901091DE759@EMPBEDEX.empirix.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708301620.37965.phillips@phunq.net>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D901091DE759@EMPBEDEX.empirix.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 30, 2007 at 04:20:35PM -0700, Daniel Phillips wrote:
-> Resubmitting a bio or submitting a dependent bio from 
-> inside a block driver does not need to be throttled because all 
-> resources required to guarantee completion must have been obtained 
-> _before_ the bio was allowed to proceed into the block layer.
+On Fri, Aug 31, 2007 at 02:35:19PM -0400, Morrison, Tom wrote:
+> This is a follow-up...
+> 
+> After a huge pain in the rear upgrading from a 
+> 2.6.11++ to a 2.6.23-rc3 (I'll give the powerpc
+> folks a 'piece' of my mind on that front) - the 
+> NFS hang problem that I was experiencing on the 
+> older kernel is NOT occurring on this new version.
+> 
+> Now what do I do?
 
-I'm toying with the idea of keeping track of the maximum device stack
-depth for each stacked device, and only permitting it to increase in
-controlled circumstances.
+Well, between the time jump and the rpc debugging output, you've got
+some great clues there--given some time I'm sure it would be possible to
+completely figure out what's going on.
 
-Alasdair
--- 
-agk@redhat.com
+Unfortunately the people with the most knowledge of the code probably
+don't have the time to fix problems on old kernels, so unless somebody
+else recognizes the problem immediately, I'm not sure what to suggest.
+Obviously, a wholesale upgrade to a more recent kernel would be the one
+sure bet....
+
+> Is the net/sunrpc net/nfsx pieces isolated enough 
+> from the rest of the kernel that I could fork-lift 
+> it back to the 2.6.11 (or is that really a lost cause).
+
+I suspect it's a lost cause.  A lot has happened in the last couple
+years.
+
+--b.
+
+> > It hangs after attempting to update the time from a 
+> > nonsensical time (e.g.: 2 months ago) - the most significant
+> > part of it is that it only hangs IFF it has started 
+> > serving its NFS client boards before I attempt to 
+> > update the time.
+> > 
+> > 
+> > The most significant output (when turning on 
+> > RPC debugging) is from:
+> > 
+> >   linux/net/sunrpc/cache.c (cache_check) - line 90:
+> > 
+> >          >> Want update, refage=1800, age=4288285
+> > 
+> > It continually loops through this method - and the cache
+> > never gets updated...even thought with some additional
+> > sleuthing (aka: additional debug printks - it thinks 
+> > that there is an cache update pending).
+> 
+> Can you reproduce the problem with the current kernel? (Say 2.6.22 or
+> later?)
+> 
+> --b.
