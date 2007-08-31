@@ -1,116 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965044AbXHaL5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965138AbXHaL6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965044AbXHaL5Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 07:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932780AbXHaL5R
+	id S965138AbXHaL6y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 07:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964871AbXHaL6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 07:57:17 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35771 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932765AbXHaL5P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 07:57:15 -0400
-Date: Fri, 31 Aug 2007 17:40:00 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Rob Landley <rob@landley.net>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Documentation/00-INDEX notice ecryptfs.txt moved.
-In-Reply-To: <200708302016.12133.rob@landley.net>
-Message-ID: <alpine.LFD.0.999.0708311705270.7173@enigma.security.iitk.ac.in>
-References: <200708301446.18024.rob@landley.net> <20070830120437.6fe49cdc.randy.dunlap@oracle.com>
- <200708302016.12133.rob@landley.net>
+	Fri, 31 Aug 2007 07:58:45 -0400
+Received: from lucidpixels.com ([75.144.35.66]:46935 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964857AbXHaL6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 07:58:44 -0400
+Date: Fri, 31 Aug 2007 07:58:43 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: linux-kernel@vger.kernel.org
+cc: apiszcz@solarrain.com
+Subject: Kernel 2.6.22.6 iPod conflict with PS/2 device.
+Message-ID: <Pine.LNX.4.64.0708310755210.17987@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-556336248-1188561523=:17987"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rob,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
+---1463747160-556336248-1188561523=:17987
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 
-On Thu, 30 Aug 2007, Rob Landley wrote:
+When I have an iPod attached via USB to an ABIT IC7-G board before it 
+boots up and let X start etc, the mouse (PS/2) does not function, but the 
+keyboard works OK.
 
-> On Thursday 30 August 2007 2:04:37 pm Randy Dunlap wrote:
-> > Please use the expected (canonical) patch format.
-> >
-> > See Documentation/SubmittingPatches:
-> >   14) The canonical patch format
-> 
-> from Rob Landley <rob@landley.net>
-> Signed-off-by: Rob Landley <rob@landley.net>
-> 
-> ecryptfs.txt moved into filesystems, make 00-INDEX follow.
+GPM does not work either.
 
-That's still not quite right :-) What Randy meant is that the sign-off
-must come /after/ the patch description:
+When I attach the iPod after the machine has booted up, everything is OK, 
+until the next reboot (with the iPod still attached via USB)
 
-From: Random J Hacker <random@hacker.com>
-/*
- * Above line not really required if it's your own patch that you're
- * sending. But required when you're "relaying" someone else's patch,
- * or if there are multiple people in the sign-off chain below,
- * to differentiate as to who was the author of the patch.
- */
+Any idea why this happens?
 
-[PATCH] <subsystem>: <one-line summary>
-/*
- * Above line not really required if Subject: of email already such.
- * But may be required if you're replying on some other LKML thread,
- * whose subject may have nothing to do with this patch.
- */
+The kernel .config is attached.
 
-<a few line(s) of patch description,
+There are no modules in use, everything is compiled into the kernel, the 
+distribution is Debian Testing.
 
-maybe a couple of paragraphs even.>
+Justin.
+---1463747160-556336248-1188561523=:17987
+Content-Type: APPLICATION/octet-stream; name=config-2.6.22.6.bz2
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.64.0708310758430.17987@p34.internal.lan>
+Content-Description: 
+Content-Disposition: attachment; filename=config-2.6.22.6.bz2
 
-Signed-off-by: Random J Hacker <random@hacker.com>
-Signed-off-by: Bob Z Maintainer <bob@maintainer.com>
-/*
- * It is generally preferable to order the sign-off's above so that
- * they reflect the patch journey -- so the original author preferably
- * comes first, then those who relayed it or picked it up from the
- * author (often the maintainer), and so on, till the person who is
- * finally relaying it currently (so from the above it seems this is
- * being sent out by Bob). If this is the first time a patch is being
- * sent, there would naturally be just a single sign-off line.
- */
+QlpoOTFBWSZTWSw03VkAC5VfgGgQXOf//z////C////wYCk8dAAA97vGSgAO
+q73veZCklKivhTyuzcbUAACO7OhhB1197BTiAJbbdslSB0k0ArbVQDWIa06y
+UpQB5VqUehhNNdtplVe+3d53zb6fO7eQe70NTCCZGgaAQEJT1Pyak009RpiH
+ppojagADTQmgECNBNE0iNqhp6hoNBpoAeoAAMTU0aiptQeTU9QNAAADIBoAa
+BoAJNKRMIJkmj1JPUNoepB6g9QADQNA0NACSRTGiaNU/VPZTT0KeaUN6phHq
+H6p6g2o0aGTE0DIJEIQCaAgmkmU9FP1EyZMjBGQBgAHh+Vn+f+7tg70mHDFJ
+5YphWRtBZmyYYxIzNsUFURJkgVFv0wvTkZsMsk+n56Yw+OCijB+7focf3tuh
+cIfRSq52kVI72ZBILYyzgtAcNsrZty7QlYRBS4FwXsze3z7AYnUQX0MrMMqC
+yKREFtsgoRY2lQUBSCMrT0NcfI4BVkwxtRlaNREqFtiwKq/FT4EDCZIsCK0p
+WC2lqErKaUqRRMWUYiKKIiMaWuGVxGqmlskVSYYVlagDbKxjFFiqoKIwbRSC
+WixVBSLFhBYTCFRGEDFKMSsqiCtpRrM/koYyqhFhJWAsrFkKkgVjo0ESC4SB
+RICwBaxQiqpWSvBKmGIixtBSiKVbYFQFqLCVrKlawWViyLGkh5sCYSSRUwIy
+KxWq0iyjV+W1giqioYTjcGAWEa/WcbUsWKIK5VReODGCsVFRqChZWgKNVkqJ
+aCjaCVKVopdrgd8ritaUqyxKW1j7KWOLXLBcMUaNUCoUYiW1GVVKLbaVFlZF
+IbWvZ8PqeXLHvz8vTl7/X0xfwe7jhCm612GnseiPikeIEhLTJE/1OdjJXFLd
+rCvZmfJ1VvBr/oUs2aKNj/bZf7iMFBqezXbuU4IGDIgkZMo30qIQV8aLGkDf
+Y2T2c4FIZIJAjCGa9apM/7WdDy51RcZDTpkkCDBYQdeYErX8QeXy8/8roWTo
+75635HytXX43/1e+x4nlOWi6CaYGX7o5bQhnBqyjBIS0/Eqaflp94/PF7fyf
+GGcUKKt8uUR+CyfXUfk+Hy+DVs/n6/YoWr9n0osC0gO1Vv2iw2lXknOd5/l+
+q3fTUNt471H5SjoRxbg0Dj+Sq8tvv+yMLrQSNV21juZv5e4lTjb0365cZpQU
+r/RimceOL66spVCWkw6eGBQqkLTEeVnvdlzUqt44U4KpCw5mIryQbVLL88Iq
+b7fnVDjm7qVdtY7V9eQ2x2i3qMuy1SKDdIN7J0ueuOObfMLLMbat795Iyvua
+8K3mPdWDyPv7e98YW4VzvSpaAi1hXVYV44LVJNx69nXwz4hdTbB2Iwq+29Cr
+XgRKl6nZdJ1ZxLQFdjLLTHZyYUkzisYEyd7unPtZbw6xpVlJ9mKXEZDHqt3L
+ly5nwaI1Xzdn9rychucpm5pwTnO0U4TazRvPntmDRwrqha2JXAtSIoVQ0rNQ
+0oI3Tkna/CXRz8EamlUqHbseucLdL20K90DakRSswYdfP69byc98XmdRv7GK
+8RoJXtGY0nW5vjz1145o7OdfNuxd74OSEIdKzsVVVM7K0Fklc570vOuzYV0y
+mtm2Vu1z+Kd91eV7ZIzPfaD0rd2z+bnNOoHunWyy/OwJCDa9EW3trhPnnJaj
+3He05Ro25+5ypC428SMrcKRyvnRJ/GqMhQsJiZUpSRxXkejcjLeod8jupXnD
+m/tJ3Rapy4ir8hbcqiHINRL+znq7x4jTphbVZknSyOHlSoFRs5Zq52Hh434y
+pjWct34YWFjq87uj9H98kbN7Li11kcL8+iHUtRFxQwZ7ywbSzpSOnWTt8O29
++U4DZBb2SfDdbW374uXIilzI1suFy+Xz9/r6benuT7JGn0m/6mJIQluv9uC/
+36pYcD4jNPRKYvxCZJIQlDjonkPizmmiYUvrvpNRW8rlWDsnL/BEd9ld1K/f
+8PbqXzYz5AAMADB1YunLzuSNNxFe7iykPLY+NON+Y3E/X5j791Vm28roKdlN
+VX0Ulnh+jl/fv6AdAQGBF7/flw1pfDV5GHErWtQfEiKBwfC7uIql1UMSAkRM
+QA1iIxMBwIxF6mVaUwE1dkPxsHhnhG011rw7+rTIiaKDR9ul+f5sD7r/1sNp
+hms6yJ3VdCnCJw9aFQbW+0UtFH/WuPpKe+7exkRzYdhXCnJK/89tm3Py12YO
+kk9I3CzKjKis5zNlZFJYh4LO4efxmA3gz8ALfw+WfrRjFIC0VTLdHAWt8a0o
+7lSQjRcPCPXYxd4CvNnh42irEhcMDjxbaq0M5j5SCvnCWze3WOCfuS3yexm3
+AGtM/JKTINgpGP8+m4ftqm2Ir1vQAHw/r21DZhy0P47Qy0RahSURExr30dJ5
+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
 
-Then three hyphens, followed by diffstat and patch ... so the below
-looks good :-)
-
-[ All this is not too important, admittedly, but causes least amount of
-  processing time to be wasted on the recipient's end, and also does not
-  confuse scripts that may be used to extract patches (and git commit
-  command-line arguments) from mails automatically. ]
-
-
-> ---
-> 
->  00-INDEX             |    2 --
->  filesystems/00-INDEX |    2 ++
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- linux-2.6.23-rc4/Documentation/00-INDEX	2007-08-27 20:32:35.000000000 -0500
-> +++ linux-new/Documentation/00-INDEX	2007-08-30 14:43:15.000000000 -0500
-> @@ -134,8 +134,6 @@
->  	- info on Linux Digital Video Broadcast (DVB) subsystem.
->  early-userspace/
->  	- info about initramfs, klibc, and userspace early during boot.
-> -ecryptfs.txt
-> -	- docs on eCryptfs: stacked cryptographic filesystem for Linux.
->  eisa.txt
->  	- info on EISA bus support.
->  exception.txt
-> --- linux-2.6.23-rc4/Documentation/filesystems/00-INDEX	2007-08-27 20:32:35.000000000 -0500
-> +++ linux-new/Documentation/filesystems/00-INDEX	2007-08-30 14:42:08.000000000 -0500
-> @@ -32,6 +32,8 @@
->  	- info about the locking scheme used for directory operations.
->  dlmfs.txt
->  	- info on the userspace interface to the OCFS2 DLM.
-> +ecryptfs.txt
-> +	- docs on eCryptfs: stacked cryptographic filesystem for Linux.
->  ext2.txt
->  	- info, mount options and specifications for the Ext2 filesystem.
->  ext3.txt
+---1463747160-556336248-1188561523=:17987--
