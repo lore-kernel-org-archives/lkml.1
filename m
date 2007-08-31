@@ -1,55 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762028AbXHaUOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762202AbXHaUQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762028AbXHaUOq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 16:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbXHaUOi
+	id S1762202AbXHaUQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 16:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbXHaUQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 16:14:38 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:61953 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754936AbXHaUOh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 16:14:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=r+0FkQZfCQgCVYDAVk6ZcEsXUCZu6M54Z7qbu2+LrioHp6yY06NX0POU9LdTnPMZAsgigCeQN7fPdzmi0esV4M3jfkf5svgRke+lULPPiNTZFDjeoiRCDU1diJBMJRBnlHTMYlBpmzvmkPoXss8WPPekyrVEWj9i3Yuj80sTnjA=
-Message-ID: <8b67d60708311314p39c7be30v630e97189d656abf@mail.gmail.com>
-Date: Fri, 31 Aug 2007 21:14:36 +0100
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH] Patch pvr2 driver to allow development of maple bus driver
-Cc: linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net,
-       "Paul Mundt" <lethal@linux-sh.org>
-In-Reply-To: <8bd0f97a0708311312n78f1c163o20aa17214bfe3702@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 31 Aug 2007 16:16:16 -0400
+Received: from xenotime.net ([66.160.160.81]:47488 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751264AbXHaUQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 16:16:13 -0400
+Date: Fri, 31 Aug 2007 13:16:12 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Simon Arlott <simon@fire.lp0.eu>,
+       sam@ravnborg.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Adrian Bunk <bunk@stusta.de>, Gabriel C <crazy@pimpmylinux.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
+Message-Id: <20070831131612.312664ef.rdunlap@xenotime.net>
+In-Reply-To: <46D858A9.4080506@garzik.org>
+References: <469E75AA.7040109@pimpmylinux.org>
+	<Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
+	<20070718134012.cde2f956.randy.dunlap@oracle.com>
+	<469E7BE1.6090401@garzik.org>
+	<Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
+	<20070718210903.GM3801@stusta.de>
+	<Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
+	<20070719054742.GN3801@stusta.de>
+	<Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
+	<469F240E.9040205@s5r6.in-berlin.de>
+	<Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
+	<20070719083109.13b2ab56.rdunlap@xenotime.net>
+	<Pine.LNX.4.64.0707191213130.8844@localhost.localdomain>
+	<469FE045.3070403@simon.arlott.org.uk>
+	<20070831102527.09fb42c0.rdunlap@xenotime.net>
+	<Pine.LNX.4.64.0708311318220.18158@localhost.localdomain>
+	<46D858A9.4080506@garzik.org>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8b67d60708311300k3ea67eadod531752cca253bbc@mail.gmail.com>
-	 <8b67d60708311306v344e8f00w36dc244fc39df39f@mail.gmail.com>
-	 <8bd0f97a0708311312n78f1c163o20aa17214bfe3702@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31/08/2007, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On 8/31/07, Adrian McMenamin <lkmladrian@gmail.com> wrote:
-> > This patch makes the PVR2 VBLANK interrupt on the SEGA Dreamcast
-> > shareable - a small but necessary change to enable ongoing efforts to
-> > develop a driver for the maple bus on the Dreamcast. (Maple is Sega's
-> > proprietary serial interface for the Dreamcast and can be set to
-> > synchronise dma transfers to the VBLANK).
-> >
-> > This has no impact on the performance of the PVR2.
->
-> sharable implies the interrupt handler checks to see if it actually
-> caused the interrupt ... which it doesnt at the moment ... presumably,
-> you're making it shared because another device will be using that
-> interrupt as well ... so when that other device gets an interrupt, how
-> do you know it's for that device and not PVR2 ?
+On Fri, 31 Aug 2007 14:06:33 -0400 Jeff Garzik wrote:
+
+> Robert P. J. Day wrote:
+> > On Fri, 31 Aug 2007, Randy Dunlap wrote:
+> > 
+> >> On Thu, 19 Jul 2007 23:05:57 +0100 Simon Arlott wrote:
+> >>
+> >>> On 19/07/07 17:19, Robert P. J. Day wrote:
+> >>>> On Thu, 19 Jul 2007, Randy Dunlap wrote:
+> >>>>> I think that Stefan means a patch to the kconfig source code,
+> >>>>> not the the Kconfig files.  Good luck.  I'd still like to see it.
+> >>>> yes, i understand what he wanted now.  as a first step (that
+> >>>> theoretically shouldn't change any behaviour), i'd patch the Kconfig
+> >>>> structure to add a new attribute ("maturity") which would be allowed
+> >>>> to be set to *exactly one* of a pre-defined set of values (say,
+> >>>> OBSOLETE, DEPRECATED, EXPERIMENTAL, and STILLBLEEDING).  and that's
+> >>>> it, nothing more.
+> >>>>
+> >>>> don't try to do anything with any of that just yet, just add the
+> >>>> infrastructure to support the (optional) association of a maturity
+> >>>> level with a config option.  that's step one.
+> >>> What about something like this? I'm not sure if the addition to sym_init
+> >>> is desirable... I also had to prefix _ to the name for now otherwise it
+> >>> conflicts badly with the current symbols. It probably should stop
+> >>> "depends on _BROKEN" etc. too.
+> > 
+> > i'm sure i'm going to get shouted down here, but i really disagree
+> > with "BROKEN" being considered a "maturity level".  IMHO, things like
+> > EXPERIMENTAL, DEPRECATED and OBSOLETE represent maturity levels, for
+> > what i think are obvious reasons.
+> > 
+> > something like BROKEN, though, has *nothing* to do with maturity.  a
+> > feature can be any of those maturity levels, and simultaneously be
+> > BROKEN.  i consider BROKEN to be what i call a "status", and different
+> > status levels might be the default of normal, or KIND_OF_FLAKY or
+> > TOTALLY_BORKED -- that's where BROKEN would fit in.
+> 
+> BROKEN is definitely a maturity level.  A more accurate description 
+> would be BITROTTING perhaps.  The code in question has passed through 
+> bleeding -> experimental -> stable, and come out the other side.
+> 
+> In contrast, OBSOLETE and DEPRECATED reflect high-level status not code 
+> quality/maturity.
+
+What I like about the patch is that it associates some kconfig symbol
+with prompt strings, so that we don't have to edit "(EXPERIMENTAL)"
+all the darn time (e.g.).
+
+I'd be quite happy with calling it "status" rather than "maturity",
+and with being able to use multiple of the status tags at one time,
+such as
+
+	config FOO
+	depends on BAR
+	status OBSOLETE BROKEN
 
 
-If the interrupt occurs then it will be for both of them. The hardware
-cannot be removed and the maple bus driver is set for hardware sync.
-
-The question seems redundant to me.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
