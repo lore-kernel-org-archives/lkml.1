@@ -1,141 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965622AbXHaPRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965572AbXHaPTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965622AbXHaPRc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 11:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932331AbXHaPRR
+	id S965572AbXHaPTa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 11:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbXHaPTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 11:17:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:40334 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932319AbXHaPRO (ORCPT
+	Fri, 31 Aug 2007 11:19:22 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58735 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932331AbXHaPTV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 11:17:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:message-id;
-        b=hihDkujmmqVDFOadY4R2uCNuRPQKZy4HptcxAjJhhNPAf3UltJfDS43mbpGymQWh8B494lpG86fu66mZIxyzXogY662ZeM+vMky+NmsAWOXgGyFoJdnSaai9ctA5ggKa3Gga6s7AoTy/HUCOPhurHYp1vpfY5HIgjv/SV4YQY4I=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Hannes Reinecke <hare@suse.de>
-Subject: [PATCH 3/3] debloat aic7xxx and aic79xx drivers
-Date: Fri, 31 Aug 2007 16:17:05 +0100
-User-Agent: KMail/1.9.1
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, Matthew Wilcox <matthew@wil.cx>,
-       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@osdl.org>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200708311613.59666.vda.linux@googlemail.com> <200708311615.54991.vda.linux@googlemail.com> <200708311616.36251.vda.linux@googlemail.com>
-In-Reply-To: <200708311616.36251.vda.linux@googlemail.com>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_xDD2GdM17UtWJ4G"
-Message-Id: <200708311617.05972.vda.linux@googlemail.com>
+	Fri, 31 Aug 2007 11:19:21 -0400
+Date: Sat, 1 Sep 2007 01:19:04 +1000
+From: David Chinner <dgc@sgi.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: David Chinner <dgc@sgi.com>, Eric Sandeen <sandeen@sandeen.net>,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xfs-oss <xfs@oss.sgi.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Increase lockdep MAX_LOCK_DEPTH
+Message-ID: <20070831151904.GC734179@sgi.com>
+References: <46D79C62.1010304@sandeen.net> <1188542389.6112.44.camel@twins> <20070831135042.GD422459@sgi.com> <1188570831.6112.64.camel@twins> <20070831150511.GA734179@sgi.com> <1188572961.6112.72.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1188572961.6112.72.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_xDD2GdM17UtWJ4G
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Fri, Aug 31, 2007 at 05:09:21PM +0200, Peter Zijlstra wrote:
+> On Sat, 2007-09-01 at 01:05 +1000, David Chinner wrote:
+> 
+> > > Trouble is, we'd like to have a sane upper bound on the amount of held
+> > > locks at any one time, obviously this is just wanting, because a lot of
+> > > lock chains also depend on the number of online cpus...
+> > 
+> > Sure - this is an obvious case where it is valid to take >30 locks at
+> > once in a single thread. In fact, worst case here we are taking twice this
+> > number of locks - we actually take 2 per inode (ilock and flock) so a
+> > full 32 inode cluster free would take >60 locks in the middle of this
+> > function and we should be busting this depth couter limit all the
+> > time. 
+> 
+> I think this started because jeffpc couldn't boot without XFS busting
+> lockdep :-)
 
-On Friday 31 August 2007 16:16, Denys Vlasenko wrote:
-> On Friday 31 August 2007 16:15, Denys Vlasenko wrote:
-> > On Friday 31 August 2007 16:13, Denys Vlasenko wrote:
-> > > Attached are three patches which fix that:
-> > > 
-> > >    text    data     bss     dec     hex filename
-> > >  261433   50018    1172  312623   4c52f linux-2.6.23-rc1.org.t/drivers/scsi/aic7xxx/built-in.o
-> > >  199654   50018    1172  250844   3d3dc linux-2.6.23-rc1.aic.t/drivers/scsi/aic7xxx/built-in.o
-> > >  184014   21314    1172  206500   326a4 linux-2.6.23-rc1.aic1.t/drivers/scsi/aic7xxx/built-in.o
-> > >  202378    2850    1172  206400   32640 linux-2.6.23-rc1.aic2.t/drivers/scsi/aic7xxx/built-in.o
-> > > 
-> > > 1-debloat.patch    deinlines a lot of functions
-> > > 2-addstatic.patch  adds statics, #ifdefs out huge amount of unused code, adds consts
-> > > 3-addconst.patch   adds more consts
---
-vda
+Ok....
 
---Boundary-00=_xDD2GdM17UtWJ4G
-Content-Type: application/x-bzip2;
-  name="linux-2.6.23-rc1-aic7xxx-3-addconst.patch.bz2"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
-	filename="linux-2.6.23-rc1-aic7xxx-3-addconst.patch.bz2"
+> > Do semaphores (the flush locks) contribute to the lock depth
+> > counters? 
+> 
+> No, alas, we cannot handle semaphores in lockdep. Semaphores don't have
+> a strict owner, hence we cannot track them. This is one of the reasons
+> to rid ourselves of semaphores - that and there are very few cases where
+> the actual semantics of semaphores are needed. Most of the times code
+> using semaphores can be expressed with either a mutex or a completion.
 
-QlpoOTFBWSZTWZun4RsAFxz/gH4wEbd7////f/f//r/v//pgFh9qipKFGxXnMV1WNYiujVVKusMt
-ZoIA1QABoABQ0GgAAAAdISRBBTYTJJ+Sp5I0/QnpQeppp6TI/VNlGmIAMRk0GgNASIQgQIIo81T9
-TKeTSG1Gm1DyR6majTynlAaNHqGmgY1A4aAAGg0GgMEANDTTIBoaNMgBiBoAGqf+qqmgI9BMJppg
-JowEYmJkyYBMCYAmCDEYOGgABoNBoDBADQ00yAaGjTIAYgaAAqKITQTQJkGhGgTVPInmlPSPU2pp
-sUM1NNqB5TQyaB+qek2ndUltR8wPzYMpEr1We/42WYP/Myf32Srw7Nis0QHclRK/urR8oxg2QVkQ
-obMmBrmy4lRixSm7Ntxx+9+9mTbZPuf7p/19aN0QKGyIENmDgN4Sj3NxMtMw40cTBCxcZZVmWMnW
-yV2tFlUtGdJFlZxatlUwMYmWiVTFUxi1i2qqZVhjGLYMVLK7athcMFsGHCP3WTvj/qmRskZujb7n
-u4rEENPwj/ly0CzTzNPJrYKY5MctJMstsyYVwstCrVTCzFsujXDrQbZe6X/mH5WllgoJE2MsOFdu
-3Oa8To+HkSLxfR178zn1EbjamOAkeBr5nI5ZLVYs9/+md8Ww2TRph3r6V6ncYI1Uw7Q03t0dWOXB
-ZnTKVK1LMOXNhDKra0cvOPVECh7wjLI8bWbE5bbRBrurogo1V9qJd6qHW6a9uJiysxcOuWLwpwYw
-xVdpOIfagi1J22DAdtD6vrvw6jrwnrNcI4G7hOKqZxh/71jc+8o/rU+ppJ5p9jf0mN32HPoWuD0a
-Fbus+HtGjDeunFifzLhdZJOfQz0ZOgKcFhKjiXLBkFjAXMDD5xr58D/GD9Mfrpb+uyPrv6atn0WZ
-p4XFfbJI9oeU+iw8kiexUj3K3BXk7sK/uh63xe96en9/DY9rhvEy6Pi97LLT1R21aWrVr2qjJklk
-1xXj6+MCJCECJ4Rh/Hye2G28/jd2jNcPk8njFu0693xM2g1OZXOuA+LK2jeix9vgbZNdzxGk5R7e
-Ebe5C7ag8DoZcZZ7vu9goRHtwuqYSTzzkMnoop5UDLEyk9Ey24qddcigNJg1ohIuZQJF3kjkJH2a
-eGfFyMzcBWGpSxZFETD8pRNTrsu6TDIZgVkY8aYuJpCvMBoc9jkUWbt0mxf6Ot4LDv0yvlZUz10W
-MhTVB8amj2WWjmAAAAAfbNVwApqSkACkqKdh6LWnLilLK2lY8v/Wvu9jn18nr2Bosjex7Phz7Hnr
-OaxHOJvoy/nn1MR2e5atKqlllLLLiNa8rpjFipUs6nZqWnaIbtBA2woYiAbbbcMhttsbbmAgOoOw
-dJQz2HMuXCrf6rTQ1Fq7kRDcEpL69yjd1pnUMk1LyrOxJfbBfBcgl/obxlOZKTXZcaD5Kfklk7E5
-v+D1xPRoMYbvp6PQfgMQQQFxnr3SBmDE2M754CUpYU1YOfj5VxxRF2HRWrgNYMkeqeyQU4KRtIa5
-D5zt6n1dvwZ9n2rKPsU25L3rlixhu5llhjdGx7RoazHUv9jaaDy3RZukhtxyIkri6quRXOgb9aie
-jE3i3di3eLttvsm/WtCjdWp5+PZx0+8RmbBBeAsffIOY446/01bji/p+C151ckyzbbMsSYkZSVSX
-CWKwYkTVhgnyUTRQwqQpVlhbGR9qD6gqhQzJIWJLLn2egvhqMjPYPxuPhv/u3OpBpJ06yuhqOGqv
-rRntSm/vd7/Ec0lttUUpK1XCWr76mD/uM3ljvneyCSnycQ2d28YKhs5gbY9PONtv0h6D0e/NRMuX
-I59VVFr1pcjDjEPlyG7ZmHlNotWLWtBJDUxVPO03Khu1WqM88RWUTVQ28zuEh+QKoUOYPoSeoCw2
-BRO7u/Y8X4vtXQ/jcz9TvAxInILwPR3xPJe4MAeoDyA1+72vDbTTRpjFzVxk6c1BVVVFRLkmqqio
-6APEB3kf5GL1tHrP54/f/0+7yiyVGjt/W/zTsB3AUk7Snh4qRERERERERERERERESqqr5gfIHSgy
-9bnn87Q6kT5e3LUFBnAP6AfX0BqxP5AXCyv3NoGH2AraDlXzq4fe57Oj8rk4yO/WcgA0UUP0hAMT
-JYQQLLTXHLmvN5qb37oBP1P3J0B0d/iq2+LYadp2PDhwtVdc9zSm8FzYqh2DAAcfC29TMsYx7qSc
-b0lv0Ofyt/DtxcerkB4g4A5Qep2vBt1tt9YCI7G4mW2+N24nItzjzGVaTzGSwi52QZHGOVuOYG7k
-DDfRs9UZ82iu7Dk2fhcuOp5lziVu6XG/k23qdLNmAGpwOfRFN7axDh8SEKdxBrtoONwRHFCoiZPx
-XJqgCDIk0N2u0rMXd5AfAx16vc8oz29ezouLcLjnjFuZJ7khBw1b1HyW0kTxABgGljPTBVHQRnCt
-eE6Isg7cGIE6c+/o51eeNLjoyDp5emT220DvUo3YJWBmGgnU4+bA4wwYjETe3phb3aaW9MXGmzeS
-cUZsg/R9/vTkDv5SSh+N8p1c/d+8V5O1MzjzHjLGcH2S6Pky8hWRnRkbEGxJhV+Mg2LbjL4PjK4P
-bhB4TyhLeReXMDb0uQFFQCsZFSWN+LGYpSqyWQvZ5ZBam85GRnbJPoe9t5MbHv4VtrM82vNzVt3z
-0A0g+ZoA8wd4S9QkkQ6UkhhJHydwN/vKHsBJbBkjvzi/hiJ9nbKe/506P5DmwD3ykiHZ8zW3FvxW
-CWBpQTbsEAKCRgYrmbF6l9NQWCgfKkQcbe+jo9OC+1KF9RvYuvPI1njZ67/93PZxlfyZP9XRTBze
-1oVZWlgDtq7PjGxxOAjAQbZGq5t/EDCLc/nMzmxJyevLKd0Fcs8Wi2BFzmAGKQwHe+59N7MOGAxO
-1iZiWnnuteij/InVGRCVRdAiRcfVcQJA7+nEZ8nTqO3OjRKXhoycTtZmB03x0d8nMkKNbPY6wYlv
-kyTV0whaRswVQrf2oV5kUhcDBiq1Uy/QNox3TqgwOwzHR8zQBcba7kcViO0eLu9PQzu5pZQGGSgO
-dwMvB4D816TiIEd0SKjJ/nSRSaloFu94yIn0HUDrnx9H0hwBwtwcpBe0mDl7xHkO3EgPoITl5kPz
-VBxHOGbF6+0zTpgdhgRskQLxXW+I9zgnF+9icE4cLVVbcJKYl34+1mac9DjKtGzQ3s/YwqsOEVN3
-9Xv/2JpDif2zn2RCu5lybMHPrMup/AkccbxN9YW1bVlnApwlz3uMk2Du+EnEbcF6GVKpnPKOFqrb
-bbbiZmCopjClttWyqq1VVatt15TETWv2NhjbSdHBs1efzY7usLMOQw/AyzNp9Go8Rr2VbbYlkORO
-nr+jDeebhLXf+1MrJ+PVomctUpjOTwdlvTFnrZJyZxf4vZ5t5v/HXhKfJRLn8z3jVGh/QpKyJF2j
-h2rLzeZi/MwybCfk+CCyHSi4WaqYpbLddcSGbBdJGtkzh+NnJV4u6pXRKhqSIbCWhQ0NibtaBSMC
-2rJKtol/4gbsx92J/KN2j/8yRiglo/V6e72w8fpfg8Ye9ylfF8M/ExIcaPP4/l4YiaaqkfXFnFke
-9MZZg14/mWbySGcdhvkSOy/PvJ1j8UrvWekfo/5eakmXukjy2w9ziy0fATPq45J1iGfpNERoSpI7
-miVU6jwA0A5WSQaayhFm5NmdIfR1YG8GZO1lE2iN3ezxhDdyqWWy9z4yaJZ5ySRz7ZOWhHeutWcT
-UxjMNOOaV8p/djKquawtVMqwKlpL7NmYotd5yOcaTRNmE5ssstAPyq8oJG0PFs7CfkPAaljnhjaZ
-mPeeeunW6xco1iYszrMW1HOy1bHmuutKtuEbqTeTViDKyGtk1RUhvgwJkr8Z3eS+XXik5d1nJz8P
-vOyBrP0OccnNlkOEqPnWJj785nN+0OOPtXhKnds9qT7QA9AsRRPWOoUFKzIPmPxpi8bRnE5YUwKn
-IFZH2uLSbRyHvjZpjSRv/hiTSU1LpN2RpE4cbGp0kwexrCp7sRsy5640khjROXQZfo5xHXLo5OLx
-Ovhh3vl73ynBXxbpx74HKHtsblKWlrzfNJDkhzvfxv2sV3PJt5mZydJ0LTaOoF68vY7MuLw0YVqw
-21jM+HlO5Y/ZwY5PXUjE5/ynJEnU7lK7j1ekeQY7U7JybtNTYNDZj3wxNkbHFohxjj7ZtybyE1mU
-VtxHZ8HaaFvTLTXKNm+ftONeMJVkR4VMDjNMyFk57+yE7W0iSSybRPfribD7np4v3vrcW2+4tDAG
-GHkxlmQKrxw+GwkdkkhLCjCJ8PVJO8vwwcrEPZ7nZLBgcKeLn43znF9KvyXMfNjdJ0O2pVL44RoX
-qxMRZSW2LJhhjCw/FKPiDyMNfBCMSExiccwmFwBuQYpEEMdiwvOsdfDXBX1CWegTFLd8AZe6dt9U
-lh7o5OMiWHm8E+PbJ889jCR03GN3QD1ob7vlxliP5+yHi4RObZ3c/m4MWd4azBFSy08KYMi4jr5T
-ljbikbp19Hbhmatrvxjz0zwaKs5sG6wmQDKiSSWewEQbnbuYkkurs17AuCnAmzH9ht+mXSyluiKY
-VxxhMmYVCxdlrk6dWtskhqi0htTEqSbUFXJZYkrMmJBjk1/ype8uiEcuvf6X0ieux6x59xOMJied
-l9Oh3O5889khOPwD1RiTsaMSQ5n4rHZ2djEyj+rtMk+OhBvLFIkrxXJLBVFipUCAOFIEfugjZQAe
-IcU1x+j68bV3Ox0mNl+BiSPkzMxegeCYqZkfqcZJ8VVVUc5BvK869qtEwwGFSqkpZEf1+2Y4/ncH
-tH1bo2DkrV2D6+zbGvtlJn4yQ730G7tlnjiSe97TgfNQ47xrFSbRpKZnsWsquDFyxUuT1MlwpPlx
-PQDhEbjVwF6x5GndlOnSPZ4zZ13KdkfVFho4AdHe27JWN4nWSyQ+aZJqGms+uyThaoFnGJohI6qQ
-7WNdz6VxdUxiuhl2Mz53mw5aJ7XXT3M8rx0K58F1A1y56tnsYZy2cMVaNnBV59jkvVwT8oGWk6uN
-SNoWLNEKoYfn9vl1ls2Rtt6Pc0kcqM9Fucw7SDq3btTEeTNtlqxRw4SEr+GrOYemrukCnBNG0bj1
-MJ3d6P4qtHvVpDS0aYYYqYrRWIOnJ1dJ2KnCIuMJtwwMxnNt/z2TIWTRZpYYtsmUiyYU0VMKTKmf
-4aZlqTSUbVxrrWGZ3mJiWKYWYtlwrErCmJUwPFh66Z0GHhg0ZPd1mJssay4iTE1xIzSRplM5TStn
-2Z/wcNpi8F0r03RMpUycbMsiYk1kiZYxMZGnGR0VOOzhwmnLDbVqDFXhTg45aasmlGDWtDdOHRUj
-6NRE7IJrJIYcuTKz0N2rf7Gz6lZc5jaH9DAkcYZXHE7rRtEnDZpNHNzk2U0sRiSyEiyDEMVMbdZJ
-qs34yScfG0Kn34xaVLXnOceCEjx4/qYv4U4E39eBir+2Ym7znXn3yT6HTVHsPfP8j55LKPP2NKTL
-8NnzBdD3PwYcnYhHrR6qhzaur3eps9bIHCSSspPXczgpMTE3jQ9APiIeB8MEyqWSiUULW5+nCrbE
-FqgooAEQEQAAAcVEE8RPQ6sTEqr34xXqLJHuM6uPe8PBJPOyMVLYsliS0n04Yltv9sslh075P7FD
-zF3JFOFCQm6fhGw=
+Yeah, and the flush lock is something we can't really use either of those
+for as we require both the multi-process lock/unlock behaviour and the
+mutual exclusion that a semaphore provides.
 
---Boundary-00=_xDD2GdM17UtWJ4G--
+So I guess that means it's only the ilock nesting that is of issue here,
+so that means right now a max lock depth of 40 would probably be ok....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
