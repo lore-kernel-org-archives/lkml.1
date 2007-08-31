@@ -1,106 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbXHaVtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbXHaVyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbXHaVtw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:49:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbXHaVto
+	id S1756686AbXHaVyz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXHaVyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:49:44 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:45331 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751035AbXHaVto (ORCPT
+	Fri, 31 Aug 2007 17:54:47 -0400
+Received: from wx-out-0506.google.com ([66.249.82.234]:49337 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753130AbXHaVyq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:49:44 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 31 Aug 2007 17:38:34 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: maturity and status and attributes, oh my!
-Message-ID: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain>
+	Fri, 31 Aug 2007 17:54:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=fd+k/+9G85cECVMiEMtRNMdVWyimMNxxOJ6ZCo+L2mmsvmcUttahyqMHliw0WtLm+boWEWPAkUAXQfIJsgGdQ+AKaI7KWZR6AvrTG3YbmC9Nt3BqfhykTOYU8ZUhm71uXsvjdZ2w+IHXni5aNiZpB+HvzNrVaOfUzYAEBPpgLb0=
+Message-ID: <661de9470708311454l3aaea0d3g4555721ba84c8aba@mail.gmail.com>
+Date: Sat, 1 Sep 2007 03:24:45 +0530
+From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [-mm PATCH] Memory controller improve user interface (v2)
+Cc: Linux@smtp2.linux-foundation.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linux MM Mailing List" <linux-mm@kvack.org>,
+       "David Rientjes" <rientjes@google.com>,
+       Containers <containers@lists.osdl.org>,
+       "Paul Menage" <menage@google.com>
+In-Reply-To: <20070831130216.226db806.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070830185246.3170.74806.sendpatchset@balbir-laptop>
+	 <20070831130216.226db806.akpm@linux-foundation.org>
+X-Google-Sender-Auth: e9276e55b64fd4e2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 9/1/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 31 Aug 2007 00:22:46 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+> > +/*
+> > + * Strategy routines for formating read/write data
+> > + */
+> > +int mem_container_read_strategy(unsigned long long val, char *buf)
+> > +{
+> > +     return sprintf(buf, "%llu Bytes\n", val);
+> > +}
+>
+> It's a bit cheesy to be printing the units like this.  It's better to just
+> print the raw number.
+>
+> If you really want to remind the user what units that number is in (not a
+> bad idea) then it can be encoded in the filename, like
+> /proc/sys/vm/min_free_kbytes, /proc/sys/vm/dirty_expire_centisecs, etc.
+>
 
-  at the risk of driving everyone here totally bonkers, i'm going to
-take one last shot at explaining what i was thinking of when i first
-proposed this whole "maturity level" thing.  and, just so you know,
-the major reason i'm so cranked up about this is that i'm feeling just
-a little territorial -- i was the one who first started nagging people
-to consider this idea, so i'm a little edgy when i see folks finally
-giving it some serious thought but appearing to get ready to implement
-it entirely incorrectly in a way that's going to ruin it irreparably
-and make it utterly useless.
+Sounds good, I'll change the file to memory.limit_in_bytes and
+memory.usage_in_bytes.
 
-  this isn't just about defining a single feature called "maturity".
-it's about defining a general mechanism so that you can add entirely
-new (what i call) "attributes" to kernel features.  one attribute
-could be "maturity", which could take one of a number of possible
-values.  another could be "status", with the same restrictions.
-heck, you could define the attribute "colour", and decide that various
-kernel features could be labelled as (at most) one of "red", "green"
-and "chartreuse."  that's what i mean by an "attribute", and
-attributes would have two critical and non-negotiable properties:
+>
+> > +int mem_container_write_strategy(char *buf, unsigned long long *tmp)
+> > +{
+> > +     *tmp = memparse(buf, &buf);
+> > +     if (*buf != '\0')
+> > +             return -EINVAL;
+> > +
+> > +     printk("tmp is %llu\n", *tmp);
+>
+> don't think we want that.
+>
 
-1) they would be entirely orthogonal to one another, and
-2) they can be assigned at most one of a pre-defined set of values
+Yes, I'll redo the patch and resend.
 
+> > +     /*
+> > +      * Round up the value to the closest page size
+> > +      */
+> > +     *tmp = ((*tmp + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
+> > +     return 0;
+> > +}
 
-  that's it.  it's really that simple and simon's earlier patch i
-think fits that almost perfectly.  now, back to the disagreement.
-
-  it may be that some people had a different understanding of what was
-meant by "maturity" than i did.  what *i* meant by that attribute is
-a feature's current position in the normal software life cycle, and
-that would be one of:
-
-  experimental -> normal (stable) -> deprecated -> obsolete
-
-  it's a natural progression and, at any point, a feature cannot
-possibly have more than one maturity value.  it would be as absurd as
-saying that someone was a teenager *and* was a twenty-something at the
-same time.  not possible.  and restricting an attribute to a single
-value makes definitions and processing *way* easier down the road.
-(and note that a feature's maturity says *nothing* about its current
-level of quality.  that's next.)
-
-  another attribute can then be what i was calling "status" but could
-also be called "quality".   *that* is where you could categorize a
-feature as one of FLAKY, BROKEN and so on.  that's an entirely
-independent categorization from maturity, which means you could have
-features that were both experimental and flaky, or deprecated and
-broken, or what have you.  and those settings would be done with
-separate Kconfig directives:
-
-config WHATEVER
-	maturity DEPRECATED
-	status BROKEN
-
-  from a quick perusal, simon's patch looked pretty much dead-on
-(except for that teeth-grinding maturity level of BROKEN :-).  but
-other than that, it looked good, although i'll have to go back later
-and look more closely.
-
-  but i hope i've flogged this thoroughly to the point where people
-can see what i'm driving at.  once you see (as in simon's patch) how
-to add the first attribute, it's trivial to simply duplicate that code
-to add as many more as you want.
-
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+Thanks,
+Balbir
