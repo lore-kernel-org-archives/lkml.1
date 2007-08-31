@@ -1,76 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbXHaIfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757382AbXHaIhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756903AbXHaIfy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 04:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXHaIfq
+	id S1757382AbXHaIhf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 04:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbXHaIh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 04:35:46 -0400
-Received: from frankvm.xs4all.nl ([80.126.170.174]:40027 "EHLO
-	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752298AbXHaIfp (ORCPT
+	Fri, 31 Aug 2007 04:37:28 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:59812 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751226AbXHaIh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 04:35:45 -0400
-Date: Fri, 31 Aug 2007 10:14:05 +0200
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: Hua Zhong <hzhong@gmail.com>
-Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org
-Subject: Re: recent nfs change causes autofs regression
-Message-ID: <20070831081405.GA21499@janus>
-References: <000701c7eb49$cff701c0$6fe50540$@com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 31 Aug 2007 04:37:27 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-kernel@vger.kernel.org
+Subject: possible build system oddity
+Date: Fri, 31 Aug 2007 10:37:28 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <000701c7eb49$cff701c0$6fe50540$@com>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200708311037.29280.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 30, 2007 at 02:07:43PM -0700, Hua Zhong wrote:
-> I am re-sending this after help from Ian and git-bisect. To me it's a
-> show-stopper: I cannot find an acceptable workaround that I can implement.
-> 
-> The problem: upgrading to 2.6.23-rc4 from 2.6.22 causes several autofs
-> mounts to fail silently - they just not appear when they should.
-> 
-> I believe it's caused by the NFS change that forces multiple mounts from
-> different directories under the same server side filesystem to have the same
-> mount options by default, otherwise it returns EBUSY.
-> 
-> For example, if server has a filesystem /a, and it exports /a/x and /a/y
-> (maybe with rw or ro), and a client must mount /a/x and /a/y with the same
-> mount options now.
-> 
-> Since in my setup they are managed by autofs, and the autofs map is managed
-> by nis, there is no way I could easily workaround it..
-> 
-> If we have to live with this regression, I want to hear some suggestions
-> about how to fix them realistically. Thanks.
-> 
-> By the way, I am not sure if I did the bisect right, but FWIW, git-bisect
-> says:
-> 
-> c98451bdb2f3e6d6cc1e03adad641e9497512b49 is first bad commit
-> commit c98451bdb2f3e6d6cc1e03adad641e9497512b49
-> Author: Frank van Maarseveen <frankvm@frankvm.com>
-> Date:   Mon Jul 9 22:25:29 2007 +0200
-> 
->     NLM: fix source address of callback to client
-> 
->     Use the destination address of the original NLM request as the
->     source address in callbacks to the client.
-> 
->     Signed-off-by: Frank van Maarseveen <frankvm@frankvm.com>
->     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> 
-> :040000 040000 675c84bd8b2c50744018becaa0db4aeca19b8f9f
-> 105fbd3cb3fa5e3019836b4b5268125d0181a72d M      fs
-> :040000 040000 0138796e0806b4ebd1cc3850ed4e8c7ab24d2d41
-> 2fec08debe51c20423a88b1a0d4281c683ba5daf M      include
+Hi,
 
-This does not have any relation with the mount problem, assuming commit
-and comment do match.
+I only touched sound/usb/usbaudio.c
+Nevertheless the whole subtree und sound/ is recompiling. What's
+happening?
 
--- 
-Frank
+	Regards
+		Oliver
