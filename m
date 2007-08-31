@@ -1,51 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762996AbXHaGmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763085AbXHaG4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762996AbXHaGmG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 02:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758513AbXHaGly
+	id S1763085AbXHaG4U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 02:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759422AbXHaG4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 02:41:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37857 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752929AbXHaGly (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 02:41:54 -0400
-Message-ID: <46D7B817.3060304@zytor.com>
-Date: Thu, 30 Aug 2007 23:41:27 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Fri, 31 Aug 2007 02:56:10 -0400
+Received: from code-monkey.de ([88.198.45.137]:36701 "EHLO code-monkey.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759098AbXHaG4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 02:56:08 -0400
+X-Greylist: delayed 555 seconds by postgrey-1.27 at vger.kernel.org; Fri, 31 Aug 2007 02:56:08 EDT
+Date: Fri, 31 Aug 2007 08:46:39 +0200
+From: Tilman Sauerbeck <tilman@code-monkey.de>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: keith.packard@intel.com, Al Boldi <a1426z@gawab.com>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, airlied@linux.ie,
+       Ingo Molnar <mingo@elte.hu>, dri-devel@lists.sourceforge.net,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: CFS review
+Message-ID: <20070831064638.GA5315@code-monkey.de>
+References: <20070827204116.GA12495@elte.hu> <200708280737.53439.a1426z@gawab.com> <20070829041827.GA8733@elte.hu> <1188361749.21502.123.camel@koto.keithp.com> <20070829044614.GA13225@elte.hu> <1188374249.21502.155.camel@koto.keithp.com> <20070829080417.GB19386@elte.hu> <1188403075.21502.158.camel@koto.keithp.com> <46D5CF5F.6090505@gmail.com> <46D66C2D.3010900@gmail.com>
 MIME-Version: 1.0
-To: Will Simoneau <simoneau@ele.uri.edu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: new x86 setup code hangs on Dell Inspiron 5150
-References: <20070831015620.GA6259@ele.uri.edu> <46D7AAF7.1030105@zytor.com>
-In-Reply-To: <46D7AAF7.1030105@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
+Content-Disposition: inline
+In-Reply-To: <46D66C2D.3010900@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Will Simoneau wrote:
->> While trying to put together a new kernel for my laptop (Dell I5150, as
->> in subject) I found that recent kernels just don't boot. Right after
->> grub loads the kernel, before the "Uncompressing Linux" message is
->> shown, it hangs. The BIOS appears to still be alive (ctrl-alt-del works,
->> keyboard lock LEDs respond). It seems to be caused by the new x86 setup
->> code.
->>
->> My kernel is Linus' git as of a1c582d0720f2eff61043e90711767decf37b917.
->> I bisected and confirmed that 4fd06960f120e02e9abc802a09f9511c400042a5
->> triggers a non-functioning boot.
->>
->> This system has Dell BIOS rev A38 and a P4 3.2 w/HT.
->>
->> What should I do next to debug this problem?
-> 
-> Can you put in some printf's in the code and see how far it gets?
-> 
 
-Specifically, the places to add printf's are to main() in main.c and 
-go_to_protected_mode() in pm.c.
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	-hpa
+Rene Herman [2007-08-30 09:05]:
+> On 08/29/2007 09:56 PM, Rene Herman wrote:
+>=20
+> Realised the BUGs may mean the kernel DRM people could want to be in CC...
+>=20
+> > On 08/29/2007 05:57 PM, Keith Packard wrote:
+> >=20
+> >> With X server 1.3, I'm getting consistent crashes with two glxgear
+> >> instances running. So, if you're getting any output, it's better than =
+my
+> >> situation.
+> >=20
+> > Before people focuss on software rendering too much -- also with 1.3.0
+> > (and a Matrox Millenium G550 AGP, 32M) glxgears also works decidedly
+> > crummy using hardware rendering. While I can move the glxgears window
+> > itself, the actual spinning wheels stay in the upper-left corner of the
+> > screen and the movement leaves a non-repainting trace on the screen.
+
+This sounds like you're running an older version of Mesa.
+The bugfix went into Mesa 6.3 and 7.0.
+
+> > Running a second instance of glxgears in addition seems to make both
+> > instances unkillable -- and when I just now forcefully killed X in this
+> > situation (the spinning wheels were covering the upper left corner of a=
+ll
+> > my desktops) I got the below.
+
+Running two instances of glxgears and killing them works for me, too.
+
+I'm using xorg-server 1.3.0.0, Mesa 7.0.1 with the latest DRM bits from
+http://gitweb.freedesktop.org/?p=3Dmesa/drm.git;a=3Dsummary
+
+I'm not running CFS though, but I guess the oops wasn't related to that.
+
+Regards,
+Tilman
+
+--=20
+A: Because it messes up the order in which people normally read text.
+Q: Why is top-posting such a bad thing?
+A: Top-posting.
+Q: What is the most annoying thing on usenet and in e-mail?
+
+--GvXjxJ+pjyke8COw
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.6 (GNU/Linux)
+
+iD8DBQFG17lO27uLisrW2w8RAnNdAJ9vsXbjbeGdjoEpnQpdSzQ5E4MtcwCdEFwS
++rra462G/56C4KZYNjJ+pRQ=
+=/hx+
+-----END PGP SIGNATURE-----
+
+--GvXjxJ+pjyke8COw--
