@@ -1,248 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759094AbXHaEhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbXHaEht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759094AbXHaEhb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 00:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbXHaEhU
+	id S1756463AbXHaEht (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 00:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbXHaEhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 00:37:20 -0400
-Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:54531 "EHLO
-	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332AbXHaEhS (ORCPT
+	Fri, 31 Aug 2007 00:37:23 -0400
+Received: from syd-iport-1.cisco.com ([64.104.193.196]:5148 "EHLO
+	syd-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751664AbXHaEhV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 00:37:18 -0400
-Message-Id: <200708310435.AA00256@paprika.lab.ntt.co.jp>
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Date: Fri, 31 Aug 2007 13:35:44 +0900
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] problem with nfs_invalidate_page
-In-Reply-To: <1188402562.6580.74.camel@heimdal.trondhjem.org>
-References: <1188402562.6580.74.camel@heimdal.trondhjem.org>
+	Fri, 31 Aug 2007 00:37:21 -0400
+X-Greylist: delayed 608 seconds by postgrey-1.27 at vger.kernel.org; Fri, 31 Aug 2007 00:37:20 EDT
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: general@lists.openfabrics.org, ewg@lists.openfabrics.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sean.hefty@intel.com
+Subject: Re: [PATCH RFC] iw_cxgb3: Support "iwarp-only" interfaces to avoid 4-tuple conflicts with the host stack.
+X-Message-Flag: Warning: May contain useful information
+References: <1187905185.5547.13.camel@stevo-desktop>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 30 Aug 2007 21:27:04 -0700
+In-Reply-To: <1187905185.5547.13.camel@stevo-desktop> (Steve Wise's message of "Thu, 23 Aug 2007 16:39:45 -0500")
+Message-ID: <adaveawwcpz.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-X-Mailer: AL-Mail32 Version 1.13
 Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 31 Aug 2007 04:27:05.0166 (UTC) FILETIME=[2F65C6E0:01C7EB87]
+Authentication-Results: syd-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/syddkim1002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Aug 2007 11:49:22 -0400, Trond Myklebust wrote:
->OK. I see your point... Basically, you are saying that the new
->->invalidatepage() semantics do not allow us to rely on the dirty status
->of the page in order to figure out if we need to clean up.
+ > The sysadmin creates "for iwarp use only" alias interfaces of the form
+ > "devname:iw*" where devname is the native interface name (eg eth0) for the
+ > iwarp netdev device.  The alias label can be anything starting with "iw".
+ > The "iw" immediately after the ':' is the key used by the iwarp driver.
 
-Exactly.
+What's wrong with my suggestion of having the iwarp driver create an
+"iwX" interface to go with the normal "ethX" interface?  It seems
+simpler to me, and there's a somewhat similar precedent with how
+mac80211 devices create both wlan0 and wmaster0 interfaces.
 
->Andrew, that was a fairly significant change in semantics...
->
->Anyhow, well done debugging it! Does the following patch fix the Oops?
->
->Trond
-
-Yes, the patch did fix the Oops crash.
-I've tested it in serveral ways, and it's working well enough so far.
-Thanks!
-
-Ryusuke Konishi
-
-
->On Tue, 2007-08-28 at 17:32 +0900, Ryusuke Konishi wrote:
->> On Mon, 27 Aug 2007 09:30:12 -0400, Trond Myklebust wrote:
->> >It looks as if ecryptfs is dropping the page lock between the calls to
->> >prepare_write() and commit_write(). That would be a bug.
->> 
->> No, ecryptfs is holding the page lock between the calls to 
->> nfs_prepare_write() and nfs_commit_write().
->> This is a regression since kernel 2.6.20;  kernel 2.6.19 does not 
->> yield the BUG.
->> 
->> Please look at truncate_complete_page() and nfs_wb_page_priority() 
->> which is called from nfs_invalidate_page().
->> 
->> The recent truncate_complete_page() clears the dirty flag from a page
->> before calling a_ops->invalidatepage(),
->> ^^^^^^
->> static void
->> truncate_complete_page(struct address_space *mapping, struct page *page)
->> {
->>         ...
->> 	cancel_dirty_page(page, PAGE_CACHE_SIZE);  <--- Inserted here at kernel 2.6.20
->> 
->> 	if (PagePrivate(page))
->> 		do_invalidatepage(page, 0);   ---> will call a_ops->invalidatepage()
->>         ...
->> }
->> 
->> and this is disturbing nfs_wb_page_priority() from calling 
->> nfs_writepage_locked() that is expected to handle the pending
->> request (=nfs_page) associated with the page.
->> 
->> int nfs_wb_page_priority(struct inode *inode, struct page *page, int how)
->> {
->> 	...
->> 	if (clear_page_dirty_for_io(page)) {
->> 		ret = nfs_writepage_locked(page, &wbc);
->> 		if (ret < 0)
->> 			goto out;
->> 	}
->>  	...
->> }
->> 
->> Since truncate_complete_page() will get rid of the page after
->> a_ops->invalidatepage() returns, the request (=nfs_page) associated
->> with the page becomes a garbage in nfs_inode->nfs_page_tree.
->> 
->> This causes the collision of nfs_page and yields the BUG.
->> 
->> 
->> Cheers,
->> Ryusuke Konishi
->
->OK. I see your point... Basically, you are saying that the new
->->invalidatepage() semantics do not allow us to rely on the dirty status
->of the page in order to figure out if we need to clean up.
->
->Andrew, that was a fairly significant change in semantics...
->
->Anyhow, well done debugging it! Does the following patch fix the Oops?
->
->Trond
->
->______________________________________________________________________
->From: Trond Myklebust <Trond.Myklebust@netapp.com>
->Date: Tue, 28 Aug 2007 10:29:36 -0400
->NFS: Fix a write request leak in nfs_invalidate_page()
->Subject: No Subject
->Message-Id: <1188402562.6580.75.camel@heimdal.trondhjem.org>
->Mime-Version: 1.0
->Content-Transfer-Encoding: 7bit
->
->Ryusuke Konishi says:
->
->The recent truncate_complete_page() clears the dirty flag from a page
->before calling a_ops->invalidatepage(),
->^^^^^^
->static void
->truncate_complete_page(struct address_space *mapping, struct page *page)
->{
->        ...
->        cancel_dirty_page(page, PAGE_CACHE_SIZE);  <--- Inserted here at
->kernel 2.6.20
->
->        if (PagePrivate(page))
->                do_invalidatepage(page, 0);   ---> will call
->a_ops->invalidatepage()
->        ...
->}
->
->and this is disturbing nfs_wb_page_priority() from calling 
->nfs_writepage_locked() that is expected to handle the pending
->request (=nfs_page) associated with the page.
->
->int nfs_wb_page_priority(struct inode *inode, struct page *page, int how)
->{
->        ...
->        if (clear_page_dirty_for_io(page)) {
->                ret = nfs_writepage_locked(page, &wbc);
->                if (ret < 0)
->                        goto out;
->        }
->        ...
->}
->
->Since truncate_complete_page() will get rid of the page after
->a_ops->invalidatepage() returns, the request (=nfs_page) associated
->with the page becomes a garbage in nfs_inode->nfs_page_tree.
->------------------------
->
->Fix this by ensuring that nfs_wb_page_priority() recognises that it may
->also need to clear out non-dirty pages that have an nfs_page associated
->with them.
->
->Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
->---
->
-> fs/nfs/file.c          |    2 +-
-> fs/nfs/write.c         |   44 ++++++++++++++++++++++++++++++++++++++++++++
-> include/linux/nfs_fs.h |    1 +
-> 3 files changed, 46 insertions(+), 1 deletions(-)
->
->diff --git a/fs/nfs/file.c b/fs/nfs/file.c
->index c87dc71..579cf8a 100644
->--- a/fs/nfs/file.c
->+++ b/fs/nfs/file.c
->@@ -316,7 +316,7 @@ static void nfs_invalidate_page(struct page *page, unsigned long offset)
-> 	if (offset != 0)
-> 		return;
-> 	/* Cancel any unstarted writes on this page */
->-	nfs_wb_page_priority(page->mapping->host, page, FLUSH_INVALIDATE);
->+	nfs_wb_page_cancel(page->mapping->host, page);
-> }
-> 
-> static int nfs_release_page(struct page *page, gfp_t gfp)
->diff --git a/fs/nfs/write.c b/fs/nfs/write.c
->index ef97e0c..0d7a77c 100644
->--- a/fs/nfs/write.c
->+++ b/fs/nfs/write.c
->@@ -1396,6 +1396,50 @@ out:
-> 	return ret;
-> }
-> 
->+int nfs_wb_page_cancel(struct inode *inode, struct page *page)
->+{
->+	struct nfs_page *req;
->+	loff_t range_start = page_offset(page);
->+	loff_t range_end = range_start + (loff_t)(PAGE_CACHE_SIZE - 1);
->+	struct writeback_control wbc = {
->+		.bdi = page->mapping->backing_dev_info,
->+		.sync_mode = WB_SYNC_ALL,
->+		.nr_to_write = LONG_MAX,
->+		.range_start = range_start,
->+		.range_end = range_end,
->+	};
->+	int ret = 0;
->+
->+	BUG_ON(!PageLocked(page));
->+	for (;;) {
->+		req = nfs_page_find_request(page);
->+		if (req == NULL)
->+			goto out;
->+		if (test_bit(PG_NEED_COMMIT, &req->wb_flags)) {
->+			nfs_release_request(req);
->+			break;
->+		}
->+		if (nfs_lock_request_dontget(req)) {
->+			nfs_inode_remove_request(req);
->+			/*
->+			 * In case nfs_inode_remove_request has marked the
->+			 * page as being dirty
->+			 */
->+			cancel_dirty_page(page, PAGE_CACHE_SIZE);
->+			nfs_unlock_request(req);
->+			break;
->+		}
->+		ret = nfs_wait_on_request(req);
->+		if (ret < 0)
->+			goto out;
->+	}
->+	if (!PagePrivate(page))
->+		return 0;
->+	ret = nfs_sync_mapping_wait(page->mapping, &wbc, FLUSH_INVALIDATE);
->+out:
->+	return ret;
->+}
->+
-> int nfs_wb_page_priority(struct inode *inode, struct page *page, int how)
-> {
-> 	loff_t range_start = page_offset(page);
->diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
->index 157dcb0..7250eea 100644
->--- a/include/linux/nfs_fs.h
->+++ b/include/linux/nfs_fs.h
->@@ -431,6 +431,7 @@ extern int nfs_sync_mapping_range(struct address_space *, loff_t, loff_t, int);
-> extern int nfs_wb_all(struct inode *inode);
-> extern int nfs_wb_page(struct inode *inode, struct page* page);
-> extern int nfs_wb_page_priority(struct inode *inode, struct page* page, int how);
->+extern int nfs_wb_page_cancel(struct inode *inode, struct page* page);
-> #if defined(CONFIG_NFS_V3) || defined(CONFIG_NFS_V4)
-> extern int  nfs_commit_inode(struct inode *, int);
-> extern struct nfs_write_data *nfs_commit_alloc(void);
+ - R.
