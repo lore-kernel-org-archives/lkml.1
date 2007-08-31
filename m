@@ -1,102 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965483AbXHaOVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965546AbXHaOZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965483AbXHaOVg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 10:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965155AbXHaOV1
+	id S965546AbXHaOZa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 10:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbXHaOZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 10:21:27 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43851 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965154AbXHaOV0 (ORCPT
+	Fri, 31 Aug 2007 10:25:22 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:28371 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753421AbXHaOZV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 10:21:26 -0400
-Message-ID: <46D823C0.5040309@zytor.com>
-Date: Fri, 31 Aug 2007 07:20:48 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Fri, 31 Aug 2007 10:25:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rR4f+47IAPRXjVNzwfwTMcVNi6iGaDgy9U74O/LtF5aw3CUYsvYCGe1Vm8ulEhUOWb8a25HtO5OeHTACeB8vSVLeiZWwVNC0aEhay/03g98jX8dWvh/lYN7prvGi7Dnerbj1Xukhjm3G8NpFzzYN44sS+0rJdJtPc4IfxAhm6lg=
+Message-ID: <379fb4870708310725h46e69d50h38c19444faf8e6fa@mail.gmail.com>
+Date: Fri, 31 Aug 2007 16:25:19 +0200
+From: "anon... anon.al" <anon.asdf@gmail.com>
+To: anon.asdf@gmail.com
+Subject: Re: Nonblocking call may block in a mutex? Nonblocking call after poll may fail?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <379fb4870708310513o46a721c6l3080179ccbb8f519@mail.gmail.com>
 MIME-Version: 1.0
-To: Christian Ehrhardt <lk@c--e.de>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-Subject: Re: New x86-Setup code breaks HVM-XEN boot
-References: <20070830141528.GA307@lisa.in-ulm.de> <46D714A9.4060103@goop.org> <20070831075434.GF20195@genua.de>
-In-Reply-To: <20070831075434.GF20195@genua.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <379fb4870708310513o46a721c6l3080179ccbb8f519@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Ehrhardt wrote:
-> (XEN) Failed vm entry (exit reason 0x80000021) caused by invalid guest state (0).
-> (XEN) ************* VMCS Area **************
-> (XEN) 	 16-bit Guest-State Fields
-> (XEN) 		0x00000800: 0x0018 0x0010 0x0018 0x0018 
-> (XEN) 		0x00000808: 0x0018 0x0018 0x0000 0x0008 
-> (XEN) 	 16-bit Host-State Fields
-> (XEN) 		0x00000c00: 0xe010 0xe008 0xe010 0xe010 
-> (XEN) 		0x00000c08: 0xe010 0xe010 0xe050 
-> (XEN) 	 64-bit Control Fields
-> (XEN) 		0x00002000: 0x0000000000bd5000 0x0000000000000000 0x0000000000bd4000 0x0000000000000000 
-> (XEN) 		0x00002004: 0x0000000000000000 0x0000000000000000 0x0000000000000000 0x0000000000000000 
-> (XEN) 		0x00002008: 0x0000000000000000 0x0000000000000000 0x0000000000000000 0x0000000000000000 
-> (XEN) 		0x0000200c: 0x0000000000000000 0x0000000000000000 ------------------ ------------------ 
-> (XEN) 		0x00002010: 0x00000000d8ba12e5 0x00000000ffd5e176 0x0000000000000000 0x0000000000000000 
-> (XEN) 	 64-bit Guest-State Fields
-> (XEN) 		0x00002800: 0x00000000ffffffff 0x00000000ffffffff 0x0000000000000000 0x0000000000000000 
-> (XEN) 	 32-bit Control Fields
-> (XEN) 		0x00004000: 0x0000001f 0x0681e7fa 0x00004008 0x00000000 
-> (XEN) 		0x00004008: 0x00000000 0x00000000 0x0003edff 0x00000000 
-> (XEN) 		0x00004010: 0x00000000 0x000011ff 0x00000000 0x00000020 
-> (XEN) 		0x00004018: 0x00000000 0x00000000 0x00000000 
-> (XEN) 	 32-bit RO Data Fields
-> (XEN) 		0x00004400: 0x0000000c 0x80000021 0x00000000 0x00050033 
-> (XEN) 		0x00004408: 0x00000000 0x00000000 0x00000003 0x00000000 
-> (XEN) 	 32-bit Guest-State Fields
-> (XEN) 		0x00004800: 0xffffffff 0xffffffff 0xffffffff 0xffffffff 
-> (XEN) 		0x00004808: 0xffffffff 0xffffffff 0x00000000 0x00002067 
-> (XEN) 		0x00004810: 0x00006fb5 0x00000000 0x0000d0ff 0x0000d0ff 
-> (XEN) 		0x00004818: 0x0000d0ff 0x0000d0ff 0x0000d0ff 0x0000d0ff 
-> (XEN) 		0x00004820: 0x00000082 0x0000008b 0x00000000 0x00000000 
-> (XEN) 		0x00004828: 0x00000000 0x00000000 
-> (XEN) 	 32-bit Host-State Fields
-> (XEN) 		0x00004c00: 0x00000000 
-> (XEN) 	 Natural 64-bit Control Fields
-> (XEN) 		0x00006000: 0x00000000ffffffff 0x00000000ffffffff 0x0000000000050033 0x0000000000000651 
-> (XEN) 		0x00006008: 0x0000000000000000 0x0000000000000000 0x0000000000000000 0x0000000000000000 
-> (XEN) 	 64-bit RO Data Fields
-> (XEN) 		0x00006400: 0x0000000000000000 0x0000000000010002 0x00000000003f7fd5 0x00000000001a2000 
-> (XEN) 		0x00006408: 0x00000000000d11b2 0x0000000000000000 
-> (XEN) 	 Natural 64-bit Guest-State Fields
-> (XEN) 		0x00006800: 0x0000000080050033 0x0000000000bbfda0 0x0000000000002671 0x00000000ffffffff 
-> (XEN) 		0x00006808: 0x00000000ffffffff 0x00000000ffffffff 0x00000000ffffffff 0x00000000ffffffff 
-> (XEN) 		0x00006810: 0x00000000ffffffff 0x0000000000000000 0x00000000000d7264 0x00000000190df0bc 
-> (XEN) 		0x00006818: 0x0000000000000000 0x0000000000000400 0x000000000000f9e8 0x0000000000100000 
-> (XEN) 		0x00006820: 0x0000000000010002 0x0000000000000000 0x0000000000000000 0x0000000000000000 
-> (XEN) 	 Natural 64-bit Host-State Fields
-> (XEN) 		0x00006c00: 0x000000008005003b 0x00000000a1f47000 0x00000000000026f0 0x0000000000000000 
-> (XEN) 		0x00006c08: 0x0000000000000000 0x00000000ff1cf380 0x00000000fe800000 0x00000000ffbeb080 
-> (XEN) 		0x00006c10: 0x0000000000000000 0x0000000000000000 0x00000000ffbf3fe8 0x00000000ff14ab10 
-> (XEN) **************************************
-> (XEN) domain_crash_sync called from vmx.c:2154
-> (XEN) Domain 353 (vcpu#0) crashed on cpu#1:
-> (XEN) ----[ Xen-3.0.3-1  x86_32p  debug=n  Not tainted ]----
-> (XEN) CPU:    1
-> (XEN) EIP:    0010:[<00100000>]
-> (XEN) EFLAGS: 00010002   CONTEXT: hvm
-> (XEN) eax: 00100000   ebx: 00000000   ecx: f0000018   edx: 00050013
-> (XEN) esi: 000932a0   edi: 000042d0   ebp: 000d0000   esp: 0000f9e8
-> (XEN) cr0: 00050033   cr4: 00000651   cr3: 00bbfda0   cr2: 00000000
-> (XEN) ds: 0018   es: 0018   fs: 0018   gs: 0018   ss: 0018   cs: 0010
-> 
+On Aug 31, 2:20 pm, "anon... anon.al" <anon.a...@gmail.com> wrote:
+> Setup:
+> there is a single output-buffer (in kernel-space) of 24 bytes for
+> writes from all processes A, B, and C: each process is restricted to
+> use at most 8 bytes: 8*3 = 24
+> (until that data is handled (interrupt-handler...))
+>
+> Question:
+> If this output-buffer has "4-bytes space remaining for process A",
+> then a non-blocking write of process A could still encounter a locked
+> mutex, if process B is busy writing to the output-buffer.
+>
+> Should process A now block/sleep until that mutex is free and it can
+> access the output-buffer (and it's 4 bytes space)?
 
-Xen crashes because it thinks VMX should be handling this, but VMX 
-doesn't think so (the exit reason is "invalid state".)
+Yes, it should sleep until the mutex is free.
 
-At this point, paging is not yet enabled (CR0.PG = 0), but that is not 
-natively supported by VMX.  From a cursory look it doesn't appear as 
-though that Xen has recognized that it's supposed to emulate this in one 
-way or another.
+This can be seen from a code snippet in LDD3 (Linux Device Drivers,
+3rd ed.), on page 153:
 
-I'm on the road, so I don't have time for a more detailed analysis just 
-at the moment.
+http://lwn.net/images/pdf/LDD3/ch06.pdf#page=19&zoom=80,0,450
 
-	-hpa
+
+The code snippet in LDD3 does not contain the following before the while loop:
+
+if (filp->f_flags & O_NONBLOCK) {
+  if (down_trylock(&dev->sem)) {
+    return -EAGAIN;
+  }
+}
+
+So a non-blocking process can also sleep (in down) if this type of
+mutex is locked. It may however not block if the output-queue is full.
+
+>
+> What about a non-blocking (write-) poll of process A: if the poll call
+> succeeds (the output buffer has space remaining for process A), and
+> process A now performs a non-blocking write: what happens if A
+> encounters a blocked mutex, since process B is busy writing to the
+> output-buffer.
+> a) Should A block until the mutex is available?
+> b) Should A return -EAGAIN, even though the poll call succeeded?
+> c) Should it be impossible for this to happen! i.e. -> should process
+> A already "have" the mutex in question, when the poll call succeeds
+> (thus preventing B from writing to the output buffer)
+>
+> For c) What if process A "has" the mutex, but never does the
+> non-blocking write. Then no process can write, since the mutex is held
+> by process A...
+>
+
+It cannot be b) (same reasoning as above).
+But is it a) or c)...?
+
+Regards,
+Albert
