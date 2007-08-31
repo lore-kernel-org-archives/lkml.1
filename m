@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964825AbXHaLmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965174AbXHaLnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964825AbXHaLmL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 07:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbXHaLlv
+	id S965174AbXHaLnQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 07:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932694AbXHaLm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 07:41:51 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41804 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965093AbXHaLl3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 07:41:29 -0400
-Date: Fri, 31 Aug 2007 12:49:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: John Sigler <linux.kernel@free.fr>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: hda: set_drive_speed_status: status=0x51 { DriveReady
- SeekComplete Error }
-Message-ID: <20070831124958.6f2104ec@the-village.bc.nu>
-In-Reply-To: <46D7CFD7.9030404@free.fr>
-References: <46D59ED2.4000900@free.fr>
-	<20070829174657.09c7de3c@the-village.bc.nu>
-	<46D67D09.6090101@free.fr>
-	<46D69E03.9080403@vc.cvut.cz>
-	<46D6B85C.5050509@free.fr>
-	<46D6DDF6.6080400@free.fr>
-	<20070831003127.6f6950f4@the-village.bc.nu>
-	<46D7CFD7.9030404@free.fr>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Aug 2007 07:42:59 -0400
+Received: from ext-nj2ut-2.online-age.net ([64.14.54.231]:36821 "EHLO
+	ext-nj2ut-2.online-age.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932675AbXHaLm6 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 07:42:58 -0400
+X-Greylist: delayed 435 seconds by postgrey-1.27 at vger.kernel.org; Fri, 31 Aug 2007 07:42:58 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: Section mismatch in 2.6.23-rc4
+Date: Fri, 31 Aug 2007 13:35:35 +0200
+Message-ID: <62DDBB9E5E23CC4A929EE46F9427CEAF295F33@BUDMLVEM04.e2k.ad.ge.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Section mismatch in 2.6.23-rc4
+Thread-Index: AcfrwwuuH2ExcsHvTuO3kHM3y6j3zg==
+From: "Hommel, Thomas (GE Indust, GE Fanuc)" <Thomas.Hommel@gefanuc.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 31 Aug 2007 11:35:40.0932 (UTC) FILETIME=[0F304440:01C7EBC3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> When a DMA operation is enabled, CS0- and CS1- shall not be asserted and 
-> transfers shall be 16-bits wide.
-> 
-> I took the above to mean the device was designed to support DMA.
-> Where did I err?
+When compiling a kernel, I get the warnings below. 
+I am using ARCH=powerpc and 'make mpc8641_hpcn_defconfig', 'make
+uImage'. This didn't appear in 2.6.22, but in
+arch/powerpc/kernel/head_32.S and setup_32.c, the section info
+apparently didn't change. 
 
-The bus is specified for DMA, not the device.
 
-> 
-> > The data sheet says the media can only do 4.1MB/second which is
-> > consistent with only needing PIO2 (actually it's far slower than PIO2)
-> 
-> Is such a slow speed typical of DOMs sold today?
-> 
-> Or do DOMs sold today support DMA bus mastering, much higher interface 
-> rates, and much higher sustained throughput?
+  LD      vmlinux.o
+  MODPOST vmlinux.o
+WARNING: vmlinux.o(.text+0x18): Section mismatch: reference to
+.init.text:early_init (between '__start' and '__after_mmu_off')
+WARNING: vmlinux.o(.text+0x3788): Section mismatch: reference to
+.init.text:machine_init (between 'start_here' and 'set_context')
+WARNING: vmlinux.o(.text+0x3790): Section mismatch: reference to
+.init.text:MMU_init (between 'start_here' and 'set_context')
+WARNING: vmlinux.o(.text+0x37ba): Section mismatch: reference to
+.init.text:start_kernel (between 'start_here' and 'set_context')
+WARNING: vmlinux.o(.text+0x37be): Section mismatch: reference to
+.init.text:start_kernel (between 'start_here' and 'set_context')
+  LD      vmlinux
+  SYSMAP  System.map
 
-Most CF is pretty slow but the newer CF cards do DMA and are getting far
-better.
-
-And yes I'd expect your real time app to deal for 3 or 4mS
-
-(Mind you you'll get 1mS normal operating worst cases off even a fast DMA
-IDE disk)
