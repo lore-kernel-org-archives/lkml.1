@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761640AbXHaDuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760169AbXHaD5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761640AbXHaDuf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 23:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbXHaDu0
+	id S1760169AbXHaD5a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 23:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbXHaD5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 23:50:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51195 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750958AbXHaDu0 (ORCPT
+	Thu, 30 Aug 2007 23:57:18 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:5159 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752282AbXHaD5R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 23:50:26 -0400
-Date: Thu, 30 Aug 2007 20:49:34 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Frank van Maarseveen <frankvm@frankvm.com>
-cc: Hua Zhong <hzhong@gmail.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: recent nfs change causes autofs regression
-In-Reply-To: <1188513433.6626.24.camel@heimdal.trondhjem.org>
-Message-ID: <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org>
-References: <000701c7eb49$cff701c0$6fe50540$@com>
- <1188513433.6626.24.camel@heimdal.trondhjem.org>
+	Thu, 30 Aug 2007 23:57:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:references:in-reply-to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
+        b=NnSX6quftvnl0XUX8EiC9AySrTqAGfyKlLXaV5kmZosA4HKVNgs0ZOh58XopNBhP+ekxtFORtpiLdt40CTEDj79RSS+tjOFvccQlvL/i+LRMi7zImFyCluMZPWjYFa4wNfYtKQnloZDUm12bGZ9qBBO3SeuBM0tFwpZK4D+UEpw=
+From: "Hua Zhong" <hzhong@gmail.com>
+To: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Trond Myklebust'" <trond.myklebust@fys.uio.no>,
+       "'Frank van Maarseveen'" <frankvm@frankvm.com>
+Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>
+References: <000701c7eb49$cff701c0$6fe50540$@com> <1188513433.6626.24.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org>
+Subject: RE: recent nfs change causes autofs regression
+Date: Thu, 30 Aug 2007 20:57:04 -0700
+Message-ID: <001f01c7eb83$003bca30$00b35e90$@com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AcfrghCXlBUnQcrtTKK2mI+BYpsLegAAKzKQ
+Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
+> Hua - that said, I don't actually see why the commit you bisected to
+> has anything to do with the issue being discussed. Can you double-check
+> that it's literally that particular commit that breaks for you (you could
+> try just reverting that commit).
 
-On Thu, 30 Aug 2007, Trond Myklebust wrote:
-> 
-> Which is better than having it fail silently, or giving you a mount with
-> the wrong mount options.
+I will double check that tomorrow. Thanks. :-) I'm happy I'll still be able
+to test the latest kernels on my work desktop.
 
-No, Trond.
+> 			Linus
 
-That commit gets reverted or fixed. It's a regression, and your theories 
-that it's "better" that way are obviously broken.
-
-It's obviously broken because you seem to say that you know better, even 
-though you also admit that:
-
-  "How is the NFS client to know that these directories are disjoint, or
-   that no-one will ever create a hard link from one directory to another? 
-   To my knowledge, the only way to ensure this is to put them on 
-   different disk partitions."
-
-the point being that you just disallowed people from doing things that are 
-sane but _potentially_ dangerous. That's now how we work. The UNIX way sis 
-to give people rope - if you cannot *prove* that what they are doing is 
-wrong, then you damn well better not disallow it.
-
-No regressions, Trond. Especially not for stuff that used to work, was 
-used, and that could be sanely expected to work (which this *definitely*
-sounds like).
-
-Please send in a fix. If the fix involves making "nosharecache" the 
-default, then that is better than making policy decisions like this in the 
-kernel. The kernel should do what the user asks and not put in unnecessary 
-roadblocks.
-
-Hua - that said, I don't actually see why the commit you bisected to has 
-anything to do with the issue being discussed. Can you double-check that 
-it's literally that particular commit that breaks for you (you could try 
-just reverting that commit).
-
-			Linus
