@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760105AbXHaQ1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761114AbXHaQ2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760105AbXHaQ1T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 12:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbXHaQ1L
+	id S1761114AbXHaQ2A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 12:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757981AbXHaQ1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 12:27:11 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:56917 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752110AbXHaQ1K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 12:27:10 -0400
-Message-ID: <46D84143.8080505@zytor.com>
-Date: Fri, 31 Aug 2007 09:26:43 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Will Simoneau <simoneau@ele.uri.edu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] save registers around VESA BIOS calls
-References: <20070831015620.GA6259@ele.uri.edu> <46D7AAF7.1030105@zytor.com> <46D7B817.3060304@zytor.com> <20070831150326.GA6003@ele.uri.edu> <20070831161746.GA5459@ele.uri.edu>
-In-Reply-To: <20070831161746.GA5459@ele.uri.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 31 Aug 2007 12:27:49 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:50129 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753301AbXHaQ1r (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 12:27:47 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Hannes Reinecke <hare@suse.de>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Matthew Wilcox <matthew@wil.cx>, Arjan van de Ven <arjan@infradead.org>,
+       Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@osdl.org>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] debloat aic7xxx and aic79xx drivers
+In-Reply-To: Your message of "Fri, 31 Aug 2007 16:13:59 BST."
+             <200708311613.59666.vda.linux@googlemail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200708311613.59666.vda.linux@googlemail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1188577642_3280P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Fri, 31 Aug 2007 12:27:22 -0400
+Message-ID: <31870.1188577642@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Will Simoneau wrote:
+--==_Exmh_1188577642_3280P
+Content-Type: text/plain; charset=us-ascii
+
+On Fri, 31 Aug 2007 16:13:59 BST, Denys Vlasenko said:
+>
+>    text    data     bss     dec     hex filename
+>  261433   50018    1172  312623   4c52f linux-2.6.23-rc1.org.t/drivers/scsi/aic7xxx/built-in.o
+>  199654   50018    1172  250844   3d3dc linux-2.6.23-rc1.aic.t/drivers/scsi/aic7xxx/built-in.o
+>  184014   21314    1172  206500   326a4 linux-2.6.23-rc1.aic1.t/drivers/scsi/aic7xxx/built-in.o
+>  202378    2850    1172  206400   32640 linux-2.6.23-rc1.aic2.t/drivers/scsi/aic7xxx/built-in.o
 > 
-> Apparently some VESA BIOS implementations clobber our registers when called.
-> Tell gcc about it.
-> 
-> This makes my Dell Inspiron 5150 boot correctly instead of hanging.
-> 
+> 1-debloat.patch    deinlines a lot of functions
+> 2-addstatic.patch  adds statics, #ifdefs out huge amount of unused code, adds consts
+> 3-addconst.patch   adds more consts
 
-OK, we probably should use the INT10 macro, then, for these, too, as 
-well as change the other two int 0x10 callsites.
+Yowza.  Looking at aic1->aic2, it looks like 20K became 'const', and only
+3K *wasn't* 'const'?  
 
-So much for optimism...
+--==_Exmh_1188577642_3280P
+Content-Type: application/pgp-signature
 
-	-hpa
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFG2EFqcC3lWbTT17ARAh+AAKDX7YTjFTX/ZrQYyx4bUUOimywHoQCgi6Ar
+t9E19PFY3NuWrY7bBTvtDno=
+=BROT
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1188577642_3280P--
