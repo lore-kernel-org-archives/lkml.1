@@ -1,135 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbXHaPxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759988AbXHaP6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759526AbXHaPxs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 11:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757451AbXHaPxl
+	id S1759988AbXHaP6q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 11:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756819AbXHaP6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 11:53:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49777 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757391AbXHaPxk (ORCPT
+	Fri, 31 Aug 2007 11:58:39 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:32908 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756708AbXHaP6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 11:53:40 -0400
-Date: Fri, 31 Aug 2007 21:36:45 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bugme-daemon@kernel-bugs.osdl.org
-Subject: Re: [Bugme-new] [Bug 8957] New: Exported functions and variables
-In-Reply-To: <469780.175.qm@web52012.mail.re2.yahoo.com>
-Message-ID: <alpine.LFD.0.999.0708312126040.9261@enigma.security.iitk.ac.in>
-References: <469780.175.qm@web52012.mail.re2.yahoo.com>
+	Fri, 31 Aug 2007 11:58:38 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 31 Aug 2007 11:47:14 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH][RFC] Starting point for deprecating "ether=" boot time
+ option.
+Message-ID: <Pine.LNX.4.64.0708311145150.13259@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matti,
 
+  i just need a tentative removal date and i can add the appropriate
+entry to the feature removal file.  and i can update some of the
+appropriate source elsewhere in the tree as well.
 
-On Thu, 30 Aug 2007, Matti Linnanvuori wrote:
-> 
-> I thought I had seen that bug. Module init function execution does not
-> seem serialized enough, so the init function of one module seems to be
-> able to be called in parallel with several other modules in turn being
-> loaded, executing their init functions and even becoming live first
-> class citizens.
-> Function sys_init_module in
-> Linux 2.6.22.x and 2.6.23-rc4 kernel/module.c does not hold module_mutex
-> when executing the init functions of the modules.
+diff --git a/net/ethernet/eth.c b/net/ethernet/eth.c
+index 12c7657..e4c3b26 100644
+--- a/net/ethernet/eth.c
++++ b/net/ethernet/eth.c
+@@ -31,6 +31,8 @@
+  *				  older network drivers and IFF_ALLMULTI.
+  *	Christer Weinigel	: Better rebuild header message.
+  *             Andrew Morton    : 26Feb01: kill ether_setup() - use netdev_boot_setup().
++ *             Robert P. J. Day : Add ether_boot_setup() to allow deprecation warning
++				  for "ether=" boot-time option.
+  *
+  *		This program is free software; you can redistribute it and/or
+  *		modify it under the terms of the GNU General Public License
+@@ -60,7 +62,17 @@
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
 
-Sure, there's nothing to prevent one module's module_init() from being
-concurrently executed with the module_init() of another -- but that's OK.
-Anyway, I tested this out with:
+-__setup("ether=", netdev_boot_setup);
++static int __init
++ether_boot_setup(char *str)
++{
++	printk(KERN_NOTICE "The 'ether' option is deprecated and "
++		"is scheduled for removal shortly after "
++		"Satan begins ice skating to work\n");
++	printk(KERN_NOTICE "Use 'netdev=<value>' instead\n");
++	return netdev_boot_setup(str);
++}
++
++__setup("ether=", ether_boot_setup);
 
-Module A
-========
+ /**
+  * eth_header - create the Ethernet header
 
-/***** mod_a.c *****/
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/delay.h>
-#include <linux/module.h>
-#include <linux/spinlock.h>
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-static spinlock_t mylock;
-
-static void mod_a_func(void)
-{
-        spin_lock(&mylock);
-        printk(KERN_INFO "inside mod_a_func\n");
-        spin_unlock(&mylock);
-}
-EXPORT_SYMBOL(mod_a_func);
-
-static int __init mod_a_init(void)
-{
-        printk(KERN_INFO "module_init begin ...");
-        ssleep(10);
-        spin_lock_init(&mylock);
-        printk(KERN_INFO "... module_init done\n");
-        return 0;
-}
-
-static void __exit mod_a_exit(void)
-{
-        printk(KERN_INFO "exiting\n");
-}
-
-module_init(mod_a_init);
-module_exit(mod_a_exit);
-MODULE_LICENSE("GPL");
-/***** mod_a.c *****/
-
-Module B
-========
-
-/***** mod_b.c *****/
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/module.h>
-
-extern void mod_a_func(void);
-
-static int __init mod_b_init(void)
-{
-        mod_a_func();
-        return 0;
-}
-
-static void __exit mod_b_exit(void)
-{
-}
-
-module_init(mod_b_init);
-module_exit(mod_b_exit);
-MODULE_LICENSE("GPL");
-/***** mod_b.c *****/
-
-Test result:
-============
-
-Module B refuses to load (could not resolve the symbol mod_a_func) unless
-the module_init() of Module A has finished completely. The following log
-was obtained by running "insmod ./mod_b.ko" repeatedly on one xterm, while
-another xterm was then used to do "insmod ./mod_a.ko":
-
-mod_b: Unknown symbol mod_a_func
-mod_b: Unknown symbol mod_a_func
-module_init begin ...<4>mod_b: Unknown symbol mod_a_func
-mod_b: Unknown symbol mod_a_func
-last message repeated 4 times
-... module_init done
-inside mod_a_func
-
-
-So the title of your bug report "Exported functions and variables should
-not be reachable by the outside of the module until module_init finishes"
-sounds to be already true to me, so let us know if bugzilla #8957 can be
-closed or not ;-)
-
-
-Thanks,
-
-Satyam
+http://crashcourse.ca
+========================================================================
