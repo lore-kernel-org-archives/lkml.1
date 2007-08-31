@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933321AbXHaVVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966052AbXHaVWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933321AbXHaVVN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932927AbXHaVU4
+	id S966052AbXHaVWL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbXHaVV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:20:56 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:34637 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932074AbXHaVUz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:20:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=GMnre2Gn+WNw5iTi7N12LLUzFlrzIqetWhr2qV5NZHcK91G/nr2F59FwvAmd7pSsrjyGATawjWsqkF012aGZh3yv6+jI/hdEXPqWgv1bobZ7IcwcVSe3vAVdSIbAs7ZwDgpaZVoJHXpwMtK4UDUBO6XH91xVVwLKK4/UBhr1zWg=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH 0/3] debloat aic7xxx and aic79xx drivers
-Date: Fri, 31 Aug 2007 22:20:36 +0100
-User-Agent: KMail/1.9.1
-Cc: Hannes Reinecke <hare@suse.de>, Jan Engelhardt <jengelh@computergmbh.de>,
-       Matthew Wilcox <matthew@wil.cx>, Arjan van de Ven <arjan@infradead.org>,
-       Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@osdl.org>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200708311613.59666.vda.linux@googlemail.com> <31870.1188577642@turing-police.cc.vt.edu>
-In-Reply-To: <31870.1188577642@turing-police.cc.vt.edu>
+	Fri, 31 Aug 2007 17:21:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:32780 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760865AbXHaVV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 17:21:57 -0400
+Message-ID: <46D8864F.4020904@redhat.com>
+Date: Fri, 31 Aug 2007 17:21:19 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>, jakub@redhat.com,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.23-rc3-mm1 - vdso and gettimeofday issues with glibc
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <23252.1188396273@turing-police.cc.vt.edu> <3909.1188409058@turing-police.cc.vt.edu>            <20070829161545.9fde1a5c.akpm@linux-foundation.org> <25082.1188482914@turing-police.cc.vt.edu>
+In-Reply-To: <25082.1188482914@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708312220.36818.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 31 August 2007 17:27, Valdis.Kletnieks@vt.edu wrote:
-> On Fri, 31 Aug 2007 16:13:59 BST, Denys Vlasenko said:
-> >
-> >    text    data     bss     dec     hex filename
-> >  261433   50018    1172  312623   4c52f linux-2.6.23-rc1.org.t/drivers/scsi/aic7xxx/built-in.o
-> >  199654   50018    1172  250844   3d3dc linux-2.6.23-rc1.aic.t/drivers/scsi/aic7xxx/built-in.o
-> >  184014   21314    1172  206500   326a4 linux-2.6.23-rc1.aic1.t/drivers/scsi/aic7xxx/built-in.o
-> >  202378    2850    1172  206400   32640 linux-2.6.23-rc1.aic2.t/drivers/scsi/aic7xxx/built-in.o
-> > 
-> > 1-debloat.patch    deinlines a lot of functions
-> > 2-addstatic.patch  adds statics, #ifdefs out huge amount of unused code, adds consts
-> > 3-addconst.patch   adds more consts
+On 08/30/2007 10:08 AM, Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 29 Aug 2007 16:15:45 PDT, Andrew Morton said:
 > 
-> Yowza.  Looking at aic1->aic2, it looks like 20K became 'const', and only
-> 3K *wasn't* 'const'?  
+>> So it's an interaction between the x86_64 vdso patches in Andi's tree and 
+>> newer glibc, and we don't know which one is getting it wrong yet?
+>>
+>> If I ever get another -mm out the door (have been without electricity for
+>> several days) I'll drop the vdso changes until this is sorted out.
+> 
+> Don't bother, I tested this last night against a vanilla 2.6.23-rc3 kernel
+> and it had the same issue as well.  So Andi's vdso patches in his tree and/or
+> the -mm kernel aren't to blame - it's in mainline as well.  And it's been
+> in for a while - I also hit it with a 2.6.22-rc6-mm1 kernel.
+> 
 
-Exactly. There are firmware images/patches and a lot of structures
-with char* members pointing to text/messages.
+We also have:
 
-Btw, aic94xx driver needs the same treatment.
---
-vda
+  http://lkml.org/lkml/2007/7/29/376
+
+(Time repeatedly jumps backwards ~4400 seconds.)
