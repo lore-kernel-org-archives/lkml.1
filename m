@@ -1,113 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932887AbXHaHAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932981AbXHaHDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932887AbXHaHAX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 03:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759058AbXHaHAK
+	id S932981AbXHaHDx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 03:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759654AbXHaHDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 03:00:10 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:47999 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759014AbXHaHAI (ORCPT
+	Fri, 31 Aug 2007 03:03:44 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60237 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759058AbXHaHDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 03:00:08 -0400
-Message-ID: <46D7BC69.8090203@linux.vnet.ibm.com>
-Date: Fri, 31 Aug 2007 12:29:53 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Fri, 31 Aug 2007 03:03:43 -0400
+Date: Fri, 31 Aug 2007 00:03:41 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Dmitry Monakhov <dmonakhov@sw.ru>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
+       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [11/36] Use page_cache_xxx in fs/buffer.c
+In-Reply-To: <20070831065613.GH29452@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0708310003280.14375@schroedinger.engr.sgi.com>
+References: <20070828190551.415127746@sgi.com> <20070828190730.220393749@sgi.com>
+ <20070830092038.GD22586@dnb.sw.ru> <Pine.LNX.4.64.0708301113170.7975@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0708301843280.13292@schroedinger.engr.sgi.com>
+ <20070831065613.GH29452@kernel.dk>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org> <46D5126F.9000405@linux.vnet.ibm.com> <20070829124615.GC7814@duck.suse.cz>
-In-Reply-To: <20070829124615.GC7814@duck.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
->>>> +	}
->>>> +	ret = nla_put_u32(skb, QUOTA_NL_A_QTYPE, dquot->dq_type);
->>>> +	if (ret)
->>>> +		goto attr_err_out;
->>>> +	ret = nla_put_u64(skb, QUOTA_NL_A_EXCESS_ID, dquot->dq_id);
->>>> +	if (ret)
->>>> +		goto attr_err_out;
->>>> +	ret = nla_put_u32(skb, QUOTA_NL_A_WARNING, warntype);
->>>> +	if (ret)
->>>> +		goto attr_err_out;
->>>> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MAJOR,
->>>> +		MAJOR(dquot->dq_sb->s_dev));
->>>> +	if (ret)
->>>> +		goto attr_err_out;
->>>> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MINOR,
->>>> +		MINOR(dquot->dq_sb->s_dev));
->>>> +	if (ret)
->>>> +		goto attr_err_out;
->>>> +	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current->user->uid);
->>>> +	if (ret)
->>>> +		goto attr_err_out;
->>>> +	genlmsg_end(skb, msg_head);
->>>> +
->> Have you looked at ensuring that the data structure works across 32 bit
->> and 64 bit systems (in terms of binary compatibility)? That's usually
->> a nice to have feature.
->   Generic netlink should take care of this - arguments are typed so it
-> knows how much bits numbers have. So this should be no issue. Are there any
-> other problems that you have in mind?
+On Fri, 31 Aug 2007, Jens Axboe wrote:
+
+> > So if we try to push a too large buffer down with submit_bh() we get a 
+> > failure.
 > 
+> Only partly, you may be violating a number of other restrictions (size
+> is many things, not just length of the data).
 
-Yes, but apart from that, if I remember Jamal Hadi's initial comments
-on taskstats, he recommended that we align everything to 64 bit so
-that the data is well aligned for 64 bit systems. You could also consider
-creating a data structure, document it's members, align them and use
-that to send out the data.
+Could you be more specific?
 
->>>> +	ret = genlmsg_multicast(skb, 0, quota_genl_family.id, GFP_NOFS);
->>>> +	if (ret < 0 && ret != -ESRCH)
->>>> +		printk(KERN_ERR
->>>> +			"VFS: Failed to send notification message: %d\n", ret);
->>>> +	return;
->>>> +attr_err_out:
->>>> +	printk(KERN_ERR "VFS: Failed to compose quota message: %d\n", ret);
->>>> +err_out:
->>>> +	kfree_skb(skb);
->>>> +}
->>>> +#endif
->>> This is it.  Normally netlink payloads are represented as a struct.  How
->>> come this one is built-by-hand?
->>>
->>> It doesn't appear to be versioned.  Should it be?
->>>
->> Yes, versioning is always nice and genetlink supports it.
->>
-
-It would nice for you to use the versioning feature.
-
->> The memory controller or VM would also be interested in notifications
->> of OOM. At OLS this year interest was shown in getting OOM notifications
->> and allow the user space a chance to handle the notification and take
->> action (especially for containers). We already have containerstats for
->> containers (which I was planning to reuse), but I was told that we would
->> be interested in user space OOM notifications in general.
-
->  Generic netlink can be used to pass this information (although in OOM
-> situation, it may be a bit hairy to get the network stack working...). But
-> I guess it's not related to my patch.
-
-We could have a pre-allocated buffer stored at startup and use that for
-OOM notification. In the case of container OOM, we are likely to have
-free global memory. Working towards an infrastructure so that anybody can
-build on top of it and sending notifications on interesting events becomes
-easier would be nice. We can reuse code that way and add fewer bugs :-)
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
