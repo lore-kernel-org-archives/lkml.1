@@ -1,52 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762583AbXHaUUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762146AbXHaUW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762583AbXHaUUS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 16:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbXHaUUE
+	id S1762146AbXHaUW6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 16:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbXHaUWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 16:20:04 -0400
-Received: from h155.mvista.com ([63.81.120.155]:44980 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755005AbXHaUUC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 16:20:02 -0400
-Message-ID: <46D87899.30006@ru.mvista.com>
-Date: Sat, 01 Sep 2007 00:22:49 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 31 Aug 2007 16:22:51 -0400
+Received: from cantor.suse.de ([195.135.220.2]:45366 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752072AbXHaUWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 16:22:50 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: kvm-devel@lists.sourceforge.net
+Subject: Re: [kvm-devel] [RFC] 9p Virtualization Transports
+Date: Fri, 31 Aug 2007 22:22:44 +0200
+User-Agent: KMail/1.9.6
+Cc: Eric Van Hensbergen <ericvh@gmail.com>, linux-kernel@vger.kernel.org,
+       v9fs-developer@lists.sourceforge.net, lguest@ozlabs.org
+References: <11883271601857-git-send-email-ericvh@gmail.com>
+In-Reply-To: <11883271601857-git-send-email-ericvh@gmail.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: John Sigler <linux.kernel@free.fr>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete
- Error }
-References: <46D59ED2.4000900@free.fr> <20070829174657.09c7de3c@the-village.bc.nu>
-In-Reply-To: <20070829174657.09c7de3c@the-village.bc.nu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708312222.44948.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>Standards:
->>         Likely used: 1
+On Tuesday 28 August 2007 20:52:36 Eric Van Hensbergen wrote:
+> This patch set contains a set of virtualization transports for the 9p file
+> system intended to provide a mechanism for guests to access a portion of the
+> hosts name space without having to go through a virtualized network.  
 
-> Prehistory
+It might be useful to convert UML's hostfs to something like this. It's essentially
+the same.
 
->>         LBA, IORDY not likely
-
-> No DMA, nothing above PIO2
-
-    Cool! :-)
-
->>         Buffer type: 0002: dual port, multi-sector
->>         Buffer size: 1.0kB      bytes avail on r/w long: 4
->>         Cannot perform double-word IO
-
-> Can't even do double word I/O
-
-    I have alwayas wondered what the drive's part in 32-bit I/O... this seems 
-to be controller's problem exclusively. B-)
-
-WBR, Sergei
+-Andi
