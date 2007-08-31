@@ -1,61 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762374AbXHaDkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763852AbXHaDlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762374AbXHaDkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 23:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757083AbXHaDks
+	id S1763852AbXHaDlq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 23:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757083AbXHaDlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 23:40:48 -0400
-Received: from mga02.intel.com ([134.134.136.20]:32801 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751712AbXHaDkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 23:40:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,328,1183359600"; 
-   d="scan'208";a="286319190"
-From: Jason Gaston <jason.d.gaston@intel.com>
-To: khali@linux-fr.org, linux-kernel@vger.kernel.org, gregkh@suse.de,
-       jason.d.gaston@intel.com, i2c@lm-sensors.org
-Subject: [PATCH 2.6.23-rc4][reRESEND] i2c-i801: SMBus patch for Intel Tolapai
-Date: Thu, 30 Aug 2007 20:42:58 -0700
-User-Agent: KMail/1.9.1
+	Thu, 30 Aug 2007 23:41:37 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:52378 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007AbXHaDlg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 23:41:36 -0400
+X-Greylist: delayed 366 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Aug 2007 23:41:35 EDT
+Date: Fri, 31 Aug 2007 13:41:34 +1000
+To: Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Tony Luck <tony.luck@intel.com>,
+       John Stultz <johnstul@us.ibm.com>
+Subject: [PATCH] Fix discrepancy between VDSO based gettimeofday() and sys_gettimeofday().
+Message-ID: <20070831034134.GP10345@bakeyournoodle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200708302042.59104.jason.d.gaston@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resend with uppercase define.
+On platforms that copy sys_tz into the vdso (currently only x86_64, soon
+to include powerpc), it is possible for the vdso to get out of sync if a
+user calls (admittedly unusual) settimeofday(NULL, ptr).
 
-This updated patch adds the Intel Tolapai SMBus Controller DID's.  This patch relies on the Tolapai patch to pci_ids.h 
+This patch adds a hook for architectures that set CONFIG_GENERIC_TIME_VSYSCALL
+to ensure when sys_tz is updated they can also updater their copy in the vdso.
 
-Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: John Stultz <johnstul@us.ibm.com>
+---
 
---- linux-2.6.23-rc4/drivers/i2c/busses/i2c-i801.c.orig	2007-08-27 18:32:35.000000000 -0700
-+++ linux-2.6.23-rc4/drivers/i2c/busses/i2c-i801.c	2007-08-30 20:25:10.000000000 -0700
-@@ -34,6 +34,7 @@
-     ESB2		269B
-     ICH8		283E
-     ICH9		2930
-+    Tolapai		5032
-     This driver supports several versions of Intel's I/O Controller Hubs (ICH).
-     For SMBus support, they are similar to the PIIX4 and are part
-     of Intel's '810' and other chipsets.
-@@ -543,6 +544,7 @@
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ESB2_17) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH8_5) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_6) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TOLAPAI_1) },
- 	{ 0, }
+Only compile tested for IA64
+Testcase at: http://bakeyournoodle.com/~tony/settimeofday-0.0/
+I guess this is aimed at 2.6.24
+
+ arch/ia64/kernel/time.c       |    5 +++++
+ arch/x86_64/kernel/vsyscall.c |   11 ++++++++++-
+ include/linux/clocksource.h   |    5 +++++
+ kernel/time.c                 |    2 ++
+ 4 files changed, 22 insertions(+), 1 deletions(-)
+
+diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
+index 98cfc90..2bb8421 100644
+--- a/arch/ia64/kernel/time.c
++++ b/arch/ia64/kernel/time.c
+@@ -371,6 +371,11 @@ ia64_setup_printk_clock(void)
+ 		ia64_printk_clock = ia64_itc_printk_clock;
+ }
+ 
++/* IA64 doesn't cache the timezone */
++void update_vsyscall_tz(void)
++{
++}
++
+ void update_vsyscall(struct timespec *wall, struct clocksource *c)
+ {
+         unsigned long flags;
+diff --git a/arch/x86_64/kernel/vsyscall.c b/arch/x86_64/kernel/vsyscall.c
+index 06c3494..4ff78b0 100644
+--- a/arch/x86_64/kernel/vsyscall.c
++++ b/arch/x86_64/kernel/vsyscall.c
+@@ -66,6 +66,16 @@ struct vsyscall_gtod_data __vsyscall_gtod_data __section_vsyscall_gtod_data =
+ 	.sysctl_enabled = 1,
  };
  
-@@ -563,6 +565,7 @@
- 	case PCI_DEVICE_ID_INTEL_ESB2_17:
- 	case PCI_DEVICE_ID_INTEL_ICH8_5:
- 	case PCI_DEVICE_ID_INTEL_ICH9_6:
-+	case PCI_DEVICE_ID_INTEL_TOLAPAI_1:
- 		isich4 = 1;
- 		break;
- 	default:
++void update_vsyscall_tz(void)
++{
++	unsigned long flags;
++
++	write_seqlock_irqsave(&vsyscall_gtod_data.lock, flags);
++	/* sys_tz has changed */
++	vsyscall_gtod_data.sys_tz = sys_tz;
++	write_sequnlock_irqrestore(&vsyscall_gtod_data.lock, flags);
++}
++
+ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
+ {
+ 	unsigned long flags;
+@@ -79,7 +89,6 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
+ 	vsyscall_gtod_data.clock.shift = clock->shift;
+ 	vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
+ 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
+-	vsyscall_gtod_data.sys_tz = sys_tz;
+ 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
+ 	vsyscall_gtod_data.wall_to_monotonic = wall_to_monotonic;
+ 	write_sequnlock_irqrestore(&vsyscall_gtod_data.lock, flags);
+diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+index 16ea337..107787a 100644
+--- a/include/linux/clocksource.h
++++ b/include/linux/clocksource.h
+@@ -221,10 +221,15 @@ extern void clocksource_resume(void);
+ 
+ #ifdef CONFIG_GENERIC_TIME_VSYSCALL
+ extern void update_vsyscall(struct timespec *ts, struct clocksource *c);
++extern void update_vsyscall_tz(void);
+ #else
+ static inline void update_vsyscall(struct timespec *ts, struct clocksource *c)
+ {
+ }
++
++static inline void update_vsyscall_tz(void)
++{
++}
+ #endif
+ 
+ #endif /* _LINUX_CLOCKSOURCE_H */
+diff --git a/kernel/time.c b/kernel/time.c
+index 2289a8d..9a4873e 100644
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -30,6 +30,7 @@
+ #include <linux/module.h>
+ #include <linux/timex.h>
+ #include <linux/capability.h>
++#include <linux/clocksource.h>
+ #include <linux/errno.h>
+ #include <linux/syscalls.h>
+ #include <linux/security.h>
+@@ -163,6 +164,7 @@ int do_sys_settimeofday(struct timespec *tv, struct timezone *tz)
+ 	if (tz) {
+ 		/* SMP safe, global irq locking makes it work. */
+ 		sys_tz = *tz;
++		update_vsyscall_tz();
+ 		if (firsttime) {
+ 			firsttime = 0;
+ 			if (!tv)
+-- 
+1.5.2.5
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+
