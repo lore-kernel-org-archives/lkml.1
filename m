@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966101AbXHaSgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966166AbXHaSlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966101AbXHaSgV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 14:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965734AbXHaSgI
+	id S966166AbXHaSlP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 14:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965908AbXHaSlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 14:36:08 -0400
-Received: from empbedex1.empirix.com ([12.38.203.54]:13781 "EHLO
-	empbedex1.empirix.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965619AbXHaSgG convert rfc822-to-8bit (ORCPT
+	Fri, 31 Aug 2007 14:41:00 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48282 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965790AbXHaSk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 14:36:06 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Follow up to: NFS/RPC Hangs after updating time...
-Date: Fri, 31 Aug 2007 14:35:19 -0400
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901091DE759@EMPBEDEX.empirix.com>
-In-Reply-To: <20070822202639.GL20946@fieldses.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Follow up to: NFS/RPC Hangs after updating time...
-Thread-Index: Acfk+tMISbPbALZYTfi+nRzPwHiwEgHAjsNA
-References: <BD261180E6D35F4D9D32F3E44FD3D90108F975FB@EMPBEDEX.empirix.com> <20070822202639.GL20946@fieldses.org>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: <nfs@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 31 Aug 2007 18:36:03.0540 (UTC) FILETIME=[C908D140:01C7EBFD]
+	Fri, 31 Aug 2007 14:40:59 -0400
+Date: Fri, 31 Aug 2007 11:40:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: [PATCH 3/3] V4L: stk11xx, add static to tables
+Message-Id: <20070831114047.4679330b.akpm@linux-foundation.org>
+In-Reply-To: <2680630254888919558@pripojeni.net>
+References: <12315207221202319057@pripojeni.net>
+	<2680630254888919558@pripojeni.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a follow-up...
+On Tue, 28 Aug 2007 01:18:34 -0700
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-After a huge pain in the rear upgrading from a 
-2.6.11++ to a 2.6.23-rc3 (I'll give the powerpc
-folks a 'piece' of my mind on that front) - the 
-NFS hang problem that I was experiencing on the 
-older kernel is NOT occurring on this new version.
-
-Now what do I do?
-
-Is the net/sunrpc net/nfsx pieces isolated enough 
-from the rest of the kernel that I could fork-lift 
-it back to the 2.6.11 (or is that really a lost cause).
-
-Thanks for any/all feedback on this front!
-
-
------Original Message-----
-From: J. Bruce Fields [mailto:bfields@fieldses.org] 
-Sent: Wednesday, August 22, 2007 4:27 PM
-To: Morrison, Tom
-Cc: nfs@lists.sourceforge.net; linux-kernel@vger.kernel.org; Rushton,
-Matt
-Subject: Re: NFS/RPC Hangs after updating time...
-
-On Wed, Aug 22, 2007 at 02:37:22PM -0400, Morrison, Tom wrote:
-> I am working with a 2.6.11++ kernel on an embedded 
-> server platform that is NFS serving Linux rootfs 
-> for other embedded NFS Client boards.
+> stk11xx, add static to tables
 > 
-> Everything works fine when the system time on the 
-> server board is relatively synchronized with the real-time. 
+> ensure, that the compiler will put all the tables in static storage
 > 
-> It hangs after attempting to update the time from a 
-> nonsensical time (e.g.: 2 months ago) - the most significant
-> part of it is that it only hangs IFF it has started 
-> serving its NFS client boards before I attempt to 
-> update the time.
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 > 
+> ...
 > 
-> The most significant output (when turning on 
-> RPC debugging) is from:
-> 
->   linux/net/sunrpc/cache.c (cache_check) - line 90:
-> 
->          >> Want update, refage=1800, age=4288285
-> 
-> It continually loops through this method - and the cache
-> never gets updated...even thought with some additional
-> sleuthing (aka: additional debug printks - it thinks 
-> that there is an cache update pending).
+> diff --git a/drivers/media/video/stk1125.c b/drivers/media/video/stk1125.c
+> index f12030d..d79c196 100644
+> --- a/drivers/media/video/stk1125.c
+> +++ b/drivers/media/video/stk1125.c
+> @@ -26,7 +26,7 @@ static int stk1125_load_microcode(struct stk11xx *dev)
+>  	int retok;
+>  
+>  	/* From 80x60 to 640x480 */
+> -	const u8 values_1_204[] = {
+> +	static const u8 values_1_204[] = {
+>  		0x12, 0x11, 0x3b, 0x6a, 0x13, 0x10, 0x00, 0x01, 0x02, 0x13,
+>  		0x39, 0x38, 0x37, 0x35, 0x0e, 0x12, 0x04, 0x0c, 0x0d, 0x17,
 
-Can you reproduce the problem with the current kernel? (Say 2.6.22 or
-later?)
+I think you'll find that the compiler is already putting this array into
+static storage.  But yes, I think the change is useful for commentary and
+peace-of-mind reasons.
 
---b.
+
