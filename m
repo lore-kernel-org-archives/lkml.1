@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbXHaHdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbXHaHiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149AbXHaHdo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 03:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbXHaHdd
+	id S1755954AbXHaHiI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 03:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbXHaHh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 03:33:33 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41051 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750756AbXHaHdc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 03:33:32 -0400
-Date: Fri, 31 Aug 2007 00:33:30 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Dmitry Monakhov <dmonakhov@sw.ru>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
-       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [11/36] Use page_cache_xxx in fs/buffer.c
-In-Reply-To: <20070831072611.GK29452@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0708310028160.14632@schroedinger.engr.sgi.com>
-References: <20070828190551.415127746@sgi.com> <20070828190730.220393749@sgi.com>
- <20070830092038.GD22586@dnb.sw.ru> <Pine.LNX.4.64.0708301113170.7975@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0708301843280.13292@schroedinger.engr.sgi.com>
- <20070831065613.GH29452@kernel.dk> <Pine.LNX.4.64.0708310003280.14375@schroedinger.engr.sgi.com>
- <20070831071142.GI29452@kernel.dk> <Pine.LNX.4.64.0708310012370.14375@schroedinger.engr.sgi.com>
- <20070831072611.GK29452@kernel.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 31 Aug 2007 03:37:57 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:19173 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752419AbXHaHh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 03:37:56 -0400
+Date: Fri, 31 Aug 2007 11:37:46 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Len Brown <lenb@kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix maxcpus=1 oops in show_stat()
+Message-ID: <20070831073746.GA15151@localhost.sw.ru>
+References: <20070828111431.GA27707@localhost.sw.ru> <Pine.LNX.4.64.0708290546430.31816@blonde.wat.veritas.com> <20070829052331.GB1765@martell.zuzino.mipt.ru> <200708290241.36092.lenb@kernel.org> <20070829072508.GA2707@localhost.sw.ru> <Pine.LNX.4.64.0708310404210.4873@blonde.wat.veritas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708310404210.4873@blonde.wat.veritas.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007, Jens Axboe wrote:
+On Fri, Aug 31, 2007 at 04:26:50AM +0100, Hugh Dickins wrote:
+> --- 2.6.23-rc4/init/main.c
+> +++ linux/init/main.c
+> @@ -397,10 +397,6 @@ static void __init smp_init(void)
+>  {
+>  	unsigned int cpu;
+>  
+> -#ifndef CONFIG_HOTPLUG_CPU
+> -	cpu_possible_map = cpu_present_map;
+> -#endif
+> -
+>  	/* FIXME: This should be done in userspace --RR */
+>  	for_each_present_cpu(cpu) {
+>  		if (num_online_cpus() >= max_cpus)
+> @@ -545,10 +541,6 @@ asmlinkage void __init start_kernel(void
+>  	setup_arch(&command_line);
+>  	setup_command_line(command_line);
+>  	unwind_setup();
+> -#ifndef CONFIG_HOTPLUG_CPU
+> -	if (max_cpus < 2)
+> -		cpu_possible_map = cpu_online_map;
+> -#endif
+>  	setup_per_cpu_areas();
+>  	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+>  
 
-> > A DMA boundary cannot be crossed AFAIK. The compound pages are aligned to 
-> > the power of two boundaries and the page allocator will not create pages 
-> > that cross the zone boundaries.
-> 
-> With a 64k page and a dma boundary of 0x7fff, that's two segments.
-
-Ok so DMA memory restrictions not conforming to the DMA zones? The 
-example is a bit weird. DMA only to the first 32k of memory? If the limit 
-would be higher like 16MB then we would not have an issue. Is there really 
-a device that can only do I/O to the first 32k of memory?
-
-How do we split that up today? We could add processing to submit_bio to 
-check for the boundary and create two bios.
-
-> > submit_bh() is used to submit a single buffer and I think that was our 
-> > main concern here.
-> 
-> And how large can that be?
-
-As large as mkxxxfs allowed it to be. For XFS and extX with the current 
-patchset 32k is the limit (64k with the fixes to ext2) but a new 
-filesystem could theoretically use a larger blocksize.
-
+Works here, I'll try on another box soon.
 
