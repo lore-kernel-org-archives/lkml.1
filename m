@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759988AbXHaP6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760660AbXHaP7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759988AbXHaP6q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 11:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756819AbXHaP6j
+	id S1760660AbXHaP7r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 11:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758509AbXHaP7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 11:58:39 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:32908 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756708AbXHaP6i (ORCPT
+	Fri, 31 Aug 2007 11:59:40 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56384 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758340AbXHaP7i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 11:58:38 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 31 Aug 2007 11:47:14 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][RFC] Starting point for deprecating "ether=" boot time
- option.
-Message-ID: <Pine.LNX.4.64.0708311145150.13259@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Fri, 31 Aug 2007 11:59:38 -0400
+Date: Fri, 31 Aug 2007 17:08:07 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "anon... anon.al" <anon.asdf@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: memory barrier to ensure copy_to_user() completes
+Message-ID: <20070831170807.50d4394f@the-village.bc.nu>
+In-Reply-To: <379fb4870708310825o70509368l490ac9063ce09866@mail.gmail.com>
+References: <379fb4870708310825o70509368l490ac9063ce09866@mail.gmail.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Which memory barrier do I require if I need to ensure that a
+> copy_to_user(dest, src, len) completes before the next statement?
 
-  i just need a tentative removal date and i can add the appropriate
-entry to the feature removal file.  and i can update some of the
-appropriate source elsewhere in the tree as well.
+Define "completes"
 
-diff --git a/net/ethernet/eth.c b/net/ethernet/eth.c
-index 12c7657..e4c3b26 100644
---- a/net/ethernet/eth.c
-+++ b/net/ethernet/eth.c
-@@ -31,6 +31,8 @@
-  *				  older network drivers and IFF_ALLMULTI.
-  *	Christer Weinigel	: Better rebuild header message.
-  *             Andrew Morton    : 26Feb01: kill ether_setup() - use netdev_boot_setup().
-+ *             Robert P. J. Day : Add ether_boot_setup() to allow deprecation warning
-+				  for "ether=" boot-time option.
-  *
-  *		This program is free software; you can redistribute it and/or
-  *		modify it under the terms of the GNU General Public License
-@@ -60,7 +62,17 @@
- #include <asm/uaccess.h>
- #include <asm/system.h>
+> 
+> copy_to_user(dest, src, len) ;
+> //rmb(); OR wmb(); OR barrier(); OR mb(); ??????
 
--__setup("ether=", netdev_boot_setup);
-+static int __init
-+ether_boot_setup(char *str)
-+{
-+	printk(KERN_NOTICE "The 'ether' option is deprecated and "
-+		"is scheduled for removal shortly after "
-+		"Satan begins ice skating to work\n");
-+	printk(KERN_NOTICE "Use 'netdev=<value>' instead\n");
-+	return netdev_boot_setup(str);
-+}
-+
-+__setup("ether=", ether_boot_setup);
+Usually none of them
 
- /**
-  * eth_header - create the Ethernet header
+> If I'm writing to hardware, and need to ensure the correct order, I'll
+> use wmb(), right?
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+No
 
-http://crashcourse.ca
-========================================================================
+> e.g.:
+> 
+> #define HW_address1 20
+> #define HW_address2 40
+> 
+> *((int *)HW_address1) = 0x00000001;
+> wmb();  // is this good???
+> *((int *)HW_address2) = 0x00000010;
+
+Linux doesn't define directly poking kernel addresses to hit hardware as
+valid (and on many platforms it doesn't work). Use readl/writel and their
+ordering is defined.
+
+Read Documentation/io_ordering.txt and Docuemntation/pci.txt
