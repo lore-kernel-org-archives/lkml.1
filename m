@@ -1,114 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966119AbXHaUya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933373AbXHaU7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966119AbXHaUya (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 16:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933373AbXHaUxm
+	id S933373AbXHaU7V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 16:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760869AbXHaU7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 16:53:42 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:54905 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933436AbXHaUxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 16:53:41 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Lee.Schermerhorn@hp.com, ak@suse.de, clameter@sgi.com
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Message-Id: <20070831205339.22283.40267.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20070831205139.22283.71284.sendpatchset@skynet.skynet.ie>
-References: <20070831205139.22283.71284.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 6/6] Use macros instead of static inline functions for zonelist iterators
-Date: Fri, 31 Aug 2007 21:53:39 +0100 (IST)
+	Fri, 31 Aug 2007 16:59:11 -0400
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:49581 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760664AbXHaU7I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 16:59:08 -0400
+X-IronPort-AV: i="4.20,194,1186383600"; 
+   d="scan'208"; a="9284982:sNHT20136060"
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 2/2] IB/ehca: SRQ fixes to enable IPoIB CM
+X-Message-Flag: Warning: May contain useful information
+References: <200708311601.42220.fenkes@de.ibm.com>
+	<200708311603.38822.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 31 Aug 2007 13:59:03 -0700
+In-Reply-To: <200708311603.38822.fenkes@de.ibm.com> (Joachim Fenkes's message of "Fri, 31 Aug 2007 16:03:37 +0200")
+Message-ID: <adamyw7whd4.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 31 Aug 2007 20:59:03.0630 (UTC) FILETIME=[C32AA6E0:01C7EC11]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-gcc-3.4 and probably older compiler versions produce worse code for static
-inline functions than they do for macros. Due to the fact the allocator
-path is a hotpath, there is approximately a 0.2% performance difference on
-kernbench's System CPU times when using static inline functions. This is
-not a problem on gcc 4.1.
-
-This patch should be ignored because the static inline functions come with
-type-checking and there doesn't need to be concern about macro arguements
-having funky side-effects. However, as the performance problem is noticable
-on older compilers, the compiler version and this patch should be checked
-as the potential source and solution to a performance regression.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
-
- include/linux/gfp.h    |    8 ++++----
- include/linux/mmzone.h |   31 +++++++++++++++++++------------
- 2 files changed, 23 insertions(+), 16 deletions(-)
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc3-mm1-040_use_one_zonelist/include/linux/gfp.h linux-2.6.23-rc3-mm1-045_macro_not_inline/include/linux/gfp.h
---- linux-2.6.23-rc3-mm1-040_use_one_zonelist/include/linux/gfp.h	2007-08-31 17:22:55.000000000 +0100
-+++ linux-2.6.23-rc3-mm1-045_macro_not_inline/include/linux/gfp.h	2007-08-31 17:23:10.000000000 +0100
-@@ -156,11 +156,11 @@ static inline gfp_t set_migrateflags(gfp
-  *
-  * For the normal case of non-DISCONTIGMEM systems the NODE_DATA() gets
-  * optimized to &contig_page_data at compile-time.
-+ *
-+ * See the explanation above zonelist_zone() in include/linux/mmzone.h as
-+ * to why this is a macro and not a static inline
-  */
--static inline struct zonelist *node_zonelist(int nid)
--{
--	return &NODE_DATA(nid)->node_zonelist;
--}
-+#define node_zonelist(nid) (&NODE_DATA(nid)->node_zonelist)
- 
- #ifndef HAVE_ARCH_FREE_PAGE
- static inline void arch_free_page(struct page *page, int order) { }
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc3-mm1-040_use_one_zonelist/include/linux/mmzone.h linux-2.6.23-rc3-mm1-045_macro_not_inline/include/linux/mmzone.h
---- linux-2.6.23-rc3-mm1-040_use_one_zonelist/include/linux/mmzone.h	2007-08-31 18:06:59.000000000 +0100
-+++ linux-2.6.23-rc3-mm1-045_macro_not_inline/include/linux/mmzone.h	2007-08-31 17:23:10.000000000 +0100
-@@ -687,15 +687,16 @@ extern struct zone *next_zone(struct zon
- #endif
- 
- #define ZONELIST_ZONEIDX_MASK ((1UL << ZONES_SHIFT) - 1)
--static inline struct zone *zonelist_zone(unsigned long zone_addr)
--{
--	return (struct zone *)(zone_addr & ~ZONELIST_ZONEIDX_MASK);
--}
- 
--static inline int zonelist_zone_idx(unsigned long zone_addr)
--{
--	return zone_addr & ZONELIST_ZONEIDX_MASK;
--}
-+/*
-+ * Subtle: These are macros, not static inlines because gcc 3.4 at least
-+ * produces worse code with static inline functions. The effect is about 0.4%
-+ * regression in kernbench tests. The problem doesn't appear to exist on
-+ * gcc 4.1
-+ */
-+#define zonelist_zone_idx(zone_addr) ((zone_addr) & ZONELIST_ZONEIDX_MASK)
-+#define zonelist_zone(zone_addr) \
-+	((struct zone *)((zone_addr) & ~ZONELIST_ZONEIDX_MASK))
- 
- static inline unsigned long encode_zone_idx(struct zone *zone)
- {
-@@ -706,13 +707,19 @@ static inline unsigned long encode_zone_
- 	return encoded;
- }
- 
--static inline int zone_in_nodemask(unsigned long zone_addr, nodemask_t *nodes)
--{
- #ifdef CONFIG_NUMA
--	return node_isset(zonelist_zone(zone_addr)->node, *nodes);
-+#define zone_in_nodemask(zone_addr, nodes) \
-+	(node_isset(zonelist_zone(zone_addr)->node, *nodes))
- #else
--	return 1;
-+#define zone_in_nodemask(zone_addr, nodes) (1)
- #endif /* CONFIG_NUMA */
-+
-+static inline int zone_in_nodemask(unsigned long zone_addr, nodemask_t *nodes)
-+{
-+	if (NUMA_BUILD)
-+		return node_isset(zonelist_zone(zone_addr)->node, *nodes);
-+
-+	return 1;
- }
- 
- /* Returns the first zone at or below highest_zoneidx in a zonelist */
+thanks, applied 1 and 2.
