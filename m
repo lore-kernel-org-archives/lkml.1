@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966063AbXHaTVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759873AbXHaT3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966063AbXHaTVJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 15:21:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964975AbXHaTU4
+	id S1759873AbXHaT3W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 15:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbXHaT3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 15:20:56 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:39791 "EHLO
+	Fri, 31 Aug 2007 15:29:09 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:33283 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932879AbXHaTUz (ORCPT
+	with ESMTP id S1750928AbXHaT3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 15:20:55 -0400
-Date: Fri, 31 Aug 2007 21:20:54 +0200 (CEST)
+	Fri, 31 Aug 2007 15:29:07 -0400
+Date: Fri, 31 Aug 2007 21:29:05 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] Starting point for deprecating "ether=" boot time
- option.
-In-Reply-To: <Pine.LNX.4.64.0708311145150.13259@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0708312119530.9413@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0708311145150.13259@localhost.localdomain>
+To: Jeff Garzik <jeff@garzik.org>
+cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Simon Arlott <simon@fire.lp0.eu>,
+       sam@ravnborg.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Adrian Bunk <bunk@stusta.de>, Gabriel C <crazy@pimpmylinux.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
+In-Reply-To: <46D858A9.4080506@garzik.org>
+Message-ID: <Pine.LNX.4.64.0708312122550.9413@fbirervta.pbzchgretzou.qr>
+References: <469E75AA.7040109@pimpmylinux.org>
+ <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
+ <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
+ <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
+ <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
+ <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
+ <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
+ <20070719083109.13b2ab56.rdunlap@xenotime.net>
+ <Pine.LNX.4.64.0707191213130.8844@localhost.localdomain>
+ <469FE045.3070403@simon.arlott.org.uk> <20070831102527.09fb42c0.rdunlap@xenotime.net>
+ <Pine.LNX.4.64.0708311318220.18158@localhost.localdomain> <46D858A9.4080506@garzik.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Aug 31 2007 11:47, Robert P. J. Day wrote:
->diff --git a/net/ethernet/eth.c b/net/ethernet/eth.c
->index 12c7657..e4c3b26 100644
->--- a/net/ethernet/eth.c
->+++ b/net/ethernet/eth.c
->@@ -31,6 +31,8 @@
->  *				  older network drivers and IFF_ALLMULTI.
->  *	Christer Weinigel	: Better rebuild header message.
->  *             Andrew Morton    : 26Feb01: kill ether_setup() - use netdev_boot_setup().
->+ *             Robert P. J. Day : Add ether_boot_setup() to allow deprecation warning
->+				  for "ether=" boot-time option.
+On Aug 31 2007 14:06, Jeff Garzik wrote:
+>> something like BROKEN, though, has *nothing* to do with maturity.  a
+>> feature can be any of those maturity levels, and simultaneously be
+>> BROKEN.  i consider BROKEN to be what i call a "status", and different
+>> status levels might be the default of normal, or KIND_OF_FLAKY or
+>> TOTALLY_BORKED -- that's where BROKEN would fit in.
+>
+> BROKEN is definitely a maturity level.  A more accurate description would be
+> BITROTTING perhaps.  The code in question has passed through bleeding ->
+> experimental -> stable, and come out the other side.
 
-Though I welcome all obsoleting-related stuff,
-"the file is not the changelog"; changes to into the SCM log.
+Software is quite unlike the art of medicine. There, you would go from
+'stable' to 'broken', then someone 'experiments' with you, and if
+it's a bad day, you bleed out. :)
 
 
 	Jan
