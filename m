@@ -1,53 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761646AbXHaWjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762088AbXHaWkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761646AbXHaWjN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 18:39:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbXHaWi6
+	id S1762088AbXHaWkn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 18:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbXHaWkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 18:38:58 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48617 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753980AbXHaWi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 18:38:56 -0400
-Date: Fri, 31 Aug 2007 23:47:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-serial@vger.kernel.org
-Subject: Re: Heads Up: Next Batch Of Serial/TTY Changes
-Message-ID: <20070831234721.5275f5d0@the-village.bc.nu>
-In-Reply-To: <20070831.152315.39158142.davem@davemloft.net>
-References: <20070831221105.2fce9023@the-village.bc.nu>
-	<20070831.144115.48807246.davem@davemloft.net>
-	<20070831231613.6b0fcdfd@the-village.bc.nu>
-	<20070831.152315.39158142.davem@davemloft.net>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 31 Aug 2007 18:40:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51082 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754709AbXHaWkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 18:40:31 -0400
+Date: Fri, 31 Aug 2007 18:39:55 -0400 (EDT)
+Message-Id: <20070831.183955.122623475.k-ueda@ct.jp.nec.com>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, jens.axboe@oracle.com, mike.miller@hp.com,
+       grant.likely@secretlab.ca
+Cc: dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: [PATCH 0/7] blk_end_request: full I/O completion handler
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+X-Mailer: Mew version 3.3 on Emacs 21.3 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Who knows what other gremlins like this now live in the tree :-)
+Hello,
+
+This set of patches changes request completion interface
+between device drivers and block layer to 1 step procedure
+from current 2 step procedures using end_that_request_{first/chunk}
+and end_that_request_last().
+
+This change allows request-based multipath to hook in before
+completing each chunk of request, check errors for it and
+retry it using another path if error is detected.
+
+Summaries of each patch are below:
+  1/7: add new request completion interface, blk_end_request()
+  2/7: add some macros to get the size of request in bytes
+  3/7: convert normal drivers to use blk_end_request()
+  4/7: convert odd drivers like cciss/cpqarray/xsysace to use
+       blk_end_request()
+  5/7: convert ide-cd (cdrom_newpc_intr) to use blk_end_request()
+  6/7: remove/unexport no longer needed end_that_request_*
+  7/7: change rq->end_io to cover request completion as a whole
+
+I have tested the patch on two machines, ia64+QLA1280+QLA2200
+and x86_64+SATA+IDE-CDROM.
+I can't test other device drivers for which I don't have hardware.
+So testing help and any comments would be very much appreciated.
+
+The interface change causes code modifications of *ALL DEVICE DRIVERS*
+which are using end_that_request_{first/chunk/last} to complete request.
+But it should not affect the behavior.
+
+Please review and apply if no problem.
+This patch-set should be applied on top of 2.6.23-rc3-mm1.
+
+
+BACKGROUND
+==========
+The patch is necessary to allow device stacking at request level,
+that is request-based device-mapper multipath.
+Currently, device-mapper is implemented as a stacking block device
+at BIO level.  OTOH, request-based DM will stack at request level to
+allow better multipathing decision.
+To allow device stacking at request level, the completion procedure
+need to provide a hook for it.
+For example, dm-multipath has to check errors and retry with other
+paths if necessary before returning the I/O result to upper layer.
+struct request has 'end_io' hook currently.  But it's called at
+the very late stage of completion handling where the I/O result
+is already returned to the upper layer.
+So we need something here.
+
+The first approach to hook in completion of each chunk of request
+was adding a new rq->end_io_first() hook and calling it on the top
+of __end_that_request_first().
+  - http://marc.theaimsgroup.com/?l=linux-scsi&m=115520444515914&w=2
+  - http://marc.theaimsgroup.com/?l=linux-kernel&m=116656637425880&w=2
+However, Jens pointed out that redesigning rq->end_io() as a full
+completion handler would be better:
+
+On Thu, 21 Dec 2006 08:49:47 +0100, Jens Axboe <jens.axboe@oracle.com> wrote:
+> Ok, I see what you are getting at. The current ->end_io() is called when
+> the request has fully completed, you want notification for each chunk
+> potentially completed.
 > 
-> There was a similar spot a few lines down, both fixed
-> as follows:
+> I think a better design here would be to use ->end_io() as the full
+> completion handler, similar to how bio->bi_end_io() works. A request
+> originating from __make_request() would set something ala:
+.....
+> instead of calling the functions manually. That would allow you to get
+> notification right at the beginning and do what you need, without adding
+> a special hook for this.
 
-Thanks I'll take a harder look over those. My test suite didn't check
-them just the main termios ioctls didn't scribble.
-
-> And here is the sparc patch, could you please add it to
-> your serial queue?  Thanks Alan.
-> 
-> [SPARC]: Add support for arbitrary serial speeds.
-> 
-> Signed-off-by: David S. Miller <davem@davemloft.net>cc[VEOF]); \
+I thought his comment was reasonable.
+So I modified the patches based on his suggestion.
 
 
-Thanks
+WHAT IS CHANGED
+===============
+The change is basically illustlated by the following pseudo code:
 
-Alan
+[Before]
+  if (end_that_request_{first/chunk} succeeds) { <-- completes bios
+     <do something driver specific>
+     end_that_request_last() <-- calls end_io()
+     <the request is free from the driver>
+  } else {
+     <the request was incomplete, retry for leftover or ignoring>
+  }
+
+[After]
+  if (blk_end_request() succeeds) { <-- calls end_io(), completes bios
+     <the request is free from the driver>
+  } else {
+     <the request was incomplete, retry for leftover or ignoring>
+  }
+
+
+In detail, request completion procedures are changed like below.
+
+[Before]
+  o 2 steps completion using end_that_request_{first/chunk}
+    and end_that_request_last().
+  o Device drivers have ownership of a request until they
+    call end_that_request_last().
+  o rq->end_io() is called at the last stage of
+    end_that_request_last() for some block layer codes need
+    specific request handling when completing it.
+
+[After]
+  o 1 step completion using blk_end_request().
+    (end_that_request_* are no longer used from device drivers.)
+  o Device drivers give over ownership of a request
+    when calling blk_end_request().
+    If it returns 0, the request is completed.
+    If it returns 1, the request isn't completed and
+    the ownership is returned to the device driver again.
+  o rq->end_io() is called at the top of blk_end_request() to
+    allow to hook all parts of request completion.
+    Existing users of rq->end_io() must be changed to do
+    all parts of request completion.
+
+
+EXAMPLE CODE
+============
+Request-based Device-mapper multipath patch-set is attached as appendix,
+although it still needs some work and isn't ready for review.
+It checks error of a request and retries the request using other paths
+if error is detected, before completing bios in the request.
+(See clone_end_request() in appendix#1.)
+
+Thanks,
+Kiyoshi Ueda
