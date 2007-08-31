@@ -1,147 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760920AbXHaDPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbXHaD21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760920AbXHaDPX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 23:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbXHaDPJ
+	id S932564AbXHaD21 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 23:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbXHaD2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 23:15:09 -0400
-Received: from main.gmane.org ([80.91.229.2]:44243 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756517AbXHaDPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 23:15:07 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Byron Bradley <byron.bbradley@gmail.com>
-Subject: XFS Fails Quality Assurance Tests on ARM
-Date: Fri, 31 Aug 2007 03:12:46 +0000 (UTC)
-Message-ID: <fb80ve$i5q$1@sea.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 82-46-103-219.cable.ubr05.azte.blueyonder.co.uk
-User-Agent: pan 0.120 (Plate of Shrimp)
+	Thu, 30 Aug 2007 23:28:18 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54671 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754622AbXHaD2R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 23:28:17 -0400
+Date: Fri, 31 Aug 2007 04:26:50 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Alexey Dobriyan <adobriyan@sw.ru>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Len Brown <lenb@kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] fix maxcpus=1 oops in show_stat()
+In-Reply-To: <20070829072508.GA2707@localhost.sw.ru>
+Message-ID: <Pine.LNX.4.64.0708310404210.4873@blonde.wat.veritas.com>
+References: <20070828111431.GA27707@localhost.sw.ru>
+ <Pine.LNX.4.64.0708290546430.31816@blonde.wat.veritas.com>
+ <20070829052331.GB1765@martell.zuzino.mipt.ru> <200708290241.36092.lenb@kernel.org>
+ <20070829072508.GA2707@localhost.sw.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[to: linux-xfs]
-[cc: lkml]
+Alexey Dobriyan reports that maxcpus=1 is still broken in 2.6.23-rc4:
+if CONFIG_HOTPLUG_CPU is not set, x86_64 bootup oopses in show_stat() -
+for_each_possible_cpu accesses a per-cpu area which was never set up.
 
-Hello,
+Alexey identified commit 61ec7567db103d537329b0db9a887db570431ff4
+(ACPI: boot correctly with "nosmp" or "maxcpus=0") as the origin;
+but it's not really to blame, just exposes a bug in 2.6.23-rc1's commit
+8b3b295502444340dd0701855ac422fbf32e161d (Especially when !CONFIG_HOTPLUG_CPU,
+avoid needlessy allocating resources for CPUs that can never become available).
 
-I am one of the developers at http://linkstationwiki.net , we are trying to
-port linux (2.6.22) to the LinkStation Pro. This has an ARM926EJ chip and
-we are having problems with XFS (the default filesystem for these devices).
+rc1's test for max_cpus < 2 in start_kernel() wasn't working because
+max_cpus was still NR_CPUS at that point: until rc4 moved the maxcpus
+parsing earlier.  Now it sets cpu_possible_map to 1 before allocating
+all possible per-cpu areas; then smp_init() expands cpu_possible_map
+to cpu_present_map (0xf in my case) later on.
 
-While we only have a few users who have reported problems with XFS in
-real life, the quality assurance tests consistently fail and leave the
-partitions in an inconsistent and irreparable state. With debug mode
-enabled the following assertion fails during test 001:
+rc1's commit has good intentions, but expects cpu_present_map to be
+limited by maxcpus, which is only the case on i386.  cpus_and(possible,
+possible,present) might be good, but needs an audit of cpu_present_map
+uses - there may well be assumptions that any cpu present is possible.
+So stay safe for now and just revert those #ifndef CONFIG_HOTPLUG_CPU
+optimizations in rc1's commit.
 
-Assertion failed: (char *)sfep - (char *)sfp == dp->i_d.di_size, file:
-fs/xfs/xfs_dir2_sf.c, line: 647 kernel BUG at fs/xfs/support/debug.c:82!
-Unable to handle kernel NULL pointer dereference at virtual address
-00000000 pgd = c5888000
-[00000000] *pgd=06254031, *pte=00000000, *ppte=00000000 Internal error:
-Oops: 817 [#1]
-Modules linked in: nfs nfsd exportfs lockd nfs_acl sunrpc reiserfs fuse
-CPU: 0    Not tainted  (2.6.22 #7)
-PC is at __bug+0x20/0x2c
-LR is at 0x60000013
-pc : [<c002937c>]    lr : [<60000013>]    psr: 60000013 sp : c678fba0  ip
-: c678fad0  fp : c678fbac r10: c606fd40  r9 : c01a6aac  r8 : 00000008 r7 :
-c606fda8  r6 : 00000000  r5 : 00000030  r4 : c606fdae r3 : 00000000  r2 :
-00000000  r1 : 0000223a  r0 : 0000002c Flags: nZCv  IRQs on  FIQs on  Mode
-SVC_32  Segment user Control: a005317f  Table: 05888000  DAC: 00000015
-Process mkdir (pid: 1522, stack limit = 0xc678e260) Stack: (0xc678fba0 to
-0xc6790000)
-fba0: c678fbbc c678fbb0 c01ab70c c002936c c678fbe4 c678fbc0 c015d6e0
-c01ab6ec fbc0: 00000000 c63b8290 c606fd40 00000000 00000008 c678fd04
-c678fc1c c678fbe8 fbe0: c015d760 c015d5f4 c00c48a8 c678fc20 c678fc0c
-00000000 c63b8290 c606fd40 fc00: 00000000 00000008 c01a6aac c678fd04
-c678fca4 c678fc20 c015205c c015d748 fc20: c63b8290 00000004 c678ff00
-00000008 c160e498 062d19b9 00000000 00000000 fc40: c606fd40 00000000
-00000000 00000000 00000000 00000000 00000008 00000000 fc60: 000005f2
-c018f22c 00000000 00000000 00000000 00000000 01000000 00000000 fc80:
-00000000 00000000 c606fd60 c63b8238 c606fd40 c678fcf8 c678fce4 c678fca8
-fca0: c018f244 c0151f48 c678fcf8 c016bec0 00000000 00000008 00460000
-00000000 fcc0: 00000008 00460000 00000000 c606fd60 c606fd40 c63b8238
-c678fd34 c678fce8 fce0: c01953b4 c018f1e4 c678fd04 c678fcf8 00000010
-c678fd44 c678e000 000200d2 fd00: c678fd2c c678fd10 c678fd2c c63b8238
-00000000 c61a2458 c678fdb0 c678fda4 fd20: c1714aa0 c6070e40 c678fd5c
-c678fd38 c01a6aac c019530c 00000000 00000000 fd40: c61a2458 c678fdb0
-c678fec0 c63b8238 c678fd94 c678fd60 c009639c c01a6a68 fd60: c678e000
-c6070eac c678fdcc c678fda4 c5e7700e 00000107 c678fec0 c5e77000 fd80:
-c678e000 00000000 c678fde4 c678fd98 c00981c0 c0096230 c678e000 00000001
-fda0: c678fdc4 00c27168 00000004 c5e7700a c1714aa0 c61a2458 c678fdf4
-c678fec0 fdc0: c17141a0 c678fec0 c78ba598 c5e77000 c678e000 c678fde8
-c678fe5c c678fde8 fde0: c0098914 c00979a0 c78ba598 c17141a0 00000017
-4013c000 c678ff3c 00000001 fe00: 00000001 00000000 c678ffb0 4013c058
-0c678ffac c678ff00 fe20: c0024230 c002c6b0 c5889000 c5a64b64 c678ff10
-00000002 c678fec0 c0552200 fe40: c5e77000 00000001 c0025794 009000c3
-c678fe6c c678fe60 c0098a18 c0098894 fe60: c678fe9c c678fe70 c0098c40
-c0098a04 c678fe9c c678fe80 c5e77000 00000001 fe80: c678fec0 ffffff9c
-c0025794 009000c3 c678febc c678fea0 c0099748 c0098b90 fea0: bebde6c4
-c678ff40 c678fec0 000000c3 c678ff2c c678fec0 c0092184 c0099714 fec0:
-c61a2458 c1714aa0 00000017 4013c000 c678ff3c 00000001 00000001 00000000
-fee0: c678ffb0 4013c058 00000000 40149000 c678ffac c678ff00 c0024230
-c002c6b0 ff00: c5889000 c5a64b64 c678ff10 00000002 00000000 bebde6c4
-c678ff40 bebde911 ff20: c678ff3c c678ff30 c0092274 c0092170 c678ffa4
-c678ff40 c002b270 c0092268 ff40: 40017000 c0025794 c678ff64 00000000
-00000000 400d9000 40016000 ffffffff ff60: 00000001 00001fdc 00000001
-0001520c 00000000 40149000 c678ff9c c678ff88 ff80: c002c9c0 c002c6b0
-ffffffff ffffffff 00000001 00000000 00000000 c678ffa8 ffa0: c0024fa0
-c002b260 00000001 00000000 bebde911 bebde6c4 bebde6c4 ffffffff ffc0:
-00000001 00000000 bebde911 bebde7a4 00000003 00000001 000001ed bebde754
-ffe0: 400e1300 bebde638 0000984c 400e1310 60000010 bebde911 00000000
-00000000 Backtrace:
-[<c002935c>] (__bug+0x0/0x2c) from [<c01ab70c>] (assfail+0x30/0x38)
-[<c01ab6dc>] (assfail+0x0/0x38) from [<c015d6e0>]
-(xfs_dir2_sf_check+0xfc/0x154) [<c015d5e4>] (xfs_dir2_sf_check+0x0/0x154)
-from [<c015d760>] (xfs_dir2_sf_lookup+0x28/0x360) [<c015d738>]
-(xfs_dir2_sf_lookup+0x0/0x360) from [<c015205c>]
-(xfs_dir_lookup+0x124/0x170) [<c0151f38>] (xfs_dir_lookup+0x0/0x170) from
-[<c018f244>] (xfs_dir_lookup_int+0x70/0x134)
- r7:c678fcf8 r6:c606fd40 r5:c63b8238 r4:c606fd60
-[<c018f1d4>] (xfs_dir_lookup_int+0x0/0x134) from [<c01953b4>]
-(xfs_lookup+0xb8/0x160) [<c01952fc>] (xfs_lookup+0x0/0x160) from
-[<c01a6aac>] (xfs_vn_lookup+0x54/0x98) [<c01a6a58>]
-(xfs_vn_lookup+0x0/0x98) from [<c009639c>] (do_lookup+0x17c/0x1b8)
- r5:c63b8238 r4:c678fec0
-[<c0096220>] (do_lookup+0x0/0x1b8) from [<c00981c0>]
-(__link_path_walk+0x830/0xef4) [<c0097990>] (__link_path_walk+0x0/0xef4)
-from [<c0098914>] (link_path_walk+0x90/0x170) [<c0098884>]
-(link_path_walk+0x0/0x170) from [<c0098a18>] (path_walk+0x24/0x28)
-[<c00989f4>] (path_walk+0x0/0x28) from [<c0098c40>]
-(do_path_lookup+0xc0/0x278) [<c0098b80>] (do_path_lookup+0x0/0x278) from
-[<c0099748>] (__user_walk_fd+0x44/0x64) [<c0099704>]
-(__user_walk_fd+0x0/0x64) from [<c0092184>] (vfs_stat_fd+0x24/0x54)
- r7:000000c3 r6:c678fec0 r5:c678ff40 r4:bebde6c4
-[<c0092160>] (vfs_stat_fd+0x0/0x54) from [<c0092274>] (vfs_stat+0x1c/0x20)
- r6:bebde911 r5:c678ff40 r4:bebde6c4
-[<c0092258>] (vfs_stat+0x0/0x20) from [<c002b270>]
-(sys_oabi_stat64+0x20/0x3c) [<c002b250>] (sys_oabi_stat64+0x0/0x3c) from
-[<c0024fa0>] (ret_fast_syscall+0x0/0x2c)
- r5:00000000 r4:00000001
-Code: e1a01000 e59f000c eb008188 e3a03000 (e5833000)
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
 
-esandeen in #xfs pointed me towards this
-bug, http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=414932 , and
-suggested that I compare the size and offset of stucts between x86 and
-ARM. After modifying over 40 structs to give them the same offsets as x86
-the problem is still present. I have already tried the patch by Greg
-Ungerer from 2004 but again this didn't change anything. I also tried
-compiling the kernel and userspace tools with an 8-bit structure size
-boundary but it made no difference.
-
-Further details of my attempts are at
-http://www.linkstationwiki.net/index.php/Buffalo_ARM9_Kernel_Port#XFS_Arm_Issues
-. I will keep this up to date until we find a solution.
-
-Anybody got any ideas of how we fix this?
-
-Thanks,
-
--- 
-Byron Bradley
-
+--- 2.6.23-rc4/init/main.c	2007-08-28 04:42:58.000000000 +0100
++++ linux/init/main.c	2007-08-30 20:45:26.000000000 +0100
+@@ -397,10 +397,6 @@ static void __init smp_init(void)
+ {
+ 	unsigned int cpu;
+ 
+-#ifndef CONFIG_HOTPLUG_CPU
+-	cpu_possible_map = cpu_present_map;
+-#endif
+-
+ 	/* FIXME: This should be done in userspace --RR */
+ 	for_each_present_cpu(cpu) {
+ 		if (num_online_cpus() >= max_cpus)
+@@ -545,10 +541,6 @@ asmlinkage void __init start_kernel(void
+ 	setup_arch(&command_line);
+ 	setup_command_line(command_line);
+ 	unwind_setup();
+-#ifndef CONFIG_HOTPLUG_CPU
+-	if (max_cpus < 2)
+-		cpu_possible_map = cpu_online_map;
+-#endif
+ 	setup_per_cpu_areas();
+ 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+ 
