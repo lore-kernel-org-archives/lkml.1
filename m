@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbXHaI3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbXHaIfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbXHaI3N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 04:29:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbXHaI27
+	id S1756903AbXHaIfy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 04:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbXHaIfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 04:28:59 -0400
-Received: from frankvm.xs4all.nl ([80.126.170.174]:60211 "EHLO
+	Fri, 31 Aug 2007 04:35:46 -0400
+Received: from frankvm.xs4all.nl ([80.126.170.174]:40027 "EHLO
 	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753797AbXHaI26 (ORCPT
+	with ESMTP id S1752298AbXHaIfp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 04:28:58 -0400
-X-Greylist: delayed 891 seconds by postgrey-1.27 at vger.kernel.org; Fri, 31 Aug 2007 04:28:58 EDT
-Date: Fri, 31 Aug 2007 10:28:56 +0200
+	Fri, 31 Aug 2007 04:35:45 -0400
+Date: Fri, 31 Aug 2007 10:14:05 +0200
 From: Frank van Maarseveen <frankvm@frankvm.com>
-To: Jakob Oestergaard <jakob@unthought.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Frank van Maarseveen <frankvm@frankvm.com>,
-       Hua Zhong <hzhong@gmail.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+To: Hua Zhong <hzhong@gmail.com>
+Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
        akpm@linux-foundation.org
 Subject: Re: recent nfs change causes autofs regression
-Message-ID: <20070831082856.GB21499@janus>
-References: <000701c7eb49$cff701c0$6fe50540$@com> <1188513433.6626.24.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org> <1188535485.6626.85.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302157470.25853@woody.linux-foundation.org> <1188536658.6626.98.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302215280.25853@woody.linux-foundation.org> <20070831074028.GR21979@unthought.net>
+Message-ID: <20070831081405.GA21499@janus>
+References: <000701c7eb49$cff701c0$6fe50540$@com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070831074028.GR21979@unthought.net>
+In-Reply-To: <000701c7eb49$cff701c0$6fe50540$@com>
 User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 31, 2007 at 09:40:28AM +0200, Jakob Oestergaard wrote:
-> On Thu, Aug 30, 2007 at 10:16:37PM -0700, Linus Torvalds wrote:
-> > 
-> ...
-> > > Why aren't we doing that for any other filesystem than NFS?
-> > 
-> > How hard is it to acknowledge the following little word:
-> > 
-> > 	"regression"
-> > 
-> > It's simple. You broke things. You may want to fix them, but you need to 
-> > fix them in a way that does not break user space.
+On Thu, Aug 30, 2007 at 02:07:43PM -0700, Hua Zhong wrote:
+> I am re-sending this after help from Ian and git-bisect. To me it's a
+> show-stopper: I cannot find an acceptable workaround that I can implement.
 > 
-> Trond has a point Linus.
+> The problem: upgrading to 2.6.23-rc4 from 2.6.22 causes several autofs
+> mounts to fail silently - they just not appear when they should.
 > 
-> What he "broke" is, for example, a ro mount being mounted as rw.
+> I believe it's caused by the NFS change that forces multiple mounts from
+> different directories under the same server side filesystem to have the same
+> mount options by default, otherwise it returns EBUSY.
 > 
-> That *could* be a very serious security (etc.etc.) problem which he just fixed.
-> Anything depending on read-only not being enforced will cease to work, of
-> course, and that is what a few people complain about(!).
+> For example, if server has a filesystem /a, and it exports /a/x and /a/y
+> (maybe with rw or ro), and a client must mount /a/x and /a/y with the same
+> mount options now.
 > 
-> If ext3 in some rare case (which would still mean it hit a few thousand users)
-> failed to remember that a file had been marked read-only and allowed writes to
-> it, wouldn't we want to fix that too?  It would cause regressions, but we'd fix
-> it, right?
+> Since in my setup they are managed by autofs, and the autofs map is managed
+> by nis, there is no way I could easily workaround it..
 > 
-> mount passes back the error code on a failed mount. autofs passes that error
-> along too (when people configure syslog correctly). In short; when these
-> serious mistakes are made and caught, the admin sees an error in his logs.
+> If we have to live with this regression, I want to hear some suggestions
+> about how to fix them realistically. Thanks.
+> 
+> By the way, I am not sure if I did the bisect right, but FWIW, git-bisect
+> says:
+> 
+> c98451bdb2f3e6d6cc1e03adad641e9497512b49 is first bad commit
+> commit c98451bdb2f3e6d6cc1e03adad641e9497512b49
+> Author: Frank van Maarseveen <frankvm@frankvm.com>
+> Date:   Mon Jul 9 22:25:29 2007 +0200
+> 
+>     NLM: fix source address of callback to client
+> 
+>     Use the destination address of the original NLM request as the
+>     source address in callbacks to the client.
+> 
+>     Signed-off-by: Frank van Maarseveen <frankvm@frankvm.com>
+>     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> 
+> :040000 040000 675c84bd8b2c50744018becaa0db4aeca19b8f9f
+> 105fbd3cb3fa5e3019836b4b5268125d0181a72d M      fs
+> :040000 040000 0138796e0806b4ebd1cc3850ed4e8c7ab24d2d41
+> 2fec08debe51c20423a88b1a0d4281c683ba5daf M      include
 
-Hua explained already that seeing the error is not the same as fixing
-the error: he cannot fix it because NFS implies other systems we _must_
-co-operate with.
+This does not have any relation with the mount problem, assuming commit
+and comment do match.
 
 -- 
 Frank
