@@ -1,92 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965635AbXHaRCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965732AbXHaRK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965635AbXHaRCv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 13:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760013AbXHaRCm
+	id S965732AbXHaRK0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 13:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932625AbXHaRKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 13:02:42 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55395 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759569AbXHaRCl (ORCPT
+	Fri, 31 Aug 2007 13:10:14 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:49811 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932719AbXHaRKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 13:02:41 -0400
-Date: Fri, 31 Aug 2007 10:01:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-cc: Frank van Maarseveen <frankvm@frankvm.com>, Hua Zhong <hzhong@gmail.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: recent nfs change causes autofs regression
-In-Reply-To: <1188577275.6649.133.camel@heimdal.trondhjem.org>
-Message-ID: <alpine.LFD.0.999.0708310946270.25853@woody.linux-foundation.org>
-References: <000701c7eb49$cff701c0$6fe50540$@com>  <1188513433.6626.24.camel@heimdal.trondhjem.org>
-  <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org>
- <1188577275.6649.133.camel@heimdal.trondhjem.org>
+	Fri, 31 Aug 2007 13:10:12 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Joachim Fenkes <FENKES@de.ibm.com>
+Subject: Re: [PATCH 2.6.23] ibmebus: Prevent bus_id collisions
+Date: Fri, 31 Aug 2007 19:08:04 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070508.662491)
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, Paul Mackerras <pmac@au1.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Thomas Q Klein <tklein@de.ibm.com>
+References: <OFBB1BA4B6.29175A76-ONC1257348.004DBCB3-C1257348.0050161C@de.ibm.com>
+In-Reply-To: <OFBB1BA4B6.29175A76-ONC1257348.004DBCB3-C1257348.0050161C@de.ibm.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708311908.05255.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18UAaJQ2XDrc8K/Vmn6antvGeWC+kDRm6OG6dU
+ QRi0WUkC5vKdetlcRYPZ9LvouMX/ZhBkrvLtpc9EvIaov+WZaQ
+ WPBodHOofO+GroTwrRPkw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 31 August 2007, Joachim Fenkes wrote:
+> > The whole logic of dynamically adding and removing device is rather 
+> bogus,
+> > and it prevents autoloading of device drivers. of_platform_make_bus_id
+> > is the function that is responsible for creating unique names over 
+> there.
+> 
+> The plaintiff makes a valid point. How about a staging approach: We put 
+> the patch as it is now into 2.6.23 so the problem is fixed, and I'll post 
+> a "nice" version with autoloading support and a generic of_make_bus_id 
+> function for 2.6.24. Agree?
 
+Ok, sounds fair. Can you make sure that the resulting bus_id is the same
+for the final version then?
 
-On Fri, 31 Aug 2007, Trond Myklebust wrote:
->
-> The best I can do given the constraints appears to be to have the kernel
-> first look for a superblock that matches both the fsid and the
-> user-specified mount options, and then spawn off a new superblock if
-> that search fails.
-
-I think this is probably acceptable to get roughly the old behaviour, but 
-I still think it's a bit stupid.
-
-What happens at "mount -o remount,..." time?
-
-The fact is, the whole "match the fsid and user mount options, and re-use 
-the mount" sounds like it's trying to solve a problem that doesn't need 
-solving. If the user really wants to duplicate the mount, he really should 
-be using a a bind-mount instead.
-
-In other words, let's assume that the user has /some/nfs/mount mounted 
-over NFS, and wants to re-mount it (or even just a subset of it) somewhere 
-else, the sane thing to do is not to mount it again, but to just do
-
-	mount --bind /some/nfs/mount/subdir /new/mount/place
-
-instead. That *guarantees* that the low-level filesystem uses the same 
-flags, and it also means that things like re-mounting have sane and 
-well-defined semantics, and will fail or succeed predictably.
-
-In contrast, if a user wants to create a new NFS mount, it really should 
-be independent of the old one, because that's (a) what other systems do, 
-and (b) also makes the semantics of re-mounting it with other flags be 
-clear and unambiguous (ie the remount has nothing what-so-ever to do with 
-the independent NFS mount).
-
-See? 
-
-This is why I think "nosharecache" should just be the default, because 
-that's the behaviour that simply does not have any subtle issues. The 
-*special* case should be the "sharecache" case, and 99% of the time that 
-one should likely be done with a "--bind" mount.
-
-(I don't really see the point of _ever_ doing anything but a bind mount, 
-but maybe there are reasons to try to share at a NFS layer that I don't 
-really see)
-
-> The attached patch does just that.
-
-Hua, does this fix things for you? If it gets rid of the regression, I can 
-certainly live with it, but as per above, I don't really think this makes 
-much sense in the "bigger picture" kind of thing.
-
-> Finally, for the record: I still feel very uncomfortable about not being
-> able to report the state of the client setup back to the sysadmin.
-> AFAIK, the only way to do so is to stat the mountpoints, and compare the
-> device ids.
-
-Well, not only don't I see that as being horribly wrong, I actually think 
-that the sysadmin should know what his mount setup is, even without having 
-to ask. But since he *can* ask, using easy and standard interfaces, I 
-don't really see what the problem really is.
-
-			Linus
+	Arnd <><
