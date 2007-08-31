@@ -1,99 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965866AbXHaSG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966036AbXHaSHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965866AbXHaSG3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 14:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965544AbXHaSGU
+	id S966036AbXHaSHN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 14:07:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965651AbXHaSHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 14:06:20 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40547 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S965503AbXHaSGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 14:06:20 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX189ZoVjweQ94gIybAeDGsq9dOLRbO2niYG7k5WeoU
-	35woNNj4IOOlqc
-Date: Fri, 31 Aug 2007 20:06:44 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: nmi_watchdog=2 regression in 2.6.21
-Message-ID: <20070831180644.GA24174@atjola.homenet>
-References: <20070828170556.GI1645@frankl.hpl.hp.com> <1188325835.2435.317.camel@dhcp193.mvista.com> <20070828194636.GB2814@frankl.hpl.hp.com> <1188332024.2435.328.camel@dhcp193.mvista.com> <20070829212451.GC4810@frankl.hpl.hp.com> <1188436919.26038.27.camel@dhcp193.mvista.com> <20070830210555.GA6635@frankl.hpl.hp.com> <1188571401.26038.41.camel@dhcp193.mvista.com> <20070831162146.GD7161@frankl.hpl.hp.com> <1188578123.26038.52.camel@dhcp193.mvista.com>
+	Fri, 31 Aug 2007 14:07:01 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55541 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965647AbXHaSG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 14:06:59 -0400
+Message-ID: <46D858A9.4080506@garzik.org>
+Date: Fri, 31 Aug 2007 14:06:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1188578123.26038.52.camel@dhcp193.mvista.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Y-GMX-Trusted: 0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Randy Dunlap <rdunlap@xenotime.net>, Simon Arlott <simon@fire.lp0.eu>,
+       sam@ravnborg.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Adrian Bunk <bunk@stusta.de>, Gabriel C <crazy@pimpmylinux.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
+References: <469E75AA.7040109@pimpmylinux.org> <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain> <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org> <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain> <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain> <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain> <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain> <20070719083109.13b2ab56.rdunlap@xenotime.net> <Pine.LNX.4.64.0707191213130.8844@localhost.localdomain> <469FE045.3070403@simon.arlott.org.uk> <20070831102527.09fb42c0.rdunlap@xenotime.net> <Pine.LNX.4.64.0708311318220.18158@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0708311318220.18158@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.08.31 09:35:23 -0700, Daniel Walker wrote:
-> On Fri, 2007-08-31 at 09:21 -0700, Stephane Eranian wrote:
-> > In this patch, the setup_*() routine now extract the MSR from the wd_ops
-> > to copy them into the nmi_watchdog_ctlblk. This is not done for P4 because
-> > of the special and ugly case of HT. 
-> > 
-> > With this approach, we can now create a custom wd_ops for CoreDuo that is
-> > a clone of the intel_arch_wd_ops, except for the MSR.
-> > 
-> > Could you try this one instead?
+Robert P. J. Day wrote:
+> On Fri, 31 Aug 2007, Randy Dunlap wrote:
 > 
-> So I tested your patch unchanged and the system boots, and the
-> check_nmi_watchdog() passes .. However, the nmi stops ticking right
-> after bootup,
+>> On Thu, 19 Jul 2007 23:05:57 +0100 Simon Arlott wrote:
+>>
+>>> On 19/07/07 17:19, Robert P. J. Day wrote:
+>>>> On Thu, 19 Jul 2007, Randy Dunlap wrote:
+>>>>> I think that Stefan means a patch to the kconfig source code,
+>>>>> not the the Kconfig files.  Good luck.  I'd still like to see it.
+>>>> yes, i understand what he wanted now.  as a first step (that
+>>>> theoretically shouldn't change any behaviour), i'd patch the Kconfig
+>>>> structure to add a new attribute ("maturity") which would be allowed
+>>>> to be set to *exactly one* of a pre-defined set of values (say,
+>>>> OBSOLETE, DEPRECATED, EXPERIMENTAL, and STILLBLEEDING).  and that's
+>>>> it, nothing more.
+>>>>
+>>>> don't try to do anything with any of that just yet, just add the
+>>>> infrastructure to support the (optional) association of a maturity
+>>>> level with a config option.  that's step one.
+>>> What about something like this? I'm not sure if the addition to sym_init
+>>> is desirable... I also had to prefix _ to the name for now otherwise it
+>>> conflicts badly with the current symbols. It probably should stop
+>>> "depends on _BROKEN" etc. too.
 > 
-> >>From my /proc/interrupts below,
+> i'm sure i'm going to get shouted down here, but i really disagree
+> with "BROKEN" being considered a "maturity level".  IMHO, things like
+> EXPERIMENTAL, DEPRECATED and OBSOLETE represent maturity levels, for
+> what i think are obvious reasons.
 > 
->            CPU0       CPU1       CPU2       CPU3       
->   0:        108          0          0          0   IO-APIC-edge      timer
->   1:          0          0          0          8   IO-APIC-edge      i8042
->   4:       3427          0          0          1   IO-APIC-edge      serial
->   8:          1          0          0          1   IO-APIC-edge      rtc
->  12:          0          0          0        113   IO-APIC-edge      i8042
->  14:       1128          0          0         10   IO-APIC-edge      ide0
->  16:       1664          0          0          1   IO-APIC-fasteoi   uhci_hcd:usb2, eth0
->  18:          0          0          0          0   IO-APIC-fasteoi   ehci_hcd:usb1
->  19:          0          0          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
->  20:          0          0          0          1   IO-APIC-fasteoi   acpi
-> NMI:       1670       1453       1097        967 
-> LOC:      48001      48002      48000      48006 
-> ERR:          0
-> MIS:          0
-> 
-> 
-> The NMI field never changes ..
-> 
-> So I added another change which looked appropriate,
-> 
-> @@ -674,6 +688,7 @@ unsigned lapic_adjust_nmi_hz(unsigned hz
->  {
->         struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
->         if (wd->perfctr_msr == MSR_P6_PERFCTR0 ||
-> +           wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0 ||
->             wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1)
->                 hz = adjust_for_32bit_ctr(hz);
->         return hz;
-> 
-> 
-> Unfortunately that didn't fix anything, but I have a feeling is has
+> something like BROKEN, though, has *nothing* to do with maturity.  a
+> feature can be any of those maturity levels, and simultaneously be
+> BROKEN.  i consider BROKEN to be what i call a "status", and different
+> status levels might be the default of normal, or KIND_OF_FLAKY or
+> TOTALLY_BORKED -- that's where BROKEN would fit in.
 
-That's because MSR_P6_PERFCTR0 is the same as MSR_ARCH_PERFMON_PERFCTR0.
-But I'd personally add that change anyway, as it makes the code less
-tricky and the compiler should optimize it away.
+BROKEN is definitely a maturity level.  A more accurate description 
+would be BITROTTING perhaps.  The code in question has passed through 
+bleeding -> experimental -> stable, and come out the other side.
 
-> something to do with the nmi hertz adjustment that happens after
-> check_nmi_watchdog() ..
+In contrast, OBSOLETE and DEPRECATED reflect high-level status not code 
+quality/maturity.
 
-Hm hm, does the same thing (watchdog stuck after check) happen with
-older kernels, ie. those before Stephane's changeset that made it use
-PERFCTR1?
+	Jeff
 
-Maybe you could "activate" the Dprintk in write_watchdog_counter32() to
-see which value gets written to the MSR? (I don't see any switch to
-activate it, so maybe just s/Dprintk(/printk(KERN_WHATEVER / ?)
 
-Thanks,
-Björn
+
