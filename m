@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758442AbXHaEDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760011AbXHaEFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758442AbXHaEDd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 00:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbXHaED0
+	id S1760011AbXHaEFY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 00:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbXHaEFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 00:03:26 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:52409 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750921AbXHaEDZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 00:03:25 -0400
-Date: Fri, 31 Aug 2007 13:35:28 +1000
-To: Bret Towe <magnade@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: linux-2.6.23-rc4 ppc build failure
-Message-ID: <20070831033528.GN10345@bakeyournoodle.com>
-References: <dda83e780708290941g1685879bned63a77d6b0fd242@mail.gmail.com> <dda83e780708301456y72bc4080qc994f4797a5fefd1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <dda83e780708301456y72bc4080qc994f4797a5fefd1@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+	Fri, 31 Aug 2007 00:05:12 -0400
+Received: from main.gmane.org ([80.91.229.2]:53781 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750980AbXHaEFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 00:05:09 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Dan Stromberg <dstromberglists@gmail.com>
+Subject: ifconfig changing a routing table?
+Date: Fri, 31 Aug 2007 03:55:53 +0000 (UTC)
+Message-ID: <fb83g8$nac$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: adsl-69-234-106-77.dsl.irvnca.pacbell.net
+X-Face: 7muj=^NJ4z|eE'nj&_M\3zqbh(dwtkA%Z{^'Cou0AFC9&[@R4!mMClzF!j0ZN|`7h/F1`Kgr$a[j^R+H:4DD}ra;@^Z7uIoqYRc\elYJ{)(sSy@%|eX\0WRNDj"W3rh{5%/ZQwnxeqA\({gn7O+7MF`"Tdl:.5U-{8n+OOjJo7(krf!d|tOMnmm"7MLYAwm':OjvlO|`\)N!q.ICnDJIMHv<j~'<i78LXT-cPluto:1-5?*=li=k1AY9"n~lMm.PSZiVf/UbMxH}OCQsE$`MO~gRn`=~%)bIP,^'R]g=L,^ot
+User-Agent: Pan/0.132 (Waxed in Black)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 30, 2007 at 02:56:50PM -0700, Bret Towe wrote:
-> On 8/29/07, Bret Towe <magnade@gmail.com> wrote:
-> > while trying to build a fresh kernel for my mini after upgrading from gutsy
-> > (and forgetting to save my .config) I hit the below build error
-> > 2.6.23-rc3 I did work under feisty but that is with a different .config
-> > so not sure if that makes any difference or not
-> > I've not bisected cause it takes so long on this computer...
-> > attached is the config I'm working off now
 
-So how did you generate the new .config?  Did you start with a defconfig
-of some sort and then alter to personal taste?
+If I "ifconfig eth1 down", a rogue route disappears.
 
-I ask because if we have other users our there that have working system
-with BLK_DEV_IDE=m it'd be nice to have make oldconfig fix them.  If
-it's just a matter of not letting people get into that state then
-something like the patch below will probably help.
+If I "ifconfig eth1 up" or "ip link set dev eth1 up", the rogue route 
+comes back.
 
-Ensure that BLK_DEV_IDE is built-in befoer allowing BLK_DEV_IDE_PMAC to
-be selected.
+The route in question is for 10.3/16, and it's breaking some of my 
+communications that should be handled by my default route.
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+I'm not accustomed to ifconfig changing the routing table.  Is this 
+normal?
 
----
+The kernel in question is 2.6.9-42.0.8.plus.c4smp.  It's a CentOSplus 
+kernel.
 
- drivers/ide/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+The relevant syscalls in an strace of the above ip link command (which a 
+very short strace, BTW) appear to be:
 
-diff --git a/drivers/ide/Kconfig b/drivers/ide/Kconfig
-index e049f65..e55be26 100644
---- a/drivers/ide/Kconfig
-+++ b/drivers/ide/Kconfig
-@@ -780,7 +780,7 @@ endif
- 
- config BLK_DEV_IDE_PMAC
- 	bool "Builtin PowerMac IDE support"
--	depends on PPC_PMAC && IDE=y
-+	depends on PPC_PMAC && IDE=y && BLK_DEV_IDE=y
- 	help
- 	  This driver provides support for the built-in IDE controller on
- 	  most of the recent Apple Power Macintoshes and PowerBooks.
+9992  socket(PF_INET, SOCK_DGRAM, IPPROTO_IP) = 3
+9992  ioctl(3, SIOCGIFFLAGS, {ifr_name="eth1", ifr_flags=IFF_BROADCAST|
+IFF_MULTICAST}) = 0
+9992  ioctl(3, SIOCSIFFLAGS, 0x7fbffff510) = 0
+9992  close(3)                          = 0
 
-Yours Tony
+The strace of ifconfig eth1 up is pretty similar, albeit with a slightly 
+different 3rd argument to the SIOCSIFFLAGS.
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+I tracked the call chain to dev_change_flags(), but then things seemed to 
+start branching out pretty fast, so I thought it might be more productive 
+to ask around before continuing.
+
+Is anyone on the list familiar with ifconfig up and/or ip link up 
+changing a routing table?  How does the kernel decide what route to add 
+in such a circumstance?
+
+Thanks!
+
 
