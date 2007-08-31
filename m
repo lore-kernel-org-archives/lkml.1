@@ -1,98 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760643AbXHaEez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759094AbXHaEhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760643AbXHaEez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 00:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbXHaEer
+	id S1759094AbXHaEhb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 00:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbXHaEhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 00:34:47 -0400
-Received: from mga02.intel.com ([134.134.136.20]:43771 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753309AbXHaEeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 00:34:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,328,1183359600"; 
-   d="scan'208";a="286332427"
-From: Jason Gaston <jason.d.gaston@intel.com>
-To: jgarzik@pobox.com, jason.d.gaston@intel.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com
-Subject: [PATCH 2.6.23-rc4][reRESEND] ata_piix: IDE mode SATA patch for Intel Tolapai
-Date: Thu, 30 Aug 2007 21:36:56 -0700
-User-Agent: KMail/1.9.1
+	Fri, 31 Aug 2007 00:37:20 -0400
+Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:54531 "EHLO
+	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332AbXHaEhS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 00:37:18 -0400
+Message-Id: <200708310435.AA00256@paprika.lab.ntt.co.jp>
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Date: Fri, 31 Aug 2007 13:35:44 +0900
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] problem with nfs_invalidate_page
+In-Reply-To: <1188402562.6580.74.camel@heimdal.trondhjem.org>
+References: <1188402562.6580.74.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708302136.57215.jason.d.gaston@intel.com>
+X-Mailer: AL-Mail32 Version 1.13
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resend trying to remove 8-bit characters in the email.
+On Wed, 29 Aug 2007 11:49:22 -0400, Trond Myklebust wrote:
+>OK. I see your point... Basically, you are saying that the new
+>->invalidatepage() semantics do not allow us to rely on the dirty status
+>of the page in order to figure out if we need to clean up.
 
-This patch adds the Intel Tolapai IDE mode SATA controller DID's.
+Exactly.
 
-Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+>Andrew, that was a fairly significant change in semantics...
+>
+>Anyhow, well done debugging it! Does the following patch fix the Oops?
+>
+>Trond
 
---- linux-2.6.23-rc4/drivers/ata/ata_piix.c.orig	2007-08-27 18:32:35.000000000 -0700
-+++ linux-2.6.23-rc4/drivers/ata/ata_piix.c	2007-08-29 17:13:13.000000000 -0700
-@@ -130,6 +130,7 @@
- 	ich6m_sata_ahci		= 8,
- 	ich8_sata_ahci		= 9,
- 	piix_pata_mwdma		= 10,	/* PIIX3 MWDMA only */
-+	tolapai_sata_ahci	= 11,
- 
- 	/* constants for mapping table */
- 	P0			= 0,  /* port 0 */
-@@ -253,6 +254,8 @@
- 	{ 0x8086, 0x292d, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
- 	/* SATA Controller IDE (ICH9M) */
- 	{ 0x8086, 0x292e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
-+	/* SATA Controller IDE (Tolapai) */
-+	{ 0x8086, 0x5028, PCI_ANY_ID, PCI_ANY_ID, 0, 0, tolapai_sata_ahci },
- 
- 	{ }	/* terminate list */
- };
-@@ -441,12 +444,25 @@
- 	},
- };
- 
-+static const struct piix_map_db tolapai_map_db = {
-+        .mask = 0x3,
-+        .port_enable = 0x3,
-+        .map = {
-+                /* PM   PS   SM   SS       MAP */
-+                {  P0,  NA,  P1,  NA }, /* 00b */
-+                {  RV,  RV,  RV,  RV }, /* 01b */
-+                {  RV,  RV,  RV,  RV }, /* 10b */
-+                {  RV,  RV,  RV,  RV },
-+        },
-+};
-+
- static const struct piix_map_db *piix_map_db_table[] = {
- 	[ich5_sata]		= &ich5_map_db,
- 	[ich6_sata]		= &ich6_map_db,
- 	[ich6_sata_ahci]	= &ich6_map_db,
- 	[ich6m_sata_ahci]	= &ich6m_map_db,
- 	[ich8_sata_ahci]	= &ich8_map_db,
-+	[tolapai_sata_ahci]	= &tolapai_map_db,
- };
- 
- static struct ata_port_info piix_port_info[] = {
-@@ -560,6 +576,17 @@
- 		.mwdma_mask	= 0x06, /* mwdma1-2 ?? CHECK 0 should be ok but slow */
- 		.port_ops	= &piix_pata_ops,
- 	},
-+
-+	/* tolapai_sata_ahci: 11: */
-+	{
-+		.sht		= &piix_sht,
-+		.flags		= PIIX_SATA_FLAGS | PIIX_FLAG_SCR |
-+				  PIIX_FLAG_AHCI,
-+		.pio_mask	= 0x1f,	/* pio0-4 */
-+		.mwdma_mask	= 0x07, /* mwdma0-2 */
-+		.udma_mask	= ATA_UDMA6,
-+		.port_ops	= &piix_sata_ops,
-+	},
- };
- 
- static struct pci_bits piix_enable_bits[] = {
+Yes, the patch did fix the Oops crash.
+I've tested it in serveral ways, and it's working well enough so far.
+Thanks!
+
+Ryusuke Konishi
+
+
+>On Tue, 2007-08-28 at 17:32 +0900, Ryusuke Konishi wrote:
+>> On Mon, 27 Aug 2007 09:30:12 -0400, Trond Myklebust wrote:
+>> >It looks as if ecryptfs is dropping the page lock between the calls to
+>> >prepare_write() and commit_write(). That would be a bug.
+>> 
+>> No, ecryptfs is holding the page lock between the calls to 
+>> nfs_prepare_write() and nfs_commit_write().
+>> This is a regression since kernel 2.6.20;  kernel 2.6.19 does not 
+>> yield the BUG.
+>> 
+>> Please look at truncate_complete_page() and nfs_wb_page_priority() 
+>> which is called from nfs_invalidate_page().
+>> 
+>> The recent truncate_complete_page() clears the dirty flag from a page
+>> before calling a_ops->invalidatepage(),
+>> ^^^^^^
+>> static void
+>> truncate_complete_page(struct address_space *mapping, struct page *page)
+>> {
+>>         ...
+>> 	cancel_dirty_page(page, PAGE_CACHE_SIZE);  <--- Inserted here at kernel 2.6.20
+>> 
+>> 	if (PagePrivate(page))
+>> 		do_invalidatepage(page, 0);   ---> will call a_ops->invalidatepage()
+>>         ...
+>> }
+>> 
+>> and this is disturbing nfs_wb_page_priority() from calling 
+>> nfs_writepage_locked() that is expected to handle the pending
+>> request (=nfs_page) associated with the page.
+>> 
+>> int nfs_wb_page_priority(struct inode *inode, struct page *page, int how)
+>> {
+>> 	...
+>> 	if (clear_page_dirty_for_io(page)) {
+>> 		ret = nfs_writepage_locked(page, &wbc);
+>> 		if (ret < 0)
+>> 			goto out;
+>> 	}
+>>  	...
+>> }
+>> 
+>> Since truncate_complete_page() will get rid of the page after
+>> a_ops->invalidatepage() returns, the request (=nfs_page) associated
+>> with the page becomes a garbage in nfs_inode->nfs_page_tree.
+>> 
+>> This causes the collision of nfs_page and yields the BUG.
+>> 
+>> 
+>> Cheers,
+>> Ryusuke Konishi
+>
+>OK. I see your point... Basically, you are saying that the new
+>->invalidatepage() semantics do not allow us to rely on the dirty status
+>of the page in order to figure out if we need to clean up.
+>
+>Andrew, that was a fairly significant change in semantics...
+>
+>Anyhow, well done debugging it! Does the following patch fix the Oops?
+>
+>Trond
+>
+>______________________________________________________________________
+>From: Trond Myklebust <Trond.Myklebust@netapp.com>
+>Date: Tue, 28 Aug 2007 10:29:36 -0400
+>NFS: Fix a write request leak in nfs_invalidate_page()
+>Subject: No Subject
+>Message-Id: <1188402562.6580.75.camel@heimdal.trondhjem.org>
+>Mime-Version: 1.0
+>Content-Transfer-Encoding: 7bit
+>
+>Ryusuke Konishi says:
+>
+>The recent truncate_complete_page() clears the dirty flag from a page
+>before calling a_ops->invalidatepage(),
+>^^^^^^
+>static void
+>truncate_complete_page(struct address_space *mapping, struct page *page)
+>{
+>        ...
+>        cancel_dirty_page(page, PAGE_CACHE_SIZE);  <--- Inserted here at
+>kernel 2.6.20
+>
+>        if (PagePrivate(page))
+>                do_invalidatepage(page, 0);   ---> will call
+>a_ops->invalidatepage()
+>        ...
+>}
+>
+>and this is disturbing nfs_wb_page_priority() from calling 
+>nfs_writepage_locked() that is expected to handle the pending
+>request (=nfs_page) associated with the page.
+>
+>int nfs_wb_page_priority(struct inode *inode, struct page *page, int how)
+>{
+>        ...
+>        if (clear_page_dirty_for_io(page)) {
+>                ret = nfs_writepage_locked(page, &wbc);
+>                if (ret < 0)
+>                        goto out;
+>        }
+>        ...
+>}
+>
+>Since truncate_complete_page() will get rid of the page after
+>a_ops->invalidatepage() returns, the request (=nfs_page) associated
+>with the page becomes a garbage in nfs_inode->nfs_page_tree.
+>------------------------
+>
+>Fix this by ensuring that nfs_wb_page_priority() recognises that it may
+>also need to clear out non-dirty pages that have an nfs_page associated
+>with them.
+>
+>Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+>---
+>
+> fs/nfs/file.c          |    2 +-
+> fs/nfs/write.c         |   44 ++++++++++++++++++++++++++++++++++++++++++++
+> include/linux/nfs_fs.h |    1 +
+> 3 files changed, 46 insertions(+), 1 deletions(-)
+>
+>diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+>index c87dc71..579cf8a 100644
+>--- a/fs/nfs/file.c
+>+++ b/fs/nfs/file.c
+>@@ -316,7 +316,7 @@ static void nfs_invalidate_page(struct page *page, unsigned long offset)
+> 	if (offset != 0)
+> 		return;
+> 	/* Cancel any unstarted writes on this page */
+>-	nfs_wb_page_priority(page->mapping->host, page, FLUSH_INVALIDATE);
+>+	nfs_wb_page_cancel(page->mapping->host, page);
+> }
+> 
+> static int nfs_release_page(struct page *page, gfp_t gfp)
+>diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+>index ef97e0c..0d7a77c 100644
+>--- a/fs/nfs/write.c
+>+++ b/fs/nfs/write.c
+>@@ -1396,6 +1396,50 @@ out:
+> 	return ret;
+> }
+> 
+>+int nfs_wb_page_cancel(struct inode *inode, struct page *page)
+>+{
+>+	struct nfs_page *req;
+>+	loff_t range_start = page_offset(page);
+>+	loff_t range_end = range_start + (loff_t)(PAGE_CACHE_SIZE - 1);
+>+	struct writeback_control wbc = {
+>+		.bdi = page->mapping->backing_dev_info,
+>+		.sync_mode = WB_SYNC_ALL,
+>+		.nr_to_write = LONG_MAX,
+>+		.range_start = range_start,
+>+		.range_end = range_end,
+>+	};
+>+	int ret = 0;
+>+
+>+	BUG_ON(!PageLocked(page));
+>+	for (;;) {
+>+		req = nfs_page_find_request(page);
+>+		if (req == NULL)
+>+			goto out;
+>+		if (test_bit(PG_NEED_COMMIT, &req->wb_flags)) {
+>+			nfs_release_request(req);
+>+			break;
+>+		}
+>+		if (nfs_lock_request_dontget(req)) {
+>+			nfs_inode_remove_request(req);
+>+			/*
+>+			 * In case nfs_inode_remove_request has marked the
+>+			 * page as being dirty
+>+			 */
+>+			cancel_dirty_page(page, PAGE_CACHE_SIZE);
+>+			nfs_unlock_request(req);
+>+			break;
+>+		}
+>+		ret = nfs_wait_on_request(req);
+>+		if (ret < 0)
+>+			goto out;
+>+	}
+>+	if (!PagePrivate(page))
+>+		return 0;
+>+	ret = nfs_sync_mapping_wait(page->mapping, &wbc, FLUSH_INVALIDATE);
+>+out:
+>+	return ret;
+>+}
+>+
+> int nfs_wb_page_priority(struct inode *inode, struct page *page, int how)
+> {
+> 	loff_t range_start = page_offset(page);
+>diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
+>index 157dcb0..7250eea 100644
+>--- a/include/linux/nfs_fs.h
+>+++ b/include/linux/nfs_fs.h
+>@@ -431,6 +431,7 @@ extern int nfs_sync_mapping_range(struct address_space *, loff_t, loff_t, int);
+> extern int nfs_wb_all(struct inode *inode);
+> extern int nfs_wb_page(struct inode *inode, struct page* page);
+> extern int nfs_wb_page_priority(struct inode *inode, struct page* page, int how);
+>+extern int nfs_wb_page_cancel(struct inode *inode, struct page* page);
+> #if defined(CONFIG_NFS_V3) || defined(CONFIG_NFS_V4)
+> extern int  nfs_commit_inode(struct inode *, int);
+> extern struct nfs_write_data *nfs_commit_alloc(void);
