@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbXHaEax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbXHaEbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756289AbXHaEax (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 00:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbXHaEaq
+	id S1757593AbXHaEbf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 00:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbXHaEb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 00:30:46 -0400
-Received: from [212.12.190.110] ([212.12.190.110]:32831 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750953AbXHaEaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 00:30:46 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Valdis.Kletnieks@vt.edu
-Subject: Re: Designers and Builders (was: Who wants to maintain KR list for stable releases?)
-Date: Fri, 31 Aug 2007 07:30:40 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200708300731.24413.a1426z@gawab.com> <26616.1188484286@turing-police.cc.vt.edu> <20070831002522.4e725ba8@the-village.bc.nu>
-In-Reply-To: <20070831002522.4e725ba8@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 31 Aug 2007 00:31:27 -0400
+Received: from pat.uio.no ([129.240.10.15]:43408 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751170AbXHaEb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 00:31:26 -0400
+Subject: RE: recent nfs change causes autofs regression
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Hua Zhong <hzhong@gmail.com>
+Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org
+In-Reply-To: <001601c7eb5f$b6146980$223d3c80$@com>
+References: <000701c7eb49$cff701c0$6fe50540$@com>
+	 <1188513433.6626.24.camel@heimdal.trondhjem.org>
+	 <001001c7eb57$afd2d320$0f787960$@com>
+	 <1188516173.6626.46.camel@heimdal.trondhjem.org>
+	 <001501c7eb5d$d295d870$77c18950$@com>
+	 <1188517070.6626.54.camel@heimdal.trondhjem.org>
+	 <001601c7eb5f$b6146980$223d3c80$@com>
+Content-Type: text/plain
+Date: Fri, 31 Aug 2007 00:31:22 -0400
+Message-Id: <1188534682.6626.70.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708310730.40500.a1426z@gawab.com>
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.090)
+X-UiO-Scanned: E9367BA4E446A70E4C36A58A8E1951E2406576D3
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 83 total 3574511 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> > The problem is not builders, or designers - this list has plenty of
-> > both.
-> >
-> > What Adrian is talking about are the people who go to designers and say
-> > "Build me something blue, with a design that doesn't work with the VFS".
->
-> And the real test of whether someone is a good engineer or a dodgy
-> consultant then follows. The engineer says "no" the consultant says
-> "it'll cost ya" ;)
+On Thu, 2007-08-30 at 16:44 -0700, Hua Zhong wrote:
+> > How is the NFS client to know that these directories are disjoint, or
+> > that no-one will ever create a hard link from one directory to another?
+> > To my knowledge, the only way to ensure this is to put them on
+> > different disk partitions.
+> > 
+> > I don't know if all Unix systems have this issue, but I have been told
+> > that Solaris at least has it.
+> 
+> Does Solaris enforces this "mount with same options" as default?
 
-And the realist may say: look there is a middle way that reduces complexity 
-many-folds and still gets us what we want.
+No. Solaris defaults to breaking cache consistency.
 
-> Humour aside don;t knock the people who have the ideas - in amongst all
-> the people wanting something that is insane are aluable pieces of
-> information if you can ever work them out - What they actually *want*
-> to be able to do, and sometimes ideas that are ones people used to the
-> technology wouldn't have - most are silly but just occasionally you get
-> the "that would be silly, we'd have to umm, interesting maybe we could,
-> I'll get back to you" type ideas.
+> > > "working" as in "I can mount the directory and do my work". And there
+> > > has never been any problems as far as I know.
+> > 
+> > That is too narrow a definition: the minimum should be "everyone can
+> > mount their directories and do their work". Your particular setup may
+> > be safe, but that is why we have overrides: the default should be for the
+> > kernel to be conservative, and to _tell_ users what it thinks is wrong.
+> 
+> Every engineer in our organization mounts it too. No problem until now.
 
-Exactly, and that's what makes these ideas so valuable.
+I believe I've already explained why that isn't a sufficient metric.
+What is your point?
 
+> It's not very conservative to suddenly change default behavior and break
+> autofs mounts. There is not even one kernel message that "_tells_ user why
+> it thinks it's wrong". It just silently fails.
 
-Thanks!
+No it doesn't. It reports an error code to the caller. If autofs is
+failing silently, then that is a bug in autofs: mount will report the
+error to the user.
 
---
-Al
+Trond
 
