@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965572AbXHaPTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965676AbXHaPW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965572AbXHaPTa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 11:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbXHaPTW
+	id S965676AbXHaPW6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 11:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932283AbXHaPWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 11:19:22 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58735 "EHLO
+	Fri, 31 Aug 2007 11:22:49 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40206 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932331AbXHaPTV (ORCPT
+	with ESMTP id S965328AbXHaPWr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 11:19:21 -0400
-Date: Sat, 1 Sep 2007 01:19:04 +1000
-From: David Chinner <dgc@sgi.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: David Chinner <dgc@sgi.com>, Eric Sandeen <sandeen@sandeen.net>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       xfs-oss <xfs@oss.sgi.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Increase lockdep MAX_LOCK_DEPTH
-Message-ID: <20070831151904.GC734179@sgi.com>
-References: <46D79C62.1010304@sandeen.net> <1188542389.6112.44.camel@twins> <20070831135042.GD422459@sgi.com> <1188570831.6112.64.camel@twins> <20070831150511.GA734179@sgi.com> <1188572961.6112.72.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1188572961.6112.72.camel@twins>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 31 Aug 2007 11:22:47 -0400
+Date: Fri, 31 Aug 2007 08:22:45 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Dmitry Monakhov <dmonakhov@sw.ru>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
+       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [11/36] Use page_cache_xxx in fs/buffer.c
+In-Reply-To: <20070831081201.GO29452@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0708310821140.16456@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0708301113170.7975@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0708301843280.13292@schroedinger.engr.sgi.com>
+ <20070831065613.GH29452@kernel.dk> <Pine.LNX.4.64.0708310003280.14375@schroedinger.engr.sgi.com>
+ <20070831071142.GI29452@kernel.dk> <Pine.LNX.4.64.0708310012370.14375@schroedinger.engr.sgi.com>
+ <20070831072611.GK29452@kernel.dk> <Pine.LNX.4.64.0708310028160.14632@schroedinger.engr.sgi.com>
+ <20070831074338.GL29452@kernel.dk> <Pine.LNX.4.64.0708310049110.14743@schroedinger.engr.sgi.com>
+ <20070831081201.GO29452@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 31, 2007 at 05:09:21PM +0200, Peter Zijlstra wrote:
-> On Sat, 2007-09-01 at 01:05 +1000, David Chinner wrote:
+On Fri, 31 Aug 2007, Jens Axboe wrote:
+
+> > Ok. So another solution maybe to limit the blocksizes that can be used 
+> > with a device?
 > 
-> > > Trouble is, we'd like to have a sane upper bound on the amount of held
-> > > locks at any one time, obviously this is just wanting, because a lot of
-> > > lock chains also depend on the number of online cpus...
-> > 
-> > Sure - this is an obvious case where it is valid to take >30 locks at
-> > once in a single thread. In fact, worst case here we are taking twice this
-> > number of locks - we actually take 2 per inode (ilock and flock) so a
-> > full 32 inode cluster free would take >60 locks in the middle of this
-> > function and we should be busting this depth couter limit all the
-> > time. 
+> That'd work for creation, but not for moving things around.
+
+What do you mean by moving things around? Creation binds a filesystem to a 
+device.
+
+> > Hmmmm.. We could keep the existing scheme too and check that device 
+> > drivers split things up if they are too large? Isnt it possible today
+> > to create a huge bio of 2M for huge pages and send it to a device?
 > 
-> I think this started because jeffpc couldn't boot without XFS busting
-> lockdep :-)
+> Not sure, aren't the constituents of compound pages the basis for IO?
 
-Ok....
-
-> > Do semaphores (the flush locks) contribute to the lock depth
-> > counters? 
-> 
-> No, alas, we cannot handle semaphores in lockdep. Semaphores don't have
-> a strict owner, hence we cannot track them. This is one of the reasons
-> to rid ourselves of semaphores - that and there are very few cases where
-> the actual semantics of semaphores are needed. Most of the times code
-> using semaphores can be expressed with either a mutex or a completion.
-
-Yeah, and the flush lock is something we can't really use either of those
-for as we require both the multi-process lock/unlock behaviour and the
-mutual exclusion that a semaphore provides.
-
-So I guess that means it's only the ilock nesting that is of issue here,
-so that means right now a max lock depth of 40 would probably be ok....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+get_user_pages() serializes compound pages into the base pages. But doesnt 
+the I/O layer coalesce these later into 2M chunks again?
