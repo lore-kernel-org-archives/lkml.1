@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763508AbXHaAAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762949AbXHaAQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763508AbXHaAAW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 20:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757078AbXHaAAJ
+	id S1762949AbXHaAQX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 20:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758417AbXHaAQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 20:00:09 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:45743 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbXHaAAI (ORCPT
+	Thu, 30 Aug 2007 20:16:14 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45507
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757044AbXHaAQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 20:00:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FTzwneyPwPgXjnkTtXCsn06BMNM5dzdiHt7Fr9lXKwfosBhHB6kB2TmMhtu2DgJmf9yBFkeF5GvJGuaiSbxfrHR7Ru1WtUSU4AwJhn/PCB7FMcxe76WhqKTapWWYnIVhBvNtN5eIrQ8vBjryUZe4fjnHG8SWl25zXSIdm2tIGkA=
-Message-ID: <9a8748490708301700y1de4347cubb78c1f82dce4821@mail.gmail.com>
-Date: Fri, 31 Aug 2007 02:00:06 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       bos@serpentine.com, rob@landley.net, werner@almesberger.net,
-       hpa@zytor.com
-In-Reply-To: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
+	Thu, 30 Aug 2007 20:16:13 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] Documentation/00-INDEX notice ecryptfs.txt moved.
+Date: Thu, 30 Aug 2007 20:16:12 -0500
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, akpm <akpm@linux-foundation.org>
+References: <200708301446.18024.rob@landley.net> <20070830120437.6fe49cdc.randy.dunlap@oracle.com>
+In-Reply-To: <20070830120437.6fe49cdc.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
+Message-Id: <200708302016.12133.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30/08/2007, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Thursday 30 August 2007 2:04:37 pm Randy Dunlap wrote:
+> Please use the expected (canonical) patch format.
 >
-> initrd/initramfs/ramdisk docs:
-> - fix typos/spellos/grammar
-> - clarify RAM disk config location
-> - correct cpio option
->
-> Cc: Bryan O'Sullivan <bos@serpentine.com>
-> Cc: Rob Landley <rob@landley.net>
-> Cc: Werner Almesberger <werner@almesberger.net>
-> Cc: H. Peter Anvin <hpa@zytor.com>
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-...
+> See Documentation/SubmittingPatches:
+>   14) The canonical patch format
 
-Hi Randy,
+from Rob Landley <rob@landley.net>
+Signed-off-by: Rob Landley <rob@landley.net>
 
-I read through your changes and they seem reasonable to me, so for
-what it's worth;
+ecryptfs.txt moved into filesystems, make 00-INDEX follow.
 
-Acked-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
+ 00-INDEX             |    2 --
+ filesystems/00-INDEX |    2 ++
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
+--- linux-2.6.23-rc4/Documentation/00-INDEX	2007-08-27 20:32:35.000000000 -0500
++++ linux-new/Documentation/00-INDEX	2007-08-30 14:43:15.000000000 -0500
+@@ -134,8 +134,6 @@
+ 	- info on Linux Digital Video Broadcast (DVB) subsystem.
+ early-userspace/
+ 	- info about initramfs, klibc, and userspace early during boot.
+-ecryptfs.txt
+-	- docs on eCryptfs: stacked cryptographic filesystem for Linux.
+ eisa.txt
+ 	- info on EISA bus support.
+ exception.txt
+--- linux-2.6.23-rc4/Documentation/filesystems/00-INDEX	2007-08-27 20:32:35.000000000 -0500
++++ linux-new/Documentation/filesystems/00-INDEX	2007-08-30 14:42:08.000000000 -0500
+@@ -32,6 +32,8 @@
+ 	- info about the locking scheme used for directory operations.
+ dlmfs.txt
+ 	- info on the userspace interface to the OCFS2 DLM.
++ecryptfs.txt
++	- docs on eCryptfs: stacked cryptographic filesystem for Linux.
+ ext2.txt
+ 	- info, mount options and specifications for the Ext2 filesystem.
+ ext3.txt
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
