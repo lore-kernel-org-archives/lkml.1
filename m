@@ -1,79 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbXHaVqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbXHaVtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbXHaVqG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbXHaVpy
+	id S1756169AbXHaVtw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbXHaVto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:45:54 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:52966 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751887AbXHaVpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:45:53 -0400
-Date: Fri, 31 Aug 2007 17:45:51 -0400
-To: "Morrison, Tom" <tmorrison@empirix.com>
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: Follow up to: NFS/RPC Hangs after updating time...
-Message-ID: <20070831214551.GP11165@fieldses.org>
-References: <BD261180E6D35F4D9D32F3E44FD3D90108F975FB@EMPBEDEX.empirix.com> <20070822202639.GL20946@fieldses.org> <BD261180E6D35F4D9D32F3E44FD3D901091DE759@EMPBEDEX.empirix.com>
+	Fri, 31 Aug 2007 17:49:44 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:45331 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751035AbXHaVto (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 17:49:44 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 31 Aug 2007 17:38:34 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: maturity and status and attributes, oh my!
+Message-ID: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D901091DE759@EMPBEDEX.empirix.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 31, 2007 at 02:35:19PM -0400, Morrison, Tom wrote:
-> This is a follow-up...
-> 
-> After a huge pain in the rear upgrading from a 
-> 2.6.11++ to a 2.6.23-rc3 (I'll give the powerpc
-> folks a 'piece' of my mind on that front) - the 
-> NFS hang problem that I was experiencing on the 
-> older kernel is NOT occurring on this new version.
-> 
-> Now what do I do?
 
-Well, between the time jump and the rpc debugging output, you've got
-some great clues there--given some time I'm sure it would be possible to
-completely figure out what's going on.
+  at the risk of driving everyone here totally bonkers, i'm going to
+take one last shot at explaining what i was thinking of when i first
+proposed this whole "maturity level" thing.  and, just so you know,
+the major reason i'm so cranked up about this is that i'm feeling just
+a little territorial -- i was the one who first started nagging people
+to consider this idea, so i'm a little edgy when i see folks finally
+giving it some serious thought but appearing to get ready to implement
+it entirely incorrectly in a way that's going to ruin it irreparably
+and make it utterly useless.
 
-Unfortunately the people with the most knowledge of the code probably
-don't have the time to fix problems on old kernels, so unless somebody
-else recognizes the problem immediately, I'm not sure what to suggest.
-Obviously, a wholesale upgrade to a more recent kernel would be the one
-sure bet....
+  this isn't just about defining a single feature called "maturity".
+it's about defining a general mechanism so that you can add entirely
+new (what i call) "attributes" to kernel features.  one attribute
+could be "maturity", which could take one of a number of possible
+values.  another could be "status", with the same restrictions.
+heck, you could define the attribute "colour", and decide that various
+kernel features could be labelled as (at most) one of "red", "green"
+and "chartreuse."  that's what i mean by an "attribute", and
+attributes would have two critical and non-negotiable properties:
 
-> Is the net/sunrpc net/nfsx pieces isolated enough 
-> from the rest of the kernel that I could fork-lift 
-> it back to the 2.6.11 (or is that really a lost cause).
+1) they would be entirely orthogonal to one another, and
+2) they can be assigned at most one of a pre-defined set of values
 
-I suspect it's a lost cause.  A lot has happened in the last couple
-years.
 
---b.
+  that's it.  it's really that simple and simon's earlier patch i
+think fits that almost perfectly.  now, back to the disagreement.
 
-> > It hangs after attempting to update the time from a 
-> > nonsensical time (e.g.: 2 months ago) - the most significant
-> > part of it is that it only hangs IFF it has started 
-> > serving its NFS client boards before I attempt to 
-> > update the time.
-> > 
-> > 
-> > The most significant output (when turning on 
-> > RPC debugging) is from:
-> > 
-> >   linux/net/sunrpc/cache.c (cache_check) - line 90:
-> > 
-> >          >> Want update, refage=1800, age=4288285
-> > 
-> > It continually loops through this method - and the cache
-> > never gets updated...even thought with some additional
-> > sleuthing (aka: additional debug printks - it thinks 
-> > that there is an cache update pending).
-> 
-> Can you reproduce the problem with the current kernel? (Say 2.6.22 or
-> later?)
-> 
-> --b.
+  it may be that some people had a different understanding of what was
+meant by "maturity" than i did.  what *i* meant by that attribute is
+a feature's current position in the normal software life cycle, and
+that would be one of:
+
+  experimental -> normal (stable) -> deprecated -> obsolete
+
+  it's a natural progression and, at any point, a feature cannot
+possibly have more than one maturity value.  it would be as absurd as
+saying that someone was a teenager *and* was a twenty-something at the
+same time.  not possible.  and restricting an attribute to a single
+value makes definitions and processing *way* easier down the road.
+(and note that a feature's maturity says *nothing* about its current
+level of quality.  that's next.)
+
+  another attribute can then be what i was calling "status" but could
+also be called "quality".   *that* is where you could categorize a
+feature as one of FLAKY, BROKEN and so on.  that's an entirely
+independent categorization from maturity, which means you could have
+features that were both experimental and flaky, or deprecated and
+broken, or what have you.  and those settings would be done with
+separate Kconfig directives:
+
+config WHATEVER
+	maturity DEPRECATED
+	status BROKEN
+
+  from a quick perusal, simon's patch looked pretty much dead-on
+(except for that teeth-grinding maturity level of BROKEN :-).  but
+other than that, it looked good, although i'll have to go back later
+and look more closely.
+
+  but i hope i've flogged this thoroughly to the point where people
+can see what i'm driving at.  once you see (as in simon's patch) how
+to add the first attribute, it's trivial to simply duplicate that code
+to add as many more as you want.
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
