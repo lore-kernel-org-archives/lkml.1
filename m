@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbXHaP2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932885AbXHaPam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760559AbXHaP2u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 11:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbXHaP2j
+	id S932885AbXHaPam (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 11:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbXHaPae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 11:28:39 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59305 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757404AbXHaP2h (ORCPT
+	Fri, 31 Aug 2007 11:30:34 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:33624 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755854AbXHaPad (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 11:28:37 -0400
-Date: Fri, 31 Aug 2007 08:28:36 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Dmitry Monakhov <dmonakhov@sw.ru>
-cc: Jens Axboe <jens.axboe@oracle.com>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
-       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [11/36] Use page_cache_xxx in fs/buffer.c
-In-Reply-To: <20070831083632.GA12619@dnb.acronis.ru>
-Message-ID: <Pine.LNX.4.64.0708310822570.16456@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0708301113170.7975@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0708301843280.13292@schroedinger.engr.sgi.com>
- <20070831065613.GH29452@kernel.dk> <Pine.LNX.4.64.0708310003280.14375@schroedinger.engr.sgi.com>
- <20070831071142.GI29452@kernel.dk> <Pine.LNX.4.64.0708310012370.14375@schroedinger.engr.sgi.com>
- <20070831072611.GK29452@kernel.dk> <Pine.LNX.4.64.0708310028160.14632@schroedinger.engr.sgi.com>
- <20070831074338.GL29452@kernel.dk> <Pine.LNX.4.64.0708310049110.14743@schroedinger.engr.sgi.com>
- <20070831083632.GA12619@dnb.acronis.ru>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 31 Aug 2007 11:30:33 -0400
+X-Sasl-enc: Y8jLcdtnx3id5opO/ZIRQGJNHd2KMv8SsLxoEw3uDYF9 1188574231
+Subject: Re: NFS hang + umount -f: better behaviour requested.
+From: Ian Kent <raven@themaw.net>
+To: Valdis.Kletnieks@vt.edu
+Cc: John Stoffel <john@stoffel.org>, Peter Staubach <staubach@redhat.com>,
+       Robin Lee Powell <rlpowell@digitalkingdom.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <27240.1188573002@turing-police.cc.vt.edu>
+References: <20070820225415.GL3956@digitalkingdom.org>
+	 <18123.5699.405125.137517@stoffel.org> <46CB1A78.7040102@redhat.com>
+	 <18123.13314.43009.263383@stoffel.org>
+	 <Pine.LNX.4.64.0708311600120.12745@raven.themaw.net>
+	 <27240.1188573002@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Fri, 31 Aug 2007 23:30:25 +0800
+Message-Id: <1188574226.3086.0.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007, Dmitry Monakhov wrote:
-
-> > Ok. So another solution maybe to limit the blocksizes that can be used 
-> > with a device?
-> IMHO It is not good because after fs was created with big blksize it's image
-> cant be used on other devices. 
-
-Ok so a raw copy of the partition would do this?
-
-> We may just rewrite submit_bh simular to drivers/md/dm-io.c:do_region
-> with following pseudocode:
+On Fri, 2007-08-31 at 11:10 -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Fri, 31 Aug 2007 16:06:36 +0800, Ian Kent said:
+> > So, there's a power outage and the UPS had a glitch.
 > 
-> remaning = super_page_size();
+> Murphy can get a *lot* more creative than that.
+> 
+> So we'd outgrown the capacity on our UPS and diesel generator, and decided
+> to replace them.  So we schedule downtime for a Saturday.  Rather scary, we
+> had a Sun E10K that had been powered-up for several years, and just as expected,
+> a good fraction of the 400+ drives it had failed to re-spinup.  While recovering
+> from that, we discovered that although the vast majority of the 400 drives were
+> either mirrors or raidsets, due to a config error, the boot volume wasn't
+> mirrored (fortunately, it spun up OK so we dodged the bullet), so we fixed that.
+> 
+> Literally the next Friday, not even a week later, a contractor relocating a
+> door into our machine room shorted out a sensor circuit in our fire suppression
+> system, triggering a Halon dump.  Of course, no amount of UPS and diesel was
+> going to save us now, because there was a safety interlock that killed the
+> power feeds if the Halon dumped.  This time, since they'd all been stressed
+> just a week before, only 2 of the 400+ disks on the E10K failed to spin up.
+> 
+> Guess which two. ;)
 
-That would be compound_size(page)
+Eeeeeekkkk!!
+The mirrors, of course.
 
-> while (remaining) {
-> 	init_bio(bio);
-> 	/*Try and add as many pages as possible*/
+Ian
 
-This seems to be doing the same as get_user_pages() serializing the 
-compound page.
 
-> 	while (remaining) {
-> 		dp->get_page(dp, &page, &len, &offset);
-> 		len = min(len,
-> 		to_bytes(remaining));
->         	if(!bio_add_page(bio, page, len, offset))
-> 		break;
->         	offset = 0;
-> 		remaining -= to_sector(len);
-> 		dp->next_page(dp);
-> 		}
-> 	atomic_inc(&io->count);
-> 	submit_bio(rw, bio);
-> }
-
-Another solution may be to not serialize but instead determine the maximum 
-segment length and generate bios that reference various subsection of the
-compound page of that length? That way you do not serialize and later 
-coalesce again.
