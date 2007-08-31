@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbXHaHL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbXHaHMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755177AbXHaHL5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 03:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbXHaHLq
+	id S1759314AbXHaHMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 03:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbXHaHLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 03:11:46 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5851 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751765AbXHaHLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 03:11:45 -0400
-Date: Fri, 31 Aug 2007 09:11:43 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Dmitry Monakhov <dmonakhov@sw.ru>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
-       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [11/36] Use page_cache_xxx in fs/buffer.c
-Message-ID: <20070831071142.GI29452@kernel.dk>
-References: <20070828190551.415127746@sgi.com> <20070828190730.220393749@sgi.com> <20070830092038.GD22586@dnb.sw.ru> <Pine.LNX.4.64.0708301113170.7975@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0708301843280.13292@schroedinger.engr.sgi.com> <20070831065613.GH29452@kernel.dk> <Pine.LNX.4.64.0708310003280.14375@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708310003280.14375@schroedinger.engr.sgi.com>
+	Fri, 31 Aug 2007 03:11:52 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39591 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753627AbXHaHLu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 03:11:50 -0400
+Subject: Re: [PATCH] Increase lockdep MAX_LOCK_DEPTH
+From: Peter Zijlstra <peterz@infradead.org>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xfs-oss <xfs@oss.sgi.com>, Dave Chinner <dgc@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <46D79C62.1010304@sandeen.net>
+References: <46D79C62.1010304@sandeen.net>
+Content-Type: text/plain
+Date: Fri, 31 Aug 2007 08:39:49 +0200
+Message-Id: <1188542389.6112.44.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 31 2007, Christoph Lameter wrote:
-> On Fri, 31 Aug 2007, Jens Axboe wrote:
+On Thu, 2007-08-30 at 23:43 -0500, Eric Sandeen wrote:
+> The xfs filesystem can exceed the current lockdep 
+> MAX_LOCK_DEPTH, because when deleting an entire cluster of inodes,
+> they all get locked in xfs_ifree_cluster().  The normal cluster
+> size is 8192 bytes, and with the default (and minimum) inode size 
+> of 256 bytes, that's up to 32 inodes that get locked.  Throw in a 
+> few other locks along the way, and 40 seems enough to get me through
+> all the tests in the xfsqa suite on 4k blocks.  (block sizes
+> above 8K will still exceed this though, I think)
+
+As 40 will still not be enough for people with larger block sizes, this
+does not seems like a solid solution. Could XFS possibly batch in
+smaller (fixed sized) chunks, or does that have significant down sides?
+
+> Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
 > 
-> > > So if we try to push a too large buffer down with submit_bh() we get a 
-> > > failure.
-> > 
-> > Only partly, you may be violating a number of other restrictions (size
-> > is many things, not just length of the data).
+> Index: linux-2.6.23-rc3/include/linux/sched.h
+> ===================================================================
+> --- linux-2.6.23-rc3.orig/include/linux/sched.h
+> +++ linux-2.6.23-rc3/include/linux/sched.h
+> @@ -1125,7 +1125,7 @@ struct task_struct {
+>  	int softirq_context;
+>  #endif
+>  #ifdef CONFIG_LOCKDEP
+> -# define MAX_LOCK_DEPTH 30UL
+> +# define MAX_LOCK_DEPTH 40UL
+>  	u64 curr_chain_key;
+>  	int lockdep_depth;
+>  	struct held_lock held_locks[MAX_LOCK_DEPTH];
 > 
-> Could you be more specific?
-
-Size of a single segment, for instance. Or if the bio crosses a dma
-boundary. If your block is 64kb and the maximum segment size is 32kb,
-then you would need to clone the bio and split it into two.
-
-Things like that. This isn't a problem with single page requests, as we
-based the lower possible boundaries on that.
-
--- 
-Jens Axboe
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
