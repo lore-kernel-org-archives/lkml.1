@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758383AbXHaPEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbXHaPFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758383AbXHaPEz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 11:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbXHaPEq
+	id S1757265AbXHaPFj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 11:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbXHaPFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 11:04:46 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34072 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754966AbXHaPEp (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 11:04:45 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org
-Subject: Re: possible build system oddity
-In-Reply-To: Your message of "Fri, 31 Aug 2007 10:42:29 +0200."
-             <20070831084229.GE9260@stusta.de>
-From: Valdis.Kletnieks@vt.edu
-References: <200708311037.29280.oliver@neukum.org>
-            <20070831084229.GE9260@stusta.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1188572427_3280P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 31 Aug 2007 11:00:27 -0400
-Message-ID: <26547.1188572427@turing-police.cc.vt.edu>
+	Fri, 31 Aug 2007 11:05:18 -0400
+Received: from orca.ele.uri.edu ([131.128.51.63]:41778 "EHLO orca.ele.uri.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758862AbXHaPE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 11:04:59 -0400
+Date: Fri, 31 Aug 2007 11:05:44 -0400
+From: Will Simoneau <simoneau@ele.uri.edu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: new x86 setup code hangs on Dell Inspiron 5150
+Message-ID: <20070831150326.GA6003@ele.uri.edu>
+References: <20070831015620.GA6259@ele.uri.edu> <46D7AAF7.1030105@zytor.com> <46D7B817.3060304@zytor.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yEPQxsgoJgBvi8ip"
+Content-Disposition: inline
+In-Reply-To: <46D7B817.3060304@zytor.com>
+User-Agent: Mutt/1.5.16 [Linux 2.6.21.1-grsec-b0rg i686]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1188572427_3280P
+
+--yEPQxsgoJgBvi8ip
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 31 Aug 2007 10:42:29 +0200, Adrian Bunk said:
-> On Fri, Aug 31, 2007 at 10:37:28AM +0200, Oliver Neukum wrote:
-> > Hi,
-> > 
-> > I only touched sound/usb/usbaudio.c
-> > Nevertheless the whole subtree und sound/ is recompiling. What's
-> > happening?
-> 
-> The only file that gets compiled (CC) should be sound/usb/usbaudio.c
-> 
-> It seems you are confused by the fact that this recompilation results in 
-> several relinks (LD)?
+On 23:41 Thu 30 Aug     , H. Peter Anvin wrote:
+> H. Peter Anvin wrote:
+>> Will Simoneau wrote:
+>>> While trying to put together a new kernel for my laptop (Dell I5150, as
+>>> in subject) I found that recent kernels just don't boot. Right after
+>>> grub loads the kernel, before the "Uncompressing Linux" message is
+>>> shown, it hangs. The BIOS appears to still be alive (ctrl-alt-del works,
+>>> keyboard lock LEDs respond). It seems to be caused by the new x86 setup
+>>> code.
+>>>
+>>> My kernel is Linus' git as of a1c582d0720f2eff61043e90711767decf37b917.
+>>> I bisected and confirmed that 4fd06960f120e02e9abc802a09f9511c400042a5
+>>> triggers a non-functioning boot.
+>>>
+>>> This system has Dell BIOS rev A38 and a P4 3.2 w/HT.
+>>>
+>>> What should I do next to debug this problem?
+>> Can you put in some printf's in the code and see how far it gets?
+>
+> Specifically, the places to add printf's are to main() in main.c and=20
+> go_to_protected_mode() in pm.c.
+>
+> 	-hpa
 
-Or something else changed that he didn't realize.  Just the other day, I
-applied a one-line patch that hit one .c file, and *the entire kernel*
-started rebuilding.
+It dies in vesa_probe() right after calling int10 with ax=3D4f01 and
+checking the return status, which was 0x004f (success). This happens on
+the third iteration of the loop; the first two modes it finds are
+framebuffer modes. This would be just after line 72 in video-vesa.c .
 
-Took me a while to figure out that I'd been looking for something else, and
-done a 'vi Makefile' in the top level, and exited with 'ZZ' rather than ':q' ;)
+I have CONFIG_VIDEO_VESA=3Dy and CONFIG_FB=3Dy, but am not passing the
+kernel options that would use vesafb as the console.
 
-
---==_Exmh_1188572427_3280P
+--yEPQxsgoJgBvi8ip
 Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Version: GnuPG v2.0.6 (GNU/Linux)
 
-iD8DBQFG2C0LcC3lWbTT17ARAtixAJ9NLGnASngAc4d/Z62Ma+LZGEtZNQCfSZOw
-SHnI6Vzevmj++5tsfetzNPI=
-=Rd/j
+iD8DBQFG2C5HLYBaX8VDLLURAnZ7AJ4gApNtkuBxpuSRYen+KuAqUC4QowCeLz+B
+G9JC03yfGO2oPCUXMbnLLPM=
+=uQj2
 -----END PGP SIGNATURE-----
 
---==_Exmh_1188572427_3280P--
+--yEPQxsgoJgBvi8ip--
