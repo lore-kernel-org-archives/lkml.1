@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762977AbXHaEpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762512AbXHaEsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762977AbXHaEpq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 00:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbXHaEpf
+	id S1762512AbXHaEsU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 00:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757158AbXHaEsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 00:45:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33329 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756030AbXHaEpe (ORCPT
+	Fri, 31 Aug 2007 00:48:12 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:8054 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757044AbXHaEsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 00:45:34 -0400
-Date: Thu, 30 Aug 2007 21:44:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lguest <lguest@ozlabs.org>, Frederik Deweerdt <deweerdt@free.fr>,
-       Andi Kleen <ak@muc.de>
-Subject: Re: [PATCH] Fix out-by-one error in traps.c
-In-Reply-To: <1188512066.6353.5.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.0.999.0708302140480.25853@woody.linux-foundation.org>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> 
- <20070822202551.GB31846@slug>  <20070823145038.9895784f.akpm@linux-foundation.org>
-  <20070824060438.GE31846@slug> <46CE7EDC.9080007@goop.org> 
- <20070824082249.GG31846@slug>  <1188043649.20041.81.camel@localhost.localdomain>
-  <20070825122324.GA6138@slug> <20070825211405.GA18217@slug> 
- <1188230999.5531.15.camel@localhost.localdomain>  <20070830163812.GA22190@slug>
- <1188512066.6353.5.camel@localhost.localdomain>
+	Fri, 31 Aug 2007 00:48:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:references:in-reply-to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
+        b=DOHvhVsMxHktW6xhaAnll36y+f7jbmWoSwWvc22DlOWURJvAzqyHMPWuQsmVhe5pczo6o0NnHzJhKQs+hg1kmPLBxE33waHiy1rd4fwZe+ng0noAsdS+V2oyYDwjgWILzS7Uw6FdJmj6kEEhjSRgIbbJyeudrfi0RYkJQvZO4CQ=
+From: "Hua Zhong" <hzhong@gmail.com>
+To: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Trond Myklebust'" <trond.myklebust@fys.uio.no>
+Cc: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>
+References: <000701c7eb49$cff701c0$6fe50540$@com>  <1188513433.6626.24.camel@heimdal.trondhjem.org>  <001001c7eb57$afd2d320$0f787960$@com>  <1188516173.6626.46.camel@heimdal.trondhjem.org>  <001501c7eb5d$d295d870$77c18950$@com>  <1188517070.6626.54.camel@heimdal.trondhjem.org>  <001601c7eb5f$b6146980$223d3c80$@com> <1188534682.6626.70.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302134500.25853@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708302134500.25853@woody.linux-foundation.org>
+Subject: RE: recent nfs change causes autofs regression
+Date: Thu, 30 Aug 2007 21:47:59 -0700
+Message-ID: <002101c7eb8a$1c20e300$5462a900$@com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AcfriMNrHcKCrRHXSr2mJEP2nr+lLQAALi9Q
+Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> On Fri, 31 Aug 2007, Trond Myklebust wrote:
+> >
+> > No. Solaris defaults to breaking cache consistency.
+> 
+> If so, and since that's obviously what people _expect_ to happen, why
+> not make that the default, with the "consistent" behaviour being the 
+> one that needs an explicit option.
+> 
+> Just out of curiosity - Hua, is this NFSv2? Especially there, cache
+> "consistency" is largely a joke anyway, so defaulting to some annoying
+> careful mode is doubly ridiculous.
 
+It's v3 as can be seen from the autofs maps I posted.
 
-On Fri, 31 Aug 2007, Rusty Russell wrote:
->
-> We don't care if ebp is on the stack, we care about ebp + 4.  Without
-> this, lguest (with CONFIG_DEBUG_LOCKDEP) can touch a page unmapped by
-> CONFIG_DEBUG_PAGEALLOC.
+These directories are used mostly as read-only and get pulled in via our
+build system. We do not actually write to them often, if at all. I don't
+think this setup is uncommon, and I am worried that once people start using
+the latest kernel their systems will mysteriously break.
 
-Hmm.. This *really* cannot happen with a normal kernel - it implies that 
-the stack has crossed into an invalid page. 
+> 		Linus
 
-Why is that allowed with lguest? What kind of code could validly *ever* 
-come in here and cause problems?
-
-I'm getting the nervous feeling that lguest is really doing things that 
-shouldn't be done, or is using normal kernel functions in ways that they 
-should not be used. 
-
-In other words, yes, we load off "ebp+4", but I really don't see it being 
-a valid situation wher ebp itself isn't also a valid stack frame. The 
-stack is not sized for "off-by-one" errors - we're supposed to always have 
-plenty of stack space free, and if you care about "off-by-one", you're not 
-just living on the edge, you're way beyond it!
-
-IOW, please explain why/how lguest ever triggers a case where this would 
-possibly matter!
-
-		Linus
