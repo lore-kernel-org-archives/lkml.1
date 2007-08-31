@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbXHaOeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758462AbXHaOfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759045AbXHaOeP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 10:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbXHaOd6
+	id S1758462AbXHaOfN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 10:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbXHaOe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 10:33:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56703 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755351AbXHaOd5 (ORCPT
+	Fri, 31 Aug 2007 10:34:57 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:53135 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753912AbXHaOe4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 10:33:57 -0400
-Subject: Re: [PATCH] Increase lockdep MAX_LOCK_DEPTH
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Chinner <dgc@sgi.com>
-Cc: Eric Sandeen <sandeen@sandeen.net>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       xfs-oss <xfs@oss.sgi.com>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20070831135042.GD422459@sgi.com>
-References: <46D79C62.1010304@sandeen.net> <1188542389.6112.44.camel@twins>
-	 <20070831135042.GD422459@sgi.com>
-Content-Type: text/plain
-Date: Fri, 31 Aug 2007 16:33:51 +0200
-Message-Id: <1188570831.6112.64.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Aug 2007 10:34:56 -0400
+In-Reply-To: <200708302022.24167.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, Paul Mackerras <pmac@au1.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Thomas Q Klein <tklein@de.ibm.com>
+MIME-Version: 1.0
+Subject: Re: [PATCH 2.6.23] ibmebus: Prevent bus_id collisions
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OFBB1BA4B6.29175A76-ONC1257348.004DBCB3-C1257348.0050161C@de.ibm.com>
+Date: Fri, 31 Aug 2007 16:34:51 +0200
+X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 31/08/2007 16:34:53,
+	Serialize complete at 31/08/2007 16:34:53
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-31 at 23:50 +1000, David Chinner wrote:
-> On Fri, Aug 31, 2007 at 08:39:49AM +0200, Peter Zijlstra wrote:
-> > On Thu, 2007-08-30 at 23:43 -0500, Eric Sandeen wrote:
-> > > The xfs filesystem can exceed the current lockdep 
-> > > MAX_LOCK_DEPTH, because when deleting an entire cluster of inodes,
-> > > they all get locked in xfs_ifree_cluster().  The normal cluster
-> > > size is 8192 bytes, and with the default (and minimum) inode size 
-> > > of 256 bytes, that's up to 32 inodes that get locked.  Throw in a 
-> > > few other locks along the way, and 40 seems enough to get me through
-> > > all the tests in the xfsqa suite on 4k blocks.  (block sizes
-> > > above 8K will still exceed this though, I think)
-> > 
-> > As 40 will still not be enough for people with larger block sizes, this
-> > does not seems like a solid solution. Could XFS possibly batch in
-> > smaller (fixed sized) chunks, or does that have significant down sides?
-> 
-> The problem is not filesystem block size, it's the xfs inode cluster buffer
-> size / the size of the inodes that determines the lock depth. the common case
-> is 8k/256 = 32 inodes in a buffer, and they all get looked during inode
-> cluster writeback.
-> 
-> This inode writeback clustering is one of the reasons XFS doesn't suffer from
-> atime issues as much as other filesystems - it doesn't need to do as much I/O
-> to write back dirty inodes to disk.
-> 
-> IOWs, we are not going to make the inode clusters smallers - if anything they
-> are going to get *larger* in future so we do less I/O during inode writeback
-> than we do now.....
+Hi, Arnd,
 
-Since they are all trylocks it seems to suggest there is no hard _need_
-to lock a whole inode cluster at once, and could iterate through it with
-less inodes locked.
+> The whole logic of dynamically adding and removing device is rather 
+bogus,
+> and it prevents autoloading of device drivers. of_platform_make_bus_id
+> is the function that is responsible for creating unique names over 
+there.
 
-Granted I have absolutely no understanding of what I'm talking about :-)
+The plaintiff makes a valid point. How about a staging approach: We put 
+the patch as it is now into 2.6.23 so the problem is fixed, and I'll post 
+a "nice" version with autoloading support and a generic of_make_bus_id 
+function for 2.6.24. Agree?
 
-Trouble is, we'd like to have a sane upper bound on the amount of held
-locks at any one time, obviously this is just wanting, because a lot of
-lock chains also depend on the number of online cpus...
-
-
-
+Regards,
+  Joachim
