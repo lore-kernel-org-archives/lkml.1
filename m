@@ -1,43 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbXHaEeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760643AbXHaEez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759365AbXHaEeY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 00:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbXHaEeP
+	id S1760643AbXHaEez (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 00:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbXHaEer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 00:34:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39098 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751769AbXHaEeO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 00:34:14 -0400
-Date: Thu, 30 Aug 2007 21:33:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-cc: Alexey Dobriyan <adobriyan@sw.ru>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Len Brown <lenb@kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix maxcpus=1 oops in show_stat()
-In-Reply-To: <Pine.LNX.4.64.0708310404210.4873@blonde.wat.veritas.com>
-Message-ID: <alpine.LFD.0.999.0708302132470.25853@woody.linux-foundation.org>
-References: <20070828111431.GA27707@localhost.sw.ru>
- <Pine.LNX.4.64.0708290546430.31816@blonde.wat.veritas.com>
- <20070829052331.GB1765@martell.zuzino.mipt.ru> <200708290241.36092.lenb@kernel.org>
- <20070829072508.GA2707@localhost.sw.ru>
- <Pine.LNX.4.64.0708310404210.4873@blonde.wat.veritas.com>
+	Fri, 31 Aug 2007 00:34:47 -0400
+Received: from mga02.intel.com ([134.134.136.20]:43771 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753309AbXHaEeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 00:34:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,328,1183359600"; 
+   d="scan'208";a="286332427"
+From: Jason Gaston <jason.d.gaston@intel.com>
+To: jgarzik@pobox.com, jason.d.gaston@intel.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, htejun@gmail.com
+Subject: [PATCH 2.6.23-rc4][reRESEND] ata_piix: IDE mode SATA patch for Intel Tolapai
+Date: Thu, 30 Aug 2007 21:36:56 -0700
+User-Agent: KMail/1.9.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708302136.57215.jason.d.gaston@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Resend trying to remove 8-bit characters in the email.
 
+This patch adds the Intel Tolapai IDE mode SATA controller DID's.
 
-On Fri, 31 Aug 2007, Hugh Dickins wrote:
->
-> So stay safe for now and just revert those #ifndef CONFIG_HOTPLUG_CPU
-> optimizations in rc1's commit.
+Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
 
-Thanks for the debugging, applied.
-
-		Linus
+--- linux-2.6.23-rc4/drivers/ata/ata_piix.c.orig	2007-08-27 18:32:35.000000000 -0700
++++ linux-2.6.23-rc4/drivers/ata/ata_piix.c	2007-08-29 17:13:13.000000000 -0700
+@@ -130,6 +130,7 @@
+ 	ich6m_sata_ahci		= 8,
+ 	ich8_sata_ahci		= 9,
+ 	piix_pata_mwdma		= 10,	/* PIIX3 MWDMA only */
++	tolapai_sata_ahci	= 11,
+ 
+ 	/* constants for mapping table */
+ 	P0			= 0,  /* port 0 */
+@@ -253,6 +254,8 @@
+ 	{ 0x8086, 0x292d, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
+ 	/* SATA Controller IDE (ICH9M) */
+ 	{ 0x8086, 0x292e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ich8_sata_ahci },
++	/* SATA Controller IDE (Tolapai) */
++	{ 0x8086, 0x5028, PCI_ANY_ID, PCI_ANY_ID, 0, 0, tolapai_sata_ahci },
+ 
+ 	{ }	/* terminate list */
+ };
+@@ -441,12 +444,25 @@
+ 	},
+ };
+ 
++static const struct piix_map_db tolapai_map_db = {
++        .mask = 0x3,
++        .port_enable = 0x3,
++        .map = {
++                /* PM   PS   SM   SS       MAP */
++                {  P0,  NA,  P1,  NA }, /* 00b */
++                {  RV,  RV,  RV,  RV }, /* 01b */
++                {  RV,  RV,  RV,  RV }, /* 10b */
++                {  RV,  RV,  RV,  RV },
++        },
++};
++
+ static const struct piix_map_db *piix_map_db_table[] = {
+ 	[ich5_sata]		= &ich5_map_db,
+ 	[ich6_sata]		= &ich6_map_db,
+ 	[ich6_sata_ahci]	= &ich6_map_db,
+ 	[ich6m_sata_ahci]	= &ich6m_map_db,
+ 	[ich8_sata_ahci]	= &ich8_map_db,
++	[tolapai_sata_ahci]	= &tolapai_map_db,
+ };
+ 
+ static struct ata_port_info piix_port_info[] = {
+@@ -560,6 +576,17 @@
+ 		.mwdma_mask	= 0x06, /* mwdma1-2 ?? CHECK 0 should be ok but slow */
+ 		.port_ops	= &piix_pata_ops,
+ 	},
++
++	/* tolapai_sata_ahci: 11: */
++	{
++		.sht		= &piix_sht,
++		.flags		= PIIX_SATA_FLAGS | PIIX_FLAG_SCR |
++				  PIIX_FLAG_AHCI,
++		.pio_mask	= 0x1f,	/* pio0-4 */
++		.mwdma_mask	= 0x07, /* mwdma0-2 */
++		.udma_mask	= ATA_UDMA6,
++		.port_ops	= &piix_sata_ops,
++	},
+ };
+ 
+ static struct pci_bits piix_enable_bits[] = {
