@@ -1,71 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbXHaPt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbXHaPxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933103AbXHaPt4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 11:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbXHaPtr
+	id S1759526AbXHaPxs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 11:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757451AbXHaPxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 11:49:47 -0400
-Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:3870 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756737AbXHaPtr (ORCPT
+	Fri, 31 Aug 2007 11:53:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49777 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757391AbXHaPxk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 11:49:47 -0400
-Date: Fri, 31 Aug 2007 17:50:45 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Jason Gaston <jason.d.gaston@intel.com>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, i2c@lm-sensors.org
-Subject: Re: [PATCH 2.6.23-rc4][reRESEND] i2c-i801: SMBus patch for Intel
- Tolapai
-Message-ID: <20070831175045.37938669@hyperion.delvare>
-In-Reply-To: <200708302042.59104.jason.d.gaston@intel.com>
-References: <200708302042.59104.jason.d.gaston@intel.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Aug 2007 11:53:40 -0400
+Date: Fri, 31 Aug 2007 21:36:45 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bugme-daemon@kernel-bugs.osdl.org
+Subject: Re: [Bugme-new] [Bug 8957] New: Exported functions and variables
+In-Reply-To: <469780.175.qm@web52012.mail.re2.yahoo.com>
+Message-ID: <alpine.LFD.0.999.0708312126040.9261@enigma.security.iitk.ac.in>
+References: <469780.175.qm@web52012.mail.re2.yahoo.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jason,
+Hi Matti,
 
-On Thu, 30 Aug 2007 20:42:58 -0700, Jason Gaston wrote:
-> Resend with uppercase define.
-> 
-> This updated patch adds the Intel Tolapai SMBus Controller DID's.
-> This patch relies on the Tolapai patch to pci_ids.h 
-> 
-> Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
-> 
-> --- linux-2.6.23-rc4/drivers/i2c/busses/i2c-i801.c.orig	2007-08-27 18:32:35.000000000 -0700
-> +++ linux-2.6.23-rc4/drivers/i2c/busses/i2c-i801.c	2007-08-30 20:25:10.000000000 -0700
-> @@ -34,6 +34,7 @@
->      ESB2		269B
->      ICH8		283E
->      ICH9		2930
-> +    Tolapai		5032
->      This driver supports several versions of Intel's I/O Controller Hubs (ICH).
->      For SMBus support, they are similar to the PIIX4 and are part
->      of Intel's '810' and other chipsets.
-> @@ -543,6 +544,7 @@
->  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ESB2_17) },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH8_5) },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_6) },
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_TOLAPAI_1) },
->  	{ 0, }
->  };
->  
-> @@ -563,6 +565,7 @@
->  	case PCI_DEVICE_ID_INTEL_ESB2_17:
->  	case PCI_DEVICE_ID_INTEL_ICH8_5:
->  	case PCI_DEVICE_ID_INTEL_ICH9_6:
-> +	case PCI_DEVICE_ID_INTEL_TOLAPAI_1:
->  		isich4 = 1;
->  		break;
->  	default:
 
-Applied together with the Documentation patch (no need for a separate
-patch). Note that I will have to wait for Greg to pick the pci_ids.h
-patch before I can push this one.
+On Thu, 30 Aug 2007, Matti Linnanvuori wrote:
+> 
+> I thought I had seen that bug. Module init function execution does not
+> seem serialized enough, so the init function of one module seems to be
+> able to be called in parallel with several other modules in turn being
+> loaded, executing their init functions and even becoming live first
+> class citizens.
+> Function sys_init_module in
+> Linux 2.6.22.x and 2.6.23-rc4 kernel/module.c does not hold module_mutex
+> when executing the init functions of the modules.
 
--- 
-Jean Delvare
+Sure, there's nothing to prevent one module's module_init() from being
+concurrently executed with the module_init() of another -- but that's OK.
+Anyway, I tested this out with:
+
+Module A
+========
+
+/***** mod_a.c *****/
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/delay.h>
+#include <linux/module.h>
+#include <linux/spinlock.h>
+
+static spinlock_t mylock;
+
+static void mod_a_func(void)
+{
+        spin_lock(&mylock);
+        printk(KERN_INFO "inside mod_a_func\n");
+        spin_unlock(&mylock);
+}
+EXPORT_SYMBOL(mod_a_func);
+
+static int __init mod_a_init(void)
+{
+        printk(KERN_INFO "module_init begin ...");
+        ssleep(10);
+        spin_lock_init(&mylock);
+        printk(KERN_INFO "... module_init done\n");
+        return 0;
+}
+
+static void __exit mod_a_exit(void)
+{
+        printk(KERN_INFO "exiting\n");
+}
+
+module_init(mod_a_init);
+module_exit(mod_a_exit);
+MODULE_LICENSE("GPL");
+/***** mod_a.c *****/
+
+Module B
+========
+
+/***** mod_b.c *****/
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/module.h>
+
+extern void mod_a_func(void);
+
+static int __init mod_b_init(void)
+{
+        mod_a_func();
+        return 0;
+}
+
+static void __exit mod_b_exit(void)
+{
+}
+
+module_init(mod_b_init);
+module_exit(mod_b_exit);
+MODULE_LICENSE("GPL");
+/***** mod_b.c *****/
+
+Test result:
+============
+
+Module B refuses to load (could not resolve the symbol mod_a_func) unless
+the module_init() of Module A has finished completely. The following log
+was obtained by running "insmod ./mod_b.ko" repeatedly on one xterm, while
+another xterm was then used to do "insmod ./mod_a.ko":
+
+mod_b: Unknown symbol mod_a_func
+mod_b: Unknown symbol mod_a_func
+module_init begin ...<4>mod_b: Unknown symbol mod_a_func
+mod_b: Unknown symbol mod_a_func
+last message repeated 4 times
+... module_init done
+inside mod_a_func
+
+
+So the title of your bug report "Exported functions and variables should
+not be reachable by the outside of the module until module_init finishes"
+sounds to be already true to me, so let us know if bugzilla #8957 can be
+closed or not ;-)
+
+
+Thanks,
+
+Satyam
