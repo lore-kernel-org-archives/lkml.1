@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933196AbXHaSZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933261AbXHaS1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933196AbXHaSZM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 14:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbXHaSY7
+	id S933261AbXHaS1J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 14:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932834AbXHaS05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 14:24:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48357 "EHLO mx3.mail.elte.hu"
+	Fri, 31 Aug 2007 14:26:57 -0400
+Received: from mga02.intel.com ([134.134.136.20]:1415 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932745AbXHaSY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 14:24:58 -0400
-Date: Fri, 31 Aug 2007 20:24:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Track accurate idle time with tick_sched.idle_sleeptime
-Message-ID: <20070831182421.GA4119@elte.hu>
-References: <20070827215611.GA30396@linux-os.sc.intel.com> <20070831182212.GA3568@elte.hu>
+	id S932808AbXHaS04 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 14:26:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,193,1186383600"; 
+   d="scan'208";a="286593163"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070831182212.GA3568@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] Track accurate idle time with tick_sched.idle_sleeptime
+Date: Fri, 31 Aug 2007 11:26:49 -0700
+Message-ID: <653FFBB4508B9042B5D43DC9E18836F50155E3CE@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <20070831182421.GA4119@elte.hu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Track accurate idle time with tick_sched.idle_sleeptime
+Thread-Index: Acfr/CrHM4ScgGXlS3KPoRcDaB/LyQAADUYg
+References: <20070827215611.GA30396@linux-os.sc.intel.com> <20070831182212.GA3568@elte.hu> <20070831182421.GA4119@elte.hu>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 31 Aug 2007 18:26:53.0104 (UTC) FILETIME=[80F2F300:01C7EBFC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+>-----Original Message-----
+>From: Ingo Molnar [mailto:mingo@elte.hu] 
+>Sent: Friday, August 31, 2007 11:24 AM
+>To: Pallipadi, Venkatesh
+>Cc: Thomas Gleixner; Andrew Morton; linux-kernel
+>Subject: Re: [PATCH] Track accurate idle time with 
+>tick_sched.idle_sleeptime
+>
+>
+>* Ingo Molnar <mingo@elte.hu> wrote:
+>
+>> nice stuff! I've added your patch to the scheduler queue - but this 
+>> will probably be 2.6.24 material.
+>
+>btw., this patch depends on the latest acpi tree, right?
+>
+>	Ingo
 
-> nice stuff! I've added your patch to the scheduler queue - but this 
-> will probably be 2.6.24 material.
+No. There are no dependencies with any ACPI changes that I know of. I
+tested this patche both with latest git and mm and worked fine both
+ways.
 
-btw., this patch depends on the latest acpi tree, right?
-
-	Ingo
+Thanks,
+Venki
