@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965553AbXHaNvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965653AbXHaNwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965553AbXHaNvT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 09:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965160AbXHaNvL
+	id S965653AbXHaNwA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 09:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965074AbXHaNvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 09:51:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60997 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965092AbXHaNvK (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 09:51:10 -0400
-Date: Fri, 31 Aug 2007 23:50:42 +1000
-From: David Chinner <dgc@sgi.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Eric Sandeen <sandeen@sandeen.net>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       xfs-oss <xfs@oss.sgi.com>, Dave Chinner <dgc@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Increase lockdep MAX_LOCK_DEPTH
-Message-ID: <20070831135042.GD422459@sgi.com>
-References: <46D79C62.1010304@sandeen.net> <1188542389.6112.44.camel@twins>
+	Fri, 31 Aug 2007 09:51:52 -0400
+Received: from pat.uio.no ([129.240.10.15]:53103 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965041AbXHaNvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 09:51:51 -0400
+Subject: Re: recent nfs change causes autofs regression
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Frank van Maarseveen <frankvm@frankvm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jakob Oestergaard <jakob@unthought.net>, Hua Zhong <hzhong@gmail.com>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org
+In-Reply-To: <20070831131226.GA24084@janus>
+References: <000701c7eb49$cff701c0$6fe50540$@com>
+	 <1188513433.6626.24.camel@heimdal.trondhjem.org>
+	 <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org>
+	 <1188535485.6626.85.camel@heimdal.trondhjem.org>
+	 <alpine.LFD.0.999.0708302157470.25853@woody.linux-foundation.org>
+	 <1188536658.6626.98.camel@heimdal.trondhjem.org>
+	 <alpine.LFD.0.999.0708302215280.25853@woody.linux-foundation.org>
+	 <20070831074028.GR21979@unthought.net>
+	 <alpine.LFD.0.999.0708310055010.25853@woody.linux-foundation.org>
+	 <1188562298.6649.39.camel@heimdal.trondhjem.org>
+	 <20070831131226.GA24084@janus>
+Content-Type: text/plain
+Date: Fri, 31 Aug 2007 09:50:12 -0400
+Message-Id: <1188568212.6649.75.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1188542389.6112.44.camel@twins>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, AWL=0.041)
+X-UiO-Scanned: DC00E1F9ABD6CBC3DBBA06605C33F14BA3D5F570
+X-UiO-Ratelimit-Test: Ratelimit
+X-UiO-SPAM-Test: UIO-RATELIMIT remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1311 total 3589923 max/h 8345 blacklist 0 greylist 0 ratelimit 1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 31, 2007 at 08:39:49AM +0200, Peter Zijlstra wrote:
-> On Thu, 2007-08-30 at 23:43 -0500, Eric Sandeen wrote:
-> > The xfs filesystem can exceed the current lockdep 
-> > MAX_LOCK_DEPTH, because when deleting an entire cluster of inodes,
-> > they all get locked in xfs_ifree_cluster().  The normal cluster
-> > size is 8192 bytes, and with the default (and minimum) inode size 
-> > of 256 bytes, that's up to 32 inodes that get locked.  Throw in a 
-> > few other locks along the way, and 40 seems enough to get me through
-> > all the tests in the xfsqa suite on 4k blocks.  (block sizes
-> > above 8K will still exceed this though, I think)
-> 
-> As 40 will still not be enough for people with larger block sizes, this
-> does not seems like a solid solution. Could XFS possibly batch in
-> smaller (fixed sized) chunks, or does that have significant down sides?
+On Fri, 2007-08-31 at 15:12 +0200, Frank van Maarseveen wrote:
 
-The problem is not filesystem block size, it's the xfs inode cluster buffer
-size / the size of the inodes that determines the lock depth. the common case
-is 8k/256 = 32 inodes in a buffer, and they all get looked during inode
-cluster writeback.
+> IMHO I'd only consider returning EBUSY when trying to mount _exactly_
+> the same directory with different flags, not for arbitrary subtrees. The
+> client should preferably not be bothered with server side disk
+> partitioning (at least not beyond the obvious such as df output).
 
-This inode writeback clustering is one of the reasons XFS doesn't suffer from
-atime issues as much as other filesystems - it doesn't need to do as much I/O
-to write back dirty inodes to disk.
+That is utterly inconsistent and confusing too.
 
-IOWs, we are not going to make the inode clusters smallers - if anything they
-are going to get *larger* in future so we do less I/O during inode writeback
-than we do now.....
+If you have a filesystem "/foo" exported on the server "remote", then
+why should
 
-Cheers,
+        mount -oro remote:/foo
+        mount -orw remote:/foo/a
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+be allowed, but
+
+        mount -oro remote:/foo
+        mount -orw remote:/foo
+
+be forbidden? The caching problems are the same. Telling the admin that
+one is safe and the other is not, is just messing with his mind.
+
+Trond
+
