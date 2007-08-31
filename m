@@ -1,79 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965853AbXHaRLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965811AbXHaROg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965853AbXHaRLA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 13:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965735AbXHaRK1
+	id S965811AbXHaROg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 13:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965394AbXHaRO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 13:10:27 -0400
-Received: from mga11.intel.com ([192.55.52.93]:12012 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965436AbXHaRKT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 13:10:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,193,1186383600"; 
-   d="scan'208";a="291572238"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 31 Aug 2007 13:14:29 -0400
+Received: from web52005.mail.re2.yahoo.com ([206.190.49.252]:38587 "HELO
+	web52005.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965379AbXHaRO2 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 13:14:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=RctOGADX9MJbUmxe8qNLcZTo+SVBX46smfhUCdtjOWrJ0qzTaFDKAD44Cdu4Qd2JCPWIRJV09m88jvGLltRPgHw7J0xltOEVzvAnjtS1vYjckaWTFz1kPfwBfw0TDk/FBJG7HqmlOATKYvOINt5NwtUzuMSwG9Q/KTPsntFy4Lc=;
+X-YMail-OSG: t4st7ZQVM1mjwWAwKbuXEzsV6oaV9hD0RbseSD444f1DJJpZxJMZnMGAgAs2MWBnDpoEKBgnl1mVKlXBB8r43vMVguvMKcLIeysD5uiXsOssmuV80bfMnj5nwthpxw--
+X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
+Date: Fri, 31 Aug 2007 10:14:27 -0700 (PDT)
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Subject: [Bugme-new] [Bug 8957] New: Exported functions and variables
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: bugme-daemon@kernel-bugs.osdl.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch for Intel Tolapai
-Date: Fri, 31 Aug 2007 10:10:17 -0700
-Message-ID: <39B20DF628532344BC7A2692CB6AEE0701B5BE08@orsmsx420.amr.corp.intel.com>
-In-Reply-To: <46D7C783.8050803@pobox.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch for Intel Tolapai
-thread-index: AcfroyjKgfQ2QoQvS56po7XeVOgmmgATkLwg
-References: <200708302127.19535.jason.d.gaston@intel.com> <46D7C783.8050803@pobox.com>
-From: "Gaston, Jason D" <jason.d.gaston@intel.com>
-To: "Jeff Garzik" <jgarzik@pobox.com>
-Cc: <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 31 Aug 2007 17:10:18.0809 (UTC) FILETIME=[CE892A90:01C7EBF1]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <116718.45429.qm@web52005.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This device has both AHCI and RAID modes that use the ahci driver.  Only
-the RAID mode DID's are being added as the PCI class code support will
-cover the AHCI mode.  Looking at the Generic, PCI class code support
-section, it uses "board_ahci".  I assumed that they should be the same
-as the generic class code support is working on this platform.
-
-Thanks,
-
-Jason
+It seems to me that kernel/module.c allows the whole kernel to use exported symbols during the execution of the init function if they are weak:
+                        /* Ok if weak.  */
+                          if (ELF_ST_BIND(sym[i].st_info) == STB_WEAK)
+                                  break;
+That seems a possible way to produce the scenario of this so-called bug.
 
 
->-----Original Message-----
->From: Jeff Garzik [mailto:jgarzik@pobox.com]
->Sent: Friday, August 31, 2007 12:47 AM
->To: Gaston, Jason D
->Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
->Subject: Re: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch
-for
->Intel Tolapai
->
->Jason Gaston wrote:
->> Resend trying to remove 8-bit characters in the email.
->>
->> This patch adds the Intel Tolapai RAID controller DID's for SATA
-support.
->>
->> Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
->>
->> --- linux-2.6.23-rc4/drivers/ata/ahci.c.orig	2007-08-27
->18:32:35.000000000 -0700
->> +++ linux-2.6.23-rc4/drivers/ata/ahci.c	2007-08-28
-16:58:11.000000000 -
->0700
->> @@ -411,6 +411,8 @@
->>  	{ PCI_VDEVICE(INTEL, 0x292f), board_ahci_pi }, /* ICH9M */
->>  	{ PCI_VDEVICE(INTEL, 0x294d), board_ahci_pi }, /* ICH9 */
->>  	{ PCI_VDEVICE(INTEL, 0x294e), board_ahci_pi }, /* ICH9M */
->> +	{ PCI_VDEVICE(INTEL, 0x502a), board_ahci }, /* Tolapai */
->> +	{ PCI_VDEVICE(INTEL, 0x502b), board_ahci }, /* Tolapai */
->
->Why did you not use board_ahci_pi?  Is the AHCI ports-implemented
->register unreliable on this platform?
+
+      ________ 
+Yahoo! Clever: Stellen Sie Fragen und finden Sie Antworten. Teilen Sie Ihr Wissen. www.yahoo.de/clever
+
