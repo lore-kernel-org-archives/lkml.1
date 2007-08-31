@@ -1,109 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762202AbXHaUQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762214AbXHaUT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762202AbXHaUQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 16:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbXHaUQQ
+	id S1762214AbXHaUT1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 16:19:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbXHaUTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 16:16:16 -0400
-Received: from xenotime.net ([66.160.160.81]:47488 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751264AbXHaUQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 16:16:13 -0400
-Date: Fri, 31 Aug 2007 13:16:12 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Simon Arlott <simon@fire.lp0.eu>,
-       sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Adrian Bunk <bunk@stusta.de>, Gabriel C <crazy@pimpmylinux.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-Message-Id: <20070831131612.312664ef.rdunlap@xenotime.net>
-In-Reply-To: <46D858A9.4080506@garzik.org>
-References: <469E75AA.7040109@pimpmylinux.org>
-	<Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
-	<20070718134012.cde2f956.randy.dunlap@oracle.com>
-	<469E7BE1.6090401@garzik.org>
-	<Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
-	<20070718210903.GM3801@stusta.de>
-	<Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
-	<20070719054742.GN3801@stusta.de>
-	<Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
-	<469F240E.9040205@s5r6.in-berlin.de>
-	<Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
-	<20070719083109.13b2ab56.rdunlap@xenotime.net>
-	<Pine.LNX.4.64.0707191213130.8844@localhost.localdomain>
-	<469FE045.3070403@simon.arlott.org.uk>
-	<20070831102527.09fb42c0.rdunlap@xenotime.net>
-	<Pine.LNX.4.64.0708311318220.18158@localhost.localdomain>
-	<46D858A9.4080506@garzik.org>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Aug 2007 16:19:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43239 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753234AbXHaUTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 16:19:20 -0400
+Date: Fri, 31 Aug 2007 16:18:20 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] add CONFIG_VT_UNICODE
+Message-ID: <20070831201820.GF31970@nostromo.devel.redhat.com>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007 14:06:33 -0400 Jeff Garzik wrote:
+As of now, the kernel defaults to non-unicode and XLATE for the keyboard.
+We've been changing this in Fedora, but that requires patching the defaults
+in the kernel.
 
-> Robert P. J. Day wrote:
-> > On Fri, 31 Aug 2007, Randy Dunlap wrote:
-> > 
-> >> On Thu, 19 Jul 2007 23:05:57 +0100 Simon Arlott wrote:
-> >>
-> >>> On 19/07/07 17:19, Robert P. J. Day wrote:
-> >>>> On Thu, 19 Jul 2007, Randy Dunlap wrote:
-> >>>>> I think that Stefan means a patch to the kconfig source code,
-> >>>>> not the the Kconfig files.  Good luck.  I'd still like to see it.
-> >>>> yes, i understand what he wanted now.  as a first step (that
-> >>>> theoretically shouldn't change any behaviour), i'd patch the Kconfig
-> >>>> structure to add a new attribute ("maturity") which would be allowed
-> >>>> to be set to *exactly one* of a pre-defined set of values (say,
-> >>>> OBSOLETE, DEPRECATED, EXPERIMENTAL, and STILLBLEEDING).  and that's
-> >>>> it, nothing more.
-> >>>>
-> >>>> don't try to do anything with any of that just yet, just add the
-> >>>> infrastructure to support the (optional) association of a maturity
-> >>>> level with a config option.  that's step one.
-> >>> What about something like this? I'm not sure if the addition to sym_init
-> >>> is desirable... I also had to prefix _ to the name for now otherwise it
-> >>> conflicts badly with the current symbols. It probably should stop
-> >>> "depends on _BROKEN" etc. too.
-> > 
-> > i'm sure i'm going to get shouted down here, but i really disagree
-> > with "BROKEN" being considered a "maturity level".  IMHO, things like
-> > EXPERIMENTAL, DEPRECATED and OBSOLETE represent maturity levels, for
-> > what i think are obvious reasons.
-> > 
-> > something like BROKEN, though, has *nothing* to do with maturity.  a
-> > feature can be any of those maturity levels, and simultaneously be
-> > BROKEN.  i consider BROKEN to be what i call a "status", and different
-> > status levels might be the default of normal, or KIND_OF_FLAKY or
-> > TOTALLY_BORKED -- that's where BROKEN would fit in.
-> 
-> BROKEN is definitely a maturity level.  A more accurate description 
-> would be BITROTTING perhaps.  The code in question has passed through 
-> bleeding -> experimental -> stable, and come out the other side.
-> 
-> In contrast, OBSOLETE and DEPRECATED reflect high-level status not code 
-> quality/maturity.
+The attached introduces CONFIG_VT_UNICODE, which sets the console in unicode
+mode by default on boot, including both the virtual terminal and the keyboard
+driver.
 
-What I like about the patch is that it associates some kconfig symbol
-with prompt strings, so that we don't have to edit "(EXPERIMENTAL)"
-all the darn time (e.g.).
+Signed-off-by: Bill Nottingham <notting@redhat.com>
 
-I'd be quite happy with calling it "status" rather than "maturity",
-and with being able to use multiple of the status tags at one time,
-such as
-
-	config FOO
-	depends on BAR
-	status OBSOLETE BROKEN
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+diff -up linux-2.6.22.noarch/drivers/char/keyboard.c.foo linux-2.6.22.noarch/drivers/char/keyboard.c
+--- linux-2.6.22.noarch/drivers/char/keyboard.c.foo	2007-08-30 17:18:54.000000000 -0400
++++ linux-2.6.22.noarch/drivers/char/keyboard.c	2007-08-30 17:27:13.000000000 -0400
+@@ -1366,7 +1366,7 @@ int __init kbd_init(void)
+ 		kbd_table[i].lockstate = KBD_DEFLOCK;
+ 		kbd_table[i].slockstate = 0;
+ 		kbd_table[i].modeflags = KBD_DEFMODE;
+-		kbd_table[i].kbdmode = VC_XLATE;
++		kbd_table[i].kbdmode = default_utf8 ? VC_UNICODE : VC_XLATE;
+ 	}
+ 
+ 	error = input_register_handler(&kbd_handler);
+diff -up linux-2.6.22.noarch/drivers/char/vt_ioctl.c.foo linux-2.6.22.noarch/drivers/char/vt_ioctl.c
+--- linux-2.6.22.noarch/drivers/char/vt_ioctl.c.foo	2007-08-30 17:15:45.000000000 -0400
++++ linux-2.6.22.noarch/drivers/char/vt_ioctl.c	2007-08-30 17:27:35.000000000 -0400
+@@ -1070,7 +1070,7 @@ int vt_waitactive(int vt)
+ void reset_vc(struct vc_data *vc)
+ {
+ 	vc->vc_mode = KD_TEXT;
+-	kbd_table[vc->vc_num].kbdmode = VC_XLATE;
++	kbd_table[vc->vc_num].kbdmode = default_utf8 ? VC_UNICODE : VC_XLATE;
+ 	vc->vt_mode.mode = VT_AUTO;
+ 	vc->vt_mode.waitv = 0;
+ 	vc->vt_mode.relsig = 0;
+diff -up linux-2.6.22.noarch/drivers/char/Kconfig.foo linux-2.6.22.noarch/drivers/char/Kconfig
+--- linux-2.6.22.noarch/drivers/char/Kconfig.foo	2007-08-30 17:33:41.000000000 -0400
++++ linux-2.6.22.noarch/drivers/char/Kconfig	2007-08-30 17:33:46.000000000 -0400
+@@ -36,6 +36,23 @@ config VT
+ 	  If unsure, say Y, or else you won't be able to do much with your new
+ 	  shiny Linux system :-)
+ 
++config VT_UNICODE
++	bool "Virtual console is Unicode by default"
++	depends on VT
++	default n
++	---help---
++	  If you say Y here, the virtual terminal will be in UTF-8 by default,
++	  and the keyboard will run in unicode mode.
++
++	  If you say N here, the virtual terminal will not be in UTF-8 by
++	  default, and the keyboard will run in XLATE mode.
++
++	  This can also be changed by passing 'default_utf8=<0|1>' on the
++	  kernel command line.
++
++	  Historically, the kernel has defaulted to non-UTF8 and XLATE mode.
++	  If unsure, say N here.
++
+ config VT_CONSOLE
+ 	bool "Support for console on virtual terminal" if EMBEDDED
+ 	depends on VT
+diff -up linux-2.6.22.noarch/drivers/char/vt.c.foo linux-2.6.22.noarch/drivers/char/vt.c
+--- linux-2.6.22.noarch/drivers/char/vt.c.foo	2007-08-30 17:20:02.000000000 -0400
++++ linux-2.6.22.noarch/drivers/char/vt.c	2007-08-30 17:26:05.000000000 -0400
+@@ -158,7 +158,11 @@ static void blank_screen_t(unsigned long
+ static void set_palette(struct vc_data *vc);
+ 
+ static int printable;		/* Is console ready for printing? */
+-static int default_utf8;
++#ifdef CONFIG_VT_UNICODE
++int default_utf8 = 1;
++#else
++int default_utf8;
++#endif
+ module_param(default_utf8, int, S_IRUGO | S_IWUSR);
+ 
+ /*
+diff -up linux-2.6.22.noarch/drivers/char/sysrq.c.foo linux-2.6.22.noarch/drivers/char/sysrq.c
+--- linux-2.6.22.noarch/drivers/char/sysrq.c.foo	2007-08-30 17:16:20.000000000 -0400
++++ linux-2.6.22.noarch/drivers/char/sysrq.c	2007-08-30 17:26:52.000000000 -0400
+@@ -107,12 +107,12 @@ static void sysrq_handle_unraw(int key, 
+ 	struct kbd_struct *kbd = &kbd_table[fg_console];
+ 
+ 	if (kbd)
+-		kbd->kbdmode = VC_XLATE;
++		kbd->kbdmode = default_utf8 ? VC_UNICODE : VC_XLATE;
+ }
+ static struct sysrq_key_op sysrq_unraw_op = {
+ 	.handler	= sysrq_handle_unraw,
+ 	.help_msg	= "unRaw",
+-	.action_msg	= "Keyboard mode set to XLATE",
++	.action_msg	= "Keyboard mode set to system default",
+ 	.enable_mask	= SYSRQ_ENABLE_KEYBOARD,
+ };
+ #else
+diff -up linux-2.6.22.x86_64/include/linux/vt_kern.h.foo linux-2.6.22.x86_64/include/linux/vt_kern.h
+--- linux-2.6.22.x86_64/include/linux/vt_kern.h.foo	2007-08-30 19:35:29.000000000 -0400
++++ linux-2.6.22.x86_64/include/linux/vt_kern.h	2007-08-30 19:35:29.000000000 -0400
+@@ -87,6 +87,7 @@ extern int unbind_con_driver(const struc
+ extern char con_buf[CON_BUF_SIZE];
+ extern struct mutex con_buf_mtx;
+ extern char vt_dont_switch;
++extern int default_utf8;
+ 
+ struct vt_spawn_console {
+ 	spinlock_t lock;
