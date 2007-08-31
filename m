@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965346AbXHaNdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965390AbXHaNgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965346AbXHaNdd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 09:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965056AbXHaNdY
+	id S965390AbXHaNgm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 09:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965091AbXHaNgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 09:33:24 -0400
-Received: from fysh.org ([83.170.75.51]:34650 "EHLO bowl.fysh.org"
+	Fri, 31 Aug 2007 09:36:33 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58548 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965045AbXHaNdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 09:33:22 -0400
-X-Greylist: delayed 3292 seconds by postgrey-1.27 at vger.kernel.org; Fri, 31 Aug 2007 09:33:22 EDT
-Date: Fri, 31 Aug 2007 13:38:25 +0100
-From: Athanasius <link@miggy.org>
-To: Patrick McHardy <kaber@trash.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, link@miggy.org
-Subject: Re: [Bugme-new] [Bug 8961] New: BUG triggered by oidentd in netlink code
-Message-ID: <20070831123825.GW22067@miggy.org>
-Mail-Followup-To: Athanasius <link@miggy.org>,
-	Patrick McHardy <kaber@trash.net>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-	bugme-daemon@bugzilla.kernel.org
-References: <bug-8961-10286@http.bugzilla.kernel.org/> <20070830180842.7c8414fe.akpm@linux-foundation.org> <Pine.LNX.4.64.0708311258520.8423@x2>
+	id S965076AbXHaNgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 09:36:32 -0400
+Message-ID: <46D8195E.20802@garzik.org>
+Date: Fri, 31 Aug 2007 09:36:30 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="eMP3JyRexyk9c0Bv"
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708311258520.8423@x2>
-X-gpg-fingerprint: B34E4BC3
-X-gpg-key: http://www.fysh.org/~athan/gpg-key
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Divy Le Ray <divy@chelsio.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 8/11] cxgb3 - Update internal memory management
+References: <20070822034941.9387.79621.stgit@speedy5>
+In-Reply-To: <20070822034941.9387.79621.stgit@speedy5>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Divy Le Ray wrote:
+> From: Divy Le Ray <divy@chelsio.com>
+> 
+> Set PM1 internal memory to round robin mode
+> It balances access to this internal memory for multiport adapters.
+> 
+> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+> ---
+> 
+>  drivers/net/cxgb3/regs.h  |    2 ++
+>  drivers/net/cxgb3/t3_hw.c |    2 ++
+>  2 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/net/cxgb3/regs.h b/drivers/net/cxgb3/regs.h
+> index 2824278..5e1bc0d 100644
+> --- a/drivers/net/cxgb3/regs.h
+> +++ b/drivers/net/cxgb3/regs.h
+> @@ -1326,6 +1326,7 @@
+>  #define V_D0_WEIGHT(x) ((x) << S_D0_WEIGHT)
+>  
+>  #define A_PM1_RX_CFG 0x5c0
+> +#define A_PM1_RX_MODE 0x5c4
+>  
+>  #define A_PM1_RX_INT_ENABLE 0x5d8
+>  
+> @@ -1394,6 +1395,7 @@
+>  #define A_PM1_RX_INT_CAUSE 0x5dc
+>  
+>  #define A_PM1_TX_CFG 0x5e0
+> +#define A_PM1_TX_MODE 0x5e4
+>  
+>  #define A_PM1_TX_INT_ENABLE 0x5f8
 
---eMP3JyRexyk9c0Bv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Future note:
 
-On Fri, Aug 31, 2007 at 01:05:04PM +0200, Patrick McHardy wrote:
-> Seems to be a bug introduced by the netlink_run_queue conversion,
-> since there is no locking and netlink_run_queue doesn't check
-> for NULL results from skb_dequeue, it might pass NULL to
-> netlink_rcv_skb, which crashes.
->=20
-> Does this patch help?
+would be nice to see the above as enums as well
 
-  I'll compile up a new kernel, likely 2.6.22.6, plus this patch, and
-reboot to it tonight.  I still don't know *exactly* how to trigger the
-bug on demand though, it's not reocurred since I posted the bug report
-(but had happened about a week before as well).
 
-thanks,
-
--Ath
---=20
-- Athanasius =3D Athanasius(at)miggy.org / http://www.miggy.org/
-                  Finger athan(at)fysh.org for PGP key
-	   "And it's me who is my enemy. Me who beats me up.
-Me who makes the monsters. Me who strips my confidence." Paula Cole - ME
-
---eMP3JyRexyk9c0Bv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG2AvBIr2uvLNOS8MRAtnKAJ4zRabYY7lO1UuKACAe2Cr2tvQ9AACeOntv
-9ccxGRDbO5AoBPshVsJHweg=
-=nF3G
------END PGP SIGNATURE-----
-
---eMP3JyRexyk9c0Bv--
