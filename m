@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbXHaDbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761389AbXHaDfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760116AbXHaDbo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 23:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbXHaDbh
+	id S1761389AbXHaDfh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 23:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757083AbXHaDf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 23:31:37 -0400
-Received: from mga02.intel.com ([134.134.136.20]:5978 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755357AbXHaDbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 23:31:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,328,1183359600"; 
-   d="scan'208";a="286317037"
-From: Jason Gaston <jason.d.gaston@intel.com>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, khali@linux-fr.org,
-       i2c@lm-sensors.nu, jason.d.gaston@intel.com
-Subject: [PATCH 2.6.23-rc4][reRESEND] irq: irq and pci_ids patch for Intel Tolapai
-Date: Thu, 30 Aug 2007 20:33:47 -0700
-User-Agent: KMail/1.9.1
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Aug 2007 23:35:28 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49754 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755771AbXHaDf1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 23:35:27 -0400
+Date: Thu, 30 Aug 2007 20:35:24 -0700
+From: Jeremy Higdon <jeremy@sgi.com>
+To: "Gaston, Jason D" <jason.d.gaston@intel.com>
+Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.23-rc4][RESEND] ahci: RAID mode SATA patch for Intel Tolapai
+Message-ID: <20070831033524.GH114642@sgi.com>
+References: <200708301753.31692.jason.d.gaston@intel.com> <39B20DF628532344BC7A2692CB6AEE0701B5BC46@orsmsx420.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200708302033.48362.jason.d.gaston@intel.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <39B20DF628532344BC7A2692CB6AEE0701B5BC46@orsmsx420.amr.corp.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resend with uppercase define.
+On Thu, Aug 30, 2007 at 06:00:26PM -0700, Gaston, Jason D wrote:
+> >
+> >Resend without wordwrap.
+> >
+> >This patch adds the Intel Tolapai RAID controller DID's for SATA support.
+> >
+> >Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+> >
+> >--- linux-2.6.23-rc4/drivers/ata/ahci.c.orig	2007-08-27
+> >18:32:35.000000000 -0700
+> >+++ linux-2.6.23-rc4/drivers/ata/ahci.c	2007-08-28 16:58:11.000000000 -
+> >0700
+> >@@ -411,6 +411,8 @@
+> > 	{ PCI_VDEVICE(INTEL, 0x292f), board_ahci_pi }, /* ICH9M */
+> > 	{ PCI_VDEVICE(INTEL, 0x294d), board_ahci_pi }, /* ICH9 */
+> > 	{ PCI_VDEVICE(INTEL, 0x294e), board_ahci_pi }, /* ICH9M */
+> >+	{ PCI_VDEVICE(INTEL, 0x502a), board_ahci }, /* Tolapai */
+> >+	{ PCI_VDEVICE(INTEL, 0x502b), board_ahci }, /* Tolapai */
+> >
+> > 	/* JMicron 360/1/3/5/6, match class to avoid IDE function */
+> > 	{ PCI_VENDOR_ID_JMICRON, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
+> 
+> 
+> I am having trouble sending these patches.  When I look in the LKML.org message archive, I see "=A0" and "=20" in the messages.  I am using KMail to send these, I have wordwrap turned off and am inserting the patch file.  Does anyone know what I am doing wrong?
 
-This updated patch adds the Intel Tolapai LPC and SMBus controller DID's.
 
-Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+It seems that you have some 8-bit characters in the email.
+The '=20' in the middle of the patch was stripped for me by sendmail,
+apparently, but you can see the character before your name in the
+'Signed-off-by' line.
 
---- linux-2.6.23-rc4/arch/i386/pci/irq.c.orig	2007-08-27 18:32:35.000000000 -0700
-+++ linux-2.6.23-rc4/arch/i386/pci/irq.c	2007-08-30 20:23:49.000000000 -0700
-@@ -550,6 +550,7 @@
- 		case PCI_DEVICE_ID_INTEL_ICH9_3:
- 		case PCI_DEVICE_ID_INTEL_ICH9_4:
- 		case PCI_DEVICE_ID_INTEL_ICH9_5:
-+		case PCI_DEVICE_ID_INTEL_TOLAPAI_0:
- 			r->name = "PIIX/ICH";
- 			r->get = pirq_piix_get;
- 			r->set = pirq_piix_set;
---- linux-2.6.23-rc4/include/linux/pci_ids.h.orig	2007-08-27 18:32:35.000000000 -0700
-+++ linux-2.6.23-rc4/include/linux/pci_ids.h	2007-08-30 20:23:08.000000000 -0700
-@@ -2293,6 +2293,8 @@
- #define PCI_DEVICE_ID_INTEL_MCH_PC	0x3599
- #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
- #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
-+#define PCI_DEVICE_ID_INTEL_TOLAPAI_0	0x5031
-+#define PCI_DEVICE_ID_INTEL_TOLAPAI_1	0x5032
- #define PCI_DEVICE_ID_INTEL_82371SB_0	0x7000
- #define PCI_DEVICE_ID_INTEL_82371SB_1	0x7010
- #define PCI_DEVICE_ID_INTEL_82371SB_2	0x7020
+Maybe try mutt?
