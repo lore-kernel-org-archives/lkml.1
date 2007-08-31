@@ -1,39 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966359AbXHaVl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbXHaVni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966359AbXHaVl1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:41:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965855AbXHaVlQ
+	id S1757397AbXHaVni (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbXHaVnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:41:16 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57409
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S965747AbXHaVlP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:41:15 -0400
-Date: Fri, 31 Aug 2007 14:41:15 -0700 (PDT)
-Message-Id: <20070831.144115.48807246.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-serial@vger.kernel.org
-Subject: Re: Heads Up: Next Batch Of Serial/TTY Changes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070831221105.2fce9023@the-village.bc.nu>
-References: <20070831221105.2fce9023@the-village.bc.nu>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 31 Aug 2007 17:43:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41690 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750993AbXHaVnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 17:43:23 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [1/2] 2.6.23-rc3: known regressions with patches
+Date: Fri, 31 Aug 2007 17:41:22 -0400
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Len Brown <len.brown@intel.com>,
+       linux-acpi@vger.kernel.org, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Daniel Ritz <daniel.ritz-ml@swissonline.ch>,
+       Tony Luck <tony.luck@intel.com>, John Stultz <johnstul@us.ibm.com>,
+       Paolo Ornati <ornati@fastwebnet.it>, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       Stephen Ziemba <sziemba@ecn.purdue.edu>
+References: <46D59081.2040605@googlemail.com>
+In-Reply-To: <46D59081.2040605@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708311741.22863.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Fri, 31 Aug 2007 22:11:05 +0100
+On Wednesday 29 August 2007 11:28, Michal Piotrowski wrote:
 
-> Firstly some architecture maintainers still haven't updated their
-> platform for arbitary tty speeds. The kernel is going to start whining
-> and issuing warnings on your platform if you don't keep up with the
-> programme (its been 6 months).
+> ACPI
+> 
+> Subject         : the fan doesn't work any more
+> References      : http://lkml.org/lkml/2007/8/28/359
+> Last known good : ?
+> Submitter       : Daniel Ritz <daniel.ritz-ml@swissonline.ch>
+> Caused-By       : Alexey Starikovskiy <astarikovskiy@suse.de>
+>                   commit cd8c93a4e04dce8f00d1ef3a476aac8bd65ae40b
+> Handled-By      : Alexey Starikovskiy <astarikovskiy@suse.de>
+> Patch           : http://lkml.org/lkml/2007/8/29/15
+> Status          : patch was suggested
 
-I took a look at this for sparc and I'm currently balking the same way
-you did :-) The current bit usage on sparc just don't work properly
-for what you're trying to do.
+I believe that this is gone as of 2.6.23-rc4-git3
+
+http://bugzilla.kernel.org/show_bug.cgi?id=8958
+
+thanks,
+-Len
