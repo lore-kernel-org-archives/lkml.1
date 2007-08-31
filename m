@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933158AbXHaLMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964956AbXHaLVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933158AbXHaLMG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 07:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbXHaLLz
+	id S964956AbXHaLVV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 07:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932661AbXHaLUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 07:11:55 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:24835 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756284AbXHaLLy (ORCPT
+	Fri, 31 Aug 2007 07:20:54 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43270 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932546AbXHaLUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 07:11:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=OPPELGg6FjMWxKNMhLqqJl7IATp1wnVtPEO62CabwlhOUnzIhfRSZOmoVDW2ckRzRubGFxd9ZUCA3MP5fxpLHKefwYDkyk4UkMczwBVwCBbWI7afv14OYz0JFxiPDT3a6PlbWCojoaLxglW+0gaJP/OQQbJlWhvGnrt25+gV4G0=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Subject: Re: 4KSTACKS + DEBUG_STACKOVERFLOW harmful
-Date: Fri, 31 Aug 2007 12:11:25 +0100
-User-Agent: KMail/1.9.1
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
-References: <46D5F462.9010401@redhat.com>
-In-Reply-To: <46D5F462.9010401@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708311211.25143.vda.linux@googlemail.com>
+	Fri, 31 Aug 2007 07:20:50 -0400
+Message-Id: <20070831112445.976429000@bull.net>
+User-Agent: quilt/0.45-1
+Date: Fri, 31 Aug 2007 13:24:45 +0200
+From: Nadia.Derbey@bull.net
+To: linux-kernel@vger.kernel.org
+Cc: matthltc@us.ibm.com
+Subject: [RFC][PATCH 0/6] An IPC implementation base on Linux IDRs
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 August 2007 23:34, Eric Sandeen wrote:
-> Noticed today that the combination of 4KSTACKS and DEBUG_STACKOVERFLOW
-> config options is a bit deadly.
->
-> DEBUG_STACKOVERFLOW warns in do_IRQ if we're within THREAD_SIZE/8 of the
-> end of useable stack space, or 512 bytes on a 4k stack.
-...
-> The large stack usage in those 2 functions is due to big char arrays, of
-> size KSYM_NAME_LEN (128 bytes) and KSYM_SYMBOL_LEN (223 bytes).
->
-> IOW, the stack warning effectively reduces useful stack left in our itty
-> bitty 4k stacks by over 10%.
+A couple of months ago, I dropped a series of patches that introduced the
+AKT framework (Automatic Kernel Tunables).
 
-KSYM_NAME_LEN = 128 sounds stupid. The name which is wider than 80 chars??
-Kernel shouldn't have names that long.
-Say, 50 chars ought to be enough.
+(see thread http://lkml.org/lkml/2007/1/16/16)
+
+When reading the patches, people complained that I was trying to treat a
+symptom, not the problem itself, and that it'd be better try to rewrite
+things where necessary (better data structures / implementations).
+
+(see http://lkml.org/lkml/2007/2/7/248)
+
+I'm trying to achieve this for the IPC case, with this new series of patches:
+after proposing a radix tree based implementation at the beginning of July,
+I'm now proposing a new ipc implementation based on the Linux idr API.
+
+In the current ipc implementation, the ipc structures pointers are stored
+in an array that is resized each time the corresponding tunable is changed
+(resized means that a new array is allocated with the new size, the old one
+is copied into that new array and the old array is de-allocated).
+
+With this new implementation, there is no need for the array resizing since
+the size change becomes "natural".
+
+With this completely dynamic implementation, it becomes possible to set the
+kernel default maximum values higher in order to prevent early DoS feedback,
+on configurations with a high amount of memory. Even if the maximum values are
+huge, no memory space will be wasted, since the allocations are done "on
+demand". This is not the case with the existing array based implementation:
+an array of the maximum number of entries is allocated only if a single ipc
+object is actually created.
+
+These patches should be applied to 2.6.23-rc2, in the following order:
+
+[PATCH 1/6]: ipc_idr.patch
+[PATCH 2/6]: ipc_syscalls.patch
+[PATCH 3/6]: ipc_get.patch
+[PATCH 4/6]: ipc_lock_and_check.patch
+[PATCH 5/6]: ipcid_to_idx.patch
+[PATCH 6/6]: ipc_buildid.patch
+
 --
-vda
+
+Regards,
+Nadia
