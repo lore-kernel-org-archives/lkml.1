@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965007AbXHaLcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965024AbXHaLlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965007AbXHaLcZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 07:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbXHaLcS
+	id S965024AbXHaLlV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 07:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbXHaLlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 07:32:18 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:39645 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756033AbXHaLcS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 07:32:18 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: possible build system oddity
-Date: Fri, 31 Aug 2007 13:32:19 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
-References: <200708311037.29280.oliver@neukum.org> <20070831084229.GE9260@stusta.de>
-In-Reply-To: <20070831084229.GE9260@stusta.de>
+	Fri, 31 Aug 2007 07:41:11 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46741 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754609AbXHaLlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 07:41:10 -0400
+Message-ID: <46D7FE52.8020807@garzik.org>
+Date: Fri, 31 Aug 2007 07:41:06 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708311332.20285.oliver@neukum.org>
+To: Divy Le Ray <divy@chelsio.com>
+CC: rdreier@cisco.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 2.6.23 1/2] cxgb3 - Fix dev->priv usage
+References: <20070830021547.21475.62560.stgit@speedy5>
+In-Reply-To: <20070830021547.21475.62560.stgit@speedy5>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 31 August 2007 schrieben Sie:
-> On Fri, Aug 31, 2007 at 10:37:28AM +0200, Oliver Neukum wrote:
-> > Hi,
-> > 
-> > I only touched sound/usb/usbaudio.c
-> > Nevertheless the whole subtree und sound/ is recompiling. What's
-> > happening?
+Divy Le Ray wrote:
+> From: Divy Le Ray <divy@chelsio.com>
 > 
-> The only file that gets compiled (CC) should be sound/usb/usbaudio.c
+> cxgb3 used netdev_priv() and dev->priv for different purposes.
+> In 2.6.23, netdev_priv() == dev->priv, cxgb3 needs a fix.
+> This patch is a partial backport of Dave Miller's changes in the 
+> net-2.6.24 git branch. 
 > 
-> It seems you are confused by the fact that this recompilation results in 
-> several relinks (LD)?
+> Without this fix, cxgb3 crashes on 2.6.23.
 > 
-> >       Regards
-> >               Oliver
+> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+> ---
 > 
-> cu
-> Adrian
+>  drivers/infiniband/hw/cxgb3/cxio_hal.c |    2 -
+>  drivers/net/cxgb3/adapter.h            |    2 +
+>  drivers/net/cxgb3/cxgb3_main.c         |  126 ++++++++++++++++++--------------
+>  drivers/net/cxgb3/cxgb3_offload.c      |   16 +++-
+>  drivers/net/cxgb3/cxgb3_offload.h      |    2 +
+>  drivers/net/cxgb3/sge.c                |   23 ++++--
+>  drivers/net/cxgb3/t3cdev.h             |    3 -
+>  7 files changed, 105 insertions(+), 69 deletions(-)
 
-Nope, it recompiled everything under sound/ and a lot of stuff under
-net/. I'll check the system for odd scripts running at night touching stuff.
+applied 1-2
 
-	Regards
-		Oliver
 
