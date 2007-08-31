@@ -1,350 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933224AbXHaQVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965573AbXHaQWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933224AbXHaQVe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 12:21:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbXHaQV0
+	id S965573AbXHaQWV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 12:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932864AbXHaQWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 12:21:26 -0400
-Received: from pat.uio.no ([129.240.10.15]:49539 "EHLO pat.uio.no"
+	Fri, 31 Aug 2007 12:22:12 -0400
+Received: from madara.hpl.hp.com ([192.6.19.124]:64248 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932803AbXHaQVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 12:21:24 -0400
-Subject: Re: recent nfs change causes autofs regression
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Frank van Maarseveen <frankvm@frankvm.com>, Hua Zhong <hzhong@gmail.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-In-Reply-To: <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org>
-References: <000701c7eb49$cff701c0$6fe50540$@com>
-	 <1188513433.6626.24.camel@heimdal.trondhjem.org>
-	 <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org>
-Content-Type: multipart/mixed; boundary="=-jdoRLdAAt3pwuOl7DeGe"
-Date: Fri, 31 Aug 2007 12:21:15 -0400
-Message-Id: <1188577275.6649.133.camel@heimdal.trondhjem.org>
+	id S932536AbXHaQWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 12:22:10 -0400
+Date: Fri, 31 Aug 2007 09:21:46 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: B.Steinbrink@gmx.de, ak@suse.de, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Stephane Eranian <eranian@hpl.hp.com>
+Subject: Re: nmi_watchdog=2 regression in 2.6.21
+Message-ID: <20070831162146.GD7161@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070828091217.GA1645@frankl.hpl.hp.com> <1188311684.2435.288.camel@dhcp193.mvista.com> <20070828170556.GI1645@frankl.hpl.hp.com> <1188325835.2435.317.camel@dhcp193.mvista.com> <20070828194636.GB2814@frankl.hpl.hp.com> <1188332024.2435.328.camel@dhcp193.mvista.com> <20070829212451.GC4810@frankl.hpl.hp.com> <1188436919.26038.27.camel@dhcp193.mvista.com> <20070830210555.GA6635@frankl.hpl.hp.com> <1188571401.26038.41.camel@dhcp193.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.072)
-X-UiO-Scanned: 7818E01830D41C80EC922FB05FD66AFFFC9337DB
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 211 total 3592334 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Type: multipart/mixed; boundary="7AUc2qLy4jB3hD7Z"
+Content-Disposition: inline
+In-Reply-To: <1188571401.26038.41.camel@dhcp193.mvista.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-jdoRLdAAt3pwuOl7DeGe
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+--7AUc2qLy4jB3hD7Z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Thu, 2007-08-30 at 20:49 -0700, Linus Torvalds wrote:
-> Please send in a fix. If the fix involves making "nosharecache" the 
-> default, then that is better than making policy decisions like this in the 
-> kernel. The kernel should do what the user asks and not put in unnecessary 
-> roadblocks.
+Daniel,
 
-The best I can do given the constraints appears to be to have the kernel
-first look for a superblock that matches both the fsid and the
-user-specified mount options, and then spawn off a new superblock if
-that search fails. The attached patch does just that.
+On Fri, Aug 31, 2007 at 07:43:20AM -0700, Daniel Walker wrote:
+> On Thu, 2007-08-30 at 14:05 -0700, Stephane Eranian wrote:
+> > Daniel,
+> 
+> > Yes, I realized I missed a small detail in the switch statement.
+> > Could you try the new version?
+> 
+> This patch still has the stuck NMI .. Essentially the same thing that
+> happened without the patch..
+> 
+Ok, looks like deaulting to P6 does not quite work.
 
-Note that this is not the same as specifying nosharecache everywhere
-since nosharecache will never attempt to match an existing superblock.
+Here is a new version. This time I used a different approach.
+I am must admit I am a bit puzzled by the duplication of information
+between the wd_ops and the nmi_watchdog_ctlblk structure. My understanding
+is that thelater is used as a cache for the info that needs to be per-cpu.
 
-Finally, for the record: I still feel very uncomfortable about not being
-able to report the state of the client setup back to the sysadmin.
-AFAIK, the only way to do so is to stat the mountpoints, and compare the
-device ids.
+The wd_ops provides the MSR to use for the counter, yet all the setup_*()
+routines hardcode the MSR. Not sure why?
 
-Trond
+In this patch, the setup_*() routine now extract the MSR from the wd_ops
+to copy them into the nmi_watchdog_ctlblk. This is not done for P4 because
+of the special and ugly case of HT. 
 
+With this approach, we can now create a custom wd_ops for CoreDuo that is
+a clone of the intel_arch_wd_ops, except for the MSR.
 
---=-jdoRLdAAt3pwuOl7DeGe
-Content-Disposition: inline; filename=linux-2.6.23-009-nosharecache_is_default.dif
-Content-Type: message/rfc822; name=linux-2.6.23-009-nosharecache_is_default.dif
+Could you try this one instead?
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: Fri, 31 Aug 2007 10:45:17 -0400
-NFS: Fix the mount regression
-Subject: No Subject
-Message-Id: <1188576086.6649.118.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Thanks.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+-- 
 
- fs/nfs/super.c |  110 +++++++++++++++++++++++++++++++++-----------------------
- 1 files changed, 64 insertions(+), 46 deletions(-)
+-Stephane
 
-diff --git a/fs/nfs/super.c b/fs/nfs/super.c
-index c28f30d..8ed5937 100644
---- a/fs/nfs/super.c
-+++ b/fs/nfs/super.c
-@@ -1303,34 +1303,6 @@ static void nfs_clone_super(struct super_block *sb,
-  	nfs_initialise_sb(sb);
- }
+--7AUc2qLy4jB3hD7Z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="coreduo3.diff"
+
+diff --git a/arch/i386/kernel/cpu/perfctr-watchdog.c b/arch/i386/kernel/cpu/perfctr-watchdog.c
+index 9b5d6af..f9066e1 100644
+--- a/arch/i386/kernel/cpu/perfctr-watchdog.c
++++ b/arch/i386/kernel/cpu/perfctr-watchdog.c
+@@ -271,8 +271,8 @@ static int setup_k7_watchdog(unsigned nmi_hz)
+ 	unsigned int evntsel;
+ 	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
  
--static int nfs_set_super(struct super_block *s, void *_server)
--{
--	struct nfs_server *server = _server;
--	int ret;
--
--	s->s_fs_info = server;
--	ret = set_anon_super(s, server);
--	if (ret == 0)
--		server->s_dev = s->s_dev;
--	return ret;
--}
--
--static int nfs_compare_super(struct super_block *sb, void *data)
--{
--	struct nfs_server *server = data, *old = NFS_SB(sb);
--
--	if (memcmp(&old->nfs_client->cl_addr,
--				&server->nfs_client->cl_addr,
--				sizeof(old->nfs_client->cl_addr)) != 0)
--		return 0;
--	/* Note: NFS_MOUNT_UNSHARED == NFS4_MOUNT_UNSHARED */
--	if (old->flags & NFS_MOUNT_UNSHARED)
--		return 0;
--	if (memcmp(&old->fsid, &server->fsid, sizeof(old->fsid)) != 0)
--		return 0;
--	return 1;
--}
--
- #define NFS_MS_MASK (MS_RDONLY|MS_NOSUID|MS_NODEV|MS_NOEXEC|MS_SYNCHRONOUS)
+-	perfctr_msr = MSR_K7_PERFCTR0;
+-	evntsel_msr = MSR_K7_EVNTSEL0;
++	perfctr_msr = wd_ops->perfctr;
++	evntsel_msr = wd_ops->evntsel;
  
- static int nfs_compare_mount_options(const struct super_block *s, const struct nfs_server *b, int flags)
-@@ -1359,9 +1331,46 @@ static int nfs_compare_mount_options(const struct super_block *s, const struct n
- 		goto Ebusy;
- 	if (clnt_a->cl_auth->au_flavor != clnt_b->cl_auth->au_flavor)
- 		goto Ebusy;
--	return 0;
-+	return 1;
- Ebusy:
--	return -EBUSY;
-+	return 0;
-+}
-+
-+struct nfs_sb_mountdata {
-+	struct nfs_server *server;
-+	int mntflags;
+ 	wrmsrl(perfctr_msr, 0UL);
+ 
+@@ -351,8 +351,8 @@ static int setup_p6_watchdog(unsigned nmi_hz)
+ 	unsigned int evntsel;
+ 	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+ 
+-	perfctr_msr = MSR_P6_PERFCTR0;
+-	evntsel_msr = MSR_P6_EVNTSEL0;
++	perfctr_msr = wd_ops->perfctr;
++	evntsel_msr = wd_ops->evntsel;
+ 
+ 	/* KVM doesn't implement this MSR */
+ 	if (wrmsr_safe(perfctr_msr, 0, 0) < 0)
+@@ -577,8 +577,8 @@ static int setup_intel_arch_watchdog(unsigned nmi_hz)
+ 	    (ebx & ARCH_PERFMON_UNHALTED_CORE_CYCLES_PRESENT))
+ 		return 0;
+ 
+-	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR1;
+-	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL1;
++	perfctr_msr = wd_ops->perfctr;
++	evntsel_msr = wd_ops->evntsel;
+ 
+ 	wrmsrl(perfctr_msr, 0UL);
+ 
+@@ -613,6 +613,16 @@ static struct wd_ops intel_arch_wd_ops = {
+ 	.evntsel = MSR_ARCH_PERFMON_EVENTSEL1,
+ };
+ 
++static struct wd_ops coreduo_wd_ops = {
++	.reserve = single_msr_reserve,
++	.unreserve = single_msr_unreserve,
++	.setup = setup_intel_arch_watchdog,
++	.rearm = p6_rearm,
++	.stop = single_msr_stop_watchdog,
++	.perfctr = MSR_ARCH_PERFMON_PERFCTR0,
++	.evntsel = MSR_ARCH_PERFMON_EVENTSEL0,
 +};
 +
-+static int nfs_set_super(struct super_block *s, void *data)
-+{
-+	struct nfs_sb_mountdata *sb_mntdata = data;
-+	struct nfs_server *server = sb_mntdata->server;
-+	int ret;
-+
-+	s->s_flags = sb_mntdata->mntflags;
-+	s->s_fs_info = server;
-+	ret = set_anon_super(s, server);
-+	if (ret == 0)
-+		server->s_dev = s->s_dev;
-+	return ret;
-+}
-+
-+static int nfs_compare_super(struct super_block *sb, void *data)
-+{
-+	struct nfs_sb_mountdata *sb_mntdata = data;
-+	struct nfs_server *server = sb_mntdata->server, *old = NFS_SB(sb);
-+	int mntflags = sb_mntdata->mntflags;
-+
-+	if (memcmp(&old->nfs_client->cl_addr,
-+				&server->nfs_client->cl_addr,
-+				sizeof(old->nfs_client->cl_addr)) != 0)
-+		return 0;
-+	/* Note: NFS_MOUNT_UNSHARED == NFS4_MOUNT_UNSHARED */
-+	if (old->flags & NFS_MOUNT_UNSHARED)
-+		return 0;
-+	if (memcmp(&old->fsid, &server->fsid, sizeof(old->fsid)) != 0)
-+		return 0;
-+	return nfs_compare_mount_options(sb, server, mntflags);
- }
- 
- static int nfs_get_sb(struct file_system_type *fs_type,
-@@ -1373,6 +1382,9 @@ static int nfs_get_sb(struct file_system_type *fs_type,
- 	struct nfs_mount_data *data = raw_data;
- 	struct dentry *mntroot;
- 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
-+	struct nfs_sb_mountdata sb_mntdata = {
-+		.mntflags = flags,
-+	};
- 	int error;
- 
- 	/* Validate the mount data */
-@@ -1386,28 +1398,25 @@ static int nfs_get_sb(struct file_system_type *fs_type,
- 		error = PTR_ERR(server);
- 		goto out;
- 	}
-+	sb_mntdata.server = server;
- 
- 	if (server->flags & NFS_MOUNT_UNSHARED)
- 		compare_super = NULL;
- 
- 	/* Get a superblock - note that we may end up sharing one that already exists */
--	s = sget(fs_type, compare_super, nfs_set_super, server);
-+	s = sget(fs_type, compare_super, nfs_set_super, &sb_mntdata);
- 	if (IS_ERR(s)) {
- 		error = PTR_ERR(s);
- 		goto out_err_nosb;
- 	}
- 
- 	if (s->s_fs_info != server) {
--		error = nfs_compare_mount_options(s, server, flags);
- 		nfs_free_server(server);
- 		server = NULL;
--		if (error < 0)
--			goto error_splat_super;
- 	}
- 
- 	if (!s->s_root) {
- 		/* initial superblock/root creation */
--		s->s_flags = flags;
- 		nfs_fill_super(s, data);
- 	}
- 
-@@ -1460,6 +1469,9 @@ static int nfs_xdev_get_sb(struct file_system_type *fs_type, int flags,
- 	struct nfs_server *server;
- 	struct dentry *mntroot;
- 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
-+	struct nfs_sb_mountdata sb_mntdata = {
-+		.mntflags = flags,
-+	};
- 	int error;
- 
- 	dprintk("--> nfs_xdev_get_sb()\n");
-@@ -1470,28 +1482,25 @@ static int nfs_xdev_get_sb(struct file_system_type *fs_type, int flags,
- 		error = PTR_ERR(server);
- 		goto out_err_noserver;
- 	}
-+	sb_mntdata.server = server;
- 
- 	if (server->flags & NFS_MOUNT_UNSHARED)
- 		compare_super = NULL;
- 
- 	/* Get a superblock - note that we may end up sharing one that already exists */
--	s = sget(&nfs_fs_type, compare_super, nfs_set_super, server);
-+	s = sget(&nfs_fs_type, compare_super, nfs_set_super, &sb_mntdata);
- 	if (IS_ERR(s)) {
- 		error = PTR_ERR(s);
- 		goto out_err_nosb;
- 	}
- 
- 	if (s->s_fs_info != server) {
--		error = nfs_compare_mount_options(s, server, flags);
- 		nfs_free_server(server);
- 		server = NULL;
--		if (error < 0)
--			goto error_splat_super;
- 	}
- 
- 	if (!s->s_root) {
- 		/* initial superblock/root creation */
--		s->s_flags = flags;
- 		nfs_clone_super(s, data->sb);
- 	}
- 
-@@ -1729,6 +1738,9 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
- 	struct dentry *mntroot;
- 	char *mntpath = NULL, *hostname = NULL, *ip_addr = NULL;
- 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
-+	struct nfs_sb_mountdata sb_mntdata = {
-+		.mntflags = flags,
-+	};
- 	int error;
- 
- 	/* Validate the mount data */
-@@ -1744,12 +1756,13 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
- 		error = PTR_ERR(server);
- 		goto out;
- 	}
-+	sb_mntdata.server = server;
- 
- 	if (server->flags & NFS4_MOUNT_UNSHARED)
- 		compare_super = NULL;
- 
- 	/* Get a superblock - note that we may end up sharing one that already exists */
--	s = sget(fs_type, compare_super, nfs_set_super, server);
-+	s = sget(fs_type, compare_super, nfs_set_super, &sb_mntdata);
- 	if (IS_ERR(s)) {
- 		error = PTR_ERR(s);
- 		goto out_free;
-@@ -1762,7 +1775,6 @@ static int nfs4_get_sb(struct file_system_type *fs_type,
- 
- 	if (!s->s_root) {
- 		/* initial superblock/root creation */
--		s->s_flags = flags;
- 		nfs4_fill_super(s);
- 	}
- 
-@@ -1816,6 +1828,9 @@ static int nfs4_xdev_get_sb(struct file_system_type *fs_type, int flags,
- 	struct nfs_server *server;
- 	struct dentry *mntroot;
- 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
-+	struct nfs_sb_mountdata sb_mntdata = {
-+		.mntflags = flags,
-+	};
- 	int error;
- 
- 	dprintk("--> nfs4_xdev_get_sb()\n");
-@@ -1826,12 +1841,13 @@ static int nfs4_xdev_get_sb(struct file_system_type *fs_type, int flags,
- 		error = PTR_ERR(server);
- 		goto out_err_noserver;
- 	}
-+	sb_mntdata.server = server;
- 
- 	if (server->flags & NFS4_MOUNT_UNSHARED)
- 		compare_super = NULL;
- 
- 	/* Get a superblock - note that we may end up sharing one that already exists */
--	s = sget(&nfs_fs_type, compare_super, nfs_set_super, server);
-+	s = sget(&nfs_fs_type, compare_super, nfs_set_super, &sb_mntdata);
- 	if (IS_ERR(s)) {
- 		error = PTR_ERR(s);
- 		goto out_err_nosb;
-@@ -1844,7 +1860,6 @@ static int nfs4_xdev_get_sb(struct file_system_type *fs_type, int flags,
- 
- 	if (!s->s_root) {
- 		/* initial superblock/root creation */
--		s->s_flags = flags;
- 		nfs4_clone_super(s, data->sb);
- 	}
- 
-@@ -1887,6 +1902,9 @@ static int nfs4_referral_get_sb(struct file_system_type *fs_type, int flags,
- 	struct dentry *mntroot;
- 	struct nfs_fh mntfh;
- 	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
-+	struct nfs_sb_mountdata sb_mntdata = {
-+		.mntflags = flags,
-+	};
- 	int error;
- 
- 	dprintk("--> nfs4_referral_get_sb()\n");
-@@ -1897,12 +1915,13 @@ static int nfs4_referral_get_sb(struct file_system_type *fs_type, int flags,
- 		error = PTR_ERR(server);
- 		goto out_err_noserver;
- 	}
-+	sb_mntdata.server = server;
- 
- 	if (server->flags & NFS4_MOUNT_UNSHARED)
- 		compare_super = NULL;
- 
- 	/* Get a superblock - note that we may end up sharing one that already exists */
--	s = sget(&nfs_fs_type, compare_super, nfs_set_super, server);
-+	s = sget(&nfs_fs_type, compare_super, nfs_set_super, &sb_mntdata);
- 	if (IS_ERR(s)) {
- 		error = PTR_ERR(s);
- 		goto out_err_nosb;
-@@ -1915,7 +1934,6 @@ static int nfs4_referral_get_sb(struct file_system_type *fs_type, int flags,
- 
- 	if (!s->s_root) {
- 		/* initial superblock/root creation */
--		s->s_flags = flags;
- 		nfs4_fill_super(s);
- 	}
- 
+ static void probe_nmi_watchdog(void)
+ {
+ 	switch (boot_cpu_data.x86_vendor) {
+@@ -623,6 +633,10 @@ static void probe_nmi_watchdog(void)
+ 		wd_ops = &k7_wd_ops;
+ 		break;
+ 	case X86_VENDOR_INTEL:
++		if (boot_cpu_data.x86 == 6 && boot_cpu_data.x86_model == 14) {
++			wd_ops = &coreduo_wd_ops;
++			break;
++		}
+ 		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)) {
+ 			wd_ops = &intel_arch_wd_ops;
+ 			break;
 
---=-jdoRLdAAt3pwuOl7DeGe--
-
+--7AUc2qLy4jB3hD7Z--
