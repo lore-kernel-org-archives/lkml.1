@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764006AbXHaWrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763914AbXHaWrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764006AbXHaWrA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 18:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763096AbXHaWqI
+	id S1763914AbXHaWrX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 18:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932099AbXHaWqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 18:46:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52319 "EHLO mx1.redhat.com"
+	Fri, 31 Aug 2007 18:46:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52400 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763467AbXHaWqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 18:46:03 -0400
-Date: Fri, 31 Aug 2007 18:45:56 -0400 (EDT)
-Message-Id: <20070831.184556.45747637.k-ueda@ct.jp.nec.com>
+	id S1763584AbXHaWqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 18:46:21 -0400
+Date: Fri, 31 Aug 2007 18:41:12 -0400 (EDT)
+Message-Id: <20070831.184112.45519768.k-ueda@ct.jp.nec.com>
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, jens.axboe@oracle.com
+       linux-ide@vger.kernel.org, jens.axboe@oracle.com, mike.miller@hp.com,
+       grant.likely@secretlab.ca
 Cc: dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: [APPENDIX PATCH 4/5] blk_end_request: userspace device-mapper for
- request-based dm
+Subject: [PATCH 1/7] blk_end_request: add new request completion interface
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 X-Mailer: Mew version 3.3 on Emacs 21.3 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -24,179 +24,126 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a feature of turning request-based dm on
-to device-mapper userspace tool.
+This patch adds 2 new interfaces for request completion:
+  o blk_end_request()   : called without queue lock
+  o __blk_end_request() : called with queue lock held
 
-To turn on request-based dm, following steps should work:
-    1. # dmsetup create --rqbase mpath0
-    2. # echo <multipath table> | dmsetup load mpath0
-    3. # dmsetup resume mpath0
-    Note: If you used bio-based targets for request-based dm device,
-          you would hit kernel panic.  And vice versa.  (This is TODO.)
-          The patch-set converts only multipath target to request-based.
-          So please don't use other targets for request-based dm device
-          and patched multipath target for bio-based dm device.
-If you use multipath-tools (another patch), multipath-tools should
-take care of all.
-
-This patch should be applied on top of CVS device-mapper-1.02.23
-of 8/28/2007.
-
-Request-based dm itself is still under development and not ready
-for inclusion.
+Some device drivers call some generic functions below between
+end_that_request_{first/chunk} and end_that_request_last().
+  o add_disk_randomness()
+  o blk_queue_end_tag()
+  o blkdev_dequeue_request()
+These are called in the blk_end_request() as a part of generic
+request completion.
+So all device drivers become to call above functions.
 
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 ---
- dmsetup/dmsetup.c         |    9 ++++++++-
- kernel/ioctl/dm-ioctl.h   |    5 +++++
- lib/.exported_symbols     |    1 +
- lib/ioctl/libdm-iface.c   |   13 ++++++++++++-
- lib/ioctl/libdm-targets.h |    1 +
- lib/libdevmapper.h        |    1 +
- 6 files changed, 28 insertions(+), 2 deletions(-)
+ block/ll_rw_blk.c      |   82 +++++++++++++++++++++++++++++++++++++++++++++++++ include/linux/blkdev.h |    2 +
+ 2 files changed, 84 insertions(+)
 
-diff -rupN cvs-device-mapper-20070828/dmsetup/dmsetup.c rqdm-device-mapper/dmsetup/dmsetup.c
---- cvs-device-mapper-20070828/dmsetup/dmsetup.c	2007-08-21 12:26:06.000000000 -0400
-+++ rqdm-device-mapper/dmsetup/dmsetup.c	2007-08-28 17:47:04.000000000 -0400
-@@ -119,6 +119,7 @@ enum {
- 	NOOPENCOUNT_ARG,
- 	NOTABLE_ARG,
- 	OPTIONS_ARG,
-+	RQBASE_ARG,
- 	SEPARATOR_ARG,
- 	SHOWKEYS_ARG,
- 	SORT_ARG,
-@@ -493,6 +493,9 @@ static int _create(int argc, char **argv, 
- 	if (_switches[NOOPENCOUNT_ARG] && !dm_task_no_open_count(dmt))
- 		goto out;
+diff -rupN 2.6.23-rc3-mm1/block/ll_rw_blk.c 01-blkendreq-interface/block/ll_rw_blk.c
+--- 2.6.23-rc3-mm1/block/ll_rw_blk.c	2007-08-22 18:54:03.000000000 -0400
++++ 01-blkendreq-interface/block/ll_rw_blk.c	2007-08-23 17:19:20.000000000 -0400
+@@ -3669,6 +3669,88 @@ void end_request(struct request *req, in
  
-+	if (_switches[RQBASE_ARG] && !dm_task_request_base(dmt))
-+		goto out;
-+
- 	if (!dm_task_run(dmt))
- 		goto out;
+ EXPORT_SYMBOL(end_request);
  
-@@ -1978,7 +1982,7 @@ static struct command _commands[] = {
- 	{"help", "[-c|-C|--columns]", 0, 0, _help},
- 	{"create", "<dev_name> [-j|--major <major> -m|--minor <minor>]\n"
- 	  "\t                  [-U|--uid <uid>] [-G|--gid <gid>] [-M|--mode <octal_mode>]\n"
--	  "\t                  [-u|uuid <uuid>]\n"
-+	  "\t                  [-u|uuid <uuid>] [--rqbase]\n"
- 	  "\t                  [--notable | --table <table> | <table_file>]",
- 	 1, 2, _create},
- 	{"remove", "[-f|--force] <device>", 0, 1, _remove},
-@@ -2366,6 +2370,7 @@ static int _process_switches(int *argc, 
- 		{"noopencount", 0, &ind, NOOPENCOUNT_ARG},
- 		{"notable", 0, &ind, NOTABLE_ARG},
- 		{"options", 1, &ind, OPTIONS_ARG},
-+		{"rqbase", 0, &ind, RQBASE_ARG},
- 		{"separator", 1, &ind, SEPARATOR_ARG},
- 		{"showkeys", 0, &ind, SHOWKEYS_ARG},
- 		{"sort", 1, &ind, SORT_ARG},
-@@ -2498,6 +2503,8 @@ static int _process_switches(int *argc, 
- 			_switches[NOLOCKFS_ARG]++;
- 		if ((ind == NOOPENCOUNT_ARG))
- 			_switches[NOOPENCOUNT_ARG]++;
-+		if ((ind == RQBASE_ARG))
-+			_switches[RQBASE_ARG]++;
- 		if ((ind == SHOWKEYS_ARG))
- 			_switches[SHOWKEYS_ARG]++;
- 		if ((ind == TABLE_ARG)) {
-diff -rupN cvs-device-mapper-20070828/kernel/ioctl/dm-ioctl.h rqdm-device-mapper/kernel/ioctl/dm-ioctl.h
---- cvs-device-mapper-20070828/kernel/ioctl/dm-ioctl.h	2006-10-12 11:42:24.000000000 -0400
-+++ rqdm-device-mapper/kernel/ioctl/dm-ioctl.h	2007-08-28 17:47:04.000000000 -0400
-@@ -330,4 +330,9 @@ typedef char ioctl_struct[308];
-  */
- #define DM_NOFLUSH_FLAG		(1 << 11) /* In */
- 
-+/*
-+ * Set this to create request based device-mapper device.
-+ */
-+#define DM_REQUEST_BASE_FLAG	(1 << 12) /* In */
-+
- #endif				/* _LINUX_DM_IOCTL_H */
-diff -rupN cvs-device-mapper-20070828/lib/.exported_symbols rqdm-device-mapper/lib/.exported_symbols
---- cvs-device-mapper-20070828/lib/.exported_symbols	2007-07-28 06:48:36.000000000 -0400
-+++ rqdm-device-mapper/lib/.exported_symbols	2007-08-28 17:47:04.000000000 -0400
-@@ -32,6 +32,7 @@ dm_task_suppress_identical_reload
- dm_task_add_target
- dm_task_no_flush
- dm_task_no_open_count
-+dm_task_request_base
- dm_task_skip_lockfs
- dm_task_update_nodes
- dm_task_run
-diff -rupN cvs-device-mapper-20070828/lib/ioctl/libdm-iface.c rqdm-device-mapper/lib/ioctl/libdm-iface.c
---- cvs-device-mapper-20070828/lib/ioctl/libdm-iface.c	2007-08-21 12:26:07.000000000 -0400
-+++ rqdm-device-mapper/lib/ioctl/libdm-iface.c	2007-08-28 17:47:04.000000000 -0400
-@@ -1038,6 +1038,13 @@ int dm_task_no_open_count(struct dm_task
- 	return 1;
- }
- 
-+int dm_task_request_base(struct dm_task *dmt)
++/**
++ * ____blk_end_request - Generic end_io function to complete a request.
++ * @rq:           the request being processed
++ * @uptodate:     1 for success, 0 for I/O error, < 0 for specific error
++ * @nr_bytes:     number of bytes to complete
++ * @needlock:     1 for queue lock need to be held.
++ *                0 for queue lock held already.
++ *
++ * Description:
++ *     Ends I/O on a number of bytes attached to @rq.
++ *     If @rq has leftover, sets it up for the next range of segments.
++ *
++ * Return:
++ *     0 - we are done with this request
++ *     1 - this request is not freed yet, it still has pending buffers.
++ **/
++static int ____blk_end_request(struct request *rq, int uptodate, int nr_bytes,
++			       int needlock)
 +{
-+	dmt->request_base = 1;
++	struct request_queue *q = rq->q;
++	unsigned long flags = 0UL;
 +
-+	return 1;
++	if (blk_fs_request(rq) || blk_pc_request(rq)) {
++		if (__end_that_request_first(rq, uptodate, nr_bytes))
++			return 1;
++	}
++
++	/*
++	 * No need to check the argument here because it is done
++	 * in add_disk_randomness().
++	 */
++	add_disk_randomness(rq->rq_disk);
++
++	if (needlock)
++		spin_lock_irqsave(q->queue_lock, flags);
++
++	if (blk_rq_tagged(rq))
++		blk_queue_end_tag(q, rq);
++
++	if (!list_empty(&rq->queuelist))
++		blkdev_dequeue_request(rq);
++
++	end_that_request_last(rq, uptodate);
++
++	if (needlock)
++		spin_unlock_irqrestore(q->queue_lock, flags);
++
++	return 0;
 +}
 +
- int dm_task_skip_lockfs(struct dm_task *dmt)
++/**
++ * blk_end_request - Helper function for drivers to complete the request.
++ * @rq:       the request being processed
++ * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
++ * @nr_bytes: number of bytes to complete
++ *
++ * Description:
++ *     Ends I/O on a number of bytes attached to @rq.
++ *     If @rq has leftover, sets it up for the next range of segments.
++ *
++ * Return:
++ *     0 - we are done with this request
++ *     1 - still buffers pending for this request
++ **/
++int blk_end_request(struct request *rq, int uptodate, int nr_bytes)
++{
++	return ____blk_end_request(rq, uptodate, nr_bytes, 1);
++}
++EXPORT_SYMBOL_GPL(blk_end_request);
++
++/**
++ * __blk_end_request - Helper function for drivers to complete the request.
++ *
++ * Description:
++ *     Must be called with queue lock held unlike blk_end_request().
++ **/
++int __blk_end_request(struct request *rq, int uptodate, int nr_bytes)
++{
++	return ____blk_end_request(rq, uptodate, nr_bytes, 0);
++}
++EXPORT_SYMBOL_GPL(__blk_end_request);
++
+ void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
+ 		     struct bio *bio)
  {
- 	dmt->skip_lockfs = 1;
-@@ -1281,6 +1288,8 @@ static struct dm_ioctl *_flatten(struct 
- 		dmi->flags |= DM_READONLY_FLAG;
- 	if (dmt->skip_lockfs)
- 		dmi->flags |= DM_SKIP_LOCKFS_FLAG;
-+	if (dmt->request_base)
-+		dmi->flags |= DM_REQUEST_BASE_FLAG;
- 
- 	dmi->target_count = count;
- 	dmi->event_nr = dmt->event_nr;
-@@ -1412,6 +1421,7 @@ static int _create_and_load_v4(struct dm
- 	task->uid = dmt->uid;
- 	task->gid = dmt->gid;
- 	task->mode = dmt->mode;
-+	task->request_base = dmt->request_base;
- 
- 	r = dm_task_run(task);
- 	dm_task_destroy(task);
-@@ -1551,7 +1561,7 @@ static struct dm_ioctl *_do_dm_ioctl(str
- 		dmi->flags |= DM_SKIP_BDGET_FLAG;
- 
- 	log_debug("dm %s %s %s%s%s %s%.0d%s%.0d%s"
--		  "%s%c%c%s %.0" PRIu64 " %s [%u]",
-+		  "%s%c%c%c%s %.0" PRIu64 " %s [%u]",
- 		  _cmd_data_v4[dmt->type].name,
- 		  dmi->name, dmi->uuid, dmt->newname ? " " : "",
- 		  dmt->newname ? dmt->newname : "",
-@@ -1563,6 +1573,7 @@ static struct dm_ioctl *_do_dm_ioctl(str
- 		  dmt->major > 0 ? ") " : "",
- 		  dmt->no_open_count ? 'N' : 'O',
- 		  dmt->no_flush ? 'N' : 'F',
-+		  dmt->request_base ? 'R' : 'B',
- 		  dmt->skip_lockfs ? "S " : "",
- 		  dmt->sector, dmt->message ? dmt->message : "",
- 		  dmi->data_size);
-diff -rupN cvs-device-mapper-20070828/lib/ioctl/libdm-targets.h rqdm-device-mapper/lib/ioctl/libdm-targets.h
---- cvs-device-mapper-20070828/lib/ioctl/libdm-targets.h	2007-08-21 12:26:07.000000000 -0400
-+++ rqdm-device-mapper/lib/ioctl/libdm-targets.h	2007-08-28 17:47:04.000000000 -0400
-@@ -54,6 +54,7 @@ struct dm_task {
- 	uint64_t sector;
- 	int no_flush;
- 	int no_open_count;
-+	int request_base;
- 	int skip_lockfs;
- 	int suppress_identical_reload;
- 
-diff -rupN cvs-device-mapper-20070828/lib/libdevmapper.h rqdm-device-mapper/lib/libdevmapper.h
---- cvs-device-mapper-20070828/lib/libdevmapper.h	2007-08-21 12:26:06.000000000 -0400
-+++ rqdm-device-mapper/lib/libdevmapper.h	2007-08-28 17:47:04.000000000 -0400
-@@ -154,6 +154,7 @@ int dm_task_set_message(struct dm_task *
- int dm_task_set_sector(struct dm_task *dmt, uint64_t sector);
- int dm_task_no_flush(struct dm_task *dmt);
- int dm_task_no_open_count(struct dm_task *dmt);
-+int dm_task_request_base(struct dm_task *dmt);
- int dm_task_skip_lockfs(struct dm_task *dmt);
- int dm_task_suppress_identical_reload(struct dm_task *dmt);
- 
+diff -rupN 2.6.23-rc3-mm1/include/linux/blkdev.h 01-blkendreq-interface/include/linux/blkdev.h
+--- 2.6.23-rc3-mm1/include/linux/blkdev.h	2007-08-13 00:25:24.000000000 -0400
++++ 01-blkendreq-interface/include/linux/blkdev.h	2007-08-23 17:22:50.000000000 -0400
+@@ -728,6 +728,8 @@ static inline void blk_run_address_space
+  * for parts of the original function. This prevents
+  * code duplication in drivers.
+  */
++extern int blk_end_request(struct request *rq, int uptodate, int nr_bytes);
++extern int __blk_end_request(struct request *rq, int uptodate, int nr_bytes);
+ extern int end_that_request_first(struct request *, int, int);
+ extern int end_that_request_chunk(struct request *, int, int);
+ extern void end_that_request_last(struct request *, int);
