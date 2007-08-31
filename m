@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762132AbXHaElf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762635AbXHaEnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762132AbXHaElf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 00:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXHaEl1
+	id S1762635AbXHaEnQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 00:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbXHaEnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 00:41:27 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40489
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750831AbXHaEl0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 00:41:26 -0400
-Date: Thu, 30 Aug 2007 21:41:26 -0700 (PDT)
-Message-Id: <20070830.214126.95059798.davem@davemloft.net>
-To: dstromberglists@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ifconfig changing a routing table?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <fb83g8$nac$1@sea.gmane.org>
-References: <fb83g8$nac$1@sea.gmane.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 31 Aug 2007 00:43:04 -0400
+Received: from sandeen.net ([209.173.210.139]:21372 "EHLO sandeen.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750741AbXHaEnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 00:43:03 -0400
+Message-ID: <46D79C62.1010304@sandeen.net>
+Date: Thu, 30 Aug 2007 23:43:14 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+MIME-Version: 1.0
+To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: xfs-oss <xfs@oss.sgi.com>
+Subject: [PATCH] Increase lockdep MAX_LOCK_DEPTH
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dan Stromberg <dstromberglists@gmail.com>
-Date: Fri, 31 Aug 2007 03:55:53 +0000 (UTC)
+The xfs filesystem can exceed the current lockdep 
+MAX_LOCK_DEPTH, because when deleting an entire cluster of inodes,
+they all get locked in xfs_ifree_cluster().  The normal cluster
+size is 8192 bytes, and with the default (and minimum) inode size 
+of 256 bytes, that's up to 32 inodes that get locked.  Throw in a 
+few other locks along the way, and 40 seems enough to get me through
+all the tests in the xfsqa suite on 4k blocks.  (block sizes
+above 8K will still exceed this though, I think)
 
-> I'm not accustomed to ifconfig changing the routing table.  Is this 
-> normal?
+Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
 
-Every time you enable an IP address on an interface, the
-kernel creates a route to that subnet which gets likewise
-deleted when you remove that IP address.
+Index: linux-2.6.23-rc3/include/linux/sched.h
+===================================================================
+--- linux-2.6.23-rc3.orig/include/linux/sched.h
++++ linux-2.6.23-rc3/include/linux/sched.h
+@@ -1125,7 +1125,7 @@ struct task_struct {
+ 	int softirq_context;
+ #endif
+ #ifdef CONFIG_LOCKDEP
+-# define MAX_LOCK_DEPTH 30UL
++# define MAX_LOCK_DEPTH 40UL
+ 	u64 curr_chain_key;
+ 	int lockdep_depth;
+ 	struct held_lock held_locks[MAX_LOCK_DEPTH];
 
-This is why you can ping hosts on your local subnet even
-before you add any explicit routes.
-
-It's been like this since ancient times and it's correct.
