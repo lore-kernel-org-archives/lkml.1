@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966036AbXHaSHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966137AbXHaSHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966036AbXHaSHN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 14:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965651AbXHaSHB
+	id S966137AbXHaSHu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 14:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965714AbXHaSHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 14:07:01 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55541 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965647AbXHaSG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 14:06:59 -0400
-Message-ID: <46D858A9.4080506@garzik.org>
-Date: Fri, 31 Aug 2007 14:06:33 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Fri, 31 Aug 2007 14:07:39 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:15402 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965672AbXHaSHi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 14:07:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OhryB+3Lr5jvvRwtpWsPWY2BSsepIo8VGvOhlWwyqdO80zs9Tk8x7uCc+15xXnEdbIbGjaDDLCTWMyhIVjl1fwXsBt/h555QyfOM/zzBObtnlG7qSmkBDFY0Gag+ocZ/LSIOU2qRf9MsB0uZpWKP1HdisSOENRTp53b8p6sV+Dk=
+Message-ID: <6bffcb0e0708311107vaa93e9ekdee55f28b6ca9cdb@mail.gmail.com>
+Date: Fri, 31 Aug 2007 20:07:37 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [ANNOUNCE] DeskOpt - on fly task, i/o scheduler optimization
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070831103943.5e44ad4f@laptopd505.fenrus.org>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Randy Dunlap <rdunlap@xenotime.net>, Simon Arlott <simon@fire.lp0.eu>,
-       sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Adrian Bunk <bunk@stusta.de>, Gabriel C <crazy@pimpmylinux.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-References: <469E75AA.7040109@pimpmylinux.org> <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain> <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org> <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain> <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain> <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain> <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain> <20070719083109.13b2ab56.rdunlap@xenotime.net> <Pine.LNX.4.64.0707191213130.8844@localhost.localdomain> <469FE045.3070403@simon.arlott.org.uk> <20070831102527.09fb42c0.rdunlap@xenotime.net> <Pine.LNX.4.64.0708311318220.18158@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0708311318220.18158@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <46D8354A.3030208@googlemail.com>
+	 <20070831103943.5e44ad4f@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Fri, 31 Aug 2007, Randy Dunlap wrote:
-> 
->> On Thu, 19 Jul 2007 23:05:57 +0100 Simon Arlott wrote:
->>
->>> On 19/07/07 17:19, Robert P. J. Day wrote:
->>>> On Thu, 19 Jul 2007, Randy Dunlap wrote:
->>>>> I think that Stefan means a patch to the kconfig source code,
->>>>> not the the Kconfig files.  Good luck.  I'd still like to see it.
->>>> yes, i understand what he wanted now.  as a first step (that
->>>> theoretically shouldn't change any behaviour), i'd patch the Kconfig
->>>> structure to add a new attribute ("maturity") which would be allowed
->>>> to be set to *exactly one* of a pre-defined set of values (say,
->>>> OBSOLETE, DEPRECATED, EXPERIMENTAL, and STILLBLEEDING).  and that's
->>>> it, nothing more.
->>>>
->>>> don't try to do anything with any of that just yet, just add the
->>>> infrastructure to support the (optional) association of a maturity
->>>> level with a config option.  that's step one.
->>> What about something like this? I'm not sure if the addition to sym_init
->>> is desirable... I also had to prefix _ to the name for now otherwise it
->>> conflicts badly with the current symbols. It probably should stop
->>> "depends on _BROKEN" etc. too.
-> 
-> i'm sure i'm going to get shouted down here, but i really disagree
-> with "BROKEN" being considered a "maturity level".  IMHO, things like
-> EXPERIMENTAL, DEPRECATED and OBSOLETE represent maturity levels, for
-> what i think are obvious reasons.
-> 
-> something like BROKEN, though, has *nothing* to do with maturity.  a
-> feature can be any of those maturity levels, and simultaneously be
-> BROKEN.  i consider BROKEN to be what i call a "status", and different
-> status levels might be the default of normal, or KIND_OF_FLAKY or
-> TOTALLY_BORKED -- that's where BROKEN would fit in.
+On 31/08/2007, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Fri, 31 Aug 2007 17:35:38 +0200
+> Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+>
+> > Hi,
+> >
+> > Here is something that might be useful for gamers and audio/video
+> > editors http://www.stardust.webpages.pl/files/tools/deskopt/
+> >
+>
+>
+> question is how many of the things they changed can we just make
+> default...
+>
 
-BROKEN is definitely a maturity level.  A more accurate description 
-would be BITROTTING perhaps.  The code in question has passed through 
-bleeding -> experimental -> stable, and come out the other side.
+Good question.
 
-In contrast, OBSOLETE and DEPRECATED reflect high-level status not code 
-quality/maturity.
+If we want to change the default settings, we need to carefully
+benchmark all changes - it is not simple, because some things work
+different on desktop/server/embedded.
 
-	Jeff
+Regards,
+Michal
 
-
-
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
