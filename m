@@ -1,83 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965742AbXHaODS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965799AbXHaODr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965742AbXHaODS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 10:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965323AbXHaODF
+	id S965799AbXHaODr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 10:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965344AbXHaODg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 10:03:05 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:36341 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965320AbXHaODC (ORCPT
+	Fri, 31 Aug 2007 10:03:36 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:50055 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965228AbXHaODe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 10:03:02 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>
-Subject: [PATCH 1/2] IB/ehca: fix Small QP regressions
-Date: Fri, 31 Aug 2007 16:02:59 +0200
-User-Agent: KMail/1.8.2
-Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-References: <200708311601.42220.fenkes@de.ibm.com>
-In-Reply-To: <200708311601.42220.fenkes@de.ibm.com>
+	Fri, 31 Aug 2007 10:03:34 -0400
+Date: Fri, 31 Aug 2007 08:03:33 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Christoph Hellwig <hch@infradead.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Satyam Sharma <satyam@infradead.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Joe Perches <joe@perches.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] trivial - constify sched.h
+Message-ID: <20070831140332.GB14130@parisc-linux.org>
+References: <1188247231.18004.129.camel@localhost> <20070827213323.GA1759@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0708302120290.24730@fbirervta.pbzchgretzou.qr> <alpine.LFD.0.999.0708310121121.28360@enigma.security.iitk.ac.in> <Pine.LNX.4.64.0708302247070.10266@fbirervta.pbzchgretzou.qr> <20070831135323.GA24509@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708311602.59890.fenkes@de.ibm.com>
+In-Reply-To: <20070831135323.GA24509@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Roscher <stefan.roscher@de.ibm.com>
+On Fri, Aug 31, 2007 at 02:53:23PM +0100, Christoph Hellwig wrote:
+> On Thu, Aug 30, 2007 at 10:55:49PM +0200, Jan Engelhardt wrote:
+> > "those callers". There was _exactly one_ caller, and that was an out-of-tree
+> > module. There were not any in-kernel callers before, and it did not generate
+> > any warning. That is perhaps why no one had constified it before me. This does
+> > not mean we should wait for a caller to pop up before constifying IMHO.
+> 
+> In this case we should just kill it instead of messing with constness.
 
-The new Small QP code had a few bugs that would also trigger for non-Small
-QPs. Fix them.
+I think Jan mis-spoke -- there were no in-kernel callers calling it with
+a const argument.
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_qp.c   |   10 ++++++----
- drivers/infiniband/hw/ehca/ipz_pt_fn.c |    2 +-
- 2 files changed, 7 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index b178cba..84d435a 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -600,10 +600,12 @@ static struct ehca_qp *internal_create_qp(
- 
- 	if (EHCA_BMASK_GET(HCA_CAP_MINI_QP, shca->hca_cap)
- 	    && !(context && udata)) { /* no small QP support in userspace ATM */
--		ehca_determine_small_queue(
--			&parms.squeue, max_send_sge, is_llqp);
--		ehca_determine_small_queue(
--			&parms.rqueue, max_recv_sge, is_llqp);
-+		if (HAS_SQ(my_qp))
-+			ehca_determine_small_queue(
-+				&parms.squeue, max_send_sge, is_llqp);
-+		if (HAS_RQ(my_qp))
-+			ehca_determine_small_queue(
-+				&parms.rqueue, max_recv_sge, is_llqp);
- 		parms.qp_storage =
- 			(parms.squeue.is_small || parms.rqueue.is_small);
- 	}
-diff --git a/drivers/infiniband/hw/ehca/ipz_pt_fn.c b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
-index a090c67..29bd476 100644
---- a/drivers/infiniband/hw/ehca/ipz_pt_fn.c
-+++ b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
-@@ -172,7 +172,7 @@ static void free_small_queue_page(struct ipz_queue *queue, struct ehca_pd *pd)
- 	unsigned long bit;
- 	int free_page = 0;
- 
--	bit = ((unsigned long)queue->queue_pages[0] & PAGE_MASK)
-+	bit = ((unsigned long)queue->queue_pages[0] & ~PAGE_MASK)
- 		>> (order + 9);
- 
- 	mutex_lock(&pd->lock);
 -- 
-1.5.2
-
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
