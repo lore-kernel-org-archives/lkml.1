@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbXHaXLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbXHaXN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbXHaXLW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 19:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbXHaXLL
+	id S1756574AbXHaXN4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 19:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbXHaXNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 19:11:11 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38869 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751011AbXHaXLK (ORCPT
+	Fri, 31 Aug 2007 19:13:48 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:35138 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723AbXHaXNr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 19:11:10 -0400
-Date: Sat, 1 Sep 2007 00:19:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: sata_via: write errors on PATA drive connected to VT6421
-Message-ID: <20070901001906.16c4db60@the-village.bc.nu>
-In-Reply-To: <200709010055.22200.linux@rainbow-software.org>
-References: <200708202242.07290.linux@rainbow-software.org>
-	<20070821132731.6bf10b50@the-village.bc.nu>
-	<200709010055.22200.linux@rainbow-software.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 31 Aug 2007 19:13:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CugO8J0ybeJ3t+co+U60MHqDmOgQJV6NqwC+BUjXOqZsN2VfInlViex1dDOLfD6tbLo6T7B0zWaLr2aUFvnKIBmRy5qGz+AMEndBnRI6gLmxESb1oNfYlq9fPwq6MQ5RE+p+NJb0P50zFvPHLirZhK3UOMGxZLBOEkhILRUS2YA=
+Message-ID: <6bffcb0e0708311613h59430eado425c95569c21d0cf@mail.gmail.com>
+Date: Sat, 1 Sep 2007 01:13:45 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Chris Snook" <csnook@redhat.com>
+Subject: Re: [ANNOUNCE] DeskOpt - on fly task, i/o scheduler optimization
+Cc: LKML <linux-kernel@vger.kernel.org>, "CK Mailinglist" <ck@vds.kolivas.org>
+In-Reply-To: <46D895AE.8060308@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46D8354A.3030208@googlemail.com> <46D895AE.8060308@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Sep 2007 00:55:21 +0200
-Ondrej Zary <linux@rainbow-software.org> wrote:
+On 01/09/2007, Chris Snook <csnook@redhat.com> wrote:
+> Michal Piotrowski wrote:
+> > Hi,
+> >
+> > Here is something that might be useful for gamers and audio/video editors
+> > http://www.stardust.webpages.pl/files/tools/deskopt/
+> >
+> > You can easily tune CFS/CFQ scheduler params
+>
+> I would think that gamers and AV editors would want to be using deadline
+> (or maybe even as), not cfq.  How well does it work with other I/O
+> schedulers?
 
-> Hello,
-> I think that I've found and fixed the problem. There is a copy/paste bug in 
-> vt6421_set_dma_mode() function which causes wrong values to be written to 
-> PATA_UDMA_TIMING register.
-> 
-> 
-> This patch fixes a copy/paste bug that breaks DMA modes on VT6421 PATA port.
-> 
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-> 
-> --- linux-2.6.22.3-orig/drivers/ata/sata_via.c	2007-09-01 00:40:22.000000000 +0200
-> +++ linux-2.6.22.3-router2/drivers/ata/sata_via.c	2007-09-01 00:10:40.000000000 +0200
-> @@ -370,7 +370,7 @@
->  {
->  	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
->  	static const u8 udma_bits[] = { 0xEE, 0xE8, 0xE6, 0xE4, 0xE2, 0xE1, 0xE0, 0xE0 };
-> -	pci_write_config_byte(pdev, PATA_UDMA_TIMING, udma_bits[adev->pio_mode - XFER_UDMA_0]);
-> +	pci_write_config_byte(pdev, PATA_UDMA_TIMING, udma_bits[adev->dma_mode - XFER_UDMA_0]);
->  }
->  
->  static const unsigned int svia_bar_sizes[] = {
+Actually it does not support other i/o schedulers (early stage of
+development ;).
 
-Acked-by: Alan Cox <alan@redhat.com>
+"Linux supports io scheduling priorities and classes since 2.6.13 with
+the CFQ io scheduler." (ionice man page)
 
+So we can only tune
+antic_expire  est_time  read_batch_expire  read_expire
+write_batch_expire  write_expire
+for anticipatory and
+fifo_batch  front_merges  read_expire  write_expire  writes_starved
+for deadline.
+
+I'll have a look on it.
+
+>
+>         -- Chris
+>
+
+Regards,
+Michal
+
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
