@@ -1,170 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXHaQRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965454AbXHaQSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933084AbXHaQRq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 12:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932540AbXHaQRg
+	id S965454AbXHaQSY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 12:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932687AbXHaQSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 12:17:36 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:51965 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932464AbXHaQRf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 12:17:35 -0400
-Date: Fri, 31 Aug 2007 10:17:33 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Greg KH <greg@kroah.com>, alex@nibbles.it, dac@conglom-o.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: [Bug 8942] dac960 driver stopped working with 2.6.22 kernel series
-Message-ID: <20070831161733.GC14130@parisc-linux.org>
-References: <bug-8942-27@http.bugzilla.kernel.org/> <20070831151748.37C39108012@picon.linux-foundation.org> <20070831084259.fc2fd903.akpm@linux-foundation.org>
+	Fri, 31 Aug 2007 12:18:16 -0400
+Received: from orca.ele.uri.edu ([131.128.51.63]:43676 "EHLO orca.ele.uri.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932715AbXHaQSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 12:18:14 -0400
+Date: Fri, 31 Aug 2007 12:18:57 -0400
+From: Will Simoneau <simoneau@ele.uri.edu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] save registers around VESA BIOS calls
+Message-ID: <20070831161746.GA5459@ele.uri.edu>
+References: <20070831015620.GA6259@ele.uri.edu> <46D7AAF7.1030105@zytor.com> <46D7B817.3060304@zytor.com> <20070831150326.GA6003@ele.uri.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ZmUaFz6apKcXQszQ"
 Content-Disposition: inline
-In-Reply-To: <20070831084259.fc2fd903.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070831150326.GA6003@ele.uri.edu>
+User-Agent: Mutt/1.5.16 [Linux 2.6.23-rc4-hrt1-b0rg-ga9a820df-dirty i686]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 31, 2007 at 08:42:59AM -0700, Andrew Morton wrote:
-> On Fri, 31 Aug 2007 08:17:48 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
-> 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=8942
-> 
-> Seems that DAC960 broke in 2.6.22 - three people are reporting this.
 
-Interesting.  Because nobody touched DAC960 since 2.6.20 ...
+--ZmUaFz6apKcXQszQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-git-log v2.6.21.. drivers/block/DAC960.[ch]
-(no output)
-The patches which touched it in 2.6.20 seem mechanical enough.
+On 11:05 Fri 31 Aug     , Will Simoneau wrote:
+> On 23:41 Thu 30 Aug     , H. Peter Anvin wrote:
+> > H. Peter Anvin wrote:
+> >> Will Simoneau wrote:
+> >>> While trying to put together a new kernel for my laptop (Dell I5150, =
+as
+> >>> in subject) I found that recent kernels just don't boot. Right after
+> >>> grub loads the kernel, before the "Uncompressing Linux" message is
+> >>> shown, it hangs. The BIOS appears to still be alive (ctrl-alt-del wor=
+ks,
+> >>> keyboard lock LEDs respond). It seems to be caused by the new x86 set=
+up
+> >>> code.
+> >>>
+> >>> My kernel is Linus' git as of a1c582d0720f2eff61043e90711767decf37b91=
+7.
+> >>> I bisected and confirmed that 4fd06960f120e02e9abc802a09f9511c400042a5
+> >>> triggers a non-functioning boot.
+> >>>
+> >>> This system has Dell BIOS rev A38 and a P4 3.2 w/HT.
+> >>>
+> >>> What should I do next to debug this problem?
+> >> Can you put in some printf's in the code and see how far it gets?
+> >
+> > Specifically, the places to add printf's are to main() in main.c and=20
+> > go_to_protected_mode() in pm.c.
+> >
+> > 	-hpa
+>=20
+> It dies in vesa_probe() right after calling int10 with ax=3D4f01 and
+> checking the return status, which was 0x004f (success). This happens on
+> the third iteration of the loop; the first two modes it finds are
+> framebuffer modes. This would be just after line 72 in video-vesa.c .
+>=20
+> I have CONFIG_VIDEO_VESA=3Dy and CONFIG_FB=3Dy, but am not passing the
+> kernel options that would use vesafb as the console.
 
-> - BIOS-e820: 0000000000000000 - 000000000009ec00 (usable)
-> - BIOS-e820: 000000000009ec00 - 00000000000a0000 (reserved)
-> + BIOS-e820: 0000000000000000 - 000000000009e400 (usable)
-> + BIOS-e820: 000000000009e400 - 00000000000a0000 (reserved)
->   BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
->   BIOS-e820: 0000000000100000 - 000000007fee0000 (usable)
->   BIOS-e820: 000000007fee0000 - 000000007fee3000 (ACPI NVS)
+Apparently some VESA BIOS implementations clobber our registers when called.
+Tell gcc about it.
 
-A little bit more memory has been reserved here.  Surely not enough to
-affect things.
+This makes my Dell Inspiron 5150 boot correctly instead of hanging.
 
-> -Memory: 2072952k/2096000k available (3291k kernel code, 21964k reserved, 952k data, 192k init, 1178496k highmem)
-> +Memory: 2068056k/2096000k available (2176k kernel code, 26764k reserved, 784k data, 356k init, 1178496k highmem)
->  virtual kernel memory layout:
-> -    fixmap  : 0xfffaa000 - 0xfffff000   ( 340 kB)
-> +    fixmap  : 0xfff4f000 - 0xfffff000   ( 704 kB)
->      pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
->      vmalloc : 0xf8800000 - 0xff7fe000   ( 111 MB)
->      lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
-> -      .init : 0xc0528000 - 0xc0558000   ( 192 kB)
-> -      .data : 0xc0436cf1 - 0xc0524f7c   ( 952 kB)
-> -      .text : 0xc0100000 - 0xc0436cf1   (3291 kB)
-> +      .init : 0xc03eb000 - 0xc0444000   ( 356 kB)
-> +      .data : 0xc03202e1 - 0xc03e46c4   ( 784 kB)
-> +      .text : 0xc0100000 - 0xc03202e1   (2176 kB)
+Signed-off-by: Will Simoneau <simoneau@ele.uri.edu>
 
-Seems like quite the different configuration.  Maybe it'd be helpful if
-the bug reporter could try very similar configurations?
+---
 
-> +SLUB: Genslabs=22, HWalign=32, Order=0-1, MinObjects=4, CPUs=1, Nodes=1
+--- linux-2.6/arch/i386/boot/video-vesa.c.old	2007-08-31 11:51:40.478575122=
+ -0400
++++ linux-2.6/arch/i386/boot/video-vesa.c	2007-08-31 11:51:10.980602450 -04=
+00
+@@ -39,9 +39,11 @@
+=20
+ 	vginfo.signature =3D VBE2_MAGIC;
+=20
+-	/* Optimistically assume a VESA BIOS is register-clean... */
+ 	ax =3D 0x4f00;
+-	asm("int $0x10" : "+a" (ax), "=3Dm" (vginfo) : "D" (&vginfo));
++	asm("int $0x10"
++	    : "+a" (ax), "=3Dm" (vginfo)
++	    : "D" (&vginfo)
++	    : "ebx", "ecx", "edx", "esi");
+=20
+ 	if (ax !=3D 0x004f ||
+ 	    vginfo.signature !=3D VESA_MAGIC ||
+@@ -66,7 +68,8 @@
+ 		ax =3D 0x4f01;
+ 		asm("int $0x10"
+ 		    : "+a" (ax), "=3Dm" (vminfo)
+-		    : "c" (mode), "D" (&vminfo));
++		    : "c" (mode), "D" (&vminfo)
++		    : "ebx", "edx", "esi");
+=20
+ 		if (ax !=3D 0x004f)
+ 			continue;
 
-Could SLUB be causing this?  Seems unlikely, but you never know.
+--ZmUaFz6apKcXQszQ
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-> +EISA: Probing bus 0 at eisa.0
-> +Cannot allocate resource for EISA slot 4
-> +Cannot allocate resource for EISA slot 5
-> +EISA: Detected 0 cards.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.6 (GNU/Linux)
 
-Might want to look into that too.
+iD8DBQFG2D9xLYBaX8VDLLURAsgXAKCQwdisCb1hdmfKdm75Ax4r7XBGWwCfbVBu
+7HMiNOVnhm1w2F2pPsK92u0=
+=cYTZ
+-----END PGP SIGNATURE-----
 
-> -ACPI: PCI Interrupt 0000:00:0b.0[A] -> GSI 19 (level, low) -> IRQ 16
-> +ACPI: PCI Interrupt 0000:00:0b.0[A] -> GSI 19 (level, low) -> IRQ 18
->  DAC960: ***** DAC960 RAID Driver Version 2.5.48 of 14 May 2006 *****
->  DAC960: Copyright 1998-2001 by Leonard N. Zubkoff <lnz@dandelion.com>
-> -DAC960#0: Configuring Mylex AcceleRAID 170 PCI RAID Controller
-> -DAC960#0:   Firmware Version: 7.02-00, Channels: 1, Memory Size: 64MB
-> -DAC960#0:   PCI Bus: 0, Device: 11, Function: 0, I/O Address: Unassigned
-> -DAC960#0:   PCI Address: 0xD8000000 mapped at 0xF8CB4000, IRQ Channel: 16
-> -DAC960#0:   Controller Queue Depth: 512, Maximum Blocks per Command: 2048
-> -DAC960#0:   Driver Queue Depth: 511, Scatter/Gather Limit: 128 of 257 Segments
-> -DAC960#0:   Physical Devices:
-> +DAC960#0: While configuring DAC960 PCI RAID Controller at
-> +DAC960#0: PCI Bus 0 Device 11 Function 0 I/O Address N/A PCI Address 0xD8000000
-> +DAC960#0: DMA mask out of range FAILED - DETACHING
-> +DAC960#0: Unable to Enable Memory Mailbox Interface for Controller at
-> +DAC960#0: PCI Bus 0 Device 11 Function 0 I/O Address N/A PCI Address 0xD8000000
-
-So anyway, what's actually failing is one of these:
-
-  if (pci_set_dma_mask(Controller->PCIDevice, DAC690_V1_PciDmaMask))
-          return DAC960_Failure(Controller, "DMA mask out of range");
-  if (pci_set_dma_mask(Controller->PCIDevice, DAC690_V2_PciDmaMask))
-          return DAC960_Failure(Controller, "DMA mask out of range");
-
-These are both defined in DAC960.h:
-
-#define DAC690_V1_PciDmaMask    0xffffffff
-#define DAC690_V2_PciDmaMask    0xffffffffffffffffULL
-
-Now, the only way for pci_set_dma_mask() to fail is if
-pci_dma_supported() fails.  On i386, pci_dma_supported just returns
-dma_supported.  i386's dma_supported fails in one of two ways:
-
-        if(mask < 0x00ffffff)
-		return 0;
-
-	/* Work around chipset bugs */
-	if (forbid_dac > 0 && mask > 0xffffffffULL)
-		return 0;
-
-The first can't fail for either adapter, but the second one can fail for
-the V2 adapters.
-
-Proceeding on that premise, how can forbid_dac be set?
-
-static __devinit void via_no_dac(struct pci_dev *dev)
-{
-        if ((dev->class >> 8) == PCI_CLASS_BRIDGE_PCI && forbid_dac == 0) {
-                printk(KERN_INFO "PCI: VIA PCI bridge detected. Disabling DAC.\n
-");
-                forbid_dac = 1;
-        }
-}
-DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_VIA, PCI_ANY_ID, via_no_dac);
-
-And here's the offender in the diff:
-
-+PCI: VIA PCI bridge detected. Disabling DAC.
-
-Now, DAC960 is at fault here; DMA-mapping.txt recommends the following
-sequence:
-
-        int using_dac;
-
-        if (!pci_set_dma_mask(pdev, DMA_64BIT_MASK)) {
-                using_dac = 1;
-        } else if (!pci_set_dma_mask(pdev, DMA_32BIT_MASK)) {
-                using_dac = 0;
-        } else {
-                printk(KERN_WARNING
-                       "mydev: No suitable DMA available.\n");
-                goto ignore_this_device;
-        }
-
-So I'll whip up a patch for DAC960, but in the meantime, these users
-can pass "iommu=usedac" as a kernel parameter.
-
-It seems a bit mean to write off *all* VIA bridges as data-corruptors.
-Maybe the people who haven't had problems before can help us start a
-white-list of VIA PCI bridges that don't have a problem with DAC.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+--ZmUaFz6apKcXQszQ--
