@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbXH3XtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763508AbXHaAAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764001AbXH3XtM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 19:49:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760843AbXH3Xs4
+	id S1763508AbXHaAAW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 20:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757078AbXHaAAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 19:48:56 -0400
-Received: from smtp131.iad.emailsrvr.com ([207.97.245.131]:46224 "EHLO
-	smtp131.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758795AbXH3Xsy (ORCPT
+	Thu, 30 Aug 2007 20:00:09 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:45743 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751025AbXHaAAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 19:48:54 -0400
-Message-ID: <46D756FF.3090602@gentoo.org>
-Date: Thu, 30 Aug 2007 19:47:11 -0400
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070805)
+	Thu, 30 Aug 2007 20:00:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FTzwneyPwPgXjnkTtXCsn06BMNM5dzdiHt7Fr9lXKwfosBhHB6kB2TmMhtu2DgJmf9yBFkeF5GvJGuaiSbxfrHR7Ru1WtUSU4AwJhn/PCB7FMcxe76WhqKTapWWYnIVhBvNtN5eIrQ8vBjryUZe4fjnHG8SWl25zXSIdm2tIGkA=
+Message-ID: <9a8748490708301700y1de4347cubb78c1f82dce4821@mail.gmail.com>
+Date: Fri, 31 Aug 2007 02:00:06 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       bos@serpentine.com, rob@landley.net, werner@almesberger.net,
+       hpa@zytor.com
+In-Reply-To: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Ulrich Kunitz <kune@deine-taler.de>, linux-wireless@vger.kernel.org
-Subject: Re: [PATCH 13/30] net: Don't do pointless kmalloc return value casts
- in zd1211 driver
-References: <1554af80879a7ef2f78a4d654f23c248203500d9.1187912217.git.jesper.juhl@gmail.com>	 <d551047daed1cb4d9de1eff956268a468c9837f6.1187912217.git.jesper.juhl@gmail.com>	 <46D70467.1040109@gentoo.org> <9a8748490708301320o49d8e794vc5c37ffc938006f1@mail.gmail.com>
-In-Reply-To: <9a8748490708301320o49d8e794vc5c37ffc938006f1@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
-> What would be wrong in applying my patch that removes the cast of the
-> kmalloc() return value and then also remove the "__nocast" here?
+On 30/08/2007, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> initrd/initramfs/ramdisk docs:
+> - fix typos/spellos/grammar
+> - clarify RAM disk config location
+> - correct cpio option
+>
+> Cc: Bryan O'Sullivan <bos@serpentine.com>
+> Cc: Rob Landley <rob@landley.net>
+> Cc: Werner Almesberger <werner@almesberger.net>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+...
 
-We use it as a safety measure when coding. For example the write 
-register function takes an address and a value. We got one of these the 
-wrong way round once, and had a non-obvious bug.
+Hi Randy,
 
-nocast and sparse helps us prevent this.
+I read through your changes and they seem reasonable to me, so for
+what it's worth;
 
-Daniel
+Acked-by: Jesper Juhl <jesper.juhl@gmail.com>
 
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
