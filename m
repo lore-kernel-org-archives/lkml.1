@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932646AbXHaKkE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759657AbXHaKq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932646AbXHaKkE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 06:40:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbXHaKjy
+	id S1759657AbXHaKq7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 06:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932320AbXHaKqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 06:39:54 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:57018 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757277AbXHaKjx (ORCPT
+	Fri, 31 Aug 2007 06:46:49 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:56663 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757836AbXHaKqd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 06:39:53 -0400
-Date: Fri, 31 Aug 2007 10:03:51 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Dittmer <jdi@l4x.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org
-Subject: Re: [1/4] 2.6.23-rc4: known regressions
-Message-ID: <20070831080351.GD9260@stusta.de>
-References: <46D5902C.1040905@googlemail.com> <46D5B544.4030708@l4x.org> <20070829234734.GA26410@stusta.de> <Pine.LNX.4.64.0708291736010.4526@schroedinger.engr.sgi.com> <46D66D49.20300@l4x.org> <Pine.LNX.4.64.0708301112030.7975@schroedinger.engr.sgi.com> <46D7108D.9090104@l4x.org> <Pine.LNX.4.64.0708310043250.14694@schroedinger.engr.sgi.com>
+	Fri, 31 Aug 2007 06:46:33 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: possible build system oddity
+Date: Fri, 31 Aug 2007 12:46:34 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070731.694771)
+Cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       linux-kernel@vger.kernel.org
+References: <200708311037.29280.oliver@neukum.org> <200708311151.32618.oliver@neukum.org> <Pine.LNX.4.64.0708311237490.9413@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708311237490.9413@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708310043250.14694@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200708311246.35460.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 31, 2007 at 12:48:45AM -0700, Christoph Lameter wrote:
-> Here is the fix for alpha:
+Am Freitag 31 August 2007 schrieb Jan Engelhardt:
+> On Aug 31 2007 11:51, Oliver Neukum wrote:
+> >Am Freitag 31 August 2007 schrieb Sam Ravnborg:
+> >> On Fri, Aug 31, 2007 at 01:14:26PM +0400, Alexey Dobriyan wrote:
+> >> > On 8/31/07, Oliver Neukum <oliver@neukum.org> wrote:
+> >> > > I only touched sound/usb/usbaudio.c
+> >> > > Nevertheless the whole subtree und sound/ is recompiling. What's
+> >> > > happening?
+> >> > 
+> >> > Not here. Do make V=2, it should say why it's recompiling.
+> >> 
+> >> And if the problem persist then do a make V=1 and post output here.
+> >> This information combined should tell what goes wrong.
+> >
+> >Not reproducible. Sorry.
 > 
-> >From clameter@sgi.com Thu Aug 30 14:13:57 2007
-> Subject: SLUB: Force inlining for functions in slub_def.h
-> 
-> Some compilers (especially older gcc releases) may skip inlining sometimes 
-> which will lead to link failures. Force the inlining of keyfunctions in 
-> slub_def.h to avoid these issues.
->...
+> NFS/etc. involved?
 
-This also explains why it's an Alpha-only problem - the Alpha port 
-pretty much diverges from the rest of the kernel regarding "inline" 
-semantics and usage...
+No, exclusively on reiserfs.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+	Regards
+		Oliver
 
