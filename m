@@ -1,117 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761014AbXHaQp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761045AbXHaQsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761014AbXHaQp0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 12:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759423AbXHaQpO
+	id S1761045AbXHaQsF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 12:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759059AbXHaQrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 12:45:14 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:2260 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759896AbXHaQpM (ORCPT
+	Fri, 31 Aug 2007 12:47:49 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:42108 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758779AbXHaQrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 12:45:12 -0400
-Subject: Re: nmi_watchdog=2 regression in 2.6.21
-From: Daniel Walker <dwalker@mvista.com>
-To: eranian@hpl.hp.com
-Cc: B.Steinbrink@gmx.de, ak@suse.de, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20070831162146.GD7161@frankl.hpl.hp.com>
-References: <20070828091217.GA1645@frankl.hpl.hp.com>
-	 <1188311684.2435.288.camel@dhcp193.mvista.com>
-	 <20070828170556.GI1645@frankl.hpl.hp.com>
-	 <1188325835.2435.317.camel@dhcp193.mvista.com>
-	 <20070828194636.GB2814@frankl.hpl.hp.com>
-	 <1188332024.2435.328.camel@dhcp193.mvista.com>
-	 <20070829212451.GC4810@frankl.hpl.hp.com>
-	 <1188436919.26038.27.camel@dhcp193.mvista.com>
-	 <20070830210555.GA6635@frankl.hpl.hp.com>
-	 <1188571401.26038.41.camel@dhcp193.mvista.com>
-	 <20070831162146.GD7161@frankl.hpl.hp.com>
-Content-Type: text/plain
-Date: Fri, 31 Aug 2007 09:35:23 -0700
-Message-Id: <1188578123.26038.52.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Aug 2007 12:47:48 -0400
+Date: Fri, 31 Aug 2007 10:47:46 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
+       Greg KH <greg@kroah.com>, alex@nibbles.it, dac@conglom-o.org,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-scsi@vger.kernel.org
+Subject: [PATCH] Fix DAC960 driver on machines which don't support 64-bit DMA
+Message-ID: <20070831164746.GD14130@parisc-linux.org>
+References: <bug-8942-27@http.bugzilla.kernel.org/> <20070831151748.37C39108012@picon.linux-foundation.org> <20070831084259.fc2fd903.akpm@linux-foundation.org> <20070831161733.GC14130@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070831161733.GC14130@parisc-linux.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-31 at 09:21 -0700, Stephane Eranian wrote:
-> Daniel,
-> 
-> On Fri, Aug 31, 2007 at 07:43:20AM -0700, Daniel Walker wrote:
-> > On Thu, 2007-08-30 at 14:05 -0700, Stephane Eranian wrote:
-> > > Daniel,
-> > 
-> > > Yes, I realized I missed a small detail in the switch statement.
-> > > Could you try the new version?
-> > 
-> > This patch still has the stuck NMI .. Essentially the same thing that
-> > happened without the patch..
-> > 
-> Ok, looks like deaulting to P6 does not quite work.
-> 
-> Here is a new version. This time I used a different approach.
-> I am must admit I am a bit puzzled by the duplication of information
-> between the wd_ops and the nmi_watchdog_ctlblk structure. My understanding
-> is that thelater is used as a cache for the info that needs to be per-cpu.
-> 
-> The wd_ops provides the MSR to use for the counter, yet all the setup_*()
-> routines hardcode the MSR. Not sure why?
+[Note: not tested.  I have a temporary shortage of machines with 5 volt
+PCI slots, and in any case, I think the DAC960 that I have is a V1 card]
 
-Yeah, that's bad .. For instance, if those had all been centralized
-Bjorn wouldn't have needed to fix those up later..
+Use PCI_DMA_* constants instead of own private definitions
+Fall back to 32-bit DMA mask if a 64-bit one fails
 
-> In this patch, the setup_*() routine now extract the MSR from the wd_ops
-> to copy them into the nmi_watchdog_ctlblk. This is not done for P4 because
-> of the special and ugly case of HT. 
-> 
-> With this approach, we can now create a custom wd_ops for CoreDuo that is
-> a clone of the intel_arch_wd_ops, except for the MSR.
-> 
-> Could you try this one instead?
+Signed-off-by: Matthew Wilcox <matthew@wil.cx>
 
-So I tested your patch unchanged and the system boots, and the
-check_nmi_watchdog() passes .. However, the nmi stops ticking right
-after bootup,
+diff --git a/drivers/block/DAC960.c b/drivers/block/DAC960.c
+index 92bf868..504a95d 100644
+--- a/drivers/block/DAC960.c
++++ b/drivers/block/DAC960.c
+@@ -17,8 +17,8 @@
+ */
+ 
+ 
+-#define DAC960_DriverVersion			"2.5.48"
+-#define DAC960_DriverDate			"14 May 2006"
++#define DAC960_DriverVersion			"2.5.49"
++#define DAC960_DriverDate			"21 Aug 2007"
+ 
+ 
+ #include <linux/module.h>
+@@ -1165,9 +1165,9 @@ static bool DAC960_V1_EnableMemoryMailboxInterface(DAC960_Controller_T
+   int i;
+ 
+   
+-  if (pci_set_dma_mask(Controller->PCIDevice, DAC690_V1_PciDmaMask))
++  if (pci_set_dma_mask(Controller->PCIDevice, DMA_32BIT_MASK))
+ 	return DAC960_Failure(Controller, "DMA mask out of range");
+-  Controller->BounceBufferLimit = DAC690_V1_PciDmaMask;
++  Controller->BounceBufferLimit = DMA_32BIT_MASK;
+ 
+   if ((hw_type == DAC960_PD_Controller) || (hw_type == DAC960_P_Controller)) {
+     CommandMailboxesSize =  0;
+@@ -1368,9 +1368,12 @@ static bool DAC960_V2_EnableMemoryMailboxInterface(DAC960_Controller_T
+   dma_addr_t	CommandMailboxDMA;
+   DAC960_V2_CommandStatus_T CommandStatus;
+ 
+-  if (pci_set_dma_mask(Controller->PCIDevice, DAC690_V2_PciDmaMask))
+-	return DAC960_Failure(Controller, "DMA mask out of range");
+-  Controller->BounceBufferLimit = DAC690_V2_PciDmaMask;
++	if (!pci_set_dma_mask(Controller->PCIDevice, DMA_64BIT_MASK))
++		Controller->BounceBufferLimit = DMA_64BIT_MASK;
++	else if (!pci_set_dma_mask(Controller->PCIDevice, DMA_32BIT_MASK))
++		Controller->BounceBufferLimit = DMA_32BIT_MASK;
++	else
++		return DAC960_Failure(Controller, "DMA mask out of range");
+ 
+   /* This is a temporary dma mapping, used only in the scope of this function */
+   CommandMailbox = pci_alloc_consistent(PCI_Device,
+diff --git a/drivers/block/DAC960.h b/drivers/block/DAC960.h
+index f5e2436..85fa9bb 100644
+--- a/drivers/block/DAC960.h
++++ b/drivers/block/DAC960.h
+@@ -61,13 +61,6 @@
+ #define DAC960_V2_MaxPhysicalDevices		272
+ 
+ /*
+-  Define the pci dma mask supported by DAC960 V1 and V2 Firmware Controlers
+- */
+-
+-#define DAC690_V1_PciDmaMask	0xffffffff
+-#define DAC690_V2_PciDmaMask	0xffffffffffffffffULL
+-
+-/*
+   Define a 32/64 bit I/O Address data type.
+ */
+ 
 
->From my /proc/interrupts below,
-
-           CPU0       CPU1       CPU2       CPU3       
-  0:        108          0          0          0   IO-APIC-edge      timer
-  1:          0          0          0          8   IO-APIC-edge      i8042
-  4:       3427          0          0          1   IO-APIC-edge      serial
-  8:          1          0          0          1   IO-APIC-edge      rtc
- 12:          0          0          0        113   IO-APIC-edge      i8042
- 14:       1128          0          0         10   IO-APIC-edge      ide0
- 16:       1664          0          0          1   IO-APIC-fasteoi   uhci_hcd:usb2, eth0
- 18:          0          0          0          0   IO-APIC-fasteoi   ehci_hcd:usb1
- 19:          0          0          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
- 20:          0          0          0          1   IO-APIC-fasteoi   acpi
-NMI:       1670       1453       1097        967 
-LOC:      48001      48002      48000      48006 
-ERR:          0
-MIS:          0
-
-
-The NMI field never changes ..
-
-So I added another change which looked appropriate,
-
-@@ -674,6 +688,7 @@ unsigned lapic_adjust_nmi_hz(unsigned hz
- {
-        struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
-        if (wd->perfctr_msr == MSR_P6_PERFCTR0 ||
-+           wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR0 ||
-            wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1)
-                hz = adjust_for_32bit_ctr(hz);
-        return hz;
-
-
-Unfortunately that didn't fix anything, but I have a feeling is has
-something to do with the nmi hertz adjustment that happens after
-check_nmi_watchdog() ..
-
-Daniel
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
