@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966194AbXHaVCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966311AbXHaVCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966194AbXHaVCX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964849AbXHaVCM
+	id S966311AbXHaVCt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966019AbXHaVCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:02:12 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:43529 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964824AbXHaVCK (ORCPT
+	Fri, 31 Aug 2007 17:02:37 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35498 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964849AbXHaVCf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:02:10 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 31 Aug 2007 16:49:17 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Jeff Garzik <jeff@garzik.org>
-cc: Randy Dunlap <rdunlap@xenotime.net>, Simon Arlott <simon@fire.lp0.eu>,
-       sam@ravnborg.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Adrian Bunk <bunk@stusta.de>, Gabriel C <crazy@pimpmylinux.org>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-In-Reply-To: <46D858A9.4080506@garzik.org>
-Message-ID: <Pine.LNX.4.64.0708311643080.27345@localhost.localdomain>
-References: <469E75AA.7040109@pimpmylinux.org>
- <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
- <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
- <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
- <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
- <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
- <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
- <20070719083109.13b2ab56.rdunlap@xenotime.net>
- <Pine.LNX.4.64.0707191213130.8844@localhost.localdomain>
- <469FE045.3070403@simon.arlott.org.uk> <20070831102527.09fb42c0.rdunlap@xenotime.net>
- <Pine.LNX.4.64.0708311318220.18158@localhost.localdomain> <46D858A9.4080506@garzik.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Fri, 31 Aug 2007 17:02:35 -0400
+Date: Fri, 31 Aug 2007 22:11:05 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-serial@vger.kernel.org
+Subject: Heads Up: Next Batch Of Serial/TTY Changes
+Message-ID: <20070831221105.2fce9023@the-village.bc.nu>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007, Jeff Garzik wrote:
 
-> Robert P. J. Day wrote:
+Firstly some architecture maintainers still haven't updated their
+platform for arbitary tty speeds. The kernel is going to start whining
+and issuing warnings on your platform if you don't keep up with the
+programme (its been 6 months).
 
-> > i'm sure i'm going to get shouted down here, but i really disagree
-> > with "BROKEN" being considered a "maturity level".  IMHO, things
-> > like EXPERIMENTAL, DEPRECATED and OBSOLETE represent maturity
-> > levels, for what i think are obvious reasons.
-> >
-> > something like BROKEN, though, has *nothing* to do with maturity.
-> > a feature can be any of those maturity levels, and simultaneously
-> > be BROKEN.  i consider BROKEN to be what i call a "status", and
-> > different status levels might be the default of normal, or
-> > KIND_OF_FLAKY or TOTALLY_BORKED -- that's where BROKEN would fit
-> > in.
->
-> BROKEN is definitely a maturity level.
+Secondly a lot of driver level code for termios methods is very very wrong
+indeed. I've been trawling through and fixing the USB stuff in part but
+some of it will need maintainer attention once the next changes go in.
 
-no.  it's not.  end of discussion.  you're wrong.
+- The termios interface says that you hand back the actual mode you set.
+This means that if your driver sets a different speed, can't do the
+selected parity etc you *MUST* update the passed tty->termios to reflect
+your hardware. Mostly this seems to be the lack of support for mark/space
+parity but if you've got a very limited specialist device you may need to
+write a lot more (indeed the empeg effectively writes the entire termios)
 
-the concept of "maturity level" reflects where in the life cycle some
-feature is.  it will typically start as "bleeding edge" or
-"experimental" or something like that, eventually stabilize to be
-normal (which would be the obvious default), after which, when its
-value starts to run out and it begins showing its age, it becomes
-"deprecated" and eventually "obsolete"  it's a natural and obvious
-progression.
+- If your hardware has no termios features don't provide a dummy handler
+just don't provide one. In that case the kernel will (as of updates) do
+the right thing and preserve the previous speed and other hardware
+parameters while updating the software ones.
 
-on the other hand, a feature can be "broken" at *any* point in that
-life cycle -- that's why it is absolutely *not* a maturity level.
-please don't fight with me on this, jeff.  you're simply wrong.
+- We now support seperate input and output speeds. Hardware that does
+this wants updating accordingly
 
-> In contrast, OBSOLETE and DEPRECATED reflect high-level status not
-> code quality/maturity.
+- If your hardware is initializing termios structures or copying and
+editing them itself it is responsible for encoding c_ispeed/c_ospeed.
+Right now there are some hacks to do it for you if you forget in most
+cases, they will go away.
 
-you have this so backwards, i can't begin to think how to explain it
-to you.
+- The new code will add two types of helper to deal with the more horrible
+bits of all this
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+	tty_encode_baud_rate(tty, inputbaud, outputbaud)
+	tty_termios_encode_baudrate(termios, inputbaud, outputbaud)
 
-http://crashcourse.ca
-========================================================================
+and also
+
+	tty_termios_copy_hw(new, old)
+
+which will copy all the hardware implemented bits and speed from old to
+new, which may be useful if your hardware needs to copy the old state
+over and implements very little.
+
+The speed encoding routines know about Bfoo encoding, arbitary rates and
+also provide error tolerances so that programs using the Bfoo style speed
+setup generally get Bfoo not BOTHER responses. Please don't put hacks for
+this in drivers - if a case breaks then let me know and I'll fix the
+encoder centrally.
+
+Once all this is in the kernel will then acquire correct POSIX semantics
+and error the ioctl if no requested change can be made.
+
+Next stop after that is likely to be the open/close/hangup path.
+
+Alan
