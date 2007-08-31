@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965572AbXHaNmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965543AbXHaNpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965572AbXHaNmv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 09:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965156AbXHaNmk
+	id S965543AbXHaNpl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 09:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965160AbXHaNpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 09:42:40 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39344 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964971AbXHaNmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 09:42:38 -0400
-Message-ID: <46D81ACC.4080708@suse.de>
-Date: Fri, 31 Aug 2007 15:42:36 +0200
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Fri, 31 Aug 2007 09:45:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:42230 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S964995AbXHaNpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 09:45:33 -0400
+X-Authenticated: #12383568
+X-Provags-ID: V01U2FsdGVkX18MdVNo1ukMXc7lFpahglqY15/+fbln9rMvrSaRg9
+	VNr3+evUpQ4u+7
+From: Clemens Kolbitsch <clemens.kol@gmx.at>
+To: "Chris Smith" <smitty1elkml@gmail.com>
+Subject: Re: Copy large memory regions from & to userspace
+Date: Fri, 31 Aug 2007 15:45:28 +0200
+User-Agent: KMail/1.9.6
+References: <200708310029.20734.clemens.kol@gmx.at> <9b53a56d0708310625q14defcb1l98ab8ce1df2c8fd7@mail.gmail.com>
+In-Reply-To: <9b53a56d0708310625q14defcb1l98ab8ce1df2c8fd7@mail.gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Matthew Wilcox <matthew@wil.cx>, Denys Vlasenko <vda.linux@googlemail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@osdl.org>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] debloat aic7xxx and aic79xx drivers by deinlining
-References: <200708252257.07241.vda.linux@googlemail.com> <200708281256.35162.vda.linux@googlemail.com> <20070828081710.4687185c@laptopd505.fenrus.org> <200708282055.07411.vda.linux@googlemail.com> <Pine.LNX.4.64.0708302042260.24730@fbirervta.pbzchgretzou.qr> <20070830190235.GX14130@parisc-linux.org> <Pine.LNX.4.64.0708302150500.24730@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0708302150500.24730@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708311545.29154.clemens.kol@gmx.at>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Aug 30 2007 13:02, Matthew Wilcox wrote:
->>> Well, you can send it to Linus/Andrew, that will usually upset people and they
->>> start commenting on it. Or they don't, and everything is fine.
->>> (The "default y" approach so to speak ;-)
->> The problem is that we don't really have a maintainer for the aic7xyz
->> drivers any more.  Volunteers welcome.  NOT IT!
-> 
-> Take it before someone else does!
-> 
-Well, the semi-official maintainers are James B. and me.
+On Friday 31 August 2007 15:25:40 you wrote:
+> On 8/30/07, Clemens Kolbitsch <clemens.kol@gmx.at> wrote:
+> > Hi!
+> > Just a short question: What is the correct method of copying large areas
+> > of memory from userspace into userspace when running in kernel-mode?
+>
+> relayfs?
 
-So I might as well do it officially.
+no... I'm copying user-memory to user-memory, not kernel-to-user, however 
+running the code in kernel-mode.
 
-Cheers,
+what i wanted to know is how to check the access-rights...
+i didn't get any other answers, so for now i'm just using 
 
-Hannes
--- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
+if (access_ok(VERIFY_READ, from, PAGE_SIZE) &&
+    access_ok(VERIFY_WRITE, to, PAGE_SIZE))
+{
+    memcpy(to, from, PAGE_SIZE);
+}
+
+and hope that this is the *correct* way to do it...
+
