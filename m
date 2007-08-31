@@ -1,185 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965817AbXHaVBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966194AbXHaVCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965817AbXHaVBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932985AbXHaVBB
+	id S966194AbXHaVCX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964849AbXHaVCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:01:01 -0400
-Received: from sj-iport-4.cisco.com ([171.68.10.86]:37890 "EHLO
-	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932900AbXHaVBA (ORCPT
+	Fri, 31 Aug 2007 17:02:12 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:43529 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964824AbXHaVCK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:01:00 -0400
-X-IronPort-AV: i="4.20,194,1186383600"; 
-   d="scan'208"; a="9285202:sNHT27259362"
-To: torvalds@linux-foundation.org
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git for-linus branch
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 31 Aug 2007 14:00:58 -0700
-Message-ID: <adair6vwh9x.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Fri, 31 Aug 2007 17:02:10 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 31 Aug 2007 16:49:17 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jeff Garzik <jeff@garzik.org>
+cc: Randy Dunlap <rdunlap@xenotime.net>, Simon Arlott <simon@fire.lp0.eu>,
+       sam@ravnborg.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Adrian Bunk <bunk@stusta.de>, Gabriel C <crazy@pimpmylinux.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
+In-Reply-To: <46D858A9.4080506@garzik.org>
+Message-ID: <Pine.LNX.4.64.0708311643080.27345@localhost.localdomain>
+References: <469E75AA.7040109@pimpmylinux.org>
+ <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
+ <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
+ <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
+ <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
+ <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
+ <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
+ <20070719083109.13b2ab56.rdunlap@xenotime.net>
+ <Pine.LNX.4.64.0707191213130.8844@localhost.localdomain>
+ <469FE045.3070403@simon.arlott.org.uk> <20070831102527.09fb42c0.rdunlap@xenotime.net>
+ <Pine.LNX.4.64.0708311318220.18158@localhost.localdomain> <46D858A9.4080506@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 31 Aug 2007 21:00:58.0959 (UTC) FILETIME=[07E875F0:01C7EC12]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Fri, 31 Aug 2007, Jeff Garzik wrote:
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+> Robert P. J. Day wrote:
 
-This tree is also available from kernel.org mirrors at:
+> > i'm sure i'm going to get shouted down here, but i really disagree
+> > with "BROKEN" being considered a "maturity level".  IMHO, things
+> > like EXPERIMENTAL, DEPRECATED and OBSOLETE represent maturity
+> > levels, for what i think are obvious reasons.
+> >
+> > something like BROKEN, though, has *nothing* to do with maturity.
+> > a feature can be any of those maturity levels, and simultaneously
+> > be BROKEN.  i consider BROKEN to be what i call a "status", and
+> > different status levels might be the default of normal, or
+> > KIND_OF_FLAKY or TOTALLY_BORKED -- that's where BROKEN would fit
+> > in.
+>
+> BROKEN is definitely a maturity level.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+no.  it's not.  end of discussion.  you're wrong.
 
-This will get fixes for two fairly bad ehca bugs introduced in 2.6.23:
+the concept of "maturity level" reflects where in the life cycle some
+feature is.  it will typically start as "bleeding edge" or
+"experimental" or something like that, eventually stabilize to be
+normal (which would be the obvious default), after which, when its
+value starts to run out and it begins showing its age, it becomes
+"deprecated" and eventually "obsolete"  it's a natural and obvious
+progression.
 
-Joachim Fenkes (1):
-      IB/ehca: SRQ fixes to enable IPoIB CM
+on the other hand, a feature can be "broken" at *any* point in that
+life cycle -- that's why it is absolutely *not* a maturity level.
+please don't fight with me on this, jeff.  you're simply wrong.
 
-Stefan Roscher (1):
-      IB/ehca: Fix Small QP regressions
+> In contrast, OBSOLETE and DEPRECATED reflect high-level status not
+> code quality/maturity.
 
- drivers/infiniband/hw/ehca/ehca_hca.c  |   10 ++++--
- drivers/infiniband/hw/ehca/ehca_irq.c  |   48 ++++++++++++++++++++-----------
- drivers/infiniband/hw/ehca/ehca_qp.c   |   10 ++++--
- drivers/infiniband/hw/ehca/ipz_pt_fn.c |    2 +-
- 4 files changed, 45 insertions(+), 25 deletions(-)
+you have this so backwards, i can't begin to think how to explain it
+to you.
 
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_hca.c b/drivers/infiniband/hw/ehca/ehca_hca.c
-index fc19ef9..cf22472 100644
---- a/drivers/infiniband/hw/ehca/ehca_hca.c
-+++ b/drivers/infiniband/hw/ehca/ehca_hca.c
-@@ -93,9 +93,13 @@ int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props)
- 	props->max_pd          = min_t(int, rblock->max_pd, INT_MAX);
- 	props->max_ah          = min_t(int, rblock->max_ah, INT_MAX);
- 	props->max_fmr         = min_t(int, rblock->max_mr, INT_MAX);
--	props->max_srq         = 0;
--	props->max_srq_wr      = 0;
--	props->max_srq_sge     = 0;
-+
-+	if (EHCA_BMASK_GET(HCA_CAP_SRQ, shca->hca_cap)) {
-+		props->max_srq         = props->max_qp;
-+		props->max_srq_wr      = props->max_qp_wr;
-+		props->max_srq_sge     = 3;
-+	}
-+
- 	props->max_pkeys       = 16;
- 	props->local_ca_ack_delay
- 		= rblock->local_ca_ack_delay;
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
-index ee06d8b..a925ea5 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -175,41 +175,55 @@ error_data1:
- 
- }
- 
--static void qp_event_callback(struct ehca_shca *shca, u64 eqe,
--			      enum ib_event_type event_type, int fatal)
-+static void dispatch_qp_event(struct ehca_shca *shca, struct ehca_qp *qp,
-+			      enum ib_event_type event_type)
- {
- 	struct ib_event event;
--	struct ehca_qp *qp;
--	u32 token = EHCA_BMASK_GET(EQE_QP_TOKEN, eqe);
--
--	read_lock(&ehca_qp_idr_lock);
--	qp = idr_find(&ehca_qp_idr, token);
--	read_unlock(&ehca_qp_idr_lock);
--
--
--	if (!qp)
--		return;
--
--	if (fatal)
--		ehca_error_data(shca, qp, qp->ipz_qp_handle.handle);
- 
- 	event.device = &shca->ib_device;
-+	event.event = event_type;
- 
- 	if (qp->ext_type == EQPT_SRQ) {
- 		if (!qp->ib_srq.event_handler)
- 			return;
- 
--		event.event = fatal ? IB_EVENT_SRQ_ERR : event_type;
- 		event.element.srq = &qp->ib_srq;
- 		qp->ib_srq.event_handler(&event, qp->ib_srq.srq_context);
- 	} else {
- 		if (!qp->ib_qp.event_handler)
- 			return;
- 
--		event.event = event_type;
- 		event.element.qp = &qp->ib_qp;
- 		qp->ib_qp.event_handler(&event, qp->ib_qp.qp_context);
- 	}
-+}
-+
-+static void qp_event_callback(struct ehca_shca *shca, u64 eqe,
-+			      enum ib_event_type event_type, int fatal)
-+{
-+	struct ehca_qp *qp;
-+	u32 token = EHCA_BMASK_GET(EQE_QP_TOKEN, eqe);
-+
-+	read_lock(&ehca_qp_idr_lock);
-+	qp = idr_find(&ehca_qp_idr, token);
-+	read_unlock(&ehca_qp_idr_lock);
-+
-+	if (!qp)
-+		return;
-+
-+	if (fatal)
-+		ehca_error_data(shca, qp, qp->ipz_qp_handle.handle);
-+
-+	dispatch_qp_event(shca, qp, fatal && qp->ext_type == EQPT_SRQ ?
-+			  IB_EVENT_SRQ_ERR : event_type);
-+
-+	/*
-+	 * eHCA only processes one WQE at a time for SRQ base QPs,
-+	 * so the last WQE has been processed as soon as the QP enters
-+	 * error state.
-+	 */
-+	if (fatal && qp->ext_type == EQPT_SRQBASE)
-+		dispatch_qp_event(shca, qp, IB_EVENT_QP_LAST_WQE_REACHED);
- 
- 	return;
- }
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index b178cba..84d435a 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -600,10 +600,12 @@ static struct ehca_qp *internal_create_qp(
- 
- 	if (EHCA_BMASK_GET(HCA_CAP_MINI_QP, shca->hca_cap)
- 	    && !(context && udata)) { /* no small QP support in userspace ATM */
--		ehca_determine_small_queue(
--			&parms.squeue, max_send_sge, is_llqp);
--		ehca_determine_small_queue(
--			&parms.rqueue, max_recv_sge, is_llqp);
-+		if (HAS_SQ(my_qp))
-+			ehca_determine_small_queue(
-+				&parms.squeue, max_send_sge, is_llqp);
-+		if (HAS_RQ(my_qp))
-+			ehca_determine_small_queue(
-+				&parms.rqueue, max_recv_sge, is_llqp);
- 		parms.qp_storage =
- 			(parms.squeue.is_small || parms.rqueue.is_small);
- 	}
-diff --git a/drivers/infiniband/hw/ehca/ipz_pt_fn.c b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
-index a090c67..29bd476 100644
---- a/drivers/infiniband/hw/ehca/ipz_pt_fn.c
-+++ b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
-@@ -172,7 +172,7 @@ static void free_small_queue_page(struct ipz_queue *queue, struct ehca_pd *pd)
- 	unsigned long bit;
- 	int free_page = 0;
- 
--	bit = ((unsigned long)queue->queue_pages[0] & PAGE_MASK)
-+	bit = ((unsigned long)queue->queue_pages[0] & ~PAGE_MASK)
- 		>> (order + 9);
- 
- 	mutex_lock(&pd->lock);
+http://crashcourse.ca
+========================================================================
