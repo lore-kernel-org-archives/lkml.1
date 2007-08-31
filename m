@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762954AbXHaFJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763238AbXHaFMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762954AbXHaFJd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 01:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbXHaFJ0
+	id S1763238AbXHaFMT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 01:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbXHaFMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 01:09:26 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:46558 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756337AbXHaFJZ (ORCPT
+	Fri, 31 Aug 2007 01:12:10 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:56367 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755974AbXHaFMJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 01:09:25 -0400
-X-Sasl-enc: m4V098TwijL3hzDxpo7CyZHy2xbBgNPOfITfNGsOXGaK 1188536963
-Date: Fri, 31 Aug 2007 13:09:16 +0800 (WST)
-From: Ian Kent <raven@themaw.net>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-cc: Hua Zhong <hzhong@gmail.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org
-Subject: RE: recent nfs change causes autofs regression
-In-Reply-To: <1188534682.6626.70.camel@heimdal.trondhjem.org>
-Message-ID: <Pine.LNX.4.64.0708311307420.8223@raven.themaw.net>
-References: <000701c7eb49$cff701c0$6fe50540$@com>  <1188513433.6626.24.camel@heimdal.trondhjem.org>
-  <001001c7eb57$afd2d320$0f787960$@com>  <1188516173.6626.46.camel@heimdal.trondhjem.org>
-  <001501c7eb5d$d295d870$77c18950$@com>  <1188517070.6626.54.camel@heimdal.trondhjem.org>
-  <001601c7eb5f$b6146980$223d3c80$@com> <1188534682.6626.70.camel@heimdal.trondhjem.org>
+	Fri, 31 Aug 2007 01:12:09 -0400
+Date: Thu, 30 Aug 2007 22:10:12 -0700
+From: Greg KH <greg@kroah.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Greg KH <gregkh@suse.de>, Oliver Neukum <oneukum@suse.de>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Dave Jones <davej@redhat.com>, Michael Krufky <mkrufky@linuxtv.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk, Chuck Wolber <chuckw@quantumlinux.com>
+Subject: Re: [stable] [patch 25/28] USB: cdc-acm: fix sysfs attribute
+	registration bug
+Message-ID: <20070831051012.GA5650@kroah.com>
+References: <20070824154906.GA19239@kroah.com> <Pine.LNX.4.44L0.0708241349240.3862-100000@iolanthe.rowland.org> <20070824180423.GA5458@suse.de> <46D60255.2000606@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46D60255.2000606@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007, Trond Myklebust wrote:
-
-> On Thu, 2007-08-30 at 16:44 -0700, Hua Zhong wrote:
-> > > How is the NFS client to know that these directories are disjoint, or
-> > > that no-one will ever create a hard link from one directory to another?
-> > > To my knowledge, the only way to ensure this is to put them on
-> > > different disk partitions.
-> > > 
-> > > I don't know if all Unix systems have this issue, but I have been told
-> > > that Solaris at least has it.
+On Wed, Aug 29, 2007 at 07:33:41PM -0400, Chuck Ebbert wrote:
+> On 08/24/2007 02:04 PM, Greg KH wrote:
+> >> I don't understand.  The history for stable/linux-2.6.22.y.git at
+> >> http://git.kernel.org shows that the commit for my patch, labelled
+> >>
+> >> 	6b30a4e1c357410a78d7bcb831743b0e99bab4ad,
+> >>
+> >> includes both hunks.  And patch-2.6.22.5.bz2 includes both as well.  
+> >> Something's fishy.
 > > 
-> > Does Solaris enforces this "mount with same options" as default?
 > 
-> No. Solaris defaults to breaking cache consistency.
 > 
-> > > > "working" as in "I can mount the directory and do my work". And there
-> > > > has never been any problems as far as I know.
-> > > 
-> > > That is too narrow a definition: the minimum should be "everyone can
-> > > mount their directories and do their work". Your particular setup may
-> > > be safe, but that is why we have overrides: the default should be for the
-> > > kernel to be conservative, and to _tell_ users what it thinks is wrong.
-> > 
-> > Every engineer in our organization mounts it too. No problem until now.
+> *sigh*
 > 
-> I believe I've already explained why that isn't a sufficient metric.
-> What is your point?
+> The stable-queue tree does not match what got released for 2.6.22.5.
 > 
-> > It's not very conservative to suddenly change default behavior and break
-> > autofs mounts. There is not even one kernel message that "_tells_ user why
-> > it thinks it's wrong". It just silently fails.
+> $ pwd
+> /home/me/git/stable-queue
+> $ grep cdc releases/2.6.22.5/*
+> $ 
 > 
-> No it doesn't. It reports an error code to the caller. If autofs is
-> failing silently, then that is a bug in autofs: mount will report the
-> error to the user.
+> $ bzcat patch-2.6.22.5.bz2 | grep cdc
+> index acdc3be..e2b9ca4 100644
+> diff --git a/drivers/usb/class/cdc-acm.c b/drivers/usb/class/cdc-acm.c
+> --- a/drivers/usb/class/cdc-acm.c
+> +++ b/drivers/usb/class/cdc-acm.c
 
-Actually, yes, it looks like I'm not logging mount errors at the correct 
-log level. Oops.
+That is because the cdc-acm patch went into an earlier .22.y release,
+look at the git tree to see that.  It was not in the 2.6.22.5 release.
 
-Ian
+thanks,
 
+greg k-h
