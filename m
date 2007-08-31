@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759365AbXHaDBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932436AbXHaDI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759365AbXHaDBy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Aug 2007 23:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbXHaDBo
+	id S932436AbXHaDI0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Aug 2007 23:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756751AbXHaDIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Aug 2007 23:01:44 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43193 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755258AbXHaDBn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Aug 2007 23:01:43 -0400
-From: Jonathan Lim <jlim@sgi.com>
-Message-Id: <200708310302.l7V32ZpV410222@sabah.engr.sgi.com>
-Subject: Re: [PATCH] Add all thread stats for TASKSTATS_CMD_ATTR_TGID
-To: balbir@linux.vnet.ibm.com
-Date: Thu, 30 Aug 2007 20:02:35 -0700 (PDT)
-Cc: guichaz@yahoo.fr (Guillaume Chazarain),
-       akpm@linux-foundation.org (Andrew Morton),
-       linux-kernel@vger.kernel.org (Linux Kernel Mailing List),
-       jlan@cthulhu.engr.sgi.com (Jay Lan)
-In-Reply-To: <46D10884.6040401@linux.vnet.ibm.com> from "Balbir Singh" at Aug 26, 2007 10:28:44 AM
-X-Mailer: ELM [version 2.5 PL6]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Aug 2007 23:08:16 -0400
+Received: from deeprooted.net ([216.254.16.51]:52753 "EHLO paris.hilman.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756714AbXHaDIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Aug 2007 23:08:15 -0400
+Message-Id: <20070831030745.794000733@mvista.com>
+User-Agent: quilt/0.45-1
+Date: Thu, 30 Aug 2007 20:07:45 -0700
+From: Kevin Hilman <khilman@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       RT-Users <linux-rt-users@vger.kernel.org>
+Subject: [PATCH 2.6.23-rc2-rt2] call IRQ-chip's end hook in thread_simple_irq()
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat Aug 25 21:58:44 2007, balbir@linux.vnet.ibm.com wrote:
-> 
-> > Also, I don't understand why the code to update btime:
-> > 
-> >         /* calculate task elapsed time in timespec */
-> >         do_posix_clock_monotonic_gettime(&uptime);
-> >         ts = timespec_sub(uptime, tsk->start_time);
-> > 	...
-> >         stats->ac_btime = get_seconds() - ts.tv_sec;
-> > 
-> > does not simply use tsk->start_time or tsk->real_start_time without
-> > comparing it to the current time.
-> 
-> From what I understand, task->start_time and task->real_start_time
-> are taken from the realtime clock. The accounting in CSA seems
-> to be very similar to the accounting done in do_acct_process()
-> (kernel/acct.c).
+When using the 'simple' handler as a chained handler, the end hook
+should be called so the chained handler can properly ack/unmask
+etc. after the threaded handler has completed.
 
-In CSA 3.0 ...
+In particular, the chained GPIO IRQ hander on OMAP uses the 'simple'
+handler since the GPIO IRQs can be dynamically configured either as
+edge or level.  When using threaded IRQs, the only way to know when
+the handler is done and do the proper ack/unmask is via the end hook.
 
-csa_acct_eop(int exitcode, struct task_struct *p)
+Signed-off-by: Kevin Hilman <khilman@mvista.com>
 
-        csa->ac_btime = boottime +
-                        ((p->start_time.tv_nsec < NSEC_PER_SEC/2) ?
-                         p->start_time.tv_sec :
-                         p->start_time.tv_sec +1);
-
-where 
-
-        do_posix_clock_monotonic_gettime(&uptime);
-        boottime = xtime.tv_sec - uptime.tv_sec;
-
-In an upcoming version of CSA ...
-
-csa_acct_eop(struct taskstats *p)
-
-        csa->ac_btime = p->ac_btime;
-
-where
-
-        do_posix_clock_monotonic_gettime(&uptime);
-        ts = uptime - tsk->start_time;
-        p->ac_btime = get_seconds() - ts.tv_sec;
-                    = xtime.tv_sec - (uptime - tsk->start_time);
-                    = (xtime.tv_sec - uptime) + tsk->start_time;
-
-So they're basically equivalent.
-
-Jonathan
+--- linux-2.6.21.orig/kernel/irq/manage.c
++++ linux-2.6.21/kernel/irq/manage.c
+@@ -637,6 +637,8 @@ static void thread_simple_irq(irq_desc_t
+ 			note_interrupt(irq, desc, action_ret);
+ 	}
+ 	desc->status &= ~IRQ_INPROGRESS;
++	if (desc->chip->end)
++		desc->chip->end(irq);
+ }
+ 
+ /*
+--
