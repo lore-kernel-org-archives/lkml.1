@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933385AbXHaVWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966252AbXHaVYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933385AbXHaVWe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965226AbXHaVWV
+	id S966252AbXHaVYV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbXHaVYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:22:21 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:38924 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965166AbXHaVWU (ORCPT
+	Fri, 31 Aug 2007 17:24:07 -0400
+Received: from wx-out-0506.google.com ([66.249.82.235]:33229 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761336AbXHaVYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:22:20 -0400
+	Fri, 31 Aug 2007 17:24:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=fsKwfPwrT1YHyF3Zc1QnDtXkf9ET0kNpR9BZLJLmtfm82kY0l2PwmDu/0wUy5pH6bOtCw4rP4yKLQFVMm6b8UFMTiUIfnbeNKniL38SAxZicnKoY4r96DBjBiMuu36MwoZ5qCjHIhX4dLVMAvB1mQClEGUGrEaddELvVF5pbrJk=
-Message-ID: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com>
-Date: Fri, 31 Aug 2007 17:22:19 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: the Linux kernel, testsuites, and maybe *you*
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
+        b=r8Qay8XkYOmbCCDSMAipEx3MWj9HedKq9A/O/Y/TUivf015LcUHSu9IiDlXsv+vTnBizLCZ+jgOe+gbk9/4ke+Lrzug43NIdUL/yvKEMQBJ+qLoDy7rZf3vnOHWNLMhAvSr037GfCU/RMHEaperdYkyYqLgkZiRmC0yu9bV9zvY=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: linux-doc@vger.kernel.org
+Subject: [PATCH 1/5] Add a missing 00-INDEX file for Documentation/vm/
+Date: Fri, 31 Aug 2007 23:20:59 +0200
+User-Agent: KMail/1.9.7
+Cc: Rob Landley <rob@landley.net>, Randy Dunlap <rdunlap@xenotime.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200708312320.59341.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-is there any sort of standard for testing and integration into
-mainline ?  in the Blackfin world, we've been developing little
-external kernel modules and adding them to our own testsuite, but
-often times these things are not Blackfin specific.  case in point,
-we're integrating a string testsuite to make sure all of the fun str*
-and mem* functions are sane and operate as they expected, but rather
-than having just Blackfin benefit here, i'd like to see this pushed
-upstream ...
+This patch adds a 00-INDEX file to Documentation/vm/
 
-i'm fully aware of LTP (as i work on it), but i feel that serves a
-great purpose for exercising the API/ABI exposed to userspace either
-directly through the kernel or indirectly through the system libc ...
-it isnt a very good tool for testing kernel internals, especially as
-the kernel changes and evolves.
 
-is there a framework already in place i'm not aware of ?  should there
-be ?  should this all live in LTP ?  i wouldnt mind an option under
-kernel hacking "Enable testsuites" ... as far as i can tell, the
-testing process is really based extensively on feedback from people,
-nothing really automated.
--mike
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
+
+ 00-INDEX |   20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+--- /dev/null	2005-11-21 04:22:37.000000000 +0100
++++ Documentation/vm/00-INDEX	2007-08-31 23:16:00.000000000 +0200
+@@ -0,0 +1,20 @@
++00-INDEX
++	- this file.
++balance
++	- various information on memory balancing.
++hugetlbpage.txt
++	- a brief summary of hugetlbpage support in the Linux kernel.
++locking
++	- info on how locking and synchronization is done in the Linux vm code.
++numa
++	- information about NUMA specific code in the Linux vm.
++numa_memory_policy.txt
++	- documentation of concepts and APIs of the 2.6 memory policy support.
++overcommit-accounting
++	- description of the Linux kernels overcommit handling modes.
++page_migration
++	- description of page migration in NUMA systems.
++slabinfo.c
++	- source code for a tool to get reports about slabs.
++slub.txt
++	- a short users guide for SLUB.
+
+
+
