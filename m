@@ -1,143 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbXHaKZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbXHaKiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759784AbXHaKZh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 06:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbXHaKZ1
+	id S1759974AbXHaKiR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 06:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbXHaKiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 06:25:27 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:52729 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S1756567AbXHaKZ0 (ORCPT
+	Fri, 31 Aug 2007 06:38:07 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57248 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754457AbXHaKiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 06:25:26 -0400
-Date: Fri, 31 Aug 2007 14:31:51 +0400
-From: Konstantin Baydarov <kbaidarov@ru.mvista.com>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       <vgoyal@in.ibm.com>, "RT" <linux-rt-users@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "Andi Kleen" <ak@suse.de>,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH] kexec: reenable HPET before kexec
-Message-ID: <20070831143151.7dde7c86@windmill.dev.rtsoft.ru>
-In-Reply-To: <m1d4x4zyoe.fsf@ebiederm.dsl.xmission.com>
-References: <20070820205530.1ffd5876@windmill.dev.rtsoft.ru>
-	<20070823090845.GA13065@in.ibm.com>
-	<20070823154936.3b7ae498@windmill.dev.rtsoft.ru>
-	<20070827053656.GC9809@in.ibm.com>
-	<653FFBB4508B9042B5D43DC9E18836F501522051@scsmsx415.amr.corp.intel.com>
-	<20070828165832.5047d4de@windmill.dev.rtsoft.ru>
-	<m1ps1532b5.fsf@ebiederm.dsl.xmission.com>
-	<20070830200749.2f1f0a18@windmill.dev.rtsoft.ru>
-	<m1d4x4zyoe.fsf@ebiederm.dsl.xmission.com>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.19; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Aug 2007 06:38:06 -0400
+Date: Fri, 31 Aug 2007 12:38:03 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Oliver Neukum <oliver@neukum.org>
+cc: Sam Ravnborg <sam@ravnborg.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: possible build system oddity
+In-Reply-To: <200708311151.32618.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.64.0708311237490.9413@fbirervta.pbzchgretzou.qr>
+References: <200708311037.29280.oliver@neukum.org>
+ <b6fcc0a0708310214u64af62cfv23893a503a166f82@mail.gmail.com>
+ <20070831094757.GA24995@uranus.ravnborg.org> <200708311151.32618.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Aug 2007 12:04:33 -0600
-ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-> I was assuming that CLOCK_EVT_MODE_SHUTDOWN just mapped
-> to the shutdown method of the clock events or something else.
-> But it shutdown means something different in this context we
-> can certainly find a better place to hook into the device
-> tree and call shutdown methods.   Especially if that will
-> make the code simpler.
+On Aug 31 2007 11:51, Oliver Neukum wrote:
+>Am Freitag 31 August 2007 schrieb Sam Ravnborg:
+>> On Fri, Aug 31, 2007 at 01:14:26PM +0400, Alexey Dobriyan wrote:
+>> > On 8/31/07, Oliver Neukum <oliver@neukum.org> wrote:
+>> > > I only touched sound/usb/usbaudio.c
+>> > > Nevertheless the whole subtree und sound/ is recompiling. What's
+>> > > happening?
+>> > 
+>> > Not here. Do make V=2, it should say why it's recompiling.
+>> 
+>> And if the problem persist then do a make V=1 and post output here.
+>> This information combined should tell what goes wrong.
+>
+>Not reproducible. Sorry.
 
-Agree. I've got rig from timekeeping. Now I'm using system device tree shutdown interface, as you suggested. I've added HPET system device class with shutdown method and HPET device to sysdev.
+NFS/etc. involved?
 
-> This is a design feature.  machine_crash_shutdown is not really 
-> supposed to disable any hardware.  There is a very minimal set that we
-> haven't been able to figure out how to get the kernels initialization
-> routines to deal with properly.  Which is a temporary justification
-> for not doing more now.  If we can't find anyway to make the
-> initialization code more robust for the hpet we can revisit this.
 
-So you suggest to check if HPET is present in HPET init code even if HPET disabled in boot kernel command line or APIC is disabled. And if HPET is present and kernel not going to use it - disable HPET interrupts?
-
-> Please remove the CONFIG_KEXEC.  We need to do this on a reboot also
-> so we don't confuse the BIOS.  BIOS's frequently but not always
-> can just reset the board to avoid complications like this, but if
-> we need a shutdown method we need a shutdown method.  The kexec
-> case just exercises things more.
-Removed CONFIG_KEXEC.
-
-So here is new version of fix. Patch against 2.6.23-rc3.
-Eric, review please. Thanks.
-
-Signed-off-by: Konstantin Baydarov <kbaidarov@ru.mvista.com>
-
- arch/i386/kernel/hpet.c |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
-
-Index: linux-2.6.23-rc3/arch/i386/kernel/hpet.c
-===================================================================
---- linux-2.6.23-rc3.orig/arch/i386/kernel/hpet.c
-+++ linux-2.6.23-rc3/arch/i386/kernel/hpet.c
-@@ -144,11 +144,31 @@ static void hpet_enable_int(void)
- {
- 	unsigned long cfg = hpet_readl(HPET_CFG);
- 
-+	if (hpet_legacy_int_enabled)
-+		return;
-+
- 	cfg |= HPET_CFG_LEGACY;
- 	hpet_writel(cfg, HPET_CFG);
- 	hpet_legacy_int_enabled = 1;
- }
- 
-+static void hpet_disable_int(void)
-+{
-+	unsigned long cfg;
-+
-+	if (!hpet_legacy_int_enabled)
-+		return;
-+
-+	if (!is_hpet_capable())
-+		return;
-+
-+	cfg = hpet_readl(HPET_CFG);
-+	cfg &= ~HPET_CFG_LEGACY;
-+	hpet_writel(cfg, HPET_CFG);
-+	hpet_legacy_int_enabled = 0;
-+
-+}
-+
- static void hpet_set_mode(enum clock_event_mode mode,
- 			  struct clock_event_device *evt)
- {
-@@ -551,3 +571,31 @@ irqreturn_t hpet_rtc_interrupt(int irq, 
- 	return IRQ_HANDLED;
- }
- #endif
-+
-+static int hpet_shutdown(struct sys_device *dev)
-+{
-+	/* We need this to make PIT works in KEXECuted kernel */
-+	hpet_disable_int();
-+
-+	return 0;
-+}
-+
-+static struct sysdev_class hpet_sysdev_class = {
-+	set_kset_name("hpet"),
-+	.shutdown = hpet_shutdown,
-+};
-+
-+static struct sys_device device_hpet = {
-+	.id	= 0,
-+	.cls	= &hpet_sysdev_class,
-+};
-+
-+static int __init hpet_init_sysfs(void)
-+{
-+	int error = sysdev_class_register(&hpet_sysdev_class);
-+	if (!error)
-+		error = sysdev_register(&device_hpet);
-+	return error;
-+}
-+
-+device_initcall(hpet_init_sysfs);
+	Jan
+-- 
