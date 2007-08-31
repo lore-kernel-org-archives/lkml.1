@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758462AbXHaOfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759344AbXHaOhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758462AbXHaOfN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 10:35:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbXHaOe5
+	id S1759344AbXHaOhW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 10:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbXHaOhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 10:34:57 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:53135 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753912AbXHaOe4 (ORCPT
+	Fri, 31 Aug 2007 10:37:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40824 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754194AbXHaOhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 10:34:56 -0400
-In-Reply-To: <200708302022.24167.arnd@arndb.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>, Paul Mackerras <pmac@au1.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Thomas Q Klein <tklein@de.ibm.com>
-MIME-Version: 1.0
-Subject: Re: [PATCH 2.6.23] ibmebus: Prevent bus_id collisions
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OFBB1BA4B6.29175A76-ONC1257348.004DBCB3-C1257348.0050161C@de.ibm.com>
-Date: Fri, 31 Aug 2007 16:34:51 +0200
-X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
- 31/08/2007 16:34:53,
-	Serialize complete at 31/08/2007 16:34:53
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 31 Aug 2007 10:37:09 -0400
+Subject: Re: [PATCH] Increase lockdep MAX_LOCK_DEPTH
+From: Peter Zijlstra <peterz@infradead.org>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: David Chinner <dgc@sgi.com>,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xfs-oss <xfs@oss.sgi.com>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <46D826BA.1060705@sandeen.net>
+References: <46D79C62.1010304@sandeen.net> <1188542389.6112.44.camel@twins>
+	 <20070831135042.GD422459@sgi.com>  <46D826BA.1060705@sandeen.net>
+Content-Type: text/plain
+Date: Fri, 31 Aug 2007 16:36:52 +0200
+Message-Id: <1188571012.6112.67.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Arnd,
+On Fri, 2007-08-31 at 09:33 -0500, Eric Sandeen wrote:
 
-> The whole logic of dynamically adding and removing device is rather 
-bogus,
-> and it prevents autoloading of device drivers. of_platform_make_bus_id
-> is the function that is responsible for creating unique names over 
-there.
+> Peter, unless there is some other reason to do so, changing xfs
+> performance behavior simply to satisfy lockdep limitations* doesn't seem
+> like the best plan.
+> 
+> I suppose one slightly flakey option would be for xfs to see whether
+> lockdep is enabled and adjust cluster size based on MAX_LOCK_DEPTH... on
+> the argument that lockdep is likely used in debugging kernels where
+> sheer performance is less important... but, that sounds pretty flakey to me.
 
-The plaintiff makes a valid point. How about a staging approach: We put 
-the patch as it is now into 2.6.23 so the problem is fixed, and I'll post 
-a "nice" version with autoloading support and a generic of_make_bus_id 
-function for 2.6.24. Agree?
+Agreed, that sucks too :-/
 
-Regards,
-  Joachim
+I was hoping there would be a 'nice' solution, a well, again, reality
+ruins it.
+
