@@ -1,52 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966485AbXHaVcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966477AbXHaVeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966485AbXHaVcl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 17:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbXHaVc3
+	id S966477AbXHaVeS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 17:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965637AbXHaVeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 17:32:29 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:28301 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965781AbXHaVc2 (ORCPT
+	Fri, 31 Aug 2007 17:34:08 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4714 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965609AbXHaVeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 17:32:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=owzajt00pmexVzkVgy9ZPdC247JwzRaU/33N56/7R+qx2wAWRV1ixDIrmvgWvqQSmRT3WvBvM2vqLQ8We1gCwN4oeD91VdshL90Q/fFWKsQRydE82RZNubuXH2dmAX7lvdC+LD7satBmme0PkVEbjsFJwlR3EoVtoNeXI9nZ65Y=
-Message-ID: <9a8748490708311432q4d8e639djbef6640e0ca08e71@mail.gmail.com>
-Date: Fri, 31 Aug 2007 23:32:26 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Jason Lunz" <lunz@falooley.org>
-Subject: Re: jffs2 deadlock introduced in linux 2.6.22.5
-Cc: jffs-dev@axis.com, "David Woodhouse" <dwmw2@infradead.org>,
-       stable@kernel.org, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070831212636.GB12868@falooley.org>
+	Fri, 31 Aug 2007 17:34:07 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: RE: Nonblocking call may block in a mutex? Nonblocking call after poll may fail?
+Date: Fri, 31 Aug 2007 14:33:22 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKIEJPGIAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070830182354.GA25077@falooley.org>
-	 <20070831212636.GB12868@falooley.org>
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <379fb4870708310513o46a721c6l3080179ccbb8f519@mail.gmail.com>
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Fri, 31 Aug 2007 14:33:55 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Fri, 31 Aug 2007 14:33:55 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31/08/2007, Jason Lunz <lunz@falooley.org> wrote:
-> On Thu, Aug 30, 2007 at 11:23:55AM -0700, Jason Lunz wrote:
-> > commit 1d8715b388c978b0f1b1bf4812fcee0e73b023d7 was added between
-> > 2.6.22.4 and 2.6.22.5 to cure a locking problem, but it seems to have
-> > introduced another (worse?) one.
->
-> I spoke too soon. I checked more carefully, and this problem was
-> introduced somewhere between 2.6.21 and 2.6.22. The jffs2 fix in
-> 2.6.22.5 isn't the culprit.
->
 
-Sounds like this belongs on the regression tracking page at
-http://kernelnewbies.org/known_regressions and/or in a bugzilla
-(http://bugzilla.kernel.org/) bugreport so it doesn't get lost.
+> If this output-buffer has "4-bytes space remaining for process A",
+> then a non-blocking write of process A could still encounter a locked
+> mutex, if process B is busy writing to the output-buffer.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Of course.
+
+> Should process A now block/sleep until that mutex is free and it can
+> access the output-buffer (and it's 4 bytes space)?
+
+That depends on how long the other process might hold the mutex. If it's
+just the time it takes to copy the buffer and do fast things, then it should
+wait. If it might be a long time, then it's probably better not to block, as
+the process requested.
+
+> What about a non-blocking (write-) poll of process A: if the poll call
+> succeeds (the output buffer has space remaining for process A), and
+> process A now performs a non-blocking write: what happens if A
+> encounters a blocked mutex, since process B is busy writing to the
+> output-buffer.
+> a) Should A block until the mutex is available?
+
+Probably, unless the mutex is one that could be held for a very long time.
+It really depends upon what semantics make sense with your driver. Is the
+wait so short it should be considered not blocking or is it potentially long
+enough that it should be avoided?
+
+A non-blocking call does not mean it must never ever lose the CPU at all
+under any circumstances. It just means no waits for "too long".
+
+> b) Should A return -EAGAIN, even though the poll call succeeded?
+
+If the wait would be for too long, then yes.
+
+> c) Should it be impossible for this to happen! i.e. -> should process
+> A already "have" the mutex in question, when the poll call succeeds
+> (thus preventing B from writing to the output buffer)
+
+No. Functions like 'poll' and 'select' are just status-reporting functions.
+They should not change the semantics of other operations unless that's
+unavoidable.
+
+> For c) What if process A "has" the mutex, but never does the
+> non-blocking write. Then no process can write, since the mutex is held
+> by process A...
+
+Right. That's why return values from 'poll' and 'select' don't guarantee
+future behavior.
+
+DS
+
+
