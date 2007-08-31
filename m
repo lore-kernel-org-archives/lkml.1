@@ -1,37 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbXHaJOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXHaJbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760310AbXHaJOh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 05:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbXHaJO2
+	id S932458AbXHaJbW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 05:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756350AbXHaJbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 05:14:28 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:37093 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757431AbXHaJO1 (ORCPT
+	Fri, 31 Aug 2007 05:31:07 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3703 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755608AbXHaJbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 05:14:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Cd3iLJpM6p4ntOkiMdxKdFB3GsmTEkwddKYcI3YjuaQfrshpBTa4TqN/okp6RRA8vUPzDqHKX7wvIr2mLRL25IGdtPoIfiL6YO19p8W6EJ21eUL07rs3uQ0RYq+A4+oPyxLKZ4JcJH7b4qBS2rDtso2Q/fuTikPuLxNMHq6GH5c=
-Message-ID: <b6fcc0a0708310214u64af62cfv23893a503a166f82@mail.gmail.com>
-Date: Fri, 31 Aug 2007 13:14:26 +0400
-From: "Alexey Dobriyan" <adobriyan@gmail.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: possible build system oddity
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200708311037.29280.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200708311037.29280.oliver@neukum.org>
+	Fri, 31 Aug 2007 05:31:03 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: jesper.juhl@gmail.com (Jesper Juhl), Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH 13/30] net: Don't do pointless kmalloc return value casts in zd1211 driver
+Cc: dsd@gentoo.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       davem@davemloft.net, kune@deine-taler.de,
+       linux-wireless@vger.kernel.org
+Organization: Core
+In-Reply-To: <9a8748490708301320o49d8e794vc5c37ffc938006f1@mail.gmail.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev,apana.lists.os.linux.wireless
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1IR2pW-0007T2-00@gondolin.me.apana.org.au>
+Date: Fri, 31 Aug 2007 17:30:18 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/31/07, Oliver Neukum <oliver@neukum.org> wrote:
-> I only touched sound/usb/usbaudio.c
-> Nevertheless the whole subtree und sound/ is recompiling. What's
-> happening?
+Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> On 30/08/2007, Daniel Drake <dsd@gentoo.org> wrote:
+>> Jesper Juhl wrote:
+>> > Since kmalloc() returns a void pointer there is no reason to cast
+>> > its return value.
+>> > This patch also removes a pointless initialization of a variable.
+>>
+>> NAK: adds a sparse warning
+>> zd_chip.c:116:15: warning: implicit cast to nocast type
+>>
+> Ok, I must admit I didn't check with sparse since it seemed pointless
+> - we usually never cast void pointers to other pointer types,
+> specifically because the C language nicely guarantees that the right
+> thing will happen without the cast.  Sometimes we have to cast them to
+> integer types, su sure we need the cast there.   But what on earth
+> makes a "zd_addr_t *" so special that we have to explicitly cast a
+> "void *" to that type?
+> 
+> I see it's defined as
+>  typedef u32 __nocast zd_addr_t;
+> in drivers/net/wireless/zd1211rw/zd_types.h , but why the __nocast ?
 
-Not here. Do make V=2, it should say why it's recompiling.
+Nevermind the __nocast, this looks like a bug in sparse.  Just
+because a base type is __nocast, sparse shouldn't infer that a
+pointer to it should also be __nocast.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
