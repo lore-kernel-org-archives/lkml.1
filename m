@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762629AbXHaFGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762954AbXHaFJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762629AbXHaFGA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 01:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbXHaFFx
+	id S1762954AbXHaFJd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 01:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbXHaFJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 01:05:53 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:52852 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751059AbXHaFFw (ORCPT
+	Fri, 31 Aug 2007 01:09:26 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:46558 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756337AbXHaFJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 01:05:52 -0400
-Message-ID: <46D7A196.7070309@suse.de>
-Date: Fri, 31 Aug 2007 09:05:26 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Fri, 31 Aug 2007 01:09:25 -0400
+X-Sasl-enc: m4V098TwijL3hzDxpo7CyZHy2xbBgNPOfITfNGsOXGaK 1188536963
+Date: Fri, 31 Aug 2007 13:09:16 +0800 (WST)
+From: Ian Kent <raven@themaw.net>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+cc: Hua Zhong <hzhong@gmail.com>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org
+Subject: RE: recent nfs change causes autofs regression
+In-Reply-To: <1188534682.6626.70.camel@heimdal.trondhjem.org>
+Message-ID: <Pine.LNX.4.64.0708311307420.8223@raven.themaw.net>
+References: <000701c7eb49$cff701c0$6fe50540$@com>  <1188513433.6626.24.camel@heimdal.trondhjem.org>
+  <001001c7eb57$afd2d320$0f787960$@com>  <1188516173.6626.46.camel@heimdal.trondhjem.org>
+  <001501c7eb5d$d295d870$77c18950$@com>  <1188517070.6626.54.camel@heimdal.trondhjem.org>
+  <001601c7eb5f$b6146980$223d3c80$@com> <1188534682.6626.70.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Daniel Ritz <daniel.ritz-ml@swissonline.ch>,
-       Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org,
-       Len Brown <len.brown@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] ACPI: EC: Check if boot_ec was really found in DSDT
-References: <200708290129.57243.daniel.ritz-ml@swissonline.ch> <20070829232150.GA17467@dreamland.darkstar.lan> <200708301907.56561.daniel.ritz-ml@swissonline.ch> <alpine.LFD.0.999.0708301020410.25853@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0708301020410.25853@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
+On Fri, 31 Aug 2007, Trond Myklebust wrote:
 
-acpi_get_devices() returns success if it did not find any device.
-We have to check for this case.
+> On Thu, 2007-08-30 at 16:44 -0700, Hua Zhong wrote:
+> > > How is the NFS client to know that these directories are disjoint, or
+> > > that no-one will ever create a hard link from one directory to another?
+> > > To my knowledge, the only way to ensure this is to put them on
+> > > different disk partitions.
+> > > 
+> > > I don't know if all Unix systems have this issue, but I have been told
+> > > that Solaris at least has it.
+> > 
+> > Does Solaris enforces this "mount with same options" as default?
+> 
+> No. Solaris defaults to breaking cache consistency.
+> 
+> > > > "working" as in "I can mount the directory and do my work". And there
+> > > > has never been any problems as far as I know.
+> > > 
+> > > That is too narrow a definition: the minimum should be "everyone can
+> > > mount their directories and do their work". Your particular setup may
+> > > be safe, but that is why we have overrides: the default should be for the
+> > > kernel to be conservative, and to _tell_ users what it thinks is wrong.
+> > 
+> > Every engineer in our organization mounts it too. No problem until now.
+> 
+> I believe I've already explained why that isn't a sufficient metric.
+> What is your point?
+> 
+> > It's not very conservative to suddenly change default behavior and break
+> > autofs mounts. There is not even one kernel message that "_tells_ user why
+> > it thinks it's wrong". It just silently fails.
+> 
+> No it doesn't. It reports an error code to the caller. If autofs is
+> failing silently, then that is a bug in autofs: mount will report the
+> error to the user.
 
-Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
----
+Actually, yes, it looks like I'm not logging mount errors at the correct 
+log level. Oops.
 
- drivers/acpi/ec.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-index 43749c8..3f7935a 100644
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -886,7 +886,8 @@ int __init acpi_ec_ecdt_probe(void)
-         printk(KERN_DEBUG PREFIX "Look up EC in DSDT\n");
-         status = acpi_get_devices(ec_device_ids[0].id, ec_parse_device,
-                         boot_ec, NULL);
--        if (ACPI_FAILURE(status))
-+        /* Check that acpi_get_devices actually find something */
-+        if (ACPI_FAILURE(status) || !boot_ec->handle)
-             goto error;
-     }
- 
+Ian
 
