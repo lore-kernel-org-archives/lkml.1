@@ -1,85 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbXHaX30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752142AbXHaXgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbXHaX30 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 19:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbXHaX3S
+	id S1752142AbXHaXgb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 19:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbXHaXgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 19:29:18 -0400
-Received: from elasmtp-mealy.atl.sa.earthlink.net ([209.86.89.69]:50701 "EHLO
-	elasmtp-mealy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750829AbXHaX3R (ORCPT
+	Fri, 31 Aug 2007 19:36:22 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48584 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750775AbXHaXgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 19:29:17 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=S7lvmvTYJAADdNgeukIbLGOIJoSgIAJk83Qzn8K5MDWCG7BCQnZuwPAzFIOSMszn;
-  h=Received:Message-ID:Reply-To:From:To:Cc:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <000501c7ec26$c2b06140$6501a8c0@earthlink.net>
-Reply-To: "Mitchell Erblich" <erblichs@earthlink.net>
-From: "Mitchell Erblich" <erblichs@earthlink.net>
-To: "\"Robert P. J. Day\"" <rpjday@mindspring.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: maturity and status and attributes, oh my!
-Date: Fri, 31 Aug 2007 16:29:20 -0700
+	Fri, 31 Aug 2007 19:36:21 -0400
+Date: Sat, 1 Sep 2007 05:19:27 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bugme-daemon@kernel-bugs.osdl.org
+Subject: Re: [Bugme-new] [Bug 8957] New: Exported functions and variables
+In-Reply-To: <116718.45429.qm@web52005.mail.re2.yahoo.com>
+Message-ID: <alpine.LFD.0.999.0709010400440.13094@enigma.security.iitk.ac.in>
+References: <116718.45429.qm@web52005.mail.re2.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1106
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
-X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec79720d6d0e801c558afcc5535d810e39a6350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.164.91.49
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Robert P. J. Day" wrote:
-> 
->   at the risk of driving everyone here totally bonkers, i'm going to
-> take one last shot at explaining what i was thinking of when i first
-> proposed this whole "maturity level" thing.  and, just so you know,
-> the major reason i'm so cranked up about this is that i'm feeling just
-> a little territorial -- i was the one who first started nagging people
-> to consider this idea, so i'm a little edgy when i see folks finally
-> giving it some serious thought but appearing to get ready to implement
-> it entirely incorrectly in a way that's going to ruin it irreparably
-> and make it utterly useless.
-> 
->   this isn't just about defining a single feature called "maturity".
-> it's about defining a general mechanism so that you can add entirely
-> new (what i call) "attributes" to kernel features.  one attribute
-> could be "maturity", which could take one of a number of possible
-> values.  another could be "status", with the same restrictions.
-> heck, you could define the attribute "colour", and decide that various
-> kernel features could be labelled as (at most) one of "red", "green"
-> and "chartreuse."  that's what i mean by an "attribute", and
-> attributes would have two critical and non-negotiable properties:
-<<< snip>>>>
-> 
->   but i hope i've flogged this thoroughly to the point where people
-> can see what i'm driving at.  once you see (as in simon's patch) how
-> to add the first attribute, it's trivial to simply duplicate that code
-> to add as many more as you want.
-> 
-> rday
-> 
-> --
-> ========================================================================
-> Robert P. J. Day
-> Linux Consulting, Training and Annoying Kernel Pedantry
-> Waterloo, Ontario, CANADA
-> 
-> http://crashcourse.ca
-> ========================================================================
-Robert Day,
 
-        If I can interpret what you are asking about and changing it abit.
 
-        Don't you think that Maturity can be defined ALSO, as the 
-       number of known bugs and their priority / serverity against a 
-       architecture dependent or independent item?
+On Fri, 31 Aug 2007, Matti Linnanvuori wrote:
+> 
+> It seems to me that kernel/module.c allows the whole kernel to use
+> exported symbols during the execution of the init function if they are
+> weak:
+>                         /* Ok if weak.  */
+>                           if (ELF_ST_BIND(sym[i].st_info) == STB_WEAK)
+>                                   break;
+> That seems a possible way to produce the scenario of this so-called bug.
 
-       Would this suffice and wouldn't it be easier to maintain?
+No, even that won't reproduce the bug you're talking about, and you
+clearly don't know how weak symbols are supposed to work / be used :-)
+simplify_symbols() -> resolve_symbol() is called to resolve /external/
+symbols that the module-being-loaded references, and error out in case
+no such (global, exported) symbol was currently found.
 
-       Mitchell Erblich
+So the "sym[i]" there refers to the (as yet unresolved) symbol referenced
+in the _dependent module B_, that it sees exported as a weak symbol
+(probably because marked as such in some header prototype). That check is
+to support usage where we still allow B to load without A being loaded,
+because it's somehow ensured that B will never call that function at
+runtime unless it is available ... something like:
+
+extern void mod_a_func(void) __attribute__((weak));
+static int __init mod_b_init(void)
+{
+        if (mod_a_func)
+                mod_a_func();
+        else {
+                /* some remedial action */
+                printk(KERN_INFO "own little mod_a_func fallback\n");
+        }
+        return 0;
+}
+
+Try running the same test I described in previous post with this change.
+
+Moreover, failure to check (mod_a_func) will cause an _oops_, and *not*
+the "module A's exported function being called even when module_init()
+has not finished" issue that you've complained about. So things look
+alright to me on this front, the bug has been rightly rejected as invalid.
+And as Arjan pointed out, if you really saw such an issue, please post
+some code instead, so that we can have a look.
+
+Thanks,
+
+Satyam
