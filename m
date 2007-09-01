@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbXIAIhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbXIAIqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753184AbXIAIhZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 04:37:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbXIAIhN
+	id S1753402AbXIAIqG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 04:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbXIAIpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 04:37:13 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:5921 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbXIAIhK (ORCPT
+	Sat, 1 Sep 2007 04:45:55 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:32812 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751035AbXIAIpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 04:37:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=QIBGBw6BREa3pjJNRiYWGIilJ8j6GaJvpjLon3E8Pq8TlYPZUQVz5H8VgWAhDgTkki1z+8MFAUDcCAdBwuvmPFyKZNwr8wndzlJdfXXuWwxA97jleMwh8mEzowa6CKtmfS0y69h1J2wCPiJ5Sy/fxAeEoEXpeZH1NphAFmmqWks=
-Message-ID: <46D924A3.3070207@googlemail.com>
-Date: Sat, 01 Sep 2007 10:36:51 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Sat, 1 Sep 2007 04:45:54 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sat, 1 Sep 2007 04:34:24 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Dave Jones <davej@redhat.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: maturity and status and attributes, oh my!
+In-Reply-To: <20070831230215.GF11499@redhat.com>
+Message-ID: <Pine.LNX.4.64.0709010425400.26137@localhost.localdomain>
+References: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain>
+ <20070831230215.GF11499@redhat.com>
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       linux-acpi@vger.kernel.org, Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Daniel Ritz <daniel.ritz-ml@swissonline.ch>
-Subject: Re: [1/2] 2.6.23-rc3: known regressions with patches
-References: <46D59081.2040605@googlemail.com> <200708311741.22863.lenb@kernel.org>
-In-Reply-To: <200708311741.22863.lenb@kernel.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len Brown pisze:
-> On Wednesday 29 August 2007 11:28, Michal Piotrowski wrote:
-> 
->> ACPI
->>
->> Subject         : the fan doesn't work any more
->> References      : http://lkml.org/lkml/2007/8/28/359
->> Last known good : ?
->> Submitter       : Daniel Ritz <daniel.ritz-ml@swissonline.ch>
->> Caused-By       : Alexey Starikovskiy <astarikovskiy@suse.de>
->>                   commit cd8c93a4e04dce8f00d1ef3a476aac8bd65ae40b
->> Handled-By      : Alexey Starikovskiy <astarikovskiy@suse.de>
->> Patch           : http://lkml.org/lkml/2007/8/29/15
->> Status          : patch was suggested
-> 
-> I believe that this is gone as of 2.6.23-rc4-git3
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=8958
+On Fri, 31 Aug 2007, Dave Jones wrote:
 
-BTW. Maciej Rutecki has said that "MCFG bug on hp nx6310" is not
-a regression, so regression counter for ACPI == 0 (if I didn't
-overlook something :))
+> On Fri, Aug 31, 2007 at 05:38:34PM -0400, Robert P. J. Day wrote:
 
-> 
-> thanks,
-> -Len
-> 
+> > it's a natural progression and, at any point, a feature cannot
+> > possibly have more than one maturity value.  it would be as absurd
+> > as saying that someone was a teenager *and* was a twenty-something
+> > at the same time.  not possible.
+>
+> Again, not so black and white. It's feasible that something can be
+> experimental on one architecture, stable on another (typically x86),
+> or even deprecated on x86, but still supported on other
+> architectures. It's not just a per arch thing either, in some cases,
+> we've had differing levels of maturity based upon other hardware
+> constraints, or even varying versions of system software.
 
-Regards,
-Michal
+absolutely agreed.  but in cases like that, it might just be easier to
+not tag that feature *at all*.  nothing in this proposal *forces*
+someone to start tagging kernel features in any way.  as you point
+out, there may be cases where trying to tag a feature becomes so
+hopelessly vague and special-cased, it's easier to just leave it
+alone.  but that still doesn't take away from the value of being able
+to use this construct elsewhere where its use *is* clear-cut and
+unambiguous.
+
+it's like the current use of "EXPERIMENTAL" -- choosing to see
+features that are EXPERIMENTAL doesn't change the build process in any
+way -- it just affects the choices you're allowed to make.  it doesn't
+*force* you to *take* any of those choices.  that's all this new
+construct is supposed to do as well.
+
+rday
+
+p.s.  if i read simon's earlier patch correctly, all it's doing right
+now is allowing assignment of attributes and values to kernel features
+-- it does nothing in terms of being able to use that feature in the
+config process.  that would be step two, after this first step is
+added and seems to be correct.
 
 -- 
-LOG
-http://www.stardust.webpages.pl/log/
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
