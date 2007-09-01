@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbXICTE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbXICTMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755785AbXICTE7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 15:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbXICTEu
+	id S1755796AbXICTMh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 15:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbXICTM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 15:04:50 -0400
-Received: from keil-draco.com ([216.193.185.50]:50496 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753868AbXICTEt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 15:04:49 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Date: Mon, 3 Sep 2007 15:04:17 -0400
-User-Agent: KMail/1.9.6
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-References: <MDEHLPKNGKAHNMBLJOLKOEDKGJAC.davids@webmaster.com> <200709031401.47111.dhazelton@enter.net> <m3myw3vc4q.fsf@maximus.localdomain>
-In-Reply-To: <m3myw3vc4q.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 3 Sep 2007 15:12:28 -0400
+Received: from ozlabs.org ([203.10.76.45]:34467 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752460AbXICTM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 15:12:27 -0400
+Subject: Re: [Lguest] [RFC] 9p Virtualization Transports
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Eric Van Hensbergen <ericvh@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
+       v9fs-developer@lists.sourceforge.net, lguest@ozlabs.org
+In-Reply-To: <11883271601857-git-send-email-ericvh@gmail.com>
+References: <11883271601857-git-send-email-ericvh@gmail.com>
+Content-Type: text/plain
+Date: Sun, 02 Sep 2007 07:14:57 +1000
+Message-Id: <1188681297.10802.38.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709031504.17454.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 September 2007 14:26:29 Krzysztof Halasa wrote:
-> Daniel Hazelton <dhazelton@enter.net> writes:
-> > The fact
-> > remains that the person making a work available under *ANY* form of
-> > copyright
-> > license has the right to revoke said grant of license to anyone.
->
-> Not after the licence has been given and accepted (and there might be
-> restrictions), unless of course the licence contained such reservation.
+On Tue, 2007-08-28 at 13:52 -0500, Eric Van Hensbergen wrote:
+> The lguest and kvm transports are functional, but we are still working out
+> remaining bugs and need to spend some time focusing on performance issues.
+> I wanted to send out this "preview" patch set to the community to solicit
+> ideas on things we can do differently/better.
 
-I hate to belabor the point, but you seem to be making the mistake of "The 
-license applies to the copyright holder" that I've seen a lot of people make 
-(and kept quiet about).
+Hi Eric,
 
-The person holding the copyright has all the legal standing to revoke a 
-license grant at any time. Licenses such as the GPL are not signed contracts, 
-and that means there are limits to what effect they can have on the copyright 
-holder.
+	Patches look reasonable, but just a heads-up: lguest will be moving to
+virtio, as will kvm.  That means a single implementation for both
+(yay!), but it does complicate your life in the short term 8(
 
-If the license was of the "signed contract" type, or contained text stating 
-that the copyright holder was giving up all rights of revocation (etc...) I 
-could agree with you. As it stands, no "Open Source" license that I have seen 
-used on a major project contains any part that does that. In fact, the GPL is 
-the only license I can name (offhand) that even touches on the rights of the 
-copyright holder - and then it is in the form of "If you do X, Y or Z all 
-rights granted under this license are automatically revoked".
+	Dor has published a kvm virtio implementation, and we've already
+discussed a couple of modifications.  I expect that to be nailed in the
+next 2 weeks tho, and lguest will follow.
 
-That is an "automatic clause" - not a limitation stating that the copyright 
-holder can only revoke under those conditions. The person holding the 
-copyright has quite a few rights - more than people believe - and not even 
-the most generous of Open Source licenses (except those that contain text 
-like "granted in perpetuity" or similar) even come close to being exempt from 
-the holder of the copyright not being able to summarily revoke a given 
-persons license.
+Thanks!
+Rusty.
 
-DRH
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
