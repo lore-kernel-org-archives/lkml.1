@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbXIALTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbXIALeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032AbXIALTW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 07:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXIALTG
+	id S1754781AbXIALeY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 07:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbXIALeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 07:19:06 -0400
-Received: from mx2.suse.de ([195.135.220.15]:42269 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754205AbXIALSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 07:18:37 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [PATCH] x86: optionally show last exception from/to register contents (v2)
-Date: Sat, 1 Sep 2007 13:18:31 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, patches@x86-64.org
-References: <46D418AF.76E4.0078.0@novell.com>
-In-Reply-To: <46D418AF.76E4.0078.0@novell.com>
+	Sat, 1 Sep 2007 07:34:15 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:48276 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753351AbXIALeO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 07:34:14 -0400
+Message-ID: <46D94E2E.5030605@linux.vnet.ibm.com>
+Date: Sat, 01 Sep 2007 17:04:06 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: travis@sgi.com, Andi Kleen <ak@suse.de>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu variable
+ (v2)
+References: <20070824222654.687510000@sgi.com> <20070824222948.851896000@sgi.com> <20070831194903.5d88a007.akpm@linux-foundation.org>
+In-Reply-To: <20070831194903.5d88a007.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709011318.31520.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 August 2007 12:44:31 Jan Beulich wrote:
-> .. when dumping register state. This is particularly useful when gcc
-> managed to tail-call optimize an indirect call which happens to hit a
-> NULL (or otherwise invalid) pointer.
+Andrew Morton wrote:
+> On Fri, 24 Aug 2007 15:26:57 -0700 travis@sgi.com wrote:
+>
+>   
+>> Convert cpu_sibling_map from a static array sized by NR_CPUS to a
+>> per_cpu variable.  This saves sizeof(cpumask_t) * NR unused cpus.
+>> Access is mostly from startup and CPU HOTPLUG functions.
+>>     
+>
+> ia64 allmodconfig:
+>
+> kernel/sched.c: In function `cpu_to_phys_group':                                                                             kernel/sched.c:5937: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:5937: error: (Each undeclared identifier is reported only once
+> kernel/sched.c:5937: error: for each function it appears in.)                                                                kernel/sched.c:5937: warning: type defaults to `int' in declaration of `type name'
+> kernel/sched.c:5937: error: invalid type argument of `unary *'                                                               kernel/sched.c: In function `build_sched_domains':                                                                           kernel/sched.c:6172: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:6172: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6172: error: invalid type argument of `unary *'                                                               kernel/sched.c:6183: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6183: error: invalid type argument of `unary *'                                                               
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+>   
+Hi Andrew,
 
-I added it, with a warning in the documentation and changelog
+I get the exact build failure on ppc64 machine with 2.6.23-rc4-mm1.
 
-Also all the other patches except for the #DF one. Thanks.
-
-BTW I think there is a reasonable cheap way to avoid the interrupt race: 
-
-If pda->irqcount was split into two 16bit words and irq entry code increases the upper 
-16bit word (that should be nearly free because because both are in L1 cache; 
-with some luck the CPU can even dual-issue). Then the traps code could save
-the irq count early and then in the no_context case disable interrupts,
-compare and only print LER if there were no interrupts inbetween.
-
--Andi 
-
+-
+Kamalesh Babulal.
 
