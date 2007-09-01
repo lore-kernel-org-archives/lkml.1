@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbXIALeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbXIALkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbXIALeY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 07:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbXIALeP
+	id S1754863AbXIALkt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 07:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbXIALkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 07:34:15 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:48276 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753351AbXIALeO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 07:34:14 -0400
-Message-ID: <46D94E2E.5030605@linux.vnet.ibm.com>
-Date: Sat, 01 Sep 2007 17:04:06 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Sat, 1 Sep 2007 07:40:39 -0400
+Received: from web52005.mail.re2.yahoo.com ([206.190.49.252]:42056 "HELO
+	web52005.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753351AbXIALki convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 07:40:38 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=OJlesUFq2GTsF89j4NvEKkY+6/r/2+kfe/ryWsFKZysqE5HL0J4DsXGMTbcI6/QidZpzhZMFAn0XQOkK3Y1iMyoyeThRJ2XNq87E0meEksOKarZuwg0u6TIvpudtaS8jzcqMvBZaL3zbeLMoFD0Oe1Rsvdf+xv6fnh8zK29+tGs=;
+X-YMail-OSG: qWmPilwVM1nxY_SFFqujvJBgcGEv9AukcbkoRkmlwpP5FNnFn9sIS.e3XqDf7SR.v7QQGi7x1xRNfTuqaE3UeZqomBQkiRrBGMZuR2708cLYAlyyBlshavwYWl0jdKFylpDg7SQfZJKgjTOnrBdGPqcodA--
+X-Mailer: YahooMailRC/651.50 YahooMailWebService/0.7.134
+Date: Sat, 1 Sep 2007 04:40:37 -0700 (PDT)
+From: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Subject: [PATCH] [Bugme-new] [Bug 8957] New: Exported functions and variables
+To: rusty@rustcorp.com.au
+Cc: linux-kernel@vger.kernel.org, bugme-daemon@kernel-bugs.osdl.org
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: travis@sgi.com, Andi Kleen <ak@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu variable
- (v2)
-References: <20070824222654.687510000@sgi.com> <20070824222948.851896000@sgi.com> <20070831194903.5d88a007.akpm@linux-foundation.org>
-In-Reply-To: <20070831194903.5d88a007.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <698763.85538.qm@web52005.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 24 Aug 2007 15:26:57 -0700 travis@sgi.com wrote:
->
->   
->> Convert cpu_sibling_map from a static array sized by NR_CPUS to a
->> per_cpu variable.  This saves sizeof(cpumask_t) * NR unused cpus.
->> Access is mostly from startup and CPU HOTPLUG functions.
->>     
->
-> ia64 allmodconfig:
->
-> kernel/sched.c: In function `cpu_to_phys_group':                                                                             kernel/sched.c:5937: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:5937: error: (Each undeclared identifier is reported only once
-> kernel/sched.c:5937: error: for each function it appears in.)                                                                kernel/sched.c:5937: warning: type defaults to `int' in declaration of `type name'
-> kernel/sched.c:5937: error: invalid type argument of `unary *'                                                               kernel/sched.c: In function `build_sched_domains':                                                                           kernel/sched.c:6172: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:6172: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6172: error: invalid type argument of `unary *'                                                               kernel/sched.c:6183: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6183: error: invalid type argument of `unary *'                                                               
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
->   
-Hi Andrew,
+This is a kernel/module.c 
+Linux 2.6.23-rc5 documentation patch that adds more explanation and corrects a spelling error.
 
-I get the exact build failure on ppc64 machine with 2.6.23-rc4-mm1.
+--- kernel/module.c   2007-09-01 14:15:06.131101500 +0300
++++ patched-kernel/module.c 2007-09-01 14:15:27.502780500 +0300
+@@ -80,7 +80,8 @@ int unregister_module_notifier(struct no
+ }
+ EXPORT_SYMBOL(unregister_module_notifier);
+ 
+-/* We require a truly strong try_module_get() */
++/* We require a truly strong try_module_get(): 0 means failure due to 
++   ongoing or failed initialization etc. */
+ static inline int strong_try_module_get(struct module *mod)
+ {
+     if (mod && mod->state == MODULE_STATE_COMING)
+@@ -957,7 +958,8 @@ static unsigned long resolve_symbol(Elf_
+     ret = __find_symbol(name, &owner, &crc,
+             !(mod->taints & TAINT_PROPRIETARY_MODULE));
+     if (ret) {
+-        /* use_module can fail due to OOM, or module unloading */
++        /* use_module can fail due to OOM, or module
++           initialization or unloading */
+         if (!check_version(sechdrs, versindex, name, mod, crc) ||
+             !use_module(mod, owner))
+             ret = 0;
+@@ -1270,7 +1272,7 @@ dup:
+     return ret;
+ }
+ 
+-/* Change all symbols so that sh_value encodes the pointer directly. */
++/* Change all symbols so that st_value encodes the pointer directly. */
+ static int simplify_symbols(Elf_Shdr *sechdrs,
+                 unsigned int symindex,
+                 const char *strtab,
 
--
-Kamalesh Babulal.
 
+Signed-off-by: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+
+
+
+
+      Wissenswertes für Bastler und Hobby Handwerker. BE A BETTER HEIMWERKER! www.yahoo.de/clever
