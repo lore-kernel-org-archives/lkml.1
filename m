@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbXIAVUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbXIAV1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932476AbXIAVUI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 17:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbXIAVT5
+	id S1757891AbXIAV1U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 17:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbXIAV1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 17:19:57 -0400
-Received: from colo.lackof.org ([198.49.126.79]:49316 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756062AbXIAVT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 17:19:57 -0400
-Date: Sat, 1 Sep 2007 15:19:39 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Jason Gaston <jason.d.gaston@intel.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, khali@linux-fr.org,
-       i2c@lm-sensors.nu
-Subject: Re: [PATCH 2.6.23-rc4] irq: irq and pci_ids patch for Intel Tolapai
-Message-ID: <20070901211939.GA10442@colo.lackof.org>
-References: <200708301546.56998.jason.d.gaston@intel.com>
+	Sat, 1 Sep 2007 17:27:08 -0400
+Received: from wx-out-0506.google.com ([66.249.82.236]:42106 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752494AbXIAV1E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 17:27:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dLUXYRKQ57z3pLbB0aJ0fipWTkmZrtdJ0aveBZEyTNlh8kiWjBE14Rdjk5Z2cDSLmQZfr3dJMG/bnnMWDwn0dSPAMkdMtNCvzWvEhUiPQtdvjqFtmb3Y4Gs6FgfOhuglKActe9rb9o2B8Z07sv3BJEpuT13nsGbX1gMoGtRjVd8=
+Message-ID: <f34ca13c0709011427u7a9cc97bp75c035afed3e5a63@mail.gmail.com>
+Date: Sat, 1 Sep 2007 17:27:03 -0400
+From: "Constantine A. Murenin" <mureninc@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+Cc: "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20070901205457.GK9260@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200708301546.56998.jason.d.gaston@intel.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <200709010140.l811eq9H005896@cvs.openbsd.org>
+	 <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
+	 <46D99FB7.6030505@garzik.org>
+	 <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
+	 <20070901205457.GK9260@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 30, 2007 at 03:46:56PM -0700, Jason Gaston wrote:
-> This updated patch adds the Intel Tolapai LPC and SMBus Controller DID's.
-> 
-> Signed-off-by: ?Jason Gaston <jason.d.gaston@intel.com>
-> 
-> --- linux-2.6.23-rc4/arch/i386/pci/irq.c.orig	2007-08-27 18:32:35.000000000 
-> -0700
-> +++ linux-2.6.23-rc4/arch/i386/pci/irq.c	2007-08-28 16:58:31.000000000 -0700
-> @@ -550,6 +550,7 @@
->  		case PCI_DEVICE_ID_INTEL_ICH9_3:
->  		case PCI_DEVICE_ID_INTEL_ICH9_4:
->  		case PCI_DEVICE_ID_INTEL_ICH9_5:
-> +		case PCI_DEVICE_ID_INTEL_Tolapai_0:
+On 01/09/07, Adrian Bunk <bunk@kernel.org> wrote:
+> On Sat, Sep 01, 2007 at 01:37:18PM -0400, Constantine A. Murenin wrote:
+> > On 01/09/07, Jeff Garzik <jeff@garzik.org> wrote:
+> > > Constantine A. Murenin wrote:
+> > > > This will hopefully help diminish certain myths about the code licensing.
+> > >
+> > > What myth?  The myth that Theo understands dual licensing?
+> >
+> > Reyk's code was never dual licensed, so it's not like it even matters
+> > to the original dispute.
+>
+> It's no longer dual licenced in the FreeBSD tree because the FreeBSD
+> people removed the GPL choice of the dual licenced code 3 months ago.
 
-If this is the only place it's used, the prefence is to define the
-constant locally (in the file) and not in pci_ids.h.
+FreeBSD doesn't have Reyk's ath(4) HAL, which OpenHAL is based on.
 
-Please do submit new PCI device IDs to pciids.sf.net project.
+FreeBSD has a driver written by Sam, and a binary-only HAL, also written by Sam.
 
-thanks,
-grant
+> So all of Theo's accusations of people breaking the law by making this
+> dual licenced code GPL-only apply as well to the FreeBSD people...
 
->  			r->name = "PIIX/ICH";
->  			r->get = pirq_piix_get;
->  			r->set = pirq_piix_set;
-> --- linux-2.6.23-rc4/include/linux/pci_ids.h.orig	2007-08-27 
-> 18:32:35.000000000 -0700
-> +++ linux-2.6.23-rc4/include/linux/pci_ids.h	2007-08-28 16:58:31.000000000 
-> -0700
-> @@ -2293,6 +2293,8 @@
->  #define PCI_DEVICE_ID_INTEL_MCH_PC	0x3599
->  #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
->  #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
-> +#define PCI_DEVICE_ID_INTEL_Tolapai_0	0x5031
-> +#define PCI_DEVICE_ID_INTEL_Tolapai_1	0x5032
->  #define PCI_DEVICE_ID_INTEL_82371SB_0	0x7000
->  #define PCI_DEVICE_ID_INTEL_82371SB_1	0x7010
->  #define PCI_DEVICE_ID_INTEL_82371SB_2	0x7020
+How? FreeBSD doesn't have Reyk's ath(4) HAL from OpenBSD, so there are
+no possible licensing accusations and violations.
+
+> > That said, I don't see what exact wording you consider inaccurate.
+>
+> Both the FreeBSD and Linux people draw the logical conclusion that this
+> "Alternatively" means everyone can always choose to remove one of the
+> two choices alternatively offered.
+>
+> According to Theo, that is "breaking the law"...
+
+FreeBSD's ath(4) code, both the driver and the HAL, is entirely
+written by Sam Leffler, who can licence it in whichever way he seems
+reasonable. The driver part of Sam's code is also present in OpenBSD,
+but the HALs in OpenBSD and FreeBSD are entirely different.
+
+C.
