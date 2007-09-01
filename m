@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbXIABvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbXIABvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbXIABvd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbXIABnw
+	id S1756822AbXIABvv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbXIABn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:43:52 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51618 "EHLO
+	Fri, 31 Aug 2007 21:43:56 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51630 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751630AbXIABmX (ORCPT
+	with ESMTP id S1751712AbXIABmY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 21:42:23 -0400
-Message-Id: <20070901014222.536517408@sgi.com>
+	Fri, 31 Aug 2007 21:42:24 -0400
+Message-Id: <20070901014223.449837413@sgi.com>
 References: <20070901014107.719506437@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 31 Aug 2007 18:41:21 -0700
+Date: Fri, 31 Aug 2007 18:41:25 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Andy Whitcroft <apw@shadowen.org>
 Cc: linux-kernel@vger.kernel.org
@@ -21,83 +21,98 @@ Cc: linux-mm@kvack.org
 Cc: linux-fsdevel@vger.kernel.org
 Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: David Chinner <dgc@sgi.com>
-Subject: [RFC 14/26] SLUB: __GFP_MOVABLE and SLAB_TEMPORARY support
-Content-Disposition: inline; filename=0014-slab_defrag_movable.patch
+Subject: [RFC 18/26] FS: ExtX filesystem defrag
+Content-Disposition: inline; filename=0018-slab_defrag_ext234.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Slabs that are reclaimable fit the definition of the objects in
-ZONE_MOVABLE. So set __GFP_MOVABLE on them (this only works
-on platforms where there is no HIGHMEM. Hopefully that restriction
-will vanish at some point).
-
-Also add the SLAB_TEMPORARY flag for slab caches that allocate objects with
-a short lifetime. Slabs with SLAB_TEMPORARY also are allocated with
-__GFP_MOVABLE. Reclaim on them works by isolating the slab for awhile and
-waiting for the objects to expire.
-
-The skbuff_head_cache is a prime example of such a slab. Add the
-SLAB_TEMPORARY flag to it.
+Support defragmentation for extX filesystem inodes
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- include/linux/slab.h |    1 +
- mm/slub.c            |    8 +++++++-
- net/core/skbuff.c    |    2 +-
- 3 files changed, 9 insertions(+), 2 deletions(-)
+ fs/ext2/super.c |    9 +++++++++
+ fs/ext3/super.c |    8 ++++++++
+ fs/ext4/super.c |    8 ++++++++
+ 3 files changed, 25 insertions(+)
 
-diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 2923861..daffc22 100644
---- a/include/linux/slab.h
-+++ b/include/linux/slab.h
-@@ -23,6 +23,7 @@
- #define SLAB_POISON		0x00000800UL	/* DEBUG: Poison objects */
- #define SLAB_HWCACHE_ALIGN	0x00002000UL	/* Align objs on cache lines */
- #define SLAB_CACHE_DMA		0x00004000UL	/* Use GFP_DMA memory */
-+#define SLAB_TEMPORARY		0x00008000UL	/* Only volatile objects */
- #define SLAB_STORE_USER		0x00010000UL	/* DEBUG: Store the last owner for bug hunting */
- #define SLAB_RECLAIM_ACCOUNT	0x00020000UL	/* Objects are reclaimable */
- #define SLAB_PANIC		0x00040000UL	/* Panic if kmem_cache_create() fails */
-diff --git a/mm/slub.c b/mm/slub.c
-index bad5291..85ba259 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1040,6 +1040,11 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
- 	if (s->flags & SLAB_CACHE_DMA)
- 		flags |= SLUB_DMA;
+Index: linux-2.6/fs/ext2/super.c
+===================================================================
+--- linux-2.6.orig/fs/ext2/super.c	2007-08-28 19:48:06.000000000 -0700
++++ linux-2.6/fs/ext2/super.c	2007-08-28 20:16:05.000000000 -0700
+@@ -168,6 +168,12 @@ static void init_once(void * foo, struct
+ 	inode_init_once(&ei->vfs_inode);
+ }
  
-+#ifndef CONFIG_HIGHMEM
-+	if (s->kick || s->flags & SLAB_TEMPORARY)
-+		flags |= __GFP_MOVABLE;
-+#endif
++static void *ext2_get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	return fs_get_inodes(s, nr, v,
++		offsetof(struct ext2_inode_info, vfs_inode));
++}
 +
- 	if (node == -1)
- 		page = alloc_pages(flags, s->order);
- 	else
-@@ -1118,7 +1123,8 @@ static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
- 	if (s->flags & (SLAB_DEBUG_FREE | SLAB_RED_ZONE | SLAB_POISON |
- 			SLAB_STORE_USER | SLAB_TRACE))
- 		SetSlabDebug(page);
--	if (s->kick)
+ static int init_inodecache(void)
+ {
+ 	ext2_inode_cachep = kmem_cache_create("ext2_inode_cache",
+@@ -177,6 +183,9 @@ static int init_inodecache(void)
+ 					     init_once);
+ 	if (ext2_inode_cachep == NULL)
+ 		return -ENOMEM;
 +
-+	if (s->flags & SLAB_TEMPORARY || s->kick)
- 		SetSlabReclaimable(page);
++	kmem_cache_setup_defrag(ext2_inode_cachep,
++			ext2_get_inodes, kick_inodes);
+ 	return 0;
+ }
  
-  out:
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 35021eb..51b2236 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -2020,7 +2020,7 @@ void __init skb_init(void)
- 	skbuff_head_cache = kmem_cache_create("skbuff_head_cache",
- 					      sizeof(struct sk_buff),
- 					      0,
--					      SLAB_HWCACHE_ALIGN|SLAB_PANIC,
-+			      SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_TEMPORARY,
- 					      NULL);
- 	skbuff_fclone_cache = kmem_cache_create("skbuff_fclone_cache",
- 						(2*sizeof(struct sk_buff)) +
--- 
-1.5.2.4
+Index: linux-2.6/fs/ext3/super.c
+===================================================================
+--- linux-2.6.orig/fs/ext3/super.c	2007-08-28 19:48:06.000000000 -0700
++++ linux-2.6/fs/ext3/super.c	2007-08-28 20:16:05.000000000 -0700
+@@ -484,6 +484,12 @@ static void init_once(void * foo, struct
+ 	inode_init_once(&ei->vfs_inode);
+ }
+ 
++static void *ext3_get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	return fs_get_inodes(s, nr, v,
++		offsetof(struct ext3_inode_info, vfs_inode));
++}
++
+ static int init_inodecache(void)
+ {
+ 	ext3_inode_cachep = kmem_cache_create("ext3_inode_cache",
+@@ -493,6 +499,8 @@ static int init_inodecache(void)
+ 					     init_once);
+ 	if (ext3_inode_cachep == NULL)
+ 		return -ENOMEM;
++	kmem_cache_setup_defrag(ext3_inode_cachep,
++			ext3_get_inodes, kick_inodes);
+ 	return 0;
+ }
+ 
+Index: linux-2.6/fs/ext4/super.c
+===================================================================
+--- linux-2.6.orig/fs/ext4/super.c	2007-08-28 19:48:06.000000000 -0700
++++ linux-2.6/fs/ext4/super.c	2007-08-28 20:16:05.000000000 -0700
+@@ -535,6 +535,12 @@ static void init_once(void * foo, struct
+ 	inode_init_once(&ei->vfs_inode);
+ }
+ 
++static void *ext4_get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	return fs_get_inodes(s, nr, v,
++		offsetof(struct ext4_inode_info, vfs_inode));
++}
++
+ static int init_inodecache(void)
+ {
+ 	ext4_inode_cachep = kmem_cache_create("ext4_inode_cache",
+@@ -544,6 +550,8 @@ static int init_inodecache(void)
+ 					     init_once);
+ 	if (ext4_inode_cachep == NULL)
+ 		return -ENOMEM;
++	kmem_cache_setup_defrag(ext4_inode_cachep,
++			ext4_get_inodes, kick_inodes);
+ 	return 0;
+ }
+ 
 
 -- 
