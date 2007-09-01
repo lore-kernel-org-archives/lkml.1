@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751818AbXIAAB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751722AbXIAALg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751818AbXIAAB1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 20:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750923AbXIAABR
+	id S1751722AbXIAALg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 20:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbXIAAL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 20:01:17 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:59393 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750854AbXIAABQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 20:01:16 -0400
-Subject: Re: [RFC 1/4] Large Blocksize support for Ext2/3/4
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: clameter@sgi.com
-Cc: linux-fsdevel@vger.kernel.org, adilger@clusterfs.com, sho@tnes.nec.co.jp,
-       ext4 development <linux-ext4@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1188434857.3799.76.camel@localhost.localdomain>
-References: <20070828190551.415127746@sgi.com>
-	 <20070828190735.292638294@sgi.com>
-	 <1188432669.3799.35.camel@localhost.localdomain>
-	 <1188434857.3799.76.camel@localhost.localdomain>
+	Fri, 31 Aug 2007 20:11:27 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:37756 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750705AbXIAAL0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 20:11:26 -0400
+Subject: Re: v2.6.23-rc4-rt1 / new project URL
+From: Daniel Walker <dwalker@mvista.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       RT-Users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1188593944.9647.15.camel@chaos>
+References: <1188593944.9647.15.camel@chaos>
 Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 31 Aug 2007 17:01:30 -0700
-Message-Id: <1188604890.3837.38.camel@localhost.localdomain>
+Date: Fri, 31 Aug 2007 17:01:26 -0700
+Message-Id: <1188604887.26038.110.camel@dhcp193.mvista.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-29 at 17:47 -0700, Mingming Cao wrote:
-
-> Just rebase to 2.6.23-rc4 and against the ext4 patch queue. Compile tested only. 
+On Fri, 2007-08-31 at 22:59 +0200, Thomas Gleixner wrote:
+> We're pleased to announce the release of the v2.6.23-rc4-rt1 kernel,
+> which can be downloaded from a new place:
+>  
+>    http://www.kernel.org/pub/linux/kernel/projects/rt/
+>  
+> The move to kernel.org is experimental for now, we'll keep it if it
+> works out fine.
 > 
-> Next steps:
-> Need a e2fsprogs changes to able test this feature. As mkfs needs to be
-> educated not assuming rec_len to be blocksize all the time.
-> Will try it with Christoph Lameter's large block patch next.
+> Changes since 2.6.23-rc2-rt2:
 > 
+> - update to -rc4
+> - update to 2.6.23-rc4-hrt1
+> 
+> - UP compile fixes back merged (Kevin Hilman / Steven Rostedt)
+> - various latency tracer fixes (Steven Rostedt)
 
-Two problems were found when testing largeblock on ext3.  Patches to
-follow. 
+I'm not sure which latency tracing fixes these are, but Steven's
+get_monotonic_cycles() changes are racy .. It might be a little
+premature to include them .. It at least fouls latency tracing on my
+test machine.
 
-Good news is, with your changes, plus all these extN changes, I am able
-to run ext2/3/4 with 64k block size, tested on x86 and ppc64 with 4k
-page size. fsx test runs fine for an hour on ext3 with 16k blocksize on
-x86:-)
+> - simple_irq change (Kevin Hilman): needs more thought
+> - RCU updates (Paul McKenney): needs proper integration
+> - latency tracer changes (Daniel Walker): needs review
+> - PICK_OP changes (Daniel Walker): needs review
 
-Mingming
+The PICK_OP changes got reviewed by Ingo , as of,
+
+http://marc.info/?l=linux-rt-users&m=118638506125380&w=2
+
+They do need one small fix tho .. Below ..
+
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
+
+Index: linux-2.6.22/include/linux/spinlock.h
+===================================================================
+--- linux-2.6.22.orig/include/linux/spinlock.h	2007-09-01 00:08:04.000000000 +0000
++++ linux-2.6.22/include/linux/spinlock.h	2007-09-01 00:07:48.000000000 +0000
+@@ -501,7 +501,7 @@ do {									\
+ 
+ #define spin_trylock_irq(lock)	\
+ 	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock_irq,		\
+-		__spin_trylock_irq, lock))
++		_spin_trylock_irq, lock))
+ 
+ #define spin_trylock_irqsave(lock, flags) \
+ 	__cond_lock(lock, PICK_SPIN_OP_RET(__spin_trylock_irqsave, 	\
+
 
