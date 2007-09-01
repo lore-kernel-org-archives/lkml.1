@@ -1,46 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbXIARhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbXIARj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756923AbXIARhc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 13:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXIARhV
+	id S1757288AbXIARj7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 13:39:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbXIARjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 13:37:21 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:65327 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753305AbXIARhT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 13:37:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uM0k+Kqpotp23ZbZ02i2ccd6NAn8ZkIkxtp0JhO091WBnM2+HNrvVqiYvdRje/jfkfHdJWBU9KzdB6LaSxHNpdmuNVgCYmsOuqjUc9gBfBJRY9UYQNPhRh35tUGDNNcZCAU4G1T31hV/FknBDuo77pgDNLN09OzKnyqXtrG/rCk=
-Message-ID: <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
-Date: Sat, 1 Sep 2007 13:37:18 -0400
-From: "Constantine A. Murenin" <mureninc@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <46D99FB7.6030505@garzik.org>
+	Sat, 1 Sep 2007 13:39:49 -0400
+Received: from fysh.org ([83.170.75.51]:38752 "EHLO bowl.fysh.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754091AbXIARjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 13:39:48 -0400
+Date: Sat, 1 Sep 2007 18:39:44 +0100
+From: Athanasius <link@miggy.org>
+To: Patrick McHardy <kaber@trash.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bugme-new] [Bug 8961] New: BUG triggered by oidentd in netlink code
+Message-ID: <20070901173944.GB3693@miggy.org>
+Mail-Followup-To: Athanasius <link@miggy.org>,
+	Patrick McHardy <kaber@trash.net>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+	bugme-daemon@bugzilla.kernel.org
+References: <bug-8961-10286@http.bugzilla.kernel.org/> <20070830180842.7c8414fe.akpm@linux-foundation.org> <Pine.LNX.4.64.0708311258520.8423@x2> <20070831123825.GW22067@miggy.org> <46D9957F.4020101@trash.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="qMm9M+Fa2AknHoGS"
 Content-Disposition: inline
-References: <200709010140.l811eq9H005896@cvs.openbsd.org>
-	 <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
-	 <46D99FB7.6030505@garzik.org>
+In-Reply-To: <46D9957F.4020101@trash.net>
+X-gpg-fingerprint: B34E4BC3
+X-gpg-key: http://www.fysh.org/~athan/gpg-key
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/09/07, Jeff Garzik <jeff@garzik.org> wrote:
-> Constantine A. Murenin wrote:
-> > This will hopefully help diminish certain myths about the code licensing.
->
-> What myth?  The myth that Theo understands dual licensing?
 
-Reyk's code was never dual licensed, so it's not like it even matters
-to the original dispute.
+--qMm9M+Fa2AknHoGS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That said, I don't see what exact wording you consider inaccurate.
+On Sat, Sep 01, 2007 at 06:38:23PM +0200, Patrick McHardy wrote:
+> Athanasius wrote:
+> >  I'll compile up a new kernel, likely 2.6.22.6, plus this patch, and
+> >reboot to it tonight.  I still don't know *exactly* how to trigger the
+> >bug on demand though, it's not reocurred since I posted the bug report
+> >(but had happened about a week before as well).
+>=20
+> Thanks. I'm not sure either, it would require two concurrent requests
+> to be processed, but AFAICS oidentd only uses a single netlink socket.
+> Perhaps multiple running instances or something else using the inet_diag
+> interface?
+>=20
+> You might be able to trigger it without this patch by running
+> "while true; do ss -tn; done" while doing ident queries, but
+> just running the while loop a couple of times in parallel
+> doesn't seem to trigger it here.
 
-C.
+  I went for setting up a dummy listener in inetd, using tcpd, and
+setting hosts.allow to specify myuser@ip.  Then a few while loops
+spamming it with connections using nc.
+
+  Anyway, on the old kernel that managed to trigger the BUG twice in
+about 30 minutes.  I'm now on 2.6.22.6 plus your patch and coming up on
+an hour (55+ mins) of the same and no sign of the BUG.
+
+  So that looks like fixed to me.  I'll weigh in again if the daily
+logcheck throws up another.
+
+-Ath
+--=20
+- Athanasius =3D Athanasius(at)miggy.org / http://www.miggy.org/
+                  Finger athan(at)fysh.org for PGP key
+	   "And it's me who is my enemy. Me who beats me up.
+Me who makes the monsters. Me who strips my confidence." Paula Cole - ME
+
+--qMm9M+Fa2AknHoGS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG2aPgIr2uvLNOS8MRAuH9AJ4pHA+ymQNSEvstqK3BG/IDta0LvgCfe58A
+fgipEqGE1kuf9zpQq0qkBz8=
+=7ln7
+-----END PGP SIGNATURE-----
+
+--qMm9M+Fa2AknHoGS--
