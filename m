@@ -1,101 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbXIABwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbXIABxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756933AbXIABwz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbXIABoB
+	id S1757561AbXIABxT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXIABoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:44:01 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46128 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751849AbXIABmZ (ORCPT
+	Fri, 31 Aug 2007 21:44:46 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:51987 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753735AbXIABon (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 21:42:25 -0400
-Message-Id: <20070901014225.281378701@sgi.com>
-References: <20070901014107.719506437@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 31 Aug 2007 18:41:33 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org
-Cc: linux-fsdevel@vger.kernel.org
-Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
-Cc: David Chinner <dgc@sgi.com>
-Subject: [RFC 26/26] SLUB: Add debugging for slab defrag
-Content-Disposition: inline; filename=0026-debug.patch
+	Fri, 31 Aug 2007 21:44:43 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 31 Aug 2007 21:33:32 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Mitchell Erblich <erblichs@earthlink.net>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: maturity and status and attributes, oh my!
+In-Reply-To: <000501c7ec26$c2b06140$6501a8c0@earthlink.net>
+Message-ID: <Pine.LNX.4.64.0708312128060.7060@localhost.localdomain>
+References: <000501c7ec26$c2b06140$6501a8c0@earthlink.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some debugging printks for slab defragmentation
+On Fri, 31 Aug 2007, Mitchell Erblich wrote:
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
----
- mm/slub.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+> "Robert P. J. Day" wrote:
+> >
+> >   at the risk of driving everyone here totally bonkers, i'm going to
+> > take one last shot at explaining what i was thinking of when i first
+> > proposed this whole "maturity level" thing.  and, just so you know,
+> > the major reason i'm so cranked up about this is that i'm feeling just
+> > a little territorial -- i was the one who first started nagging people
+> > to consider this idea, so i'm a little edgy when i see folks finally
+> > giving it some serious thought but appearing to get ready to implement
+> > it entirely incorrectly in a way that's going to ruin it irreparably
+> > and make it utterly useless.
+> >
+> >   this isn't just about defining a single feature called "maturity".
+> > it's about defining a general mechanism so that you can add entirely
+> > new (what i call) "attributes" to kernel features.  one attribute
+> > could be "maturity", which could take one of a number of possible
+> > values.  another could be "status", with the same restrictions.
+> > heck, you could define the attribute "colour", and decide that various
+> > kernel features could be labelled as (at most) one of "red", "green"
+> > and "chartreuse."  that's what i mean by an "attribute", and
+> > attributes would have two critical and non-negotiable properties:
+> <<< snip>>>>
+> >
+> >   but i hope i've flogged this thoroughly to the point where people
+> > can see what i'm driving at.  once you see (as in simon's patch) how
+> > to add the first attribute, it's trivial to simply duplicate that code
+> > to add as many more as you want.
+> >
+> > rday
+> >
+> > --
+> > ========================================================================
+> > Robert P. J. Day
+> > Linux Consulting, Training and Annoying Kernel Pedantry
+> > Waterloo, Ontario, CANADA
+> >
+> > http://crashcourse.ca
+> > ========================================================================
+> Robert Day,
+>
+>         If I can interpret what you are asking about and changing it abit.
+>
+>         Don't you think that Maturity can be defined ALSO, as the
+>        number of known bugs and their priority / serverity against a
+>        architecture dependent or independent item?
+>
+>        Would this suffice and wouldn't it be easier to maintain?
+>
+>        Mitchell Erblich
 
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c	2007-08-28 20:11:34.000000000 -0700
-+++ linux-2.6/mm/slub.c	2007-08-28 20:21:39.000000000 -0700
-@@ -2697,8 +2697,10 @@ int kmem_cache_isolate_slab(struct page 
- 	 * This is necessary to make sure that the page does not vanish
- 	 * from under us before we are able to check the result.
- 	 */
--	if (!get_page_unless_zero(page))
-+	if (!get_page_unless_zero(page)) {
-+		printk(KERN_ERR "isolate %p zero ref\n", page);
- 		return rc;
-+	}
- 
- 	local_irq_save(flags);
- 	slab_lock(page);
-@@ -2712,6 +2714,8 @@ int kmem_cache_isolate_slab(struct page 
- 	if (!PageSlab(page) || SlabFrozen(page) || !page->inuse) {
- 		slab_unlock(page);
- 		put_page(page);
-+		printk(KERN_ERR "isolate faillock %p flags=%lx %s\n",
-+			page, page->flags, PageSlab(page)?page->slab->name:"--");
- 		goto out;
- 	}
- 
-@@ -2739,6 +2743,7 @@ int kmem_cache_isolate_slab(struct page 
- 	SetSlabFrozen(page);
- 	slab_unlock(page);
- 	rc = 0;
-+	printk(KERN_ERR "Isolated %s slab=%p objects=%d\n", s->name, page, page->inuse);
- out:
- 	local_irq_restore(flags);
- 	return rc;
-@@ -2809,6 +2814,8 @@ static int kmem_cache_vacate(struct page
- 	 */
- 	if (page->inuse == objects)
- 		ClearSlabReclaimable(page);
-+	printk(KERN_ERR "Finish vacate %s slab=%p objects=%d->%d\n",
-+		s->name, page, objects, page->inuse);
- out:
- 	leftover = page->inuse;
- 	unfreeze_slab(s, page, tail);
-@@ -2826,6 +2833,7 @@ int kmem_cache_reclaim(struct list_head 
- 	void **scratch;
- 	struct page *page;
- 	struct page *page2;
-+	int pages = 0;
- 
- 	if (list_empty(zaplist))
- 		return 0;
-@@ -2836,10 +2844,13 @@ int kmem_cache_reclaim(struct list_head 
- 
- 	list_for_each_entry_safe(page, page2, zaplist, lru) {
- 		list_del(&page->lru);
-+		pages++;
- 		if (kmem_cache_vacate(page, scratch) == 0)
- 				freed++;
- 	}
- 	kfree(scratch);
-+	printk(KERN_ERR "kmem_cache_reclaim recovered %d of %d slabs.\n",
-+			freed, pages);
- 	return freed;
- }
- 
+perhaps.  all i'm begging for is that these attributes be defined
+cleanly and clearly, and following those two conditions i suggested
+earlier:
+
+1) all attributes are orthogonal to one another, and
+2) values within an attribute are mutually exclusive
+
+if you violate either of those conditions, i think you're going to
+find it very difficult to design sane Kconfig entries around them.
+if you don't believe me, give it a try.
+
+rday
+
+p.s.  rather than saying that maturity can be defined "also" in
+another way, you should say that it can be defined "instead" in
+another way.  i don't want to think what it might mean to define
+something like maturity in two different ways simultaneously, if
+that's what you were suggesting.  that just makes my brain hurt.
 
 -- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
