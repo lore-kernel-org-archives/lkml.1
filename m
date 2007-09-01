@@ -1,76 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbXIAVbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932291AbXIAVd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbXIAVbR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 17:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbXIAVbH
+	id S932291AbXIAVd2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 17:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbXIAVdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 17:31:07 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52744 "EHLO mail.dvmed.net"
+	Sat, 1 Sep 2007 17:33:20 -0400
+Received: from madara.hpl.hp.com ([192.6.19.124]:63599 "EHLO madara.hpl.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753553AbXIAVbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 17:31:06 -0400
-Message-ID: <46D9DA12.6050805@garzik.org>
-Date: Sat, 01 Sep 2007 17:30:58 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Grant Grundler <grundler@parisc-linux.org>,
-       Jason Gaston <jason.d.gaston@intel.com>
-CC: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, khali@linux-fr.org,
-       i2c@lm-sensors.nu
-Subject: Re: [PATCH 2.6.23-rc4] irq: irq and pci_ids patch for Intel Tolapai
-References: <200708301546.56998.jason.d.gaston@intel.com> <20070901211939.GA10442@colo.lackof.org>
-In-Reply-To: <20070901211939.GA10442@colo.lackof.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	id S1756150AbXIAVdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 17:33:20 -0400
+Date: Sat, 1 Sep 2007 14:33:01 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: akpm@linux-foundation.org, Andi Kleen <ak@suse.de>, B.Steinbrink@gmx.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] i386: fix a hang on stuck nmi watchdog
+Message-ID: <20070901213301.GB9778@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070901205417.305538884@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070901205417.305538884@mvista.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Grundler wrote:
-> On Thu, Aug 30, 2007 at 03:46:56PM -0700, Jason Gaston wrote:
->> This updated patch adds the Intel Tolapai LPC and SMBus Controller DID's.
->>
->> Signed-off-by: ?Jason Gaston <jason.d.gaston@intel.com>
->>
->> --- linux-2.6.23-rc4/arch/i386/pci/irq.c.orig	2007-08-27 18:32:35.000000000 
->> -0700
->> +++ linux-2.6.23-rc4/arch/i386/pci/irq.c	2007-08-28 16:58:31.000000000 -0700
->> @@ -550,6 +550,7 @@
->>  		case PCI_DEVICE_ID_INTEL_ICH9_3:
->>  		case PCI_DEVICE_ID_INTEL_ICH9_4:
->>  		case PCI_DEVICE_ID_INTEL_ICH9_5:
->> +		case PCI_DEVICE_ID_INTEL_Tolapai_0:
+Daniel,
+
+Thanks for your help tracking down this bug. Maybe we can close
+the bugzilla report now.
+
+On Sat, Sep 01, 2007 at 01:54:17PM -0700, Daniel Walker wrote:
+> In the case when an nmi gets stucks the endflag stays equal to zero. This
+> causes the busy looping on other cpus to continue, even tho the nmi test
+> is done.
 > 
-> If this is the only place it's used, the prefence is to define the
-> constant locally (in the file) and not in pci_ids.h.
+> On my machine with out the change below the system would hang right after
+> check_nmi_watchdog(). The change below just sets endflag prior to checking
+> if the test was successful or not.
+> 
+> Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> 
+> ---
+>  arch/i386/kernel/nmi.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.22/arch/i386/kernel/nmi.c
+> ===================================================================
+> --- linux-2.6.22.orig/arch/i386/kernel/nmi.c
+> +++ linux-2.6.22/arch/i386/kernel/nmi.c
+> @@ -115,12 +115,12 @@ static int __init check_nmi_watchdog(voi
+>  			atomic_dec(&nmi_active);
+>  		}
+>  	}
+> +	endflag = 1;
+>  	if (!atomic_read(&nmi_active)) {
+>  		kfree(prev_nmi_count);
+>  		atomic_set(&nmi_active, -1);
+>  		return -1;
+>  	}
+> -	endflag = 1;
+>  	printk("OK.\n");
+>  
+>  	/* now that we know it works we can reduce NMI frequency to
+> -- 
+> 
+> -- 
 
-Kinda sorta:  if you must define a constant, it should go into 
-linux/pci_ids.h.  Otherwise someone will come along later, do the same 
-locally in another file, then you have two independent symbols with the 
-same meaning.
+-- 
 
-Ideally, in pci_device_id tables and such, you can just use the hex 
-number, since they are all arbitrary and lack meaning anyway.
-
-
-> Please do submit new PCI device IDs to pciids.sf.net project.
-
-Yep.
-
-
->>  #define PCI_DEVICE_ID_INTEL_MCH_PC	0x3599
->>  #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
->>  #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
->> +#define PCI_DEVICE_ID_INTEL_Tolapai_0	0x5031
->> +#define PCI_DEVICE_ID_INTEL_Tolapai_1	0x5032
-
-And change the StudlyCaps to ALLCAPS.
-
-	Jeff
-
-
-
+-Stephane
