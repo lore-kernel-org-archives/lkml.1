@@ -1,53 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbXIAMz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbXIANJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800AbXIAMz3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 08:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbXIAMzU
+	id S1754059AbXIANJq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 09:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbXIANJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 08:55:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34279 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750965AbXIAMzT (ORCPT
+	Sat, 1 Sep 2007 09:09:36 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:39024 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751419AbXIANJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 08:55:19 -0400
-Date: Sat, 1 Sep 2007 13:55:39 +0100
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH] skge: unbalanced parenthesis fix
-Message-ID: <20070901135539.40557930@oldman>
-In-Reply-To: <200709010810.12798.m.kozlowski@tuxland.pl>
-References: <200709010810.12798.m.kozlowski@tuxland.pl>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 1 Sep 2007 09:09:35 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sat, 1 Sep 2007 08:56:30 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Randy Dunlap <rdunlap@xenotime.net>, Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Adrian Bunk <bunk@stusta.de>, Jeff Garzik <jeff@garzik.org>,
+       Gabriel C <crazy@pimpmylinux.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
+In-Reply-To: <20070901124901.GA2935@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0709010853040.6031@localhost.localdomain>
+References: <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
+ <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
+ <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
+ <20070719083109.13b2ab56.rdunlap@xenotime.net>
+ <Pine.LNX.4.64.0707191213130.8844@localhost.localdomain>
+ <469FE045.3070403@simon.arlott.org.uk> <20070831102527.09fb42c0.rdunlap@xenotime.net>
+ <Pine.LNX.4.64.0709010641540.31472@localhost.localdomain>
+ <20070901124901.GA2935@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	TW_VN 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Sep 2007 08:10:12 +0200
-Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+On Sat, 1 Sep 2007, Sam Ravnborg wrote:
 
-> Hello,
-> 
-> 	This patch fixes unbalanced parenthesis.
-> 
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> 
->  drivers/net/skge.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-2.6.23-rc4-mm1-a/drivers/net/skge.h	2007-09-01 07:23:52.000000000 +0200
-> +++ linux-2.6.23-rc4-mm1-b/drivers/net/skge.h	2007-09-01 07:37:55.000000000 +0200
-> @@ -1351,7 +1351,7 @@ enum {
->  	PHY_M_PC_EN_DET_PLUS	= 3<<8, /* Energy Detect Plus (Mode 2) */
->  };
-> 
-> -#define PHY_M_PC_MDI_XMODE(x)	((((u16)(x)<<5) & PHY_M_PC_MDIX_MSK)
-> +#define PHY_M_PC_MDI_XMODE(x)	(((u16)(x)<<5) & PHY_M_PC_MDIX_MSK)
-> 
->  enum {
->  	PHY_M_PC_MAN_MDI	= 0, /* 00 = Manual MDI configuration */
+> On Sat, Sep 01, 2007 at 06:44:06AM -0400, Robert P. J. Day wrote:
+> >
+> > > >  	while (1) {
+> > > >  		printf("%*s%s ", indent - 1, "", menu->prompt->text);
+> > > > +		switch (sym->maturity) {
+> > > > +		case M_EXPERIMENTAL:
+> > > > +			printf("(EXPERIMENTAL) ");
+> > > > +			break;
+> > > > +		case M_DEPRECATED:
+> > > > +			printf("(DEPRECATED) ");
+> > > > +			break;
+> > > > +		case M_OBSOLETE:
+> > > > +			printf("(OBSOLETE) ");
+> > > > +			break;
+> > > > +		case M_BROKEN:
+> > > > +			printf("(BROKEN) ");
+> > > > +			break;
+> > > > +		default:
+> > > > +			break;
+> > > > +		}
+> > > >  		if (sym->name)
+> > > >  			printf("(%s) ", sym->name);
+> > > >  		type = sym_get_type(sym);
+> >
+> > for now, simon, why not just reduce this to supporting only DEPRECATED
+> > and OBSOLETE so that it can be at least tested as "proof of concept?"
+>
+> The principle with letting a dependency add text to the promts are good.
+> But the implementation done by Simon with a language extension is not good.
+> A simple and better approach would be to use the newly added option
+> support for this and let the backend generate the promtps.
+>
+> I have not yet tried to cook up a patch for it, but it should be
+> quite generaic and doable.
+>
+> config EXPERIMENTAL
+> 	option appendprompt=" (EXPERIMENTAL)
+>
+> config DEPRECATED
+> 	option appendprompt=" (DEPRECATED)
 
-Since the macro is unused, I would rather just drop it.
+
+but this is deviating from the basic principle that these things are
+not regular Kconfig "config" settings -- they are a new beast
+entirely, and need a new infrastructure to support them.
+
+put another way, they are not a normal kernel feature to be selected
+or deselected.  they are, rather, *attributes* that can be *applied*
+to kernel features, in the same way as is done with "bool" or
+"string".  making these things regular config directives defeats the
+whole purpose.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
