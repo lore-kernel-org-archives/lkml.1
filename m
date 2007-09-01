@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbXIAKiC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbXIAKnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbXIAKiC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 06:38:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXIAKhy
+	id S1754536AbXIAKnk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 06:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbXIAKnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 06:37:54 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:17286 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752787AbXIAKhx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 06:37:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=KgqmmmxpG1/0wTajep2xKNTFDbjIvTkRP1HnqMlbm7hR5HvlUIKIccIoEeA4UlqKblD7yj1GgsffKye7o5MNWPYUk/W42zLXsSTR6YDGQuw2cbd8wxALE40YBHTSvHBJLx0MAXLfiF1iSHbPBA6CnoVNxfnqyt1Qlp1vi2y3KGs=
-Date: Sat, 1 Sep 2007 14:37:46 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Grant Wilson <grant.wilson@zen.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.23-rc5 - oops
-Message-ID: <20070901103746.GB7425@cvg>
-References: <alpine.LFD.0.999.0708312343440.27951@evo.linux-foundation.org> <20070901101110.038835c2@worthy.swandive.local> <20070901102050.GA7425@cvg> <46D93FBB.10601@garzik.org>
+	Sat, 1 Sep 2007 06:43:33 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46608 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752057AbXIAKnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 06:43:32 -0400
+Message-ID: <46D94252.3000505@garzik.org>
+Date: Sat, 01 Sep 2007 06:43:30 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46D93FBB.10601@garzik.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: maturity and status and attributes, oh my!
+References: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain> <46D89800.8080701@s5r6.in-berlin.de> <Pine.LNX.4.64.0708312109580.7060@localhost.localdomain> <46D92D8E.9020508@s5r6.in-berlin.de>
+In-Reply-To: <46D92D8E.9020508@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jeff Garzik - Sat, Sep 01, 2007 at 06:32:27AM -0400]
-> Cyrill Gorcunov wrote:
->> test this, does it help?
->> 		Cyrill
->> ---
->> diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
->> index e40c94f..8031697 100644
->> --- a/drivers/ata/ata_piix.c
->> +++ b/drivers/ata/ata_piix.c
->> @@ -1187,6 +1187,7 @@ static void piix_iocfg_bit18_quirk(struct pci_dev 
->> *pdev)
->>  				DMI_MATCH(DMI_PRODUCT_NAME, "M570U"),
->>  			},
->>  		},
->> +		{}
->>  	};
->
->
-> heh, you beat me to it.  That should indeed fix it.
->
-> 	Jeff
->
->
+Stefan Richter wrote:
+> But I can state requirements for the 'experimental' marker, from the POV
+> of a volunteer driver support guy:
+>   - Show it in big letters in the Kconfig prompt of an experimental
+>     feature.
+>   - Explain at appropriate place(s) what the particular caveats of the
+>     feature are.
+> That's it.  I am not aware of a need to evaluate this marker in routines
+> which calculate the .config, unlike the 'broken' marker.
 
-Don't swear on me it was not intended ;)
+Correct.
 
-So Jeff, make the real patch then (and btw I think
-using braces with a space between does look more
-elegant ;)
 
-		Cyrill
+> BTW, the requirements of communication in feature removal processes are
+> similar to a degree.  But feature removal involves more active two-way
+> communication and is tied to a schedule.
+
+'deprecated' and 'obsolete' are very different beasts from the other 
+statuses.  They are largely just a marker of opinion of the developer, 
+and are largely treated as synonyms.
+
+Code that was never marked deprecated nor obsolete often appears in 
+Documentation/feature-removal-schedule.txt, and eventually gets removed.
+
+Feature deprecation and removal is a very amorphous concept that does 
+not fit well at all into Kconfig markers, unlike experimental/broken.
+
+	Jeff
+
 
