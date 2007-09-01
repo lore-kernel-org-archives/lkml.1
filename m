@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbXIABsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbXIABss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbXIABsb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbXIABnb
+	id S1755792AbXIABss (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbXIABnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:43:31 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46122 "EHLO
+	Fri, 31 Aug 2007 21:43:33 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51615 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751701AbXIABmY (ORCPT
+	with ESMTP id S1751083AbXIABmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 21:42:24 -0400
-Message-Id: <20070901014222.762921292@sgi.com>
+	Fri, 31 Aug 2007 21:42:23 -0400
+Message-Id: <20070901014222.303468369@sgi.com>
 References: <20070901014107.719506437@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 31 Aug 2007 18:41:22 -0700
+Date: Fri, 31 Aug 2007 18:41:20 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Andy Whitcroft <apw@shadowen.org>
 Cc: linux-kernel@vger.kernel.org
@@ -21,64 +21,139 @@ Cc: linux-mm@kvack.org
 Cc: linux-fsdevel@vger.kernel.org
 Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: David Chinner <dgc@sgi.com>
-Subject: [RFC 15/26] bufferhead: Revert constructor removal
-Content-Disposition: inline; filename=0015-slab_defrag_buffer_head_revert.patch
+Subject: [RFC 13/26] SLUB: Add SlabReclaimable() to avoid repeated reclaim attempts
+Content-Disposition: inline; filename=0013-slab_defrag_reclaim_flag.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The constructor for buffer_head slabs was removed recently. We need
-the constructor in order to insure that slab objects always have a definite
-state even before we allocated them.
+Add a flag SlabReclaimable() that is set on slabs with a method
+that allows defrag/reclaim. Clear the flag if a reclaim action is not
+successful in reducing the number of objects in a slab. The reclaim
+flag is set again if all objects have been allocated from it.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
 ---
- fs/buffer.c |   19 +++++++++++++++----
- 1 files changed, 15 insertions(+), 4 deletions(-)
+ mm/slub.c |   42 ++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 36 insertions(+), 6 deletions(-)
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 0e5ec37..f4824d1 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -2960,9 +2960,8 @@ static void recalc_bh_state(void)
- 	
- struct buffer_head *alloc_buffer_head(gfp_t gfp_flags)
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-08-28 20:10:37.000000000 -0700
++++ linux-2.6/mm/slub.c	2007-08-28 20:10:47.000000000 -0700
+@@ -107,6 +107,8 @@
+ #define SLABDEBUG 0
+ #endif
+ 
++#define SLABRECLAIMABLE (1 << PG_dirty)
++
+ static inline int SlabFrozen(struct page *page)
  {
--	struct buffer_head *ret = kmem_cache_zalloc(bh_cachep, gfp_flags);
-+	struct buffer_head *ret = kmem_cache_alloc(bh_cachep, gfp_flags);
- 	if (ret) {
--		INIT_LIST_HEAD(&ret->b_assoc_buffers);
- 		get_cpu_var(bh_accounting).nr++;
- 		recalc_bh_state();
- 		put_cpu_var(bh_accounting);
-@@ -3003,12 +3002,24 @@ static int buffer_cpu_notify(struct notifier_block *self,
- 	return NOTIFY_OK;
+ 	return page->flags & FROZEN;
+@@ -137,6 +139,21 @@ static inline void ClearSlabDebug(struct
+ 	page->flags &= ~SLABDEBUG;
  }
  
-+static void
-+init_buffer_head(void *data, struct kmem_cache *cachep, unsigned long flags)
++static inline int SlabReclaimable(struct page *page)
 +{
-+	struct buffer_head * bh = (struct buffer_head *)data;
-+
-+	memset(bh, 0, sizeof(*bh));
-+	INIT_LIST_HEAD(&bh->b_assoc_buffers);
++	return page->flags & SLABRECLAIMABLE;
 +}
 +
- void __init buffer_init(void)
- {
- 	int nrpages;
++static inline void SetSlabReclaimable(struct page *page)
++{
++	page->flags |= SLABRECLAIMABLE;
++}
++
++static inline void ClearSlabReclaimable(struct page *page)
++{
++	page->flags &= ~SLABRECLAIMABLE;
++}
++
+ /*
+  * Issues still to be resolved:
+  *
+@@ -1099,6 +1116,8 @@ static struct page *new_slab(struct kmem
+ 	if (s->flags & (SLAB_DEBUG_FREE | SLAB_RED_ZONE | SLAB_POISON |
+ 			SLAB_STORE_USER | SLAB_TRACE))
+ 		SetSlabDebug(page);
++	if (s->kick)
++		SetSlabReclaimable(page);
  
--	bh_cachep = KMEM_CACHE(buffer_head,
--			SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD);
-+	bh_cachep = kmem_cache_create("buffer_head",
-+			sizeof(struct buffer_head), 0,
-+				(SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
-+				SLAB_MEM_SPREAD),
-+				init_buffer_head);
+  out:
+ 	if (flags & __GFP_WAIT)
+@@ -1155,6 +1174,7 @@ static void discard_slab(struct kmem_cac
+ 	atomic_long_dec(&n->nr_slabs);
+ 	reset_page_mapcount(page);
+ 	__ClearPageSlab(page);
++	ClearSlabReclaimable(page);
+ 	free_slab(s, page);
+ }
+ 
+@@ -1328,8 +1348,12 @@ static void unfreeze_slab(struct kmem_ca
+ 
+ 		if (page->freelist)
+ 			add_partial(n, page, tail);
+-		else if (SlabDebug(page) && (s->flags & SLAB_STORE_USER))
+-			add_full(n, page);
++		else {
++			if (SlabDebug(page) && (s->flags & SLAB_STORE_USER))
++				add_full(n, page);
++			if (s->kick && !SlabReclaimable(page))
++				SetSlabReclaimable(page);
++		}
+ 		slab_unlock(page);
+ 
+ 	} else {
+@@ -2659,7 +2683,7 @@ int kmem_cache_isolate_slab(struct page 
+ 	struct kmem_cache *s;
+ 	int rc = -ENOENT;
+ 
+-	if (!PageSlab(page) || SlabFrozen(page))
++	if (!PageSlab(page) || SlabFrozen(page) || !SlabReclaimable(page))
+ 		return rc;
  
  	/*
- 	 * Limit the bh occupancy to 10% of ZONE_NORMAL
--- 
-1.5.2.4
+@@ -2729,7 +2753,7 @@ static int kmem_cache_vacate(struct page
+ 	struct kmem_cache *s;
+ 	unsigned long *map;
+ 	int leftover;
+-	int objects;
++	int objects = -1;
+ 	void *private;
+ 	unsigned long flags;
+ 	int tail = 1;
+@@ -2739,7 +2763,7 @@ static int kmem_cache_vacate(struct page
+ 	slab_lock(page);
+ 
+ 	s = page->slab;
+-	map = scratch + s->objects * sizeof(void **);
++	map = scratch + max_defrag_slab_objects * sizeof(void **);
+ 	if (!page->inuse || !s->kick)
+ 		goto out;
+ 
+@@ -2773,10 +2797,13 @@ static int kmem_cache_vacate(struct page
+ 	local_irq_save(flags);
+ 	slab_lock(page);
+ 	tail = 0;
+-out:
++
+ 	/*
+ 	 * Check the result and unfreeze the slab
+ 	 */
++	if (page->inuse == objects)
++		ClearSlabReclaimable(page);
++out:
+ 	leftover = page->inuse;
+ 	unfreeze_slab(s, page, tail);
+ 	local_irq_restore(flags);
+@@ -2831,6 +2858,9 @@ static unsigned long __kmem_cache_shrink
+ 		if (inuse > s->objects / 4)
+ 			continue;
+ 
++		if (s->kick && !SlabReclaimable(page))
++			continue;
++
+ 		if (!slab_trylock(page))
+ 			continue;
+ 
 
 -- 
