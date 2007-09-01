@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbXIABtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbXIABuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753360AbXIABtx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:49:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXIABnl
+	id S1756165AbXIABuR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbXIABno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:43:41 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46122 "EHLO
+	Fri, 31 Aug 2007 21:43:44 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51615 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751813AbXIABmZ (ORCPT
+	with ESMTP id S1751818AbXIABmZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 31 Aug 2007 21:42:25 -0400
-Message-Id: <20070901014224.596352219@sgi.com>
+Message-Id: <20070901014224.822197100@sgi.com>
 References: <20070901014107.719506437@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 31 Aug 2007 18:41:30 -0700
+Date: Fri, 31 Aug 2007 18:41:31 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Andy Whitcroft <apw@shadowen.org>
 Cc: linux-kernel@vger.kernel.org
@@ -21,120 +21,81 @@ Cc: linux-mm@kvack.org
 Cc: linux-fsdevel@vger.kernel.org
 Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: David Chinner <dgc@sgi.com>
-Subject: [RFC 23/26] dentries: Extract common code to remove dentry from lru
-Content-Disposition: inline; filename=0023-slab_defrag_dentry_remove_lru.patch
+Subject: [RFC 24/26] dentries: Add constructor
+Content-Disposition: inline; filename=0024-slab_defrag_dentry_state.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Extract the common code to remove a dentry from the lru into a new function
-dentry_lru_remove().
+In order to support defragmentation on the dentry cache we need to have
+an determined object state at all times. Without a destructor the object
+would have a random state after allocation.
 
-Two call sites used list_del() instead of list_del_init(). AFAIK the
-performance of both is the same. dentry_lru_remove() does a list_del_init().
-
-As a result dentry->d_lru is now always empty when a dentry is freed.
-A consistent state is useful to establish dentry state from slab defrag.
+So provide a constructor.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- fs/dcache.c |   42 ++++++++++++++----------------------------
- 1 files changed, 14 insertions(+), 28 deletions(-)
+ fs/dcache.c |   26 ++++++++++++++------------
+ 1 files changed, 14 insertions(+), 12 deletions(-)
 
 diff --git a/fs/dcache.c b/fs/dcache.c
-index 678d39d..71e4877 100644
+index 71e4877..282a467 100644
 --- a/fs/dcache.c
 +++ b/fs/dcache.c
-@@ -95,6 +95,14 @@ static void d_free(struct dentry *dentry)
- 		call_rcu(&dentry->d_u.d_rcu, d_callback);
- }
+@@ -874,6 +874,16 @@ static struct shrinker dcache_shrinker = {
+ 	.seeks = DEFAULT_SEEKS,
+ };
  
-+static void dentry_lru_remove(struct dentry *dentry)
++void dcache_ctor(void *p, struct kmem_cache *s, unsigned long flags)
 +{
-+	if (!list_empty(&dentry->d_lru)) {
-+		list_del_init(&dentry->d_lru);
-+		dentry_stat.nr_unused--;
-+	}
++	struct dentry *dentry = p;
++
++	spin_lock_init(&dentry->d_lock);
++	dentry->d_inode = NULL;
++	INIT_LIST_HEAD(&dentry->d_lru);
++	INIT_LIST_HEAD(&dentry->d_alias);
 +}
 +
- /*
-  * Release the dentry's inode, using the filesystem
-  * d_iput() operation if defined.
-@@ -211,13 +219,7 @@ repeat:
- unhash_it:
- 	__d_drop(dentry);
- kill_it:
--	/* If dentry was on d_lru list
--	 * delete it from there
--	 */
--	if (!list_empty(&dentry->d_lru)) {
--		list_del(&dentry->d_lru);
--		dentry_stat.nr_unused--;
--	}
-+	dentry_lru_remove(dentry);
- 	dentry = d_kill(dentry);
- 	if (dentry)
- 		goto repeat;
-@@ -285,10 +287,7 @@ int d_invalidate(struct dentry * dentry)
- static inline struct dentry * __dget_locked(struct dentry *dentry)
+ /**
+  * d_alloc	-	allocate a dcache entry
+  * @parent: parent of entry to allocate
+@@ -911,8 +921,6 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
+ 
+ 	atomic_set(&dentry->d_count, 1);
+ 	dentry->d_flags = DCACHE_UNHASHED;
+-	spin_lock_init(&dentry->d_lock);
+-	dentry->d_inode = NULL;
+ 	dentry->d_parent = NULL;
+ 	dentry->d_sb = NULL;
+ 	dentry->d_op = NULL;
+@@ -922,9 +930,7 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
+ 	dentry->d_cookie = NULL;
+ #endif
+ 	INIT_HLIST_NODE(&dentry->d_hash);
+-	INIT_LIST_HEAD(&dentry->d_lru);
+ 	INIT_LIST_HEAD(&dentry->d_subdirs);
+-	INIT_LIST_HEAD(&dentry->d_alias);
+ 
+ 	if (parent) {
+ 		dentry->d_parent = dget(parent);
+@@ -2098,14 +2104,10 @@ static void __init dcache_init(unsigned long mempages)
  {
- 	atomic_inc(&dentry->d_count);
--	if (!list_empty(&dentry->d_lru)) {
--		dentry_stat.nr_unused--;
--		list_del_init(&dentry->d_lru);
--	}
-+	dentry_lru_remove(dentry);
- 	return dentry;
- }
+ 	int loop;
  
-@@ -407,10 +406,7 @@ static void prune_one_dentry(struct dentry * dentry, int prune_parents)
+-	/* 
+-	 * A constructor could be added for stable state like the lists,
+-	 * but it is probably not worth it because of the cache nature
+-	 * of the dcache. 
+-	 */
+-	dentry_cache = KMEM_CACHE(dentry,
+-		SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD);
+-	
++	dentry_cache = kmem_cache_create("dentry_cache", sizeof(struct dentry),
++		0, SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD,
++		dcache_ctor);
++
+ 	register_shrinker(&dcache_shrinker);
  
- 		if (dentry->d_op && dentry->d_op->d_delete)
- 			dentry->d_op->d_delete(dentry);
--		if (!list_empty(&dentry->d_lru)) {
--			list_del(&dentry->d_lru);
--			dentry_stat.nr_unused--;
--		}
-+		dentry_lru_remove(dentry);
- 		__d_drop(dentry);
- 		dentry = d_kill(dentry);
- 		spin_lock(&dcache_lock);
-@@ -600,10 +596,7 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
- 
- 	/* detach this root from the system */
- 	spin_lock(&dcache_lock);
--	if (!list_empty(&dentry->d_lru)) {
--		dentry_stat.nr_unused--;
--		list_del_init(&dentry->d_lru);
--	}
-+	dentry_lru_remove(dentry);
- 	__d_drop(dentry);
- 	spin_unlock(&dcache_lock);
- 
-@@ -617,11 +610,7 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
- 			spin_lock(&dcache_lock);
- 			list_for_each_entry(loop, &dentry->d_subdirs,
- 					    d_u.d_child) {
--				if (!list_empty(&loop->d_lru)) {
--					dentry_stat.nr_unused--;
--					list_del_init(&loop->d_lru);
--				}
--
-+				dentry_lru_remove(dentry);
- 				__d_drop(loop);
- 				cond_resched_lock(&dcache_lock);
- 			}
-@@ -803,10 +792,7 @@ resume:
- 		struct dentry *dentry = list_entry(tmp, struct dentry, d_u.d_child);
- 		next = tmp->next;
- 
--		if (!list_empty(&dentry->d_lru)) {
--			dentry_stat.nr_unused--;
--			list_del_init(&dentry->d_lru);
--		}
-+		dentry_lru_remove(dentry);
- 		/* 
- 		 * move only zero ref count dentries to the end 
- 		 * of the unused list for prune_dcache
+ 	/* Hash may have been set up in dcache_init_early */
 -- 
 1.5.2.4
 
