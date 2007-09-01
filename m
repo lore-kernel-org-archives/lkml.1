@@ -1,64 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbXIAHMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbXIAHNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbXIAHMj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 03:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbXIAHMb
+	id S1754403AbXIAHNa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 03:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbXIAHNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 03:12:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34961 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752532AbXIAHMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 03:12:30 -0400
+	Sat, 1 Sep 2007 03:13:23 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:59263 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbXIAHNW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 03:13:22 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sat, 1 Sep 2007 03:02:08 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Mitchell Erblich <erblichs@earthlink.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: maturity and status and attributes, oh my!
+In-Reply-To: <Pine.LNX.4.64.0709010835380.11617@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0709010248140.21492@localhost.localdomain>
+References: <000501c7ec26$c2b06140$6501a8c0@earthlink.net>
+ <Pine.LNX.4.64.0708312128060.7060@localhost.localdomain>
+ <Pine.LNX.4.64.0709010835380.11617@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: SIGNAL_STOP_DEQUEUED
-In-Reply-To: Oleg Nesterov's message of  Tuesday, 28 August 2007 13:13:18 +0400 <20070828091318.GA307@tv-sign.ru>
-X-Windows: it could be worse, but it'll take time.
-Message-Id: <20070901071226.6C42E4D04CC@magilla.localdomain>
-Date: Sat,  1 Sep 2007 00:12:26 -0700 (PDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes. do_wait(WCONTINUED) can miss SIGNAL_STOP_CONTINUED task if the task
-> dequeues another sig_kernel_stop() signal. I thought this is harmless, but
-> it turns out I misunderstood the needed semantics.
-> 
-> Thanks for your explanation.
-> 
-> This is easy to fix, but we have to split SIGNAL_STOP_CONTINUED into 2 flags,
-> one for do_wait(), another to indicate that do_signal_stop() should abort.
+On Sat, 1 Sep 2007, Jan Engelhardt wrote:
 
-SIGNAL_STOP_DEQUEUED is that second flag (its lack says to abort the stop).
+>
+> On Aug 31 2007 21:33, Robert P. J. Day wrote:
+> >
+> >perhaps.  all i'm begging for is that these attributes be defined
+> >cleanly and clearly, and following those two conditions i suggested
+> >earlier:
+> >
+> >1) all attributes are orthogonal to one another, and
+>
+> This "orthogonal" argument is reserved for the cdrecord maintainer;
+>
+> I cannot figure out what you mean by orthogonal. If A is orthogonal
+> to B and B is orthogonal to C, then A is parallel to C. If there are
+> more objects than dimensions, at least one pair of them is not
+> orthogonal. That is what orthogonal means to me ;-)
 
-> However, is it all correct currently ? Consider 2 threads, T1 and T2,
-> SIGTTIN is SIG_DFL, SIGTTOU has a handler.
-> 
-> 	T1 does get_signal_to_deliver(), dequeus SIGTTIN, unlocks ->siglock.
-> 
-> 	SIGCONT comes in, nothing to do yet, just clear SIGNAL_STOP_DEQUEUED.
-> 
-> 	SIGTTOU is sent, T2 dequeues it and sets SIGNAL_STOP_DEQUEUED again.
-> 	It has a handler, we shouldn't stop, but
-> 
-> 	T1 continues, takes ->siglock, and calls do_signal_stop().
+  you're being too literal in a purely mathematical sense.
+"orthogonality" has a much more general definition in the context of
+computer science -- see here:
 
-Yes, I think you are right that this could happen.  It is indeed wrong that
-it's possible to stop with SIGTTIN when the SIGCONT was posted second.
+http://dict.die.net/orthogonal/
 
-> What do you think about something like the patch below? It moves the setting of
-> SIGNAL_STOP_DEQUEUED from dequeue_signal() to get_signal_to_deliver(), and the
-> flag is set only if the sig_kernel_stop() signal doesn't have a handler.
+"The term is used loosely to mean mutually independent or well
+separated.  It is used to describe sets of primitives or capabilities
+that, like linearly independent vectors in geometry, span the entire
+"capability space" and are in some sense non-overlapping or mutually
+independent."
 
-I don't recall why this went into dequeue_signal in the first place.  It's
-possible there was a specific reason at the time, but I can't find one now.
-Probably it just seemed natural at the time to set the flag very close the
-actual dequeuing just so it's simple to be sure what the invariant is.
+and here:
 
+"Computer science
 
-Thanks,
-Roland
+"Orthogonality is a system design property facilitating feasibility
+and compactness of complex designs. Orthogonality guarantees that
+modifying the technical effect produced by a component of a system
+neither creates nor propagates side effects to other components of the
+system."
+
+  in the case of Kconfig "attributes", a set of orthogonal attributes
+might be a variable's maturity, its colour and its flavour (i'm just
+making those last two up, of course).  and each of those clearly
+orthogonal attributes is allowed to have at most one value, and that
+value is entirely independent of what the value is of any of the
+*other* attributes for that kernel feature.
+
+  i'm harping on this because it seems to me that lumping together
+values such as experimental, deprecated, obsolete and broken in a
+single attribute is creating a dangerously ill-defined attribute
+that's trying to do two things at once -- identify both a variable's
+"age", if you will, and its current code quality.  and i'm simply
+arguing that those are two different things and, if you do that, it
+would prevent you from saying that some kernel feature is both
+experimental *and* broken.
+
+  note:  the above is assuming that an attribute is *defined* as being
+allowed to have at most one possible value at a time, as in deprecated
+*or* obsolete, and never deprecated *and* obsolete.  if you go down
+that second road, very bad things await you.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
