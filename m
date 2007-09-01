@@ -1,121 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757576AbXIATwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbXIAUTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757576AbXIATwT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 15:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbXIATwJ
+	id S1756560AbXIAUTq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 16:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbXIAUTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 15:52:09 -0400
-Received: from madara.hpl.hp.com ([192.6.19.124]:59865 "EHLO madara.hpl.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753042AbXIATwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 15:52:08 -0400
-Date: Sat, 1 Sep 2007 12:51:42 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Daniel Walker <dwalker@mvista.com>,
-       =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: nmi_watchdog=2 regression in 2.6.21
-Message-ID: <20070901195142.GA9778@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-References: <20070828194636.GB2814@frankl.hpl.hp.com> <20070901010053.GA29765@atjola.homenet> <1188610568.9476.7.camel@dhcp193.mvista.com> <200709011219.49256.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709011219.49256.ak@suse.de>
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+	Sat, 1 Sep 2007 16:19:37 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:18753 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753777AbXIAUTV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 16:19:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=T7E+EhO+Mfg/1RKNObdidcmF5epYaO6KBhcz7LbCN+6MKRVhFA/5gdsqc41EVhe8+WsXzERvKIuopFoRVLDiQ7USkTffm+Xis4Pa6EZKShKSDqAPqQyujmQf6E4TO4PeeFRkAx1PYyt0DfnmNg1zPDXdXfebPJPpA52O28ibqeM=
+Message-ID: <46D9C935.3000701@gmail.com>
+Date: Sat, 01 Sep 2007 22:19:01 +0200
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386 and x86_64: randomize brk()
+References: <Pine.LNX.4.64.0708301545100.4135@jikos.suse.cz>	<8bd0f97a0708300701r1f36bc0anc45b9cad4a11f2ef@mail.gmail.com>	<Pine.LNX.4.64.0708301620010.4135@jikos.suse.cz>	<8bd0f97a0708300726h563808a6j2b2ef9adf805c109@mail.gmail.com>	<Pine.LNX.4.64.0708301708590.4135@jikos.suse.cz> <20070830180538.b52b802d.akpm@linux-foundation.org>
+In-Reply-To: <20070830180538.b52b802d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hello Andrew,
 
-Here is a patch to fix the NMI watchdog problem on CoreDuo processor.
-I think we still need Daniel's patch to make the error path (when you
-are stuck) do the right cleanup.
+Andrew Morton wrote:
+> On Thu, 30 Aug 2007 17:10:03 +0200 (CEST) Jiri Kosina <jkosina@suse.cz> wrote:
+>> Andrew, do you still strongly oppose to having ARCH_HAS_RANDOMIZE_BRK 
+>> macro instead please?
+>>
+> 
+> Not strongly, but the general opinion seems to be that ARCH_HAS_FOO is
+> sucky.  It should at least be done in Kconfig rather than in .h, but even
+> better is just to implement the thing for all architectures.
+> 
 
+Sorry for asking again but the initial poster haven't taken time to
+answer to my feedbacks...
 
-Changelog:
-	- fix the NMI watchdog on Intel CoreDuo processor whereby the
-	  kernel would get stuck during boot. The issue is related to
-	  errata AE49, where the PERFEVTSEL1 counter does not have a
-	  working enable bit. Thus it is not possible to use it for NMI.
-	  The patch creates a dedicated wd_ops for CoreDuo which falls
-	  back to using PERFEVTSEL0. The other Intel processors supporting
-	  the architectural PMU will keep on using PERFEVTSEL1 as this
-	  allows other subsystems, such as perfmon, to use PERFEVTSEL0 for
-	  PEBS monitoring in particular.
-	  Bug initially reported by Daniel Walker.
+What about using a weak function in that case ? It actually gives a
+default implementation in _one_ place and can be changed easily from
+a nop to something more complex later.
 
-Signed-off-by: Stephane Eranian <eranian@hpl.hp.com>
+Another point is that the current prototype of arch_randomize_brk()
+could be slightly improved IMHO.
 
+The proposed prototype is:
 
-diff --git a/arch/i386/kernel/cpu/perfctr-watchdog.c b/arch/i386/kernel/cpu/perfctr-watchdog.c
-index 9b5d6af..f9066e1 100644
---- a/arch/i386/kernel/cpu/perfctr-watchdog.c
-+++ b/arch/i386/kernel/cpu/perfctr-watchdog.c
-@@ -271,8 +271,8 @@ static int setup_k7_watchdog(unsigned nmi_hz)
- 	unsigned int evntsel;
- 	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
- 
--	perfctr_msr = MSR_K7_PERFCTR0;
--	evntsel_msr = MSR_K7_EVNTSEL0;
-+	perfctr_msr = wd_ops->perfctr;
-+	evntsel_msr = wd_ops->evntsel;
- 
- 	wrmsrl(perfctr_msr, 0UL);
- 
-@@ -351,8 +351,8 @@ static int setup_p6_watchdog(unsigned nmi_hz)
- 	unsigned int evntsel;
- 	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
- 
--	perfctr_msr = MSR_P6_PERFCTR0;
--	evntsel_msr = MSR_P6_EVNTSEL0;
-+	perfctr_msr = wd_ops->perfctr;
-+	evntsel_msr = wd_ops->evntsel;
- 
- 	/* KVM doesn't implement this MSR */
- 	if (wrmsr_safe(perfctr_msr, 0, 0) < 0)
-@@ -577,8 +577,8 @@ static int setup_intel_arch_watchdog(unsigned nmi_hz)
- 	    (ebx & ARCH_PERFMON_UNHALTED_CORE_CYCLES_PRESENT))
- 		return 0;
- 
--	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR1;
--	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL1;
-+	perfctr_msr = wd_ops->perfctr;
-+	evntsel_msr = wd_ops->evntsel;
- 
- 	wrmsrl(perfctr_msr, 0UL);
- 
-@@ -613,6 +613,16 @@ static struct wd_ops intel_arch_wd_ops = {
- 	.evntsel = MSR_ARCH_PERFMON_EVENTSEL1,
- };
- 
-+static struct wd_ops coreduo_wd_ops = {
-+	.reserve = single_msr_reserve,
-+	.unreserve = single_msr_unreserve,
-+	.setup = setup_intel_arch_watchdog,
-+	.rearm = p6_rearm,
-+	.stop = single_msr_stop_watchdog,
-+	.perfctr = MSR_ARCH_PERFMON_PERFCTR0,
-+	.evntsel = MSR_ARCH_PERFMON_EVENTSEL0,
-+};
-+
- static void probe_nmi_watchdog(void)
- {
- 	switch (boot_cpu_data.x86_vendor) {
-@@ -623,6 +633,10 @@ static void probe_nmi_watchdog(void)
- 		wd_ops = &k7_wd_ops;
- 		break;
- 	case X86_VENDOR_INTEL:
-+		if (boot_cpu_data.x86 == 6 && boot_cpu_data.x86_model == 14) {
-+			wd_ops = &coreduo_wd_ops;
-+			break;
-+		}
- 		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)) {
- 			wd_ops = &intel_arch_wd_ops;
- 			break;
+		    void arch_randomize_brk(void)
+
+and I think it could be:
+
+		  unsigned long randomize_brk(unsigned long brk)
+
+Because the current code of exec syscall is rather.. hmm "tricky",
+_hiding_ "current" global usage inside this function is error prone:
+if this function is moved later, its use of "current->mm" could
+reference the old mm process and it's hard to notice/fix.
+
+thanks,
+		Franck
