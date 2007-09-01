@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbXIAQuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbXIAQuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756678AbXIAQuF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 12:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbXIAQtz
+	id S1757013AbXIAQuZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 12:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756764AbXIAQuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 12:49:55 -0400
-Received: from kallisti.us ([67.59.168.233]:42412 "EHLO kallisti.us"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752739AbXIAQtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 12:49:55 -0400
-X-Greylist: delayed 977 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Sep 2007 12:49:55 EDT
-From: Ross Vandegrift <ross@kallisti.us>
-Date: Sat, 1 Sep 2007 12:33:35 -0400
-To: Dan Stromberg <dstromberglists@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ifconfig changing a routing table?
-Message-ID: <20070901163335.GB13190@kallisti.us>
-References: <fb83g8$nac$1@sea.gmane.org>
+	Sat, 1 Sep 2007 12:50:08 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60921 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756689AbXIAQuG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 12:50:06 -0400
+Date: Sat, 1 Sep 2007 22:33:07 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Adrian Bunk <bunk@kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eugene Teo <eugeneteo@kernel.sg>,
+       "Antonino A. Daplas" <adaplas@pol.net>
+Subject: Re: 2.6.23-rc4-mm1: geode fb compile error
+In-Reply-To: <20070901141845.GG9260@stusta.de>
+Message-ID: <alpine.LFD.0.999.0709012220370.20781@enigma.security.iitk.ac.in>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org>
+ <20070901141845.GG9260@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fb83g8$nac$1@sea.gmane.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 31, 2007 at 03:55:53AM +0000, Dan Stromberg wrote:
-> Is anyone on the list familiar with ifconfig up and/or ip link up 
-> changing a routing table?  How does the kernel decide what route to add 
-> in such a circumstance?
-
-By the parameteres you supplied for the interface configuration.
-
-So, if you're getting a connected route for 10.3.0.0/16 out of dev
-eth0, it's because you assigned some IP in that subnet to that device,
-with a netmask of 255.255.0.0
-
-Check that your netmask is correct.
 
 
--- 
-Ross Vandegrift
-ross@kallisti.us
+On Sat, 1 Sep 2007, Adrian Bunk wrote:
+> 
+> On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
+> >...
+> > Changes since 2.6.23-rc3-mm1:
+> >...
+> > +drivers-video-geode-lxfb_corec-fix-lxfb_setup-warning-fix.patch
+> > 
+> >  Fix drivers-video-geode-lxfb_corec-fix-lxfb_setup-warning.patch
+> >...
+> 
+> This patch doesn't fix 
+> drivers-video-geode-lxfb_corec-fix-lxfb_setup-warning.patch, together 
+> they break the compilation (2 - 1 - 1 = 0 < 1):
 
-"The good Christian should beware of mathematicians, and all those who
-make empty prophecies. The danger already exists that the mathematicians
-have made a covenant with the devil to darken the spirit and to confine
-man in the bonds of Hell."
-	--St. Augustine, De Genesi ad Litteram, Book II, xviii, 37
+True, both (Eugene's and mine) patches are different/independent patches
+to remove the "unused variable" warning. Both seem to have got included in
+-mm with the result that build broke. One of these 2 patches (either mine
+or Eugene's) is superfluous and should be dropped.
