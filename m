@@ -1,66 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbXIAJP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752615AbXIAJPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754155AbXIAJP0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 05:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbXIAJPP
+	id S1752615AbXIAJPj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 05:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbXIAJPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 05:15:15 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53964 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752247AbXIAJPN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 05:15:13 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46D92D8E.9020508@s5r6.in-berlin.de>
-Date: Sat, 01 Sep 2007 11:14:54 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: maturity and status and attributes, oh my!
-References: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain> <46D89800.8080701@s5r6.in-berlin.de> <Pine.LNX.4.64.0708312109580.7060@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0708312109580.7060@localhost.localdomain>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 1 Sep 2007 05:15:18 -0400
+Received: from doppler.zen.co.uk ([212.23.3.27]:41676 "EHLO doppler.zen.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752255AbXIAJPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 05:15:14 -0400
+Date: Sat, 1 Sep 2007 10:11:10 +0100
+From: Grant Wilson <grant.wilson@zen.co.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: Linux 2.6.23-rc5 - oops
+Message-ID: <20070901101110.038835c2@worthy.swandive.local>
+In-Reply-To: <alpine.LFD.0.999.0708312343440.27951@evo.linux-foundation.org>
+References: <alpine.LFD.0.999.0708312343440.27951@evo.linux-foundation.org>
+X-Mailer: Claws Mail 3.0.0-rc2 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Originating-Rutherford-IP: [82.71.45.175]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> *attributes* would be orthogonal to one another -- the values *within*
-> an attribute would be mutually exclusive.
+On Fri, 31 Aug 2007 23:52:36 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Ah, right.
+> 
+> I'm making ready to leave for the kernel summit (as are probably a
+> lot of other core kernel people), and as part of that, there's a
+> 2.6.23-rc5 out there now.
+> 
+> Hopefully we've addressed most regressions, so please do give it a
+> good testing.
+> 
+[snip] 
+> Tejun Heo (3):
+>       ata_piix: add Satellite U200 to broken suspend list
+>       libata: implement BROKEN_HPA horkage and apply it to affected
+> drives ata_piix: implement IOCFG bit18 quirk
 
-...
-> with regard to "experimental", what attribute would you imagine it
-> would be a possible value for, and what other possible values might
-> that attribute have as opposed to experimental?
+Hi,
+Get an oops when booting this kernel:
 
-In the context of kernel features, "experimental" doesn't mean that
-developers are conducting experiments, but rather that users may use it
-for experimental purposes.  Kernel packagers/ distributors/ admins/
-users are advised that this feature is not for use in production (for
-whatever reasons, e.g. proof-testing not completed, known instability,
-lack of compatibility, missing features).
+[   49.178892] Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP:
+[   49.178905]  [<ffffffff803af352>] strlen+0x2/0x20
+[   49.180550] PGD 0
+[   49.181368] Oops: 0000 [1] PREEMPT SMP
+[   49.182189] CPU 0
+[   49.182994] Modules linked in:
+[   49.183805] Pid: 1, comm: swapper Not tainted 2.6.23-rc5 #2
+[   49.184619] RIP: 0010:[<ffffffff803af352>]  [<ffffffff803af352>] strlen+0x2/0x20
+[   49.185445] RSP: 0000:ffff8100cff27be0  EFLAGS: 00010246
+[   49.186264] RAX: 0000000000000000 RBX: ffffffff809002c0 RCX: 0000000000000008
+[   49.187101] RDX: 000000000000830f RSI: 0000000000000000 RDI: 0000000000000000
+[   49.187947] RBP: ffff8100cff27c00 R08: 0000000000000009 R09: 0000000000000008
+[   49.188804] R10: 00000000000000fa R11: 0000000000000000 R12: ffffffff80833778
+[   49.189660] R13: 0000000000000000 R14: ffff8100cfe77070 R15: ffffffff8068cd20
+[   49.190508] FS:  0000000000000000(0000) GS:ffffffff80881000(0000) knlGS:0000000000000000
+[   49.191365] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+[   49.192230] CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+[   49.193103] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[   49.193988] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[   49.194878] Process swapper (pid: 1, threadinfo ffff8100cff26000, task ffff8100cff24000)
+[   49.195772] Stack:  ffffffff803af644 0000000000000000 ffffffff80833778 0000000000000000
+[   49.196697]  ffff8100cff27c30 ffffffff804f3d96 ffff8100cfe77000 ffffffff8068d1a8
+[   49.197620]  ffff8100cfe77000 ffff8100cff27c70 ffff8100cff27d40 ffffffff80491f04
+[   49.197648] Call Trace:
+[   49.199465]  [<ffffffff803af644>] strstr+0x24/0x80
+[   49.200382]  [<ffffffff804f3d96>] dmi_check_system+0x46/0x90
+[   49.201300]  [<ffffffff80491f04>] piix_init_one+0x184/0x630
+[   49.202214]  [<ffffffff802d40d0>] sysfs_ilookup_test+0x0/0x20
+[   49.203126]  [<ffffffff803c1a86>] pci_device_probe+0x76/0xa0
+[   49.204033]  [<ffffffff8044e9a8>] driver_probe_device+0xa8/0x1b0
+[   49.204941]  [<ffffffff8044ec85>] __driver_attach+0xe5/0xf0
+[   49.205847]  [<ffffffff8044eba0>] __driver_attach+0x0/0xf0
+[   49.206750]  [<ffffffff8044dbc3>] bus_for_each_dev+0x53/0x80
+[   49.207648]  [<ffffffff8044e7dc>] driver_attach+0x1c/0x20
+[   49.208542]  [<ffffffff8044dfd5>] bus_add_driver+0xa5/0x1e0
+[   49.209430]  [<ffffffff8044eecd>] driver_register+0x4d/0x80
+[   49.210307]  [<ffffffff803c1cb8>] __pci_register_driver+0x78/0xc0
+[   49.211184]  [<ffffffff808ce089>] piix_init+0x19/0x30
+[   49.212048]  [<ffffffff808b0774>] kernel_init+0x154/0x340
+[   49.212905]  [<ffffffff80643714>] _spin_unlock_irq+0x14/0x40
+[   49.213769]  [<ffffffff8020cb68>] child_rip+0xa/0x12
+[   49.214621]  [<ffffffff808b0620>] kernel_init+0x0/0x340
+[   49.215472]  [<ffffffff8020cb5e>] child_rip+0x0/0x12
+[   49.216318]
+[   49.217153]
+[   49.217153] Code: 80 3f 00 55 48 89 e5 74 11 48 89 f8 66 90 48 83 c0 01 80 38
+[   49.218908] RIP  [<ffffffff803af352>] strlen+0x2/0x20
+[   49.219752]  RSP <ffff8100cff27be0>
+[   49.220580] CR2: 0000000000000000
+[   49.221451] Kernel panic - not syncing: Attempted to kill init!
 
-I have no advise into which attribute to put this and which alternative
-values that attribute could assume.
 
-But I can state requirements for the 'experimental' marker, from the POV
-of a volunteer driver support guy:
-  - Show it in big letters in the Kconfig prompt of an experimental
-    feature.
-  - Explain at appropriate place(s) what the particular caveats of the
-    feature are.
-That's it.  I am not aware of a need to evaluate this marker in routines
-which calculate the .config, unlike the 'broken' marker.
+Using git-bisect the faulty commit is
 
-BTW, the requirements of communication in feature removal processes are
-similar to a degree.  But feature removal involves more active two-way
-communication and is tied to a schedule.
--- 
-Stefan Richter
--=====-=-=== =--= ----=
-http://arcgraph.de/sr/
+bad: [43a98f05d99205687ddf74089e79a8312c8c5f90] ata_piix: implement IOCFG bit18 quirk
+
+Cheers,
+Grant
+
