@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbXIABvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbXIABvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752680AbXIABvH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbXIABnt
+	id S1756560AbXIABvd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbXIABnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:43:49 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51607 "EHLO
+	Fri, 31 Aug 2007 21:43:52 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51618 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751699AbXIABmY (ORCPT
+	with ESMTP id S1751630AbXIABmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 21:42:24 -0400
-Message-Id: <20070901014223.225007714@sgi.com>
+	Fri, 31 Aug 2007 21:42:23 -0400
+Message-Id: <20070901014222.536517408@sgi.com>
 References: <20070901014107.719506437@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 31 Aug 2007 18:41:24 -0700
+Date: Fri, 31 Aug 2007 18:41:21 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Andy Whitcroft <apw@shadowen.org>
 Cc: linux-kernel@vger.kernel.org
@@ -21,154 +21,83 @@ Cc: linux-mm@kvack.org
 Cc: linux-fsdevel@vger.kernel.org
 Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: David Chinner <dgc@sgi.com>
-Subject: [RFC 17/26] inodes: Support generic defragmentation
-Content-Disposition: inline; filename=0017-slab_defrag_generic_inode_defrag.patch
+Subject: [RFC 14/26] SLUB: __GFP_MOVABLE and SLAB_TEMPORARY support
+Content-Disposition: inline; filename=0014-slab_defrag_movable.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implements the ability to remove inodes in a particular slab
-from inode cache. In order to remove an inode we may have to write out
-the pages of an inode, the inode itself and remove the dentries referring
-to the node.
+Slabs that are reclaimable fit the definition of the objects in
+ZONE_MOVABLE. So set __GFP_MOVABLE on them (this only works
+on platforms where there is no HIGHMEM. Hopefully that restriction
+will vanish at some point).
 
-Provide generic functionality that can be used by filesystems that have
-their own inode caches to also tie into the defragmentation functions
-that are made available here.
+Also add the SLAB_TEMPORARY flag for slab caches that allocate objects with
+a short lifetime. Slabs with SLAB_TEMPORARY also are allocated with
+__GFP_MOVABLE. Reclaim on them works by isolating the slab for awhile and
+waiting for the objects to expire.
+
+The skbuff_head_cache is a prime example of such a slab. Add the
+SLAB_TEMPORARY flag to it.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- fs/inode.c         |   95 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fs.h |    5 ++
- 2 files changed, 100 insertions(+)
+ include/linux/slab.h |    1 +
+ mm/slub.c            |    8 +++++++-
+ net/core/skbuff.c    |    2 +-
+ 3 files changed, 9 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/fs/inode.c
-===================================================================
---- linux-2.6.orig/fs/inode.c	2007-08-28 19:48:07.000000000 -0700
-+++ linux-2.6/fs/inode.c	2007-08-28 20:15:26.000000000 -0700
-@@ -1351,6 +1351,100 @@ static int __init set_ihash_entries(char
- }
- __setup("ihash_entries=", set_ihash_entries);
+diff --git a/include/linux/slab.h b/include/linux/slab.h
+index 2923861..daffc22 100644
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -23,6 +23,7 @@
+ #define SLAB_POISON		0x00000800UL	/* DEBUG: Poison objects */
+ #define SLAB_HWCACHE_ALIGN	0x00002000UL	/* Align objs on cache lines */
+ #define SLAB_CACHE_DMA		0x00004000UL	/* Use GFP_DMA memory */
++#define SLAB_TEMPORARY		0x00008000UL	/* Only volatile objects */
+ #define SLAB_STORE_USER		0x00010000UL	/* DEBUG: Store the last owner for bug hunting */
+ #define SLAB_RECLAIM_ACCOUNT	0x00020000UL	/* Objects are reclaimable */
+ #define SLAB_PANIC		0x00040000UL	/* Panic if kmem_cache_create() fails */
+diff --git a/mm/slub.c b/mm/slub.c
+index bad5291..85ba259 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1040,6 +1040,11 @@ static struct page *allocate_slab(struct kmem_cache *s, gfp_t flags, int node)
+ 	if (s->flags & SLAB_CACHE_DMA)
+ 		flags |= SLUB_DMA;
  
-+static void *get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	int i;
++#ifndef CONFIG_HIGHMEM
++	if (s->kick || s->flags & SLAB_TEMPORARY)
++		flags |= __GFP_MOVABLE;
++#endif
 +
-+	spin_lock(&inode_lock);
-+	for (i = 0; i < nr; i++) {
-+		struct inode *inode = v[i];
+ 	if (node == -1)
+ 		page = alloc_pages(flags, s->order);
+ 	else
+@@ -1118,7 +1123,8 @@ static struct page *new_slab(struct kmem_cache *s, gfp_t flags, int node)
+ 	if (s->flags & (SLAB_DEBUG_FREE | SLAB_RED_ZONE | SLAB_POISON |
+ 			SLAB_STORE_USER | SLAB_TRACE))
+ 		SetSlabDebug(page);
+-	if (s->kick)
 +
-+		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
-+			v[i] = NULL;
-+		else
-+			__iget(inode);
-+	}
-+	spin_unlock(&inode_lock);
-+	return NULL;
-+}
-+
-+/*
-+ * Function for filesystems that embedd struct inode into their own
-+ * structures. The offset is the offset of the struct inode in the fs inode.
-+ */
-+void *fs_get_inodes(struct kmem_cache *s, int nr, void **v,
-+						unsigned long offset)
-+{
-+	int i;
-+
-+	for (i = 0; i < nr; i++)
-+		v[i] += offset;
-+
-+	return get_inodes(s, nr, v);
-+}
-+EXPORT_SYMBOL(fs_get_inodes);
-+
-+void kick_inodes(struct kmem_cache *s, int nr, void **v, void *private)
-+{
-+	struct inode *inode;
-+	int i;
-+	int abort = 0;
-+	LIST_HEAD(freeable);
-+	struct super_block *sb;
-+
-+	for (i = 0; i < nr; i++) {
-+		inode = v[i];
-+		if (!inode)
-+			continue;
-+
-+		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
-+			if (remove_inode_buffers(inode))
-+				invalidate_mapping_pages(&inode->i_data,
-+								0, -1);
-+		}
-+
-+		/* Invalidate children and dentry */
-+		if (S_ISDIR(inode->i_mode)) {
-+			struct dentry *d = d_find_alias(inode);
-+
-+			if (d) {
-+				d_invalidate(d);
-+				dput(d);
-+			}
-+		}
-+
-+		if (inode->i_state & I_DIRTY)
-+			write_inode_now(inode, 1);
-+
-+		d_prune_aliases(inode);
-+	}
-+
-+	mutex_lock(&iprune_mutex);
-+	for (i = 0; i < nr; i++) {
-+		inode = v[i];
-+		if (!inode)
-+			continue;
-+
-+		sb = inode->i_sb;
-+		iput(inode);
-+		if (abort || !(sb->s_flags & MS_ACTIVE))
-+			continue;
-+
-+		spin_lock(&inode_lock);
-+		abort =  !can_unuse(inode);
-+
-+		if (!abort) {
-+			list_move(&inode->i_list, &freeable);
-+			inode->i_state |= I_FREEING;
-+			inodes_stat.nr_unused--;
-+		}
-+		spin_unlock(&inode_lock);
-+	}
-+	dispose_list(&freeable);
-+	mutex_unlock(&iprune_mutex);
-+}
-+EXPORT_SYMBOL(kick_inodes);
-+
- /*
-  * Initialize the waitqueues and inode hash table.
-  */
-@@ -1390,6 +1484,7 @@ void __init inode_init(unsigned long mem
- 					 SLAB_MEM_SPREAD),
- 					 init_once);
- 	register_shrinker(&icache_shrinker);
-+	kmem_cache_setup_defrag(inode_cachep, get_inodes, kick_inodes);
++	if (s->flags & SLAB_TEMPORARY || s->kick)
+ 		SetSlabReclaimable(page);
  
- 	/* Hash may have been set up in inode_init_early */
- 	if (!hashdist)
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2007-08-28 19:48:07.000000000 -0700
-+++ linux-2.6/include/linux/fs.h	2007-08-28 20:15:26.000000000 -0700
-@@ -1644,6 +1644,11 @@ static inline void insert_inode_hash(str
- 	__insert_inode_hash(inode, inode->i_ino);
- }
- 
-+/* Helper functions for inode defragmentation support in filesystems */
-+extern void kick_inodes(struct kmem_cache *, int, void **, void *);
-+extern void *fs_get_inodes(struct kmem_cache *, int nr, void **,
-+						unsigned long offset);
-+
- extern struct file * get_empty_filp(void);
- extern void file_move(struct file *f, struct list_head *list);
- extern void file_kill(struct file *f);
+  out:
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 35021eb..51b2236 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -2020,7 +2020,7 @@ void __init skb_init(void)
+ 	skbuff_head_cache = kmem_cache_create("skbuff_head_cache",
+ 					      sizeof(struct sk_buff),
+ 					      0,
+-					      SLAB_HWCACHE_ALIGN|SLAB_PANIC,
++			      SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_TEMPORARY,
+ 					      NULL);
+ 	skbuff_fclone_cache = kmem_cache_create("skbuff_fclone_cache",
+ 						(2*sizeof(struct sk_buff)) +
+-- 
+1.5.2.4
 
 -- 
