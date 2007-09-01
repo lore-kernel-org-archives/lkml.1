@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbXIABpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbXIABpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbXIABpO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXIABmb
+	id S1754216AbXIABpj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbXIABnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:42:31 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46095 "EHLO
+	Fri, 31 Aug 2007 21:43:05 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46094 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751301AbXIABmV (ORCPT
+	with ESMTP id S1751225AbXIABmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 31 Aug 2007 21:42:21 -0400
-Message-Id: <20070901014220.222604174@sgi.com>
+Message-Id: <20070901014219.988922690@sgi.com>
 References: <20070901014107.719506437@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 31 Aug 2007 18:41:11 -0700
+Date: Fri, 31 Aug 2007 18:41:10 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Andy Whitcroft <apw@shadowen.org>
 Cc: linux-kernel@vger.kernel.org
@@ -21,87 +21,99 @@ Cc: linux-mm@kvack.org
 Cc: linux-fsdevel@vger.kernel.org
 Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: David Chinner <dgc@sgi.com>
-Subject: [RFC 04/26] SLUB: Add defrag_ratio field and sysfs support.
-Content-Disposition: inline; filename=0004-slab_defrag_add_defrag_ratio.patch
+Subject: [RFC 03/26] SLUB: Rename NUMA defrag_ratio to remote_node_defrag_ratio
+Content-Disposition: inline; filename=0003-slab_defrag_remote_node_defrag_ratio.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The defrag_ratio is used to set the threshold when a slabcache should be
-defragmented.
+We need the defrag ratio for the non NUMA situation now. The NUMA defrag works
+by allocating objects from partial slabs on remote nodes. Rename it to
 
-The allocation ratio is measured in a percentage of the available slots.
-The percentage will be lower for slabs that are more fragmented.
+	remote_node_defrag_ratio
 
-Add a defrag ratio field and set it to 30% by default. A limit of 30%
-that less than 3 out of 10 available slots for objects are in use.
+to be clear about this.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- include/linux/slub_def.h |    7 +++++++
- mm/slub.c                |   18 ++++++++++++++++++
- 2 files changed, 25 insertions(+), 0 deletions(-)
+ include/linux/slub_def.h |    5 ++++-
+ mm/slub.c                |   17 +++++++++--------
+ 2 files changed, 13 insertions(+), 9 deletions(-)
 
 diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
-index 5912b58..291881d 100644
+index 8aad7dc..5912b58 100644
 --- a/include/linux/slub_def.h
 +++ b/include/linux/slub_def.h
-@@ -52,6 +52,13 @@ struct kmem_cache {
- 	void (*ctor)(void *, struct kmem_cache *, unsigned long);
- 	int inuse;		/* Offset to metadata */
- 	int align;		/* Alignment */
-+	int defrag_ratio;	/*
-+				 * objects/possible-objects limit. If we have
-+				 * less that the specified percentage of
-+				 * objects allocated then defrag passes
-+				 * will start to occur during reclaim.
-+				 */
-+
- 	const char *name;	/* Name (only for display!) */
- 	struct list_head list;	/* List of slab caches */
- #ifdef CONFIG_SLUB_DEBUG
+@@ -59,7 +59,10 @@ struct kmem_cache {
+ #endif
+ 
+ #ifdef CONFIG_NUMA
+-	int defrag_ratio;
++	/*
++	 * Defragmentation by allocating from a remote node.
++	 */
++	int remote_node_defrag_ratio;
+ 	struct kmem_cache_node *node[MAX_NUMNODES];
+ #endif
+ #ifdef CONFIG_SMP
 diff --git a/mm/slub.c b/mm/slub.c
-index e63aba5..f95a760 100644
+index aad6f83..e63aba5 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -2200,6 +2200,7 @@ static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
- 		goto error;
+@@ -1267,7 +1267,8 @@ static struct page *get_any_partial(struct kmem_cache *s, gfp_t flags)
+ 	 * expensive if we do it every time we are trying to find a slab
+ 	 * with available objects.
+ 	 */
+-	if (!s->defrag_ratio || get_cycles() % 1024 > s->defrag_ratio)
++	if (!s->remote_node_defrag_ratio ||
++			get_cycles() % 1024 > s->remote_node_defrag_ratio)
+ 		return NULL;
+ 
+ 	zonelist = &NODE_DATA(slab_node(current->mempolicy))
+@@ -2200,7 +2201,7 @@ static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
  
  	s->refcount = 1;
-+	s->defrag_ratio = 30;
  #ifdef CONFIG_NUMA
- 	s->remote_node_defrag_ratio = 100;
+-	s->defrag_ratio = 100;
++	s->remote_node_defrag_ratio = 100;
  #endif
-@@ -3717,6 +3718,22 @@ static ssize_t free_calls_show(struct kmem_cache *s, char *buf)
- }
+ 
+ 	if (!init_kmem_cache_nodes(s, gfpflags & ~SLUB_DMA))
+@@ -3717,21 +3718,21 @@ static ssize_t free_calls_show(struct kmem_cache *s, char *buf)
  SLAB_ATTR_RO(free_calls);
  
-+static ssize_t defrag_ratio_show(struct kmem_cache *s, char *buf)
-+{
-+	return sprintf(buf, "%d\n", s->defrag_ratio);
-+}
-+
-+static ssize_t defrag_ratio_store(struct kmem_cache *s,
-+				const char *buf, size_t length)
-+{
-+	int n = simple_strtoul(buf, NULL, 10);
-+
-+	if (n < 100)
-+		s->defrag_ratio = n;
-+	return length;
-+}
-+SLAB_ATTR(defrag_ratio);
-+
  #ifdef CONFIG_NUMA
- static ssize_t remote_node_defrag_ratio_show(struct kmem_cache *s, char *buf)
+-static ssize_t defrag_ratio_show(struct kmem_cache *s, char *buf)
++static ssize_t remote_node_defrag_ratio_show(struct kmem_cache *s, char *buf)
  {
-@@ -3759,6 +3776,7 @@ static struct attribute * slab_attrs[] = {
- 	&shrink_attr.attr,
- 	&alloc_calls_attr.attr,
- 	&free_calls_attr.attr,
-+	&defrag_ratio_attr.attr,
- #ifdef CONFIG_ZONE_DMA
+-	return sprintf(buf, "%d\n", s->defrag_ratio / 10);
++	return sprintf(buf, "%d\n", s->remote_node_defrag_ratio / 10);
+ }
+ 
+-static ssize_t defrag_ratio_store(struct kmem_cache *s,
++static ssize_t remote_node_defrag_ratio_store(struct kmem_cache *s,
+ 				const char *buf, size_t length)
+ {
+ 	int n = simple_strtoul(buf, NULL, 10);
+ 
+ 	if (n < 100)
+-		s->defrag_ratio = n * 10;
++		s->remote_node_defrag_ratio = n * 10;
+ 	return length;
+ }
+-SLAB_ATTR(defrag_ratio);
++SLAB_ATTR(remote_node_defrag_ratio);
+ #endif
+ 
+ static struct attribute * slab_attrs[] = {
+@@ -3762,7 +3763,7 @@ static struct attribute * slab_attrs[] = {
  	&cache_dma_attr.attr,
  #endif
+ #ifdef CONFIG_NUMA
+-	&defrag_ratio_attr.attr,
++	&remote_node_defrag_ratio_attr.attr,
+ #endif
+ 	NULL
+ };
 -- 
 1.5.2.4
 
