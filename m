@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbXIABoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbXIABoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbXIABoI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbXIABm0
+	id S1753520AbXIABoa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXIABm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:42:26 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51584 "EHLO
+	Fri, 31 Aug 2007 21:42:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51591 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751077AbXIABmV (ORCPT
+	with ESMTP id S1751182AbXIABmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 31 Aug 2007 21:42:21 -0400
-Message-Id: <20070901014220.452715954@sgi.com>
+Message-Id: <20070901014220.690110465@sgi.com>
 References: <20070901014107.719506437@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 31 Aug 2007 18:41:12 -0700
+Date: Fri, 31 Aug 2007 18:41:13 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Andy Whitcroft <apw@shadowen.org>
 Cc: linux-kernel@vger.kernel.org
@@ -21,61 +21,137 @@ Cc: linux-mm@kvack.org
 Cc: linux-fsdevel@vger.kernel.org
 Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: David Chinner <dgc@sgi.com>
-Subject: [RFC 05/26] SLUB: Replace ctor field with ops field in /sys/slab/:0000008 /sys/slab/:0000016 /sys/slab/:0000024 /sys/slab/:0000032 /sys/slab/:0000040 /sys/slab/:0000048 /sys/slab/:0000056 /sys/slab/:0000064 /sys/slab/:0000072 /sys/slab/:0000080 /sys/slab/:0000088 /sys/slab/:0000096 /sys/slab/:0000104 /sys/slab/:0000128 /sys/slab/:0000144 /sys/slab/:0000184 /sys/slab/:0000192 /sys/slab/:0000216 /sys/slab/:0000256 /sys/slab/:0000344 /sys/slab/:0000384 /sys/slab/:0000448 /sys/slab/:0000512 /sys/slab/:0000768 /sys/slab/:0000920 /sys/slab/:0001024 /sys/slab/:0001152 /sys/slab/:0001344 /sys/slab/:0001536 /sys/slab/:0002048 /sys/slab/:0003072 /sys/slab/:0004096 /sys/slab/:a-0000056 /sys/slab/:a-0000080 /sys/slab/:a-0000128 /sys/slab/Acpi-Namespace /sys/slab/Acpi-Operand /sys/slab/Acpi-Parse /sys/slab/Acpi-ParseExt /sys/slab/Acpi-State /sys/slab/RAW /sys/slab/TCP /sys/slab/UDP /sys/slab/UDP-Lite /sys/slab/UNIX /sys/slab/anon_vma /sys/slab/arp_cache /sys/slab/bdev_cache /sys/
- slab/bio /sys/slab/biovec-1 /sys/slab/biovec-128 /sys/slab/biovec-16 /sys/slab/biovec-256 /sys/slab/biovec-4 /sys/slab/biovec-64 /sys/slab/blkdev_ioc /sys/slab/blkdev_queue /sys/slab/blkdev_requests /sys/slab/buffer_head /sys/slab/cfq_io_context /sys/slab/cfq_queue /sys/slab/dentry /sys/slab/eventpoll_epi /sys/slab/eventpoll_pwq /sys/slab/ext2_inode_cache /sys/slab/ext3_inode_cache /sys/slab/fasync_cache /sys/slab/file_lock_cache /sys/slab/files_cache /sys/slab/filp /sys/slab/flow_cache /sys/slab/fs_cache /sys/slab/idr_layer_cache /sys/slab/inet_peer_cache /sys/slab/inode_cache /sys/slab/inotify_event_cache /sys/slab/inotify_watch_cache /sys/slab/ip_dst_cache /sys/slab/ip_fib_alias /sys/slab/ip_fib_hash /sys/slab/jbd_1k /sys/slab/jbd_4k /sys/slab/journal_handle /sys/slab/journal_head /sys/slab/kiocb /sys/slab/kioctx /sys/slab/kmalloc-1024 /sys/slab/kmalloc-128 /sys/slab/kmalloc-16 /sys/slab/kmalloc-192 /sys/slab/kmalloc-2048 /sys/slab/kmalloc-256 /sys/slab/kmalloc-32 /sys/sl
- ab/kmalloc-512 /sys/slab/kmalloc-64 /sys/slab/kmalloc-8 /sys/slab/kmalloc-96 /sys/slab/mm_struct /sys/slab/mnt_cache /sys/slab/mqueue_inode_cache /sys/slab/names_cache /sys/slab/nfs_direct_cache /sys/slab/nfs_inode_cache /sys/slab/nfs_page /sys/slab/nfs_read_data /sys/slab/nfs_write_data /sys/slab/nfsd4_delegations /sys/slab/nfsd4_files /sys/slab/nfsd4_stateids /sys/slab/nfsd4_stateowners /sys/slab/nsproxy /sys/slab/pid /sys/slab/posix_timers_cache /sys/slab/proc_inode_cache /sys/slab/radix_tree_node /sys/slab/request_sock_TCP /sys/slab/revoke_record /sys/slab/revoke_table /sys/slab/rpc_buffers /sys/slab/rpc_inode_cache /sys/slab/rpc_tasks /sys/slab/scsi_cmd_cache /sys/slab/scsi_io_context /sys/slab/secpath_cache /sys/slab/sgpool-128 /sys/slab/sgpool-16 /sys/slab/sgpool-32 /sys/slab/sgpool-64 /sys/slab/sgpool-8 /sys/slab/shmem_inode_cache /sys/slab/sighand_cache /sys/slab/signal_cache /sys/slab/sigqueue /sys/slab/skbuff_fclone_cache /sys/slab/skbuff_head_cache /sys/slab/sock
- _inode_cache /sys/slab/sysfs_dir_cache /sys/slab/task_struct /sys/slab/tcp_bind_bucket /sys/slab/tw_sock_TCP /sys/slab/uhci_urb_priv /sys/slab/uid_cache /sys/slab/vm_area_struct /sys/slab/xfrm_dst_cache
-Content-Disposition: inline; filename=0005-slab_defrag_ops_field.patch
+Subject: [RFC 06/26] SLUB: Add get() and kick() methods
+Content-Disposition: inline; filename=0006-slab_defrag_get_and_kick_method.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create an ops field in /sys/slab/*/ops to contain all the operations defined
-on a slab. This will be used to display the additional operations that we
-will define soon.
+Add the two methods needed for defragmentation and add the display of the
+methods via the proc interface.
+
+Add documentation explaining the use of these methods.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- mm/slub.c |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
+ include/linux/slab.h     |    3 +++
+ include/linux/slub_def.h |   32 ++++++++++++++++++++++++++++++++
+ mm/slub.c                |   32 ++++++++++++++++++++++++++++++--
+ 3 files changed, 65 insertions(+), 2 deletions(-)
 
+diff --git a/include/linux/slab.h b/include/linux/slab.h
+index d859354..848e9a7 100644
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -54,6 +54,9 @@ struct kmem_cache *kmem_cache_create(const char *, size_t, size_t,
+ 			void (*)(void *, struct kmem_cache *, unsigned long));
+ void kmem_cache_destroy(struct kmem_cache *);
+ int kmem_cache_shrink(struct kmem_cache *);
++void kmem_cache_setup_defrag(struct kmem_cache *s,
++	void *(*get)(struct kmem_cache *, int nr, void **),
++	void (*kick)(struct kmem_cache *, int nr, void **, void *private));
+ void kmem_cache_free(struct kmem_cache *, void *);
+ unsigned int kmem_cache_size(struct kmem_cache *);
+ const char *kmem_cache_name(struct kmem_cache *);
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index 291881d..69c32a7 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -50,6 +50,38 @@ struct kmem_cache {
+ 	int objects;		/* Number of objects in slab */
+ 	int refcount;		/* Refcount for slab cache destroy */
+ 	void (*ctor)(void *, struct kmem_cache *, unsigned long);
++
++	/*
++	 * Called with slab lock held and interrupts disabled.
++	 * No slab operation may be performed in get().
++	 *
++	 * Parameters passed are the number of objects to process
++	 * and an array of pointers to objects for which we
++	 * need references.
++	 *
++	 * Returns a pointer that is passed to the kick function.
++	 * If all objects cannot be moved then the pointer may
++	 * indicate that this wont work and then kick can simply
++	 * remove the references that were already obtained.
++	 *
++	 * The array passed to get() is also passed to kick(). The
++	 * function may remove objects by setting array elements to NULL.
++	 */
++	void *(*get)(struct kmem_cache *, int nr, void **);
++
++	/*
++	 * Called with no locks held and interrupts enabled.
++	 * Any operation may be performed in kick().
++	 *
++	 * Parameters passed are the number of objects in the array,
++	 * the array of pointers to the objects and the pointer
++	 * returned by get().
++	 *
++	 * Success is checked by examining the number of remaining
++	 * objects in the slab.
++	 */
++	void (*kick)(struct kmem_cache *, int nr, void **, void *private);
++
+ 	int inuse;		/* Offset to metadata */
+ 	int align;		/* Alignment */
+ 	int defrag_ratio;	/*
 diff --git a/mm/slub.c b/mm/slub.c
-index f95a760..fc2f1e3 100644
+index fc2f1e3..4a64038 100644
 --- a/mm/slub.c
 +++ b/mm/slub.c
-@@ -3501,16 +3501,18 @@ static ssize_t order_show(struct kmem_cache *s, char *buf)
+@@ -2597,6 +2597,20 @@ void kfree(const void *x)
  }
- SLAB_ATTR_RO(order);
+ EXPORT_SYMBOL(kfree);
  
--static ssize_t ctor_show(struct kmem_cache *s, char *buf)
-+static ssize_t ops_show(struct kmem_cache *s, char *buf)
++void kmem_cache_setup_defrag(struct kmem_cache *s,
++	void *(*get)(struct kmem_cache *, int nr, void **),
++	void (*kick)(struct kmem_cache *, int nr, void **, void *private))
++{
++	/*
++	 * Defragmentable slabs must have a ctor otherwise objects may be
++	 * in an undetermined state after they are allocated.
++	 */
++	BUG_ON(!s->ctor);
++	s->get = get;
++	s->kick = kick;
++}
++EXPORT_SYMBOL(kmem_cache_setup_defrag);
++
+ static unsigned long count_partial(struct kmem_cache_node *n)
  {
--	if (s->ctor) {
--		int n = sprint_symbol(buf, (unsigned long)s->ctor);
-+	int x = 0;
+ 	unsigned long flags;
+@@ -2777,7 +2791,7 @@ static int slab_unmergeable(struct kmem_cache *s)
+ 	if (slub_nomerge || (s->flags & SLUB_NEVER_MERGE))
+ 		return 1;
  
--		return n + sprintf(buf + n, "\n");
-+	if (s->ctor) {
-+		x += sprintf(buf + x, "ctor : ");
-+		x += sprint_symbol(buf + x, (unsigned long)s->ops->ctor);
+-	if (s->ctor)
++	if (s->ctor || s->kick || s->get)
+ 		return 1;
+ 
+ 	/*
+@@ -3507,7 +3521,21 @@ static ssize_t ops_show(struct kmem_cache *s, char *buf)
+ 
+ 	if (s->ctor) {
+ 		x += sprintf(buf + x, "ctor : ");
+-		x += sprint_symbol(buf + x, (unsigned long)s->ops->ctor);
++		x += sprint_symbol(buf + x, (unsigned long)s->ctor);
 +		x += sprintf(buf + x, "\n");
++	}
++
++	if (s->get) {
++		x += sprintf(buf + x, "get : ");
++		x += sprint_symbol(buf + x,
++				(unsigned long)s->get);
++		x += sprintf(buf + x, "\n");
++	}
++
++	if (s->kick) {
++		x += sprintf(buf + x, "kick : ");
++		x += sprint_symbol(buf + x,
++				(unsigned long)s->kick);
+ 		x += sprintf(buf + x, "\n");
  	}
--	return 0;
-+	return x;
- }
--SLAB_ATTR_RO(ctor);
-+SLAB_ATTR_RO(ops);
- 
- static ssize_t aliases_show(struct kmem_cache *s, char *buf)
- {
-@@ -3761,7 +3763,7 @@ static struct attribute * slab_attrs[] = {
- 	&slabs_attr.attr,
- 	&partial_attr.attr,
- 	&cpu_slabs_attr.attr,
--	&ctor_attr.attr,
-+	&ops_attr.attr,
- 	&aliases_attr.attr,
- 	&align_attr.attr,
- 	&sanity_checks_attr.attr,
+ 	return x;
 -- 
 1.5.2.4
 
