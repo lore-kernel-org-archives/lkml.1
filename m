@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbXIABtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbXIABth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbXIABtJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbXIABng
+	id S1755394AbXIABth (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXIABni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:43:36 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46125 "EHLO
+	Fri, 31 Aug 2007 21:43:38 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51638 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751838AbXIABmZ (ORCPT
+	with ESMTP id S1751770AbXIABmZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 31 Aug 2007 21:42:25 -0400
-Message-Id: <20070901014225.046839422@sgi.com>
+Message-Id: <20070901014224.368426395@sgi.com>
 References: <20070901014107.719506437@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 31 Aug 2007 18:41:32 -0700
+Date: Fri, 31 Aug 2007 18:41:29 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Andy Whitcroft <apw@shadowen.org>
 Cc: linux-kernel@vger.kernel.org
@@ -21,144 +21,45 @@ Cc: linux-mm@kvack.org
 Cc: linux-fsdevel@vger.kernel.org
 Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: David Chinner <dgc@sgi.com>
-Subject: [RFC 25/26] dentries: dentry defragmentation
-Content-Disposition: inline; filename=0025-slab_defrag_dentry_defrag.patch
+Subject: [RFC 22/26] FS: Socket inode defragmentation
+Content-Disposition: inline; filename=0022-slab_defrag_socket.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kick() is called after get() has been used and after the slab has dropped
-all of its own locks. The dentry pruning for unused entries works in a
-straightforward way.
+Support inode defragmentation for sockets
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- fs/dcache.c |  100 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 99 insertions(+), 1 deletion(-)
+ net/socket.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-Index: linux-2.6/fs/dcache.c
-===================================================================
---- linux-2.6.orig/fs/dcache.c	2007-08-29 18:55:21.000000000 -0700
-+++ linux-2.6/fs/dcache.c	2007-08-29 18:57:51.000000000 -0700
-@@ -143,7 +143,10 @@ static struct dentry *d_kill(struct dent
- 
- 	list_del(&dentry->d_u.d_child);
- 	dentry_stat.nr_dentry--;	/* For d_free, below */
--	/*drops the locks, at that point nobody can reach this dentry */
-+	/*
-+	 * drops the locks, at that point nobody (aside from defrag)
-+	 * can reach this dentry
-+	 */
- 	dentry_iput(dentry);
- 	parent = dentry->d_parent;
- 	d_free(dentry);
-@@ -2100,6 +2103,100 @@ static void __init dcache_init_early(voi
- 		INIT_HLIST_HEAD(&dentry_hashtable[loop]);
+diff --git a/net/socket.c b/net/socket.c
+index ec07703..89fc7a5 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -264,6 +264,12 @@ static void init_once(void *foo, struct kmem_cache *cachep, unsigned long flags)
+ 	inode_init_once(&ei->vfs_inode);
  }
  
-+/*
-+ * The slab allocator is holding off frees. We can safely examine
-+ * the object without the danger of it vanishing from under us.
-+ */
-+static void *get_dentries(struct kmem_cache *s, int nr, void **v)
++static void *sock_get_inodes(struct kmem_cache *s, int nr, void **v)
 +{
-+	struct dentry *dentry;
-+	int i;
-+
-+	spin_lock(&dcache_lock);
-+	for (i = 0; i < nr; i++) {
-+		dentry = v[i];
-+
-+		/*
-+		 * Three sorts of dentries cannot be reclaimed:
-+		 *
-+		 * 1. dentries that are in the process of being allocated
-+		 *    or being freed. In that case the dentry is neither
-+		 *    on the LRU nor hashed.
-+		 *
-+		 * 2. Fake hashed entries as used for anonymous dentries
-+		 *    and pipe I/O. The fake hashed entries have d_flags
-+		 *    set to indicate a hashed entry. However, the
-+		 *    d_hash field indicates that the entry is not hashed.
-+		 *
-+		 * 3. dentries that have a backing store that is not
-+		 *    writable. This is true for tmpsfs and other in
-+		 *    memory filesystems. Removing dentries from them
-+		 *    would loose dentries for good.
-+		 */
-+		if ((d_unhashed(dentry) && list_empty(&dentry->d_lru)) ||
-+		   (!d_unhashed(dentry) && hlist_unhashed(&dentry->d_hash)) ||
-+		   (dentry->d_inode &&
-+		   !mapping_cap_writeback_dirty(dentry->d_inode->i_mapping)))
-+		   	/* Ignore this dentry */
-+			v[i] = NULL;
-+		else
-+			/* dget_locked will remove the dentry from the LRU */
-+			dget_locked(dentry);
-+	}
-+	spin_unlock(&dcache_lock);
-+	return NULL;
++	return fs_get_inodes(s, nr, v,
++		offsetof(struct socket_alloc, vfs_inode));
 +}
 +
-+/*
-+ * Slab has dropped all the locks. Get rid of the refcount obtained
-+ * earlier and also free the object.
-+ */
-+static void kick_dentries(struct kmem_cache *s,
-+				int nr, void **v, void *private)
-+{
-+	struct dentry *dentry;
-+	int i;
-+
-+	/*
-+	 * First invalidate the dentries without holding the dcache lock
-+	 */
-+	for (i = 0; i < nr; i++) {
-+		dentry = v[i];
-+
-+		if (dentry)
-+			d_invalidate(dentry);
-+	}
-+
-+	/*
-+	 * If we are the last one holding a reference then the dentries can
-+	 * be freed. We need the dcache_lock.
-+	 */
-+	spin_lock(&dcache_lock);
-+	for (i = 0; i < nr; i++) {
-+		dentry = v[i];
-+		if (!dentry)
-+			continue;
-+
-+		spin_lock(&dentry->d_lock);
-+		if (atomic_read(&dentry->d_count) > 1) {
-+			spin_unlock(&dentry->d_lock);
-+			spin_unlock(&dcache_lock);
-+			dput(dentry);
-+			spin_lock(&dcache_lock);
-+			continue;
-+		}
-+
-+		prune_one_dentry(dentry, 1);
-+	}
-+	spin_unlock(&dcache_lock);
-+
-+	/*
-+	 * dentries are freed using RCU so we need to wait until RCU
-+	 * operations are complete
-+	 */
-+	synchronize_rcu();
-+}
-+
- static void __init dcache_init(unsigned long mempages)
+ static int init_inodecache(void)
  {
- 	int loop;
-@@ -2109,6 +2206,7 @@ static void __init dcache_init(unsigned 
- 		dcache_ctor);
+ 	sock_inode_cachep = kmem_cache_create("sock_inode_cache",
+@@ -275,6 +281,8 @@ static int init_inodecache(void)
+ 					      init_once);
+ 	if (sock_inode_cachep == NULL)
+ 		return -ENOMEM;
++	kmem_cache_setup_defrag(sock_inode_cachep,
++			sock_get_inodes, kick_inodes);
+ 	return 0;
+ }
  
- 	register_shrinker(&dcache_shrinker);
-+	kmem_cache_setup_defrag(dentry_cache, get_dentries, kick_dentries);
- 
- 	/* Hash may have been set up in dcache_init_early */
- 	if (!hashdist)
+-- 
+1.5.2.4
 
 -- 
