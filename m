@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbXIABxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbXIABx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757851AbXIABxh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbXIABqL
+	id S1756132AbXIABx4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXIABtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:46:11 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:52877 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754095AbXIABqJ (ORCPT
+	Fri, 31 Aug 2007 21:49:25 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:8586 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753342AbXIABtX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 21:46:09 -0400
-Subject: Re: nmi_watchdog=2 regression in 2.6.21
-From: Daniel Walker <dwalker@mvista.com>
-To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-Cc: eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20070901010053.GA29765@atjola.homenet>
-References: <20070828194636.GB2814@frankl.hpl.hp.com>
-	 <1188332024.2435.328.camel@dhcp193.mvista.com>
-	 <20070829212451.GC4810@frankl.hpl.hp.com>
-	 <1188436919.26038.27.camel@dhcp193.mvista.com>
-	 <20070830210555.GA6635@frankl.hpl.hp.com>
-	 <1188571401.26038.41.camel@dhcp193.mvista.com>
-	 <20070831162146.GD7161@frankl.hpl.hp.com>
-	 <1188578123.26038.52.camel@dhcp193.mvista.com>
-	 <20070831180644.GA24174@atjola.homenet>
-	 <1188606286.26038.117.camel@dhcp193.mvista.com>
-	 <20070901010053.GA29765@atjola.homenet>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 31 Aug 2007 18:36:07 -0700
-Message-Id: <1188610568.9476.7.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 8bit
+	Fri, 31 Aug 2007 21:49:23 -0400
+Date: Fri, 31 Aug 2007 19:48:12 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Copy large memory regions from & to userspace
+In-reply-to: <fa.tMlh7ZYvNMxPEL69Eww8ErwDEmw@ifi.uio.no>
+To: Clemens Kolbitsch <clemens.kol@gmx.at>
+Cc: Chris Smith <smitty1elkml@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Message-id: <46D8C4DC.2080307@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.0TqRgC3Smn96vb+Bwv5QRWKBTQg@ifi.uio.no>
+ <fa.x2L04usZZxVIMYSdrufu+Hen9aY@ifi.uio.no>
+ <fa.tMlh7ZYvNMxPEL69Eww8ErwDEmw@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-09-01 at 03:00 +0200, Björn Steinbrink wrote:
-> On 2007.08.31 17:24:46 -0700, Daniel Walker wrote:
-> > On Fri, 2007-08-31 at 20:06 +0200, Björn Steinbrink wrote:
-> > 
-> > 
-> > > > something to do with the nmi hertz adjustment that happens after
-> > > > check_nmi_watchdog() ..
-> > > 
-> > > Hm hm, does the same thing (watchdog stuck after check) happen with
-> > > older kernels, ie. those before Stephane's changeset that made it use
-> > > PERFCTR1?
-> > 
-> > I noticed the frequency gets turned down after check_nmi_watchdog() is
-> > called.. I think it's suppose to trigger once per second, but it's more
-> > like it updates randomly ..
+Clemens Kolbitsch wrote:
+> On Friday 31 August 2007 15:25:40 you wrote:
+>> On 8/30/07, Clemens Kolbitsch <clemens.kol@gmx.at> wrote:
+>>> Hi!
+>>> Just a short question: What is the correct method of copying large areas
+>>> of memory from userspace into userspace when running in kernel-mode?
+>> relayfs?
 > 
-> It's once per second if the cpu is 100% busy, if it's just idling and
-> halted, the performance counters won't be increased.
-
-Didn't know that .. I ran hackbench while watching /proc/interrupts ,
-and it ticks along ok on some cores .. 
-
-The acid test was running an application that hangs the system, and it
-caught it (although the system didn't recover from the lockup..) ..
-
-> > In older kernels it's very slow, but it's more consistent ..
+> no... I'm copying user-memory to user-memory, not kernel-to-user, however 
+> running the code in kernel-mode.
 > 
-> With the same load on the box? Maybe some other changes caused the box
-> to behave differently (say, CFS), regarding eg. load distribution
-> amongst the cores.
+> what i wanted to know is how to check the access-rights...
+> i didn't get any other answers, so for now i'm just using 
+> 
+> if (access_ok(VERIFY_READ, from, PAGE_SIZE) &&
+>     access_ok(VERIFY_WRITE, to, PAGE_SIZE))
+> {
+>     memcpy(to, from, PAGE_SIZE);
+> }
+> 
+> and hope that this is the *correct* way to do it...
 
-It must not have been the same load considering everything else.
+No, it's not. access_ok does not guarantee that the memory region can be 
+validly read or written. It only allows using __copy_to_user or 
+__copy_from_user which skips the same checks that access_ok does.
 
-I'm satisfied that Stephane's last patch fixes it ..
+I'm not aware of any code in the kernel that does userspace-to-userspace 
+copies directly. Likely because there's rarely a need for it?
 
-Daniel
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
