@@ -1,113 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbXIABxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbXIABxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757561AbXIABxT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXIABoq
+	id S1757851AbXIABxh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbXIABqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:44:46 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:51987 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753735AbXIABon (ORCPT
+	Fri, 31 Aug 2007 21:46:11 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:52877 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754095AbXIABqJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 21:44:43 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Fri, 31 Aug 2007 21:33:32 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Mitchell Erblich <erblichs@earthlink.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: maturity and status and attributes, oh my!
-In-Reply-To: <000501c7ec26$c2b06140$6501a8c0@earthlink.net>
-Message-ID: <Pine.LNX.4.64.0708312128060.7060@localhost.localdomain>
-References: <000501c7ec26$c2b06140$6501a8c0@earthlink.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Fri, 31 Aug 2007 21:46:09 -0400
+Subject: Re: nmi_watchdog=2 regression in 2.6.21
+From: Daniel Walker <dwalker@mvista.com>
+To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+Cc: eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20070901010053.GA29765@atjola.homenet>
+References: <20070828194636.GB2814@frankl.hpl.hp.com>
+	 <1188332024.2435.328.camel@dhcp193.mvista.com>
+	 <20070829212451.GC4810@frankl.hpl.hp.com>
+	 <1188436919.26038.27.camel@dhcp193.mvista.com>
+	 <20070830210555.GA6635@frankl.hpl.hp.com>
+	 <1188571401.26038.41.camel@dhcp193.mvista.com>
+	 <20070831162146.GD7161@frankl.hpl.hp.com>
+	 <1188578123.26038.52.camel@dhcp193.mvista.com>
+	 <20070831180644.GA24174@atjola.homenet>
+	 <1188606286.26038.117.camel@dhcp193.mvista.com>
+	 <20070901010053.GA29765@atjola.homenet>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 31 Aug 2007 18:36:07 -0700
+Message-Id: <1188610568.9476.7.camel@dhcp193.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007, Mitchell Erblich wrote:
+On Sat, 2007-09-01 at 03:00 +0200, Björn Steinbrink wrote:
+> On 2007.08.31 17:24:46 -0700, Daniel Walker wrote:
+> > On Fri, 2007-08-31 at 20:06 +0200, Björn Steinbrink wrote:
+> > 
+> > 
+> > > > something to do with the nmi hertz adjustment that happens after
+> > > > check_nmi_watchdog() ..
+> > > 
+> > > Hm hm, does the same thing (watchdog stuck after check) happen with
+> > > older kernels, ie. those before Stephane's changeset that made it use
+> > > PERFCTR1?
+> > 
+> > I noticed the frequency gets turned down after check_nmi_watchdog() is
+> > called.. I think it's suppose to trigger once per second, but it's more
+> > like it updates randomly ..
+> 
+> It's once per second if the cpu is 100% busy, if it's just idling and
+> halted, the performance counters won't be increased.
 
-> "Robert P. J. Day" wrote:
-> >
-> >   at the risk of driving everyone here totally bonkers, i'm going to
-> > take one last shot at explaining what i was thinking of when i first
-> > proposed this whole "maturity level" thing.  and, just so you know,
-> > the major reason i'm so cranked up about this is that i'm feeling just
-> > a little territorial -- i was the one who first started nagging people
-> > to consider this idea, so i'm a little edgy when i see folks finally
-> > giving it some serious thought but appearing to get ready to implement
-> > it entirely incorrectly in a way that's going to ruin it irreparably
-> > and make it utterly useless.
-> >
-> >   this isn't just about defining a single feature called "maturity".
-> > it's about defining a general mechanism so that you can add entirely
-> > new (what i call) "attributes" to kernel features.  one attribute
-> > could be "maturity", which could take one of a number of possible
-> > values.  another could be "status", with the same restrictions.
-> > heck, you could define the attribute "colour", and decide that various
-> > kernel features could be labelled as (at most) one of "red", "green"
-> > and "chartreuse."  that's what i mean by an "attribute", and
-> > attributes would have two critical and non-negotiable properties:
-> <<< snip>>>>
-> >
-> >   but i hope i've flogged this thoroughly to the point where people
-> > can see what i'm driving at.  once you see (as in simon's patch) how
-> > to add the first attribute, it's trivial to simply duplicate that code
-> > to add as many more as you want.
-> >
-> > rday
-> >
-> > --
-> > ========================================================================
-> > Robert P. J. Day
-> > Linux Consulting, Training and Annoying Kernel Pedantry
-> > Waterloo, Ontario, CANADA
-> >
-> > http://crashcourse.ca
-> > ========================================================================
-> Robert Day,
->
->         If I can interpret what you are asking about and changing it abit.
->
->         Don't you think that Maturity can be defined ALSO, as the
->        number of known bugs and their priority / serverity against a
->        architecture dependent or independent item?
->
->        Would this suffice and wouldn't it be easier to maintain?
->
->        Mitchell Erblich
+Didn't know that .. I ran hackbench while watching /proc/interrupts ,
+and it ticks along ok on some cores .. 
 
-perhaps.  all i'm begging for is that these attributes be defined
-cleanly and clearly, and following those two conditions i suggested
-earlier:
+The acid test was running an application that hangs the system, and it
+caught it (although the system didn't recover from the lockup..) ..
 
-1) all attributes are orthogonal to one another, and
-2) values within an attribute are mutually exclusive
+> > In older kernels it's very slow, but it's more consistent ..
+> 
+> With the same load on the box? Maybe some other changes caused the box
+> to behave differently (say, CFS), regarding eg. load distribution
+> amongst the cores.
 
-if you violate either of those conditions, i think you're going to
-find it very difficult to design sane Kconfig entries around them.
-if you don't believe me, give it a try.
+It must not have been the same load considering everything else.
 
-rday
+I'm satisfied that Stephane's last patch fixes it ..
 
-p.s.  rather than saying that maturity can be defined "also" in
-another way, you should say that it can be defined "instead" in
-another way.  i don't want to think what it might mean to define
-something like maturity in two different ways simultaneously, if
-that's what you were suggesting.  that just makes my brain hurt.
+Daniel
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
