@@ -1,39 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932885AbXIAVxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932681AbXIAWAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932885AbXIAVxT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 17:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbXIAVxD
+	id S932681AbXIAWAV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 18:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756879AbXIAWAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 17:53:03 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45230 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756925AbXIAVxB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 17:53:01 -0400
-Date: Sun, 2 Sep 2007 03:36:08 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: 2.6.23-rc4-mm1 "no CRC" MODPOST warnings
-In-Reply-To: <20070831215822.26e1432b.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0709020327260.20781@enigma.security.iitk.ac.in>
-References: <20070831215822.26e1432b.akpm@linux-foundation.org>
+	Sat, 1 Sep 2007 18:00:08 -0400
+Received: from ns.suse.de ([195.135.220.2]:44127 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756164AbXIAWAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 18:00:06 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] x86/x86-64 PCI domain support
+Date: Sun, 2 Sep 2007 00:00:03 +0200
+User-Agent: KMail/1.9.6
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20070901143223.GA32216@havoc.gtf.org>
+In-Reply-To: <20070901143223.GA32216@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709020000.03375.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+>  
+> +config PCI_DOMAINS
+> +	bool "PCI domain support"
+> +	depends on PCI
 
-On Fri, 31 Aug 2007, Andrew Morton wrote:
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
+I don't think this should be a config option.
 
-Got these on an i386 build with CONFIG_MODVERSIONS=y ...
+But there should be a pci=... option with Documentation to turn it off at runtime
 
-WARNING: "div64_64" [net/netfilter/xt_connbytes.ko] has no CRC!
-WARNING: "div64_64" [net/ipv4/tcp_cubic.ko] has no CRC!
 
-Full .config at: http://www.cse.iitk.ac.in/users/ssatyam/config-mm
+> +static inline int pci_proc_domain(struct pci_bus *bus)
+> +{
+> +	return pci_domain_nr(bus);
+> +}
+
+The second function is redundant? 
+
+
+-Andi
