@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbXIAGK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752705AbXIAGLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753293AbXIAGK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 02:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751030AbXIAGKR
+	id S1752705AbXIAGLS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 02:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbXIAGK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 02:10:17 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3326 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751106AbXIAGKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 02:10:15 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: [PATCH] skge: unbalanced parenthesis fix
-Date: Sat, 1 Sep 2007 08:10:12 +0200
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+	Sat, 1 Sep 2007 02:10:59 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:48590 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753489AbXIAGKp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 02:10:45 -0400
+Date: Sat, 1 Sep 2007 08:10:44 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Robert Hancock <hancockr@shaw.ca>
+cc: Clemens Kolbitsch <clemens.kol@gmx.at>,
+       Chris Smith <smitty1elkml@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Copy large memory regions from & to userspace
+In-Reply-To: <46D8C4DC.2080307@shaw.ca>
+Message-ID: <Pine.LNX.4.64.0709010810070.11617@fbirervta.pbzchgretzou.qr>
+References: <fa.0TqRgC3Smn96vb+Bwv5QRWKBTQg@ifi.uio.no>
+ <fa.x2L04usZZxVIMYSdrufu+Hen9aY@ifi.uio.no> <fa.tMlh7ZYvNMxPEL69Eww8ErwDEmw@ifi.uio.no>
+ <46D8C4DC.2080307@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709010810.12798.m.kozlowski@tuxland.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-	This patch fixes unbalanced parenthesis.
+On Aug 31 2007 19:48, Robert Hancock wrote:
+>
+> I'm not aware of any code in the kernel that does userspace-to-userspace
+> copies directly. Likely because there's rarely a need for it?
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+splice(), sort of.
 
- drivers/net/skge.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.23-rc4-mm1-a/drivers/net/skge.h	2007-09-01 07:23:52.000000000 +0200
-+++ linux-2.6.23-rc4-mm1-b/drivers/net/skge.h	2007-09-01 07:37:55.000000000 +0200
-@@ -1351,7 +1351,7 @@ enum {
- 	PHY_M_PC_EN_DET_PLUS	= 3<<8, /* Energy Detect Plus (Mode 2) */
- };
 
--#define PHY_M_PC_MDI_XMODE(x)	((((u16)(x)<<5) & PHY_M_PC_MDIX_MSK)
-+#define PHY_M_PC_MDI_XMODE(x)	(((u16)(x)<<5) & PHY_M_PC_MDIX_MSK)
-
- enum {
- 	PHY_M_PC_MAN_MDI	= 0, /* 00 = Manual MDI configuration */
+	Jan
+-- 
