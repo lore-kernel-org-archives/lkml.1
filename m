@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752142AbXHaXgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751818AbXIAAB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752142AbXHaXgb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 19:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbXHaXgW
+	id S1751818AbXIAAB1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 20:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750923AbXIAABR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 19:36:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48584 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbXHaXgV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 19:36:21 -0400
-Date: Sat, 1 Sep 2007 05:19:27 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bugme-daemon@kernel-bugs.osdl.org
-Subject: Re: [Bugme-new] [Bug 8957] New: Exported functions and variables
-In-Reply-To: <116718.45429.qm@web52005.mail.re2.yahoo.com>
-Message-ID: <alpine.LFD.0.999.0709010400440.13094@enigma.security.iitk.ac.in>
-References: <116718.45429.qm@web52005.mail.re2.yahoo.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 31 Aug 2007 20:01:17 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:59393 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750854AbXIAABQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 20:01:16 -0400
+Subject: Re: [RFC 1/4] Large Blocksize support for Ext2/3/4
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: clameter@sgi.com
+Cc: linux-fsdevel@vger.kernel.org, adilger@clusterfs.com, sho@tnes.nec.co.jp,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1188434857.3799.76.camel@localhost.localdomain>
+References: <20070828190551.415127746@sgi.com>
+	 <20070828190735.292638294@sgi.com>
+	 <1188432669.3799.35.camel@localhost.localdomain>
+	 <1188434857.3799.76.camel@localhost.localdomain>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 31 Aug 2007 17:01:30 -0700
+Message-Id: <1188604890.3837.38.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-08-29 at 17:47 -0700, Mingming Cao wrote:
 
-
-On Fri, 31 Aug 2007, Matti Linnanvuori wrote:
+> Just rebase to 2.6.23-rc4 and against the ext4 patch queue. Compile tested only. 
 > 
-> It seems to me that kernel/module.c allows the whole kernel to use
-> exported symbols during the execution of the init function if they are
-> weak:
->                         /* Ok if weak.  */
->                           if (ELF_ST_BIND(sym[i].st_info) == STB_WEAK)
->                                   break;
-> That seems a possible way to produce the scenario of this so-called bug.
+> Next steps:
+> Need a e2fsprogs changes to able test this feature. As mkfs needs to be
+> educated not assuming rec_len to be blocksize all the time.
+> Will try it with Christoph Lameter's large block patch next.
+> 
 
-No, even that won't reproduce the bug you're talking about, and you
-clearly don't know how weak symbols are supposed to work / be used :-)
-simplify_symbols() -> resolve_symbol() is called to resolve /external/
-symbols that the module-being-loaded references, and error out in case
-no such (global, exported) symbol was currently found.
+Two problems were found when testing largeblock on ext3.  Patches to
+follow. 
 
-So the "sym[i]" there refers to the (as yet unresolved) symbol referenced
-in the _dependent module B_, that it sees exported as a weak symbol
-(probably because marked as such in some header prototype). That check is
-to support usage where we still allow B to load without A being loaded,
-because it's somehow ensured that B will never call that function at
-runtime unless it is available ... something like:
+Good news is, with your changes, plus all these extN changes, I am able
+to run ext2/3/4 with 64k block size, tested on x86 and ppc64 with 4k
+page size. fsx test runs fine for an hour on ext3 with 16k blocksize on
+x86:-)
 
-extern void mod_a_func(void) __attribute__((weak));
-static int __init mod_b_init(void)
-{
-        if (mod_a_func)
-                mod_a_func();
-        else {
-                /* some remedial action */
-                printk(KERN_INFO "own little mod_a_func fallback\n");
-        }
-        return 0;
-}
+Mingming
 
-Try running the same test I described in previous post with this change.
-
-Moreover, failure to check (mod_a_func) will cause an _oops_, and *not*
-the "module A's exported function being called even when module_init()
-has not finished" issue that you've complained about. So things look
-alright to me on this front, the bug has been rightly rejected as invalid.
-And as Arjan pointed out, if you really saw such an issue, please post
-some code instead, so that we can have a look.
-
-Thanks,
-
-Satyam
