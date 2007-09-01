@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbXIALEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbXIALGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbXIALEH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 07:04:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbXIALDy
+	id S1755028AbXIALGV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 07:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXIALGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 07:03:54 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:35757 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752495AbXIALDx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 07:03:53 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sat, 1 Sep 2007 06:52:17 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Jeff Garzik <jeff@garzik.org>
-cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Sat, 1 Sep 2007 07:06:14 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46872 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752622AbXIALGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 07:06:13 -0400
+Message-ID: <46D947A3.1000404@garzik.org>
+Date: Sat, 01 Sep 2007 07:06:11 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: maturity and status and attributes, oh my!
-In-Reply-To: <46D94252.3000505@garzik.org>
-Message-ID: <Pine.LNX.4.64.0709010648530.32589@localhost.localdomain>
-References: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain>
- <46D89800.8080701@s5r6.in-berlin.de> <Pine.LNX.4.64.0708312109580.7060@localhost.localdomain>
- <46D92D8E.9020508@s5r6.in-berlin.de> <46D94252.3000505@garzik.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+References: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain> <46D89800.8080701@s5r6.in-berlin.de> <Pine.LNX.4.64.0708312109580.7060@localhost.localdomain> <46D92D8E.9020508@s5r6.in-berlin.de> <46D94252.3000505@garzik.org> <Pine.LNX.4.64.0709010648530.32589@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0709010648530.32589@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Sep 2007, Jeff Garzik wrote:
+Robert P. J. Day wrote:
+> On Sat, 1 Sep 2007, Jeff Garzik wrote:
+> 
+>> Feature deprecation and removal is a very amorphous concept that
+>> does not fit well at all into Kconfig markers, unlike
+>> experimental/broken.
+> 
+> and, as i've said before, i disagree.  while one might debate what
 
-> Feature deprecation and removal is a very amorphous concept that
-> does not fit well at all into Kconfig markers, unlike
-> experimental/broken.
+Feel free to disagree -- I am describing how things play out on a day to 
+day basis.  In essence you are disagreeing with reality.
 
-and, as i've said before, i disagree.  while one might debate what
-those words *mean*, or which features should be tagged thusly, i think
-there's a measurable value to be able to, with one mouse click, say
-you want to do a build test on the kernel which does not incorporate
-anything deemed deprecated and/or obsolete.  if you don't agree,
-however, no amount of explaining that on my part is going to change
-your opinion.
+	Jeff
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
 
-http://crashcourse.ca
-========================================================================
