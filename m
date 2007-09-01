@@ -1,47 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933466AbXIAXsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933502AbXIAXuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933466AbXIAXsl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 19:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932282AbXIAXsb
+	id S933502AbXIAXuJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 19:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbXIAXtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 19:48:31 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:64529 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932122AbXIAXsa (ORCPT
+	Sat, 1 Sep 2007 19:49:53 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:50750 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932230AbXIAXtv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 19:48:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EZ3vrS1XrKWbFYaTt+Z9xDWFmcJ6LTR58mykmpocAaNffHc6iliEuyzjCB0oFaS4OhBrvaG10qJTQbakysZTfTgHdGULIo9eq2gBTPXuE5bKGPe5JYaBMIcwzeWcWOeBwXpuwoj4PApK5+HyklABQtJinH2tzNNIuCOq3pKhxGc=
-Message-ID: <43e72e890709011648k5caffb7fn1051e1f5d5f27c9b@mail.gmail.com>
-Date: Sat, 1 Sep 2007 19:48:28 -0400
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "Constantine A. Murenin" <mureninc@gmail.com>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Cc: "Adrian Bunk" <bunk@kernel.org>, "Jeff Garzik" <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, "Jiri Slaby" <jirislaby@gmail.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <f34ca13c0709011629g1f16508cic7c31c3d20a57dae@mail.gmail.com>
+	Sat, 1 Sep 2007 19:49:51 -0400
+Date: Sun, 2 Sep 2007 01:49:52 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Bob Beck <beck@bofh.cns.ualberta.ca>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [beck@bofh.cns.ualberta.ca: I respect the GPL immensely,
+	really I do - but I believe this type of action weakens us all.]
+Message-ID: <20070901234952.GA16016@stusta.de>
+References: <20070901224112.GC24887@bofh.cns.ualberta.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <200709010140.l811eq9H005896@cvs.openbsd.org>
-	 <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
-	 <46D99FB7.6030505@garzik.org>
-	 <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
-	 <20070901205457.GK9260@stusta.de>
-	 <f34ca13c0709011427u7a9cc97bp75c035afed3e5a63@mail.gmail.com>
-	 <20070901215225.GM9260@stusta.de>
-	 <f34ca13c0709011629g1f16508cic7c31c3d20a57dae@mail.gmail.com>
+In-Reply-To: <20070901224112.GC24887@bofh.cns.ualberta.ca>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I urge developers to not bait into this and just leave this alone.
-Those involved know what they are doing and have a strong team of
-attorneys watching their backs. Any *necessary* discussions are be
-done privately.
+On Sat, Sep 01, 2007 at 04:41:12PM -0600, Bob Beck wrote:
+> ----- Forwarded message from Bob Beck <beck@bofh.cns.ualberta.ca> -----
+> 
+> From: Bob Beck <beck@bofh.cns.ualberta.ca>
+> To: misc@openbsd.org
+> Subject: I respect the GPL immensely, really I do - but I believe this type of action weakens us all.
+> X-Spam-Checker-Version: SpamAssassin 3.1.8 (2007-02-13) on bofh.cns.ualberta.ca
+> X-Spam-Level: 
+> X-Spam-Status: No, score=-2.8 required=3.0 tests=AWL,BAYES_00,
+> 	DNS_FROM_RFC_ABUSE,FORGED_RCVD_HELO autolearn=no version=3.1.8
+> Date: Sat, 1 Sep 2007 16:22:43 -0600
+> User-Agent: Mutt/1.5.12-2006-07-14
+> 
+>  [ A copy of this is going to the linux kernel mailing list, regarding the
+> recent license modifications to reyk's files]
+> 
+> >Oh, and if you look at the OpenBSD CVS you see versions 4 months old 
+> >with dozens of contributions by Reyk and with:
+> >
+> >/*      $OpenBSD: ath.c,v 1.63 2007/05/09 16:41:14 reyk Exp $  */
+> >/*      $NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $        */
+> >/*-
+> > * Copyright (c) 2002-2004 Sam Leffler, Errno Consulting
+> > * All rights reserved.
+> 
+>    Of course you do! because some of reyk's work used some of Sam's
+> work, and unlike what it seems a portion of the Linux community seems
+> to be willing to do in their Zealotry for the GPL, reyk is not
+> *removing and modifying* the licenses granted by the original authors.
+> That's the point. He's not saying he wrote this piece, and he's not
+> *changing* the conditions under which Sam distributed the code in the
+> first place. However what scares me more is the seeming willingness to
+> make the authors of a derivative work appear to be the primary authors
+> of something, and a willingness to change an authors copyright
+> statement (on reyk's code) without his permission. 
+>...
 
-  Luis
+You miss the whole point of dual licencing:
+
+Sam has stated in the licence that the code can be distributed under the 
+terms of the BSD licence, or alternatively it can be distributed under 
+the terms of the GPLv2.
+
+Noone removed Sam's licence.
+
+Sam has offered a choice, and if you choose one of the two offered 
+licences when distributing his code that complies with what he stated
+in his copyright notice.
+
+IANAL, but if reyk contributed to dual licenced code keeping the file 
+dual licenced it's hard to argue that he did not make the changes he 
+made available dual licenced.
+
+>    I seriously hope that saner more mature and forward thinking heads
+> inside the Linux community will stop bashing the things that Theo and
+> the rest of our community is saying just because it's coming from
+> Theo, and he's a great target to bash, and start thinking about what
+> you are doing to free software as a whole. I think you are on the
+> verge of doing irreparable damage that will seriously weaken the
+> ability for all of our projects to move forward, and protect our
+> rights as code authors in the future.
+
+The funny thing is that it seems Jiri's patch contained copyright 
+violations - and the parts of his patch Theo attacks are the parts
+that are OK...
+
+> 	-Bob
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
