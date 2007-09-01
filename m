@@ -1,44 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbXIAKww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbXIAK5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628AbXIAKww (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 06:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbXIAKwn
+	id S1754706AbXIAK5U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 06:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbXIAK5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 06:52:43 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:56009 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752739AbXIAKwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 06:52:42 -0400
-Message-ID: <46D94474.7080905@garzik.org>
-Date: Sat, 01 Sep 2007 06:52:36 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Sat, 1 Sep 2007 06:57:07 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:35613 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753322AbXIAK5F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 06:57:05 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sat, 1 Sep 2007 06:44:06 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Randy Dunlap <rdunlap@xenotime.net>
+cc: Simon Arlott <simon@fire.lp0.eu>, Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Adrian Bunk <bunk@stusta.de>, Jeff Garzik <jeff@garzik.org>,
+       Gabriel C <crazy@pimpmylinux.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
+In-Reply-To: <20070831102527.09fb42c0.rdunlap@xenotime.net>
+Message-ID: <Pine.LNX.4.64.0709010641540.31472@localhost.localdomain>
+References: <469E75AA.7040109@pimpmylinux.org>
+ <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
+ <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
+ <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
+ <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
+ <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
+ <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
+ <20070719083109.13b2ab56.rdunlap@xenotime.net>
+ <Pine.LNX.4.64.0707191213130.8844@localhost.localdomain>
+ <469FE045.3070403@simon.arlott.org.uk> <20070831102527.09fb42c0.rdunlap@xenotime.net>
 MIME-Version: 1.0
-To: Ondrej Zary <linux@rainbow-software.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: sata_via: write errors on PATA drive connected to VT6421
-References: <200708202242.07290.linux@rainbow-software.org> <20070821132731.6bf10b50@the-village.bc.nu> <200709010055.22200.linux@rainbow-software.org>
-In-Reply-To: <200709010055.22200.linux@rainbow-software.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ondrej Zary wrote:
-> Hello,
-> I think that I've found and fixed the problem. There is a copy/paste bug in 
-> vt6421_set_dma_mode() function which causes wrong values to be written to 
-> PATA_UDMA_TIMING register.
-> 
-> 
-> This patch fixes a copy/paste bug that breaks DMA modes on VT6421 PATA port.
-> 
-> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+On Fri, 31 Aug 2007, Randy Dunlap wrote:
 
-applied
+> On Thu, 19 Jul 2007 23:05:57 +0100 Simon Arlott wrote:
 
+> > What about something like this? I'm not sure if the addition to
+> > sym_init is desirable... I also had to prefix _ to the name for
+> > now otherwise it conflicts badly with the current symbols. It
+> > probably should stop "depends on _BROKEN" etc. too.
+>
+> Hi Simon,
+>
+> (sorry for the delay)
+>
+> I like this patch very much... I just can't get it to build (on
+> 2.6.23-rc4).
 
+i got a patch from simon a while back, and it failed with
+"shift/reduce" conflicts.  is that what you're seeing?
+
+> >  	while (1) {
+> >  		printf("%*s%s ", indent - 1, "", menu->prompt->text);
+> > +		switch (sym->maturity) {
+> > +		case M_EXPERIMENTAL:
+> > +			printf("(EXPERIMENTAL) ");
+> > +			break;
+> > +		case M_DEPRECATED:
+> > +			printf("(DEPRECATED) ");
+> > +			break;
+> > +		case M_OBSOLETE:
+> > +			printf("(OBSOLETE) ");
+> > +			break;
+> > +		case M_BROKEN:
+> > +			printf("(BROKEN) ");
+> > +			break;
+> > +		default:
+> > +			break;
+> > +		}
+> >  		if (sym->name)
+> >  			printf("(%s) ", sym->name);
+> >  		type = sym_get_type(sym);
+
+for now, simon, why not just reduce this to supporting only DEPRECATED
+and OBSOLETE so that it can be at least tested as "proof of concept?"
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
