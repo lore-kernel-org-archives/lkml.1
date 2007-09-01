@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbXIAUck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbXIAUiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbXIAUck (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 16:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbXIAUca
+	id S1756925AbXIAUiU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 16:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbXIAUiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 16:32:30 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43641 "EHLO mx2.suse.de"
+	Sat, 1 Sep 2007 16:38:11 -0400
+Received: from continuum.csy.ca ([70.71.0.134]:33792 "EHLO continuum.csy.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752104AbXIAUca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 16:32:30 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: eranian@hpl.hp.com
-Subject: Re: nmi_watchdog=2 regression in 2.6.21
-Date: Sat, 1 Sep 2007 22:32:25 +0200
-User-Agent: KMail/1.9.6
-Cc: Daniel Walker <dwalker@mvista.com>,
-       =?iso-8859-1?q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20070828194636.GB2814@frankl.hpl.hp.com> <200709011219.49256.ak@suse.de> <20070901195142.GA9778@frankl.hpl.hp.com>
-In-Reply-To: <20070901195142.GA9778@frankl.hpl.hp.com>
+	id S1752059AbXIAUiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 16:38:10 -0400
+X-Greylist: delayed 3222 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Sep 2007 16:38:10 EDT
+Date: Sat, 1 Sep 2007 12:44:27 -0700
+From: Shane <shane@cm.nu>
+To: linux-kernel@vger.kernel.org
+Subject: intel-rng on modern hardware
+Message-ID: <20070901194426.GA32713@csy.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200709012232.25609.ak@suse.de>
+X-No-Archive: yes
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 01 September 2007 21:51:42 Stephane Eranian wrote:
-> Hello,
-> 
-> Here is a patch to fix the NMI watchdog problem on CoreDuo processor.
-> I think we still need Daniel's patch to make the error path (when you
-> are stuck) do the right cleanup.
+Hi,
 
-Thanks.
+Just wondering if there is a newer version of intel-rng out
+of tree or whether modern Intel chipsets have a usable RNG. 
+I haven't been able to get intel-rng loading (no such
+device) on anything from the p965, p975 or p35 chipsets.
 
-Can that other patch please be submitted too? 
+Best,
+Shane
 
--Andi
-
+-- 
+http://www.cm.nu/~shane/
