@@ -1,39 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbXIAOHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbXIAOSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbXIAOHZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 10:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbXIAOHO
+	id S1754670AbXIAOSy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 10:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbXIAOSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 10:07:14 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53239 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752213AbXIAOHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 10:07:13 -0400
-From: Andi Kleen <ak@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu variable (v2)
-Date: Sat, 1 Sep 2007 16:06:48 +0200
-User-Agent: KMail/1.9.1
-Cc: travis@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>
-References: <20070824222654.687510000@sgi.com> <20070824222948.851896000@sgi.com> <20070831194903.5d88a007.akpm@linux-foundation.org>
-In-Reply-To: <20070831194903.5d88a007.akpm@linux-foundation.org>
+	Sat, 1 Sep 2007 10:18:45 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33813 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751573AbXIAOSo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 10:18:44 -0400
+Date: Sat, 1 Sep 2007 16:18:45 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Satyam Sharma <satyam@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Eugene Teo <eugeneteo@kernel.sg>,
+       "Antonino A. Daplas" <adaplas@pol.net>
+Subject: 2.6.23-rc4-mm1: geode fb compile error
+Message-ID: <20070901141845.GG9260@stusta.de>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200709011606.49208.ak@suse.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070831215822.26e1432b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 01 September 2007 04:49, Andrew Morton wrote:
-> On Fri, 24 Aug 2007 15:26:57 -0700 travis@sgi.com wrote:
-> > Convert cpu_sibling_map from a static array sized by NR_CPUS to a
-> > per_cpu variable.  This saves sizeof(cpumask_t) * NR unused cpus.
-> > Access is mostly from startup and CPU HOTPLUG functions.
+On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.23-rc3-mm1:
+>...
+> +drivers-video-geode-lxfb_corec-fix-lxfb_setup-warning-fix.patch
+> 
+>  Fix drivers-video-geode-lxfb_corec-fix-lxfb_setup-warning.patch
+>...
 
-The patchset was broken anyways even on x86-64 because of the 
-ordering issues at early boot Suresh pointed out.
+This patch doesn't fix 
+drivers-video-geode-lxfb_corec-fix-lxfb_setup-warning.patch, together 
+they break the compilation (2 - 1 - 1 = 0 < 1):
 
--Andi
+<--  snip  -->
+
+...
+  CC      drivers/video/geode/lxfb_core.o
+/home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/drivers/video/geode/lxfb_core.c: In function ‘lxfb_setup’:
+/home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/drivers/video/geode/lxfb_core.c:567: error: ‘opt’ undeclared (first use in this function)
+/home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/drivers/video/geode/lxfb_core.c:567: error: (Each undeclared identifier is reported only once
+/home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/drivers/video/geode/lxfb_core.c:567: error: for each function it appears in.)
+make[4]: *** [drivers/video/geode/lxfb_core.o] Error 1
+
+<--  snip  -->
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
