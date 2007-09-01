@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932993AbXIAWJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933109AbXIAWK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932993AbXIAWJO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 18:09:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932143AbXIAWI7
+	id S933109AbXIAWK5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 18:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665AbXIAWKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 18:08:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49188 "EHLO mx2.suse.de"
+	Sat, 1 Sep 2007 18:10:48 -0400
+Received: from ns.suse.de ([195.135.220.2]:45118 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932096AbXIAWI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 18:08:58 -0400
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: the Linux kernel, testsuites, and maybe *you*
-References: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com>
+	id S1756577AbXIAWKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 18:10:47 -0400
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, "CK Mailinglist" <ck@vds.kolivas.org>
+Subject: Re: [ANNOUNCE] DeskOpt - on fly task, i/o scheduler optimization
+References: <46D8354A.3030208@googlemail.com>
 From: Andi Kleen <andi@firstfloor.org>
-Date: 02 Sep 2007 00:08:57 +0200
-In-Reply-To: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com>
-Message-ID: <p733axyxcli.fsf@bingen.suse.de>
+Date: 02 Sep 2007 00:10:46 +0200
+In-Reply-To: <46D8354A.3030208@googlemail.com>
+Message-ID: <p73y7fqvxy1.fsf@bingen.suse.de>
 User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Mike Frysinger" <vapier.adi@gmail.com> writes:
+Michal Piotrowski <michal.k.k.piotrowski@gmail.com> writes:
 
-> is there any sort of standard for testing and integration into
-> mainline ?  
+> Here is something that might be useful for gamers and audio/video editors
+> http://www.stardust.webpages.pl/files/tools/deskopt/
 
-Everybody does their own.
+To make it double cool combine that with the generic genetic 
+optimizer for parameters that was posted a couple of months ago.
 
-> in the Blackfin world, we've been developing little
-> external kernel modules and adding them to our own testsuite, but
-> often times these things are not Blackfin specific.  case in point,
-> we're integrating a string testsuite to make sure all of the fun str*
-> and mem* functions are sane and operate as they expected, but rather
-> than having just Blackfin benefit here, i'd like to see this pushed
-> upstream ...
+> 
+> You can easily tune CFS/CFQ scheduler params
+> 
+> sched_batch_wakeup_granularity_ns
+> sched_latency_ns
+> sched_min_granularity_ns
+> sched_runtime_limit_ns
+> sched_stat_granularity_ns
+> sched_wakeup_granularity_ns
+> 
+> back_seek_max
+> back_seek_penalty
+> fifo_expire_async
+> fifo_expire_sync
+> quantum
+> slice_async
+> slice_async_rq
+> slice_idle
+> slice_sync
+> 
 
-I would like to see this too. I wrote a couple of unit tests
-during x86-64 development too and they would be handy
-to have in a central place.
-
-The SUSE kernel also has a crasher module that exercises the
-allocators and is pretty useful to stress code in general.
-
-Disadvantage is that test code tends to be hackish and ugly
-and very specialized and will probably not pass standard review procedures.
-
-Also the rt people seem to have pushed a couple of tests in already, 
-but I always hated it that they're in the standard directories.
-RCU also has, in fact they added a "eat all my CPU in tests"
-CONFIG option. Just making that dependent on a CONFIG_UNIT_TESTS
-would be a good change in itself. And then there are the slab
-failure inducers of course.
-
-BTW string functions are best tested in user space. That's
-a relatively bad example.
+You should probably add the device queue length too. That seems
+to often have a large impact on IO scheduling because on modern
+long queue controllers the Linux IO scheduler often doesn't
+have much to do because the device queue just eats it all up quickly.
 
 -Andi
