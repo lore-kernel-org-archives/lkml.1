@@ -1,162 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbXIALSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbXIALTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbXIALSj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 07:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXIALSa
+	id S1754032AbXIALTW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 07:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXIALTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 07:18:30 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:57432 "EHLO havoc.gtf.org"
+	Sat, 1 Sep 2007 07:19:06 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42269 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752306AbXIALS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 07:18:29 -0400
-Date: Sat, 1 Sep 2007 07:18:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: linux-ide@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ata_piix: use more-robust form of array init
-Message-ID: <20070901111828.GA26314@havoc.gtf.org>
+	id S1754205AbXIALSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 07:18:37 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [PATCH] x86: optionally show last exception from/to register contents (v2)
+Date: Sat, 1 Sep 2007 13:18:31 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, patches@x86-64.org
+References: <46D418AF.76E4.0078.0@novell.com>
+In-Reply-To: <46D418AF.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Message-Id: <200709011318.31520.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 28 August 2007 12:44:31 Jan Beulich wrote:
+> .. when dumping register state. This is particularly useful when gcc
+> managed to tail-call optimize an indirect call which happens to hit a
+> NULL (or otherwise invalid) pointer.
 
-commit f1aa850441adc237d237a469dca7d87dde0fe3b2
-Author: Jeff Garzik <jeff@garzik.org>
-Date:   Sat Sep 1 07:17:36 2007 -0400
+I added it, with a warning in the documentation and changelog
 
-    [libata] ata_piix: Use more-robust form of array initialization
-    
-    Use a form of array init that is less fragile, less sensitive to trivial
-    typos and ordering mismatches.
-    
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Also all the other patches except for the #DF one. Thanks.
 
- drivers/ata/ata_piix.c |   34 ++++++++++++----------------------
- 1 file changed, 12 insertions(+), 22 deletions(-)
+BTW I think there is a reasonable cheap way to avoid the interrupt race: 
 
-f1aa850441adc237d237a469dca7d87dde0fe3b2
-diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
-index 54c3487..cf5c599 100644
---- a/drivers/ata/ata_piix.c
-+++ b/drivers/ata/ata_piix.c
-@@ -123,7 +123,6 @@ enum {
- 	ich_pata_33		= 1,	/* ICH up to UDMA 33 only */
- 	ich_pata_66		= 2,	/* ICH up to 66 Mhz */
- 	ich_pata_100		= 3,	/* ICH up to UDMA 100 */
--	/* ICH up to UDMA 133 is not supported */
- 	ich5_sata		= 5,
- 	ich6_sata		= 6,
- 	ich6_sata_ahci		= 7,
-@@ -459,7 +458,7 @@ static const struct piix_map_db *piix_map_db_table[] = {
- };
- 
- static struct ata_port_info piix_port_info[] = {
--	/* piix_pata_33: 0:  PIIX4 at 33MHz */
-+	[piix_pata_33] =	/* PIIX4 at 33MHz */
- 	{
- 		.sht		= &piix_sht,
- 		.flags		= PIIX_PATA_FLAGS,
-@@ -469,7 +468,7 @@ static struct ata_port_info piix_port_info[] = {
- 		.port_ops	= &piix_pata_ops,
- 	},
- 
--	/* ich_pata_33: 1 	ICH0 - ICH at 33Mhz*/
-+	[ich_pata_33] = 	/* ICH0 - ICH at 33Mhz*/
- 	{
- 		.sht		= &piix_sht,
- 		.flags		= PIIX_PATA_FLAGS,
-@@ -478,7 +477,8 @@ static struct ata_port_info piix_port_info[] = {
- 		.udma_mask	= ATA_UDMA2, /* UDMA33 */
- 		.port_ops	= &ich_pata_ops,
- 	},
--	/* ich_pata_66: 2 	ICH controllers up to 66MHz */
-+
-+	[ich_pata_66] = 	/* ICH controllers up to 66MHz */
- 	{
- 		.sht		= &piix_sht,
- 		.flags		= PIIX_PATA_FLAGS,
-@@ -488,7 +488,7 @@ static struct ata_port_info piix_port_info[] = {
- 		.port_ops	= &ich_pata_ops,
- 	},
- 
--	/* ich_pata_100: 3 */
-+	[ich_pata_100] =
- 	{
- 		.sht		= &piix_sht,
- 		.flags		= PIIX_PATA_FLAGS | PIIX_FLAG_CHECKINTR,
-@@ -498,17 +498,7 @@ static struct ata_port_info piix_port_info[] = {
- 		.port_ops	= &ich_pata_ops,
- 	},
- 
--	/* ich_pata_133: 4 - Not supported - */
--	{
--		.sht		= &piix_sht,
--		.flags		= PIIX_PATA_FLAGS | PIIX_FLAG_CHECKINTR,
--		.pio_mask 	= 0x1f,	/* pio 0-4 */
--		.mwdma_mask	= 0x06, /* Check: maybe 0x07  */
--		.udma_mask	= ATA_UDMA6, /* UDMA133 */
--		.port_ops	= &ich_pata_ops,
--	},
--
--	/* ich5_sata: 5 */
-+	[ich5_sata] =
- 	{
- 		.sht		= &piix_sht,
- 		.flags		= PIIX_SATA_FLAGS,
-@@ -518,7 +508,7 @@ static struct ata_port_info piix_port_info[] = {
- 		.port_ops	= &piix_sata_ops,
- 	},
- 
--	/* ich6_sata: 6 */
-+	[ich6_sata] =
- 	{
- 		.sht		= &piix_sht,
- 		.flags		= PIIX_SATA_FLAGS | PIIX_FLAG_SCR,
-@@ -528,7 +518,7 @@ static struct ata_port_info piix_port_info[] = {
- 		.port_ops	= &piix_sata_ops,
- 	},
- 
--	/* ich6_sata_ahci: 7 */
-+	[ich6_sata_ahci] =
- 	{
- 		.sht		= &piix_sht,
- 		.flags		= PIIX_SATA_FLAGS | PIIX_FLAG_SCR |
-@@ -539,7 +529,7 @@ static struct ata_port_info piix_port_info[] = {
- 		.port_ops	= &piix_sata_ops,
- 	},
- 
--	/* ich6m_sata_ahci: 8 */
-+	[ich6m_sata_ahci] =
- 	{
- 		.sht		= &piix_sht,
- 		.flags		= PIIX_SATA_FLAGS | PIIX_FLAG_SCR |
-@@ -550,7 +540,7 @@ static struct ata_port_info piix_port_info[] = {
- 		.port_ops	= &piix_sata_ops,
- 	},
- 
--	/* ich8_sata_ahci: 9 */
-+	[ich8_sata_ahci] =
- 	{
- 		.sht		= &piix_sht,
- 		.flags		= PIIX_SATA_FLAGS | PIIX_FLAG_SCR |
-@@ -561,7 +551,7 @@ static struct ata_port_info piix_port_info[] = {
- 		.port_ops	= &piix_sata_ops,
- 	},
- 
--	/* piix_pata_mwdma: 10:  PIIX3 MWDMA only */
-+	[piix_pata_mwdma] = 	/* PIIX3 MWDMA only */
- 	{
- 		.sht		= &piix_sht,
- 		.flags		= PIIX_PATA_FLAGS,
-@@ -570,7 +560,7 @@ static struct ata_port_info piix_port_info[] = {
- 		.port_ops	= &piix_pata_ops,
- 	},
- 
--	/* tolapai_sata_ahci: 11: */
-+	[tolapai_sata_ahci] =
- 	{
- 		.sht		= &piix_sht,
- 		.flags		= PIIX_SATA_FLAGS | PIIX_FLAG_SCR |
+If pda->irqcount was split into two 16bit words and irq entry code increases the upper 
+16bit word (that should be nearly free because because both are in L1 cache; 
+with some luck the CPU can even dual-issue). Then the traps code could save
+the irq count early and then in the no_context case disable interrupts,
+compare and only print LER if there were no interrupts inbetween.
+
+-Andi 
+
+
