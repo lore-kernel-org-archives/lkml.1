@@ -1,46 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbXIACHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbXIACs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbXIACHw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 22:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbXIACHl
+	id S1752483AbXIACs7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 22:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbXIACsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 22:07:41 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48183 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751178AbXIACHk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 22:07:40 -0400
-Date: Fri, 31 Aug 2007 19:07:39 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: apw@shadowen.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, hch@lst.de, mel@skynet.ie, dgc@sgi.com
-Subject: Re: [RFC 14/26] SLUB: __GFP_MOVABLE and SLAB_TEMPORARY support
-In-Reply-To: <20070901110410.acea7b2b.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0708311906280.23843@schroedinger.engr.sgi.com>
-References: <20070901014107.719506437@sgi.com> <20070901014222.536517408@sgi.com>
- <20070901110410.acea7b2b.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 31 Aug 2007 22:48:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38302 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751301AbXIACst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 22:48:49 -0400
+Message-ID: <46D8D30B.6090703@redhat.com>
+Date: Fri, 31 Aug 2007 21:48:43 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       ext4 development <linux-ext4@vger.kernel.org>
+Subject: [RESEND][PATCH] dir_index: error out instead of BUG on corrupt hash
+ dir limit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Sep 2007, KAMEZAWA Hiroyuki wrote:
+(resend, this one got lost?  Got an acked-by from Andreas
+last go-round)
 
-> On Fri, 31 Aug 2007 18:41:21 -0700
-> Christoph Lameter <clameter@sgi.com> wrote:
-> 
-> > +#ifndef CONFIG_HIGHMEM
-> > +	if (s->kick || s->flags & SLAB_TEMPORARY)
-> > +		flags |= __GFP_MOVABLE;
-> > +#endif
-> > +
-> 
-> Should I do this as
-> 
-> #if !defined(CONFIG_HIGHMEM) && !defined(CONFIG_MEMORY_HOTREMOVE)
+(Andrew, Ted, should I be splitting out ext3 and ext4 patches and
+sending separately...?)
 
-Hmmm.... Not sure... I think the use of __GFP_MOVABLE the way it is up 
-there will change as soon as Mel's antifrag patchset is merged.
+Thanks,
+-Eric
+
+----------
+
+A corrupt ondisk hash dir limit will trip an assert in dx_probe,
+which calls BUG().  Instead, we can just issue the warning and
+fail dx_probe like the other 3 tests just before it.  Thanks
+to aviro for suggesting this...  Tested with a hand-crafted
+corrupt ext3 image, issues:
+
+EXT3-fs warning (device loop0): dx_probe: Corrupt limit in dir inode 14337
+
+vs. previous:
+
+Assertion failure in dx_probe() at fs/ext3/namei.c:383: "dx_get_limit(entries) == dx_root_limit(dir, root->info.info_length)"
+------------[ cut here ]------------
+kernel BUG at fs/ext3/namei.c:383!
+...
+
+
+Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+
+Index: linux-2.6.22-rc4/fs/ext3/namei.c
+===================================================================
+--- linux-2.6.22-rc4.orig/fs/ext3/namei.c
++++ linux-2.6.22-rc4/fs/ext3/namei.c
+@@ -379,8 +379,16 @@ dx_probe(struct dentry *dentry, struct i
+ 
+ 	entries = (struct dx_entry *) (((char *)&root->info) +
+ 				       root->info.info_length);
+-	assert(dx_get_limit(entries) == dx_root_limit(dir,
+-						      root->info.info_length));
++
++	if (dx_get_limit(entries) != dx_root_limit(dir,
++						   root->info.info_length)) {
++		ext3_warning(dir->i_sb, __FUNCTION__,
++			     "Corrupt limit in dir inode %ld\n", dir->i_ino);
++		brelse(bh);
++		*err = ERR_BAD_DX_DIR;
++		goto fail;
++	}
++
+ 	dxtrace (printk("Look up %x", hash));
+ 	while (1)
+ 	{
+Index: linux-2.6.22-rc4/fs/ext4/namei.c
+===================================================================
+--- linux-2.6.22-rc4.orig/fs/ext4/namei.c
++++ linux-2.6.22-rc4/fs/ext4/namei.c
+@@ -379,8 +379,16 @@ dx_probe(struct dentry *dentry, struct i
+ 
+ 	entries = (struct dx_entry *) (((char *)&root->info) +
+ 				       root->info.info_length);
+-	assert(dx_get_limit(entries) == dx_root_limit(dir,
+-						      root->info.info_length));
++
++	if (dx_get_limit(entries) != dx_root_limit(dir,
++						   root->info.info_length)) {
++		ext4_warning(dir->i_sb, __FUNCTION__,
++			     "Corrupt limit in dir inode %ld\n", dir->i_ino);
++		brelse(bh);
++		*err = ERR_BAD_DX_DIR;
++		goto fail;
++	}
++
+ 	dxtrace (printk("Look up %x", hash));
+ 	while (1)
+ 	{
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
