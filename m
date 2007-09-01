@@ -1,123 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbXIABAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752121AbXIABL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752190AbXIABAf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbXIABA0
+	id S1752121AbXIABL7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbXIABLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:00:26 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49520 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750737AbXIABA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 21:00:26 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX1+e/Yosp8uejfr4VmKESntYV80CkqoIa2yPZQmDXv
-	IoeyM3DpnI1iTH
-Date: Sat, 1 Sep 2007 03:00:53 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: nmi_watchdog=2 regression in 2.6.21
-Message-ID: <20070901010053.GA29765@atjola.homenet>
-References: <20070828194636.GB2814@frankl.hpl.hp.com> <1188332024.2435.328.camel@dhcp193.mvista.com> <20070829212451.GC4810@frankl.hpl.hp.com> <1188436919.26038.27.camel@dhcp193.mvista.com> <20070830210555.GA6635@frankl.hpl.hp.com> <1188571401.26038.41.camel@dhcp193.mvista.com> <20070831162146.GD7161@frankl.hpl.hp.com> <1188578123.26038.52.camel@dhcp193.mvista.com> <20070831180644.GA24174@atjola.homenet> <1188606286.26038.117.camel@dhcp193.mvista.com>
+	Fri, 31 Aug 2007 21:11:48 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44296 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751258AbXIABLr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 21:11:47 -0400
+Date: Fri, 31 Aug 2007 18:11:43 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Christoph Hellwig <hch@lst.de>
+cc: torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
+       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Mingming Cao <cmm@us.ibm.com>
+Subject: Re: [00/36] Large Blocksize Support V6
+In-Reply-To: <Pine.LNX.4.64.0708281254070.16473@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0708311804550.20144@schroedinger.engr.sgi.com>
+References: <20070828190551.415127746@sgi.com> <20070828192034.GA13883@lst.de>
+ <Pine.LNX.4.64.0708281254070.16473@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1188606286.26038.117.camel@dhcp193.mvista.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Y-GMX-Trusted: 0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.08.31 17:24:46 -0700, Daniel Walker wrote:
-> On Fri, 2007-08-31 at 20:06 +0200, Björn Steinbrink wrote:
-> 
-> 
-> > > something to do with the nmi hertz adjustment that happens after
-> > > check_nmi_watchdog() ..
-> > 
-> > Hm hm, does the same thing (watchdog stuck after check) happen with
-> > older kernels, ie. those before Stephane's changeset that made it use
-> > PERFCTR1?
-> 
-> I noticed the frequency gets turned down after check_nmi_watchdog() is
-> called.. I think it's suppose to trigger once per second, but it's more
-> like it updates randomly ..
+Thanks to some help Mingming Cao we now have support for extX with up to 
+64k blocksize. There were several issues in the jbd layer.... (The ext2 
+patch that Christoph complained about was dropped).
 
-It's once per second if the cpu is 100% busy, if it's just idling and
-halted, the performance counters won't be increased.
+The patchset can be tested (assuming one has a current git tree)
 
-> In older kernels it's very slow, but it's more consistent ..
+git checkout -b largeblock
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/christoph/largeblocksize.git largeblock
 
-With the same load on the box? Maybe some other changes caused the box
-to behave differently (say, CFS), regarding eg. load distribution
-amongst the cores.
+... Fiddle around with large blocksize functionality....
 
-> 
-> Here is some output ..
-> 
-> morning-glory ~ # cat /proc/interrupts
->            CPU0       CPU1       CPU2       CPU3
->   0:        103          0          0          0   IO-APIC-edge      timer
->   1:          0          0          0          8   IO-APIC-edge      i8042
->   4:       2320          0          0          1   IO-APIC-edge      serial
->   8:          1          0          0          1   IO-APIC-edge      rtc
->  12:          0          0          0        113   IO-APIC-edge      i8042
->  14:       1143          0          0         10   IO-APIC-edge      ide0
->  16:        227          0          0          1   IO-APIC-fasteoi   uhci_hcd:usb2, eth0
->  18:          0          0          0          0   IO-APIC-fasteoi   ehci_hcd:usb1
->  19:          0          0          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
->  20:          0          0          0          1   IO-APIC-fasteoi   acpi
-> NMI:        150        168        124        121
-> LOC:       6188       6189       6187       6184
-> ERR:          0
-> MIS:          0
-> morning-glory ~ # cat /proc/interrupts 
->            CPU0       CPU1       CPU2       CPU3       
->   0:        103          0          0          0   IO-APIC-edge      timer
->   1:          0          0          0          8   IO-APIC-edge      i8042
->   4:       2391          0          0          1   IO-APIC-edge      serial
->   8:          1          0          0          1   IO-APIC-edge      rtc
->  12:          0          0          0        113   IO-APIC-edge      i8042
->  14:       1143          0          0         10   IO-APIC-edge      ide0
->  16:        872          0          0          1   IO-APIC-fasteoi   uhci_hcd:usb2, eth0
->  18:          0          0          0          0   IO-APIC-fasteoi   ehci_hcd:usb1
->  19:          0          0          0          0   IO-APIC-fasteoi   uhci_hcd:usb3
->  20:          0          0          0          1   IO-APIC-fasteoi   acpi
-> NMI:        151        168        124        121 
-> LOC:      21443      21444      21442      21439 
-> ERR:          0
-> MIS:          0
-> dwalker2 ~ # 
-> 
-> 
-> If you look at the LOC values you'll notice a lot of time has passed,
-> with only one NMI and on only one cpu ..
-> 
-> It's possible this is something else completely tho ..
+git checkout master
 
-At least from the interrupt side, that box looks pretty idle, so that's
-expected I'd say.
+... Back to Linus' tree.
 
-> 
-> > Maybe you could "activate" the Dprintk in write_watchdog_counter32() to
-> > see which value gets written to the MSR? (I don't see any switch to
-> > activate it, so maybe just s/Dprintk(/printk(KERN_WHATEVER / ?)
-> 
-> Here's the only lines printed,
-> 
-> setting INTEL_ARCH_PERFCTR0 to -0x0131385e
-> setting INTEL_ARCH_PERFCTR0 to -0x0131385e
-> setting INTEL_ARCH_PERFCTR0 to -0x0131385e
-> setting INTEL_ARCH_PERFCTR0 to -0x0131385e
+git branch -D largeblock
 
-Ok, dumb I am.
+... Get rid of it.
 
-The "interesting" call from p6_rearm passes NULL as desc, and thus the
-printk is never called that way. But before we start flooding your logs,
-could you just hog all cores with a simple cpu hog and check if that
-causes the NMI counter to increase at about 1 Hz? If that doesn't work,
-we can go back to that debug output.
 
-Björn
+commit ed541c23b8e71a0217fd96d1b421992fdd7519df
+Author: Mingming Cao <cmm@us.ibm.com>
+
+    JBD: blocks reservation fix for large block support
+
+commit a1eaa33cf1600f18e961f1cf5c87820bca44df08
+Author: Christoph Lameter <clameter@sgi.com>
+
+    Teach jbd/jbd2 slab management to support >8k block size.
+
+commit 8199976e04333d66202edcaec6cef46771ed194e
+Author: Christoph Lameter <clameter@sgi.com>
+
+    Do not use f_mapping in simple_prepare_write()
+
+commit ac4d742ff3b3526d4c22d5b42e9f9fcc99881a8c
+Author: Mingming Cao <cmm@us.ibm.com>
+
+    ext4: fix rec_len overflow with 64KB block size
+
+commit f336a2d00e7c79500ff30fad40f6e3090319cbe7
+Author: Mingming Cao <cmm@us.ibm.com>
+
+    ext3: fix rec_len overflow with 64KB block size
+
+commit b0c1b74d42cce96c592f8d13b7b842a3e07b0273
+Author: Christoph Lameter <christoph@qirst.com>
+
+    ext2: fix rec_len overflow with 64KB block size
+
+commit 01229e6a2e84178a8b8467930c113a0096c069f2
+Author: Mingming Cao <cmm@us.ibm.com>
+
+    Large Blocksize support for Ext2/3/4
+
+
