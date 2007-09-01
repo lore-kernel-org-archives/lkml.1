@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932398AbXIAVQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbXIAVUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932398AbXIAVQx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 17:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbXIAVQn
+	id S932476AbXIAVUI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 17:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbXIAVT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 17:16:43 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60823 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755939AbXIAVQl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 17:16:41 -0400
-Date: Sat, 1 Sep 2007 23:16:43 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: "Constantine A. Murenin" <mureninc@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Message-ID: <20070901211642.GL9260@stusta.de>
-References: <200709010140.l811eq9H005896@cvs.openbsd.org> <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com> <46D99FB7.6030505@garzik.org> <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com> <20070901205457.GK9260@stusta.de>
+	Sat, 1 Sep 2007 17:19:57 -0400
+Received: from colo.lackof.org ([198.49.126.79]:49316 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756062AbXIAVT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 17:19:57 -0400
+Date: Sat, 1 Sep 2007 15:19:39 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Jason Gaston <jason.d.gaston@intel.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, khali@linux-fr.org,
+       i2c@lm-sensors.nu
+Subject: Re: [PATCH 2.6.23-rc4] irq: irq and pci_ids patch for Intel Tolapai
+Message-ID: <20070901211939.GA10442@colo.lackof.org>
+References: <200708301546.56998.jason.d.gaston@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070901205457.GK9260@stusta.de>
+In-Reply-To: <200708301546.56998.jason.d.gaston@intel.com>
+X-Home-Page: http://www.parisc-linux.org/
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 01, 2007 at 10:54:57PM +0200, Adrian Bunk wrote:
-> On Sat, Sep 01, 2007 at 01:37:18PM -0400, Constantine A. Murenin wrote:
-> > On 01/09/07, Jeff Garzik <jeff@garzik.org> wrote:
-> > > Constantine A. Murenin wrote:
-> > > > This will hopefully help diminish certain myths about the code licensing.
-> > >
-> > > What myth?  The myth that Theo understands dual licensing?
-> > 
-> > Reyk's code was never dual licensed, so it's not like it even matters
-> > to the original dispute.
+On Thu, Aug 30, 2007 at 03:46:56PM -0700, Jason Gaston wrote:
+> This updated patch adds the Intel Tolapai LPC and SMBus Controller DID's.
+> 
+> Signed-off-by: ?Jason Gaston <jason.d.gaston@intel.com>
+> 
+> --- linux-2.6.23-rc4/arch/i386/pci/irq.c.orig	2007-08-27 18:32:35.000000000 
+> -0700
+> +++ linux-2.6.23-rc4/arch/i386/pci/irq.c	2007-08-28 16:58:31.000000000 -0700
+> @@ -550,6 +550,7 @@
+>  		case PCI_DEVICE_ID_INTEL_ICH9_3:
+>  		case PCI_DEVICE_ID_INTEL_ICH9_4:
+>  		case PCI_DEVICE_ID_INTEL_ICH9_5:
+> +		case PCI_DEVICE_ID_INTEL_Tolapai_0:
 
-Oh, and if you look at the OpenBSD CVS you see versions 4 months old 
-with dozens of contributions by Reyk and with:
+If this is the only place it's used, the prefence is to define the
+constant locally (in the file) and not in pci_ids.h.
 
-/*      $OpenBSD: ath.c,v 1.63 2007/05/09 16:41:14 reyk Exp $  */
-/*      $NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $        */
+Please do submit new PCI device IDs to pciids.sf.net project.
 
-/*-
- * Copyright (c) 2002-2004 Sam Leffler, Errno Consulting
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer,
- *    without modification.
- * 2. Redistributions in binary form must reproduce at minimum a disclaimer
- *    similar to the "NO WARRANTY" disclaimer below ("Disclaimer") and any
- *    redistribution must be conditioned upon including a substantially
- *    similar Disclaimer requirement for further binary redistribution.
- * 3. Neither the names of the above-listed copyright holders nor the names
- *    of any contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * Alternatively, this software may be distributed under the terms of the
- * GNU General Public License ("GPL") version 2 as published by the Free
- * Software Foundation.
- *
- * NO WARRANTY
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF NONINFRINGEMENT, MERCHANTIBILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR SPECIAL, EXEMPLARY,
- * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
- * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
- * THE POSSIBILITY OF SUCH DAMAGES.
- */
+thanks,
+grant
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+>  			r->name = "PIIX/ICH";
+>  			r->get = pirq_piix_get;
+>  			r->set = pirq_piix_set;
+> --- linux-2.6.23-rc4/include/linux/pci_ids.h.orig	2007-08-27 
+> 18:32:35.000000000 -0700
+> +++ linux-2.6.23-rc4/include/linux/pci_ids.h	2007-08-28 16:58:31.000000000 
+> -0700
+> @@ -2293,6 +2293,8 @@
+>  #define PCI_DEVICE_ID_INTEL_MCH_PC	0x3599
+>  #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
+>  #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
+> +#define PCI_DEVICE_ID_INTEL_Tolapai_0	0x5031
+> +#define PCI_DEVICE_ID_INTEL_Tolapai_1	0x5032
+>  #define PCI_DEVICE_ID_INTEL_82371SB_0	0x7000
+>  #define PCI_DEVICE_ID_INTEL_82371SB_1	0x7010
+>  #define PCI_DEVICE_ID_INTEL_82371SB_2	0x7020
