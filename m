@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbXIAOcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbXIAOf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755838AbXIAOcn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 10:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXIAOcf
+	id S1755649AbXIAOf3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 10:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbXIAOfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 10:32:35 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33446 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752801AbXIAOcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 10:32:35 -0400
-Message-ID: <46D97801.5050104@garzik.org>
-Date: Sat, 01 Sep 2007 10:32:33 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Karsten Keil <kkeil@suse.de>, Andi Kleen <ak@suse.de>
-Subject: New stuff pushed to -mm
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 1 Sep 2007 10:35:21 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:46870 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753773AbXIAOfU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 10:35:20 -0400
+Subject: Re: v2.6.23-rc4-rt1 / new project URL
+From: Daniel Walker <dwalker@mvista.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       RT-Users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <1188631638.17941.11.camel@chaos>
+References: <1188593944.9647.15.camel@chaos>
+	 <1188604887.26038.110.camel@dhcp193.mvista.com>
+	 <1188631638.17941.11.camel@chaos>
+Content-Type: text/plain
+Date: Sat, 01 Sep 2007 07:25:05 -0700
+Message-Id: <1188656705.11196.4.camel@dhcp193.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just added three branches to 'ALL' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
+On Sat, 2007-09-01 at 09:27 +0200, Thomas Gleixner wrote:
 
-dmi-const		DMI constification
+> 
+> Yeah, I know. Still I wanted to go through it myself.
+> 
 
-pciseg			x86 PCI domain support, newly updated
-			for the latest Muli stuff upstream
+Ok,
 
-isdn-cleanups		Obvious and simple cleanups for ISDN
+Here are some other trivial fixes,
 
-All are targetted for 2.6.24.  Just sent out dmi-const and pciseg to 
-LKML.  Sent isdn-cleanups to LKML, ISDN list and Karsten a while ago.
+http://lkml.org/lkml/2007/8/28/331
+http://lkml.org/lkml/2007/8/28/334
 
-The "super mondo ISDN cleanups", converting ISDN HiSax drivers to 
-PCI/PNP/ISA APIs, are not included in this batch.
-
-	Jeff
-
+Daniel
 
