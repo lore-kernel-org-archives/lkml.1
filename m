@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757744AbXIAVGD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932143AbXIAVJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757744AbXIAVGD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 17:06:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbXIAVFv
+	id S932143AbXIAVJd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 17:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbXIAVJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 17:05:51 -0400
-Received: from mx.freeshell.ORG ([192.94.73.19]:54973 "EHLO sdf.lonestar.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755764AbXIAVFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 17:05:50 -0400
-X-Greylist: delayed 466 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Sep 2007 17:05:50 EDT
-Date: Sat, 1 Sep 2007 20:57:42 +0000
-From: Jacob Meuser <jakemsr@sdf.lonestar.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Constantine A. Murenin" <mureninc@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Message-ID: <20070901205742.GB23642@SDF.LONESTAR.ORG>
-References: <200709010140.l811eq9H005896@cvs.openbsd.org> <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com> <20070901213052.530483c3@the-village.bc.nu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070901213052.530483c3@the-village.bc.nu>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 1 Sep 2007 17:09:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37464 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753553AbXIAVJX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 17:09:23 -0400
+Date: Sun, 2 Sep 2007 02:51:53 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Andi Kleen <ak@suse.de>
+cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       len.brown@intel.com, linux-ide@vger.kernel.org, dz@debian.org,
+       minyard@acm.org, j.w.r.degoede@hhs.nl, lm-sensors@lm-sensors.org,
+       rlove@rlove.org, bzolnier@gmail.com, dmitry.torokhov@gmail.com,
+       mzxreary@0pointer.de, stelian@popies.net, ibm-acpi@hmh.eng.br,
+       ambx1@neo.rr.com, gimli@dark-green.com
+Subject: Re: [PATCH] drivers/firmware: const-ify DMI API and internals
+In-Reply-To: <200709011833.08581.ak@suse.de>
+Message-ID: <alpine.LFD.0.999.0709020249190.20781@enigma.security.iitk.ac.in>
+References: <20070901142719.GA31990@havoc.gtf.org>
+ <200709011833.08581.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 01, 2007 at 09:30:52PM +0100, Alan Cox wrote:
 
-> If OpenBSD wants a world where code must be returned
 
-OpenBSD does not want this.
+On Sat, 1 Sep 2007, Andi Kleen wrote:
+> 
+> >     And if we're really lucky, this might enable some additional
+> >     optimizations on the part of the compiler.
+> 
+> Only if the kernel was compiled C++. C compilers generally ignore constness
+> for optimization purposes because it can be so easily casted away.
 
-OpenBSD wants a world where people do things because they are the
-right thing to do.
+???
 
-OpenBSD lets you decide; it doesn't dictate.
-
-someone poo-poos your decision, well, it was your decision.
-
-someone poo-poos you because you do exactly the thing that you are so
-afraid of having happen to you, well, it was your decision.
-
--- 
-jakemsr@sdf.lonestar.org
-SDF Public Access UNIX System - http://sdf.lonestar.org
+I can't speak for the exact const-ification that Jeff did in this
+particular patch, but if you intended your comment up there to be a
+blanket statement, then you're totally and horribly wrong. There's a
+whole plethora of optimizations that gcc does when dealing with const-
+marked data. If you've seen / experienced otherwise, please post some
+testcases.
