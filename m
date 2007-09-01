@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932545AbXIAVrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbXIAVv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932545AbXIAVrd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 17:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756577AbXIAVr0
+	id S932560AbXIAVv7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 17:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756879AbXIAVvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 17:47:26 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:44578 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756037AbXIAVrZ (ORCPT
+	Sat, 1 Sep 2007 17:51:51 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:53632 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756801AbXIAVvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 17:47:25 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "T. J. Brumfield" <enderandrew@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: about modularization
-In-Reply-To: <20070803131900.GA26203@elte.hu>
-References: <cdc89fe60708030507r29283942mbb9947edbe04e23a@mail.gmail.com> <20070803131900.GA26203@elte.hu>
-Date: Sun, 2 Sep 2007 00:02:22 +0200
-Message-Id: <E1IRb2s-0001Qp-5j@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Sat, 1 Sep 2007 17:51:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=H6E8rEBOz+RgNNU62DGExr0lHqSPqaRAYArc41NHzAhjpNgD9qyNwplDZHKWFC/F84EH2zeSrrUNP2T7Fycjn8QNV4AldsFaBF2MpFEntr5UpL85i/1sUpnjHARh+F+/jQAHzgRELbGYwRwRPBiVueln82R1xEFerXddMNrEZPo=
+Message-ID: <f34ca13c0709011451p67ca96f8o184c0b32efa6b55b@mail.gmail.com>
+Date: Sat, 1 Sep 2007 17:51:49 -0400
+From: "Constantine A. Murenin" <mureninc@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+Cc: "Jeff Garzik" <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20070901211642.GL9260@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200709010140.l811eq9H005896@cvs.openbsd.org>
+	 <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
+	 <46D99FB7.6030505@garzik.org>
+	 <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
+	 <20070901205457.GK9260@stusta.de> <20070901211642.GL9260@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Date: Fri, 3 Aug 2007 15:19:00 +0200
-* Received-SPF: softfail (mx3: transitioning domain of elte.hu does not designate 157.181.1.14 as permitted sender) client-ip=157.181.1.14; envelope-from=mingo@elte.hu; helo=elvis.elte.hu;
-
-> If you boot into a distro kernel on 
-> a typical PC, about half of the kernel code that the box runs in any 
-> moment will be in modules, half of it is in the "kernel core". For 
-> example, on a random laptop:
-
-That was your laptop and distro.
-
->  $ echo `lsmod | cut -c1-30 | cut -d' ' -f2-` | sed 's/Size //' |
->    sed 's/ /+/g' | bc
->  2513784
+On 01/09/07, Adrian Bunk <bunk@kernel.org> wrote:
+> On Sat, Sep 01, 2007 at 10:54:57PM +0200, Adrian Bunk wrote:
+> > On Sat, Sep 01, 2007 at 01:37:18PM -0400, Constantine A. Murenin wrote:
+> > > On 01/09/07, Jeff Garzik <jeff@garzik.org> wrote:
+> > > > Constantine A. Murenin wrote:
+> > > > > This will hopefully help diminish certain myths about the code licensing.
+> > > >
+> > > > What myth?  The myth that Theo understands dual licensing?
+> > >
+> > > Reyk's code was never dual licensed, so it's not like it even matters
+> > > to the original dispute.
 >
-> i.e. 2.5 MB of modules. The core kernel's size:
+> Oh, and if you look at the OpenBSD CVS you see versions 4 months old
+> with dozens of contributions by Reyk and with:
 >
->  $ dmesg | grep 'kernel code'
->  Memory: 2053212k/2087808k available (2185k kernel code, 33240k reserved, 1174k data, 244k init, 1170304k highmem)
+> /*      $OpenBSD: ath.c,v 1.63 2007/05/09 16:41:14 reyk Exp $  */
+> /*      $NetBSD: ath.c,v 1.37 2004/08/18 21:59:39 dyoung Exp $        */
 >
-> 2.1 MB of kernel core code. (of course the total body of "possible 
-> drivers" is 10 times larger than that of the core kernel - but the 
-> fundamental 'variety' is not.)
+> /*-
+>  * Copyright (c) 2002-2004 Sam Leffler, Errno Consulting
+>  * All rights reserved.
+>  *
+>  * Redistribution and use in source and binary forms, with or without
+>  * modification, are permitted provided that the following conditions
+>  * are met:
+>  * 1. Redistributions of source code must retain the above copyright
+>  *    notice, this list of conditions and the following disclaimer,
+>  *    without modification.
+>  * 2. Redistributions in binary form must reproduce at minimum a disclaimer
+>  *    similar to the "NO WARRANTY" disclaimer below ("Disclaimer") and any
+>  *    redistribution must be conditioned upon including a substantially
+>  *    similar Disclaimer requirement for further binary redistribution.
+>  * 3. Neither the names of the above-listed copyright holders nor the names
+>  *    of any contributors may be used to endorse or promote products derived
+>  *    from this software without specific prior written permission.
+>  *
+>  * Alternatively, this software may be distributed under the terms of the
+>  * GNU General Public License ("GPL") version 2 as published by the Free
+>  * Software Foundation.
+>  *
+>  * NO WARRANTY
+>  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+>  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+>  * LIMITED TO, THE IMPLIED WARRANTIES OF NONINFRINGEMENT, MERCHANTIBILITY
+>  * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+>  * THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR SPECIAL, EXEMPLARY,
+>  * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+>  * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+>  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+>  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+>  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+>  * THE POSSIBILITY OF SUCH DAMAGES.
+>  */
 
-Just for reference here's my 2+ years old Asus A4K, kernel is form
-Debian Etch:
+Where exactly do you see Reyk's copyright in the above quote?
 
-deen:/tmp# uname -a
-Linux deen 2.6.18-4-amd64 #1 SMP Mon Mar 26 11:36:53 CEST 2007 x86_64 x86_64
-deen:/tmp# lsmod | (read a; while read a b c; do S=$((b+${S=0})); done; echo $S)
-1583684                                                                        
-deen:/tmp# lsmod | grep xfs                                                    
-xfs                   485192  3                                                
-deen:/tmp# dmesg | grep kernel\ code                                           
-Memory: 506676k/523520k available (1930k kernel code, 16456k reserved, 868k data, 176k init)
+http://www.openbsd.org/cgi-bin/man.cgi?query=ath&sektion=4#AUTHORS
 
-Apart from diff in hardware and implied designing/coding skills, decision
-was made
-
-* after one "wrong" response plus illness from Con,
-* brave core-duo by Ingo and Tomas, who made some bunch of students to test
-  scheduler and reported success to Linus.
-
-I don't know why, after all that variety of things (mostly drivers, but
-recent *fd also) there's such big resistance to anything that's useful
-and used by ordinary people. A star sickness, pride? If yes, that's just
-ridiculous, but who cares.
-____
+C.
