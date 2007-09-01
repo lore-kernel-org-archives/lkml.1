@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbXIASY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbXIAS3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbXIASY7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 14:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXIASYv
+	id S1756869AbXIAS3g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 14:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbXIAS33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 14:24:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46599 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753923AbXIASYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 14:24:51 -0400
-Date: Sat, 1 Sep 2007 14:24:41 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: maturity and status and attributes, oh my!
-Message-ID: <20070901182441.GA8571@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
-	Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain> <46D89800.8080701@s5r6.in-berlin.de> <Pine.LNX.4.64.0709010435070.26137@localhost.localdomain> <46D9306C.9040301@s5r6.in-berlin.de> <Pine.LNX.4.64.0709010533260.29190@localhost.localdomain> <20070901172231.GA28391@redhat.com> <Pine.LNX.4.64.0709011352390.20094@localhost.localdomain> <Pine.LNX.4.64.0709011402570.20725@localhost.localdomain>
-MIME-Version: 1.0
+	Sat, 1 Sep 2007 14:29:29 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2021 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753376AbXIAS32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 14:29:28 -0400
+Date: Sat, 1 Sep 2007 18:18:45 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dtor@mail.ru
+Subject: Re: [PATCH] Console keyboard events and accessibility
+Message-ID: <20070901181845.GA4839@ucw.cz>
+References: <20070821005718.GD3658@interface.famille.thibault.fr> <Pine.LNX.4.64.0708210732270.5333@fbirervta.pbzchgretzou.qr> <20070821204951.GC3658@interface.famille.thibault.fr> <20070712191932.GA3947@ucw.cz> <20070901122604.GA3251@implementation.famille.thibault.fr> <20070901123258.GA4612@ucw.cz> <20070901125120.GC3251@implementation.famille.thibault.fr> <20070901172301.GA4275@ucw.cz> <20070901173329.GB12644@implementation>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709011402570.20725@localhost.localdomain>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070901173329.GB12644@implementation>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 01, 2007 at 02:06:22PM -0400, Robert P. J. Day wrote:
- > On Sat, 1 Sep 2007, Robert P. J. Day wrote:
- > 
- > > On Sat, 1 Sep 2007, Dave Jones wrote:
- > 
- > > > People just don't care about how mature an option is if they need
- > > > a driver/feature.  *No-one* is going to come across options and
- > > > think "Oh, the driver for my network card isn't stable. Guess I'll
- > > > not enable it". And the idea of hiding the options behind multiple
- > > > levels of maturity options sounds completely batshit.
- > 
- > by the way and just for the record, dave, you have the above
- > completely backwards.  the default for what you would be allowed to
- > select or deselect would be *everything*.  what this whole maturity
- > level thing would allow you to do is selectively *deselect* (or
- > *filter*) what is displayed.  in short, if you do nothing, you see no
- > effect.
+Hi!
 
->From your earlier mail..
+> > > Very early is not so early, and loading initrd itself may actually fail.
+> > > The kernel may indeed hang, but there are more chances to get some
+> > > messages before the hang.  Don't _you_ have a VGA screen for getting
+> > > earliest failure messages from the kernel?
+> > 
+> > No. I'm using framebuffer, that's initialized quite late in boot
+> > process. Plus many users just use bootsplash. I do use vga mode for
+> > heavy debugging, but that's quite unusual.
+> 
+> But that's what some people do for their work, so they need it.
 
-"all this new construct is doing is implementing a new way to globally
- select or de-select large sets of kernel features to display for user
- selection, in exactly the way that EXPERIMENTAL does it now, that's all."
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+How many such users are out there?
 
-EXPERIMENTAL hides options.
+> > So... you actually have speech-enabled grub/lilo/something?
+> 
+> That's in project too (and there's no reason it shouldn't be done).
 
- > so i don't mind folks criticizing the proposal.  but it sure would be
- > nice if they understood what they were criticising, know what i mean?
-
-Quite.
-
-	Dave
-
+I'd say kernel debugging is hard without accessible bootloader, so I'd
+hope number of such users is very low.
+							Pavel
 -- 
-http://www.codemonkey.org.uk
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
