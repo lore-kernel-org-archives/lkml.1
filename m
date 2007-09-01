@@ -1,83 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbXIAQo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbXIAQsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbXIAQo2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 12:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbXIAQoR
+	id S1755991AbXIAQsx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 12:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbXIAQsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 12:44:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60759 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752138AbXIAQoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 12:44:16 -0400
-Date: Sat, 1 Sep 2007 18:44:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: chris@zankel.net, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc: sched.c vs. xtensa: RSR redefined
-Message-ID: <20070901164412.GA7273@elte.hu>
-References: <20070901152743.GI9260@stusta.de>
+	Sat, 1 Sep 2007 12:48:43 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:42342 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752729AbXIAQsl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 12:48:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ejRMHLCn210yTJ6VYXI7EI+apki7W2rqFg9UGE+EisC2AdeZsPF47eP7UTDZd7X378WjAYeED4SMM4e64088e9TynsU7nXdo4rj4tW4GxxUUTPiN4SdCxwREMAB2tFyGJvuo2ThcQ1HtilWeRT50YGz1IlJmX99NI1mxOzaWCUE=
+Message-ID: <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
+Date: Sat, 1 Sep 2007 12:48:40 -0400
+From: "Constantine A. Murenin" <mureninc@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Fwd: That whole "Linux stealing our code" thing
+In-Reply-To: <200709010140.l811eq9H005896@cvs.openbsd.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070901152743.GI9260@stusta.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <200709010140.l811eq9H005896@cvs.openbsd.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This will hopefully help diminish certain myths about the code licensing.
 
-* Adrian Bunk <bunk@kernel.org> wrote:
+C.
 
-> Although it seems to pick the right version the following namespace 
-> conflict should be resolved:
+---------- Forwarded message ----------
+From: Theo de Raadt <deraadt@cvs.openbsd.org>
+Date: 31-Aug-2007 21:40
+Subject: That whole "Linux stealing our code" thing
+To: misc@openbsd.org
 
-agreed - i've queued up the fix below.
 
-	Ingo
+[bcc'd to Eben Moglen so that people don't flood him]
 
------------------->
-Subject: sched: fix xtensa build warning
-From: Ingo Molnar <mingo@elte.hu>
+I stopped making public statements in the recent controversy because
+Eben Moglen started working behind the scenes to 'improve' what Linux
+people are doing wrong with licensing, and he asked me to give him
+pause, so his team could work.  Honestly, I was greatly troubled by
+the situation, because even people like Alan Cox were giving other
+Linux developers advice to ... break the law.  And furthermore, there
+are even greater potential risks for how the various communities
+interact.
 
-rename RSR to SRR - 'RSR' is already defined on xtensa.
+For the record -- I was right and the Linux developers cannot change
+the licenses in any of those ways proposed in those diffs, or that
+conversation (http://lkml.org/lkml/2007/8/28/157).
 
-found by Adrian Bunk.
+It is illegal to modify a license unless you are the owner/author,
+because it is a legal document.  If there are multiple owners/authors,
+they must all agree.  A person who receives the file under two
+licenses can use the file in either way....  but if they distribute
+the file (modified or unmodified!), they must distribute it with the
+existing license intact, because the licenses we all use have
+statements which say that the license may not be removed.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+It may seem that the licenses let one _distribute_ it under either
+license, but this interpretation of the license is false -- it is
+still illegal to break up, cut up, or modify someone else's legal
+document, and, it cannot be replaced by another license because it may
+not be removed.  Hence, a dual licensed file always remains dual
+licensed, every time it is distributed.
 
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -668,7 +668,7 @@ static u64 div64_likely32(u64 divident, 
- /*
-  * Shift right and round:
-  */
--#define RSR(x, y) (((x) + (1UL << ((y) - 1))) >> (y))
-+#define SRR(x, y) (((x) + (1UL << ((y) - 1))) >> (y))
- 
- static unsigned long
- calc_delta_mine(unsigned long delta_exec, unsigned long weight,
-@@ -684,10 +684,10 @@ calc_delta_mine(unsigned long delta_exec
- 	 * Check whether we'd overflow the 64-bit multiplication:
- 	 */
- 	if (unlikely(tmp > WMULT_CONST))
--		tmp = RSR(RSR(tmp, WMULT_SHIFT/2) * lw->inv_weight,
-+		tmp = SRR(SRR(tmp, WMULT_SHIFT/2) * lw->inv_weight,
- 			WMULT_SHIFT/2);
- 	else
--		tmp = RSR(tmp * lw->inv_weight, WMULT_SHIFT);
-+		tmp = SRR(tmp * lw->inv_weight, WMULT_SHIFT);
- 
- 	return (unsigned long)min(tmp, (u64)(unsigned long)LONG_MAX);
- }
+Now I've been nice enough to give Eben and his team a few days time to
+communicate inside the Linux community, to convince them that what
+they have proposed/discussed is wrong at a legal level.  I think that
+Eben also agrees with me that there are grave concerns about how this
+leads to problems at the ethical and community levels (at some level,
+a ethos is needed for Linux developers to work with *BSD developers).
+And there are possibilities that similar issues could loom in the
+larger open source communities who are writing applications.
+
+Eben has thus far chosen not to make a public statement, but since
+time is running out on people's memory, I am making one.  Also, I feel
+that a lot of Linux "relicencing" meme-talkin' trolls basically have
+attacked me very unfairly again, so I am not going to wait for Eben to
+say something public about this.
+
+In http://lkml.org/lkml/2007/8/29/183, Alan Cox managed to summarize
+what Jiri Slaby and Luis Rodriguez were trying to do by proposing a
+modification of a Dual Licenced file without the consent of all the
+authors.  Alan asks "So whats the problem ?".  Well, Alan, I must
+caution you -- your post is advising people to break the law.
+
+I will attempt to describe in simple terms, based on what I have been
+taught, how one must handle such licenses:
+
+- If you receive dual licensed code, you may not delete the license
+  you don't like and then distribute it.  It has to stay, because you
+  may not edit someone's else's license -- which is a three-part legal
+  document (For instance: Copyright notice, BSD, followed by GPL).
+
+- If you receive ISC or BSD licensed code, you may not delete the
+  license.  Same principle, since the notice says so.  It's the law.
+  Really.
+
+- If you add "large pieces of originality" to the code which are valid
+  for copyright protection on their own, you may choose to put a different
+  and seperate (must be non-conflicting...) license at the top of the file
+  above the existing license.
+
+    (Warning: things become less clear as to what the combination of
+    licenses mean, though -- there are ethical traps, too).
+
+- If you wish for everyone to remain friends, you should give code back.
+
+  That means (at some ethical or friendliness level) you probably do
+  not want to put a GPL at the top of a BSD or ISC file, because you
+  would be telling the people who wrote the BSD or ISC file:
+
+     "Thanks for what you wrote, but this is a one-way street, you give
+     us code, and we take it, we give you you nothing back.  screw off."
+
+In either case, I think a valuable lessons has been taught us here in
+the BSD world -- there are many many GPL loving people who are going
+to try to find any way to not give back and share (I will mention one
+name: Luis Rodriguez has been a fanatic pushing us for dual licensed,
+and I feel he is to blame for this particular problem).  Many of those
+same people have been saying for years that BSD code can be stolen,
+and that is why people should GPL their code.
+
+Well, the lesson they have really taught us is that they consider the
+GPL their best tool to take from us!
+
+GPL fans said the great problem we would face is that companies would
+take our BSD code, modify it, and not give back.  Nope -- the great
+problem we face is that people would wrap the GPL around our code, and
+lock us out in the same way that these supposed companies would lock
+us out.  Just like the Linux community, we have many companies giving
+us code back, all the time.  But once the code is GPL'd, we cannot get
+it back.
+
+Ironic.
+
+I hope some people in the GPL community will give that some thought.
+Your license may benefit you, but you could lose friends you need.
+The GPL users have an opportunity to 'develop community', to keep an
+ethic of sharing alive.
+
+If the Linux developers wrap GPL's around things we worked very hard
+on, it will definately not be viewed as community development.
+
+Thank you for thinking about this.
+
+[I ask that one person make sure that one copy of this ends up on the
+linux kernel mailing list]
