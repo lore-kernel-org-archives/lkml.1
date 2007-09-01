@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933372AbXIAXrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933466AbXIAXsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933372AbXIAXrr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 19:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757632AbXIAXrk
+	id S933466AbXIAXsl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 19:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932282AbXIAXsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 19:47:40 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:46042 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757620AbXIAXrj (ORCPT
+	Sat, 1 Sep 2007 19:48:31 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:64529 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932122AbXIAXsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 19:47:39 -0400
-To: Rob Landley <rob@landley.net>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org
-Subject: kconfig/kbuild rewite (Re: What's up with CONFIG_BLK_DEV?)
-In-Reply-To: <200708260108.28584.rob@landley.net>
-References: <200708241517.28475.rob@landley.net> <Pine.LNX.4.64.0708242234250.28540@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0708242234500.28540@fbirervta.pbzchgretzou.qr> <200708260108.28584.rob@landley.net>
-Date: Sun, 2 Sep 2007 02:02:37 +0200
-Message-Id: <E1IRcvF-0007yi-73@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Sat, 1 Sep 2007 19:48:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EZ3vrS1XrKWbFYaTt+Z9xDWFmcJ6LTR58mykmpocAaNffHc6iliEuyzjCB0oFaS4OhBrvaG10qJTQbakysZTfTgHdGULIo9eq2gBTPXuE5bKGPe5JYaBMIcwzeWcWOeBwXpuwoj4PApK5+HyklABQtJinH2tzNNIuCOq3pKhxGc=
+Message-ID: <43e72e890709011648k5caffb7fn1051e1f5d5f27c9b@mail.gmail.com>
+Date: Sat, 1 Sep 2007 19:48:28 -0400
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "Constantine A. Murenin" <mureninc@gmail.com>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+Cc: "Adrian Bunk" <bunk@kernel.org>, "Jeff Garzik" <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, "Jiri Slaby" <jirislaby@gmail.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <f34ca13c0709011629g1f16508cic7c31c3d20a57dae@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200709010140.l811eq9H005896@cvs.openbsd.org>
+	 <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
+	 <46D99FB7.6030505@garzik.org>
+	 <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
+	 <20070901205457.GK9260@stusta.de>
+	 <f34ca13c0709011427u7a9cc97bp75c035afed3e5a63@mail.gmail.com>
+	 <20070901215225.GM9260@stusta.de>
+	 <f34ca13c0709011629g1f16508cic7c31c3d20a57dae@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Sun, 26 Aug 2007 01:08:28 -0500
-* Organization: Boundaries Unlimited
->
-[]
-> Also "here's a symbol, show me a menu containing everything else that is 
-> either required by or enabled by this symbol..."  That sounds like a more 
-> powerful abstraction, since the previous one is "show me everything that 
-> depends on CONFIG_BLOCK".
->
-> (I wonder if this would be a largeish rewrite of the menuconfig 
-> infrastructure?  Hmmm...)
+I urge developers to not bait into this and just leave this alone.
+Those involved know what they are doing and have a strong team of
+attorneys watching their backs. Any *necessary* discussions are be
+done privately.
 
-Yess. I'm doing this, actually. Sam, Andrew and Linus have got an email
-half a year ago about my intent. Tried to release 2.6.20-j4f, but that
-was just a dream. Now i did some training in non-kernel related stuff and
-always catch (30k, 14k) LKML backlogs to stay in tune. Some bits i 
-get are here ftp://flower.upol.cz/Linux/info-LKML/tools/
-
-So, ideas: UI, organization, efficiency, simplicity, etc. are welcome.
-
-Maybe in one month i'll get something to show (base is 2.6.22).
-Imagination plays very well, the thing must be ground shaking, but i'll
-see how it will fit reality. Yours one in consideration from very
-beginning, don't bother :)
-
-Another problem that i have to solve before any publishing (it's
-completely another tree, logic, interface), is the work tracking system,
-i was describing in June. This is important, because i sick of current
-chaos and manual organizing work in-tree or in regression tracking.
-____
+  Luis
