@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbXIABou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbXIABpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbXIABou (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbXIABm3
+	id S1753351AbXIABpO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbXIABmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:42:29 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46096 "EHLO
+	Fri, 31 Aug 2007 21:42:31 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46095 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751283AbXIABmV (ORCPT
+	with ESMTP id S1751301AbXIABmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 31 Aug 2007 21:42:21 -0400
-Message-Id: <20070901014219.531030578@sgi.com>
+Message-Id: <20070901014220.222604174@sgi.com>
 References: <20070901014107.719506437@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 31 Aug 2007 18:41:08 -0700
+Date: Fri, 31 Aug 2007 18:41:11 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Andy Whitcroft <apw@shadowen.org>
 Cc: linux-kernel@vger.kernel.org
@@ -21,189 +21,87 @@ Cc: linux-mm@kvack.org
 Cc: linux-fsdevel@vger.kernel.org
 Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: David Chinner <dgc@sgi.com>
-Subject: [RFC 01/26] SLUB: Extend slabinfo to support -D and -C options
-Content-Disposition: inline; filename=0001-slab_defrag_slabinfo_update.patch
+Subject: [RFC 04/26] SLUB: Add defrag_ratio field and sysfs support.
+Content-Disposition: inline; filename=0004-slab_defrag_add_defrag_ratio.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--D lists caches that support defragmentation
+The defrag_ratio is used to set the threshold when a slabcache should be
+defragmented.
 
--C lists caches that use a ctor.
+The allocation ratio is measured in a percentage of the available slots.
+The percentage will be lower for slabs that are more fragmented.
 
-Change field names for defrag_ratio and remote_node_defrag_ratio.
-
-Add determination of the allocation ratio for slab. The allocation ratio
-is the percentage of available slots for objects in use.
+Add a defrag ratio field and set it to 30% by default. A limit of 30%
+that less than 3 out of 10 available slots for objects are in use.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- Documentation/vm/slabinfo.c |   52 ++++++++++++++++++++++++++++++++++++------
- 1 files changed, 44 insertions(+), 8 deletions(-)
+ include/linux/slub_def.h |    7 +++++++
+ mm/slub.c                |   18 ++++++++++++++++++
+ 2 files changed, 25 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/vm/slabinfo.c b/Documentation/vm/slabinfo.c
-index 1af7bd5..1319756 100644
---- a/Documentation/vm/slabinfo.c
-+++ b/Documentation/vm/slabinfo.c
-@@ -30,6 +30,8 @@ struct slabinfo {
- 	int hwcache_align, object_size, objs_per_slab;
- 	int sanity_checks, slab_size, store_user, trace;
- 	int order, poison, reclaim_account, red_zone;
-+	int defrag, ctor;
-+	int defrag_ratio, remote_node_defrag_ratio;
- 	unsigned long partial, objects, slabs;
- 	int numa[MAX_NODES];
- 	int numa_partial[MAX_NODES];
-@@ -56,6 +58,8 @@ int show_slab = 0;
- int skip_zero = 1;
- int show_numa = 0;
- int show_track = 0;
-+int show_defrag = 0;
-+int show_ctor = 0;
- int show_first_alias = 0;
- int validate = 0;
- int shrink = 0;
-@@ -90,18 +94,20 @@ void fatal(const char *x, ...)
- void usage(void)
- {
- 	printf("slabinfo 5/7/2007. (c) 2007 sgi. clameter@sgi.com\n\n"
--		"slabinfo [-ahnpvtsz] [-d debugopts] [slab-regexp]\n"
-+		"slabinfo [-aCDefhilnosSrtTvz1] [-d debugopts] [slab-regexp]\n"
- 		"-a|--aliases           Show aliases\n"
-+		"-C|--ctor              Show slabs with ctors\n"
- 		"-d<options>|--debug=<options> Set/Clear Debug options\n"
--		"-e|--empty		Show empty slabs\n"
-+		"-D|--defrag            Show defragmentable caches\n"
-+		"-e|--empty             Show empty slabs\n"
- 		"-f|--first-alias       Show first alias\n"
- 		"-h|--help              Show usage information\n"
- 		"-i|--inverted          Inverted list\n"
- 		"-l|--slabs             Show slabs\n"
- 		"-n|--numa              Show NUMA information\n"
--		"-o|--ops		Show kmem_cache_ops\n"
-+		"-o|--ops               Show kmem_cache_ops\n"
- 		"-s|--shrink            Shrink slabs\n"
--		"-r|--report		Detailed report on single slabs\n"
-+		"-r|--report            Detailed report on single slabs\n"
- 		"-S|--Size              Sort by size\n"
- 		"-t|--tracking          Show alloc/free information\n"
- 		"-T|--Totals            Show summary information\n"
-@@ -281,7 +287,7 @@ int line = 0;
- void first_line(void)
- {
- 	printf("Name                   Objects Objsize    Space "
--		"Slabs/Part/Cpu  O/S O %%Fr %%Ef Flg\n");
-+		"Slabs/Part/Cpu  O/S O %%Ra %%Ef Flg\n");
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index 5912b58..291881d 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -52,6 +52,13 @@ struct kmem_cache {
+ 	void (*ctor)(void *, struct kmem_cache *, unsigned long);
+ 	int inuse;		/* Offset to metadata */
+ 	int align;		/* Alignment */
++	int defrag_ratio;	/*
++				 * objects/possible-objects limit. If we have
++				 * less that the specified percentage of
++				 * objects allocated then defrag passes
++				 * will start to occur during reclaim.
++				 */
++
+ 	const char *name;	/* Name (only for display!) */
+ 	struct list_head list;	/* List of slab caches */
+ #ifdef CONFIG_SLUB_DEBUG
+diff --git a/mm/slub.c b/mm/slub.c
+index e63aba5..f95a760 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2200,6 +2200,7 @@ static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
+ 		goto error;
+ 
+ 	s->refcount = 1;
++	s->defrag_ratio = 30;
+ #ifdef CONFIG_NUMA
+ 	s->remote_node_defrag_ratio = 100;
+ #endif
+@@ -3717,6 +3718,22 @@ static ssize_t free_calls_show(struct kmem_cache *s, char *buf)
  }
+ SLAB_ATTR_RO(free_calls);
  
- /*
-@@ -324,7 +330,7 @@ void slab_numa(struct slabinfo *s, int mode)
- 		return;
- 
- 	if (!line) {
--		printf("\n%-21s:", mode ? "NUMA nodes" : "Slab");
-+		printf("\n%-21s: Rto ", mode ? "NUMA nodes" : "Slab");
- 		for(node = 0; node <= highest_node; node++)
- 			printf(" %4d", node);
- 		printf("\n----------------------");
-@@ -333,6 +339,7 @@ void slab_numa(struct slabinfo *s, int mode)
- 		printf("\n");
- 	}
- 	printf("%-21s ", mode ? "All slabs" : s->name);
-+	printf("%3d ", s->remote_node_defrag_ratio);
- 	for(node = 0; node <= highest_node; node++) {
- 		char b[20];
- 
-@@ -406,6 +413,8 @@ void report(struct slabinfo *s)
- 		printf("** Slabs are destroyed via RCU\n");
- 	if (s->reclaim_account)
- 		printf("** Reclaim accounting active\n");
-+	if (s->defrag)
-+		printf("** Defragmentation at %d%%\n", s->defrag_ratio);
- 
- 	printf("\nSizes (bytes)     Slabs              Debug                Memory\n");
- 	printf("------------------------------------------------------------------------\n");
-@@ -452,6 +461,12 @@ void slabcache(struct slabinfo *s)
- 	if (show_empty && s->slabs)
- 		return;
- 
-+	if (show_defrag && !s->defrag)
-+		return;
++static ssize_t defrag_ratio_show(struct kmem_cache *s, char *buf)
++{
++	return sprintf(buf, "%d\n", s->defrag_ratio);
++}
 +
-+	if (show_ctor && !s->ctor)
-+		return;
++static ssize_t defrag_ratio_store(struct kmem_cache *s,
++				const char *buf, size_t length)
++{
++	int n = simple_strtoul(buf, NULL, 10);
 +
- 	store_size(size_str, slab_size(s));
- 	sprintf(dist_str,"%lu/%lu/%d", s->slabs, s->partial, s->cpu_slabs);
- 
-@@ -462,6 +477,10 @@ void slabcache(struct slabinfo *s)
- 		*p++ = '*';
- 	if (s->cache_dma)
- 		*p++ = 'd';
-+	if (s->defrag)
-+		*p++ = 'D';
-+	if (s->ctor)
-+		*p++ = 'C';
- 	if (s->hwcache_align)
- 		*p++ = 'A';
- 	if (s->poison)
-@@ -481,7 +500,7 @@ void slabcache(struct slabinfo *s)
- 	printf("%-21s %8ld %7d %8s %14s %4d %1d %3ld %3ld %s\n",
- 		s->name, s->objects, s->object_size, size_str, dist_str,
- 		s->objs_per_slab, s->order,
--		s->slabs ? (s->partial * 100) / s->slabs : 100,
-+		s->slabs ? (s->objects * 100) / (s->slabs * s->objs_per_slab) : 100,
- 		s->slabs ? (s->objects * s->object_size * 100) /
- 			(s->slabs * (page_size << s->order)) : 100,
- 		flags);
-@@ -1071,7 +1090,16 @@ void read_slab_dir(void)
- 			decode_numa_list(slab->numa, t);
- 			slab->store_user = get_obj("store_user");
- 			slab->trace = get_obj("trace");
-+			slab->defrag_ratio = get_obj("defrag_ratio");
-+			slab->remote_node_defrag_ratio =
-+					get_obj("remote_node_defrag_ratio");
- 			chdir("..");
-+			if (read_slab_obj(slab, "ops")) {
-+				if (strstr(buffer, "ctor :"))
-+					slab->ctor = 1;
-+				if (strstr(buffer, "kick :"))
-+					slab->defrag = 1;
-+			}
- 			if (slab->name[0] == ':')
- 				alias_targets++;
- 			slab++;
-@@ -1121,7 +1149,9 @@ void output_slabs(void)
- 
- struct option opts[] = {
- 	{ "aliases", 0, NULL, 'a' },
-+	{ "ctor", 0, NULL, 'C' },
- 	{ "debug", 2, NULL, 'd' },
-+	{ "defrag", 0, NULL, 'D' },
- 	{ "empty", 0, NULL, 'e' },
- 	{ "first-alias", 0, NULL, 'f' },
- 	{ "help", 0, NULL, 'h' },
-@@ -1146,7 +1176,7 @@ int main(int argc, char *argv[])
- 
- 	page_size = getpagesize();
- 
--	while ((c = getopt_long(argc, argv, "ad::efhil1noprstvzTS",
-+	while ((c = getopt_long(argc, argv, "ad::efhil1noprstvzCDTS",
- 						opts, NULL)) != -1)
- 	switch(c) {
- 		case '1':
-@@ -1196,6 +1226,12 @@ int main(int argc, char *argv[])
- 		case 'z':
- 			skip_zero = 0;
- 			break;
-+		case 'C':
-+			show_ctor = 1;
-+			break;
-+		case 'D':
-+			show_defrag = 1;
-+			break;
- 		case 'T':
- 			show_totals = 1;
- 			break;
++	if (n < 100)
++		s->defrag_ratio = n;
++	return length;
++}
++SLAB_ATTR(defrag_ratio);
++
+ #ifdef CONFIG_NUMA
+ static ssize_t remote_node_defrag_ratio_show(struct kmem_cache *s, char *buf)
+ {
+@@ -3759,6 +3776,7 @@ static struct attribute * slab_attrs[] = {
+ 	&shrink_attr.attr,
+ 	&alloc_calls_attr.attr,
+ 	&free_calls_attr.attr,
++	&defrag_ratio_attr.attr,
+ #ifdef CONFIG_ZONE_DMA
+ 	&cache_dma_attr.attr,
+ #endif
 -- 
 1.5.2.4
 
