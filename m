@@ -1,119 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933431AbXIBAJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933589AbXIBAJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933431AbXIBAJZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 20:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932304AbXIBAJN
+	id S933589AbXIBAJp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 20:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933511AbXIBAJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 20:09:13 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33225 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932216AbXIBAJL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 20:09:11 -0400
-Date: Sun, 2 Sep 2007 02:09:13 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: "Constantine A. Murenin" <mureninc@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Message-ID: <20070902000913.GB16016@stusta.de>
-References: <200709010140.l811eq9H005896@cvs.openbsd.org> <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com> <46D99FB7.6030505@garzik.org> <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com> <20070901205457.GK9260@stusta.de> <f34ca13c0709011427u7a9cc97bp75c035afed3e5a63@mail.gmail.com> <20070901215225.GM9260@stusta.de> <f34ca13c0709011629g1f16508cic7c31c3d20a57dae@mail.gmail.com>
+	Sat, 1 Sep 2007 20:09:31 -0400
+Received: from ns2.g-housing.de ([81.169.133.75]:38185 "EHLO mail.g-house.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933301AbXIBAJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 20:09:24 -0400
+X-Greylist: delayed 11534 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Sep 2007 20:09:23 EDT
+Date: Sat, 1 Sep 2007 22:57:05 +0200 (CEST)
+From: Christian Kujau <lists@nerdbynature.de>
+X-X-Sender: evil@sheep.housecafe.de
+To: linux-kernel@vger.kernel.org
+cc: netdev@vger.kernel.org
+Subject: Oops in 2.6.23-rc5
+Message-ID: <alpine.DEB.0.999.0709012236460.6640@sheep.housecafe.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <f34ca13c0709011629g1f16508cic7c31c3d20a57dae@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 01, 2007 at 07:29:39PM -0400, Constantine A. Murenin wrote:
-> On 01/09/07, Adrian Bunk <bunk@kernel.org> wrote:
-> > On Sat, Sep 01, 2007 at 05:27:03PM -0400, Constantine A. Murenin wrote:
-> > > On 01/09/07, Adrian Bunk <bunk@kernel.org> wrote:
-> > > > On Sat, Sep 01, 2007 at 01:37:18PM -0400, Constantine A. Murenin wrote:
-> > > > > On 01/09/07, Jeff Garzik <jeff@garzik.org> wrote:
-> > > > > > Constantine A. Murenin wrote:
-> > > > > > > This will hopefully help diminish certain myths about the code licensing.
-> > > > > >
-> > > > > > What myth?  The myth that Theo understands dual licensing?
-> > > > >
-> > > > > Reyk's code was never dual licensed, so it's not like it even matters
-> > > > > to the original dispute.
-> > > >
-> > > > It's no longer dual licenced in the FreeBSD tree because the FreeBSD
-> > > > people removed the GPL choice of the dual licenced code 3 months ago.
-> > >
-> > > FreeBSD doesn't have Reyk's ath(4) HAL, which OpenHAL is based on.
-> > >
-> > > FreeBSD has a driver written by Sam, and a binary-only HAL, also written by Sam.
-> > >
-> > > > So all of Theo's accusations of people breaking the law by making this
-> > > > dual licenced code GPL-only apply as well to the FreeBSD people...
-> > >
-> > > How? FreeBSD doesn't have Reyk's ath(4) HAL from OpenBSD, so there are
-> > > no possible licensing accusations and violations.
-> >
-> > OK, I begin to understand this, there seem to be three different types
-> > of files changed by Jiri's patch:
-> > 1. dual licenced files planned to make GPL-only
-> > 2. previously dual licenced files with a too recent version used planned
-> >    to make GPL-only
-> > 3. never dual licenced files planned to make GPL-only
-> >
-> > For files under 1. and 2. Reyk did contribute to dual licenced code
-> > without touching the licence, but I missed that there's also code unter 3.
-> >
-> > So there is a problem, but not with the code under 1. (unless you plan
-> > to change the semantics of the word "alternatively"), the problem is
-> > with some headers under 2. plus the code under 3.
-> >
-> > It's funny how Theo missed the part of Jiri's patch that actually is a
-> > copyright violation and instead complains about the part that is OK...
-> 
-> I'm not sure how you conclude that Theo missed the relevant parts --
-> there were many messages posted to misc@openbsd.org mailing list and
-> to The OpenBSD Journal in the last few days, and to me it appears as
-> all of the problems were discussed ad nauseam.
->...
+Hi,
 
-Then it's your fault that you forwarded the wrong email - in the email 
-you forwarded the only action for which Theo accused the Linux 
-developers of breaking the law was for choosing one licence when using 
-dual licenced code.
+today I switched from 2.6.22.3 to 2.6.23-rc5 (skipped quite a few -rc 
+versions due to lack of time), and the box keeps panicking under certain 
+circumstances. I suspected disk related problems, because: when the box 
+is up, I usually resume ~10 bittorrent files. When doing this, each
+file (~200MB...1GB) is checked and disk activity is pretty high (20MB/s
+or so), and after 1 minute of doing so the box panicks. Every time.
 
-> After the obvious copyright violations were addressed, I think the
-> problem started being an ethical one.
-> 
-> As a free software user and developer, the question I have is how come
-> the Linux community feels that they can take the BSD code that was
-> reverse-engineered at OpenBSD, and put a more restrictive licence onto
-> it, such that there will be no possibility of the changes going back
-> to OpenBSD, given that the main work on the code has happened at
-> OpenBSD? (Obviously, such a scenario it is permitted by the licence,
-> but my question is an ethical one -- after all, most components of
-> OpenHAL were specifically based on the OpenBSD's ath(4) HAL code.)
-> 
-> You can see that Christoph Hellwig agrees with this ethical problem,
-> as in the message below.
+However, I could not reproduce it while generating disk-io with say tar 
+or rsync to the same fs. It always panicked when the torrent client(s) 
+start up. As the box would not log anything via remote-syslog before 
+halting, I connected a vga display. As I don't have a digital camera, I 
+tried to write down some stuff: http://ww.nerdbynature.de/bits/2.6.23-rc5/
+(I'll try to write down the full oops to this place, or what was still 
+visible from it, because the first few(?) lines where lost, display 
+scrollback was not working, only sysrq was).
 
-Is it a legal problem or is it "only" an ethical problem?
+The backtrace mentions do_page_fault, error_code, tcp_rtt_estimator, 
+tcp_ack_saw_timestamp, tcp_ack, tcp_rcv_established, tcp_v4_do_rcv, 
+tcp_v4_rcv, ip_local_delimiter, netif_receive_skb, process_backlog, 
+net_rcv_activate, __do_softirq, do_softirq - in that order. As said, the 
+correct addresses will be put on above's url (Q: do I really need *all* 
+the numbers? Or just a few?). These snippets made me suspect network 
+related issues, because: aside from disk-io, the bittorrent clients will 
+establish quite a few (~50 in total) connections to all the peers.
 
-If choosing one licence when using dual licenced code is not a legal 
-problem then Theo repeatedly talking about it would "break the law" in 
-the email you forwarded was very unethical and the worst he could do
-for his cause.
+The box is a amd-k7, 2 NICs (forcedeth, 3c59x), 2 GB RAM, ACPI 
+disabled, gcc-4.1
 
-> C.
->...
-
-cu
-Adrian
-
+Thanks for looking into this,
+Christian.
 -- 
+BOFH excuse #335:
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+the AA battery in the wallclock sends magnetic interference
