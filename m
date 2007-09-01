@@ -1,73 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbXIANnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbXIANo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbXIANnZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 09:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbXIANnP
+	id S1754813AbXIANo0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 09:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbXIANoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 09:43:15 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:55965 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752421AbXIANnP (ORCPT
+	Sat, 1 Sep 2007 09:44:20 -0400
+Received: from flatoutfitness.com ([66.178.130.209]:55236 "EHLO
+	mail.seiner.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbXIANoT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 09:43:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Y3iZtgOBD2bL4aFKusH2ZpqdYyqhJX8ERlSvACLk0RFvJcfj+z01ofM/l+Tx+5WEpOQtQyp8Qmeivc4J/l32zy+DbHsrFT+XDKg6ge3v5gs+BJwu8+KKJjlzCfL/rR89mBpFbLtK6H26ZcexIBUZmv2AXQMRa8V2runq+C/TBg4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: maturity and status and attributes, oh my!
-Date: Sat, 1 Sep 2007 15:44:07 +0200
-User-Agent: KMail/1.9.6
-References: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain> <Pine.LNX.4.64.0709010648530.32589@localhost.localdomain> <46D947A3.1000404@garzik.org>
-In-Reply-To: <46D947A3.1000404@garzik.org>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Sat, 1 Sep 2007 09:44:19 -0400
+X-Greylist: delayed 1635 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Sep 2007 09:44:19 EDT
+Message-ID: <46D96637.2000601@seiner.com>
+Date: Sat, 01 Sep 2007 06:16:39 -0700
+From: Yan Seiner <yan@seiner.com>
+User-Agent: IceDove 1.5.0.12 (X11/20070606)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Subject: read-only /sys/block/sda/device/queue_depth
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709011544.07732.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 01 September 2007, you wrote:
-> Robert P. J. Day wrote:
-> > On Sat, 1 Sep 2007, Jeff Garzik wrote:
-> > 
-> >> Feature deprecation and removal is a very amorphous concept that
-> >> does not fit well at all into Kconfig markers, unlike
-> >> experimental/broken.
+I'm running into the same issue reported here:
 
-The current approach (text file) is:
-* centralized
-* requires manual testing of all future changes
-* totally invisible to the end-users (higly frustrating for them when
-  they learn about scheduled changes when things brake)
+<http://readlist.com/lists/vger.kernel.org/linux-kernel/72/361184.html>
 
-The proposed approach (Kconfig) is:
-* distributed
-* allows partial automatic testing of future changes
-* could be make visible to the end-users by smart use of macros/inlines
-  and adding kernel parameter (would make users informed and encourage
-  them to help with the development)
+I am using the ata_piix module.  If I read the docs correctly, I should 
+be able to use ahci as well; I need to rebuild the kernel though (debian 
+insists on putting ata_piix into the initrd....)
 
-> > and, as i've said before, i disagree.  while one might debate what
-> 
-> Feel free to disagree -- I am describing how things play out on a day to 
-> day basis.  In essence you are disagreeing with reality.
+dionysus:~# ls -l /sys/block/sd[abcde]/device/queue_depth
+-r--r--r-- 1 root root 4096 2007-09-01 06:00 
+/sys/block/sda/device/queue_depth
+-r--r--r-- 1 root root 4096 2007-09-01 06:00 
+/sys/block/sdb/device/queue_depth
+-r--r--r-- 1 root root 4096 2007-09-01 06:00 
+/sys/block/sdc/device/queue_depth
+-r--r--r-- 1 root root 4096 2007-09-01 06:00 
+/sys/block/sdd/device/queue_depth
+-r--r--r-- 1 root root 4096 2007-09-01 06:00 
+/sys/block/sde/device/queue_depth
 
-Part of the problem is that many people (including developers) learn about
-things being deprecated/obsoleted after they are actually removed.
+If I change the perms to rw, I get an Input/Output error.  AFAICT, the 
+drives support queueing, but it's disabled.
 
-Of course things are not black and white and common sense is required but
-moving in the Kconfig direction is an improvement IMO and could speed up
-the development in the long-term.
+dionysus:~# uname -a
+Linux dionysus 2.6.22.6 #1 SMP Fri Aug 31 14:24:17 PDT 2007 x86_64 GNU/Linux
 
-BTW There is nothing wrong with disagreeing with the reality and trying
-to change it.  If everybody would conform to the reality there will be no
-progress at all... ;)
+libata version 2.21 loaded.
+ata_piix 0000:00:1f.2: version 2.11
+ata_piix 0000:00:1f.2: MAP [ P0 P2 P1 P3 ]
+scsi0 : ata_piix
+scsi1 : ata_piix
+ata1: SATA max UDMA/133 cmd 0x00000000000101f0 ctl 0x00000000000103f6 
+bmdma 0x000000000001f000 irq 14
+ata2: SATA max UDMA/133 cmd 0x0000000000010170 ctl 0x0000000000010376 
+bmdma 0x000000000001f008 irq 15
+ata1.00: Host Protected Area detected:
+ata1.00: ATA-7: ST3400620AS, 3.AAC, max UDMA/133
+ata1.00: 781420655 sectors, multi 16: LBA48 NCQ (depth 0/32)
+ata1.01: Host Protected Area detected:
+ata1.01: ATA-7: ST3400620AS, 3.AAC, max UDMA/133
+ata1.01: 781420655 sectors, multi 16: LBA48 NCQ (depth 0/32)
+ata1.00: Host Protected Area detected:
+ata1.00: configured for UDMA/133
+ata1.01: Host Protected Area detected:
+ata1.01: configured for UDMA/133
+ata2.00: ATA-7: ST3400620AS, 3.AAC, max UDMA/133
+ata2.00: 781422768 sectors, multi 16: LBA48 NCQ (depth 0/32)
+ata2.01: ATA-7: ST3400620AS, 3.AAC, max UDMA/133
+ata2.01: 781422768 sectors, multi 16: LBA48 NCQ (depth 0/32)
+ata2.00: configured for UDMA/133
+ata2.01: configured for UDMA/133
 
-Bart
+dionysus:~# lspci -s 00:1f.2 -vvv
+00:1f.2 IDE interface: Intel Corporation 82801GB/GR/GH (ICH7 Family) 
+Serial ATA Storage Controller IDE (rev 01) (prog-if 8a [Master SecP PriP])
+        Subsystem: Giga-byte Technology Unknown device b002
+        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- 
+ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0
+        Interrupt: pin B routed to IRQ 19
+        Region 0: I/O ports at 01f0 [size=8]
+        Region 1: I/O ports at 03f4 [size=1]
+        Region 2: I/O ports at 0170 [size=8]
+        Region 3: I/O ports at 0374 [size=1]
+        Region 4: I/O ports at f000 [size=16]
+        Capabilities: [70] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA 
+PME(D0-,D1-,D2-,D3hot+,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+-- 
+  o__
+  ,>/'_          o__
+  (_)\(_)        ,>/'_          o__
+Yan Seiner      (_)\(_)         ,>/'_   o__     o__
+Certified Personal Trainer     (_)\(_)  ,>/'_   ,>/'_
+Licensed Professional Engineer         (_)\(_) (_)\(_)
+
+Linux stuff has made big progress over the competition. When things sit and don't start right away, we have a watch, and those poor guys have to settle for an hourglass.
+
