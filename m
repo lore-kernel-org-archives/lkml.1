@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbXIATqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbXIATrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757892AbXIATqt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 15:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757515AbXIATqc
+	id S932098AbXIATrL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 15:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757712AbXIATqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 15:46:32 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:61169 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756345AbXIATqa (ORCPT
+	Sat, 1 Sep 2007 15:46:43 -0400
+Received: from qb-out-0506.google.com ([72.14.204.229]:37099 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757693AbXIATql (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 15:46:30 -0400
+	Sat, 1 Sep 2007 15:46:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=eVZve75cV9sL0CPTmC65Ib0k9+233RKaCI2/FSOTKyq/9eqznID8GHjoSUgBjv+d5LyRgUJ/K2JrkQyksVTj0zRzX80WTbv9nsKWduWCX8muaNXvLkxZWmr655sJd33Ng55FGvyEf4RDgsmqbFpfw01ysK68OMWBWbnDlTzAzIg=
+        b=MM/6gPDM9VjSS5muy34Yk1gNIEXhZJBFCNsiYHsxdaI2o1QxmekRWLe7h73Bhd6U/zR5EGYZhn3fvdYqCMU7T0j+NhL4ri9uBy2vZUsfMkoh/bHiXDUlpCMvt701b0jE12mUbtnJzcVdCBfQXBq9tKwH80vsnCat3YZjzQKyj4k=
 From: Denis Cheng <crquan@gmail.com>
 To: "David S. Miller" <davem@davemloft.net>
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, cr_quan@163.com
-Subject: [PATCH 2/3] netlink: the temp variable name max is ambiguous
-Date: Sun,  2 Sep 2007 03:45:58 +0800
-Message-Id: <11886759682348-git-send-email-crquan@gmail.com>
+Subject: [PATCH 3/3] netlink: use a statically allocated nl_table instead
+Date: Sun,  2 Sep 2007 03:45:59 +0800
+Message-Id: <11886759772663-git-send-email-crquan@gmail.com>
 X-Mailer: git-send-email 1.5.3.rc7
-In-Reply-To: <1188675959178-git-send-email-crquan@gmail.com>
+In-Reply-To: <11886759682348-git-send-email-crquan@gmail.com>
 References: <1188675959178-git-send-email-crquan@gmail.com>
+ <11886759682348-git-send-email-crquan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-with the macro max provided by <linux/kernel.h>, so changed its name to a more proper one: limit
+if the table is always fixed size with MAX_LINKS entries, why not use a statically
+allocated table straightforwardly?
 
 Signed-off-by: Denis Cheng <crquan@gmail.com>
 ---
- net/netlink/af_netlink.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ net/netlink/af_netlink.c |   11 ++---------
+ 1 files changed, 2 insertions(+), 9 deletions(-)
 
 diff --git a/net/netlink/af_netlink.c b/net/netlink/af_netlink.c
-index 8bb14e3..ac3b100 100644
+index ac3b100..c527f87 100644
 --- a/net/netlink/af_netlink.c
 +++ b/net/netlink/af_netlink.c
-@@ -1885,7 +1885,7 @@ static int __init netlink_proto_init(void)
- {
- 	struct sk_buff *dummy_skb;
- 	int i;
--	unsigned long max;
-+	unsigned long limit;
- 	unsigned int order;
- 	int err = proto_register(&netlink_proto, 0);
+@@ -115,7 +115,7 @@ struct netlink_table {
+ 	int registered;
+ };
  
-@@ -1899,13 +1899,13 @@ static int __init netlink_proto_init(void)
- 		goto panic;
+-static struct netlink_table *nl_table;
++static struct netlink_table nl_table[MAX_LINKS];
  
+ static DECLARE_WAIT_QUEUE_HEAD(nl_table_wait);
+ 
+@@ -1894,10 +1894,6 @@ static int __init netlink_proto_init(void)
+ 
+ 	BUILD_BUG_ON(sizeof(struct netlink_skb_parms) > sizeof(dummy_skb->cb));
+ 
+-	nl_table = kcalloc(MAX_LINKS, sizeof(*nl_table), GFP_KERNEL);
+-	if (!nl_table)
+-		goto panic;
+-
  	if (num_physpages >= (128 * 1024))
--		max = num_physpages >> (21 - PAGE_SHIFT);
-+		limit = num_physpages >> (21 - PAGE_SHIFT);
+ 		limit = num_physpages >> (21 - PAGE_SHIFT);
  	else
--		max = num_physpages >> (23 - PAGE_SHIFT);
-+		limit = num_physpages >> (23 - PAGE_SHIFT);
+@@ -1915,8 +1911,7 @@ static int __init netlink_proto_init(void)
+ 			while (i-- > 0)
+ 				nl_pid_hash_free(nl_table[i].hash.table,
+ 						 1 * sizeof(*hash->table));
+-			kfree(nl_table);
+-			goto panic;
++			goto out;
+ 		}
+ 		memset(hash->table, 0, 1 * sizeof(*hash->table));
+ 		hash->max_shift = order;
+@@ -1933,8 +1928,6 @@ static int __init netlink_proto_init(void)
+ 	rtnetlink_init();
+ out:
+ 	return err;
+-panic:
+-	panic("netlink_init: Cannot allocate nl_table\n");
+ }
  
--	order = get_bitmask_order(max) - 1 + PAGE_SHIFT;
--	max = (1UL << order) / sizeof(struct hlist_head);
--	order = get_bitmask_order(min(max, (unsigned long)UINT_MAX)) - 1;
-+	order = get_bitmask_order(limit) - 1 + PAGE_SHIFT;
-+	limit = (1UL << order) / sizeof(struct hlist_head);
-+	order = get_bitmask_order(min(limit, (unsigned long)UINT_MAX)) - 1;
- 
- 	for (i = 0; i < MAX_LINKS; i++) {
- 		struct nl_pid_hash *hash = &nl_table[i].hash;
+ core_initcall(netlink_proto_init);
 -- 
 1.5.3.rc7
 
