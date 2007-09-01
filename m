@@ -1,38 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbXIAK5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbXIALEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754706AbXIAK5U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 06:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbXIAK5H
+	id S1754866AbXIALEH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 07:04:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbXIALDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 06:57:07 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:35613 "EHLO
+	Sat, 1 Sep 2007 07:03:54 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:35757 "EHLO
 	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753322AbXIAK5F (ORCPT
+	with ESMTP id S1752495AbXIALDx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 06:57:05 -0400
+	Sat, 1 Sep 2007 07:03:53 -0400
 X-Originating-Ip: 72.143.66.27
-Date: Sat, 1 Sep 2007 06:44:06 -0400 (EDT)
+Date: Sat, 1 Sep 2007 06:52:17 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@mindspring.com>
 X-X-Sender: rpjday@localhost.localdomain
-To: Randy Dunlap <rdunlap@xenotime.net>
-cc: Simon Arlott <simon@fire.lp0.eu>, Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Adrian Bunk <bunk@stusta.de>, Jeff Garzik <jeff@garzik.org>,
-       Gabriel C <crazy@pimpmylinux.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH] net/, drivers/net/ , missing EXPERIMENTAL in menus
-In-Reply-To: <20070831102527.09fb42c0.rdunlap@xenotime.net>
-Message-ID: <Pine.LNX.4.64.0709010641540.31472@localhost.localdomain>
-References: <469E75AA.7040109@pimpmylinux.org>
- <Pine.LNX.4.64.0707181620460.13912@localhost.localdomain>
- <20070718134012.cde2f956.randy.dunlap@oracle.com> <469E7BE1.6090401@garzik.org>
- <Pine.LNX.4.64.0707181648330.15343@localhost.localdomain>
- <20070718210903.GM3801@stusta.de> <Pine.LNX.4.64.0707181712340.16513@localhost.localdomain>
- <20070719054742.GN3801@stusta.de> <Pine.LNX.4.64.0707190331330.11902@localhost.localdomain>
- <469F240E.9040205@s5r6.in-berlin.de> <Pine.LNX.4.64.0707190523001.19216@localhost.localdomain>
- <20070719083109.13b2ab56.rdunlap@xenotime.net>
- <Pine.LNX.4.64.0707191213130.8844@localhost.localdomain>
- <469FE045.3070403@simon.arlott.org.uk> <20070831102527.09fb42c0.rdunlap@xenotime.net>
+To: Jeff Garzik <jeff@garzik.org>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: maturity and status and attributes, oh my!
+In-Reply-To: <46D94252.3000505@garzik.org>
+Message-ID: <Pine.LNX.4.64.0709010648530.32589@localhost.localdomain>
+References: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain>
+ <46D89800.8080701@s5r6.in-berlin.de> <Pine.LNX.4.64.0708312109580.7060@localhost.localdomain>
+ <46D92D8E.9020508@s5r6.in-berlin.de> <46D94252.3000505@garzik.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
@@ -45,49 +35,19 @@ X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Aug 2007, Randy Dunlap wrote:
+On Sat, 1 Sep 2007, Jeff Garzik wrote:
 
-> On Thu, 19 Jul 2007 23:05:57 +0100 Simon Arlott wrote:
+> Feature deprecation and removal is a very amorphous concept that
+> does not fit well at all into Kconfig markers, unlike
+> experimental/broken.
 
-> > What about something like this? I'm not sure if the addition to
-> > sym_init is desirable... I also had to prefix _ to the name for
-> > now otherwise it conflicts badly with the current symbols. It
-> > probably should stop "depends on _BROKEN" etc. too.
->
-> Hi Simon,
->
-> (sorry for the delay)
->
-> I like this patch very much... I just can't get it to build (on
-> 2.6.23-rc4).
-
-i got a patch from simon a while back, and it failed with
-"shift/reduce" conflicts.  is that what you're seeing?
-
-> >  	while (1) {
-> >  		printf("%*s%s ", indent - 1, "", menu->prompt->text);
-> > +		switch (sym->maturity) {
-> > +		case M_EXPERIMENTAL:
-> > +			printf("(EXPERIMENTAL) ");
-> > +			break;
-> > +		case M_DEPRECATED:
-> > +			printf("(DEPRECATED) ");
-> > +			break;
-> > +		case M_OBSOLETE:
-> > +			printf("(OBSOLETE) ");
-> > +			break;
-> > +		case M_BROKEN:
-> > +			printf("(BROKEN) ");
-> > +			break;
-> > +		default:
-> > +			break;
-> > +		}
-> >  		if (sym->name)
-> >  			printf("(%s) ", sym->name);
-> >  		type = sym_get_type(sym);
-
-for now, simon, why not just reduce this to supporting only DEPRECATED
-and OBSOLETE so that it can be at least tested as "proof of concept?"
+and, as i've said before, i disagree.  while one might debate what
+those words *mean*, or which features should be tagged thusly, i think
+there's a measurable value to be able to, with one mouse click, say
+you want to do a build test on the kernel which does not incorporate
+anything deemed deprecated and/or obsolete.  if you don't agree,
+however, no amount of explaining that on my part is going to change
+your opinion.
 
 rday
 -- 
