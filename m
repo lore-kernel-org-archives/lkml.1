@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933280AbXIAWkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933421AbXIAWk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933280AbXIAWkg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 18:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757119AbXIAWk3
+	id S933421AbXIAWk4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 18:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbXIAWkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 18:40:29 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41182 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756654AbXIAWk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 18:40:28 -0400
-Message-ID: <46D9EA5B.9010101@garzik.org>
-Date: Sat, 01 Sep 2007 18:40:27 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Sat, 1 Sep 2007 18:40:46 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56574 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757470AbXIAWkp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 18:40:45 -0400
+Date: Sun, 2 Sep 2007 00:40:46 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: 2.6.23-rc4-mm1 "no CRC" MODPOST warnings
+Message-ID: <20070901224046.GP9260@stusta.de>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <alpine.LFD.0.999.0709020327260.20781@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86/x86-64 PCI domain support
-References: <20070901143223.GA32216@havoc.gtf.org> <200709020000.03375.ak@suse.de> <46D9E254.6010702@garzik.org> <200709020026.52725.ak@suse.de>
-In-Reply-To: <200709020026.52725.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0709020327260.20781@enigma.security.iitk.ac.in>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>> The second function is redundant? 
->> No, it's a hook we must implement, when CONFIG_PCI_DOMAINS is enabled.
+On Sun, Sep 02, 2007 at 03:36:08AM +0530, Satyam Sharma wrote:
 > 
-> Then the other function is redundant.
+> 
+> On Fri, 31 Aug 2007, Andrew Morton wrote:
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
+> 
+> Got these on an i386 build with CONFIG_MODVERSIONS=y ...
+> 
+> WARNING: "div64_64" [net/netfilter/xt_connbytes.ko] has no CRC!
+> WARNING: "div64_64" [net/ipv4/tcp_cubic.ko] has no CRC!
+>...
 
-No, both functions are required by the interface.
+That's expected since the fix is in git-kbuild.
 
-	Jeff
+cu
+Adrian
 
+-- 
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
