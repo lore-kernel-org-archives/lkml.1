@@ -1,37 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbXIAUiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbXIAUjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756925AbXIAUiU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 16:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbXIAUiL
+	id S1757523AbXIAUjx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 16:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbXIAUjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 16:38:11 -0400
-Received: from continuum.csy.ca ([70.71.0.134]:33792 "EHLO continuum.csy.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752059AbXIAUiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 16:38:10 -0400
-X-Greylist: delayed 3222 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Sep 2007 16:38:10 EDT
-Date: Sat, 1 Sep 2007 12:44:27 -0700
-From: Shane <shane@cm.nu>
-To: linux-kernel@vger.kernel.org
-Subject: intel-rng on modern hardware
-Message-ID: <20070901194426.GA32713@csy.ca>
+	Sat, 1 Sep 2007 16:39:43 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:9912 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753162AbXIAUjm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 16:39:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=tEYRVMEIjY1iLFH49qeCrnLpKjqYmEiq+hUIe4dy9cYPuEC2h7JNi2iXW52w+t425MgnXyrWatbJjAy+EWWEZ1MZfbEqlYaBKknkmQ3TPqCYDRmtW50rW4UZRICtcyEn71rivRY3PRFvg6cfj9/hzSo2rB14a+IBT2bVqg915ig=
+Message-ID: <46D9C6A8.7070600@gmail.com>
+Date: Sat, 01 Sep 2007 22:08:08 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-X-No-Archive: yes
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: "John W. Linville" <linville@tuxdriver.com>
+CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 3/5] Net: ath5k, use int as retval
+References: <2713029743177393055@pripojeni.net> <2440910618305782004@pripojeni.net> <20070830124054.GC5140@tuxdriver.com>
+In-Reply-To: <20070830124054.GC5140@tuxdriver.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+John W. Linville napsal(a):
+> On Tue, Aug 28, 2007 at 12:00:09PM -0400, Jiri Slaby wrote:
+>> ath5k, use int as retval
+>>
+>> Convert some functions to return int and proper negative return value on
+>> error as we are used to.
+> 
+> Since I didn't apply 1/5, this one didn't apply either.  It seems
+> fine overall, so if you rediff I'll be happy to apply.
 
-Just wondering if there is a newer version of intel-rng out
-of tree or whether modern Intel chipsets have a usable RNG. 
-I haven't been able to get intel-rng loading (no such
-device) on anything from the p965, p975 or p35 chipsets.
-
-Best,
-Shane
-
+Ok, I'll do it, thanks,
 -- 
-http://www.cm.nu/~shane/
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+
