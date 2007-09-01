@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbXIATYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbXIAT1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbXIATYv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 15:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbXIATYk
+	id S1757394AbXIAT1T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 15:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbXIAT1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 15:24:40 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:54849 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754193AbXIATYi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 15:24:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AFCbiDRU6DyYxWKR41qffyenIsLFFgBmu4YWoww5REtWxEaADugpOB2vZ2QLWCOS11wtBWlkTnejp8pe3el3rY3K45zkoaqdDHgAuyUeW7UgaiSDziCDQ8jjjc92sZwksZo/PDWfGMWUBAMu/wvXIsWjIyBcmBdnlM3s1mgossU=
-Message-ID: <be1b757c0709011224tafebaaby697d03ab5377e20f@mail.gmail.com>
-Date: Sat, 1 Sep 2007 21:24:36 +0200
-From: "Karl Meyer" <adhocrocker@gmail.com>
-To: "Francois Romieu" <romieu@fr.zoreil.com>
-Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20070816141122.GA6625@electric-eye.fr.zoreil.com>
+	Sat, 1 Sep 2007 15:27:12 -0400
+Received: from mx.treblig.org ([80.68.94.177]:3185 "EHLO mx.treblig.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754999AbXIAT1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 15:27:12 -0400
+Date: Sat, 1 Sep 2007 20:27:04 +0100
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, neilb@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add source address to sunrpc svc errors
+Message-ID: <20070901192704.GA5228@gallifrey>
+References: <20070825012630.GB5431@gallifrey> <20070824185621.3f16f7c9.randy.dunlap@oracle.com> <20070825150927.GA29335@gallifrey> <20070827214333.GM3118@fieldses.org> <20070828180306.GA25233@gallifrey> <20070828185621.GD3764@fieldses.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com>
-	 <20070813165821.GA19356@electric-eye.fr.zoreil.com>
-	 <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com>
-	 <20070814070901.GA14693@electric-eye.fr.zoreil.com>
-	 <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com>
-	 <20070814224629.GB3495@electric-eye.fr.zoreil.com>
-	 <20070816141122.GA6625@electric-eye.fr.zoreil.com>
+In-Reply-To: <20070828185621.GD3764@fieldses.org>
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
+X-Uptime: 20:26:29 up 19 days,  3:41,  2 users,  load average: 0.37, 0.48, 0.46
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is what happened today:
+* J. Bruce Fields (bfields@fieldses.org) wrote:
+> On Tue, Aug 28, 2007 at 07:03:06PM +0100, Dr. David Alan Gilbert wrote:
 
-Sep  1 21:08:01 frege NETDEV WATCHDOG: eth0: transmit timed out
-frege ~ # uname -r
-2.6.22.5-cfs-v20.5
+<snip>
 
+> > I'm not going to be able to recut the patch until the weekend;
+> > do you just want to remove the 'err' in your copy and feed this
+> > to the main tree with some of the rest of your patches?
+> 
+> Done; result at
+> 
+> 	git://linux-nfs.org/~bfields/linux.git	nfs-server-stable
+> 
+> if you'd like to check.
 
-2007/8/16, Francois Romieu <romieu@fr.zoreil.com>:
-> (please do not remove the netdev Cc:)
->
-> Francois Romieu <romieu@fr.zoreil.com> :
-> [...]
-> > If it does not work I'll dissect 0e4851502f846b13b29b7f88f1250c980d57e944
-> > tomorrow.
->
-> You will find a tgz archive in attachment which contains a serie of patches
-> (0001-... to 0005-...) to walk from 6dccd16b7c2703e8bbf8bca62b5cf248332afbe2
-> to 0e4851502f846b13b29b7f88f1250c980d57e944 in smaller steps.
->
-> Please apply 0001 on top of 6dccd16b7c2703e8bbf8bca62b5cf248332afbe2. If it
-> still works, apply 0002 on top of 0001, etc.
->
-> --
-> Ueimor
->
->
+Yep, that's fine.
+
+Dave
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
+\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
