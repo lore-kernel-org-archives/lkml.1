@@ -1,41 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbXIACth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbXIADCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753223AbXIACth (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 22:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbXIACt0
+	id S1752672AbXIADCn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 23:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbXIADCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 22:49:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42623 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752638AbXIACtS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 22:49:18 -0400
-Date: Fri, 31 Aug 2007 19:49:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: travis@sgi.com
-Cc: Andi Kleen <ak@suse.de>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu
- variable (v2)
-Message-Id: <20070831194903.5d88a007.akpm@linux-foundation.org>
-In-Reply-To: <20070824222948.851896000@sgi.com>
-References: <20070824222654.687510000@sgi.com>
-	<20070824222948.851896000@sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 31 Aug 2007 23:02:34 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:57365 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751511AbXIADCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 23:02:33 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: linuxsh-dev@lists.sourceforge.net
+Subject: Re: [PATCH] Patch pvr2 driver to allow development of maple bus driver
+Date: Fri, 31 Aug 2007 23:02:45 -0400
+User-Agent: KMail/1.9.7
+Cc: "Adrian McMenamin" <lkmladrian@gmail.com>,
+       "Mike Frysinger" <vapier.adi@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
+References: <8b67d60708311300k3ea67eadod531752cca253bbc@mail.gmail.com> <8bd0f97a0708311312n78f1c163o20aa17214bfe3702@mail.gmail.com> <8b67d60708311314p39c7be30v630e97189d656abf@mail.gmail.com>
+In-Reply-To: <8b67d60708311314p39c7be30v630e97189d656abf@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2842700.tRFiO0C76J";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200708312302.46542.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Aug 2007 15:26:57 -0700 travis@sgi.com wrote:
+--nextPart2842700.tRFiO0C76J
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Convert cpu_sibling_map from a static array sized by NR_CPUS to a
-> per_cpu variable.  This saves sizeof(cpumask_t) * NR unused cpus.
-> Access is mostly from startup and CPU HOTPLUG functions.
+On Friday 31 August 2007, Adrian McMenamin wrote:
+> On 31/08/2007, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> > On 8/31/07, Adrian McMenamin <lkmladrian@gmail.com> wrote:
+> > > This patch makes the PVR2 VBLANK interrupt on the SEGA Dreamcast
+> > > shareable - a small but necessary change to enable ongoing efforts to
+> > > develop a driver for the maple bus on the Dreamcast. (Maple is Sega's
+> > > proprietary serial interface for the Dreamcast and can be set to
+> > > synchronise dma transfers to the VBLANK).
+> > >
+> > > This has no impact on the performance of the PVR2.
+> >
+> > sharable implies the interrupt handler checks to see if it actually
+> > caused the interrupt ... which it doesnt at the moment ... presumably,
+> > you're making it shared because another device will be using that
+> > interrupt as well ... so when that other device gets an interrupt, how
+> > do you know it's for that device and not PVR2 ?
+>
+> If the interrupt occurs then it will be for both of them. The hardware
+> cannot be removed and the maple bus driver is set for hardware sync.
+>
+> The question seems redundant to me.
 
-ia64 allmodconfig:
+i really dont know how the maple bus works or what piece of hardware is wir=
+ed=20
+up to the same interrupt line.  my point is that if the other device fires =
+an=20
+interrupt, the pvr interrupt handler may be executed and attempt to do work=
+=20
+when in reality the pvr was not the source of the interrupt.
+=2Dmike
 
-kernel/sched.c: In function `cpu_to_phys_group':                                                                             kernel/sched.c:5937: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:5937: error: (Each undeclared identifier is reported only once
-kernel/sched.c:5937: error: for each function it appears in.)                                                                kernel/sched.c:5937: warning: type defaults to `int' in declaration of `type name'
-kernel/sched.c:5937: error: invalid type argument of `unary *'                                                               kernel/sched.c: In function `build_sched_domains':                                                                           kernel/sched.c:6172: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:6172: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6172: error: invalid type argument of `unary *'                                                               kernel/sched.c:6183: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6183: error: invalid type argument of `unary *'                                                               
+--nextPart2842700.tRFiO0C76J
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.6 (GNU/Linux)
+
+iQIVAwUARtjWVkFjO5/oN/WBAQIEihAAwyLXm7hCbKiuCpwU7iNYURfWp925lzni
+q1iVZvZ2wHwTTlGfdwdcj5JqNq+jNLo4FYhKaHNj3MSOfMCPbsj0M0Ehv/OIkar3
+lahqKE0U+W89OATfdMTxSpSUdn+gSv/8Kk8QipOYW6wB2zfy7xDHCYVN4K62WqFp
+EThjI5t04drP064RdJfyV1m1BM95OS33+QHpeGBtFsjp2yRdKFcfkblYvk15rD6V
+hszT4h0sqz70Q8xfcqdXYYrTUJpOMr0Cw9pb4EO8nwpKDlpA0F1EWcDpMwDgJILF
+X234btTxtPf5hZ0HFfvXUvvO4cpoFRnYvErGGObirxQqSPgmADQ2rqXhw5KqxQ8K
+megksKI4DuehAeLXEFDP9YGX23hBBPSrFV4TL4Qj+A5QcsN18LNaK26eOBlHAss3
+yg/HwbpL2fb8CNu0K0HvOOez4R2Egxwy2GeUYzPageyaQalODlfvKz56lpOeSy/v
+dMepbhuAWxm4GM6YQoP/9hItqFQv/vSZdmZv24iEzAm2qwUY1x2OUx68esRdKGbn
++F+zAV5HYFHLj3HHe2zvOFlr+7ocdPypRlnqmSW+xXoWWTMW43jesQUYP3Fwlhmx
+LtkCgM+xFUclRWWzq5r8Vzo4WRcCUUYIkdGtyARf1kRQ5NLHUk1oU/kFJUaXUNRw
+MRamIjVzobA=
+=80Nh
+-----END PGP SIGNATURE-----
+
+--nextPart2842700.tRFiO0C76J--
