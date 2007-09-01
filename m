@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751516AbXIAEfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbXIAEuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751516AbXIAEfW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 00:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbXIAEfG
+	id S1752858AbXIAEuf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 00:50:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbXIAEu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 00:35:06 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59947 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751302AbXIAEfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 00:35:04 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/JylkIzaTJQuN36BoOKfXiGXbJobkFCn3/GBp2on
-	wR25Mn9YI+EN4p
-Subject: Re: [ANNOUNCE/RFC] Really Fair Scheduler
-From: Mike Galbraith <efault@gmx.de>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org
-In-Reply-To: <Pine.LNX.4.64.0708311520420.1817@scrub.home>
-References: <Pine.LNX.4.64.0708310139280.1817@scrub.home>
-	 <1188553015.8061.36.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0708311520420.1817@scrub.home>
-Content-Type: text/plain
-Date: Sat, 01 Sep 2007 06:35:00 +0200
-Message-Id: <1188621300.6476.0.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Sat, 1 Sep 2007 00:50:27 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:29131 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbXIAEu0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 00:50:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=cpOSKaz3mAJE65Ak7V+sATkaYYvarK6NNUrLTHexJkL8rz4cO2BV2ZiQRP94KSjNpzEev49PSzVSLYR5PpVt7wPZGkY4hksrZcPf7uPntPzkg7xOz7oYXr/20fKBA97y/ezm2zQiTK403TfAeItJyWA1cnDCj0YT18jvLNNT0PY=
+Date: Sat, 1 Sep 2007 08:50:20 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: socket locking obscure code
+Message-ID: <20070901045020.GA7221@cvg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-31 at 15:22 +0200, Roman Zippel wrote:
+Hi LKML,
+ 
+looking thru lock_sock_nested (while trying to catch
+BUG in CIFS as reported on bugzilla #8377) I found
+that lock_sock_nested consist of:
 
-> Were there some kernel messages while running it?
-
-Nope.
-
-	-Mike
-
+void fastcall lock_sock_nested(struct sock *sk, int subclass)
+{
+	might_sleep();
+--->	spin_lock_bh(&sk->sk_lock.slock);
+	if (sk->sk_lock.owner)
+		__lock_sock(sk);
+	sk->sk_lock.owner = (void *)1;
+--->	spin_unlock(&sk->sk_lock.slock);
+	/*
+	 * The sk_lock has mutex_lock() semantics here:
+	 */
+	mutex_acquire(&sk->sk_lock.dep_map, subclass, 0, _RET_IP_);
+	local_bh_enable();
+}
+ 
+so why spin_unlock are there instead of spin_unlock_bh?
+To recope with __lock_sock? Am I right?
+ 
+ 		Cyrill
+ 
