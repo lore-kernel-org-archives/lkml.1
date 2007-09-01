@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbXIAThU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbXIAToe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757239AbXIAThU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 15:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXIAThJ
+	id S1757142AbXIAToe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 15:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbXIAToZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 15:37:09 -0400
-Received: from iona.labri.fr ([147.210.8.143]:60942 "EHLO iona.labri.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755223AbXIAThH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 15:37:07 -0400
-Date: Sat, 1 Sep 2007 21:36:52 +0200
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dtor@mail.ru
-Subject: Re: [PATCH] Console keyboard events and accessibility
-Message-ID: <20070901193652.GD12644@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Pavel Machek <pavel@ucw.cz>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, dtor@mail.ru
-References: <20070821005718.GD3658@interface.famille.thibault.fr> <Pine.LNX.4.64.0708210732270.5333@fbirervta.pbzchgretzou.qr> <20070821204951.GC3658@interface.famille.thibault.fr> <20070712191932.GA3947@ucw.cz> <20070901122604.GA3251@implementation.famille.thibault.fr> <20070901123258.GA4612@ucw.cz> <20070901125120.GC3251@implementation.famille.thibault.fr> <20070901172301.GA4275@ucw.cz> <20070901173329.GB12644@implementation> <20070901181845.GA4839@ucw.cz>
+	Sat, 1 Sep 2007 15:44:25 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:56428 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755341AbXIAToY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 15:44:24 -0400
+X-Sasl-enc: uj8D1/h49VoC+P5H8ArJkGtPuqN70CLMhHF1CVNGat1Q 1188675861
+Date: Sat, 1 Sep 2007 16:44:17 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Shem Multinymous <multinymous@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org, "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [lm-sensors] [PATCH] hwmon: Add power meters to
+	Documentation/hwmon/sysfs-interface
+Message-ID: <20070901194417.GA24897@khazad-dum.debian.net>
+References: <20070827211446.GG32667@tree.beaverton.ibm.com> <20070828015029.GA10107@khazad-dum.debian.net> <20070828131942.18449886@hyperion.delvare> <20070828164440.GL32667@tree.beaverton.ibm.com> <20070901171048.GA3883@ucw.cz> <41840b750709011105s6c434217t50d965a0b17df643@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070901181845.GA4839@ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <41840b750709011105s6c434217t50d965a0b17df643@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek, le Sat 01 Sep 2007 18:18:45 +0000, a écrit :
-> > > > Very early is not so early, and loading initrd itself may actually fail.
-> > > > The kernel may indeed hang, but there are more chances to get some
-> > > > messages before the hang.  Don't _you_ have a VGA screen for getting
-> > > > earliest failure messages from the kernel?
-> > > 
-> > > No. I'm using framebuffer, that's initialized quite late in boot
-> > > process. Plus many users just use bootsplash. I do use vga mode for
-> > > heavy debugging, but that's quite unusual.
-> > 
-> > But that's what some people do for their work, so they need it.
-> 
-> How many such users are out there?
+On Sat, 01 Sep 2007, Shem Multinymous wrote:
+> > Should we add power?_10sec_avg_input? IIRC thinkpads export that,
+> > too.
 
-You know that it's a question that just can't be answered.  There are
-such people, and their employment depend on this.
+I'd say it is enough to know it is an average, you don't need to specify HOW
+it is averaged.
 
-> > > So... you actually have speech-enabled grub/lilo/something?
-> > 
-> > That's in project too (and there's no reason it shouldn't be done).
-> 
-> I'd say kernel debugging is hard without accessible bootloader
+But there is a real need to export both instantaneous and averaged values in
+power supplies/power sources, so we should have a standard way to do so in
+hwmon, and power_supply class should use it (or the opposite, it doesn't
+matter, as long as everyone does it the same way).
 
-A bootloader with only two entries is not so difficult to use blindly.
+> It would be nice if the power meter interface uses the same
+> conventions as the power supply interface, since the former is
+> essentially a subset of the latter. Userspace app that read power
+> meters via sysfs should work for power supplies too.
 
-Samuel
+Agreed.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
