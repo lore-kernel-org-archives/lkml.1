@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbXIAI1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbXIAIhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbXIAI1Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 04:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbXIAI1Q
+	id S1753184AbXIAIhZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 04:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbXIAIhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 04:27:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50614 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751862AbXIAI1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 04:27:14 -0400
+	Sat, 1 Sep 2007 04:37:13 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:5921 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751772AbXIAIhK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 04:37:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=QIBGBw6BREa3pjJNRiYWGIilJ8j6GaJvpjLon3E8Pq8TlYPZUQVz5H8VgWAhDgTkki1z+8MFAUDcCAdBwuvmPFyKZNwr8wndzlJdfXXuWwxA97jleMwh8mEzowa6CKtmfS0y69h1J2wCPiJ5Sy/fxAeEoEXpeZH1NphAFmmqWks=
+Message-ID: <46D924A3.3070207@googlemail.com>
+Date: Sat, 01 Sep 2007 10:36:51 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Len Brown <lenb@kernel.org>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       linux-acpi@vger.kernel.org, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Daniel Ritz <daniel.ritz-ml@swissonline.ch>
+Subject: Re: [1/2] 2.6.23-rc3: known regressions with patches
+References: <46D59081.2040605@googlemail.com> <200708311741.22863.lenb@kernel.org>
+In-Reply-To: <200708311741.22863.lenb@kernel.org>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: PATCH? fix SIGNAL_STOP_DEQUEUED vs SIGCONT race
-In-Reply-To: Oleg Nesterov's message of  Tuesday, 28 August 2007 19:54:33 +0400 <20070828155433.GA1081@tv-sign.ru>
-Emacs: because one operating system isn't enough.
-Message-Id: <20070901082638.3C1124D04CC@magilla.localdomain>
-Date: Sat,  1 Sep 2007 01:26:38 -0700 (PDT)
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Move the setting of SIGNAL_STOP_DEQUEUED from dequeue_signal() to
-> get_signal_to_deliver(), and set this flag only if we are really going to stop.
-> This also simplifies the code and makes the SIGNAL_STOP_DEQUEUED usage more
-> understandable.
+Len Brown pisze:
+> On Wednesday 29 August 2007 11:28, Michal Piotrowski wrote:
+> 
+>> ACPI
+>>
+>> Subject         : the fan doesn't work any more
+>> References      : http://lkml.org/lkml/2007/8/28/359
+>> Last known good : ?
+>> Submitter       : Daniel Ritz <daniel.ritz-ml@swissonline.ch>
+>> Caused-By       : Alexey Starikovskiy <astarikovskiy@suse.de>
+>>                   commit cd8c93a4e04dce8f00d1ef3a476aac8bd65ae40b
+>> Handled-By      : Alexey Starikovskiy <astarikovskiy@suse.de>
+>> Patch           : http://lkml.org/lkml/2007/8/29/15
+>> Status          : patch was suggested
+> 
+> I believe that this is gone as of 2.6.23-rc4-git3
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=8958
 
-It looks like a nice cleanup to me.
+BTW. Maciej Rutecki has said that "MCFG bug on hp nx6310" is not
+a regression, so regression counter for ACPI == 0 (if I didn't
+overlook something :))
 
-> However, this changes the behaviour when the task is ptraced. If the debugger
-> doesn't clear ->exit_code, SIGSTOP always succeeds after ptrace_stop(), even
-> if SIGCONT was sent in between. I can't decide whether this change is good
-> or bad, hopefully Roland can clarify.
+> 
+> thanks,
+> -Len
+> 
 
-Hmm.  I think this is bad.  
+Regards,
+Michal
 
-First, considering only the single-threaded case, there are debugger vs
-SIGCONT races.  Someone does kill(pid,SIGSTOP);kill(pid,SIGCONT); while pid
-is debugged.  The mandate for end user behavior here is that pid cannot
-wind up sitting in job control stop in the end.  Say the debugger is
-e.g. strace, simply printing every signal and passing it through.
-So say it goes:
-	T			K			D
-	merrily running ...				blocked in wait4
-				kill(K, SIGSTOP)
-	dequeue SIGSTOP
-	 -> ptrace_stop
- 							wait4 -> K,{SIGSTOP}
-				kill(K, SIGCONT)
-							PTRACE_CONT,K,SIGSTOP
-	do_signal_stop(SIGSTOP)
- 							wait4 -> K,{SIGSTOP}
-
-The debugger did the obvious thing: just pass through what it got.
-The killer did something POSIX guarantees leaves T running.
-T is in job control stop, with a pending SIGCONT (normally impossible).
-It's not the end of the world, since the next SIGKILL or SIGCONT will
-always wake it up.  But it's not right.
-
-There are related issues with multi-threaded job control stop and with
-suddenly killing the debugger.  I could get into those in detail.  But I
-think the case above illustrates why we need a stop signal pending
-consideration by the debugger to be like a stop signal pending locking for
-the is_current_pgrp_orphaned() check when a SIGCONT/SIGKILL comes in between.
-
-It's still probably a worthwhile cleanup to have the logic only in
-get_signal_to_deliver, and to fix the problem you cited.  It will take only
-a little extra code to handle the ptrace case too, i.e.
-	if (sig_kernel_stop(signr) &&
- 	    current->sighand->action[signr-1] == SIG_DFL &&
- 	    !(current->signal->flags & SIGNAL_GROUP_EXIT))
-		current->signal->flags |= SIGNAL_STOP_DEQUEUED;
-	ptrace_stop(signr, signr, info);
-	if (sig_kernel_stop(signr) && current->exit_code == signr &&
-	    !(current->signal->flags & SIGNAL_STOP_DEQUEUED) &&
- 	    current->sighand->action[signr-1] == SIG_DFL)
-		current->exit_code = 0;
-maybe.
-
-
-Thanks,
-Roland
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
