@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbXIABss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbXIABtJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755792AbXIABss (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbXIABnd
+	id S1755704AbXIABtJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:49:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbXIABng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:43:33 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51615 "EHLO
+	Fri, 31 Aug 2007 21:43:36 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46125 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751083AbXIABmX (ORCPT
+	with ESMTP id S1751838AbXIABmZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 21:42:23 -0400
-Message-Id: <20070901014222.303468369@sgi.com>
+	Fri, 31 Aug 2007 21:42:25 -0400
+Message-Id: <20070901014225.046839422@sgi.com>
 References: <20070901014107.719506437@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 31 Aug 2007 18:41:20 -0700
+Date: Fri, 31 Aug 2007 18:41:32 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Andy Whitcroft <apw@shadowen.org>
 Cc: linux-kernel@vger.kernel.org
@@ -21,139 +21,144 @@ Cc: linux-mm@kvack.org
 Cc: linux-fsdevel@vger.kernel.org
 Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: David Chinner <dgc@sgi.com>
-Subject: [RFC 13/26] SLUB: Add SlabReclaimable() to avoid repeated reclaim attempts
-Content-Disposition: inline; filename=0013-slab_defrag_reclaim_flag.patch
+Subject: [RFC 25/26] dentries: dentry defragmentation
+Content-Disposition: inline; filename=0025-slab_defrag_dentry_defrag.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a flag SlabReclaimable() that is set on slabs with a method
-that allows defrag/reclaim. Clear the flag if a reclaim action is not
-successful in reducing the number of objects in a slab. The reclaim
-flag is set again if all objects have been allocated from it.
+kick() is called after get() has been used and after the slab has dropped
+all of its own locks. The dentry pruning for unused entries works in a
+straightforward way.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- mm/slub.c |   42 ++++++++++++++++++++++++++++++++++++------
- 1 file changed, 36 insertions(+), 6 deletions(-)
+ fs/dcache.c |  100 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 99 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/mm/slub.c
+Index: linux-2.6/fs/dcache.c
 ===================================================================
---- linux-2.6.orig/mm/slub.c	2007-08-28 20:10:37.000000000 -0700
-+++ linux-2.6/mm/slub.c	2007-08-28 20:10:47.000000000 -0700
-@@ -107,6 +107,8 @@
- #define SLABDEBUG 0
- #endif
+--- linux-2.6.orig/fs/dcache.c	2007-08-29 18:55:21.000000000 -0700
++++ linux-2.6/fs/dcache.c	2007-08-29 18:57:51.000000000 -0700
+@@ -143,7 +143,10 @@ static struct dentry *d_kill(struct dent
  
-+#define SLABRECLAIMABLE (1 << PG_dirty)
-+
- static inline int SlabFrozen(struct page *page)
- {
- 	return page->flags & FROZEN;
-@@ -137,6 +139,21 @@ static inline void ClearSlabDebug(struct
- 	page->flags &= ~SLABDEBUG;
+ 	list_del(&dentry->d_u.d_child);
+ 	dentry_stat.nr_dentry--;	/* For d_free, below */
+-	/*drops the locks, at that point nobody can reach this dentry */
++	/*
++	 * drops the locks, at that point nobody (aside from defrag)
++	 * can reach this dentry
++	 */
+ 	dentry_iput(dentry);
+ 	parent = dentry->d_parent;
+ 	d_free(dentry);
+@@ -2100,6 +2103,100 @@ static void __init dcache_init_early(voi
+ 		INIT_HLIST_HEAD(&dentry_hashtable[loop]);
  }
  
-+static inline int SlabReclaimable(struct page *page)
++/*
++ * The slab allocator is holding off frees. We can safely examine
++ * the object without the danger of it vanishing from under us.
++ */
++static void *get_dentries(struct kmem_cache *s, int nr, void **v)
 +{
-+	return page->flags & SLABRECLAIMABLE;
++	struct dentry *dentry;
++	int i;
++
++	spin_lock(&dcache_lock);
++	for (i = 0; i < nr; i++) {
++		dentry = v[i];
++
++		/*
++		 * Three sorts of dentries cannot be reclaimed:
++		 *
++		 * 1. dentries that are in the process of being allocated
++		 *    or being freed. In that case the dentry is neither
++		 *    on the LRU nor hashed.
++		 *
++		 * 2. Fake hashed entries as used for anonymous dentries
++		 *    and pipe I/O. The fake hashed entries have d_flags
++		 *    set to indicate a hashed entry. However, the
++		 *    d_hash field indicates that the entry is not hashed.
++		 *
++		 * 3. dentries that have a backing store that is not
++		 *    writable. This is true for tmpsfs and other in
++		 *    memory filesystems. Removing dentries from them
++		 *    would loose dentries for good.
++		 */
++		if ((d_unhashed(dentry) && list_empty(&dentry->d_lru)) ||
++		   (!d_unhashed(dentry) && hlist_unhashed(&dentry->d_hash)) ||
++		   (dentry->d_inode &&
++		   !mapping_cap_writeback_dirty(dentry->d_inode->i_mapping)))
++		   	/* Ignore this dentry */
++			v[i] = NULL;
++		else
++			/* dget_locked will remove the dentry from the LRU */
++			dget_locked(dentry);
++	}
++	spin_unlock(&dcache_lock);
++	return NULL;
 +}
 +
-+static inline void SetSlabReclaimable(struct page *page)
++/*
++ * Slab has dropped all the locks. Get rid of the refcount obtained
++ * earlier and also free the object.
++ */
++static void kick_dentries(struct kmem_cache *s,
++				int nr, void **v, void *private)
 +{
-+	page->flags |= SLABRECLAIMABLE;
-+}
++	struct dentry *dentry;
++	int i;
 +
-+static inline void ClearSlabReclaimable(struct page *page)
-+{
-+	page->flags &= ~SLABRECLAIMABLE;
-+}
++	/*
++	 * First invalidate the dentries without holding the dcache lock
++	 */
++	for (i = 0; i < nr; i++) {
++		dentry = v[i];
 +
- /*
-  * Issues still to be resolved:
-  *
-@@ -1099,6 +1116,8 @@ static struct page *new_slab(struct kmem
- 	if (s->flags & (SLAB_DEBUG_FREE | SLAB_RED_ZONE | SLAB_POISON |
- 			SLAB_STORE_USER | SLAB_TRACE))
- 		SetSlabDebug(page);
-+	if (s->kick)
-+		SetSlabReclaimable(page);
- 
-  out:
- 	if (flags & __GFP_WAIT)
-@@ -1155,6 +1174,7 @@ static void discard_slab(struct kmem_cac
- 	atomic_long_dec(&n->nr_slabs);
- 	reset_page_mapcount(page);
- 	__ClearPageSlab(page);
-+	ClearSlabReclaimable(page);
- 	free_slab(s, page);
- }
- 
-@@ -1328,8 +1348,12 @@ static void unfreeze_slab(struct kmem_ca
- 
- 		if (page->freelist)
- 			add_partial(n, page, tail);
--		else if (SlabDebug(page) && (s->flags & SLAB_STORE_USER))
--			add_full(n, page);
-+		else {
-+			if (SlabDebug(page) && (s->flags & SLAB_STORE_USER))
-+				add_full(n, page);
-+			if (s->kick && !SlabReclaimable(page))
-+				SetSlabReclaimable(page);
-+		}
- 		slab_unlock(page);
- 
- 	} else {
-@@ -2659,7 +2683,7 @@ int kmem_cache_isolate_slab(struct page 
- 	struct kmem_cache *s;
- 	int rc = -ENOENT;
- 
--	if (!PageSlab(page) || SlabFrozen(page))
-+	if (!PageSlab(page) || SlabFrozen(page) || !SlabReclaimable(page))
- 		return rc;
- 
- 	/*
-@@ -2729,7 +2753,7 @@ static int kmem_cache_vacate(struct page
- 	struct kmem_cache *s;
- 	unsigned long *map;
- 	int leftover;
--	int objects;
-+	int objects = -1;
- 	void *private;
- 	unsigned long flags;
- 	int tail = 1;
-@@ -2739,7 +2763,7 @@ static int kmem_cache_vacate(struct page
- 	slab_lock(page);
- 
- 	s = page->slab;
--	map = scratch + s->objects * sizeof(void **);
-+	map = scratch + max_defrag_slab_objects * sizeof(void **);
- 	if (!page->inuse || !s->kick)
- 		goto out;
- 
-@@ -2773,10 +2797,13 @@ static int kmem_cache_vacate(struct page
- 	local_irq_save(flags);
- 	slab_lock(page);
- 	tail = 0;
--out:
++		if (dentry)
++			d_invalidate(dentry);
++	}
 +
- 	/*
- 	 * Check the result and unfreeze the slab
- 	 */
-+	if (page->inuse == objects)
-+		ClearSlabReclaimable(page);
-+out:
- 	leftover = page->inuse;
- 	unfreeze_slab(s, page, tail);
- 	local_irq_restore(flags);
-@@ -2831,6 +2858,9 @@ static unsigned long __kmem_cache_shrink
- 		if (inuse > s->objects / 4)
- 			continue;
- 
-+		if (s->kick && !SlabReclaimable(page))
++	/*
++	 * If we are the last one holding a reference then the dentries can
++	 * be freed. We need the dcache_lock.
++	 */
++	spin_lock(&dcache_lock);
++	for (i = 0; i < nr; i++) {
++		dentry = v[i];
++		if (!dentry)
 +			continue;
 +
- 		if (!slab_trylock(page))
- 			continue;
++		spin_lock(&dentry->d_lock);
++		if (atomic_read(&dentry->d_count) > 1) {
++			spin_unlock(&dentry->d_lock);
++			spin_unlock(&dcache_lock);
++			dput(dentry);
++			spin_lock(&dcache_lock);
++			continue;
++		}
++
++		prune_one_dentry(dentry, 1);
++	}
++	spin_unlock(&dcache_lock);
++
++	/*
++	 * dentries are freed using RCU so we need to wait until RCU
++	 * operations are complete
++	 */
++	synchronize_rcu();
++}
++
+ static void __init dcache_init(unsigned long mempages)
+ {
+ 	int loop;
+@@ -2109,6 +2206,7 @@ static void __init dcache_init(unsigned 
+ 		dcache_ctor);
  
+ 	register_shrinker(&dcache_shrinker);
++	kmem_cache_setup_defrag(dentry_cache, get_dentries, kick_dentries);
+ 
+ 	/* Hash may have been set up in dcache_init_early */
+ 	if (!hashdist)
 
 -- 
