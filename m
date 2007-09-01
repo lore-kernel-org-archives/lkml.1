@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbXIABth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbXIABtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755394AbXIABth (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXIABni
+	id S1753360AbXIABtx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXIABnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:43:38 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51638 "EHLO
+	Fri, 31 Aug 2007 21:43:41 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46122 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751770AbXIABmZ (ORCPT
+	with ESMTP id S1751813AbXIABmZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 31 Aug 2007 21:42:25 -0400
-Message-Id: <20070901014224.368426395@sgi.com>
+Message-Id: <20070901014224.596352219@sgi.com>
 References: <20070901014107.719506437@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 31 Aug 2007 18:41:29 -0700
+Date: Fri, 31 Aug 2007 18:41:30 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: Andy Whitcroft <apw@shadowen.org>
 Cc: linux-kernel@vger.kernel.org
@@ -21,44 +21,120 @@ Cc: linux-mm@kvack.org
 Cc: linux-fsdevel@vger.kernel.org
 Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: David Chinner <dgc@sgi.com>
-Subject: [RFC 22/26] FS: Socket inode defragmentation
-Content-Disposition: inline; filename=0022-slab_defrag_socket.patch
+Subject: [RFC 23/26] dentries: Extract common code to remove dentry from lru
+Content-Disposition: inline; filename=0023-slab_defrag_dentry_remove_lru.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support inode defragmentation for sockets
+Extract the common code to remove a dentry from the lru into a new function
+dentry_lru_remove().
+
+Two call sites used list_del() instead of list_del_init(). AFAIK the
+performance of both is the same. dentry_lru_remove() does a list_del_init().
+
+As a result dentry->d_lru is now always empty when a dentry is freed.
+A consistent state is useful to establish dentry state from slab defrag.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- net/socket.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ fs/dcache.c |   42 ++++++++++++++----------------------------
+ 1 files changed, 14 insertions(+), 28 deletions(-)
 
-diff --git a/net/socket.c b/net/socket.c
-index ec07703..89fc7a5 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -264,6 +264,12 @@ static void init_once(void *foo, struct kmem_cache *cachep, unsigned long flags)
- 	inode_init_once(&ei->vfs_inode);
+diff --git a/fs/dcache.c b/fs/dcache.c
+index 678d39d..71e4877 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -95,6 +95,14 @@ static void d_free(struct dentry *dentry)
+ 		call_rcu(&dentry->d_u.d_rcu, d_callback);
  }
  
-+static void *sock_get_inodes(struct kmem_cache *s, int nr, void **v)
++static void dentry_lru_remove(struct dentry *dentry)
 +{
-+	return fs_get_inodes(s, nr, v,
-+		offsetof(struct socket_alloc, vfs_inode));
++	if (!list_empty(&dentry->d_lru)) {
++		list_del_init(&dentry->d_lru);
++		dentry_stat.nr_unused--;
++	}
 +}
 +
- static int init_inodecache(void)
+ /*
+  * Release the dentry's inode, using the filesystem
+  * d_iput() operation if defined.
+@@ -211,13 +219,7 @@ repeat:
+ unhash_it:
+ 	__d_drop(dentry);
+ kill_it:
+-	/* If dentry was on d_lru list
+-	 * delete it from there
+-	 */
+-	if (!list_empty(&dentry->d_lru)) {
+-		list_del(&dentry->d_lru);
+-		dentry_stat.nr_unused--;
+-	}
++	dentry_lru_remove(dentry);
+ 	dentry = d_kill(dentry);
+ 	if (dentry)
+ 		goto repeat;
+@@ -285,10 +287,7 @@ int d_invalidate(struct dentry * dentry)
+ static inline struct dentry * __dget_locked(struct dentry *dentry)
  {
- 	sock_inode_cachep = kmem_cache_create("sock_inode_cache",
-@@ -275,6 +281,8 @@ static int init_inodecache(void)
- 					      init_once);
- 	if (sock_inode_cachep == NULL)
- 		return -ENOMEM;
-+	kmem_cache_setup_defrag(sock_inode_cachep,
-+			sock_get_inodes, kick_inodes);
- 	return 0;
+ 	atomic_inc(&dentry->d_count);
+-	if (!list_empty(&dentry->d_lru)) {
+-		dentry_stat.nr_unused--;
+-		list_del_init(&dentry->d_lru);
+-	}
++	dentry_lru_remove(dentry);
+ 	return dentry;
  }
  
+@@ -407,10 +406,7 @@ static void prune_one_dentry(struct dentry * dentry, int prune_parents)
+ 
+ 		if (dentry->d_op && dentry->d_op->d_delete)
+ 			dentry->d_op->d_delete(dentry);
+-		if (!list_empty(&dentry->d_lru)) {
+-			list_del(&dentry->d_lru);
+-			dentry_stat.nr_unused--;
+-		}
++		dentry_lru_remove(dentry);
+ 		__d_drop(dentry);
+ 		dentry = d_kill(dentry);
+ 		spin_lock(&dcache_lock);
+@@ -600,10 +596,7 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
+ 
+ 	/* detach this root from the system */
+ 	spin_lock(&dcache_lock);
+-	if (!list_empty(&dentry->d_lru)) {
+-		dentry_stat.nr_unused--;
+-		list_del_init(&dentry->d_lru);
+-	}
++	dentry_lru_remove(dentry);
+ 	__d_drop(dentry);
+ 	spin_unlock(&dcache_lock);
+ 
+@@ -617,11 +610,7 @@ static void shrink_dcache_for_umount_subtree(struct dentry *dentry)
+ 			spin_lock(&dcache_lock);
+ 			list_for_each_entry(loop, &dentry->d_subdirs,
+ 					    d_u.d_child) {
+-				if (!list_empty(&loop->d_lru)) {
+-					dentry_stat.nr_unused--;
+-					list_del_init(&loop->d_lru);
+-				}
+-
++				dentry_lru_remove(dentry);
+ 				__d_drop(loop);
+ 				cond_resched_lock(&dcache_lock);
+ 			}
+@@ -803,10 +792,7 @@ resume:
+ 		struct dentry *dentry = list_entry(tmp, struct dentry, d_u.d_child);
+ 		next = tmp->next;
+ 
+-		if (!list_empty(&dentry->d_lru)) {
+-			dentry_stat.nr_unused--;
+-			list_del_init(&dentry->d_lru);
+-		}
++		dentry_lru_remove(dentry);
+ 		/* 
+ 		 * move only zero ref count dentries to the end 
+ 		 * of the unused list for prune_dcache
 -- 
 1.5.2.4
 
