@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbXIAG5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbXIAG7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbXIAG5i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 02:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbXIAG5b
+	id S1753989AbXIAG7g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 02:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbXIAG70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 02:57:31 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:58886 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbXIAG5a (ORCPT
+	Sat, 1 Sep 2007 02:59:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47907 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751987AbXIAG7Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 02:57:30 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sat, 1 Sep 2007 02:46:07 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm] add-a-rounddown_pow_of_two-routine-to-log2h.patch
- fix
-In-Reply-To: <200709010755.37838.m.kozlowski@tuxland.pl>
-Message-ID: <Pine.LNX.4.64.0709010245440.21492@localhost.localdomain>
-References: <200709010755.37838.m.kozlowski@tuxland.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sat, 1 Sep 2007 02:59:25 -0400
+Date: Fri, 31 Aug 2007 23:58:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc4-mm1
+Message-Id: <20070831235815.a09c7865.akpm@linux-foundation.org>
+In-Reply-To: <20070901155353.8a09db69.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org>
+	<20070901155353.8a09db69.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Sep 2007, Mariusz Kozlowski wrote:
+> On Sat, 1 Sep 2007 15:53:53 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> I met 2 troubles while I compiled rc4-mm1 on x86/UP system,
+> 
+> One on pcnet32.c (patch is attaced below).
+> One on crypto CONFIG.
+> 
+> == compile log ==
+> drivers/net/pcnet32.c: In function 'pcnet32_netif_stop':
+> drivers/net/pcnet32.c:445: warning: unused variable 'lp'
+> drivers/net/pcnet32.c: In function 'pcnet32_netif_start':
+> drivers/net/pcnet32.c:455: warning: unused variable 'lp'
+> drivers/net/pcnet32.c: In function 'pcnet32_interrupt':
+> drivers/net/pcnet32.c:2622: error: 'struct net_device' has no member named 'napi'
 
-> Hello,
->
-> 	This patch fixes the unbalanced parenthesis inroduced by
-> add-a-rounddown_pow_of_two-routine-to-log2h.patch.
->
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
->
->  include/linux/log2.h |    2 +-
+Only git-net touches pcnet32.c
+
+> crypto/built-in.o: In function `update2':
+> digest.c:(.text+0x94a): undefined reference to `crypto_km_types'
+> digest.c:(.text+0x9bf): undefined reference to `crypto_km_types'
+> 
+> digest.c (CONFIG_CRYPTO) uses crypto/scatterwalk.c's object (CONFIG_CRYPTO_ALGAPI)
+> I meet this when CONFIG_CRYPTO_ALGAPI=m. I need to make CONFIG_CRYPTO_ALGAPI=y.
+
+cc herbert..
+
+> Regards,
+> -Kame.
+> == cut from here ==
+> 
+>  tiny bug fix for pcnet32.c (maybe works well. please confirm.)
+> 
+>  Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+>  drivers/net/pcnet32.c |    2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> --- linux-2.6.23-rc4-mm1-a/include/linux/log2.h	2007-09-01 07:23:28.000000000 +0200
-> +++ linux-2.6.23-rc4-mm1-b/include/linux/log2.h	2007-09-01 07:29:27.000000000 +0200
-> @@ -186,7 +186,7 @@ unsigned long __rounddown_pow_of_two(uns
->  (						\
->  	__builtin_constant_p(n) ? (		\
->  		(n == 1) ? 0 :			\
-> -		(1UL << ilog2(n)) :		\
-> +		(1UL << ilog2(n))) :		\
->  	__rounddown_pow_of_two(n)		\
->   )
->
-> -
+> 
+> Index: devel-2.6.23-rc4-mm1/drivers/net/pcnet32.c
+> ===================================================================
+> --- devel-2.6.23-rc4-mm1.orig/drivers/net/pcnet32.c
+> +++ devel-2.6.23-rc4-mm1/drivers/net/pcnet32.c
+> @@ -2619,7 +2619,7 @@ pcnet32_interrupt(int irq, void *dev_id)
+>  			break;
+>  		}
+>  #else
+> -		pcnet32_rx(dev, dev->napi.weight);
+> +		pcnet32_rx(dev, lp->napi.weight);
+>  		if (pcnet32_tx(dev)) {
+>  			/* reset the chip to clear the error condition, then restart */
+>  			lp->a.reset(ioaddr);
 
-oh, crap ... how did that happen?  sorry.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+cc netdev, thanks.
