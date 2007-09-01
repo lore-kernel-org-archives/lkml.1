@@ -1,92 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752121AbXIABL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbXIABel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752121AbXIABL7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 21:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbXIABLs
+	id S1752327AbXIABel (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 21:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbXIABec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 21:11:48 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44296 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751258AbXIABLr (ORCPT
+	Fri, 31 Aug 2007 21:34:32 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:51782 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750701AbXIABec (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 21:11:47 -0400
-Date: Fri, 31 Aug 2007 18:11:43 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Christoph Hellwig <hch@lst.de>
-cc: torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, "H. Peter Anvin" <hpa@zytor.com>,
-       joern@lazybastard.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Mingming Cao <cmm@us.ibm.com>
-Subject: Re: [00/36] Large Blocksize Support V6
-In-Reply-To: <Pine.LNX.4.64.0708281254070.16473@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0708311804550.20144@schroedinger.engr.sgi.com>
-References: <20070828190551.415127746@sgi.com> <20070828192034.GA13883@lst.de>
- <Pine.LNX.4.64.0708281254070.16473@schroedinger.engr.sgi.com>
+	Fri, 31 Aug 2007 21:34:32 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Fri, 31 Aug 2007 21:23:03 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: maturity and status and attributes, oh my!
+In-Reply-To: <46D89800.8080701@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0708312109580.7060@localhost.localdomain>
+References: <Pine.LNX.4.64.0708311720140.29153@localhost.localdomain>
+ <46D89800.8080701@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks to some help Mingming Cao we now have support for extX with up to 
-64k blocksize. There were several issues in the jbd layer.... (The ext2 
-patch that Christoph complained about was dropped).
+On Sat, 1 Sep 2007, Stefan Richter wrote:
 
-The patchset can be tested (assuming one has a current git tree)
+> Robert P. J. Day wrote:
+> ...
+> > attributes would have two critical and non-negotiable properties:
+> >
+> > 1) they would be entirely orthogonal to one another, and
+> > 2) they can be assigned at most one of a pre-defined set of values
+>
+> If they are fully orthogonal to another, then they are also
+> nonexclusive.  You want them to be mutual exclusive, not orthogonal.
 
-git checkout -b largeblock
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/christoph/largeblocksize.git largeblock
+*attributes* would be orthogonal to one another -- the values *within*
+an attribute would be mutually exclusive.  maybe i phrased that badly
+the first time.  so a feature could have both a maturity *and* a
+status (just using my hypothetical attributes here), but no feature
+can have an attribute with more than one value.
 
-... Fiddle around with large blocksize functionality....
+ergo, you can have a maturity of, say, deprecated, *and* a status of,
+say, broken.  is that what you meant?  it's what i was getting at.
 
-git checkout master
+> >   experimental -> normal (stable) -> deprecated -> obsolete
+> >
+> >   it's a natural progression and, at any point, a feature cannot
+> > possibly have more than one maturity value.  it would be as absurd
+> > as saying that someone was a teenager *and* was a twenty-something
+> > at the same time.
+>
+> Keep in mind though that 'experimental', in the context of Linux
+> kernel features, has nothing to do with the age of a feature.
 
-... Back to Linus' tree.
+your point is well taken.  i'm just trying to draw a clear distinction
+between what i see as the natural chronological progression of a
+feature, and its actual level of functionality, which i'm firmly
+convinced represent two *very* different pieces of information.
+something which is marked as obsolete can still be known to be
+functioning perfectly well, while something which is still bleeding
+edge might be well known to be broken as well.
 
-git branch -D largeblock
+with regard to "experimental", what attribute would you imagine it
+would be a possible value for, and what other possible values might
+that attribute have as opposed to experimental?
 
-... Get rid of it.
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-
-commit ed541c23b8e71a0217fd96d1b421992fdd7519df
-Author: Mingming Cao <cmm@us.ibm.com>
-
-    JBD: blocks reservation fix for large block support
-
-commit a1eaa33cf1600f18e961f1cf5c87820bca44df08
-Author: Christoph Lameter <clameter@sgi.com>
-
-    Teach jbd/jbd2 slab management to support >8k block size.
-
-commit 8199976e04333d66202edcaec6cef46771ed194e
-Author: Christoph Lameter <clameter@sgi.com>
-
-    Do not use f_mapping in simple_prepare_write()
-
-commit ac4d742ff3b3526d4c22d5b42e9f9fcc99881a8c
-Author: Mingming Cao <cmm@us.ibm.com>
-
-    ext4: fix rec_len overflow with 64KB block size
-
-commit f336a2d00e7c79500ff30fad40f6e3090319cbe7
-Author: Mingming Cao <cmm@us.ibm.com>
-
-    ext3: fix rec_len overflow with 64KB block size
-
-commit b0c1b74d42cce96c592f8d13b7b842a3e07b0273
-Author: Christoph Lameter <christoph@qirst.com>
-
-    ext2: fix rec_len overflow with 64KB block size
-
-commit 01229e6a2e84178a8b8467930c113a0096c069f2
-Author: Mingming Cao <cmm@us.ibm.com>
-
-    Large Blocksize support for Ext2/3/4
-
-
+http://crashcourse.ca
+========================================================================
