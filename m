@@ -1,107 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbXIACs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbXIACth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbXIACs7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 22:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbXIACsu
+	id S1753223AbXIACth (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Aug 2007 22:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbXIACt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 22:48:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38302 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbXIACst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 22:48:49 -0400
-Message-ID: <46D8D30B.6090703@redhat.com>
-Date: Fri, 31 Aug 2007 21:48:43 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
-MIME-Version: 1.0
-To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       ext4 development <linux-ext4@vger.kernel.org>
-Subject: [RESEND][PATCH] dir_index: error out instead of BUG on corrupt hash
- dir limit
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 31 Aug 2007 22:49:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42623 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752638AbXIACtS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Aug 2007 22:49:18 -0400
+Date: Fri, 31 Aug 2007 19:49:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: travis@sgi.com
+Cc: Andi Kleen <ak@suse.de>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu
+ variable (v2)
+Message-Id: <20070831194903.5d88a007.akpm@linux-foundation.org>
+In-Reply-To: <20070824222948.851896000@sgi.com>
+References: <20070824222654.687510000@sgi.com>
+	<20070824222948.851896000@sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(resend, this one got lost?  Got an acked-by from Andreas
-last go-round)
+On Fri, 24 Aug 2007 15:26:57 -0700 travis@sgi.com wrote:
 
-(Andrew, Ted, should I be splitting out ext3 and ext4 patches and
-sending separately...?)
+> Convert cpu_sibling_map from a static array sized by NR_CPUS to a
+> per_cpu variable.  This saves sizeof(cpumask_t) * NR unused cpus.
+> Access is mostly from startup and CPU HOTPLUG functions.
 
-Thanks,
--Eric
+ia64 allmodconfig:
 
-----------
-
-A corrupt ondisk hash dir limit will trip an assert in dx_probe,
-which calls BUG().  Instead, we can just issue the warning and
-fail dx_probe like the other 3 tests just before it.  Thanks
-to aviro for suggesting this...  Tested with a hand-crafted
-corrupt ext3 image, issues:
-
-EXT3-fs warning (device loop0): dx_probe: Corrupt limit in dir inode 14337
-
-vs. previous:
-
-Assertion failure in dx_probe() at fs/ext3/namei.c:383: "dx_get_limit(entries) == dx_root_limit(dir, root->info.info_length)"
-------------[ cut here ]------------
-kernel BUG at fs/ext3/namei.c:383!
-...
-
-
-Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
-
-Index: linux-2.6.22-rc4/fs/ext3/namei.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext3/namei.c
-+++ linux-2.6.22-rc4/fs/ext3/namei.c
-@@ -379,8 +379,16 @@ dx_probe(struct dentry *dentry, struct i
- 
- 	entries = (struct dx_entry *) (((char *)&root->info) +
- 				       root->info.info_length);
--	assert(dx_get_limit(entries) == dx_root_limit(dir,
--						      root->info.info_length));
-+
-+	if (dx_get_limit(entries) != dx_root_limit(dir,
-+						   root->info.info_length)) {
-+		ext3_warning(dir->i_sb, __FUNCTION__,
-+			     "Corrupt limit in dir inode %ld\n", dir->i_ino);
-+		brelse(bh);
-+		*err = ERR_BAD_DX_DIR;
-+		goto fail;
-+	}
-+
- 	dxtrace (printk("Look up %x", hash));
- 	while (1)
- 	{
-Index: linux-2.6.22-rc4/fs/ext4/namei.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext4/namei.c
-+++ linux-2.6.22-rc4/fs/ext4/namei.c
-@@ -379,8 +379,16 @@ dx_probe(struct dentry *dentry, struct i
- 
- 	entries = (struct dx_entry *) (((char *)&root->info) +
- 				       root->info.info_length);
--	assert(dx_get_limit(entries) == dx_root_limit(dir,
--						      root->info.info_length));
-+
-+	if (dx_get_limit(entries) != dx_root_limit(dir,
-+						   root->info.info_length)) {
-+		ext4_warning(dir->i_sb, __FUNCTION__,
-+			     "Corrupt limit in dir inode %ld\n", dir->i_ino);
-+		brelse(bh);
-+		*err = ERR_BAD_DX_DIR;
-+		goto fail;
-+	}
-+
- 	dxtrace (printk("Look up %x", hash));
- 	while (1)
- 	{
-
--
-To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+kernel/sched.c: In function `cpu_to_phys_group':                                                                             kernel/sched.c:5937: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:5937: error: (Each undeclared identifier is reported only once
+kernel/sched.c:5937: error: for each function it appears in.)                                                                kernel/sched.c:5937: warning: type defaults to `int' in declaration of `type name'
+kernel/sched.c:5937: error: invalid type argument of `unary *'                                                               kernel/sched.c: In function `build_sched_domains':                                                                           kernel/sched.c:6172: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:6172: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6172: error: invalid type argument of `unary *'                                                               kernel/sched.c:6183: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6183: error: invalid type argument of `unary *'                                                               
