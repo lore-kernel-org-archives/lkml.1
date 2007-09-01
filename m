@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932169AbXIAVh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932314AbXIAVpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932169AbXIAVh2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 17:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbXIAVhU
+	id S932314AbXIAVpU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 17:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbXIAVpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 17:37:20 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:7761 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756136AbXIAVhT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 17:37:19 -0400
+	Sat, 1 Sep 2007 17:45:07 -0400
+Received: from mx1.suse.de ([195.135.220.2]:43280 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756149AbXIAVpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 17:45:06 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Daniel Walker <dwalker@mvista.com>
 Subject: Re: [PATCH 1/1] i386: fix a hang on stuck nmi watchdog
-From: Daniel Walker <dwalker@mvista.com>
-To: eranian@hpl.hp.com
-Cc: akpm@linux-foundation.org, Andi Kleen <ak@suse.de>, B.Steinbrink@gmx.de,
+Date: Sat, 1 Sep 2007 23:45:00 +0200
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, eranian@hpl.hp.com, B.Steinbrink@gmx.de,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20070901213301.GB9778@frankl.hpl.hp.com>
 References: <20070901205417.305538884@mvista.com>
-	 <20070901213301.GB9778@frankl.hpl.hp.com>
-Content-Type: text/plain
-Date: Sat, 01 Sep 2007 14:26:47 -0700
-Message-Id: <1188682007.11196.18.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+In-Reply-To: <20070901205417.305538884@mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709012345.00991.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-09-01 at 14:33 -0700, Stephane Eranian wrote:
-> Daniel,
+On Saturday 01 September 2007 22:54:17 Daniel Walker wrote:
+> In the case when an nmi gets stucks the endflag stays equal to zero. This
+> causes the busy looping on other cpus to continue, even tho the nmi test
+> is done.
 > 
-> Thanks for your help tracking down this bug. Maybe we can close
-> the bugzilla report now.
+> On my machine with out the change below the system would hang right after
+> check_nmi_watchdog(). The change below just sets endflag prior to checking
+> if the test was successful or not.
+> 
+> Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-No problem , and thanks for taking the time to dig into it ..
+Added thanks. I guess it's .23 material.
 
-I'll close the bugzilla report.
-
-Daniel
+-Andi
 
