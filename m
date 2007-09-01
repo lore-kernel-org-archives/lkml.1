@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933175AbXIAWNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933198AbXIAWOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933175AbXIAWNR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 18:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932192AbXIAWND
+	id S933198AbXIAWOs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 18:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932208AbXIAWOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 18:13:03 -0400
-Received: from ns.suse.de ([195.135.220.2]:45272 "EHLO mx1.suse.de"
+	Sat, 1 Sep 2007 18:14:40 -0400
+Received: from mail.suse.de ([195.135.220.2]:45459 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932182AbXIAWNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 18:13:01 -0400
-To: Nadia.Derbey@bull.net
-Cc: linux-kernel@vger.kernel.org, matthltc@us.ibm.com
-Subject: Re: [RFC][PATCH 1/6] Storing ipcs into IDRs
-References: <20070831112445.976429000@bull.net>
-	<20070831112613.552219000@bull.net>
+	id S932192AbXIAWOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 18:14:39 -0400
+To: David Miller <davem@davemloft.net>
+Cc: byron.bbradley@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: XFS Fails Quality Assurance Tests on ARM
+References: <fb80ve$i5q$1@sea.gmane.org>
+	<20070830.213901.48806818.davem@davemloft.net>
 From: Andi Kleen <andi@firstfloor.org>
-Date: 02 Sep 2007 00:12:57 +0200
-In-Reply-To: <20070831112613.552219000@bull.net>
-Message-ID: <p73tzqevxue.fsf@bingen.suse.de>
+Date: 02 Sep 2007 00:14:38 +0200
+In-Reply-To: <20070830.213901.48806818.davem@davemloft.net>
+Message-ID: <p73ps12vxrl.fsf@bingen.suse.de>
 User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nadia.Derbey@bull.net writes:
+David Miller <davem@davemloft.net> writes:
 
-> This patch introduces ipcs storage into IDRs. The main changes are:
->   . This ipc_ids structure is changed: the entries array is changed into a
->     root idr structure.
->   . The grow_ary() routine is removed: it is not needed anymore when adding
->     an ipc structure, since we are now using the IDR facility.
->   . The ipc_rmid() routine interface is changed:
->        . there is no need for this routine to return the pointer passed in as
->          argument: it is now declared as a void
->        . since the id is now part of the kern_ipc_perm structure, no need to
->          have it as an argument to the routine
+> From: Byron Bradley <byron.bbradley@gmail.com>
+> Date: Fri, 31 Aug 2007 03:12:46 +0000 (UTC)
 > 
+> > Anybody got any ideas of how we fix this?
+> 
+> I don't know how much testing XFS gets on ARM, but one thing that some
+> ARM chips have is D-cache aliasing problems and one thing XFS uses a
+> lot is virtual remapping of various data structures via vmap().
+> 
+> This might be what is causing the problems.
 
-Thanks for doing this work. It was long overdue.
-
-Do you have any data how this changes memory consumption with 
-many objects? 
+AFAIK XFS uses vmap() mainly during log replay. If David's theory
+was true then the failures must be seen during tests that do 
+this.
 
 -Andi
