@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbXIAS3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbXIASji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756869AbXIAS3g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 14:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbXIAS33
+	id S1757119AbXIASji (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 14:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbXIASj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 14:29:29 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2021 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753376AbXIAS32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 14:29:28 -0400
-Date: Sat, 1 Sep 2007 18:18:45 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dtor@mail.ru
-Subject: Re: [PATCH] Console keyboard events and accessibility
-Message-ID: <20070901181845.GA4839@ucw.cz>
-References: <20070821005718.GD3658@interface.famille.thibault.fr> <Pine.LNX.4.64.0708210732270.5333@fbirervta.pbzchgretzou.qr> <20070821204951.GC3658@interface.famille.thibault.fr> <20070712191932.GA3947@ucw.cz> <20070901122604.GA3251@implementation.famille.thibault.fr> <20070901123258.GA4612@ucw.cz> <20070901125120.GC3251@implementation.famille.thibault.fr> <20070901172301.GA4275@ucw.cz> <20070901173329.GB12644@implementation>
+	Sat, 1 Sep 2007 14:39:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43805 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbXIASj0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 14:39:26 -0400
+Date: Sat, 1 Sep 2007 19:39:22 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, adilger@clusterfs.com, sho@tnes.nec.co.jp,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, clameter@sgi.com
+Subject: Re: [RFC 1/2] JBD: slab management support for large block(>8k)
+Message-ID: <20070901183922.GA12907@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Mingming Cao <cmm@us.ibm.com>, linux-fsdevel@vger.kernel.org,
+	adilger@clusterfs.com, sho@tnes.nec.co.jp,
+	ext4 development <linux-ext4@vger.kernel.org>,
+	linux-kernel@vger.kernel.org, clameter@sgi.com
+References: <20070828190551.415127746@sgi.com> <20070828190735.292638294@sgi.com> <1188432669.3799.35.camel@localhost.localdomain> <1188434857.3799.76.camel@localhost.localdomain> <1188605538.3837.51.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070901173329.GB12644@implementation>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1188605538.3837.51.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, Aug 31, 2007 at 05:12:18PM -0700, Mingming Cao wrote:
+> >From clameter:
+> Teach jbd/jbd2 slab management to support >8k block size. Without this, it refused to mount on >8k ext3.
 
-> > > Very early is not so early, and loading initrd itself may actually fail.
-> > > The kernel may indeed hang, but there are more chances to get some
-> > > messages before the hang.  Don't _you_ have a VGA screen for getting
-> > > earliest failure messages from the kernel?
-> > 
-> > No. I'm using framebuffer, that's initialized quite late in boot
-> > process. Plus many users just use bootsplash. I do use vga mode for
-> > heavy debugging, but that's quite unusual.
-> 
-> But that's what some people do for their work, so they need it.
 
-How many such users are out there?
-
-> > So... you actually have speech-enabled grub/lilo/something?
-> 
-> That's in project too (and there's no reason it shouldn't be done).
-
-I'd say kernel debugging is hard without accessible bootloader, so I'd
-hope number of such users is very low.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+But the real fix is to kill this code.  We can't send down slab pages
+down the block layer without breaking iscsi or aoe.  And this code is
+only used in so rare cases that all the normal testing won't hit it.
+Very bad combination.
