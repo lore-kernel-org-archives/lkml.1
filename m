@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933723AbXIBKaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933856AbXIBKav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933723AbXIBKaB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 06:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbXIBK3w
+	id S933856AbXIBKav (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 06:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbXIBKak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 06:29:52 -0400
-Received: from cg-p07-fb.rzone.de ([81.169.146.215]:30611 "EHLO
-	cg-p07-fb.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755006AbXIBK3v (ORCPT
+	Sun, 2 Sep 2007 06:30:40 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:46069 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756378AbXIBKai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 06:29:51 -0400
-Date: Sun, 2 Sep 2007 12:28:00 +0200
-From: Alex Riesen <raa.lkml@gmail.com>
-To: Arkadiusz Miskiewicz <arekm@pld-linux.org>
-Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] GIT 1.5.3
-Message-ID: <20070902102800.GA11473@steel.home>
-Reply-To: Alex Riesen <raa.lkml@gmail.com>
-Mail-Followup-To: Alex Riesen <raa.lkml@gmail.com>,
-	Arkadiusz Miskiewicz <arekm@pld-linux.org>, git@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <7vodglr32i.fsf@gitster.siamese.dyndns.org> <fbdt3q$lcf$1@sea.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fbdt3q$lcf$1@sea.gmane.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-RZG-AUTH: z4gQVF2k5XWuW3CcuQaFzAPiog==
-X-RZG-CLASS-ID: mo07
+	Sun, 2 Sep 2007 06:30:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=kLKQxcSWvdXgdUHT5Vw+9ouVJoIWP/x8zdYXR6ymAs81mCQlCOsyTXClcmaoCTuvGbrkgZTvwE3sRYWM2zjWAY5KY/uL/Q/qMZy/3WL9kX6eoq7A71J8sQx32LhJr5fvkEN1Rqp2btbyu7f3hwrFD1jyhr4kZ2TWQVUvG0lvBt4=
+From: Denis Cheng <crquan@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, cr_quan@163.com
+Subject: [PATCH 1/2] net/: all net/ cleanup with ARRAY_SIZE
+Date: Sun,  2 Sep 2007 18:30:17 +0800
+Message-Id: <11887290181154-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.3.rc7
+In-Reply-To: <Pine.LNX.4.64.0709020235420.22012@localhost.localdomain>
+References: <Pine.LNX.4.64.0709020235420.22012@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arkadiusz Miskiewicz, Sun, Sep 02, 2007 10:43:38 +0200:
-> *** t0001-init.sh ***
-> * FAIL 1: plain
-> 
->                 (
->                         unset GIT_DIR GIT_WORK_TREE &&
->                         mkdir plain &&
->                         cd plain &&
->                         git init
->                 ) &&
->                 check_config plain/.git false unset
-> 
-> *   ok 2: plain with GIT_WORK_TREE
-> * FAIL 3: plain bare
-> 
->                 (
->                         unset GIT_DIR GIT_WORK_TREE GIT_CONFIG &&
->                         mkdir plain-bare-1 &&
->                         cd plain-bare-1 &&
->                         git --bare init
->                 ) &&
->                 check_config plain-bare-1 true unset
-> 
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ net/atm/proc.c      |    2 +-
+ net/decnet/dn_dev.c |    2 +-
+ net/ipv4/af_inet.c  |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-Do you have bash-2.05b as /bin/sh ?
+diff --git a/net/atm/proc.c b/net/atm/proc.c
+index 99fc1fe..a3e52ff 100644
+--- a/net/atm/proc.c
++++ b/net/atm/proc.c
+@@ -175,7 +175,7 @@ static void pvc_info(struct seq_file *seq, struct atm_vcc *vcc)
+ 
+ 	seq_printf(seq, "%3d %3d %5d %-3s %7d %-5s %7d %-6s",
+ 	    vcc->dev->number,vcc->vpi,vcc->vci,
+-	    vcc->qos.aal >= sizeof(aal_name)/sizeof(aal_name[0]) ? "err" :
++	    vcc->qos.aal >= ARRAY_SIZE(aal_name) ? "err" :
+ 	    aal_name[vcc->qos.aal],vcc->qos.rxtp.min_pcr,
+ 	    class_name[vcc->qos.rxtp.traffic_class],vcc->qos.txtp.min_pcr,
+ 	    class_name[vcc->qos.txtp.traffic_class]);
+diff --git a/net/decnet/dn_dev.c b/net/decnet/dn_dev.c
+index fa6604f..9470cb9 100644
+--- a/net/decnet/dn_dev.c
++++ b/net/decnet/dn_dev.c
+@@ -149,7 +149,7 @@ static struct dn_dev_parms dn_dev_list[] =  {
+ }
+ };
+ 
+-#define DN_DEV_LIST_SIZE (sizeof(dn_dev_list)/sizeof(struct dn_dev_parms))
++#define DN_DEV_LIST_SIZE ARRAY_SIZE(dn_dev_list)
+ 
+ #define DN_DEV_PARMS_OFFSET(x) ((int) ((char *) &((struct dn_dev_parms *)0)->x))
+ 
+diff --git a/net/ipv4/af_inet.c b/net/ipv4/af_inet.c
+index e681034..d5e8b67 100644
+--- a/net/ipv4/af_inet.c
++++ b/net/ipv4/af_inet.c
+@@ -939,7 +939,7 @@ static struct inet_protosw inetsw_array[] =
+        }
+ };
+ 
+-#define INETSW_ARRAY_LEN (sizeof(inetsw_array) / sizeof(struct inet_protosw))
++#define INETSW_ARRAY_LEN ARRAY_SIZE(inetsw_array)
+ 
+ void inet_register_protosw(struct inet_protosw *p)
+ {
+-- 
+1.5.3.rc7
 
