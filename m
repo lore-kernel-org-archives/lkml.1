@@ -1,87 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbXIBUot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbXIBUxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759741AbXIBUot (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 16:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbXIBUol
+	id S1757699AbXIBUxH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 16:53:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbXIBUwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 16:44:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37311 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750715AbXIBUok (ORCPT
+	Sun, 2 Sep 2007 16:52:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49791 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750993AbXIBUwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 16:44:40 -0400
-Date: Mon, 3 Sep 2007 02:27:48 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Jeff Garzik <jeff@garzik.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm] drivers/md/: Shut up uninitialized variable
- warnings
-In-Reply-To: <46DB1E5C.2080107@garzik.org>
-Message-ID: <alpine.LFD.0.999.0709030220210.29617@enigma.security.iitk.ac.in>
-References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i
- n> <alpine.LFD.0.999.0709030151320.29617@enigma.security.iitk.ac.in>
- <46DB1E5C.2080107@garzik.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-514402326-1188766671=:29617"
+	Sun, 2 Sep 2007 16:52:53 -0400
+Date: Sun, 2 Sep 2007 13:52:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net
+Subject: Re: 2.6.23-rc4-mm1: unpingable box and NULL dereference at
+ tcp_rto_min()
+Message-Id: <20070902135245.aed7c7a9.akpm@linux-foundation.org>
+In-Reply-To: <20070902023618.GA2537@martell.zuzino.mipt.ru>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org>
+	<20070902023618.GA2537@martell.zuzino.mipt.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---464262402-514402326-1188766671=:29617
-Content-Type: TEXT/PLAIN; charset=iso-2022-jp
-
-
-
-On Sun, 2 Sep 2007, Jeff Garzik wrote:
-
-> Satyam Sharma wrote:
-> > drivers/md/dm-exception-store.c: In function ‘persistent_read_metadata’:
-> > drivers/md/dm-exception-store.c:452: warning: ‘new_snapshot’ may be used
-> > uninitialized in this function
-> > 
-> > drivers/md/dm-ioctl.c: In function ‘ctl_ioctl’:
-> > drivers/md/dm-ioctl.c:1407: warning: ‘param’ may be used uninitialized in
-> > this function
-> > 
-> > [ For these, I'd like to especially add -- shame on you, gcc! ]
-> > 
-> > drivers/md/dm-table.c: In function ‘dm_get_device’:
-> > drivers/md/dm-table.c:472: warning: ‘dev’ may be used uninitialized in this
-> > function
-> > 
-> > are all verified to be bogus warnings. Let's shut them up.
-> > 
-> > ---
-> > 
-> >  drivers/md/dm-exception-store.c |    3 ++-
-> >  drivers/md/dm-ioctl.c |    2 +-
-> >  drivers/md/dm-table.c |    2 +-
-> >  3 file changed, 4 insertions(+), 3 deletion(-)
+> On Sun, 2 Sep 2007 06:36:19 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
+> > - dynticks-for-x86_64 has returned
 > 
-> same comment as with the last uninit'd var patch:  these markers should be
-> used sparingly.  Try it on multiple compiler versions, see if it's a new
-> behavior.
+> Good news is that, contary to popular belief, -mm is not horrible piece
+> of crap and NO_HZ on x86_64 worked here straight away.
+
+variable.  It at least Works For Me before it goes out.
+
 > 
-> Quite realistically, you might actually be finding gcc bugs,
+> The bad news is something knocked off box from the net, then panicked it:
 
-Definitely -- a lot of these patches are purely a result of gcc's shoddy
-inadequacies. I do intend filing reports with gcc, however ...
+Yeah, the net tree has been quite bad lately.  Unusually bad - it's usually
+one of the good ones.
 
-> implying the
-> proper path is to file a gcc bug report (and they are _very_ diligent about
-> handling these, its impressive) rather than to patch the Linux kernel.
-
-My experience (regarding gcc's diligence in dealing with bug reports) has
-been otherwise :-)
-
-Anyway, I once had a _very_ similar discussion with Andrew (regarding some
-other gcc bug) previously, and the (completely correct) point he made was
-that: firstly, there's no guarantee they'll get this sorted out asap, and
-even if they did, we'll still not be dropping support for older gcc
-versions anyway ...
---464262402-514402326-1188766671=:29617--
+It also breaks a lot of the net driver work in several other trees (I dropped
+git-ixgbe.patch wholesale because of this).  But there isn't a lot we can
+do about that.  
