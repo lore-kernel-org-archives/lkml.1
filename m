@@ -1,74 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966302AbXIBMgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965677AbXIBMhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966302AbXIBMgH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 08:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964958AbXIBMfz
+	id S965677AbXIBMhU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 08:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965407AbXIBMhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 08:35:55 -0400
-Received: from mtl.rackplans.net ([69.90.0.18]:38197 "EHLO mtl.rackplans.net"
+	Sun, 2 Sep 2007 08:37:03 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42561 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964822AbXIBMfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 08:35:54 -0400
-Date: Sun, 2 Sep 2007 08:35:51 -0400 (EDT)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3: sysfs_remove_bin_file: bad dentry or inode or no
- such file: "descriptors"
-In-Reply-To: <20070902045349.b59af405.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.0.999.0709020835160.4961@mtl.rackplans.net>
-References: <alpine.DEB.0.999.0708142335120.21213@mtl.rackplans.net>
- <20070902045349.b59af405.akpm@linux-foundation.org>
+	id S965341AbXIBMhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 08:37:00 -0400
+Message-ID: <46DAAE64.3070203@garzik.org>
+Date: Sun, 02 Sep 2007 08:36:52 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Igor Sobrado <igor@condmat1.ciencias.uniovi.es>
+CC: Adrian Bunk <bunk@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Constantine A. Murenin" <mureninc@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+References: <200709010140.l811eq9H005896@cvs.openbsd.org> <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com> <46D99FB7.6030505@garzik.org> <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com> <20070901205457.GK9260@stusta.de> <20070902113638.78fbd202@the-village.bc.nu> <Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es> <20070902115041.GM16016@stusta.de> <Pine.LNX.4.64.0709021416130.6181@condmat1.ciencias.uniovi.es>
+In-Reply-To: <Pine.LNX.4.64.0709021416130.6181@condmat1.ciencias.uniovi.es>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Sep 2007, Andrew Morton wrote:
+Igor Sobrado wrote:
+> When code is multi-licensed it must be distributed under *all* these 
+> licensing terms concurrently.  It is easy to understand.  Removing (or 
+> changing) the conditions that apply to the program from the source code 
+> and documentation *without* an authorization from all the author(s) is 
+> illegal.
 
-> > On Tue, 14 Aug 2007 23:36:32 -0400 (EDT) Gerhard Mack <gmack@innerfire.net> wrote:
-> > hello, 
-> > 
-> > Got this when I booted into 2.6.23-rc3:  Let me know if more info is 
-> > needed.
-> > 
-> > 	Gerhard
-> > 
-> > 
-> > sysfs_remove_bin_file: bad dentry or inode or no such file: "descriptors"
-> > 
-> > Call Trace:
-> >  [<ffffffff80480117>] usb_remove_sysfs_dev_files+0x89/0x9d
-> >  [<ffffffff8047cf29>] usb_unbind_device+0x15/0x19
-> >  [<ffffffff803f855e>] __device_release_driver+0x8e/0xb0
-> >  [<ffffffff803f8953>] device_release_driver+0x2c/0x44
-> >  [<ffffffff803f7e56>] bus_remove_device+0x6e/0x7d
-> >  [<ffffffff803f6641>] device_del+0x1ec/0x268
-> >  [<ffffffff80477af3>] usb_disconnect+0xbc/0x149
-> >  [<ffffffff804782c2>] hub_thread+0x3f8/0xba5
-> >  [<ffffffff805e3463>] thread_return+0x57/0xdf
-> >  [<ffffffff80244f0b>] autoremove_wake_function+0x0/0x2e
-> >  [<ffffffff80477eca>] hub_thread+0x0/0xba5
-> >  [<ffffffff80244df3>] kthread+0x47/0x74
-> >  [<ffffffff8020c588>] child_rip+0xa/0x12
-> >  [<ffffffff8021b96a>] flat_send_IPI_mask+0x0/0x4c
-> >  [<ffffffff80244dac>] kthread+0x0/0x74
-> >  [<ffffffff8020c57e>] child_rip+0x0/0x12
-> > 
-> 
-> Is this still happening in 2.6.23-rc4 or later?
 
-2.6.23-rc4 is fixed and so is 2.6.23-rc5.
+The plain English in the dual-license text directly contradicts this 
+fiction.
 
-Thanks,
+	Jeff
 
-	Gerhard
- 
 
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
