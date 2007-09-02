@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbXIBTyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbXIBT4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756078AbXIBTyd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 15:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXIBTyZ
+	id S1758832AbXIBT4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 15:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXIBTz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 15:54:25 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37256 "EHLO
+	Sun, 2 Sep 2007 15:55:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37273 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbXIBTyY (ORCPT
+	with ESMTP id S1752566AbXIBTz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 15:54:24 -0400
-Date: Mon, 3 Sep 2007 01:37:31 +0530 (IST)
+	Sun, 2 Sep 2007 15:55:57 -0400
+Date: Mon, 3 Sep 2007 01:39:04 +0530 (IST)
 From: Satyam Sharma <satyam@infradead.org>
 X-X-Sender: satyam@enigma.security.iitk.ac.in
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Thomas Winischhofer <thomas@winischhofer.net>,
-       Greg Kroah-Hartman <greg@kroah.com>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: [PATCH -mm] sisusbvga: Fix bug and build warnings
+cc: Greg Banks <gnb@melbourne.sgi.com>, Olaf Kirch <olaf.kirch@oracle.com>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: [PATCH -mm] sunrpc svc: Shut up bogus uninitialized variable
+ warning
 In-Reply-To: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.in>
-Message-ID: <alpine.LFD.0.999.0709030136140.29617@enigma.security.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0709030137390.29617@enigma.security.iitk.ac.in>
 References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i
  n>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-1616065580-1188763655=:29617"
+Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-445849459-1188763748=:29617"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
---464262402-1616065580-1188763655=:29617
+--464262402-445849459-1188763748=:29617
 Content-Type: TEXT/PLAIN; charset=iso-2022-jp
 
 
-drivers/usb/misc/sisusbvga/sisusb.c: In function ‘usb_sisusb_init’:
-drivers/usb/misc/sisusbvga/sisusb.c:3321: warning: unused variable ‘sisusb’
-drivers/usb/misc/sisusbvga/sisusb.c:3320: warning: unused variable ‘retval’
+net/sunrpc/svc.c: In function ‘__svc_create_thread’:
+net/sunrpc/svc.c:550: warning: ‘oldmask.bits[0u]’ may be used uninitialized in this function
 
-are trivially solved by getting rid of the unused variables.
+is a bogus warning, but gcc isn't smart enough to see why. We cannot just
+reorganize the code in the function, because we want the set_cpus_allowed()
+restore to happen only after the kernel_thread() is forked. Alas, we have
+to use cpus_clear() to initialize oldmask instead to keep gcc happy.
 
-drivers/usb/misc/sisusbvga/sisusb.c: In function ‘sisusb_open’:
-drivers/usb/misc/sisusbvga/sisusb.c:2444: warning: ‘sisusb’ is used uninitialized in this function
-
-is a genuine bug (which will cause oops). We cannot use "sisusb" in
-error path for (!interface), because sisusb will itself be derived
-from "interface" later.
+Also add some comments to describe what's happening in the function.
 
 Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
 ---
 
- drivers/usb/misc/sisusbvga/sisusb.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ net/sunrpc/svc.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- linux-2.6.23-rc4-mm1/drivers/usb/misc/sisusbvga/sisusb.c~fix	2007-09-02 19:06:01.000000000 +0530
-+++ linux-2.6.23-rc4-mm1/drivers/usb/misc/sisusbvga/sisusb.c	2007-09-02 19:10:52.000000000 +0530
-@@ -2440,10 +2440,8 @@ sisusb_open(struct inode *inode, struct 
- 	struct usb_interface *interface;
- 	int subminor = iminor(inode);
+--- linux-2.6.23-rc4-mm1/net/sunrpc/svc.c~fix	2007-09-02 22:55:25.000000000 +0530
++++ linux-2.6.23-rc4-mm1/net/sunrpc/svc.c	2007-09-02 23:03:45.000000000 +0530
+@@ -568,17 +568,24 @@ __svc_create_thread(svc_thread_fn func, 
+ 	rqstp->rq_server = serv;
+ 	rqstp->rq_pool = pool;
  
--	if (!(interface = usb_find_interface(&sisusb_driver, subminor))) {
--		dev_err(&sisusb->sisusb_dev->dev, "Failed to find interface\n");
-+	if (!(interface = usb_find_interface(&sisusb_driver, subminor)))
- 		return -ENODEV;
--	}
++	/* Only to prevent gcc warning */
++	cpus_clear(oldmask);
++
++	/* Temporarily change CPU affinity before forking svc thread */
+ 	if (serv->sv_nrpools > 1)
+ 		have_oldmask = svc_pool_map_set_cpumask(pool->sp_id, &oldmask);
  
- 	if (!(sisusb = usb_get_intfdata(interface)))
- 		return -ENODEV;
-@@ -3317,9 +3315,6 @@ static struct usb_driver sisusb_driver =
++	/* Will inherit current->cpus_allowed */
+ 	error = kernel_thread((int (*)(void *)) func, rqstp, 0);
  
- static int __init usb_sisusb_init(void)
- {
--	int retval;
--	struct sisusb_usb_data *sisusb;
--
- #ifdef INCL_SISUSB_CON
- 	sisusb_init_concode();
- #endif
---464262402-1616065580-1188763655=:29617--
++	/* Restore old cpus_allowed */
+ 	if (have_oldmask)
+ 		set_cpus_allowed(current, oldmask);
+ 
+ 	if (error < 0)
+ 		goto out_thread;
+ 	svc_sock_update_bufs(serv);
++
+ 	error = 0;
+ out:
+ 	return error;
+--464262402-445849459-1188763748=:29617--
