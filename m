@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966251AbXIBMNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965383AbXIBMQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966251AbXIBMNi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 08:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964828AbXIBMN3
+	id S965383AbXIBMQj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 08:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbXIBMQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 08:13:29 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:43843 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964820AbXIBMN1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 08:13:27 -0400
-Subject: Re: [jffs2] [rfc] fix write deadlock regression
-From: David Woodhouse <dwmw2@infradead.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Jason Lunz <lunz@falooley.org>, lkml <linux-kernel@vger.kernel.org>,
-       jffs-dev@axis.com, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070902042012.GA5864@wotan.suse.de>
-References: <20070830182354.GA25077@falooley.org>
-	 <20070831212636.GB12868@falooley.org> <20070901190602.GA5926@falooley.org>
-	 <20070902042012.GA5864@wotan.suse.de>
-Content-Type: text/plain
-Date: Sun, 02 Sep 2007 13:13:23 +0100
-Message-Id: <1188735203.3834.16.camel@shinybook.infradead.org>
+	Sun, 2 Sep 2007 08:16:31 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:48331 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751975AbXIBMQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 08:16:30 -0400
+Date: Sun, 2 Sep 2007 16:19:43 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk-manpages@gmx.net>
+Subject: Re: [RFC + PATCH] signalfd simplification
+Message-ID: <20070902121943.GA141@tv-sign.ru>
+References: <Pine.LNX.4.64.0709011618280.4045@alien.or.mcafeemobile.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-3.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0709011618280.4045@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason, thank you _so_ much for finding the underlying cause of this.
+On 09/01, Davide Libenzi wrote:
+>
+> I'm playing at the moment with this patch, that recall Ben's idea  of 
+> attaching to the sighand only during read/poll, and calling dequeue_signal()
+> only with "current". This simplifies the signalfd logic quite a bit.
+> If this patch is applied, a task calling signalfd can read its own private 
+> signals, and its own group signals.
+>
+>  fs/exec.c                 |    3 
+>  fs/signalfd.c             |  186 +++++++---------------------------------------
+>  include/linux/init_task.h |    2 
+>  include/linux/sched.h     |    2 
+>  include/linux/signalfd.h  |   29 -------
+>  kernel/exit.c             |    9 --
+>  kernel/fork.c             |    2 
+>  kernel/signal.c           |    8 -
+>  8 files changed, 40 insertions(+), 201 deletions(-)
 
-On Sun, 2007-09-02 at 06:20 +0200, Nick Piggin wrote:
-> Hmm, thanks for that. It does sound like it is deadlocking via
-> commit_write(). OTOH, it seems like it could be using the page
-> before it is uptodate -- it _may_ only be dealing with uptodate
-> data at that point... but if so, why even read_cache_page at
-> all?
+Imho, very very nice. We lose the ability to read the cross-process signals,
+but I doubt very much we should regret about that.
 
-jffs2_readpage() is synchronous -- there's no chance that the page won't
-be up to date. We're doing this for garbage collection -- if there are
-many log entries covering a single page of data, we want to write out a
-single replacement which covers the whole page, obsoleting the previous
-suboptimal representation of the same data.
+I cc'ed Michael, because it makes sense to document a user-visible change.
+With this patch, the forked child reads its own signals (not parent's) via
+the inherited signalfd (or if it was passed with unix socket).
 
-> However, it is a regression. So unless David can come up with a
-> more satisfactory approach, I guess we'd have to go with your
-> patch. 
+Small problem: unless I missed something, signalfd_deliver() and sys_signalfd()
+should use wake_up_all(), not wake_up() which implies nr_exclusive == 1.
 
-I think Jason's patch is the best answer for the moment. At some point
-in the very near future I want to improve the RAM usage and compression
-ratio by dropping the rule that data nodes may not cross page boundaries
--- in which case garbage collection will need to do something other than
-reading the page using read_cache_page() and then writing it out again;
-it'll probably need to end up using its own internal buffer. But for
-now, Jason's patch looks good.
+It is possible that we have multiple threads waiting on ->signalfd_wqh with
+the the different ->sigmask. In this case, the first woken thread can ignore
+the signal, we should wake up all of them.
 
-Thanks.
+We can optimize this later, using a "clever" wait_queue_func_t if needed.
 
--- 
-dwmw2
+> +	spin_lock_irq(&current->sighand->siglock);
+> +	if (next_signal(&current->pending, &ctx->sigmask) > 0 ||
+> +	    next_signal(&current->signal->shared_pending,
+> +			&ctx->sigmask) > 0)
+
+Very minor nit: next_signal() always returns the value >= 0, imho the "> 0"
+check looks a bit confusing.
+
+Oleg.
 
