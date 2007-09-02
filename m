@@ -1,50 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757611AbXIBTrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbXIBTtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757611AbXIBTrV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 15:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbXIBTrO
+	id S1755864AbXIBTtR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 15:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbXIBTtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 15:47:14 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:4494 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbXIBTrN (ORCPT
+	Sun, 2 Sep 2007 15:49:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37456 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbXIBTtE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 15:47:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BCtzBieppoC49Ut/RI/aS3gyffClCcRUYImM68AgidDwIjjHLWGlYGWMipmZ3jZdtdKp29Ncpa2DWGDW31vNaBVWQSO6bp2rOtIWvIrJOAq/c0SZNOvMwle6qVsGz7M8MyXtiDIpveBLhpoxPAnaz9RFEcMhpOYTkQdXZNrRAMo=
-Message-ID: <71a0d6ff0709021247uefb4695y13a24523900e1b91@mail.gmail.com>
-Date: Sun, 2 Sep 2007 23:47:12 +0400
-From: "Alexander Shishkin" <alexander.shishckin@gmail.com>
-To: "Philippe De Muyter" <phdm@macqel.be>
-Subject: Re: Hint needed : how to debug sempahore's problem
-Cc: linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org
-In-Reply-To: <20070902194031.GA24800@ingate.macqel.be>
+	Sun, 2 Sep 2007 15:49:04 -0400
+Date: Mon, 3 Sep 2007 01:32:12 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [-mm patchset] War on warnings
+Message-ID: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070713102610.GA16087@muff.macqel.be>
-	 <20070902194031.GA24800@ingate.macqel.be>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/2/07, Philippe De Muyter <phdm@macqel.be> wrote:
-> Hi all,
-Hi,
 
-> Can someone give me some hint or link for the following question :
->
-> I have several processes blocked in 'D' state, and I surmise they are
-> waiting for a semaphore (in the `down' routine).  How is it possible :
-> - to verify the processes are really blocked on a semaphore,
-> - to see which semaphore they are waiting on,
-> - to find out which process/driver/whatever holds those semaphores.
-I'm sure there might be a better solution, but the easiest one I've
-found for myself is enabling sysrq and sending sysrq-p or sysrq-t
-combination to the board's console and see the callpaths that lead to
-a deadlock (or other incorrect locking situation) in the kernel.
+I decided to ruin my Sunday with an utterly pointless activity --
+waging war on -mm build warnings. Some of the code I touched belonged
+to grotty, unused, dying drivers, but still, the end result was that
+I can now only see 5 warnings remaining on my typical .config (those
+have to do with pci_{find,enable}_device deprecation and __must_check
+on sysfs_create_{file,link} so I'll just leave 'em for now).
 
--- 
-I like long walks, especially when they are taken by people who annoy me.
+Some were unused variable warnings, some uninitialized (few of those
+real bugs, but most not), some were "function defined but not used",
+some function argument signedness mismatches, some __must_check fixes,
+some tricky, but most just trivial.
+
+So till the next kernel release adds back shiny new build warnings,
+here's to some temporary peace ...
