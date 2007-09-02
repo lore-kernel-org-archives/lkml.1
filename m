@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933657AbXIBBWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933609AbXIBBcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933657AbXIBBWi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 21:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932487AbXIBBW2
+	id S933609AbXIBBcr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 21:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932514AbXIBBcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 21:22:28 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59228 "EHLO
+	Sat, 1 Sep 2007 21:32:36 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:50337 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932366AbXIBBW1 (ORCPT
+	with ESMTP id S932487AbXIBBcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 21:22:27 -0400
-Date: Sun, 2 Sep 2007 03:22:28 +0200
+	Sat, 1 Sep 2007 21:32:35 -0400
+Date: Sun, 2 Sep 2007 03:32:36 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Theo de Raadt <deraadt@cvs.openbsd.org>
-Cc: Bob Beck <beck@bofh.cns.ualberta.ca>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, misc@openbsd.org
 Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Message-ID: <20070902012228.GE16016@stusta.de>
-References: <20070902000226.GE24887@bofh.cns.ualberta.ca> <200709020036.l820aaNf014181@cvs.openbsd.org>
+Message-ID: <20070902013236.GF16016@stusta.de>
+References: <20070902000226.GE24887@bofh.cns.ualberta.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200709020036.l820aaNf014181@cvs.openbsd.org>
+In-Reply-To: <20070902000226.GE24887@bofh.cns.ualberta.ca>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 01, 2007 at 06:36:36PM -0600, Theo de Raadt wrote:
-> When companies have taken our wireless device drivers, many many of
-> them have given changes and fixes back.  Some maybe didn't, but that
-> is OK.
+On Sat, Sep 01, 2007 at 06:02:26PM -0600, Bob Beck wrote:
+> >As a free software user and developer, the question I have is how come
+> >the Linux community feels that they can take the BSD code that was
+> >reverse-engineered at OpenBSD, and put a more restrictive licence onto
+> >it, such that there will be no possibility of the changes going back
+> >to OpenBSD, given that the main work on the code has happened at
+> >OpenBSD? (Obviously, such a scenario it is permitted by the licence,
+> >but my question is an ethical one -- after all, most components of
+> >OpenHAL were specifically based on the OpenBSD's ath(4) HAL code.)
+> >
+> >You can see that Christoph Hellwig agrees with this ethical problem,
+> >as in the message below.
+> >
+> >C.
+> >
+> >
+> >>On 28/08/07, Christoph Hellwig <hch@infradead.org> wrote:
+> >> On Tue, Aug 28, 2007 at 12:00:50PM -0400, Jiri Slaby wrote:
+> >> > ath5k, license is GPLv2
+> >> >
+> >> > The files are available only under GPLv2 since now.
+> >>
+> >> Is this really a good idea?  Most of the reverse-engineering was
+> >> done by the OpenBSD folks, and it would certainly be helpful to
+> >> work together with them on new hardware revisions, etc..
 > 
-> When Linux took our changes back, they immediately locked the door
-> against changes moving back, by putting a GPL license on guard.
+> I couldn't agree more. The point is, while we BSD license fans know and
+> expect people from private industry to take our stuff and use it, at
+> least private industry does not come to the table with "hey, let's
+> cooperate" - we know who the corporate whores are, and we act accordingly. 
 > 
-> Why does our brother Linux take a file that is 90% BSD licensed,
-> and refuse to let us see the 10% he adds?
+> However, when a linux developer comes to us and say "hey lets cooperate"
+> usually there is a thought of "this is a kindred spirit who understands
+> what our mutual goals are and won't stab us in the back".  My concern
+> is that this situation will change if this is not rectified. 
+> 
+> I think the community needs to decide, should cooperation be based on
+> morals and trust, or does the Linux community need to be regarded with
+> less trust than a Corporation, something to be avoided, as while
+> corporations can be counted on to act without morals, the knife is up
+> front and visible. They do not come to you with one hand of
+> cooperation extended and a knife kept behind their back.
 
-Theo, the primary claim you made in your email that was forwarded to 
-linux-kernel was:
+Theo explicitely accused Alan that telling people that it was OK to 
+choose one licence for dual licenced code was "advising people to break 
+the law".
 
-<--  snip  -->
+I hope you agree when talking about "cooperation [...] based on morals 
+and trust" that such accusations should either be proven correct or the 
+moral position of the person who made such accusations becomes quiet 
+weak.
 
-In http://lkml.org/lkml/2007/8/29/183, Alan Cox managed to summarize
-what Jiri Slaby and Luis Rodriguez were trying to do by proposing a
-modification of a Dual Licenced file without the consent of all the
-authors.  Alan asks "So whats the problem ?".  Well, Alan, I must
-caution you -- your post is advising people to break the law.
-
-<--  snip  -->
-
-It is a quite heavy accusation against Alan that saying it was OK to 
-change dual licenced code to one of the offered licences would advise
-to break the law.
-
-There's nothing about goodwill or other ethical questions in your 
-statement, this statement you made can be verified or falsified by 
-lawyers.
-
-If it is true, all ethical questions about this are anyway moot because 
-it was illegal as you claim.
-
-If you wrongly accused Alan, you owe Alan an apology.
+>  -Bob 
 
 cu
 Adrian
