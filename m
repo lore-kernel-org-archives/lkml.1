@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966462AbXIBMum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966381AbXIBMzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966462AbXIBMum (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 08:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965714AbXIBMuc
+	id S966381AbXIBMzd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 08:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965099AbXIBMz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 08:50:32 -0400
-Received: from fresno.net.uniovi.es ([156.35.11.2]:55857 "EHLO
-	FRESNO.NET.UNIOVI.ES" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965686AbXIBMua (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 08:50:30 -0400
-Date: Sun, 02 Sep 2007 13:20:27 +0200 (CEST)
-From: Igor Sobrado <igor@condmat1.ciencias.uniovi.es>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-In-reply-to: <20070902113638.78fbd202@the-village.bc.nu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Constantine A. Murenin" <mureninc@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Message-id: <Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-References: <200709010140.l811eq9H005896@cvs.openbsd.org>
- <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
- <46D99FB7.6030505@garzik.org>
- <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
- <20070901205457.GK9260@stusta.de> <20070902113638.78fbd202@the-village.bc.nu>
+	Sun, 2 Sep 2007 08:55:26 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:41551 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965016AbXIBMzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 08:55:25 -0400
+Subject: Re: [PATCH 5/6] Use one zonelist that is filtered by nodemask
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Lee.Schermerhorn@hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0708311732580.19868@schroedinger.engr.sgi.com>
+References: <20070831205139.22283.71284.sendpatchset@skynet.skynet.ie>
+	 <20070831205319.22283.45590.sendpatchset@skynet.skynet.ie>
+	 <Pine.LNX.4.64.0708311732580.19868@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Sun, 02 Sep 2007 12:10:04 +0100
+Message-Id: <1188731404.27508.0.camel@machina.109elm.lan>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Sep 2007, Alan Cox wrote:
-> You can shout this all you like but you would be wrong. You can remove
-> the licence if you have permission to do so. For the ath c files there
-> was permission to do so.
+On Fri, 2007-08-31 at 17:34 -0700, Christoph Lameter wrote:
+> Good idea. That gets rid of the GFP_THISNODE stuff that I introduced for 
+> the memoryless node patchset.
+> 
 
-There was permission to do so from Reyk Floeter?  Really?
+Yes, I was fairly pleased with that. It makes the split look a little
+strange as an early patch makes it two zonelists and a later patch makes
+it one. However, there didn't seem to be a nicer way of doing it without
+having multi-purpose patches.
 
-> Your understanding isn't quite right. One of many things you may get with
-> dual licensed code is the right to pick a licence from several choices,
-> you may also get the right to remove some choices from the recipient.
+Thanks
 
-Reyk code was never dual licensed!  His code is under truly free 
-licensing terms (BSD).
+-- 
+Mel Gorman
 
-> A work that combines GPL and BSD licensed material is not the same as a
-> work which says I may choose between two licences. If both licences must
-> always apply (which is a perfectly possible condition to put in a
-> licence) then putting such a "both" GPL/BSD licence piece of code into
-> OpenBSD would require any OpenBSD distributed containing it was GPL
-> licenced when conveyed, which I am *very* sure is not the intent.
->
-> Thus what you appear to be doing by putting the ath5k C code in OpenBSD is
-> conveying it under the BSD licence (making a choice between the two
-> offered) and conveying a right for parties down the chain to convey it
-> under one of the licences only.
-
-I think that Theo explained this point clearly quite a few times in the 
-last days.
-
-> And as we've already established the header files are quite different.
-
-Is a simple change in the header files a reason to vindicate the people 
-that changed the licensing terms?  Obviously, it isn't.
-
-> Doesn't mean its not somewhat rude but illegal and rude are two very
-> different things.
-
-No, because this change is both rude and illegal.
-
-Igor
