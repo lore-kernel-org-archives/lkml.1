@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966153AbXIBL51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966279AbXIBL6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966153AbXIBL51 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 07:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965205AbXIBL5R
+	id S966279AbXIBL6Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 07:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965205AbXIBL6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 07:57:17 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:6949 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965181AbXIBL5P (ORCPT
+	Sun, 2 Sep 2007 07:58:14 -0400
+Received: from mi0.bluebottle.com ([206.188.25.15]:35222 "EHLO
+	mi0.bluebottle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965345AbXIBL6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 07:57:15 -0400
-Message-ID: <a0738740709020457n3490ee52l49d29712f3ddbb75@mail.gmail.com>
-Date: Sun, 2 Sep 2007 12:57:14 +0100
-From: "Alex Smith" <lkml@alex-smith.me.uk>
-To: linux-kernel@vger.kernel.org
-Subject: Oops in pwc v4l driver
+	Sun, 2 Sep 2007 07:58:13 -0400
+DomainKey-Signature: a=rsa-sha1; s=mail; d=bluebottle.com; c=nofws; q=dns;
+	h=received:from:to:cc:subject:date:mime-version:
+	content-type:content-transfer-encoding:x-priority:
+	x-msmail-priority:x-mailer:x-mimeole:x-trusted-delivery;
+	b=Gr6rmwwFPb4veNiAQcH12pGKbcvLMpEoHuySx5vcXyXeUDu0FtNp1/cYL8BSRTkEh
+	yMOlr4+hT1BhwS6/xItG8cYCX1JL1oNUjh08Pj5wmSUf6pXA99gcLRTg4zYWmbm
+Message-Id: <200709021158.l82BwCcO013983@mi0.bluebottle.com>
+From: "n" <xellos@bluebottle.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, <patrizio.bassi@gmail.com>
+Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Kernel," <linux-kernel@vger.kernel.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
+       "Alan Cox" <alan@redhat.com>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: libata / pata drivers and smart , pata_via . pata_pdc202xx_old
+Date: Sun, 2 Sep 2007 04:58:11 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	format=flowed;
+	charset="Windows-1252";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-Trusted-Delivery: <5177670bec0ce7890a75872964e1ff4d>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+is it possible to get the new libata drivers (pata_via . pata_pdc202xx_old) 
+to support smart?
+i was looking at smartcrl -a and it says Device does not support SMART even 
+though it does.
 
-I found an old Philips Askey VC010 webcam and attempted to get it
-working on Linux (latest git, x86_64). It worked fine, I could view
-the camera in mplayer. But, however, when I went to move the camera, I
-unplugged it and forgot to close mplayer. I didn't notice, moved it,
-plugged it back in and immediately Mplayer died and dropped a genaral
-protection fault oops + stacktrace in the kernel log. I unplugged the
-camera again, and the entire system froze, most likely a kernel panic.
-I've reproduced this twice, however I haven't been able to get it to
-occur when using mplayer from the command line (so that I can see what
-happens when it freezes). I've uploaded the 2 dmesg logs here:
+----------------------------------------------------------------------
+Get a free email address with REAL anti-spam protection.
+http://www.bluebottle.com/tag/1
 
-http://www.alex-smith.me.uk/files/dmesg.log
-http://www.alex-smith.me.uk/files/dmesg2.log
-
-and also my .config here:
-
-http://www.alex-smith.me.uk/files/config-2.6.23-rc5.txt
-
-The mplayer command I used:
-
-mplayer -cache 128 -tv
-driver=v4l:width=640:height=480:outfmt=i420:device=/dev/video1 -vc
-rawi420 -vo xv tv://
-
-Thanks,
-Alex
--- 
-Alex Smith - http://www.alex-smith.me.uk
