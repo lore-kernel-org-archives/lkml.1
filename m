@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbXIBSmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbXIBSrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758813AbXIBSmY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 14:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXIBSmQ
+	id S1756661AbXIBSrD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 14:47:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXIBSqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 14:42:16 -0400
-Received: from web57301.mail.re1.yahoo.com ([66.196.100.37]:43837 "HELO
-	web57301.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750775AbXIBSmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 14:42:16 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.ph;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=k4aoC+KP7UteQDy73qnjfxXJQ2XLN4sfAkgxpe62w9ZsV95dVBWB7EZKUWDVmgSNAbZZ9fXuWs4A+IpeTEY4KRveEInEntbl7hJ4q82ud15AKRRCVrUu0iV4bG7SjvxLHDS15J8+Os2b4kPrHVmum1SNMiyeoqQHmmo5INr3SRs=;
-X-YMail-OSG: 8XzY3y8VM1l0egZeLM9Fzw4c9ZNA1jbRdh5QZvY2iCG65moD0EmpNUE6N4pzuf2qvMcuQXXduqVob8lBNTdApFkVZTNR6eJkwKXA
-Date: Sun, 2 Sep 2007 11:42:14 -0700 (PDT)
-From: daryll q <daryll_26m@yahoo.com.ph>
-Subject: Hang in 2.6.23-rc5
-To: linux-kernel@vger.kernel.org
+	Sun, 2 Sep 2007 14:46:55 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59950 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750737AbXIBSqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 14:46:55 -0400
+Message-ID: <46DB051D.3010008@garzik.org>
+Date: Sun, 02 Sep 2007 14:46:53 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Message-ID: <994260.18490.qm@web57301.mail.re1.yahoo.com>
+To: "Jonathan A. George" <jageorge@austin.rr.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: "GPL weasels and the atheros stink"
+References: <46DAF70E.9060800@austin.rr.com>
+In-Reply-To: <46DAF70E.9060800@austin.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Upgraded my kernel from 2.6.23-rc2 to 2.6.23-rc5.
- 
- System hangs (caps lock and scroll lock leds are both
-flashing).
- 
- It *randomly* happens but most of the time during
-after login to KDE.
- 
- I have not investigated it yet because I have not
-tried doing it
- before.
- 
- Also the system is really not responding so I can't
-do much.. Just
- hope it blue screen so I can send the error code
-easily :)
- 
-Just CC me bec I'm not subscribed.
+Jonathan A. George wrote:
+> Question #1: Is it _ethical_ (legality aside) to take someone else's 
+> actively maintained work (for example an OpenBSD driver) and make 
+> changes which can not be shared/used by the original developer/maintainer?
 
- 
- Regards,
+This happens all the time.  It's called a fork.
+
+Forks happen for good reasons, bad reasons, dumb reasons, and smart reasons.
+
+Sometimes the useful changes can be shared back, and that's a good thing 
+[for that situation].
+
+Sometimes changes cannnot be shared back, and that's also a good thing 
+[for that situation].
 
 
-      
-____________________________________________________ 
-Tired of spam? Yahoo! Mail has the best spam protection around 
-http://ph.mail.yahoo.com 
+> Question #2: Is it _technically beneficial_ to branch an OSS work (for 
+> example an OpenBSD driver) in such a way as to diminish the ability to 
+> share contributions between projects?
+
+Can only be answered on a case-by-case basis.
+
+The reality OF THE CODE is such that *BSD and Linux share good SOLUTIONS 
+quite often.  That's a benefit of open source.  And that's a good thing.
+
+	Jeff
+
+
