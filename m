@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760303AbXIBUcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbXIBUeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760303AbXIBUcX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 16:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750993AbXIBUcO
+	id S1758991AbXIBUeq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 16:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbXIBUej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 16:32:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39349 "EHLO mail.dvmed.net"
+	Sun, 2 Sep 2007 16:34:39 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:39363 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750715AbXIBUcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 16:32:12 -0400
-Message-ID: <46DB1DCA.3050509@garzik.org>
-Date: Sun, 02 Sep 2007 16:32:10 -0400
+	id S1750989AbXIBUei (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 16:34:38 -0400
+Message-ID: <46DB1E5C.2080107@garzik.org>
+Date: Sun, 02 Sep 2007 16:34:36 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Satyam Sharma <satyam@infradead.org>
 CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <james.bottomley@steeleye.com>, aacraid@adaptec.com,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH -mm] IPS SCSI driver: Check return of scsi_add_host()
-References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i n> <alpine.LFD.0.999.0709030142490.29617@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0709030142490.29617@enigma.security.iitk.ac.in>
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm] drivers/md/: Shut up uninitialized variable warnings
+References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i n> <alpine.LFD.0.999.0709030151320.29617@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0709030151320.29617@enigma.security.iitk.ac.in>
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 8bit
 X-Spam-Score: -4.3 (----)
@@ -30,54 +30,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Satyam Sharma wrote:
-> drivers/scsi/ips.c: In function ‘ips_register_scsi’:
-> drivers/scsi/ips.c:6869:
-> warning: ignoring return value of ‘scsi_add_host’, declared with attribute warn_unused_result
+> drivers/md/dm-exception-store.c: In function ‘persistent_read_metadata’:
+> drivers/md/dm-exception-store.c:452: warning: ‘new_snapshot’ may be used uninitialized in this function
 > 
-> scsi_add_host() is __must_check, so let's check it's return and cleanup
-> appropriately on errors.
+> drivers/md/dm-ioctl.c: In function ‘ctl_ioctl’:
+> drivers/md/dm-ioctl.c:1407: warning: ‘param’ may be used uninitialized in this function
 > 
-> Signed-off-by: Satyam Sharma <satyam@infradead.org>
+> [ For these, I'd like to especially add -- shame on you, gcc! ]
+> 
+> drivers/md/dm-table.c: In function ‘dm_get_device’:
+> drivers/md/dm-table.c:472: warning: ‘dev’ may be used uninitialized in this function
+> 
+> are all verified to be bogus warnings. Let's shut them up.
 > 
 > ---
 > 
->  drivers/scsi/ips.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.23-rc4-mm1/drivers/scsi/ips.c~fix	2007-09-02 20:21:27.000000000 +0530
-> +++ linux-2.6.23-rc4-mm1/drivers/scsi/ips.c	2007-09-02 20:25:58.000000000 +0530
-> @@ -6866,7 +6866,12 @@ ips_register_scsi(int index)
->  	sh->max_channel = ha->nbus - 1;
->  	sh->can_queue = ha->max_cmds - 1;
->  
-> -	scsi_add_host(sh, NULL);
-> +	if (scsi_add_host(sh, NULL)) {
-> +		IPS_PRINTK(KERN_WARNING, ha->pcidev, "Unable to add SCSI host\n");
-> +		free_irq(ha->irq, ha);
-> +		scsi_host_put(sh);
-> +		return -1;
+>  drivers/md/dm-exception-store.c |    3 ++-
+>  drivers/md/dm-ioctl.c |    2 +-
+>  drivers/md/dm-table.c |    2 +-
+>  3 file changed, 4 insertions(+), 3 deletion(-)
 
-ACK, as long as you add a comment to this code and the request_irq() 
-failure code:  the oldha/old irq is not restored upon failure, in this 
-function.
+same comment as with the last uninit'd var patch:  these markers should 
+be used sparingly.  Try it on multiple compiler versions, see if it's a 
+new behavior.
 
-That is a pre-existing bug, and not your fault, but your patch 
-"continues in the same buggy tradition" :)  We should at least note the 
-FIXME at each error handling code branch.
+Quite realistically, you might actually be finding gcc bugs, implying 
+the proper path is to file a gcc bug report (and they are _very_ 
+diligent about handling these, its impressive) rather than to patch the 
+Linux kernel.
 
-Ideally you or somebody should do a detailed analysis to
-a) (preferably) get rid of the silly oldha/ double-irq-request weirdness 
-and make it look like other drivers,
-	or,
-b) analyze the code and see what it takes to _really_ unwind the error.
-
-Also, I would recommend moving the error handling code to the end of the 
-function and using the standard 'goto' approach for function error 
-handling.  This eliminates the duplicate scsi_host_put() calls upon error.
+Overall, for any uninitialized_var() patch, we need more info on 
+platform/compiler version/analysis methods/etc.
 
 	Jeff
-
-
 
 
 
