@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbXIBEUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933317AbXIBEU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757907AbXIBEUR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 00:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbXIBEUF
+	id S933317AbXIBEU7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 00:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757917AbXIBEUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 00:20:05 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:1945 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750969AbXIBEUD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 00:20:03 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: lists@nerdbynature.de (Christian Kujau)
-Subject: Re: Oops in 2.6.23-rc5
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       torvalds@linux-foundation.org, davem@davemloft.net
-Organization: Core
-In-Reply-To: <alpine.DEB.0.999.0709012236460.6640@sheep.housecafe.de>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1IRgwF-0004G0-00@gondolin.me.apana.org.au>
-Date: Sun, 02 Sep 2007 12:19:55 +0800
+	Sun, 2 Sep 2007 00:20:49 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34543 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755040AbXIBEUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 00:20:15 -0400
+Date: Sun, 2 Sep 2007 06:20:12 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jason Lunz <lunz@falooley.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
+       jffs-dev@axis.com, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [jffs2] [rfc] fix write deadlock regression
+Message-ID: <20070902042012.GA5864@wotan.suse.de>
+References: <20070830182354.GA25077@falooley.org> <20070831212636.GB12868@falooley.org> <20070901190602.GA5926@falooley.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070901190602.GA5926@falooley.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Kujau <lists@nerdbynature.de> wrote:
+On Sat, Sep 01, 2007 at 12:06:03PM -0700, Jason Lunz wrote:
 > 
-> today I switched from 2.6.22.3 to 2.6.23-rc5 (skipped quite a few -rc 
-> versions due to lack of time), and the box keeps panicking under certain 
-> circumstances. I suspected disk related problems, because: when the box 
-> is up, I usually resume ~10 bittorrent files. When doing this, each
-> file (~200MB...1GB) is checked and disk activity is pretty high (20MB/s
-> or so), and after 1 minute of doing so the box panicks. Every time.
+> It introduced a wait to read_cache_page, as well as a
+> read_cache_page_async function equivalent to the old read_cache_page
+> without any callers.
+> 
+> Switching jffs2_gc_fetch_page to read_cache_page_async for the old
+> behavior makes the deadlocks go away, but maybe reintroduces the
+> use-before-uptodate problem? I don't understand the mm/fs interaction
+> well enough to say.
+> 
+> Someone more knowledgable should see if similar deadlock issues may have
+> been introduced for other read_cache_page callers, including the other
+> two in jffs2.
 
-You want this patch (by davem).
+Hmm, thanks for that. It does sound like it is deadlocking via
+commit_write(). OTOH, it seems like it could be using the page
+before it is uptodate -- it _may_ only be dealing with uptodate
+data at that point... but if so, why even read_cache_page at
+all?
 
-Unfortunately people are travelling so I'm not sure when it'll
-get picked up by Linus.
+However, it is a regression. So unless David can come up with a
+more satisfactory approach, I guess we'd have to go with your
+patch.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-From: davem@davemloft.net (David Miller)
 
-> ip is at tcp_rto_min+0x20/0x40
 
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 1ee7212..bbad2cd 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -560,7 +560,7 @@ static u32 tcp_rto_min(struct sock *sk)
- 	struct dst_entry *dst = __sk_dst_get(sk);
- 	u32 rto_min = TCP_RTO_MIN;
- 
--	if (dst_metric_locked(dst, RTAX_RTO_MIN))
-+	if (dst && dst_metric_locked(dst, RTAX_RTO_MIN))
- 		rto_min = dst->metrics[RTAX_RTO_MIN-1];
- 	return rto_min;
- }
+> 
+>     Signed-off-by: Jason Lunz <lunz@falooley.org>
+> 
+> ---
+>  fs/jffs2/fs.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/jffs2/fs.c b/fs/jffs2/fs.c
+> index 1d3b7a9..8bc727b 100644
+> --- a/fs/jffs2/fs.c
+> +++ b/fs/jffs2/fs.c
+> @@ -627,7 +627,7 @@ unsigned char *jffs2_gc_fetch_page(struct jffs2_sb_info *c,
+>  	struct inode *inode = OFNI_EDONI_2SFFJ(f);
+>  	struct page *pg;
+>  
+> -	pg = read_cache_page(inode->i_mapping, offset >> PAGE_CACHE_SHIFT,
+> +	pg = read_cache_page_async(inode->i_mapping, offset >> PAGE_CACHE_SHIFT,
+>  			     (void *)jffs2_do_readpage_unlock, inode);
+>  	if (IS_ERR(pg))
+>  		return (void *)pg;
