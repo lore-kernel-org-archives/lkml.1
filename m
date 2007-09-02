@@ -1,44 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759840AbXIBVT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbXIBV0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759840AbXIBVT1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 17:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbXIBVTQ
+	id S1759505AbXIBV0E (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 17:26:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbXIBVZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 17:19:16 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:12005 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbXIBVTO (ORCPT
+	Sun, 2 Sep 2007 17:25:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56474 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750719AbXIBVZw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 17:19:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=XhmKZqV84hIo7NQqFEjA3TzR2b+OLlYwRk7H4AjRNtjjz4bR7SqPiikSaaNGC5IRvhh/LRlu1wu7kABKGfF8ikzVTYmUXuMoIAD0di+FEdIpKI2/cTK9pPu+3FNFt6oPm7mpIu9xVVcrE43kcdUtSouaYWo3VVoAK/8uAwiH/Vc=
-Date: Mon, 3 Sep 2007 01:19:07 +0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net
-Subject: Re: 2.6.23-rc4-mm1: unpingable box and NULL dereference at tcp_rto_min()
-Message-ID: <20070902211907.GA2452@martell.zuzino.mipt.ru>
-References: <20070831215822.26e1432b.akpm@linux-foundation.org> <20070902023618.GA2537@martell.zuzino.mipt.ru> <20070902135245.aed7c7a9.akpm@linux-foundation.org>
+	Sun, 2 Sep 2007 17:25:52 -0400
+Date: Mon, 3 Sep 2007 03:08:58 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Alistair John Strachan <alistair@devzero.co.uk>
+cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Winischhofer <thomas@winischhofer.net>,
+       Greg Kroah-Hartman <greg@kroah.com>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [PATCH -mm] sisusbvga: Fix bug and build warnings
+In-Reply-To: <200709022218.06849.alistair@devzero.co.uk>
+Message-ID: <alpine.LFD.0.999.0709030305030.29617@enigma.security.iitk.ac.in>
+References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.in>
+ <alpine.LFD.0.999.0709030159320.29617@enigma.security.iitk.ac.in>
+ <9a8748490709021323k3d4adbddv53346aacdd66ab57@mail.gmail.com>
+ <200709022218.06849.alistair@devzero.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070902135245.aed7c7a9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-1262612648-1188768980=:29617"
+Content-ID: <alpine.LFD.0.999.0709030307031.29617@enigma.security.iitk.ac.in>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 02, 2007 at 01:52:45PM -0700, Andrew Morton wrote:
-> > On Sun, 2 Sep 2007 06:36:19 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> > The bad news is something knocked off box from the net, then panicked it:
-> 
-> Yeah, the net tree has been quite bad lately.  Unusually bad - it's usually
-> one of the good ones.
-> 
-> It also breaks a lot of the net driver work in several other trees (I dropped
-> git-ixgbe.patch wholesale because of this).  But there isn't a lot we can
-> do about that.  
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-OK, I'm currently running with "dst entry can be NULL" fix from net
-tree, so far it's fine.
+--464262402-1262612648-1188768980=:29617
+Content-Type: TEXT/PLAIN; CHARSET=iso-8859-15
+Content-Transfer-Encoding: 8BIT
+Content-ID: <alpine.LFD.0.999.0709030307032.29617@enigma.security.iitk.ac.in>
+
+
+
+On Sun, 2 Sep 2007, Alistair John Strachan wrote:
+
+> On Sunday 02 September 2007 21:23:16 Jesper Juhl wrote:
+> > On 02/09/07, Satyam Sharma <satyam@infradead.org> wrote:
+> > > Hi Jesper,
+> > >
+> > > On Sun, 2 Sep 2007, Jesper Juhl wrote:
+> > > > > -       if (!(interface = usb_find_interface(&sisusb_driver,
+> > > > > subminor))) { -               dev_err(&sisusb->sisusb_dev->dev,
+> > > > > "Failed to find interface¥n");
+> > > >
+> > > > Odd how in your patch the line ends with  "¥n"  but if I look in my
+> > > > local copy of the source tree I see  "\n".
+> > >
+> > > Odd, indeed. I see correct '\n' in the mail I sent, but in your mail
+> > > here it's coming out wrong -- lkml.org shows badness as well. Hmmm,
+> > > "insert file" using ^R in alpine never gave any problems before ...
+> 
+> The encoding is set to ISO-2022-JP, this is probably breaking things.
+
+??? I have no clue how/why/when that suddenly happened.
+
+I clearly see "Content-Type: TEXT/PLAIN; charset=us-ascii" for the first
+mail I sent out -- but all the replies seem to have somehow got this
+weirdness. Will close and restart my alpine session, just in case ...
+thanks for heads-up, Alistair.
+--464262402-1262612648-1188768980=:29617--
