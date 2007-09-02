@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759603AbXIBWN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759985AbXIBWOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759603AbXIBWN0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 18:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbXIBWNR
+	id S1759985AbXIBWOm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 18:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbXIBWOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 18:13:17 -0400
-Received: from rune.sasl.smtp.pobox.com ([208.210.124.37]:41956 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752467AbXIBWNQ (ORCPT
+	Sun, 2 Sep 2007 18:14:34 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42615 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753982AbXIBWOe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 18:13:16 -0400
-From: Junio C Hamano <gitster@pobox.com>
-To: Sean <seanlkml@sympatico.ca>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, David Kastrup <dak@gnu.org>,
-       git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] GIT 1.5.3
-References: <7vodglr32i.fsf@gitster.siamese.dyndns.org>
-	<46DA5F33.2020005@zytor.com> <85odgltrtj.fsf@lola.goethe.zz>
-	<46DA88EF.7080103@zytor.com>
-	<20070902133803.1b46f599.seanlkml@sympatico.ca>
-Date: Sun, 02 Sep 2007 15:13:09 -0700
-In-Reply-To: <20070902133803.1b46f599.seanlkml@sympatico.ca>
-	(seanlkml@sympatico.ca's message of "Sun, 2 Sep 2007 13:38:03 -0400")
-Message-ID: <7v4picpvgq.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 2 Sep 2007 18:14:34 -0400
+Date: Mon, 3 Sep 2007 03:57:40 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Alistair John Strachan <alistair@devzero.co.uk>
+cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Winischhofer <thomas@winischhofer.net>,
+       Greg Kroah-Hartman <greg@kroah.com>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [PATCH -mm] sisusbvga: Fix bug and build warnings
+In-Reply-To: <alpine.LFD.0.999.0709030305030.29617@enigma.security.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0709030348580.31154@enigma.security.iitk.ac.in>
+References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.in>
+ <alpine.LFD.0.999.0709030159320.29617@enigma.security.iitk.ac.in>
+ <9a8748490709021323k3d4adbddv53346aacdd66ab57@mail.gmail.com>
+ <200709022218.06849.alistair@devzero.co.uk>
+ <alpine.LFD.0.999.0709030305030.29617@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sean <seanlkml@sympatico.ca> writes:
 
-> On Sun, 02 Sep 2007 10:57:03 +0100
-> "H. Peter Anvin" <hpa@zytor.com> wrote:
->
->>  From the looks of it, there is still a git-p4, it just moved to contrib 
->> and uses fast-import, so removing its rpm package was probably broken in 
->> the first place.
-> ...
-> As an aside, when I sent the patch removing git-p4import from the spec
-> file I mentioned that I had no way to test it and asked for testers.
-> Git needs a spec file maintainer so that issues like this can be caught
-> before release.  Without a maintainer, it should probably be demoted
-> to contrib itself.
 
-For majority of general public, I thought the spec file _I_
-ship, along with RPM files _I_ build, are contrib status
-already.  Don't distro people do their own RPM packages, instead
-of using what I placed on k.org?
+On Mon, 3 Sep 2007, Satyam Sharma wrote:
+> 
+> On Sun, 2 Sep 2007, Alistair John Strachan wrote:
+> > 
+> > The encoding is set to ISO-2022-JP, this is probably breaking things.
+> 
+> ??? I have no clue how/why/when that suddenly happened.
+> 
+> I clearly see "Content-Type: TEXT/PLAIN; charset=us-ascii" for the first
+> mail I sent out -- but all the replies seem to have somehow got this
+> weirdness.
 
-Assuming that we do not give the old git-p4import script
-packaged in "git-p4 package", would the following patch be all
-that is needed, or do we need other things in the spec file?
-
--- snipsnap clipcrap --
-
-diff --git a/git.spec.in b/git.spec.in
-index fe7b3d8..3d56e17 100644
---- a/git.spec.in
-+++ b/git.spec.in
-@@ -13,6 +13,7 @@ Source: 	http://kernel.org/pub/software/scm/git/%{name}-%{version}.tar.gz
- BuildRequires:	zlib-devel >= 1.2, openssl-devel, curl-devel, expat-devel  %{!?_without_docs:, xmlto, asciidoc > 6.0.3}
- BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
- Requires:	git-core, git-svn, git-cvs, git-arch, git-email, gitk, git-gui, perl-Git
-+Obsoletes:	git-p4
- 
- %description
- Git is a fast, scalable, distributed revision control system with an
-
+OK, I've got it figured out now. What happened is this -- alpine has this
+nifty feature that (if not explicitly set) it will automatically adjust
+the content-type encoding of outgoing mails depending upon the kind of
+text it sees written in the mail. Now when I normally post (eg. the first
+mail in this set), it naturally goes out as US-ASCII. What was special
+about the other mails was that each contained GCC's error/warning output.
+And if you've noticed it produces that totally pointless special non-
+US-ASCII 'quotes' around wherever it points out the name of an identifier
+-- and that confused alpine into thinking I was writing in Japanese (!)
+Anyway, I've explicitly set all mails to be sent out as US-ASCII only
+now, so hopefully things will be ok ...
