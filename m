@@ -1,142 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbXIBTli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbXIBTpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758106AbXIBTli (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 15:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbXIBTlb
+	id S1754821AbXIBTpH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 15:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbXIBTo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 15:41:31 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:2896 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750715AbXIBTla (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 15:41:30 -0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-To: bzolnier@gmail.com
-Subject: [PATCH 3/4] ide: make ide_rate_filter() also respect PIO and SW/MW DMA mode masks (take 2)
-Date: Sun, 2 Sep 2007 23:44:18 +0400
-User-Agent: KMail/1.5
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+	Sun, 2 Sep 2007 15:44:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58718 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750719AbXIBTo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 15:44:56 -0400
+Date: Sun, 2 Sep 2007 21:44:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tong Li <tong.n.li@intel.com>
+Cc: Roman Zippel <zippel@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, Mike Galbraith <efault@gmx.de>
+Subject: Re: [ANNOUNCE/RFC] Really Simple Really Fair Scheduler
+Message-ID: <20070902194447.GA30724@elte.hu>
+References: <20070902120154.GA23769@elte.hu> <Pine.LNX.4.64.0709021106230.30970@tongli.jf.intel.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200709022344.18565.sshtylyov@ru.mvista.com>
+In-Reply-To: <Pine.LNX.4.64.0709021106230.30970@tongli.jf.intel.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make ide_rate_filter() also respect PIO/SWDMA/MWDMA mode masks.  While at it,
-make the udma_filter() method calls take precedence over using the mode masks.
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+* Tong Li <tong.n.li@intel.com> wrote:
 
----
-Alas, the previous version of the patch wasn't even worth signing it off --
-the code had to be much trickier. The patch against the current Linus' tree and
-unfortunately I was able to only compile test it since that tree gives MODPOST
-warning and dies early on bootup. I'm hoping to give it more tesring when/if
-I have time... :-)
+> I like this patch since it's really simple. CFS does provide a nice 
+> infrastructure to enable new algorithmic changes/extensions. My only 
+> concern was the O(log N) complexity under heavy load, but I'm willing 
+> to agree that it's OK in the common case. [...]
 
- drivers/ide/ide-dma.c |    7 +++---
- drivers/ide/ide-lib.c |   57 ++++++++++++++++++++++++++++++--------------------
- 2 files changed, 39 insertions(+), 25 deletions(-)
+yeah. Note that just in case i wasnt clear enough: my patch attempts to 
+be an adoption of the core fairness math algorithm Roman suggested - so 
+it is not my idea and i dont want to take credit for it. (if it were to 
+go upstream it would of course carry a prominent "fairness math 
+rewritten by Roman Zippel" credit.)
 
-Index: linux-2.6/drivers/ide/ide-dma.c
-===================================================================
---- linux-2.6.orig/drivers/ide/ide-dma.c
-+++ linux-2.6/drivers/ide/ide-dma.c
-@@ -664,10 +664,11 @@ static unsigned int ide_get_mode_mask(id
- 		if ((id->field_valid & 4) == 0)
- 			break;
- 
--		mask = id->dma_ultra & hwif->ultra_mask;
--
- 		if (hwif->udma_filter)
--			mask &= hwif->udma_filter(drive);
-+			mask = hwif->udma_filter(drive);
-+		else
-+			mask = hwif->ultra_mask;
-+		mask &= id->dma_ultra;
- 
- 		if ((mask & 0x78) && (eighty_ninty_three(drive) == 0))
- 			mask &= 0x07;
-Index: linux-2.6/drivers/ide/ide-lib.c
-===================================================================
---- linux-2.6.orig/drivers/ide/ide-lib.c
-+++ linux-2.6/drivers/ide/ide-lib.c
-@@ -75,38 +75,51 @@ EXPORT_SYMBOL(ide_xfer_verbose);
-  *
-  *	Given the available transfer modes this function returns
-  *	the best available speed at or below the speed requested.
-- *
-- *	FIXME: filter also PIO/SWDMA/MWDMA modes
-  */
- 
- u8 ide_rate_filter(ide_drive_t *drive, u8 speed)
- {
--#ifdef CONFIG_BLK_DEV_IDEDMA
- 	ide_hwif_t *hwif = drive->hwif;
--	u8 mask = hwif->ultra_mask, mode = XFER_MW_DMA_2;
-+	u8 mask, base = speed & 0xf8, bit = 1 << (speed & 0x07);
- 
--	if (hwif->udma_filter)
--		mask = hwif->udma_filter(drive);
-+	switch (base) {
-+#ifdef CONFIG_BLK_DEV_IDEDMA
-+	case XFER_UDMA_0:
-+		mask = hwif->udma_filter ? hwif->udma_filter(drive) :
-+					   hwif->ultra_mask;
- 
--	/*
--	 * TODO: speed > XFER_UDMA_2 extra check is needed to avoid false
--	 * cable warning from eighty_ninty_three(), moving ide_rate_filter()
--	 * calls from ->speedproc to core code will make this hack go away
--	 */
--	if (speed > XFER_UDMA_2) {
--		if ((mask & 0x78) && (eighty_ninty_three(drive) == 0))
-+		/*
-+		 * TODO: if speed > XFER_UDMA_2, an extra check is needed to
-+		 * avoid a false cable warning from eighty_ninty_three() --
-+		 * moving ide_rate_filter() calls from ->speedproc to core
-+		 * code will make this hack go away...
-+		 */
-+		if (speed > XFER_UDMA_2 && (mask & 0x78) &&
-+		    eighty_ninty_three(drive) == 0)
- 			mask &= 0x07;
--	}
--
--	if (mask)
--		mode = fls(mask) - 1 + XFER_UDMA_0;
- 
--//	printk("%s: mode 0x%02x, speed 0x%02x\n", __FUNCTION__, mode, speed);
--
--	return min(speed, mode);
--#else /* !CONFIG_BLK_DEV_IDEDMA */
--	return min(speed, (u8)XFER_PIO_4);
-+		if (mask & bit)
-+			break;
-+		base = XFER_MW_DMA_0;
-+		/* Fall thru */
-+	case XFER_MW_DMA_0:
-+		if (hwif->mwdma_mask & bit)
-+			break;
-+		base = XFER_SW_DMA_0;
-+		/* Fall thru */
-+	case XFER_SW_DMA_0:
-+		if (hwif->swdma_mask & bit)
-+			break;
-+		base = XFER_PIO_0;
-+		/* Fall thru */
- #endif /* CONFIG_BLK_DEV_IDEDMA */
-+	case XFER_PIO_0:
-+		if (hwif->pio_mask & bit)
-+			break;
-+	default:
-+		BUG();
-+	}
-+	return base | bit;
- }
- 
- EXPORT_SYMBOL(ide_rate_filter);
+about O(log N) complexity: the "timeline" nature of the CFS rbtree 
+(which rbtree Roman's patch preserves) guarantees a certain good level 
+of cache locality. We generally insert tasks at the "right side" of the 
+tree and remove them from the "left side" of the tree. (not always of 
+course, but for most workloads) So in practice, on a reasonable CPU, 
+there's no difference to the cachemiss patterns of pure O(1) algorithms. 
+And in terms of cycle overhead, lets consider something really extreme: 
+_one million runnable tasks on a single CPU_ (which is clearly silly and 
+unrealistic), which has a worst-case rbtree depth of ~31. A modern CPU 
+can walk a 31-deep binary tree in the neighborhood of 100 cycles 
+(cached). That makes it comparable to the O(1) scheduler's reliance on 
+the BSF instruction on x86 (which instruction costs a few dozen cycles 
+last i remember). In practice O(log(N)) algorithms are really equivalent 
+to O(1) algorithms. The big thing about the "O(1) scheduler" was that 
+the scheduler it replaced was O(N). Now an O(N) algorithm _does_ hurt.
 
+No doubt, people _will_ play with CFS and will try to implement its 
+timeline data structure using O(1) algorithms (or improved tree 
+algorithms). It's doable and it will certainly be interesting to see the 
+results of such experiments. The rbtree was simply the most natural 
+choice of an already existing, lightweight in-kernel tree data 
+structure. [ It's also used by the MM so continued sanity and 
+performance of that code is guaranteed by the MM hackers ;-) ]
+
+> [...] Some comments on the code:
+
+> >+	key = se->exec_runtime;
+> >
+> >	se->fair_key = key;
+> >}
+> 
+> Should we use the weighted fair clock exec_runtime as the key? This 
+> way tasks with larger weights will have their keys incremented more 
+> slowly and thus be given more CPU time. This is what other 
+> virtual-clock based fair scheduling algorithms commonly do.
+
+yep. The code i posted treats all tasks as nice-0. I suspect by adding a 
+calc_weighted() transformation to the key calculation above we'd get 
+most of the nice level support. (but i havent tried that yet - i was 
+mainly interested in a simple expression of Roman's ideas)
+
+> >+	se->exec_runtime = avg_exec_runtime(cfs_rq);
+> >	__enqueue_entity(cfs_rq, se);
+> >}
+> 
+> What's the intuition behind avg_exec_runtime? I thought the original 
+> CFS approach, i.e., setting a newly arriving task's key to be the 
+> current fair clock, adjusted by wait_runtime, was good. It matches 
+> other fair queuing algorithms and thus has provably good properties.
+
+it's i think what Roman's algorithm does, and i wanted to implement that 
+and only that, to be able to review the effects of a much simpler, yet 
+behaviorally equivalent patch. Perhaps Roman can shed some light on what 
+the thinking behind that average is.
+
+	Ingo
