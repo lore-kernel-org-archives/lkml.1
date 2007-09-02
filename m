@@ -1,69 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbXIBPAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933529AbXIBPEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbXIBPAd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 11:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXIBPAX
+	id S933529AbXIBPEc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 11:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbXIBPEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 11:00:23 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:55552 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755202AbXIBPAW (ORCPT
+	Sun, 2 Sep 2007 11:04:25 -0400
+Received: from smtprelay11.ispgateway.de ([80.67.29.28]:35941 "EHLO
+	smtprelay11.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755363AbXIBPEY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 11:00:22 -0400
-Date: Sun, 2 Sep 2007 17:15:21 +0200
-To: Willy Tarreau <w@1wt.eu>
-Cc: Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       Matti Aarnio <matti.aarnio@zmailer.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: [OT] good job guys with the anti-spam !
-Message-ID: <20070902151521.GE475@flower.upol.cz>
-References: <20070731214011.GA17735@1wt.eu> <E1IRdRq-00015P-S4@flower> <20070902003936.GA8005@atjola.homenet> <20070902012353.GC475@flower.upol.cz> <20070902081836.GA14728@1wt.eu>
+	Sun, 2 Sep 2007 11:04:24 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: linux-kernel@vger.kernel.org
+Subject: [RFD] new syscalls: suspend_other/resume_other?
+Date: Sun, 2 Sep 2007 17:04:21 +0200
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070902081836.GA14728@1wt.eu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+Message-Id: <200709021704.22325.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 02, 2007 at 10:18:36AM +0200, Willy Tarreau wrote:
-[]
->
-> Your method
+Hi there,
 
-as i mentioned
+at the moment implementing a mark and sweep garbage collection 
+subsystem is quite a hack, because you always have to use up
+some signals for suspend/resume all threads to implement this.
 
-> makes it trivial for them to request 1 ticket, then send 10000 mails
-> which will be accepted without ever being filtered. It will result in
-> an increase of the number of spams and a great annoyance for the users.
+For runtime environments (like D system libraries or JVMs) this is 
+a hack, since you take away flexibility from the application.
 
-It's metter of experiment to know how much spammers today
+A possible solution would be a syscall or a PTRACE extension
+to realize the suspend/resume. I best describe the possible
+syscall manpages here, so you get an idea.
 
-* compose messages with non outloock default headers
+NAME 
+	suspend_other - suspends execution of all but the calling thread
 
-* have *valid* reply address
-  ** if it's valid and message to get ticket looks spammy as well as message
-     after ticket does, address gets blacklisted forever
+SYNOPSIS
+	long suspend_other(void);
 
-* bother about published email address' policy
+RETURN VALUE
+	Positive count suspended threads on success. 
+        If 0, then suspend_other was a no-op and there is nothing to resume, but the
+	call should still considered successful.
+	If the number is -1, the errno has to be checked for possible error values.
 
-> Not for me, thanks :-/
+ERRORS
+	EDEADLK We run already a suspend_other() and the calling thread 
+		has just been resumed.
 
-You know, after requests like "we need more man power to handle mail
-lists" i wonder in what century we are leaving XXI or IIX?
+	EPERM The calling thread is not allowed to do this. 
+		(optional case due to security)
+	
+DESCRIPTION
+	After sucessful return of this call, the affected process 
+	is single threaded and only the calling thread runs 
+	in this process (==MM struct).
 
-OTHO Gmane is an excellent example of applying NNTP structure, that is
-very superior to mailing lists concept. But as i mentioned, i don't know
-whole story about USENET vs Mailing lists. I just speculate, that latter
-was established as an private entity, that groups of people can handle as
-they need and want.
+	The thread, which calls this is responsible for resuming 
+	all the suspended threads. One can iterate through 
+	"/proc/self/task/", to verify for sure that one knows all threads,
+	if the returned count doesn't match the expected value.
 
-But NNTP isn't USENET, and only Gmane shows how it lets people like me to
-handle tens of thousand emails in nearly 60 mailing lists (not only
-reading up to date, but archives easily). And frankly, i just pissed off
-by "6 day lkml archive, please", "Adrian, your email is bouncing, bla
-bla...". I'd better see spam, then dumb things like that, see?
-____
+	Any per thread queued signals are deferred until resume_other()
+	or process destruction.
+
+NOTES
+	This call might be restricted to the main thread.
+
+------------
+
+NAME 
+	resume_other - resume execution of foreign thread in this process
+
+SYNOPSIS
+	long resume_other(pid_t tid)
+
+RETURN VALUE
+	Returns 0, if successful.
+	Otherwise -1 is returned, the errno has to be checked for 
+	possible error values and the call has no effect at all.
+
+	Any non-blocked signals of that thread which happend during 
+	suspend/resume are deliverd now.
+
+ERRORS
+	EINVAL The thread is running already. 
+		(this is a severe caller BUG).
+	ESRCH The thread with tid does not exist.
+		(or doesn't belong to this process).
+	EPERM The calling thread is not allowed to do this. 
+		(optional case due to security)
+	
+DESCRIPTION
+	After sucessful return of this call, the affected thread 
+	is the the state it was before it was suspended 
+	by calling suspend_other().
+
+NOTES
+	The value -1 for tid is reserved for future extension 
+	(e.g. meaning ALL other threads).
+
+	This call might be restricted to the main thread.
+
+---------
+
+Any opinions?
+
+
+Best Regards
+
+Ingo Oeser
