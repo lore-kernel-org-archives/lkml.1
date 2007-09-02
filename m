@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933824AbXIBBSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933657AbXIBBWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933824AbXIBBSq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 21:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933388AbXIBBSh
+	id S933657AbXIBBWi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 21:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932487AbXIBBW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 21:18:37 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:4462 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933003AbXIBBSf (ORCPT
+	Sat, 1 Sep 2007 21:22:28 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59228 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932366AbXIBBW1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 21:18:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=rhStz40uQpYRsr1bWc/LXPs+PWDH+7c1TiYp2YvaBk/bKhj8eQzWwjl3gH9y5dO+ri/veUSDKilPtT4kk9YM5KkzGwjISX3aUzEN9yh76+GXxTL4vKhWzzVQB4tAbJOX8T4btIAjob/C6oM+VDFL0IfFvw6Wx1YG7aATDs0dBbo=
-Message-ID: <d2ad857f0709011818o7954b40csfc9d5267f9fb3f8b@mail.gmail.com>
-Date: Sat, 1 Sep 2007 21:18:35 -0400
-From: "Adit Ranadive" <adit.262@gmail.com>
-To: netdev@vger.kernel.org
-Subject: PATCH - Pktgen srcmac fix - Kernel 2.6.22.6
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+	Sat, 1 Sep 2007 21:22:27 -0400
+Date: Sun, 2 Sep 2007 03:22:28 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Theo de Raadt <deraadt@cvs.openbsd.org>
+Cc: Bob Beck <beck@bofh.cns.ualberta.ca>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+Message-ID: <20070902012228.GE16016@stusta.de>
+References: <20070902000226.GE24887@bofh.cns.ualberta.ca> <200709020036.l820aaNf014181@cvs.openbsd.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <200709020036.l820aaNf014181@cvs.openbsd.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff -urNp linux-orig/net/core/pktgen.c linux-mod/net/core/pktgen.c
---- linux-orig/net/core/pktgen.c        2007-08-31 02:21:01.000000000 -0400
-+++ linux-mod/net/core/pktgen.c 2007-09-01 20:51:22.000000000 -0400
-@@ -111,6 +111,9 @@
-  *
-  * 802.1Q/Q-in-Q support by Francesco Fondelli (FF)
-<francesco.fondelli@gmail.com>
-  *
-+ * Fixed src_mac command to set source mac of packet to value specified in
-+ * command by Adit Ranadive <adit.262@gmail.com>
-+ *
-  */
- #include <linux/sys.h>
- #include <linux/types.h>
-@@ -1415,7 +1418,9 @@ static ssize_t pktgen_if_write(struct fi
-        }
-        if (!strcmp(name, "src_mac")) {
-                char *v = valstr;
-+               unsigned char old_smac[ETH_ALEN];
-                unsigned char *m = pkt_dev->src_mac;
-+               memcpy(old_smac, pkt_dev->src_mac, ETH_ALEN);
+On Sat, Sep 01, 2007 at 06:36:36PM -0600, Theo de Raadt wrote:
+> When companies have taken our wireless device drivers, many many of
+> them have given changes and fixes back.  Some maybe didn't, but that
+> is OK.
+> 
+> When Linux took our changes back, they immediately locked the door
+> against changes moving back, by putting a GPL license on guard.
+> 
+> Why does our brother Linux take a file that is 90% BSD licensed,
+> and refuse to let us see the 10% he adds?
 
-                len = strn_len(&user_buffer[i], sizeof(valstr) - 1);
-                if (len < 0) {
-@@ -1445,6 +1450,10 @@ static ssize_t pktgen_if_write(struct fi
-                        }
-                }
+Theo, the primary claim you made in your email that was forwarded to 
+linux-kernel was:
 
-+               /* Set up Src MAC */
-+               if (compare_ether_addr(old_smac, pkt_dev->src_mac))
-+                       memcpy(&(pkt_dev->hh[6]), pkt_dev->src_mac, ETH_ALEN);
-+
-                sprintf(pg_result, "OK: srcmac");
-                return count;
-        }
+<--  snip  -->
 
+In http://lkml.org/lkml/2007/8/29/183, Alan Cox managed to summarize
+what Jiri Slaby and Luis Rodriguez were trying to do by proposing a
+modification of a Dual Licenced file without the consent of all the
+authors.  Alan asks "So whats the problem ?".  Well, Alan, I must
+caution you -- your post is advising people to break the law.
+
+<--  snip  -->
+
+It is a quite heavy accusation against Alan that saying it was OK to 
+change dual licenced code to one of the offered licences would advise
+to break the law.
+
+There's nothing about goodwill or other ethical questions in your 
+statement, this statement you made can be verified or falsified by 
+lawyers.
+
+If it is true, all ethical questions about this are anyway moot because 
+it was illegal as you claim.
+
+If you wrongly accused Alan, you owe Alan an apology.
+
+cu
+Adrian
 
 -- 
-Adit Ranadive
-MS CS Candidate
-Georgia Institute of Technology,
-Atlanta, GA
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
