@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754359AbXIBUXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751811AbXIBUXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754359AbXIBUXV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 16:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbXIBUXG
+	id S1751811AbXIBUXf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 16:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbXIBUXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 16:23:06 -0400
-Received: from ns.firmix.at ([62.141.48.66]:38888 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750806AbXIBUXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 16:23:08 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:54548 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750816AbXIBUXF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 2 Sep 2007 16:23:05 -0400
-Subject: Re: GPL weasels and the atheros stink
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: espie@nerim.net
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070902140306.GA27317@lain.home>
-References: <20070902140306.GA27317@lain.home>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Sun, 02 Sep 2007 22:22:54 +0200
-Message-Id: <1188764575.31863.8.camel@gimli.at.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Message-ID: <46DB1C50.2020205@ru.mvista.com>
+Date: Mon, 03 Sep 2007 00:25:52 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] hpt366: MWDMA filter for SATA cards
+References: <200709030019.22732.sshtylyov@ru.mvista.com>
+In-Reply-To: <200709030019.22732.sshtylyov@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.317 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.317 required=5
-X-Spam-Score: -2.317 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-09-02 at 16:03 +0200, Marc Espie wrote:
-[...]
-> So, now, it's down to dirty fighting. Absorbing and `relicensing' and 
-> evolving code.  Have you all been bitten my RMS paranoia (that leads to
-> this `interesting GPLv3) ? Do you intend to keep grabbing BSD code and
-> putting it exclusively under the GPL ?
+Hello, I wrote:
 
-AFAIK: I could take BSD- (or ISC-)licensed code (legally), patch it,
-sell it (nor not) and (legally) not give back anything putting the whole
-code effectively under proprietary license.
-And you can't do anything (except negative propaganda) independent if
-you are maintainer, author or whoever.
+    The patch was 4/4 of course. :-<
+     Probably I was too esctatic about the code. ;-)
 
-And you seriously have a problem with GPLed patches (which is BTW more
-"open" since you cannot legally hide the changes once you gave a binary
-away - at least from the receiver of said binaries)?
+> The Marvell bridge chips used on HighPoint SATA cards do not seem to support
+> the MWDMA modes (at least that caould be seen in their so-called drivers :-),
+> so the driver needs to account for this -- to achieve this:
 
-BTW it's the same as with other "open code": Take it or leave it - it's
-your decision.
+> - add mdma_filter() method from the original patch by Bartlomiej Zolnierkewicz
+>   with his consent, also adding the method callout to ide_rate_filter();
 
-SCNR,
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+> - installed the method for all chips to only return empty mask if a SATA drive
+>   is detected onHPT372{AN]/374 chips...
 
+> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+> ---
+> This patch against the current Linus' tree and unfortunately I was able to only
+> compile test it since that tree gives MODPOST warning and dies early on bootup.
+> Will hopefully try to test if/when I have time... :-)
+
+> Index: linux-2.6/drivers/ide/pci/hpt366.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/ide/pci/hpt366.c
+> +++ linux-2.6/drivers/ide/pci/hpt366.c
+> @@ -1,5 +1,5 @@
+>  /*
+> - * linux/drivers/ide/pci/hpt366.c		Version 1.12	Aug 25, 2007
+> + * linux/drivers/ide/pci/hpt366.c		Version 1.13	Aug 22, 2007
+
+    Errr... and version shuold Aug 02 -- thought I've fixed that. :-/
+
+MBR, Sergei
