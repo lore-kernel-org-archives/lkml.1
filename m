@@ -1,109 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933974AbXIBOvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbXIBPAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933974AbXIBOvf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 10:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756972AbXIBOv2
+	id S1758097AbXIBPAd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 11:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXIBPAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 10:51:28 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:52013 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756961AbXIBOv1 (ORCPT
+	Sun, 2 Sep 2007 11:00:23 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:55552 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755202AbXIBPAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 10:51:27 -0400
-Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically
-	hangs on resume from hibernation
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, michal.k.k.piotrowski@gmail.com,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200709021529.51165.arvidjaar@mail.ru>
-References: <200706300859.47133.arvidjaar@mail.ru>
-	 <200707010134.30843.arvidjaar@mail.ru> <200707011209.29250.rjw@sisk.pl>
-	 <200709021529.51165.arvidjaar@mail.ru>
-Content-Type: text/plain
-Date: Sun, 02 Sep 2007 16:49:49 +0200
-Message-Id: <1188744589.11644.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+	Sun, 2 Sep 2007 11:00:22 -0400
+Date: Sun, 2 Sep 2007 17:15:21 +0200
+To: Willy Tarreau <w@1wt.eu>
+Cc: Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
+       Matti Aarnio <matti.aarnio@zmailer.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [OT] good job guys with the anti-spam !
+Message-ID: <20070902151521.GE475@flower.upol.cz>
+References: <20070731214011.GA17735@1wt.eu> <E1IRdRq-00015P-S4@flower> <20070902003936.GA8005@atjola.homenet> <20070902012353.GC475@flower.upol.cz> <20070902081836.GA14728@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070902081836.GA14728@1wt.eu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for top posting, but this is MAYBE a related matter, i am not
-sure.
+On Sun, Sep 02, 2007 at 10:18:36AM +0200, Willy Tarreau wrote:
+[]
+>
+> Your method
 
-the thing is, i am running with libata and reiserfs on a raid5 with 6
-disks, and after i changed to libata it has worked excellently (before
-it used to give DMA errors and then go boom).
+as i mentioned
 
-however now i sometimes, if theres some load on the array, see that the
-hdd leds go fully on, and for ~10sec to 1 min, all IO just stops
-complete, and after the time, it resumes and works perfectly.
+> makes it trivial for them to request 1 ticket, then send 10000 mails
+> which will be accepted without ever being filtered. It will result in
+> an increase of the number of spams and a great annoyance for the users.
 
-any ideas? and i also bring this up as it may give a clue as to what
-causes this. - I also use CFQ
+It's metter of experiment to know how much spammers today
 
-On Sun, 2007-09-02 at 15:29 +0400, Andrey Borzenkov wrote:
-> On Sunday 01 July 2007, Rafael J. Wysocki wrote:
-> > On Saturday, 30 June 2007 23:34, Andrey Borzenkov wrote:
-> > > On Sunday 01 July 2007, Rafael J. Wysocki wrote:
-> > > > On Saturday, 30 June 2007 06:59, Andrey Borzenkov wrote:
-> > > > > Since 2.6.18 I do not have suspend to RAM; now I am starting to lose
-> > > > > suspend to disk :)
-> > > > >
-> > > > > Environment - vanilla kernel (2.6.22-rc6 currently + squashfs +
-> > > > > single pata_ali patch to switch off DMA on CD-ROM), single root on
-> > > > > reiserfs, libata with pata_ali driver.
-> > > > >
-> > > > > Until 2.6.22-rc I never had problems with hibernation. With 2.6.22-rc
-> > > > > system hung at least once in every rcX. Up to rc6 those lockups were
-> > > > > absolutely silent (black screen without reaction to any key). In rc6
-> > > > > I just got something different. After resume I got on screem:
-> > > > >
-> > > > > swsusp: Marking nosave pages: 000000000009f000-0000000000100000
-> > > > > swsusp: Basic memory bitmaps created
-> > > > > swsusp: Basic memory bitmaps freed
-> > > > >
-> > > > > After that it just sits there doing nothing. Ther was brief sound of
-> > > > > HDD but I suspect it was related more to power-on. System was
-> > > > > responding to power-on button press:
-> > > > >
-> > > > > ACPI Error (event-0305): No installed handler for fixed event
-> > > > > [00000002 20070125]
-> > > > >
-> > > > > And SysRq was functioning.
-> > > >
-> > > > That probably means that there's a deadlock somewhere in there.
-> > > >
-> > > > > Unfortunately I do not have serial console so I
-> > > > > copy manually stacks from several last screens of output; I have
-> > > > > tried to make a photo but right now my kbluetooth is refusing to work
-> > > > > at all so I cannot transfer them :( (but I suspect quality would be
-> > > > > too bad anyway)
-> > > > >
-> > > > > laptop_mode D
-> > > > > 	io_schedule+0xe/0x20
-> > > >
-> > > > Looks suspicious to me.  Can you identify what line of code this points
-> > > > to?
-> > >
-> > > If you could explain how to ...
-> >
-> > Michal has already done that. :-)
-> >
-> > [--snip--]
-> >
-> > > > I see you're using CFQ as the default IO scheduler.  Can you please
-> > > > switch to AS and see if that changes anything?
-> > >
-> > > Sure, but given that I have no idea how to reproduce the lockup, we may
-> > > never know whether it actually helped.
-> >
-> > Well, if the lockup never happens with AS, that will indicate something ...
-> >
-> 
-> I thought it is gone but it just happened again with 2.6.23-rc5. I thought I 
-> have been running AS but no, I did use CFQ. Now I definitely switched to AS 
-> default; let's see ...
+* compose messages with non outloock default headers
 
+* have *valid* reply address
+  ** if it's valid and message to get ticket looks spammy as well as message
+     after ticket does, address gets blacklisted forever
+
+* bother about published email address' policy
+
+> Not for me, thanks :-/
+
+You know, after requests like "we need more man power to handle mail
+lists" i wonder in what century we are leaving XXI or IIX?
+
+OTHO Gmane is an excellent example of applying NNTP structure, that is
+very superior to mailing lists concept. But as i mentioned, i don't know
+whole story about USENET vs Mailing lists. I just speculate, that latter
+was established as an private entity, that groups of people can handle as
+they need and want.
+
+But NNTP isn't USENET, and only Gmane shows how it lets people like me to
+handle tens of thousand emails in nearly 60 mailing lists (not only
+reading up to date, but archives easily). And frankly, i just pissed off
+by "6 day lkml archive, please", "Adrian, your email is bouncing, bla
+bla...". I'd better see spam, then dumb things like that, see?
+____
