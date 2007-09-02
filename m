@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965321AbXIBQqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965546AbXIBQrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965321AbXIBQqX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 12:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756571AbXIBQqN
+	id S965546AbXIBQrg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 12:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbXIBQrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 12:46:13 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59461 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751059AbXIBQqM (ORCPT
+	Sun, 2 Sep 2007 12:47:25 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:12308 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756597AbXIBQrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 12:46:12 -0400
-Date: Sun, 2 Sep 2007 17:54:46 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: espie@nerim.net
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: GPL weasels and the atheros stink
-Message-ID: <20070902175446.1c877201@the-village.bc.nu>
-In-Reply-To: <20070902140306.GA27317@lain.home>
-References: <20070902140306.GA27317@lain.home>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 2 Sep 2007 12:47:24 -0400
+Date: Sun, 2 Sep 2007 09:46:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86/x86-64 PCI domain support
+Message-Id: <20070902094637.6750f068.randy.dunlap@oracle.com>
+In-Reply-To: <46D9EA5B.9010101@garzik.org>
+References: <20070901143223.GA32216@havoc.gtf.org>
+	<200709020000.03375.ak@suse.de>
+	<46D9E254.6010702@garzik.org>
+	<200709020026.52725.ak@suse.de>
+	<46D9EA5B.9010101@garzik.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> as git, this is no longer as cumbersome as this used to be. So, instead
-> of new gcc code sent to the FSF (and given to the FSF), we could explicitly
-> keep patches under the ISC licence, and explain loudly why this is so.
+On Sat, 01 Sep 2007 18:40:27 -0400 Jeff Garzik wrote:
 
-I think you need to learn about derivative works. That aside I'm not
-aware the FSF has any particular part or stated opinion in this particular
-matter. Linus isn't exactly known for being a Stallman fan and Linux
-despite Mr Stallmans perpetual attempt to stick "GNU/" on the front of
-it, is not and has never been an FSF project.
+> Andi Kleen wrote:
+> >>> The second function is redundant? 
+> >> No, it's a hook we must implement, when CONFIG_PCI_DOMAINS is enabled.
+> > 
+> > Then the other function is redundant.
+> 
+> No, both functions are required by the interface.
 
-> Heck, if Reyk Floeter is not totally disgusted with all this when he comes
-> back from vacation, what licence do you think he's going to use for his 
-> next driver ?
+by what interface?  and why, please?  (instead of just stating "required")
 
-I guess he'll have to write a new BSD2 licence. I'm suprised to hear he
-is on vacation. I assumed the OpenBSD developers would have consulted him
-before speaking for him ?
 
-Alan
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
