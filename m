@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbXIBXKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758336AbXIBXQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757540AbXIBXKX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 19:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbXIBXKN
+	id S1758336AbXIBXQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 19:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbXIBXQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 19:10:13 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:7983 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751640AbXIBXKK (ORCPT
+	Sun, 2 Sep 2007 19:16:48 -0400
+Received: from bay0-omc1-s1.bay0.hotmail.com ([65.54.246.73]:58941 "EHLO
+	bay0-omc1-s1.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754395AbXIBXQr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 19:10:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dWQAczlh/emUX0w/E/nbY+dg34nxNSccrsa6ULLXmUgpfrGmIXrJx4IkglLpoEVx01D1dOMnmC+nLcazqxN1+++k2lSR9vBabDAZypGjgJUGythQ+KuRmdvsoWk51AuymdckfAYJU+CmxWQ7uvEYsBSjr4KY4Qn4dxlCTtuahCU=
-Message-ID: <5a4c581d0709021610s113f8d15kb723bbd36343f95@mail.gmail.com>
-Date: Mon, 3 Sep 2007 01:10:09 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Satyam Sharma" <satyam@infradead.org>
-Subject: Re: Hang in 2.6.23-rc5
-Cc: "Alexey Dobriyan" <adobriyan@gmail.com>, "FD Cami" <francois.cami@free.fr>,
-       "charles gagalac" <charles.gagalac@gmail.com>,
-       "daryll q" <daryll_26m@yahoo.com.ph>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.999.0709030411510.31154@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 2 Sep 2007 19:16:47 -0400
+X-Originating-IP: [64.231.205.174]
+X-Originating-Email: [seanlkml@sympatico.ca]
+Date: Sun, 2 Sep 2007 19:16:44 -0400
+From: Sean <seanlkml@sympatico.ca>
+To: Junio C Hamano <gitster@pobox.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, David Kastrup <dak@gnu.org>,
+       git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.5.3
+Message-Id: <20070902191644.29d46cd2.seanlkml@sympatico.ca>
+In-Reply-To: <7v4picpvgq.fsf@gitster.siamese.dyndns.org>
+References: <7vodglr32i.fsf@gitster.siamese.dyndns.org>
+	<46DA5F33.2020005@zytor.com>
+	<85odgltrtj.fsf@lola.goethe.zz>
+	<46DA88EF.7080103@zytor.com>
+	<20070902133803.1b46f599.seanlkml@sympatico.ca>
+	<7v4picpvgq.fsf@gitster.siamese.dyndns.org>
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.14; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <994260.18490.qm@web57301.mail.re1.yahoo.com>
-	 <6cf66ee10709021205u7d57b93fv777f414dbba4373f@mail.gmail.com>
-	 <5a4c581d0709021338s1e9e0dc0md490a032781b60e8@mail.gmail.com>
-	 <20070902232939.f2c8acbb.francois.cami@free.fr>
-	 <20070902214631.GA1892@martell.zuzino.mipt.ru>
-	 <alpine.LFD.0.999.0709030411510.31154@enigma.security.iitk.ac.in>
+X-OriginalArrivalTime: 02 Sep 2007 23:17:51.0375 (UTC) FILETIME=[7BB731F0:01C7EDB7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/3/07, Satyam Sharma <satyam@infradead.org> wrote:
->
->
-> On Mon, 3 Sep 2007, Alexey Dobriyan wrote:
-> >
-> > Try this from net-2.6 tree:
-> >
-> > --- a/net/ipv4/tcp_input.c
-> > +++ b/net/ipv4/tcp_input.c
-> > @@ -560,7 +560,7 @@ static u32 tcp_rto_min(struct sock *sk)
-> >       struct dst_entry *dst = __sk_dst_get(sk);
-> >       u32 rto_min = TCP_RTO_MIN;
-> >
-> > -     if (dst_metric_locked(dst, RTAX_RTO_MIN))
-> > +     if (dst && dst_metric_locked(dst, RTAX_RTO_MIN))
-> >               rto_min = dst->metrics[RTAX_RTO_MIN-1];
-> >       return rto_min;
-> >  }
->
-> That's my impression as well. That's way too core/busy a codepath to have
-> a bug in. As I said earlier, almost anybody testing -rc5 is sure to hit
-> this within a few hours (probably less) -- sad, it greatly erodes from the
-> usefulness of -rc5 as a release candidate.
->
+On Sun, 02 Sep 2007 15:13:09 -0700
+Junio C Hamano <gitster@pobox.com> wrote:
 
-Well - when my box locked up I was also doing a 300MB scp
- through my ipw2200 wireless interface. But I did another today
- and nothing bad happened.
+Hi Junio,
 
-In another email someone mentioned /var/log/messages - no,
- that was totally void of anything peculiar, despite the fact that
- I rebooted via Alt-SysRq T / P / S / U / B (this last did reboot
- the box). Upon restart however no, nothing in /var/log/messages.
-Didn't think it was the case to set up netconsole - only one
- occurrence AND with VMWare modules loaded...
+> For majority of general public, I thought the spec file _I_
+> ship, along with RPM files _I_ build, are contrib status
+> already.  Don't distro people do their own RPM packages, instead
+> of using what I placed on k.org?
 
-I will apply the above fix and will post again in case the hang
- issue pops up again. Thanks, ciao,
+Didn't know you used RPM yourself, so I guess this is just
+a case of something slipping through rather than the spec file
+needing a maintainer.  Having said that, it seems odd that you
+would say the spec file included with git is "contrib status
+already".   How can something be contrib status unless it
+is in the contrib directory of Git?
+ 
+> Assuming that we do not give the old git-p4import script
+> packaged in "git-p4 package", would the following patch be all
+> that is needed, or do we need other things in the spec file?
 
---alessandro
+Given the comment from David, I suspect your patch is all
+that's needed; hopefully Peter can give it a quick test.
 
- "I can't believe you if I can't hear you"
-
-   (Editors, 'Smokers Outside The Hospital Doors')
+Sean
