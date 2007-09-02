@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932972AbXIBSVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934103AbXIBSXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932972AbXIBSVl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 14:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbXIBSVb
+	id S934103AbXIBSXZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 14:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbXIBSXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 14:21:31 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45998 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753912AbXIBSV3 (ORCPT
+	Sun, 2 Sep 2007 14:23:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:49842 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754213AbXIBSXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 14:21:29 -0400
-Date: Sun, 2 Sep 2007 19:21:15 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Igor Sobrado <igor@condmat1.ciencias.uniovi.es>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
-       "Constantine A. Murenin" <mureninc@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
+	Sun, 2 Sep 2007 14:23:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=epgIBOZgEimhr6Mk8gp4FD6c2PscXE35bLPTgqk4nohBXDZ+poUxe+mXmfFqIK9LSEtkZXRQahjb874d3cSXGzbzk5zq3dk0cA26QJc+Pyrh7E2Vc03z5gTNmTBCqOiSuJlSLQwqysnWhsIdVSyo7MV3Lv0nmllDLniN2Iu/xYY=
+Message-ID: <7579f7fb0709021123p7088ec41m5b688f527ba46d13@mail.gmail.com>
+Date: Sun, 2 Sep 2007 11:23:11 -0700
+From: "Matthew Jacob" <lydianconcepts@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
 Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Message-ID: <20070902182115.GR21089@ftp.linux.org.uk>
-References: <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com> <46D99FB7.6030505@garzik.org> <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com> <20070901205457.GK9260@stusta.de> <20070902113638.78fbd202@the-village.bc.nu> <Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es> <20070902115041.GM16016@stusta.de> <Pine.LNX.4.64.0709021416130.6181@condmat1.ciencias.uniovi.es> <20070902134612.28a88761@the-village.bc.nu> <Pine.LNX.4.64.0709021446550.6181@condmat1.ciencias.uniovi.es>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0709021754250.6772@condmat1.ciencias.uniovi.es>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709021446550.6181@condmat1.ciencias.uniovi.es>
-User-Agent: Mutt/1.4.1i
+References: <200709010140.l811eq9H005896@cvs.openbsd.org>
+	 <20070902113638.78fbd202@the-village.bc.nu>
+	 <Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
+	 <20070902115041.GM16016@stusta.de>
+	 <Pine.LNX.4.64.0709021416130.6181@condmat1.ciencias.uniovi.es>
+	 <20070902134612.28a88761@the-village.bc.nu>
+	 <Pine.LNX.4.64.0709021446550.6181@condmat1.ciencias.uniovi.es>
+	 <m3642txj91.fsf@maximus.localdomain> <46DAC482.5090107@garzik.org>
+	 <Pine.LNX.4.64.0709021754250.6772@condmat1.ciencias.uniovi.es>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 02, 2007 at 03:00:46PM +0200, Igor Sobrado wrote:
-> >Not strictly true. They can either agree to a change and issue one or
-> >they can convey to other parties the right to change the terms. The GPL
-> >for example does this for version selection.
-> 
-> So, under a dual-licensed BSD/GPL code the latter license allows a 
-> developer to remove the GPL license itself and release a single-licensed 
-> BSD code if other parties want to do it?
+This has been pretty interesting for me to watch as I distribute my
+isp driver under a dual license (at least the portions of it which are
+common with the *BSD and Solaris ports)  that is almost identical to
+Sam's verbiage.
 
-Exactly.  That's what dual-licensing is.
+I'll admit that I hadn't thought about whether redistribution included
+the ability to modify the header (and thus the text of the licensing
+as I had written) or not. On balance I'd say I believe that the
+arguments for, on redistribution, picking one or the other license
+makes sense and honored my general intent.
 
-[quote]
-This is no different from the fact that we have some drivers that are
-GPLv2/BSD licensed. Within the kernel, they are GPLv2. But on their own, 
-you can choose to use them under the BSD license, make your changes to
-them, and release them commercially.
-And correct - I cannot (and neither can anybody else) then accept those
-*non*GPLv2 changes back.
-[end quote]
+This allows people who modify the code (and presumably improve it) a
+"chef's choice" based on where they're serving the meal.
 
-That's from Linus and quite recently.
-
-FWIW, it's damn hard to codify "... and changes to this code should not
-change the situation".  It's certainly a very good policy and in this
-case it's the only sane policy.
-
-[quote]
-Actually, normally I *do* have such a trust. It's why I have no problem
-with drivers that are dual-GPL/BSD, and in fact, I've told people that I
-don't want them to turn them into GPL-only, because that is simply not   
-polite.
-[end quote]
-
-Same posting from Linus.  And that's much more relevant to shooting the patch
-in question down (and IMO it ought to be shot down) than references to
-legality.
+IANAL, but I believe that none of this keeps me from continuing to put
+a dual license on stuff I leave up for distribution, or changing that
+to restricting the code to Martian Triathalon winners or what have
+you.
