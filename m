@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933542AbXIBINL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756330AbXIBI06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933542AbXIBINL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 04:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbXIBIM5
+	id S1756330AbXIBI06 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 04:26:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbXIBI0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 04:12:57 -0400
-Received: from main.gmane.org ([80.91.229.2]:50592 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754095AbXIBIMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 04:12:55 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
-Subject: video4linux, bttv, vbi and missing lines in teletext...
-Date: Sun, 02 Sep 2007 10:18:02 +0200
-Message-ID: <fbdr9c$hqi$1@sea.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: p4fd4a1a4.dip0.t-ipconnect.de
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.6) Gecko/20070809 SeaMonkey/1.1.4
+	Sun, 2 Sep 2007 04:26:48 -0400
+Received: from europa.telenet-ops.be ([195.130.137.75]:33040 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753664AbXIBI0r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 04:26:47 -0400
+Date: Sun, 2 Sep 2007 10:26:41 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Rob Landley <rob@landley.net>, "Robert P. J. Day" <rpjday@mindspring.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       bos@serpentine.com, werner@almesberger.net
+Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
+In-Reply-To: <46D74797.4070105@zytor.com>
+Message-ID: <Pine.LNX.4.64.0709021025571.21147@anakin>
+References: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0708301426360.4088@localhost.localdomain>
+ <200708301836.48707.rob@landley.net> <46D74797.4070105@zytor.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, 30 Aug 2007, H. Peter Anvin wrote:
+> Rob Landley wrote:
+> > On Thursday 30 August 2007 1:28:17 pm Robert P. J. Day wrote:
+> > > On Thu, 30 Aug 2007, Randy Dunlap wrote:
+> > > 
+> > > ...
+> > > 
+> > > > The old "ramdisk=<ram_size>" has been changed to
+> > > > "ramdisk_size=<ram_size>" to make it clearer.  The original
+> > > > "ramdisk=<ram_size>" has been kept around for compatibility reasons,
+> > > > but it may be removed in the future.
+> > > ...
+> > > 
+> > > i just the other day submitted a patch to remove that backward
+> > > compatibility, and the m68k portion of it has already been acked by
+> > > geert uytterhoeven.
+> > 
+> > Could you mention it in feature-removal-schedule.txt?  (People check that
+> > for warning of upcoming changes that impact existing code.  They may not
+> > notice something elsewhere after they've got it working...)
+> > 
+> 
+> The same objection applies to this as to the previous one.  In that respect,
+> an Ack from a maintainer of an almost unused architecture is meaningless
+> (sorry, Geert.)
 
-I want to view teletext using my bt878 card.
+Of course I ack'ed the m68k part, iff the non-arch-specific part was accepted.
 
-I tried with mtt, but I always had missing lines in the teletext 
-display. As I have been unsure, which is the reason, I also downloaded 
-and compiled alevt. Here, the same lines are missing.
+Gr{oetje,eeting}s,
 
-Now I used the test tools from the zvbi library, to capture the teletext 
-page to a file. I never got any errors while capturing. After capturing 
-for a while, I sorted the result by line and found out, that line 1 and 
-line 13 are always missing on this teletext page (Page 116 on german 
-channel "Sat1"). In the whole logged file, I never have those two pages, 
-but have all the other pages several times.
+						Geert
 
-Which may be the reason? Why I'm unable to receive those two lines? I 
-connected a TV to the same AV cable, I usually have on my PC, and the TV 
-displays the teletext without any problems...
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Is someone here, who may help me with getting this problem fixed?
-
-Today I'll visit someone, who has a Windows PC. I've already removed the 
-bt878 card from my PC. I'll try at his PC, if I get the same problem 
-with the original driver and TV watching software. If this works, I'll 
-boot Knoppix from his PC to get sure, that I also get the same problems 
-on his PC with his video source. I'll tell you about the results of my test.
-
-For the case, it's important for the discussion:
-
-manuel@linux2:~$ uname -a
-Linux linux2 2.6.21.5 #1 Tue Jun 19 15:10:54 CDT 2007 i686 Pentium III 
-(Coppermine) GenuineIntel GNU/Linux
-
-The "card=" value for the bttv module is currently 54. I also tried 65 
-with the same results. Watching TV works pretty well, but in teletext, I 
-miss one or two lines in nearly any page.
-
-Thank you very much in advance
-
-Yours
-
-Manuel
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
