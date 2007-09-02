@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbXIBT4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbXIBT5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758832AbXIBT4Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 15:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXIBTz6
+	id S1757645AbXIBT5a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 15:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbXIBT5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 15:55:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37273 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752566AbXIBTz5 (ORCPT
+	Sun, 2 Sep 2007 15:57:22 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59549 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876AbXIBT5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 15:55:57 -0400
-Date: Mon, 3 Sep 2007 01:39:04 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Greg Banks <gnb@melbourne.sgi.com>, Olaf Kirch <olaf.kirch@oracle.com>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: [PATCH -mm] sunrpc svc: Shut up bogus uninitialized variable
- warning
-In-Reply-To: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.in>
-Message-ID: <alpine.LFD.0.999.0709030137390.29617@enigma.security.iitk.ac.in>
-References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i
- n>
+	Sun, 2 Sep 2007 15:57:21 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Rob Landley <rob@landley.net>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysctl: Deprecate sys_sysctl in a user space visible fashion.
+References: <m1veazb7w0.fsf@ebiederm.dsl.xmission.com>
+	<200709020344.51437.rob@landley.net> <46DA7A4C.6080501@zytor.com>
+	<200709020605.00782.rob@landley.net>
+Date: Sun, 02 Sep 2007 13:56:33 -0600
+In-Reply-To: <200709020605.00782.rob@landley.net> (Rob Landley's message of
+	"Sun, 2 Sep 2007 06:05:00 -0500")
+Message-ID: <m1d4x0zvri.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-445849459-1188763748=:29617"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Rob Landley <rob@landley.net> writes:
+>
+> If you're going to add a new api, you might as well go with the sysctl-by-name 
+> patch above, which looks reasonably small and simple to me from a very quick 
+> glance at a 2.6.0-era patch.
+>
+> The advantage of breaking /proc/sys into a separate filesystem doesn't 
+> introduce a new API (although possibly a new line in the init scripts), so 
+> existing software doesn't have to change to use it, which is good.  It 
+> increases orthogonality and granularity, which embedded guys like me are 
+> generally in favor of. :)
 
---464262402-445849459-1188763748=:29617
-Content-Type: TEXT/PLAIN; charset=iso-2022-jp
+- I think sysctlfs makes sense.
+- I think all that is left is superblock handling and some backward
+  compatibility magic. (Using the follow_link trick to automatically
+  mount /proc/sys)
 
+All of the rest of the code pretty much lives in fs/proc/proc_sysctl.c
+already.
 
-net/sunrpc/svc.c: In function ‘__svc_create_thread’:
-net/sunrpc/svc.c:550: warning: ‘oldmask.bits[0u]’ may be used uninitialized in this function
+I have some other priorities to deal with first but if no one does the
+work before I get there I will probably implement that eventually.
 
-is a bogus warning, but gcc isn't smart enough to see why. We cannot just
-reorganize the code in the function, because we want the set_cpus_allowed()
-restore to happen only after the kernel_thread() is forked. Alas, we have
-to use cpus_clear() to initialize oldmask instead to keep gcc happy.
-
-Also add some comments to describe what's happening in the function.
-
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
-
----
-
- net/sunrpc/svc.c |    7 +++++++
- 1 file changed, 7 insertions(+)
-
---- linux-2.6.23-rc4-mm1/net/sunrpc/svc.c~fix	2007-09-02 22:55:25.000000000 +0530
-+++ linux-2.6.23-rc4-mm1/net/sunrpc/svc.c	2007-09-02 23:03:45.000000000 +0530
-@@ -568,17 +568,24 @@ __svc_create_thread(svc_thread_fn func, 
- 	rqstp->rq_server = serv;
- 	rqstp->rq_pool = pool;
- 
-+	/* Only to prevent gcc warning */
-+	cpus_clear(oldmask);
-+
-+	/* Temporarily change CPU affinity before forking svc thread */
- 	if (serv->sv_nrpools > 1)
- 		have_oldmask = svc_pool_map_set_cpumask(pool->sp_id, &oldmask);
- 
-+	/* Will inherit current->cpus_allowed */
- 	error = kernel_thread((int (*)(void *)) func, rqstp, 0);
- 
-+	/* Restore old cpus_allowed */
- 	if (have_oldmask)
- 		set_cpus_allowed(current, oldmask);
- 
- 	if (error < 0)
- 		goto out_thread;
- 	svc_sock_update_bufs(serv);
-+
- 	error = 0;
- out:
- 	return error;
---464262402-445849459-1188763748=:29617--
+Eric
