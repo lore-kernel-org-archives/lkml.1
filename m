@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933801AbXIBNxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933703AbXIBN5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933801AbXIBNxg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 09:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755711AbXIBNx0
+	id S933703AbXIBN5q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 09:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756445AbXIBN5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 09:53:26 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:60828 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754952AbXIBNxZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 09:53:25 -0400
-Subject: Re: [jffs2] [rfc] fix write deadlock regression
-From: David Woodhouse <dwmw2@infradead.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Jason Lunz <lunz@falooley.org>, lkml <linux-kernel@vger.kernel.org>,
-       jffs-dev@axis.com, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070902132034.GA20902@wotan.suse.de>
-References: <20070830182354.GA25077@falooley.org>
-	 <20070831212636.GB12868@falooley.org> <20070901190602.GA5926@falooley.org>
-	 <20070902042012.GA5864@wotan.suse.de>
-	 <1188735203.3834.16.camel@shinybook.infradead.org>
-	 <20070902132034.GA20902@wotan.suse.de>
-Content-Type: text/plain
-Date: Sun, 02 Sep 2007 14:48:04 +0100
-Message-Id: <1188740884.3834.22.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-3.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 2 Sep 2007 09:57:35 -0400
+Received: from khc.piap.pl ([195.187.100.11]:51740 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755711AbXIBN5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 09:57:34 -0400
+To: Igor Sobrado <igor@condmat1.ciencias.uniovi.es>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@kernel.org>,
+       "Constantine A. Murenin" <mureninc@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+References: <200709010140.l811eq9H005896@cvs.openbsd.org>
+	<f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
+	<46D99FB7.6030505@garzik.org>
+	<f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
+	<20070901205457.GK9260@stusta.de>
+	<20070902113638.78fbd202@the-village.bc.nu>
+	<Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
+	<20070902115041.GM16016@stusta.de>
+	<Pine.LNX.4.64.0709021416130.6181@condmat1.ciencias.uniovi.es>
+	<20070902134612.28a88761@the-village.bc.nu>
+	<Pine.LNX.4.64.0709021446550.6181@condmat1.ciencias.uniovi.es>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sun, 02 Sep 2007 15:57:30 +0200
+In-Reply-To: <Pine.LNX.4.64.0709021446550.6181@condmat1.ciencias.uniovi.es> (Igor Sobrado's message of "Sun, 02 Sep 2007 15:00:46 +0200 (CEST)")
+Message-ID: <m3642txj91.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-09-02 at 15:20 +0200, Nick Piggin wrote:
-> OK, but then hasn't the patch just made the deadlock harder to hit,
-> or is there some invariant that says that readpage() will never be
-> invoked if gc was invoked on the same page as we're commit_write()ing?
+IANAL, but:
 
-> The Q/A comments aren't very sure about this. I guess from the look
-> of it, prepare_write/commit_write make sure the page will be uptodate
-> by the start of commit_write, 
+Igor Sobrado <igor@condmat1.ciencias.uniovi.es> writes:
 
-That's the intention, yes.
+> So, under a dual-licensed BSD/GPL code the latter license allows a
+> developer to remove the GPL license itself and release a
+> single-licensed BSD code if other parties want to do it?
 
-> and you avoid GCing the page in
-> prepare_write because your new page won't have any nodes allocated
-> yet that can possibly be GCed?
+Of course. If it wasn't legal, dual BSD/GPL would just be equal
+to GPL. Now, dual BSD/GPL equals BSD.
 
-We _might_ GC the page -- it might not be a new page; we might be
-overwriting it. But it's fine if we do. Actually it's slightly
-suboptimal because we'll write out the same data twice -- once in GC and
-then immediately afterward in the write which we were making space for.
-But that's not the end of the world, and it's not very common.
+OTOH I'd probable leave the original licence text, something like:
 
-> BTW. with write_begin/write_end, you get to control the page lock,
-> so for example if the readpage in prepare_write for partial writes
-> is *only* for the purpose of avoiding this deadlock later, you
-> could possibly avoid the RMW with the new aops. Maybe it would
-> help you with data nodes crossing page boundaries too...
+The actual licence conditions:
+GPL or BSD or whatever.
 
-I'll look at that; thanks.
- 
-> OK, thanks for looking at it. If you'd care to pass it on to Linus
-> before he releases 2.6.23 in random() % X days time... ;)
-
-Not before the Kernel Summit now, I suspect. But yes, I'll do that later
-today or in the morning (the linuxconf.eu conference has already
-started).
+Portions of this file were licenced under:
+[the original licence text, not valid as a licence for current file]
 
 
+WRT Atheros driver I'd probably leave the thing as is (i.e., BSD/GPL
+= in fact BSD), unless something like 50+% of the code is rewritten -
+it's mostly their hard work after all, isn't it? Not legal
+requirement, though.
 -- 
-dwmw2
-
+Krzysztof Halasa
