@@ -1,57 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760166AbXIBWQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933371AbXIBWSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760166AbXIBWQG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 18:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754799AbXIBWPv
+	id S933371AbXIBWSY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 18:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbXIBWSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 18:15:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:37274 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754603AbXIBWPu (ORCPT
+	Sun, 2 Sep 2007 18:18:16 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:38176 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755093AbXIBWSP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 18:15:50 -0400
+	Sun, 2 Sep 2007 18:18:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XYx9xUU/vXjjGOORLK8VwhvDxzMSmFqc6wLx8p1T+to8UpckYSqRR94vtY0EveQ/EjJxzcRWEsQh/yrMzIQwPLmcA3RmXhz/O4ak3Hjp1dmnc62YDF30UJAOdpykfa/UAcAPcEOOXuIhBgYrSJCFMC8UPutcKle07Z2NS+hLJxk=
-Message-ID: <6bffcb0e0709021515v586f078cjce04f877e2f27aa2@mail.gmail.com>
-Date: Mon, 3 Sep 2007 00:15:46 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Karl Meyer" <adhocrocker@gmail.com>
-Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
-Cc: "Francois Romieu" <romieu@fr.zoreil.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <be1b757c0709011224tafebaaby697d03ab5377e20f@mail.gmail.com>
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=VwjJRy+8qMftloWwPCxWiejpe+9rFSlT7kBw1V1VA/tb2iPu0jp+OHJo7J6DyPVUgjvN9EktzIU3hVR0GIKF7cbn73eqVN73k/gXQX9VTbAu4wUZUgRHBzlOGBYfw2mT7BVSpUyWauy6DwFUiEZe4KdlR/YM4WLelb4ZjVIaiC0=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Richard Mittendorfer <delist@gmx.net>
+Subject: Re: Hang in 2.6.23-rc5
+Date: Mon, 3 Sep 2007 00:14:53 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+References: <994260.18490.qm@web57301.mail.re1.yahoo.com> <5a4c581d0709021338s1e9e0dc0md490a032781b60e8@mail.gmail.com> <20070903000515.45dacb3f.delist@gmx.net>
+In-Reply-To: <20070903000515.45dacb3f.delist@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com>
-	 <20070813165821.GA19356@electric-eye.fr.zoreil.com>
-	 <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com>
-	 <20070814070901.GA14693@electric-eye.fr.zoreil.com>
-	 <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com>
-	 <20070814224629.GB3495@electric-eye.fr.zoreil.com>
-	 <20070816141122.GA6625@electric-eye.fr.zoreil.com>
-	 <be1b757c0709011224tafebaaby697d03ab5377e20f@mail.gmail.com>
+Message-Id: <200709030014.53225.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Monday 03 September 2007 00:05:15 Richard Mittendorfer wrote:
+> Also sprach "Alessandro Suardi" <alessandro.suardi@gmail.com> (Sun, 2 Sep 2007 22:38:28 +0200):
+> > On 9/2/07, charles gagalac <charles.gagalac@gmail.com> wrote:
+> > > On 9/2/07, daryll q wrote:
+> > > > Upgraded my kernel from 2.6.23-rc2 to 2.6.23-rc5.
+> > > >
+> > > >  System hangs (caps lock and scroll lock leds are both flashing).
+> [...]
+> > > i experienced hangs, with the flashing caps and scroll locks as you've
+> > > described, in a few of my later pulls prior to rc5.  i couldn't
+> > > reproduce the hangs and my logs didn't show evidence of a problem.  my
+> > > system under rc5, so far, hasn't hung on me.
+> [...]
+> > Oh, I thought I was the only one. I also had a single hang+flashing
+> >  Caps & Scroll Lock with -rc5, but haven't had one since.
+> [...]
+> 
+> Hmm, just occured here, no chance to capture anything. Happend under
+> some system and network load (distcc/nfs) (latest atheros/madwifi
+> tainted however, but never had troubles). Not had much uptime with pre-5
+> -rc's.
+> 
+> Anything I can help to debug this?
+> 
 
-On 01/09/07, Karl Meyer <adhocrocker@gmail.com> wrote:
-> This is what happened today:
->
-> Sep  1 21:08:01 frege NETDEV WATCHDOG: eth0: transmit timed out
-> frege ~ # uname -r
-> 2.6.22.5-cfs-v20.5
+First of all, try this patch : 
 
-Can you reproduce this on 2.6.22 (not 2.6.22.x - it might be a -stable
-regression)?
+--- a/net/ipv4/tcp_input.c
++++ b/net/ipv4/tcp_input.c
+@@ -560,7 +560,7 @@ static u32 tcp_rto_min(struct sock *sk)
+        struct dst_entry *dst = __sk_dst_get(sk);
+        u32 rto_min = TCP_RTO_MIN;
+ 
+-       if (dst_metric_locked(dst, RTAX_RTO_MIN))
++       if (dst && dst_metric_locked(dst, RTAX_RTO_MIN))
+                rto_min = dst->metrics[RTAX_RTO_MIN-1];
+        return rto_min;
+ }
 
-Regards,
-Michal
+If that doesn't help, then setup netconsole or serial console and 
+try to capture some output from the hang.
+(details on how to setup net & serial consoles can be found in 
+ Documentation/networking/netconsole.txt
+  and
+ Documentation/serial-console.txt
+)
+Make sure you've set your console loglevel high enough to log 
+everything.
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+Also try enabling sysrq in your kernel and, if possible, capture a 
+sysrq+t dump when the crash happens and send in the dmesg output 
+after sysrq+t - details in Documentation/sysrq.txt - there's also 
+info on console log level in there.
+
+You can also try building a kernel with most (or all) of the debug 
+options found in the 'Kernel hacking' menu enabled. That can often 
+help by producing extra valuable debug output (you need to be able 
+to capture it though, so getting net/serial console setup as well 
+is usually a good idea if the box hangs completely and you can't 
+just get info by running dmesg).
+
+
+Kind regards,
+  Jesper Juhl
+
+
