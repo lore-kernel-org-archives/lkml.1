@@ -1,101 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933412AbXIBNmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933796AbXIBNpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933412AbXIBNmd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 09:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbXIBNmY
+	id S933796AbXIBNpq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 09:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbXIBNpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 09:42:24 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:64782 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754729AbXIBNmX (ORCPT
+	Sun, 2 Sep 2007 09:45:36 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35929 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752159AbXIBNpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 09:42:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding;
-        b=WrQNXwl0HdN8X075p4XyKuYnKMnL7/zt7bT4g231q2sdrEyXh7qGAS76WHKlOUffNbvv7+beJsOlr8e4TwimTdsBwuijv216LezJ8ru1eU4CHvLlvuNhshEgu/wAyWnnq6j5ckKHRXqnzXy/TLHBdpzgvu8c2OthN4X1evhjhq0=
-Message-ID: <46DABD6A.2030708@gmail.com>
-Date: Sun, 02 Sep 2007 22:40:58 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Greg K-H <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: regarding sysfs/kobject separation
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 2 Sep 2007 09:45:34 -0400
+Date: Sun, 2 Sep 2007 14:53:51 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Igor Sobrado <igor@condmat1.ciencias.uniovi.es>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       "Constantine A. Murenin" <mureninc@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+Message-ID: <20070902145351.3a204005@the-village.bc.nu>
+In-Reply-To: <Pine.LNX.4.64.0709021446550.6181@condmat1.ciencias.uniovi.es>
+References: <200709010140.l811eq9H005896@cvs.openbsd.org>
+	<f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
+	<46D99FB7.6030505@garzik.org>
+	<f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
+	<20070901205457.GK9260@stusta.de>
+	<20070902113638.78fbd202@the-village.bc.nu>
+	<Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
+	<20070902115041.GM16016@stusta.de>
+	<Pine.LNX.4.64.0709021416130.6181@condmat1.ciencias.uniovi.es>
+	<20070902134612.28a88761@the-village.bc.nu>
+	<Pine.LNX.4.64.0709021446550.6181@condmat1.ciencias.uniovi.es>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, just a note to tell you guys what's going on.
+> > Not strictly true. They can either agree to a change and issue one or
+> > they can convey to other parties the right to change the terms. The GPL
+> > for example does this for version selection.
+> 
+> So, under a dual-licensed BSD/GPL code the latter license allows a 
+> developer to remove the GPL license itself and release a single-licensed 
+> BSD code if other parties want to do it?
 
-It's taking more time than I expected but it's near completion.  I'm
-testing things now.  After that, they need to be split and documented.
-It'll be a BIG change and due to other things including moronic military
-reserve training, I'll probably be able to post it after next week.
-Sorry about the delay but I think the result will be pretty good in the end.
+If the dual licence permits you to select from two alternatives as
+appears to be the case in
 
-* Suicidal nodes don't need special treatment.  If a file tries to
-commit suicide, sysfs will detect the condition and deactivate and drain
-the node except for the suiciding reference.
+"* Alternatively, this software may be distributed under the terms of the
+ * GNU General Public License ("GPL") version 2 as published by the Free
+ * Software Foundation."
 
-* much more compact and flexible interface based on sysfs_dirent instead
-of kobject.
+Then there is no problem in doing exactly what it says and distributing
+it under the terms of the GPL v2 and the GPL v2 alone (or indeed the BSD
+licence alone). Anyone who took the project code and produced a binary
+only proprietary product from it would for example select the BSD licence
+alone and convey almost no rights at all to their customer.
 
-* Backward compatibility is fully maintained.  All kobject based
-interface is reimplemented in terms of the new interface.
+> I would assume a file as a boundary of a work in the case that file is 
+> under different licensing terms to the rest of the software package.  On a 
 
-* Plugged creation and batched error handling.  Sysfs directories can be
-'plugged' on creation such that it can be made visible atomically after
-all its subtrees are constructed.  Also, the user doesn't have to check
-for failure at every step.  For example, the user can do the following.
+Assuming is bad, you should consult caselaw.
 
-	dir = sysfs_add_dir(parent, "my_dir", SYSFS_PLUGGED | 0777);
-	sysfs_add_file(dir, ...);
-	...
-	dir2 = sysfs_add_dir(dir, ...);
-	sysfs_add_link(dir, "link-to-dir2", dir2);
-	...
-	if (sysfs_check_batch_error(dir) == 0)
-		sysfs_unplug(dir);
-	else
-		sysfs_remove(dir);
+> lot of software packages different modules are covered under different 
+> licensing terms.
+> 
+> We can choose what license terms we will honor; however, we do not have 
+> the ability to remove the licensing terms we do not like.
 
-And all the nodes under and including @dir will show up atomically if
-all operations succeeded or removed without ever bothering userland.
+If the author has conveyed that right to you, then you may usually do so.
 
-* Automatic symlink handling.  Symlink names can be formatted with the
-name of its target.  e.g. if the symlink name is specified as
-"link-%1:%0" and points to "devices/mybus0/mydev0", its name becomes
-"link-mybus0-mydev0" && the symlink will be automatically renamed when
-the target node or one of its ancestor is moved or renamed.  The symlink
-is also plugged and removed together with its target.  So, once created,
-the user doesn't have to care about the symlink.  sysfs will take care
-of it.
-
-* I think most of the changes wouldn't hinder implementation of tagged
-nodes.  In fact, most of the new rename logic which handles symlink
-rename together is taken from tagged node implementation, so with some
-luck it should be easier to support tagged nodes.
-
-*** Future plans.
-
-* Move uevent support over to sysfs and bridging the current users.
-This makes sense because sysfs hierarchy is all that userland can see
-and sysfs users which don't use kobject also needs uevent support.
-
-* Convert device model (drivers/base/*) over to the new sysfs_dirent
-based interface and make device/driver <-> sysfs association flexible.
-Automatic sysfs association is a good thing.  In most cases, it makes
-sense and makes drivers simpler but it also needs to be flexible such
-that drivers with special needs can override how the device and driver
-are represented to userland.  I think such flexibility can be achieved
-without too much problem now that sysfs and kobject are separated.
-
-Thanks.
-
--- 
-tejun
+Alan
