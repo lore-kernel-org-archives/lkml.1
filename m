@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbXIBVFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758495AbXIBVNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932308AbXIBVFU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 17:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbXIBVFJ
+	id S1758495AbXIBVNn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 17:13:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXIBVNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 17:05:09 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:31752 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbXIBVFH (ORCPT
+	Sun, 2 Sep 2007 17:13:34 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35705 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbXIBVNd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 17:05:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VjcPjhyHyVlVDKvW3A1uSHiZmSdasdaswuMh4xtrPpPCfId5tjnZL+G0gPmMdfLJYH5ZeYOkptCgCdHEPaeeyzwmXbtTVRD1wxFAUic+bJp+MHxAFDXcXfLmvKpeqQPh5n15pIGnIxZ12ui+YsK4iOd5HtTJu2LOqaWYM69uyX4=
-Message-ID: <68676e00709021405i70faca8bs910a988a67adb49d@mail.gmail.com>
-Date: Sun, 2 Sep 2007 23:05:06 +0200
-From: Luca <kronos.it@gmail.com>
-To: "Prakash Punnoor" <prakash@punnoor.de>
-Subject: Re: ipv4_get_l4proto: Frag of proto 17
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200709020955.31420.prakash@punnoor.de>
+	Sun, 2 Sep 2007 17:13:33 -0400
+Date: Mon, 3 Sep 2007 02:56:39 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Alessandro Suardi <alessandro.suardi@gmail.com>
+cc: charles gagalac <charles.gagalac@gmail.com>,
+       daryll q <daryll_26m@yahoo.com.ph>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew <andrew@nelless.net>
+Subject: Re: Hang in 2.6.23-rc5
+In-Reply-To: <5a4c581d0709021338s1e9e0dc0md490a032781b60e8@mail.gmail.com>
+Message-ID: <alpine.LFD.0.999.0709030242060.29617@enigma.security.iitk.ac.in>
+References: <994260.18490.qm@web57301.mail.re1.yahoo.com> 
+ <6cf66ee10709021205u7d57b93fv777f414dbba4373f@mail.gmail.com>
+ <5a4c581d0709021338s1e9e0dc0md490a032781b60e8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200709020955.31420.prakash@punnoor.de>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/2/07, Prakash Punnoor <prakash@punnoor.de> wrote:
-> Hi,
->
-> since 2.6.23-rc1 my log gets cluttered with
->
-> ipv4_get_l4proto: Frag of proto 17
->
-> What is the reason?
 
-netfilter conntrack code. See:
-http://article.gmane.org/gmane.linux.network/70824
 
-Luca
+On Sun, 2 Sep 2007, Alessandro Suardi wrote:
+> 
+> On 9/2/07, charles gagalac <charles.gagalac@gmail.com> wrote:
+> > On 9/2/07, daryll q wrote:
+> > > Upgraded my kernel from 2.6.23-rc2 to 2.6.23-rc5.
+> > >
+> > >  System hangs (caps lock and scroll lock leds are both flashing).
+> > >
+> > >  It *randomly* happens but most of the time during after login to KDE.
+> > >
+> > >  I have not investigated it yet because I have not tried doing it  before.
+> > >
+> > >  Also the system is really not responding so I can't do much.. Just
+> > >  hope it blue screen so I can send the error code easily :)
+> >
+> > i experienced hangs, with the flashing caps and scroll locks as you've
+> > described, in a few of my later pulls prior to rc5.  i couldn't
+> > reproduce the hangs and my logs didn't show evidence of a problem.  my
+> > system under rc5, so far, hasn't hung on me.
+> 
+> Oh, I thought I was the only one. I also had a single hang+flashing
+>  Caps & Scroll Lock with -rc5, but haven't had one since.
+
+Looks like a full-blown panic to me. Didn't any of you guys manage to
+catch anything in /var/log/messages? Else, please try reproducing this
+with a serial console or netconsole at least. netconsole should be easy
+to setup, instructions on how to use that here:
+
+(very long URL)
+http://git.kernel.org/?p=linux/kernel/git/davem/net-2.6.24.git;a=blob_plain;f=Documentation/networking/netconsole.txt;hb=HEAD
