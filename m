@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933573AbXIBGT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933622AbXIBGan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933573AbXIBGT1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 02:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbXIBGTQ
+	id S933622AbXIBGan (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 02:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbXIBGaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 02:19:16 -0400
-Received: from smtp-vbr16.xs4all.nl ([194.109.24.36]:1605 "EHLO
-	smtp-vbr16.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751270AbXIBGTP (ORCPT
+	Sun, 2 Sep 2007 02:30:35 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:45484 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbXIBGae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 02:19:15 -0400
-Date: Sun, 2 Sep 2007 08:19:00 +0200
-From: thunder7@xs4all.nl
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Jeff Garzik <jeff@garzik.org>, thunder7@xs4all.nl,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: 2.6.23-rc4-mm1 OOPS in forcedeth?
-Message-ID: <20070902061900.GA5595@amd64.of.nowhere>
-References: <20070831215822.26e1432b.akpm@linux-foundation.org> <20070901181352.GA4156@amd64.of.nowhere> <46D9B7EF.2050109@garzik.org> <alpine.LFD.0.999.0709020610590.20781@enigma.security.iitk.ac.in>
+	Sun, 2 Sep 2007 02:30:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dvakfaSdQChoZPmkChiRAHDTxJK4N1DrsE83aL55syT85t24ROBuUVNT4kvUg8sHFYH/icD5EQUslNsda2Y1rS7pP3nHuKC9+qqpjjSKM/UntaY1b1LE5eDau96rMyt5B+mX2sDR0ncs//HCfQqI0zMPfxAi2GKyNP0Sl2iXB9c=
+Message-ID: <91b13c310709012330n5ab23496p86423bdcd4fd08f2@mail.gmail.com>
+Date: Sun, 2 Sep 2007 14:30:32 +0800
+From: "rae l" <crquan@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [PATCH] net/ipv4/af_inet.c: use ARRAY_SIZE macro from kernel.h instead
+Cc: "Linux kernel mailing list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0709020100180.17742@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709020610590.20781@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <11887091471748-git-send-email-crquan@gmail.com>
+	 <Pine.LNX.4.64.0709020100180.17742@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Satyam Sharma <satyam@infradead.org>
-Date: Sun, Sep 02, 2007 at 06:24:29AM +0530
-> Hi Jurriaan,
-> 
-> 
-> > thunder7@xs4all.nl wrote:
-> > > From: Andrew Morton <akpm@linux-foundation.org>
-> > > Date: Fri, Aug 31, 2007 at 09:58:22PM -0700
-> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
-> > > > 
-> > > On this machine (Athlon 64 X2 4600, 4 GiB memory, lots of disks),
-> > > 2.6.23-rc1-mm2 runs fine. 2.6.23-rc4-mm1 reproducably dies within seconds of
-> > > starting
-> > > a rsync session on another PC against this machine.
-> > > 
-> > > NULL pointer dereference
-> > > code:	nv_napi_poll+0x108
-> > > trace:	net_rx_action+0xab
-> > > 	__do_softirq+0x74
-> > > 	call_softirq+0x1c
-> > > 	do_softirq+0x3d
-> > > 	irq_exit+0x85
-> > > 	do_IRQ+0x85
-> > > 	ret_from_intr+0x0
-> 
-> The dmesg you posted below doesn't cover the messages from this oops
-> itself. As you mentioned you can reproduce this oops easily, please do so,
-> and post the *full* oops log (if it doesn't get logged to disk, you can
-> try taking digicam photo, or write down *all* the messages and post here).
-> I built an x86_64 kernel as per your .config, but don't see any memory
-> dereference at nv_napi_poll+0x108 -- could be toolchain differences.
-> 
-There are 4 pictures of oopses here:
+On 9/2/07, Robert P. J. Day <rpjday@mindspring.com> wrote:
+> On Sun, 2 Sep 2007, Denis Cheng wrote:
+>
+> > Signed-off-by: Denis Cheng <crquan@gmail.com>
+> > ---
+> >  net/ipv4/af_inet.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/net/ipv4/af_inet.c b/net/ipv4/af_inet.c
+> > index e681034..d5e8b67 100644
+> > --- a/net/ipv4/af_inet.c
+> > +++ b/net/ipv4/af_inet.c
+> > @@ -939,7 +939,7 @@ static struct inet_protosw inetsw_array[] =
+> >         }
+> >  };
+> >
+> > -#define INETSW_ARRAY_LEN (sizeof(inetsw_array) / sizeof(struct inet_protosw))
+> > +#define INETSW_ARRAY_LEN ARRAY_SIZE(inetsw_array)
+> >
+> >  void inet_register_protosw(struct inet_protosw *p)
+> >  {
+>
+> denis:
+>
+> if you're planning on doing this ARRAY_SIZE cleanup fairly rigorously,
+> here's an overview of what you're looking (based on a fairly dumb
+> scanning script that undoubtedly generates some false positives).  of
+> course, the respective subsystem maintainers are welcome to deal with
+> them first, of course.
+>
+> p.s.  and when you submit those patches, it's necessary to submit them
+> to only the appropriate subsystem mailing lists, not to the LKML in
+> general.
+I didn't realize that there's so many places to switch to ARRAY_SIZE,
+so now I wonder is this cleaning work valuable to the whole kernel tree?
+or we can keep the current state and just encourage new code to use ARRAY_SIZE?
 
-http://www.xs4all.nl/~thunder7/oops_2623rc4mm1_1.jpg
-http://www.xs4all.nl/~thunder7/oops_2623rc4mm1_2.jpg
-http://www.xs4all.nl/~thunder7/oops_2623rc4mm1_3.jpg
-http://www.xs4all.nl/~thunder7/oops_2623rc4mm1_4.jpg
-
-image quality, well, they're readable.
-
-Good luck,
-Jurriaan
--- 
-management n.
-1. Corporate power elites distinguished primarily by their distance from
-actual productive work and their chronic failure to manage (see also suit).
-Spoken derisively, as in "Management decided that ...". 2. Mythically, a
-vast bureaucracy responsible for all the world's minor irritations.
-Hackers' satirical public notices are often signed `The Mgt'; this derives
-from the "Illuminatus" novels (see the Bibliography in Appendix C).
-Debian (Unstable) GNU/Linux 2.6.23-rc1-mm2 2x2010 bogomips load 0.43
-the Jack Vance Integral Edition: http://www.integralarchive.org
+--
+Denis
