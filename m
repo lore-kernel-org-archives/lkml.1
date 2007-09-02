@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbXIBPz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933796AbXIBP65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758379AbXIBPz3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 11:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755716AbXIBPzS
+	id S933796AbXIBP65 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 11:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbXIBP6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 11:55:18 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:24986 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754235AbXIBPzQ (ORCPT
+	Sun, 2 Sep 2007 11:58:46 -0400
+Received: from fresno.net.uniovi.es ([156.35.11.2]:59094 "EHLO
+	FRESNO.NET.UNIOVI.ES" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755716AbXIBP6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 11:55:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eES3xOr23d3DAge0NA2x3PL/AkCwi24QsSOBxFos64G1qIbXE/CbVIwAlJklL1//KLdXwaA5auP7jTSmmBb1fJJhU91cshXr2iduOCrT+Qr4lsr5C/y9oqp3don5f3AyqACkExkIyHm3cBFZg5uhYgzH5CUpLwvcHcAfn2bkvOU=
-Message-ID: <40f31dec0709020855q10d9227bld6e594ea57ba8142@mail.gmail.com>
-Date: Sun, 2 Sep 2007 18:55:15 +0300
-From: "Nick Kossifidis" <mickflemm@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [PATCH 3/5] Net: ath5k, use int as retval
-Cc: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <46D9C6A8.7070600@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2713029743177393055@pripojeni.net>
-	 <2440910618305782004@pripojeni.net>
-	 <20070830124054.GC5140@tuxdriver.com> <46D9C6A8.7070600@gmail.com>
+	Sun, 2 Sep 2007 11:58:44 -0400
+Date: Sun, 02 Sep 2007 17:58:41 +0200 (CEST)
+From: Igor Sobrado <igor@condmat1.ciencias.uniovi.es>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+In-reply-to: <46DAC482.5090107@garzik.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Adrian Bunk <bunk@kernel.org>,
+       "Constantine A. Murenin" <mureninc@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Message-id: <Pine.LNX.4.64.0709021754250.6772@condmat1.ciencias.uniovi.es>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+References: <200709010140.l811eq9H005896@cvs.openbsd.org>
+ <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
+ <46D99FB7.6030505@garzik.org>
+ <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
+ <20070901205457.GK9260@stusta.de> <20070902113638.78fbd202@the-village.bc.nu>
+ <Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
+ <20070902115041.GM16016@stusta.de>
+ <Pine.LNX.4.64.0709021416130.6181@condmat1.ciencias.uniovi.es>
+ <20070902134612.28a88761@the-village.bc.nu>
+ <Pine.LNX.4.64.0709021446550.6181@condmat1.ciencias.uniovi.es>
+ <m3642txj91.fsf@maximus.localdomain> <46DAC482.5090107@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/9/1, Jiri Slaby <jirislaby@gmail.com>:
-> John W. Linville napsal(a):
-> > On Tue, Aug 28, 2007 at 12:00:09PM -0400, Jiri Slaby wrote:
-> >> ath5k, use int as retval
-> >>
-> >> Convert some functions to return int and proper negative return value on
-> >> error as we are used to.
-> >
-> > Since I didn't apply 1/5, this one didn't apply either.  It seems
-> > fine overall, so if you rediff I'll be happy to apply.
+On Sun, 2 Sep 2007, Jeff Garzik wrote:
+
+> Krzysztof Halasa wrote:
+>>  WRT Atheros driver I'd probably leave the thing as is (i.e., BSD/GPL
+>>  = in fact BSD), unless something like 50+% of the code is rewritten -
+>>  it's mostly their hard work after all, isn't it? Not legal
+>>  requirement, though.
 >
-> Ok, I'll do it, thanks,
+> Yes.  This deserves to be reinforced:
+>
+> There is definite value in sharing the ath5k HAL between OpenBSD and Linux.
 
-Can somebody commit my resent changes from madwifi-svn (cleanups,
-kconfig, remove_hw_ from filenames etc) ? I don't have git repository
-;-(
+Of course.  Sharing knowledge and efforts can only improve both the GPL 
+and BSD licensed code.  It is important in all cases, but becomes critical 
+when support from manufacturers is limited or even non existent.  In these 
+cases, shared efforts are required to write successful code.
 
-
--- 
-GPG ID: 0xD21DB2DB
-As you read this post global entropy rises. Have Fun ;-)
-Nick
+Cheers,
+Igor.
