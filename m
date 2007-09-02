@@ -1,76 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966315AbXIBNUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933412AbXIBNmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966315AbXIBNUr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 09:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964828AbXIBNUi
+	id S933412AbXIBNmd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 09:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbXIBNmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 09:20:38 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54397 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965090AbXIBNUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 09:20:37 -0400
-Date: Sun, 2 Sep 2007 15:20:34 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Jason Lunz <lunz@falooley.org>, lkml <linux-kernel@vger.kernel.org>,
-       jffs-dev@axis.com, Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [jffs2] [rfc] fix write deadlock regression
-Message-ID: <20070902132034.GA20902@wotan.suse.de>
-References: <20070830182354.GA25077@falooley.org> <20070831212636.GB12868@falooley.org> <20070901190602.GA5926@falooley.org> <20070902042012.GA5864@wotan.suse.de> <1188735203.3834.16.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1188735203.3834.16.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.9i
+	Sun, 2 Sep 2007 09:42:24 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:64782 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754729AbXIBNmX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 09:42:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding;
+        b=WrQNXwl0HdN8X075p4XyKuYnKMnL7/zt7bT4g231q2sdrEyXh7qGAS76WHKlOUffNbvv7+beJsOlr8e4TwimTdsBwuijv216LezJ8ru1eU4CHvLlvuNhshEgu/wAyWnnq6j5ckKHRXqnzXy/TLHBdpzgvu8c2OthN4X1evhjhq0=
+Message-ID: <46DABD6A.2030708@gmail.com>
+Date: Sun, 02 Sep 2007 22:40:58 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Greg K-H <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: regarding sysfs/kobject separation
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 02, 2007 at 01:13:23PM +0100, David Woodhouse wrote:
-> Jason, thank you _so_ much for finding the underlying cause of this.
-> 
-> On Sun, 2007-09-02 at 06:20 +0200, Nick Piggin wrote:
-> > Hmm, thanks for that. It does sound like it is deadlocking via
-> > commit_write(). OTOH, it seems like it could be using the page
-> > before it is uptodate -- it _may_ only be dealing with uptodate
-> > data at that point... but if so, why even read_cache_page at
-> > all?
-> 
-> jffs2_readpage() is synchronous -- there's no chance that the page won't
-> be up to date. We're doing this for garbage collection -- if there are
-> many log entries covering a single page of data, we want to write out a
-> single replacement which covers the whole page, obsoleting the previous
-> suboptimal representation of the same data.
+Hello, just a note to tell you guys what's going on.
 
-OK, but then hasn't the patch just made the deadlock harder to hit,
-or is there some invariant that says that readpage() will never be
-invoked if gc was invoked on the same page as we're commit_write()ing?
+It's taking more time than I expected but it's near completion.  I'm
+testing things now.  After that, they need to be split and documented.
+It'll be a BIG change and due to other things including moronic military
+reserve training, I'll probably be able to post it after next week.
+Sorry about the delay but I think the result will be pretty good in the end.
 
-The Q/A comments aren't very sure about this. I guess from the look
-of it, prepare_write/commit_write make sure the page will be uptodate
-by the start of commit_write, and you avoid GCing the page in
-prepare_write because your new page won't have any nodes allocated
-yet that can possibly be GCed?
+* Suicidal nodes don't need special treatment.  If a file tries to
+commit suicide, sysfs will detect the condition and deactivate and drain
+the node except for the suiciding reference.
 
-BTW. with write_begin/write_end, you get to control the page lock,
-so for example if the readpage in prepare_write for partial writes
-is *only* for the purpose of avoiding this deadlock later, you
-could possibly avoid the RMW with the new aops. Maybe it would
-help you with data nodes crossing page boundaries too...
- 
+* much more compact and flexible interface based on sysfs_dirent instead
+of kobject.
 
-> > However, it is a regression. So unless David can come up with a
-> > more satisfactory approach, I guess we'd have to go with your
-> > patch. 
-> 
-> I think Jason's patch is the best answer for the moment. At some point
-> in the very near future I want to improve the RAM usage and compression
-> ratio by dropping the rule that data nodes may not cross page boundaries
-> -- in which case garbage collection will need to do something other than
-> reading the page using read_cache_page() and then writing it out again;
-> it'll probably need to end up using its own internal buffer. But for
-> now, Jason's patch looks good.
+* Backward compatibility is fully maintained.  All kobject based
+interface is reimplemented in terms of the new interface.
 
-OK, thanks for looking at it. If you'd care to pass it on to Linus
-before he releases 2.6.23 in random() % X days time... ;)
+* Plugged creation and batched error handling.  Sysfs directories can be
+'plugged' on creation such that it can be made visible atomically after
+all its subtrees are constructed.  Also, the user doesn't have to check
+for failure at every step.  For example, the user can do the following.
 
+	dir = sysfs_add_dir(parent, "my_dir", SYSFS_PLUGGED | 0777);
+	sysfs_add_file(dir, ...);
+	...
+	dir2 = sysfs_add_dir(dir, ...);
+	sysfs_add_link(dir, "link-to-dir2", dir2);
+	...
+	if (sysfs_check_batch_error(dir) == 0)
+		sysfs_unplug(dir);
+	else
+		sysfs_remove(dir);
+
+And all the nodes under and including @dir will show up atomically if
+all operations succeeded or removed without ever bothering userland.
+
+* Automatic symlink handling.  Symlink names can be formatted with the
+name of its target.  e.g. if the symlink name is specified as
+"link-%1:%0" and points to "devices/mybus0/mydev0", its name becomes
+"link-mybus0-mydev0" && the symlink will be automatically renamed when
+the target node or one of its ancestor is moved or renamed.  The symlink
+is also plugged and removed together with its target.  So, once created,
+the user doesn't have to care about the symlink.  sysfs will take care
+of it.
+
+* I think most of the changes wouldn't hinder implementation of tagged
+nodes.  In fact, most of the new rename logic which handles symlink
+rename together is taken from tagged node implementation, so with some
+luck it should be easier to support tagged nodes.
+
+*** Future plans.
+
+* Move uevent support over to sysfs and bridging the current users.
+This makes sense because sysfs hierarchy is all that userland can see
+and sysfs users which don't use kobject also needs uevent support.
+
+* Convert device model (drivers/base/*) over to the new sysfs_dirent
+based interface and make device/driver <-> sysfs association flexible.
+Automatic sysfs association is a good thing.  In most cases, it makes
+sense and makes drivers simpler but it also needs to be flexible such
+that drivers with special needs can override how the device and driver
+are represented to userland.  I think such flexibility can be achieved
+without too much problem now that sysfs and kobject are separated.
+
+Thanks.
+
+-- 
+tejun
