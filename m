@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbXIBCj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758129AbXIBCn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758263AbXIBCj4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 22:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbXIBCjo
+	id S1758129AbXIBCn7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 22:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbXIBCnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 22:39:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37179 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753808AbXIBCjn (ORCPT
+	Sat, 1 Sep 2007 22:43:52 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:33338 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753165AbXIBCnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 22:39:43 -0400
-Date: Sun, 2 Sep 2007 08:22:42 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: 2.6.23-rc4-mm1
-In-Reply-To: <20070902014610.GA15533@gondor.apana.org.au>
-Message-ID: <alpine.LFD.0.999.0709020746250.20781@enigma.security.iitk.ac.in>
-References: <20070831215822.26e1432b.akpm@linux-foundation.org>
- <20070901155353.8a09db69.kamezawa.hiroyu@jp.fujitsu.com>
- <20070831235815.a09c7865.akpm@linux-foundation.org> <20070901085429.GA7213@gondor.apana.org.au>
- <alpine.LFD.0.999.0709020157580.20781@enigma.security.iitk.ac.in>
- <20070902014610.GA15533@gondor.apana.org.au>
+	Sat, 1 Sep 2007 22:43:52 -0400
+Date: Sat, 1 Sep 2007 20:43:49 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] TASK_KILLABLE version 2
+Message-ID: <20070902024348.GJ14130@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Here's the second version of TASK_KILLABLE.  A few changes since version 1:
 
-On Sun, 2 Sep 2007, Herbert Xu wrote:
-> 
-> On Sun, Sep 02, 2007 at 02:39:15AM +0530, Satyam Sharma wrote:
-> > 
-> > Tangential, but I've often wondered what are the upsides of keeping
-> > CONFIG_CRYPTO_ALGAPI as a separate config option in the first place? Every
-> > single item in crypto/ ends up "select"ing it (directly or transitively)
-> > so it makes all sense to just do away with it and keep it == CONFIG_CRYPTO
-> > in the Makefile, thusly:
-> 
-> NACK.  ALGAPI exists so that it can be built as a module, as
-> opposed to CRYPTO which is always built-in.
+ - Don't split up TASK_INTERRUPTIBLE and TASK_UNINTERRUPTIBLE.
+   TASK_WAKESIGNAL and TASK_LOADAVG were pretty much equivalent, and since
+   we had to keep __TASK_{UN,}INTERRUPTIBLE anyway, splitting them made
+   little sense.
+ - Instead, I've added some is_task_*() predicates.  I think they
+   achieve what Linus wanted without consuming flag bits and without
+   checking a metric tonne of code to see whether it wanted
+   TASK_UNINTERRUPTIBLE or __TASK_UNINTERRUPTIBLE.
+ - Renamed try_lock_page() to lock_page_killable() and change the sense.
+   I had envisioned uses being like spin_trylock(), but that turned out
+   not to make sense.
+ - Fix the bug Trond noticed in wait_on_retry_sync_kiocb() by having the
+   callers handle it returning -EINTR
+ - Fix the bug I noticed in sync_pages_killable() by adding the new
+   function fatal_signal_pending()
+ - Audit a lot of uses of TASK_*.  A few seemed dubious and were fixed.
 
-I had already noticed that, and was even *expecting* you to reply with
-*exactly* this ;-)
+I'd like to see this spend a bit of time in the -mm tree.  I've wasted
+a couple of days trying to track down why my machine no longer does
+much after starting init, so clearly I'm tampering with stuff I don't
+quite understand.
 
-[ BTW CRYPTO is _not_ always built-in -- but only when CONFIG_CRYPTO=y ]
+Having said that, I ditched that version of the code and started again
+with a much more minimalist approach.  I've also split the patch into
+five independent pieces, each of which accomplishes a logical step,
+for ease of bisection.
 
-Anyway, the natural follow-up to your argument is -- why is the other
-stuff in CRYPTO always built-in too ?
+I think patch 1/5 is clearly Right and should be merged ASAP.  Patch 2/5
+and 3/5 carry some risk.  4/5 and 5/5 seem less risky to me (and are
+independent of each other; both rely on 1-3 being applied first)
 
-Take the crypto_alloc_xxx() callchain for example (I chose it because
-it is the _first_ call any cryptoapi user ever has to make, and hence
-it's the one that deals with module-loading stuff).
+I obviously haven't covered every place that can result in a process
+sleeping uninterruptibly while attempting an operation.  But sync_page
+(patch 4/5) covers about 90% of the times I've attempted to kill cat,
+and I hope that by providing the two examples, I can help other people
+to fix the cases that they find interesting.
 
-So what finally got exported out of crypto/ to the rest of the kernel
-was just the crypto_alloc_xxx() wrapper. That resolves to a call to
-crypto_alloc_base() in crypto/api.c, which first loads the specific
-low-level algo modules, and then proceeds to crypto_init_ops(), which
-itself may, say, resolve to a crypto_init_digest_ops() -- the only
-interface exported from digest.c.
-
-The point is, because the module-loading (if necessary) already takes
-place before the call to digest.c is made, there is _no_ reason why
-even digest.c can't be made modular -- or _any_ of the other CRYPTO
-stuff (with the exception of api.c itself, of course) that "always
-gets built-in" as you mentioned above.
-
-And so caring about the optimization of making ALGAPI modular rather
-than simply built-in with rest of "core" crypto stuff such as digest.c
-(which could _also_ have been made modular by the same logic but wasn't)
-sounds like a bogus argument to me. [ BTW did you notice that the
-__crypto_alloc_tfm() has been EXPORT_SYMBOL'ed _only_ because of one
-solitary modular-callsite in algapi.c ? ]
-
-
-Satyam
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
