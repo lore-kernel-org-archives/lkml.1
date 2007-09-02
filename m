@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932352AbXIBRdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758399AbXIBRiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932352AbXIBRdT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 13:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbXIBRdH
+	id S1758399AbXIBRiU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 13:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbXIBRiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 13:33:07 -0400
-Received: from sidhe.atheme.org ([204.15.224.234]:57862 "EHLO sidhe.atheme.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753133AbXIBRdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 13:33:06 -0400
-Message-ID: <46DAF43E.8030407@partiallystapled.com>
-Date: Sun, 02 Sep 2007 13:34:54 -0400
-From: Michael Tharp <gxti@partiallystapled.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070619)
-MIME-Version: 1.0
-To: espie@nerim.net
-CC: linux-kernel@vger.kernel.org
-Subject: Re: GPL weasels and the atheros stink
-References: <20070902140306.GA27317@lain.home>
-In-Reply-To: <20070902140306.GA27317@lain.home>
-X-Enigmail-Version: 0.95.3
-OpenPGP: id=94C1C841
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 2 Sep 2007 13:38:08 -0400
+Received: from bay0-omc1-s2.bay0.hotmail.com ([65.54.246.74]:15619 "EHLO
+	bay0-omc1-s2.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750950AbXIBRiG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 13:38:06 -0400
+X-Originating-IP: [64.231.205.174]
+X-Originating-Email: [seanlkml@sympatico.ca]
+Date: Sun, 2 Sep 2007 13:38:03 -0400
+From: Sean <seanlkml@sympatico.ca>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: David Kastrup <dak@gnu.org>, Junio C Hamano <gitster@pobox.com>,
+       git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.5.3
+Message-Id: <20070902133803.1b46f599.seanlkml@sympatico.ca>
+In-Reply-To: <46DA88EF.7080103@zytor.com>
+References: <7vodglr32i.fsf@gitster.siamese.dyndns.org>
+	<46DA5F33.2020005@zytor.com>
+	<85odgltrtj.fsf@lola.goethe.zz>
+	<46DA88EF.7080103@zytor.com>
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.14; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Sep 2007 17:38:05.0585 (UTC) FILETIME=[04D68010:01C7ED88]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marc Espie wrote:
-> Let's extend the story a wee little bit. It seems that these days, some
-> parts of the opensource community have gotten confident enough that they
-> do not need the other part. We all know the situation is already fairly
-> disymetric. The GPL is less free than the ISC licence for instance (for
-> some definition of free), [...]
+On Sun, 02 Sep 2007 10:57:03 +0100
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-It does indeed depend on your definition of free. I, for one, find
-BSD/ISC "more free" since it grants rights to any potential user or
-contributor, not just those using a compatible license. Others may find
-the GPL "more free" since it encourages contributors to give their code
-back to the original project, or at least allows the original project to
-consume those changes, meaning that the project can benefit from changes
-made by a third party and still remain usable by all.
+>  From the looks of it, there is still a git-p4, it just moved to contrib 
+> and uses fast-import, so removing its rpm package was probably broken in 
+> the first place.
 
-> So, now, it's down to dirty fighting. Absorbing and `relicensing' and 
-> evolving code.  Have you all been bitten my RMS paranoia (that leads to
-> this `interesting GPLv3) ? Do you intend to keep grabbing BSD code and
-> putting it exclusively under the GPL ?
+Hi Peter,
 
-That's the bittersweet side of BSD licensing - others have every right
-to take your code and use it for their own projects without having to
-give their changes back to you.
+Items in contrib aren't officially supported, so it doesn't sound like
+a good idea to offer installs for them.  Of course, it might be a good
+idea to promote git-p4 up out of contrib and add it to the spec file.
 
-> Well, if that's truely the case, I may reconsider my good faith for future
-> contributions. Heck, instead of giving away my code under the GPL, I could
-> keep my contributions in the form of patches. Ironically, with tools such
-> as git, this is no longer as cumbersome as this used to be. So, instead
-> of new gcc code sent to the FSF (and given to the FSF), we could explicitly
-> keep patches under the ISC licence, and explain loudly why this is so.
+As things stand now, do you get an error when trying to upgrade Git via
+yum?   I'd have thought things would upgrade fine but leave the old git-p4
+rpm hanging around.  Either way, the obsoletes line mentioned by David
+sounds like the right solution.
 
-Technologically quite easy, yes, and while I'm sure no-one would really
-challenge you for doing so. it'd be interesting to know how legal it
-would be to distribute an ISC patchset on top of GPL code.
+As an aside, when I sent the patch removing git-p4import from the spec
+file I mentioned that I had no way to test it and asked for testers.
+Git needs a spec file maintainer so that issues like this can be caught
+before release.  Without a maintainer, it should probably be demoted
+to contrib itself.
 
-> Nice going, GPL fan-boys...
-> --
-> 	Marc Espie
-
--- m. tharp, BSD fanboy, devil's advocate
+Sean
