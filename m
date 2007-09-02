@@ -1,46 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbXIBEF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933459AbXIBEFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755535AbXIBEF0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 00:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXIBEFM
+	id S933459AbXIBEFl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 00:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbXIBEFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 00:05:12 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:1899 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750748AbXIBEFL (ORCPT
+	Sun, 2 Sep 2007 00:05:23 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:55765 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752344AbXIBEFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 00:05:11 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: kaber@trash.net (Patrick McHardy)
-Subject: Re: [Bugme-new] [Bug 8961] New: BUG triggered by oidentd in netlink code
-Cc: link@miggy.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, bugme-daemon@bugzilla.kernel.org
-Organization: Core
-In-Reply-To: <46D9957F.4020101@trash.net>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1IRghZ-0004EL-00@gondolin.me.apana.org.au>
-Date: Sun, 02 Sep 2007 12:04:45 +0800
+	Sun, 2 Sep 2007 00:05:22 -0400
+Date: Sat, 1 Sep 2007 22:05:19 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] Use macros instead of TASK_ flags
+Message-ID: <20070902040519.GL14130@parisc-linux.org>
+References: <20070902024348.GJ14130@parisc-linux.org> <11887012142333-git-send-email-matthew@wil.cx> <1188704106.11196.44.camel@dhcp193.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1188704106.11196.44.camel@dhcp193.mvista.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy <kaber@trash.net> wrote:
-> 
-> Thanks. I'm not sure either, it would require two concurrent requests
-> to be processed, but AFAICS oidentd only uses a single netlink socket.
-> Perhaps multiple running instances or something else using the inet_diag
-> interface?
+On Sat, Sep 01, 2007 at 08:35:06PM -0700, Daniel Walker wrote:
+> Does it take task->state or task ?
 
-Since identd serves requests from the outside world it is
-quite possible for two identd instances to run simultaneously
-serving two requests.
+task.  Clearly I didn't test on ia64.  (There was an iteration where it
+took task->state, and I guess I missed one).  Thanks for pointing out
+this oops, I'll fix it for round three.
 
-I'm not familiar with oidentd but this is certainly pidentd
-works.
-
-Cheers,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
