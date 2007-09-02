@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966381AbXIBMzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966519AbXIBM7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966381AbXIBMzd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 08:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965099AbXIBMz0
+	id S966519AbXIBM7W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 08:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965317AbXIBM7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 08:55:26 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41551 "EHLO gir.skynet.ie"
+	Sun, 2 Sep 2007 08:59:15 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:60892 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965016AbXIBMzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 08:55:25 -0400
-Subject: Re: [PATCH 5/6] Use one zonelist that is filtered by nodemask
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Lee.Schermerhorn@hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0708311732580.19868@schroedinger.engr.sgi.com>
-References: <20070831205139.22283.71284.sendpatchset@skynet.skynet.ie>
-	 <20070831205319.22283.45590.sendpatchset@skynet.skynet.ie>
-	 <Pine.LNX.4.64.0708311732580.19868@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Sun, 02 Sep 2007 12:10:04 +0100
-Message-Id: <1188731404.27508.0.camel@machina.109elm.lan>
+	id S965449AbXIBM7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 08:59:14 -0400
+Date: Sun, 2 Sep 2007 17:02:34 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk-manpages@gmx.net>
+Subject: Re: [RFC + PATCH] signalfd simplification
+Message-ID: <20070902130234.GA183@tv-sign.ru>
+References: <Pine.LNX.4.64.0709011618280.4045@alien.or.mcafeemobile.com> <20070902121943.GA141@tv-sign.ru>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070902121943.GA141@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-31 at 17:34 -0700, Christoph Lameter wrote:
-> Good idea. That gets rid of the GFP_THISNODE stuff that I introduced for 
-> the memoryless node patchset.
+On 09/02, Oleg Nesterov wrote:
+>
+> Small problem: unless I missed something, signalfd_deliver() and sys_signalfd()
+> should use wake_up_all(), not wake_up() which implies nr_exclusive == 1.
 > 
+> It is possible that we have multiple threads waiting on ->signalfd_wqh with
+> the the different ->sigmask. In this case, the first woken thread can ignore
+> the signal, we should wake up all of them.
 
-Yes, I was fairly pleased with that. It makes the split look a little
-strange as an early patch makes it two zonelists and a later patch makes
-it one. However, there didn't seem to be a nicer way of doing it without
-having multi-purpose patches.
+Oops, sorry for noise. I forgot about WQ_FLAG_EXCLUSIVE, we don't set it by
+default.
 
-Thanks
-
--- 
-Mel Gorman
+Oleg.
 
