@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966398AbXIBM27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966460AbXIBM3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966398AbXIBM27 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 08:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966225AbXIBM2q
+	id S966460AbXIBM3a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 08:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965249AbXIBM3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 08:28:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56985 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966173AbXIBM2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 08:28:45 -0400
-Date: Sun, 2 Sep 2007 14:28:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm][resend] softlockup-improve-debug-output.patch fix
-Message-ID: <20070902122835.GA27438@elte.hu>
-References: <20070831215822.26e1432b.akpm@linux-foundation.org> <alpine.LFD.0.999.0709020439290.20781@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0709021803060.24993@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709021803060.24993@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 2 Sep 2007 08:29:11 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43539 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965247AbXIBM3J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 08:29:09 -0400
+Date: Sun, 2 Sep 2007 13:36:36 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Igor Sobrado <igor@condmat1.ciencias.uniovi.es>
+Cc: "Constantine A. Murenin" <mureninc@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+Message-ID: <20070902133636.51e1bef3@the-village.bc.nu>
+In-Reply-To: <Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
+References: <200709010140.l811eq9H005896@cvs.openbsd.org>
+	<f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
+	<46D99FB7.6030505@garzik.org>
+	<f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
+	<20070901205457.GK9260@stusta.de>
+	<20070902113638.78fbd202@the-village.bc.nu>
+	<Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 02 Sep 2007 13:20:27 +0200 (CEST)
+Igor Sobrado <igor@condmat1.ciencias.uniovi.es> wrote:
 
-* Satyam Sharma <satyam@infradead.org> wrote:
+> On Sun, 2 Sep 2007, Alan Cox wrote:
+> > You can shout this all you like but you would be wrong. You can remove
+> > the licence if you have permission to do so. For the ath c files there
+> > was permission to do so.
+> 
+> There was permission to do so from Reyk Floeter?  Really?
 
-> 
-> 
-> On Sun, 2 Sep 2007, Satyam Sharma wrote:
-> > 
-> > --- kernel/softlockup.c~fix	2007-09-02 04:23:49.000000000 +0530
-> > +++ kernel/softlockup.c	2007-09-02 04:34:45.000000000 +0530
->   ^^^^^^^^^^
-> 
-> Ick, I botched a trivial patch, it doesn't even apply. Updated one below
-> (with indentation fix as added bonus :-)
-> 
-> 
-> [PATCH -mm] softlockup-improve-debug-output.patch fix (v2)
-> 
-> kernel/softlockup.c: In function 'softlockup_tick':
-> kernel/softlockup.c:125: warning: 'regs' is used uninitialized in this function
-> 
-> is a genuine bug (will cause an oops in all probability, or cause 
-> wrong info to be printed, if we're lucky). So let's fix the 
-> softlockup-improve-debug-output.patch to actually work as intended.
-> 
-> Signed-off-by: Satyam Sharma <satyam@infradead.org>
+The code pieces I quoted contained that choice. As far as I am concerned
+that is what the discussion was about. 
 
-Thanks! Not sure how that bug slipped in, in my tree it does this:
-
- +       struct pt_regs *regs;
- ...
- +       regs = get_irq_regs();
-
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+Alan
