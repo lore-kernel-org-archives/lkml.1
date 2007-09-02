@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759634AbXIBUHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932154AbXIBUIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759634AbXIBUHg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 16:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbXIBUHA
+	id S932154AbXIBUIT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 16:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbXIBUIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 16:07:00 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:16675 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752334AbXIBUG7 convert rfc822-to-8bit (ORCPT
+	Sun, 2 Sep 2007 16:08:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56858 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752078AbXIBUIC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 16:06:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=RROsE2hmzZ3PewiqJ4mhxhf9xKhCER7/Gs6GQ2KQcQW7QYaFVUCED79uoWs5aRG7jyWtKSBsBnKzbfpFiDVpaWdtDBRWQEBoU2ZSxG+bMlSQ8UvdCMos+hoRcIuXsHfzYW4AtR+3icln+MKJVbqqrkG+aSww/cQsUS0d7jLK32M=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Satyam Sharma <satyam@infradead.org>
-Subject: Re: [PATCH -mm] IPS SCSI driver: Check return of scsi_add_host()
-Date: Sun, 2 Sep 2007 22:03:39 +0200
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <james.bottomley@steeleye.com>, aacraid@adaptec.com,
-       linux-scsi@vger.kernel.org
-References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i n> <alpine.LFD.0.999.0709030142490.29617@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0709030142490.29617@enigma.security.iitk.ac.in>
+	Sun, 2 Sep 2007 16:08:02 -0400
+Date: Mon, 3 Sep 2007 01:51:10 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
+       alsa-devel@alsa-project.org
+Subject: [PATCH -mm] es18xx: Shut up uninitialized var build warning
+In-Reply-To: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0709030150180.29617@enigma.security.iitk.ac.in>
+References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i
+ n>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200709022203.39922.jesper.juhl@gmail.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-74108432-1188764474=:29617"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 02 September 2007 22:13:49 Satyam Sharma wrote:
-> 
-> drivers/scsi/ips.c: In function ‘ips_register_scsi’:
-> drivers/scsi/ips.c:6869:
-> warning: ignoring return value of ‘scsi_add_host’, declared with attribute warn_unused_result
-> 
-> scsi_add_host() is __must_check, so let's check it's return and cleanup
-> appropriately on errors.
-> 
-> Signed-off-by: Satyam Sharma <satyam@infradead.org>
-> 
-[snip]
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Something seems to be wrong either at your end or mine
-> +		IPS_PRINTK(KERN_WARNING, ha->pcidev, "Unable to add SCSI host¥n");
-
-This should end with a newline  "\n"  but I'm seeing "¥n" ...
+--464262402-74108432-1188764474=:29617
+Content-Type: TEXT/PLAIN; charset=iso-2022-jp
 
 
-/Jesper
+sound/isa/es18xx.c: In function $B!F(Jsnd_es18xx_isa_probe$B!G(J:
+sound/isa/es18xx.c:2251: warning: $B!F(Jerr$B!G(J may be used uninitialized in this function
 
+gcc is a sad, sad compiler. This warning is bogus so let's shut it up.
+
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
+
+---
+
+ sound/isa/es18xx.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- linux-2.6.23-rc4-mm1/sound/isa/es18xx.c~fix	2007-09-02 21:16:54.000000000 +0530
++++ linux-2.6.23-rc4-mm1/sound/isa/es18xx.c	2007-09-02 21:30:13.000000000 +0530
+@@ -2248,7 +2248,6 @@ static int __devinit snd_es18xx_isa_prob
+ 
+ static int __devinit snd_es18xx_isa_probe(struct device *pdev, unsigned int dev)
+ {
+-	int err;
+ 	static int possible_irqs[] = {5, 9, 10, 7, 11, 12, -1};
+ 	static int possible_dmas[] = {1, 0, 3, 5, -1};
+ 
+@@ -2276,6 +2275,8 @@ static int __devinit snd_es18xx_isa_prob
+ 	} else {
+ 		static unsigned long possible_ports[] = {0x220, 0x240, 0x260, 0x280};
+ 		int i;
++		int uninitialized_var(err);
++
+ 		for (i = 0; i < ARRAY_SIZE(possible_ports); i++) {
+ 			port[dev] = possible_ports[i];
+ 			err = snd_es18xx_isa_probe1(dev, pdev);
+--464262402-74108432-1188764474=:29617--
