@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758981AbXIBUHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759634AbXIBUHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758981AbXIBUHO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 16:07:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbXIBUG6
+	id S1759634AbXIBUHg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 16:07:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbXIBUHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 16:06:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56849 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbXIBUG5 (ORCPT
+	Sun, 2 Sep 2007 16:07:00 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:16675 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752334AbXIBUG7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 16:06:57 -0400
-Date: Mon, 3 Sep 2007 01:50:05 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Eric Moore <Eric.Moore@lsi.com>,
-       James Bottomley <james.bottomley@steeleye.com>, support@lsi.com,
-       mpt_linux_developer@lsi.com
-Subject: [PATCH -mm] mpt fusion: Shut up uninitialized variable warnings
-In-Reply-To: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.in>
-Message-ID: <alpine.LFD.0.999.0709030148590.29617@enigma.security.iitk.ac.in>
-References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i
- n>
+	Sun, 2 Sep 2007 16:06:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=RROsE2hmzZ3PewiqJ4mhxhf9xKhCER7/Gs6GQ2KQcQW7QYaFVUCED79uoWs5aRG7jyWtKSBsBnKzbfpFiDVpaWdtDBRWQEBoU2ZSxG+bMlSQ8UvdCMos+hoRcIuXsHfzYW4AtR+3icln+MKJVbqqrkG+aSww/cQsUS0d7jLK32M=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Satyam Sharma <satyam@infradead.org>
+Subject: Re: [PATCH -mm] IPS SCSI driver: Check return of scsi_add_host()
+Date: Sun, 2 Sep 2007 22:03:39 +0200
+User-Agent: KMail/1.9.7
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Bottomley <james.bottomley@steeleye.com>, aacraid@adaptec.com,
+       linux-scsi@vger.kernel.org
+References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i n> <alpine.LFD.0.999.0709030142490.29617@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0709030142490.29617@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-781556762-1188764408=:29617"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709022203.39922.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sunday 02 September 2007 22:13:49 Satyam Sharma wrote:
+> 
+> drivers/scsi/ips.c: In function ‘ips_register_scsi’:
+> drivers/scsi/ips.c:6869:
+> warning: ignoring return value of ‘scsi_add_host’, declared with attribute warn_unused_result
+> 
+> scsi_add_host() is __must_check, so let's check it's return and cleanup
+> appropriately on errors.
+> 
+> Signed-off-by: Satyam Sharma <satyam@infradead.org>
+> 
+[snip]
 
---464262402-781556762-1188764408=:29617
-Content-Type: TEXT/PLAIN; charset=iso-2022-jp
+Something seems to be wrong either at your end or mine
+> +		IPS_PRINTK(KERN_WARNING, ha->pcidev, "Unable to add SCSI host¥n");
+
+This should end with a newline  "\n"  but I'm seeing "¥n" ...
 
 
-drivers/message/fusion/mptctl.c: In function $B!F(Jmptctl_mpt_command$B!G(J:
-drivers/message/fusion/mptctl.c:1764: warning: $B!F(JbufIn.len$B!G(J may be used uninitialized in this function
-drivers/message/fusion/mptctl.c:1765: warning: $B!F(JbufOut.len$B!G(J may be used uninitialized in this function
+/Jesper
 
-come because gcc gets confused by some "goto" statements in above function.
-The warnings have been verified to be bogus, however, the function does
-initialize these later (after the offending goto's) in the function anyway.
-So let's move those initializations to top of function, thereby also shutting
-up these warnings.
-
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
-
----
-
- drivers/message/fusion/mptctl.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
---- linux-2.6.23-rc4-mm1/drivers/message/fusion/mptctl.c~fix	2007-09-02 21:51:14.000000000 +0530
-+++ linux-2.6.23-rc4-mm1/drivers/message/fusion/mptctl.c	2007-09-02 21:54:25.000000000 +0530
-@@ -1773,7 +1773,10 @@ mptctl_do_mpt_command (struct mpt_ioctl_
- 	ulong 		timeout;
- 	struct scsi_device *sdev;
- 
-+	/* bufIn and bufOut are used for user to kernel space transfers
-+	 */
- 	bufIn.kptr = bufOut.kptr = NULL;
-+	bufIn.len = bufOut.len = 0;
- 
- 	if (((iocnum = mpt_verify_adapter(karg.hdr.iocnum, &ioc)) < 0) ||
- 	    (ioc == NULL)) {
-@@ -2107,11 +2110,6 @@ mptctl_do_mpt_command (struct mpt_ioctl_
- 	psge = (char *) (((int *) mf) + karg.dataSgeOffset);
- 	flagsLength = 0;
- 
--	/* bufIn and bufOut are used for user to kernel space transfers
--	 */
--	bufIn.kptr = bufOut.kptr = NULL;
--	bufIn.len = bufOut.len = 0;
--
- 	if (karg.dataOutSize > 0)
- 		sgSize ++;
- 
---464262402-781556762-1188764408=:29617--
