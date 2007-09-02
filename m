@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933302AbXIBPn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934010AbXIBPoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933302AbXIBPn6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 11:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbXIBPnv
+	id S934010AbXIBPoW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 11:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757648AbXIBPny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 11:43:51 -0400
-Received: from mail02.o2online.de ([82.113.101.28]:54846 "EHLO
-	mail.mc.o2online.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755081AbXIBPnu convert rfc822-to-8bit (ORCPT
+	Sun, 2 Sep 2007 11:43:54 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42445 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757501AbXIBPnx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 11:43:50 -0400
-X-Greylist: delayed 3733 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Sep 2007 11:43:49 EDT
-Date: Sun, 2 Sep 2007 16:41:32 +0200 (CEST)
-Message-Id: <200709021441.l82EfWCe022642@mail.mc.o2online.de>
-From: <colin.michael@o2online.de>
-To: <linux-kernel@vger.kernel.org>
-Subject: [patch] enable userspace cpu core voltage control with acpi-cpufreq
-X-Priority: 3 (Normal)
-Importance: Normal
-MIME-Version: 1.0
-X-Mailer: O3SIS o2 Communication Center Mail 5.26.00 2003-09-04 Cologne Edition
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Sun, 2 Sep 2007 11:43:53 -0400
+Date: Sun, 2 Sep 2007 17:43:51 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: the Linux kernel, testsuites, and maybe *you*
+Message-ID: <20070902154351.GA21230@one.firstfloor.org>
+References: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com> <p733axyxcli.fsf@bingen.suse.de> <8bd0f97a0709011550y833fb5ax7d40cae937789fd8@mail.gmail.com> <20070902065926.GA15487@one.firstfloor.org> <8bd0f97a0709020815r75fcb225lf44bcb57783b436c@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0709020815r75fcb225lf44bcb57783b436c@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please add me as CC to any answear to that post.
+On Sun, Sep 02, 2007 at 11:15:23AM -0400, Mike Frysinger wrote:
+> there is still the ABI issue ... code written in kernel space in pure
+> asm cannot always be compiled in userspace and work properly/the same
 
+Is that a blackfin weirdness? 
 
-Hello, 
-i want to make a patch known that provides a userspace interface to control the core voltage of a computer processor(s).
+> 
+> > The other issue to test some of them properly you need unmapped pages
+> > etc. That gets much easier to do in user space. There are some other
+> > issues.
+> 
+> you mean testing boundary overflows ?  can be handled with canaries
+> rather than segfaults i imagine ...
 
-Some notes about:
-=============================================================
-The current version patches acpi-cpufreq.
-An older version patched speedstep-centrino and also adds additional built-in frequency/voltage tables to the Linux kernel 
-for some Pentium-M CPU models.
-This is particularly usefull for laptops with broken ACPI that can't use the speedstep-centrino cpufreq driver at all.
+Not for reads, no.
 
-The interface is located in SysFS. Some files are read only (for example to read the default values), others
-are writeable to set up lower voltages.
-
-The main use of this interface is to lower the core voltage of a laptop's CPU ("undervolt").
-The goal is to reduce the laptop's temperature so the cooling fan can safely run at a slower speed. 
-Another goal of undervolting is to reduce the power consumption of a laptop and thus extend its battery lifetime.
-
-Currently supported processors are Pentium-M (centrino) class CPUs and Core/Core2 CPUs.
-Supporting AMD processors is planned and a patch may be available at the end of this year.
-
-
-
-An example about the benefits:
-=============================================================
-My Core2Duo T7200 normally uses 1.2Volt at 2GHz.
-The power consumption (measured with intel's PowerTOP) of the system is ~55 Watts at full load (using sprime).
-
-The lowest Voltage i can use without instabilizing the system is 0.9875Volts at 2GHz.
-Using this setting the power consumption is reduced to ~40 Watts.
-
-Also the CPU stay cooler depending on the load and speed.
-
-
-Many peoples with Pentium-M processors reporting they can run the cpu at 0.700Volts. For most of them the CPU fan
-never brushes during normal work (also depenting on the load and the system).
-
-=============================================================
-Unfortunalely the projects suffers on to few developers.
-So if you think this would be interesting you you are welcome to join.
-
-Project located at: https://www.dedigentoo.org/trac/linux-phc/
-IRC on freenode: ##linux-phc
-
-Regards
-cmichael   c dot michael -at- o2online dot de
-
-
+-Andi
