@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbXIBU3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbXIBUaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbXIBU3Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 16:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbXIBU3Q
+	id S1760198AbXIBUaa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 16:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbXIBUaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 16:29:16 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44245 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751059AbXIBU3P (ORCPT
+	Sun, 2 Sep 2007 16:30:23 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:47811 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbXIBUaV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 16:29:15 -0400
-Date: Sun, 2 Sep 2007 13:28:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Franck Bui-Huu <vagabon.xyz@gmail.com>
-Cc: jkosina@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386 and x86_64: randomize brk()
-Message-Id: <20070902132847.5fc968b1.akpm@linux-foundation.org>
-In-Reply-To: <46D9C935.3000701@gmail.com>
-References: <Pine.LNX.4.64.0708301545100.4135@jikos.suse.cz>
-	<8bd0f97a0708300701r1f36bc0anc45b9cad4a11f2ef@mail.gmail.com>
-	<Pine.LNX.4.64.0708301620010.4135@jikos.suse.cz>
-	<8bd0f97a0708300726h563808a6j2b2ef9adf805c109@mail.gmail.com>
-	<Pine.LNX.4.64.0708301708590.4135@jikos.suse.cz>
-	<20070830180538.b52b802d.akpm@linux-foundation.org>
-	<46D9C935.3000701@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 2 Sep 2007 16:30:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Jsom0YBC+i86QODec/CFse8wOmYV0i9q125ZwhqYT+MjVszE8thTPu0Yxjhj2TePLu8QEVgTpIr4p3poFuLYVZvQ173lmJJba+BFakoT6nyjhKlLFxx5sy3STLOxbKzTbAPRjuJhYVnoKtrpYoCjrJJo4dDlJVWW3S+GtNxQ9bI=
+Message-ID: <9a8748490709021330g6d556c4fqf8b9b3f6f1196eee@mail.gmail.com>
+Date: Sun, 2 Sep 2007 22:30:20 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Satyam Sharma" <satyam@infradead.org>
+Subject: Re: [-mm patchset] War on warnings
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.999.0709030205300.29617@enigma.security.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.in>
+	 <9a8748490709021304k37d7e42clc32a08d5ec0f4a75@mail.gmail.com>
+	 <alpine.LFD.0.999.0709030205300.29617@enigma.security.iitk.ac.in>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sat, 01 Sep 2007 22:19:01 +0200 Franck Bui-Huu <vagabon.xyz@gmail.com> wrote:
-> Hello Andrew,
-> 
-> Andrew Morton wrote:
-> > On Thu, 30 Aug 2007 17:10:03 +0200 (CEST) Jiri Kosina <jkosina@suse.cz> wrote:
-> >> Andrew, do you still strongly oppose to having ARCH_HAS_RANDOMIZE_BRK 
-> >> macro instead please?
-> >>
-> > 
-> > Not strongly, but the general opinion seems to be that ARCH_HAS_FOO is
-> > sucky.  It should at least be done in Kconfig rather than in .h, but even
-> > better is just to implement the thing for all architectures.
-> > 
-> 
-> Sorry for asking again but the initial poster haven't taken time to
-> answer to my feedbacks...
-> 
-> What about using a weak function in that case ? It actually gives a
-> default implementation in _one_ place and can be changed easily from
-> a nop to something more complex later.
+On 02/09/07, Satyam Sharma <satyam@infradead.org> wrote:
+>
+>
+> On Sun, 2 Sep 2007, Jesper Juhl wrote:
+> >
+> > Thank you for doing this, I hope some of your patches get merged.
+> >
+> > Btw; it would be easier to see if one has got all the patches if you
+> > numbered your patch series with the usual "[PATCH XX/YY]".
+>
+> Hey, thanks ;-) There are 13 in all, I just felt lazy and simply used
+> ^R from alpine in-reply-to the first mail one-after-another instead
+> of scripting it ...
+>
+Hehe, I often do it that way myself, but just edit the subject of each
+mail and manually put in the [PATCH XX/YY] bit.
 
-Yeah, weak functions are by far the cleanest way of doing this - they're
-most elegant.  But they do add the overhead of an empty call/return, so
-some thought needs to go into the tradeoff.
+It is just that sometimes mails get lost, so it's very nice to know
+how many patches to expect in a series :)
 
-> Another point is that the current prototype of arch_randomize_brk()
-> could be slightly improved IMHO.
-> 
-> The proposed prototype is:
-> 
-> 		    void arch_randomize_brk(void)
-> 
-> and I think it could be:
-> 
-> 		  unsigned long randomize_brk(unsigned long brk)
-> 
-> Because the current code of exec syscall is rather.. hmm "tricky",
-> _hiding_ "current" global usage inside this function is error prone:
-> if this function is moved later, its use of "current->mm" could
-> reference the old mm process and it's hard to notice/fix.
-
-Could be..
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
