@@ -1,52 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759059AbXIBUnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbXIBUot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759059AbXIBUnk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 16:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbXIBUnb
+	id S1759741AbXIBUot (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 16:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbXIBUol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 16:43:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52344 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750816AbXIBUna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 16:43:30 -0400
-Message-ID: <46DB2070.9010608@garzik.org>
-Date: Sun, 02 Sep 2007 16:43:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Sun, 2 Sep 2007 16:44:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37311 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbXIBUok (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 16:44:40 -0400
+Date: Mon, 3 Sep 2007 02:27:48 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Jeff Garzik <jeff@garzik.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm] drivers/md/: Shut up uninitialized variable
+ warnings
+In-Reply-To: <46DB1E5C.2080107@garzik.org>
+Message-ID: <alpine.LFD.0.999.0709030220210.29617@enigma.security.iitk.ac.in>
+References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i
+ n> <alpine.LFD.0.999.0709030151320.29617@enigma.security.iitk.ac.in>
+ <46DB1E5C.2080107@garzik.org>
 MIME-Version: 1.0
-To: Satyam Sharma <satyam@infradead.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       Oliver Neukum <oliver@neukum.name>, linux-scsi@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -mm] DC395x SCSI driver: Shut up uninitialized variable
- build warning
-References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i n> <alpine.LFD.0.999.0709030152260.29617@enigma.security.iitk.ac.in> <46DB1BDF.4090100@garzik.org> <alpine.LFD.0.999.0709030211040.29617@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0709030211040.29617@enigma.security.iitk.ac.in>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-514402326-1188766671=:29617"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> I'll post the info as a reply to the first mail in this series. I have
-> fairly recent gcc (4.1.1) and I don't see us dropping support for it in
-> the next few years.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-What's important is not support lifetime, but whether or not the warning 
-persists through version 4.1.2, 4.1.3, etc.
-
-We don't want to add markers for compiler quirks that come and go.
-
-The current markers tend to exist for a class of problems that gcc 
-fundamentally has a tough time "seeing."  Different optimizer behaviors 
-from compiler version to compiler version are just noise[1].
-
-	Jeff
+--464262402-514402326-1188766671=:29617
+Content-Type: TEXT/PLAIN; charset=iso-2022-jp
 
 
-[1] sometimes quite literally, in the case of compiler warnings.
 
+On Sun, 2 Sep 2007, Jeff Garzik wrote:
+
+> Satyam Sharma wrote:
+> > drivers/md/dm-exception-store.c: In function ‘persistent_read_metadata’:
+> > drivers/md/dm-exception-store.c:452: warning: ‘new_snapshot’ may be used
+> > uninitialized in this function
+> > 
+> > drivers/md/dm-ioctl.c: In function ‘ctl_ioctl’:
+> > drivers/md/dm-ioctl.c:1407: warning: ‘param’ may be used uninitialized in
+> > this function
+> > 
+> > [ For these, I'd like to especially add -- shame on you, gcc! ]
+> > 
+> > drivers/md/dm-table.c: In function ‘dm_get_device’:
+> > drivers/md/dm-table.c:472: warning: ‘dev’ may be used uninitialized in this
+> > function
+> > 
+> > are all verified to be bogus warnings. Let's shut them up.
+> > 
+> > ---
+> > 
+> >  drivers/md/dm-exception-store.c |    3 ++-
+> >  drivers/md/dm-ioctl.c |    2 +-
+> >  drivers/md/dm-table.c |    2 +-
+> >  3 file changed, 4 insertions(+), 3 deletion(-)
+> 
+> same comment as with the last uninit'd var patch:  these markers should be
+> used sparingly.  Try it on multiple compiler versions, see if it's a new
+> behavior.
+> 
+> Quite realistically, you might actually be finding gcc bugs,
+
+Definitely -- a lot of these patches are purely a result of gcc's shoddy
+inadequacies. I do intend filing reports with gcc, however ...
+
+> implying the
+> proper path is to file a gcc bug report (and they are _very_ diligent about
+> handling these, its impressive) rather than to patch the Linux kernel.
+
+My experience (regarding gcc's diligence in dealing with bug reports) has
+been otherwise :-)
+
+Anyway, I once had a _very_ similar discussion with Andrew (regarding some
+other gcc bug) previously, and the (completely correct) point he made was
+that: firstly, there's no guarantee they'll get this sorted out asap, and
+even if they did, we'll still not be dropping support for older gcc
+versions anyway ...
+--464262402-514402326-1188766671=:29617--
