@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758336AbXIBXay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933244AbXIBXsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758336AbXIBXay (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 19:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbXIBXaq
+	id S933244AbXIBXsB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 19:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXIBXrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 19:30:46 -0400
-Received: from web36603.mail.mud.yahoo.com ([209.191.85.20]:48806 "HELO
-	web36603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753323AbXIBXap (ORCPT
+	Sun, 2 Sep 2007 19:47:52 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:15513 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbXIBXrv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 19:30:45 -0400
-X-YMail-OSG: 3pUZ06cVM1nQ9RzF8zS9LNuOhFzFYUWg2LnUJmZVpLU8KUoARCJbMCpp.ds9KsRJLQ--
-X-RocketYMMF: rancidfat
-Date: Sun, 2 Sep 2007 16:30:44 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: Get source and destination info
-To: Shahbaz Khan <shaz.linux@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, selinux@tyco.nsa.gov
-In-Reply-To: <20cbb9450709021618o42ae8047k10e52e880c97a0a8@mail.gmail.com>
+	Sun, 2 Sep 2007 19:47:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=naMK2sdAJyxGodSwd1/yRBT+CCGkdGU+BZgA53I8ZFjW2AlhN2K3NCxXVKNzorOiSCxdH7x1REze8FJhkh4DGHqKHVhMYapaM0OyJdq617jyRIp9u5OjIGk8ynd4olNDwh0voRgAKwoPY8t6idzj1N0hRAuJzPF6kOpIPljBJyA=
+Message-ID: <6bffcb0e0709021647m7ad694d7mf876bf4a6c8b4aca@mail.gmail.com>
+Date: Mon, 3 Sep 2007 01:47:50 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Alex Smith" <lkml@alex-smith.me.uk>
+Subject: Re: Oops in pwc v4l driver
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <a0738740709020457n3490ee52l49d29712f3ddbb75@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <711567.2389.qm@web36603.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a0738740709020457n3490ee52l49d29712f3ddbb75@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Alex,
 
---- Shahbaz Khan <shaz.linux@gmail.com> wrote:
-
+On 02/09/07, Alex Smith <lkml@alex-smith.me.uk> wrote:
 > Hi,
-> 
-> I am trying to figure out what part in the kernel code is the point
-> from where I can get source and destination ip-address, port, security
-> labels (selinux etc) from a packet before I export it to application
-> space for my needs. Any hints?
+>
+> I found an old Philips Askey VC010 webcam and attempted to get it
+> working on Linux (latest git, x86_64).
 
-Look into the netlabel and xfrm code. In Smack it gets dealt with
-in smack_lsm.c, but Smack only uses netlabel. SELinux spreads the
-handling into a number of files, including hooks.c, netlabel.c, xfrm.c,
-and ss/services.c.
+Is this a regression? Does 2.6.22 work fine?
 
+Regards,
+Michal
 
-Casey Schaufler
-casey@schaufler-ca.com
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
