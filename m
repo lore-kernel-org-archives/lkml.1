@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933616AbXIBG7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964908AbXIBG76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933616AbXIBG7i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 02:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbXIBG73
+	id S964908AbXIBG76 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 02:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933787AbXIBG7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 02:59:29 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47396 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753571AbXIBG72 (ORCPT
+	Sun, 2 Sep 2007 02:59:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40853 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752842AbXIBG7n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 02:59:28 -0400
-Date: Sun, 2 Sep 2007 08:59:26 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: the Linux kernel, testsuites, and maybe *you*
-Message-ID: <20070902065926.GA15487@one.firstfloor.org>
-References: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com> <p733axyxcli.fsf@bingen.suse.de> <8bd0f97a0709011550y833fb5ax7d40cae937789fd8@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8bd0f97a0709011550y833fb5ax7d40cae937789fd8@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 2 Sep 2007 02:59:43 -0400
+Message-ID: <46DA5F33.2020005@zytor.com>
+Date: Sun, 02 Sep 2007 07:58:59 +0100
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Junio C Hamano <gitster@pobox.com>
+CC: git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.5.3
+References: <7vodglr32i.fsf@gitster.siamese.dyndns.org>
+In-Reply-To: <7vodglr32i.fsf@gitster.siamese.dyndns.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 01, 2007 at 06:50:30PM -0400, Mike Frysinger wrote:
-> On 02 Sep 2007 00:08:57 +0200, Andi Kleen <andi@firstfloor.org> wrote:
-> > BTW string functions are best tested in user space. That's
-> > a relatively bad example.
+Junio C Hamano wrote:
 > 
-> in theory, maybe ... in reality, i really dont think so
+> * For people who need to import from Perforce, a front-end for
+>   fast-import is in contrib/fast-import/.
 > 
-> the string implementations are spread out over the kernel ... there's
-> implementations in lib/, include/asm-*/, and arch/*/lib/ ... so any
-> test code that would use these sources is going to be an ugly hack to
-> make sure it grabs all the right pieces from all the right places.
 
-string functions tend to be self contained.
+There seems to be an issue with this and RPMS.
 
-The other issue to test some of them properly you need unmapped pages
-etc. That gets much easier to do in user space. There are some other
-issues.
+In particular, there is no longer a git-p4 RPMS, which prevents git from 
+getting upgraded at all by yum.
 
--Andi
+Anyone who knows yum well enough to explain what needs to be done so 
+that yum knows this is obsolete?
+
+	-hpa
+
