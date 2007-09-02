@@ -1,102 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965879AbXIBLvC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965763AbXIBLxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965879AbXIBLvC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 07:51:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965029AbXIBLuq
+	id S965763AbXIBLxz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 07:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964926AbXIBLxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 07:50:46 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:44065 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965776AbXIBLuk (ORCPT
+	Sun, 2 Sep 2007 07:53:47 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36571 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964889AbXIBLxq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 07:50:40 -0400
-Date: Sun, 2 Sep 2007 13:50:41 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Igor Sobrado <igor@condmat1.ciencias.uniovi.es>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Constantine A. Murenin" <mureninc@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Message-ID: <20070902115041.GM16016@stusta.de>
-References: <200709010140.l811eq9H005896@cvs.openbsd.org> <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com> <46D99FB7.6030505@garzik.org> <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com> <20070901205457.GK9260@stusta.de> <20070902113638.78fbd202@the-village.bc.nu> <Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sun, 2 Sep 2007 07:53:46 -0400
+Date: Sun, 2 Sep 2007 04:53:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gerhard Mack <gmack@innerfire.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc3: sysfs_remove_bin_file: bad dentry or inode or no
+ such file: "descriptors"
+Message-Id: <20070902045349.b59af405.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.0.999.0708142335120.21213@mtl.rackplans.net>
+References: <alpine.DEB.0.999.0708142335120.21213@mtl.rackplans.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 02, 2007 at 01:20:27PM +0200, Igor Sobrado wrote:
-> On Sun, 2 Sep 2007, Alan Cox wrote:
->> You can shout this all you like but you would be wrong. You can remove
->> the licence if you have permission to do so. For the ath c files there
->> was permission to do so.
->
-> There was permission to do so from Reyk Floeter?  Really?
->
->> Your understanding isn't quite right. One of many things you may get with
->> dual licensed code is the right to pick a licence from several choices,
->> you may also get the right to remove some choices from the recipient.
->
-> Reyk code was never dual licensed!  His code is under truly free licensing 
-> terms (BSD).
+> On Tue, 14 Aug 2007 23:36:32 -0400 (EDT) Gerhard Mack <gmack@innerfire.net> wrote:
+> hello, 
+> 
+> Got this when I booted into 2.6.23-rc3:  Let me know if more info is 
+> needed.
+> 
+> 	Gerhard
+> 
+> 
+> sysfs_remove_bin_file: bad dentry or inode or no such file: "descriptors"
+> 
+> Call Trace:
+>  [<ffffffff80480117>] usb_remove_sysfs_dev_files+0x89/0x9d
+>  [<ffffffff8047cf29>] usb_unbind_device+0x15/0x19
+>  [<ffffffff803f855e>] __device_release_driver+0x8e/0xb0
+>  [<ffffffff803f8953>] device_release_driver+0x2c/0x44
+>  [<ffffffff803f7e56>] bus_remove_device+0x6e/0x7d
+>  [<ffffffff803f6641>] device_del+0x1ec/0x268
+>  [<ffffffff80477af3>] usb_disconnect+0xbc/0x149
+>  [<ffffffff804782c2>] hub_thread+0x3f8/0xba5
+>  [<ffffffff805e3463>] thread_return+0x57/0xdf
+>  [<ffffffff80244f0b>] autoremove_wake_function+0x0/0x2e
+>  [<ffffffff80477eca>] hub_thread+0x0/0xba5
+>  [<ffffffff80244df3>] kthread+0x47/0x74
+>  [<ffffffff8020c588>] child_rip+0xa/0x12
+>  [<ffffffff8021b96a>] flat_send_IPI_mask+0x0/0x4c
+>  [<ffffffff80244dac>] kthread+0x0/0x74
+>  [<ffffffff8020c57e>] child_rip+0x0/0x12
+> 
 
-Jiri's patch touched both files containing BSD-only code by Reyk and 
-code Reyk contributed to leaving the file dual licenced.
-
->> A work that combines GPL and BSD licensed material is not the same as a
->> work which says I may choose between two licences. If both licences must
->> always apply (which is a perfectly possible condition to put in a
->> licence) then putting such a "both" GPL/BSD licence piece of code into
->> OpenBSD would require any OpenBSD distributed containing it was GPL
->> licenced when conveyed, which I am *very* sure is not the intent.
->>
->> Thus what you appear to be doing by putting the ath5k C code in OpenBSD is
->> conveying it under the BSD licence (making a choice between the two
->> offered) and conveying a right for parties down the chain to convey it
->> under one of the licences only.
->
-> I think that Theo explained this point clearly quite a few times in the 
-> last days.
->
->> And as we've already established the header files are quite different.
->
-> Is a simple change in the header files a reason to vindicate the people 
-> that changed the licensing terms?  Obviously, it isn't.
->
->> Doesn't mean its not somewhat rude but illegal and rude are two very
->> different things.
->
-> No, because this change is both rude and illegal.
-
-You mixed two completely different things in your email:
-
-1. Jiri's patch (that was never merged into Linux) not only removed the 
-   BSD header from dual licenced files but also from not dual licenced
-   files.
-
-2. Theo accused Alan that telling people that it was OK to choose one 
-   licence for dual licenced code was "advising people to break the law".
-
-Jiri's patch was legally not OK regarding 1. - there's no discussion 
-regarding this.
-
-The point 2 is what the email of Theo that was forwarded to linux-kernel 
-is about and what the discussion is about. That's quite a rude action 
-by Theo unless he's able to prove that this accusation is correct.
-
-> Igor
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Is this still happening in 2.6.23-rc4 or later?
