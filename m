@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934127AbXIBRQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932352AbXIBRdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934127AbXIBRQp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 13:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757501AbXIBRQc
+	id S932352AbXIBRdT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 13:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbXIBRdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 13:16:32 -0400
-Received: from smtp-100-sunday.nerim.net ([62.4.16.100]:62174 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757733AbXIBRQb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 13:16:31 -0400
-Date: Sun, 2 Sep 2007 19:17:46 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, len.brown@intel.com,
-       bzolnier@gmail.com, minyard@acm.org, rlove@rlove.org, dz@debian.org,
-       Greg KH <greg@kroah.com>, stelian@popies.net, dmitry.torokhov@gmail.com,
-       ibm-acpi@hmh.eng.br, ak@suse.de, lm-sensors@lm-sensors.org,
-       linux-ide@vger.kernel.org, mzxreary@0pointer.de, j.w.r.degoede@hhs.nl,
-       Andrew Morton <akpm@linux-foundation.org>, gimli@dark-green.com,
-       ambx1@neo.rr.com
-Subject: Re: [lm-sensors] [PATCH] drivers/firmware: const-ify DMI API and
- internals
-Message-ID: <20070902191746.6aa9fcae@hyperion.delvare>
-In-Reply-To: <20070901142719.GA31990@havoc.gtf.org>
-References: <20070901142719.GA31990@havoc.gtf.org>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 2 Sep 2007 13:33:07 -0400
+Received: from sidhe.atheme.org ([204.15.224.234]:57862 "EHLO sidhe.atheme.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753133AbXIBRdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 13:33:06 -0400
+Message-ID: <46DAF43E.8030407@partiallystapled.com>
+Date: Sun, 02 Sep 2007 13:34:54 -0400
+From: Michael Tharp <gxti@partiallystapled.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070619)
+MIME-Version: 1.0
+To: espie@nerim.net
+CC: linux-kernel@vger.kernel.org
+Subject: Re: GPL weasels and the atheros stink
+References: <20070902140306.GA27317@lain.home>
+In-Reply-To: <20070902140306.GA27317@lain.home>
+X-Enigmail-Version: 0.95.3
+OpenPGP: id=94C1C841
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Sep 2007 10:27:19 -0400, Jeff Garzik wrote:
-> 
-> commit 457b6eb3bf3341d2e143518a0bb99ffbb8d754c4
-> Author: Jeff Garzik <jeff@garzik.org>
-> Date:   Sat Sep 1 10:16:45 2007 -0400
-> 
->     drivers/firmware: const-ify DMI API and internals
->     
->     Three main sets of changes:
->     
->     1) dmi_get_system_info() return value should have been marked const,
->        since callers should not be changing that data.
->     
->     2) const-ify DMI internals, since DMI firmware tables should,
->        whenever possible, be marked const to ensure we never ever write to
->        that data area.
->     
->     3) const-ify DMI API, to enable marking tables const where possible
->        in low-level drivers.
->     
->     And if we're really lucky, this might enable some additional
->     optimizations on the part of the compiler.
->     
->     The bulk of the changes are #2 and #3, which are interrelated.  #1 could
->     have been a separate patch, but it was so small compared to the others,
->     it was easier to roll it into this changeset.
->     
->     Signed-off-by: Jeff Garzik <jeff@garzik.org>
+Marc Espie wrote:
+> Let's extend the story a wee little bit. It seems that these days, some
+> parts of the opensource community have gotten confident enough that they
+> do not need the other part. We all know the situation is already fairly
+> disymetric. The GPL is less free than the ISC licence for instance (for
+> some definition of free), [...]
 
-Looks alright to me, thanks Jeff.
+It does indeed depend on your definition of free. I, for one, find
+BSD/ISC "more free" since it grants rights to any potential user or
+contributor, not just those using a compatible license. Others may find
+the GPL "more free" since it encourages contributors to give their code
+back to the original project, or at least allows the original project to
+consume those changes, meaning that the project can benefit from changes
+made by a third party and still remain usable by all.
 
--- 
-Jean Delvare
+> So, now, it's down to dirty fighting. Absorbing and `relicensing' and 
+> evolving code.  Have you all been bitten my RMS paranoia (that leads to
+> this `interesting GPLv3) ? Do you intend to keep grabbing BSD code and
+> putting it exclusively under the GPL ?
+
+That's the bittersweet side of BSD licensing - others have every right
+to take your code and use it for their own projects without having to
+give their changes back to you.
+
+> Well, if that's truely the case, I may reconsider my good faith for future
+> contributions. Heck, instead of giving away my code under the GPL, I could
+> keep my contributions in the form of patches. Ironically, with tools such
+> as git, this is no longer as cumbersome as this used to be. So, instead
+> of new gcc code sent to the FSF (and given to the FSF), we could explicitly
+> keep patches under the ISC licence, and explain loudly why this is so.
+
+Technologically quite easy, yes, and while I'm sure no-one would really
+challenge you for doing so. it'd be interesting to know how legal it
+would be to distribute an ISC patchset on top of GPL code.
+
+> Nice going, GPL fan-boys...
+> --
+> 	Marc Espie
+
+-- m. tharp, BSD fanboy, devil's advocate
