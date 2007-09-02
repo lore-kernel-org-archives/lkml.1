@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbXIBSrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751077AbXIBSxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbXIBSrD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 14:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbXIBSqz
+	id S1751077AbXIBSxu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 14:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbXIBSxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 14:46:55 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59950 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbXIBSqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 14:46:55 -0400
-Message-ID: <46DB051D.3010008@garzik.org>
-Date: Sun, 02 Sep 2007 14:46:53 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Sun, 2 Sep 2007 14:53:43 -0400
+Received: from relay.hkfree.org ([89.248.240.5]:53931 "EHLO
+	mail.hades.hkfree.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbXIBSxn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 14:53:43 -0400
+X-Greylist: delayed 1145 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Sep 2007 14:53:42 EDT
+Message-ID: <46DB0239.2070304@assembler.cz>
+Date: Sun, 02 Sep 2007 20:34:33 +0200
+From: Rudolf Marek <r.marek@assembler.cz>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-To: "Jonathan A. George" <jageorge@austin.rr.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: "GPL weasels and the atheros stink"
-References: <46DAF70E.9060800@austin.rr.com>
-In-Reply-To: <46DAF70E.9060800@austin.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Satyam Sharma <satyam@infradead.org>
+CC: "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] hwmon coretemp: Remove bogus __cpuinitdata etc cleanup
+References: <alpine.LFD.0.999.0708230910120.2049@enigma.security.iitk.ac.in> <20070902154152.GC19101@jupiter.solarsys.private>
+In-Reply-To: <20070902154152.GC19101@jupiter.solarsys.private>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan A. George wrote:
-> Question #1: Is it _ethical_ (legality aside) to take someone else's 
-> actively maintained work (for example an OpenBSD driver) and make 
-> changes which can not be shared/used by the original developer/maintainer?
+>> [ Rudolf, Mark, would it be acceptable to you to remove all the open
+>>   #ifdef HOTPLUG_CPU from this file and replace them with __cpuinit{data}
+>>   instead? That could increase size of modular builds, but would remain
+>>   consistent with rest of kernel, and make the file #ifdef-clean ... ]
 
-This happens all the time.  It's called a fork.
+Well I dont have any strong preference. I agree with Mark that that #ifdef is
+easy to read.
 
-Forks happen for good reasons, bad reasons, dumb reasons, and smart reasons.
-
-Sometimes the useful changes can be shared back, and that's a good thing 
-[for that situation].
-
-Sometimes changes cannnot be shared back, and that's also a good thing 
-[for that situation].
-
-
-> Question #2: Is it _technically beneficial_ to branch an OSS work (for 
-> example an OpenBSD driver) in such a way as to diminish the ability to 
-> share contributions between projects?
-
-Can only be answered on a case-by-case basis.
-
-The reality OF THE CODE is such that *BSD and Linux share good SOLUTIONS 
-quite often.  That's a benefit of open source.  And that's a good thing.
-
-	Jeff
-
-
+Rudolf
