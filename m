@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966111AbXIBM2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966398AbXIBM27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966111AbXIBM2o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 08:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757251AbXIBM2d
+	id S966398AbXIBM27 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 08:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966225AbXIBM2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 08:28:33 -0400
-Received: from fresno.net.uniovi.es ([156.35.11.2]:55444 "EHLO
-	FRESNO.NET.UNIOVI.ES" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755402AbXIBM2b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 08:28:31 -0400
-X-Greylist: delayed 4080 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Sep 2007 08:28:31 EDT
-Date: Sun, 02 Sep 2007 14:28:28 +0200 (CEST)
-From: Igor Sobrado <igor@condmat1.ciencias.uniovi.es>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-In-reply-to: <20070902115041.GM16016@stusta.de>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Constantine A. Murenin" <mureninc@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Message-id: <Pine.LNX.4.64.0709021416130.6181@condmat1.ciencias.uniovi.es>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-References: <200709010140.l811eq9H005896@cvs.openbsd.org>
- <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
- <46D99FB7.6030505@garzik.org>
- <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
- <20070901205457.GK9260@stusta.de> <20070902113638.78fbd202@the-village.bc.nu>
- <Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
- <20070902115041.GM16016@stusta.de>
+	Sun, 2 Sep 2007 08:28:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56985 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966173AbXIBM2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 08:28:45 -0400
+Date: Sun, 2 Sep 2007 14:28:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm][resend] softlockup-improve-debug-output.patch fix
+Message-ID: <20070902122835.GA27438@elte.hu>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <alpine.LFD.0.999.0709020439290.20781@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0709021803060.24993@enigma.security.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0709021803060.24993@enigma.security.iitk.ac.in>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Sep 2007, Adrian Bunk wrote:
-> On Sun, Sep 02, 2007 at 01:20:27PM +0200, Igor Sobrado wrote:
->> Reyk code was never dual licensed!  His code is under truly free licensing
->> terms (BSD).
->
-> Jiri's patch touched both files containing BSD-only code by Reyk and
-> code Reyk contributed to leaving the file dual licenced.
 
-Ok.
+* Satyam Sharma <satyam@infradead.org> wrote:
 
-> You mixed two completely different things in your email:
->
-> 1. Jiri's patch (that was never merged into Linux) not only removed the
->   BSD header from dual licenced files but also from not dual licenced
->   files.
->
-> 2. Theo accused Alan that telling people that it was OK to choose one
->   licence for dual licenced code was "advising people to break the law".
->
-> Jiri's patch was legally not OK regarding 1. - there's no discussion
-> regarding this.
->
-> The point 2 is what the email of Theo that was forwarded to linux-kernel
-> is about and what the discussion is about. That's quite a rude action
-> by Theo unless he's able to prove that this accusation is correct.
+> 
+> 
+> On Sun, 2 Sep 2007, Satyam Sharma wrote:
+> > 
+> > --- kernel/softlockup.c~fix	2007-09-02 04:23:49.000000000 +0530
+> > +++ kernel/softlockup.c	2007-09-02 04:34:45.000000000 +0530
+>   ^^^^^^^^^^
+> 
+> Ick, I botched a trivial patch, it doesn't even apply. Updated one below
+> (with indentation fix as added bonus :-)
+> 
+> 
+> [PATCH -mm] softlockup-improve-debug-output.patch fix (v2)
+> 
+> kernel/softlockup.c: In function 'softlockup_tick':
+> kernel/softlockup.c:125: warning: 'regs' is used uninitialized in this function
+> 
+> is a genuine bug (will cause an oops in all probability, or cause 
+> wrong info to be printed, if we're lucky). So let's fix the 
+> softlockup-improve-debug-output.patch to actually work as intended.
+> 
+> Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
-When code is multi-licensed it must be distributed under *all* these 
-licensing terms concurrently.  It is easy to understand.  Removing (or 
-changing) the conditions that apply to the program from the source code 
-and documentation *without* an authorization from all the author(s) is 
-illegal.
+Thanks! Not sure how that bug slipped in, in my tree it does this:
 
-So, a multi-licensed file remains multi-licensed except when all authors 
-agree about a change in the licensing terms.  And it is clear on the BSD 
-license that a modification of the distribution terms is illegal.  It is 
-the first clause on the BSD license:
+ +       struct pt_regs *regs;
+ ...
+ +       regs = get_irq_regs();
 
-  * 1. Redistributions of source code must retain the above copyright
-  *    notice, this list of conditions and the following disclaimer,
-  *    without modification.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-So, removing (or changing) the list of conditions on the BSD license is 
-not allowed.
-
-Igor.
+	Ingo
