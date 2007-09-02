@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934116AbXIBWVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934195AbXIBWWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934116AbXIBWVX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 18:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933998AbXIBWVI
+	id S934195AbXIBWWM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 18:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXIBWVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 18:21:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49982 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755935AbXIBWVH (ORCPT
+	Sun, 2 Sep 2007 18:21:54 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:1287 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756150AbXIBWVw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 18:21:07 -0400
-Date: Mon, 3 Sep 2007 04:04:14 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Rene Herman <rene.herman@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>,
-       alsa-devel@alsa-project.org
-Subject: Re: [PATCH -mm] sb16: Shut up uninitialized var build warning
-In-Reply-To: <46DB33D0.40204@gmail.com>
-Message-ID: <alpine.LFD.0.999.0709030358410.31154@enigma.security.iitk.ac.in>
-References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i
- n> <alpine.LFD.0.999.0709030143550.29617@enigma.security.iitk.ac.in>
- <46DB33D0.40204@gmail.com>
+	Sun, 2 Sep 2007 18:21:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nK+YeNnq2LvNa848pjSDbJ9bMGuM79PKeAO6xVWEW4AsopkCzl7+SsK3NfLbbhv4mnJDJJTHUihYgt8aTtWsh2qKDncz5FvZKvXHetGJjrvIas59uP/gOHUquJHZ0eU0ZZKVP3Cr7oMYIPjpV7GoQog7VPh8t8zlQcmL6KxrO9k=
+Message-ID: <be1b757c0709021521q850f2bdq3f88c24c02c26b1b@mail.gmail.com>
+Date: Mon, 3 Sep 2007 00:21:50 +0200
+From: "Karl Meyer" <adhocrocker@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
+Cc: "Francois Romieu" <romieu@fr.zoreil.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <6bffcb0e0709021515v586f078cjce04f877e2f27aa2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-507949488-1188772458=:31154"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com>
+	 <20070813165821.GA19356@electric-eye.fr.zoreil.com>
+	 <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com>
+	 <20070814070901.GA14693@electric-eye.fr.zoreil.com>
+	 <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com>
+	 <20070814224629.GB3495@electric-eye.fr.zoreil.com>
+	 <20070816141122.GA6625@electric-eye.fr.zoreil.com>
+	 <be1b757c0709011224tafebaaby697d03ab5377e20f@mail.gmail.com>
+	 <6bffcb0e0709021515v586f078cjce04f877e2f27aa2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi,
 
---464262402-507949488-1188772458=:31154
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+am am looking for this issue for some time now, but there where no
+errors in 2.6.22-r2 (gentoo speak, I guess this is 2.6.22.2
+officially), I also ran git-bisect (for more information see the older
+messages in this thread).
 
-
-
-On Mon, 3 Sep 2007, Rene Herman wrote:
-> 
-> On 09/02/2007 10:15 PM, Satyam Sharma wrote:
-> 
-> > sound/isa/sb16/sb16.c: In function ‘snd_sb16_isa_probe’:
-> 
-> Blah. Your message has:
-> 
-> 	Content-Type: TEXT/PLAIN; charset=iso-2022-jp
-> 
-> This apparently is caused by a combination of GCC using groovy UTF tickmarks
-> in its error messages when in a UTF locale and alpine believing it to be a
-> great idea to automatically try for the "simplest" character set it can encode
-> the content in. No idea why that means that iso-2022-jp is picked, but it is.
-
-Yeah, precisely.
-
-> As to the content of this patch -- I'd almost say it's better to live with the
-> warning than with that unitialized_var() thing. That ARRAY_SIZE is very much a
-> compile time constant, so exactly how dumb must GCC get before we get to say
-> to here and no further?
-
-Pretty dumb indeed -- in fact that's the case with 4 patches in this
-series. Like Jeff said, that (gcc's) behaviour has likely even improved
-w.r.t. later versions, so I guess it's fine if these 4 patches are not
-applied -- I'll leave it upto the maintainers.
---464262402-507949488-1188772458=:31154--
+2007/9/3, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>:
+> Hi,
+>
+> On 01/09/07, Karl Meyer <adhocrocker@gmail.com> wrote:
+> > This is what happened today:
+> >
+> > Sep  1 21:08:01 frege NETDEV WATCHDOG: eth0: transmit timed out
+> > frege ~ # uname -r
+> > 2.6.22.5-cfs-v20.5
+>
+> Can you reproduce this on 2.6.22 (not 2.6.22.x - it might be a -stable
+> regression)?
+>
+> Regards,
+> Michal
+>
+> --
+> LOG
+> http://www.stardust.webpages.pl/log/
+>
