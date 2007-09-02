@@ -1,74 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbXIBULv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757517AbXIBUQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760001AbXIBULv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 16:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbXIBULk
+	id S1757517AbXIBUQr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 16:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbXIBUQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 16:11:40 -0400
-Received: from wx-out-0506.google.com ([66.249.82.236]:40237 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751226AbXIBULj (ORCPT
+	Sun, 2 Sep 2007 16:16:37 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:2928 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750715AbXIBUQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 16:11:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MWEEoEgn3ADOVI8njZItfPo+Q9QNo0p1K2uXBg8ET0z1ZH9XiEgUjBh8fiPoaxcSKgHkHVqeMnXHrfdJvXIzH37pvck6MAbfCO5lv8Cv3jutm4R86aRbLztKywIX+7Fm0ZEMqLPVAaC3yDOPfsAynfTGMfMQgbLKkUHw+KL9Qt0=
-Message-ID: <9a8748490709021311q179ab8c6iee7ffb14f6a2eb80@mail.gmail.com>
-Date: Sun, 2 Sep 2007 22:11:38 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Satyam Sharma" <satyam@infradead.org>
-Subject: Re: [PATCH -mm] sisusbvga: Fix bug and build warnings
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Thomas Winischhofer" <thomas@winischhofer.net>,
-       "Greg Kroah-Hartman" <greg@kroah.com>,
-       linux-usb-devel@lists.sourceforge.net
-In-Reply-To: <alpine.LFD.0.999.0709030136140.29617@enigma.security.iitk.ac.in>
+	Sun, 2 Sep 2007 16:16:35 -0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+To: bzolnier@gmail.com
+Subject: [PATCH 2/4] hpt366: MWDMA filter for SATA cards
+Date: Mon, 3 Sep 2007 00:19:22 +0400
+User-Agent: KMail/1.5
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.in>
-	 <alpine.LFD.0.999.0709030136140.29617@enigma.security.iitk.ac.in>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200709030019.22732.sshtylyov@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/09/07, Satyam Sharma <satyam@infradead.org> wrote:
->
-> drivers/usb/misc/sisusbvga/sisusb.c: In function 'usb_sisusb_init':
-> drivers/usb/misc/sisusbvga/sisusb.c:3321: warning: unused variable 'sisusb'
-> drivers/usb/misc/sisusbvga/sisusb.c:3320: warning: unused variable 'retval'
->
-> are trivially solved by getting rid of the unused variables.
->
-> drivers/usb/misc/sisusbvga/sisusb.c: In function 'sisusb_open':
-> drivers/usb/misc/sisusbvga/sisusb.c:2444: warning: 'sisusb' is used uninitialized in this function
->
-> is a genuine bug (which will cause oops). We cannot use "sisusb" in
-> error path for (!interface), because sisusb will itself be derived
-> from "interface" later.
->
-> Signed-off-by: Satyam Sharma <satyam@infradead.org>
->
-> ---
->
->  drivers/usb/misc/sisusbvga/sisusb.c |    7 +------
->  1 file changed, 1 insertion(+), 6 deletions(-)
->
-> --- linux-2.6.23-rc4-mm1/drivers/usb/misc/sisusbvga/sisusb.c(J~(Bfix        2007-09-02 19:06:01.000000000 +0530
-> +++ linux-2.6.23-rc4-mm1/drivers/usb/misc/sisusbvga/sisusb.c    2007-09-02 19:10:52.000000000 +0530
-> @@ -2440,10 +2440,8 @@ sisusb_open(struct inode *inode, struct
->         struct usb_interface *interface;
->         int subminor = iminor(inode);
->
-> -       if (!(interface = usb_find_interface(&sisusb_driver, subminor))) {
-> -               dev_err(&sisusb->sisusb_dev->dev, "Failed to find interface(J\(Bn");
+The Marvell bridge chips used on HighPoint SATA cards do not seem to support
+the MWDMA modes (at least that caould be seen in their so-called drivers :-),
+so the driver needs to account for this -- to achieve this:
 
-Odd how in your patch the line ends with  "(J\(Bn"  but if I look in my
-local copy of the source tree I see  "\n".
+- add mdma_filter() method from the original patch by Bartlomiej Zolnierkewicz
+  with his consent, also adding the method callout to ide_rate_filter();
 
+- installed the method for all chips to only return empty mask if a SATA drive
+  is detected onHPT372{AN]/374 chips...
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+---
+This patch against the current Linus' tree and unfortunately I was able to only
+compile test it since that tree gives MODPOST warning and dies early on bootup.
+Will hopefully try to test if/when I have time... :-)
+
+ drivers/ide/ide-dma.c    |    9 +++++++--
+ drivers/ide/ide-lib.c    |    4 +++-
+ drivers/ide/ide.c        |    1 +
+ drivers/ide/pci/hpt366.c |   23 +++++++++++++++++++++--
+ include/linux/ide.h      |    1 +
+ 5 files changed, 33 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/drivers/ide/ide-dma.c
+===================================================================
+--- linux-2.6.orig/drivers/ide/ide-dma.c
++++ linux-2.6/drivers/ide/ide-dma.c
+@@ -674,8 +674,13 @@ static unsigned int ide_get_mode_mask(id
+ 			mask &= 0x07;
+ 		break;
+ 	case XFER_MW_DMA_0:
+-		if (id->field_valid & 2)
+-			mask = id->dma_mword & hwif->mwdma_mask;
++		if ((id->field_valid & 2) == 0)
++			break;
++		if (hwif->mdma_filter)
++			mask = hwif->mdma_filter(drive);
++		else
++			mask = hwif->mwdma_mask;
++		mask &= id->dma_mword;
+ 		break;
+ 	case XFER_SW_DMA_0:
+ 		if (id->field_valid & 2) {
+Index: linux-2.6/drivers/ide/ide-lib.c
+===================================================================
+--- linux-2.6.orig/drivers/ide/ide-lib.c
++++ linux-2.6/drivers/ide/ide-lib.c
+@@ -103,7 +103,9 @@ u8 ide_rate_filter(ide_drive_t *drive, u
+ 		base = XFER_MW_DMA_0;
+ 		/* Fall thru */
+ 	case XFER_MW_DMA_0:
+-		if (hwif->mwdma_mask & bit)
++		mask = hwif->mdma_filter ? hwif->mdma_filter(drive) :
++					   hwif->mwdma_mask;
++		if (mask & bit)
+ 			break;
+ 		base = XFER_SW_DMA_0;
+ 		/* Fall thru */
+Index: linux-2.6/drivers/ide/ide.c
+===================================================================
+--- linux-2.6.orig/drivers/ide/ide.c
++++ linux-2.6/drivers/ide/ide.c
+@@ -398,6 +398,7 @@ static void ide_hwif_restore(ide_hwif_t 
+ 
+ 	hwif->tuneproc			= tmp_hwif->tuneproc;
+ 	hwif->speedproc			= tmp_hwif->speedproc;
++	hwif->mdma_filter		= tmp_hwif->mdma_filter;
+ 	hwif->udma_filter		= tmp_hwif->udma_filter;
+ 	hwif->selectproc		= tmp_hwif->selectproc;
+ 	hwif->reset_poll		= tmp_hwif->reset_poll;
+Index: linux-2.6/drivers/ide/pci/hpt366.c
+===================================================================
+--- linux-2.6.orig/drivers/ide/pci/hpt366.c
++++ linux-2.6/drivers/ide/pci/hpt366.c
+@@ -1,5 +1,5 @@
+ /*
+- * linux/drivers/ide/pci/hpt366.c		Version 1.12	Aug 25, 2007
++ * linux/drivers/ide/pci/hpt366.c		Version 1.13	Aug 22, 2007
+  *
+  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
+  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
+@@ -114,7 +114,7 @@
+  *   unify HPT36x/37x timing setup code and the speedproc handlers by joining
+  *   the register setting lists into the table indexed by the clock selected
+  * - set the correct hwif->ultra_mask for each individual chip
+- * - add UltraDMA mode filtering for the HPT37[24] based SATA cards
++ * - add Ultra and MW DMA mode filtering for the HPT37[24] based SATA cards
+  *	Sergei Shtylyov, <sshtylyov@ru.mvista.com> or <source@mvista.com>
+  */
+ 
+@@ -562,6 +562,24 @@ static u8 hpt3xx_udma_filter(ide_drive_t
+ 	return check_in_drive_list(drive, bad_ata33) ? 0x00 : mask;
+ }
+ 
++static u8 hpt3xx_mdma_filter(ide_drive_t *drive)
++{
++	ide_hwif_t *hwif	= HWIF(drive);
++	struct hpt_info *info	= pci_get_drvdata(hwif->pci_dev);
++
++	switch (info->chip_type) {
++	case HPT372 :
++	case HPT372A:
++	case HPT372N:
++	case HPT374 :
++		if (ide_dev_is_sata(drive->id))
++			return 0x00;
++		/* Fall thru */
++	default:
++		return 0x07;
++	}
++}
++
+ static u32 get_speed_setting(u8 speed, struct hpt_info *info)
+ {
+ 	int i;
+@@ -1257,6 +1275,7 @@ static void __devinit init_hwif_hpt366(i
+ 	hwif->busproc		= &hpt3xx_busproc;
+ 
+ 	hwif->udma_filter	= &hpt3xx_udma_filter;
++	hwif->mdma_filter	= &hpt3xx_mdma_filter;
+ 
+ 	/*
+ 	 * HPT3xxN chips have some complications:
+Index: linux-2.6/include/linux/ide.h
+===================================================================
+--- linux-2.6.orig/include/linux/ide.h
++++ linux-2.6/include/linux/ide.h
+@@ -723,6 +723,7 @@ typedef struct hwif_s {
+ 	/* driver soft-power interface */
+ 	int	(*busproc)(ide_drive_t *, int);
+ #endif
++	u8 (*mdma_filter)(ide_drive_t *);
+ 	u8 (*udma_filter)(ide_drive_t *);
+ 
+ 	void (*ata_input_data)(ide_drive_t *, void *, u32);
+
