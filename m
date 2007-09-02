@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965954AbXIBLyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965998AbXIBLzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965954AbXIBLyZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 07:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965114AbXIBLyN
+	id S965998AbXIBLzK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 07:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965212AbXIBLyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 07:54:13 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39007 "EHLO
+	Sun, 2 Sep 2007 07:54:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45010 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964926AbXIBLyM (ORCPT
+	by vger.kernel.org with ESMTP id S965178AbXIBLyy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 07:54:12 -0400
-Date: Sun, 2 Sep 2007 04:54:01 -0700
+	Sun, 2 Sep 2007 07:54:54 -0400
+Date: Sun, 2 Sep 2007 04:54:10 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabor Kovacs <kgabor@bolyai.elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: User process freezes on NFSv4 client
-Message-Id: <20070902045401.1b8a347c.akpm@linux-foundation.org>
-In-Reply-To: <200708161819.14437.kgabor@bolyai.elte.hu>
-References: <200708161819.14437.kgabor@bolyai.elte.hu>
+To: gshan <gshan@alcatel-lucent.com>
+Cc: linux-kernel@vger.kernel.org, Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: NFS client show nothing for "ls" command.
+Message-Id: <20070902045410.54738a77.akpm@linux-foundation.org>
+In-Reply-To: <46C528D4.9010904@alcatel-lucent.com>
+References: <46C528D4.9010904@alcatel-lucent.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,23 +25,50 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 16 Aug 2007 18:19:14 -0400 Gabor Kovacs <kgabor@bolyai.elte.hu> wrote:
-> Hello All,
+> On Fri, 17 Aug 2007 12:49:24 +0800 gshan <gshan@alcatel-lucent.com> wrote:
+> Hi All,
 > 
-> I've got NFSv4 problems on a big partition. Both NFS server and client run 
-> kernel version 2.6.21.6. Exported file system is on an AoE etherdrive 
-> (/dev/etherd/e1.1) device, having no partition table, XFS file system. The 
-> file system is pretty large,  8.9T. Typical file size 1-10M. 
+> Recently, I got a funny problem that my NFS client can't show some of 
+> mounted directories. These directories that can't be showed by "ls" 
+> command have great deals of files.
 > 
-> On the client side, after much time (3-7 days) of file intensive task, the 
-> user process freezes. Top command shows a "D" state for it, but many other 
-> command trying to "touch" it, freezes, too. (ps, fuser /nfs_dir, w) None of 
-> the frozen processes can be killed. New processes, however, can access the 
-> nfs4 mounted file system. Any idea?
+> For example. I have a directory on NFS server log and there are 69 
+> files. I can't show it's child files through NFS.
+> 
+> ---On NFS server---
+> bash-2.05b# ls
+> 1   13  17  20  24  28  31  35  39  42  46  5   53  57  60  64  68  9
+> 10  14  18  21  25  29  32  36  4   43  47  50  54  58  61  65  69
+> 11  15  19  22  26  3   33  37  40  44  48  51  55  59  62  66  7
+> 12  16  2   23  27  30  34  38  41  45  49  52  56  6   63  67  8
+> 
+> ---On NFS client---
+> # ls
+> #
+> 
+> After I delete one file from NFS server side, everything becomes OK.
+> 
+> ---On NFS server---
+> bash-2.05b# rm 69
+> bash-2.05b# ls
+> 1   13  17  20  24  28  31  35  39  42  46  5   53  57  60  64  68
+> 10  14  18  21  25  29  32  36  4   43  47  50  54  58  61  65  7
+> 11  15  19  22  26  3   33  37  40  44  48  51  55  59  62  66  8
+> 12  16  2   23  27  30  34  38  41  45  49  52  56  6   63  67  9
+> 
+> ---On NFS client---
+> # ls
+> 1   13  17  20  24  28  31  35  39  42  46  5   53  57  60  64  68
+> 10  14  18  21  25  29  32  36  4   43  47  50  54  58  61  65  7
+> 11  15  19  22  26  3   33  37  40  44  48  51  55  59  62  66  8
+> 12  16  2   23  27  30  34  38  41  45  49  52  56  6   63  67  9
+> #
+> 
+> I also scrapped the packets through ethereal and saw that packet sent at 
+> case 1) isn't valid. It only has 3 fileds: ., .. and last. I suppose the 
+> problem came from NFS server side because we can't received valid NFS 
+> packet for such directories with plenty of files. Anybody knew what's 
+> the root cause?
 > 
 
-Next time it happens, please run
-
-	echo t > /proc/sysrq-trigger
-
-then send the output of `dmesg -s 1000000'.  Thanks.
+what kernel are you running?
