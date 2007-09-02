@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964824AbXIBBJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933726AbXIBBNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964824AbXIBBJJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 21:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932648AbXIBBI4
+	id S933726AbXIBBNs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 21:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932648AbXIBBNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 21:08:56 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:47108 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932475AbXIBBI4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 21:08:56 -0400
-Date: Sun, 2 Sep 2007 03:23:53 +0200
-To: Bj?rn Steinbrink <B.Steinbrink@gmx.de>
-Cc: Willy Tarreau <w@1wt.eu>, Matti Aarnio <matti.aarnio@zmailer.org>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: [OT] good job guys with the anti-spam !
-Message-ID: <20070902012353.GC475@flower.upol.cz>
-References: <20070731214011.GA17735@1wt.eu> <E1IRdRq-00015P-S4@flower> <20070902003936.GA8005@atjola.homenet>
+	Sat, 1 Sep 2007 21:13:37 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:56772 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932923AbXIBBNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Sep 2007 21:13:36 -0400
+Message-ID: <46DA0E3B.1080509@garzik.org>
+Date: Sat, 01 Sep 2007 21:13:31 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070902003936.GA8005@atjola.homenet>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+To: Bob Beck <beck@bofh.cns.ualberta.ca>
+CC: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: r.kernel.org
+References: <20070902001913.GF24887@bofh.cns.ualberta.ca>
+In-Reply-To: <20070902001913.GF24887@bofh.cns.ualberta.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 02, 2007 at 02:39:36AM +0200, Bj?rn Steinbrink wrote:
-[]
+Bob Beck wrote:
 > 
-> Ehrm, you want everyone who wants to start a new thread to:
+>> I urge developers to not bait into this and just leave this alone.
+>> Those involved know what they are doing and have a strong team of
+>> attorneys watching their backs. Any *necessary* discussions are be
+>> done privately.
+>>
+>>  Luis
 > 
->  - send an email
->  - await response from the mail server
->  - send the same email again as a reply to the first one
+> 	What? when we talk about the ethics of cooperating development
+> and sharing code the response is "we have lawyers watching your backs"
+> and "we know what we are doing and have a plan"
+> 
+> 	What is this? a concerted attack by some organization on
+> the BSD projects? Would that be the FSF? or freesoftware.org?  
+> 
+> 	What kind of crap is this? that Free Software developers can't
+> respect each others project goals and work together, but instead should
+> beware of organizations with hidden agendas to abscond with their work. 
+> 
+> 	What a crock. I urge any developers involved to decide if
+> you really want to work in an environment of this sort of amoral baloney.
 
-No. Send a ticket request and then organize patch bomb with gotten ticket
-in `references:' or `in-reply-to'. New discussion thread: be organized
-have a pull of tickets, care about what you post, how you post, etc.
+Your BSD software appears to have a bug in it.  Your email's CC line was 
+truncated at "netdev@vge", with the rest spilling into your email's 
+subject line.
 
-Those new posters will get current footer with more info -- no problem.
+I'll wager this bug also triggered a buffer overflow on your side, 
+leading to an unwanted public spew of anti-Linux conspiracy theories.
 
-People in thread need no work at all. Linus, Andrew, Jeff, DaveM etc.
-are likely to be in white list with no additional work also.
+But don't worry, we find them entertaining nonetheless.
 
-It's anti-spam thing, but maybe it can be kind of netiquette, which is
-forgotten in modern XML Internet world. I didn't live in that time, but
-that's my impression. In case if efficient algo/logic will be implemented
-it will save CPU power, because all processing is done in header part of
-the message and it's a token lookup. Switch on your imagination and
-think, what can be done in another way, why not? 
-____
+	Jeff
+
+
+
