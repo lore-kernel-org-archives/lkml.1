@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758495AbXIBVNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbXIBVS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758495AbXIBVNn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 17:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbXIBVNe
+	id S1759212AbXIBVS0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 17:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbXIBVST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 17:13:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35705 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbXIBVNd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 17:13:33 -0400
-Date: Mon, 3 Sep 2007 02:56:39 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-cc: charles gagalac <charles.gagalac@gmail.com>,
-       daryll q <daryll_26m@yahoo.com.ph>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew <andrew@nelless.net>
-Subject: Re: Hang in 2.6.23-rc5
-In-Reply-To: <5a4c581d0709021338s1e9e0dc0md490a032781b60e8@mail.gmail.com>
-Message-ID: <alpine.LFD.0.999.0709030242060.29617@enigma.security.iitk.ac.in>
-References: <994260.18490.qm@web57301.mail.re1.yahoo.com> 
- <6cf66ee10709021205u7d57b93fv777f414dbba4373f@mail.gmail.com>
- <5a4c581d0709021338s1e9e0dc0md490a032781b60e8@mail.gmail.com>
+	Sun, 2 Sep 2007 17:18:19 -0400
+Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:46509 "EHLO
+	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751228AbXIBVSS convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 17:18:18 -0400
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [PATCH -mm] sisusbvga: Fix bug and build warnings
+Date: Sun, 2 Sep 2007 22:18:06 +0100
+User-Agent: KMail/1.9.7
+Cc: "Satyam Sharma" <satyam@infradead.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Thomas Winischhofer" <thomas@winischhofer.net>,
+       "Greg Kroah-Hartman" <greg@kroah.com>,
+       linux-usb-devel@lists.sourceforge.net
+References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0709030159320.29617@enigma.security.iitk.ac.in> <9a8748490709021323k3d4adbddv53346aacdd66ab57@mail.gmail.com>
+In-Reply-To: <9a8748490709021323k3d4adbddv53346aacdd66ab57@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709022218.06849.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 2 Sep 2007, Alessandro Suardi wrote:
-> 
-> On 9/2/07, charles gagalac <charles.gagalac@gmail.com> wrote:
-> > On 9/2/07, daryll q wrote:
-> > > Upgraded my kernel from 2.6.23-rc2 to 2.6.23-rc5.
-> > >
-> > >  System hangs (caps lock and scroll lock leds are both flashing).
-> > >
-> > >  It *randomly* happens but most of the time during after login to KDE.
-> > >
-> > >  I have not investigated it yet because I have not tried doing it  before.
-> > >
-> > >  Also the system is really not responding so I can't do much.. Just
-> > >  hope it blue screen so I can send the error code easily :)
+On Sunday 02 September 2007 21:23:16 Jesper Juhl wrote:
+> On 02/09/07, Satyam Sharma <satyam@infradead.org> wrote:
+> > Hi Jesper,
 > >
-> > i experienced hangs, with the flashing caps and scroll locks as you've
-> > described, in a few of my later pulls prior to rc5.  i couldn't
-> > reproduce the hangs and my logs didn't show evidence of a problem.  my
-> > system under rc5, so far, hasn't hung on me.
-> 
-> Oh, I thought I was the only one. I also had a single hang+flashing
->  Caps & Scroll Lock with -rc5, but haven't had one since.
+> > On Sun, 2 Sep 2007, Jesper Juhl wrote:
+> > > > -       if (!(interface = usb_find_interface(&sisusb_driver,
+> > > > subminor))) { -               dev_err(&sisusb->sisusb_dev->dev,
+> > > > "Failed to find interface¥n");
+> > >
+> > > Odd how in your patch the line ends with  "¥n"  but if I look in my
+> > > local copy of the source tree I see  "\n".
+> >
+> > Odd, indeed. I see correct '\n' in the mail I sent, but in your mail
+> > here it's coming out wrong -- lkml.org shows badness as well. Hmmm,
+> > "insert file" using ^R in alpine never gave any problems before ...
 
-Looks like a full-blown panic to me. Didn't any of you guys manage to
-catch anything in /var/log/messages? Else, please try reproducing this
-with a serial console or netconsole at least. netconsole should be easy
-to setup, instructions on how to use that here:
+The encoding is set to ISO-2022-JP, this is probably breaking things.
 
-(very long URL)
-http://git.kernel.org/?p=linux/kernel/git/davem/net-2.6.24.git;a=blob_plain;f=Documentation/networking/netconsole.txt;hb=HEAD
+-- 
+Cheers,
+Alistair.
+
+137/1 Warrender Park Road, Edinburgh, UK.
+
