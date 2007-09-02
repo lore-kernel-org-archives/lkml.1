@@ -1,63 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbXIBRs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758492AbXIBR5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758784AbXIBRs0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 13:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbXIBRsT
+	id S1758492AbXIBR5z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 13:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbXIBR5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 13:48:19 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:20936 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753664AbXIBRsS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 13:48:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=isyEwD/7vlHWtk4c2GDSIu1noallG/G2R4uHH6akJYFb2uuOGH+6w2sypsoqO/0X+aXqltkCwcWj6eY4AF6SIYV2IW5YaNu09IxaPlXHvuo6UTO5aW7dyr3PzGuMoMdKq7b6xfk/XwnDe/VIWMI+wl8aZ2FRRwfG9vclvIBwdvg=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Steve French <sfrench@samba.org>
-Subject: [PATCH][Trivial] CIFS: Use ssleep() instead of msleep() when sleeping multiple seconds
-Date: Sun, 2 Sep 2007 19:44:49 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-cifs-client@lists.samba.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Sun, 2 Sep 2007 13:57:46 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55960 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751765AbXIBR5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 13:57:45 -0400
+Message-ID: <46DAF995.8020301@garzik.org>
+Date: Sun, 02 Sep 2007 13:57:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: espie@nerim.net
+CC: linux-kernel@vger.kernel.org
+Subject: Re: GPL weasels and the atheros stink
+References: <20070902140306.GA27317@lain.home>
+In-Reply-To: <20070902140306.GA27317@lain.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709021944.49862.jesper.juhl@gmail.com>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-A little trivial thing...
+(more serious reply now ensues)
 
-When sleeping for multiple seconds the function to use is
-ssleep() not msleep() - especially when there's a comment 
-above reading "... wait at least 45 seconds ...", then 
-ssleep() best describes what is wanted.
+Marc Espie wrote:
+> After reading the current email exchanges, I've become convinced
+> there is something VERY fishy going on, and some people there have 
+> hidden agendas.
+> 
+> Look at the situation: Reyk Floeter writes some code, puts it
+> under a dual licence, and goes on vacation.
+> 
+> While he's away, some other people (Jiri, for starters) tweak the
+> copyright and licence on the file he's mostly written. Without asking
+
+Dude, you have got to put down the conspiracy juice.
+
+NOTHING IS IN STONE, because nothing has been committed to my 
+repository, much less torvalds/linux-2.6.git.
+
+A patch was posted, people complained, corrections were made.  That's 
+how adults handle mistakes.  Mistakes were made, and mistakes were 
+rectified.
 
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+> Reyk. Without even having the basic decency to wait for him to be
+> around.
 
- fs/cifs/connect.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Demonstrably false:  you cannot make that claim until the code is 
+actually committed to Linux.
 
-diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index 4af3588..0a9b76a 100644
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -733,7 +733,7 @@ multi_t2_fnd:
- 		on a request getting a response and going ahead
- 		and killing cifsd */
- 		cFYI(1, ("Wait for exit from demultiplex thread"));
--		msleep(46000);
-+		ssleep(46);
- 		/* if threads still have not exited they are probably never
- 		coming home not much else we can do but free the memory */
- 	}
+
+> The only possible issue is related to paranoia: if this file stays
+> dual-licenced, some of its code may escape from the GPL shrine, and
+> become available to the cuddly BSD people... but since their licence
+> doesn't protect anything, it could used by the Evil Empire of Microsoft,
+> or SCO, or whoever is the villain of the month.
+
+This is a classic straw man:  http://en.wikipedia.org/wiki/Straw_man
+
+_You_ are paranoid about these changes, and you project your fears upon 
+us.  None of this applies to the vast majority of Linux engineers.
+
+
+> Woah. You guys kill me. If you want to protect against that, just make
+> sure the code you want to protect stays inside its own file! But frankly,
+> removing Reyk's licence, or heck, making it `second class' (the file was
+> originally under this licence) shows incredibly poor ethics. (I'll let
+
+So I guess when that was corrected, and a mistake was admitted and 
+corrected, it shows good ethics?
+
+
+> actual lawyers comment on the legality of that, but some informed sources
+> tell me this is also downright illegal in most places).
+
+Removing the copyright and license ON NON-DUAL-LICENSED CODE -- yes, 
+that was wrong, and it was fixed.
+
+But for dual-licensed code, it is fine.  The license text explicitly 
+permits selection of one OR the other license.
+
+
+> Linux is so proud of its numerous drivers... I think that it's a story of
+
+<guffaw>  As a major Linux driver author and maintainer, I can tell you 
+they are just as grotty as any other piece of code.
+
+
+> pride: some people can't bear the fact that sometimes, some interesting
+> development happens outside of linux first. I'm very proud of my fellow
+> members of the OpenBSD project, who managed to get some wireless cards to
+> work WITHOUT any nwi binary blob, and BEFORE the linux people managed to
+> get them to work.
+
+Good engineers just don't have time for shite like this.  And our 
+wireless guys are good engineers, just like Reyk.
+
+
+> So, now, it's down to dirty fighting. Absorbing and `relicensing' and 
+> evolving code.  Have you all been bitten my RMS paranoia (that leads to
+> this `interesting GPLv3) ?
+
+You've missed the last ten years or so of Linux kernel development, 
+haven't you?
+
+Linux kernel peeps are traditionally not fans of the FSF (and that is an 
+understatement in some cases).
+
+Next time, please look at the facts before letting Theo lead you like a 
+mind-numbed robot.
+
+	Jeff
+
+
 
