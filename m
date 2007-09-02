@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965383AbXIBMQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965819AbXIBMTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965383AbXIBMQj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 08:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbXIBMQb
+	id S965819AbXIBMTq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 08:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbXIBMTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 08:16:31 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:48331 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751975AbXIBMQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 08:16:30 -0400
-Date: Sun, 2 Sep 2007 16:19:43 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Kerrisk <mtk-manpages@gmx.net>
-Subject: Re: [RFC + PATCH] signalfd simplification
-Message-ID: <20070902121943.GA141@tv-sign.ru>
-References: <Pine.LNX.4.64.0709011618280.4045@alien.or.mcafeemobile.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 2 Sep 2007 08:19:39 -0400
+Received: from wx-out-0506.google.com ([66.249.82.236]:24089 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756543AbXIBMTi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 08:19:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dW+rEl2bbIeWvbbbREvtn/AqKu4Ri++CuZfC2dSj/gzBJ9q+EOBBGBJEs3ZQ1xHx24RqYTLBGIY3t16iYoOoPSlB78e6KUxlsEbpjVmTAr9WXOBJapsPp0x2U3vLicyhYX2KeB77ERMCqPhNjuT0sNS9Ah8GOBeE2VGQxU5lgyk=
+Message-ID: <9a8748490709020519i222bab93iad2c4fc1e59a41c3@mail.gmail.com>
+Date: Sun, 2 Sep 2007 14:19:37 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: [2/4] 2.6.23-rc4: known regressions
+Cc: "Ivan N. Zlatev" <contact@i-nz.net>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Thomas Meyer" <thomas@m3y3r.de>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <s5hodgqibf8.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709011618280.4045@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.11
+References: <46D58CC6.4020605@googlemail.com> <46D59052.6040609@googlemail.com>
+	 <3db1ec7f0708290842y176c48eck9f39131a107756f9@mail.gmail.com>
+	 <s5hodgqibf8.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/01, Davide Libenzi wrote:
+On 29/08/07, Takashi Iwai <tiwai@suse.de> wrote:
+> At Wed, 29 Aug 2007 18:42:56 +0300,
+> Ivan N. Zlatev wrote:
+> >
+> > On 8/29/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> > >
+> > > ALSA
+> > >
+> > > Subject         : Master volume control broken
+> > > References      : http://lkml.org/lkml/2007/8/18/46
+> > > Last known good : ?
+> > > Submitter       : Thomas Meyer <thomas@m3y3r.de>
+> > > Caused-By       : Ivan N. Zlatev <contact@i-nz.net>
+> > >                   commit 5d5d3bc3eddf2ad97b2cb090b92580e7fed6cee1
+> > > Handled-By      : Ivan N. Zlatev <contact@i-nz.net>
+> > > Status          : problem is being debugged
+> > >
+> > >
+> >
+> > Hello,
+> >
+> > I am not the one to handle the issue. I have just supplied the
+> > pinconfigs for the intel mac cards and assisted with logs/debug
+> > information, so I happen to be more of an end user. I am not familiar
+> > with the code base of the Intel HDA Codec. Takashi Iwai is the one
+> > with the knowledge to fix the problem.
 >
-> I'm playing at the moment with this patch, that recall Ben's idea  of 
-> attaching to the sighand only during read/poll, and calling dequeue_signal()
-> only with "current". This simplifies the signalfd logic quite a bit.
-> If this patch is applied, a task calling signalfd can read its own private 
-> signals, and its own group signals.
+> ... but without the hardware :-<
 >
->  fs/exec.c                 |    3 
->  fs/signalfd.c             |  186 +++++++---------------------------------------
->  include/linux/init_task.h |    2 
->  include/linux/sched.h     |    2 
->  include/linux/signalfd.h  |   29 -------
->  kernel/exit.c             |    9 --
->  kernel/fork.c             |    2 
->  kernel/signal.c           |    8 -
->  8 files changed, 40 insertions(+), 201 deletions(-)
+> IMO, this is actually no real regression.  In the earlier verison, you
+> didn't have controls for multiple outputs, thus the mixer control was
+> named as Master.  Now you do have multiple individual controls, and
+> thus there is no master any more, instead.  That's the trade-off.
+>
+Shouldn't the goal be to have both?  Multiple individual controls as
+well as a Master that adjusts them all.  That would also solve Thomas'
+problem.
+As I see it you broke Thomas' setup and that in my book is a regression.
 
-Imho, very very nice. We lose the ability to read the cross-process signals,
-but I doubt very much we should regret about that.
-
-I cc'ed Michael, because it makes sense to document a user-visible change.
-With this patch, the forked child reads its own signals (not parent's) via
-the inherited signalfd (or if it was passed with unix socket).
-
-Small problem: unless I missed something, signalfd_deliver() and sys_signalfd()
-should use wake_up_all(), not wake_up() which implies nr_exclusive == 1.
-
-It is possible that we have multiple threads waiting on ->signalfd_wqh with
-the the different ->sigmask. In this case, the first woken thread can ignore
-the signal, we should wake up all of them.
-
-We can optimize this later, using a "clever" wait_queue_func_t if needed.
-
-> +	spin_lock_irq(&current->sighand->siglock);
-> +	if (next_signal(&current->pending, &ctx->sigmask) > 0 ||
-> +	    next_signal(&current->signal->shared_pending,
-> +			&ctx->sigmask) > 0)
-
-Very minor nit: next_signal() always returns the value >= 0, imho the "> 0"
-check looks a bit confusing.
-
-Oleg.
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
