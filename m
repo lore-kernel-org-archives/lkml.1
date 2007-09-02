@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756330AbXIBI06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbXIBI1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756330AbXIBI06 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 04:26:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbXIBI0s
+	id S1757944AbXIBI1p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 04:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbXIBI1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 04:26:48 -0400
-Received: from europa.telenet-ops.be ([195.130.137.75]:33040 "EHLO
-	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753664AbXIBI0r (ORCPT
+	Sun, 2 Sep 2007 04:27:36 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58436 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754582AbXIBI1f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 04:26:47 -0400
-Date: Sun, 2 Sep 2007 10:26:41 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Rob Landley <rob@landley.net>, "Robert P. J. Day" <rpjday@mindspring.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       bos@serpentine.com, werner@almesberger.net
-Subject: Re: [PATCH] docs: ramdisk/initrd/initramfs corrections
-In-Reply-To: <46D74797.4070105@zytor.com>
-Message-ID: <Pine.LNX.4.64.0709021025571.21147@anakin>
-References: <20070830112055.2b2c8985.randy.dunlap@oracle.com>
- <Pine.LNX.4.64.0708301426360.4088@localhost.localdomain>
- <200708301836.48707.rob@landley.net> <46D74797.4070105@zytor.com>
+	Sun, 2 Sep 2007 04:27:35 -0400
+Date: Sun, 2 Sep 2007 14:10:37 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Ingo Molnar <mingo@elte.hu>
+cc: Daniel Walker <dwalker@mvista.com>, Roman Zippel <zippel@linux-m68k.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       peterz@infradead.org
+Subject: Re: [ANNOUNCE/RFC] Really Fair Scheduler
+In-Reply-To: <20070902072029.GA24427@elte.hu>
+Message-ID: <alpine.LFD.0.999.0709021349290.22654@enigma.security.iitk.ac.in>
+References: <Pine.LNX.4.64.0708310139280.1817@scrub.home>
+ <1188694367.11196.42.camel@dhcp193.mvista.com>
+ <20070902072029.GA24427@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Aug 2007, H. Peter Anvin wrote:
-> Rob Landley wrote:
-> > On Thursday 30 August 2007 1:28:17 pm Robert P. J. Day wrote:
-> > > On Thu, 30 Aug 2007, Randy Dunlap wrote:
-> > > 
-> > > ...
-> > > 
-> > > > The old "ramdisk=<ram_size>" has been changed to
-> > > > "ramdisk_size=<ram_size>" to make it clearer.  The original
-> > > > "ramdisk=<ram_size>" has been kept around for compatibility reasons,
-> > > > but it may be removed in the future.
-> > > ...
-> > > 
-> > > i just the other day submitted a patch to remove that backward
-> > > compatibility, and the m68k portion of it has already been acked by
-> > > geert uytterhoeven.
-> > 
-> > Could you mention it in feature-removal-schedule.txt?  (People check that
-> > for warning of upcoming changes that impact existing code.  They may not
-> > notice something elsewhere after they've got it working...)
-> > 
+
+
+On Sun, 2 Sep 2007, Ingo Molnar wrote:
 > 
-> The same objection applies to this as to the previous one.  In that respect,
-> an Ack from a maintainer of an almost unused architecture is meaningless
-> (sorry, Geert.)
+> Although it _should_ have been a net code size win, because if you look 
+> at the diff you'll see that other useful things were removed as well: 
+> sleeper fairness, CPU time distribution smarts, tunings, scheduler 
+> instrumentation code, etc.
 
-Of course I ack'ed the m68k part, iff the non-arch-specific part was accepted.
+To be fair to Roman, he probably started development off an earlier CFS,
+most probably 2.6.23-rc3-git1, if I guess correctly from his original
+posting. So it's likely he missed out on some of the tunings/comments(?)
+etc code that got merged after that.
 
-Gr{oetje,eeting}s,
+> > I also ran hackbench (in a haphazard way) a few times on it vs. CFS in 
+> > my tree, and RFS was faster to some degree (it varied)..
+> 
+> here are some actual numbers for "hackbench 50" on -rc5, 10 consecutive 
+> runs fresh after bootup, Core2Duo, UP:
 
-						Geert
+Again, it would be interesting to benchmark against 2.6.23-rc3-git1. And
+also probably rediff vs 2.6.23-rc3-git1 and compare how the code actually
+changed ... but admittedly, doing so would be utterly pointless, because
+much water has flowed down the Ganges since -rc3 (misc CFS improvements,
+Peter's patches that you mentioned). So a "look, I told you so" kind of
+situation wouldn't really be constructive at all.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> It would be far more reviewable and objectively judgeable on an item by 
+> item basis if Roman posted the finegrained patches i asked for. (which 
+> patch series should be sorted in order of intrusiveness - i.e. leaving 
+> the harder changes to the end of the series.)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Absolutely. And if there indeed are net improvements (be it for corner
+cases) over latest CFS-rc5, while maintaining performance for the common
+cases at the same time, well, that can only be a good thing.
+
+Just my Rs. 0.02,
+
+Satyam
