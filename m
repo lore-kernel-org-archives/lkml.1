@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934195AbXIBWWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932270AbXIBW0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934195AbXIBWWM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 18:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXIBWVy
+	id S932270AbXIBW0y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 18:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbXIBW0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 18:21:54 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:1287 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756150AbXIBWVw (ORCPT
+	Sun, 2 Sep 2007 18:26:44 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57026 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998AbXIBW0n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 18:21:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nK+YeNnq2LvNa848pjSDbJ9bMGuM79PKeAO6xVWEW4AsopkCzl7+SsK3NfLbbhv4mnJDJJTHUihYgt8aTtWsh2qKDncz5FvZKvXHetGJjrvIas59uP/gOHUquJHZ0eU0ZZKVP3Cr7oMYIPjpV7GoQog7VPh8t8zlQcmL6KxrO9k=
-Message-ID: <be1b757c0709021521q850f2bdq3f88c24c02c26b1b@mail.gmail.com>
-Date: Mon, 3 Sep 2007 00:21:50 +0200
-From: "Karl Meyer" <adhocrocker@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
-Cc: "Francois Romieu" <romieu@fr.zoreil.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <6bffcb0e0709021515v586f078cjce04f877e2f27aa2@mail.gmail.com>
+	Sun, 2 Sep 2007 18:26:43 -0400
+Date: Mon, 3 Sep 2007 04:09:15 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Jeff Garzik <jeff@garzik.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Bottomley <james.bottomley@steeleye.com>, aacraid@adaptec.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH -mm] IPS SCSI driver: Check return of scsi_add_host()
+In-Reply-To: <46DB1DCA.3050509@garzik.org>
+Message-ID: <alpine.LFD.0.999.0709030407040.31154@enigma.security.iitk.ac.in>
+References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i
+ n> <alpine.LFD.0.999.0709030142490.29617@enigma.security.iitk.ac.in>
+ <46DB1DCA.3050509@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com>
-	 <20070813165821.GA19356@electric-eye.fr.zoreil.com>
-	 <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com>
-	 <20070814070901.GA14693@electric-eye.fr.zoreil.com>
-	 <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com>
-	 <20070814224629.GB3495@electric-eye.fr.zoreil.com>
-	 <20070816141122.GA6625@electric-eye.fr.zoreil.com>
-	 <be1b757c0709011224tafebaaby697d03ab5377e20f@mail.gmail.com>
-	 <6bffcb0e0709021515v586f078cjce04f877e2f27aa2@mail.gmail.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-1312230887-1188772759=:31154"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-am am looking for this issue for some time now, but there where no
-errors in 2.6.22-r2 (gentoo speak, I guess this is 2.6.22.2
-officially), I also ran git-bisect (for more information see the older
-messages in this thread).
+--464262402-1312230887-1188772759=:31154
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-2007/9/3, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>:
-> Hi,
->
-> On 01/09/07, Karl Meyer <adhocrocker@gmail.com> wrote:
-> > This is what happened today:
-> >
-> > Sep  1 21:08:01 frege NETDEV WATCHDOG: eth0: transmit timed out
-> > frege ~ # uname -r
-> > 2.6.22.5-cfs-v20.5
->
-> Can you reproduce this on 2.6.22 (not 2.6.22.x - it might be a -stable
-> regression)?
->
-> Regards,
-> Michal
->
-> --
-> LOG
-> http://www.stardust.webpages.pl/log/
->
+
+
+On Sun, 2 Sep 2007, Jeff Garzik wrote:
+
+> Satyam Sharma wrote:
+> > drivers/scsi/ips.c: In function ‘ips_register_scsi’:
+> > drivers/scsi/ips.c:6869:
+> > warning: ignoring return value of ‘scsi_add_host’, declared with attribute
+> > warn_unused_result
+> > 
+> > scsi_add_host() is __must_check, so let's check it's return and cleanup
+> > appropriately on errors.
+> > 
+> > Signed-off-by: Satyam Sharma <satyam@infradead.org>
+> > 
+> > ---
+> > 
+> >  drivers/scsi/ips.c |    7 ++++++-
+> >  1 file changed, 6 insertions(+), 1 deletion(-)
+> > 
+> > --- linux-2.6.23-rc4-mm1/drivers/scsi/ips.c~fix	2007-09-02
+> > 20:21:27.000000000 +0530
+> > +++ linux-2.6.23-rc4-mm1/drivers/scsi/ips.c	2007-09-02 20:25:58.000000000
+> > +0530
+> > @@ -6866,7 +6866,12 @@ ips_register_scsi(int index)
+> >  	sh->max_channel = ha->nbus - 1;
+> >  	sh->can_queue = ha->max_cmds - 1;
+> >  -	scsi_add_host(sh, NULL);
+> > +	if (scsi_add_host(sh, NULL)) {
+> > +		IPS_PRINTK(KERN_WARNING, ha->pcidev, "Unable to add SCSI
+> > host\n");
+> > +		free_irq(ha->irq, ha);
+> > +		scsi_host_put(sh);
+> > +		return -1;
+> 
+> ACK, as long as you add a comment to this code and the request_irq() failure
+> code:  the oldha/old irq is not restored upon failure, in this function.
+> 
+> That is a pre-existing bug, and not your fault, but your patch "continues in
+> the same buggy tradition" :)  We should at least note the FIXME at each error
+> handling code branch.
+
+True, I did notice that (as well as the coding style issue you pointed
+out) when making the patch, but felt lazy to actually set it right fully.
+And that (when it's done) should be a separate patch anyway.
+--464262402-1312230887-1188772759=:31154--
