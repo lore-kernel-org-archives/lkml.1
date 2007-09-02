@@ -1,32 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966460AbXIBM3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966279AbXIBMaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966460AbXIBM3a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 08:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965249AbXIBM3L
+	id S966279AbXIBMaK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 08:30:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964987AbXIBM3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 08:29:11 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43539 "EHLO
+	Sun, 2 Sep 2007 08:29:50 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54665 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965247AbXIBM3J (ORCPT
+	with ESMTP id S965480AbXIBM3t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 08:29:09 -0400
-Date: Sun, 2 Sep 2007 13:36:36 +0100
+	Sun, 2 Sep 2007 08:29:49 -0400
+Date: Sun, 2 Sep 2007 13:38:00 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Igor Sobrado <igor@condmat1.ciencias.uniovi.es>
-Cc: "Constantine A. Murenin" <mureninc@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Message-ID: <20070902133636.51e1bef3@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
-References: <200709010140.l811eq9H005896@cvs.openbsd.org>
-	<f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
-	<46D99FB7.6030505@garzik.org>
-	<f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
-	<20070901205457.GK9260@stusta.de>
-	<20070902113638.78fbd202@the-village.bc.nu>
-	<Pine.LNX.4.64.0709021303001.4312@condmat1.ciencias.uniovi.es>
+To: "n" <xellos@bluebottle.com>
+Cc: <patrizio.bassi@gmail.com>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Kernel," <linux-kernel@vger.kernel.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
+       "Alan Cox" <alan@redhat.com>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: libata / pata drivers and smart , pata_via . pata_pdc202xx_old
+Message-ID: <20070902133800.7c188e98@the-village.bc.nu>
+In-Reply-To: <200709021158.l82BwCcR013983@mi0.bluebottle.com>
+References: <200709021158.l82BwCcR013983@mi0.bluebottle.com>
 X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -37,17 +33,13 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Sep 2007 13:20:27 +0200 (CEST)
-Igor Sobrado <igor@condmat1.ciencias.uniovi.es> wrote:
+On Sun, 2 Sep 2007 04:58:11 -0700
+"n" <xellos@bluebottle.com> wrote:
 
-> On Sun, 2 Sep 2007, Alan Cox wrote:
-> > You can shout this all you like but you would be wrong. You can remove
-> > the licence if you have permission to do so. For the ath c files there
-> > was permission to do so.
-> 
-> There was permission to do so from Reyk Floeter?  Really?
+> is it possible to get the new libata drivers (pata_via . pata_pdc202xx_old) 
+> to support smart?
+> i was looking at smartcrl -a and it says Device does not support SMART even 
+> though it does.
 
-The code pieces I quoted contained that choice. As far as I am concerned
-that is what the discussion was about. 
-
-Alan
+They support smart. You may need a newer smartctl or to use different
+options
