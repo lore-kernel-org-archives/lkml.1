@@ -1,96 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbXIBFJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbXIBFQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbXIBFJc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 01:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbXIBFJV
+	id S1758221AbXIBFQY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 01:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbXIBFQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 01:09:21 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:46362 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751104AbXIBFJT (ORCPT
+	Sun, 2 Sep 2007 01:16:15 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:60118 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbXIBFQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 01:09:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=M+BTJKgwSwrANu/QmLyrcfnKZyA9xGSnY933i2d0FNfs+6XITZVG46EyCbnKgJcTamydyvOMb30iACsBsNMF/OduKyTcotyuTCJiEoM7QRyMx4n5gT6q8bem7m91AIWP0Jsfqtt92H+xkr+KlivazsDJV2PzlKzntcdMIIrzJIQ=
-Message-ID: <f34ca13c0709012209x64c282b9o1fd0cb7d08690247@mail.gmail.com>
-Date: Sun, 2 Sep 2007 01:09:18 -0400
-From: "Constantine A. Murenin" <mureninc@gmail.com>
-To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
-Subject: Re: That whole "Linux stealing our code" thing
-Cc: "Adrian Bunk" <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, jirislaby@gmail.com,
-       "Nick Kossifidis" <mickflemm@gmail.com>
-In-Reply-To: <5619.1188704843@turing-police.cc.vt.edu>
+	Sun, 2 Sep 2007 01:16:14 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sun, 2 Sep 2007 01:04:41 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Denis Cheng <crquan@gmail.com>
+cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] net/ipv4/af_inet.c: use ARRAY_SIZE macro from kernel.h
+ instead
+In-Reply-To: <11887091471748-git-send-email-crquan@gmail.com>
+Message-ID: <Pine.LNX.4.64.0709020100180.17742@localhost.localdomain>
+References: <11887091471748-git-send-email-crquan@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200709010140.l811eq9H005896@cvs.openbsd.org>
-	 <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
-	 <46D99FB7.6030505@garzik.org>
-	 <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
-	 <20070901205457.GK9260@stusta.de> <20070901215225.GM9260@stusta.de>
-	 <3A831845-B630-42AD-B52F-DC9EA2060BAE@dixongroup.net>
-	 <20070902015537.GH16016@stusta.de>
-	 <5619.1188704843@turing-police.cc.vt.edu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/09/07, Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
-> On Sun, 02 Sep 2007 03:55:37 +0200, Adrian Bunk said:
+On Sun, 2 Sep 2007, Denis Cheng wrote:
+
+> Signed-off-by: Denis Cheng <crquan@gmail.com>
+> ---
+>  net/ipv4/af_inet.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 >
-> > Jiri's patch would have wrongly not only removed the BSD statement from
-> > dual licenced files but also from not dual licenced files.
-> >
-> > This was a mistake in this patch (that was never merged into the tree)
-> > neither Jiri nor Alan noticed.
+> diff --git a/net/ipv4/af_inet.c b/net/ipv4/af_inet.c
+> index e681034..d5e8b67 100644
+> --- a/net/ipv4/af_inet.c
+> +++ b/net/ipv4/af_inet.c
+> @@ -939,7 +939,7 @@ static struct inet_protosw inetsw_array[] =
+>         }
+>  };
 >
-> You know, we *could* have solved this a *hell* of a lot easier if people quit
-> flaming about it, and we did something *productive* instead.
+> -#define INETSW_ARRAY_LEN (sizeof(inetsw_array) / sizeof(struct inet_protosw))
+> +#define INETSW_ARRAY_LEN ARRAY_SIZE(inetsw_array)
 >
-> Like submit a corrected patch. :)
+>  void inet_register_protosw(struct inet_protosw *p)
+>  {
 
-Dear Valdis,
+denis:
 
-The idea here is that no patching was needed in the first place --
-most of the files are/were BSD-licensed, because they were forked from
-OpenBSD.
+if you're planning on doing this ARRAY_SIZE cleanup fairly rigorously,
+here's an overview of what you're looking (based on a fairly dumb
+scanning script that undoubtedly generates some false positives).  of
+course, the respective subsystem maintainers are welcome to deal with
+them first, of course.
 
-It is beneficial for the atmosphere of both projects to keep the
-licence compatible. If Linux tries to GPL future modifications to
-Reyk's code, then OpenBSD would not be able to take back the changes.
-But this would not be the case if all modifications to Reyk's code are
-continued to be BSD-licensed. This is what this whole issue is about.
+p.s.  and when you submit those patches, it's necessary to submit them
+to only the appropriate subsystem mailing lists, not to the LKML in
+general.
 
-My understanding, is that Nick Kossifidis never had a problem with
-licensing his changes with a BSD-license, although Jiri Slaby always
-used GPLv2.
 
-With the last patch posted by Luis [0], Jiri actually recalled his
-original patch and relicensed all of his GPLv2 work under BSD (!);
-however, at the very same time, Nick changed his mind, and decided to
-relicense his BSD code under GPLv2 (!). (Surprise! Yes, it appears
-that both Nick and Jiri decided to switch their licensing positions,
-and mutually relicense their work under each other's respective
-licence. :) Is everyone ready going to go back and forth now? Does
-this whole story still makes any sense to you? :)
+===== Where ARRAY_SIZE() might be used ...
 
-I hope that both Nick Kossifidis and Jiri Slaby can agree on licensing
-their HAL code with a BSD licence, so that the code remains
-licence-compatible with OpenBSD. If there are any unresolved licensing
-questions, I personally would be more than happy to answer any such
-questions as much as I can, and yes -- I am not a lawyer. :)
+./Documentation/CodingStyle:  #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+./Documentation/hpet.txt:	for (i = 0; i < (sizeof (hpet_command) / sizeof (hpet_command[0])); i++)
+./Documentation/spi/spidev_test.c:#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+./include/acpi/acmacros.h:#define ACPI_ARRAY_LENGTH(x)            (sizeof(x) / sizeof((x)[0]))
+./include/linux/netfilter/xt_sctp.h:#define ELEMCOUNT(x) (sizeof(x)/sizeof(x[0]))
+./include/linux/kernel.h:#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+./include/asm-parisc/mmzone.h:	BUG_ON(i >= sizeof(pfnnid_map) / sizeof(pfnnid_map[0]));
+./include/asm-sh/hw_irq.h:#define _INTC_ARRAY(a) a, sizeof(a)/sizeof(*a)
+./include/video/sgivw.h:#define DBE_VT_SIZE  (sizeof(dbeVTimings)/sizeof(dbeVTimings[0]))
+./include/net/ip_vs.h:#define IP_VS_INIT_HASH_TABLE(t) ip_vs_init_hash_table(t, sizeof(t)/sizeof(t[0]))
+./kernel/compat.c:		for (j = 0; j < sizeof(m)/sizeof(um); j++) {
+./kernel/compat.c:		for (j = 0; j < sizeof(m)/sizeof(um); j++) {
+./arch/m68k/amiga/amisound.c:#define DATA_SIZE	(sizeof(sine_data)/sizeof(sine_data[0]))
+./arch/i386/boot/compressed/relocs.c:#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+./arch/x86_64/kernel/smpboot.c:	for (i = 0; i < sizeof(regs) / sizeof(*regs); i++) {
+./arch/mips/au1000/common/dbdma.c:#define DBDEV_TAB_SIZE (sizeof(dbdev_tab) / sizeof(dbdev_tab_t))
+./arch/cris/arch-v10/kernel/setup.c:	if (revision >= sizeof cpu_info/sizeof *cpu_info)
+./arch/cris/arch-v10/kernel/setup.c:		info = &cpu_info[sizeof cpu_info/sizeof *cpu_info - 1];
+./arch/um/include/user.h:#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+./arch/um/kernel/tt/ptproxy/ptrace.c:		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
+./arch/um/kernel/tt/ptproxy/ptrace.c:		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
+./arch/um/kernel/tt/ptproxy/ptrace.c:		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
+./arch/um/kernel/tt/ptproxy/ptrace.c:		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
+./arch/um/kernel/tt/ptproxy/ptrace.c:		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
+./arch/um/kernel/tt/ptproxy/ptrace.c:		for (i = 0; i < sizeof(regs)/sizeof(regs[0]); i++)
+./arch/arm/kernel/dma-isa.c:		for (i = 0; i < sizeof(dma_resources) / sizeof(dma_resources[0]); i++)
+./arch/avr32/mach-at32ap/time-tc.c:	int divs_size = sizeof(divs) / sizeof(*divs);
+./arch/powerpc/platforms/celleb/scc_sio.c:	for(i = 0; i < sizeof(txx9_scc_tab)/sizeof(txx9_scc_tab[0]); i++) {
+./arch/powerpc/boot/types.h:#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+./scripts/mod/file2alias.c:#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+./drivers/char/synclink_gt.c:	static unsigned int count = sizeof(patterns)/sizeof(patterns[0]);
+./drivers/mtd/nand/excite_nandflash.c:				   sizeof partition_info / sizeof partition_info[0]);
+./drivers/message/fusion/mptbase.c:		if (u16cnt < sizeof(ioc->hs_reply) / sizeof(ioc->hs_reply[0]))
+./drivers/serial/mcfserial.c:			(sizeof(mcfrs_baud_table)/sizeof(mcfrs_baud_table[0]))
+./drivers/serial/68328serial.c:#define BAUD_TABLE_SIZE (sizeof(baud_table)/sizeof(baud_table[0]))
+./drivers/serial/68328serial.c:	for (i = 0; i < sizeof(baud_table) / sizeof(baud_table[0]); i++)
+./drivers/serial/68328serial.c:	if (i >= sizeof(baud_table) / sizeof(baud_table[0])) {
+./drivers/zorro/names.c:#define MANUF( manuf, name )		{ 0x##manuf, sizeof(__prods_##manuf) / sizeof(struct zorro_prod_info), __manufstr_##manuf, __prods_##manuf },
+./drivers/media/video/saa7134/saa7134-tvaudio.c:#define TVAUDIO (sizeof(tvaudio)/sizeof(struct saa7134_tvaudio))
+./drivers/media/video/tveeprom.c:#define STRM(array,i) (i < sizeof(array)/sizeof(char*) ? array[i] : "unknown")
+./drivers/media/video/mxb.c:	.num_stds	= sizeof(standard)/sizeof(struct saa7146_standard),
+./drivers/media/video/dpc7146.c:	.num_stds	= sizeof(standard)/sizeof(struct saa7146_standard),
+./drivers/media/dvb/ttpci/budget-av.c:	.num_stds = sizeof(standard) / sizeof(struct saa7146_standard),
+./drivers/pcmcia/i82365.c:#define PCIC_COUNT	(sizeof(pcic)/sizeof(pcic_t))
+./drivers/isdn/hardware/eicon/message.c:      i<(sizeof(ftable)/sizeof(struct _ftable));
+./drivers/net/zorro8390.c:	for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++) {
+./drivers/net/lp486e.c:#define SIZE(x)	(sizeof(x)/sizeof((x)[0]))
+./drivers/net/irda/actisys-sir.c:#define MAX_SPEEDS (sizeof(baud_rates)/sizeof(baud_rates[0]))
+./drivers/net/ne-h8300.c:		for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++)
+./drivers/net/cs89x0.c:			if (i >= sizeof(cs8900_irq_map)/sizeof(cs8900_irq_map[0]))
+./drivers/net/cs89x0.c:		for (i = 0; i != sizeof(cs8900_irq_map)/sizeof(cs8900_irq_map[0]); i++)
+./drivers/net/cs89x0.c:		if (i == sizeof(cs8900_irq_map)/sizeof(cs8900_irq_map[0]))
+./drivers/net/netxen/netxen_nic_hw.c:		for (i = 0; i < (sizeof(locs) / sizeof(locs[0])); i++) {
+./drivers/net/skfp/smt.c:#define N_SMT_PLEN	(sizeof(smt_pdef)/sizeof(smt_pdef[0]))
+./drivers/net/skfp/srf.c:#define MAX_EVCS	(sizeof(smc->evcs)/sizeof(smc->evcs[0]))
+./drivers/net/skfp/srf.c:#define MAX_INIT_EVC	(sizeof(evc_inits)/sizeof(evc_inits[0]))
+./drivers/net/apne.c:	for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++) {
+./drivers/net/ne2k-pci.c:		for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++)
+./drivers/net/atl1/atl1_hw.c:	if (hw->flash_vendor >= sizeof(flash_table) / sizeof(flash_table[0]))
+./drivers/net/pcmcia/axnet_cs.c:    for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++)
+./drivers/net/pcmcia/pcnet_cs.c:#define NR_INFO		(sizeof(hw_info)/sizeof(hw_info_t))
+./drivers/net/pcmcia/pcnet_cs.c:    for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++)
+./drivers/net/arm/am79c961a.c:	for (i = 0; i < sizeof(multi_hash) / sizeof(multi_hash[0]); i++)
+./drivers/net/ne.c:		for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++)
+./drivers/net/ibm_emac/ibm_emac_debug.c:	if (idx >= sizeof(__emacs) / sizeof(__emacs[0])) {
+./drivers/net/ibm_emac/ibm_emac_debug.c:	if (idx >= sizeof(__mals) / sizeof(__mals[0])) {
+./drivers/net/ibm_emac/ibm_emac_debug.c:	for (i = 0; i < sizeof(__mals) / sizeof(__mals[0]); ++i)
+./drivers/net/ibm_emac/ibm_emac_debug.c:	for (i = 0; i < sizeof(__emacs) / sizeof(__emacs[0]); ++i)
+./drivers/net/fec_8xx/fec_mii.c:	for (i = 0, phy = phy_info; i < sizeof(phy_info) / sizeof(phy_info[0]);
+./drivers/net/fec_8xx/fec_mii.c:	if (i >= sizeof(phy_info) / sizeof(phy_info[0])) {
+./drivers/net/atarilance.c:#define	N_LANCE_ADDR	(sizeof(lance_addr_list)/sizeof(*lance_addr_list))
+./drivers/net/ne2.c:		for (i = 0; i < sizeof(program_seq)/sizeof(program_seq[0]); i++)
+./drivers/net/wireless/libertas/fw.c:	for (i = 0; i < sizeof(adapter->wep_keys) / sizeof(adapter->wep_keys[0]);
+./drivers/net/wireless/libertas/main.c:	end = sizeof(region_cfp_table)/sizeof(struct region_cfp_table);
+./net/atm/proc.c:	    vcc->qos.aal >= sizeof(aal_name)/sizeof(aal_name[0]) ? "err" :
 
-Nick, Jiri -- since much of the work on OpenHAL is based on Reyk's
-HAL, could you please be so kind as to both agree to licence you
-changes in OpenHAL with the same licence as Reyk does in OpenBSD's
-ath(4) HAL? This step will be very welcome in the OpenBSD community at
-large.
 
-Best regards,
-Constantine.
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-[0] http://marc.info/?l=linux-wireless&m=118857712529898&w=2
+http://crashcourse.ca
+========================================================================
