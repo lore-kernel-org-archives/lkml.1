@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbXIBRks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934103AbXIBRlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758615AbXIBRks (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 13:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbXIBRkl
+	id S934103AbXIBRlc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 13:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbXIBRlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 13:40:41 -0400
-Received: from ipx20189.ipxserver.de ([80.190.249.56]:2669 "EHLO
-	ipx20189.ipxserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751226AbXIBRkk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 13:40:40 -0400
-Date: Sun, 2 Sep 2007 19:40:38 +0200
-From: Christian Leber <christian@leber.de>
-To: linux-kernel@vger.kernel.org
-Subject: Linux, 2.6.23-rc5, powersaving degradation, (time spend in C0 goes up after a while)
-Message-ID: <20070902174038.GA10877@core>
+	Sun, 2 Sep 2007 13:41:23 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50830 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752673AbXIBRlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 13:41:22 -0400
+Message-ID: <46DAF5C0.9070602@garzik.org>
+Date: Sun, 02 Sep 2007 13:41:20 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Accept-Language: de en
-X-Location: Europe, Germany, Mannheim
-X-Operating-System: Debian GNU/Linux (sid)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: espie@nerim.net
+CC: linux-kernel@vger.kernel.org
+Subject: Re: GPL weasels and the atheros stink
+References: <20070902140306.GA27317@lain.home>
+In-Reply-To: <20070902140306.GA27317@lain.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+> hidden agendas.
 
-I have observed some oddness in the powersaving behavior in rc5 and the
-rcs before and i suspect this may be scheduler related.
+ooh!
 
-After booting or resuming from drisk or ram(!) the wakeups are about
-45 per second (about 1% C0 (cpu runng)) and after
-about half an hour to hours of doing nothing with the laptop besides
-having a powertop in konsole the wakeups rise to about 6200 and the cpu
-is running 55% of the time.
+> Look at the situation: Reyk Floeter writes some code, puts it
+> under a dual licence, and goes on vacation.
+> While he's away, some other people (Jiri, for starters) tweak the
 
-(with rc3 this was odder, it took three time pretty exactly 43min until
-this occured)
-
-I appended the output of powertop and the .config.
-But powertop doesn't even show the reason for the wakeups, probably they
-don't exist, but the power usage really goes up.
-
-The hardware is btw. Dell latitude d830 (intel T7300, intel wlan and
-gfx)
-
-It's not a bad bug, it's just odd and eats about 4W of power.
+oh!
 
 
-Christian Leber
+> The only possible issue is related to paranoia:
+> the GPL shrine, and
+> the cuddly BSD people...
+> the Evil Empire of Microsoft,
+> or SCO, or whoever is the villain of the month.
 
--- 
-http://rettetdieti.vde-uni-mannheim.de/
+scary!
+
+> downright illegal in most places).
+
+<shiver>  BSD code stealing and anal sex, finally in the same category.
+
+
+> Linux is so proud of its numerous drivers...
+> some people can't bear the fact that sometimes, some interesting
+> development happens outside of linux first
+
+Linux have small penis.  OpenBSD have very large penis.  We jealous.  No 
+time for engineering, while staring at OpenBSD large penis.
+
+> RMS paranoia
+
+He scares us!
+
+> this `interesting GPLv3) ?
+
+Our hidden agenda revealed at last!  Curse you!
+
+> rabid linux zealots are all but intent on stealing his code
+
+> Nice going, GPL fan-boys...
+
+You forgot to blame George W. Bush for it all.
+
+	Jeff
+
+
 
