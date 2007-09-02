@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758129AbXIBCn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758375AbXIBCp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758129AbXIBCn7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Sep 2007 22:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbXIBCnw
+	id S1758375AbXIBCp6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Sep 2007 22:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbXIBCps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Sep 2007 22:43:52 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:33338 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753165AbXIBCnw (ORCPT
+	Sat, 1 Sep 2007 22:45:48 -0400
+Received: from mail-out5.netspace.net.au ([203.10.110.92]:62840 "EHLO
+	mail.netspace.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753413AbXIBCpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Sep 2007 22:43:52 -0400
-Date: Sat, 1 Sep 2007 20:43:49 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] TASK_KILLABLE version 2
-Message-ID: <20070902024348.GJ14130@parisc-linux.org>
+	Sat, 1 Sep 2007 22:45:46 -0400
+X-Greylist: delayed 1364 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Sep 2007 22:45:45 EDT
+Date: Sun, 2 Sep 2007 12:22:53 +1000
+From: Jonathan Gray <jsg@goblin.cx>
+To: Jason Dixon <jason@dixongroup.net>
+Cc: bunk@kernel.org, mureninc@gmail.com, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, jirislaby@gmail.com, alan@lxorguk.ukuu.org.uk
+Subject: Re: That whole "Linux stealing our code" thing
+Message-ID: <20070902022253.GA18201@mail.netspace.net.au>
+References: <200709010140.l811eq9H005896@cvs.openbsd.org> <f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com> <46D99FB7.6030505@garzik.org> <f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com> <20070901205457.GK9260@stusta.de> <3A831845-B630-42AD-B52F-DC9EA2060BAE@dixongroup.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <3A831845-B630-42AD-B52F-DC9EA2060BAE@dixongroup.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Sep 01, 2007 at 08:36:24PM -0400, Jason Dixon wrote:
+>
+> On Sep 1, 2007, at 5:52 PM, Adrian Bunk wrote:
+>
+>> OK, I begin to understand this, there seem to be three different types
+>> of files changed by Jiri's patch:
+>> 1. dual licenced files planned to make GPL-only
+>> 2. previously dual licenced files with a too recent version used planned
+>>    to make GPL-only
+>> 3. never dual licenced files planned to make GPL-only
+>>
+>> For files under 1. and 2. Reyk did contribute to dual licenced code
+>> without touching the licence, but I missed that there's also code unter 3.
+>>
+>> So there is a problem, but not with the code under 1. (unless you plan
+>> to change the semantics of the word "alternatively"), the problem is
+>> with some headers under 2. plus the code under 3.
+>
+> The BSD license plainly states:
+>
+> "Permission to use, copy, modify, and/or distribute this software for any
+> purpose with or without fee is hereby granted, provided that the above
+> copyright notice and this permission notice appear in all copies."
+>
+> Once the grantor (Reyk) releases his code under that license, it must 
+> remain.  You are free to derive work and redistribute under your license, 
+> but the original copyright and license permission remains intact.  Many 
+> other entities (Microsoft, Apple, Sun, etc) have used BSD code and have no 
+> problem understanding this.  Why is this so difficult for the Linux brain 
+> share to absorb?
+>
+> As a former Linux advocate and current OpenBSD user/developer, I'm appalled 
+> that fellow open-source developers would see fit to cavalierly disregard 
+> the rights of the original copyright holder.  You wield the GPL when it 
+> suits you, and trample the courtesies of non-GPL developers just because 
+> you [think you] can.  As bad as Jiri's offense was, it pales to the 
+> impudence displayed by Alan Cox, one of the so-called defenders of free 
+> software.
 
-Here's the second version of TASK_KILLABLE.  A few changes since version 1:
+>From http://www.mac.linux-m68k.org/docs/macpaper.php
 
- - Don't split up TASK_INTERRUPTIBLE and TASK_UNINTERRUPTIBLE.
-   TASK_WAKESIGNAL and TASK_LOADAVG were pretty much equivalent, and since
-   we had to keep __TASK_{UN,}INTERRUPTIBLE anyway, splitting them made
-   little sense.
- - Instead, I've added some is_task_*() predicates.  I think they
-   achieve what Linus wanted without consuming flag bits and without
-   checking a metric tonne of code to see whether it wanted
-   TASK_UNINTERRUPTIBLE or __TASK_UNINTERRUPTIBLE.
- - Renamed try_lock_page() to lock_page_killable() and change the sense.
-   I had envisioned uses being like spin_trylock(), but that turned out
-   not to make sense.
- - Fix the bug Trond noticed in wait_on_retry_sync_kiocb() by having the
-   callers handle it returning -EINTR
- - Fix the bug I noticed in sync_pages_killable() by adding the new
-   function fatal_signal_pending()
- - Audit a lot of uses of TASK_*.  A few seemed dubious and were fixed.
+"Always be the second operating system port to an undocumented platform.
+The sterling work done by the OpenBSD/Mac team was a huge help to the
+Linux project. I'm also happy to say that while half of the world may
+sit on usenet advocacy groups throwing manure the relationship between
+the Linux and BSD Macintosh teams has always been one of mutual
+co-operation. Together we advance our detective work and knowledge of
+the Macintosh platforms to the good of all Macintosh users dumped"
 
-I'd like to see this spend a bit of time in the -mm tree.  I've wasted
-a couple of days trying to track down why my machine no longer does
-much after starting init, so clearly I'm tampering with stuff I don't
-quite understand.
+Alan Cox circa 1999.
 
-Having said that, I ditched that version of the code and started again
-with a much more minimalist approach.  I've also split the patch into
-five independent pieces, each of which accomplishes a logical step,
-for ease of bisection.
+http://lists.freedesktop.org/archives/xorg/2007-August/027419.html
 
-I think patch 1/5 is clearly Right and should be merged ASAP.  Patch 2/5
-and 3/5 carry some risk.  4/5 and 5/5 seem less risky to me (and are
-independent of each other; both rely on 1-3 being applied first)
+"well I'd be quite happy to see X go GPL but I'm aware
+thats not the intention of the project ;)"
 
-I obviously haven't covered every place that can result in a process
-sleeping uninterruptibly while attempting an operation.  But sync_page
-(patch 4/5) covers about 90% of the times I've attempted to kill cat,
-and I hope that by providing the two examples, I can help other people
-to fix the cases that they find interesting.
+Alan Cox circa 2007.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+What changed? Why are you guys setting out to break all of the
+work underpinning UNIX and the Internet done in the 80s at
+Berkeley? The reason the protocols and infrastructure took
+off in the first place is due to liberal licenses that let everyone
+be involved, not wrapping things up in more restrictions and lawyers.
