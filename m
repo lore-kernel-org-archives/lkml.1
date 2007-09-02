@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbXIBECS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbXIBEF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754582AbXIBECS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 00:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbXIBECJ
+	id S1755535AbXIBEF0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 00:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbXIBEFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 00:02:09 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:51315 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750719AbXIBECI (ORCPT
+	Sun, 2 Sep 2007 00:05:12 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:1899 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750748AbXIBEFL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 00:02:08 -0400
-X-Sasl-enc: xVswniSdVIDSOyGfEj+8iXklS/U7A1KDvvtGNHNX7LmY 1188705726
-Date: Sun, 2 Sep 2007 01:02:03 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Shane <shane@cm.nu>, linux-kernel@vger.kernel.org
-Subject: Re: intel-rng on modern hardware
-Message-ID: <20070902040203.GA16520@khazad-dum.debian.net>
-References: <20070901194426.GA32713@csy.ca> <46D9CE20.9060603@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46D9CE20.9060603@garzik.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sun, 2 Sep 2007 00:05:11 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: kaber@trash.net (Patrick McHardy)
+Subject: Re: [Bugme-new] [Bug 8961] New: BUG triggered by oidentd in netlink code
+Cc: link@miggy.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, bugme-daemon@bugzilla.kernel.org
+Organization: Core
+In-Reply-To: <46D9957F.4020101@trash.net>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1IRghZ-0004EL-00@gondolin.me.apana.org.au>
+Date: Sun, 02 Sep 2007 12:04:45 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 01 Sep 2007, Jeff Garzik wrote:
-> Shane wrote:
->> Just wondering if there is a newer version of intel-rng out
->> of tree or whether modern Intel chipsets have a usable RNG. I haven't been 
->> able to get intel-rng loading (no such
->> device) on anything from the p965, p975 or p35 chipsets.
->
-> No modern ICH chipset has an RNG, AFAIK.
+Patrick McHardy <kaber@trash.net> wrote:
+> 
+> Thanks. I'm not sure either, it would require two concurrent requests
+> to be processed, but AFAICS oidentd only uses a single netlink socket.
+> Perhaps multiple running instances or something else using the inet_diag
+> interface?
 
-No ICH ever had one.
+Since identd serves requests from the outside world it is
+quite possible for two identd instances to run simultaneously
+serving two requests.
 
-The i810 era Intel RNG is in the FWH (the firmware hub, aka BIOS FLASH
-chip).  You can have it anywhere someone uses an original Intel 82802AB or
-82802AC FWH, no matter the chipset (the FWH is a LPC device).
+I'm not familiar with oidentd but this is certainly pidentd
+works.
 
-But you have to be lucky enough to get a Intel FWH, and one that has the RNG
-inside working.  I doubt Intel is producing them anymore, but you could ask
-them.  The last board I know of that had those *if you were lucky* was the
-D875PBZ.
-
+Cheers,
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
