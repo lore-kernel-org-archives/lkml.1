@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbXIBTF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758883AbXIBTFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756864AbXIBTF0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 15:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbXIBTFP
+	id S1758883AbXIBTFr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 15:05:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbXIBTFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 15:05:15 -0400
-Received: from ms-smtp-05.texas.rr.com ([24.93.47.44]:57525 "EHLO
-	ms-smtp-05.texas.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750947AbXIBTFO (ORCPT
+	Sun, 2 Sep 2007 15:05:37 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:44979 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752465AbXIBTFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 15:05:14 -0400
-Message-ID: <46DB0960.9060405@austin.rr.com>
-Date: Sun, 02 Sep 2007 14:05:04 -0500
-From: "Jonathan A. George" <jageorge@austin.rr.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Sun, 2 Sep 2007 15:05:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=b2njw6Fd2eICeY9WtyK4h+zXOJRTwwbpQWS9FN9hopwQa2LTxfINux5SWSG7MtyG8A9+XFbjD8sv37WFjeflDftwnUEjCcCTAQg1tWGY9uu+DCCA3MGtAekBvjPD2X1chyGM9hAnKx2uw7L0aoXI8bTB674FrFczcy5z02IedBU=
+Message-ID: <6cf66ee10709021205u7d57b93fv777f414dbba4373f@mail.gmail.com>
+Date: Sun, 2 Sep 2007 09:05:34 -1000
+From: "charles gagalac" <charles.gagalac@gmail.com>
+To: "daryll q" <daryll_26m@yahoo.com.ph>
+Subject: Re: Hang in 2.6.23-rc5
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <994260.18490.qm@web57301.mail.re1.yahoo.com>
 MIME-Version: 1.0
-To: Matthew Jacob <lydianconcepts@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: "GPL weasels and the atheros stink"
-References: <46DAF70E.9060800@austin.rr.com> <7579f7fb0709021131g43768bcet5a0895b5e56540ef@mail.gmail.com>
-In-Reply-To: <7579f7fb0709021131g43768bcet5a0895b5e56540ef@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <994260.18490.qm@web57301.mail.re1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Jacob wrote:
->  > Question #1: Is it _ethical_ (legality aside) to take someone else's
->> actively maintained work (for example an OpenBSD driver) and make
->> changes which can not be shared/used by the original developer/maintainer?
->>
->> Answer #1: Considering that the whole reason I personally choose the GPL
->> for some projects is to prevent this sort of one way street behavior
->> _away_ from the original OSS developers/contributors _my_ answer must
->> be; No it is not ethical.
-> 
-> I beg to differ. If you want to put things out there for others to use
-> but want to avoid having the situation as you describe it, simply
-> license the work as such (which would be neither BSD nor GPL)-
-> requiring any changes to come back to the original maintainer.
-> *Snort*. I seem to recall Unix commercial distributions that made
-> claims that bug fixes that you made belonged to them.
+On 9/2/07, daryll q wrote:
+> Upgraded my kernel from 2.6.23-rc2 to 2.6.23-rc5.
+>
+>  System hangs (caps lock and scroll lock leds are both
+> flashing).
+>
+>  It *randomly* happens but most of the time during
+> after login to KDE.
+>
+>  I have not investigated it yet because I have not
+> tried doing it
+>  before.
+>
+>  Also the system is really not responding so I can't
+> do much.. Just
+>  hope it blue screen so I can send the error code
+> easily :)
 
-... But is it _ethical_ (as opposed to legal) to violate the expressed 
-intent of the original author ...
+i experienced hangs, with the flashing caps and scroll locks as you've
+described, in a few of my later pulls prior to rc5.  i couldn't
+reproduce the hangs and my logs didn't show evidence of a problem.  my
+system under rc5, so far, hasn't hung on me.
 
-IP laws (including copyright) are generally used as an imperfect (and 
-internationally inconsistent) mechanism to protect intent, but inexact 
-application of those laws affects enforcement as law ... however, 
-respect for intent remains the ethical standard by which I (for one) 
-would prefer to govern my life.
-
---Jonathan--
+charles
