@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933501AbXIBKCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933580AbXIBKKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933501AbXIBKCz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 06:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbXIBKCs
+	id S933580AbXIBKKa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 06:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbXIBKKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 06:02:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57851 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755734AbXIBKCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 06:02:47 -0400
-Date: Sun, 2 Sep 2007 12:02:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Track accurate idle time with tick_sched.idle_sleeptime
-Message-ID: <20070902100215.GB26138@elte.hu>
-References: <20070827215611.GA30396@linux-os.sc.intel.com> <p73bqcmvxc6.fsf@bingen.suse.de> <20070902072806.GC5075@elte.hu> <20070902074622.GA16045@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070902074622.GA16045@one.firstfloor.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.0.3
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.2639]
+	Sun, 2 Sep 2007 06:10:20 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33360 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755187AbXIBKKT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 06:10:19 -0400
+Date: Sun, 2 Sep 2007 11:18:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jonathan Gray <jsg@goblin.cx>
+Cc: Jason Dixon <jason@dixongroup.net>, bunk@kernel.org, mureninc@gmail.com,
+       jeff@garzik.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       jirislaby@gmail.com
+Subject: Re: That whole "Linux stealing our code" thing
+Message-ID: <20070902111824.153bc036@the-village.bc.nu>
+In-Reply-To: <20070902022253.GA18201@mail.netspace.net.au>
+References: <200709010140.l811eq9H005896@cvs.openbsd.org>
+	<f34ca13c0709010948v67b04b58lb098713dc38c4d6a@mail.gmail.com>
+	<46D99FB7.6030505@garzik.org>
+	<f34ca13c0709011037p221cb40fjf69651d1858df212@mail.gmail.com>
+	<20070901205457.GK9260@stusta.de>
+	<3A831845-B630-42AD-B52F-DC9EA2060BAE@dixongroup.net>
+	<20070902022253.GA18201@mail.netspace.net.au>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> > at least the current out-of-idle code already does what amounts to a 
-> > PM-timer read when exiting from C2 or C3 mode. The
+> co-operation. Together we advance our detective work and knowledge of
+> the Macintosh platforms to the good of all Macintosh users dumped"
 > 
-> C2/C3 are already slow. I more worry about C1.
+> Alan Cox circa 1999.
+> 
+> http://lists.freedesktop.org/archives/xorg/2007-August/027419.html
+> 
+> "well I'd be quite happy to see X go GPL but I'm aware
+> thats not the intention of the project ;)"
+> Alan Cox circa 2007.
+> 
+> What changed? 
 
-C2/C3 are only slow in older CPUs - and they are getting faster and 
-faster. (also, newer systems do less of C1, due to increased energy 
-awareness.)
+Nothing that I am aware of. You can't take Linux/Mac68K code back into
+BSD either. BSD code is being used according to the BSD licence. You
+could adopt a different licence if the way your code is being used
+bothers you, thats.
 
-would be nice to measure the overhead/impact i suspect.
+Where I've reused BSD code I've aways tried to contribute it back to the
+BSD people or share the knowledge (and the knowledge far more than the
+code mattered both ways for Mac68K systems)
 
-	Ingo
+I suggest you read drivers/net/wan/syncppp.c, which is I think the only
+BSD derived bit of code of mine left in the kernel - and its quite
+specific what it says.
+
+Ath5k isn't my code so I don't get to pick. Having the OpenBSD maintainer
+make bogus remarks about that doesn't help anyone, especially when he's
+wrong and doesn't appear to know about the subject in the first place.
+
+Alan
