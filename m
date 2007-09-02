@@ -1,95 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbXIBUhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbXIBUii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758574AbXIBUhJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 16:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbXIBUg5
+	id S1759505AbXIBUii (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 16:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbXIBUia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 16:36:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35524 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751205AbXIBUg4 (ORCPT
+	Sun, 2 Sep 2007 16:38:30 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:40360 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049AbXIBUi3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 16:36:56 -0400
-Date: Mon, 3 Sep 2007 02:19:59 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Jeff Garzik <jeff@garzik.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <james.bottomley@steeleye.com>,
-       Oliver Neukum <oliver@neukum.name>, linux-scsi@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -mm] DC395x SCSI driver: Shut up uninitialized variable
- build warning
-In-Reply-To: <46DB1BDF.4090100@garzik.org>
-Message-ID: <alpine.LFD.0.999.0709030211040.29617@enigma.security.iitk.ac.in>
-References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.i
- n> <alpine.LFD.0.999.0709030152260.29617@enigma.security.iitk.ac.in>
- <46DB1BDF.4090100@garzik.org>
+	Sun, 2 Sep 2007 16:38:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cMYTMGXsax4+Ajvl4qg1dofDmVE33nwxZ54is21NLng+6M2H66qZWZpQaVsQM1/GITtG9I+l9lJUu/cJWC1RDLRggoWs3cjimKraKYrhvNnGD/0BrhiWqPuosdfoyhrXmyam1oZq09qTJpHuIZZiWWiO5rkCix+dg/56TW2ag84=
+Message-ID: <5a4c581d0709021338s1e9e0dc0md490a032781b60e8@mail.gmail.com>
+Date: Sun, 2 Sep 2007 22:38:28 +0200
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "charles gagalac" <charles.gagalac@gmail.com>
+Subject: Re: Hang in 2.6.23-rc5
+Cc: "daryll q" <daryll_26m@yahoo.com.ph>, linux-kernel@vger.kernel.org
+In-Reply-To: <6cf66ee10709021205u7d57b93fv777f414dbba4373f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-1586562954-1188766100=:29617"
-Content-ID: <alpine.LFD.0.999.0709030219380.29617@enigma.security.iitk.ac.in>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <994260.18490.qm@web57301.mail.re1.yahoo.com>
+	 <6cf66ee10709021205u7d57b93fv777f414dbba4373f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On 9/2/07, charles gagalac <charles.gagalac@gmail.com> wrote:
+> On 9/2/07, daryll q wrote:
+> > Upgraded my kernel from 2.6.23-rc2 to 2.6.23-rc5.
+> >
+> >  System hangs (caps lock and scroll lock leds are both flashing).
+> >
+> >  It *randomly* happens but most of the time during after login to KDE.
+> >
+> >  I have not investigated it yet because I have not tried doing it  before.
+> >
+> >  Also the system is really not responding so I can't do much.. Just
+> >  hope it blue screen so I can send the error code easily :)
+>
+> i experienced hangs, with the flashing caps and scroll locks as you've
+> described, in a few of my later pulls prior to rc5.  i couldn't
+> reproduce the hangs and my logs didn't show evidence of a problem.  my
+> system under rc5, so far, hasn't hung on me.
+>
+> charles
 
---464262402-1586562954-1188766100=:29617
-Content-Type: TEXT/PLAIN; CHARSET=iso-2022-jp
-Content-ID: <alpine.LFD.0.999.0709030219381.29617@enigma.security.iitk.ac.in>
+Oh, I thought I was the only one. I also had a single hang+flashing
+ Caps & Scroll Lock with -rc5, but haven't had one since.
 
+I had VMWare Player modules loaded at the time though, and I
+ recently rebuilt them with the any-any-patch-113 (earlier versions
+ would not build with very recent kernels).
 
+-rc4-git2 and -git3 never hung even with VMWare modules loaded.
 
-On Sun, 2 Sep 2007, Jeff Garzik wrote:
-> 
-> Satyam Sharma wrote:
-> > drivers/scsi/dc395x.c: In function ‘dc395x_init_one’:
-> > drivers/scsi/dc395x.c:4272: warning: ‘ptr’ may be used uninitialized in this
-> > function
-> > 
-> > has been verified to be a bogus warning. Let's shut it up.
-> > 
-> > Signed-off-by: Satyam Sharma <satyam@infradead.org>
-> > 
-> > ---
-> > 
-> >  drivers/scsi/dc395x.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > --- linux-2.6.23-rc4-mm1/drivers/scsi/dc395x.c~fix	2007-09-02
-> > 20:57:51.000000000 +0530
-> > +++ linux-2.6.23-rc4-mm1/drivers/scsi/dc395x.c	2007-09-02
-> > 21:10:49.000000000 +0530
-> > @@ -4269,7 +4269,7 @@ static int __devinit adapter_sg_tables_a
-> >  	const unsigned srbs_per_page = PAGE_SIZE/SEGMENTX_LEN;
-> >  	int srb_idx = 0;
-> >  	unsigned i = 0;
-> > -	struct SGentry *ptr;
-> > +	struct SGentry * uninitialized_var(ptr);
-> 
-> For things like this, we need to see (perhaps a separate email in the same
-> thread) your build details:  config, arch, compiler version, etc.
+So I disabled the autoload of VMWare stuff. The problem has not
+ reproduced so far. My system is a Dell D610, running updated
+ Fedora 7, with Intel 915GM video chipset.
 
-I'll post the info as a reply to the first mail in this series. I have
-fairly recent gcc (4.1.1) and I don't see us dropping support for it in
-the next few years.
+--alessandro
 
-> I paid careful attention to my recent set of uninitialized_var() markers (now
-> upstream), making sure that they persisted across several compiler versions,
-> ensuring the warning was not a temporary optimizer bug quickly remedied.
-> 
-> I hope to encourage similar diligence in others :)  These markers have the
-> very-real potential downside of hiding bugs, so they should be used sparingly.
+ "I can't believe you if I can't hear you"
 
-Well, uninitialized_var() is definitely more greppable than "= 0" which
-code all over does all the time :-) Anyway, the point is that the
-warnings are bogus anyway (hence maintainers Cc:'ed so that they can
-confirm if I arrived at the conclusion correctly) /and/ that
-uninitialized_var() stands out sorely, so I don't see bugs getting
-"hidden" at all -- in fact I did find two bugs during this process, and
-fixed them accordingly.
-
-Thanks,
-
-Satyam
---464262402-1586562954-1188766100=:29617--
+   (Editors, 'Smokers Outside The Hospital Doors')
