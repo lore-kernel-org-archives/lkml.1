@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933155AbXIBPLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933922AbXIBPPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933155AbXIBPLT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 11:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbXIBPLI
+	id S933922AbXIBPPb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 11:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbXIBPPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 11:11:08 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:33721 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752610AbXIBPLH (ORCPT
+	Sun, 2 Sep 2007 11:15:25 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:39967 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754493AbXIBPPY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 11:11:07 -0400
-Subject: Re: [ANNOUNCE/RFC] Really Fair Scheduler
-From: Daniel Walker <dwalker@mvista.com>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org
-In-Reply-To: <Pine.LNX.4.64.0709021634370.1817@scrub.home>
-References: <Pine.LNX.4.64.0708310139280.1817@scrub.home>
-	 <1188694367.11196.42.camel@dhcp193.mvista.com>
-	 <Pine.LNX.4.64.0709021634370.1817@scrub.home>
-Content-Type: text/plain
-Date: Sun, 02 Sep 2007 08:00:08 -0700
-Message-Id: <1188745208.11196.59.camel@dhcp193.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Sun, 2 Sep 2007 11:15:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LzlI956u0jzIh8BI82THwhByEWEMSBtlgvNqpVYKjZUF92Sk7zNpTuieVUm4R8A5hIsJBEhZhjeRXntbKgMqzEG41MG2MQUcqLocZlqGh+9JQJUvsEb/zjNiywf1qiFUIZQaX91uxT5tiQNjnwYwzByRht7fh3DzUTa+TMvKnvM=
+Message-ID: <8bd0f97a0709020815r75fcb225lf44bcb57783b436c@mail.gmail.com>
+Date: Sun, 2 Sep 2007 11:15:23 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: the Linux kernel, testsuites, and maybe *you*
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070902065926.GA15487@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com>
+	 <p733axyxcli.fsf@bingen.suse.de>
+	 <8bd0f97a0709011550y833fb5ax7d40cae937789fd8@mail.gmail.com>
+	 <20070902065926.GA15487@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-09-02 at 16:47 +0200, Roman Zippel wrote:
+On 9/2/07, Andi Kleen <andi@firstfloor.org> wrote:
+> On Sat, Sep 01, 2007 at 06:50:30PM -0400, Mike Frysinger wrote:
+> > On 02 Sep 2007 00:08:57 +0200, Andi Kleen <andi@firstfloor.org> wrote:
+> > > BTW string functions are best tested in user space. That's
+> > > a relatively bad example.
+> >
+> > in theory, maybe ... in reality, i really dont think so
+> >
+> > the string implementations are spread out over the kernel ... there's
+> > implementations in lib/, include/asm-*/, and arch/*/lib/ ... so any
+> > test code that would use these sources is going to be an ugly hack to
+> > make sure it grabs all the right pieces from all the right places.
+>
+> string functions tend to be self contained.
 
-> > > (1)	time = sum_{t}^{T}(time_{t})
-> > > (2)	weight_sum = sum_{t}^{T}(weight_{t})
-> > 
-> > I read your description, but I was distracted by this latex style
-> > notation .. Could you walk through in english what these two equation
-> > are doing ..
-> 
-> T is the number of tasks, so the first is the sum of the time every task 
-> gets over a period of time and the second is the sum of all weights of 
-> each task.
+"tend to be" does not lend itself to being cleanly tested ... and i
+imagine i'd get some pretty heavy resistance if i proposed
+re-organzing code just so that i could compile it outside of the
+kernel
 
-I think I'm more puzzled now than I was before, (scratches head for
-minutes) ..
+there is still the ABI issue ... code written in kernel space in pure
+asm cannot always be compiled in userspace and work properly/the same
 
-I see .. It's a summation symbol .. 
+> The other issue to test some of them properly you need unmapped pages
+> etc. That gets much easier to do in user space. There are some other
+> issues.
 
-For instance if there are three tasks in the system. Call them A,B, and
-C.
-
-then 
-
-time equals "time of A" + "time of B" + "time of C"
-
-Right? 
-
-Daniel
-
+you mean testing boundary overflows ?  can be handled with canaries
+rather than segfaults i imagine ...
+-mike
