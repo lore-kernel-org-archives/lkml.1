@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933739AbXIBIG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933542AbXIBINL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933739AbXIBIG2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 04:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbXIBIGO
+	id S933542AbXIBINL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 04:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbXIBIM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 04:06:14 -0400
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:37149 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750886AbXIBIGL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 04:06:11 -0400
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Junio C Hamano <gitster@pobox.com>, git@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] GIT 1.5.3
-References: <7vodglr32i.fsf@gitster.siamese.dyndns.org>
-	<46DA5F33.2020005@zytor.com>
-From: David Kastrup <dak@gnu.org>
-Date: Sun, 02 Sep 2007 10:06:00 +0200
-In-Reply-To: <46DA5F33.2020005@zytor.com> (H. Peter Anvin's message of "Sun\, 02 Sep 2007 07\:58\:59 +0100")
-Message-ID: <85odgltrtj.fsf@lola.goethe.zz>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 2 Sep 2007 04:12:57 -0400
+Received: from main.gmane.org ([80.91.229.2]:50592 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754095AbXIBIMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 04:12:55 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
+Subject: video4linux, bttv, vbi and missing lines in teletext...
+Date: Sun, 02 Sep 2007 10:18:02 +0200
+Message-ID: <fbdr9c$hqi$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: p4fd4a1a4.dip0.t-ipconnect.de
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.6) Gecko/20070809 SeaMonkey/1.1.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+Hello,
 
-> Junio C Hamano wrote:
->>
->> * For people who need to import from Perforce, a front-end for
->>   fast-import is in contrib/fast-import/.
->>
->
-> There seems to be an issue with this and RPMS.
->
-> In particular, there is no longer a git-p4 RPMS, which prevents git
-> from getting upgraded at all by yum.
->
-> Anyone who knows yum well enough to explain what needs to be done so
-> that yum knows this is obsolete?
+I want to view teletext using my bt878 card.
 
-Probably a matter of the correct spec file.  In auctex.spec, we have
+I tried with mtt, but I always had missing lines in the teletext 
+display. As I have been unsure, which is the reason, I also downloaded 
+and compiled alevt. Here, the same lines are missing.
 
-Summary: 	Enhanced TeX modes for Emacsen
-Name: 		auctex
-Version: 	11.84
-Release: 	1%{distri}
-License: 	GPL
-Group: 		%{commongroup}
-URL: 		http://www.gnu.org/software/auctex/
-Source0:        ftp://ftp.gnu.org/pub/gnu/auctex/%{name}-%{version}.tar.gz
-BuildArchitectures: noarch
-BuildRoot: 	%{_tmppath}/%{name}-root
+Now I used the test tools from the zvbi library, to capture the teletext 
+page to a file. I never got any errors while capturing. After capturing 
+for a while, I sorted the result by line and found out, that line 1 and 
+line 13 are always missing on this teletext page (Page 116 on german 
+channel "Sat1"). In the whole logged file, I never have those two pages, 
+but have all the other pages several times.
 
-%description
-AUCTeX is [...]
+Which may be the reason? Why I'm unable to receive those two lines? I 
+connected a TV to the same AV cable, I usually have on my PC, and the TV 
+displays the teletext without any problems...
 
-%package emacs
-Summary: 	Enhanced TeX modes for GNU Emacs
-Group:          %{commongroup}
-Requires: 	emacs >= 21
-Obsoletes:      ge_auc emacs-auctex auctex preview-latex-emacs
-Conflicts:      emacspeak < 18
-Provides:       auctex
+Is someone here, who may help me with getting this problem fixed?
 
+Today I'll visit someone, who has a Windows PC. I've already removed the 
+bt878 card from my PC. I'll try at his PC, if I get the same problem 
+with the original driver and TV watching software. If this works, I'll 
+boot Knoppix from his PC to get sure, that I also get the same problems 
+on his PC with his video source. I'll tell you about the results of my test.
 
-So auctex-emacs obsoletes the previous "auctex" package and some other
-packages.  It also provides "auctex" since some other packages might
-require it.
+For the case, it's important for the discussion:
 
-Basically, you need to provide everything that a third-party package
-might have asked for, and you need to obsolete everything that you
-intend to replace.
+manuel@linux2:~$ uname -a
+Linux linux2 2.6.21.5 #1 Tue Jun 19 15:10:54 CDT 2007 i686 Pentium III 
+(Coppermine) GenuineIntel GNU/Linux
 
--- 
-David Kastrup, Kriemhildstr. 15, 44793 Bochum
+The "card=" value for the bttv module is currently 54. I also tried 65 
+with the same results. Watching TV works pretty well, but in teletext, I 
+miss one or two lines in nearly any page.
+
+Thank you very much in advance
+
+Yours
+
+Manuel
+
