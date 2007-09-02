@@ -1,64 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933922AbXIBPPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbXIBPQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933922AbXIBPPb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 11:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbXIBPPZ
+	id S1758290AbXIBPQR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 11:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756392AbXIBPQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 11:15:25 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:39967 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754493AbXIBPPY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 11:15:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LzlI956u0jzIh8BI82THwhByEWEMSBtlgvNqpVYKjZUF92Sk7zNpTuieVUm4R8A5hIsJBEhZhjeRXntbKgMqzEG41MG2MQUcqLocZlqGh+9JQJUvsEb/zjNiywf1qiFUIZQaX91uxT5tiQNjnwYwzByRht7fh3DzUTa+TMvKnvM=
-Message-ID: <8bd0f97a0709020815r75fcb225lf44bcb57783b436c@mail.gmail.com>
-Date: Sun, 2 Sep 2007 11:15:23 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: the Linux kernel, testsuites, and maybe *you*
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070902065926.GA15487@one.firstfloor.org>
+	Sun, 2 Sep 2007 11:16:01 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4390 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756360AbXIBPQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 11:16:00 -0400
+Date: Sun, 2 Sep 2007 17:16:23 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Daniel Walker <dwalker@mvista.com>, linux-kernel@vger.kernel.org,
+       peterz@infradead.org
+Subject: Re: [ANNOUNCE/RFC] Really Fair Scheduler
+In-Reply-To: <20070902072029.GA24427@elte.hu>
+Message-ID: <Pine.LNX.4.64.0709021655340.1817@scrub.home>
+References: <Pine.LNX.4.64.0708310139280.1817@scrub.home>
+ <1188694367.11196.42.camel@dhcp193.mvista.com> <20070902072029.GA24427@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com>
-	 <p733axyxcli.fsf@bingen.suse.de>
-	 <8bd0f97a0709011550y833fb5ax7d40cae937789fd8@mail.gmail.com>
-	 <20070902065926.GA15487@one.firstfloor.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/2/07, Andi Kleen <andi@firstfloor.org> wrote:
-> On Sat, Sep 01, 2007 at 06:50:30PM -0400, Mike Frysinger wrote:
-> > On 02 Sep 2007 00:08:57 +0200, Andi Kleen <andi@firstfloor.org> wrote:
-> > > BTW string functions are best tested in user space. That's
-> > > a relatively bad example.
-> >
-> > in theory, maybe ... in reality, i really dont think so
-> >
-> > the string implementations are spread out over the kernel ... there's
-> > implementations in lib/, include/asm-*/, and arch/*/lib/ ... so any
-> > test code that would use these sources is going to be an ugly hack to
-> > make sure it grabs all the right pieces from all the right places.
->
-> string functions tend to be self contained.
+Hi,
 
-"tend to be" does not lend itself to being cleanly tested ... and i
-imagine i'd get some pretty heavy resistance if i proposed
-re-organzing code just so that i could compile it outside of the
-kernel
+On Sun, 2 Sep 2007, Ingo Molnar wrote:
 
-there is still the ABI issue ... code written in kernel space in pure
-asm cannot always be compiled in userspace and work properly/the same
+> And if you look at the resulting code size/complexity, it actually 
+> increases with Roman's patch (UP, nodebug, x86):
+> 
+>      text    data     bss     dec     hex filename
+>     13420     228    1204   14852    3a04 sched.o.rc5
+>     13554     228    1228   15010    3aa2 sched.o.rc5-roman
 
-> The other issue to test some of them properly you need unmapped pages
-> etc. That gets much easier to do in user space. There are some other
-> issues.
+That's pretty easy to explain due to differences in inlining:
 
-you mean testing boundary overflows ?  can be handled with canaries
-rather than segfaults i imagine ...
--mike
+   text    data     bss     dec     hex filename
+  15092     228    1204   16524    408c kernel/sched.o
+  15444     224    1228   16896    4200 kernel/sched.o.rfs
+  14708     224    1228   16160    3f20 kernel/sched.o.rfs.noinline
+
+Sorry, but I didn't spend as much time as you on tuning these numbers.
+
+Index: linux-2.6/kernel/sched_norm.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_norm.c	2007-09-02 16:58:05.000000000 +0200
++++ linux-2.6/kernel/sched_norm.c	2007-09-02 16:10:58.000000000 +0200
+@@ -145,7 +145,7 @@ static inline struct task_struct *task_o
+ /*
+  * Enqueue an entity into the rb-tree:
+  */
+-static inline void
++static void
+ __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ {
+ 	struct rb_node **link = &cfs_rq->tasks_timeline.rb_node;
+@@ -192,7 +192,7 @@ __enqueue_entity(struct cfs_rq *cfs_rq, 
+ 	se->queued = 1;
+ }
+ 
+-static inline void
++static void
+ __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ {
+ 	if (cfs_rq->rb_leftmost == se) {
+@@ -240,7 +240,7 @@ static void verify_queue(struct cfs_rq *
+  * Update the current task's runtime statistics. Skip current tasks that
+  * are not in our scheduling class.
+  */
+-static inline void update_curr(struct cfs_rq *cfs_rq)
++static void update_curr(struct cfs_rq *cfs_rq)
+ {
+ 	struct sched_entity *curr = cfs_rq->curr;
+ 	kclock_t now = rq_of(cfs_rq)->clock;
+
+> Although it _should_ have been a net code size win, because if you look 
+> at the diff you'll see that other useful things were removed as well: 
+> sleeper fairness, CPU time distribution smarts, tunings, scheduler 
+> instrumentation code, etc.
+
+Well, these are things I'd like you to explain a little, for example I 
+repeatedly asked you about the sleeper fairness and I got no answer.
+BTW you seemed to haved missed that I actually give a bonus to sleepers 
+as well.
+
+> > I also ran hackbench (in a haphazard way) a few times on it vs. CFS in 
+> > my tree, and RFS was faster to some degree (it varied)..
+> 
+> here are some actual numbers for "hackbench 50" on -rc5, 10 consecutive 
+> runs fresh after bootup, Core2Duo, UP:
+> 
+>            -rc5(cfs)           -rc5+rfs
+>           -------------------------------
+>           Time: 3.905         Time: 4.259
+>           Time: 3.962         Time: 4.190
+>           Time: 3.981         Time: 4.241
+>           Time: 3.986         Time: 3.937
+>           Time: 3.984         Time: 4.120
+>           Time: 4.001         Time: 4.013
+>           Time: 3.980         Time: 4.248
+>           Time: 3.983         Time: 3.961
+>           Time: 3.989         Time: 4.345
+>           Time: 3.981         Time: 4.294
+>           -------------------------------
+>            Avg: 3.975          Avg: 4.160 (+4.6%)
+>          Fluct: 0.138        Fluct: 1.671
+> 
+> so unmodified CFS is 4.6% faster on this box than with Roman's patch and 
+> it's also more consistent/stable (10 times lower fluctuations).
+
+Was SCHED_DEBUG enabled or disabled for these runs?
+
+bye, Roman
