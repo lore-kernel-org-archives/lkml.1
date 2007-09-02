@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbXIBUTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754359AbXIBUXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757996AbXIBUTt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 16:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbXIBUTl
+	id S1754359AbXIBUXV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 16:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbXIBUXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 16:19:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56380 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbXIBUTk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 16:19:40 -0400
-Date: Mon, 3 Sep 2007 02:02:47 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Jesper Juhl <jesper.juhl@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Winischhofer <thomas@winischhofer.net>,
-       Greg Kroah-Hartman <greg@kroah.com>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [PATCH -mm] sisusbvga: Fix bug and build warnings
-In-Reply-To: <9a8748490709021311q179ab8c6iee7ffb14f6a2eb80@mail.gmail.com>
-Message-ID: <alpine.LFD.0.999.0709030159320.29617@enigma.security.iitk.ac.in>
-References: <alpine.LFD.0.999.0709022344550.27844@enigma.security.iitk.ac.in>
-  <alpine.LFD.0.999.0709030136140.29617@enigma.security.iitk.ac.in>
- <9a8748490709021311q179ab8c6iee7ffb14f6a2eb80@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="464262402-428625364-1188765171=:29617"
+	Sun, 2 Sep 2007 16:23:06 -0400
+Received: from ns.firmix.at ([62.141.48.66]:38888 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750806AbXIBUXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 16:23:05 -0400
+Subject: Re: GPL weasels and the atheros stink
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: espie@nerim.net
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070902140306.GA27317@lain.home>
+References: <20070902140306.GA27317@lain.home>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Sun, 02 Sep 2007 22:22:54 +0200
+Message-Id: <1188764575.31863.8.camel@gimli.at.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.317 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.317 required=5
+X-Spam-Score: -2.317 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sun, 2007-09-02 at 16:03 +0200, Marc Espie wrote:
+[...]
+> So, now, it's down to dirty fighting. Absorbing and `relicensing' and 
+> evolving code.  Have you all been bitten my RMS paranoia (that leads to
+> this `interesting GPLv3) ? Do you intend to keep grabbing BSD code and
+> putting it exclusively under the GPL ?
 
---464262402-428625364-1188765171=:29617
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+AFAIK: I could take BSD- (or ISC-)licensed code (legally), patch it,
+sell it (nor not) and (legally) not give back anything putting the whole
+code effectively under proprietary license.
+And you can't do anything (except negative propaganda) independent if
+you are maintainer, author or whoever.
 
-Hi Jesper,
+And you seriously have a problem with GPLed patches (which is BTW more
+"open" since you cannot legally hide the changes once you gave a binary
+away - at least from the receiver of said binaries)?
 
+BTW it's the same as with other "open code": Take it or leave it - it's
+your decision.
 
-On Sun, 2 Sep 2007, Jesper Juhl wrote:
-> 
-> > -       if (!(interface = usb_find_interface(&sisusb_driver, subminor))) {
-> > -               dev_err(&sisusb->sisusb_dev->dev, "Failed to find interface¥n");
-> 
-> Odd how in your patch the line ends with  "¥n"  but if I look in my
-> local copy of the source tree I see  "\n".
+SCNR,
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
-Odd, indeed. I see correct '\n' in the mail I sent, but in your mail
-here it's coming out wrong -- lkml.org shows badness as well. Hmmm,
-"insert file" using ^R in alpine never gave any problems before ...
---464262402-428625364-1188765171=:29617--
