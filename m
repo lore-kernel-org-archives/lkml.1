@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965474AbXIBQwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758480AbXIBQ5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965474AbXIBQwP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 12:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbXIBQwA
+	id S1758480AbXIBQ5Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 12:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbXIBQ5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 12:52:00 -0400
-Received: from smtpout.mac.com ([17.250.248.177]:57227 "EHLO smtpout.mac.com"
+	Sun, 2 Sep 2007 12:57:03 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:56833 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756571AbXIBQwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 12:52:00 -0400
-In-Reply-To: <20070902140306.GA27317@lain.home>
-References: <20070902140306.GA27317@lain.home>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <316EB086-09DE-42ED-9C57-FBDD3D6C3D1D@mac.com>
-Cc: linux-kernel@vger.kernel.org
+	id S1752803AbXIBQ5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 12:57:01 -0400
+Message-ID: <46DAEB58.3070109@garzik.org>
+Date: Sun, 02 Sep 2007 12:56:56 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86/x86-64 PCI domain support
+References: <20070901143223.GA32216@havoc.gtf.org>	<200709020000.03375.ak@suse.de>	<46D9E254.6010702@garzik.org>	<200709020026.52725.ak@suse.de>	<46D9EA5B.9010101@garzik.org> <20070902094637.6750f068.randy.dunlap@oracle.com>
+In-Reply-To: <20070902094637.6750f068.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: GPL weasels and the atheros stink
-Date: Sun, 2 Sep 2007 12:52:29 -0400
-To: espie@nerim.net
-X-Mailer: Apple Mail (2.752.2)
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 02, 2007, at 10:03:07, Marc Espie wrote:
-> Do you really think he's going to keep his work under a dual- 
-> licence, seeing
-> how a bunch of rabid linux zealots are all but intent on stealing  
-> his code
-> whenever they can.
+Randy Dunlap wrote:
+> On Sat, 01 Sep 2007 18:40:27 -0400 Jeff Garzik wrote:
+> 
+>> Andi Kleen wrote:
+>>>>> The second function is redundant? 
+>>>> No, it's a hook we must implement, when CONFIG_PCI_DOMAINS is enabled.
+>>> Then the other function is redundant.
+>> No, both functions are required by the interface.
+> 
+> by what interface?  and why, please?  (instead of just stating "required")
 
-[...snip...]
+grep for CONFIG_PCI_DOMAINS in arch code and include/linux/pci.h.
 
-Oh god, not another Linux/*BSD month-long flamewar chewing up more  
-developer resources than Microsoft has ever had.  Please nobody else  
-reply to such flamebait and let's get on to productive code  
-development.  If you think it really matters to you, then please do  
-the following in order:
-   1)  Come back in a week.  License issues can be easily resolved  
-even months later.  Look at the SCO case, for example, they didn't  
-have a legal peg-leg to stand on and they've been churning through  
-the legal system for years.
-   2)  Reread all of the posts in the other threads (either through  
-the archives or whatever).  In particular look at Adrian Bunk's  
-emails, he seems to have a pretty sane grasp on the subject.
-   3)  When you want to reply USE THE SAME THREAD!!!  Most of the  
-people on this list don't really give a damn about legal crap, we  
-just want to write code or have interesting technical discussions.   
-By using the same thread we only have one button to click to hide it  
-forever.
-   4)  Refrain from rhetoric and name-calling, it's unproductive and  
-childish.
+This is normal "arch" interface:  you enable a define, and a group of 
+functions is assumed to be present.  Otherwise (!defined), a set of stub 
+no-ops is activated for your arch.
 
-That said, Marc Espie seems to be all set to blast the first person  
-who isn't frothing at the mouth in support of BSD, so... Plonk!
+I have implemented the [small] group of functions the code assumes to be 
+present, when CONFIG_PCI_DOMAINS is enabled, like all the other arches 
+that implement PCI domain support.
 
-Cheers,
-Kyle Moffett
+	Jeff
+
+
 
