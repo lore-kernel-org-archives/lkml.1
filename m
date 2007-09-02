@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934010AbXIBPoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbXIBPz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934010AbXIBPoW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 11:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757648AbXIBPny
+	id S1758379AbXIBPz3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 11:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755716AbXIBPzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 11:43:54 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42445 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757501AbXIBPnx (ORCPT
+	Sun, 2 Sep 2007 11:55:18 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:24986 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754235AbXIBPzQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 11:43:53 -0400
-Date: Sun, 2 Sep 2007 17:43:51 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: the Linux kernel, testsuites, and maybe *you*
-Message-ID: <20070902154351.GA21230@one.firstfloor.org>
-References: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com> <p733axyxcli.fsf@bingen.suse.de> <8bd0f97a0709011550y833fb5ax7d40cae937789fd8@mail.gmail.com> <20070902065926.GA15487@one.firstfloor.org> <8bd0f97a0709020815r75fcb225lf44bcb57783b436c@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 2 Sep 2007 11:55:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eES3xOr23d3DAge0NA2x3PL/AkCwi24QsSOBxFos64G1qIbXE/CbVIwAlJklL1//KLdXwaA5auP7jTSmmBb1fJJhU91cshXr2iduOCrT+Qr4lsr5C/y9oqp3don5f3AyqACkExkIyHm3cBFZg5uhYgzH5CUpLwvcHcAfn2bkvOU=
+Message-ID: <40f31dec0709020855q10d9227bld6e594ea57ba8142@mail.gmail.com>
+Date: Sun, 2 Sep 2007 18:55:15 +0300
+From: "Nick Kossifidis" <mickflemm@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: [PATCH 3/5] Net: ath5k, use int as retval
+Cc: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <46D9C6A8.7070600@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <8bd0f97a0709020815r75fcb225lf44bcb57783b436c@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+References: <2713029743177393055@pripojeni.net>
+	 <2440910618305782004@pripojeni.net>
+	 <20070830124054.GC5140@tuxdriver.com> <46D9C6A8.7070600@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 02, 2007 at 11:15:23AM -0400, Mike Frysinger wrote:
-> there is still the ABI issue ... code written in kernel space in pure
-> asm cannot always be compiled in userspace and work properly/the same
+2007/9/1, Jiri Slaby <jirislaby@gmail.com>:
+> John W. Linville napsal(a):
+> > On Tue, Aug 28, 2007 at 12:00:09PM -0400, Jiri Slaby wrote:
+> >> ath5k, use int as retval
+> >>
+> >> Convert some functions to return int and proper negative return value on
+> >> error as we are used to.
+> >
+> > Since I didn't apply 1/5, this one didn't apply either.  It seems
+> > fine overall, so if you rediff I'll be happy to apply.
+>
+> Ok, I'll do it, thanks,
 
-Is that a blackfin weirdness? 
+Can somebody commit my resent changes from madwifi-svn (cleanups,
+kconfig, remove_hw_ from filenames etc) ? I don't have git repository
+;-(
 
-> 
-> > The other issue to test some of them properly you need unmapped pages
-> > etc. That gets much easier to do in user space. There are some other
-> > issues.
-> 
-> you mean testing boundary overflows ?  can be handled with canaries
-> rather than segfaults i imagine ...
 
-Not for reads, no.
-
--Andi
+-- 
+GPG ID: 0xD21DB2DB
+As you read this post global entropy rises. Have Fun ;-)
+Nick
