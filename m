@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbXICCeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934142AbXICCet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760027AbXICCeZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 22:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757684AbXICC0F
+	id S934142AbXICCet (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 22:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbXICC0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 22:26:05 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57683 "EHLO
+	Sun, 2 Sep 2007 22:26:08 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57694 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756894AbXICCZA (ORCPT
+	with ESMTP id S932075AbXICCZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 22:25:00 -0400
+	Sun, 2 Sep 2007 22:25:09 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        hch@infradead.org, viro@ftp.linux.org.uk, bharata@linux.vnet.ibm.com,
        j.blunck@tu-harburg.de, Erez Zadok <ezk@cs.sunysb.edu>,
        "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 14/32] Unionfs: file_revalidate updates
-Date: Sun,  2 Sep 2007 22:20:37 -0400
-Message-Id: <11887860571736-git-send-email-jsipek@cs.sunysb.edu>
+Subject: [PATCH 23/32] Unionfs: mount-time option parsing fix
+Date: Sun,  2 Sep 2007 22:20:46 -0400
+Message-Id: <11887860583576-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2.238.g7cbf2f2
 In-Reply-To: <1188786055371-git-send-email-jsipek@cs.sunysb.edu>
 References: <1188786055371-git-send-email-jsipek@cs.sunysb.edu>
@@ -27,70 +27,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Erez Zadok <ezk@cs.sunysb.edu>
 
-Correctly revalidate a file and account for lower mnts, even when branches
-are updated or inserted.  Better info upon file copyup.
-
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- fs/unionfs/commonfops.c |   25 +++++++++++++++++++++----
- 1 files changed, 21 insertions(+), 4 deletions(-)
+ fs/unionfs/main.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
-index 64bd0bd..612207a 100644
---- a/fs/unionfs/commonfops.c
-+++ b/fs/unionfs/commonfops.c
-@@ -333,6 +333,9 @@ int unionfs_file_revalidate(struct file *file, int willwrite)
+diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
+index bc5c105..ce08d96 100644
+--- a/fs/unionfs/main.c
++++ b/fs/unionfs/main.c
+@@ -337,8 +337,12 @@ static int parse_dirs_option(struct super_block *sb, struct unionfs_dentry_info
+ 		int perms;
+ 		char *mode = strchr(name, '=');
+ 
+-		if (!name || !*name)
++		if (!name)
+ 			continue;
++		if (!*name) {	/* bad use of ':' (extra colons) */
++			err = -EINVAL;
++			goto out;
++		}
+ 
+ 		branches++;
+ 
+@@ -404,10 +408,9 @@ static int parse_dirs_option(struct super_block *sb, struct unionfs_dentry_info
+ 	 * branch-overlapping test.
  	 */
- 	if (!d_deleted(dentry) &&
- 	    (sbgen > fgen || dbstart(dentry) != fbstart(file))) {
-+		/* save orig branch ID */
-+		int orig_brid =	UNIONFS_F(file)->saved_branch_ids[fbstart(file)];
-+
- 		/* First we throw out the existing files. */
- 		cleanup_file(file);
- 
-@@ -359,22 +362,36 @@ int unionfs_file_revalidate(struct file *file, int willwrite)
- 			if (err)
- 				goto out;
- 		} else {
-+			int new_brid;
- 			/* We only open the highest priority branch. */
- 			err = open_highest_file(file, willwrite);
- 			if (err)
- 				goto out;
-+			new_brid = UNIONFS_F(file)->
-+			  saved_branch_ids[fbstart(file)];
-+			if (new_brid != orig_brid && sbgen > fgen) {
-+				/*
-+				 * If we re-opened the file on a different
-+				 * branch than the original one, and this
-+				 * was due to a new branch inserted, then
-+				 * update the mnt counts of the old and new
-+				 * branches accordingly.
-+				 */
-+				unionfs_mntget(dentry, bstart);
-+				unionfs_mntput(sb->s_root,
-+					       branch_id_to_idx(sb, orig_brid));
-+			}
- 		}
- 		atomic_set(&UNIONFS_F(file)->generation,
--			   atomic_read(&UNIONFS_I(dentry->d_inode)->
--				       generation));
-+			   atomic_read(&UNIONFS_I(dentry->d_inode)->generation));
- 	}
- 
- 	/* Copyup on the first write to a file on a readonly branch. */
- 	if (willwrite && IS_WRITE_FLAG(file->f_flags) &&
- 	    !IS_WRITE_FLAG(unionfs_lower_file(file)->f_flags) &&
- 	    is_robranch(dentry)) {
--		printk(KERN_DEBUG "unionfs: Doing delayed copyup of a "
--		       "read-write file on a read-only branch.\n");
-+		printk(KERN_DEBUG "unionfs: do delay copyup of \"%s\"\n",
-+		       dentry->d_name.name);
- 		err = do_delayed_copyup(file);
- 	}
- 
+ 	for (i = 0; i < branches; i++) {
++		dent1 = lower_root_info->lower_paths[i].dentry;
+ 		for (j = i + 1; j < branches; j++) {
+-			dent1 = lower_root_info->lower_paths[i].dentry;
+ 			dent2 = lower_root_info->lower_paths[j].dentry;
+-
+ 			if (is_branch_overlap(dent1, dent2)) {
+ 				printk(KERN_WARNING "unionfs: branches %d and "
+ 				       "%d overlap\n", i, j);
 -- 
 1.5.2.2.238.g7cbf2f2
 
