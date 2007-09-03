@@ -1,89 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbXICLAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbXICLCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbXICLAo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 07:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbXICLAh
+	id S1757476AbXICLCV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 07:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbXICLCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 07:00:37 -0400
-Received: from highlandsun.propagation.net ([66.221.212.168]:3856 "EHLO
-	highlandsun.propagation.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753354AbXICLAg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 07:00:36 -0400
-X-Greylist: delayed 2039 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 07:00:36 EDT
-Message-ID: <46DBE1FD.10409@symas.com>
-Date: Mon, 03 Sep 2007 03:29:17 -0700
-From: Howard Chu <hyc@symas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.9a8pre) Gecko/2007082216 SeaMonkey/2.0a1pre
+	Mon, 3 Sep 2007 07:02:13 -0400
+Received: from [203.178.140.9] ([203.178.140.9]:56049 "EHLO mail.gomagoma.org"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754876AbXICLCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 07:02:13 -0400
+X-Greylist: delayed 1248 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 07:02:12 EDT
+Date: Mon, 03 Sep 2007 19:43:51 +0900
+From: Masahide NAKAMURA <nakam@linux-ipv6.org>
+To: Adrian Bunk <bunk@kernel.org>, David Miller <davem@davemloft.net>
+Subject: Re: [-mm patch] IPV6 must select XFRM
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, nakam@linux-ipv6.org
+In-Reply-To: <20070902112557.GK16016@stusta.de>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <20070902112557.GK16016@stusta.de>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070903193711.6A1D.NAKAM@linux-ipv6.org>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: 2.6.22.6 pata_via cable detect
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/mixed; boundary="------_46DBE3D76AA40B35F140_MULTIPART_MIXED_"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.31 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Still have a slight glitch here. I have 2 hard drives on the primary channel, 
-detected correctly as 80-wire and UDMA100. I have a DVD burner on the secondary 
-channel, detected incorrectly as 40-wire. (It's sitting by itself on an 80-wire 
-cable.) This is on an Asus A8V-Deluxe.
+--------_46DBE3D76AA40B35F140_MULTIPART_MIXED_
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 
-Here's the dmesg output after a "modprobe pata_via"
+Hello,
 
-pata_via 0000:00:0f.1: version 0.3.1
-ACPI: PCI Interrupt 0000:00:0f.1[A] -> GSI 20 (level, low) -> IRQ 20
-scsi5 : pata_via
-scsi6 : pata_via
-ata6: PATA max UDMA/133 cmd 0x00000000000101f0 ctl 0x00000000000103f6 bmdma 
-0x000000000001fc00 irq 14
-ata7: PATA max UDMA/133 cmd 0x0000000000010170 ctl 0x0000000000010376 bmdma 
-0x000000000001fc08 irq 15
-ata6.00: ATA-6: WDC WD2000JB-00DUA0, 70.13G70, max UDMA/100
-ata6.00: 390721968 sectors, multi 16: LBA48
-ata6.01: ATA-7: WDC WD5000AAKB-00UKA0, 07.01N01, max UDMA/100
-ata6.01: 976773168 sectors, multi 16: LBA48
-ata6.00: configured for UDMA/100
-ata6.01: configured for UDMA/100
-ata7.00: ATAPI: LITE-ON DVDRW LH-20A1H, LL07, max UDMA/66
-ata7.00: limited to UDMA/33 due to 40-wire cable
-ata7.00: configured for UDMA/33
-scsi 5:0:0:0: Direct-Access     ATA      WDC WD2000JB-00D 70.1 PQ: 0 ANSI: 5
-sd 5:0:0:0: [sde] 390721968 512-byte hardware sectors (200050 MB)
-sd 5:0:0:0: [sde] Write Protect is off
-sd 5:0:0:0: [sde] Mode Sense: 00 3a 00 00
-sd 5:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 5:0:0:0: [sde] 390721968 512-byte hardware sectors (200050 MB)
-sd 5:0:0:0: [sde] Write Protect is off
-sd 5:0:0:0: [sde] Mode Sense: 00 3a 00 00
-sd 5:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-  sde: sde1
-sd 5:0:0:0: [sde] Attached SCSI disk
-sd 5:0:0:0: Attached scsi generic sg4 type 0
-scsi 5:0:1:0: Direct-Access     ATA      WDC WD5000AAKB-0 07.0 PQ: 0 ANSI: 5
-sd 5:0:1:0: [sdf] 976773168 512-byte hardware sectors (500108 MB)
-sd 5:0:1:0: [sdf] Write Protect is off
-sd 5:0:1:0: [sdf] Mode Sense: 00 3a 00 00
-sd 5:0:1:0: [sdf] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 5:0:1:0: [sdf] 976773168 512-byte hardware sectors (500108 MB)
-sd 5:0:1:0: [sdf] Write Protect is off
-sd 5:0:1:0: [sdf] Mode Sense: 00 3a 00 00
-sd 5:0:1:0: [sdf] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-  sdf: unknown partition table
-sd 5:0:1:0: [sdf] Attached SCSI disk
-sd 5:0:1:0: Attached scsi generic sg5 type 0
-scsi 6:0:0:0: CD-ROM            LITE-ON  DVDRW LH-20A1H   LL07 PQ: 0 ANSI: 5
-sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
-Uniform CD-ROM driver Revision: 3.20
-sr 6:0:0:0: Attached scsi CD-ROM sr0
-sr 6:0:0:0: Attached scsi generic sg6 type 5
+On Sun, 2 Sep 2007 13:25:57 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
 
-Let me know what other info you need.
+> On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
+> >...
+> > Changes since 2.6.23-rc3-mm1:
+> >...
+> >  git-net.patch
+> >...
+> >  git trees
+> >...
+> 
+> This patch fixes the following compile error:
+> 
+> <--  snip  -->
+> 
+> ...
+>   LD      .tmp_vmlinux1
+> net/built-in.o: In function `inet6_csk_xmit':
+> (.text+0x72b0f): undefined reference to `flow_cache_genid'
+> net/built-in.o: In function `inet6_csk_xmit':
+> (.text+0x72be5): undefined reference to `flow_cache_genid'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> 
+> <--  snip  -->
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> --- a/net/ipv6/Kconfig
+> +++ b/net/ipv6/Kconfig
+> @@ -5,6 +5,7 @@
+>  #   IPv6 as module will cause a CRASH if you try to unload it
+>  config IPV6
+>  	tristate "The IPv6 protocol"
+> +	select XFRM
+>  	default m
+>  	---help---
+>  	  This is complemental support for the IP version 6.
+> 
+> -
+
+
+Thank you for catching this. the issue is caused with patch
+"[IPV6] XFRM: Fix connected socket to use transformation."
+which I sent to netdev.
+(a85d5450ddeb959bdf9e4603f9c06e9d79217cfa on net-2.6.24).
+
+I'd prefer to modify the original patch to use "ifdef CONFIG_XFRM"
+than changing kernel config depends. Does it make sense?
+
+Please review the attached patch.
+
 -- 
-   -- Howard Chu
-   Chief Architect, Symas Corp.  http://www.symas.com
-   Director, Highland Sun        http://highlandsun.com/hyc/
-   Chief Architect, OpenLDAP     http://www.openldap.org/project/
+Masahide NAKAMURA
+
+--------_46DBE3D76AA40B35F140_MULTIPART_MIXED_
+Content-Type: application/octet-stream;
+ name="0001-PATCH-IPV6-XFRM-Fix-dependency-issue-at-inet6_csk_xmit.txt"
+Content-Disposition: attachment;
+ filename="0001-PATCH-IPV6-XFRM-Fix-dependency-issue-at-inet6_csk_xmit.txt"
+Content-Transfer-Encoding: base64
+
+RnJvbSBjOWIwZDE1ZjgyMjJkZTc4NTRhNmFkNTA0YzQ1NjIwMDRiOTllNDg3IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBNYXNhaGlkZSBOQUtBTVVSQSA8bmFrYW1AbGludXgtaXB2Ni5v
+cmc+CkRhdGU6IE1vbiwgMyBTZXAgMjAwNyAxOTozMTozMiArMDkwMApTdWJqZWN0OiBbUEFUQ0hd
+IFtJUFY2XSBYRlJNOiBGaXggZGVwZW5kZW5jeSBpc3N1ZSBhdCBpbmV0Nl9jc2tfeG1pdC4KClNp
+Z25lZC1vZmYtYnk6IE1hc2FoaWRlIE5BS0FNVVJBIDxuYWthbUBsaW51eC1pcHY2Lm9yZz4KLS0t
+CiBpbmNsdWRlL25ldC9pcDZfZmliLmggICAgICAgICAgICB8ICAgIDIgKysKIG5ldC9pcHY2L2lu
+ZXQ2X2Nvbm5lY3Rpb25fc29jay5jIHwgICAzMSArKysrKysrKysrKysrKysrKystLS0tLS0tLS0t
+LS0tCiAyIGZpbGVzIGNoYW5nZWQsIDIwIGluc2VydGlvbnMoKyksIDEzIGRlbGV0aW9ucygtKQoK
+ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbmV0L2lwNl9maWIuaCBiL2luY2x1ZGUvbmV0L2lwNl9maWIu
+aAppbmRleCA4NWQ2ZDlmLi44NTc4MjEzIDEwMDY0NAotLS0gYS9pbmNsdWRlL25ldC9pcDZfZmli
+LmgKKysrIGIvaW5jbHVkZS9uZXQvaXA2X2ZpYi5oCkBAIC0xMDYsNyArMTA2LDkgQEAgc3RydWN0
+IHJ0Nl9pbmZvCiAKIAl1OAkJCQlydDZpX3Byb3RvY29sOwogCisjaWZkZWYgQ09ORklHX1hGUk0K
+IAl1MzIJCQkJcnQ2aV9mbG93X2NhY2hlX2dlbmlkOworI2VuZGlmCiB9OwogCiBzdGF0aWMgaW5s
+aW5lIHN0cnVjdCBpbmV0Nl9kZXYgKmlwNl9kc3RfaWRldihzdHJ1Y3QgZHN0X2VudHJ5ICpkc3Qp
+CmRpZmYgLS1naXQgYS9uZXQvaXB2Ni9pbmV0Nl9jb25uZWN0aW9uX3NvY2suYyBiL25ldC9pcHY2
+L2luZXQ2X2Nvbm5lY3Rpb25fc29jay5jCmluZGV4IGYzODkzMjIuLjI1YjkzMTcgMTAwNjQ0Ci0t
+LSBhL25ldC9pcHY2L2luZXQ2X2Nvbm5lY3Rpb25fc29jay5jCisrKyBiL25ldC9pcHY2L2luZXQ2
+X2Nvbm5lY3Rpb25fc29jay5jCkBAIC0xNDMsMjkgKzE0MywzNCBAQCBzdGF0aWMgaW5saW5lCiB2
+b2lkIF9faW5ldDZfY3NrX2RzdF9zdG9yZShzdHJ1Y3Qgc29jayAqc2ssIHN0cnVjdCBkc3RfZW50
+cnkgKmRzdCwKIAkJCSAgIHN0cnVjdCBpbjZfYWRkciAqZGFkZHIsIHN0cnVjdCBpbjZfYWRkciAq
+c2FkZHIpCiB7Ci0Jc3RydWN0IHJ0Nl9pbmZvICpydCA9IChzdHJ1Y3QgcnQ2X2luZm8gKilkc3Q7
+Ci0KIAlfX2lwNl9kc3Rfc3RvcmUoc2ssIGRzdCwgZGFkZHIsIHNhZGRyKTsKLQlydC0+cnQ2aV9m
+bG93X2NhY2hlX2dlbmlkID0gYXRvbWljX3JlYWQoJmZsb3dfY2FjaGVfZ2VuaWQpOworCisjaWZk
+ZWYgQ09ORklHX1hGUk0KKwlpZiAoZHN0KSB7CisJCXN0cnVjdCBydDZfaW5mbyAqcnQgPSAoc3Ry
+dWN0IHJ0Nl9pbmZvICAqKWRzdDsKKwkJcnQtPnJ0NmlfZmxvd19jYWNoZV9nZW5pZCA9IGF0b21p
+Y19yZWFkKCZmbG93X2NhY2hlX2dlbmlkKTsKKwl9CisjZW5kaWYKIH0KIAogc3RhdGljIGlubGlu
+ZQogc3RydWN0IGRzdF9lbnRyeSAqX19pbmV0Nl9jc2tfZHN0X2NoZWNrKHN0cnVjdCBzb2NrICpz
+aywgdTMyIGNvb2tpZSkKIHsKIAlzdHJ1Y3QgZHN0X2VudHJ5ICpkc3Q7Ci0Jc3RydWN0IHJ0Nl9p
+bmZvICpydDsKIAogCWRzdCA9IF9fc2tfZHN0X2NoZWNrKHNrLCBjb29raWUpOwotCWlmICghZHN0
+KQotCQlnb3RvIGVuZDsKLQotCXJ0ID0gKHN0cnVjdCBydDZfaW5mbyAqKWRzdDsKLQlpZiAocnQt
+PnJ0NmlfZmxvd19jYWNoZV9nZW5pZCAhPSBhdG9taWNfcmVhZCgmZmxvd19jYWNoZV9nZW5pZCkp
+IHsKLQkJc2stPnNrX2RzdF9jYWNoZSA9IE5VTEw7Ci0JCWRzdF9yZWxlYXNlKGRzdCk7Ci0JCWRz
+dCA9IE5VTEw7CisKKyNpZmRlZiBDT05GSUdfWEZSTQorCWlmIChkc3QpIHsKKwkJc3RydWN0IHJ0
+Nl9pbmZvICpydCA9IChzdHJ1Y3QgcnQ2X2luZm8gKilkc3Q7CisJCWlmIChydC0+cnQ2aV9mbG93
+X2NhY2hlX2dlbmlkICE9IGF0b21pY19yZWFkKCZmbG93X2NhY2hlX2dlbmlkKSkgeworCQkJc2st
+PnNrX2RzdF9jYWNoZSA9IE5VTEw7CisJCQlkc3RfcmVsZWFzZShkc3QpOworCQkJZHN0ID0gTlVM
+TDsKKwkJfQogCX0KLSBlbmQ6CisjZW5kaWYKKwogCXJldHVybiBkc3Q7CiB9CiAKLS0gCjEuNC40
+LjIKCg==
+--------_46DBE3D76AA40B35F140_MULTIPART_MIXED_--
+
