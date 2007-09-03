@@ -1,114 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbXICOCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbXICOGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764AbXICOCG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 10:02:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbXICOBy
+	id S1753679AbXICOGj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 10:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbXICOGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 10:01:54 -0400
-Received: from styx.suse.cz ([82.119.242.94]:48698 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751077AbXICOBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 10:01:53 -0400
-Date: Mon, 3 Sep 2007 16:21:23 +0200
-From: Jan Kara <jack@suse.cz>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-ID: <20070903142123.GG7524@duck.suse.cz>
-References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org> <20070829122647.GB7814@duck.suse.cz> <m1mywa42g7.fsf@ebiederm.dsl.xmission.com> <20070829192653.GD7814@duck.suse.cz> <m1wsve2gpo.fsf@ebiederm.dsl.xmission.com> <20070830092548.GB16336@duck.suse.cz> <20070830191010.GA23464@vino.hallyn.com> <20070830221825.GB21298@duck.suse.cz> <20070830221447.GA25675@vino.hallyn.com>
+	Mon, 3 Sep 2007 10:06:31 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:33761 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbXICOGa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 10:06:30 -0400
+Date: Mon, 3 Sep 2007 10:04:58 -0400
+From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, hch@infradead.org, viro@ftp.linux.org.uk,
+       bharata@linux.vnet.ibm.com, j.blunck@tu-harburg.de,
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: Re: [PATCH 12/32] Unionfs: documentation updates
+Message-ID: <20070903140458.GA22745@filer.fsl.cs.sunysb.edu>
+References: <1188786055371-git-send-email-jsipek@cs.sunysb.edu> <1188786057364-git-send-email-jsipek@cs.sunysb.edu> <Pine.LNX.4.64.0709030854210.4454@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070830221447.GA25675@vino.hallyn.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0709030854210.4454@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 30-08-07 17:14:47, Serge E. Hallyn wrote:
-> Quoting Jan Kara (jack@suse.cz):
-> >   Maybe before proceeding further with the discussion I'd like to
-> > understand following: What are these user namespaces supposed to be good
-> > for?
+On Mon, Sep 03, 2007 at 08:59:02AM +0200, Jan Engelhardt wrote:
 > 
-> (Please skip to the message end first, as I think you may not care about
-> the next bit of my blathering)
+> On Sep 2 2007 22:20, Josef 'Jeff' Sipek wrote:
+> >+
+> >+While rebuilding Unionfs's objects, we also purge any page mappings and
+> >+truncate inode pages (see fs/Unionfs/dentry.c:purge_inode_data).  This is to
 > 
-> Right now they are only good for providing some separate accounting for
-> uid 1000 in one user namespace versus uid 1000 in another namespace.
-> All security enforcement must be done by actually providing separate
-> filesystems and separate pid namespaces and, hopefully, with a selinux
-> policy.
+> fs/unionfs/dentry.c
 > 
-> Eventually the idea will be that uid 1000 in one user namespace and uid
-> 1000 in another namespace will be completely separate entities.  A
-> mounted filesystem will be tied to a particuler user namespace, and
-> the kernel will provide any cross-userns access perhaps the way I
-> described, with uid equivalence implemented through the keyring.
-  I see. Thanks for explanation.
+> >+Unionfs maintains the following important invariant regarding mtime's,
+> >+ctime's, and atime's: the upper inode object's times are the max() of all of
+> 
+> utimes, ctimes and atimes.
+> 
+> >+2. Lockdep (a debugging feature) isn't aware of stacking, and so it
+> >+   incorrectly complains about locking problems.  The problem boils down to
+> >+   this: Lockdep considers all objects of a certain type to be in the same
+> >+   class, for example, all inodes.  Lockdep doesn't like to see a lock held
+> >+   on two inodes within the same task, and warns that it could lead to a
+> >+   deadlock.  However, stackable file systems do precisely that: they lock
+> >+   an upper object, and then a lower object, in a strict order to avoid
+> >+   locking problems; in addition, Unionfs, as a fan-out file system, may
+> >+   have to lock several lower inodes.  We are currently looking into Lockdep
+> >+   to see how to make it aware of stackable file systems.  In the mean time,
+> 
+> meantime
+> 
+> >@@ -86,5 +86,12 @@ command:
+> > 
+> > # mount -t unionfs -o remount,incgen none MOUNTPOINT
+> > 
+> >+Note that the older way of incrementing the generation number using an
+> >+ioctl, is no longer supported in Unionfs 2.0.  Ioctls in general are not
+> 
+> 2.1?
 
-> But note that this isn't really relevant when we get to NFS.  Two user
-> namespaces on one machine should have different network namespaces and
-> network addresses as well, and so should look to the NFS server like two
-> separate machines.
-> 
-> So the user namespaces are only really relevant when talking about local
-> filesystems.
-> 
-> >   I imagine it so that you have a machine and on it several virtual
-> > machines which are sharing a filesystem (or it could be a cluster). Now you
-> > want UIDs to be independent between these virtual machines. That's it,
-> > right?
-> >   Now to continue the example: Alice has UID 100 on machineA, Bob has
-> >  UID 100 on machineB. These translate to UIDs 1000 and 1001 on the common
-> > filesystem. Process of Alice writes to a file and Bob becomes to be over
-> > quota. In this situation, there would be probably two processes (from
-> > machineA and machineB) listening on the netlink socket. We want to send a
-> > message so that on Alice's desktop we can show a message: "You caused
-> > Bob to exceed his quotas" and of Bob's desktop: "Alice has caused that you
-> > are over quota.".
-> 
-> Since this is over NFS, you handle it the way you would any other time
-> that user Alice on some other machine managed to do this.
-  I meant this would actually happen over a local filesystem (imagine
-something like "hostfs" from UML).
+Thanks.
 
-> >   Because there may be is not a notion of Bob on machineA or of Alice on
-> > machineB, we are in trouble, right? What I like the most is to use the
-> > filesystem identities (as you suggested in some other email). I. e. because
-> > both Alice and Bob share a filesystem, identities of both have to make sense
-> > to it (for example for purposes of permission checking). So we can probably
-> 
-> Right, so long as we're talking about local filesystems that's the way
-> to go.  If a file write was allowed which brought bob over quota,
-> clearly the person responsible had some uid valid on the filesystem to
-> allow him to do so.
-  Fine. So I'll keep UID in the quota netlink protocol with the meaning
-"the identity of the user for filesystem operations".
+Jeff.
 
-> > send via netlink these (in our example ids 1000 and 1001) and hope that
-> > inside machineA and machineB there will be a way to translate these
-> > identities to names "Alice" and "Bob". So that user can understand what
-> > is happenning. Does this sound plausible?
-> >   If we go this route, then we only need a kernel function, that will
-> > for a pair ($filesystem, $task) return indentity of that $task used
-> > for operations on $filesystem...
-> 
-> Ok, now I see.  This is again unrelated to user namespaces, it's an
-> issue regardless.
-> 
-> Is there no way to just report Alice as the guilty party to Bob on his
-> machine as (host=nfsserver,uid=1000)?
-  You know, in fact this contains all the information but it is quite useless
-for an ordinary user. The message should be understandable to average desktop
-user so it should contain some name rather than UID - but resolving the
-"filesystem" UID to some meaningful name is completely different issue
-and I'd probably leave that for the moment when the kernel infrastructure
-and use cases would be clearer...
-
-								Honza
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Penguin : Linux version 2.4.20-46.9.legacysmp on an i386 machine (2778.72 BogoMips).
