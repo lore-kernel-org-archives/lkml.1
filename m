@@ -1,50 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbXICIN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756666AbXICIPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757285AbXICIN5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 04:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbXICINs
+	id S1756666AbXICIPZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 04:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbXICIPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 04:13:48 -0400
-Received: from smtp2e.orange.fr ([80.12.242.112]:57546 "EHLO smtp2e.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752299AbXICINr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 04:13:47 -0400
-X-ME-UUID: 20070903081346767.BB4C27000094@mwinf2e08.orange.fr
-Subject: [OT] Re: very very strange simultaneous RAID resync on sep 2,
-	01:06 CEST (+2)
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Patrick Mau <mau@oscar.ping.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070903080641.GA2074@oscar.prima.de>
-References: <1188806170.1131.479.camel@frg-rhel40-em64t-04>
-	 <20070903080641.GA2074@oscar.prima.de>
-Content-Type: text/plain
-Date: Mon, 03 Sep 2007 10:13:43 +0200
-Message-Id: <1188807223.1131.492.camel@frg-rhel40-em64t-04>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Sep 2007 04:15:14 -0400
+Received: from smtp-vbr11.xs4all.nl ([194.109.24.31]:1989 "EHLO
+	smtp-vbr11.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751910AbXICIPM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 04:15:12 -0400
+X-Greylist: delayed 508 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 04:15:12 EDT
+Message-ID: <46DBC092.8030209@xs4all.nl>
+Date: Mon, 03 Sep 2007 10:06:42 +0200
+From: Bauke Jan Douma <bjdouma@xs4all.nl>
+Reply-To: bjdouma@xs4all.nl
+Organization: a training zoo
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: bogomips discrepancy on Intel Core2 Quad CPU
+Content-Type: multipart/mixed;
+ boundary="------------030102000500050503000204"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-03 at 10:06 +0200, Patrick Mau wrote:
-> My debian installation has a system cronjob that will perform a resync
-> every first Sunday morning at 1:06 AM:
-> 
-> [root@oscar] cat /etc/cron.d/mdadm
-> ...
-> 6 1 * * 0 root [ -x /usr/share/mdadm/checkarray ] && [ $(date +\%d) -
-> le 7 ] && /usr/share/mdadm/checkarray --cron --all --quiet
-> 
-> I did not read the manpage, but my guess is that 'quiet' will suppress
-> the mail notification.
+This is a multi-part message in MIME format.
+--------------030102000500050503000204
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Yes, that was it, checkarray leaves traces in the syslog.
-Now I'm really ashamed I jumped on my mailer before using what's left of
-my braincells. Could I take it back please ?
+$> uname -a
+Linux skyscraper 2.6.22.5 #7 SMP PREEMPT Sun Sep 2 12:12:25 CEST 2007 i686 GNU/Linux
 
-Thanks,
+$> cat /proc/cpuinfo | grep bogomips
+bogomips	: 4813.46
+bogomips	: 4810.91
+bogomips	: 4810.91
+bogomips	: 10583.94
 
-	Xav
+The latter seems way off base.
+Prod me for more info.
+
+bjd
+
+--------------030102000500050503000204
+Content-Type: text/plain;
+ name="cpuinfo-full.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cpuinfo-full.txt"
+
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 Quad CPU           @ 2.40GHz
+stepping	: 7
+cpu MHz		: 2405.551
+cache size	: 4096 KB
+physical id	: 0
+siblings	: 4
+core id		: 0
+cpu cores	: 4
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 4813.46
+clflush size	: 64
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 Quad CPU           @ 2.40GHz
+stepping	: 7
+cpu MHz		: 2405.551
+cache size	: 4096 KB
+physical id	: 0
+siblings	: 4
+core id		: 1
+cpu cores	: 4
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 4810.91
+clflush size	: 64
+
+processor	: 2
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 Quad CPU           @ 2.40GHz
+stepping	: 7
+cpu MHz		: 2405.551
+cache size	: 4096 KB
+physical id	: 0
+siblings	: 4
+core id		: 2
+cpu cores	: 4
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 4810.91
+clflush size	: 64
+
+processor	: 3
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 Quad CPU           @ 2.40GHz
+stepping	: 7
+cpu MHz		: 2405.551
+cache size	: 4096 KB
+physical id	: 0
+siblings	: 4
+core id		: 3
+cpu cores	: 4
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 10583.94
+clflush size	: 64
 
 
+--------------030102000500050503000204--
