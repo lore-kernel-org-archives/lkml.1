@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbXICSu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbXICSyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592AbXICSu4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 14:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbXICSud
+	id S1756141AbXICSyY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 14:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXICSyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 14:50:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:43480 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753415AbXICSuc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 14:50:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=H2lWbyZ8nVb45E9wzHJDaOKRzeEriwxBu0aFOvy3WO4fo/jtqmT0xOHCpx6CWDGydCnSvz86YfDx5TpGGgBauu+m0gaA0qcIOZG5aRfYE6L00vgJ5PMTyoDHwZzlehK9S65ymtB6o+Z3jOoyVv/U6rzALgOfFwL8NzQ7j7Fsm+4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 2/4] hpt366: MWDMA filter for SATA cards
-Date: Mon, 3 Sep 2007 20:50:32 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200709030019.22732.sshtylyov@ru.mvista.com> <46DB1C50.2020205@ru.mvista.com>
-In-Reply-To: <46DB1C50.2020205@ru.mvista.com>
+	Mon, 3 Sep 2007 14:54:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36419 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752939AbXICSyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 14:54:17 -0400
+Date: Mon, 3 Sep 2007 20:54:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [ANNOUNCE/RFC] Really Simple Really Fair Scheduler
+Message-ID: <20070903185403.GA23479@elte.hu>
+References: <20070902120154.GA23769@elte.hu> <Pine.LNX.4.64.0709032030320.1817@scrub.home>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709032050.32397.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <Pine.LNX.4.64.0709032030320.1817@scrub.home>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 02 September 2007, Sergei Shtylyov wrote:
-> Hello, I wrote:
-> 
->     The patch was 4/4 of course. :-<
->      Probably I was too esctatic about the code. ;-)
-> 
-> > The Marvell bridge chips used on HighPoint SATA cards do not seem to support
-> > the MWDMA modes (at least that caould be seen in their so-called drivers :-),
-> > so the driver needs to account for this -- to achieve this:
-> 
-> > - add mdma_filter() method from the original patch by Bartlomiej Zolnierkewicz
-> >   with his consent, also adding the method callout to ide_rate_filter();
-> 
-> > - installed the method for all chips to only return empty mask if a SATA drive
-> >   is detected onHPT372{AN]/374 chips...
-> 
-> > Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> 
-> > ---
-> > This patch against the current Linus' tree and unfortunately I was able to only
-> > compile test it since that tree gives MODPOST warning and dies early on bootup.
-> > Will hopefully try to test if/when I have time... :-)
-> 
-> > Index: linux-2.6/drivers/ide/pci/hpt366.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/ide/pci/hpt366.c
-> > +++ linux-2.6/drivers/ide/pci/hpt366.c
-> > @@ -1,5 +1,5 @@
-> >  /*
-> > - * linux/drivers/ide/pci/hpt366.c		Version 1.12	Aug 25, 2007
-> > + * linux/drivers/ide/pci/hpt366.c		Version 1.13	Aug 22, 2007
-> 
->     Errr... and version shuold Aug 02 -- thought I've fixed that. :-/
 
-and we have ATA_MWDMA2 define in _vanilla_ kernel now :)
+* Roman Zippel <zippel@linux-m68k.org> wrote:
 
-Bart
+> Hi,
+> 
+> On Sun, 2 Sep 2007, Ingo Molnar wrote:
+> 
+> > Roman, as an addendum to my review, please find below a prototype patch 
+> > i've just written that implements RSRFS (Really Simple Really Fair 
+> > Scheduler) ontop of CFS. It is intended to demonstrate the essence of 
+> > the math you have presented via your patch. (it has no nice levels 
+> > support yet, to make the math really apparent to everyone interested)
+> 
+> It simplifies the math too much, the nice level weighting is an 
+> essential part of the math and without it one can't really understand 
+> the problem I'm trying to solve. At http://lkml.org/lkml/2007/9/3/168 
+> I provide an example of the math, which more acurately demonstrates 
+> the essential math.
+
+as i mentioned it above, in the first level review i'm mainly interested 
+in your patch's behavior wrt. simple nice-0 tasks, how they run and how 
+they sleep and wake up. Nothing else. Why? That's what 99% of the Linux 
+tasks do after all. So could you please confirm whether that aspect of 
+what i wrote (both in words and in code) is correct?
+
+If this basic model is correct, we can look further. If this basic model 
+is flawed, no amount of weighting, nice level logic, rounding behavior 
+can fix it. I'm sure you agree with that too.
+
+That's why i wrote this prototype, please confirm or deny whether i 
+correctly understood how you intend to handle nice-0 tasks. (From your 
+mails i read a part-acknowledgement of that but i'd like to see a more 
+clear acknowledgement - or please mention any issues if you know about 
+them.) Thanks!
+
+	Ingo
