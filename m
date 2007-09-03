@@ -1,118 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757066AbXICKLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbXICKLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757066AbXICKLd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 06:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbXICKLA
+	id S1757106AbXICKLw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 06:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757340AbXICKLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 06:11:00 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:13161 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753978AbXICKK6 (ORCPT
+	Mon, 3 Sep 2007 06:11:13 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:33714 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757238AbXICKLK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 06:10:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=kxJx4NgeOVA+Wr6elrCQ5e7j5FjJocUEznUT8/cKKIxPOJ0S9GdgUd9cC3xC/sWy8cyKjF9C9a8WBc4EpYCEvCHVAZ+eaCjI/ZzTO9CW1AvZNu4E+g0OuBuokKmu1WwzCEbwNwDgoTi1QOqzGt3tkIVYHZREdX0KEtTBg9cXKjk=
-Message-ID: <46DBDD8E.6050802@googlemail.com>
-Date: Mon, 03 Sep 2007 12:10:22 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 3 Sep 2007 06:11:10 -0400
+Message-ID: <46DBDEFF.4030206@bull.net>
+Date: Mon, 03 Sep 2007 12:16:31 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Shish <shish@shishnet.org>, Karl Meyer <adhocrocker@gmail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>, linux-wireless@vger.kernel.org,
-       Christian Casteyde <casteyde.christian@free.fr>,
-       Martin Langer <martin-langer@gmx.de>, Stefano Brivio <st3@riseup.net>,
-       Michael Buesch <mbuesch@freenet.de>,
-       Danny van Dyk <kugelfang@gentoo.org>,
-       Andreas Jaggi <andreas.jaggi@waterwave.ch>,
-       Daniel Drake <dsd@gentoo.org>, Oliver Neukum <oliver@neukum.org>,
-       linux-usb-devel@lists.sourceforge.net, Florian Lohoff <flo@rfc822.org>
-Subject: Re: [3/4] 2.6.23-rc5: known regressions
-References: <46DBD982.3080102@googlemail.com>
-In-Reply-To: <46DBD982.3080102@googlemail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, matthltc@us.ibm.com
+Subject: Re: [RFC][PATCH 1/6] Storing ipcs into IDRs
+References: <20070831112445.976429000@bull.net>	<20070831112613.552219000@bull.net> <p73tzqevxue.fsf@bingen.suse.de>
+In-Reply-To: <p73tzqevxue.fsf@bingen.suse.de>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 03/09/2007 12:16:38,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 03/09/2007 12:16:40,
+	Serialize complete at 03/09/2007 12:16:40
 Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Andi Kleen wrote:
+> Nadia.Derbey@bull.net writes:
+> 
+> 
+>>This patch introduces ipcs storage into IDRs. The main changes are:
+>>  . This ipc_ids structure is changed: the entries array is changed into a
+>>    root idr structure.
+>>  . The grow_ary() routine is removed: it is not needed anymore when adding
+>>    an ipc structure, since we are now using the IDR facility.
+>>  . The ipc_rmid() routine interface is changed:
+>>       . there is no need for this routine to return the pointer passed in as
+>>         argument: it is now declared as a void
+>>       . since the id is now part of the kern_ipc_perm structure, no need to
+>>         have it as an argument to the routine
+>>
+> 
+> 
+> Thanks for doing this work. It was long overdue.
+> 
+> Do you have any data how this changes memory consumption with 
+> many objects? 
+> 
 
-Here is a list of some known regressions in 2.6.23-rc5.
-
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
-
-List of Aces
-
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            9
-Linus Torvalds                         6
-Andi Kleen                             5
-Hugh Dickins                           5
-Andrew Morton                          4
-Al Viro                                3
-Alan Stern                             3
-Alexey Starikovskiy                    3
-Cornelia Huck                          3
-Jens Axboe                             3
-Stephen Hemminger                      3
-Tejun Heo                              3
-
-
-
-Networking
-
-Subject         : ifconfig eth1 - scheduling while atomic: ifconfig/0x00000002/4170
-References      : http://lkml.org/lkml/2007/9/2/165
-Last known good : ?
-Submitter       : Florian Lohoff <flo@rfc822.org> 
-Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
-
-Subject         : zd1211rw regression, device does not enumerate
-References      : http://marc.info/?l=linux-usb-devel&m=118854967709322&w=2
-Last known good : ?
-Submitter       : Oliver Neukum <oliver@neukum.org>
-Caused-By       : Daniel Drake <dsd@gentoo.org>
-                  commit 74553aedd46b3a2cae986f909cf2a3f99369decc
-Handled-By      : ?
-Status          : unknown
-
-Subject         : System freeze when restarting network connection with Broadcom driver
-References      : http://bugzilla.kernel.org/show_bug.cgi?id=8934
-Last known good : ?
-Submitter       : Christian Casteyde <casteyde.christian@free.fr>
-Caused-By       : ?
-Handled-By      : ?
-Status          : problem is being debugged
-
-Subject         : NETDEV WATCHDOG: eth0: transmit timed out
-References      : http://lkml.org/lkml/2007/8/13/737
-Last known good : ?
-Submitter       : Karl Meyer <adhocrocker@gmail.com>
-Caused-By       : ?
-Handled-By      : Francois Romieu <romieu@fr.zoreil.com>
-Status          : problem is being debugged
-
-Subject         : Weird network problems with 2.6.23-rc2
-References      : http://lkml.org/lkml/2007/8/11/40
-Last known good : ?
-Submitter       : Shish <shish@shishnet.org>
-Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
-
-
+No. Will try to send you this as soon as I've done some measurements.
 
 Regards,
-Michal
+Nadia
 
---
-LOG
-http://www.stardust.webpages.pl/log/
+
+-- 
+===============================================================
+Name.......... Nadia DERBEY
+Organization.. BULL/DT/OSwR&D/Linux
+---------------------------------------------------------------
+Email......... mailto:Nadia.Derbey@bull.net
+Address....... BULL, B.P. 208, 38432 Echirolles Cedex, France
+Tel........... (33) 76 29 77 62 [Internal Bull: (229) 77 62]
+Telex,Fax..... 980648 F - (33) 76 29 76 00
+Internal Bull. Mail: FREC-B1405
+===============================================================
+
