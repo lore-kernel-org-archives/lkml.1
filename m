@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbXICR6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbXICR7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753954AbXICR6d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 13:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbXICR6X
+	id S1755899AbXICR7J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 13:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbXICR6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 13:58:23 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:38557 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755696AbXICR6V (ORCPT
+	Mon, 3 Sep 2007 13:58:55 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:65364 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753449AbXICR6x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 13:58:21 -0400
-Date: Mon, 3 Sep 2007 19:58:20 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: patrizio.bassi@gmail.com,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       "Kernel," <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Alan Cox <alan@redhat.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: libata not working for sis5533
-In-Reply-To: <20070902114032.7dbfb21a@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0709031957390.24179@fbirervta.pbzchgretzou.qr>
-References: <46D132C5.5000803@gmail.com> <6bffcb0e0708261627s12e5a9acqef92d0261264a40c@mail.gmail.com>
- <46D8921E.3010304@gmail.com> <46D89429.7080802@gmail.com>
- <20070902114032.7dbfb21a@the-village.bc.nu>
+	Mon, 3 Sep 2007 13:58:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BbpeweIWQ2uI/M3ypTI//s8dWzxnmLw4+0kBi2USjd1jVPDQfy8TuWRsBMO7xL0cwHrwAjyr2N5H5Jpm9H3xP5Q/prhIhTb4GtsZ3dzPdEEEnPFwijf4fLrwGpi3U7MJQ6eNzUZuf2cncLEMEs6PJ2xk9sPthQjsoLDy7lmBiO4=
+Message-ID: <8bd0f97a0709031058g3d0b5e8dodbb5fa5f35366b4f@mail.gmail.com>
+Date: Mon, 3 Sep 2007 13:58:53 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Clemens Koller" <clemens.koller@anagramm.de>
+Subject: Re: [PATCH] Blackfin BF54x NAND Flash Controller driver
+Cc: bryan.wu@analog.com, "David Woodhouse" <dwmw2@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <46DBDE75.90203@anagramm.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1188804323.29566.6.camel@roc-laptop> <46DBDE75.90203@anagramm.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sep 2 2007 11:40, Alan Cox wrote:
+On 9/3/07, Clemens Koller <clemens.koller@anagramm.de> wrote:
+> Bryan Wu schrieb:
+> > This is the driver for latest Blackfin BF54x nand flash controller
+> >
+> >  - use nand_chip and mtd_info common nand driver interface
+> >  - provide both PIO and dma operation
+> >  - compiled with ezkit bf548 configuration
+> >  - use hardware 1-bit ECC
+> >  - tested with YAFFS2 and can mount YAFFS2 filesystem as rootfs
 >
->> i've been out for a week, but found no notice, did i lost any email or
->> no activity on this issue?
+> Looks great!
 >
->I tagged it onto the obscure IDE report pile. It doesn't contain any
->really useful information and its probably not an IDE layer bug as of
->itself. But its on the todo list for further investigation and to see if
->patterns emerge
+> Will this driver also work for the new BF52x series of the Blackfin Series?
+> (Or is it planned to make it work for... anytime soon.)
 
-I shall give this a spin too, since I happen to have sis5513.
+the order for porting of new chips is:
+u-boot -> core kernel -> peripherals
 
-
-	Jan
--- 
+we generally dont bother looking at peripherals until the earlier stuff is done
+-mike
