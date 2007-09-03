@@ -1,94 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbXICQsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbXICQ5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbXICQsY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 12:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbXICQsS
+	id S1754452AbXICQ5p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 12:57:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbXICQ5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 12:48:18 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:59015 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750734AbXICQsR (ORCPT
+	Mon, 3 Sep 2007 12:57:36 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:14377 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752304AbXICQ5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 12:48:17 -0400
-Date: Mon, 3 Sep 2007 09:48:15 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: Robert Richter <robert.richter@amd.com>
-cc: Andi Kleen <ak@suse.de>, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 5/5] x86: Set PCI config space size to extended for AMD
- Barcelona
-In-Reply-To: <20070903081736.805623000@amd.com>
-Message-ID: <Pine.LNX.4.64.0709030930150.3502@twinlark.arctic.org>
-References: <20070903081736.288288000@amd.com> <20070903081736.805623000@amd.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 3 Sep 2007 12:57:35 -0400
+Date: Mon, 3 Sep 2007 09:57:13 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stefan Becker <Stefan.Becker@nokia.com>
+Cc: linux-kernel@vger.kernel.org, michal.k.k.piotrowski@gmail.com
+Subject: Re: [pre-2.6.23 REGRESSION] 2.6.23-rc3-git1 crash/stuck on VIA
+ CN700 system
+Message-Id: <20070903095713.3d071275.randy.dunlap@oracle.com>
+In-Reply-To: <46DBA2DE.9040803@nokia.com>
+References: <46C9D148.5080505@nokia.com>
+	<46D3AF72.7030701@nokia.com>
+	<46DBA2DE.9040803@nokia.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-it's so very unfortunate the PCI standard has no feature bit to indicate 
-the presence of ECS.
+On Mon, 03 Sep 2007 08:59:58 +0300 Stefan Becker wrote:
 
-FWIW in my testing on a range of machines spanning 7 or 8 years i could 
-read config space reg 256... and get 0xffffffff when the device didn't 
-support ECS, and get valid data when the device did support ECS... granted 
-there may be some system out there which behaves really badly when you do 
-this.
+> Hi,
+> 
+> > Stefan Becker wrote:
+> >>
+> >> while trying to debug a hibernation/rtc_cmos alarm wakeup problem in 
+> >> 2.6.22 (or later) I noticed that the latest kernel crashes (or gets 
+> >> stuck sometimes) during boot after the message:
+> >>
+> >> SMP alternatives: switching to UP code
+> 
+> Retested with 2.6.23-rc4. Same result.
+> 
+> I also added "debug" to the boot command line. Unfortunately it didn't 
+> show anything new. Comparing to 2.6.22.2 boot the next message should be
+> 
+>   Freeing SMP alternatives: ....
+> 
+> Any hints what I should change on the command line or config to reveal 
+> more information?
 
-perhaps someone could write a userspace program and test that concept on a 
-far wider range of machines.
+You could try booting with 'initcall_debug' to see if that helps
+narrow down the error.
 
--dean
 
-On Mon, 3 Sep 2007, Robert Richter wrote:
-
-> This patch sets the config space size for AMD Barcelona PCI devices to
-> 4096.
-> 
-> Signed-off-by: Robert Richter <robert.richter@amd.com>
-> 
-> ---
->  arch/i386/pci/fixup.c |   14 ++++++++++++++
->  1 file changed, 14 insertions(+)
-> 
-> Index: linux-2.6/arch/i386/pci/fixup.c
-> ===================================================================
-> --- linux-2.6.orig/arch/i386/pci/fixup.c
-> +++ linux-2.6/arch/i386/pci/fixup.c
-> @@ -8,6 +8,7 @@
->  #include <linux/init.h>
->  #include "pci.h"
->  
-> +#define PCI_CFG_SPACE_EXP_SIZE	4096
->  
->  static void __devinit pci_fixup_i450nx(struct pci_dev *d)
->  {
-> @@ -444,3 +445,16 @@ static void __devinit pci_siemens_interr
->  }
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_SIEMENS, 0x0015,
->  			  pci_siemens_interrupt_controller);
-> +
-> +/*
-> + * Extend size of PCI configuration space for AMD CPUs
-> + */
-> +static void __devinit pci_ext_cfg_space_access(struct pci_dev *dev)
-> +{
-> +	dev->cfg_size = PCI_CFG_SPACE_EXP_SIZE;
-> +}
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_FAM10H_HT,   pci_ext_cfg_space_access);
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_FAM10H_MAP,  pci_ext_cfg_space_access);
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_FAM10H_DRAM, pci_ext_cfg_space_access);
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_FAM10H_MISC, pci_ext_cfg_space_access);
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_FAM10H_LINK, pci_ext_cfg_space_access);
-> 
-> -- 
-> AMD Saxony, Dresden, Germany
-> Operating System Research Center
-> email: robert.richter@amd.com
-> 
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
