@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbXICQFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbXICQMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbXICQFV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 12:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbXICQFL
+	id S1753865AbXICQMk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 12:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbXICQMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 12:05:11 -0400
-Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:3236 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751518AbXICQFK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 12:05:10 -0400
-Date: Mon, 3 Sep 2007 18:06:36 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [PATCH] hwmon: Add power meters to
- Documentation/hwmon/sysfs-interface
-Message-ID: <20070903180636.4096e7d5@hyperion.delvare>
-In-Reply-To: <20070903020200.GA8948@khazad-dum.debian.net>
-References: <20070827211446.GG32667@tree.beaverton.ibm.com>
-	<20070828015029.GA10107@khazad-dum.debian.net>
-	<20070828131942.18449886@hyperion.delvare>
-	<20070828164440.GL32667@tree.beaverton.ibm.com>
-	<20070901171048.GA3883@ucw.cz>
-	<41840b750709011105s6c434217t50d965a0b17df643@mail.gmail.com>
-	<20070901194417.GA24897@khazad-dum.debian.net>
-	<20070902213837.7293d6fa@hyperion.delvare>
-	<20070903020200.GA8948@khazad-dum.debian.net>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Mon, 3 Sep 2007 12:12:31 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:35177 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750734AbXICQMa (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 12:12:30 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: espie@nerim.net
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: GPL weasels and the atheros stink
+In-Reply-To: Your message of "Sun, 02 Sep 2007 16:03:07 +0200."
+             <20070902140306.GA27317@lain.home>
+From: Valdis.Kletnieks@vt.edu
+References: <20070902140306.GA27317@lain.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1188835948_2902P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Mon, 03 Sep 2007 12:12:28 -0400
+Message-ID: <18261.1188835948@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Sep 2007 23:02:01 -0300, Henrique de Moraes Holschuh wrote:
-> On Sun, 02 Sep 2007, Jean Delvare wrote:
-> > I guess power[1-*]_average would be OK?
+--==_Exmh_1188835948_2902P
+Content-Type: text/plain; charset=us-ascii
+
+On Sun, 02 Sep 2007 16:03:07 +0200, Marc Espie said:
+
+> Look at the situation: Reyk Floeter writes some code, puts it
+> under a dual licence, and goes on vacation.
 > 
-> AFAIK, yes.  It is probably not 100% in sync with the power supply class,
-> though.
+> While he's away, some other people (Jiri, for starters) tweak the
+> copyright and licence on the file he's mostly written. Without asking
+> Reyk. Without even having the basic decency to wait for him to be
+> around.
 
-Is the power supply class creating sysfs files? I see a number of
-attributes listed in Documentation/power_supply_class.txt, but they are
-all uppercase, which doesn't seem suitable for sysfs file names. That
-document also doesn't list the numbering convention when multiple
-channels are present.
+And we collectively told Jiri where to stick that.
 
-My main worry is that we will have to add support for power measurement
-in libsensors, and I would like it to be as easy as possible. Thus
-sticking to the same naming convention hwmon have been using for years
-appears to be the best solution.
+So let's recap:
 
-I see that the power supply class units are 10^-6 A and 10^-6 W, so if
-we are supposed to be compatible, I guess we'll have to use this too.
+1) Jiri submitted a borked patch that changed the licenses.
+2) We didn't accept said patch.
+3) There's then a whole big fuss about a *NON EXISTENT PROBLEM*.
 
--- 
-Jean Delvare
+I could see where the *BSD people could complain if we had *accepted and
+distributed* said patch.  But it was wrong, we recognized it was wrong,
+and the system is working as designed.  So let's quit the flamefest already.
+
+Geez.
+
+--==_Exmh_1188835948_2902P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG3DJscC3lWbTT17ARAgBEAJ9p23HbjnH2bMeRTnD9a5SwGXnVSACeNmnE
+nZSKguQH5AgrGsi3A42dNfE=
+=ORm5
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1188835948_2902P--
