@@ -1,99 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbXICSMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbXICSSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755139AbXICSMT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 14:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbXICSMH
+	id S1755302AbXICSSq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 14:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbXICSSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 14:12:07 -0400
-Received: from keil-draco.com ([216.193.185.50]:50205 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753286AbXICSMG (ORCPT
+	Mon, 3 Sep 2007 14:18:36 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:8124 "EHLO
+	outbound9-sin-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751069AbXICSSf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 14:12:06 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: GPL weasels and the atheros stink
-Date: Mon, 3 Sep 2007 14:11:51 -0400
-User-Agent: KMail/1.9.6
-Cc: davids@webmaster.com, espie@nerim.net, linux-kernel@vger.kernel.org
-References: <MDEHLPKNGKAHNMBLJOLKMECFGJAC.davids@webmaster.com> <200709022257.54663.dhazelton@enter.net> <m3bqcjwtuc.fsf@maximus.localdomain>
-In-Reply-To: <m3bqcjwtuc.fsf@maximus.localdomain>
+	Mon, 3 Sep 2007 14:18:35 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Mon, 3 Sep 2007 20:18:06 +0200
+From: "Robert Richter" <robert.richter@amd.com>
+To: "dean gaudet" <dean@arctic.org>
+cc: "Andi Kleen" <ak@suse.de>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 5/5] x86: Set PCI config space size to extended for
+ AMD Barcelona
+Message-ID: <20070903181805.GB4758@erda.amd.com>
+References: <20070903081736.288288000@amd.com>
+ <20070903081736.805623000@amd.com>
+ <Pine.LNX.4.64.0709030930150.3502@twinlark.arctic.org>
 MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.4.64.0709030930150.3502@twinlark.arctic.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 03 Sep 2007 18:18:06.0201 (UTC)
+ FILETIME=[C6212E90:01C7EE56]
+X-WSS-ID: 6AC290670X86435142-01-01
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+ charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709031411.51598.dhazelton@enter.net>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 September 2007 13:18:35 Krzysztof Halasa wrote:
-> Daniel Hazelton <dhazelton@enter.net> writes:
-> > Then go yell at Mr. Floeter. The code is dual-licensed and he put
-> > BSD-License
-> > only code in it. Because that's the *EXACT* *SAME* thing you're talking
-> > about.
->
-> Actually it is not.
->
-> Dual BSD/GPL licence essentially means BSD, because rights given by
-> BSD are a superset of these by GPL.
+On 03.09.07 09:48:15, dean gaudet wrote:
+> it's so very unfortunate the PCI standard has no feature bit to indicate 
+> the presence of ECS.
 
-Actually, I was pointing out a logical fallacy. I'll spell it out long here so 
-everyone can see the point I was trying to make.
+Right. Not nice.
 
-Person A writes a device driver and releases it under a dual license.
-Person B modifies said device driver and licenses his changes under only one 
-of the licenses on the device driver. Nobody complains.
-Person C modifies the same device driver and licenses his changes under the 
-other license on the device driver. People start complaining.
+> FWIW in my testing on a range of machines spanning 7 or 8 years i could 
+> read config space reg 256... and get 0xffffffff when the device didn't 
+> support ECS, and get valid data when the device did support ECS... granted 
+> there may be some system out there which behaves really badly when you do 
+> this.
+> 
+> perhaps someone could write a userspace program and test that concept on a 
+> far wider range of machines.
 
-In this case either the actions of both persons B and C are legal - in which 
-case neither person B or person C is likely to lose a lawsuit (or even face 
-one) - or they are illegal, in which case the second a lawsuit is brought 
-against person C, the same lawsuit must be brought against person B.
+A user space programm could map the config space (if MMCONFIG is usable)
+and scan the PCI devices directly using memory access.
 
-The exact nature of the licenses and whether one is a superset or subset of 
-the other doesn't matter. Either the action of making modifications licensed 
-solely under one or the other of the two licenses on the original code-base 
-is illegal or it isn't.
+This patch sets pcidev->cfg_size to 4096 for certain devices so that
+the ECS is also available using proc/sys fs or lspci -xxxx. In this
+case the Kernel access functions are used. This works with both
+methods, CF8 and MMCONFIG. For CF8, all patches of these series must
+be used.
 
-<snip out the straw-man>
-> The other thing is copyright notices. I think one can't legally
-> alter someone else's licence conditions (in his/her name), unless
-> something like that is explicitly permitted.
+Note also, that ECS access is not only for CPU devices available, but
+also of other PCI Express devices on the bus.
 
-Fully agreed. I've even said such myself.
-
-> However, we're talking about derivative works. A derivative
-> work may be, for example, GPL-licenced:
->
-> "Copyright (C) 1234 Joe the GPL lover
-> licenced under the GPL as published"
->
-> but could lawfully use code originally licenced under BSD:
->
-> "Portions copyright (C) 1234 Bill the BSD lover
-> originally licenced under no-ad BSD"
->
-> Thus his (Joe's) work is GPL only, but Bill's licence notice is
-> intact as required by it (BSD).
-
-I've suggested that such be done in the future - if just because it *IS* how 
-it should be done.
-
->
-> IANAL, maybe you (all of us) should consult one if required.
-
-Would cost me money to consult a lawyer over this, but I do have a few friends 
-that have completed law school and are waiting on the results of the BAR. 
-They have told me that they are not legally allowed to dispense legal 
-advice - but I got around that by asking them to recount what the law 
-actually says.
-
-Apparently the above suggestion would meet the letter of the law.
-
-DRH
+-Robert
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+AMD Saxony, Dresden, Germany
+Operating System Research Center
+email: robert.richter@amd.com
+
+
