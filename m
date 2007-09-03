@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbXICWDD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbXICWDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbXICWDD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 18:03:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbXICWCw
+	id S1754571AbXICWDV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 18:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbXICWC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 18:02:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55690 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751661AbXICWCv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 18:02:51 -0400
-Date: Tue, 4 Sep 2007 03:45:55 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Steffen Klassert <klassert@mathematik.tu-chemnitz.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev Mailing List <netdev@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH -mm 1/2] 3c59x: Fix uninitialized variable bug
-Message-ID: <alpine.LFD.0.999.0709040340250.8504@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+	Mon, 3 Sep 2007 18:02:58 -0400
+Received: from prans.org ([209.59.209.223]:38281 "EHLO prans.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754441AbXICWC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 18:02:56 -0400
+X-Greylist: delayed 929 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 18:02:56 EDT
+From: Elvis Pranskevichus <el@prans.net>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Dmitry Torokhov <dtor@insightbb.com>, Elvis Pranskevichus <el@prans.net>
+Subject: [PATCH] Input: i8042 - add HP Pavilion DV4270ca to the MUX blacklist
+Date: Mon,  3 Sep 2007 17:47:18 -0400
+Message-Id: <11888560383968-git-send-email-el@prans.net>
+X-Mailer: git-send-email 1.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This fixes "atkbd.c: Suprious NAK on isa0060/serio0" errors for
+HP Pavilion DV4270ca. Same reasons as for 9d9d50bb2efb50594abfc3941a5504b62c514ebd
+and 6e782584e0713ea89da151333e7fe754c8f40324.
 
-drivers/net/3c59x.c: In function 'vortex_up':
-drivers/net/3c59x.c:1495: warning: 'err' may be used uninitialized in this function
+Signed-off-by: Elvis Pranskevichus <el@prans.net>
 
-is a genuine bug. The function returns an uninitialized value of 'err'
-back to the caller, which expects it to be 0 for success cases. Let's
-fix this by explicitly initializing 'err' to zero.
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
+diff --git a/drivers/input/serio/i8042-x86ia64io.h b/drivers/input/serio/i8042-x86ia64io.h
+index 702a526..f8fe421 100644
+--- a/drivers/input/serio/i8042-x86ia64io.h
++++ b/drivers/input/serio/i8042-x86ia64io.h
+@@ -211,6 +211,16 @@ static struct dmi_system_id __initdata i8042_dmi_nomux_table[] = {
+ 		},
+ 	},
+ 	{
++		/*
++		 * Like DV4017EA does not raise AUXERR for errors on MUX ports.
++		 */
++		.ident = "HP Pavilion DV4270ca",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Pavilion dv4000 (EH476UA#ABL)"),
++		},
++	},
++	{
+ 		.ident = "Toshiba P10",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
+-- 
+1.5.3
 
----
-
- drivers/net/3c59x.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- linux-2.6.23-rc4-mm1/drivers/net/3c59x.c~fix	2007-09-04 03:29:40.000000000 +0530
-+++ linux-2.6.23-rc4-mm1/drivers/net/3c59x.c	2007-09-04 03:30:08.000000000 +0530
-@@ -1492,7 +1492,8 @@ vortex_up(struct net_device *dev)
- 	struct vortex_private *vp = netdev_priv(dev);
- 	void __iomem *ioaddr = vp->ioaddr;
- 	unsigned int config;
--	int i, mii_reg1, mii_reg5, err;
-+	int i, mii_reg1, mii_reg5;
-+	int err = 0;
- 
- 	if (VORTEX_PCI(vp)) {
- 		pci_set_power_state(VORTEX_PCI(vp), PCI_D0);	/* Go active */
