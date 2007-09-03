@@ -1,138 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbXICLCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbXICLHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757476AbXICLCV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 07:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbXICLCN
+	id S1756139AbXICLHr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 07:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbXICLHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 07:02:13 -0400
-Received: from [203.178.140.9] ([203.178.140.9]:56049 "EHLO mail.gomagoma.org"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754876AbXICLCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 07:02:13 -0400
-X-Greylist: delayed 1248 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 07:02:12 EDT
-Date: Mon, 03 Sep 2007 19:43:51 +0900
-From: Masahide NAKAMURA <nakam@linux-ipv6.org>
-To: Adrian Bunk <bunk@kernel.org>, David Miller <davem@davemloft.net>
-Subject: Re: [-mm patch] IPV6 must select XFRM
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, nakam@linux-ipv6.org
-In-Reply-To: <20070902112557.GK16016@stusta.de>
-References: <20070831215822.26e1432b.akpm@linux-foundation.org> <20070902112557.GK16016@stusta.de>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20070903193711.6A1D.NAKAM@linux-ipv6.org>
+	Mon, 3 Sep 2007 07:07:40 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:25102 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752289AbXICLHj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 07:07:39 -0400
+Message-ID: <3db1ec7f0709030407y2cb9fc8ew52160ca28b2592d2@mail.gmail.com>
+Date: Mon, 3 Sep 2007 14:07:38 +0300
+From: "Ivan N. Zlatev" <contact@i-nz.net>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: [PATCH] [ALSA] Added new pin config for first gen macbook.
+Cc: "Abhijit Bhopatkar" <bain@devslashzero.com>,
+       "Jaroslav Kysela" <perex@suse.cz>, linux-kernel@vger.kernel.org
+In-Reply-To: <s5hr6lgdoiv.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="------_46DBE3D76AA40B35F140_MULTIPART_MIXED_"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.31 [ja]
+Content-Disposition: inline
+References: <2ff216280709030325r626d98b3h2c5a48e90470610b@mail.gmail.com>
+	 <s5hr6lgdoiv.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---------_46DBE3D76AA40B35F140_MULTIPART_MIXED_
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+On 9/3/07, Takashi Iwai <tiwai@suse.de> wrote:
+> At Mon, 3 Sep 2007 15:55:18 +0530,
+> Abhijit Bhopatkar wrote:
+> >
+> > commit 5d5d3bc3eddf2ad97b2cb090b92580e7fed6cee1 changed all
+> > pin configs for intel macs, but it breaks sound on
+> > Macbook first generation.
+>
 
-Hello,
+For the record I have just verified that according to Apple the
+pinconfigs for your codec match the ones in alsa and are as follows. I
+believe those were extracted from Boot Camp 1.2. I will check with
+version 1.4 in few hours.
 
-On Sun, 2 Sep 2007 13:25:57 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
-
-> On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
-> >...
-> > Changes since 2.6.23-rc3-mm1:
-> >...
-> >  git-net.patch
-> >...
-> >  git trees
-> >...
-> 
-> This patch fixes the following compile error:
-> 
-> <--  snip  -->
-> 
-> ...
->   LD      .tmp_vmlinux1
-> net/built-in.o: In function `inet6_csk_xmit':
-> (.text+0x72b0f): undefined reference to `flow_cache_genid'
-> net/built-in.o: In function `inet6_csk_xmit':
-> (.text+0x72be5): undefined reference to `flow_cache_genid'
-> make[1]: *** [.tmp_vmlinux1] Error 1
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> --- a/net/ipv6/Kconfig
-> +++ b/net/ipv6/Kconfig
-> @@ -5,6 +5,7 @@
->  #   IPv6 as module will cause a CRASH if you try to unload it
->  config IPV6
->  	tristate "The IPv6 protocol"
-> +	select XFRM
->  	default m
->  	---help---
->  	  This is complemental support for the IP version 6.
-> 
-> -
-
-
-Thank you for catching this. the issue is caused with patch
-"[IPV6] XFRM: Fix connected socket to use transformation."
-which I sent to netdev.
-(a85d5450ddeb959bdf9e4603f9c06e9d79217cfa on net-2.6.24).
-
-I'd prefer to modify the original patch to use "ifdef CONFIG_XFRM"
-than changing kernel config depends. Does it make sense?
-
-Please review the attached patch.
-
+[0A]
+CfgDflt = 0x0321E21F
+Action = 01,0A,81,0C,81,0D,81,10,85,51,05,21
+[0B]
+CfgDflt = 0x03A1E02E
+FF,04
+[0C]
+CfgDflt = 0x9017E110
+[0D]
+CfgDflt = 0x9017E11F
+[0E]
+CfgDflt = 0x400000FE
+Action = hex: 01,10,81,0A,81,0C,81,0D
+[0F]
+CfgDflt = 0x0381E020
+Action = 09,0F
+[10]
+CfgDflt = 0x1345E230
+[11]
+CfgDflt = 0x13C5E240
+[15]
+CfgDflt = 0x400000FC
+[1B]
+CfgDflt = 0x400000FB
 -- 
-Masahide NAKAMURA
+Ivan N. Zlatev
 
---------_46DBE3D76AA40B35F140_MULTIPART_MIXED_
-Content-Type: application/octet-stream;
- name="0001-PATCH-IPV6-XFRM-Fix-dependency-issue-at-inet6_csk_xmit.txt"
-Content-Disposition: attachment;
- filename="0001-PATCH-IPV6-XFRM-Fix-dependency-issue-at-inet6_csk_xmit.txt"
-Content-Transfer-Encoding: base64
-
-RnJvbSBjOWIwZDE1ZjgyMjJkZTc4NTRhNmFkNTA0YzQ1NjIwMDRiOTllNDg3IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBNYXNhaGlkZSBOQUtBTVVSQSA8bmFrYW1AbGludXgtaXB2Ni5v
-cmc+CkRhdGU6IE1vbiwgMyBTZXAgMjAwNyAxOTozMTozMiArMDkwMApTdWJqZWN0OiBbUEFUQ0hd
-IFtJUFY2XSBYRlJNOiBGaXggZGVwZW5kZW5jeSBpc3N1ZSBhdCBpbmV0Nl9jc2tfeG1pdC4KClNp
-Z25lZC1vZmYtYnk6IE1hc2FoaWRlIE5BS0FNVVJBIDxuYWthbUBsaW51eC1pcHY2Lm9yZz4KLS0t
-CiBpbmNsdWRlL25ldC9pcDZfZmliLmggICAgICAgICAgICB8ICAgIDIgKysKIG5ldC9pcHY2L2lu
-ZXQ2X2Nvbm5lY3Rpb25fc29jay5jIHwgICAzMSArKysrKysrKysrKysrKysrKystLS0tLS0tLS0t
-LS0tCiAyIGZpbGVzIGNoYW5nZWQsIDIwIGluc2VydGlvbnMoKyksIDEzIGRlbGV0aW9ucygtKQoK
-ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbmV0L2lwNl9maWIuaCBiL2luY2x1ZGUvbmV0L2lwNl9maWIu
-aAppbmRleCA4NWQ2ZDlmLi44NTc4MjEzIDEwMDY0NAotLS0gYS9pbmNsdWRlL25ldC9pcDZfZmli
-LmgKKysrIGIvaW5jbHVkZS9uZXQvaXA2X2ZpYi5oCkBAIC0xMDYsNyArMTA2LDkgQEAgc3RydWN0
-IHJ0Nl9pbmZvCiAKIAl1OAkJCQlydDZpX3Byb3RvY29sOwogCisjaWZkZWYgQ09ORklHX1hGUk0K
-IAl1MzIJCQkJcnQ2aV9mbG93X2NhY2hlX2dlbmlkOworI2VuZGlmCiB9OwogCiBzdGF0aWMgaW5s
-aW5lIHN0cnVjdCBpbmV0Nl9kZXYgKmlwNl9kc3RfaWRldihzdHJ1Y3QgZHN0X2VudHJ5ICpkc3Qp
-CmRpZmYgLS1naXQgYS9uZXQvaXB2Ni9pbmV0Nl9jb25uZWN0aW9uX3NvY2suYyBiL25ldC9pcHY2
-L2luZXQ2X2Nvbm5lY3Rpb25fc29jay5jCmluZGV4IGYzODkzMjIuLjI1YjkzMTcgMTAwNjQ0Ci0t
-LSBhL25ldC9pcHY2L2luZXQ2X2Nvbm5lY3Rpb25fc29jay5jCisrKyBiL25ldC9pcHY2L2luZXQ2
-X2Nvbm5lY3Rpb25fc29jay5jCkBAIC0xNDMsMjkgKzE0MywzNCBAQCBzdGF0aWMgaW5saW5lCiB2
-b2lkIF9faW5ldDZfY3NrX2RzdF9zdG9yZShzdHJ1Y3Qgc29jayAqc2ssIHN0cnVjdCBkc3RfZW50
-cnkgKmRzdCwKIAkJCSAgIHN0cnVjdCBpbjZfYWRkciAqZGFkZHIsIHN0cnVjdCBpbjZfYWRkciAq
-c2FkZHIpCiB7Ci0Jc3RydWN0IHJ0Nl9pbmZvICpydCA9IChzdHJ1Y3QgcnQ2X2luZm8gKilkc3Q7
-Ci0KIAlfX2lwNl9kc3Rfc3RvcmUoc2ssIGRzdCwgZGFkZHIsIHNhZGRyKTsKLQlydC0+cnQ2aV9m
-bG93X2NhY2hlX2dlbmlkID0gYXRvbWljX3JlYWQoJmZsb3dfY2FjaGVfZ2VuaWQpOworCisjaWZk
-ZWYgQ09ORklHX1hGUk0KKwlpZiAoZHN0KSB7CisJCXN0cnVjdCBydDZfaW5mbyAqcnQgPSAoc3Ry
-dWN0IHJ0Nl9pbmZvICAqKWRzdDsKKwkJcnQtPnJ0NmlfZmxvd19jYWNoZV9nZW5pZCA9IGF0b21p
-Y19yZWFkKCZmbG93X2NhY2hlX2dlbmlkKTsKKwl9CisjZW5kaWYKIH0KIAogc3RhdGljIGlubGlu
-ZQogc3RydWN0IGRzdF9lbnRyeSAqX19pbmV0Nl9jc2tfZHN0X2NoZWNrKHN0cnVjdCBzb2NrICpz
-aywgdTMyIGNvb2tpZSkKIHsKIAlzdHJ1Y3QgZHN0X2VudHJ5ICpkc3Q7Ci0Jc3RydWN0IHJ0Nl9p
-bmZvICpydDsKIAogCWRzdCA9IF9fc2tfZHN0X2NoZWNrKHNrLCBjb29raWUpOwotCWlmICghZHN0
-KQotCQlnb3RvIGVuZDsKLQotCXJ0ID0gKHN0cnVjdCBydDZfaW5mbyAqKWRzdDsKLQlpZiAocnQt
-PnJ0NmlfZmxvd19jYWNoZV9nZW5pZCAhPSBhdG9taWNfcmVhZCgmZmxvd19jYWNoZV9nZW5pZCkp
-IHsKLQkJc2stPnNrX2RzdF9jYWNoZSA9IE5VTEw7Ci0JCWRzdF9yZWxlYXNlKGRzdCk7Ci0JCWRz
-dCA9IE5VTEw7CisKKyNpZmRlZiBDT05GSUdfWEZSTQorCWlmIChkc3QpIHsKKwkJc3RydWN0IHJ0
-Nl9pbmZvICpydCA9IChzdHJ1Y3QgcnQ2X2luZm8gKilkc3Q7CisJCWlmIChydC0+cnQ2aV9mbG93
-X2NhY2hlX2dlbmlkICE9IGF0b21pY19yZWFkKCZmbG93X2NhY2hlX2dlbmlkKSkgeworCQkJc2st
-PnNrX2RzdF9jYWNoZSA9IE5VTEw7CisJCQlkc3RfcmVsZWFzZShkc3QpOworCQkJZHN0ID0gTlVM
-TDsKKwkJfQogCX0KLSBlbmQ6CisjZW5kaWYKKwogCXJldHVybiBkc3Q7CiB9CiAKLS0gCjEuNC40
-LjIKCg==
---------_46DBE3D76AA40B35F140_MULTIPART_MIXED_--
-
+Web: http://www.i-nZ.net
+"It's all some kind of whacked out conspiracy."
