@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbXICMgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756449AbXICMhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755703AbXICMgp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 08:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbXICMgh
+	id S1756449AbXICMhB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 08:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbXICMgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 08:36:37 -0400
-Received: from hu-out-0506.google.com ([72.14.214.238]:4576 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbXICMgg (ORCPT
+	Mon, 3 Sep 2007 08:36:52 -0400
+Received: from rzcomm22.rz.tu-bs.de ([134.169.9.68]:44700 "EHLO
+	rzcomm22.rz.tu-bs.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752846AbXICMgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 08:36:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=REltVxAKtworbzomT0vSl5ZHlyUI+amvOCSp0cAGgtxMWJ5jzO67PfuepfSJoW1lY1gYJOJ2q7CdcamM96yECyC6KEgz7ScPmSg7WTmSRjvfE4rVRCagWMaEwb1mmKgAEWeCOzzh9eYnaZuGYXFH3+eqnKUy2IhccSI7f47uRcE=
-Message-ID: <b6a2187b0709030536w3e40f12bk4d25b6eb954d22b6@mail.gmail.com>
-Date: Mon, 3 Sep 2007 20:36:32 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [2/4] 2.6.23-rc5: known regressions
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       Markus <lists4me@web.de>, "Antonino A. Daplas" <adaplas@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Len Brown" <lenb@kernel.org>,
-       dth <dth@dth.net>, linux-fsdevel@vger.kernel.org,
-       nfs@lists.sourceforge.net,
-       "Trond Myklebust" <Trond.Myklebust@netapp.com>,
-       "Andrew Clayton" <andrew@digital-domain.net>,
-       "Peter Kovar" <peter.kovar@gmail.com>
-In-Reply-To: <46DBDD8B.7040706@googlemail.com>
+	Mon, 3 Sep 2007 08:36:51 -0400
+Message-ID: <46DBFFB0.3080204@l4x.org>
+Date: Mon, 03 Sep 2007 14:36:00 +0200
+From: Jan Dittmer <jdi@l4x.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46DBD982.3080102@googlemail.com> <46DBDD8B.7040706@googlemail.com>
+To: Adrian Bunk <bunk@kernel.org>
+CC: Jeff Dike <jdike@linux.intel.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc5 regression: uml on x86_64 compile error
+References: <20070903104619.GR16016@stusta.de>
+In-Reply-To: <20070903104619.GR16016@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/3/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+Adrian Bunk wrote:
+> Commit d1254b12c93e1e586137a2ffef71fd33cf273f35 causes the following 
+> compile error (found at [1]):
+> 
+> <--  snip  -->
+> 
+> ...
+> CC      fs/binfmt_elf.o
+> In file included from fs/binfmt_elf.c:30:
+> include/linux/elfcore.h: In function ‘elf_core_copy_regs’:
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+> make[2]: *** [fs/binfmt_elf.o] Error 1
 
-> Subject         : console is messed up after resume from s2ram or switching to console from X
-> References      : http://lkml.org/lkml/2007/8/4/6
-> Last known good : ?
-> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-> Caused-By       : ?
-> Handled-By      : H. Peter Anvin <hpa@zytor.com>
->                   Antonino A. Daplas <adaplas@gmail.com>
-> Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
-> Status          : problem is being debugged
+That may actually be a toolchain/build system problem. It's a i486 chroot in
+which the compile happens. Host is x86_64 though as reported by uname. And I
+use gcc 4.0 as HOSTCC, while CC is gcc 4.1.2.
 
-Michal,
+# gcc -v
+Using built-in specs.
+Target: i486-linux-gnu
+Configured with: ../src/configure -v 
+--enable-languages=c,c++,fortran,objc,obj-c++,treelang --prefix=/usr 
+--enable-shared --with-system-zlib --libexecdir=/usr/lib 
+--without-included-gettext --enable-threads=posix --enable-nls 
+--program-suffix=-4.1 --enable-__cxa_atexit --enable-clocale=gnu 
+--enable-libstdcxx-debug --enable-mpfr --with-tune=i686 
+--enable-checking=release i486-linux-gnu
+Thread model: posix
+gcc version 4.1.2 20061115 (prerelease) (Debian 4.1.1-21)
+# uname -m
+x86_64
 
-Can you please close this case. I'm using the workaround and satisfied with it.
 
-Thanks,
-Jeff.
+Jan
