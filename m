@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbXICTXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbXICTc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756318AbXICTXN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 15:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbXICTW6
+	id S1755909AbXICTc2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 15:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbXICTbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 15:22:58 -0400
-Received: from jabberwock.ucw.cz ([89.250.246.4]:56518 "EHLO jabberwock.ucw.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751087AbXICTW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 15:22:58 -0400
-X-Greylist: delayed 1286 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 15:22:58 EDT
-Date: Mon, 3 Sep 2007 21:01:24 +0200
-From: Martin Mares <mj@ucw.cz>
-To: dean gaudet <dean@arctic.org>
-Cc: Robert Richter <robert.richter@amd.com>, Andi Kleen <ak@suse.de>,
-       patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 5/5] x86: Set PCI config space size to extended for AMD Barcelona
-Message-ID: <mj+md-20070903.190044.18705.albireo@ucw.cz>
-References: <20070903081736.288288000@amd.com> <20070903081736.805623000@amd.com> <Pine.LNX.4.64.0709030930150.3502@twinlark.arctic.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709030930150.3502@twinlark.arctic.org>
-User-Agent: Mutt/1.5.9i
+	Mon, 3 Sep 2007 15:31:51 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50536 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751844AbXICTbu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 15:31:50 -0400
+Date: Mon, 3 Sep 2007 12:31:49 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Christoph Hellwig <hch@infradead.org>
+cc: Mingming Cao <cmm@us.ibm.com>, linux-fsdevel@vger.kernel.org,
+       adilger@clusterfs.com, sho@tnes.nec.co.jp,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC 1/2] JBD: slab management support for large block(>8k)
+In-Reply-To: <20070903134043.GB28962@infradead.org>
+Message-ID: <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com>
+References: <20070828190551.415127746@sgi.com> <20070828190735.292638294@sgi.com>
+ <1188432669.3799.35.camel@localhost.localdomain> <1188434857.3799.76.camel@localhost.localdomain>
+ <1188605538.3837.51.camel@localhost.localdomain> <20070901183922.GA12907@infradead.org>
+ <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com>
+ <20070902152801.GA19962@infradead.org> <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com>
+ <20070903134043.GB28962@infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, 3 Sep 2007, Christoph Hellwig wrote:
 
-> it's so very unfortunate the PCI standard has no feature bit to indicate 
-> the presence of ECS.
+> > How about getting rid of the slabs there and use kmalloc? Kmalloc in mm 
+> > (and therfore hopefully 2.6.24) will convert kmallocs > PAGE_SIZE to page 
+> > allocator calls. Not sure what to do about the 1k and 2k requests though.
 > 
-> FWIW in my testing on a range of machines spanning 7 or 8 years i could 
-> read config space reg 256... and get 0xffffffff when the device didn't 
-> support ECS, and get valid data when the device did support ECS... granted 
-> there may be some system out there which behaves really badly when you do 
-> this.
-> 
-> perhaps someone could write a userspace program and test that concept on a 
-> far wider range of machines.
+> The problem is that we must never use kmalloc pages, so we always need
+> to request a page or more for these.  Better to use get_free_page directly,
+> that's how I fixed it in XFS a while ago.
 
-If you want to experiment with this in user space, it's easy to write
-a couple of access functions for the libpci in pciutils. (Patches welcome,
-as usually :) )
+So you'd be fine with replacing the allocs with
 
-				Have a nice fortnight
--- 
-Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
-Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
-God is real, unless declared integer.
+get_free_pages(GFP_xxx, get_order(size)) ?
+
