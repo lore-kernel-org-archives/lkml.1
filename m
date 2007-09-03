@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbXICIH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932127AbXICIHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756991AbXICIH2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 04:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756497AbXICIGt
+	id S932127AbXICIHw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 04:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbXICIHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 04:06:49 -0400
-Received: from main.gmane.org ([80.91.229.2]:45316 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756245AbXICIGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 04:06:47 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Subject: Re: 2.6.23-rc4-mm1
-Date: Mon, 3 Sep 2007 08:06:25 +0000 (UTC)
-Message-ID: <loom.20070903T100420-157@post.gmane.org>
-References: <20070902045634.06ea0515@loke.fish.not>
-Mime-Version: 1.0
+	Mon, 3 Sep 2007 04:07:18 -0400
+Received: from lilly.ping.de ([83.97.42.2]:3674 "HELO lilly.ping.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932142AbXICIHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 04:07:16 -0400
+Date: Mon, 3 Sep 2007 10:06:41 +0200
+From: Patrick Mau <mau@oscar.ping.de>
+To: Xavier Bestel <xavier.bestel@free.fr>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: very very strange simultaneous RAID resync on sep 2, 01:06
+	CEST (+2)
+Message-ID: <20070903080641.GA2074@oscar.prima.de>
+References: <1188806170.1131.479.camel@frg-rhel40-em64t-04>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 192.54.193.51 (Mozilla/5.0 (Windows; U; Windows NT 5.0; fr; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6)
+Content-Disposition: inline
+In-Reply-To: <1188806170.1131.479.camel@frg-rhel40-em64t-04>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mats Johannesson <spamcan <at> bredband.net> writes:
+On Mon, Sep 03, 2007 at 09:56:10AM +0200, Xavier Bestel wrote:
+> Hi,
 
+Hi Xavier
+
+> I have a server running with RAID5 disks, under debian/stable, kernel
+> 2.6.18-5-686. Yesterday the RAID resync'd for no apparent reason,
+> without even mdamd sending a mail to warn about that:
 > 
-> On 2007-09-01 16:07:48 Torsten Kaiser wrote:
-> [...]
-> > The good:
-> >> +hpet-force-enable-on-vt8235-37-chipsets.patch
-> >> +hpet-force-enable-on-vt8235-37-chipsets-fix.patch
-> >
-> > Kernel 2.6.23-rc4-mm1 works on one of my systems with:
-> > 00:00.0 Host bridge: VIA Technologies, Inc. VT8385 [K8T800 AGP] Host
-> > Bridge (rev 01)
-> > 00:01.0 PCI bridge: VIA Technologies, Inc. VT8237 PCI bridge
-> > [K8T800/K8T890 South]
-> 
-> And glory, glory, my Acer Aspire 1520 (1524) AMD64 notebook with the
-> old vt8235 chipset got a good kick in the behind as well. 
+> Sep  2 01:06:01 awak kernel: md: syncing RAID array md0
 
-Now we have working HPET override for Intel and Via, could Nvidia users be
-considered too? The required info has been known for ages:
+[snip]
 
-http://marc.info/?l=linux-kernel&m=117679014505031
+> I'm still gathering informations (no idea what his disks are, etc.), but
+> does anyone have the same problem ? Does anyone know where it can come
+> from (debian trouble, md bug, drive firmware problem, rootkit, ..) and
+> how I can pinpoint that ?
+
+My debian installation has a system cronjob that will perform a resync
+every first Sunday morning at 1:06 AM:
+
+[root@oscar] cat /etc/cron.d/mdadm
+...
+6 1 * * 0 root [ -x /usr/share/mdadm/checkarray ] && [ $(date +\%d) -le 7 ] && /usr/share/mdadm/checkarray --cron --all --quiet
+
+I did not read the manpage, but my guess is that 'quiet' will suppress
+the mail notification.
 
 Regards,
-
--- 
-Nicolas Mailhot
+Patrick
 
