@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbXICCCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbXICCZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754474AbXICCCz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 22:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756085AbXICCCK
+	id S1756033AbXICCZa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 22:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbXICCYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 22:02:10 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42301 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755198AbXICCCH (ORCPT
+	Sun, 2 Sep 2007 22:24:23 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57580 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753165AbXICCYU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 22:02:07 -0400
-X-Sasl-enc: fuq6tU5e4RfOmmLp8om9Zb7crPh0R/rv644cw/tOTLth 1188784925
-Date: Sun, 2 Sep 2007 23:02:01 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [PATCH] hwmon: Add power meters to
-	Documentation/hwmon/sysfs-interface
-Message-ID: <20070903020200.GA8948@khazad-dum.debian.net>
-References: <20070827211446.GG32667@tree.beaverton.ibm.com> <20070828015029.GA10107@khazad-dum.debian.net> <20070828131942.18449886@hyperion.delvare> <20070828164440.GL32667@tree.beaverton.ibm.com> <20070901171048.GA3883@ucw.cz> <41840b750709011105s6c434217t50d965a0b17df643@mail.gmail.com> <20070901194417.GA24897@khazad-dum.debian.net> <20070902213837.7293d6fa@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070902213837.7293d6fa@hyperion.delvare>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sun, 2 Sep 2007 22:24:20 -0400
+From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org, viro@ftp.linux.org.uk, bharata@linux.vnet.ibm.com,
+       j.blunck@tu-harburg.de, Erez Zadok <ezk@cs.sunysb.edu>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [PATCH 16/32] Unionfs: minor file_release updates
+Date: Sun,  2 Sep 2007 22:20:39 -0400
+Message-Id: <11887860572220-git-send-email-jsipek@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.2.238.g7cbf2f2
+In-Reply-To: <1188786055371-git-send-email-jsipek@cs.sunysb.edu>
+References: <1188786055371-git-send-email-jsipek@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Sep 2007, Jean Delvare wrote:
-> On Sat, 1 Sep 2007 16:44:17 -0300, Henrique de Moraes Holschuh wrote:
-> > On Sat, 01 Sep 2007, Shem Multinymous wrote:
-> > > > Should we add power?_10sec_avg_input? IIRC thinkpads export that,
-> > > > too.
-> > 
-> > I'd say it is enough to know it is an average, you don't need to specify HOW
-> > it is averaged.
-> 
-> Agreed.
-> 
-> > But there is a real need to export both instantaneous and averaged values in
-> > power supplies/power sources, so we should have a standard way to do so in
-> > hwmon, and power_supply class should use it (or the opposite, it doesn't
-> > matter, as long as everyone does it the same way).
-> 
-> I guess power[1-*]_average would be OK?
+From: Erez Zadok <ezk@cs.sunysb.edu>
 
-AFAIK, yes.  It is probably not 100% in sync with the power supply class,
-though.
+Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
+Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+---
+ fs/unionfs/commonfops.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+index 612207a..1050c49 100644
+--- a/fs/unionfs/commonfops.c
++++ b/fs/unionfs/commonfops.c
+@@ -593,8 +593,7 @@ int unionfs_file_release(struct inode *inode, struct file *file)
+ 	struct unionfs_inode_info *inodeinfo;
+ 	struct super_block *sb = inode->i_sb;
+ 	int bindex, bstart, bend;
+-	int fgen;
+-	int err;
++	int fgen, err = 0;
+ 
+ 	unionfs_read_lock(sb);
+ 	/*
+@@ -618,7 +617,7 @@ int unionfs_file_release(struct inode *inode, struct file *file)
+ 
+ 		if (lower_file) {
+ 			fput(lower_file);
+-			branchput(inode->i_sb, bindex);
++			branchput(sb, bindex);
+ 		}
+ 	}
+ 	kfree(fileinfo->lower_files);
+@@ -640,6 +639,7 @@ int unionfs_file_release(struct inode *inode, struct file *file)
+ 		fileinfo->rdstate = NULL;
+ 	}
+ 	kfree(fileinfo);
++
+ out:
+ 	unionfs_read_unlock(sb);
+ 	return err;
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+1.5.2.2.238.g7cbf2f2
+
