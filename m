@@ -1,38 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbXICTNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbXICTUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756555AbXICTNV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 15:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbXICTNG
+	id S1756072AbXICTUu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 15:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbXICTUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 15:13:06 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:3322 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752460AbXICTNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 15:13:05 -0400
-Date: Mon, 3 Sep 2007 21:13:33 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, peterz@infradead.org,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [ANNOUNCE/RFC] Really Simple Really Fair Scheduler
-In-Reply-To: <20070903185403.GA23479@elte.hu>
-Message-ID: <Pine.LNX.4.64.0709032106070.1817@scrub.home>
-References: <20070902120154.GA23769@elte.hu> <Pine.LNX.4.64.0709032030320.1817@scrub.home>
- <20070903185403.GA23479@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 3 Sep 2007 15:20:41 -0400
+Received: from mailrelay004.isp.belgacom.be ([195.238.6.170]:55297 "EHLO
+	mailrelay004.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752939AbXICTUk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 15:20:40 -0400
+X-Belgacom-Dynamic: yes
+Date: Mon, 3 Sep 2007 21:25:19 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc4-mm1
+Message-ID: <20070903192519.GA2758@infomag.infomag.iguana.be>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <20070902213049.45804afd.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070902213049.45804afd.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Randy,
 
-On Mon, 3 Sep 2007, Ingo Molnar wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
+> > 
+> > Changes since 2.6.23-rc3-mm1:
+> > 
+> >  git-watchdog.patch
+> 
+> 
+> on x86_64:
+> drivers/watchdog/core/watchdog_dev.c:84: warning: format '%i' expects type 'int', but argument 5 has type 'size_t'
 
-> If this basic model is correct, we can look further.
+I'll have a look at it.
 
-The basic model is correct insofar I use an absolute time instead of a 
-relative time, but it's not the essence of my math, so I don't quite 
-understand the point of this exercise.
-
-bye, Roman
+Greetings,
+Wim.
