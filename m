@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757377AbXICDse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbXICEc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757377AbXICDse (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 23:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbXICDsY
+	id S1752500AbXICEc5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 00:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbXICEcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 23:48:24 -0400
-Received: from [212.12.190.47] ([212.12.190.47]:32854 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753323AbXICDsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 23:48:23 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>, akpm@linux-foundation.org
-Subject: Re: [GIT PULL -mm] Unionfs/fsstack/eCryptfs updates/cleanups/fixes
-Date: Mon, 3 Sep 2007 06:48:20 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org, viro@ftp.linux.org.uk, bharata@linux.vnet.ibm.com,
-       j.blunck@tu-harburg.de
-References: <1188786055371-git-send-email-jsipek@cs.sunysb.edu>
-In-Reply-To: <1188786055371-git-send-email-jsipek@cs.sunysb.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 3 Sep 2007 00:32:48 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:34741 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750821AbXICEcs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 00:32:48 -0400
+Date: Sun, 2 Sep 2007 21:30:49 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, wim@iguana.be
+Subject: Re: 2.6.23-rc4-mm1
+Message-Id: <20070902213049.45804afd.randy.dunlap@oracle.com>
+In-Reply-To: <20070831215822.26e1432b.akpm@linux-foundation.org>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709030648.20267.a1426z@gawab.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Josef 'Jeff' Sipek wrote:
-> The following is a series of patches related to Unionfs, which include
-> three small VFS/fsstack patches and one eCryptfs patch; the rest are
-> Unionfs patches.  The patches here represent several months of work and
-> testing under various conditions, especially low-memory, SMP, and
-> preemption situations with an assortment of lower systems: ext2/3/4, xfs,
-> reiserfs, nfs, jffs2, ramfs, tmpfs, cramfs, and squashfs.
+On Fri, 31 Aug 2007 21:58:22 -0700 Andrew Morton wrote:
 
-To increase test-usage, it may be critical to always backport at least to the 
-latest stable release, like 2.6.22.
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
+> 
+> Changes since 2.6.23-rc3-mm1:
+> 
+>  git-watchdog.patch
 
 
-Thanks!
+on x86_64:
+drivers/watchdog/core/watchdog_dev.c:84: warning: format '%i' expects type 'int', but argument 5 has type 'size_t'
 
---
-Al
 
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
