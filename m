@@ -1,37 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbXICK4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbXICLAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309AbXICK4X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 06:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbXICK4P
+	id S1756911AbXICLAo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 07:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbXICLAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 06:56:15 -0400
-Received: from ns2.suse.de ([195.135.220.15]:35414 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751067AbXICK4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 06:56:14 -0400
-To: <colin.michael@o2online.de>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] enable userspace cpu core voltage control with acpi-cpufreq
-References: <200709021441.l82EfWCe022642@mail.mc.o2online.de>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 03 Sep 2007 12:56:13 +0200
-In-Reply-To: <200709021441.l82EfWCe022642@mail.mc.o2online.de>
-Message-ID: <p738x7oaugi.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Mon, 3 Sep 2007 07:00:37 -0400
+Received: from highlandsun.propagation.net ([66.221.212.168]:3856 "EHLO
+	highlandsun.propagation.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753354AbXICLAg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 07:00:36 -0400
+X-Greylist: delayed 2039 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 07:00:36 EDT
+Message-ID: <46DBE1FD.10409@symas.com>
+Date: Mon, 03 Sep 2007 03:29:17 -0700
+From: Howard Chu <hyc@symas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.9a8pre) Gecko/2007082216 SeaMonkey/2.0a1pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: 2.6.22.6 pata_via cable detect
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<colin.michael@o2online.de> writes:
+Still have a slight glitch here. I have 2 hard drives on the primary channel, 
+detected correctly as 80-wire and UDMA100. I have a DVD burner on the secondary 
+channel, detected incorrectly as 40-wire. (It's sitting by itself on an 80-wire 
+cable.) This is on an Asus A8V-Deluxe.
 
-> i want to make a patch known that provides a userspace interface to control the core voltage of a computer processor(s).
+Here's the dmesg output after a "modprobe pata_via"
 
-That would be essentially linux supported undervolting which 
-for stability is as bad as overclocking. The problem is that 
-such games tend to generate weird kernel crashes and then
-chew up development issues when kernel hackers have to chase
-ghost bugs. I don't think we should support it. Developer 
-time is too precious.
+pata_via 0000:00:0f.1: version 0.3.1
+ACPI: PCI Interrupt 0000:00:0f.1[A] -> GSI 20 (level, low) -> IRQ 20
+scsi5 : pata_via
+scsi6 : pata_via
+ata6: PATA max UDMA/133 cmd 0x00000000000101f0 ctl 0x00000000000103f6 bmdma 
+0x000000000001fc00 irq 14
+ata7: PATA max UDMA/133 cmd 0x0000000000010170 ctl 0x0000000000010376 bmdma 
+0x000000000001fc08 irq 15
+ata6.00: ATA-6: WDC WD2000JB-00DUA0, 70.13G70, max UDMA/100
+ata6.00: 390721968 sectors, multi 16: LBA48
+ata6.01: ATA-7: WDC WD5000AAKB-00UKA0, 07.01N01, max UDMA/100
+ata6.01: 976773168 sectors, multi 16: LBA48
+ata6.00: configured for UDMA/100
+ata6.01: configured for UDMA/100
+ata7.00: ATAPI: LITE-ON DVDRW LH-20A1H, LL07, max UDMA/66
+ata7.00: limited to UDMA/33 due to 40-wire cable
+ata7.00: configured for UDMA/33
+scsi 5:0:0:0: Direct-Access     ATA      WDC WD2000JB-00D 70.1 PQ: 0 ANSI: 5
+sd 5:0:0:0: [sde] 390721968 512-byte hardware sectors (200050 MB)
+sd 5:0:0:0: [sde] Write Protect is off
+sd 5:0:0:0: [sde] Mode Sense: 00 3a 00 00
+sd 5:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+sd 5:0:0:0: [sde] 390721968 512-byte hardware sectors (200050 MB)
+sd 5:0:0:0: [sde] Write Protect is off
+sd 5:0:0:0: [sde] Mode Sense: 00 3a 00 00
+sd 5:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+  sde: sde1
+sd 5:0:0:0: [sde] Attached SCSI disk
+sd 5:0:0:0: Attached scsi generic sg4 type 0
+scsi 5:0:1:0: Direct-Access     ATA      WDC WD5000AAKB-0 07.0 PQ: 0 ANSI: 5
+sd 5:0:1:0: [sdf] 976773168 512-byte hardware sectors (500108 MB)
+sd 5:0:1:0: [sdf] Write Protect is off
+sd 5:0:1:0: [sdf] Mode Sense: 00 3a 00 00
+sd 5:0:1:0: [sdf] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+sd 5:0:1:0: [sdf] 976773168 512-byte hardware sectors (500108 MB)
+sd 5:0:1:0: [sdf] Write Protect is off
+sd 5:0:1:0: [sdf] Mode Sense: 00 3a 00 00
+sd 5:0:1:0: [sdf] Write cache: enabled, read cache: enabled, doesn't support 
+DPO or FUA
+  sdf: unknown partition table
+sd 5:0:1:0: [sdf] Attached SCSI disk
+sd 5:0:1:0: Attached scsi generic sg5 type 0
+scsi 6:0:0:0: CD-ROM            LITE-ON  DVDRW LH-20A1H   LL07 PQ: 0 ANSI: 5
+sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 6:0:0:0: Attached scsi CD-ROM sr0
+sr 6:0:0:0: Attached scsi generic sg6 type 5
 
--Andi
+Let me know what other info you need.
+-- 
+   -- Howard Chu
+   Chief Architect, Symas Corp.  http://www.symas.com
+   Director, Highland Sun        http://highlandsun.com/hyc/
+   Chief Architect, OpenLDAP     http://www.openldap.org/project/
