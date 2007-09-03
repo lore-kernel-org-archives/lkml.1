@@ -1,46 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbXICTMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbXICTNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755796AbXICTMh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 15:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbXICTM2
+	id S1756555AbXICTNV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 15:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbXICTNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 15:12:28 -0400
-Received: from ozlabs.org ([203.10.76.45]:34467 "EHLO ozlabs.org"
+	Mon, 3 Sep 2007 15:13:06 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:3322 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752460AbXICTM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 15:12:27 -0400
-Subject: Re: [Lguest] [RFC] 9p Virtualization Transports
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
-       v9fs-developer@lists.sourceforge.net, lguest@ozlabs.org
-In-Reply-To: <11883271601857-git-send-email-ericvh@gmail.com>
-References: <11883271601857-git-send-email-ericvh@gmail.com>
-Content-Type: text/plain
-Date: Sun, 02 Sep 2007 07:14:57 +1000
-Message-Id: <1188681297.10802.38.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1752460AbXICTNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 15:13:05 -0400
+Date: Mon, 3 Sep 2007 21:13:33 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, peterz@infradead.org,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [ANNOUNCE/RFC] Really Simple Really Fair Scheduler
+In-Reply-To: <20070903185403.GA23479@elte.hu>
+Message-ID: <Pine.LNX.4.64.0709032106070.1817@scrub.home>
+References: <20070902120154.GA23769@elte.hu> <Pine.LNX.4.64.0709032030320.1817@scrub.home>
+ <20070903185403.GA23479@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-28 at 13:52 -0500, Eric Van Hensbergen wrote:
-> The lguest and kvm transports are functional, but we are still working out
-> remaining bugs and need to spend some time focusing on performance issues.
-> I wanted to send out this "preview" patch set to the community to solicit
-> ideas on things we can do differently/better.
+Hi,
 
-Hi Eric,
+On Mon, 3 Sep 2007, Ingo Molnar wrote:
 
-	Patches look reasonable, but just a heads-up: lguest will be moving to
-virtio, as will kvm.  That means a single implementation for both
-(yay!), but it does complicate your life in the short term 8(
+> If this basic model is correct, we can look further.
 
-	Dor has published a kvm virtio implementation, and we've already
-discussed a couple of modifications.  I expect that to be nailed in the
-next 2 weeks tho, and lguest will follow.
+The basic model is correct insofar I use an absolute time instead of a 
+relative time, but it's not the essence of my math, so I don't quite 
+understand the point of this exercise.
 
-Thanks!
-Rusty.
-
+bye, Roman
