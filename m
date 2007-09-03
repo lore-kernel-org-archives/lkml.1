@@ -1,78 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbXICKZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXICKee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758161AbXICKZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 06:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbXICKZU
+	id S1755894AbXICKee (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 06:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbXICKeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 06:25:20 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:36969 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750783AbXICKZT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 06:25:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=fdTjbrYL6c/PyeLescZqOxiTwxe89la8OVxUlc1B+9MzMeyDRPUhHqR3nNykNWDUlOvek22q33FXJLz1SwqBZ2itIkqS17Shk3DQB6182zlNv0K6qhox8Iw4ZOHOFQ3z4A/tntydAY4UBQosHZgf/20GooKr/ZqRj1uGHfTKQNI=
-Message-ID: <2ff216280709030325r626d98b3h2c5a48e90470610b@mail.gmail.com>
-Date: Mon, 3 Sep 2007 15:55:18 +0530
-From: "Abhijit Bhopatkar" <bain@devslashzero.com>
-To: "Takashi Iwai" <tiwai@suse.de>, "Ivan N. Zlatev" <contact@i-nz.net>,
-       "Jaroslav Kysela" <perex@suse.cz>, linux-kernel@vger.kernel.org
-Subject: [PATCH] [ALSA] Added new pin config for first gen macbook.
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Sep 2007 06:34:24 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:34260
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751452AbXICKeO convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 06:34:14 -0400
+Message-Id: <46DBFF65.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Mon, 03 Sep 2007 11:34:45 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andi Kleen" <ak@suse.de>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i386: per-CPU double fault TSS and stack
+References: <46D42DC7.76E4.0078.0@novell.com>
+ <200709011233.12256.ak@suse.de>
+In-Reply-To: <200709011233.12256.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-X-Google-Sender-Auth: 5e78b60c82831144
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 5d5d3bc3eddf2ad97b2cb090b92580e7fed6cee1 changed all
-pin configs for intel macs, but it breaks sound on
-Macbook first generation.
+>>> Andi Kleen <ak@suse.de> 01.09.07 12:33 >>>
+>
+>Can you cc the next version to Linus please? He's probably best qualified
+>to review the i386 double fault handler because he wrote it originally.
+>I must admit the code always scared me a bit.
 
-Readded a known working pin config for first gen macbooks.
+Will do.
 
-Signed-off-by: Abhijit Bhopatkar <bainonline@gmail.com>
----
- sound/pci/hda/patch_sigmatel.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
+>> +#ifdef CONFIG_HOTPLUG_CPU
+>> +static void *noinline __init_refok
+>> +#else
+>> +static inline void *__init
+>> +#endif
+>
+>I really wonder if there isn't a cleaner way to do that :-( These init reference checks
+>are starting to become a major annoyance.
 
-diff --git a/sound/pci/hda/patch_sigmatel.c b/sound/pci/hda/patch_sigmatel.c
-index 3f25de7..a2b0422 100644
---- a/sound/pci/hda/patch_sigmatel.c
-+++ b/sound/pci/hda/patch_sigmatel.c
-@@ -585,6 +585,12 @@ static unsigned int intel_mac_v5_pin_configs[10] = {
-        0x400000fc, 0x400000fb,
- };
+They just aren't flexible enough. And no, I can't think of a better way here.
 
-+static unsigned int intel_macbook_first_gen_pin_configs[10] = {
-+       0x0321e230, 0x03a1e020, 0x9017e110, 0x01014010,
-+       0x01a19021, 0x0381e021, 0x1345e240, 0x13c5e22e,
-+       0x02a19320, 0x400000fb,
-+};
-+
- static unsigned int stac922x_dell_pin_configs[10] = {
-        0x0221121e, 0x408103ff, 0x02a1123e, 0x90100310,
-        0x408003f1, 0x0221122f, 0x03451340, 0x40c003f2,
-@@ -603,7 +609,7 @@ static unsigned int *stac922x_brd_tbl[STAC_922X_MODELS] = {
-        [STAC_INTEL_MAC_V5] = intel_mac_v5_pin_configs,
-        /* for backward compitability */
-        [STAC_MACMINI] = intel_mac_v3_pin_configs,
--       [STAC_MACBOOK] = intel_mac_v5_pin_configs,
-+       [STAC_MACBOOK] = intel_macbook_first_gen_pin_configs,
-        [STAC_MACBOOK_PRO_V1] = intel_mac_v3_pin_configs,
-        [STAC_MACBOOK_PRO_V2] = intel_mac_v3_pin_configs,
-        [STAC_IMAC_INTEL] = intel_mac_v2_pin_configs,
-@@ -2132,6 +2138,8 @@ static int patch_stac922x(struct hda_codec *codec)
-                        spec->board_config = STAC_INTEL_MAC_V4;
-                        break;
-                case 0x106b0a00:
-+                       spec->board_config = STAC_MACBOOK;
-+                       break;
-                case 0x106b2200:
-                        spec->board_config = STAC_INTEL_MAC_V5;
-                        break;
--- 
-1.5.2.4
+>> +#if N_EXCEPTION_TSS
+>> +	unsigned i;
+>> +#endif
+>
+>Would it be that bad to have the TSS even around without CONFIG_DOUBLEFAULT?
+
+It costs 4.xx k space per CPU - perhaps a constraint for embedded?
+
+>In fact I would prefer to just eliminate CONFIG_DOUBLEFAULT (imho 
+>it always a bad idea because the amount of code it saves is miniscule) instead of 
+>adding such a ifdef maze.
+
+It's configurable for embedded only anyway, and I think there's some value
+in allowing it to be configured off for that environment.
+
+>> -#ifdef CONFIG_DOUBLEFAULT
+>> -	/* Set up doublefault TSS pointer in the GDT */
+>> -	__set_tss_desc(cpu, GDT_ENTRY_DOUBLEFAULT_TSS, &doublefault_tss);
+>> +#if N_EXCEPTION_TSS
+>> +#if EXCEPTION_STACK_ORDER > THREAD_ORDER
+>> +#error Assertion failed: EXCEPTION_STACK_ORDER <= THREAD_ORDER
+>> +#endif
+>
+>BUILD_BUG_ON would look nicer
+
+Agreed, will change (this code dates back to pre-BUILD_BUG_ON days).
+
+>> +
+>> +		/* Set up exception handling stacks */
+>> +#ifdef CONFIG_SMP
+>> +		if (cpu) {
+>
+>If you move the code after the gs pda setup you could use smp_processor_id() and
+>avoid the ifdefs (on UP it expands to 0 so the optimizer would do it cleanly)
+
+I'll check if that's feasible.
+
+>> +				BUG_ON(page_count(page));
+>> +				init_page_count(page);
+>> +				free_pages(stack, j);
+>> +				stack += (PAGE_SIZE << j);
+>
+>In 2.4-aa I added a alloc_pages_exact() for this. I don't think such games should
+>be played outside page_alloc.c. I would recommend to readd alloc_pages_exact()
+>and then use it.
+
+Will need to track that patch down.
+
+>> -#define DOUBLEFAULT_STACKSIZE (1024)
+>> -static unsigned long doublefault_stack[DOUBLEFAULT_STACKSIZE];
+>> -#define STACK_START (unsigned long)(doublefault_stack+DOUBLEFAULT_STACKSIZE)
+>> +extern unsigned long max_low_pfn;
+>
+>No externs in .c
+
+The question is - is it acceptable to declare max_low_pfn in any header?
+
+>> +#define ptr_ok(x, l) ((x) >= PAGE_OFFSET \
+>> +                      && (x) + (l) <= PAGE_OFFSET + max_low_pfn * PAGE_SIZE - 1)
+>>  
+>> -#define ptr_ok(x) ((x) > PAGE_OFFSET && (x) < PAGE_OFFSET + MAXMEM)
+>> +#define THREAD_INFO_FROM(x) ((struct thread_info *)((x) & ~(THREAD_SIZE - 1)))
+>>  
+>> -static void doublefault_fn(void)
+>> +register const struct i386_hw_tss *self __asm__("ebx");
+>
+>Can't you just move that to a proper argument register in assembler code?
+
+That should be possible, though I can't see anything wrong with the approach
+I used.
+
+Jan
+
