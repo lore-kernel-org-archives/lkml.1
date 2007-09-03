@@ -1,74 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755681AbXICI6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbXICI7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755681AbXICI6m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 04:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbXICI6e
+	id S1756640AbXICI7R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 04:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbXICI7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 04:58:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46893 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750904AbXICI6d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 04:58:33 -0400
-Date: Mon, 3 Sep 2007 09:58:47 +0100
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Len Brown" <lenb@kernel.org>, "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fujtisu application panel driver
-Message-ID: <20070903095847.72245af4@oldman>
-In-Reply-To: <d120d5000707021216y1a3641b1rbc0c741e2d7d4e70@mail.gmail.com>
-References: <20070702111724.43ee5b43@freepuppy.localdomain.hemminger.net>
-	<d120d5000707021216y1a3641b1rbc0c741e2d7d4e70@mail.gmail.com>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 3 Sep 2007 04:59:01 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50577 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753280AbXICI7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 04:59:00 -0400
+Message-ID: <46DBCCD2.70800@garzik.org>
+Date: Mon, 03 Sep 2007 04:58:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: davids@webmaster.com
+CC: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+References: <MDEHLPKNGKAHNMBLJOLKOECFGJAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOECFGJAC.davids@webmaster.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jul 2007 15:16:30 -0400
-"Dmitry Torokhov" <dmitry.torokhov@gmail.com> wrote:
+David Schwartz wrote:
+> Either license can grant you the right to distribute it, but how you get the
+> rights to distribute has *NO* effect on the recipient. They receive a lawful
+> copy and any rights the original author grants them under a license from
+> that original author. You have no power to grant or modify rights to the
+> original work.
 
-> Hi Stephen,
-> 
-> On 7/2/07, Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> > This driver supports the application buttons on some Fujitsu Lifebook laptops.
-> > These buttons are read via the SMBus, for more details see:
-> >        http://apanel.sourceforge.net/tech.php
-> > The buttons are handled as by the regular input system.
-> > Two models are detected now, but other Fujitsu laptop's have
-> > keys that may work similarly.
-> >
-> > It is based on the earlier apanel driver done by Jochen Eisenger, but
-> > with many changes.  The original driver used ioctl's and a separate
-> > user space program; this version hooks into the input subsystem so
-> > that the normal Gnome/KDE shortcuts work without any userspace
-> > changes.
-> >
-> 
-> Thank you very much for updating the patch. I have a couple of requests though:
-> 
-> 1. LEDs shoud use the generic led subsystem instead of input layer. I
-> do not have plans of adding any more LED_XXX constants and I think
-> that adding any LEDs not directly relating to keyboard state was a
-> mistake.
+Secondary parties have the power to grant or modify rights, if delegated 
+to them by the original author.
 
-No, way to much work for one stinking LED.
-Also there is existing application support for legacy LED_MAIL through
-input subsystem, and no application support for mail led through LED
-subsystem.
+Relicensing and transfer of rights happens all the time.  How do you 
+think most music gets into consumer hands?
 
-> 2. It would be nice if driver supported changing its keymaps now that
-> we allow overriding default getkeycode() and setkeycode().
+	Jeff
 
-No, this drivers mapping table is from bits to key codes, not scan codes to keycodes.
-Each key is a bit in the scan code, so hitting A and B key generates
-scancode of : 0xC = 0x4 | 0x8.
-get/setkeycode is designed for keyboards where each key generates different
-unique code.
 
-> 3. Do not aaccess input_dev->private directly. input_set_drvdata() and
-> input+_getdrvdata shoudl be used.
-
-New version of  driver has to use input_polled_dev->private directly.
