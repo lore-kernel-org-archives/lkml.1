@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbXICTc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbXICTdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755909AbXICTc2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 15:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbXICTbv
+	id S1756511AbXICTdR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 15:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbXICTdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 15:31:51 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50536 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751844AbXICTbu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 15:31:50 -0400
-Date: Mon, 3 Sep 2007 12:31:49 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Christoph Hellwig <hch@infradead.org>
-cc: Mingming Cao <cmm@us.ibm.com>, linux-fsdevel@vger.kernel.org,
-       adilger@clusterfs.com, sho@tnes.nec.co.jp,
-       ext4 development <linux-ext4@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 1/2] JBD: slab management support for large block(>8k)
-In-Reply-To: <20070903134043.GB28962@infradead.org>
-Message-ID: <Pine.LNX.4.64.0709031230190.2131@schroedinger.engr.sgi.com>
-References: <20070828190551.415127746@sgi.com> <20070828190735.292638294@sgi.com>
- <1188432669.3799.35.camel@localhost.localdomain> <1188434857.3799.76.camel@localhost.localdomain>
- <1188605538.3837.51.camel@localhost.localdomain> <20070901183922.GA12907@infradead.org>
- <Pine.LNX.4.64.0709020438490.28046@schroedinger.engr.sgi.com>
- <20070902152801.GA19962@infradead.org> <Pine.LNX.4.64.0709030051370.31366@schroedinger.engr.sgi.com>
- <20070903134043.GB28962@infradead.org>
+	Mon, 3 Sep 2007 15:33:05 -0400
+Received: from khc.piap.pl ([195.187.100.11]:46518 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752460AbXICTdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 15:33:04 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+References: <MDEHLPKNGKAHNMBLJOLKOEDKGJAC.davids@webmaster.com>
+	<200709031401.47111.dhazelton@enter.net>
+	<m3myw3vc4q.fsf@maximus.localdomain>
+	<200709031504.17454.dhazelton@enter.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 03 Sep 2007 21:33:01 +0200
+In-Reply-To: <200709031504.17454.dhazelton@enter.net> (Daniel Hazelton's message of "Mon, 3 Sep 2007 15:04:17 -0400")
+Message-ID: <m3642rv91u.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Sep 2007, Christoph Hellwig wrote:
+Daniel Hazelton <dhazelton@enter.net> writes:
 
-> > How about getting rid of the slabs there and use kmalloc? Kmalloc in mm 
-> > (and therfore hopefully 2.6.24) will convert kmallocs > PAGE_SIZE to page 
-> > allocator calls. Not sure what to do about the 1k and 2k requests though.
-> 
-> The problem is that we must never use kmalloc pages, so we always need
-> to request a page or more for these.  Better to use get_free_page directly,
-> that's how I fixed it in XFS a while ago.
+> I hate to belabor the point, but you seem to be making the mistake of "The 
+> license applies to the copyright holder"
 
-So you'd be fine with replacing the allocs with
+Of course not.
 
-get_free_pages(GFP_xxx, get_order(size)) ?
+> The person holding the copyright has all the legal standing to revoke a 
+> license grant at any time.
 
+Based on?
+
+> Licenses such as the GPL are not signed contracts, 
+> and that means there are limits to what effect they can have on the
+> copyright 
+> holder.
+
+Perhaps that is your local laws, but I'd be surprised anyway.
+
+Do you sign contracts when shopping, or are you (and the shop)
+allowed to "revoke" the transaction after it's made (I'm not
+talking about shop's return policy)?
+
+Is what you wrote only valid WRT licences?
+
+Which country has such laws BTW?
+
+
+In Poland, I can't just go and "revoke" a "statement of will"
+if I haven't explicite reserved a right to do so.
+Obviously I can act contrary to the statement, and be held liable.
+-- 
+Krzysztof Halasa
