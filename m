@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757008AbXICJTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757852AbXICJVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757008AbXICJTS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 05:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbXICJTJ
+	id S1757852AbXICJVi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 05:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbXICJVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 05:19:09 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56590 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751306AbXICJTI (ORCPT
+	Mon, 3 Sep 2007 05:21:30 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3136 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753045AbXICJVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 05:19:08 -0400
-Date: Mon, 3 Sep 2007 03:11:45 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [RFC][PATCH 1/2 -mm] kexec based hibernation: kexec jump
-Message-ID: <20070903031145.GF21721@ucw.cz>
-References: <1188177280.3247.37.camel@caritas-dev.intel.com> <20070827184829.GB4104@ucw.cz> <1188548842.1365.13.camel@caritas-dev.intel.com>
+	Mon, 3 Sep 2007 05:21:30 -0400
+Date: Mon, 03 Sep 2007 02:21:10 -0700
+From: "David Schwartz" <davids@webmaster.com>
+To: linux-kernel-owner+davids=40webmaster.com-S1754697AbXICI7Q@vger.kernel.org,
+       "Jeff Garzik" <jeff@garzik.org>,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1188548842.1365.13.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain
+Message-ID: <WorldClient-F200709030221.AA21100013@webmaster.com>
+X-Mailer: WorldClient 8.1.3
+In-Reply-To: <46DBCCD2.70800@garzik.org>
+References: <MDEHLPKNGKAHNMBLJOLKOECFGJAC.davids@webmaster.com> <46DBCCD2.70800@garzik.org>
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Mon, 03 Sep 2007 02:21:13 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 216.152.64.169
+X-Return-Path: davids@webmaster.com
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Mon, 03 Sep 2007 02:21:14 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > > @@ -94,6 +94,10 @@
-> > >  		unsigned long start_address,
-> > >  		unsigned int has_pae) ATTRIB_NORET;
-> > >  
-> > > +#ifdef CONFIG_KEXEC_JUMP
-> > > +extern asmlinkage int machine_kexec_real_jump(void *buf);
-> > > +#endif
-> > 
-> > Is it really neccessery to have ifdef here?
-> 
-> It is not necessary. I will fix it in the next version.
+Jeff Garzik wrote:
 
-Looking forward to next version :-).
+> Secondary parties have the power to grant or modify rights, if
+> delegated 
+> to them by the original author.
 
-> > > +#define CR3	0x18
-> > > +#define CR4	0x1c
-> > > +#define FLAG	0x20
-> > > +#define RET	0x24
-> > 
-> > Hmm, is this enough? Should it use struct ptregs for normal registers?
-> > What about segment registers -- they could change between kernel
-> > version. Should some kind of 'version of kjump protocol' be
-> > introduced?
-> 
-> All "preserve" registers defined in ABI are saved, I think that is
-> sufficient. The "swsusp_arch_suspend" saves only these registers too.
-> 
-> An extensible inter-kernel kjump protocol and corresponding version
-> number seems sensible. I will work on this.
+Yes, but this has to be done in writing and neither the BSD nor the GPL
+license claim to allow this.
+ 
+> Relicensing and transfer of rights happens all the time.  How do you 
+> think most music gets into consumer hands?
 
-Ok, perhaps that can wait after initial merge.
+Through written agreements to permit this. Neither the BSD nor the GPL
+license do. You cannot revoke someone's GPL rights to code you did not
+write because they flow directly from the original author to the recipient.
 
-> > What about CX/DX/fpu state? GDT pointer?
-> > 
-> > Actually I think that you _do_ need to save FPU. You should probably
-> > use relevant swsusp parts here.
-> 
-> Before and after "machine_kexec_jump" is called, the
-> save_processor_state() and restore_processor_state() are called, where
-> the MTRR/FPU/GDT/IDT/TR/segments/cr are saved and restored. These two
-> functions come from swsusp. Thanks swsusp guys. :)
+The GPL is quite clear, you do not grant a license to anyone else's code,
+the original author does. This is why the GPL does not need to be in writing.
 
-So I'm blind. Sorry for the noise.
-									Pavel
+DS
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
