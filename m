@@ -1,151 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756666AbXICIPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbXICIR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756666AbXICIPZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 04:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbXICIPO
+	id S1756925AbXICIR3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 04:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbXICIRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 04:15:14 -0400
-Received: from smtp-vbr11.xs4all.nl ([194.109.24.31]:1989 "EHLO
-	smtp-vbr11.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751910AbXICIPM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 04:15:12 -0400
-X-Greylist: delayed 508 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 04:15:12 EDT
-Message-ID: <46DBC092.8030209@xs4all.nl>
-Date: Mon, 03 Sep 2007 10:06:42 +0200
-From: Bauke Jan Douma <bjdouma@xs4all.nl>
-Reply-To: bjdouma@xs4all.nl
-Organization: a training zoo
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Mon, 3 Sep 2007 04:17:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58277 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752641AbXICIRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 04:17:21 -0400
+To: James Pearson <james-p@moving-picture.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Guy Streeter <guy.streeter@gmail.com>,
+       James Pearson <james-p@moving-picture.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 4096 byte limit to /proc/PID/environ ?
+References: <4474B7DB.8000304@moving-picture.com>
+	<200605242029.k4OKTn9C031700@terminus.zytor.com>
+	<447EF58C.6000605@moving-picture.com>
+	<52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com>
+	<46C33700.1060605@zytor.com> <46D6CBED.4040301@moving-picture.com>
+From: Anton Arapov <aarapov@redhat.com>
+X-URL: http://people.redhat.com/aarapov
+Date: Mon, 03 Sep 2007 10:17:11 +0200
+In-Reply-To: <46D6CBED.4040301@moving-picture.com> (James Pearson's message of "Thu\, 30 Aug 2007 14\:53\:49 +0100")
+Message-ID: <h8fy1w40zc.fsf@pepelac.englab.brq.redhat.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: bogomips discrepancy on Intel Core2 Quad CPU
-Content-Type: multipart/mixed;
- boundary="------------030102000500050503000204"
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030102000500050503000204
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+--=-=-=
+Content-Transfer-Encoding: quoted-printable
 
-$> uname -a
-Linux skyscraper 2.6.22.5 #7 SMP PREEMPT Sun Sep 2 12:12:25 CEST 2007 i686 GNU/Linux
+James Pearson <james-p@moving-picture.com> writes:
+> H. Peter Anvin wrote:
+>> Guy Streeter wrote:
+>>>On 6/1/06, James Pearson <james-p@moving-picture.com> wrote:
+>>>>H. Peter Anvin wrote:
+[...skipped...]
+>>>>The following patch is based on the /proc/PID/mem code appears to work =
+fine.
+>>>This thread has gone stale. The PAGE_SIZE limit still exists. Is this
+>>>solution acceptable?
+>> Can we avoid the code duplication?
+> There isn't that much that is duplicated - and there are also bits of
+> the /proc/PID/mem code that are not needed in this case, so I'm not
+> really sure if it is worth doing.
+>
+> I did submit a patch a few months ago - see:
+> <http://marc.info/?l=3Dlinux-kernel&m=3D117862109623007&w=3D2>
+  Yep, I'm sure we should not reuse something from mem part, there are some=
+ insignificant code duplicating. If we will try to avoid this, it will comp=
+licate code and does not bring any advantage.=20
 
-$> cat /proc/cpuinfo | grep bogomips
-bogomips	: 4813.46
-bogomips	: 4810.91
-bogomips	: 4810.91
-bogomips	: 10583.94
+=2D-=20
+Anton Arapov, <aarapov@redhat.com>
 
-The latter seems way off base.
-Prod me for more info.
+--=-=-=
+Content-Type: application/pgp-signature
 
-bjd
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
 
---------------030102000500050503000204
-Content-Type: text/plain;
- name="cpuinfo-full.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="cpuinfo-full.txt"
-
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 15
-model name	: Intel(R) Core(TM)2 Quad CPU           @ 2.40GHz
-stepping	: 7
-cpu MHz		: 2405.551
-cache size	: 4096 KB
-physical id	: 0
-siblings	: 4
-core id		: 0
-cpu cores	: 4
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
-bogomips	: 4813.46
-clflush size	: 64
-
-processor	: 1
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 15
-model name	: Intel(R) Core(TM)2 Quad CPU           @ 2.40GHz
-stepping	: 7
-cpu MHz		: 2405.551
-cache size	: 4096 KB
-physical id	: 0
-siblings	: 4
-core id		: 1
-cpu cores	: 4
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
-bogomips	: 4810.91
-clflush size	: 64
-
-processor	: 2
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 15
-model name	: Intel(R) Core(TM)2 Quad CPU           @ 2.40GHz
-stepping	: 7
-cpu MHz		: 2405.551
-cache size	: 4096 KB
-physical id	: 0
-siblings	: 4
-core id		: 2
-cpu cores	: 4
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
-bogomips	: 4810.91
-clflush size	: 64
-
-processor	: 3
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 15
-model name	: Intel(R) Core(TM)2 Quad CPU           @ 2.40GHz
-stepping	: 7
-cpu MHz		: 2405.551
-cache size	: 4096 KB
-physical id	: 0
-siblings	: 4
-core id		: 3
-cpu cores	: 4
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
-bogomips	: 10583.94
-clflush size	: 64
-
-
---------------030102000500050503000204--
+iD8DBQFG28MMVub9yW+oyBIRAsDhAJ4lSE2zpJYVV4KwWiE4YkQvsNE7AgCeNaPt
+Glp9WH7+7ZCzqRh2ri8mHKo=
+=AO7U
+-----END PGP SIGNATURE-----
+--=-=-=--
