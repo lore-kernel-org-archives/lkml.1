@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbXICExy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbXICGAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbXICExy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 00:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbXICExq
+	id S1752560AbXICGAY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 02:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbXICGAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 00:53:46 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:49807 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750942AbXICExp (ORCPT
+	Mon, 3 Sep 2007 02:00:12 -0400
+Received: from smtp.nokia.com ([131.228.20.173]:20382 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739AbXICGAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 00:53:45 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=HBpYrz24lL1ApyA/7a1HeHx99ZsgnZ91ZD6ppof3/0WNKENkIoX5Uay8Ywk/pmqcg
-	+4s+EsJqchZSi8IaoPXTA==
-Message-ID: <6599ad830709022153g1720bcedsb61d7cf7a783bd3f@mail.gmail.com>
-Date: Sun, 2 Sep 2007 21:53:22 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [-mm PATCH] Memory controller improve user interface (v3)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "Linux MM Mailing List" <linux-mm@kvack.org>,
-       "David Rientjes" <rientjes@google.com>,
-       "Dave Hansen" <haveblue@us.ibm.com>
-In-Reply-To: <20070902105021.3737.31251.sendpatchset@balbir-laptop>
+	Mon, 3 Sep 2007 02:00:10 -0400
+Message-ID: <46DBA2DE.9040803@nokia.com>
+Date: Mon, 03 Sep 2007 08:59:58 +0300
+From: Stefan Becker <Stefan.Becker@nokia.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+CC: michal.k.k.piotrowski@gmail.com
+Subject: Re: [pre-2.6.23 REGRESSION] 2.6.23-rc3-git1 crash/stuck on VIA CN700
+ system
+References: <46C9D148.5080505@nokia.com> <46D3AF72.7030701@nokia.com>
+In-Reply-To: <46D3AF72.7030701@nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070902105021.3737.31251.sendpatchset@balbir-laptop>
+X-OriginalArrivalTime: 03 Sep 2007 05:59:58.0754 (UTC) FILETIME=[A8C11020:01C7EDEF]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/2/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> -       s += sprintf(s, "%lu\n", *val);
-> +       if (read_strategy)
-> +               s += read_strategy(*val, s);
-> +       else
-> +               s += sprintf(s, "%lu\n", *val);
+Hi,
 
-This would be better as %llu
+> Stefan Becker wrote:
+>>
+>> while trying to debug a hibernation/rtc_cmos alarm wakeup problem in 
+>> 2.6.22 (or later) I noticed that the latest kernel crashes (or gets 
+>> stuck sometimes) during boot after the message:
+>>
+>> SMP alternatives: switching to UP code
 
-> +               tmp = simple_strtoul(buf, &end, 10);
+Retested with 2.6.23-rc4. Same result.
 
-and this as simple_strtoull()
+I also added "debug" to the boot command line. Unfortunately it didn't 
+show anything new. Comparing to 2.6.22.2 boot the next message should be
 
-Paul
+  Freeing SMP alternatives: ....
+
+Any hints what I should change on the command line or config to reveal 
+more information?
+
+Regards,
+
+	Stefan
+
+---
+Stefan Becker
+E-Mail: Stefan.Becker@nokia.com
