@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbXICKHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbXICKIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbXICKHu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 06:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXICKHn
+	id S1756759AbXICKIo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 06:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXICKIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 06:07:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40296 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751428AbXICKHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 06:07:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: cpu hotplug support broken in 2.6.23-rc3
-Date: Mon, 3 Sep 2007 12:19:12 +0200
-User-Agent: KMail/1.9.5
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, rusty@rustycorp.com.au,
-       vatsa@in.ibm.com, zwane@arm.linux.org.uk,
+	Mon, 3 Sep 2007 06:08:37 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:48780 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753392AbXICKIg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 06:08:36 -0400
+Date: Mon, 3 Sep 2007 03:58:54 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
        kernel list <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20070827104350.GA2073@elf.ucw.cz> <b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com> <20070903034720.GB3655@ucw.cz>
-In-Reply-To: <20070903034720.GB3655@ucw.cz>
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: cpu hotplug support broken in 2.6.23-rc3
+Message-ID: <20070903035854.GD3655@ucw.cz>
+References: <20070827104350.GA2073@elf.ucw.cz> <20070829080827.GD6832@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709031219.12846.rjw@sisk.pl>
+In-Reply-To: <20070829080827.GD6832@in.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 3 September 2007 05:47, Pavel Machek wrote:
-> Hi!
+On Wed 2007-08-29 13:38:27, Gautham R Shenoy wrote:
+> Hi Pavel,
+> On Mon, Aug 27, 2007 at 12:43:50PM +0200, Pavel Machek wrote:
+> > Hi!
+> > 
+> > Trying to do few onlines/offlines reliably hangs my machine (thinkpad
+> > x60, i386 architecture).
+> > 
 > 
-> > > Can you try 20-or-so tests? Mine hangs randomly, so it survived 4 or
-> > > so cycles at one point.
-> > 
-> > Mine still survives with this ... with sleep 1 ...
-> > 
-> > # for((i=0; i<100; i++)); do echo $i; echo $((i % 2))
-> > >/sys/devices/system/cpu/cpu1/online; sleep 1; done
-> > 
-> > and this as well ... without sleep ...
-> > 
-> > # for((i=0; i<100; i++)); do echo $i; echo $((i % 2))
-> > >/sys/devices/system/cpu/cpu1/online; done
-> > 
-> > I'm on reiserfs. gcc 3.4.5. Config sent to you seperately so as not to
-> > cloud lkml. If anyone wants the config, please let me know. Is mime
-> > "attachment" acceptable now on lkml?
+> That's strange. 
 > 
-> Ok, so it gets weirder. I have now machine in "hung" state; other
-> consoles still work, but there are no timers -  sleep 1 hangs forever.
-> 
-> sysrq-t shows kstopmachine hung in hrtimer_try_to_cancel.
-> 
-> So I indeed suspect difference-in-kconfig to trigger this, and will
-> try disabling noidlehz.
+> I've been running cpu offline/online tests with kern bench, 
+> cpufreq-ondemand and a few rt-tasks running in the background
+> and it has worked for me. 
+> Something like 100 iterations without a problem. But these were on
+> machines with 4-8 cpus.  So may be this could be something specific to
+> the dual cpu machine.
 
-I would unset CONFIG_HIGH_RES_TIMERS for starters.
+Seems like it is specific to nohz/highrestimers. 
 
-Well, I guess Thomas should know about that. ;-)
+> Can you post the .config? I'll try to recreate it?
 
-Greetings,
-Rafael
+Will send privately.
+
+> > Plus I guess it would be nice to add CPU HOTPLUG into MAINTAINERS
+> > file:
+> > 
+> 
+> There is a list of maintainers in the Documentation/cpu-hotplug.txt, 
+> which includes maintainers for different platforms as well.
+> 
+> It's a good idea to add that info to the MAINTAINERS file as well.
+
+Yes, please.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
