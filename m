@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752738AbXICNJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447AbXICNPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752738AbXICNJv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 09:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbXICNJk
+	id S1755447AbXICNPb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 09:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbXICNPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 09:09:40 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58073 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbXICNJj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 09:09:39 -0400
-Message-ID: <46DC0740.1030507@zytor.com>
-Date: Mon, 03 Sep 2007 14:08:16 +0100
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jeff Chua <jeff.chua.linux@gmail.com>, michal.k.k.piotrowski@gmail.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, lists4me@web.de, adaplas@gmail.com, lenb@kernel.org,
-       dth@dth.net, linux-fsdevel@vger.kernel.org, nfs@lists.sourceforge.net,
-       Trond.Myklebust@netapp.com, andrew@digital-domain.net,
-       peter.kovar@gmail.com
-Subject: Re: [2/4] 2.6.23-rc5: known regressions
-References: <46DBD982.3080102@googlemail.com>	<46DBDD8B.7040706@googlemail.com>	<b6a2187b0709030536w3e40f12bk4d25b6eb954d22b6@mail.gmail.com> <20070903055114.7f82ef46.akpm@linux-foundation.org>
-In-Reply-To: <20070903055114.7f82ef46.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Sep 2007 09:15:23 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:49829 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752609AbXICNPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 09:15:22 -0400
+To: paul.moore@hp.com
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       chrisw@sous-sol.org
+Subject: Re: [TOMOYO 15/15] LSM expansion for TOMOYO Linux.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <46CED214.6050505@gmail.com>
+	<200708271049.06900.paul.moore@hp.com>
+	<200708281939.JDH33719.MVSFOOQJHFFOtL@I-love.SAKURA.ne.jp>
+	<200708280921.48867.paul.moore@hp.com>
+In-Reply-To: <200708280921.48867.paul.moore@hp.com>
+Message-Id: <200709032215.DCF36819.SLQtHFMFOOFOVJ@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50]
+X-Accept-Language: ja,en
+Date: Mon, 3 Sep 2007 22:15:27 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->> On Mon, 3 Sep 2007 20:36:32 +0800 "Jeff Chua" <jeff.chua.linux@gmail.com> wrote:
->> On 9/3/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
->>
->>> Subject         : console is messed up after resume from s2ram or switching to console from X
->>> References      : http://lkml.org/lkml/2007/8/4/6
->>> Last known good : ?
->>> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
->>> Caused-By       : ?
->>> Handled-By      : H. Peter Anvin <hpa@zytor.com>
->>>                   Antonino A. Daplas <adaplas@gmail.com>
->>> Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
->>> Status          : problem is being debugged
->> Michal,
->>
->> Can you please close this case. I'm using the workaround and satisfied with it.
-> 
-> 2.6.21 was OK, and 2.6.23-rc2 needed a manual workaround?
-> 
-> That's a regression.
+Hello.
 
-Yes, it is.  2.6.21 was OK, but only within a narrow and 
-ill-characterized set of conditions (framebuffer not compiled into the 
-kernel, in particular.)  It appears to me that the interaction between 
-STR and video on this system is extremely fragile, to the point that any 
-minor perturbations in the state can break it, and that that is the real 
-underlying problem here.
+Paul Moore wrote:
+> I apologize for not recognizing your approach from our earlier discussion on 
+> the LSM mailing list in July.  Unfortunately, I have the same objections to 
+> these changes that I did back then and from what I can recall of the 
+> discussion the rest of the kernel networking community agreed that these 
+> changes are not the preferred way of solving this problem.  We offered 
+> suggestions on how to accomplish your goals in a way that would be acceptable 
+> upstream and I would encourage you to investigate those options further.
 
-	-hpa
+When I proposed a patch in July, I was patching at post-copy_to_user() step
+(i.e. after sock_recvmsg()).
+This approach messed up user-supplied buffer.
+
+This time, I'm patching at pre-copy_to_user() step
+(i.e. at skb_recv_datagram()).
+This approach doesn't mess up user-supplied buffer.
+I think this is a cleaner way than the previous patch.
+
+Although read() gets an error when select() said "read ready",
+I can't find other place to use for accomplishing my goals.
+
+By the way, similar thing can happen when select() against
+a file descriptor said "read ready" but read() gets an error
+if security policy or security-id of the file has changed
+between select() and read(), isn't it?
+And such behavior is acceptable, isn't it?
+If such behavior can happen and is acceptable and *preferable*,
+I think checking permission at dequeue time (i.e. skb_recv_datagram())
+is *preferable* way than checking permission at enqueue time
+(i.e. socket_sock_rcv_skb()).
+
+Regards.
