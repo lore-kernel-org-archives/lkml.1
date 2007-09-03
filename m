@@ -1,62 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbXICOtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbXICOvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754159AbXICOtR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 10:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbXICOtF
+	id S1754628AbXICOvB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 10:51:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbXICOux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 10:49:05 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:8977 "EHLO
-	outbound4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751859AbXICOtE (ORCPT
+	Mon, 3 Sep 2007 10:50:53 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:52039 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750856AbXICOuw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 10:49:04 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Mon, 3 Sep 2007 16:48:42 +0200
-From: "Robert Richter" <robert.richter@amd.com>
-To: "Andi Kleen" <ak@suse.de>
-cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space
- access for AMD Barcelona
-Message-ID: <20070903144842.GK7916@erda.amd.com>
-References: <20070830174311.221133000@amd.com>
- <200709031215.03473.ak@suse.de> <20070903112746.GH7916@erda.amd.com>
- <200709031448.42285.ak@suse.de>
+	Mon, 3 Sep 2007 10:50:52 -0400
+Date: Mon, 3 Sep 2007 16:50:53 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Jonathan Gray <jsg@goblin.cx>, Reyk Floeter <reyk@openbsd.org>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: [reyk@openbsd.org: Re: That whole "Linux stealing our code"
+	thing]
+Message-ID: <20070903145053.GX16016@stusta.de>
+References: <20070903132542.GA902@mail.netspace.net.au>
 MIME-Version: 1.0
-In-Reply-To: <200709031448.42285.ak@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 03 Sep 2007 14:48:43.0128 (UTC)
- FILETIME=[85F45F80:01C7EE39]
-X-WSS-ID: 6AC2C1470X86422949-01-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070903132542.GA902@mail.netspace.net.au>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
+On Mon, Sep 03, 2007 at 11:25:42PM +1000, Jonathan Gray wrote:
 
-On 03.09.07 14:48:41, Andi Kleen wrote:
+> This is a lot more relevant than much of the ongoing
+> discussion, so perhaps people could take a moment to read it over.
+> 
+> ----- Forwarded message from Reyk Floeter <reyk@openbsd.org> -----
+> 
+> From: Reyk Floeter <reyk@openbsd.org>
+> Date: Mon, 3 Sep 2007 13:23:04 +0200
+> To: misc@openbsd.org
+> Subject: Re: That whole "Linux stealing our code" thing
+> 
+> Hi!
+> 
+> I just returned from vacation where I was offline for about two weeks.
+> So I totally missed the incidence and all the surrounding discussion.
+> I'm just digging through many many mails in my inbox from OpenBSD
+> users and developers, Linux people, GNU/freesoftware people, misc *BSD
+> people, and obviously from some trolls.
+> 
+> I don't want to restart the discussion but I just want to say and
+> repeat a few words:
+> 
+> - I will not release or agree to release my code under either the GPL
+> or any kind of a "dual"-license.
 
-> > As said above, I do not see CF8 access as a workaround. I expect my
-> > system to work in the same way also if MMCONFIG is not available.
->
-> It should boot sure, but exotic stuff not working is not a major issue
+It's your code and it's your choice.
 
-It is not only about booting the system without MMCONFIG, it is also
-about using the system. For this PCI ECS CF8 access is needed. So why
-not adding support for this? Excluding major parts of CPU registers
-when using CF8 base access only will cause writing code to workaround
-this. Not very nice to handle.
+(But note that you contributed to then dual-licenced code in the
+ OpenBSD CVS and kept this code dual-licenced. For this code your
+ contributions might be assumed dual-licenced.)
 
--Robert
+> - The ISC-style license must remain including the copyright notice and
+> even the warranty term.
+
+Full agreement (for not dual-licenced code).
+
+> - Thanks to the OpenBSD community and especially to Theo de Raadt for
+> entering into it and for defending my rights as the author of the
+> controversial code.
+
+The email of Theo that was forwarded to linux-kernel [1] centered around 
+Theo telling people that picking one licence for Sam's dual-licenced 
+code would "break the law".
+
+He would have better made the mistake in Jiri's patch visible (and 
+therefore better defended your copyright) if he wouldn't have obscured 
+it with these pointless accusations...
+
+> - This is eating our time. Every few weeks I get a new discussion
+> about licensing of the atheros driver etc. blah blah. Why can't they
+> just accept the license as it is and focus on more important things?
+> 
+> I will talk to different people to get the latest state and to think
+> about the next steps. I don't even know if the issue has been solved
+> in the linux tree.
+>...
+
+To clarify this myth once again:
+
+The patch that mistakenly changed BSD-only code to GPL has never ever 
+been in the Linux tree.
+
+> Thanks!
+> reyk
+
+cu
+Adrian
+
+[1] http://lkml.org/lkml/2007/9/1/102
 
 -- 
-AMD Saxony, Dresden, Germany
-Operating System Research Center
-email: robert.richter@amd.com
 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
