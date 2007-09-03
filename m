@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbXICGAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752808AbXICGMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752560AbXICGAY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 02:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbXICGAM
+	id S1752808AbXICGMV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 02:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbXICGMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 02:00:12 -0400
-Received: from smtp.nokia.com ([131.228.20.173]:20382 "EHLO
-	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739AbXICGAK (ORCPT
+	Mon, 3 Sep 2007 02:12:15 -0400
+Received: from main.carme.maven.pl ([193.239.45.138]:37856 "EHLO
+	main.carme.maven.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739AbXICGMP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 02:00:10 -0400
-Message-ID: <46DBA2DE.9040803@nokia.com>
-Date: Mon, 03 Sep 2007 08:59:58 +0300
-From: Stefan Becker <Stefan.Becker@nokia.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 3 Sep 2007 02:12:15 -0400
+From: Arkadiusz Miskiewicz <arekm@maven.pl>
+Organization: SelfOrganizing
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [4/4] 2.6.23-rc4: known regressions
+Date: Mon, 3 Sep 2007 08:12:04 +0200
+User-Agent: PLD Linux KMail/1.9.7
+Cc: "Soeren Sonnenburg" <kernel@nn7.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Pavel Machek" <pavel@ucw.cz>
+References: <46D58CC6.4020605@googlemail.com> <1188470552.22467.8.camel@localhost> <6bffcb0e0709021533u1fd81db6pfb0d985d80f73995@mail.gmail.com>
+In-Reply-To: <6bffcb0e0709021533u1fd81db6pfb0d985d80f73995@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: michal.k.k.piotrowski@gmail.com
-Subject: Re: [pre-2.6.23 REGRESSION] 2.6.23-rc3-git1 crash/stuck on VIA CN700
- system
-References: <46C9D148.5080505@nokia.com> <46D3AF72.7030701@nokia.com>
-In-Reply-To: <46D3AF72.7030701@nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Sep 2007 05:59:58.0754 (UTC) FILETIME=[A8C11020:01C7EDEF]
-X-Nokia-AV: Clean
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200709030812.05460.arekm@maven.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Monday 03 of September 2007, Michal Piotrowski wrote:
+> Hi,
+>
+> On 30/08/07, Soeren Sonnenburg <kernel@nn7.de> wrote:
+> > On Wed, 2007-08-29 at 17:27 +0200, Michal Piotrowski wrote:
+> > > Power management
+> > >
+> > > Subject         : something broke resume from s2ram on mbp c1d (??? :))
+> > > References      : http://lkml.org/lkml/2007/8/28/67
+> > > Last known good : 2.6.23-rc3
+> > > Submitter       : Soeren Sonnenburg <kernel@nn7.de>
+> > > Caused-By       : ?
+> > > Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+> > > Status          : unknown
+> > >
+> > > Subject         : resume from ram much slower
+> > > References      : http://lkml.org/lkml/2007/8/10/275
+> > > Last known good : 2.6.23-rc1 ?
+> > > Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
+> > > Caused-By       : ?
+> > > Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+> > > Status          : problem is being debugged
+> >
+> > I am not sure whether the problem I am having is not the very same as
+> > the one Arkadiusz is seeing. At least I've found resume from s2ram to be
+> > working a couple of times. Only sometimes it took long to resume, that
+> > is >30 seconds (around 5 - which I already consider long - is normal).
+> >
+> > anyway this this is with the closed source fglrx kernel module,
+>
+> Arkadiusz, are you using any of these binary crap modules?
 
-> Stefan Becker wrote:
->>
->> while trying to debug a hibernation/rtc_cmos alarm wakeup problem in 
->> 2.6.22 (or later) I noticed that the latest kernel crashes (or gets 
->> stuck sometimes) during boot after the message:
->>
->> SMP alternatives: switching to UP code
+No.
 
-Retested with 2.6.23-rc4. Same result.
+> Regards,
+> Michal
 
-I also added "debug" to the boot command line. Unfortunately it didn't 
-show anything new. Comparing to 2.6.22.2 boot the next message should be
+ps. had no time to do bisecting
 
-  Freeing SMP alternatives: ....
-
-Any hints what I should change on the command line or config to reveal 
-more information?
-
-Regards,
-
-	Stefan
-
----
-Stefan Becker
-E-Mail: Stefan.Becker@nokia.com
+-- 
+Arkadiusz Mi¶kiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
