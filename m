@@ -1,34 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbXICKLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757066AbXICKLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757375AbXICKLP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 06:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbXICKK5
+	id S1757066AbXICKLd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 06:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbXICKLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 06:10:57 -0400
+	Mon, 3 Sep 2007 06:11:00 -0400
 Received: from nf-out-0910.google.com ([64.233.182.190]:13161 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750783AbXICKK4 (ORCPT
+	with ESMTP id S1753978AbXICKK6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 06:10:56 -0400
+	Mon, 3 Sep 2007 06:10:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=T2NN/IUhvXFaaxmsvouKNbQ9SZk1+rtegACzX7GRGPKgD9vPRoKY3yOf9kH2XWR/GnzSKfOzgetQop7oBWScLTFwkhO2AHbF6GE19tCRB1v2XryE5Us1hZkx1r7dVOgF9Fp0MSUNoHmn3bCgGw9okNTK3N6zlq1aNlkTdvn5ais=
-Message-ID: <46DBDD8B.7040706@googlemail.com>
-Date: Mon, 03 Sep 2007 12:10:19 +0200
+        b=kxJx4NgeOVA+Wr6elrCQ5e7j5FjJocUEznUT8/cKKIxPOJ0S9GdgUd9cC3xC/sWy8cyKjF9C9a8WBc4EpYCEvCHVAZ+eaCjI/ZzTO9CW1AvZNu4E+g0OuBuokKmu1WwzCEbwNwDgoTi1QOqzGt3tkIVYHZREdX0KEtTBg9cXKjk=
+Message-ID: <46DBDD8E.6050802@googlemail.com>
+Date: Mon, 03 Sep 2007 12:10:22 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Len Brown <lenb@kernel.org>,
-       dth <dth@dth.net>, linux-fsdevel@vger.kernel.org,
-       nfs@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Andrew Clayton <andrew@digital-domain.net>,
-       Peter Kovar <peter.kovar@gmail.com>
-Subject: Re: [2/4] 2.6.23-rc5: known regressions
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Shish <shish@shishnet.org>, Karl Meyer <adhocrocker@gmail.com>,
+       Francois Romieu <romieu@fr.zoreil.com>, linux-wireless@vger.kernel.org,
+       Christian Casteyde <casteyde.christian@free.fr>,
+       Martin Langer <martin-langer@gmx.de>, Stefano Brivio <st3@riseup.net>,
+       Michael Buesch <mbuesch@freenet.de>,
+       Danny van Dyk <kugelfang@gentoo.org>,
+       Andreas Jaggi <andreas.jaggi@waterwave.ch>,
+       Daniel Drake <dsd@gentoo.org>, Oliver Neukum <oliver@neukum.org>,
+       linux-usb-devel@lists.sourceforge.net, Florian Lohoff <flo@rfc822.org>
+Subject: Re: [3/4] 2.6.23-rc5: known regressions
 References: <46DBD982.3080102@googlemail.com>
 In-Reply-To: <46DBD982.3080102@googlemail.com>
 X-Enigmail-Version: 0.95.3
@@ -63,55 +65,45 @@ Tejun Heo                              3
 
 
 
-Unclassified
+Networking
 
-Subject         : console is messed up after resume from s2ram or switching to console from X
-References      : http://lkml.org/lkml/2007/8/4/6
+Subject         : ifconfig eth1 - scheduling while atomic: ifconfig/0x00000002/4170
+References      : http://lkml.org/lkml/2007/9/2/165
 Last known good : ?
-Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-Caused-By       : ?
-Handled-By      : H. Peter Anvin <hpa@zytor.com>
-                  Antonino A. Daplas <adaplas@gmail.com>
-Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
-Status          : problem is being debugged
-
-Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
-References      : http://lkml.org/lkml/2007/7/22/86
-Last known good : ?
-Submitter       : Markus <lists4me@web.de>
-Caused-By       : ?
-Handled-By      : Ingo Molnar <mingo@elte.hu>
-Status          : problem is being debugged
-
-
-
-CPUFREQ
-
-Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-References      : http://lkml.org/lkml/2007/7/27/298
-                  http://lkml.org/lkml/2007/7/29/371
-Last known good : ?
-Submitter       : dth <dth@dth.net>
-Caused-By       : Len Brown <lenb@kernel.org>
-                  commit f79e3185dd0f8650022518d7624c876d8929061b
-Handled-By      : Len Brown <lenb@kernel.org>
-Status          : problem is being debugged
-
-
-FS
-
-Subject         : NFSv3 server error in LOOKUP after READDIRPLUS Call
-References      : http://bugzilla.kernel.org/show_bug.cgi?id=8966
-Last known good : ?
-Submitter       : Peter Kovar <peter.kovar@gmail.com>
+Submitter       : Florian Lohoff <flo@rfc822.org> 
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : [NFSD OOPS] 2.6.23-rc1-git10
-References      : http://lkml.org/lkml/2007/8/2/462
+Subject         : zd1211rw regression, device does not enumerate
+References      : http://marc.info/?l=linux-usb-devel&m=118854967709322&w=2
 Last known good : ?
-Submitter       : Andrew Clayton <andrew@digital-domain.net>
+Submitter       : Oliver Neukum <oliver@neukum.org>
+Caused-By       : Daniel Drake <dsd@gentoo.org>
+                  commit 74553aedd46b3a2cae986f909cf2a3f99369decc
+Handled-By      : ?
+Status          : unknown
+
+Subject         : System freeze when restarting network connection with Broadcom driver
+References      : http://bugzilla.kernel.org/show_bug.cgi?id=8934
+Last known good : ?
+Submitter       : Christian Casteyde <casteyde.christian@free.fr>
+Caused-By       : ?
+Handled-By      : ?
+Status          : problem is being debugged
+
+Subject         : NETDEV WATCHDOG: eth0: transmit timed out
+References      : http://lkml.org/lkml/2007/8/13/737
+Last known good : ?
+Submitter       : Karl Meyer <adhocrocker@gmail.com>
+Caused-By       : ?
+Handled-By      : Francois Romieu <romieu@fr.zoreil.com>
+Status          : problem is being debugged
+
+Subject         : Weird network problems with 2.6.23-rc2
+References      : http://lkml.org/lkml/2007/8/11/40
+Last known good : ?
+Submitter       : Shish <shish@shishnet.org>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
