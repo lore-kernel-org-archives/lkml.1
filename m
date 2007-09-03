@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbXICKpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbXICKq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755789AbXICKpp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 06:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbXICKpg
+	id S1756758AbXICKq0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 06:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbXICKqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 06:45:36 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51130 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752972AbXICKpf (ORCPT
+	Mon, 3 Sep 2007 06:46:18 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34020 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753891AbXICKqS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 06:45:35 -0400
-Date: Mon, 3 Sep 2007 19:46:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: "mel@csn.ul.ie" <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       "kamezawa.hiroyu@jp.fujitsu.com" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [PATCH][-mm] Fix setup_per_zone_pages_min() lock.
-Message-Id: <20070903194629.aa24ecc5.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Sep 2007 06:46:18 -0400
+Date: Mon, 3 Sep 2007 12:46:19 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Jeff Dike <jdike@linux.intel.com>
+Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Jan Dittmer <jdi@l4x.org>
+Subject: 2.6.23-rc5 regression: uml on x86_64 compile error
+Message-ID: <20070903104619.GR16016@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix setup_per_zone_pages_min().
+Commit d1254b12c93e1e586137a2ffef71fd33cf273f35 causes the following 
+compile error (found at [1]):
 
-Now setup_per_zone_pages_min() uses zone->lru_lock. This has 2 problems.
+<--  snip  -->
 
-1. setup_page_zone_pages_min() modifies zone->pages_min,pages_low,pages_high.
-   in atomic. But readers of these values tend not to take lru_lock.
-   (At least, we need lock between memory hotplug vs. sysctl)
-2. setup_zone_migrate_reserve() should take zone->lock instead of lru_lock.
+...
+CC      fs/binfmt_elf.o
+In file included from fs/binfmt_elf.c:30:
+include/linux/elfcore.h: In function ‘elf_core_copy_regs’:
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+include/linux/elfcore.h:103: error: ‘union uml_pt_regs’ has no member named ‘gp’
+make[2]: *** [fs/binfmt_elf.o] Error 1
 
-This patch replaces zone->lru_lock with zone->lock.
+<--  snip  -->
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cu
+Adrian
 
+[1] http://l4x.org/k/?d=33926#err
 
+-- 
 
----
- mm/page_alloc.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-Index: devel-2.6.23-rc4-mm1-zone/mm/page_alloc.c
-===================================================================
---- devel-2.6.23-rc4-mm1-zone.orig/mm/page_alloc.c
-+++ devel-2.6.23-rc4-mm1-zone/mm/page_alloc.c
-@@ -4176,8 +4176,8 @@ void setup_per_zone_pages_min(void)
- 
- 	for_each_zone(zone) {
- 		u64 tmp;
-+		spin_lock_irqsave(&zone->lock, flags);
- 
--		spin_lock_irqsave(&zone->lru_lock, flags);
- 		tmp = (u64)pages_min * zone->present_pages;
- 		do_div(tmp, lowmem_pages);
- 		if (is_highmem(zone)) {
-@@ -4208,8 +4208,9 @@ void setup_per_zone_pages_min(void)
- 
- 		zone->pages_low   = zone->pages_min + (tmp >> 2);
- 		zone->pages_high  = zone->pages_min + (tmp >> 1);
-+
- 		setup_zone_migrate_reserve(zone);
--		spin_unlock_irqrestore(&zone->lru_lock, flags);
-+		spin_unlock_irqrestore(&zone->lock, flags);
- 	}
- 
- 	/* update totalreserve_pages */
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
