@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbXICTV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbXICTXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756641AbXICTV0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 15:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbXICTVN
+	id S1756318AbXICTXN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 15:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbXICTW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 15:21:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34038 "EHLO mx3.mail.elte.hu"
+	Mon, 3 Sep 2007 15:22:58 -0400
+Received: from jabberwock.ucw.cz ([89.250.246.4]:56518 "EHLO jabberwock.ucw.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756227AbXICTU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 15:20:56 -0400
-Date: Mon, 3 Sep 2007 21:20:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [ANNOUNCE/RFC] Really Simple Really Fair Scheduler
-Message-ID: <20070903192050.GA29049@elte.hu>
-References: <20070902120154.GA23769@elte.hu> <Pine.LNX.4.64.0709032030320.1817@scrub.home> <20070903185403.GA23479@elte.hu> <Pine.LNX.4.64.0709032106070.1817@scrub.home>
-MIME-Version: 1.0
+	id S1751087AbXICTW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 15:22:58 -0400
+X-Greylist: delayed 1286 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 15:22:58 EDT
+Date: Mon, 3 Sep 2007 21:01:24 +0200
+From: Martin Mares <mj@ucw.cz>
+To: dean gaudet <dean@arctic.org>
+Cc: Robert Richter <robert.richter@amd.com>, Andi Kleen <ak@suse.de>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 5/5] x86: Set PCI config space size to extended for AMD Barcelona
+Message-ID: <mj+md-20070903.190044.18705.albireo@ucw.cz>
+References: <20070903081736.288288000@amd.com> <20070903081736.805623000@amd.com> <Pine.LNX.4.64.0709030930150.3502@twinlark.arctic.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709032106070.1817@scrub.home>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0709030930150.3502@twinlark.arctic.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Roman Zippel <zippel@linux-m68k.org> wrote:
-
-> On Mon, 3 Sep 2007, Ingo Molnar wrote:
+> it's so very unfortunate the PCI standard has no feature bit to indicate 
+> the presence of ECS.
 > 
-> > If this basic model is correct, we can look further.
+> FWIW in my testing on a range of machines spanning 7 or 8 years i could 
+> read config space reg 256... and get 0xffffffff when the device didn't 
+> support ECS, and get valid data when the device did support ECS... granted 
+> there may be some system out there which behaves really badly when you do 
+> this.
 > 
-> The basic model is correct insofar I use an absolute time instead of a 
-> relative time, but it's not the essence of my math, so I don't quite 
-> understand the point of this exercise.
+> perhaps someone could write a userspace program and test that concept on a 
+> far wider range of machines.
 
-thanks. (and i did not claim nor do i want to claim this to be the 
-essence of your efforts - it is very clear from your mails where your 
-focus is.)
+If you want to experiment with this in user space, it's easy to write
+a couple of access functions for the libpci in pciutils. (Patches welcome,
+as usually :) )
 
-My next question then is about this code of yours in the wakeup path:
-
- +static void
- +enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
- +{
- +       kclock_t min_time;
- +
- +       verify_queue(cfs_rq, cfs_rq->curr != se, se);
- +       min_time = get_time_avg(cfs_rq) - se->req_weight_inv;
- +       if ((kclock_t)(se->time_norm - min_time) < 0)
- +               se->time_norm = min_time;
-
-why do you only use the "min_time" if the pre-sleep time_norm is smaller 
-than the min_time? Here 'min_time' is close to the current average. 
-Shouldnt here the woken up task be set to the average time, like i did 
-it in the crude prototype:
-
-+               se->exec_runtime = avg_exec_runtime(cfs_rq);
-
-(and lets again only consider the special case of only having nice-0 
-tasks.)
-
-Or is it set in a similar way as my prototype does, and i missed some 
-detail why that branch is there?
-
-	Ingo
+				Have a nice fortnight
+-- 
+Martin `MJ' Mares                          <mj@ucw.cz>   http://mj.ucw.cz/
+Faculty of Math and Physics, Charles University, Prague, Czech Rep., Earth
+God is real, unless declared integer.
