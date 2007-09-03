@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbXICLet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbXICL4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757285AbXICLet (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 07:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbXICLem
+	id S1756293AbXICL4T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 07:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbXICL4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 07:34:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37463 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753574AbXICLem (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 07:34:42 -0400
-Date: Mon, 3 Sep 2007 04:33:19 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-Cc: "Robert Richter" <robert.richter@amd.com>, patches@x86-64.org,
+	Mon, 3 Sep 2007 07:56:10 -0400
+Received: from mail.op5.se ([193.201.96.20]:47932 "EHLO mail.op5.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753106AbXICL4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 07:56:09 -0400
+X-Greylist: delayed 1435 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 07:56:09 EDT
+X-Spam-Score: -4.399
+Message-ID: <46DBF0BB.3070605@op5.se>
+Date: Mon, 03 Sep 2007 13:32:11 +0200
+From: Andreas Ericsson <ae@op5.se>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Junio C Hamano <gitster@pobox.com>
+CC: Sean <seanlkml@sympatico.ca>, "H. Peter Anvin" <hpa@zytor.com>,
+       David Kastrup <dak@gnu.org>, git@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space access
- for AMD Barcelona
-Message-ID: <20070903043319.7573875b@laptopd505.fenrus.org>
-In-Reply-To: <20070903091718.GB22144@alberich.amd.com>
-References: <20070903081736.288288000@amd.com>
-	<20070903081736.588599000@amd.com>
-	<20070903013157.72c94891@laptopd505.fenrus.org>
-	<20070903091718.GB22144@alberich.amd.com>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [ANNOUNCE] GIT 1.5.3
+References: <7vodglr32i.fsf@gitster.siamese.dyndns.org>	<46DA5F33.2020005@zytor.com> <85odgltrtj.fsf@lola.goethe.zz>	<46DA88EF.7080103@zytor.com>	<20070902133803.1b46f599.seanlkml@sympatico.ca> <7v4picpvgq.fsf@gitster.siamese.dyndns.org>
+In-Reply-To: <7v4picpvgq.fsf@gitster.siamese.dyndns.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Sep 2007 11:17:18 +0200
-"Andreas Herrmann" <andreas.herrmann3@amd.com> wrote:
-\> 
-> Do you see any other issues besides the naming of the bit?
+Junio C Hamano wrote:
+> 
+> Assuming that we do not give the old git-p4import script
+> packaged in "git-p4 package", would the following patch be all
+> that is needed, or do we need other things in the spec file?
+> 
+> -- snipsnap clipcrap --
+> +Obsoletes:	git-p4
 
-I wonder if we should key this off a PCI ID of the chipset rather than
-the cpu id... I mean, how sure are you that all via chipsets connected
-to the barcelona cpu will deal well?
+That depends. If packages outside of git requires the git-p4 package to function
+then this will not suffice and a line saying
+
+	Provides: git-p4
+
+would have to be added instead. If some other already installed package Require:'s
+/usr/bin/git-p4import, then that other package is broken and we're toast.
+
+I have a hard time seeing what other package would depend on the git-p4import
+script so this was more along the lines of "how rpm dependencies work, kinda"
+than a real issue.
+
+-- 
+Andreas Ericsson                   andreas.ericsson@op5.se
+OP5 AB                             www.op5.se
+Tel: +46 8-230225                  Fax: +46 8-230231
