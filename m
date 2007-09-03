@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbXICSmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbXICSql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbXICSmr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 14:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbXICSmk
+	id S1755821AbXICSql (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 14:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbXICSqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 14:42:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41616 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753786AbXICSmj (ORCPT
+	Mon, 3 Sep 2007 14:46:33 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:48730 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753868AbXICSqc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 14:42:39 -0400
-Date: Mon, 3 Sep 2007 11:41:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan Kara <jack@suse.cz>
-Cc: randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-Id: <20070903114109.ebfeb0b7.akpm@linux-foundation.org>
-In-Reply-To: <20070903174846.GJ7524@duck.suse.cz>
-References: <20070828141318.GC5869@duck.suse.cz>
-	<20070828215128.d8147a43.akpm@linux-foundation.org>
-	<20070903144336.GH7524@duck.suse.cz>
-	<20070903101234.c74ead59.randy.dunlap@oracle.com>
-	<20070903174846.GJ7524@duck.suse.cz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Sep 2007 14:46:32 -0400
+Date: Mon, 3 Sep 2007 14:42:07 -0400
+Message-Id: <200709031842.l83Ig719014512@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org, viro@ftp.linux.org.uk, bharata@linux.vnet.ibm.com,
+       j.blunck@tu-harburg.de
+Subject: Re: [GIT PULL -mm] Unionfs/fsstack/eCryptfs updates/cleanups/fixes 
+In-reply-to: Your message of "Mon, 03 Sep 2007 21:26:47 +0300."
+             <200709032126.47232.a1426z@gawab.com> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 3 Sep 2007 19:48:46 +0200 Jan Kara <jack@suse.cz> wrote:
-> On Mon 03-09-07 10:12:34, Randy Dunlap wrote:
-> > On Mon, 3 Sep 2007 16:43:36 +0200 Jan Kara wrote:
-> > 
-> > > User-Agent: Mutt/1.5.13 (2006-08-11)
-> > 
-> > Mutt knows how to send patches inline vs. attachments... :(
->   Hmm, I thought Andrew either does not mind or prefers attachments. If
-> it isn't the case, I can inline patches. Andrew? BTW: I personally prefer
-> attachments - mutt inlines text attachments for me anyway and sometimes
-> it's useful to have the file structured by MIME.
+In message <200709032126.47232.a1426z@gawab.com>, Al Boldi writes:
+> Erez Zadok wrote:
+> > Al, we have back-ports of the latest Unionfs to 2.6.{22,21,20,19,18,9},
+> > all in http://unionfs.filesystems.org/.  Before we release any change, we
+> > test it on all back-ports as well as the latest -rc/-mm code base (takes
+> > over 24 hours straight to get through all of our regressions :-)
+> 
+> I am impressed, thanks!
 
-inlined is a bit better, mainly because one can reply to it and the email
-client will quote the whole thing.
+You're welcome.
 
-> > +This command is used to send a notification about any of the above mentioned
-> > +events. Each message has six attributes. These are (type of the argument is
-> > +in braces):
-> > 
-> > s/braces/parentheses/
-> > 
-> > +        QUOTA_NL_A_QTYPE (u32)
-> > +	  - type of quota beging exceeded (one of USRQUOTA, GRPQUOTA)
-> > 
-> > s/beging/being/
->   Thanks for reading it. Andrew, should I resend the patch or will you
-> substitute it in the patch?
+> It's probably a good idea to always point these backports out, whenever 
+> submitting patches against -mm.  Otherwise, people might forget.
 
-I'll sort it out, thanks.
+Good idea.
+
+> > So we'd be happy to submit those patches to the latest stable kernel. 
+> > But, are you talking about VFS/ecryptfs patches (which are in the stable
+> > kernel), or are you talking about Unionfs (which is not)?
+> 
+> I'm talking about Unionfs, which seems like a rather critical feature to 
+> miss-out on.
+
+Hmmm, we'll have to discuss this among the unionfs developers first.
+
+> BTW, did you ever get that oops-on-umount worked out?
+
+Which bug?  Is that something anyone submitted to our
+https://bugzilla.filesystems.org?  I don't recall such a bug in a while, so
+if it got fixed, it must've been a while back.  If it's still there and
+reproducible, please let me know asap so I can work on it.
+
+It is possible that the bug is in the -mm code.  That's why we just posted
+the long series of Unionfs patches: those patches represent more than four
+months of intense hardening and testing.  Some of the bugs we've fixed had
+to do with improper refcounting (esp. mnt refcounting, which, if not
+perfect, either causes an EBUSY on unmount or an oops on unmount :-)
+
+> Thanks!
+> 
+> --
+> Al
+
+Erez.
