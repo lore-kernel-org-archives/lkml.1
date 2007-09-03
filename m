@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbXICTpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbXICTq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbXICTpw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 15:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbXICTpn
+	id S1756558AbXICTq7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 15:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbXICTqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 15:45:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55944 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbXICTpm (ORCPT
+	Mon, 3 Sep 2007 15:46:52 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:49734 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753891AbXICTqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 15:45:42 -0400
-Date: Tue, 4 Sep 2007 01:28:52 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: bug in 2.6.22.6, net/sunrpc/svcsock.c
-In-Reply-To: <200709031848.46005.wolfgang.walter@studentenwerk.mhn.de>
-Message-ID: <alpine.LFD.0.999.0709040118120.7514@enigma.security.iitk.ac.in>
-References: <200709031848.46005.wolfgang.walter@studentenwerk.mhn.de>
+	Mon, 3 Sep 2007 15:46:51 -0400
+Message-ID: <46DC6446.1080707@linux.vnet.ibm.com>
+Date: Mon, 03 Sep 2007 20:45:10 +0100
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       David Rientjes <rientjes@google.com>, Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [-mm PATCH] Memory controller improve user interface (v3)
+References: <20070902105021.3737.31251.sendpatchset@balbir-laptop> <6599ad830709022153g1720bcedsb61d7cf7a783bd3f@mail.gmail.com>
+In-Reply-To: <6599ad830709022153g1720bcedsb61d7cf7a783bd3f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Wolfgang,
-
-
-On Mon, 3 Sep 2007, Wolfgang Walter wrote:
+Paul Menage wrote:
+> On 9/2/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>> -       s += sprintf(s, "%lu\n", *val);
+>> +       if (read_strategy)
+>> +               s += read_strategy(*val, s);
+>> +       else
+>> +               s += sprintf(s, "%lu\n", *val);
 > 
-> in 2.6.22.6, net/sunrpc/svcsock.c
+> This would be better as %llu
 > 
-> random characters are printed by svc_tcp_accept:
+>> +               tmp = simple_strtoul(buf, &end, 10);
 > 
-> 	lockd: last TCP connect from <some random chars>
-> [...]
+> and this as simple_strtoull()
 > 
-> --- linux-2.6.22.6/net/sunrpc/svcsock.c	2007-08-27 18:10:14.000000000 +0200
-> +++ linux-2.6.22.6w/net/sunrpc/svcsock.c	2007-09-03 18:27:30.000000000 +0200
-> @@ -1090,7 +1090,7 @@
->  						   serv->sv_name);
->  				printk(KERN_NOTICE
->  				       "%s: last TCP connect from %s\n",
-> -				       serv->sv_name, buf);
-> +				       serv->sv_name, __svc_print_addr(sin, buf, sizeof(buf)));
->  			}
->  			/*
->  			 * Always select the oldest socket. It's not fair,
+> Paul
+> 
 
-Your patch is correct, but please read patch submission instructions at:
+Thanks for catching it, I'll fix that.
 
-http://lxr.linux.no/source/Documentation/SubmittingPatches
-http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
-http://lkml.org/lkml/2005/4/7/183
-
-At a minimum, you need to: (1) provide Signed-off-by: line on top of the
-patch, (2) cc: netdev[at]vger.kernel.org (or other maintainer(s)) in your
-mail, and, (3) give a useful "[patch] sunrpc: fix printk argument" kind of
-Subject: line.
-
-
-Satyam
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
