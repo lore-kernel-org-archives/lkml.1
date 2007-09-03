@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbXICLHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbXICLUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756139AbXICLHr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 07:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbXICLHk
+	id S1756107AbXICLUl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 07:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbXICLUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 07:07:40 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:25102 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752289AbXICLHj (ORCPT
+	Mon, 3 Sep 2007 07:20:32 -0400
+Received: from ccerelrim04.cce.hp.com ([161.114.21.25]:14038 "EHLO
+	ccerelrim04.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbXICLUb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 07:07:39 -0400
-Message-ID: <3db1ec7f0709030407y2cb9fc8ew52160ca28b2592d2@mail.gmail.com>
-Date: Mon, 3 Sep 2007 14:07:38 +0300
-From: "Ivan N. Zlatev" <contact@i-nz.net>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: [PATCH] [ALSA] Added new pin config for first gen macbook.
-Cc: "Abhijit Bhopatkar" <bain@devslashzero.com>,
-       "Jaroslav Kysela" <perex@suse.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <s5hr6lgdoiv.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Sep 2007 07:20:31 -0400
+X-Greylist: delayed 1770 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 07:20:31 EDT
+From: "Bob Picco" <bob.picco@hp.com>
+Date: Mon, 3 Sep 2007 06:50:57 -0400
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Daniel Walker <dwalker@mvista.com>, torvalds@linux-foundation.org,
+       Bob Picco <bob.picco@hp.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.23-rc5] driver/char/hpet.c: remove clocksourcewarning on !IA64
+Message-ID: <20070903105057.GA18302@localhost>
+References: <20070901155140.972420930@mvista.com> <1188679097.11196.15.camel@dhcp193.mvista.com> <617E1C2C70743745A92448908E030B2A024F3CB9@scsmsx411.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <2ff216280709030325r626d98b3h2c5a48e90470610b@mail.gmail.com>
-	 <s5hr6lgdoiv.wl%tiwai@suse.de>
+In-Reply-To: <617E1C2C70743745A92448908E030B2A024F3CB9@scsmsx411.amr.corp.intel.com>
+User-Agent: Mutt/1.5.11
+X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.9.3.32526
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/3/07, Takashi Iwai <tiwai@suse.de> wrote:
-> At Mon, 3 Sep 2007 15:55:18 +0530,
-> Abhijit Bhopatkar wrote:
+luck wrote:	[Sun Sep 02 2007, 03:13:45AM EDT]
+> > This patch eliminates the warnings when the clocksoure isn't used.
+> > It also removes some other unused stuff that goes along with the
+> > clocksource ..
 > >
-> > commit 5d5d3bc3eddf2ad97b2cb090b92580e7fed6cee1 changed all
-> > pin configs for intel macs, but it breaks sound on
-> > Macbook first generation.
->
+> > I don't have access to an ia64 machine, or even a compiler .. So this
+> > one is untested for that. I'm hoping one of the ia64 guys can help
+> > test this
+> 
+> Well, it does *compile* cleanly for ia64 [none of my test systems actually
+> have a functional HPET ... the closest I get is one that fails the hd_nirqs
+> part of the "if (!data.hd_address || !data.hd_nirqs) {" test in hpet_acpi_add].
+> 
+> Bob: Does this work for you?
+I boot tested on the HP internal platform simulator. Should it be
+necessary, I could have it boot tested later in the week on real
+hardware.
 
-For the record I have just verified that according to Apple the
-pinconfigs for your codec match the ones in alsa and are as follows. I
-believe those were extracted from Boot Camp 1.2. I will check with
-version 1.4 in few hours.
-
-[0A]
-CfgDflt = 0x0321E21F
-Action = 01,0A,81,0C,81,0D,81,10,85,51,05,21
-[0B]
-CfgDflt = 0x03A1E02E
-FF,04
-[0C]
-CfgDflt = 0x9017E110
-[0D]
-CfgDflt = 0x9017E11F
-[0E]
-CfgDflt = 0x400000FE
-Action = hex: 01,10,81,0A,81,0C,81,0D
-[0F]
-CfgDflt = 0x0381E020
-Action = 09,0F
-[10]
-CfgDflt = 0x1345E230
-[11]
-CfgDflt = 0x13C5E240
-[15]
-CfgDflt = 0x400000FC
-[1B]
-CfgDflt = 0x400000FB
--- 
-Ivan N. Zlatev
-
-Web: http://www.i-nZ.net
-"It's all some kind of whacked out conspiracy."
+bob
