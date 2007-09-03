@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbXICTq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXICTvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756558AbXICTq7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 15:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbXICTqw
+	id S1756181AbXICTvQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 15:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbXICTvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 15:46:52 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:49734 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753891AbXICTqv (ORCPT
+	Mon, 3 Sep 2007 15:51:05 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:35221 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753672AbXICTvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 15:46:51 -0400
-Message-ID: <46DC6446.1080707@linux.vnet.ibm.com>
-Date: Mon, 03 Sep 2007 20:45:10 +0100
+	Mon, 3 Sep 2007 15:51:04 -0400
+Message-ID: <46DC6543.3000607@linux.vnet.ibm.com>
+Date: Mon, 03 Sep 2007 20:49:23 +0100
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
 Organization: IBM
@@ -41,14 +41,21 @@ Paul Menage wrote:
 > 
 > This would be better as %llu
 > 
+
+Hi, Paul,
+
+This does not need fixing, since the other counters like failcnt are
+still unsigned long
+
 >> +               tmp = simple_strtoul(buf, &end, 10);
 > 
 > and this as simple_strtoull()
 > 
-> Paul
-> 
 
-Thanks for catching it, I'll fix that.
+
+Will do, thanks!
+
+
 
 -- 
 	Warm Regards,
