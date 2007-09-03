@@ -1,124 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbXICC5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbXICC61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758619AbXICC5l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 22:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbXICC5d
+	id S1759285AbXICC61 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 22:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757083AbXICC6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 22:57:33 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4485 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752888AbXICC5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 22:57:32 -0400
-Date: Mon, 3 Sep 2007 04:58:03 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, peterz@infradead.org,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [ANNOUNCE/RFC] Really Fair Scheduler
-In-Reply-To: <20070902092611.GA14783@elte.hu>
-Message-ID: <Pine.LNX.4.64.0709021940241.1817@scrub.home>
-References: <Pine.LNX.4.64.0708310139280.1817@scrub.home> <20070831105447.GA17956@elte.hu>
- <Pine.LNX.4.64.0708311341510.1817@scrub.home> <20070902092611.GA14783@elte.hu>
+	Sun, 2 Sep 2007 22:58:13 -0400
+Received: from keil-draco.com ([216.193.185.50]:50518 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759064AbXICC6I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Sep 2007 22:58:08 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: davids@webmaster.com
+Subject: Re: GPL weasels and the atheros stink
+Date: Sun, 2 Sep 2007 22:57:54 -0400
+User-Agent: KMail/1.9.6
+Cc: espie@nerim.net, linux-kernel@vger.kernel.org
+References: <MDEHLPKNGKAHNMBLJOLKMECFGJAC.davids@webmaster.com>
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKMECFGJAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709022257.54663.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sunday 02 September 2007 22:01:17 David Schwartz wrote:
+> > Letting aside the legality of that change, why would such a change
+> > be needed ? The licensing is perfectly clear: the file is available
+> > under the ISC licence, OR the GPL licence.  This doesn't cause any
+> > problem for the linux kernel. The ISC licence is perfectly compatible
+> > with the GPL (note to GPL trolls: this new licence does not have any
+> > advertizing clause, which was the ONLY issue with the old licence). And
+> > heck, they can use the code under the GPL licence. There is no
+> > incompatibility
+> > in there.
+>
+> Your entire argument is based on the false assumption that these licenses
+> are compatible. They are not. You cannot put code that was offered under
+> the GPLv2 into code that is licensed under the dual license and distribute
+> the result.
 
-On Sun, 2 Sep 2007, Ingo Molnar wrote:
+Then go yell at Mr. Floeter. The code is dual-licensed and he put BSD-License 
+only code in it. Because that's the *EXACT* *SAME* thing you're talking 
+about.
 
-> > Did you even try to understand what I wrote? I didn't say that it's a 
-> > "common problem", it's a conceptual problem. The rounding has been 
-> > improved lately, so it's not as easy to trigger with some simple busy 
-> > loops.
-> 
-> As i mentioned it in my first reply to you i really welcome your changes 
-> and your interest in the Linux scheduler, but i'm still somewhat 
-> surprised why you focus on rounding so much (and why you attack CFS's 
-> math implementation so vehemently and IMO so unfairly) - and we had this 
-> discussion before in the "CFS review" thread that you started.
+IANAL, but your argument is specious - if the code is dual-licensed and you 
+are going to let one person add code to it that is only licensed under one of 
+those licenses, you *CANNOT* complain when somebody else does it and chooses 
+the other license. (Well, you can, but the complaint has no legal standing)
 
-The rounding is insofar a problem as it makes it very difficult to produce 
-a correct mathematical model of CFS, which can be used to verify the 
-working of code.
-With the recent rounding changes they have indeed little effect in the 
-short term, especially as the error is distributed equally to the task, so 
-every task gets relatively the same time, the error still exists 
-nonetheless and adds up over time (although with the rounding changes it 
-doesn't grow into one direction anymore). The problem is now the limiting, 
-which you can't remove as long as the error exists. Part of this problem
-is that CFS doesn't really maintain a balanced sum of the available 
-runtime, i.e. the sum of all updated wait_runtime values of all active 
-tasks should be zero. This means under complex loads it's possible to hit 
-the wait_runtime limits and the overflow/underflow time is lost in the 
-calculation and this value can be easily in the millisecond range.
-To be honest I have no idea how real this problem in the praxis is right 
-now, quite possibly people will only see it as a small glitch and in most 
-cases they won't even notice. Previously it had been rather easy to 
-trigger these problems due to the rounding problems. The main problem for 
-me here is now that with any substantial change in CFS I'm running risk of 
-making this worse and noticable again somehow. For example CFS relies on 
-the 64bit math to have enough resolution so that the errors aren't 
-noticable.
-That's why I needed a mathematical model I can work with and with it for 
-example I can easily downscale the math to 32bit and I know exactly the 
-limits within it will work correctly.
+> > The only possible issue is related to paranoia: if this file stays
+> > dual-licenced, some of its code may escape from the GPL shrine, and
+> > become available to the cuddly BSD people... but since their licence
+> > doesn't protect anything, it could used by the Evil Empire of Microsoft,
+> > or SCO, or whoever is the villain of the month.
+>
+> That's not the problem. The problem is that if the file stays
+> dual-licensed, everyone working on that file in the Linux kernel will have
+> to be careful not to put any GPLv2-only code into it. That's just
+> untenable. Any consistent license is better than different files being
+> under different licenses such that you can't cut and paste code between
+> files.
 
-> Your math is fairly simple (and that is _good_, just like CFS's existing 
-> math is simple),
+Then why aren't you complaining about Mr. Floeters code ?
 
-I really wouldn't call CFS's existing math simple, the basic ideas are 
-indeed simple, but that the math of the actual implementation is quite a 
-bit more complex.
+His code doesn't maintain the dual-license. I think the reason is that you 
+could care less about the "Dual License" and you just want the code - period.
 
-> it can be summed up in essence as (without complicating 
-> it with nice-level weighting, for easy understandability):
-> 
-> " use the already existing p->sum_exec_runtime 'task runtime' metric 
->   that CFS maintains, and use that as the key into the rb-tree that 
->   selects tasks that should be run next. To handle sleeping tasks: keep 
->   a per-rq sum of all runnable task's ->sum_exec_runtime values and 
->   start newly woken tasks at the average rq->sum/nr_running value. "
-> 
-> Now your patch does not actually do it that way in a clearly discernible 
-> manner because lots of changes are intermixed into one big patch. 
+> > Let's extend the story a wee little bit. It seems that these days, some
+> > parts of the opensource community have gotten confident enough that they
+> > do not need the other part. We all know the situation is already fairly
+> > disymetric. The GPL is less free than the ISC licence for instance (for
+> > some definition of free), and practically, this makes it impossible to
+> > add GPL code to an ISC project without putting the project under the
+> > Aegis of the GPL licence. The reciprocal relationship does NOT hold. As
+> > you can see in various places, it is quite possible to put BSD code
+> > inside a GPL project without any issue (the FSF libiberty is a nice proof
+> > of that. And heck, the glibc as well... Read carefully past the COPYING
+> > file, you'll find numerous instances of BSD-like licences).
+>
+> If you embed protectable elements from GPLv2-only code into any of those
+> files, they are no longer dual-licensed. You wind up creating traps and
+> complexity that makes the code much harder to maintain.
 
-Well, it's part of the math, but I wouldn't call it the "essence" of the 
-_math_, as it leaves many questions unanswered, the essence of the math 
-mainly involves how the problems are solved created by the weighting.
+The same can be said of Floeters code. *ALL* of his code, IIRC, is 
+*SINGLE-LICENSE*. ie: a complexity trap. But you aren't complaining about his 
+code - you are complaining that somebody is doing the same thing, but is 
+using the side of the dual-license you don't like.
 
-If you want to describe the basic logical differences, you can do it a 
-little simpler: CFS maintains the runtime of a task relative to a global 
-clock, while in my model every task has its own clock and an approximated 
-average is used to initialize the clock of new tasks.
+Nothing *LEGALLY* actionable there.
 
-> ( please correct me if i got your math wrong. Your patch does not add 
->   any comments at all to the new code and this slowed down my review
->   and analysis of your patch quite considerably. Lack of comments makes
->   it harder to see the purpose and makes it harder to notice the
->   benefits/tradeoffs involved in each change. )
+<snip>
+> > Do you really think he's going to keep his work under a
+> > dual-licence, seeing
+> > how a bunch of rabid linux zealots are all but intent on stealing his
+> > code whenever they can.
+> >
+> > Nice going, GPL fan-boys...
+>
+> A dual-license is a compromise. One of the downsides is that you may force
+> large projects that are under one license or the other to fork the code. If
+> that bothers you, don't dual license.
 
-I hope you did notice that I explained in the announcement in quite detail 
-what the code does.
+Exactly.
 
-> To sum up: the math in your patch _could_ be implemented as a much 
-> smaller add-on to the already existing variables maintained by CFS, but 
-> you chose to do lots of changes, variable-renames and removals at once 
-> and posted them as one big change.
+If you want to only have your code available under a specific license but rely 
+on dual-licensed code, you create a fork that contains the new code under 
+that side of the license. For instance: Suppose I've written a new filesystem 
+and released it with three licenses - CDDL, BSD/ISC and GPL(v2) - and a Linux 
+developer decides to import my FS into Linux. But the code isn't optimal for 
+Linux, so he fixes it - and only wants his code usable under the GPLv2 - he 
+can do this - it just means that that fork isn't usable under the other two 
+licenses.
 
-I didn't rename that much and there are only a few that could be reused, 
-for most part I indeed removed quite a bit and the rest really has a 
-different meaning.
+Note that the boundary of what a "work" consists of is complex - but as far as 
+a computer program goes it is "the collection of source code needed to build 
+the functional result" or "the functional result". 
 
->  _Please_, separate things 
-> out so that they can be reviewed one by one.
+This means that I can contribute as much code as I want to a project under 
+whatever license I choose, but the project itself can have a different 
+license. In the case of the code in question, that means that the second Mr. 
+Floeters code was distributed as a part of the "whole work" that constitutes 
+the Atheros driver it automatically fell under the dual-license of the 
+controlling project. When Jiri downloaded the code and began the work of 
+porting it to Linux, he accepted the terms of the GPL license - his choice to 
+make. However, the initial patches altered the licensing of files that, 
+individually, have a different license. That was illegal and pointed out to 
+him - and that code *WAS* *NOT* accepted into Linux.
 
-That's not really the problem, but _please_ someone explain to me the 
-features you want to see preserved. I don't want to be left at guessing 
-what they're intendend to do and blindly implement something which should 
-do something similiar.
-Thanks.
+In other words: everyone claiming that Jiri making changes that are GPLv2 only 
+is illegal needs to learn the law. And Theo's statement about Alan Cox fully 
+constitutes Libel (Slander?). (I've never looked into the specifics of those 
+laws - so I'm not sure which one e-mail falls under, however it is one of 
+those)
 
-bye, Roman
+To the 90% of the people that are following Theo's lead and bitching that they 
+can't import Jiri's changes because they are solely GPL:
+
+STFU, OK ? -- Your position isn't legally tenable *AT* *ALL*.
+(Okay, so it might be that any Atheros driver containing Jiri's changes loses 
+the dual-license because of the viral nature of the GPL... IANAL, but I can't 
+see that happening in this case.)
+
+DRH
+
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
