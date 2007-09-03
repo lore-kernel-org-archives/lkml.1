@@ -1,87 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbXICNVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbXICN1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756301AbXICNVs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 09:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbXICNVj
+	id S1755274AbXICN1W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 09:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbXICN1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 09:21:39 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:42278 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753090AbXICNVj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 09:21:39 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46DC0A0D.1030207@s5r6.in-berlin.de>
-Date: Mon, 03 Sep 2007 15:20:13 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Mon, 3 Sep 2007 09:27:15 -0400
+Received: from waste.org ([66.93.16.53]:45702 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750752AbXICN1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 09:27:14 -0400
+Date: Mon, 3 Sep 2007 08:29:04 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       josh@kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] Make rcutorture RNG use temporal entropy
+Message-ID: <20070903132904.GV21720@waste.org>
+References: <20070816024904.GA5312@linux.vnet.ibm.com> <20070817115356.cb201e42.akpm@linux-foundation.org> <20070817200022.GH8464@linux.vnet.ibm.com> <20070823180658.GQ11166@waste.org> <20070823185830.GC8371@linux.vnet.ibm.com> <20070823194037.GW30556@waste.org> <20070828011554.GB31860@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Natalie Protasevich <protasnb@gmail.com>, David Rees <drees76@gmail.com>,
-       Daniel Walker <dwalker@mvista.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       =?ISO-8859-1?Q?Bj=F6rn_Stei?= =?ISO-8859-1?Q?nbrink?= 
-	<B.Steinbrink@gmx.de>,
-       eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org,
-       Al Boldi <a1426z@gawab.com>
-Subject: Re: Who wants to maintain KR list for stable releases?
-References: <20070827005131.b93f5935.akpm@linux-foundation.org> <6bffcb0e0708270438j4c92a0b4m1396b4010f25bfb5@mail.gmail.com> <1188227585.2435.192.camel@dhcp193.mvista.com> <6bffcb0e0708270826p7a7fb044re53d0db4094bc3d5@mail.gmail.com> <1188229197.2435.207.camel@dhcp193.mvista.com> <72dbd3150708271212w6bcca4c4web26d7cb25892afc@mail.gmail.com> <32209efe0708290042g362fbfadj38fe57e0de7f3af@mail.gmail.com> <20070829222344.GV26410@stusta.de> <32209efe0708291659w1f75adbcrf72e61a9325903da@mail.gmail.com> <46D6E135.8000203@s5r6.in-berlin.de> <20070903122940.GU16016@stusta.de>
-In-Reply-To: <20070903122940.GU16016@stusta.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070828011554.GB31860@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Thu, Aug 30, 2007 at 05:24:37PM +0200, Stefan Richter wrote:
-[on whether to track missing features]
->> Where I am around, there are always far too few people who fix things
->> and build things.  But very, very occasionally there is someone new who
->> wonders if there is an interesting TODO item which is perhaps in the
->> reach of his abilities.  Contributing a cleanup or an actual feature is
->> typically much easier than fixing an open, tracked bug.  (The bugs which
->> end up in the bugtracker are usually the difficult ones.)  The
->> contributor learns something and, in a rare turn of events, may
->> eventually become able and willing to join the bugfixing.
+On Mon, Aug 27, 2007 at 06:15:54PM -0700, Paul E. McKenney wrote:
+> On Thu, Aug 23, 2007 at 02:40:37PM -0500, Matt Mackall wrote:
+> > On Thu, Aug 23, 2007 at 11:58:31AM -0700, Paul E. McKenney wrote:
+> > > On Thu, Aug 23, 2007 at 01:06:58PM -0500, Matt Mackall wrote:
+> > > > On Fri, Aug 17, 2007 at 01:00:22PM -0700, Paul E. McKenney wrote:
+> > > > > On Fri, Aug 17, 2007 at 11:53:56AM -0700, Andrew Morton wrote:
+> > > > > > On Wed, 15 Aug 2007 19:49:04 -0700
+> > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > 
+> > > > > > > Repost of http://lkml.org/lkml/2007/8/10/472 made available by request.
+> > > > > > > 
+> > > > > > > The locking used by get_random_bytes() can conflict with the
+> > > > > > > preempt_disable() and synchronize_sched() form of RCU.  This patch changes
+> > > > > > > rcutorture's RNG to gather entropy from the new cpu_clock() interface
+> > > > > > > (relying on interrupts, preemption, daemons, and rcutorture's reader
+> > > > > > > thread's rock-bottom scheduling priority to provide useful entropy),
+> > > > > > > and also adds and EXPORT_SYMBOL_GPL() to make that interface available
+> > > > > > > to GPLed kernel modules such as rcutorture.
+> > > > > > > 
+> > > > > > > Passes several hours of rcutorture.
+> > > > > > 
+> > > > > > Please explain what "conflict with" means so that I can work out if
+> > > > > > this is a needed-in-2.6.23 change, thanks.
+> > > > > 
+> > > > > Not needed in 2.6.23.  This change falls into the "preparation for -rt"
+> > > > > category.  Also in the "don't unnecessarily eat entropy, leave some for
+> > > > > the people needing crypographically secure randomness" category.
+> > > > 
+> > > > We've had several calls for a more fast and loose version of
+> > > > get_random_bytes. Generalizing one of the cookie generation functions
+> > > > is probably a good way to go.
+> > > 
+> > > Are you thinking in terms of secure_tcp_syn_cookie(), or did you have
+> > > something else in mind?
+> > 
+> > Yes. Using a hash function rather than a trivial LFSR is preferable.
+> > But pulling the guts out and giving it an n-bytes interface like
+> > get_random_bytes().
 > 
-> "Contributing a cleanup" is what the Kernel Janitor Project
-> already offers.
+> OK.  But this cannot be the first discussion of getting a fast and loose
+> version of get_random_bytes() into the kernel.  Anyplace I should look
+> for cautionary tales?  A quick search located a spirited discussion of
+> proposed kernel infrastructure for user-mode random number generation
+> back in 2003, but...
 > 
-> But "Contributing an actual feature" is much harder:
+> Also a 2006 proposal from Stephan Eranian: http://lkml.org/lkml/2006/8/23/41
+> This appears to have gotten zero replies.  :-/  (Though not hash-based.)
+
+You probably did the same searches I would do, so no, don't have any
+pointers, just vague recollections.
+ 
+> Other semi-related threads:
 > 
-> You need a feature:
-> - with a realistic chance of being included and
-> - hard enough that the person suggesting it doesn't simply implement it
->   himself instead of requesting it
-
-    or there is simply nobody else who takes the time to implement it
-
->   and
-> - easy enough that a newbie can implement it.
+> 	http://lkml.org/lkml/2005/3/15/102
+> 	http://lkml.org/lkml/2004/9/23/337
 > 
-> And the code should then be in a reasonable shape for being merged.
+> Some years back, my reflexive design would have been per-CPU state,
+> accessed with interrupts disabled.  Not so good for realtime usage,
+> though.  One could go with per-task state in order to avoid the
+> interrupt disabling, which might be OK if the state is quite small.
 
-Helping to bring it into shape may be one of the easier pastimes of a
-gateway person.  (Can be done after mindnumbing day job.)
+We only need be concerned here with locking insofar as we'd produce
+duplicate output without it. So it's fairly easy to imagine a lockless
+design using percpu data and perhaps folding in the preemption state.
 
-> IMHO that's nearly impossible.
-> 
-> Realistically, offering a TODO item for a feature would require the one 
-> proposing it to do an amount of mentoring work that is not smaller than 
-> the amount of work he had to spend if implementing it himself.
-> 
-> This might be worth it if you know for sure the person you are mentoring 
-> stays active after completion of the feature - but this assumption is 
-> too often not true.
-
-Adding a feature is not just a matter of amount of work, it is also a
-matter of motivation and inspiration.  So, even if it remains a one-off
-project, at least that feature came into life.
-
-But besides these remarks I have to agree with your view, overall.
 -- 
-Stefan Richter
--=====-=-=== =--= ---==
-http://arcgraph.de/sr/
+Mathematics is the supreme nostalgia of our time.
