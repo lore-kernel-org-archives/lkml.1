@@ -1,171 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbXICOYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbXICOr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360AbXICOYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 10:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbXICOYI
+	id S1753506AbXICOr3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 10:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbXICOrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 10:24:08 -0400
-Received: from styx.suse.cz ([82.119.242.94]:56954 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752377AbXICOYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 10:24:06 -0400
-Date: Mon, 3 Sep 2007 16:43:36 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-ID: <20070903144336.GH7524@duck.suse.cz>
-References: <20070828141318.GC5869@duck.suse.cz> <20070828215128.d8147a43.akpm@linux-foundation.org>
+	Mon, 3 Sep 2007 10:47:20 -0400
+Received: from mail.tmr.com ([64.65.253.246]:39715 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750809AbXICOrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 10:47:20 -0400
+Message-ID: <46DC1E9B.3030108@tmr.com>
+Date: Mon, 03 Sep 2007 10:47:55 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="dDRMvlgZJXvWKvBx"
-Content-Disposition: inline
-In-Reply-To: <20070828215128.d8147a43.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: bjdouma@xs4all.nl
+CC: linux-kernel@vger.kernel.org
+Subject: Re: bogomips discrepancy on Intel Core2 Quad CPU
+References: <46DBC092.8030209@xs4all.nl>
+In-Reply-To: <46DBC092.8030209@xs4all.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---dDRMvlgZJXvWKvBx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Tue 28-08-07 21:51:28, Andrew Morton wrote:
-> On Tue, 28 Aug 2007 16:13:18 +0200 Jan Kara <jack@suse.cz> wrote:
+Bauke Jan Douma wrote:
+> $> uname -a
+> Linux skyscraper 2.6.22.5 #7 SMP PREEMPT Sun Sep 2 12:12:25 CEST 2007 
+> i686 GNU/Linux
 > 
-> > +static void send_warning(const struct dquot *dquot, const char warntype)
-> > +{
-> > +	static unsigned long seq;
-> > +	struct sk_buff *skb;
-> > +	void *msg_head;
-> > +	int ret;
-> > +
-> > +	skb = genlmsg_new(QUOTA_NL_MSG_SIZE, GFP_NOFS);
-> > +	if (!skb) {
-> > +		printk(KERN_ERR
-> > +		  "VFS: Not enough memory to send quota warning.\n");
-> > +		return;
-> > +	}
-> > +	msg_head = genlmsg_put(skb, 0, seq++, &quota_genl_family, 0, QUOTA_NL_C_WARNING);
+> $> cat /proc/cpuinfo | grep bogomips
+> bogomips    : 4813.46
+> bogomips    : 4810.91
+> bogomips    : 4810.91
+> bogomips    : 10583.94
 > 
-> The access to seq is racy, isn't it?
+> The latter seems way off base.
+> Prod me for more info.
 > 
-> If so, that can be solved with a lock, or with atomic_add_return().
-  Attached is an incremental patch solving the issues you've spotted.
-Thanks for review.  The result of the discussion with namespace guys is
-that the id used as an identify for filesystem operations should be fine.
-If it will ever be something different than a number, we can change the
-protocol which should be no problem...
-  Also after some more reading, I've found out that we can even easily find
-out, which attributes have been sent in the netlink message. So I don't see
-a real reason for some versioning of the protocol - either the message has
-all the attributes we are interested and then we report it, or it does not
-and then we complain that tools are too old and don't understand the
-protocol...
+I see this occasionally on a dual, speedstep (or similar) finds a way to 
+throttle down the cores under light load. I suspect that if you load the 
+system:
 
-									Honza
+   for n in 1 2 3 4; do
+     nice -19 bash -c 'while true; do a=$RANDOM; done' &
+   done
+
+Then you should see your bogomips rise on all cores.
+
+
+> bjd
+
+	[... copy of output snipped, see the O.P. ...]
+
 -- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
-
---dDRMvlgZJXvWKvBx
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="quota-2.6.23-rc4-1-quota_messages_update.diff"
-
-Add documentation of quota netlink interface, fix possible race in handling of
-packet numbers, add a comment about GFP_NOFS allocation.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff -NrupX /home/jack/.kerndiffexclude linux-2.6.23-rc4-1-quota_messages_old/Documentation/filesystems/quota.txt linux-2.6.23-rc4-1-quota_messages/Documentation/filesystems/quota.txt
---- linux-2.6.23-rc4-1-quota_messages_old/Documentation/filesystems/quota.txt	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.23-rc4-1-quota_messages/Documentation/filesystems/quota.txt	2007-08-30 16:23:55.000000000 +0200
-@@ -0,0 +1,59 @@
-+
-+Quota subsystem
-+===============
-+
-+Quota subsystem allows system administrator to set limits on used space and
-+number of used inodes (inode is a filesystem structure which is associated
-+with each file or directory) for users and/or groups. For both used space and
-+number of used inodes there are actually two limits. The first one is called
-+softlimit and the second one hardlimit.  An user can never exceed a hardlimit
-+for any resource. User is allowed to exceed softlimit but only for limited
-+period of time. This period is called "grace period" or "grace time". When
-+grace time is over, user is not able to allocate more space/inodes until he
-+frees enough of them to get below softlimit.
-+
-+Quota limits (and amount of grace time) are set independently for each
-+filesystem.
-+
-+For more details about quota design, see the documentation in quota-tools package
-+(http://sourceforge.net/projects/linuxquota).
-+
-+Quota netlink interface
-+=======================
-+When user exceeds a softlimit, runs out of grace time or reaches hardlimit,
-+quota subsystem traditionally printed a message to the controlling terminal of
-+the process which caused the excess. This method has the disadvantage that
-+when user is using a graphical desktop he usually cannot see the message.
-+Thus quota netlink interface has been designed to pass information about
-+the above events to userspace. There they can be captured by an application
-+and processed accordingly.
-+
-+The interface uses generic netlink framework (see
-+http://lwn.net/Articles/208755/ and http://people.suug.ch/~tgr/libnl/ for more
-+details about this layer). The name of the quota generic netlink interface
-+is "VFS_DQUOT". Definitions of constants below are in <linux/quota.h>.
-+  Currently, the interface supports only one message type QUOTA_NL_C_WARNING.
-+This command is used to send a notification about any of the above mentioned
-+events. Each message has six attributes. These are (type of the argument is
-+in braces):
-+        QUOTA_NL_A_QTYPE (u32)
-+	  - type of quota beging exceeded (one of USRQUOTA, GRPQUOTA)
-+        QUOTA_NL_A_EXCESS_ID (u64)
-+	  - UID/GID (depends on quota type) of user / group whose limit
-+	    is being exceeded.
-+        QUOTA_NL_A_CAUSED_ID (u64)
-+	  - UID of a user who caused the event
-+        QUOTA_NL_A_WARNING (u32)
-+	  - what kind of limit is exceeded:
-+		QUOTA_NL_IHARDWARN - inode hardlimit
-+		QUOTA_NL_ISOFTLONGWARN - inode softlimit is exceeded longer
-+		  than given grace period
-+		QUOTA_NL_ISOFTWARN - inode softlimit
-+		QUOTA_NL_BHARDWARN - space (block) hardlimit
-+		QUOTA_NL_BSOFTLONGWARN - space (block) softlimit is exceeded
-+		  longer than given grace period.
-+		QUOTA_NL_BSOFTWARN - space (block) softlimit
-+        QUOTA_NL_A_DEV_MAJOR (u32)
-+	  - major number of a device with the affected filesystem
-+        QUOTA_NL_A_DEV_MINOR (u32)
-+	  - minor number of a device with the affected filesystem
-diff -NrupX /home/jack/.kerndiffexclude linux-2.6.23-rc4-1-quota_messages_old/fs/dquot.c linux-2.6.23-rc4-1-quota_messages/fs/dquot.c
---- linux-2.6.23-rc4-1-quota_messages_old/fs/dquot.c	2007-09-03 16:25:21.000000000 +0200
-+++ linux-2.6.23-rc4-1-quota_messages/fs/dquot.c	2007-08-29 19:42:23.000000000 +0200
-@@ -910,18 +910,22 @@ static struct genl_family quota_genl_fam
- /* Send warning to userspace about user which exceeded quota */
- static void send_warning(const struct dquot *dquot, const char warntype)
- {
--	static unsigned long seq;
-+	static atomic_t seq;
- 	struct sk_buff *skb;
- 	void *msg_head;
- 	int ret;
- 
-+	/* We have to allocate using GFP_NOFS as we are called from a
-+	 * filesystem performing write and thus further recursion into
-+	 * the fs to free some data could cause deadlocks. */
- 	skb = genlmsg_new(QUOTA_NL_MSG_SIZE, GFP_NOFS);
- 	if (!skb) {
- 		printk(KERN_ERR
- 		  "VFS: Not enough memory to send quota warning.\n");
- 		return;
- 	}
--	msg_head = genlmsg_put(skb, 0, seq++, &quota_genl_family, 0, QUOTA_NL_C_WARNING);
-+	msg_head = genlmsg_put(skb, 0, atomic_add_return(1, &seq),
-+			&quota_genl_family, 0, QUOTA_NL_C_WARNING);
- 	if (!msg_head) {
- 		printk(KERN_ERR
- 		  "VFS: Cannot store netlink header in quota warning.\n");
-
---dDRMvlgZJXvWKvBx--
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
