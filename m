@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbXICOr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbXICOtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbXICOr3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 10:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbXICOrU
+	id S1754159AbXICOtR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 10:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbXICOtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 10:47:20 -0400
-Received: from mail.tmr.com ([64.65.253.246]:39715 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750809AbXICOrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 10:47:20 -0400
-Message-ID: <46DC1E9B.3030108@tmr.com>
-Date: Mon, 03 Sep 2007 10:47:55 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Mon, 3 Sep 2007 10:49:05 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:8977 "EHLO
+	outbound4-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751859AbXICOtE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 10:49:04 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Mon, 3 Sep 2007 16:48:42 +0200
+From: "Robert Richter" <robert.richter@amd.com>
+To: "Andi Kleen" <ak@suse.de>
+cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space
+ access for AMD Barcelona
+Message-ID: <20070903144842.GK7916@erda.amd.com>
+References: <20070830174311.221133000@amd.com>
+ <200709031215.03473.ak@suse.de> <20070903112746.GH7916@erda.amd.com>
+ <200709031448.42285.ak@suse.de>
 MIME-Version: 1.0
-To: bjdouma@xs4all.nl
-CC: linux-kernel@vger.kernel.org
-Subject: Re: bogomips discrepancy on Intel Core2 Quad CPU
-References: <46DBC092.8030209@xs4all.nl>
-In-Reply-To: <46DBC092.8030209@xs4all.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+In-Reply-To: <200709031448.42285.ak@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 03 Sep 2007 14:48:43.0128 (UTC)
+ FILETIME=[85F45F80:01C7EE39]
+X-WSS-ID: 6AC2C1470X86422949-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bauke Jan Douma wrote:
-> $> uname -a
-> Linux skyscraper 2.6.22.5 #7 SMP PREEMPT Sun Sep 2 12:12:25 CEST 2007 
-> i686 GNU/Linux
-> 
-> $> cat /proc/cpuinfo | grep bogomips
-> bogomips    : 4813.46
-> bogomips    : 4810.91
-> bogomips    : 4810.91
-> bogomips    : 10583.94
-> 
-> The latter seems way off base.
-> Prod me for more info.
-> 
-I see this occasionally on a dual, speedstep (or similar) finds a way to 
-throttle down the cores under light load. I suspect that if you load the 
-system:
+Andi,
 
-   for n in 1 2 3 4; do
-     nice -19 bash -c 'while true; do a=$RANDOM; done' &
-   done
+On 03.09.07 14:48:41, Andi Kleen wrote:
 
-Then you should see your bogomips rise on all cores.
+> > As said above, I do not see CF8 access as a workaround. I expect my
+> > system to work in the same way also if MMCONFIG is not available.
+>
+> It should boot sure, but exotic stuff not working is not a major issue
 
+It is not only about booting the system without MMCONFIG, it is also
+about using the system. For this PCI ECS CF8 access is needed. So why
+not adding support for this? Excluding major parts of CPU registers
+when using CF8 base access only will cause writing code to workaround
+this. Not very nice to handle.
 
-> bjd
-
-	[... copy of output snipped, see the O.P. ...]
+-Robert
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+AMD Saxony, Dresden, Germany
+Operating System Research Center
+email: robert.richter@amd.com
+
+
