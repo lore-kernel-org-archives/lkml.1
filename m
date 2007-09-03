@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbXICRN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750754AbXICRSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbXICRN5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 13:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbXICRNt
+	id S1750754AbXICRSo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 13:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbXICRSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 13:13:49 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:17946 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751069AbXICRNs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 13:13:48 -0400
-Date: Mon, 3 Sep 2007 10:12:34 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-Id: <20070903101234.c74ead59.randy.dunlap@oracle.com>
-In-Reply-To: <20070903144336.GH7524@duck.suse.cz>
-References: <20070828141318.GC5869@duck.suse.cz>
-	<20070828215128.d8147a43.akpm@linux-foundation.org>
-	<20070903144336.GH7524@duck.suse.cz>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 3 Sep 2007 13:18:38 -0400
+Received: from khc.piap.pl ([195.187.100.11]:35429 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751087AbXICRSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 13:18:37 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: davids@webmaster.com, espie@nerim.net, linux-kernel@vger.kernel.org
+Subject: Re: GPL weasels and the atheros stink
+References: <MDEHLPKNGKAHNMBLJOLKMECFGJAC.davids@webmaster.com>
+	<200709022257.54663.dhazelton@enter.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 03 Sep 2007 19:18:35 +0200
+In-Reply-To: <200709022257.54663.dhazelton@enter.net> (Daniel Hazelton's message of "Sun, 2 Sep 2007 22:57:54 -0400")
+Message-ID: <m3bqcjwtuc.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Sep 2007 16:43:36 +0200 Jan Kara wrote:
+Daniel Hazelton <dhazelton@enter.net> writes:
 
-> User-Agent: Mutt/1.5.13 (2006-08-11)
+> Then go yell at Mr. Floeter. The code is dual-licensed and he put
+> BSD-License 
+> only code in it. Because that's the *EXACT* *SAME* thing you're talking 
+> about.
 
-Mutt knows how to send patches inline vs. attachments... :(
+Actually it is not.
 
+Dual BSD/GPL licence essentially means BSD, because rights given by
+BSD are a superset of these by GPL.
 
-Anyway, on to the patch.  Thanks for adding the new doc file.
+You can legally take BSD code (or BSD/GPL, which is the same thing)
+and include it in GPL project (or even in closed source one).
 
-
-+This command is used to send a notification about any of the above mentioned
-+events. Each message has six attributes. These are (type of the argument is
-+in braces):
-
-s/braces/parentheses/
-
-+        QUOTA_NL_A_QTYPE (u32)
-+	  - type of quota beging exceeded (one of USRQUOTA, GRPQUOTA)
-
-s/beging/being/
+You can't legally take GPL code and include it in BSD project (or in
+GPL/BSD), because GPL forbids derivative works distributed under less
+(or more) restrictive licence than itself.
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Being distributed under GPL/BSD legally equals "pure" BSD (BSD allows
+restricting downstream, while GPL doesn't).
+
+If some file in Linux reads "GPL/BSD" then it's, in fact, under BSD
+licence. Crazy, isn't it? :-)
+
+
+
+The other thing is copyright notices. I think one can't legally
+alter someone else's licence conditions (in his/her name), unless
+something like that is explicitly permitted.
+
+However, we're talking about derivative works. A derivative
+work may be, for example, GPL-licenced:
+
+"Copyright (C) 1234 Joe the GPL lover
+licenced under the GPL as published"
+
+but could lawfully use code originally licenced under BSD:
+
+"Portions copyright (C) 1234 Bill the BSD lover
+originally licenced under no-ad BSD"
+
+Thus his (Joe's) work is GPL only, but Bill's licence notice is
+intact as required by it (BSD).
+
+
+IANAL, maybe you (all of us) should consult one if required.
+-- 
+Krzysztof Halasa
