@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbXICPZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753639AbXICPoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbXICPZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 11:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbXICPZT
+	id S1753639AbXICPoU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 11:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbXICPoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 11:25:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43418 "EHLO mx1.redhat.com"
+	Mon, 3 Sep 2007 11:44:09 -0400
+Received: from lucidpixels.com ([75.144.35.66]:58804 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752672AbXICPZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 11:25:17 -0400
-Date: Mon, 3 Sep 2007 11:24:57 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: colin.michael@o2online.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch] enable userspace cpu core voltage control with
-	acpi-cpufreq
-Message-ID: <20070903152457.GC21586@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andi Kleen <andi@firstfloor.org>, colin.michael@o2online.de,
-	linux-kernel@vger.kernel.org
-References: <200709021441.l82EfWCe022642@mail.mc.o2online.de> <p738x7oaugi.fsf@bingen.suse.de>
+	id S1750895AbXICPoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 11:44:08 -0400
+Date: Mon, 3 Sep 2007 11:44:08 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Bill Davidsen <davidsen@tmr.com>
+cc: bjdouma@xs4all.nl, linux-kernel@vger.kernel.org
+Subject: Re: bogomips discrepancy on Intel Core2 Quad CPU
+In-Reply-To: <46DC1E9B.3030108@tmr.com>
+Message-ID: <Pine.LNX.4.64.0709031143540.27061@p34.internal.lan>
+References: <46DBC092.8030209@xs4all.nl> <46DC1E9B.3030108@tmr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p738x7oaugi.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 03, 2007 at 12:56:13PM +0200, Andi Kleen wrote:
- > <colin.michael@o2online.de> writes:
- > 
- > > i want to make a patch known that provides a userspace interface to control the core voltage of a computer processor(s).
- > 
- > That would be essentially linux supported undervolting which 
- > for stability is as bad as overclocking. The problem is that 
- > such games tend to generate weird kernel crashes and then
- > chew up development issues when kernel hackers have to chase
- > ghost bugs. I don't think we should support it. Developer 
- > time is too precious.
- 
-Seconded.  Exactly the same reasons I've refused to merge patches
-into cpufreq to allow arbitrary tables to override BIOS tables.
-Or patches to remove boundary checks.   Even when correctly
-implemented, this stuff can be fragile as hell, so introducing
-more things that cast doubt over its stability isn't something
-I'm keen on at all.
 
-	Dave
 
--- 
-http://www.codemonkey.org.uk
+On Mon, 3 Sep 2007, Bill Davidsen wrote:
+
+> Bauke Jan Douma wrote:
+>> $> uname -a
+>> Linux skyscraper 2.6.22.5 #7 SMP PREEMPT Sun Sep 2 12:12:25 CEST 2007 i686 
+>> GNU/Linux
+>> 
+>> $> cat /proc/cpuinfo | grep bogomips
+>> bogomips    : 4813.46
+>> bogomips    : 4810.91
+>> bogomips    : 4810.91
+>> bogomips    : 10583.94
+>> 
+>> The latter seems way off base.
+>> Prod me for more info.
+>> 
+> I see this occasionally on a dual, speedstep (or similar) finds a way to 
+> throttle down the cores under light load. I suspect that if you load the 
+> system:
+>
+>  for n in 1 2 3 4; do
+>    nice -19 bash -c 'while true; do a=$RANDOM; done' &
+>  done
+>
+> Then you should see your bogomips rise on all cores.
+>
+>
+>> bjd
+>
+> 	[... copy of output snipped, see the O.P. ...]
+>
+> -- 
+> Bill Davidsen <davidsen@tmr.com>
+>  "We have more to fear from the bungling of the incompetent than from
+> the machinations of the wicked."  - from Slashdot
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+$ uname -a
+Linux p34.internal.lan 2.6.22 #2 SMP Mon Jul 16 18:40:31 EDT 2007 x86_64 
+GNU/Linux
+
+$ cat /proc/cpuinfo | grep bogomips
+bogomips        : 4797.72
+bogomips        : 4795.16
+bogomips        : 4795.21
+bogomips        : 4795.19
+
+Mine is fine, not using any speedstep here.
+
+Justin.
