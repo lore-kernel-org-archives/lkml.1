@@ -1,90 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbXICSCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbXICSMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755578AbXICSCL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 14:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbXICSB6
+	id S1755139AbXICSMT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 14:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbXICSMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 14:01:58 -0400
-Received: from keil-draco.com ([216.193.185.50]:50154 "EHLO
+	Mon, 3 Sep 2007 14:12:07 -0400
+Received: from keil-draco.com ([216.193.185.50]:50205 "EHLO
 	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751069AbXICSB5 (ORCPT
+	with ESMTP id S1753286AbXICSMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 14:01:57 -0400
+	Mon, 3 Sep 2007 14:12:06 -0400
 From: Daniel Hazelton <dhazelton@enter.net>
-To: davids@webmaster.com
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Date: Mon, 3 Sep 2007 14:01:47 -0400
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Subject: Re: GPL weasels and the atheros stink
+Date: Mon, 3 Sep 2007 14:11:51 -0400
 User-Agent: KMail/1.9.6
-Cc: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-References: <MDEHLPKNGKAHNMBLJOLKOEDKGJAC.davids@webmaster.com>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKOEDKGJAC.davids@webmaster.com>
+Cc: davids@webmaster.com, espie@nerim.net, linux-kernel@vger.kernel.org
+References: <MDEHLPKNGKAHNMBLJOLKMECFGJAC.davids@webmaster.com> <200709022257.54663.dhazelton@enter.net> <m3bqcjwtuc.fsf@maximus.localdomain>
+In-Reply-To: <m3bqcjwtuc.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709031401.47111.dhazelton@enter.net>
+Message-Id: <200709031411.51598.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 September 2007 05:48:00 David Schwartz wrote:
-> > Mr. Floeter *CAN* request that his code be removed from said fork
-> > - his code
-> > is solely licensed (AFAICT and IIRC) under the BSD/ISC license
-> > and was only
-> > covered by the dual-license because it was integrated into a work that
-> > carried said dual-license. (I'm not sure how well such a revocation would
-> > work in reality, but it is Mr. Floeters right.)...
+On Monday 03 September 2007 13:18:35 Krzysztof Halasa wrote:
+> Daniel Hazelton <dhazelton@enter.net> writes:
+> > Then go yell at Mr. Floeter. The code is dual-licensed and he put
+> > BSD-License
+> > only code in it. Because that's the *EXACT* *SAME* thing you're talking
+> > about.
 >
-> No. Neither the BSD license nor the GPL license permit you to revoke
-> rights. Mr. Floeter's code is still available under the BSD/ISC license.
-> The BSD license does not require you to make derived works available under
-> a BSD license. *His* code is still available under a BSD/ISC license, of
-> course, but the changed code is not.
+> Actually it is not.
+>
+> Dual BSD/GPL licence essentially means BSD, because rights given by
+> BSD are a superset of these by GPL.
 
-Doesn't matter if the BSD license or the GPL *PERMITS* it or not. The fact 
-remains that the person making a work available under *ANY* form of copyright 
-license has the right to revoke said grant of license to anyone. The GPL 
-codifies certain situations in which the person would not, personally, have 
-to revoke the license, but does not limit the original copyright holders 
-rights (in that regard) in any way.
+Actually, I was pointing out a logical fallacy. I'll spell it out long here so 
+everyone can see the point I was trying to make.
 
-The BSD/ISC license has none of the automatic conditions of the GPL, but it 
-also cannot remove the copyright holder(s) from exercising their rights.
+Person A writes a device driver and releases it under a dual license.
+Person B modifies said device driver and licenses his changes under only one 
+of the licenses on the device driver. Nobody complains.
+Person C modifies the same device driver and licenses his changes under the 
+other license on the device driver. People start complaining.
 
-(And no, I haven't spoken to a lawyer about this - I did, however, ask a 
-recently graduated law-school student where I could look for case-law and the 
-text of the actual laws. What I got was some background on US copyright law 
-itself and an agreement that a copyright license does not - and can not - 
-affect the person holding the copyright)
+In this case either the actions of both persons B and C are legal - in which 
+case neither person B or person C is likely to lose a lawsuit (or even face 
+one) - or they are illegal, in which case the second a lawsuit is brought 
+against person C, the same lawsuit must be brought against person B.
 
-> Read the BSD license. It does not require changes to be made available
-> under a compatible license. This is the main difference between the BSD and
-> GPL licenses.
+The exact nature of the licenses and whether one is a superset or subset of 
+the other doesn't matter. Either the action of making modifications licensed 
+solely under one or the other of the two licenses on the original code-base 
+is illegal or it isn't.
 
-Have done so. And that is the only part of the license that I actually don't 
-like.
+<snip out the straw-man>
+> The other thing is copyright notices. I think one can't legally
+> alter someone else's licence conditions (in his/her name), unless
+> something like that is explicitly permitted.
 
-> Note that it would be an error to remove the BSD license text, as the BSD
-> license requires you to keep it and you still need the BSD license to grant
-> you distribution rights to the original work. However, the license does not
-> apply to protectable aspects of the code not placed under the BSD license
-> by their original author, and it is important to add a note to that effect.
+Fully agreed. I've even said such myself.
 
-Agreed, and I've never claimed otherwise. (Nor has anyone else. I believe the 
-closest that anyone has come was Alan Cox saying (and I'm going to paraphrase 
-it because I don't think he ever stated it well) "If you've made changes to a 
-file that carries a dual BSD/GPL license and your changes are GPL only, the 
-file can no longer be distributed under the BSD license at all. So it is safe 
-to remove the headers from that individual file."
+> However, we're talking about derivative works. A derivative
+> work may be, for example, GPL-licenced:
+>
+> "Copyright (C) 1234 Joe the GPL lover
+> licenced under the GPL as published"
+>
+> but could lawfully use code originally licenced under BSD:
+>
+> "Portions copyright (C) 1234 Bill the BSD lover
+> originally licenced under no-ad BSD"
+>
+> Thus his (Joe's) work is GPL only, but Bill's licence notice is
+> intact as required by it (BSD).
 
-There is no way that a license on a constituent file can alter or affect the 
-license on the whole project (if it is different). It can "muddy the waters", 
-but that is about as far as I can see it going.
+I've suggested that such be done in the future - if just because it *IS* how 
+it should be done.
 
-(I realize I may have said different, originally, but you'll have to forgive 
-me. I was not in the best of moods (or the best state of mind) to be making a 
-completely rational argument when I did such.)
+>
+> IANAL, maybe you (all of us) should consult one if required.
+
+Would cost me money to consult a lawyer over this, but I do have a few friends 
+that have completed law school and are waiting on the results of the BAR. 
+They have told me that they are not legally allowed to dispense legal 
+advice - but I got around that by asking them to recount what the law 
+actually says.
+
+Apparently the above suggestion would meet the letter of the law.
 
 DRH
 
