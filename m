@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbXICPYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbXICPZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754384AbXICPYz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 11:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbXICPYs
+	id S1754927AbXICPZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 11:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbXICPZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 11:24:48 -0400
-Received: from ns1.suse.de ([195.135.220.2]:38393 "EHLO mx1.suse.de"
+	Mon, 3 Sep 2007 11:25:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43418 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752473AbXICPYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 11:24:47 -0400
-From: Andi Kleen <ak@suse.de>
-To: "Robert Richter" <robert.richter@amd.com>
-Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space access for AMD Barcelona
-Date: Mon, 3 Sep 2007 16:24:09 +0100
-User-Agent: KMail/1.9.1
-Cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-References: <20070830174311.221133000@amd.com> <200709031448.42285.ak@suse.de> <20070903144842.GK7916@erda.amd.com>
-In-Reply-To: <20070903144842.GK7916@erda.amd.com>
+	id S1752672AbXICPZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 11:25:17 -0400
+Date: Mon, 3 Sep 2007 11:24:57 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: colin.michael@o2online.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch] enable userspace cpu core voltage control with
+	acpi-cpufreq
+Message-ID: <20070903152457.GC21586@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andi Kleen <andi@firstfloor.org>, colin.michael@o2online.de,
+	linux-kernel@vger.kernel.org
+References: <200709021441.l82EfWCe022642@mail.mc.o2online.de> <p738x7oaugi.fsf@bingen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709031624.09681.ak@suse.de>
+In-Reply-To: <p738x7oaugi.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 September 2007 15:48, Robert Richter wrote:
-> Andi,
->
-> On 03.09.07 14:48:41, Andi Kleen wrote:
-> > > As said above, I do not see CF8 access as a workaround. I expect my
-> > > system to work in the same way also if MMCONFIG is not available.
-> >
-> > It should boot sure, but exotic stuff not working is not a major issue
->
-> It is not only about booting the system without MMCONFIG, it is also
-> about using the system
+On Mon, Sep 03, 2007 at 12:56:13PM +0200, Andi Kleen wrote:
+ > <colin.michael@o2online.de> writes:
+ > 
+ > > i want to make a patch known that provides a userspace interface to control the core voltage of a computer processor(s).
+ > 
+ > That would be essentially linux supported undervolting which 
+ > for stability is as bad as overclocking. The problem is that 
+ > such games tend to generate weird kernel crashes and then
+ > chew up development issues when kernel hackers have to chase
+ > ghost bugs. I don't think we should support it. Developer 
+ > time is too precious.
+ 
+Seconded.  Exactly the same reasons I've refused to merge patches
+into cpufreq to allow arbitrary tables to override BIOS tables.
+Or patches to remove boundary checks.   Even when correctly
+implemented, this stuff can be fragile as hell, so introducing
+more things that cast doubt over its stability isn't something
+I'm keen on at all.
 
-There are limits on how many BIOS bug workaround (and all this
-patch kit is nothing more than a elaborate BIOS bug workaround) we can do.
-IMHO you're far exceeding the threshold.
+	Dave
 
-Better would be to invest that energy to get the BIOSes fixed.
-
-> . For this PCI ECS CF8 access is needed.
-
-AER and IBS are all totally optional features and the systems
-will be completely usable without them.
-
--Andi
+-- 
+http://www.codemonkey.org.uk
