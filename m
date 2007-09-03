@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbXICXmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbXICXp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753193AbXICXmz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 19:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXICXms
+	id S1753528AbXICXp3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 19:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbXICXpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 19:42:48 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33611 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750852AbXICXmr (ORCPT
+	Mon, 3 Sep 2007 19:45:20 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34273 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbXICXpT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 19:42:47 -0400
-Date: Tue, 4 Sep 2007 05:25:57 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: David CHANIAL <david.ml@euro-web.fr>
-cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
-In-Reply-To: <200707270928.27328.david.ml@euro-web.fr>
-Message-ID: <alpine.LFD.0.999.0709040521170.8504@enigma.security.iitk.ac.in>
-References: <200707160638.15750.david.ml@euro-web.fr> <200707201533.14517.david.ml@euro-web.fr>
- <a781481a0707200636s353c8a64l5564d5f81cc7f266@mail.gmail.com>
- <200707270928.27328.david.ml@euro-web.fr>
+	Mon, 3 Sep 2007 19:45:19 -0400
+Date: Mon, 3 Sep 2007 19:43:51 -0400
+From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, hch@infradead.org, viro@ftp.linux.org.uk,
+       bharata@linux.vnet.ibm.com, j.blunck@tu-harburg.de,
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: Re: [PATCH 03/32] VFS/fsstack: cpp endif comments
+Message-ID: <20070903234351.GB19168@filer.fsl.cs.sunysb.edu>
+References: <1188786055371-git-send-email-jsipek@cs.sunysb.edu> <11887860564146-git-send-email-jsipek@cs.sunysb.edu> <Pine.LNX.4.64.0709030838180.4454@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0709030838180.4454@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
-
-
-On Fri, 27 Jul 2007, David CHANIAL wrote:
+On Mon, Sep 03, 2007 at 08:39:27AM +0200, Jan Engelhardt wrote:
 > 
-> Le vendredi 20 juillet 2007 15:36, Satyam Sharma a ecrit:
-> > Yes, you can apply the patch Neil just sent to your kernel,
-> > re-build, and test that.
+> On Sep 2 2007 22:20, Josef 'Jeff' Sipek wrote:
+> >diff --git a/include/linux/fs_stack.h b/include/linux/fs_stack.h
+> >index 6b52faf..28543ad 100644
+> >--- a/include/linux/fs_stack.h
+> >+++ b/include/linux/fs_stack.h
+> >@@ -39,4 +39,4 @@ static inline void fsstack_copy_attr_times(struct inode *dest,
+> > 	dest->i_ctime = src->i_ctime;
+> > }
+> > 
+> >-#endif /* _LINUX_FS_STACK_H */
+> >+#endif /* not _LINUX_FS_STACK_H */
 > 
-> Hi, I have no patched the kernel as asked by Neil, but i would notice
-> that
-> with 2.6.22.1 kernel it continue to happend :
-> 
-> http://internetworkpro.org/pastebin/765
-> 
-> I would patch the kernel now and wait to see...
+> I hardly think this changes a thing, and it even goes against
+> the de-facto standard of a lot of other files.
 
-Did you test with that patch applied? Did you manage to hit the
-BUG again (with or without it)?
+Fair enough. I'm going to drop it.
 
-Neil, I don't see this one applied upstream as yet -- if this patch
-indeed solves the oops David saw again (as per the link he has posted)
-then I'd suggest it be pushed upstream (and -stable too).
+Jeff.
 
-
-Satyam
+-- 
+My public GPG key can be found at
+http://www.josefsipek.net/gpg/public-0xC7958FFE.txt
