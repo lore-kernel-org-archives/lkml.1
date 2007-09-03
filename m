@@ -1,67 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbXICKIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbXICKKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756759AbXICKIo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 06:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXICKIh
+	id S1756641AbXICKKf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 06:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbXICKK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 06:08:37 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:48780 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753392AbXICKIg (ORCPT
+	Mon, 3 Sep 2007 06:10:27 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:47005 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753270AbXICKKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 06:08:36 -0400
-Date: Mon, 3 Sep 2007 03:58:54 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: cpu hotplug support broken in 2.6.23-rc3
-Message-ID: <20070903035854.GD3655@ucw.cz>
-References: <20070827104350.GA2073@elf.ucw.cz> <20070829080827.GD6832@in.ibm.com>
+	Mon, 3 Sep 2007 06:10:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=EvsW/O/dMfVAHOM4i8jTnjvnLetVgTyS/KbWAUdXX1uSnWYcHQKKdnZj9Ngxz+bY2cTe27mm3/sXVGbUiANqHYR51DzVdVtIwfI0SnCW4LEj9r6pqgjlk/jLRwav1bUNvFTT6nW4ukLLVdJHlTlcXbYYTqxDDwnQOt8xJ5yF1iI=
+Message-ID: <46DBDD6E.9020007@googlemail.com>
+Date: Mon, 03 Sep 2007 12:09:50 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070829080827.GD6832@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jan Dittmer <jdi@l4x.org>,
+       Christian Zankel <chris@zankel.net>, linux-alpha@vger.kernel.org,
+       Stefan Becker <Stefan.Becker@nokia.com>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <len.brown@intel.com>, Gene Heskett <gene.heskett@gmail.com>,
+       Andi Kleen <ak@suse.de>, Jakub Jelinek <jakub@redhat.com>
+Subject: [1/4] 2.6.23-rc5: known regressions
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2007-08-29 13:38:27, Gautham R Shenoy wrote:
-> Hi Pavel,
-> On Mon, Aug 27, 2007 at 12:43:50PM +0200, Pavel Machek wrote:
-> > Hi!
-> > 
-> > Trying to do few onlines/offlines reliably hangs my machine (thinkpad
-> > x60, i386 architecture).
-> > 
-> 
-> That's strange. 
-> 
-> I've been running cpu offline/online tests with kern bench, 
-> cpufreq-ondemand and a few rt-tasks running in the background
-> and it has worked for me. 
-> Something like 100 iterations without a problem. But these were on
-> machines with 4-8 cpus.  So may be this could be something specific to
-> the dual cpu machine.
+Hi all,
 
-Seems like it is specific to nohz/highrestimers. 
+Here is a list of some known regressions in 2.6.23-rc5.
 
-> Can you post the .config? I'll try to recreate it?
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
-Will send privately.
+List of Aces
 
-> > Plus I guess it would be nice to add CPU HOTPLUG into MAINTAINERS
-> > file:
-> > 
-> 
-> There is a list of maintainers in the Documentation/cpu-hotplug.txt, 
-> which includes maintainers for different platforms as well.
-> 
-> It's a good idea to add that info to the MAINTAINERS file as well.
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            9
+Linus Torvalds                         6
+Andi Kleen                             5
+Hugh Dickins                           5
+Andrew Morton                          4
+Al Viro                                3
+Alan Stern                             3
+Alexey Starikovskiy                    3
+Cornelia Huck                          3
+Jens Axboe                             3
+Stephen Hemminger                      3
+Tejun Heo                              3
 
-Yes, please.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+Unclassified
+
+Subject         : x86_64 vdso patch is broken somehow?
+References      : http://lkml.org/lkml/2007/8/29/136
+Last known good : ?
+Submitter       : Chuck Ebbert <cebbert@redhat.com>
+Caused-By       : Andi Kleen <ak@suse.de>
+                  commit 2aae950b21e4bc789d1fc6668faf67e8748300b7
+Handled-By      : ?
+Status          : unknown
+
+Subject         : weird hangs
+References      : http://lkml.org/lkml/2007/8/29/32
+Last known good : 2.6.23-rc3
+Submitter       : Gene Heskett <gene.heskett@gmail.com>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+Subject         : cpu hotplug support broken in 2.6.23-rc3
+References      : http://lkml.org/lkml/2007/8/27/58
+Last known good : ?
+Submitter       : Pavel Machek <pavel@ucw.cz>
+Caused-By       : ?
+Handled-By      : ?
+Status          : problem is being debugged
+
+Subject         : 2.6.23-rc3-git1 crash/stuck on VIA CN700 system
+References      : http://lkml.org/lkml/2007/8/20/174
+Last known good : ?
+Submitter       : Stefan Becker <Stefan.Becker@nokia.com>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+Subject         : 2.6.23-rc2 cross compile regressions (alpha,xtensa)
+References      : http://lkml.org/lkml/2007/8/6/43
+Last known good : alpha: 2.6.22-git8
+                  xtensa: 2.6.22-git6
+Submitter       : Jan Dittmer <jdi@l4x.org>
+Caused-By       : ?
+Handled-By      : xtensa: Christian Zankel <chris@zankel.net>
+Status          : unknown
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
