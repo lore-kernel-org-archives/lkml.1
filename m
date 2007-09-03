@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933933AbXICCdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbXICCeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933933AbXICCdt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 22:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932481AbXICC0A
+	id S1760027AbXICCeZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 22:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757684AbXICC0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 22:26:00 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57680 "EHLO
+	Sun, 2 Sep 2007 22:26:05 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57683 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756876AbXICCY5 (ORCPT
+	with ESMTP id S1756894AbXICCZA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 22:24:57 -0400
+	Sun, 2 Sep 2007 22:25:00 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        hch@infradead.org, viro@ftp.linux.org.uk, bharata@linux.vnet.ibm.com,
        j.blunck@tu-harburg.de, Erez Zadok <ezk@cs.sunysb.edu>,
        "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 07/32] Unionfs: cpp endif comments
-Date: Sun,  2 Sep 2007 22:20:30 -0400
-Message-Id: <11887860561705-git-send-email-jsipek@cs.sunysb.edu>
+Subject: [PATCH 14/32] Unionfs: file_revalidate updates
+Date: Sun,  2 Sep 2007 22:20:37 -0400
+Message-Id: <11887860571736-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2.238.g7cbf2f2
 In-Reply-To: <1188786055371-git-send-email-jsipek@cs.sunysb.edu>
 References: <1188786055371-git-send-email-jsipek@cs.sunysb.edu>
@@ -27,73 +27,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Erez Zadok <ezk@cs.sunysb.edu>
 
-Add comments to #endif's to help clarify code.
+Correctly revalidate a file and account for lower mnts, even when branches
+are updated or inserted.  Better info upon file copyup.
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- fs/unionfs/copyup.c |    2 +-
- fs/unionfs/inode.c  |    4 ++--
- fs/unionfs/sioq.h   |    2 +-
- fs/unionfs/union.h  |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ fs/unionfs/commonfops.c |   25 +++++++++++++++++++++----
+ 1 files changed, 21 insertions(+), 4 deletions(-)
 
-diff --git a/fs/unionfs/copyup.c b/fs/unionfs/copyup.c
-index cc7a816..410ce07 100644
---- a/fs/unionfs/copyup.c
-+++ b/fs/unionfs/copyup.c
-@@ -433,7 +433,7 @@ static int copyup_named_dentry(struct inode *dir, struct dentry *dentry,
- 	/* Selinux uses extended attributes for permissions. */
- 	if ((err = copyup_xattrs(old_lower_dentry, new_lower_dentry)))
- 		goto out_unlink;
--#endif
-+#endif /* CONFIG_UNION_FS_XATTR */
+diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+index 64bd0bd..612207a 100644
+--- a/fs/unionfs/commonfops.c
++++ b/fs/unionfs/commonfops.c
+@@ -333,6 +333,9 @@ int unionfs_file_revalidate(struct file *file, int willwrite)
+ 	 */
+ 	if (!d_deleted(dentry) &&
+ 	    (sbgen > fgen || dbstart(dentry) != fbstart(file))) {
++		/* save orig branch ID */
++		int orig_brid =	UNIONFS_F(file)->saved_branch_ids[fbstart(file)];
++
+ 		/* First we throw out the existing files. */
+ 		cleanup_file(file);
  
- 	/* do not allow files getting deleted to be re-interposed */
- 	if (!d_deleted(dentry))
-diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
-index cbbde6f..9261bed 100644
---- a/fs/unionfs/inode.c
-+++ b/fs/unionfs/inode.c
-@@ -1122,7 +1122,7 @@ struct inode_operations unionfs_dir_iops = {
- 	.getxattr	= unionfs_getxattr,
- 	.removexattr	= unionfs_removexattr,
- 	.listxattr	= unionfs_listxattr,
--#endif
-+#endif /* CONFIG_UNION_FS_XATTR */
- };
+@@ -359,22 +362,36 @@ int unionfs_file_revalidate(struct file *file, int willwrite)
+ 			if (err)
+ 				goto out;
+ 		} else {
++			int new_brid;
+ 			/* We only open the highest priority branch. */
+ 			err = open_highest_file(file, willwrite);
+ 			if (err)
+ 				goto out;
++			new_brid = UNIONFS_F(file)->
++			  saved_branch_ids[fbstart(file)];
++			if (new_brid != orig_brid && sbgen > fgen) {
++				/*
++				 * If we re-opened the file on a different
++				 * branch than the original one, and this
++				 * was due to a new branch inserted, then
++				 * update the mnt counts of the old and new
++				 * branches accordingly.
++				 */
++				unionfs_mntget(dentry, bstart);
++				unionfs_mntput(sb->s_root,
++					       branch_id_to_idx(sb, orig_brid));
++			}
+ 		}
+ 		atomic_set(&UNIONFS_F(file)->generation,
+-			   atomic_read(&UNIONFS_I(dentry->d_inode)->
+-				       generation));
++			   atomic_read(&UNIONFS_I(dentry->d_inode)->generation));
+ 	}
  
- struct inode_operations unionfs_main_iops = {
-@@ -1133,5 +1133,5 @@ struct inode_operations unionfs_main_iops = {
- 	.getxattr	= unionfs_getxattr,
- 	.removexattr	= unionfs_removexattr,
- 	.listxattr	= unionfs_listxattr,
--#endif
-+#endif /* CONFIG_UNION_FS_XATTR */
- };
-diff --git a/fs/unionfs/sioq.h b/fs/unionfs/sioq.h
-index bedd7af..afb71ee 100644
---- a/fs/unionfs/sioq.h
-+++ b/fs/unionfs/sioq.h
-@@ -89,4 +89,4 @@ extern void __unionfs_unlink(struct work_struct *work);
- extern void __delete_whiteouts(struct work_struct *work);
- extern void __is_opaque_dir(struct work_struct *work);
+ 	/* Copyup on the first write to a file on a readonly branch. */
+ 	if (willwrite && IS_WRITE_FLAG(file->f_flags) &&
+ 	    !IS_WRITE_FLAG(unionfs_lower_file(file)->f_flags) &&
+ 	    is_robranch(dentry)) {
+-		printk(KERN_DEBUG "unionfs: Doing delayed copyup of a "
+-		       "read-write file on a read-only branch.\n");
++		printk(KERN_DEBUG "unionfs: do delay copyup of \"%s\"\n",
++		       dentry->d_name.name);
+ 		err = do_delayed_copyup(file);
+ 	}
  
--#endif /* _SIOQ_H */
-+#endif /* not _SIOQ_H */
-diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
-index 2a8f763..b7e5a93 100644
---- a/fs/unionfs/union.h
-+++ b/fs/unionfs/union.h
-@@ -419,7 +419,7 @@ static inline int is_robranch(const struct dentry *dentry)
- 
- #ifndef DEFAULT_POLLMASK
- #define DEFAULT_POLLMASK (POLLIN | POLLOUT | POLLRDNORM | POLLWRNORM)
--#endif
-+#endif /* not DEFAULT_POLLMASK */
- 
- /*
-  * EXTERNALS:
 -- 
 1.5.2.2.238.g7cbf2f2
 
