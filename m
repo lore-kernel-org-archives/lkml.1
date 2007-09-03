@@ -1,86 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbXICXOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751736AbXICXU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753737AbXICXOY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 19:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbXICXOR
+	id S1751736AbXICXU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 19:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750923AbXICXUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 19:14:17 -0400
-Received: from mail98.megamailservers.com ([216.251.36.98]:52127 "EHLO
-	mail98.megamailservers.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750916AbXICXOQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 19:14:16 -0400
-X-Greylist: delayed 3277 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Sep 2007 19:14:16 EDT
-X-Authenticated-User: jgeorgas.georgas.ca
-Subject: HIMEM calculation
-From: "James C. Georgas" <jgeorgas@georgas.ca>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Georgas Software Solutions
-Date: Mon, 03 Sep 2007 18:19:34 -0400
-Message-Id: <1188857974.6090.19.camel@Tachyon.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Mon, 3 Sep 2007 19:20:21 -0400
+Received: from mail.tmr.com ([64.65.253.246]:39931 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750832AbXICXUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 19:20:20 -0400
+Message-ID: <46DC9700.7070208@tmr.com>
+Date: Mon, 03 Sep 2007 19:21:36 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Xu Yang <risingsunxy@googlemail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: ramdisk
+References: <ab40e9c0709030604u5fecf34dr945ece01b95e622d@mail.gmail.com>	 <46DC2228.7080503@tmr.com> <ab40e9c0709031003h72901a45wafc8697f086af477@mail.gmail.com>
+In-Reply-To: <ab40e9c0709031003h72901a45wafc8697f086af477@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm not sure I understand how the kernel calculates the amount of
-physical RAM it can map during the boot process.
+Xu Yang wrote:
+> thanks for the reply.
+>
+> no , it is not decompressed. isn' t the kernel supposed to do that? As
+> we have tried to load this filesystem on the pc, it turns out the the
+> kernel can recognize it.
+>
+> concerning the root=/dev/ram0,
+> as the default value is root=/dev/nfs, so I just modify the nfs to
+> ram0. is this might be a problem?
+>
+>   
+Hopefully someone who works with this regularly can provide some 
+answers, the only time I used booting into a RAM-only system the tools 
+which I had "just worked" and I followed the steps outlined without 
+fully understanding the details. However, I just tried loop mounting a 
+compressed filesystem and that didn't work, while decompressing into a 
+ramdisk and mounting worked fine. That's why I asked if your tool was 
+just copying to RAM without decompression, since I have no ides what 
+tool you use.
 
-I've quoted two blocks of kernel messages below, one for a kernel with
-NOHIGHMEM and another for a kernel with HIGHMEM4G.
+As for the name, your original post used "dev" without a leading "/" and 
+while I assumed it was a typo, I thought it was worth mentioning since 
+you were looking for suggestions. I would expect /dev/ram0 to be correct.
 
-If I do the math on the BIOS provided physical RAM map, there is less
-than 5MiB of the address space reserved. Since I only have 1GiB of
-physical RAM in the board, I figured that it would still be possible to
-physically map 1019MiB, even with the 3GiB/1GiB split between user space
-and kernel space that occurs with NOHIGHMEM.
+I would try the decompressed image next, and I have no other ideas at 
+the moment.
+> regards,
+>
+>
+> 2007/9/3, Bill Davidsen <davidsen@tmr.com>:
+>   
+>> Xu Yang wrote:
+>>     
+>>> Hi everyone,
+>>>
+>>> I want to use ramdisk to boot my filesystem, as I can't use NFS and harddisk.
+>>>
+>>> I have load the ramdisk into the ram memory (start address :0x4000000)
+>>>
+>>> and in the boot options I specified : root =dev/ram0 initrd=0x4000000
+>>>
+>>> but the kernel said it can not find any file system on it.
+>>>
+>>>       
+>> Looking at the information below, did the program which loaded the
+>> filesystem into RAM decompress it? It noted that it was compressed so I
+>> would assume so, but I am unfamiliar with ARM tools, so I ask the
+>> question. Also, should the boot device be "/dev/ram0" rather than
+>> "dev/ram0" or is that correct for your system?
+>>
+>>     
+>>> Here is the information I can supply :
+>>> U-Boot 1.2.0 (Aug 31 2007 - 20:54:55)
+>>>
+>>> ***  Auto-detects ethernet chip ***
+>>>
+>>>
+>>>
+>>> DRAM:   0 kB
+>>> ## Unknown FLASH on Bank 1 - Size = 0x00000000 = 0 MB
+>>> Flash:  0 kB
+>>> *** Warning - bad CRC, using default environment
+>>>
+>>> In:    serial
+>>> Out:   serial
+>>> Err:   serial
+>>>
+>>> Hit any key to stop autoboot:  0
+>>> ## Booting image at 00007fc0 ...
+>>>    Image Name:   Linux-2.6.19-arm2
+>>>    Image Type:   ARM Linux Kernel Image (uncompressed)
+>>>    Data Size:    740372 Bytes = 723 kB
+>>>    Load Address: 00008000
+>>>    Entry Point:  00008000
+>>> OK
+>>>
+>>>
+>>> ## Loading Ramdisk Image at 04000000 ...
+>>>    Image Name:   ramdisc
+>>>    Image Type:   ARM Linux RAMDisk Image (gzip compressed)
+>>>    Data Size:    12582962 Bytes = 12 MB
+>>>    Load Address: 04000000
+>>>    Entry Point:  04000000
+>>>
+>>> Starting kernel ...
+>>>
+>>>
+>>> .........................................................................................
+>>>
+>>> RAMDISK driver initialized: 16 RAM disks of 10240K size 1024 blocksize
+>>> <6>loop: loaded (max 8 devices)
+>>> <6>mice: PS/2 mouse device common for all mice
+>>> <6>VFP support v0.3: implementor 41 architecture 1 part 20 variant b rev 3
+>>> No filesystem could mount root, tried:  ext2 cramfs vfat
+>>> <0>Kernel panic - not syncing: VFS: Unable to mount root fs on
+>>> unknown-block(1,0)
+>>>
+>>>
+>>> Who can give me some hints ? or point me some direction to handle this.
+>>>
+>>> I appreciate this very much.
+>>>
+>>> regards,
+>>>
+>>> Yang
+>>>       
+>> --
+>> Bill Davidsen <davidsen@tmr.com>
+>>   "We have more to fear from the bungling of the incompetent than from
+>> the machinations of the wicked."  - from Slashdot
+>>
+>>     
+>
+>   
 
-However, What actually happens is that I'm 127MiB short of a full GiB.
 
-What am I missing here? Why does that last 127MiB have to go in HIGHMEM?
-
-Message log for a NOHIGHMEM kernel:
-
-Sep  3 16:56:50 Tachyon kernel: Linux version 2.6.22-gentoo-r5 (root@Tachyon) (gcc version 4.1.2 (Gentoo 4.1.2 p1.0.1)) #2 PREEMPT Mon Sep 3 16:01:08 EDT 2007
-Sep  3 16:56:50 Tachyon kernel: BIOS-provided physical RAM map:
-Sep  3 16:56:50 Tachyon kernel:  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-Sep  3 16:56:50 Tachyon kernel:  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-Sep  3 16:56:50 Tachyon kernel:  BIOS-e820: 0000000000100000 - 000000003ffd3000 (usable)
-Sep  3 16:56:50 Tachyon kernel:  BIOS-e820: 000000003ffd3000 - 0000000040000000 (reserved)
-Sep  3 16:56:50 Tachyon kernel:  BIOS-e820: 00000000feda0000 - 00000000fee00000 (reserved)
-Sep  3 16:56:50 Tachyon kernel:  BIOS-e820: 00000000ffb80000 - 0000000100000000 (reserved)
-Sep  3 16:56:50 Tachyon kernel: Warning only 896MB will be used.
-Sep  3 16:56:50 Tachyon kernel: Use a HIGHMEM enabled kernel.
-Sep  3 16:56:50 Tachyon kernel: 896MB LOWMEM available.
-Sep  3 16:56:50 Tachyon kernel: Zone PFN ranges:
-Sep  3 16:56:50 Tachyon kernel:   DMA             0 ->     4096
-Sep  3 16:56:50 Tachyon kernel:   Normal       4096 ->   229376
-Sep  3 16:56:50 Tachyon kernel: early_node_map[1] active PFN ranges
-Sep  3 16:56:50 Tachyon kernel:     0:        0 ->   229376
-Sep  3 16:56:50 Tachyon kernel: DMI 2.3 present.
-
-
-
-
-Message log for a HIGHMEM4G kernel:
-
-Sep  3 17:40:53 Tachyon kernel: BIOS-provided physical RAM map:
-Sep  3 17:40:53 Tachyon kernel:  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
-Sep  3 17:40:53 Tachyon kernel:  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
-Sep  3 17:40:53 Tachyon kernel:  BIOS-e820: 0000000000100000 - 000000003ffd3000 (usable)
-Sep  3 17:40:53 Tachyon kernel:  BIOS-e820: 000000003ffd3000 - 0000000040000000 (reserved)
-Sep  3 17:40:53 Tachyon kernel:  BIOS-e820: 00000000feda0000 - 00000000fee00000 (reserved)
-Sep  3 17:40:53 Tachyon kernel:  BIOS-e820: 00000000ffb80000 - 0000000100000000 (reserved)
-Sep  3 17:40:53 Tachyon kernel: 127MB HIGHMEM available.
-Sep  3 17:40:53 Tachyon kernel: 896MB LOWMEM available.
-Sep  3 17:40:53 Tachyon kernel: Zone PFN ranges:
-Sep  3 17:40:53 Tachyon kernel:   DMA             0 ->     4096
-Sep  3 17:40:53 Tachyon kernel:   Normal       4096 ->   229376
-Sep  3 17:40:53 Tachyon kernel:   HighMem    229376 ->   262099
-Sep  3 17:40:53 Tachyon kernel: early_node_map[1] active PFN ranges
-Sep  3 17:40:53 Tachyon kernel:     0:        0 ->   262099
-Sep  3 17:40:53 Tachyon kernel: DMI 2.3 present.
-
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
