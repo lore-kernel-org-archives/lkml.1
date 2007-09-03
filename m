@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbXICKEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbXICKG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756276AbXICKEA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 06:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbXICKDx
+	id S1756093AbXICKG0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 06:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbXICKGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 06:03:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40266 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752717AbXICKDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 06:03:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.23-rc4-mm1: boot failure on HPC nx6325
-Date: Mon, 3 Sep 2007 12:15:06 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, john stultz <johnstul@us.ibm.com>
-References: <20070831215822.26e1432b.akpm@linux-foundation.org> <200709022239.14175.rjw@sisk.pl> <1188808600.5698.9.camel@chaos>
-In-Reply-To: <1188808600.5698.9.camel@chaos>
+	Mon, 3 Sep 2007 06:06:20 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:48631 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752603AbXICKGT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 06:06:19 -0400
+Date: Mon, 3 Sep 2007 03:56:44 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, tglx@linutronix.de
+Subject: highres timers break cpu hotplug in 2.6.23-rc5 [was Re: cpu hotplug support broken in 2.6.23-rc3]
+Message-ID: <20070903035644.GC3655@ucw.cz>
+References: <20070827104350.GA2073@elf.ucw.cz> <20070827105801.GA4053@elf.ucw.cz> <b6a2187b0708270736q5cfc180fp3c223a57ea6904f9@mail.gmail.com> <20070827213248.GF3398@elf.ucw.cz> <b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709031215.06824.rjw@sisk.pl>
+In-Reply-To: <b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 3 September 2007 10:36, Thomas Gleixner wrote:
-> On Sun, 2007-09-02 at 22:39 +0200, Rafael J. Wysocki wrote:
-> > On Saturday, 1 September 2007 06:58, Andrew Morton wrote:
-> > > - dynticks-for-x86_64 has returned
-> > 
-> > It fails to boot on my HPC nx6325 (hangs very early, before any messages reach
-> > the console), because of this patch:
-> > 
-> > x86_64-convert-to-clockevents.patch
-> 
-> Sigh. Can you try
-> 
-> noapictimer
-> nohpet
-> 
-> on the kernel commandline please ?
+Hi!
 
-nohpet is sufficient to make it work.
-
-> Also it would be interesting whether the -hrt patchset on top of rc5 has
-> the same problem:
+> > Can you try 20-or-so tests? Mine hangs randomly, so it survived 4 or
+> > so cycles at one point.
 > 
-> http://www.tglx.de/projects/hrtimers/2.6.23-rc5/patch-2.6.23-rc5-hrt1.patches.tar.bz2
+> Mine still survives with this ... with sleep 1 ...
+> 
+> # for((i=0; i<100; i++)); do echo $i; echo $((i % 2))
+> >/sys/devices/system/cpu/cpu1/online; sleep 1; done
+> 
+> and this as well ... without sleep ...
+> 
+> # for((i=0; i<100; i++)); do echo $i; echo $((i % 2))
+> >/sys/devices/system/cpu/cpu1/online; done
+> 
+> I'm on reiserfs. gcc 3.4.5. Config sent to you seperately so as not to
+> cloud lkml. If anyone wants the config, please let me know. Is mime
+> "attachment" acceptable now on lkml?
 
-I'll try that later.
+It gets weirder. With "nohz=off" on commandline, I have to press any
+key (generate interrupt?) for echo 1  > online to finish. 2.6.23-rc5
+kernel... but hotplug/unplug works reliably now.
 
-Greetings,
-Rafael
+With nohz=off highres=off I can unplug/replug cpus as much as I
+want... running in tight loop now.
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
