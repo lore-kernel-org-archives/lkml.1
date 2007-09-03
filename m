@@ -1,63 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbXICHsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbXICHu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754714AbXICHsN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 03:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbXICHrc
+	id S1755219AbXICHu0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 03:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbXICHuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 03:47:32 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:32879 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750822AbXICHra (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 03:47:30 -0400
-Message-ID: <46DBBBEB.6010701@zytor.com>
-Date: Mon, 03 Sep 2007 08:46:51 +0100
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 3 Sep 2007 03:50:06 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:25159 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752278AbXICHuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 03:50:03 -0400
+Date: Mon, 3 Sep 2007 09:45:45 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, mike.miller@hp.com,
+       grant.likely@secretlab.ca, dm-devel@redhat.com, j-nomura@ce.jp.nec.com
+Subject: Re: [PATCH 1/7] blk_end_request: add new request completion
+	interface
+Message-ID: <20070903074545.GH4253@kernel.dk>
+References: <20070831.184112.45519768.k-ueda@ct.jp.nec.com>
 MIME-Version: 1.0
-To: Sean <seanlkml@sympatico.ca>
-CC: David Kastrup <dak@gnu.org>, Junio C Hamano <gitster@pobox.com>,
-       git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] GIT 1.5.3
-References: <7vodglr32i.fsf@gitster.siamese.dyndns.org>	<46DA5F33.2020005@zytor.com>	<85odgltrtj.fsf@lola.goethe.zz>	<46DA88EF.7080103@zytor.com> <20070902133803.1b46f599.seanlkml@sympatico.ca>
-In-Reply-To: <20070902133803.1b46f599.seanlkml@sympatico.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070831.184112.45519768.k-ueda@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sean wrote:
-> On Sun, 02 Sep 2007 10:57:03 +0100
-> "H. Peter Anvin" <hpa@zytor.com> wrote:
+On Fri, Aug 31 2007, Kiyoshi Ueda wrote:
+> This patch adds 2 new interfaces for request completion:
+>   o blk_end_request()   : called without queue lock
+>   o __blk_end_request() : called with queue lock held
 > 
->>  From the looks of it, there is still a git-p4, it just moved to contrib 
->> and uses fast-import, so removing its rpm package was probably broken in 
->> the first place.
+> Some device drivers call some generic functions below between
+> end_that_request_{first/chunk} and end_that_request_last().
+>   o add_disk_randomness()
+>   o blk_queue_end_tag()
+>   o blkdev_dequeue_request()
+> These are called in the blk_end_request() as a part of generic
+> request completion.
+> So all device drivers become to call above functions.
 > 
-> Hi Peter,
+> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+> ---
+>  block/ll_rw_blk.c      |   82 +++++++++++++++++++++++++++++++++++++++++++++++++ include/linux/blkdev.h |    2 +
+>  2 files changed, 84 insertions(+)
 > 
-> Items in contrib aren't officially supported, so it doesn't sound like
-> a good idea to offer installs for them.  Of course, it might be a good
-> idea to promote git-p4 up out of contrib and add it to the spec file.
+> diff -rupN 2.6.23-rc3-mm1/block/ll_rw_blk.c 01-blkendreq-interface/block/ll_rw_blk.c
+> --- 2.6.23-rc3-mm1/block/ll_rw_blk.c	2007-08-22 18:54:03.000000000 -0400
+> +++ 01-blkendreq-interface/block/ll_rw_blk.c	2007-08-23 17:19:20.000000000 -0400
+> @@ -3669,6 +3669,88 @@ void end_request(struct request *req, in
+>  
+>  EXPORT_SYMBOL(end_request);
+>  
+> +/**
+> + * ____blk_end_request - Generic end_io function to complete a request.
+> + * @rq:           the request being processed
+> + * @uptodate:     1 for success, 0 for I/O error, < 0 for specific error
+> + * @nr_bytes:     number of bytes to complete
+> + * @needlock:     1 for queue lock need to be held.
+> + *                0 for queue lock held already.
+> + *
+> + * Description:
+> + *     Ends I/O on a number of bytes attached to @rq.
+> + *     If @rq has leftover, sets it up for the next range of segments.
+> + *
+> + * Return:
+> + *     0 - we are done with this request
+> + *     1 - this request is not freed yet, it still has pending buffers.
+> + **/
+> +static int ____blk_end_request(struct request *rq, int uptodate, int nr_bytes,
+> +			       int needlock)
+> +{
+> +	struct request_queue *q = rq->q;
+> +	unsigned long flags = 0UL;
+> +
+> +	if (blk_fs_request(rq) || blk_pc_request(rq)) {
+> +		if (__end_that_request_first(rq, uptodate, nr_bytes))
+> +			return 1;
+> +	}
+> +
+> +	/*
+> +	 * No need to check the argument here because it is done
+> +	 * in add_disk_randomness().
+> +	 */
+> +	add_disk_randomness(rq->rq_disk);
+> +
+> +	if (needlock)
+> +		spin_lock_irqsave(q->queue_lock, flags);
+> +
+> +	if (blk_rq_tagged(rq))
+> +		blk_queue_end_tag(q, rq);
+> +
+> +	if (!list_empty(&rq->queuelist))
+> +		blkdev_dequeue_request(rq);
+> +
+> +	end_that_request_last(rq, uptodate);
+> +
+> +	if (needlock)
+> +		spin_unlock_irqrestore(q->queue_lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * blk_end_request - Helper function for drivers to complete the request.
+> + * @rq:       the request being processed
+> + * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
+> + * @nr_bytes: number of bytes to complete
+> + *
+> + * Description:
+> + *     Ends I/O on a number of bytes attached to @rq.
+> + *     If @rq has leftover, sets it up for the next range of segments.
+> + *
+> + * Return:
+> + *     0 - we are done with this request
+> + *     1 - still buffers pending for this request
+> + **/
+> +int blk_end_request(struct request *rq, int uptodate, int nr_bytes)
+> +{
+> +	return ____blk_end_request(rq, uptodate, nr_bytes, 1);
+> +}
+> +EXPORT_SYMBOL_GPL(blk_end_request);
+> +
+> +/**
+> + * __blk_end_request - Helper function for drivers to complete the request.
+> + *
+> + * Description:
+> + *     Must be called with queue lock held unlike blk_end_request().
+> + **/
+> +int __blk_end_request(struct request *rq, int uptodate, int nr_bytes)
+> +{
+> +	return ____blk_end_request(rq, uptodate, nr_bytes, 0);
+> +}
+> +EXPORT_SYMBOL_GPL(__blk_end_request);
+> +
+>  void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
+>  		     struct bio *bio)
+>  {
+> diff -rupN 2.6.23-rc3-mm1/include/linux/blkdev.h 01-blkendreq-interface/include/linux/blkdev.h
+> --- 2.6.23-rc3-mm1/include/linux/blkdev.h	2007-08-13 00:25:24.000000000 -0400
+> +++ 01-blkendreq-interface/include/linux/blkdev.h	2007-08-23 17:22:50.000000000 -0400
+> @@ -728,6 +728,8 @@ static inline void blk_run_address_space
+>   * for parts of the original function. This prevents
+>   * code duplication in drivers.
+>   */
+> +extern int blk_end_request(struct request *rq, int uptodate, int nr_bytes);
+> +extern int __blk_end_request(struct request *rq, int uptodate, int nr_bytes);
+>  extern int end_that_request_first(struct request *, int, int);
+>  extern int end_that_request_chunk(struct request *, int, int);
+>  extern void end_that_request_last(struct request *, int);
 
-Well, the old one was out of contrib, too.  Maybe it should never have 
-been packaged up, but it was...
+We get in to way too many levels of underscores here. Please changes
+this to be blk_end_request() and blk_end_request_locked(), where the
+former grabs the queue lock but the latter assumes it's held. Then have
+the static __blk_end_request() where the lock MUST be held - do this in
+the caller, don't pass it as an argument!
 
-> As things stand now, do you get an error when trying to upgrade Git via
-> yum?   I'd have thought things would upgrade fine but leave the old git-p4
-> rpm hanging around.  Either way, the obsoletes line mentioned by David
-> sounds like the right solution.
+-- 
+Jens Axboe
 
-Yes, it gets an error, because all the git RPMs are tied together by 
-explicit version number and so can only be upgraded as a group.
-
-> As an aside, when I sent the patch removing git-p4import from the spec
-> file I mentioned that I had no way to test it and asked for testers.
-> Git needs a spec file maintainer so that issues like this can be caught
-> before release.  Without a maintainer, it should probably be demoted
-> to contrib itself.
-
-Well, git on kernel.org (and many other places) critically depends on 
-rpms being available.
-
-	-hpa
