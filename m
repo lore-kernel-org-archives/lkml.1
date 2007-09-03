@@ -1,85 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbXICMGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbXICM1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592AbXICMGn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 08:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbXICMGd
+	id S1753785AbXICM1T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 08:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbXICM1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 08:06:33 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:44236 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751030AbXICMGd (ORCPT
+	Mon, 3 Sep 2007 08:27:06 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:51049 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751170AbXICM1E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 08:06:33 -0400
-Message-ID: <3db1ec7f0709030506j5fe6dbc3w6c7ae8daa94c3323@mail.gmail.com>
-Date: Mon, 3 Sep 2007 15:06:30 +0300
-From: "Ivan N. Zlatev" <contact@i-nz.net>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: [PATCH] [ALSA] Added new pin config for first gen macbook.
-Cc: "Abhijit Bhopatkar" <bain@devslashzero.com>,
-       "Jaroslav Kysela" <perex@suse.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <3db1ec7f0709030407y2cb9fc8ew52160ca28b2592d2@mail.gmail.com>
+	Mon, 3 Sep 2007 08:27:04 -0400
+Date: Mon, 3 Sep 2007 14:27:02 +0200
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Folkert van Heusden <folkert@vanheusden.com>, linux-kernel@vger.kernel.org,
+       Jan Kara <jack@ucw.cz>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [2.6.22] circular lock detected
+Message-ID: <20070903122702.GC29908@atrey.karlin.mff.cuni.cz>
+References: <20070824210033.GB13237@vanheusden.com> <20070902045529.c66eddc9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <2ff216280709030325r626d98b3h2c5a48e90470610b@mail.gmail.com>
-	 <s5hr6lgdoiv.wl%tiwai@suse.de>
-	 <3db1ec7f0709030407y2cb9fc8ew52160ca28b2592d2@mail.gmail.com>
+In-Reply-To: <20070902045529.c66eddc9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/3/07, Ivan N. Zlatev <contact@i-nz.net> wrote:
-> On 9/3/07, Takashi Iwai <tiwai@suse.de> wrote:
-> > At Mon, 3 Sep 2007 15:55:18 +0530,
-> > Abhijit Bhopatkar wrote:
-> > >
-> > > commit 5d5d3bc3eddf2ad97b2cb090b92580e7fed6cee1 changed all
-> > > pin configs for intel macs, but it breaks sound on
-> > > Macbook first generation.
-> >
->
-> For the record I have just verified that according to Apple the
-> pinconfigs for your codec match the ones in alsa and are as follows. I
-> believe those were extracted from Boot Camp 1.2. I will check with
-> version 1.4 in few hours.
+> > On Fri, 24 Aug 2007 23:00:33 +0200 Folkert van Heusden <folkert@vanheusden.com> wrote:
+> > Hi,
+> > 
+> > 2.6.22 kernel with hyperthreading enabled only ext3 filesystems (2).
+> > 
+> > [  346.314640] =======================================================
+> > [  346.314758] [ INFO: possible circular locking dependency detected ]
+> > [  346.314815] 2.6.22 #5
+> > [  346.314862] -------------------------------------------------------
+> > [  346.314920] tor/2421 is trying to acquire lock:
+> > [  346.314973]  (tty_mutex){--..}, at: [<c121aa83>] mutex_lock+0x8/0xa
+> > [  346.315193] 
+> > [  346.315195] but task is already holding lock:
+> > [  346.316203]  (&s->s_dquot.dqptr_sem){----}, at: [<c10a485f>] dquot_alloc_space+0x50/0x189
+> > [  346.316457] 
+> > [  346.316458] which lock already depends on the new lock.
+> > [  346.316461] 
+> > [  346.316585] 
+> > [  346.316586] the existing dependency chain (in reverse order) is:
+> > [  346.316675] 
+> > [  346.316676] -> #4 (&s->s_dquot.dqptr_sem){----}:
+> > [  346.316871]        [<c103b2ee>] check_prev_add+0x15b/0x281
+> > [  346.317204]        [<c103b49f>] check_prevs_add+0x8b/0xe8
+> > [  346.317535]        [<c103ce2a>] __lock_acquire+0x65d/0xb51
+> > [  346.317873]        [<c103d786>] lock_acquire+0x62/0x81
+> > [  346.318195]        [<c10341af>] down_read+0x2b/0x3d
+> > [  346.318527]        [<c10a485f>] dquot_alloc_space+0x50/0x189
+> > [  346.318854]        [<c10b5c55>] ext3_new_blocks+0x44b/0x5a2
+> > [  346.319187]        [<c10b81e4>] ext3_alloc_blocks+0x40/0xdf
+> > [  346.319513]        [<c10b82d3>] ext3_alloc_branch+0x50/0x21b
+> > [  346.319850]        [<c10b87b1>] ext3_get_blocks_handle+0x1b8/0x367
+> > [  346.320184]        [<c10b8ada>] ext3_getblk+0x97/0x228
+> > [  346.320530]        [<c10b8c85>] ext3_bread+0x1a/0x78
+> > [  346.320870]        [<c10bde64>] ext3_mkdir+0xf4/0x270
+> > [  346.321188]        [<c107cdf6>] vfs_mkdir+0xb3/0x161
+> > [  346.321506]        [<c107cf30>] sys_mkdirat+0x8c/0xc4
+> > [  346.321820]        [<c107cf88>] sys_mkdir+0x20/0x22
+> > [  346.322131]        [<c1003eea>] syscall_call+0x7/0xb
+> > [  346.322446]        [<ffffffff>] 0xffffffff
+> > [  346.322779] 
+> > [  346.322780] -> #3 (&ei->truncate_mutex){--..}:
+> > [  346.322965]        [<c103b2ee>] check_prev_add+0x15b/0x281
+> > [  346.323278]        [<c103b49f>] check_prevs_add+0x8b/0xe8
+> > [  346.323602]        [<c103ce2a>] __lock_acquire+0x65d/0xb51
+> > [  346.323919]        [<c103d786>] lock_acquire+0x62/0x81
+> > [  346.324234]        [<c121ab04>] __mutex_lock_slowpath+0x75/0x28c
+> > [  346.324857]        [<c121aa83>] mutex_lock+0x8/0xa
+> > [  346.325177]        [<c10ba380>] ext3_truncate+0x170/0x468
+> > [  346.325501]        [<c1060e9a>] vmtruncate+0xa6/0x116
+> > [  346.325828]        [<c1087937>] inode_setattr+0x145/0x16c
+> > [  346.326150]        [<c10bb301>] ext3_setattr+0x150/0x22f
+> > [  346.326479]        [<c1087cb0>] notify_change+0x352/0x386
+> > [  346.326802]        [<c1071af4>] do_truncate+0x5c/0x7f
+> > [  346.327116]        [<c107c2e3>] may_open+0x1ec/0x231
+> > [  346.327434]        [<c107c4a4>] open_namei+0xdd/0x5a2
+> > [  346.327770]        [<c107275b>] do_filp_open+0x2c/0x53
+> > [  346.328090]        [<c1072a90>] do_sys_open+0x52/0xd8
+> > [  346.328408]        [<c1072b32>] sys_open+0x1c/0x1e
+> > [  346.328727]        [<c1003eea>] syscall_call+0x7/0xb
+> > [  346.329042]        [<ffffffff>] 0xffffffff
+> > [  346.329368] 
+> > [  346.329370] -> #2 (&inode->i_alloc_sem){--..}:
+> > [  346.329556]        [<c103b2ee>] check_prev_add+0x15b/0x281
+> > [  346.329879]        [<c103b49f>] check_prevs_add+0x8b/0xe8
+> > [  346.330192]        [<c103ce2a>] __lock_acquire+0x65d/0xb51
+> > [  346.330508]        [<c103d786>] lock_acquire+0x62/0x81
+> > [  346.330826]        [<c1034245>] down_write+0x2b/0x45
+> > [  346.331137]        [<c1087c37>] notify_change+0x2d9/0x386
+> > [  346.331453]        [<c1071af4>] do_truncate+0x5c/0x7f
+> > [  346.331769]        [<c107c2e3>] may_open+0x1ec/0x231
+> > [  346.332087]        [<c107c4a4>] open_namei+0xdd/0x5a2
+> > [  346.332401]        [<c107275b>] do_filp_open+0x2c/0x53
+> > [  346.332720]        [<c1072a90>] do_sys_open+0x52/0xd8
+> > [  346.333037]        [<c1072b32>] sys_open+0x1c/0x1e
+> > [  346.333600]        [<c1003eea>] syscall_call+0x7/0xb
+> > [  346.333912]        [<ffffffff>] 0xffffffff
+> > [  346.334232] 
+> > [  346.334233] -> #1 (&sysfs_inode_imutex_key){--..}:
+> > [  346.334422]        [<c103b2ee>] check_prev_add+0x15b/0x281
+> > [  346.334734]        [<c103b49f>] check_prevs_add+0x8b/0xe8
+> > [  346.335046]        [<c103ce2a>] __lock_acquire+0x65d/0xb51
+> > [  346.335361]        [<c103d786>] lock_acquire+0x62/0x81
+> > [  346.335685]        [<c121ab04>] __mutex_lock_slowpath+0x75/0x28c
+> > [  346.336001]        [<c121aa83>] mutex_lock+0x8/0xa
+> > [  346.336313]        [<c10b2828>] remove_dir+0x2c/0xf1
+> > [  346.336629]        [<c10b28f5>] sysfs_remove_subdir+0x8/0xa
+> > [  346.336941]        [<c10b3ccf>] sysfs_remove_group+0x67/0x78
+> > [  346.337256]        [<c115cc58>] dpm_sysfs_remove+0x12/0x16
+> > [  346.337574]        [<c115c36f>] device_pm_remove+0x21/0x62
+> > [  346.337888]        [<c1156dc5>] device_del+0x82/0x291
+> > [  346.338199]        [<c1156fdf>] device_unregister+0xb/0x15
+> > [  346.338516]        [<c11571da>] device_destroy+0x8d/0x9a
+> > [  346.338827]        [<c1142712>] vcs_remove_sysfs+0x1c/0x3a
+> > [  346.339142]        [<c1149075>] con_close+0x5e/0x6b
+> > [  346.339458]        [<c113aa5e>] release_dev+0x4c4/0x6ce
+> > [  346.339767]        [<c113b0d6>] tty_release+0x12/0x1c
+> > [  346.340078]        [<c1074479>] __fput+0x145/0x16e
+> > [  346.340392]        [<c1074332>] fput+0x19/0x1b
+> > [  346.340701]        [<c1072bb3>] filp_close+0x3c/0x75
+> > [  346.341012]        [<c1072c55>] sys_close+0x69/0xb4
+> > [  346.341325]        [<c1003eea>] syscall_call+0x7/0xb
+> > [  346.341892]        [<ffffffff>] 0xffffffff
+> > [  346.342213] 
+> > [  346.342214] -> #0 (tty_mutex){--..}:
+> > [  346.342397]        [<c103b1c7>] check_prev_add+0x34/0x281
+> > [  346.342708]        [<c103b49f>] check_prevs_add+0x8b/0xe8
+> > [  346.343017]        [<c103ce2a>] __lock_acquire+0x65d/0xb51
+> > [  346.343333]        [<c103d786>] lock_acquire+0x62/0x81
+> > [  346.343646]        [<c121ab04>] __mutex_lock_slowpath+0x75/0x28c
+> > [  346.343956]        [<c121aa83>] mutex_lock+0x8/0xa
+> > [  346.344263]        [<c10a41d5>] print_warning+0x8c/0x15d
+> > [  346.344575]        [<c10a4993>] dquot_alloc_space+0x184/0x189
+> > [  346.344883]        [<c10b5c55>] ext3_new_blocks+0x44b/0x5a2
+> > [  346.345193]        [<c10b81e4>] ext3_alloc_blocks+0x40/0xdf
+> > [  346.345507]        [<c10b82d3>] ext3_alloc_branch+0x50/0x21b
+> > [  346.345816]        [<c10b87b1>] ext3_get_blocks_handle+0x1b8/0x367
+> > [  346.346127]        [<c10b89d8>] ext3_get_block+0x78/0xe3
+> > [  346.346441]        [<c1094802>] __block_prepare_write+0x168/0x415
+> > [  346.346750]        [<c109530e>] block_prepare_write+0x28/0x3b
+> > [  346.347057]        [<c10b8e84>] ext3_prepare_write+0xe3/0x17e
+> > [  346.347369]        [<c10552f1>] generic_file_buffered_write+0x1b4/0x614
+> > [  346.347689]        [<c105598b>] __generic_file_aio_write_nolock+0x23a/0x533
+> > [  346.348002]        [<c1055d8d>] generic_file_aio_write+0x58/0xc4
+> > [  346.348314]        [<c10b6a93>] ext3_file_write+0x2d/0xba
+> > [  346.348627]        [<c107353b>] do_sync_write+0xc7/0x116
+> > [  346.348935]        [<c10736e2>] vfs_write+0x158/0x15d
+> > [  346.349246]        [<c1073788>] sys_write+0x3d/0x64
+> > [  346.349560]        [<c1003eea>] syscall_call+0x7/0xb
+> > [  346.349869]        [<ffffffff>] 0xffffffff
+> > [  346.350438] 
+> > [  346.350440] other info that might help us debug this:
+> > [  346.350442] 
+> > [  346.350562] 3 locks held by tor/2421:
+> > [  346.350604]  #0:  (&inode->i_mutex){--..}, at: [<c121aa83>] mutex_lock+0x8/0xa
+> > [  346.350827]  #1:  (&ei->truncate_mutex){--..}, at: [<c121aa83>] mutex_lock+0x8/0xa
+> > [  346.351049]  #2:  (&s->s_dquot.dqptr_sem){----}, at: [<c10a485f>] dquot_alloc_space+0x50/0x189
+> > [  346.351274] 
+> > [  346.351276] stack backtrace:
+> > [  346.351363]  [<c1004cac>] show_trace_log_lvl+0x1a/0x30
+> > [  346.351446]  [<c1004cd4>] show_trace+0x12/0x14
+> > [  346.351526]  [<c1004dce>] dump_stack+0x16/0x18
+> > [  346.351605]  [<c103ab29>] print_circular_bug_tail+0x6f/0x71
+> > [  346.351686]  [<c103b1c7>] check_prev_add+0x34/0x281
+> > [  346.351764]  [<c103b49f>] check_prevs_add+0x8b/0xe8
+> > [  346.351843]  [<c103ce2a>] __lock_acquire+0x65d/0xb51
+> > [  346.351921]  [<c103d786>] lock_acquire+0x62/0x81
+> > [  346.352002]  [<c121ab04>] __mutex_lock_slowpath+0x75/0x28c
+> > [  346.352083]  [<c121aa83>] mutex_lock+0x8/0xa
+> > [  346.352160]  [<c10a41d5>] print_warning+0x8c/0x15d
+> > [  346.352240]  [<c10a4993>] dquot_alloc_space+0x184/0x189
+> > [  346.352323]  [<c10b5c55>] ext3_new_blocks+0x44b/0x5a2
+> > [  346.352402]  [<c10b81e4>] ext3_alloc_blocks+0x40/0xdf
+> > [  346.352479]  [<c10b82d3>] ext3_alloc_branch+0x50/0x21b
+> > [  346.352558]  [<c10b87b1>] ext3_get_blocks_handle+0x1b8/0x367
+> > [  346.352638]  [<c10b89d8>] ext3_get_block+0x78/0xe3
+> > [  346.352720]  [<c1094802>] __block_prepare_write+0x168/0x415
+> > [  346.352801]  [<c109530e>] block_prepare_write+0x28/0x3b
+> > [  346.352881]  [<c10b8e84>] ext3_prepare_write+0xe3/0x17e
+> > [  346.352961]  [<c10552f1>] generic_file_buffered_write+0x1b4/0x614
+> > [  346.353041]  [<c105598b>] __generic_file_aio_write_nolock+0x23a/0x533
+> > [  346.353121]  [<c1055d8d>] generic_file_aio_write+0x58/0xc4
+> > [  346.353200]  [<c10b6a93>] ext3_file_write+0x2d/0xba
+> > [  346.353281]  [<c107353b>] do_sync_write+0xc7/0x116
+> > [  346.353364]  [<c10736e2>] vfs_write+0x158/0x15d
+> > [  346.353444]  [<c1073788>] sys_write+0x3d/0x64
+> > [  346.353524]  [<c1003eea>] syscall_call+0x7/0xb
+> > [  346.353603]  =======================
+> > 
+> Has been reported before, but I don't recall whether we fixed it.  Jan,
+> do you know>?
+  I think we at least found a solution: Teach lockdep that I_MUTEX for
+different filesystems is different. Peter Zilstra wrote a patch for that
+and Folkert even confirmed that it fixes the problem for him. I'm not
+sure what happened with the patch afterwards though. Adding Peter to CC
+:).
 
-Nope, no change since 1.2.
-
->
-> [0A]
-> CfgDflt = 0x0321E21F
-> Action = 01,0A,81,0C,81,0D,81,10,85,51,05,21
-> [0B]
-> CfgDflt = 0x03A1E02E
-> FF,04
-> [0C]
-> CfgDflt = 0x9017E110
-> [0D]
-> CfgDflt = 0x9017E11F
-> [0E]
-> CfgDflt = 0x400000FE
-> Action = hex: 01,10,81,0A,81,0C,81,0D
-> [0F]
-> CfgDflt = 0x0381E020
-> Action = 09,0F
-> [10]
-> CfgDflt = 0x1345E230
-> [11]
-> CfgDflt = 0x13C5E240
-> [15]
-> CfgDflt = 0x400000FC
-> [1B]
-> CfgDflt = 0x400000FB
-> --
-> Ivan N. Zlatev
->
-> Web: http://www.i-nZ.net
-> "It's all some kind of whacked out conspiracy."
->
-
-
+								Honza
 -- 
-Ivan N. Zlatev
-
-Web: http://www.i-nZ.net
-"It's all some kind of whacked out conspiracy."
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
