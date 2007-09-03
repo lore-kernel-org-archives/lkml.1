@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbXICTvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbXICTy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756181AbXICTvQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 15:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbXICTvF
+	id S1756681AbXICTy6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 15:54:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbXICTyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 15:51:05 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:35221 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753672AbXICTvE (ORCPT
+	Mon, 3 Sep 2007 15:54:49 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:29258 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754384AbXICTys (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 15:51:04 -0400
-Message-ID: <46DC6543.3000607@linux.vnet.ibm.com>
-Date: Mon, 03 Sep 2007 20:49:23 +0100
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Mon, 3 Sep 2007 15:54:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=lg0EOI6HehnPJD0oMEooK7RpPYJ2kk0CHXsTXbySE1Q6bHNXQ+6M/jZ76L3x8sEuykBPlz4A2UK+mYeYNemSZ9ZcVAXUUy/ujIYcAEz3q30uEqmXhQOUbbJ7u37E0JtxLvbrLvWRSYsYQN35Umc+ucUq6UaCvogZBwM8ycPrBLc=
+Message-ID: <46DC6682.7070400@gmail.com>
+Date: Mon, 03 Sep 2007 21:54:42 +0200
+From: Patrizio Bassi <patrizio.bassi@gmail.com>
+Reply-To: patrizio.bassi@gmail.com
+Organization: patrizio.bassi@gmail.com
+User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       David Rientjes <rientjes@google.com>, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [-mm PATCH] Memory controller improve user interface (v3)
-References: <20070902105021.3737.31251.sendpatchset@balbir-laptop> <6599ad830709022153g1720bcedsb61d7cf7a783bd3f@mail.gmail.com>
-In-Reply-To: <6599ad830709022153g1720bcedsb61d7cf7a783bd3f@mail.gmail.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       "Kernel," <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: libata not working for sis5533
+References: <46D132C5.5000803@gmail.com> <6bffcb0e0708261627s12e5a9acqef92d0261264a40c@mail.gmail.com> <46D8921E.3010304@gmail.com> <46D89429.7080802@gmail.com> <20070902114032.7dbfb21a@the-village.bc.nu> <Pine.LNX.4.64.0709031957390.24179@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0709031957390.24179@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On 9/2/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->> -       s += sprintf(s, "%lu\n", *val);
->> +       if (read_strategy)
->> +               s += read_strategy(*val, s);
->> +       else
->> +               s += sprintf(s, "%lu\n", *val);
-> 
-> This would be better as %llu
-> 
+Jan Engelhardt ha scritto:
+> On Sep 2 2007 11:40, Alan Cox wrote:
+>   
+>>> i've been out for a week, but found no notice, did i lost any email or
+>>> no activity on this issue?
+>>>       
+>> I tagged it onto the obscure IDE report pile. It doesn't contain any
+>> really useful information and its probably not an IDE layer bug as of
+>> itself. But its on the todo list for further investigation and to see if
+>> patterns emerge
+>>     
+>
+> I shall give this a spin too, since I happen to have sis5513.
+>
+>   
 
-Hi, Paul,
+oops i just noticed i made a typo in the subject...5513 for me too
 
-This does not need fixing, since the other counters like failcnt are
-still unsigned long
-
->> +               tmp = simple_strtoul(buf, &end, 10);
-> 
-> and this as simple_strtoull()
-> 
-
-
-Will do, thanks!
-
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Patrizio
