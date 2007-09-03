@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbXICXlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbXICXmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752536AbXICXlR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 19:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbXICXlH
+	id S1753193AbXICXmz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 19:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXICXms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 19:41:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35576 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750916AbXICXlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 19:41:07 -0400
-Message-ID: <46DC9B8A.3060404@redhat.com>
-Date: Mon, 03 Sep 2007 19:40:58 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+	Mon, 3 Sep 2007 19:42:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33611 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbXICXmr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 19:42:47 -0400
+Date: Tue, 4 Sep 2007 05:25:57 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: David CHANIAL <david.ml@euro-web.fr>
+cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
+In-Reply-To: <200707270928.27328.david.ml@euro-web.fr>
+Message-ID: <alpine.LFD.0.999.0709040521170.8504@enigma.security.iitk.ac.in>
+References: <200707160638.15750.david.ml@euro-web.fr> <200707201533.14517.david.ml@euro-web.fr>
+ <a781481a0707200636s353c8a64l5564d5f81cc7f266@mail.gmail.com>
+ <200707270928.27328.david.ml@euro-web.fr>
 MIME-Version: 1.0
-To: "James C. Georgas" <jgeorgas@georgas.ca>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: HIMEM calculation
-References: <1188857974.6090.19.camel@Tachyon.home>
-In-Reply-To: <1188857974.6090.19.camel@Tachyon.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James C. Georgas wrote:
-> I'm not sure I understand how the kernel calculates the amount of
-> physical RAM it can map during the boot process.
-> 
-> I've quoted two blocks of kernel messages below, one for a kernel with
-> NOHIGHMEM and another for a kernel with HIGHMEM4G.
-> 
-> If I do the math on the BIOS provided physical RAM map, there is less
-> than 5MiB of the address space reserved. Since I only have 1GiB of
-> physical RAM in the board, I figured that it would still be possible to
-> physically map 1019MiB, even with the 3GiB/1GiB split between user space
-> and kernel space that occurs with NOHIGHMEM.
-> 
-> However, What actually happens is that I'm 127MiB short of a full GiB.
-> 
-> What am I missing here? Why does that last 127MiB have to go in HIGHMEM?
+Hi David,
 
-That's the vmalloc address space.  You only get 896 MB in the NORMAL 
-zone on i386, to leave room for vmalloc.  If you don't like it, go 64-bit.
 
-	-- Chris
+On Fri, 27 Jul 2007, David CHANIAL wrote:
+> 
+> Le vendredi 20 juillet 2007 15:36, Satyam Sharma a ecrit:
+> > Yes, you can apply the patch Neil just sent to your kernel,
+> > re-build, and test that.
+> 
+> Hi, I have no patched the kernel as asked by Neil, but i would notice
+> that
+> with 2.6.22.1 kernel it continue to happend :
+> 
+> http://internetworkpro.org/pastebin/765
+> 
+> I would patch the kernel now and wait to see...
+
+Did you test with that patch applied? Did you manage to hit the
+BUG again (with or without it)?
+
+Neil, I don't see this one applied upstream as yet -- if this patch
+indeed solves the oops David saw again (as per the link he has posted)
+then I'd suggest it be pushed upstream (and -stable too).
+
+
+Satyam
