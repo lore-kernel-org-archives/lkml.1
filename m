@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934438AbXICCjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934227AbXICCk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934438AbXICCjr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 22:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932879AbXICC2P
+	id S934227AbXICCk1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 22:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933560AbXICC2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 22:28:15 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57941 "EHLO
+	Sun, 2 Sep 2007 22:28:53 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57977 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964815AbXICC2K (ORCPT
+	with ESMTP id S933489AbXICC2v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 22:28:10 -0400
+	Sun, 2 Sep 2007 22:28:51 -0400
 From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        hch@infradead.org, viro@ftp.linux.org.uk, bharata@linux.vnet.ibm.com,
        j.blunck@tu-harburg.de, Erez Zadok <ezk@cs.sunysb.edu>,
        "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 12/32] Unionfs: documentation updates
-Date: Sun,  2 Sep 2007 22:20:35 -0400
-Message-Id: <1188786057364-git-send-email-jsipek@cs.sunysb.edu>
+Subject: [PATCH 17/32] Unionfs: interpose updates
+Date: Sun,  2 Sep 2007 22:20:40 -0400
+Message-Id: <1188786057225-git-send-email-jsipek@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2.238.g7cbf2f2
 In-Reply-To: <1188786055371-git-send-email-jsipek@cs.sunysb.edu>
 References: <1188786055371-git-send-email-jsipek@cs.sunysb.edu>
@@ -27,237 +27,369 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Erez Zadok <ezk@cs.sunysb.edu>
 
-Details of cache-coherency implementation (as per OLS'07 talk).
-Also explain new incgen support via remount, not ioctl.
+Update unionfs_interpose to handle spliced dentries, which is important for
+NFS exporting.
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 ---
- Documentation/filesystems/unionfs/concepts.txt |  106 ++++++++++++++++++++++++
- Documentation/filesystems/unionfs/issues.txt   |   53 ++++--------
- Documentation/filesystems/unionfs/usage.txt    |   11 ++-
- 3 files changed, 134 insertions(+), 36 deletions(-)
+ fs/unionfs/inode.c  |   40 +++++++++++----
+ fs/unionfs/lookup.c |   22 +++++++-
+ fs/unionfs/main.c   |  138 +++++++++++++++++++++++++++++++++------------------
+ fs/unionfs/union.h  |    4 +-
+ 4 files changed, 141 insertions(+), 63 deletions(-)
 
-diff --git a/Documentation/filesystems/unionfs/concepts.txt b/Documentation/filesystems/unionfs/concepts.txt
-index 83d45b9..74b5bdc 100644
---- a/Documentation/filesystems/unionfs/concepts.txt
-+++ b/Documentation/filesystems/unionfs/concepts.txt
-@@ -4,6 +4,7 @@ Unionfs 2.0 CONCEPTS:
- This file describes the concepts needed by a namespace unification file
- system.
+diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
+index 6cec564..a219a40 100644
+--- a/fs/unionfs/inode.c
++++ b/fs/unionfs/inode.c
+@@ -152,7 +152,12 @@ static int unionfs_create(struct inode *parent, struct dentry *dentry,
+ 						     wh_dentry);
+ 			wh_dentry = NULL;
  
-+
- Branch Priority:
- ================
+-			err = unionfs_interpose(dentry, parent->i_sb, 0);
++			/*
++			 * Only INTERPOSE_LOOKUP can return a value other
++			 * than 0 on err.
++			 */
++			err = PTR_ERR(unionfs_interpose(dentry,
++							parent->i_sb, 0));
+ 			goto out;
+ 		}
+ 	}
+@@ -194,11 +199,14 @@ static int unionfs_create(struct inode *parent, struct dentry *dentry,
+ 			if (!IS_COPYUP_ERR(err))
+ 				break;
+ 		} else {
+-			err = unionfs_interpose(dentry, parent->i_sb, 0);
++			/*
++			 * Only INTERPOSE_LOOKUP can return a value other
++			 * than 0 on err.
++			 */
++			err = PTR_ERR(unionfs_interpose(dentry,
++							parent->i_sb, 0));
+ 			if (!err) {
+-				fsstack_copy_attr_times(parent,
+-							lower_parent_dentry->
+-							d_inode);
++				unionfs_copy_attr_times(parent);
+ 				fsstack_copy_inode_size(parent,
+ 							lower_parent_dentry->
+ 							d_inode);
+@@ -527,7 +535,12 @@ static int unionfs_symlink(struct inode *dir, struct dentry *dentry,
+ 			if (!IS_COPYUP_ERR(err))
+ 				break;
+ 		} else {
+-			err = unionfs_interpose(dentry, dir->i_sb, 0);
++			/*
++			 * Only INTERPOSE_LOOKUP can return a value other
++			 * than 0 on err.
++			 */
++			err = PTR_ERR(unionfs_interpose(dentry,
++							dir->i_sb, 0));
+ 			if (!err) {
+ 				fsstack_copy_attr_times(dir,
+ 							lower_dir_dentry->
+@@ -664,10 +677,13 @@ static int unionfs_mkdir(struct inode *parent, struct dentry *dentry, int mode)
+ 		}
+ 		set_dbend(dentry, bindex);
  
-@@ -72,4 +73,109 @@ that lookup and readdir return this newer "version" of the file rather than
- the original (see duplicate elimination).
+-		err = unionfs_interpose(dentry, parent->i_sb, 0);
++		/*
++		 * Only INTERPOSE_LOOKUP can return a value other than 0 on
++		 * err.
++		 */
++		err = PTR_ERR(unionfs_interpose(dentry, parent->i_sb, 0));
+ 		if (!err) {
+-			fsstack_copy_attr_times(parent,
+-						lower_parent_dentry->d_inode);
++			unionfs_copy_attr_times(parent);
+ 			fsstack_copy_inode_size(parent,
+ 						lower_parent_dentry->d_inode);
  
+@@ -795,7 +811,11 @@ static int unionfs_mknod(struct inode *dir, struct dentry *dentry, int mode,
+ 			break;
+ 		}
  
-+Cache Coherency:
-+================
-+
-+Unionfs users often want to be able to modify files and directories directly
-+on the lower branches, and have those changes be visible at the Unionfs
-+level.  This means that data (e.g., pages) and meta-data (dentries, inodes,
-+open files, etc.) have to be synchronized between the upper and lower
-+layers.  In other words, the newest changes from a layer below have to be
-+propagated to the Unionfs layer above.  If the two layers are not in sync, a
-+cache incoherency ensues, which could lead to application failures and even
-+oopses.  The Linux kernel, however, has a rather limited set of mechanisms
-+to ensure this inter-layer cache coherency---so Unionfs has to do most of
-+the hard work on its own.
-+
-+Maintaining Invariants:
-+
-+The way Unionfs ensures cache coherency is as follows.  At each entry point
-+to a Unionfs file system method, we call a utility function to validate the
-+primary objects of this method.  Generally, we call unionfs_file_revalidate
-+on open files, and __unionfs_d_revalidate_chain on dentries (which also
-+validates inodes).  These utility functions check to see whether the upper
-+Unionfs object is in sync with any of the lower objects that it represents.
-+The checks we perform include whether the Unionfs superblock has a newer
-+generation number, or if any of the lower objects mtime's or ctime's are
-+newer.  (Note: generation numbers change when branch-management commands are
-+issued, so in a way, maintaining cache coherency is also very important for
-+branch-management.)  If indeed we determine that any Unionfs object is no
-+longer in sync with its lower counterparts, then we rebuild that object
-+similarly to how we do so for branch-management.
-+
-+While rebuilding Unionfs's objects, we also purge any page mappings and
-+truncate inode pages (see fs/Unionfs/dentry.c:purge_inode_data).  This is to
-+ensure that Unionfs will re-get the newer data from the lower branches.  We
-+perform this purging only if the Unionfs operation in question is a reading
-+operation; if Unionfs is performing a data writing operation (e.g., ->write,
-+->commit_write, etc.) then we do NOT flush the lower mappings/pages: this is
-+because (1) a self-deadlock could occur and (2) the upper Unionfs pages are
-+considered more authoritative anyway, as they are newer and will overwrite
-+any lower pages.
-+
-+Unionfs maintains the following important invariant regarding mtime's,
-+ctime's, and atime's: the upper inode object's times are the max() of all of
-+the lower ones.  For non-directory objects, there's only one object below,
-+so the mapping is simple; for directory objects, there could me multiple
-+lower objects and we have to sync up with the newest one of all the lower
-+ones.  This invariant is important to maintain, especially for directories
-+(besides, we need this to be POSIX compliant).  A union could comprise
-+multiple writable branches, each of which could change.  If we don't reflect
-+the newest possible mtime/ctime, some applications could fail.  For example,
-+NFSv2/v3 exports check for newer directory mtimes on the server to determine
-+if the client-side attribute cache should be purged.
-+
-+To maintain these important invariants, of course, Unionfs carefully
-+synchronizes upper and lower times in various places.  For example, if we
-+copy-up a file to a top-level branch, the parent directory where the file
-+was copied up to will now have a new mtime: so after a successful copy-up,
-+we sync up with the new top-level branch's parent directory mtime.
-+
-+Implementation:
-+
-+This cache-coherency implementation is efficient because it defers any
-+synchronizing between the upper and lower layers until absolutely needed.
-+Consider the example a common situation where users perform a lot of lower
-+changes, such as untarring a whole package.  While these take place,
-+typically the user doesn't access the files via Unionfs; only after the
-+lower changes are done, does the user try to access the lower files.  With
-+our cache-coherency implementation, the entirety of the changes to the lower
-+branches will not result in a single CPU cycle spent at the Unionfs level
-+until the user invokes a system call that goes through Unionfs.
-+
-+We have considered two alternate cache-coherency designs.  (1) Using the
-+dentry/inode notify functionality to register interest in finding out about
-+any lower changes.  This is a somewhat limited and also a heavy-handed
-+approach which could result in many notifications to the Unionfs layer upon
-+each small change at the lower layer (imagine a file being modified multiple
-+times in rapid succession).  (2) Rewriting the VFS to support explicit
-+callbacks from lower objects to upper objects.  We began exploring such an
-+implementation, but found it to be very complicated--it would have resulted
-+in massive VFS/MM changes which are unlikely to be accepted by the LKML
-+community.  We therefore believe that our current cache-coherency design and
-+implementation represent the best approach at this time.
-+
-+Limitations:
-+
-+Our implementation works in that as long as a user process will have caused
-+Unionfs to be called, directly or indirectly, even to just do
-+->d_revalidate; then we will have purged the current Unionfs data and the
-+process will see the new data.  For example, a process that continually
-+re-reads the same file's data will see the NEW data as soon as the lower
-+file had changed, upon the next read(2) syscall (even if the file is still
-+open!)  However, this doesn't work when the process re-reads the open file's
-+data via mmap(2) (unless the user unmaps/closes the file and remaps/reopens
-+it).  Once we respond to ->readpage(s), then the kernel maps the page into
-+the process's address space and there doesn't appear to be a way to force
-+the kernel to invalidate those pages/mappings, and force the process to
-+re-issue ->readpage.  If there's a way to invalidate active mappings and
-+force a ->readpage, let us know please (invalidate_inode_pages2 doesn't do
-+the trick).
-+
-+Our current Unionfs code has to perform many file-revalidation calls.  It
-+would be really nice if the VFS would export an optional file system hook
-+->file_revalidate (similarly to dentry->d_revalidate) that will be called
-+before each VFS op that has a "struct file" in it.
-+
-+
- For more information, see <http://unionfs.filesystems.org/>.
-diff --git a/Documentation/filesystems/unionfs/issues.txt b/Documentation/filesystems/unionfs/issues.txt
-index c634604..c3a0aef 100644
---- a/Documentation/filesystems/unionfs/issues.txt
-+++ b/Documentation/filesystems/unionfs/issues.txt
-@@ -1,39 +1,24 @@
--KNOWN Unionfs 2.0 ISSUES:
-+KNOWN Unionfs 2.1 ISSUES:
- =========================
+-		err = unionfs_interpose(dentry, dir->i_sb, 0);
++		/*
++		 * Only INTERPOSE_LOOKUP can return a value other than 0 on
++		 * err.
++		 */
++		err = PTR_ERR(unionfs_interpose(dentry, dir->i_sb, 0));
+ 		if (!err) {
+ 			fsstack_copy_attr_times(dir,
+ 						lower_parent_dentry->d_inode);
+diff --git a/fs/unionfs/lookup.c b/fs/unionfs/lookup.c
+index 61ee50d..e4e8470 100644
+--- a/fs/unionfs/lookup.c
++++ b/fs/unionfs/lookup.c
+@@ -72,7 +72,12 @@ out:
+ 	return err;
+ }
  
--1. The NFS server returns -EACCES for read-only exports, instead of -EROFS.
--   This means we can't reliably detect a read-only NFS export.
+-/* main (and complex) driver function for Unionfs's lookup */
++/*
++ * Main (and complex) driver function for Unionfs's lookup
++ *
++ * Returns: NULL (ok), ERR_PTR if an error occurred, or a non-null non-error
++ * PTR if d_splice returned a different dentry.
++ */
+ struct dentry *unionfs_lookup_backend(struct dentry *dentry,
+ 				      struct nameidata *nd, int lookupmode)
+ {
+@@ -81,6 +86,7 @@ struct dentry *unionfs_lookup_backend(struct dentry *dentry,
+ 	struct dentry *wh_lower_dentry = NULL;
+ 	struct dentry *lower_dir_dentry = NULL;
+ 	struct dentry *parent_dentry = NULL;
++	struct dentry *d_interposed = NULL;
+ 	int bindex, bstart, bend, bopaque;
+ 	int dentry_count = 0;	/* Number of positive dentries. */
+ 	int first_dentry_offset = -1; /* -1 is uninitialized */
+@@ -90,7 +96,6 @@ struct dentry *unionfs_lookup_backend(struct dentry *dentry,
+ 	int locked_parent = 0;
+ 	int locked_child = 0;
+ 	int allocated_new_info = 0;
 -
--2. Modifying a Unionfs branch directly, while the union is mounted, is
--   currently unsupported, because it could cause a cache incoherency between
--   the union layer and the lower file systems (for that reason, Unionfs
--   currently prohibits using branches which overlap with each other, even
--   partially).  We have tested Unionfs under such conditions, and fixed any
--   bugs we found (Unionfs comes with an extensive regression test suite).
--   However, it may still be possible that changes made to lower branches
--   directly could cause cache incoherency which, in the worst case, may case
--   an oops.
--
--   Unionfs 2.0 has a temporary workaround for this.  You can force Unionfs
--   to increase the superblock generation number, and hence purge all cached
--   Unionfs objects, which would then  be re-gotten from the lower branches.
--   This should ensure cache consistency.  To increase the generation number,
--   executed the command:
--
--	mount -t unionfs -o remount,incgen none MOUNTPOINT
--
--   Note that the older way of incrementing the generation number using an
--   ioctl, is no longer supported in Unionfs 2.0.  Ioctls in general are not
--   encouraged.  Plus, an ioctl is per-file concept, whereas the generation
--   number is a per-file-system concept.  Worse, such an ioctl requires an
--   open file, which then has to be invalidated by the very nature of the
--   generation number increase (read: the old generation increase ioctl was
--   pretty racy).
--
--3. Unionfs should not use lookup_one_len() on the underlying f/s as it
--   confuses NFS.  Currently, unionfs_lookup() passes lookup intents to the
-+1. Unionfs should not use lookup_one_len() on the underlying f/s as it
-+   confuses NFSv4.  Currently, unionfs_lookup() passes lookup intents to the
-    lower file-system, this eliminates part of the problem.  The remaining
--   calls to lookup_one_len may need to be changed to pass an intent.
--
-+   calls to lookup_one_len may need to be changed to pass an intent.  We are
-+   currently introducing VFS changes to fs/namei.c's do_path_lookup() to
-+   allow proper file lookup and opening in stackable file systems.
+ 	int opaque;
+ 	char *whname = NULL;
+ 	const char *name;
+@@ -370,7 +375,16 @@ out_positive:
+ 		bend = dbend(dentry);
+ 	}
+ 
+-	err = unionfs_interpose(dentry, dentry->d_sb, lookupmode);
++	/*
++	 * Interpose can return a dentry if d_splice returned a different
++	 * dentry.
++	 */
++	d_interposed = unionfs_interpose(dentry, dentry->d_sb, lookupmode);
++	if (IS_ERR(d_interposed))
++		err = PTR_ERR(d_interposed);
++	else if (d_interposed)
++		dentry = d_interposed;
 +
-+2. Lockdep (a debugging feature) isn't aware of stacking, and so it
-+   incorrectly complains about locking problems.  The problem boils down to
-+   this: Lockdep considers all objects of a certain type to be in the same
-+   class, for example, all inodes.  Lockdep doesn't like to see a lock held
-+   on two inodes within the same task, and warns that it could lead to a
-+   deadlock.  However, stackable file systems do precisely that: they lock
-+   an upper object, and then a lower object, in a strict order to avoid
-+   locking problems; in addition, Unionfs, as a fan-out file system, may
-+   have to lock several lower inodes.  We are currently looking into Lockdep
-+   to see how to make it aware of stackable file systems.  In the mean time,
-+   if you get any warnings from Lockdep, you can safely ignore them (or feel
-+   free to report them to the Unionfs maintainers, just to be sure).
+ 	if (err)
+ 		goto out_drop;
  
- For more information, see <http://unionfs.filesystems.org/>.
-diff --git a/Documentation/filesystems/unionfs/usage.txt b/Documentation/filesystems/unionfs/usage.txt
-index 1c7554b..2316670 100644
---- a/Documentation/filesystems/unionfs/usage.txt
-+++ b/Documentation/filesystems/unionfs/usage.txt
-@@ -44,7 +44,7 @@ To upgrade a union from read-only to read-write:
+@@ -406,6 +420,8 @@ out:
+ 	dput(parent_dentry);
+ 	if (locked_child || (err && allocated_new_info))
+ 		unionfs_unlock_dentry(dentry);
++	if (!err && d_interposed)
++		return d_interposed;
+ 	return ERR_PTR(err);
+ }
  
- To delete a branch /foo, regardless where it is in the current union:
+diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
+index 689a8fa..bc5c105 100644
+--- a/fs/unionfs/main.c
++++ b/fs/unionfs/main.c
+@@ -20,20 +20,73 @@
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
  
--# mount -t unionfs -o del=/foo none MOUNTPOINT
-+# mount -t unionfs -o remount,del=/foo none MOUNTPOINT
- 
- To insert (add) a branch /foo before /bar:
- 
-@@ -67,7 +67,7 @@ To append a branch to the very end (new lowest-priority branch):
- To append a branch to the very end (new lowest-priority branch), in
- read-only mode:
- 
--# mount -t unionfs -o remount,add=:/foo:ro none MOUNTPOINT
-+# mount -t unionfs -o remount,add=:/foo=ro none MOUNTPOINT
- 
- Finally, to change the mode of one existing branch, say /foo, from read-only
- to read-write, and change /bar from read-write to read-only:
-@@ -86,5 +86,12 @@ command:
- 
- # mount -t unionfs -o remount,incgen none MOUNTPOINT
- 
-+Note that the older way of incrementing the generation number using an
-+ioctl, is no longer supported in Unionfs 2.0.  Ioctls in general are not
-+encouraged.  Plus, an ioctl is per-file concept, whereas the generation
-+number is a per-file-system concept.  Worse, such an ioctl requires an open
-+file, which then has to be invalidated by the very nature of the generation
-+number increase (read: the old generation increase ioctl was pretty racy).
++static void unionfs_fill_inode(struct dentry *dentry,
++			       struct inode *inode)
++{
++	struct inode *lower_inode;
++	struct dentry *lower_dentry;
++	int bindex, bstart, bend;
 +
++	bstart = dbstart(dentry);
++	bend = dbend(dentry);
++
++	for (bindex = bstart; bindex <= bend; bindex++) {
++		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++		if (!lower_dentry) {
++			unionfs_set_lower_inode_idx(inode, bindex, NULL);
++			continue;
++		}
++
++		/* Initialize the lower inode to the new lower inode. */
++		if (!lower_dentry->d_inode)
++			continue;
++
++		unionfs_set_lower_inode_idx(inode, bindex,
++					    igrab(lower_dentry->d_inode));
++	}
++
++	ibstart(inode) = dbstart(dentry);
++	ibend(inode) = dbend(dentry);
++
++	/* Use attributes from the first branch. */
++	lower_inode = unionfs_lower_inode(inode);
++
++	/* Use different set of inode ops for symlinks & directories */
++	if (S_ISLNK(lower_inode->i_mode))
++		inode->i_op = &unionfs_symlink_iops;
++	else if (S_ISDIR(lower_inode->i_mode))
++		inode->i_op = &unionfs_dir_iops;
++
++	/* Use different set of file ops for directories */
++	if (S_ISDIR(lower_inode->i_mode))
++		inode->i_fop = &unionfs_dir_fops;
++
++	/* properly initialize special inodes */
++	if (S_ISBLK(lower_inode->i_mode) || S_ISCHR(lower_inode->i_mode) ||
++	    S_ISFIFO(lower_inode->i_mode) || S_ISSOCK(lower_inode->i_mode))
++		init_special_inode(inode, lower_inode->i_mode,
++				   lower_inode->i_rdev);
++
++	/* all well, copy inode attributes */
++	unionfs_copy_attr_all(inode, lower_inode);
++	fsstack_copy_inode_size(inode, lower_inode);
++}
++
+ /*
+  * Connect a unionfs inode dentry/inode with several lower ones.  This is
+  * the classic stackable file system "vnode interposition" action.
+  *
+  * @sb: unionfs's super_block
+  */
+-int unionfs_interpose(struct dentry *dentry, struct super_block *sb, int flag)
++struct dentry *unionfs_interpose(struct dentry *dentry, struct super_block *sb,
++				 int flag)
+ {
+-	struct inode *lower_inode;
+-	struct dentry *lower_dentry;
+ 	int err = 0;
+ 	struct inode *inode;
+ 	int is_negative_dentry = 1;
+ 	int bindex, bstart, bend;
++	int need_fill_inode = 1;
++	struct dentry *spliced = NULL;
  
- For more information, see <http://unionfs.filesystems.org/>.
+ 	verify_locked(dentry);
+ 
+@@ -80,51 +133,12 @@ int unionfs_interpose(struct dentry *dentry, struct super_block *sb, int flag)
+ 			err = -EACCES;
+ 			goto out;
+ 		}
+-
+ 		if (atomic_read(&inode->i_count) > 1)
+ 			goto skip;
+ 	}
+ 
+-	for (bindex = bstart; bindex <= bend; bindex++) {
+-		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
+-		if (!lower_dentry) {
+-			unionfs_set_lower_inode_idx(inode, bindex, NULL);
+-			continue;
+-		}
+-
+-		/* Initialize the lower inode to the new lower inode. */
+-		if (!lower_dentry->d_inode)
+-			continue;
+-
+-		unionfs_set_lower_inode_idx(inode, bindex,
+-					    igrab(lower_dentry->d_inode));
+-	}
+-
+-	ibstart(inode) = dbstart(dentry);
+-	ibend(inode) = dbend(dentry);
+-
+-	/* Use attributes from the first branch. */
+-	lower_inode = unionfs_lower_inode(inode);
+-
+-	/* Use different set of inode ops for symlinks & directories */
+-	if (S_ISLNK(lower_inode->i_mode))
+-		inode->i_op = &unionfs_symlink_iops;
+-	else if (S_ISDIR(lower_inode->i_mode))
+-		inode->i_op = &unionfs_dir_iops;
+-
+-	/* Use different set of file ops for directories */
+-	if (S_ISDIR(lower_inode->i_mode))
+-		inode->i_fop = &unionfs_dir_fops;
+-
+-	/* properly initialize special inodes */
+-	if (S_ISBLK(lower_inode->i_mode) || S_ISCHR(lower_inode->i_mode) ||
+-	    S_ISFIFO(lower_inode->i_mode) || S_ISSOCK(lower_inode->i_mode))
+-		init_special_inode(inode, lower_inode->i_mode,
+-				   lower_inode->i_rdev);
+-
+-	/* all well, copy inode attributes */
+-	unionfs_copy_attr_all(inode, lower_inode);
+-	fsstack_copy_inode_size(inode, lower_inode);
++	need_fill_inode = 0;
++	unionfs_fill_inode(dentry, inode);
+ 
+ skip:
+ 	/* only (our) lookup wants to do a d_add */
+@@ -134,7 +148,28 @@ skip:
+ 		d_instantiate(dentry, inode);
+ 		break;
+ 	case INTERPOSE_LOOKUP:
+-		err = PTR_ERR(d_splice_alias(inode, dentry));
++		spliced = d_splice_alias(inode, dentry);
++		if (IS_ERR(spliced))
++			err = PTR_ERR(spliced);
++		else if (spliced && spliced != dentry) {
++			/*
++			 * d_splice can return a dentry if it was
++			 * disconnected and had to be moved.  We must ensure
++			 * that the private data of the new dentry is
++			 * correct and that the inode info was filled
++			 * properly.  Finally we must return this new
++			 * dentry.
++			 */
++			spliced->d_op = &unionfs_dops;
++			spliced->d_fsdata = dentry->d_fsdata;
++			dentry->d_fsdata = NULL;
++			dentry = spliced;
++			if (need_fill_inode) {
++				need_fill_inode = 0;
++				unionfs_fill_inode(dentry, inode);
++			}
++			goto out_spliced;
++		}
+ 		break;
+ 	case INTERPOSE_REVAL:
+ 		/* Do nothing. */
+@@ -143,9 +178,13 @@ skip:
+ 		printk(KERN_ERR "unionfs: invalid interpose flag passed!");
+ 		BUG();
+ 	}
++	goto out;
+ 
++out_spliced:
++	if (!err)
++		return spliced;
+ out:
+-	return err;
++	return ERR_PTR(err);
+ }
+ 
+ /* like interpose above, but for an already existing dentry */
+@@ -623,8 +662,11 @@ static int unionfs_read_super(struct super_block *sb, void *raw_data,
+ 	/* Set the generation number to one, since this is for the mount. */
+ 	atomic_set(&UNIONFS_D(sb->s_root)->generation, 1);
+ 
+-	/* call interpose to create the upper level inode */
+-	err = unionfs_interpose(sb->s_root, sb, 0);
++	/*
++	 * Call interpose to create the upper level inode.  Only
++	 * INTERPOSE_LOOKUP can return a value other than 0 on err.
++	 */
++	err = PTR_ERR(unionfs_interpose(sb->s_root, sb, 0));
+ 	unionfs_unlock_dentry(sb->s_root);
+ 	if (!err)
+ 		goto out;
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index ec33155..0fa8ae0 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -333,8 +333,8 @@ extern int is_newer_lower(const struct dentry *dentry);
+ #define INTERPOSE_REVAL_NEG	3
+ #define INTERPOSE_PARTIAL	4
+ 
+-extern int unionfs_interpose(struct dentry *this_dentry,
+-			     struct super_block *sb, int flag);
++extern struct dentry *unionfs_interpose(struct dentry *this_dentry,
++					struct super_block *sb, int flag);
+ 
+ #ifdef CONFIG_UNION_FS_XATTR
+ /* Extended attribute functions. */
 -- 
 1.5.2.2.238.g7cbf2f2
 
