@@ -1,106 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbXICOvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbXICPCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754628AbXICOvB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 10:51:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbXICOux
+	id S1753767AbXICPCA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 11:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbXICPBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 10:50:53 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:52039 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750856AbXICOuw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 10:50:52 -0400
-Date: Mon, 3 Sep 2007 16:50:53 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jonathan Gray <jsg@goblin.cx>, Reyk Floeter <reyk@openbsd.org>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: [reyk@openbsd.org: Re: That whole "Linux stealing our code"
-	thing]
-Message-ID: <20070903145053.GX16016@stusta.de>
-References: <20070903132542.GA902@mail.netspace.net.au>
+	Mon, 3 Sep 2007 11:01:51 -0400
+Received: from mail.tmr.com ([64.65.253.246]:39726 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751428AbXICPBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 11:01:51 -0400
+Message-ID: <46DC2228.7080503@tmr.com>
+Date: Mon, 03 Sep 2007 11:03:04 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070903132542.GA902@mail.netspace.net.au>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Xu Yang <risingsunxy@googlemail.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: ramdisk
+References: <ab40e9c0709030604u5fecf34dr945ece01b95e622d@mail.gmail.com>
+In-Reply-To: <ab40e9c0709030604u5fecf34dr945ece01b95e622d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 03, 2007 at 11:25:42PM +1000, Jonathan Gray wrote:
-
-> This is a lot more relevant than much of the ongoing
-> discussion, so perhaps people could take a moment to read it over.
+Xu Yang wrote:
+> Hi everyone,
 > 
-> ----- Forwarded message from Reyk Floeter <reyk@openbsd.org> -----
+> I want to use ramdisk to boot my filesystem, as I can't use NFS and harddisk.
 > 
-> From: Reyk Floeter <reyk@openbsd.org>
-> Date: Mon, 3 Sep 2007 13:23:04 +0200
-> To: misc@openbsd.org
-> Subject: Re: That whole "Linux stealing our code" thing
+> I have load the ramdisk into the ram memory (start address :0x4000000)
 > 
-> Hi!
+> and in the boot options I specified : root =dev/ram0 initrd=0x4000000
 > 
-> I just returned from vacation where I was offline for about two weeks.
-> So I totally missed the incidence and all the surrounding discussion.
-> I'm just digging through many many mails in my inbox from OpenBSD
-> users and developers, Linux people, GNU/freesoftware people, misc *BSD
-> people, and obviously from some trolls.
+> but the kernel said it can not find any file system on it.
 > 
-> I don't want to restart the discussion but I just want to say and
-> repeat a few words:
+Looking at the information below, did the program which loaded the 
+filesystem into RAM decompress it? It noted that it was compressed so I 
+would assume so, but I am unfamiliar with ARM tools, so I ask the 
+question. Also, should the boot device be "/dev/ram0" rather than 
+"dev/ram0" or is that correct for your system?
+
+> Here is the information I can supply :
+> U-Boot 1.2.0 (Aug 31 2007 - 20:54:55)
 > 
-> - I will not release or agree to release my code under either the GPL
-> or any kind of a "dual"-license.
-
-It's your code and it's your choice.
-
-(But note that you contributed to then dual-licenced code in the
- OpenBSD CVS and kept this code dual-licenced. For this code your
- contributions might be assumed dual-licenced.)
-
-> - The ISC-style license must remain including the copyright notice and
-> even the warranty term.
-
-Full agreement (for not dual-licenced code).
-
-> - Thanks to the OpenBSD community and especially to Theo de Raadt for
-> entering into it and for defending my rights as the author of the
-> controversial code.
-
-The email of Theo that was forwarded to linux-kernel [1] centered around 
-Theo telling people that picking one licence for Sam's dual-licenced 
-code would "break the law".
-
-He would have better made the mistake in Jiri's patch visible (and 
-therefore better defended your copyright) if he wouldn't have obscured 
-it with these pointless accusations...
-
-> - This is eating our time. Every few weeks I get a new discussion
-> about licensing of the atheros driver etc. blah blah. Why can't they
-> just accept the license as it is and focus on more important things?
+> ***  Auto-detects ethernet chip ***
 > 
-> I will talk to different people to get the latest state and to think
-> about the next steps. I don't even know if the issue has been solved
-> in the linux tree.
->...
+> 
+> 
+> DRAM:   0 kB
+> ## Unknown FLASH on Bank 1 - Size = 0x00000000 = 0 MB
+> Flash:  0 kB
+> *** Warning - bad CRC, using default environment
+> 
+> In:    serial
+> Out:   serial
+> Err:   serial
+> 
+> Hit any key to stop autoboot:  0
+> ## Booting image at 00007fc0 ...
+>    Image Name:   Linux-2.6.19-arm2
+>    Image Type:   ARM Linux Kernel Image (uncompressed)
+>    Data Size:    740372 Bytes = 723 kB
+>    Load Address: 00008000
+>    Entry Point:  00008000
+> OK
+> 
+> 
+> ## Loading Ramdisk Image at 04000000 ...
+>    Image Name:   ramdisc
+>    Image Type:   ARM Linux RAMDisk Image (gzip compressed)
+>    Data Size:    12582962 Bytes = 12 MB
+>    Load Address: 04000000
+>    Entry Point:  04000000
+> 
+> Starting kernel ...
+> 
+> 
+> .........................................................................................
+> 
+> RAMDISK driver initialized: 16 RAM disks of 10240K size 1024 blocksize
+> <6>loop: loaded (max 8 devices)
+> <6>mice: PS/2 mouse device common for all mice
+> <6>VFP support v0.3: implementor 41 architecture 1 part 20 variant b rev 3
+> No filesystem could mount root, tried:  ext2 cramfs vfat
+> <0>Kernel panic - not syncing: VFS: Unable to mount root fs on
+> unknown-block(1,0)
+> 
+> 
+> Who can give me some hints ? or point me some direction to handle this.
+> 
+> I appreciate this very much.
+> 
+> regards,
+> 
+> Yang
 
-To clarify this myth once again:
-
-The patch that mistakenly changed BSD-only code to GPL has never ever 
-been in the Linux tree.
-
-> Thanks!
-> reyk
-
-cu
-Adrian
-
-[1] http://lkml.org/lkml/2007/9/1/102
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
