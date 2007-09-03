@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbXICKOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbXICKOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932234AbXICKOV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 06:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426AbXICKOH
+	id S1757340AbXICKOi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 06:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbXICKOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 06:14:07 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:49644 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753184AbXICKOE (ORCPT
+	Mon, 3 Sep 2007 06:14:09 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:9769 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754925AbXICKOG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 06:14:04 -0400
-Message-ID: <46DBDE75.90203@anagramm.de>
-Date: Mon, 03 Sep 2007 12:14:13 +0200
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 3 Sep 2007 06:14:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AO6Svl92m6glP//Kl+zqxW9RAelSc7577WCow4FQXMY/XDnafbe/eyFXWFbU9rSJG3XSU8sCRlRp8XaN2tFOByG5juz5Ow5+qKnmboDrbWlZ5fE56pNG9pPXF7ynBQNdXClvXx7NK4opJoteAXI+62b1x/zWF1qLFLWre6COfz0=
+Message-ID: <6bffcb0e0709030314t28c0102dr41f3c7b75b134cfa@mail.gmail.com>
+Date: Mon, 3 Sep 2007 12:14:05 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Jan Dittmer" <jdi@l4x.org>
+Subject: Re: [1/4] 2.6.23-rc5: known regressions
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org
+In-Reply-To: <46DBDDF0.3090203@l4x.org>
 MIME-Version: 1.0
-To: bryan.wu@analog.com
-CC: David Woodhouse <dwmw2@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Blackfin BF54x NAND Flash Controller driver
-References: <1188804323.29566.6.camel@roc-laptop>
-In-Reply-To: <1188804323.29566.6.camel@roc-laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX1/SrXRHECjWAqojUKchZQbMKHMHG6yCJrJmcn0
- TZkl+obNsA7u4+6BOVfaLyqG0Ftez1Sx+4y9mKXuBX9ZHARmqy
- L3QavCoKqcvwj48ggx+NA==
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46DBDD6E.9020007@googlemail.com> <46DBDDF0.3090203@l4x.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Bryan!
+On 03/09/07, Jan Dittmer <jdi@l4x.org> wrote:
+> Michal Piotrowski wrote:
+> > Subject         : 2.6.23-rc2 cross compile regressions (alpha,xtensa)
+> > References      : http://lkml.org/lkml/2007/8/6/43
+> > Last known good : alpha: 2.6.22-git8
+> >                   xtensa: 2.6.22-git6
+> > Submitter       : Jan Dittmer <jdi@l4x.org>
+> > Caused-By       : ?
+> > Handled-By      : xtensa: Christian Zankel <chris@zankel.net>
+> > Status          : unknown
+>
+> Both are fixed as of -rc5
 
-Bryan Wu schrieb:
-> This is the driver for latest Blackfin BF54x nand flash controller
-> 
->  - use nand_chip and mtd_info common nand driver interface
->  - provide both PIO and dma operation
->  - compiled with ezkit bf548 configuration
->  - use hardware 1-bit ECC
->  - tested with YAFFS2 and can mount YAFFS2 filesystem as rootfs
+Thanks. I will try to figure out who fixed these bugs.
 
-Looks great!
+>
+> Jan
+>
 
-Will this driver also work for the new BF52x series of the Blackfin Series?
-(Or is it planned to make it work for... anytime soon.)
+Regards,
+Michal
 
-Thank you!
 -- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+LOG
+http://www.stardust.webpages.pl/log/
