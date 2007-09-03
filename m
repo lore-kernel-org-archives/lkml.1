@@ -1,60 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbXICJ4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbXICJ7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754902AbXICJ4d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 05:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbXICJ40
+	id S1755278AbXICJ7e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 05:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXICJ70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 05:56:26 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46162 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbXICJ4Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 05:56:25 -0400
-Date: Mon, 3 Sep 2007 03:47:20 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: rusty@rustycorp.com.au, vatsa@in.ibm.com, zwane@arm.linux.org.uk,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: cpu hotplug support broken in 2.6.23-rc3
-Message-ID: <20070903034720.GB3655@ucw.cz>
-References: <20070827104350.GA2073@elf.ucw.cz> <20070827105801.GA4053@elf.ucw.cz> <b6a2187b0708270736q5cfc180fp3c223a57ea6904f9@mail.gmail.com> <20070827213248.GF3398@elf.ucw.cz> <b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com>
+	Mon, 3 Sep 2007 05:59:26 -0400
+Received: from styx.suse.cz ([82.119.242.94]:46910 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752258AbXICJ70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 05:59:26 -0400
+Date: Mon, 3 Sep 2007 12:18:54 +0200
+From: Jan Kara <jack@suse.cz>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org
+Subject: Re: [PATCH] Send quota messages via netlink
+Message-ID: <20070903101853.GC7524@duck.suse.cz>
+References: <20070828141318.GC5869@duck.suse.cz> <20070828211335.37fce4c9.akpm@linux-foundation.org> <46D5126F.9000405@linux.vnet.ibm.com> <20070829124615.GC7814@duck.suse.cz> <46D7BC69.8090203@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b6a2187b0708280721w20d5dc44q249642f7946ae55a@mail.gmail.com>
+In-Reply-To: <46D7BC69.8090203@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri 31-08-07 12:29:53, Balbir Singh wrote:
+> Jan Kara wrote:
+> >>>> +	}
+> >>>> +	ret = nla_put_u32(skb, QUOTA_NL_A_QTYPE, dquot->dq_type);
+> >>>> +	if (ret)
+> >>>> +		goto attr_err_out;
+> >>>> +	ret = nla_put_u64(skb, QUOTA_NL_A_EXCESS_ID, dquot->dq_id);
+> >>>> +	if (ret)
+> >>>> +		goto attr_err_out;
+> >>>> +	ret = nla_put_u32(skb, QUOTA_NL_A_WARNING, warntype);
+> >>>> +	if (ret)
+> >>>> +		goto attr_err_out;
+> >>>> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MAJOR,
+> >>>> +		MAJOR(dquot->dq_sb->s_dev));
+> >>>> +	if (ret)
+> >>>> +		goto attr_err_out;
+> >>>> +	ret = nla_put_u32(skb, QUOTA_NL_A_DEV_MINOR,
+> >>>> +		MINOR(dquot->dq_sb->s_dev));
+> >>>> +	if (ret)
+> >>>> +		goto attr_err_out;
+> >>>> +	ret = nla_put_u64(skb, QUOTA_NL_A_CAUSED_ID, current->user->uid);
+> >>>> +	if (ret)
+> >>>> +		goto attr_err_out;
+> >>>> +	genlmsg_end(skb, msg_head);
+> >>>> +
+> >> Have you looked at ensuring that the data structure works across 32 bit
+> >> and 64 bit systems (in terms of binary compatibility)? That's usually
+> >> a nice to have feature.
+> >   Generic netlink should take care of this - arguments are typed so it
+> > knows how much bits numbers have. So this should be no issue. Are there any
+> > other problems that you have in mind?
+> > 
+> Yes, but apart from that, if I remember Jamal Hadi's initial comments
+> on taskstats, he recommended that we align everything to 64 bit so
+> that the data is well aligned for 64 bit systems. You could also consider
+  But each attribute is just one number (either 32 or 64 bit) so there's
+not much to align. Also each attribute has its netlink header so alignment
+is anyway hard to predict. Finally, this is by no means performance
+critical - average system using quotas may get say 1 notification per user
+per month?
 
-> > Can you try 20-or-so tests? Mine hangs randomly, so it survived 4 or
-> > so cycles at one point.
-> 
-> Mine still survives with this ... with sleep 1 ...
-> 
-> # for((i=0; i<100; i++)); do echo $i; echo $((i % 2))
-> >/sys/devices/system/cpu/cpu1/online; sleep 1; done
-> 
-> and this as well ... without sleep ...
-> 
-> # for((i=0; i<100; i++)); do echo $i; echo $((i % 2))
-> >/sys/devices/system/cpu/cpu1/online; done
-> 
-> I'm on reiserfs. gcc 3.4.5. Config sent to you seperately so as not to
-> cloud lkml. If anyone wants the config, please let me know. Is mime
-> "attachment" acceptable now on lkml?
+> creating a data structure, document it's members, align them and use
+> that to send out the data.
+  I don't like sending one structure - by doing that you loose the
+flexibility of netlink attributes...
 
-Ok, so it gets weirder. I have now machine in "hung" state; other
-consoles still work, but there are no timers -  sleep 1 hangs forever.
+> >>>> +	ret = genlmsg_multicast(skb, 0, quota_genl_family.id, GFP_NOFS);
+> >>>> +	if (ret < 0 && ret != -ESRCH)
+> >>>> +		printk(KERN_ERR
+> >>>> +			"VFS: Failed to send notification message: %d\n", ret);
+> >>>> +	return;
+> >>>> +attr_err_out:
+> >>>> +	printk(KERN_ERR "VFS: Failed to compose quota message: %d\n", ret);
+> >>>> +err_out:
+> >>>> +	kfree_skb(skb);
+> >>>> +}
+> >>>> +#endif
+> >>> This is it.  Normally netlink payloads are represented as a struct.  How
+> >>> come this one is built-by-hand?
+> >>>
+> >>> It doesn't appear to be versioned.  Should it be?
+> >>>
+> >> Yes, versioning is always nice and genetlink supports it.
+> >>
+> It would nice for you to use the versioning feature.
+  How does generic netlink support versioning? I have not found this
+feature. Looking into Documentation/accounting/taskstats.txt it seems that
+taskstats are versioning only the structure taskstats itself but not the
+buch of attributes as a whole...
 
-sysrq-t shows kstopmachine hung in hrtimer_try_to_cancel.
+> >> The memory controller or VM would also be interested in notifications
+> >> of OOM. At OLS this year interest was shown in getting OOM notifications
+> >> and allow the user space a chance to handle the notification and take
+> >> action (especially for containers). We already have containerstats for
+> >> containers (which I was planning to reuse), but I was told that we would
+> >> be interested in user space OOM notifications in general.
+> 
+> >  Generic netlink can be used to pass this information (although in OOM
+> > situation, it may be a bit hairy to get the network stack working...). But
+> > I guess it's not related to my patch.
+> 
+> We could have a pre-allocated buffer stored at startup and use that for
+> OOM notification. In the case of container OOM, we are likely to have
+> free global memory. Working towards an infrastructure so that anybody can
+> build on top of it and sending notifications on interesting events becomes
+> easier would be nice. We can reuse code that way and add fewer bugs :-)
+  Yes, but generic netlink itself is such an infrastructure, isn't it? It
+is about 70 lines of code to implement notification for quota subsystem so
+it's really simple...
 
-So I indeed suspect difference-in-kconfig to trigger this, and will
-try disabling noidlehz.
-								Pavel
-
+									Honza
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
