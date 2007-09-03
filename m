@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447AbXICNPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbXICNSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755447AbXICNPb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 09:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbXICNPX
+	id S1755596AbXICNSd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 09:18:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXICNSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 09:15:23 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:49829 "EHLO smtp.wine.ocn.ne.jp"
+	Mon, 3 Sep 2007 09:18:24 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:49916 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752609AbXICNPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 09:15:22 -0400
-To: paul.moore@hp.com
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       chrisw@sous-sol.org
-Subject: Re: [TOMOYO 15/15] LSM expansion for TOMOYO Linux.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <46CED214.6050505@gmail.com>
-	<200708271049.06900.paul.moore@hp.com>
-	<200708281939.JDH33719.MVSFOOQJHFFOtL@I-love.SAKURA.ne.jp>
-	<200708280921.48867.paul.moore@hp.com>
-In-Reply-To: <200708280921.48867.paul.moore@hp.com>
-Message-Id: <200709032215.DCF36819.SLQtHFMFOOFOVJ@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50]
-X-Accept-Language: ja,en
-Date: Mon, 3 Sep 2007 22:15:27 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752596AbXICNSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 09:18:23 -0400
+Message-ID: <46DC0976.10003@free.fr>
+Date: Mon, 03 Sep 2007 15:17:42 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete
+ Error }
+References: <46D59ED2.4000900@free.fr> <46D9876F.1070405@ru.mvista.com>
+In-Reply-To: <46D9876F.1070405@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Sergei Shtylyov wrote:
 
-Paul Moore wrote:
-> I apologize for not recognizing your approach from our earlier discussion on 
-> the LSM mailing list in July.  Unfortunately, I have the same objections to 
-> these changes that I did back then and from what I can recall of the 
-> discussion the rest of the kernel networking community agreed that these 
-> changes are not the preferred way of solving this problem.  We offered 
-> suggestions on how to accomplish your goals in a way that would be acceptable 
-> upstream and I would encourage you to investigate those options further.
+> John Sigler wrote:
+> 
+>> When my system boots, I get several set_drive_speed_status errors.
+>> (Please see attached dmesg output.)
+> 
+>> Can someone explain what they mean? How do I get rid of them?
+> 
+>    IDE code attempts to autotune PIO mode and fails at that because your 
+> device is too old (or its manufacturer was too lazy) to support ATA-2 
+> (or EIDE from marketing PoV) is its full glory.
 
-When I proposed a patch in July, I was patching at post-copy_to_user() step
-(i.e. after sock_recvmsg()).
-This approach messed up user-supplied buffer.
+But the data sheet seems to state the drive supports PIO modes 1 and 2?
 
-This time, I'm patching at pre-copy_to_user() step
-(i.e. at skb_recv_datagram()).
-This approach doesn't mess up user-supplied buffer.
-I think this is a cleaner way than the previous patch.
+>> Is there something I need to set in the config? or something I should 
+>> not have set?
+> 
+>    No, it just means that the IDE code is *too young* to support such 
+> pre-EIDE devices. :-D
 
-Although read() gets an error when select() said "read ready",
-I can't find other place to use for accomplishing my goals.
+Wow! This is a device that was purchased only a few months ago...
 
-By the way, similar thing can happen when select() against
-a file descriptor said "read ready" but read() gets an error
-if security policy or security-id of the file has changed
-between select() and read(), isn't it?
-And such behavior is acceptable, isn't it?
-If such behavior can happen and is acceptable and *preferable*,
-I think checking permission at dequeue time (i.e. skb_recv_datagram())
-is *preferable* way than checking permission at enqueue time
-(i.e. socket_sock_rcv_skb()).
+>> Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+>> ide: Assuming 33MHz system bus speed for PIO modes; override with 
+>> idebus=xx
+>> VP_IDE: IDE controller at PCI slot 0000:00:07.1
+>> VP_IDE: chipset revision 6
+>> VP_IDE: not 100% native mode: will probe irqs later
+>> VP_IDE: VIA vt82c686b (rev 40) IDE UDMA100 controller on pci0000:00:07.1
+>>     ide0: BM-DMA at 0xd000-0xd007, BIOS settings: hda:pio, hdb:pio
+>>     ide1: BM-DMA at 0xd008-0xd00f, BIOS settings: hdc:pio, hdd:pio
+>> Probing IDE interface ide0...
+>> hda: PQI IDE DiskOnModule, ATA DISK drive
+>> hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete 
+>> Error }
+>> hda: set_drive_speed_status: error=0x04 { DriveStatusError }
+>> hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete 
+>> Error }
+>> hda: set_drive_speed_status: error=0x04 { DriveStatusError }
+> 
+>   That means that you've managed to find pre-EIDE/ATA hardware which 
+> doesn't support setting arbitrary PIO modes. What's funny is that 
+> recently being discussed here, so expect a patch RSN. :-)
+
+In 2.6.23?
 
 Regards.
