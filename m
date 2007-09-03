@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbXICNSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbXICNU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755596AbXICNSd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 09:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXICNSY
+	id S1756076AbXICNU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 09:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXICNUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 09:18:24 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:49916 "EHLO smtp4-g19.free.fr"
+	Mon, 3 Sep 2007 09:20:21 -0400
+Received: from unthought.net ([212.97.129.88]:54781 "EHLO unthought.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752596AbXICNSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 09:18:23 -0400
-Message-ID: <46DC0976.10003@free.fr>
-Date: Mon, 03 Sep 2007 15:17:42 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	id S1753279AbXICNUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 09:20:20 -0400
+Date: Mon, 3 Sep 2007 15:20:19 +0200
+From: Jakob Oestergaard <jakob@unthought.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Frank van Maarseveen <frankvm@frankvm.com>,
+       Hua Zhong <hzhong@gmail.com>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org
+Subject: Re: recent nfs change causes autofs regression
+Message-ID: <20070903132019.GC21977@unthought.net>
+Mail-Followup-To: Jakob Oestergaard <jakob@unthought.net>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Trond Myklebust <trond.myklebust@fys.uio.no>,
+	Frank van Maarseveen <frankvm@frankvm.com>,
+	Hua Zhong <hzhong@gmail.com>,
+	'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>,
+	akpm@linux-foundation.org
+References: <1188513433.6626.24.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org> <1188535485.6626.85.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302157470.25853@woody.linux-foundation.org> <1188536658.6626.98.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302215280.25853@woody.linux-foundation.org> <20070831074028.GR21979@unthought.net> <alpine.LFD.0.999.0708310055010.25853@woody.linux-foundation.org> <20070831085157.GS21979@unthought.net> <alpine.LFD.0.999.0708310935240.25853@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete
- Error }
-References: <46D59ED2.4000900@free.fr> <46D9876F.1070405@ru.mvista.com>
-In-Reply-To: <46D9876F.1070405@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0708310935240.25853@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov wrote:
+On Fri, Aug 31, 2007 at 09:43:29AM -0700, Linus Torvalds wrote:
+...
+> This is *not* a security hole. In order to make it a security hole, you 
+> need to be root in the first place.
 
-> John Sigler wrote:
+Non-root users can write to places where root might believe they cannot write
+because he might be under the mistaken assumption that ro means ro.
+
+I am under the impression that that could have implications in some setups.
+
+...
 > 
->> When my system boots, I get several set_drive_speed_status errors.
->> (Please see attached dmesg output.)
-> 
->> Can someone explain what they mean? How do I get rid of them?
-> 
->    IDE code attempts to autotune PIO mode and fails at that because your 
-> device is too old (or its manufacturer was too lazy) to support ATA-2 
-> (or EIDE from marketing PoV) is its full glory.
+>  - it's a misfeature that people are used to, and has been around forever.
 
-But the data sheet seems to state the drive supports PIO modes 1 and 2?
+Sure, they're used it it, but I doubt they are aware of it.
 
->> Is there something I need to set in the config? or something I should 
->> not have set?
-> 
->    No, it just means that the IDE code is *too young* to support such 
-> pre-EIDE devices. :-D
+...
+> so I really don't see why people excuse the new behaviour.
 
-Wow! This is a device that was purchased only a few months ago...
+We can certainly agree that a nicer fix would be nicer :)
 
->> Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
->> ide: Assuming 33MHz system bus speed for PIO modes; override with 
->> idebus=xx
->> VP_IDE: IDE controller at PCI slot 0000:00:07.1
->> VP_IDE: chipset revision 6
->> VP_IDE: not 100% native mode: will probe irqs later
->> VP_IDE: VIA vt82c686b (rev 40) IDE UDMA100 controller on pci0000:00:07.1
->>     ide0: BM-DMA at 0xd000-0xd007, BIOS settings: hda:pio, hdb:pio
->>     ide1: BM-DMA at 0xd008-0xd00f, BIOS settings: hdc:pio, hdd:pio
->> Probing IDE interface ide0...
->> hda: PQI IDE DiskOnModule, ATA DISK drive
->> hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete 
->> Error }
->> hda: set_drive_speed_status: error=0x04 { DriveStatusError }
->> hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete 
->> Error }
->> hda: set_drive_speed_status: error=0x04 { DriveStatusError }
-> 
->   That means that you've managed to find pre-EIDE/ATA hardware which 
-> doesn't support setting arbitrary PIO modes. What's funny is that 
-> recently being discussed here, so expect a patch RSN. :-)
+-- 
 
-In 2.6.23?
+ / jakob
 
-Regards.
