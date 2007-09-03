@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933453AbXICATT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbXICBGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933453AbXICATT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Sep 2007 20:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbXICATE
+	id S1757789AbXICBGi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Sep 2007 21:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbXICBGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Sep 2007 20:19:04 -0400
-Received: from fed1rmmtao101.cox.net ([68.230.241.45]:43779 "EHLO
-	fed1rmmtao101.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750737AbXICATC (ORCPT
+	Sun, 2 Sep 2007 21:06:30 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45239 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752499AbXICBG3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Sep 2007 20:19:02 -0400
-From: Junio C Hamano <junkio@pobox.com>
-To: Sean <seanlkml@sympatico.ca>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, David Kastrup <dak@gnu.org>,
-       git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] GIT 1.5.3
-References: <7vodglr32i.fsf@gitster.siamese.dyndns.org>
-	<46DA5F33.2020005@zytor.com> <85odgltrtj.fsf@lola.goethe.zz>
-	<46DA88EF.7080103@zytor.com>
-	<20070902133803.1b46f599.seanlkml@sympatico.ca>
-	<7v4picpvgq.fsf@gitster.siamese.dyndns.org>
-	<20070902191644.29d46cd2.seanlkml@sympatico.ca>
-Date: Sun, 02 Sep 2007 17:19:00 -0700
-In-Reply-To: <20070902191644.29d46cd2.seanlkml@sympatico.ca>
-	(seanlkml@sympatico.ca's message of "Sun, 2 Sep 2007 19:16:44 -0400")
-Message-ID: <7vejhgob2j.fsf@gitster.siamese.dyndns.org>
+	Sun, 2 Sep 2007 21:06:29 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tejun Heo <htejun@gmail.com>
+Cc: Greg K-H <greg@kroah.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: regarding sysfs/kobject separation
+References: <46DABD6A.2030708@gmail.com>
+Date: Sun, 02 Sep 2007 19:06:09 -0600
+In-Reply-To: <46DABD6A.2030708@gmail.com> (Tejun Heo's message of "Sun, 02 Sep
+	2007 22:40:58 +0900")
+Message-ID: <m1veasy2v2.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sean <seanlkml@sympatico.ca> writes:
+Tejun Heo <htejun@gmail.com> writes:
 
-> On Sun, 02 Sep 2007 15:13:09 -0700
-> Junio C Hamano <gitster@pobox.com> wrote:
-> ...
->> For majority of general public, I thought the spec file _I_
->> ship, along with RPM files _I_ build, are contrib status
->> already.  Don't distro people do their own RPM packages, instead
->> of using what I placed on k.org?
+> * Automatic symlink handling.  Symlink names can be formatted with the
+> name of its target.  e.g. if the symlink name is specified as
+> "link-%1:%0" and points to "devices/mybus0/mydev0", its name becomes
+> "link-mybus0-mydev0" && the symlink will be automatically renamed when
+> the target node or one of its ancestor is moved or renamed.  The symlink
+> is also plugged and removed together with its target.  So, once created,
+> the user doesn't have to care about the symlink.  sysfs will take care
+> of it.
+
+Sounds nice.
+
+> * I think most of the changes wouldn't hinder implementation of tagged
+> nodes.  In fact, most of the new rename logic which handles symlink
+> rename together is taken from tagged node implementation, so with some
+> luck it should be easier to support tagged nodes.
+
+Hopefully.
+
+> *** Future plans.
 >
-> Didn't know you used RPM yourself, so I guess this is just
-> a case of something slipping through rather than the spec file
-> needing a maintainer.
+> * Move uevent support over to sysfs and bridging the current users.
+> This makes sense because sysfs hierarchy is all that userland can see
+> and sysfs users which don't use kobject also needs uevent support.
 
-Well, I do not _use_ it, but the RPM I have on k.org and mention
-as part of the announcement are built by me by typing "make
-rpm".  What I meant to say was that these RPM files may not be
-"official" at all from the point of view of distro users, and I
-suspect that distro "package maintainers" for git would not be
-doing just a plain vanilla "make rpm" using the spec file that
-comes as part of git.git repository.
+This could have an interesting interaction with the namespace work.
+I think my current implementation only makes these events visible
+in the initial network namespace.  But that should change.
 
+Eric
