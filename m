@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbXIDW5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbXIDXIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755772AbXIDW5u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 18:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbXIDW5n
+	id S1755552AbXIDXIZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 19:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbXIDXIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 18:57:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45967 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752583AbXIDW5m (ORCPT
+	Tue, 4 Sep 2007 19:08:17 -0400
+Received: from keil-draco.com ([216.193.185.50]:50651 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752403AbXIDXIQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 18:57:42 -0400
-Date: Wed, 5 Sep 2007 04:40:52 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Jason Lunz <lunz@falooley.org>
-cc: David Woodhouse <dwmw2@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
-       Stable Branch <stable@kernel.org>
-Subject: Re: [mtd] allow modular mtdsuper
-In-Reply-To: <20070904222154.GA12804@falooley.org>
-Message-ID: <alpine.LFD.0.999.0709050421330.20571@enigma.security.iitk.ac.in>
-References: <20070904222154.GA12804@falooley.org>
+	Tue, 4 Sep 2007 19:08:16 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Michael Poole <mdpoole@troilus.org>
+Subject: Re: Fwd: That whole "Linux stealing our code" thing
+Date: Tue, 4 Sep 2007 19:08:04 -0400
+User-Agent: KMail/1.9.6
+Cc: "Chris Friesen" <cfriesen@nortel.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       davids@webmaster.com,
+       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+References: <MDEHLPKNGKAHNMBLJOLKOEDKGJAC.davids@webmaster.com> <46DDB1CB.8080306@nortel.com> <87ejherza8.fsf@graviton.dyn.troilus.org>
+In-Reply-To: <87ejherza8.fsf@graviton.dyn.troilus.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709041908.04232.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jason,
+On Tuesday 04 September 2007 15:44:31 Michael Poole wrote:
+> Chris Friesen writes:
+> > Daniel Hazelton wrote:
+> >> On Tuesday 04 September 2007 09:27:02 Krzysztof Halasa wrote:
+> >>>Daniel Hazelton <dhazelton@enter.net> writes:
+> >>>>US Copyright law. A copyright holder, regardless of what license he/she
+> >>>>may have released the work under, can still revoke the license for a
+> >>>>specific person or group of people. (There are some exceptions, but
+> >>>> they do not apply to the situation that is being discussed)
+> >
+> > The OpenBSD policy page doesn't agree with you:
+> >
+> > "...That means that having granted a permission, the copyright holder
+> > can not retroactively say that an individual or class of individuals
+> > are no longer granted those permissions. Likewise should the copyright
+> > holder decide to "go commercial" he can not revoke permissions already
+> > granted for the use of the work as distributed, though he may impose
+> > more restrictive permissions in his future distributions of that work."
+> >
+> > http://www.openbsd.org/policy.html
+>
+> By my reading, this is supported by 17 USC 203(a)(3):
+>
+>   (3) Termination of the grant may be effected at any time during a
+>       period of five years beginning at the end of thirty-five years
+>       from the date of execution of the grant; or, if the grant covers
+>       the right of publication of the work, the period begins at the
+>       end of thirty-five years from the date of publication of the
+>       work under the grant or at the end of forty years from the date
+>       of execution of the grant, whichever term ends earlier.
+>
+> (from
+> http://www.law.cornell.edu/uscode/html/uscode17/usc_sec_17_00000203----000-
+>.html )
 
+Ah, I am both right and wrong, it seems. Apparently you have to wait anywhere 
+form 35 to 40 years, and then you only have a five year window. Seems damned 
+strange to me, but oh well.
 
-On Tue, 4 Sep 2007, Jason Lunz wrote:
-> 
-> Declare mtdsuper to be gpl-licensed so it can access get_mtd_device and
-> put_mtd_device when loaded as a module.
+(I'd totally forgotten that part of the law - or my mind decided to play 
+tricks on me.)
 
-The actual issue was a bit different -- refer commit bec494775600b1cd in
-latest -git (patch included below).
+DRH
 
-David, it looks like .22 had this problem as well. If we care enough, you
-could forward this on to -stable (cc'ed, just in case).
+PS: See, I will admit it when I'm shown evidence that I'm wrong :)
 
-Satyam
-
-[MTD] Makefile fix for mtdsuper
-
-We want drivers/mtd/{mtdcore, mtdsuper, mtdpart}.c to be built and linked
-into the same mtd.ko module. Fix the Makefile to ensure this, and remove
-duplicate MODULE_ declarations in mtdpart.c, as mtdcore.c already has them.
-
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-
----
-
- drivers/mtd/Makefile  |    2 +-
- drivers/mtd/mtdpart.c |    4 ----
- 2 files changed, 1 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/mtd/Makefile b/drivers/mtd/Makefile
-index 451adcc..6d958a4 100644
---- a/drivers/mtd/Makefile
-+++ b/drivers/mtd/Makefile
-@@ -3,9 +3,9 @@
- #
- 
- # Core functionality.
-+obj-$(CONFIG_MTD)		+= mtd.o
- mtd-y				:= mtdcore.o mtdsuper.o
- mtd-$(CONFIG_MTD_PARTITIONS)	+= mtdpart.o
--obj-$(CONFIG_MTD)		+= $(mtd-y)
- 
- obj-$(CONFIG_MTD_CONCAT)	+= mtdconcat.o
- obj-$(CONFIG_MTD_REDBOOT_PARTS) += redboot.o
-diff --git a/drivers/mtd/mtdpart.c b/drivers/mtd/mtdpart.c
-index 9c62368..6174a97 100644
---- a/drivers/mtd/mtdpart.c
-+++ b/drivers/mtd/mtdpart.c
-@@ -560,7 +560,3 @@ int parse_mtd_partitions(struct mtd_info *master, const char **types,
- EXPORT_SYMBOL_GPL(parse_mtd_partitions);
- EXPORT_SYMBOL_GPL(register_mtd_parser);
- EXPORT_SYMBOL_GPL(deregister_mtd_parser);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Nicolas Pitre <nico@cam.org>");
--MODULE_DESCRIPTION("Generic support for partitioning of MTD devices");
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
