@@ -1,250 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbXIDLTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbXIDLVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030AbXIDLTS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 07:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbXIDLTF
+	id S1753660AbXIDLVU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 07:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbXIDLVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 07:19:05 -0400
-Received: from mi0.bluebottle.com ([206.188.25.15]:40004 "EHLO
-	mi0.bluebottle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753005AbXIDLTD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 07:19:03 -0400
-DomainKey-Signature: a=rsa-sha1; s=mail; d=bluebottle.com; c=nofws; q=dns;
-	h=received:from:to:cc:subject:date:mime-version:
-	content-type:content-transfer-encoding:x-priority:
-	x-msmail-priority:x-mailer:x-mimeole:x-trusted-delivery;
-	b=KGW5q5TO/7C1JezLRps3qqLZPKRSlIfiz6aL4TAyDofG4QrZl5hNgQvSONqeTgV9u
-	Wq0tiM9wvV26aaa9n8RN6naJOde7Vgr3qvzMiKtIWAio1/hryjzjJZTyvGoudG7
-Message-Id: <200709041119.l84BJ1H8008726@mi0.bluebottle.com>
-From: "n" <xellos@bluebottle.com>
-To: "n" <xellos@bluebottle.com>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       <patrizio.bassi@gmail.com>
-Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Kernel," <linux-kernel@vger.kernel.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       "Alan Cox" <alan@redhat.com>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-Subject: pata_pdc202xx_old bug?  (ATA bus error)
-Date: Tue, 4 Sep 2007 04:19:04 -0700
+	Tue, 4 Sep 2007 07:21:13 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4145 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751225AbXIDLVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 07:21:12 -0400
+Date: Tue, 4 Sep 2007 13:21:40 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, peterz@infradead.org,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [ANNOUNCE/RFC] Really Simple Really Fair Scheduler
+In-Reply-To: <20070904062957.GA25634@elte.hu>
+Message-ID: <Pine.LNX.4.64.0709041244080.1817@scrub.home>
+References: <20070902120154.GA23769@elte.hu> <Pine.LNX.4.64.0709032030320.1817@scrub.home>
+ <20070903185403.GA23479@elte.hu> <Pine.LNX.4.64.0709032106070.1817@scrub.home>
+ <20070903192050.GA29049@elte.hu> <Pine.LNX.4.64.0709032140140.1817@scrub.home>
+ <20070903200405.GA2943@elte.hu> <Pine.LNX.4.64.0709040130360.1817@scrub.home>
+ <20070904062957.GA25634@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="Windows-1252";
-	reply-type=response
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-Trusted-Delivery: <c111299ef24070e7921410aa9cd92e2d>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-anyone come up with a patch/fix for this?
+Hi,
 
-i also tried this drive on the system ide ports and it worked fine (also 
-uses libata drivers, nforce2), it seems to be something wrong in the 
-"pata_pdc202xx_old" code.
-what can i do to get this fixed?
-the drive is a seagate.
-i dont know what  res 51/84:00:3f:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA 
-bus error) means
+On Tue, 4 Sep 2007, Ingo Molnar wrote:
 
-this is a really strange and hard to reproduce bug since all my other drives 
-work (all maxtors , and one wd) just the seagate gets this error (and only 
-on the PDC20267 card)
-thanks.
+> and what about the mirror image problem?
 
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:01:3f:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 512 out
-         res 51/84:00:3f:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/100
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:01:3f:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 512 out
-         res 51/84:00:3f:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/100
-ata3: EH complete
-sd 2:0:0:0: [sde] 234441648 512-byte hardware sectors (120034 MB)
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:01:3f:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 512 out
-         res 51/84:00:3f:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/100
-ata3: EH complete
-sd 2:0:0:0: [sde] Write Protect is off
-sd 2:0:0:0: [sde] Mode Sense: 00 3a 00 00
-ata3.00: limiting speed to UDMA/66:PIO4
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:01:3f:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 512 out
-         res 51/84:00:3f:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/66
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:01:3f:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 512 out
-         res 51/84:00:3f:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/66
-ata3: EH complete
-sd 2:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:01:3f:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 512 out
-         res 51/84:00:3f:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/66
-sd 2:0:0:0: [sde] Result: hostbyte=0x00 driverbyte=0x08
-sd 2:0:0:0: [sde] Sense Key : 0xb [current] [descriptor]
-Descriptor sense data with sense descriptors (in hex):
-        72 0b 47 00 00 00 00 0c 00 0a 80 00 00 00 00 00
-        00 00 00 3f
-sd 2:0:0:0: [sde] ASC=0x47 ASCQ=0x0
-end_request: I/O error, dev sde, sector 63
-ata3: EH complete
-sd 2:0:0:0: [sde] 234441648 512-byte hardware sectors (120034 MB)
-Filesystem "sde1": Disabling barriers, trial barrier write failed
-sd 2:0:0:0: [sde] Write Protect is off
-sd 2:0:0:0: [sde] Mode Sense: 00 3a 00 00
-XFS mounting filesystem sde1
-sd 2:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-sd 2:0:0:0: [sde] 234441648 512-byte hardware sectors (120034 MB)
-sd 2:0:0:0: [sde] Write Protect is off
-sd 2:0:0:0: [sde] Mode Sense: 00 3a 00 00
-sd 2:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't support 
-DPO or FUA
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b6:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b6:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/66
-ata3: EH complete
-ata3.00: limiting speed to UDMA/33:PIO4
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b6:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b6:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/33
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b6:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b6:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/33
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b6:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b6:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/33
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b6:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b6:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/33
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b6:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b6:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/33
-sd 2:0:0:0: [sde] Result: hostbyte=0x00 driverbyte=0x08
-sd 2:0:0:0: [sde] Sense Key : 0xb [current] [descriptor]
-Descriptor sense data with sense descriptors (in hex):
-        72 0b 47 00 00 00 00 0c 00 0a 80 00 00 00 00 00
-        06 fc b6 17
-sd 2:0:0:0: [sde] ASC=0x47 ASCQ=0x0
-end_request: I/O error, dev sde, sector 117224983
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b7:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b7:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/33
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b7:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b7:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/33
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b7:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b7:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/33
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b7:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b7:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/33
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b7:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b7:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/33
-ata3: EH complete
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-ata3.00: (BMDMA stat 0x4)
-ata3.00: cmd ca/00:00:17:b7:fc/00:00:00:00:00/e6 tag 0 cdb 0x0 data 131072 
-out
-         res 51/84:00:17:b7:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
-ata3: soft resetting port
-ata3.00: configured for UDMA/33
-sd 2:0:0:0: [sde] Result: hostbyte=0x00 driverbyte=0x08
-sd 2:0:0:0: [sde] Sense Key : 0xb [current] [descriptor]
-Descriptor sense data with sense descriptors (in hex):
-        72 0b 47 00 00 00 00 0c 00 0a 80 00 00 00 00 00
-        06 fc b7 17
-sd 2:0:0:0: [sde] ASC=0x47 ASCQ=0x0
-end_request: I/O error, dev sde, sector 117225239
-ata3: EH complete
-xfs_force_shutdown(sde1,0x1) called from line 423 of file fs/xfs/xfs_rw.c. 
-Return address = 0xc01e6258
-Filesystem "sde1": I/O Error Detected.  Shutting down filesystem: sde1
-Please umount the filesystem, and rectify the problem(s)
-I/O error in filesystem ("sde1") meta-data dev sde1 block 0x6fcb5d8 
-("xlog_bwrite") error 5 buf count 262144
-XFS: failed to locate log tail
-XFS: log mount/recovery failed: error 5
-XFS: log mount failed
+Sorry, I'm not familiar with that in a scheduler context.
 
-----------------------------------------------------------------------
-Get a free email account with anti spam protection.
-http://www.bluebottle.com/tag/2
+> Your math assumes that tasks 
+> use up their full timeslices, somewhere starting at (12):
+> 
+> | (12)    time_norm_app = sum_{t}^{T}(time_norm_{t} * weight_{t}) /
+> |                                            sum_{t}^{T}(weight_{t})
+> |
+> | This produces only a approximate normalized time, but if all 
+> | time_norm_{t} are equal (i.e. all tasks got their share), the result 
+> | is the same, thus the error is only temporary.
+> 
+> >From here on the reasoning and the math is flawed i believe: it assumes 
+> that tasks use up their timeslices - which is rarely the case.
 
+I'm not sure what you're refering to. The remaining math basically only 
+deals with the average calculation and if we're still at your simplified 
+model, then it's largely irrevelant, because the approximation error only 
+comes into effect with different weights. This means for the common case, 
+you can assume my code produces a perfect average.
+
+> In practical terms: your code causes unfairness to tasks that sleep when 
+> they have used up only a fraction of their slice, when they are in a 
+> fairness-deficit. For example consider a task that just waited alot to 
+> get on the CPU, and when it finally got there (gathering a fairness 
+> deficit of say 9 milliseconds), a hundred microseconds later it sleeps.
+> 
+> The problem is that when it wakes up and gets back on the runqueue your 
+> code "forgets" that the task is in "need of fairness" by 9 milliseconds: 
+> the task continues as if its previous starvation didnt happen at all. 
+
+Please put this into more context, e.g. demonstrate how this problem 
+doesn't exist in CFS. My code should largely mirror CFS behaviour with the 
+exception that the bonus maybe isn't as big and this:
+
+        if (sysctl_sched_features & SCHED_FEAT_SLEEPER_AVG)
+                delta_fair = div64_likely32((u64)delta_fair * load,
+                                                load + se->load.weight);
+
+
+> This effect can cause _far more noise_ and even systematic starvation 
+> than any numeric rounding effects could cause. (This could perhaps 
+> explain the unfairness Mike reported, and this could perhaps explain the 
+> noisy hackbench results i'm seeing with your patch - although i'm not 
+> certain about this, i havent looked into those usecases in detail.)
+
+The problem Mike reported looks more like a bug, I'm puzzled why the 
+verify code didn't trigger as the whole thing was pretty much out of sync, 
+so in the next version I'll add a few more checks, but I'm not finished 
+with the hackbench results yet.
+
+> CFS's current math addresses this problem via the use of the fair-clock 
+> metric and via ->wait_runtime: that gives us a good idea what happened 
+> to the system while the task slept. With your model, that information is 
+> not maintained at all, and is not regainable. At the moment i dont see 
+> how we could achieve good sleeper behavior with your model, you've 
+> over-simplified the scheduler metrics and we've lost essential 
+> information.
+
+Please describe this sleeper behaviour, what kind of sleeper do you have 
+in mind exactly? If we take for example interactive tasks, these should be 
+constantly behind other running tasks and thus have an advantage at 
+getting the cpu, i.e. if a task doesn't use up its time slice its runtime 
+value won't advance as much as of other tasks which do use their slice.
+
+bye, Roman
