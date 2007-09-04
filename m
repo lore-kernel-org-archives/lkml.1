@@ -1,108 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752281AbXIDF1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752564AbXIDFd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752281AbXIDF1p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 01:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbXIDF1h
+	id S1752564AbXIDFd6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 01:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbXIDFdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 01:27:37 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:37603 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750708AbXIDF1g (ORCPT
+	Tue, 4 Sep 2007 01:33:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34351 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbXIDFdu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 01:27:36 -0400
-Date: Tue, 4 Sep 2007 01:27:34 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org
-Subject: Re: 2.6.23-rc4-mm1: mips compile error
-Message-ID: <20070904052734.GA2991@Krystal>
-References: <20070831215822.26e1432b.akpm@linux-foundation.org> <20070901154441.GJ9260@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070901154441.GJ9260@stusta.de>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 01:22:29 up 36 days,  5:41,  4 users,  load average: 2.22, 1.58, 1.29
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 4 Sep 2007 01:33:50 -0400
+Date: Tue, 4 Sep 2007 11:16:50 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       josh@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Make rcutorture RNG use temporal entropy
+In-Reply-To: <20070816024904.GA5312@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.0.999.0709041047070.13651@enigma.security.iitk.ac.in>
+References: <20070816024904.GA5312@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Adrian Bunk (bunk@kernel.org) wrote:
-> On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
-> >...
-> > Changes since 2.6.23-rc3-mm1:
-> >...
-> >  git-mips.patch
-> >...
-> >  git trees
-> >...
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      arch/mips/kernel/asm-offsets.s
-> In file included from include2/asm/processor.h:22,
->                  from include2/asm/thread_info.h:15,
->                  from 
-> /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/include/linux/thread_info.h:21,
->                  from 
-> /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/include/linux/preempt.h:9,
->                  from 
-> /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/include/linux/spinlock.h:49,
->                  from 
-> /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/include/linux/seqlock.h:29,
->                  from 
-> /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/include/linux/time.h:8,
->                  from 
-> /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/include/linux/timex.h:57,
->                  from 
-> /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/include/linux/sched.h:52,
->                  from 
-> /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/arch/mips/kernel/asm-offsets.c:13:
-> include2/asm/system.h:415:39: error: asm-generic/cmpxchg-local.h: No such file or directory
-> make[2]: *** [arch/mips/kernel/asm-offsets.s] Error 1
-> 
-> <--  snip  -->
-> 
-
-Hello,
-
-It is because
-"Add cmpxchg64 and cmpxchg64_local to mips" has been added to the
-git-mips.patch, but it depends on 
-"add-cmpxchg-local-to-generic-for-up.patch" which is not merged yet.
-
-It was an error in my series file.
-add-cmpxchg-local-to-generic-for-up.patch should come before these
-patches:
-
-i386-cmpxchg64-80386-80486-fallback.patch
-add-cmpxchg64-to-alpha.patch
-add-cmpxchg64-to-mips.patch
-add-cmpxchg64-to-powerpc.patch
-add-cmpxchg64-to-x86_64.patch
+Hi Paul,
 
 
-Mathieu
+On Wed, 15 Aug 2007, Paul E. McKenney wrote:
+> 
+> The locking used by get_random_bytes() can conflict with the
+> preempt_disable() and synchronize_sched() form of RCU.  This patch changes
+> rcutorture's RNG to gather entropy from the new cpu_clock() interface
+> (relying on interrupts, preemption, daemons, and rcutorture's reader
+> thread's rock-bottom scheduling priority to provide useful entropy),
+> and also adds and EXPORT_SYMBOL_GPL() to make that interface available
+> to GPLed kernel modules such as rcutorture.
 
-> 
-> cu
-> Adrian
-> 
-> -- 
-> 
->        "Is there not promise of rain?" Ling Tan asked suddenly out
->         of the darkness. There had been need of rain for many days.
->        "Only a promise," Lao Er said.
->                                        Pearl S. Buck - Dragon Seed
-> 
+Honestly, rcutorture goes to some amazing lengths just to have this
+randomizing-the-delays-that-read/write-test-threads-spend-inside-or-
+outside-the-critical-sections thing :-) Especially, seeing that
+synchro-test, the other "comparable" module, just doesn't bother with
+all this at all. (especially check out its load == interval == do_sched
+== 0 case! :-)
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+So IMHO, considering that rcutorture isn't a "serious" user of randomness
+in the first place (of even a "fast-and-loose version" for that matter),
+you could consider a solution where you gather all the randomness you need
+at module_init time itself and save it somewhere, and then use it wherever
+you're calling into rcu_random()->cpu_clock() [ or get_random_bytes() ]
+in the current code. You could even make some trivial updates to those
+random numbers after every RCU_RANDOM_REFRESH uses, like present.
+
+Agreed, anybody running rcutorture isn't really looking for performance,
+but why call get_random_bytes() or cpu_clock() (and the smp_processor_id()
++ irq_save/restore + export_symbol() that goes with it) when it isn't
+_really_ "required" as such ...
+
+Just a suggestion,
+
+Satyam
