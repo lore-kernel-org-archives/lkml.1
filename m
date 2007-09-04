@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbXIDToo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbXIDUCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbXIDToo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 15:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbXIDToh
+	id S1754693AbXIDUCy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 16:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbXIDUCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 15:44:37 -0400
-Received: from 24-75-174-210-st.chvlva.adelphia.net ([24.75.174.210]:49168
-	"EHLO sanosuke.troilus.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752323AbXIDTog (ORCPT
+	Tue, 4 Sep 2007 16:02:46 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:52486 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753281AbXIDUCp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 15:44:36 -0400
-From: Michael Poole <mdpoole@troilus.org>
-To: "Chris Friesen" <cfriesen@nortel.com>,
-       Daniel Hazelton <dhazelton@enter.net>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-References: <MDEHLPKNGKAHNMBLJOLKOEDKGJAC.davids@webmaster.com>
-	<200709032020.04989.dhazelton@enter.net>
-	<m34piaftnd.fsf@maximus.localdomain>
-	<200709041313.22831.dhazelton@enter.net> <46DDB1CB.8080306@nortel.com>
-Date: Tue, 04 Sep 2007 15:44:31 -0400
-In-Reply-To: <46DDB1CB.8080306@nortel.com> (Chris Friesen's message of "Tue,
-	04 Sep 2007 13:28:11 -0600")
-Message-ID: <87ejherza8.fsf@graviton.dyn.troilus.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 4 Sep 2007 16:02:45 -0400
+Date: Tue, 4 Sep 2007 16:02:42 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@redhat.com,
+       linux-ia64@vger.kernel.org
+Subject: Re: [PATCH] SLUB use cmpxchg_local
+Message-ID: <20070904200242.GB8157@Krystal>
+References: <20070827202203.GB5653@Krystal> <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com> <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com> <20070827211003.GA10627@Krystal> <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com> <20070827213845.GB9748@Krystal> <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com> <20070827222715.GA16982@Krystal> <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:01:14 up 36 days, 20:20,  6 users,  load average: 0.23, 0.30, 0.40
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen writes:
+* Christoph Lameter (clameter@sgi.com) wrote:
+> Measurements on IA64 slub w/per cpu vs slub w/per cpu/cmpxchg_local 
+> emulation. Results are not good:
+> 
 
-> Daniel Hazelton wrote:
->> On Tuesday 04 September 2007 09:27:02 Krzysztof Halasa wrote:
->>
->>>Daniel Hazelton <dhazelton@enter.net> writes:
->>>
->>>>US Copyright law. A copyright holder, regardless of what license he/she
->>>>may have released the work under, can still revoke the license for a
->>>>specific person or group of people. (There are some exceptions, but they
->>>>do not apply to the situation that is being discussed)
->
-> The OpenBSD policy page doesn't agree with you:
->
-> "...That means that having granted a permission, the copyright holder
-> can not retroactively say that an individual or class of individuals
-> are no longer granted those permissions. Likewise should the copyright
-> holder decide to "go commercial" he can not revoke permissions already
-> granted for the use of the work as distributed, though he may impose
-> more restrictive permissions in his future distributions of that work."
->
-> http://www.openbsd.org/policy.html
+Hi Christoph,
 
-By my reading, this is supported by 17 USC 203(a)(3):
+I tried to come up with a patch set implementing the basics of a new
+critical section: local_enter(flags) and local_exit(flags).
 
-  (3) Termination of the grant may be effected at any time during a
-      period of five years beginning at the end of thirty-five years
-      from the date of execution of the grant; or, if the grant covers
-      the right of publication of the work, the period begins at the
-      end of thirty-five years from the date of publication of the
-      work under the grant or at the end of forty years from the date
-      of execution of the grant, whichever term ends earlier.
+Can you try those on ia64 and tell me if the results are better ?
 
-(from http://www.law.cornell.edu/uscode/html/uscode17/usc_sec_17_00000203----000-.html )
+See the 2 next posts...
 
-I would be interested to see what other legal basis is alleged as
-grounds to rescind a license.
-
-Michael
+Mathieu
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
