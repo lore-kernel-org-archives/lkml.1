@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbXIDQVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbXIDQcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755151AbXIDQVR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 12:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbXIDQVI
+	id S1755075AbXIDQcb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 12:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbXIDQcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 12:21:08 -0400
-Received: from mail-in-04.arcor-online.net ([151.189.21.44]:47150 "EHLO
-	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752532AbXIDQVG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 12:21:06 -0400
-From: Prakash Punnoor <prakash@punnoor.de>
+	Tue, 4 Sep 2007 12:32:21 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:37347 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753131AbXIDQcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 12:32:20 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: Linux 2.6.23-rc5
-Date: Tue, 4 Sep 2007 18:20:47 +0200
+Date: Tue, 4 Sep 2007 19:32:03 +0300
 User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.999.0708312343440.27951@evo.linux-foundation.org> <200709020954.08285.prakash@punnoor.de>
-In-Reply-To: <200709020954.08285.prakash@punnoor.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, axboe@kernel.dk,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+References: <alpine.LFD.0.999.0708312343440.27951@evo.linux-foundation.org> <200709041911.03442.caglar@pardus.org.tr>
+In-Reply-To: <200709041911.03442.caglar@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1398238.VqLXGQ9tUN";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200709041820.51292.prakash@punnoor.de>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200709041932.04220.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1398238.VqLXGQ9tUN
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi Again;
 
-On the day of Sunday 02 September 2007 Prakash Punnoor hast written:
-> Hi,
+04 Eyl 2007 Sal tarihinde, S.Çağlar Onur şunları yazmıştı: 
+> Hi;
 >
-> 2.6.23-rc5 locks up hard (Magic Syskeys won't even work) after a few
-> minutes of work on x86_64. 2.6.23-rc4 was fine. I'll try git-bisect to fi=
-nd
-> out what is causing trouble. Yes, I am using nvidia binary but it didn't
-> make troubles since ages... When I found the bugger, I'll try whether it
-> works w/o nvidia binary.
+> 01 Eyl 2007 Cts tarihinde, Linus Torvalds şunları yazmıştı:
+> > So have fun, give it a go, and expect a quiet week next week.
+>
+> After upgrading -rc5 (i'm currently using linus's latest git + appArmor and
+> bootsplash patchset) my CD/DVD-ROM suddenly disappeared :).
+>
+> caglar@zangetsu ~ $ diff -u rc4 rc5 | grep cd-rom -i
+> -Sep  3 11:30:33 localhost kernel: [   19.328120] scsi 4:0:0:0: CD-ROM
+> MATSHITA DVD-RAM UJ-851S  1.50 PQ: 0 ANSI: 5
+> -Sep  3 11:30:33 localhost kernel: [   21.258819] Uniform CD-ROM driver
+> Revision: 3.20
+> -Sep  3 11:30:33 localhost kernel: [   21.258873] sr 4:0:0:0: Attached scsi
+> CD-ROM sr0
 
-It seems my system is stable again with patch from
+Forget it :), it was a hardware problem caused by cdrom bay
 
-http://lkml.org/lkml/2007/9/2/219
+Cheers
+-- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
-Though I didn't get a light show on hang...
-
-=2D-=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
-
---nextPart1398238.VqLXGQ9tUN
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.6 (GNU/Linux)
-
-iD8DBQBG3YXjxU2n/+9+t5gRAosZAJ9EMGI7mDWl0K8UCUxKom2oL7AL8gCg59v2
-lMzAYXNaCo8rKHsyURRdgb0=
-=vB1A
------END PGP SIGNATURE-----
-
---nextPart1398238.VqLXGQ9tUN--
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
