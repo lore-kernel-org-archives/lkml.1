@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbXIDXOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbXIDXSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbXIDXOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 19:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXIDXN7
+	id S1756001AbXIDXSP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 19:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbXIDXSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 19:13:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51475 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754316AbXIDXN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 19:13:57 -0400
-Date: Tue, 04 Sep 2007 19:13:18 -0400 (EDT)
-Message-Id: <20070904.191318.23007091.k-ueda@ct.jp.nec.com>
-To: bhalevy@panasas.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, jens.axboe@oracle.com, mike.miller@hp.com,
-       grant.likely@secretlab.ca, bharrosh@panasas.com, dm-devel@redhat.com,
-       j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: Re: [PATCH 6/7] blk_end_request: remove/unexport end_that_request_*
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <E472128B1EB43941B4E7FB268020C89B02992D9B@riverside.int.panasas.com>
-References: <20070831.184335.85683085.k-ueda@ct.jp.nec.com>
-	<E472128B1EB43941B4E7FB268020C89B02992D9B@riverside.int.panasas.com>
-X-Mailer: Mew version 3.3 on Emacs 21.3 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 4 Sep 2007 19:18:00 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56115 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754290AbXIDXR7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 19:17:59 -0400
+Message-ID: <46DDE623.1090402@sgi.com>
+Date: Tue, 04 Sep 2007 16:11:31 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: clameter@sgi.com, steiner@sgi.com, ak@suse.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kamalesh@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu variable
+ (v2) (fwd)
+References: <Pine.LNX.4.64.0708312028400.24049@schroedinger.engr.sgi.com>	<46DDC017.4040301@sgi.com> <20070904141055.e00a60d7.akpm@linux-foundation.org>
+In-Reply-To: <20070904141055.e00a60d7.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Tue, 4 Sep 2007 17:25:14 -0400, "Halevy, Benny" <bhalevy@panasas.com> wrote:
-> We suspect we'll still need the extern entry points for handling the bidi 
-> request in the scsi_io_completion() path as we only want to call
-> end_that_request_chunk on req->next_rq and never
-> end_that_request_last.
->  
-> (see 
-> http://www.bhalevy.com/open-osd/download/linux-2.6.23-rc2_and_iscsi-iscsi-2007_08_09/0005-SCSI-bidi-support.patch)
 
-If this patch-set is merged, there may be other way to do that.
+Andrew Morton wrote:
+>> On Tue, 04 Sep 2007 13:29:11 -0700 Mike Travis <travis@sgi.com> wrote:
 
-For tricky drivers, special interface, blk_end_request_callback(),
-is added in the patch 5/7.
-(http://marc.info/?l=linux-kernel&m=118860027714753&w=2)
-Currently, only user of the interface is ide-cd (cdrom_newpc_intr()).
-It needs to call only end_that_request_first() too.
+>>> ---------- Forwarded message ----------
+>>> Date: Fri, 31 Aug 2007 19:49:03 -0700
+>>> From: Andrew Morton <akpm@linux-foundation.org>
+>>> To: travis@sgi.com
+>>> Cc: Andi Kleen <ak@suse.de>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+>>>     Christoph Lameter <clameter@sgi.com>
+>>> Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu variable
+>>>     (v2)
+>>>
+>>> On Fri, 24 Aug 2007 15:26:57 -0700 travis@sgi.com wrote:
+>>>
+>>>> Convert cpu_sibling_map from a static array sized by NR_CPUS to a
+>>>> per_cpu variable.  This saves sizeof(cpumask_t) * NR unused cpus.
+>>>> Access is mostly from startup and CPU HOTPLUG functions.
+>>> ia64 allmodconfig:
+>>>
+>>> kernel/sched.c: In function `cpu_to_phys_group':                                                                             kernel/sched.c:5937: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:5937: error: (Each undeclared identifier is reported only once
+>>> kernel/sched.c:5937: error: for each function it appears in.)                                                                kernel/sched.c:5937: warning: type defaults to `int' in declaration of `type name'
+>>> kernel/sched.c:5937: error: invalid type argument of `unary *'                                                               kernel/sched.c: In function `build_sched_domains':                                                                           kernel/sched.c:6172: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:6172: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6172: error: invalid type argument of `unary *'                                                               kernel/sched.c:6183: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6183: error: invalid type argument of `unary *'                                                               
+>> I'm thinking that the best approach would be to define a cpu_sibling_map() macro
+>> to handle the cases where cpu_sibling_map is not a per_cpu variable?  Perhaps
+>> something like:
+>>
+>> #ifdef CONFIG_SCHED_SMT
+>> #ifndef cpu_sibling_map
+>> #define cpu_sibling_map(cpu)    cpu_sibling_map[cpu]
+>> #endif
+>> #endif
+>>
+>> My question though, would include/linux/smp.h be the appropriate place for
+>> the above define?  (That is, if the above approach is the correct one... ;-)
+> 
+> It'd be better to convert the unconverted architectures?
 
-With the patch 7/7, you can set your own handler in rq->end_io()
-to complete the request by your own way.
+I can easily do the changes for ia64 and test them.  I don't have the capability
+of testing on the powerpc.  
+
+And are you asking for just the changes to fix the build problem, or the whole
+set of the changes that were made for x86_64 and i386 in regards to converting
+NR_CPU arrays to per cpu data?
 
 Thanks,
-Kiyoshi Ueda
+Mike
