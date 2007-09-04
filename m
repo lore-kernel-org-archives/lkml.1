@@ -1,85 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752698AbXIDDml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752042AbXIDEEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752698AbXIDDml (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 23:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbXIDDme
+	id S1752042AbXIDEEu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 00:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbXIDEEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 23:42:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:8550 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbXIDDmd (ORCPT
+	Tue, 4 Sep 2007 00:04:43 -0400
+Received: from mail153.messagelabs.com ([216.82.253.51]:43269 "HELO
+	mail153.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750706AbXIDEEm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 23:42:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=jh0XR5v1ck1qOX5X2N9sJRgluPsIEXGVuMPtGNzQBRlll/wP1htKEqiU/x/MSiXS5iRpLlDQFI9mcqmgjjhy1S3sAQXlSt2dPAJHUZ/OrCOWF3tZuuA3Nw/Hcm350158bqkeU1qab9XSD85wO47xgWCVrJ1DIrYELwxPypwoRnU=
-Message-ID: <2ff216280709032042t4a507feci8d5759526971ae7b@mail.gmail.com>
-Date: Tue, 4 Sep 2007 09:12:32 +0530
-From: "Abhijit Bhopatkar" <bain@devslashzero.com>
-To: "Ivan N. Zlatev" <contact@i-nz.net>
-Subject: Re: [PATCH] [ALSA] Added new pin config for first gen macbook.
-Cc: "Takashi Iwai" <tiwai@suse.de>, "Jaroslav Kysela" <perex@suse.cz>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <3db1ec7f0709030506j5fe6dbc3w6c7ae8daa94c3323@mail.gmail.com>
+	Tue, 4 Sep 2007 00:04:42 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Mano.Pallewatta@motorola.com
+X-Msg-Ref: server-5.tower-153.messagelabs.com!1188878680!4367772!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [129.188.136.8]
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2ff216280709030325r626d98b3h2c5a48e90470610b@mail.gmail.com>
-	 <s5hr6lgdoiv.wl%tiwai@suse.de>
-	 <3db1ec7f0709030407y2cb9fc8ew52160ca28b2592d2@mail.gmail.com>
-	 <3db1ec7f0709030506j5fe6dbc3w6c7ae8daa94c3323@mail.gmail.com>
-X-Google-Sender-Auth: 33a443c4b9260377
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] linux-2.6.16.51 gzipped core dump patch
+Date: Tue, 4 Sep 2007 00:04:37 -0400
+Message-ID: <1188AA083E6C7C4EBCE34803004A84014FE932@de01exm72.ds.mot.com>
+In-Reply-To: <20070904032637.GY21089@ftp.linux.org.uk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] linux-2.6.16.51 gzipped core dump patch
+Thread-Index: Acfuo2nlWM11V3gXRuGkPSdGaMtu9gABBqug
+References: <1188AA083E6C7C4EBCE34803004A84014FE921@de01exm72.ds.mot.com> <20070904013811.GX21089@ftp.linux.org.uk> <1188AA083E6C7C4EBCE34803004A84014FE926@de01exm72.ds.mot.com> <20070904032637.GY21089@ftp.linux.org.uk>
+From: "Pallewatta Mano-FPCD67" <Mano.Pallewatta@motorola.com>
+To: "Al Viro" <viro@ftp.linux.org.uk>
+Cc: <linux-kernel@vger.kernel.org>
+X-CFilter-Loop: Reflected
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/3/07, Ivan N. Zlatev <contact@i-nz.net> wrote:
-> On 9/3/07, Ivan N. Zlatev <contact@i-nz.net> wrote:
-> > On 9/3/07, Takashi Iwai <tiwai@suse.de> wrote:
-> > > At Mon, 3 Sep 2007 15:55:18 +0530,
-> > > Abhijit Bhopatkar wrote:
-> > > >
-> > > > commit 5d5d3bc3eddf2ad97b2cb090b92580e7fed6cee1 changed all
-> > > > pin configs for intel macs, but it breaks sound on
-> > > > Macbook first
-> > >
-> > > Please elaborate how does it break.  "it breaks sound" is too
-> > > ambigious like the most popular bug reports "sound doesn't work" :)
+This support was there in the 2.6.16.51 kernel. In fact there was no
+call_usermodehelper_pipe().
 
-Apologies for the terse report,
+Mano
 
-On my macbook with latest kernels
+-----Original Message-----
+From: Al Viro [mailto:viro@ftp.linux.org.uk] 
+Sent: Monday, September 03, 2007 8:27 PM
+To: Pallewatta Mano-FPCD67
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] linux-2.6.16.51 gzipped core dump patch
 
-1. Alsamixer is showing only three controlls in total,
-    Master PCM and Digital.
-2. There is absolutely no output sound what so ever.
-3. There is no capture sound being captured either.
+On Mon, Sep 03, 2007 at 10:32:00PM -0400, Pallewatta Mano-FPCD67 wrote:
+> This patch was developed for embedded systems which had limited space
+> for file storage. If an external process is to compress core files you
+> will need to store those files somewhere first as core dump output
+> cannot be directly fed to the stdin of compression program.
 
-Reverting back the pin config to the one in previous kernels is
-working (although not perfect e.g. to enable input sound we need to
-toggle the capture device to mic and linein atlease once, no idea
-whats the deal with that)
+Why?  Create a pipe, start a new process, put the reader struct file
+into its descriptor table as stdin, do execve in new process and
+pass the writer struct file to ->core_dump().
 
-I am willing to do whatever test you people want, though I do not know
-where to look for more info at this point. So please feel free direct
-me to arrive at a better soultion or better info.
+As the matter of fact, it's already done - see
+        lock_kernel();
+        ispipe = format_corename(corename, core_pattern, signr);
+        unlock_kernel();
+        if (ispipe) {
+                /* SIGPIPE can happen, but it's just never processed */
+                if(call_usermodehelper_pipe(corename+1, NULL, NULL,
+&file)) {
+                        printk(KERN_INFO "Core dump to %s pipe
+failed\n",
+                               corename);
+                        goto fail_unlock;
+                }
+        } else
+                file = filp_open(corename,
+                                 O_CREAT | 2 | O_NOFOLLOW | O_LARGEFILE
+| flag,
+                                 0600);
+in do_coredump().  So take a look at fs/exec.c:format_corename() and see
+what to feed for it in order to get the equivalent of your patch.
+core_patttern is set by sysctl (just say
+echo [whatever] >/proc/sys/kernel/core_pattern 
+and don't forget quoting, since | should be the first character to
+indicate
+that you want to pipe coredump through a helper).
 
-Thanks
-
-Abhijit
-
-PS:
-lspci -v shows
-
-00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High
-Definition Audio Controller (rev 02)
-        Subsystem: Unknown device 8384:7680
-        Flags: us master, fast devsel, latency 0, IRQ 21
-        Memory at 90440000 (64-bit, non-prefetchable) [size=16K]
-        Capabilities: [50] Power Management version 2
-        Capabilities: [60] Message Signalled Interrupts: Mask- 64bit+
-Queue=0/0 Enable-
-        Capabilities: [70] Express Unknown type IRQ 0
-
-Let me know if you need output dump of other stuff.
+I really don't see a reason to do that kind of work in the kernel,
+embedded
+system or not.
