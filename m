@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752887AbXIDIGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752085AbXIDIGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752887AbXIDIGA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 04:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbXIDIFo
+	id S1752085AbXIDIGW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 04:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbXIDIGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 04:05:44 -0400
-Received: from wx-out-0506.google.com ([66.249.82.226]:40723 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751300AbXIDIFm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 04:05:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=MF4C47nIIC1nk6K0FAi55A0wLfVF2ydOmkb5aD1AXLgrOBx4zDYNt1OXu9f0ZAPPV7/C4mIGpKlV06M3nIGwOhqvCEO4TRIA9UxeY7HxXKhkupsYoCHHzpLuxbBFcFJvmer8uLsdLuSdzGKn1opLNZqoTw/97v+5Zv5uCpjxGoU=
-Message-ID: <46DD121A.2010404@gmail.com>
-Date: Tue, 04 Sep 2007 16:06:50 +0800
-From: Micah Gruber <micah.gruber@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 4 Sep 2007 04:06:03 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35449 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752698AbXIDIF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 04:05:58 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX19G2yg7yPpGV5hpy1mna+K562CxFkmQH9n6iLe9WQ
+	oAmmeZhKXeClx4
+Message-ID: <46DD116C.4040301@gmx.net>
+Date: Tue, 04 Sep 2007 10:03:56 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com
-Subject: [PATCH] Fix a potential NULL pointer dereference in uli526x_interrupt()
- in drivers/net/tulip/uli526x.c
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Randy Dunlap <rdunlap@xenotime.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Linux Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, stable@kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH] Revised timerfd() interface
+References: <20070825064114.107820@gmx.net> <Pine.LNX.4.64.0708300458120.7717@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0708300458120.7717@alien.or.mcafeemobile.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a potential null dereference bug where we dereference dev before a null check. This patch simply moves the dereferencing after the null check.
+Davide,
 
-Signed-off-by: Micah Gruber <micah.gruber@gmail.com>
----
+>> Davide -- ping!  Can you please offer your comments about this change, and
+>> also thoughts on Jon's and my comments about a more radical API change
+>> later  in this thread.
+> 
+> IMO the complexity of the resulting API (and resulting patch), and the ABI 
+> change, is not justified by the added value.
 
---- a/drivers/net/tulip/uli526x.c
-+++ b/drivers/net/tulip/uli526x.c
-@@ -663,7 +663,7 @@
- {
- 	struct net_device *dev = dev_id;
- 	struct uli526x_board_info *db = netdev_priv(dev);
--	unsigned long ioaddr;
-+	unsigned long ioaddr = dev->base_addr;
- 	unsigned long flags;
- 
- 	if (!dev) {
-@@ -671,8 +671,6 @@
- 		return IRQ_NONE;
- 	}
- 
--	ioaddr = dev->base_addr;
--
- 	spin_lock_irqsave(&db->lock, flags);
- 	outl(0, ioaddr + DCR7);
+Neither of the proposed APIs (either my multiplexed version of timerfd()
+or Jon's/my idea of using three system calls (like POSIX timers), or
+the notion of timerfd() integrated with POSIX timers) is more
+complicated than the existing POSIX timers API.
 
+The ABI change doesn't really matter, since timerfd() was broken in 2.6.22
+anyway.
+
+Both previous APIs provided the features I have described provide:
+
+* the ability to fetch the old timer value when applying
+  a new setting
+
+* the ability to non-destructively fetch the amount of time remaining
+  on a timer.
+
+This is clearly useful for timers -- but you have not explained why
+you think this is not necessary for timerfd timers.
+
+Please -- let's do timerfd() better.  Either three syscalls like:
+
+timerfd_create()
+timerfd_settime()
+timer_gettime()
+
+(the analogs of timer_create(), timer_settime(), timer_gettime()).
+
+Or (if possible, and even better) timerfd() integrated with POSIX timers.
+
+Then we have a good API for the coming decades.  I'm prepared to help
+out with patches (for what my help is worth ;-)).
+
+Cheers,
+
+Michael
+
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
+
+Want to help with man page maintenance?  Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages/
+read the HOWTOHELP file and grep the source files for 'FIXME'.
