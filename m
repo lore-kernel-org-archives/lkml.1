@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbXIDUfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbXIDUpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202AbXIDUfi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 16:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbXIDUfa
+	id S1755341AbXIDUpl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 16:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbXIDUpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 16:35:30 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47796 "EHLO
+	Tue, 4 Sep 2007 16:45:33 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44853 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753679AbXIDUfa (ORCPT
+	with ESMTP id S1753474AbXIDUpc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 16:35:30 -0400
-Message-ID: <46DDC017.4040301@sgi.com>
-Date: Tue, 04 Sep 2007 13:29:11 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 4 Sep 2007 16:45:32 -0400
+Date: Tue, 4 Sep 2007 13:45:28 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@redhat.com,
+       linux-ia64@vger.kernel.org
+Subject: Re: [PATCH] slub - Use local_t protection
+In-Reply-To: <20070904200429.GD8157@Krystal>
+Message-ID: <Pine.LNX.4.64.0709041344040.6376@schroedinger.engr.sgi.com>
+References: <20070827202203.GB5653@Krystal> <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com>
+ <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com>
+ <20070827211003.GA10627@Krystal> <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com>
+ <20070827213845.GB9748@Krystal> <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com>
+ <20070827222715.GA16982@Krystal> <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com>
+ <20070904200429.GD8157@Krystal>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Jack Steiner <steiner@sgi.com>, Andi Kleen <ak@suse.de>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu variable
- (v2) (fwd)
-References: <Pine.LNX.4.64.0708312028400.24049@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0708312028400.24049@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sorry, I did not see this message until Christoph forwarded it to me.  I'm
-guessing we (SGI) still have a problem with our external spam filter?]
+On Tue, 4 Sep 2007, Mathieu Desnoyers wrote:
 
-> 
-> ---------- Forwarded message ----------
-> Date: Fri, 31 Aug 2007 19:49:03 -0700
-> From: Andrew Morton <akpm@linux-foundation.org>
-> To: travis@sgi.com
-> Cc: Andi Kleen <ak@suse.de>, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
->     Christoph Lameter <clameter@sgi.com>
-> Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu variable
->     (v2)
-> 
-> On Fri, 24 Aug 2007 15:26:57 -0700 travis@sgi.com wrote:
-> 
->> Convert cpu_sibling_map from a static array sized by NR_CPUS to a
->> per_cpu variable.  This saves sizeof(cpumask_t) * NR unused cpus.
->> Access is mostly from startup and CPU HOTPLUG functions.
-> 
-> ia64 allmodconfig:
-> 
-> kernel/sched.c: In function `cpu_to_phys_group':                                                                             kernel/sched.c:5937: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:5937: error: (Each undeclared identifier is reported only once
-> kernel/sched.c:5937: error: for each function it appears in.)                                                                kernel/sched.c:5937: warning: type defaults to `int' in declaration of `type name'
-> kernel/sched.c:5937: error: invalid type argument of `unary *'                                                               kernel/sched.c: In function `build_sched_domains':                                                                           kernel/sched.c:6172: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)                               kernel/sched.c:6172: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6172: error: invalid type argument of `unary *'                                                               kernel/sched.c:6183: warning: type defaults to `int' in declaration of `type name'                                           kernel/sched.c:6183: error: invalid type argument of `unary *'                                                               
+> @@ -1566,12 +1565,13 @@ redo:
+>  		object[c->offset]) != object))
+>  			goto redo;
+>  
+> -	put_cpu();
+> +	local_exit(flags);
+>  	if (unlikely((gfpflags & __GFP_ZERO)))
+>  		memset(object, 0, c->objsize);
+>  
+>  	return object;
+>  slow:
+> +	local_exit(flags);
 
-I'm thinking that the best approach would be to define a cpu_sibling_map() macro
-to handle the cases where cpu_sibling_map is not a per_cpu variable?  Perhaps
-something like:
+Here we can be rescheduled to another processors.
 
-#ifdef CONFIG_SCHED_SMT
-#ifndef cpu_sibling_map
-#define cpu_sibling_map(cpu)    cpu_sibling_map[cpu]
-#endif
-#endif
+>  	return __slab_alloc(s, gfpflags, node, addr, c)
 
-My question though, would include/linux/smp.h be the appropriate place for
-the above define?  (That is, if the above approach is the correct one... ;-)
-
-Thanks,
-Mike
+c may point to the wrong processor.
