@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752423AbXIDHTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbXIDHUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752423AbXIDHTl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 03:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbXIDHTd
+	id S1752837AbXIDHUZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 03:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbXIDHUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 03:19:33 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:57825 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751319AbXIDHTc (ORCPT
+	Tue, 4 Sep 2007 03:20:10 -0400
+Received: from srv4.netavous.net ([213.251.145.243]:36906 "HELO
+	srv4.netavous.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751319AbXIDHUJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 03:19:32 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=H/uRnzdoGonLOGkf4bfrgc09CeeCSN97HzSYFjGECj+WUGL5cKIbpOjoPn0VLgtTN
-	hpFJTrLjmzHggzAP739hA==
-Message-ID: <6599ad830709040019r17861771we2a0893c0c160723@mail.gmail.com>
-Date: Tue, 4 Sep 2007 00:19:22 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [-mm PATCH] Memory controller improve user interface (v3)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "Linux MM Mailing List" <linux-mm@kvack.org>,
-       "David Rientjes" <rientjes@google.com>,
-       "Dave Hansen" <haveblue@us.ibm.com>
-In-Reply-To: <46DC6543.3000607@linux.vnet.ibm.com>
+	Tue, 4 Sep 2007 03:20:09 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Sep 2007 03:20:08 EDT
+From: David CHANIAL <david.ml@euro-web.fr>
+Organization: Euro Web
+To: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
+Date: Tue, 4 Sep 2007 09:14:48 +0200
+User-Agent: KMail/1.9.7
+References: <200707160638.15750.david.ml@euro-web.fr> <200707270928.27328.david.ml@euro-web.fr> <alpine.LFD.0.999.0709040521170.8504@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0709040521170.8504@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20070902105021.3737.31251.sendpatchset@balbir-laptop>
-	 <6599ad830709022153g1720bcedsb61d7cf7a783bd3f@mail.gmail.com>
-	 <46DC6543.3000607@linux.vnet.ibm.com>
+Message-Id: <200709040914.49142.david.ml@euro-web.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/3/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> Paul Menage wrote:
-> > On 9/2/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >> -       s += sprintf(s, "%lu\n", *val);
-> >> +       if (read_strategy)
-> >> +               s += read_strategy(*val, s);
-> >> +       else
-> >> +               s += sprintf(s, "%lu\n", *val);
-> >
-> > This would be better as %llu
-> >
->
-> Hi, Paul,
->
-> This does not need fixing, since the other counters like failcnt are
-> still unsigned long
->
+Le Tuesday 04 September 2007 01:55:57 Satyam Sharma, vous avez écrit :
+> Did you test with that patch applied? Did you manage to hit the
+> BUG again (with or without it)?
 
-But val is an unsigned long long*. So printing *val with %lu will
-break (at least a warning, and maybe corruption if you had other
-parameters) on 32-bit archs.
+I not have tested this patch.
 
-Paul
+I will test it as soon as possible (in few days).
+
+Best regards,
+-- 
+David
