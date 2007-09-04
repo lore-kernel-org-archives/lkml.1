@@ -1,129 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbXIDWYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbXIDW3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664AbXIDWYK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 18:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXIDWXz
+	id S1755806AbXIDW3y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 18:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXIDW3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 18:23:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37561 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751155AbXIDWXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 18:23:53 -0400
-Date: Tue, 04 Sep 2007 18:23:31 -0400 (EDT)
-Message-Id: <20070904.182331.88469348.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, mike.miller@hp.com,
-       grant.likely@secretlab.ca, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
-       k-ueda@ct.jp.nec.com
-Subject: Re: [PATCH 1/7] blk_end_request: add new request completion
- interface
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <20070903074545.GH4253@kernel.dk>
-References: <20070831.184112.45519768.k-ueda@ct.jp.nec.com>
-	<20070903074545.GH4253@kernel.dk>
-X-Mailer: Mew version 3.3 on Emacs 21.3 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Sep 2007 18:29:46 -0400
+Received: from styx.suse.cz ([82.119.242.94]:53130 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753470AbXIDW3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 18:29:46 -0400
+Date: Wed, 5 Sep 2007 00:49:21 +0200
+From: Jan Kara <jack@suse.cz>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Jan Kara <jack@suse.cz>, "Serge E. Hallyn" <serge@hallyn.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, containers@lists.osdl.org
+Subject: Re: [PATCH] Send quota messages via netlink
+Message-ID: <20070904224921.GA19693@duck.suse.cz>
+References: <20070829122647.GB7814@duck.suse.cz> <m1mywa42g7.fsf@ebiederm.dsl.xmission.com> <20070829192653.GD7814@duck.suse.cz> <m1wsve2gpo.fsf@ebiederm.dsl.xmission.com> <20070830092548.GB16336@duck.suse.cz> <20070830191010.GA23464@vino.hallyn.com> <20070830221825.GB21298@duck.suse.cz> <20070830221447.GA25675@vino.hallyn.com> <20070903142123.GG7524@duck.suse.cz> <20070904213210.GD30980@sergelap.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070904213210.GD30980@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
-
-Thank you for the comments.
-
-On Mon, 3 Sep 2007 09:45:45 +0200, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > +extern int blk_end_request(struct request *rq, int uptodate, int nr_bytes);
-> > +extern int __blk_end_request(struct request *rq, int uptodate, int nr_bytes);
-> >  extern int end_that_request_first(struct request *, int, int);
-> >  extern int end_that_request_chunk(struct request *, int, int);
-> >  extern void end_that_request_last(struct request *, int);
+On Tue 04-09-07 16:32:10, Serge E. Hallyn wrote:
+> Quoting Jan Kara (jack@suse.cz):
+> > On Thu 30-08-07 17:14:47, Serge E. Hallyn wrote:
+> > > Quoting Jan Kara (jack@suse.cz):
+> > > >   I imagine it so that you have a machine and on it several virtual
+> > > > machines which are sharing a filesystem (or it could be a cluster). Now you
+> > > > want UIDs to be independent between these virtual machines. That's it,
+> > > > right?
+> > > >   Now to continue the example: Alice has UID 100 on machineA, Bob has
+> > > >  UID 100 on machineB. These translate to UIDs 1000 and 1001 on the common
+> > > > filesystem. Process of Alice writes to a file and Bob becomes to be over
+> > > > quota. In this situation, there would be probably two processes (from
+> > > > machineA and machineB) listening on the netlink socket. We want to send a
+> > > > message so that on Alice's desktop we can show a message: "You caused
+> > > > Bob to exceed his quotas" and of Bob's desktop: "Alice has caused that you
+> > > > are over quota.".
+> > > 
+> > > Since this is over NFS, you handle it the way you would any other time
+> > > that user Alice on some other machine managed to do this.
+> >   I meant this would actually happen over a local filesystem (imagine
+> > something like "hostfs" from UML).
 > 
-> We get in to way too many levels of underscores here. Please changes
-> this to be blk_end_request() and blk_end_request_locked(), where the
-> former grabs the queue lock but the latter assumes it's held. Then have
-> the static __blk_end_request() where the lock MUST be held - do this in
-> the caller, don't pass it as an argument!
+> Ok, then that is where I was previously suggesting that we use an api to
+> report a uid meaningful in bob's context, where we currently (in the
+> absense of meaningful mount uids and uid equivalence) tell Bob that root
+> was the one who brought him over quota.  From a user pov 'nobody' would
+> make more sense, but I don't think we want the kernel to know about user
+> nobody, right?
+  But what is the problem with using the filesystem ids? All virtual
+machines in my example should have a notion of those...
 
-It makes perfect sense but I have a reason I couldn't do it.
+> So if the msg weren't broadcast, or netlink sockets were tied to one
+> user namespace, we could call a
+> 	int uid_in_user_ns(struct user *, struct user_ns *)
+> sending in Alice's user struct and Bob's userns, and use the result in
+> the netlink message.  Otherwise I'm not sure what is the right answer.
+> We just might need the equivalent of 'struct pid' to struct user, or
+> persistant global user namespace ids (persistant after user namespace
+> destruction, not across reboot) so we can safely send the user_ns * in a
+> netlink msg.
+  Yes, that could also be a solution.
 
-The goal of our patch set is to change the role of rq->end_io()
-so that the request submitter can set its own procedure of
-request completion (please see the patch 7/7).
+> > > >   Because there may be is not a notion of Bob on machineA or of Alice on
+> > > > machineB, we are in trouble, right? What I like the most is to use the
+> > > > filesystem identities (as you suggested in some other email). I. e. because
+> > > > both Alice and Bob share a filesystem, identities of both have to make sense
+> > > > to it (for example for purposes of permission checking). So we can probably
+> > > 
+> > > Right, so long as we're talking about local filesystems that's the way
+> > > to go.  If a file write was allowed which brought bob over quota,
+> > > clearly the person responsible had some uid valid on the filesystem to
+> > > allow him to do so.
+> >   Fine. So I'll keep UID in the quota netlink protocol with the meaning
+> > "the identity of the user for filesystem operations".
+> 
+> I think that's ok.
+> 
+> Hopefully when that changes to accomodate user namespaces, we can use
+> netlink field versioning to make that transition pretty seamless?
+  Yes, we'd just assign the attribute a different number and teach
+userspace about the new attribute format...
 
-So if the caller must hold the lock, we have to hold the lock
-during the whole rq->end_io(), that includes end_that_request_first().
-It would cause performance regression by making the lock held longer.
-OTOH, the 'needlock' argument allows the completion handler to hold
-the lock during the minimum piece of the code.
+> If not, then we probably should in fact make some decision now so as not
+> to change the api.
+> 
+> > > > send via netlink these (in our example ids 1000 and 1001) and hope that
+> > > > inside machineA and machineB there will be a way to translate these
+> > > > identities to names "Alice" and "Bob". So that user can understand what
+> > > > is happenning. Does this sound plausible?
+> > > >   If we go this route, then we only need a kernel function, that will
+> > > > for a pair ($filesystem, $task) return indentity of that $task used
+> > > > for operations on $filesystem...
+> > > 
+> > > Ok, now I see.  This is again unrelated to user namespaces, it's an
+> > > issue regardless.
+> > > 
+> > > Is there no way to just report Alice as the guilty party to Bob on his
+> > > machine as (host=nfsserver,uid=1000)?
+> >   You know, in fact this contains all the information but it is quite useless
+> > for an ordinary user. The message should be understandable to average desktop
+> 
+> What is the ordinary user going to do about it?  If the user didn't set
+> up the nfsserver and/or the second client, the only thing he can do is
+> report the guilty user to an admin.  In which case the tuple
+> (host=nfsserver,uid=1000) is exactly the data he needs to report.
+  Maybe write him an email or go and bang him with a baseball bat ;)
+Seriously, if someone (like admin) is able to find a physical identity of the
+guilty user, then we should be able to do this in a software too, shouldn't
+we?
 
-If you have any idea to fix the situation, I would appreciate it.
-
-
-Below is the detailed explanation of the above.
-I took your comment as below.
------------------------------------------------------------------
-static void __blk_end_request(rq, uptodate) {
-	blk_queue_end_tag();
-	blkdev_dequeue_request();
-	end_that_request_last(rq, uptodate);
-}
-int blk_end_request_locked(rq, uptodate, nr_bytes) {
-	if (end_that_request_first(rq, uptodate, nr_bytes))
-		return 1;
-	add_disk_randomness();
-	__blk_end_request(rq, uptodate);
-	return 0;
-}
-EXPORT_SYMBOL_GPL(blk_end_request_locked);
-int blk_end_request(rq, uptodate, nr_bytes) {
-	if (end_that_request_first(rq, uptodate, nr_bytes))
-		return 1;
-	add_disk_randomness();
-	spin_lock_irqsave();
-	__blk_end_request(rq, uptodate);
-	spin_unlock_irqrestore();
-	return 0;
-}
-EXPORT_SYMBOL_GPL(blk_end_request);
------------------------------------------------------------------
-
-It's quite reasonable on the patch 1/7.
-But the goal of this patch-set is to allow to hook the whole request
-completion procedures by a single rq->end_io() hook.
-(Please see the patch 7/7 for details)
-So the callee (funciton_to_be_set_in_rq_end_io() below) needs to know
-whether it has the lock or not.
-To prepare for the change of the patch 7/7 and avoid code duplication,
-I chose passing the lock information as an argument.
------------------------------------------------------------------
-static int function_to_be_set_in_rq_end_io(rq, uptodate, nr_bytes, needlock) {
-	if (end_that_request_first(rq, uptodate, nr_bytes))
-		return 1;
-	add_disk_randomness();
-	if (needlock)
-		spin_lock_irqsave();
-	__blk_end_request(rq, uptodate);
-	if (needlock)
-		spin_unlock_irqrestore();
-	return 0;
-}
-int blk_end_request_locked(rq, uptodate, nr_bytes) {
-	if (rq->end_io)
-		return rq->end_io(rq, uptodate, nr_bytes, 0);
-
-	if (end_that_request_first(rq, uptodate, nr_bytes))
-	....
-}
-int blk_end_request(rq, uptodate, nr_bytes) {
-	if (rq->end_io)
-		return rq->end_io(rq, uptodate, nr_bytes, 1);
-
-	if (end_that_request_first(rq, uptodate, nr_bytes))
-	....
-}
------------------------------------------------------------------
-
-Thanks,
-Kiyoshi Ueda
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
