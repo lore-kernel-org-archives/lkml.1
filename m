@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbXIDO1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbXIDOhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbXIDO1x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 10:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbXIDO1o
+	id S1754699AbXIDOhW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 10:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbXIDOhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 10:27:44 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39296 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753643AbXIDO1n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 10:27:43 -0400
-Date: Tue, 4 Sep 2007 16:27:44 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Update version information of ips driver
-Message-ID: <20070904142744.GC16016@stusta.de>
-References: <20070904141626.GA9777@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070904141626.GA9777@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 4 Sep 2007 10:37:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49447 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753655AbXIDOg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 10:36:58 -0400
+Date: Tue, 4 Sep 2007 10:36:43 -0400
+Message-Id: <200709041436.l84EahTs009995@dantu.rdu.redhat.com>
+From: Jeff Layton <jlayton@redhat.com>
+Subject: [PATCH 0/7] fix setuid/setgid clearing in networked filesystems (take 5)
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
+       ecryptfs-devel@lists.sourceforge.net, reiserfs-devel@vger.kernel.org,
+       unionfs@filesystems.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 04, 2007 at 04:16:26PM +0200, Bernhard Walle wrote:
-> This patch just makes the version number in ips.c and ips.h consistent. It
-> seems that this has been forgotten in a60768e2d43eb30a1adb8a119aeac35dc0d03ef6.
+When an unprivileged process attempts to modify a file that has the
+setuid or setgid bits set, the VFS will attempt to clear these bits. The
+VFS will set the ATTR_KILL_SUID or ATTR_KILL_SGID bits in the ia_valid
+mask, and then call notify_change to clear these bits and set the mode
+accordingly.
 
-A better fix would be to no longer have two different places defining a 
-version number.
+With a networked filesystem (NFS and CIFS in particular but likely
+others), the client machine or process may not have credentials that
+allow for setting the mode. In some situations, this can lead to file
+corruption, an operation failing outright because the setattr fails, or
+to races that lead to a mode change being reverted.
 
-> Signed-off-by: Bernhard Walle <bwalle@suse.de>
-> 
-> ---
->  drivers/scsi/ips.h |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> --- a/drivers/scsi/ips.h
-> +++ b/drivers/scsi/ips.h
-> @@ -1175,9 +1175,9 @@ typedef struct {
->  #define IPS_VER_MAJOR_STRING "7"
->  #define IPS_VER_MINOR 12
->  #define IPS_VER_MINOR_STRING "12"
-> -#define IPS_VER_BUILD 02
-> -#define IPS_VER_BUILD_STRING "02"
-> -#define IPS_VER_STRING "7.12.02"
-> +#define IPS_VER_BUILD 05
-> +#define IPS_VER_BUILD_STRING "05"
-> +#define IPS_VER_STRING "7.12.05"
->  #define IPS_RELEASE_ID 0x00020000
->  #define IPS_BUILD_IDENT 761
->  #define IPS_LEGALCOPYRIGHT_STRING "(C) Copyright IBM Corp. 1994, 2002. All Rights Reserved."
+In this situation, we'd like to just leave the handling of this to the
+server and ignore these bits. The problem is that by the time the
+setattr op is called, the VFS has already reinterpreted the ATTR_KILL_*
+bits into a mode change and the setattr operation has no way to
+know its intent.
 
-cu
-Adrian
+The following patchset fixes this by making notify_change no longer
+clear the ATTR_KILL_SUID and ATTR_KILL_SGID bits in the ia_valid before
+handing it off to the setattr inode op. setattr can then check for the
+presence of these bits, and if they're set it can assume that the mode
+change was only for the purposes of clearing these bits.
 
--- 
+This means that we now have an implicit assumption that notify_change is
+never called with ATTR_MODE and either ATTR_KILL_S*ID bit set. Nothing
+currently enforces that, so the first patch also adds a BUG_ON() if that
+occurs.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+The next two patches fix NFS and CIFS to take advantage of this new
+scheme to ignore doing the mode change when these flags are set. The
+last four patches fix up callers of notify_change to make sure that
+they don't trip the new BUG() call.
+
+This patchset should apply cleanly to 2.6.23-rc4-mm1. This is
+basically the same patchset as take 4 with a few extra patches to
+fix up the callers of notify_change, and some minor parenthetical
+cleanups.
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
 
