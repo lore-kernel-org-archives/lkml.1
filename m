@@ -1,47 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbXIDU1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbXIDU3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbXIDU1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 16:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbXIDU1B
+	id S1755341AbXIDU3N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 16:29:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbXIDU26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 16:27:01 -0400
-Received: from smtp.cs.aau.dk ([130.225.194.6]:35382 "EHLO smtp.cs.aau.dk"
+	Tue, 4 Sep 2007 16:28:58 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3873 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753296AbXIDU1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 16:27:00 -0400
-X-Greylist: delayed 1218 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Sep 2007 16:27:00 EDT
-Subject: Re: [PATCH] Fix a potential NULL pointer dereference in
-	usbat_check_status()  in drivers/usb/storage/shuttle_usbat.c
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Micah Gruber <micah.gruber@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net, gregkh@suse.de
-In-Reply-To: <20070904110651.GB5126@kernel.dk>
-References: <46DD1661.4070500@gmail.com>  <20070904110651.GB5126@kernel.dk>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 04 Sep 2007 21:57:49 +0200
-Message-Id: <1188935869.19079.3.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 8bit
+	id S1753043AbXIDU25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 16:28:57 -0400
+Date: Tue, 4 Sep 2007 16:27:43 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: rusty@rustcorp.com.au, adam@yggdrasil.com, jcm@jonmasters.org,
+       kaber@trash.net, netfilter-devel@lists.netfilter.org,
+       linux-kernel@vger.kernel.org
+Cc: nhorman@tuxdriver.com
+Subject: [PATCH 1/2] Fix (improve) deadlock condition on module removal netfilter socket option removal
+Message-ID: <20070904202743.GB19083@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tir, 04 09 2007 kl. 13:06 +0200, skrev Jens Axboe:
-> On Tue, Sep 04 2007, Micah Gruber wrote:
-> > This patch fixes a potential null dereference bug where we dereference us before a null check. This patch simply moves the dereferencing after the null check.
-> > 
-> > Signed-off-by: Micah Gruber <micah.gruber@gmail.com>
-> 
-> Be careful with stuff like that, if you actually look at the code, a us
-> == NULL doesn't seem to be possible (or usbat_flash_transport() would
-> have oopsed before).
-> 
-If that is true, then
-        if (!us)
-                return USB_STOR_TRANSPORT_ERROR;
-is utterly pointless.
+Patch 1/2 to fix netfilter socket option removal
+
+This patch changes netfilter socket options to do reference counting on the
+module refcounter (And saves us 4 bytes in the structure to boot :) ).
+
+regards
+
+Neil
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
 
-Simon Holm Thøgersen
+ include/linux/netfilter.h                      |    5 +--
+ net/bridge/netfilter/ebtables.c                |    1 
+ net/ipv4/ipvs/ip_vs_ctl.c                      |    1 
+ net/ipv4/netfilter/arp_tables.c                |    1 
+ net/ipv4/netfilter/ip_tables.c                 |    1 
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    1 
+ net/ipv6/netfilter/ip6_tables.c                |    1 
+ net/netfilter/nf_sockopt.c                     |   36 +++++++------------------
+ 8 files changed, 19 insertions(+), 28 deletions(-)
 
+
+diff --git a/include/linux/netfilter.h b/include/linux/netfilter.h
+index 0eed0b7..1dd075e 100644
+--- a/include/linux/netfilter.h
++++ b/include/linux/netfilter.h
+@@ -88,9 +88,8 @@ struct nf_sockopt_ops
+ 	int (*compat_get)(struct sock *sk, int optval,
+ 			void __user *user, int *len);
+ 
+-	/* Number of users inside set() or get(). */
+-	unsigned int use;
+-	struct task_struct *cleanup_task;
++	/* Use the module struct to lock set/get code in place */
++	struct module *owner;
+ };
+ 
+ /* Each queued (to userspace) skbuff has one of these. */
+diff --git a/net/bridge/netfilter/ebtables.c b/net/bridge/netfilter/ebtables.c
+index 4169a2a..6018d0e 100644
+--- a/net/bridge/netfilter/ebtables.c
++++ b/net/bridge/netfilter/ebtables.c
+@@ -1513,6 +1513,7 @@ static struct nf_sockopt_ops ebt_sockopts =
+ 	.get_optmin	= EBT_BASE_CTL,
+ 	.get_optmax	= EBT_SO_GET_MAX + 1,
+ 	.get		= do_ebt_get_ctl,
++	.owner		= THIS_MODULE,
+ };
+ 
+ static int __init ebtables_init(void)
+diff --git a/net/ipv4/ipvs/ip_vs_ctl.c b/net/ipv4/ipvs/ip_vs_ctl.c
+index e1052bc..0234122 100644
+--- a/net/ipv4/ipvs/ip_vs_ctl.c
++++ b/net/ipv4/ipvs/ip_vs_ctl.c
+@@ -2340,6 +2340,7 @@ static struct nf_sockopt_ops ip_vs_sockopts = {
+ 	.get_optmin	= IP_VS_BASE_CTL,
+ 	.get_optmax	= IP_VS_SO_GET_MAX+1,
+ 	.get		= do_ip_vs_get_ctl,
++	.owner		= THIS_MODULE,
+ };
+ 
+ 
+diff --git a/net/ipv4/netfilter/arp_tables.c b/net/ipv4/netfilter/arp_tables.c
+index d1149ab..29114a9 100644
+--- a/net/ipv4/netfilter/arp_tables.c
++++ b/net/ipv4/netfilter/arp_tables.c
+@@ -1161,6 +1161,7 @@ static struct nf_sockopt_ops arpt_sockopts = {
+ 	.get_optmin	= ARPT_BASE_CTL,
+ 	.get_optmax	= ARPT_SO_GET_MAX+1,
+ 	.get		= do_arpt_get_ctl,
++	.owner		= THIS_MODULE,
+ };
+ 
+ static int __init arp_tables_init(void)
+diff --git a/net/ipv4/netfilter/ip_tables.c b/net/ipv4/netfilter/ip_tables.c
+index e1b402c..6486894 100644
+--- a/net/ipv4/netfilter/ip_tables.c
++++ b/net/ipv4/netfilter/ip_tables.c
+@@ -2296,6 +2296,7 @@ static struct nf_sockopt_ops ipt_sockopts = {
+ #ifdef CONFIG_COMPAT
+ 	.compat_get	= compat_do_ipt_get_ctl,
+ #endif
++	.owner		= THIS_MODULE,
+ };
+ 
+ static struct xt_match icmp_matchstruct __read_mostly = {
+diff --git a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+index 64552af..fd65337 100644
+--- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
++++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+@@ -403,6 +403,7 @@ static struct nf_sockopt_ops so_getorigdst = {
+ 	.get_optmin	= SO_ORIGINAL_DST,
+ 	.get_optmax	= SO_ORIGINAL_DST+1,
+ 	.get		= &getorigdst,
++	.owner		= THIS_MODULE,
+ };
+ 
+ struct nf_conntrack_l3proto nf_conntrack_l3proto_ipv4 __read_mostly = {
+diff --git a/net/ipv6/netfilter/ip6_tables.c b/net/ipv6/netfilter/ip6_tables.c
+index aeda617..cd9df02 100644
+--- a/net/ipv6/netfilter/ip6_tables.c
++++ b/net/ipv6/netfilter/ip6_tables.c
+@@ -1462,6 +1462,7 @@ static struct nf_sockopt_ops ip6t_sockopts = {
+ 	.get_optmin	= IP6T_BASE_CTL,
+ 	.get_optmax	= IP6T_SO_GET_MAX+1,
+ 	.get		= do_ip6t_get_ctl,
++	.owner		= THIS_MODULE,
+ };
+ 
+ static struct xt_match icmp6_matchstruct __read_mostly = {
+diff --git a/net/netfilter/nf_sockopt.c b/net/netfilter/nf_sockopt.c
+index 8b8ece7..e32761c 100644
+--- a/net/netfilter/nf_sockopt.c
++++ b/net/netfilter/nf_sockopt.c
+@@ -55,18 +55,7 @@ EXPORT_SYMBOL(nf_register_sockopt);
+ 
+ void nf_unregister_sockopt(struct nf_sockopt_ops *reg)
+ {
+-	/* No point being interruptible: we're probably in cleanup_module() */
+- restart:
+ 	mutex_lock(&nf_sockopt_mutex);
+-	if (reg->use != 0) {
+-		/* To be woken by nf_sockopt call... */
+-		/* FIXME: Stuart Young's name appears gratuitously. */
+-		set_current_state(TASK_UNINTERRUPTIBLE);
+-		reg->cleanup_task = current;
+-		mutex_unlock(&nf_sockopt_mutex);
+-		schedule();
+-		goto restart;
+-	}
+ 	list_del(&reg->list);
+ 	mutex_unlock(&nf_sockopt_mutex);
+ }
+@@ -86,10 +75,11 @@ static int nf_sockopt(struct sock *sk, int pf, int val,
+ 	list_for_each(i, &nf_sockopts) {
+ 		ops = (struct nf_sockopt_ops *)i;
+ 		if (ops->pf == pf) {
++			if (!try_module_get(ops->owner))
++				goto out_nosup;
+ 			if (get) {
+ 				if (val >= ops->get_optmin
+ 				    && val < ops->get_optmax) {
+-					ops->use++;
+ 					mutex_unlock(&nf_sockopt_mutex);
+ 					ret = ops->get(sk, val, opt, len);
+ 					goto out;
+@@ -97,23 +87,20 @@ static int nf_sockopt(struct sock *sk, int pf, int val,
+ 			} else {
+ 				if (val >= ops->set_optmin
+ 				    && val < ops->set_optmax) {
+-					ops->use++;
+ 					mutex_unlock(&nf_sockopt_mutex);
+ 					ret = ops->set(sk, val, opt, *len);
+ 					goto out;
+ 				}
+ 			}
++			module_put(ops->owner);
+ 		}
+ 	}
++ out_nosup:
+ 	mutex_unlock(&nf_sockopt_mutex);
+ 	return -ENOPROTOOPT;
+ 
+  out:
+-	mutex_lock(&nf_sockopt_mutex);
+-	ops->use--;
+-	if (ops->cleanup_task)
+-		wake_up_process(ops->cleanup_task);
+-	mutex_unlock(&nf_sockopt_mutex);
++	module_put(ops->owner);
+ 	return ret;
+ }
+ 
+@@ -144,10 +131,12 @@ static int compat_nf_sockopt(struct sock *sk, int pf, int val,
+ 	list_for_each(i, &nf_sockopts) {
+ 		ops = (struct nf_sockopt_ops *)i;
+ 		if (ops->pf == pf) {
++			if (!try_module_get(ops->owner))
++				goto out_nosup;
++
+ 			if (get) {
+ 				if (val >= ops->get_optmin
+ 				    && val < ops->get_optmax) {
+-					ops->use++;
+ 					mutex_unlock(&nf_sockopt_mutex);
+ 					if (ops->compat_get)
+ 						ret = ops->compat_get(sk,
+@@ -160,7 +149,6 @@ static int compat_nf_sockopt(struct sock *sk, int pf, int val,
+ 			} else {
+ 				if (val >= ops->set_optmin
+ 				    && val < ops->set_optmax) {
+-					ops->use++;
+ 					mutex_unlock(&nf_sockopt_mutex);
+ 					if (ops->compat_set)
+ 						ret = ops->compat_set(sk,
+@@ -171,17 +159,15 @@ static int compat_nf_sockopt(struct sock *sk, int pf, int val,
+ 					goto out;
+ 				}
+ 			}
++			module_put(ops->owner);
+ 		}
+ 	}
++ out_nosup:
+ 	mutex_unlock(&nf_sockopt_mutex);
+ 	return -ENOPROTOOPT;
+ 
+  out:
+-	mutex_lock(&nf_sockopt_mutex);
+-	ops->use--;
+-	if (ops->cleanup_task)
+-		wake_up_process(ops->cleanup_task);
+-	mutex_unlock(&nf_sockopt_mutex);
++	module_put(ops->owner);
+ 	return ret;
+ }
+ 
+-- 
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
