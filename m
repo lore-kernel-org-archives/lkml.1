@@ -1,93 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXIDOmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbXIDOyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbXIDOmB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 10:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbXIDOlx
+	id S1754762AbXIDOyU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 10:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXIDOyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 10:41:53 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:8404 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754068AbXIDOlw (ORCPT
+	Tue, 4 Sep 2007 10:54:08 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:3296 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754250AbXIDOyF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 10:41:52 -0400
-X-IronPort-AV: i="4.20,207,1186372800"; 
-   d="scan'208"; a="38851230:sNHT913746134"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: the Linux kernel, testsuites, and maybe *you*
-Date: Tue, 4 Sep 2007 10:41:31 -0400
-User-Agent: KMail/1.9.5
-Cc: "Mike Frysinger" <vapier.adi@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-References: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com> <p733axyxcli.fsf@bingen.suse.de>
-In-Reply-To: <p733axyxcli.fsf@bingen.suse.de>
+	Tue, 4 Sep 2007 10:54:05 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709041041.31353.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 04 Sep 2007 14:41:21.0217 (UTC) FILETIME=[A8F7DB10:01C7EF01]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 04 Sep 2007 14:53:37.0235 (UTC) FILETIME=[5FAB4A30:01C7EF03]
+Content-class: urn:content-classes:message
+Subject: Re: Forbid deletion of memory mappings
+Date: Tue, 4 Sep 2007 10:53:53 -0400
+Message-ID: <Pine.LNX.4.61.0709041050410.7968@chaos.analogic.com>
+In-Reply-To: <200708310005.53587.clemens.kol@gmx.at>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Forbid deletion of memory mappings
+Thread-Index: AcfvA1+0s8RmjPB0TqWBe1368Dev1w==
+References: <200708301844.10532.clemens.kol@gmx.at> <200708302341.09459.clemens.kol@gmx.at> <30071.1188510621@turing-police.cc.vt.edu> <200708310005.53587.clemens.kol@gmx.at>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Clemens Kolbitsch" <clemens.kol@gmx.at>
+Cc: <Valdis.Kletnieks@vt.edu>, <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 1 Sep 2007 18:08, Andi Kleen pondered:
-> "Mike Frysinger" <vapier.adi@gmail.com> writes:
-> 
-> > is there any sort of standard for testing and integration into
-> > mainline ?  
-> 
-> Everybody does their own.
 
-That kind of stinks - and seems to be a potential duplication of effort all 
-over the place.
+On Thu, 30 Aug 2007, Clemens Kolbitsch wrote:
 
-> > in the Blackfin world, we've been developing little
-> > external kernel modules and adding them to our own testsuite, but
-> > often times these things are not Blackfin specific.  case in point,
-> > we're integrating a string testsuite to make sure all of the fun str*
-> > and mem* functions are sane and operate as they expected, but rather
-> > than having just Blackfin benefit here, i'd like to see this pushed
-> > upstream ...
-> 
-> I would like to see this too. I wrote a couple of unit tests
-> during x86-64 development too and they would be handy
-> to have in a central place.
-> 
-> The SUSE kernel also has a crasher module that exercises the
-> allocators and is pretty useful to stress code in general.
-> 
-> Disadvantage is that test code tends to be hackish and ugly
-> and very specialized and will probably not pass standard review
-> procedures.
+> On Thursday 30 August 2007 23:50:21 Valdis.Kletnieks@vt.edu wrote:
+>> On Thu, 30 Aug 2007 23:41:09 +0200, Clemens Kolbitsch said:
+>>> On Thursday 30 August 2007 23:34:52 you wrote:
+>>>> On Thu, 30 Aug 2007, Clemens Kolbitsch wrote:
+>>>>> is there no way to tell the kernel, that a certain mapping must not
+>>>>> be removed, no matter what (except of course an explicit call to
+>>>>> sys_unmap, of course)?
+>>>>
+>>>> I don't seem to get what is the issue here. Your mapping is not
+>>>> removed, only the VMAs are merged together into one larger VMA if they
+>>>> have neighbouring address ranges and compatible protection bits. See
+>>>> vma_merge().
+>>>
+>>> the thing is that they are not. the kernel chooses to REPLACE my mapping.
+>>>
+>>> consider the user-space code:
+>>>
+>>> mmap(0xaaaa0000, 0x3000, MAP_FIXED, ...);
+>>> mmap(0xaaaa1000, 0x4000, MAP_FIXED, ...);
+>>>
+>>> here, the second call to mmap will shorten the first mapping to 0x1000
+>>> bytes and create one big vma with size 0x5000 bytes.
+>>>
+>>> is there a way to tell it that the second mmap MUST fail?
+>>
+>> There's an LSM exit point for mmap, you could perhaps do something there.
+>>
+>> What are you trying to achieve by forcing the second one to fail?
+>
+> puh... that is a good question :-)
+>
+> I'm writing my master's thesis on a new model of memory protection and need to
+> have every memory mapping in userspace duplicated. I also have kind of a
+> second PGD/PTD that allows finding this mirrored mapping.
+>
+> However, as the number of original mappings grows, I suddenly have the problem
+> that the kernel tries to allocate a new mapping and picks the address of a
+> mirrored memory page, which it shouldn't.
+>
+> Honestly, I don't understand why it does so, but it simply does... so
+> basically I want these second mappings to stay in memory as long as the
+> original page.
+>
+> What do you mean exactly with
+>
+>> There's an LSM exit point for mmap, you could perhaps do something there.
+>
+> ??
+>
+> By the way / @Jiri Kosina:
+>
+>> Which is exactly in compliance with what POSIX says about MAP_FIXED mmaps
+>> - see http://opengroup.org/onlinepubs/007908799/xsh/mmap.html
+>
+> I know... I'm not even saying that this is a bug... I just wonder if there is
+> some way to avoid this problem :-)
+>
+> Thanks for your help - i really appreciate that!!
 
-Then this makes perfect sense to actually have it in the proper places, and 
-have it go through the standard review process. I have run into problems 
-recently, where ugly hackish tests seem never really catch actual faults. 
-(Since they were written by the same person who wrote the driver - Design a 
-fault in, code the fault, test the fault is there).
+You might need to keep track of your memory mappings and
+not remap something that will overlap. You can mmap
+a single page in which you write the addresses. If you
+map it shared, all your processes can access it and
+call a common memory-mapping procedure (that you write)
+which keeps track of its kernel allocations for you.
 
-With many eyes - and all that stuff - hopefully we would catch things.
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
-> Also the rt people seem to have pushed a couple of tests in already, 
-> but I always hated it that they're in the standard directories.
-> RCU also has, in fact they added a "eat all my CPU in tests"
-> CONFIG option. Just making that dependent on a CONFIG_UNIT_TESTS
-> would be a good change in itself. And then there are the slab
-> failure inducers of course.
 
-Putting them close to the standard directories might be OK - keeping the tests 
-close to the thing that is being tested may help with maintainers keeping an 
-eye on things that might be missed otherwise.
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
-Maybe these types of tests should go into a separate directory - power on self 
-tests (post) directories in the respective places? ./kernel/post 
-and ./drivers/xxxx/post?
-
-So Mike's proposed string tests would go into ./lib/post/strings.c
-
-When things pass - you get a single indication (all tests for unit X passed) 
-or a pass for each test?
-
--Robin
+Thank you.
