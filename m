@@ -1,49 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbXIDV3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbXIDVcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756029AbXIDV3V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 17:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbXIDV3H
+	id S1756070AbXIDVcl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 17:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755069AbXIDVcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 17:29:07 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5755 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754764AbXIDV3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 17:29:05 -0400
-Date: Tue, 4 Sep 2007 23:24:35 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Halevy, Benny" <bhalevy@panasas.com>
-Cc: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       mike.miller@hp.com, grant.likely@secretlab.ca,
-       "Harrosh, Boaz" <bharrosh@panasas.com>, dm-devel@redhat.com,
-       j-nomura@ce.jp.nec.com
-Subject: Re: [PATCH 6/7] blk_end_request: remove/unexport end_that_request_*
-Message-ID: <20070904212435.GG4117@kernel.dk>
-References: <20070831.184335.85683085.k-ueda@ct.jp.nec.com> <E472128B1EB43941B4E7FB268020C89B02992D9B@riverside.int.panasas.com>
+	Tue, 4 Sep 2007 17:32:33 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:51461 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754532AbXIDVcc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 17:32:32 -0400
+Date: Tue, 4 Sep 2007 16:32:10 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Jan Kara <jack@suse.cz>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.osdl.org
+Subject: Re: [PATCH] Send quota messages via netlink
+Message-ID: <20070904213210.GD30980@sergelap.austin.ibm.com>
+References: <20070828211335.37fce4c9.akpm@linux-foundation.org> <20070829122647.GB7814@duck.suse.cz> <m1mywa42g7.fsf@ebiederm.dsl.xmission.com> <20070829192653.GD7814@duck.suse.cz> <m1wsve2gpo.fsf@ebiederm.dsl.xmission.com> <20070830092548.GB16336@duck.suse.cz> <20070830191010.GA23464@vino.hallyn.com> <20070830221825.GB21298@duck.suse.cz> <20070830221447.GA25675@vino.hallyn.com> <20070903142123.GG7524@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E472128B1EB43941B4E7FB268020C89B02992D9B@riverside.int.panasas.com>
+In-Reply-To: <20070903142123.GG7524@duck.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 04 2007, Halevy, Benny wrote:
-> Boaz raised my attention to this patchset today...
-> We suspect we'll still need the extern entry points for handling the bidi 
-> request in the scsi_io_completion() path as we only want to call
-> end_that_request_chunk on req->next_rq and never
-> end_that_request_last.
->  
-> (see 
-> http://www.bhalevy.com/open-osd/download/linux-2.6.23-rc2_and_iscsi-iscsi-2007_08_09/0005-SCSI-bidi-support.patch)
->  
-> If this is ok with you I'd leave these entry points in place rather than
-> taking them out and putting them back in later.
+Quoting Jan Kara (jack@suse.cz):
+> On Thu 30-08-07 17:14:47, Serge E. Hallyn wrote:
+> > Quoting Jan Kara (jack@suse.cz):
+> > >   Maybe before proceeding further with the discussion I'd like to
+> > > understand following: What are these user namespaces supposed to be good
+> > > for?
+> > 
+> > (Please skip to the message end first, as I think you may not care about
+> > the next bit of my blathering)
+> > 
+> > Right now they are only good for providing some separate accounting for
+> > uid 1000 in one user namespace versus uid 1000 in another namespace.
+> > All security enforcement must be done by actually providing separate
+> > filesystems and separate pid namespaces and, hopefully, with a selinux
+> > policy.
+> > 
+> > Eventually the idea will be that uid 1000 in one user namespace and uid
+> > 1000 in another namespace will be completely separate entities.  A
+> > mounted filesystem will be tied to a particuler user namespace, and
+> > the kernel will provide any cross-userns access perhaps the way I
+> > described, with uid equivalence implemented through the keyring.
+>   I see. Thanks for explanation.
+> 
+> > But note that this isn't really relevant when we get to NFS.  Two user
+> > namespaces on one machine should have different network namespaces and
+> > network addresses as well, and so should look to the NFS server like two
+> > separate machines.
+> > 
+> > So the user namespaces are only really relevant when talking about local
+> > filesystems.
+> > 
+> > >   I imagine it so that you have a machine and on it several virtual
+> > > machines which are sharing a filesystem (or it could be a cluster). Now you
+> > > want UIDs to be independent between these virtual machines. That's it,
+> > > right?
+> > >   Now to continue the example: Alice has UID 100 on machineA, Bob has
+> > >  UID 100 on machineB. These translate to UIDs 1000 and 1001 on the common
+> > > filesystem. Process of Alice writes to a file and Bob becomes to be over
+> > > quota. In this situation, there would be probably two processes (from
+> > > machineA and machineB) listening on the netlink socket. We want to send a
+> > > message so that on Alice's desktop we can show a message: "You caused
+> > > Bob to exceed his quotas" and of Bob's desktop: "Alice has caused that you
+> > > are over quota.".
+> > 
+> > Since this is over NFS, you handle it the way you would any other time
+> > that user Alice on some other machine managed to do this.
+>   I meant this would actually happen over a local filesystem (imagine
+> something like "hostfs" from UML).
 
-There's no point in leaving them in when nothing current needs it, I'd
-much rather add it back in should the need arise. That's the proper way
-to handle things like this.
+Ok, then that is where I was previously suggesting that we use an api to
+report a uid meaningful in bob's context, where we currently (in the
+absense of meaningful mount uids and uid equivalence) tell Bob that root
+was the one who brought him over quota.  From a user pov 'nobody' would
+make more sense, but I don't think we want the kernel to know about user
+nobody, right?
 
--- 
-Jens Axboe
+So if the msg weren't broadcast, or netlink sockets were tied to one
+user namespace, we could call a
+	int uid_in_user_ns(struct user *, struct user_ns *)
+sending in Alice's user struct and Bob's userns, and use the result in
+the netlink message.  Otherwise I'm not sure what is the right answer.
+We just might need the equivalent of 'struct pid' to struct user, or
+persistant global user namespace ids (persistant after user namespace
+destruction, not across reboot) so we can safely send the user_ns * in a
+netlink msg.
 
+> > >   Because there may be is not a notion of Bob on machineA or of Alice on
+> > > machineB, we are in trouble, right? What I like the most is to use the
+> > > filesystem identities (as you suggested in some other email). I. e. because
+> > > both Alice and Bob share a filesystem, identities of both have to make sense
+> > > to it (for example for purposes of permission checking). So we can probably
+> > 
+> > Right, so long as we're talking about local filesystems that's the way
+> > to go.  If a file write was allowed which brought bob over quota,
+> > clearly the person responsible had some uid valid on the filesystem to
+> > allow him to do so.
+>   Fine. So I'll keep UID in the quota netlink protocol with the meaning
+> "the identity of the user for filesystem operations".
+
+I think that's ok.
+
+Hopefully when that changes to accomodate user namespaces, we can use
+netlink field versioning to make that transition pretty seamless?
+
+If not, then we probably should in fact make some decision now so as not
+to change the api.
+
+> > > send via netlink these (in our example ids 1000 and 1001) and hope that
+> > > inside machineA and machineB there will be a way to translate these
+> > > identities to names "Alice" and "Bob". So that user can understand what
+> > > is happenning. Does this sound plausible?
+> > >   If we go this route, then we only need a kernel function, that will
+> > > for a pair ($filesystem, $task) return indentity of that $task used
+> > > for operations on $filesystem...
+> > 
+> > Ok, now I see.  This is again unrelated to user namespaces, it's an
+> > issue regardless.
+> > 
+> > Is there no way to just report Alice as the guilty party to Bob on his
+> > machine as (host=nfsserver,uid=1000)?
+>   You know, in fact this contains all the information but it is quite useless
+> for an ordinary user. The message should be understandable to average desktop
+
+What is the ordinary user going to do about it?  If the user didn't set
+up the nfsserver and/or the second client, the only thing he can do is
+report the guilty user to an admin.  In which case the tuple
+(host=nfsserver,uid=1000) is exactly the data he needs to report.
+
+> user so it should contain some name rather than UID - but resolving the
+> "filesystem" UID to some meaningful name is completely different issue
+> and I'd probably leave that for the moment when the kernel infrastructure
+> and use cases would be clearer...
+> 
+> 								Honza
+> -- 
+> Jan Kara <jack@suse.cz>
+> SuSE CR Labs
+
+thanks,
+-serge
