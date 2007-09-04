@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbXIDWpD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbXIDW5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbXIDWpD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 18:45:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbXIDWoy
+	id S1755772AbXIDW5u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 18:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbXIDW5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 18:44:54 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2165 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754336AbXIDWox (ORCPT
+	Tue, 4 Sep 2007 18:57:43 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45967 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752583AbXIDW5m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 18:44:53 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 4 Sep 2007 15:44:49 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Michael Kerrisk <mtk-manpages@gmx.net>
-cc: Andrew Morton <akpm@linux-foundation.org>, corbet@lwn.net,
-       jengelh@computergmbh.de, hch@lst.de, stable@kernel.org,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       tglx@linutronix.de, rdunlap@xenotime.net
-Subject: Re: [PATCH] Revised timerfd() interface
-In-Reply-To: <20070904204932.208520@gmx.net>
-Message-ID: <Pine.LNX.4.64.0709041541500.7326@alien.or.mcafeemobile.com>
-References: <20070825064114.107820@gmx.net> <Pine.LNX.4.64.0708300458120.7717@alien.or.mcafeemobile.com>
- <46DD116C.4040301@gmx.net> <20070904011800.762523a4.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0709040805490.6887@alien.or.mcafeemobile.com>
- <20070904204932.208520@gmx.net>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 4 Sep 2007 18:57:42 -0400
+Date: Wed, 5 Sep 2007 04:40:52 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Jason Lunz <lunz@falooley.org>
+cc: David Woodhouse <dwmw2@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
+       Stable Branch <stable@kernel.org>
+Subject: Re: [mtd] allow modular mtdsuper
+In-Reply-To: <20070904222154.GA12804@falooley.org>
+Message-ID: <alpine.LFD.0.999.0709050421330.20571@enigma.security.iitk.ac.in>
+References: <20070904222154.GA12804@falooley.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Sep 2007, Michael Kerrisk wrote:
+Hi Jason,
 
-> > Useless like it'd be a motorcycle w/out a cup-holder :)
-> > Seriously, the ability to get the previous values from "something" could 
-> > have a meaning if this something is a shared global resource (like 
-> > signals
-> > for example). In the timerfd case this makes little sense, since you can 
-> > create as many timerfd as you like and you do not need to share a single 
-> > one by changing/restoring the original context.
+
+On Tue, 4 Sep 2007, Jason Lunz wrote:
 > 
-> Davide,
-> 
-> As I think about this more, I see more problems with
-> your argument.  timerfd needs the ability to get and 
-> get-while-setting just as much as the earlier APIs.
-> Consider a library that creates a timerfd file descriptor that
-> is handed off to an application: that library may want
-> to modify the timer settings without having to create a
-> new file descriptor (the app mey not be able to be told about
-> the new fd).  Your argument just doesn't hold, AFAICS.
+> Declare mtdsuper to be gpl-licensed so it can access get_mtd_device and
+> put_mtd_device when loaded as a module.
 
-Such hypotethical library, in case it really wanted to offer such 
-functionality, could simply return an handle instead of the raw fd, and 
-take care of all that stuff in userspace.
-Again, mimicking POSIX APIs doesn't always take you in the right place.
+The actual issue was a bit different -- refer commit bec494775600b1cd in
+latest -git (patch included below).
 
+David, it looks like .22 had this problem as well. If we care enough, you
+could forward this on to -stable (cc'ed, just in case).
 
+Satyam
 
-- Davide
+[MTD] Makefile fix for mtdsuper
 
+We want drivers/mtd/{mtdcore, mtdsuper, mtdpart}.c to be built and linked
+into the same mtd.ko module. Fix the Makefile to ensure this, and remove
+duplicate MODULE_ declarations in mtdpart.c, as mtdcore.c already has them.
 
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+
+---
+
+ drivers/mtd/Makefile  |    2 +-
+ drivers/mtd/mtdpart.c |    4 ----
+ 2 files changed, 1 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/mtd/Makefile b/drivers/mtd/Makefile
+index 451adcc..6d958a4 100644
+--- a/drivers/mtd/Makefile
++++ b/drivers/mtd/Makefile
+@@ -3,9 +3,9 @@
+ #
+ 
+ # Core functionality.
++obj-$(CONFIG_MTD)		+= mtd.o
+ mtd-y				:= mtdcore.o mtdsuper.o
+ mtd-$(CONFIG_MTD_PARTITIONS)	+= mtdpart.o
+-obj-$(CONFIG_MTD)		+= $(mtd-y)
+ 
+ obj-$(CONFIG_MTD_CONCAT)	+= mtdconcat.o
+ obj-$(CONFIG_MTD_REDBOOT_PARTS) += redboot.o
+diff --git a/drivers/mtd/mtdpart.c b/drivers/mtd/mtdpart.c
+index 9c62368..6174a97 100644
+--- a/drivers/mtd/mtdpart.c
++++ b/drivers/mtd/mtdpart.c
+@@ -560,7 +560,3 @@ int parse_mtd_partitions(struct mtd_info *master, const char **types,
+ EXPORT_SYMBOL_GPL(parse_mtd_partitions);
+ EXPORT_SYMBOL_GPL(register_mtd_parser);
+ EXPORT_SYMBOL_GPL(deregister_mtd_parser);
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Nicolas Pitre <nico@cam.org>");
+-MODULE_DESCRIPTION("Generic support for partitioning of MTD devices");
