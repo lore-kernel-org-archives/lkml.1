@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbXIDPG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbXIDPJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755376AbXIDPG5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 11:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXIDPGt
+	id S1755401AbXIDPJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 11:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbXIDPJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 11:06:49 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:3013 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754293AbXIDPGs convert rfc822-to-8bit (ORCPT
+	Tue, 4 Sep 2007 11:09:12 -0400
+Received: from smtp.opengridcomputing.com ([71.42.183.126]:45635 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754542AbXIDPJL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 11:06:48 -0400
+	Tue, 4 Sep 2007 11:09:11 -0400
+Message-ID: <46DD7516.4090905@opengridcomputing.com>
+Date: Tue, 04 Sep 2007 10:09:10 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 04 Sep 2007 15:04:08.0349 (UTC) FILETIME=[D7D7A4D0:01C7EF04]
-Content-class: urn:content-classes:message
-Subject: Re: ramdisk
-Date: Tue, 4 Sep 2007 11:04:31 -0400
-Message-ID: <Pine.LNX.4.61.0709041101290.7968@chaos.analogic.com>
-In-Reply-To: <ab40e9c0709030604u5fecf34dr945ece01b95e622d@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: ramdisk
-Thread-Index: AcfvBNf9jj5Qge0ZRG+jorzhcGbFMA==
-References: <ab40e9c0709030604u5fecf34dr945ece01b95e622d@mail.gmail.com>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Xu Yang" <risingsunxy@googlemail.com>
-Cc: "LKML" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: Roland Dreier <rdreier@cisco.com>
+CC: Divy Le Ray <divy@chelsio.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.23 0/2] cxgb3 - Fix dev->priv usage
+References: <46D4F12C.7090409@chelsio.com> <ada3ay26gys.fsf@cisco.com> <46D5B296.8020703@chelsio.com>
+In-Reply-To: <46D5B296.8020703@chelsio.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Roland,
 
-On Mon, 3 Sep 2007, Xu Yang wrote:
+We'll work on upgrading you to T3B2 boards as well.
 
-> Hi everyone,
->
-> I want to use ramdisk to boot my filesystem, as I can't use NFS and harddisk.
->
-> I have load the ramdisk into the ram memory (start address :0x4000000)
->
-> and in the boot options I specified : root =dev/ram0 initrd=0x4000000
+Stay tuned.
 
-Since you don't know what the default directory is, perhaps
-root should be /dev/ram0. Also, make sure you actually create
-those device nodes in /dev
-
-[Snipped...]
-
-> but the kernel said it can not find any file system on it.
->
-> regards,
->
-> Yang
->
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+Steve.
 
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
-Thank you.
+Divy Le Ray wrote:
+> Roland Dreier wrote:
+>>
+>> Looks OK to me but I would just roll up the second patch into the
+>> first patch and let Jeff merge it as one commit.  There's no point in
+>> creating an intermediate tree that doesn't build -- it just breaks git
+>> bisect for no useful purpose.
+>>
+> 
+> Okay, Jeff agrees too, I'll do so.
+> 
+>> Also as a side note, when trying to test this I got the message
+>>
+>>     could not load TP SRAM: unable to load t3a_protocol_sram-1.0.44.bin
+>>
+>> and you guys seem to only have t3b protocol sram images on your web
+>> site.  Could you send me the t3a file (or swap out my T3A boards for
+>> T3B boards ;)?
+>>
+> I'd rather fix the driver then:
+> First, HW folks tell me that there is no need for engine
+> microcode update for T3A.
+> Moreover, there is a bug when the file name is constructed.
+> We have T3B and T3B2 board revs, the driver looks for
+> t3b_protocol_sram-1.0.44.bin for T3B2 boards and defaults to
+> t3a_protocol_sram-1.0.44.bin even for T3B boards.
+> I submitted a patch fixing this in netdev#upstream.
+> I should propose the fix for 2.6.23 instead.
+> 
+> Cheers,
+> Divy
+> 
