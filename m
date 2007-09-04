@@ -1,48 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbXIDRfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbXIDRrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755418AbXIDRfR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 13:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXIDRfE
+	id S1755528AbXIDRrj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 13:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755022AbXIDRrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 13:35:04 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:21476 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754734AbXIDRfB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 13:35:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WkIYLwNT+7U23zqlRkYYuhrd07JR+WJGw2LHPRcGSbgZ4X+SBYF4Ttxp4wECkfvMl34na0OgVaFAcsZM8Yj9BFXHM1TyNixPjxrlnTuIq3PbJvrrMKfUcTjblxopNjiziMj6fW0524DeB8lqiFCpo7MF9nyekO/3jKDr0x70e9Q=
-Message-ID: <379fb4870709041035p7f8d6fch6a683b54cbbbd81a@mail.gmail.com>
-Date: Tue, 4 Sep 2007 19:35:00 +0200
-From: "anon... anon.al" <anon.asdf@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: Race condition: calling remove_proc_entry in cleanup_module (module_exit) while someone's using procfile
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070904165637.GA1905@martell.zuzino.mipt.ru>
+	Tue, 4 Sep 2007 13:47:31 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50481 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754997AbXIDRra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 13:47:30 -0400
+Date: Tue, 4 Sep 2007 10:47:28 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, bunk@kernel.org,
+       josh@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Make rcutorture RNG use temporal entropy
+Message-ID: <20070904174728.GA18701@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070816024904.GA5312@linux.vnet.ibm.com> <alpine.LFD.0.999.0709041047070.13651@enigma.security.iitk.ac.in> <20070904161419.GA11417@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <379fb4870709040939m2430be6ci57fd73f1f9abc6ef@mail.gmail.com>
-	 <20070904165637.GA1905@martell.zuzino.mipt.ru>
+In-Reply-To: <20070904161419.GA11417@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/4/07, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> For regular proc files, this is fixed in 2.6.23-rc1 and later.
+On Tue, Sep 04, 2007 at 09:14:19AM -0700, Paul E. McKenney wrote:
+> On Tue, Sep 04, 2007 at 11:16:50AM +0530, Satyam Sharma wrote:
+> > Hi Paul,
+> > 
+> > On Wed, 15 Aug 2007, Paul E. McKenney wrote:
+> > > 
+> > > The locking used by get_random_bytes() can conflict with the
+> > > preempt_disable() and synchronize_sched() form of RCU.  This patch changes
+> > > rcutorture's RNG to gather entropy from the new cpu_clock() interface
+> > > (relying on interrupts, preemption, daemons, and rcutorture's reader
+> > > thread's rock-bottom scheduling priority to provide useful entropy),
+> > > and also adds and EXPORT_SYMBOL_GPL() to make that interface available
+> > > to GPLed kernel modules such as rcutorture.
+> > 
+> > Honestly, rcutorture goes to some amazing lengths just to have this
+> > randomizing-the-delays-that-read/write-test-threads-spend-inside-or-
+> > outside-the-critical-sections thing :-) Especially, seeing that
+> > synchro-test, the other "comparable" module, just doesn't bother with
+> > all this at all. (especially check out its load == interval == do_sched
+> > == 0 case! :-)
+> 
+> Yep.  The need for that level of randomization in rcutorture has been made
+> painfully clear to me over a period of more than a decade.  Of course,
+> the overhead of the re-seeding does get diluted by a factor of 10,000 or
+> 100,000, depending on what version you are using.  So, from a throughput
+> standpoint, the overhead is essentially that of a linear congruential
+> random-number generator.  This is critically important given the low
+> overhead of rcu_read_lock() and rcu_read_unlock().
+> 
+> Still, this is indeed not what you want on a fastpath of a realtime
+> system, where average performance means nothing -- only the worst case
+> counts.  And this is why I am -not- putting the rcutorture RNG forward
+> for general-purpose use.  So we are at least in agreement on that piece!
+> 
+> And, as you hint below, anyone running rcutorture while also running
+> a production realtime workload needs to seriously rethink their design.  ;-)
+> (If you are instead running it to provide a test load for your realtime
+> testing, fine and good.)
+> 
+> > So IMHO, considering that rcutorture isn't a "serious" user of randomness
+> > in the first place (of even a "fast-and-loose version" for that matter),
+> > you could consider a solution where you gather all the randomness you need
+> > at module_init time itself and save it somewhere, and then use it wherever
+> > you're calling into rcu_random()->cpu_clock() [ or get_random_bytes() ]
+> > in the current code. You could even make some trivial updates to those
+> > random numbers after every RCU_RANDOM_REFRESH uses, like present.
+> 
+> Well, assuming that the Linux kernel really needs a central implementation
+> of a "pretty fast" and "pretty good" RNG, one could imagine all sorts of
+> designs:
+> 
+> 1.	Use an LCRNG feeding into an array, as the old Berkeley random()
+> 	does (or see Knuth for an earlier citation), but make it per-CPU.
+> 	When pulling out randomness, do an MDn hash on the array
+> 	along with a per-task counter and the per-CPU preempt counter.
+> 	Increment the per-task counter on each use.  Do an LCRNG step
+> 	on each use.  Since this is a fixed array, the collisions in
+> 	CONFIG_PREEMPT due to preemption can be permitted to happen
+> 	without penalty.
+> 
+> 	This approach avoids all locking, all interrupt disabling, and
+> 	all preemption disabling.  But the MD hashes aren't the fastest
+> 	things in the kernel, from what I understand.
+> 
+> 	Question: will this be fast enough?  If so, which of the MD
+> 	hashes should be used?
+> 
+> 2.	As in #1 above, but use some simpler hash, such as addition or
+> 	XOR.  Maybe CRC.  (Benchmark for speed.)
+> 
+> 3.	Just use a simple LCRNG with per-task state.  Perturb from some
+> 	statistical counter (the per-CPU RCU grace-period counter might
+> 	be appropriate).  Or don't even bother doing that.
+> 
+> 	This would be -much- faster than any of the above, and would
+> 	be deterministic, hence good for realtime use.	LCRNG might not
+> 	satisfy more-demanding users, especially the paranoid ones.
+> 
+> 	(This is what you are proposing above, correct?)
+> 
+> 4.	Just use LCRNG into a array like Berkeley random(), but replicate
+> 	on a per-CPU basis.  Maybe or maybe not perturb occasionally
+> 	from some statistical counter as in #3 above.
+> 
+> 	This would be reasonably fast, and should satisfy most users.
+> 	People needing cryptographically secure RNGs should of course
+> 	stick with get_random_bytes().
+> 
+> 	[If I had some blazing reason to implement this -right- -now-,
+> 	this would be the approach I would take.]
+> 
+> 5.	Stick with the current situation where people needing fast
+> 	and dirty RNGs roll their own.
 
-Thanks!
+Or, better yet, as suggested by Rusty:
 
-I see you've been working on it:
-fix-rmmod-read-write-races-in-proc-entries...
-http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.22-rc6/2.6.22-rc6-mm1/broken-out/
+6.	Use random32() from lib/random32.c and be happy.  This does
+	disable preemption across the calculation, which should not
+	be a problem in most situations.  Although it does not protect
+	against interrupts, the effect would simply be to scramble
+	the state a bit more (or perhaps unscramble it a bit).
 
-((
-older relevant posts:
-http://groups.google.com/group/linux.kernel/browse_thread/thread/4c74bbea17727e6e/809c15bd0e6fa8f9?
-http://groups.google.com/group/fa.linux.kernel/browse_thread/thread/fb03e1a500fcb258/563a7f11acdec992?
-))
+	The overhead should not be too bad.
 
-Thanks, Albert
+There.  My work is done.  ;-)
+
+							Thanx, Paul
+
+> > Agreed, anybody running rcutorture isn't really looking for performance,
+> > but why call get_random_bytes() or cpu_clock() (and the smp_processor_id()
+> > + irq_save/restore + export_symbol() that goes with it) when it isn't
+> > _really_ "required" as such ...
+> 
+> Well, that would in fact be why the high-overhead path is taken only
+> very rarely.
+> 
+> And again, I am -not- putting the rcutorture RNG forward for general use,
+> as it is a no-go for realtime fastpath use.
+> 
+> Votes for #5 above?  Given the total lack of any sort of response to
+> Stephan Eranian's proposal last year, might be optimal.  ;-)
+> 
+> 							Thanx, Paul
