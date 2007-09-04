@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646AbXIDIDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752887AbXIDIGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752646AbXIDIDh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 04:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbXIDIDZ
+	id S1752887AbXIDIGA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 04:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbXIDIFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 04:03:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39012 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751680AbXIDIDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 04:03:24 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.0.999.0708310946270.25853@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0708310946270.25853@woody.linux-foundation.org> <000701c7eb49$cff701c0$6fe50540$@com> <1188513433.6626.24.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org> <1188577275.6649.133.camel@heimdal.trondhjem.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dhowells@redhat.com, Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Frank van Maarseveen <frankvm@frankvm.com>,
-       Hua Zhong <hzhong@gmail.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: recent nfs change causes autofs regression
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Tue, 04 Sep 2007 09:02:51 +0100
-Message-ID: <6053.1188892971@redhat.com>
+	Tue, 4 Sep 2007 04:05:44 -0400
+Received: from wx-out-0506.google.com ([66.249.82.226]:40723 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbXIDIFm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 04:05:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=MF4C47nIIC1nk6K0FAi55A0wLfVF2ydOmkb5aD1AXLgrOBx4zDYNt1OXu9f0ZAPPV7/C4mIGpKlV06M3nIGwOhqvCEO4TRIA9UxeY7HxXKhkupsYoCHHzpLuxbBFcFJvmer8uLsdLuSdzGKn1opLNZqoTw/97v+5Zv5uCpjxGoU=
+Message-ID: <46DD121A.2010404@gmail.com>
+Date: Tue, 04 Sep 2007 16:06:50 +0800
+From: Micah Gruber <micah.gruber@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com
+Subject: [PATCH] Fix a potential NULL pointer dereference in uli526x_interrupt()
+ in drivers/net/tulip/uli526x.c
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+This patch fixes a potential null dereference bug where we dereference dev before a null check. This patch simply moves the dereferencing after the null check.
 
-> In other words, let's assume that the user has /some/nfs/mount mounted 
-> over NFS, and wants to re-mount it (or even just a subset of it) somewhere 
-> else, the sane thing to do is not to mount it again, but to just do
+Signed-off-by: Micah Gruber <micah.gruber@gmail.com>
+---
 
-What about a superset?  What about two intersecting sets?  Bind mounts aren't
-quite it for this problem, and in any case your suggestion of:
-
+--- a/drivers/net/tulip/uli526x.c
++++ b/drivers/net/tulip/uli526x.c
+@@ -663,7 +663,7 @@
+ {
+ 	struct net_device *dev = dev_id;
+ 	struct uli526x_board_info *db = netdev_priv(dev);
+-	unsigned long ioaddr;
++	unsigned long ioaddr = dev->base_addr;
+ 	unsigned long flags;
+ 
+ 	if (!dev) {
+@@ -671,8 +671,6 @@
+ 		return IRQ_NONE;
+ 	}
+ 
+-	ioaddr = dev->base_addr;
+-
+ 	spin_lock_irqsave(&db->lock, flags);
+ 	outl(0, ioaddr + DCR7);
 
