@@ -1,123 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbXIDW3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbXIDWdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755806AbXIDW3y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 18:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXIDW3q
+	id S1755899AbXIDWdT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 18:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXIDWdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 18:29:46 -0400
-Received: from styx.suse.cz ([82.119.242.94]:53130 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753470AbXIDW3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 18:29:46 -0400
-Date: Wed, 5 Sep 2007 00:49:21 +0200
-From: Jan Kara <jack@suse.cz>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Jan Kara <jack@suse.cz>, "Serge E. Hallyn" <serge@hallyn.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-ID: <20070904224921.GA19693@duck.suse.cz>
-References: <20070829122647.GB7814@duck.suse.cz> <m1mywa42g7.fsf@ebiederm.dsl.xmission.com> <20070829192653.GD7814@duck.suse.cz> <m1wsve2gpo.fsf@ebiederm.dsl.xmission.com> <20070830092548.GB16336@duck.suse.cz> <20070830191010.GA23464@vino.hallyn.com> <20070830221825.GB21298@duck.suse.cz> <20070830221447.GA25675@vino.hallyn.com> <20070903142123.GG7524@duck.suse.cz> <20070904213210.GD30980@sergelap.austin.ibm.com>
-MIME-Version: 1.0
+	Tue, 4 Sep 2007 18:33:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57438 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424AbXIDWdJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 18:33:09 -0400
+Date: Tue, 4 Sep 2007 23:33:04 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christian Ehrhardt <lk@c--e.de>
+Subject: Re: [GIT PULL] x86 setup: work around bug in Xen HVM
+Message-ID: <20070904223303.GA22306@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Christian Ehrhardt <lk@c--e.de>
+References: <200709041655.l84GtjiJ008962@tazenda.hos.anvin.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070904213210.GD30980@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200709041655.l84GtjiJ008962@tazenda.hos.anvin.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 04-09-07 16:32:10, Serge E. Hallyn wrote:
-> Quoting Jan Kara (jack@suse.cz):
-> > On Thu 30-08-07 17:14:47, Serge E. Hallyn wrote:
-> > > Quoting Jan Kara (jack@suse.cz):
-> > > >   I imagine it so that you have a machine and on it several virtual
-> > > > machines which are sharing a filesystem (or it could be a cluster). Now you
-> > > > want UIDs to be independent between these virtual machines. That's it,
-> > > > right?
-> > > >   Now to continue the example: Alice has UID 100 on machineA, Bob has
-> > > >  UID 100 on machineB. These translate to UIDs 1000 and 1001 on the common
-> > > > filesystem. Process of Alice writes to a file and Bob becomes to be over
-> > > > quota. In this situation, there would be probably two processes (from
-> > > > machineA and machineB) listening on the netlink socket. We want to send a
-> > > > message so that on Alice's desktop we can show a message: "You caused
-> > > > Bob to exceed his quotas" and of Bob's desktop: "Alice has caused that you
-> > > > are over quota.".
-> > > 
-> > > Since this is over NFS, you handle it the way you would any other time
-> > > that user Alice on some other machine managed to do this.
-> >   I meant this would actually happen over a local filesystem (imagine
-> > something like "hostfs" from UML).
-> 
-> Ok, then that is where I was previously suggesting that we use an api to
-> report a uid meaningful in bob's context, where we currently (in the
-> absense of meaningful mount uids and uid equivalence) tell Bob that root
-> was the one who brought him over quota.  From a user pov 'nobody' would
-> make more sense, but I don't think we want the kernel to know about user
-> nobody, right?
-  But what is the problem with using the filesystem ids? All virtual
-machines in my example should have a notion of those...
+On Tue, Sep 04, 2007 at 09:55:45AM -0700, H. Peter Anvin wrote:
+>     
+>     Apparently XEN does not keep the contents of the 48-bit gdt_48 data
+>     structure that is passed to lgdt in the XEN machine state. Instead it
+>     appears to save the _address_ of the 48-bit descriptor
+>     somewhere. Unfortunately this data happens to reside on the stack and
+>     is probably no longer availiable at the time of the actual protected
+>     mode jump.
+>     
+>     This is Xen bug but given that there is a one-line patch to work
+>     around this problem, the linux kernel should probably do this.  My fix
+>     is to make the gdt_48 description in setup_gdt static (in setup_idt
+>     this is already the case). This allows the kernel to boot under
+>     Xen HVM again.
 
-> So if the msg weren't broadcast, or netlink sockets were tied to one
-> user namespace, we could call a
-> 	int uid_in_user_ns(struct user *, struct user_ns *)
-> sending in Alice's user struct and Bob's userns, and use the result in
-> the netlink message.  Otherwise I'm not sure what is the right answer.
-> We just might need the equivalent of 'struct pid' to struct user, or
-> persistant global user namespace ids (persistant after user namespace
-> destruction, not across reboot) so we can safely send the user_ns * in a
-> netlink msg.
-  Yes, that could also be a solution.
+> -	struct gdt_ptr gdt;
+> +	static struct gdt_ptr gdt;
 
-> > > >   Because there may be is not a notion of Bob on machineA or of Alice on
-> > > > machineB, we are in trouble, right? What I like the most is to use the
-> > > > filesystem identities (as you suggested in some other email). I. e. because
-> > > > both Alice and Bob share a filesystem, identities of both have to make sense
-> > > > to it (for example for purposes of permission checking). So we can probably
-> > > 
-> > > Right, so long as we're talking about local filesystems that's the way
-> > > to go.  If a file write was allowed which brought bob over quota,
-> > > clearly the person responsible had some uid valid on the filesystem to
-> > > allow him to do so.
-> >   Fine. So I'll keep UID in the quota netlink protocol with the meaning
-> > "the identity of the user for filesystem operations".
-> 
-> I think that's ok.
-> 
-> Hopefully when that changes to accomodate user namespaces, we can use
-> netlink field versioning to make that transition pretty seamless?
-  Yes, we'd just assign the attribute a different number and teach
-userspace about the new attribute format...
-
-> If not, then we probably should in fact make some decision now so as not
-> to change the api.
-> 
-> > > > send via netlink these (in our example ids 1000 and 1001) and hope that
-> > > > inside machineA and machineB there will be a way to translate these
-> > > > identities to names "Alice" and "Bob". So that user can understand what
-> > > > is happenning. Does this sound plausible?
-> > > >   If we go this route, then we only need a kernel function, that will
-> > > > for a pair ($filesystem, $task) return indentity of that $task used
-> > > > for operations on $filesystem...
-> > > 
-> > > Ok, now I see.  This is again unrelated to user namespaces, it's an
-> > > issue regardless.
-> > > 
-> > > Is there no way to just report Alice as the guilty party to Bob on his
-> > > machine as (host=nfsserver,uid=1000)?
-> >   You know, in fact this contains all the information but it is quite useless
-> > for an ordinary user. The message should be understandable to average desktop
-> 
-> What is the ordinary user going to do about it?  If the user didn't set
-> up the nfsserver and/or the second client, the only thing he can do is
-> report the guilty user to an admin.  In which case the tuple
-> (host=nfsserver,uid=1000) is exactly the data he needs to report.
-  Maybe write him an email or go and bang him with a baseball bat ;)
-Seriously, if someone (like admin) is able to find a physical identity of the
-guilty user, then we should be able to do this in a software too, shouldn't
-we?
-
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+It might make sense to add your above commit message to the code as a comment.
