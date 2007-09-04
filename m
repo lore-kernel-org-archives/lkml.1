@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbXIDPFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbXIDPG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbXIDPFp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 11:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbXIDPFf
+	id S1755376AbXIDPG5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 11:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXIDPGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 11:05:35 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:59765 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754453AbXIDPFe (ORCPT
+	Tue, 4 Sep 2007 11:06:49 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:3013 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754293AbXIDPGs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 11:05:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gWWFyZMOMCKcYeFtv1Sl7pa+MyU/h8GzbsFrYmn7RfanRPlTNSbFCeN+IPG6hNjzkZTZCz3fgN2PsDSR2RuKx6KI8LlHUgwglFIkfj+uZ62hhDS1NvHiazGki5F3r4OtkE7EuIQ7SMN+k9xzAzzd5RIy8o3XeLSf7i+cjvJkmSI=
-Message-ID: <8bd0f97a0709040805y233cf07yc60ec0fedadb706d@mail.gmail.com>
-Date: Tue, 4 Sep 2007 11:05:33 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: the Linux kernel, testsuites, and maybe *you*
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070902154351.GA21230@one.firstfloor.org>
+	Tue, 4 Sep 2007 11:06:48 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com>
-	 <p733axyxcli.fsf@bingen.suse.de>
-	 <8bd0f97a0709011550y833fb5ax7d40cae937789fd8@mail.gmail.com>
-	 <20070902065926.GA15487@one.firstfloor.org>
-	 <8bd0f97a0709020815r75fcb225lf44bcb57783b436c@mail.gmail.com>
-	 <20070902154351.GA21230@one.firstfloor.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 04 Sep 2007 15:04:08.0349 (UTC) FILETIME=[D7D7A4D0:01C7EF04]
+Content-class: urn:content-classes:message
+Subject: Re: ramdisk
+Date: Tue, 4 Sep 2007 11:04:31 -0400
+Message-ID: <Pine.LNX.4.61.0709041101290.7968@chaos.analogic.com>
+In-Reply-To: <ab40e9c0709030604u5fecf34dr945ece01b95e622d@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: ramdisk
+Thread-Index: AcfvBNf9jj5Qge0ZRG+jorzhcGbFMA==
+References: <ab40e9c0709030604u5fecf34dr945ece01b95e622d@mail.gmail.com>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Xu Yang" <risingsunxy@googlemail.com>
+Cc: "LKML" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/2/07, Andi Kleen <andi@firstfloor.org> wrote:
-> On Sun, Sep 02, 2007 at 11:15:23AM -0400, Mike Frysinger wrote:
-> > there is still the ABI issue ... code written in kernel space in pure
-> > asm cannot always be compiled in userspace and work properly/the same
+
+On Mon, 3 Sep 2007, Xu Yang wrote:
+
+> Hi everyone,
 >
-> Is that a blackfin weirdness?
-
-yes, Blackfin is weird in this respect due to being a no-mmu and
-wanting ELF, but i was being sufficiently general to bolster my claims
-and to leave the door open for any other port out there i'm not
-familiar with and any port that comes along
-
-> > > The other issue to test some of them properly you need unmapped pages
-> > > etc. That gets much easier to do in user space. There are some other
-> > > issues.
-> >
-> > you mean testing boundary overflows ?  can be handled with canaries
-> > rather than segfaults i imagine ...
+> I want to use ramdisk to boot my filesystem, as I can't use NFS and harddisk.
 >
-> Not for reads, no.
+> I have load the ramdisk into the ram memory (start address :0x4000000)
+>
+> and in the boot options I specified : root =dev/ram0 initrd=0x4000000
 
-true, but generally the string functions arent searching for crashes
-in the boundary conditions ... they just happen to sometimes find them
-:)
--mike
+Since you don't know what the default directory is, perhaps
+root should be /dev/ram0. Also, make sure you actually create
+those device nodes in /dev
+
+[Snipped...]
+
+> but the kernel said it can not find any file system on it.
+>
+> regards,
+>
+> Yang
+>
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
