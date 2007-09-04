@@ -1,86 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbXIDXqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbXIDXtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbXIDXqf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 19:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbXIDXq2
+	id S1755974AbXIDXtR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 19:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbXIDXtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 19:46:28 -0400
-Received: from mga11.intel.com ([192.55.52.93]:53991 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754022AbXIDXq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 19:46:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,208,1186383600"; 
-   d="scan'208";a="125028297"
-Date: Tue, 4 Sep 2007 16:46:26 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Chuck Ebbert <cebbert@redhat.com>, mingo@elte.hu
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, mingo@elte.hu,
-       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch] sched: fix broken smt/mc optimizations with CFS
-Message-ID: <20070904234626.GB5187@linux-os.sc.intel.com>
-References: <20070816010150.GG10033@linux-os.sc.intel.com> <20070823115416.GA31027@elte.hu> <20070823121341.GA5775@elte.hu> <20070827191905.GE1894@linux-os.sc.intel.com> <20070827192324.GA29441@elte.hu> <20070827193103.GF1894@linux-os.sc.intel.com> <20070828222718.GI1894@linux-os.sc.intel.com> <46DDEBB9.3080501@redhat.com>
-Mime-Version: 1.0
+	Tue, 4 Sep 2007 19:49:04 -0400
+Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:40295 "HELO
+	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754316AbXIDXtD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 19:49:03 -0400
+X-YMail-OSG: vf6JvBYVM1n3JNEWjIBvs5lsurybqSVdvYo1odS3ys1FjctZKJMXBF9UML4SGt25z7ilK2JALQ--
+Date: Tue, 4 Sep 2007 18:48:52 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Jan Kara <jack@suse.cz>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "Serge E. Hallyn" <serge@hallyn.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@in.ibm.com>, containers@lists.osdl.org
+Subject: Re: [PATCH] Send quota messages via netlink
+Message-ID: <20070904234852.GA12592@vino.hallyn.com>
+References: <m1mywa42g7.fsf@ebiederm.dsl.xmission.com> <20070829192653.GD7814@duck.suse.cz> <m1wsve2gpo.fsf@ebiederm.dsl.xmission.com> <20070830092548.GB16336@duck.suse.cz> <20070830191010.GA23464@vino.hallyn.com> <20070830221825.GB21298@duck.suse.cz> <20070830221447.GA25675@vino.hallyn.com> <20070903142123.GG7524@duck.suse.cz> <20070904213210.GD30980@sergelap.austin.ibm.com> <20070904224921.GA19693@duck.suse.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46DDEBB9.3080501@redhat.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070904224921.GA19693@duck.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 04, 2007 at 07:35:21PM -0400, Chuck Ebbert wrote:
-> On 08/28/2007 06:27 PM, Siddha, Suresh B wrote:
-> > Try to fix MC/HT scheduler optimization breakage again, with out breaking
-> > the FUZZ logic.
+Quoting Jan Kara (jack@suse.cz):
+> On Tue 04-09-07 16:32:10, Serge E. Hallyn wrote:
+> > Quoting Jan Kara (jack@suse.cz):
+> > > On Thu 30-08-07 17:14:47, Serge E. Hallyn wrote:
+> > > > Quoting Jan Kara (jack@suse.cz):
+> > > > >   I imagine it so that you have a machine and on it several virtual
+> > > > > machines which are sharing a filesystem (or it could be a cluster). Now you
+> > > > > want UIDs to be independent between these virtual machines. That's it,
+> > > > > right?
+> > > > >   Now to continue the example: Alice has UID 100 on machineA, Bob has
+> > > > >  UID 100 on machineB. These translate to UIDs 1000 and 1001 on the common
+> > > > > filesystem. Process of Alice writes to a file and Bob becomes to be over
+> > > > > quota. In this situation, there would be probably two processes (from
+> > > > > machineA and machineB) listening on the netlink socket. We want to send a
+> > > > > message so that on Alice's desktop we can show a message: "You caused
+> > > > > Bob to exceed his quotas" and of Bob's desktop: "Alice has caused that you
+> > > > > are over quota.".
+> > > > 
+> > > > Since this is over NFS, you handle it the way you would any other time
+> > > > that user Alice on some other machine managed to do this.
+> > >   I meant this would actually happen over a local filesystem (imagine
+> > > something like "hostfs" from UML).
 > > 
-> > First fix the check
-> > 	if (*imbalance + SCHED_LOAD_SCALE_FUZZ < busiest_load_per_task)
-> > with this
-> > 	if (*imbalance < busiest_load_per_task)
-> > 
-> > As the current check is always false for nice 0 tasks (as SCHED_LOAD_SCALE_FUZZ
-> > is same as busiest_load_per_task for nice 0 tasks).
-> > 
-> > With the above change, imbalance was getting reset to 0 in the corner case
-> > condition, making the FUZZ logic fail. Fix it by not corrupting the
-> > imbalance and change the imbalance, only when it finds that the
-> > HT/MC optimization is needed.
-> > 
-> > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> > ---
-> > 
-> > diff --git a/kernel/sched.c b/kernel/sched.c
-> > index 9fe473a..03e5e8d 100644
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -2511,7 +2511,7 @@ group_next:
-> >  	 * a think about bumping its value to force at least one task to be
-> >  	 * moved
-> >  	 */
-> > -	if (*imbalance + SCHED_LOAD_SCALE_FUZZ < busiest_load_per_task) {
-> > +	if (*imbalance < busiest_load_per_task) {
-> >  		unsigned long tmp, pwr_now, pwr_move;
-> >  		unsigned int imbn;
-> >  
-> > @@ -2563,10 +2563,8 @@ small_imbalance:
-> >  		pwr_move /= SCHED_LOAD_SCALE;
-> >  
-> >  		/* Move if we gain throughput */
-> > -		if (pwr_move <= pwr_now)
-> > -			goto out_balanced;
-> > -
-> > -		*imbalance = busiest_load_per_task;
-> > +		if (pwr_move > pwr_now)
-> > +			*imbalance = busiest_load_per_task;
-> >  	}
-> >  
-> >  	return busiest;
+> > Ok, then that is where I was previously suggesting that we use an api to
+> > report a uid meaningful in bob's context, where we currently (in the
+> > absense of meaningful mount uids and uid equivalence) tell Bob that root
+> > was the one who brought him over quota.  From a user pov 'nobody' would
+> > make more sense, but I don't think we want the kernel to know about user
+> > nobody, right?
+>   But what is the problem with using the filesystem ids? All virtual
+> machines in my example should have a notion of those...
+
+I don't know what you mean by filesystem ids.  Do you mean the uid
+stored on the fs?  I imagine a network fs could get fancy and store
+something more detailed than the unix uid, based on the user's keys.
+
+Do you mean the inode->i_uid?  Nothing wrong with that.  Then we just
+assume that either you are in the superblock or mount's user namespace
+(depending on how we implement it, probably superblock), or can figure
+out what that is.
+
+> > So if the msg weren't broadcast, or netlink sockets were tied to one
+> > user namespace, we could call a
+> > 	int uid_in_user_ns(struct user *, struct user_ns *)
+> > sending in Alice's user struct and Bob's userns, and use the result in
+> > the netlink message.  Otherwise I'm not sure what is the right answer.
+> > We just might need the equivalent of 'struct pid' to struct user, or
+> > persistant global user namespace ids (persistant after user namespace
+> > destruction, not across reboot) so we can safely send the user_ns * in a
+> > netlink msg.
+>   Yes, that could also be a solution.
 > 
-> Seems this didn't get merged? Latest git as of today still has the code
-> as it was before this patch.
+> > > > >   Because there may be is not a notion of Bob on machineA or of Alice on
+> > > > > machineB, we are in trouble, right? What I like the most is to use the
+> > > > > filesystem identities (as you suggested in some other email). I. e. because
+> > > > > both Alice and Bob share a filesystem, identities of both have to make sense
+> > > > > to it (for example for purposes of permission checking). So we can probably
+> > > > 
+> > > > Right, so long as we're talking about local filesystems that's the way
+> > > > to go.  If a file write was allowed which brought bob over quota,
+> > > > clearly the person responsible had some uid valid on the filesystem to
+> > > > allow him to do so.
+> > >   Fine. So I'll keep UID in the quota netlink protocol with the meaning
+> > > "the identity of the user for filesystem operations".
+> > 
+> > I think that's ok.
+> > 
+> > Hopefully when that changes to accomodate user namespaces, we can use
+> > netlink field versioning to make that transition pretty seamless?
+>   Yes, we'd just assign the attribute a different number and teach
+> userspace about the new attribute format...
 
-This is must fix for .23 and Ingo previously mentioned that he will push it
-for .23
+Ok.
 
-Ingo?
+> > If not, then we probably should in fact make some decision now so as not
+> > to change the api.
+> > 
+> > > > > send via netlink these (in our example ids 1000 and 1001) and hope that
+> > > > > inside machineA and machineB there will be a way to translate these
+> > > > > identities to names "Alice" and "Bob". So that user can understand what
+> > > > > is happenning. Does this sound plausible?
+> > > > >   If we go this route, then we only need a kernel function, that will
+> > > > > for a pair ($filesystem, $task) return indentity of that $task used
+> > > > > for operations on $filesystem...
+> > > > 
+> > > > Ok, now I see.  This is again unrelated to user namespaces, it's an
+> > > > issue regardless.
+> > > > 
+> > > > Is there no way to just report Alice as the guilty party to Bob on his
+> > > > machine as (host=nfsserver,uid=1000)?
+> > >   You know, in fact this contains all the information but it is quite useless
+> > > for an ordinary user. The message should be understandable to average desktop
+> > 
+> > What is the ordinary user going to do about it?  If the user didn't set
+> > up the nfsserver and/or the second client, the only thing he can do is
+> > report the guilty user to an admin.  In which case the tuple
+> > (host=nfsserver,uid=1000) is exactly the data he needs to report.
+>   Maybe write him an email or go and bang him with a baseball bat ;)
+> Seriously, if someone (like admin) is able to find a physical identity of the
+> guilty user, then we should be able to do this in a software too, shouldn't
+> we?
+
+Sure, and in many ways.  But if working with NFS, as far as I know the
+most common way to solve it is to enforce a common /etc/passwd across
+all the valid NFS clients  :)
+
+-serge
