@@ -1,102 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbXIDIvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbXIDIxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374AbXIDIvo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 04:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbXIDIvg
+	id S1753575AbXIDIxM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 04:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbXIDIw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 04:51:36 -0400
-Received: from main.gmane.org ([80.91.229.2]:45223 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751861AbXIDIvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 04:51:35 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: James Bruce <bruce@andrew.cmu.edu>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Date: Tue, 04 Sep 2007 01:50:34 -0700
-Message-ID: <46DD1C5A.9060708@andrew.cmu.edu>
-References: <MDEHLPKNGKAHNMBLJOLKOEDKGJAC.davids@webmaster.com> <200709031401.47111.dhazelton@enter.net> <m3myw3vc4q.fsf@maximus.localdomain> <200709031504.17454.dhazelton@enter.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 4 Sep 2007 04:52:58 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:36679 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbXIDIw5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 04:52:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SAlqPudqKObpVA2qv1DhCESP2GT2EAadzn6GBMKGxkH76E746jM/ocIhgJytqOU4JvH4SN++duBLGT+xDDOX5j4i42vXpYLm2qVeek25vI8da9hQkomecQc4QUuXmj8KePEkbeRQlIO7PSnlqcV+El6X9p7HBCjHT6x28FDb87Q=
+Message-ID: <ab40e9c0709040152v5019a6abi2f18182623115ef@mail.gmail.com>
+Date: Tue, 4 Sep 2007 10:52:55 +0200
+From: "Xu Yang" <risingsunxy@googlemail.com>
+To: "Bill Davidsen" <davidsen@tmr.com>
+Subject: Re: ramdisk
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <46DC9700.7070208@tmr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-X-Gmane-NNTP-Posting-Host: c-67-169-182-39.hsd1.ca.comcast.net
-User-Agent: Icedove 1.5.0.12 (X11/20070730)
-In-Reply-To: <200709031504.17454.dhazelton@enter.net>
+Content-Disposition: inline
+References: <ab40e9c0709030604u5fecf34dr945ece01b95e622d@mail.gmail.com>
+	 <46DC2228.7080503@tmr.com>
+	 <ab40e9c0709031003h72901a45wafc8697f086af477@mail.gmail.com>
+	 <46DC9700.7070208@tmr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Hazelton wrote:
-> On Monday 03 September 2007 14:26:29 Krzysztof Halasa wrote:
->> Daniel Hazelton <dhazelton@enter.net> writes:
->>> The fact
->>> remains that the person making a work available under *ANY* form of
->>> copyright
->>> license has the right to revoke said grant of license to anyone.
->> Not after the licence has been given and accepted (and there might be
->> restrictions), unless of course the licence contained such reservation.
-> 
-> I hate to belabor the point, but you seem to be making the mistake of "The 
-> license applies to the copyright holder" that I've seen a lot of people make 
-> (and kept quiet about).
+Hi Bill,
 
-I believe you are making the mistake that the license on code has 
-anything to do with what the author chooses to do in the future. 
-Releasing something as BSD does not force the author to do anything in 
-the future with his code, and he/she could add and relicence as he/she 
-feels fit.  HOWEVER, that particular code has already been released as 
-BSD, and the author no longer has control over that release.
+OK I will try it.
+Thanks,
 
-> The person holding the copyright has all the legal standing to revoke a 
-> license grant at any time. Licenses such as the GPL are not signed contracts, 
-> and that means there are limits to what effect they can have on the copyright 
-> holder.
-
-I believe you are confusing the fact that an author can decide to 
-release code under another license, with the existence of code under 
-that earlier license.  The license grant comes from THE CODE (which 
-bears a license), not THE AUTHOR.  I can use GPL code I get in the mail 
-because the license on the work says I can do so, not because I 
-contacted the author and got a specific grant.  If such a grant were 
-only verbal, your theory might hold, but that doesn't apply to any OSS 
-software under discussion here.
-
-If your legal theory were true, I could sell you a book and then later 
-demand that you destroy it.  I could also release something as public 
-domain, and then later rescind that (I still hold the copyright on what 
-I produced), and charge money from anyone who used it.  I think its safe 
-to say that this does not happen in practice.  Please provide some 
-examples to the contrary or caselaw if you want to convince me otherwise.
-
-Furthermore, BSD/GPL software could not really exist under your legal 
-theory; A programmer who wrote 30 year old core BSD code could wake up 
-tomorrow and decide to require all BSD derivatives to remove his code or 
-pay him for it (and the next day he could change the price again).  Open 
-source software would not exist if such a liability were true, and 
-companies like Sun could not be built up off of derivatives of it. 
-Linux 0.01 is still available under a pre-GPL license if you can find a 
-copy, and neither Linus (nor anyone else) can change that.
-
-> If the license was of the "signed contract" type, or contained text stating 
-> that the copyright holder was giving up all rights of revocation (etc...) I 
-> could agree with you. As it stands, no "Open Source" license that I have seen 
-> used on a major project contains any part that does that. In fact, the GPL is 
-> the only license I can name (offhand) that even touches on the rights of the 
-> copyright holder - and then it is in the form of "If you do X, Y or Z all 
-> rights granted under this license are automatically revoked".
- >
-> That is an "automatic clause" - not a limitation stating that the copyright 
-> holder can only revoke under those conditions. The person holding the 
-> copyright has quite a few rights - more than people believe - and not even 
-> the most generous of Open Source licenses (except those that contain text 
-> like "granted in perpetuity" or similar) even come close to being exempt from 
-> the holder of the copyright not being able to summarily revoke a given 
-> persons license.
-
-There are plenty of rights, but retroactive changes to the license terms 
-of something you've already distributed is not one of them.
-
-  - Jim Bruce
-
+2007/9/4, Bill Davidsen <davidsen@tmr.com>:
+> Xu Yang wrote:
+> > thanks for the reply.
+> >
+> > no , it is not decompressed. isn' t the kernel supposed to do that? As
+> > we have tried to load this filesystem on the pc, it turns out the the
+> > kernel can recognize it.
+> >
+> > concerning the root=/dev/ram0,
+> > as the default value is root=/dev/nfs, so I just modify the nfs to
+> > ram0. is this might be a problem?
+> >
+> >
+> Hopefully someone who works with this regularly can provide some
+> answers, the only time I used booting into a RAM-only system the tools
+> which I had "just worked" and I followed the steps outlined without
+> fully understanding the details. However, I just tried loop mounting a
+> compressed filesystem and that didn't work, while decompressing into a
+> ramdisk and mounting worked fine. That's why I asked if your tool was
+> just copying to RAM without decompression, since I have no ides what
+> tool you use.
+>
+> As for the name, your original post used "dev" without a leading "/" and
+> while I assumed it was a typo, I thought it was worth mentioning since
+> you were looking for suggestions. I would expect /dev/ram0 to be correct.
+>
+> I would try the decompressed image next, and I have no other ideas at
+> the moment.
+> > regards,
+> >
+> >
+> > 2007/9/3, Bill Davidsen <davidsen@tmr.com>:
+> >
+> >> Xu Yang wrote:
+> >>
+> >>> Hi everyone,
+> >>>
+> >>> I want to use ramdisk to boot my filesystem, as I can't use NFS and harddisk.
+> >>>
+> >>> I have load the ramdisk into the ram memory (start address :0x4000000)
+> >>>
+> >>> and in the boot options I specified : root =dev/ram0 initrd=0x4000000
+> >>>
+> >>> but the kernel said it can not find any file system on it.
+> >>>
+> >>>
+> >> Looking at the information below, did the program which loaded the
+> >> filesystem into RAM decompress it? It noted that it was compressed so I
+> >> would assume so, but I am unfamiliar with ARM tools, so I ask the
+> >> question. Also, should the boot device be "/dev/ram0" rather than
+> >> "dev/ram0" or is that correct for your system?
+> >>
+> >>
+> >>> Here is the information I can supply :
+> >>> U-Boot 1.2.0 (Aug 31 2007 - 20:54:55)
+> >>>
+> >>> ***  Auto-detects ethernet chip ***
+> >>>
+> >>>
+> >>>
+> >>> DRAM:   0 kB
+> >>> ## Unknown FLASH on Bank 1 - Size = 0x00000000 = 0 MB
+> >>> Flash:  0 kB
+> >>> *** Warning - bad CRC, using default environment
+> >>>
+> >>> In:    serial
+> >>> Out:   serial
+> >>> Err:   serial
+> >>>
+> >>> Hit any key to stop autoboot:  0
+> >>> ## Booting image at 00007fc0 ...
+> >>>    Image Name:   Linux-2.6.19-arm2
+> >>>    Image Type:   ARM Linux Kernel Image (uncompressed)
+> >>>    Data Size:    740372 Bytes = 723 kB
+> >>>    Load Address: 00008000
+> >>>    Entry Point:  00008000
+> >>> OK
+> >>>
+> >>>
+> >>> ## Loading Ramdisk Image at 04000000 ...
+> >>>    Image Name:   ramdisc
+> >>>    Image Type:   ARM Linux RAMDisk Image (gzip compressed)
+> >>>    Data Size:    12582962 Bytes = 12 MB
+> >>>    Load Address: 04000000
+> >>>    Entry Point:  04000000
+> >>>
+> >>> Starting kernel ...
+> >>>
+> >>>
+> >>> .........................................................................................
+> >>>
+> >>> RAMDISK driver initialized: 16 RAM disks of 10240K size 1024 blocksize
+> >>> <6>loop: loaded (max 8 devices)
+> >>> <6>mice: PS/2 mouse device common for all mice
+> >>> <6>VFP support v0.3: implementor 41 architecture 1 part 20 variant b rev 3
+> >>> No filesystem could mount root, tried:  ext2 cramfs vfat
+> >>> <0>Kernel panic - not syncing: VFS: Unable to mount root fs on
+> >>> unknown-block(1,0)
+> >>>
+> >>>
+> >>> Who can give me some hints ? or point me some direction to handle this.
+> >>>
+> >>> I appreciate this very much.
+> >>>
+> >>> regards,
+> >>>
+> >>> Yang
+> >>>
+> >> --
+> >> Bill Davidsen <davidsen@tmr.com>
+> >>   "We have more to fear from the bungling of the incompetent than from
+> >> the machinations of the wicked."  - from Slashdot
+> >>
+> >>
+> >
+> >
+>
+>
+> --
+> bill davidsen <davidsen@tmr.com>
+>  CTO TMR Associates, Inc
+>  Doing interesting things with small computers since 1979
+>
+>
