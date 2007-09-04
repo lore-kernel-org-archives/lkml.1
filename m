@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbXIDPAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbXIDPAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754721AbXIDPAX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 11:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbXIDPAK
+	id S1755178AbXIDPAi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 11:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbXIDPAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 11:00:10 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:51664 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753508AbXIDPAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 11:00:09 -0400
-Date: Tue, 4 Sep 2007 17:01:41 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Valdis.Kletnieks@vt.edu
-Cc: espie@nerim.net, linux-kernel@vger.kernel.org
-Subject: Re: GPL weasels and the atheros stink
-Message-ID: <20070904150141.GC2346@ff.dom.local>
-Mime-Version: 1.0
+	Tue, 4 Sep 2007 11:00:22 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39585 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754660AbXIDPAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 11:00:20 -0400
+Date: Tue, 4 Sep 2007 17:00:18 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: Dan Aloni <da-x@monatomic.org>
+Subject: [PATCH] Add ELF note with Linux version
+Message-ID: <20070904150018.GA4357@suse.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org, Dan Aloni <da-x@monatomic.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18261.1188835948@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.4.2.2i
+Organization: SUSE LINUX Products GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03-09-2007 18:12, Valdis.Kletnieks@vt.edu wrote:
-> On Sun, 02 Sep 2007 16:03:07 +0200, Marc Espie said:
-> 
->> Look at the situation: Reyk Floeter writes some code, puts it
->> under a dual licence, and goes on vacation.
->>
->> While he's away, some other people (Jiri, for starters) tweak the
->> copyright and licence on the file he's mostly written. Without asking
->> Reyk. Without even having the basic decency to wait for him to be
->> around.
-> 
-> And we collectively told Jiri where to stick that.
+This patch adds version information to the ELF kernel file. Together
+with the bzImage version information, this allows distributions to
+identify the kernel version based on the file name.
 
-Are you sure everybody told the same then?
 
-> 
-> So let's recap:
-> 
-> 1) Jiri submitted a borked patch that changed the licenses.
-> 2) We didn't accept said patch.
-> 3) There's then a whole big fuss about a *NON EXISTENT PROBLEM*.
-> 
-> I could see where the *BSD people could complain if we had *accepted and
-> distributed* said patch.  But it was wrong, we recognized it was wrong,
-...
+Signed-off-by: Dan Aloni <da-x@monatomic.org>
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
-Probably there would be no problem if it were like this (...plus maybe
-some usual s-word...).
+---
+ include/linux/elfnote.h |    9 +++++++++
+ init/version.c          |    3 +++
+ 2 files changed, 12 insertions(+)
 
-Regards,
-Jarek P.
+--- a/include/linux/elfnote.h
++++ b/include/linux/elfnote.h
+@@ -93,6 +93,15 @@
+ 
+ #define ELFNOTE32(name, type, desc) ELFNOTE(32, name, type, desc)
+ #define ELFNOTE64(name, type, desc) ELFNOTE(64, name, type, desc)
++
++#ifdef CONFIG_64BIT
++#define ELFNOTE_C(params...) ELFNOTE64(params)
++#else
++#define ELFNOTE_C(params...) ELFNOTE32(params)
++#endif
++
+ #endif	/* __ASSEMBLER__ */
+ 
++#define LINUX_ELFNOTE_UTS_RELEASE    0
++
+ #endif /* _LINUX_ELFNOTE_H */
+--- a/init/version.c
++++ b/init/version.c
+@@ -11,6 +11,7 @@
+ #include <linux/uts.h>
+ #include <linux/utsname.h>
+ #include <linux/utsrelease.h>
++#include <linux/elfnote.h>
+ #include <linux/version.h>
+ 
+ #define version(a) Version_ ## a
+@@ -42,3 +43,5 @@ const char linux_proc_banner[] =
+ 	"%s version %s"
+ 	" (" LINUX_COMPILE_BY "@" LINUX_COMPILE_HOST ")"
+ 	" (" LINUX_COMPILER ") %s\n";
++
++ELFNOTE_C("LINUX", LINUX_ELFNOTE_UTS_RELEASE, UTS_RELEASE);
