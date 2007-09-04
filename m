@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbXIDQ4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbXIDQ4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755139AbXIDQ4J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 12:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbXIDQz5
+	id S1755629AbXIDQ4w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 12:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbXIDQ4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 12:55:57 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34853 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752160AbXIDQz4 (ORCPT
+	Tue, 4 Sep 2007 12:56:45 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:45711 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbXIDQ4o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 12:55:56 -0400
-Date: Tue, 4 Sep 2007 09:55:45 -0700
-Message-Id: <200709041655.l84GtjiJ008962@tazenda.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christian Ehrhardt <lk@c--e.de>
-Subject: [GIT PULL] x86 setup: work around bug in Xen HVM
+	Tue, 4 Sep 2007 12:56:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=MFLLb2BeosPFUn5c2hRXD0WqCPr8ArME/WTz3NjqSODhU6DESMVHeOjlVPK0rzU5fxRXXdiTjGfV8S5ESnGfN3P3x+8ucqaZtCJ2OA17NgyZQkgyt39bVr9k5mvtFOhcYi87+34OPaCwIZp7zdfkvDOuLvr9pcstkTympYdFGxc=
+Date: Tue, 4 Sep 2007 20:56:37 +0400
+To: "anon... anon.al" <anon.asdf@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Race condition: calling remove_proc_entry in cleanup_module (module_exit) while someone's using procfile
+Message-ID: <20070904165637.GA1905@martell.zuzino.mipt.ru>
+References: <379fb4870709040939m2430be6ci57fd73f1f9abc6ef@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <379fb4870709040939m2430be6ci57fd73f1f9abc6ef@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tue, Sep 04, 2007 at 06:39:33PM +0200, anon... anon.al wrote:
+> There is a race condition if an instance is executing "__exit
+> device_exit" and calls remove_proc_entry, while someone is still using
+> the procfile, right?.
+> 
+> static void __exit device_exit(void)
+> {
+>   // what if the procfile is still in use?
+>   remove_proc_entry(PROC_FILE_NAME, &proc_root);
+> }
 
-Please pull:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git for-linus
-
-Christian Ehrhardt (1):
-      [x86 setup] Work around bug in Xen HVM
-
- arch/i386/boot/pm.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-[Log messages and full diffs follow]
-
-commit 92ea189254b87727d6be407558d9c18fed0937bb
-Author: Christian Ehrhardt <lk@c--e.de>
-Date:   Mon Sep 3 20:32:38 2007 +0200
-
-    [x86 setup] Work around bug in Xen HVM
-    
-    Apparently XEN does not keep the contents of the 48-bit gdt_48 data
-    structure that is passed to lgdt in the XEN machine state. Instead it
-    appears to save the _address_ of the 48-bit descriptor
-    somewhere. Unfortunately this data happens to reside on the stack and
-    is probably no longer availiable at the time of the actual protected
-    mode jump.
-    
-    This is Xen bug but given that there is a one-line patch to work
-    around this problem, the linux kernel should probably do this.  My fix
-    is to make the gdt_48 description in setup_gdt static (in setup_idt
-    this is already the case). This allows the kernel to boot under
-    Xen HVM again.
-    
-    Signed-off-by: Christian Ehrhardt <lk@c--e.de>
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-
-diff --git a/arch/i386/boot/pm.c b/arch/i386/boot/pm.c
-index 6be9ca8..f7958f1 100644
---- a/arch/i386/boot/pm.c
-+++ b/arch/i386/boot/pm.c
-@@ -122,7 +122,7 @@ static void setup_gdt(void)
- 		/* DS: data, read/write, 4 GB, base 0 */
- 		[GDT_ENTRY_BOOT_DS] = GDT_ENTRY(0xc093, 0, 0xfffff),
- 	};
--	struct gdt_ptr gdt;
-+	static struct gdt_ptr gdt;
- 
- 	gdt.len = sizeof(boot_gdt)-1;
- 	gdt.ptr = (u32)&boot_gdt + (ds() << 4);
+For regular proc files, this is fixed in 2.6.23-rc1 and later.
