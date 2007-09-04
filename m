@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbXIDK6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433AbXIDK7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754293AbXIDK6s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 06:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbXIDK6k
+	id S1754433AbXIDK7j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 06:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbXIDK7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 06:58:40 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:33918 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753146AbXIDK6j (ORCPT
+	Tue, 4 Sep 2007 06:59:31 -0400
+Received: from mail-in-11.arcor-online.net ([151.189.21.51]:44282 "EHLO
+	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751225AbXIDK7a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 06:58:39 -0400
-Date: Tue, 4 Sep 2007 13:00:00 +0200
+	Tue, 4 Sep 2007 06:59:30 -0400
+Date: Tue, 4 Sep 2007 13:00:50 +0200
 From: aherrman@arcor.de
 To: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] radeonfb: fix setting of PPLL_REF_DIV for RV370 5B60
-Message-ID: <20070904110000.GG7320@devil>
+Subject: [PATCH 4/4] radeonfb: use PCI device Id in hex for name string
+Message-ID: <20070904110050.GH7320@devil>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,29 +23,37 @@ User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As observed with various Radeon X300: console goes blank
-without fixing setting of PPLL_REF_DIV.
+.. instead of potentially using nonprintable characters.
+
+I guess the former (odd) concatenation was used to construct name strings
+that match the  "*_ATI_RADEON_??" macros in include/linux/pci_ids.h
+
+The PCI Id in hex is much more convenient to use. E.g. it can easily be
+verified against "lspci -nn" output.
 
 Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
 ---
- drivers/video/aty/radeon_base.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/video/aty/radeon_base.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index f672c0c..71b0c17 100644
+index 71b0c17..e6229b4 100644
 --- a/drivers/video/aty/radeon_base.c
 +++ b/drivers/video/aty/radeon_base.c
-@@ -1287,7 +1287,8 @@ static void radeon_write_pll_regs(struct radeonfb_info *rinfo, struct radeon_reg
- 	if (rinfo->family == CHIP_FAMILY_R300 ||
- 	    rinfo->family == CHIP_FAMILY_RS300 ||
- 	    rinfo->family == CHIP_FAMILY_R350 ||
--	    rinfo->family == CHIP_FAMILY_RV350) {
-+	    rinfo->family == CHIP_FAMILY_RV350 ||
-+	    rinfo->family == CHIP_FAMILY_RV380 ) {
- 		if (mode->ppll_ref_div & R300_PPLL_REF_DIV_ACC_MASK) {
- 			/* When restoring console mode, use saved PPLL_REF_DIV
- 			 * setting.
+@@ -2184,9 +2184,8 @@ static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
+ 	rinfo->lvds_timer.function = radeon_lvds_timer_func;
+ 	rinfo->lvds_timer.data = (unsigned long)rinfo;
+ 
+-	strcpy(rinfo->name, "ATI Radeon XX ");
+-	rinfo->name[11] = ent->device >> 8;
+-	rinfo->name[12] = ent->device & 0xFF;
++	snprintf(rinfo->name, sizeof(rinfo->name),
++		 "ATI Radeon %x", ent->device & 0xffff);
+ 	rinfo->family = ent->driver_data & CHIP_FAMILY_MASK;
+ 	rinfo->chipset = pdev->device;
+ 	rinfo->has_CRTC2 = (ent->driver_data & CHIP_HAS_CRTC2) != 0;
 -- 
 1.5.3
+
 
 
