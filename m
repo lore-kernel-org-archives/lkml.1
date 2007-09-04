@@ -1,53 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbXIDUpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbXIDUsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbXIDUpl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 16:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbXIDUpd
+	id S1755557AbXIDUsS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 16:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbXIDUsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 16:45:33 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44853 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753474AbXIDUpc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 16:45:32 -0400
-Date: Tue, 4 Sep 2007 13:45:28 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@redhat.com,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH] slub - Use local_t protection
-In-Reply-To: <20070904200429.GD8157@Krystal>
-Message-ID: <Pine.LNX.4.64.0709041344040.6376@schroedinger.engr.sgi.com>
-References: <20070827202203.GB5653@Krystal> <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com>
- <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com>
- <20070827211003.GA10627@Krystal> <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com>
- <20070827213845.GB9748@Krystal> <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com>
- <20070827222715.GA16982@Krystal> <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com>
- <20070904200429.GD8157@Krystal>
+	Tue, 4 Sep 2007 16:48:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37738 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753296AbXIDUsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 16:48:10 -0400
+Message-ID: <46DDC462.2040309@redhat.com>
+Date: Tue, 04 Sep 2007 16:47:30 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Brown, Len" <len.brown@intel.com>
+Subject: What's happening with the cpuidle code?
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Sep 2007, Mathieu Desnoyers wrote:
+A look at the 'cpuidle' branch of git-acpi shows a commit
+e40cede7d63a029e92712a3fe02faee60cc38fb4, "cpuidle: first
+round of documentation updates" that doesn't show up in that
+branch online. The entire Documentation/cpuidle directory
+is missing from the tree when looking at the web pages, and
+it's missing from git-acpi.patch in 2.6.23-rc4-mm1 (but the
+patch shows up in the summary information in the patch
+header.) Where did it go? And how can -mm be used to test
+things if its patches don't even match their own headers?
 
-> @@ -1566,12 +1565,13 @@ redo:
->  		object[c->offset]) != object))
->  			goto redo;
->  
-> -	put_cpu();
-> +	local_exit(flags);
->  	if (unlikely((gfpflags & __GFP_ZERO)))
->  		memset(object, 0, c->objsize);
->  
->  	return object;
->  slow:
-> +	local_exit(flags);
-
-Here we can be rescheduled to another processors.
-
->  	return __slab_alloc(s, gfpflags, node, addr, c)
-
-c may point to the wrong processor.
