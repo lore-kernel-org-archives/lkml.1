@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbXIDOOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbXIDOQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754419AbXIDOOd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 10:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXIDOOZ
+	id S1754493AbXIDOQh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 10:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbXIDOQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 10:14:25 -0400
-Received: from smtpout.mac.com ([17.250.248.178]:64624 "EHLO smtpout.mac.com"
+	Tue, 4 Sep 2007 10:16:29 -0400
+Received: from ns2.suse.de ([195.135.220.15]:36634 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753779AbXIDOOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 10:14:24 -0400
-In-Reply-To: <200709042302.CDE26023.MJOOLQVFFOtHSF@I-love.SAKURA.ne.jp>
-References: <46CED214.6050505@gmail.com> <200708280921.48867.paul.moore@hp.com> <200709032215.DCF36819.SLQtHFMFOOFOVJ@I-love.SAKURA.ne.jp> <200709040753.32204.paul.moore@hp.com> <200709042302.CDE26023.MJOOLQVFFOtHSF@I-love.SAKURA.ne.jp>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2F57DE1C-8F5F-4AE3-B61D-B1405BD0B098@mac.com>
-Cc: paul.moore@hp.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, chrisw@sous-sol.org
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [TOMOYO 15/15] LSM expansion for TOMOYO Linux.
-Date: Tue, 4 Sep 2007 10:13:27 -0400
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-X-Mailer: Apple Mail (2.752.2)
+	id S1753459AbXIDOQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 10:16:28 -0400
+Date: Tue, 4 Sep 2007 16:16:26 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Subject: [PATCH] Update version information of ips driver
+Message-ID: <20070904141626.GA9777@suse.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: SUSE LINUX Products GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 04, 2007, at 10:02:46, Tetsuo Handa wrote:
-> Hmm, I can't understand why I have to perform access control at  
-> "enqueue" time.
->
-> What I want to do is
->   allow process1 receive UDP packets from 10.0.0.1 port 1024
->   allow process2 receive UDP packets from 10.0.0.2 port 2048
-> when there is no guarantee that process1 and process2 are not  
-> sharing a socket.
->
-> If there is guarantee that process1 and process2 are not sharing a  
-> socket,
-> I can do it using netfilter.
+This patch just makes the version number in ips.c and ips.h consistent. It
+seems that this has been forgotten in a60768e2d43eb30a1adb8a119aeac35dc0d03ef6.
 
-Well, we used to be able to do that with netfilter but it had the  
-same unfixable race conditions that you are presently running into  
-and so such support was dropped by the netfilter folks.  I suspect if  
-you CC'ed netdev@vger.kernel.org you would get some very precise  
-reasons why such filtering doesn't work.
 
-Cheers,
-Kyle Moffett
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
+---
+ drivers/scsi/ips.h |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/drivers/scsi/ips.h
++++ b/drivers/scsi/ips.h
+@@ -1175,9 +1175,9 @@ typedef struct {
+ #define IPS_VER_MAJOR_STRING "7"
+ #define IPS_VER_MINOR 12
+ #define IPS_VER_MINOR_STRING "12"
+-#define IPS_VER_BUILD 02
+-#define IPS_VER_BUILD_STRING "02"
+-#define IPS_VER_STRING "7.12.02"
++#define IPS_VER_BUILD 05
++#define IPS_VER_BUILD_STRING "05"
++#define IPS_VER_STRING "7.12.05"
+ #define IPS_RELEASE_ID 0x00020000
+ #define IPS_BUILD_IDENT 761
+ #define IPS_LEGALCOPYRIGHT_STRING "(C) Copyright IBM Corp. 1994, 2002. All Rights Reserved."
