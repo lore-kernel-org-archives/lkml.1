@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbXIDQlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbXIDQpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbXIDQlf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 12:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbXIDQl2
+	id S1755454AbXIDQpd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 12:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbXIDQp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 12:41:28 -0400
-Received: from norden.math.tntech.edu ([149.149.136.15]:40534 "EHLO
-	norden.math.tntech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752532AbXIDQl1 (ORCPT
+	Tue, 4 Sep 2007 12:45:26 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:35789 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754451AbXIDQpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 12:41:27 -0400
-X-Greylist: delayed 2033 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Sep 2007 12:41:27 EDT
-Date: Tue, 4 Sep 2007 11:07:20 -0500
-Message-Id: <200709041607.l84G7KsT032647@norden.math.tntech.edu>
-From: Jeff Norden <jeff@math.tntech.edu>
-To: alan@redhat.com
-Subject: [PATCH 1/1] pata_it821x: fix lost interrupt with atapi devices
-CC: linux-kernel@vger.kernel.org
+	Tue, 4 Sep 2007 12:45:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PUe3EA4VPEeaf91nEKytXB6qD4tIXCdTZrnurhPZMQKOt2QJWTHyIm4im3lgQk1ErjKP3lKOCkPOTHNpI+6ZZoBg7MfXYxIx0RUpAj7vtDc4Xy8idsiMSfyRbprV9YC/cRg8/NSP3wksTFNIveor+rir4jLN9ECvRn+ehLGLfKc=
+Message-ID: <379fb4870709040945ve834f9djf4772ec6166bb7ff@mail.gmail.com>
+Date: Tue, 4 Sep 2007 18:45:23 +0200
+From: "anon... anon.al" <anon.asdf@gmail.com>
+To: albert.neu@gmail.com
+Subject: Re: Race condition: calling remove_proc_entry in cleanup_module (module_exit) while someone's using procfile
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <379fb4870709040939m2430be6ci57fd73f1f9abc6ef@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <379fb4870709040939m2430be6ci57fd73f1f9abc6ef@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- From: Jeff Norden <jnorden@math.tntech.edu>
+On 9/4/07, anon... anon.al <anon.asdf@gmail.com> wrote:
+<snip>
+> If yes: which mechanism can be used?
 
-Fix "lost" interrupt problem when using dma with CD/DVD drives in some
-configurations.  This problem can make installing linux from media
-impossible for distro's that have switched to libata-only configurations.
+I was thinking about using an atomic counter in procfile_write
 
-The simple fix is to eliminate the use of dma for reading drive status, etc,
-by checking the number of bytes to transferred.
+  proc_f = create_proc_entry(PROC_FILE_NAME, 0644, NULL);
+  //...
+  proc_f->write_proc = procfile_write;
 
-This change will only affect the behavior of atapi devices, not disks.
-There is more info at http://bugzilla.redhat.com/show_bug.cgi?id=242229
-This patch is for 2.6.22.1
+int procfile_write(struct file *filp, const char *buffer, \
+		   unsigned long len, void *data)
+{
+  //"StackXXX"
+  atomic_inc(&cnt_procfile_users);
 
-Signed-off-by: Jeff Norden <jnorden@math.tntech.edu>
+  printk(KERN_ALERT "Hi there!\n");
 
----
+  atomic_dec(&cnt_procfile_users);
+  wake_up_interruptible(&queue);
+  return len;
+}
 
---- pata_it821x.c.orig	2007-08-16 14:20:49.000000000 -0500
-+++ pata_it821x.c	2007-08-31 16:09:22.000000000 -0500
-@@ -533,6 +533,10 @@ static int it821x_check_atapi_dma(struct
- 	struct ata_port *ap = qc->ap;
- 	struct it821x_dev *itdev = ap->private_data;
- 
-+	/* Only use dma for transfers to/from the media. */
-+	if (qc->nbytes < 2048)
-+		return -EOPNOTSUPP;
-+
- 	/* No ATAPI DMA in smart mode */
- 	if (itdev->smart)
- 		return -EOPNOTSUPP;
+and then in cleanup_module using:
 
+wait_event_interruptible(queue,           \
+(                                         \
+ spin_lock_irqsave(&lock, flags),	  \
+ cnt = atomic_read(&cnt_procfile_users),  \
+ ((cnt == 0)                              \
+  ? 1					  \
+  : (spin_unlock_irqrestore(&lock, flags), 0))\
+));
+remove_proc_entry(PROC_FILE_NAME, &proc_root);
+spin_unlock_irqrestore(&lock, flags);
+
+But:
+x1)
+Could it happen that code is already in function procfile_write at "StackXXX"
+(before atomic_inc(&cnt_procfile_users)) when the scheduler switches
+to another task??
+((Or is the "entering into a function, up to the function's first
+statement" atomic??))
+
+x2)
+Could it happen that the scheduler switches, after
+atomic_dev(&cnt_procfile_users) but before
+return len??
+
+If so, then it could happen that we're in spin_lock_irqsave, while
+someone else is still using the procfile; and then this code still
+fails miserably.
+?
+
+Regards -Albert
