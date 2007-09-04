@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbXIDVhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbXIDVkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbXIDVhY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 17:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbXIDVhM
+	id S1755856AbXIDVkO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 17:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbXIDVj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 17:37:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:18722 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754040AbXIDVhK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 17:37:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cawsopENh9adCTeIrxjh/fsmCGRQGmTs8bIxeUbgrhFcBPV3OCfh9VWnOg2aILRU0+tvrWyB2uUrVxEe2N0qFG0DV6XcoUww6drwhxkEJXnEV88Ap35YsG3inf0slJ2uc7dChHVVXTu3edb8n1u6ASkY0NqFKFt56aio9DwSTM8=
-Message-ID: <ab40e9c0709041437m13b12b47r1461d3b9bba68a99@mail.gmail.com>
-Date: Tue, 4 Sep 2007 23:37:08 +0200
-From: "Xu Yang" <risingsunxy@googlemail.com>
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-Subject: Re: ramdisk
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.61.0709041101290.7968@chaos.analogic.com>
+	Tue, 4 Sep 2007 17:39:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35327 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754175AbXIDVj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 17:39:58 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Chuck Ebbert <cebbert@redhat.com>, linux-acpi@vger.kernel.org
+Subject: Re: What's happening with the cpuidle code?
+Date: Tue, 4 Sep 2007 17:43:47 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Adam Belay <abelay@novell.com>
+References: <46DDC462.2040309@redhat.com>
+In-Reply-To: <46DDC462.2040309@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <ab40e9c0709030604u5fecf34dr945ece01b95e622d@mail.gmail.com>
-	 <Pine.LNX.4.61.0709041101290.7968@chaos.analogic.com>
+Message-Id: <200709041743.47837.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dick,
-Thanks for the reply.
+On Tuesday 04 September 2007 16:47, Chuck Ebbert wrote:
+> A look at the 'cpuidle' branch of git-acpi shows a commit
+> e40cede7d63a029e92712a3fe02faee60cc38fb4, "cpuidle: first
+> round of documentation updates" that doesn't show up in that
+> branch online. The entire Documentation/cpuidle directory
+> is missing from the tree when looking at the web pages, and
+> it's missing from git-acpi.patch in 2.6.23-rc4-mm1 (but the
+> patch shows up in the summary information in the patch
+> header.) Where did it go? And how can -mm be used to test
+> things if its patches don't even match their own headers?
 
-then how to create these device nodes in /dev? from the information i
-got from the cosole(unknown block(1,0) ), it seems that I didn't
-create the device? I thought the kernel should do this work right? if
-not how to create it?
+A later patch in that series, "cpuidle: re-write", reverted
+the documentation from the intermediate patch that you refer to:
 
-thanks,
+http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git;a=commit;h=2305a5920fb8ee6ccec1c62ade05aa8351091d71
 
-regards,
+The cpuidle branch on git.kernel.org looks okay to me:
+
+http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git;a=shortlog;h=cpuidle
+
+the top commit is this one:
+
+commit 8975059a2c1e56cfe83d1bcf031bcf4cb39be743
+Author: Adam Belay <abelay@novell.com>
+Date:   Tue Aug 21 18:27:07 2007 -0400
+
+    CPUIDLE: load ACPI properly when CPUIDLE is disabled
+
+And this top patch is indeed included in the latest acpi test branch,
+as well as the latest ACPI test patch here:
+
+http://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/test/2.6.23/acpi-test-20070126-2.6.23-rc5.diff.gz
+
+Note that there were some merge conflicts when pulling cpuidle into 2.6.23,
+so you are best off running either the acpi patch above on top of 2.6.23-rc5,
+or the acpi test  branch, or the mm tree so you won't have to merge the
+cpuidle branch onto your latest kernel again.
+
+cheers,
+-Len
 
 
-2007/9/4, linux-os (Dick Johnson) <linux-os@analogic.com>:
->
-> On Mon, 3 Sep 2007, Xu Yang wrote:
->
-> > Hi everyone,
-> >
-> > I want to use ramdisk to boot my filesystem, as I can't use NFS and harddisk.
-> >
-> > I have load the ramdisk into the ram memory (start address :0x4000000)
-> >
-> > and in the boot options I specified : root =dev/ram0 initrd=0x4000000
->
-> Since you don't know what the default directory is, perhaps
-> root should be /dev/ram0. Also, make sure you actually create
-> those device nodes in /dev
->
-> [Snipped...]
->
-> > but the kernel said it can not find any file system on it.
-> >
-> > regards,
-> >
-> > Yang
-> >
->
-> Cheers,
-> Dick Johnson
-> Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
-> My book : http://www.AbominableFirebug.com/
-> _
->
->
-> ****************************************************************
-> The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
->
-> Thank you.
->
