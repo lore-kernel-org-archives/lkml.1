@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbXIDUEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbXIDUJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755213AbXIDUEl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 16:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbXIDUEc
+	id S1755270AbXIDUJT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 16:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbXIDUJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 16:04:32 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:39235 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753313AbXIDUEa (ORCPT
+	Tue, 4 Sep 2007 16:09:10 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:53538 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753442AbXIDUJJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 16:04:30 -0400
-Date: Tue, 4 Sep 2007 16:04:29 -0400
+	Tue, 4 Sep 2007 16:09:09 -0400
+Date: Tue, 4 Sep 2007 16:03:56 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Christoph Lameter <clameter@sgi.com>
 Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, mingo@redhat.com,
        linux-ia64@vger.kernel.org
-Subject: [PATCH] slub - Use local_t protection
-Message-ID: <20070904200429.GD8157@Krystal>
+Subject: [PATCH] local_t protection (critical section)
+Message-ID: <20070904200356.GC8157@Krystal>
 References: <20070827202203.GB5653@Krystal> <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com> <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com> <20070827211003.GA10627@Krystal> <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com> <20070827213845.GB9748@Krystal> <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com> <20070827222715.GA16982@Krystal> <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,112 +27,86 @@ In-Reply-To: <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:03:57 up 36 days, 20:22,  6 users,  load average: 0.43, 0.34, 0.39
+X-Uptime: 16:02:44 up 36 days, 20:21,  6 users,  load average: 0.13, 0.25, 0.37
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-slub - Use local_t protection
+local_t protection (critical section)
 
-Use local_enter/local_exit for protection in the fast path.
+Adds local_enter(flags) and local_exit(flags) as primitives to surround critical
+sections using local_t types.
 
-Depends on the cmpxchg_local slub patch.
+On architectures providing fast atomic primitives, this turns into a preempt
+disable/enable().
+However, on architectures not providing such fast primitives, such as ia64, it
+turns into a local irq disable/enable so that we can use *_local primitives that
+are non atomic.
+
+This is only the primary work here: made for testing ia64 with cmpxchg_local
+(other local_* primitives still use atomic_long_t operations as fallback).
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Christoph Lameter <clameter@sgi.com>
+Christoph Lameter <clameter@sgi.com>
 ---
- mm/slub.c |   18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+ include/asm-generic/local.h   |    3 +++
+ include/asm-i386/local.h      |    3 +++
+ include/asm-ia64/intrinsics.h |   14 ++++++++++++--
+ 3 files changed, 18 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/mm/slub.c
+Index: linux-2.6-lttng/include/asm-generic/local.h
 ===================================================================
---- linux-2.6-lttng.orig/mm/slub.c	2007-09-04 15:47:20.000000000 -0400
-+++ linux-2.6-lttng/mm/slub.c	2007-09-04 15:52:07.000000000 -0400
-@@ -1456,7 +1456,6 @@ static void *__slab_alloc(struct kmem_ca
- 	unsigned long flags;
+--- linux-2.6-lttng.orig/include/asm-generic/local.h	2007-09-04 15:32:02.000000000 -0400
++++ linux-2.6-lttng/include/asm-generic/local.h	2007-09-04 15:36:41.000000000 -0400
+@@ -46,6 +46,9 @@ typedef struct
+ #define local_add_unless(l, a, u) atomic_long_add_unless((&(l)->a), (a), (u))
+ #define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
  
- 	local_irq_save(flags);
--	put_cpu_no_resched();
- 	if (!c->page)
- 		/* Slab was flushed */
- 		goto new_slab;
-@@ -1480,7 +1479,6 @@ load_freelist:
- out:
- 	slab_unlock(c->page);
- 	local_irq_restore(flags);
--	preempt_check_resched();
- 	if (unlikely((gfpflags & __GFP_ZERO)))
- 		memset(object, 0, c->objsize);
- 	return object;
-@@ -1524,7 +1522,6 @@ new_slab:
- 		goto load_freelist;
- 	}
- 	local_irq_restore(flags);
--	preempt_check_resched();
- 	return NULL;
- debug:
- 	object = c->page->freelist;
-@@ -1552,8 +1549,10 @@ static void __always_inline *slab_alloc(
- {
- 	void **object;
- 	struct kmem_cache_cpu *c;
++#define local_enter(flags) local_irq_save(flags)
++#define local_exit(flags) local_irq_restore(flags)
++
+ /* Non-atomic variants, ie. preemption disabled and won't be touched
+  * in interrupt, etc.  Some archs can optimize this case well. */
+ #define __local_inc(l)		local_set((l), local_read(l) + 1)
+Index: linux-2.6-lttng/include/asm-i386/local.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-i386/local.h	2007-09-04 15:28:52.000000000 -0400
++++ linux-2.6-lttng/include/asm-i386/local.h	2007-09-04 15:31:54.000000000 -0400
+@@ -194,6 +194,9 @@ static __inline__ long local_sub_return(
+ })
+ #define local_inc_not_zero(l) local_add_unless((l), 1, 0)
+ 
++#define local_enter(flags) preempt_disable()
++#define local_exit(flags) preempt_enable()
++
+ /* On x86, these are no better than the atomic variants. */
+ #define __local_inc(l)		local_inc(l)
+ #define __local_dec(l)		local_dec(l)
+Index: linux-2.6-lttng/include/asm-ia64/intrinsics.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-ia64/intrinsics.h	2007-09-04 15:47:24.000000000 -0400
++++ linux-2.6-lttng/include/asm-ia64/intrinsics.h	2007-09-04 15:49:41.000000000 -0400
+@@ -160,8 +160,18 @@ extern long ia64_cmpxchg_called_with_bad
+ #define cmpxchg(ptr,o,n)	cmpxchg_acq(ptr,o,n)
+ #define cmpxchg64(ptr,o,n)	cmpxchg_acq(ptr,o,n)
+ 
+-#define cmpxchg_local		cmpxchg
+-#define cmpxchg64_local		cmpxchg64
++/* Must be executed between local_enter/local_exit. */
++static inline void *cmpxchg_local(void **p, void *old, void *new)
++{
 +	unsigned long flags;
++	void *before;
++
++	before = *p;
++	if (likely(before == old))
++		*p = new;
++	return before;
++}
++#define cmpxchg64_local		cmpxchg_local
  
--	c = get_cpu_slab(s, get_cpu());
-+	local_enter(flags);
-+	c = get_cpu_slab(s, smp_processor_id());
- redo:
- 	object = c->freelist;
- 	if (unlikely(!object))
-@@ -1566,12 +1565,13 @@ redo:
- 		object[c->offset]) != object))
- 			goto redo;
- 
--	put_cpu();
-+	local_exit(flags);
- 	if (unlikely((gfpflags & __GFP_ZERO)))
- 		memset(object, 0, c->objsize);
- 
- 	return object;
- slow:
-+	local_exit(flags);
- 	return __slab_alloc(s, gfpflags, node, addr, c);
- 
- }
-@@ -1605,7 +1605,6 @@ static void __slab_free(struct kmem_cach
- 	void **object = (void *)x;
- 	unsigned long flags;
- 
--	put_cpu();
- 	local_irq_save(flags);
- 	slab_lock(page);
- 
-@@ -1670,10 +1669,12 @@ static void __always_inline slab_free(st
- 	void **object = (void *)x;
- 	void **freelist;
- 	struct kmem_cache_cpu *c;
-+	unsigned long flags;
- 
- 	debug_check_no_locks_freed(object, s->objsize);
- 
--	c = get_cpu_slab(s, get_cpu());
-+	local_enter(flags);
-+	c = get_cpu_slab(s, smp_processor_id());
- 	if (unlikely(c->node < 0))
- 		goto slow;
- redo:
-@@ -1687,9 +1688,10 @@ redo:
- 							!= freelist))
- 		goto redo;
- 
--	put_cpu();
-+	local_exit(flags);
- 	return;
- slow:
-+	local_exit(flags);
- 	__slab_free(s, page, x, addr, c->offset);
- }
-
+ #ifdef CONFIG_IA64_DEBUG_CMPXCHG
+ # define CMPXCHG_BUGCHECK_DECL	int _cmpxchg_bugcheck_count = 128;
 -- 
 Mathieu Desnoyers
 Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
