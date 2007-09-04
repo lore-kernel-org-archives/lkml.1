@@ -1,100 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752070AbXIDAUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbXIDAYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752070AbXIDAUc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 20:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751020AbXIDAUZ
+	id S1752536AbXIDAYF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 20:24:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbXIDAXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 20:20:25 -0400
-Received: from keil-draco.com ([216.193.185.50]:50831 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750965AbXIDAUZ (ORCPT
+	Mon, 3 Sep 2007 20:23:55 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3232 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231AbXIDAXy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 20:20:25 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Date: Mon, 3 Sep 2007 20:19:56 -0400
-User-Agent: KMail/1.9.6
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-References: <MDEHLPKNGKAHNMBLJOLKOEDKGJAC.davids@webmaster.com> <200709031504.17454.dhazelton@enter.net> <m3642rv91u.fsf@maximus.localdomain>
-In-Reply-To: <m3642rv91u.fsf@maximus.localdomain>
+	Mon, 3 Sep 2007 20:23:54 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <dhazelton@enter.net>
+Cc: <espie@nerim.net>, <linux-kernel@vger.kernel.org>
+Subject: RE: GPL weasels and the atheros stink
+Date: Mon, 3 Sep 2007 17:23:37 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKOEGFGJAC.davids@webmaster.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709032020.04989.dhazelton@enter.net>
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <200709031343.23949.dhazelton@enter.net>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Mon, 03 Sep 2007 17:24:14 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Mon, 03 Sep 2007 17:24:16 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 September 2007 15:33:01 Krzysztof Halasa wrote:
-> Daniel Hazelton <dhazelton@enter.net> writes:
-> > I hate to belabor the point, but you seem to be making the mistake of
-> > "The license applies to the copyright holder"
->
-> Of course not.
 
-I'll take this at face value - I might have mis-parsed your earlier statements 
-wrong.
+> Wrong - I said "You can't complain about Person A doing X when
+> you let Person
+> B do X without complaint".
 
-> > The person holding the copyright has all the legal standing to revoke a
-> > license grant at any time.
->
-> Based on?
+Yes, I can. There is no inconsistency between acting in one case and failing
+to act in another. We need not act in every possible case where we could act
+to preserve our right to act in a particular case.
 
-US Copyright law. A copyright holder, regardless of what license he/she may 
-have released the work under, can still revoke the license for a specific 
-person or group of people. (There are some exceptions, but they do not apply 
-to the situation that is being discussed)
+> To whit: you can't complain that Jiri has made
+> changes to a dual-licensed "work" and only released his changes
+> under one of
+> the licenses on the work when somebody else - in this case Msr.
+> Floeter - has
+> done the same thing.
 
-> > Licenses such as the GPL are not signed contracts,
-> > and that means there are limits to what effect they can have on the
-> > copyright
-> > holder.
->
-> Perhaps that is your local laws, but I'd be surprised anyway.
+First of all, I haven't complained about Jiri's changes. Second, I most
+certainly can. I can complain about one murder without complaining about
+every murder. There is no inconsistency whatsoever with acting in one case
+without having to act in every other conceivable case.
 
-I wouldn't. The US Legal system is rather twisted.
+We can complain about or work to fight whatever injustices we like. There is
+no obligation to address every equal, or greater, injustice before working
+on the injustice of one's choice.
 
-> Do you sign contracts when shopping, or are you (and the shop)
-> allowed to "revoke" the transaction after it's made (I'm not
-> talking about shop's return policy)?
+> No, no confusion. You could care less about the code being dual-licensed.
+Your
+> choice of subjects 'GPL weasels' speaks volumes.
 
-A purchase is separate from a grant of copyright under license. If I purchase 
-a book I have the right to read the book and I have the right to sell the 
-book to someone else, but I have no other rights to it. But if I purchase 
-something, there are rights that go along with said purchase.
+*My* choice of subjects?! You seem to have me confused with someone else
+entirely.
 
-Under a license such as the GPL (I can't say the same for the BSD/ISC 
-license - I haven't spent enough time studying it to know for sure) no money 
-need change hands for access to the program *and* source. All the rights that 
-anyone *BESIDES* the copyright holder have to the program and/or source comes 
-from license. But since money has not changed hands, there is no further set 
-of rights or guarantees - the copyright holder has not, in general, sold a 
-copy of the work or granted any guarantee that the license will not be 
-revoked.
+My sole points in this thread were to:
 
-> Is what you wrote only valid WRT licences?
+1) Correct some misunderstandings about how dual licenses actually work.
 
-Yes. For contracts there is slightly different set of laws in play.
+2) Explain *why* a file cannot really remain dual-licensed if it's part of
+the Linux kernel distribution.
 
-> Which country has such laws BTW?
+While I generally prefer the BSD license to the GPL license and tend to be a
+pretty vocal GPL critic, I have said many times that almost any *consistent*
+license is better for a large project than different licenses, even if
+they're compatible, on different files.
 
-The USA.
+> Doesn't matter if the BSD license or the GPL *PERMITS* it or not. The fact
+> remains that the person making a work available under *ANY* form of
+copyright
+> license has the right to revoke said grant of license to anyone. The GPL
+> codifies certain situations in which the person would not, personally,
+have
+> to revoke the license, but does not limit the original copyright holders
+> rights (in that regard) in any way.
 
->
-> In Poland, I can't just go and "revoke" a "statement of will"
-> if I haven't explicite reserved a right to do so.
-> Obviously I can act contrary to the statement, and be held liable.
+I'm not sure where you're getting this from, but it's not true. Linus cannot
+decide tomorrow that nobody can distribute the Linux kernel anymore.
 
-Ah, see - in the US the license(s) in question (and licenses in general) are 
-grants of rights, not a "statements of will". If there are to be any limits 
-on the rights of the copyright holder, under US law, they have to be 
-explicitly stated in the license itself. (Truthfully, in the US a license 
-should be read with an implicit "All rights reserved")
+DS
 
-DRH
 
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
