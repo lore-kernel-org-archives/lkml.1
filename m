@@ -1,41 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbXIDHUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbXIDHXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837AbXIDHUZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 03:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbXIDHUK
+	id S1752756AbXIDHXQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 03:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbXIDHXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 03:20:10 -0400
-Received: from srv4.netavous.net ([213.251.145.243]:36906 "HELO
-	srv4.netavous.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751319AbXIDHUJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 03:20:09 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Sep 2007 03:20:08 EDT
-From: David CHANIAL <david.ml@euro-web.fr>
-Organization: Euro Web
-To: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
-Date: Tue, 4 Sep 2007 09:14:48 +0200
-User-Agent: KMail/1.9.7
-References: <200707160638.15750.david.ml@euro-web.fr> <200707270928.27328.david.ml@euro-web.fr> <alpine.LFD.0.999.0709040521170.8504@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0709040521170.8504@enigma.security.iitk.ac.in>
+	Tue, 4 Sep 2007 03:23:05 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33920 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751941AbXIDHXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 03:23:04 -0400
+From: Andi Kleen <ak@suse.de>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] Restore call_usermodehelper_pipe() behaviour
+Date: Tue, 4 Sep 2007 08:17:42 +0100
+User-Agent: KMail/1.9.1
+Cc: Andrew Morton <akpm@osdl.org>, jeremy@xensource.com, rusty@rustcorp.com.au,
+       dhowells@redhat.com, B.Steinbrink@gmx.de, randy.dunlap@oracle.com,
+       linux-kernel@vger.kernel.org
+References: <a96a9b883c735b73866cf39997bdc8d5f9f1c451.1188887696.git.michael@ellerman.id.au>
+In-Reply-To: <a96a9b883c735b73866cf39997bdc8d5f9f1c451.1188887696.git.michael@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709040914.49142.david.ml@euro-web.fr>
+Message-Id: <200709040817.43063.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Tuesday 04 September 2007 01:55:57 Satyam Sharma, vous avez écrit :
-> Did you test with that patch applied? Did you manage to hit the
-> BUG again (with or without it)?
 
-I not have tested this patch.
+> The fix is to change the 1 to UMH_WAIT_EXEC (aka 0), indicating that we
+> want to wait for the kernel thread to be started, but not for the helper to
+> finish.
 
-I will test it as soon as possible (in few days).
+Looks good. Clear 2.6.23 candidate IMHO
 
-Best regards,
--- 
-David
+-Andi
