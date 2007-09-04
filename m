@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbXIDITs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753372AbXIDIXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbXIDITs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 04:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbXIDITk
+	id S1753372AbXIDIXg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 04:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbXIDIX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 04:19:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35789 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752115AbXIDITj (ORCPT
+	Tue, 4 Sep 2007 04:23:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48357 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751309AbXIDIX0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 04:19:39 -0400
-Date: Tue, 4 Sep 2007 01:18:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Kerrisk <mtk-manpages@gmx.net>
-Cc: davidel@xmailserver.org, rdunlap@xenotime.net, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       drepper@redhat.com, stable@kernel.org, hch@lst.de,
-       jengelh@computergmbh.de, corbet@lwn.net
-Subject: Re: [PATCH] Revised timerfd() interface
-Message-Id: <20070904011800.762523a4.akpm@linux-foundation.org>
-In-Reply-To: <46DD116C.4040301@gmx.net>
-References: <20070825064114.107820@gmx.net>
-	<Pine.LNX.4.64.0708300458120.7717@alien.or.mcafeemobile.com>
-	<46DD116C.4040301@gmx.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Sep 2007 04:23:26 -0400
+Date: Tue, 4 Sep 2007 14:06:31 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Micah Gruber <micah.gruber@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev Mailing List <netdev@vger.kernel.org>, jgarzik@pobox.com
+Subject: Re: [PATCH] Fix a potential NULL pointer dereference in uli526x_interrupt()
+ in drivers/net/tulip/uli526x.c
+In-Reply-To: <46DD121A.2010404@gmail.com>
+Message-ID: <alpine.LFD.0.999.0709041352450.13651@enigma.security.iitk.ac.in>
+References: <46DD121A.2010404@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 04 Sep 2007 10:03:56 +0200 Michael Kerrisk <mtk-manpages@gmx.net> wrote:
-> Davide,
-> 
-> >> Davide -- ping!  Can you please offer your comments about this change, and
-> >> also thoughts on Jon's and my comments about a more radical API change
-> >> later  in this thread.
-> > 
-> > IMO the complexity of the resulting API (and resulting patch), and the ABI 
-> > change, is not justified by the added value.
-> 
-> Neither of the proposed APIs (either my multiplexed version of timerfd()
-> or Jon's/my idea of using three system calls (like POSIX timers), or
-> the notion of timerfd() integrated with POSIX timers) is more
-> complicated than the existing POSIX timers API.
-> 
-> The ABI change doesn't really matter, since timerfd() was broken in 2.6.22
-> anyway.
-> 
-> Both previous APIs provided the features I have described provide:
-> 
-> * the ability to fetch the old timer value when applying
->   a new setting
-> 
-> * the ability to non-destructively fetch the amount of time remaining
->   on a timer.
-> 
-> This is clearly useful for timers -- but you have not explained why
-> you think this is not necessary for timerfd timers.
-
-<wakes up>
-
-I'd have thought that the existing stuff would be near-useless without the
-capabilities which you describe?
+Hi Micah,
 
 
+On Tue, 4 Sep 2007, Micah Gruber wrote:
+
+> This patch fixes a potential null dereference bug where we dereference
+> dev before a null check. This patch simply moves the dereferencing after
+> the null check.
+> 
+> Signed-off-by: Micah Gruber <micah.gruber@gmail.com>
+> ---
+> 
+> --- a/drivers/net/tulip/uli526x.c
+> +++ b/drivers/net/tulip/uli526x.c
+> @@ -663,7 +663,7 @@
+>  {
+>  	struct net_device *dev = dev_id;
+>  	struct uli526x_board_info *db = netdev_priv(dev);
+> -	unsigned long ioaddr;
+> +	unsigned long ioaddr = dev->base_addr;
+>  	unsigned long flags;
+>  
+>  	if (!dev) {
+> @@ -671,8 +671,6 @@
+>  		return IRQ_NONE;
+>  	}
+>  
+> -	ioaddr = dev->base_addr;
+> -
+>  	spin_lock_irqsave(&db->lock, flags);
+>  	outl(0, ioaddr + DCR7);
+
+
+[The patch is reversed.]
+
+But it is also complete -- you've left out the "netdev_priv(dev)"
+statement _just_ before the dereference that you've pushed down.
+Coverity wasn't smart enough to tell, but that's actually a dev->priv,
+so we'll _still_ be dereferencing dev before checking it for NULL below.
+And lastly, the patch isn't quite correct. It is the (!dev) check that
+is redundant and must be removed instead :-)
+
+I bet more such pointless checks exist all over. It makes more sense to
+remove them than unnecessarily try to solve "potential" NULL dereferences,
+that we (naturally) never saw earlier, because they're impossible. ISTR
+pointing out two similar patches a month or so back when Jeff pushed net
+driver patches upstream, IIRC ... ]
+
+
+Satyam
