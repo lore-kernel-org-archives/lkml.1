@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbXIDDZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbXIDD0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752565AbXIDDZA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 23:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbXIDDYw
+	id S1752936AbXIDD0q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 23:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbXIDD0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 23:24:52 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:39856 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751599AbXIDDYv (ORCPT
+	Mon, 3 Sep 2007 23:26:38 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:34312 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbXIDD0i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 23:24:51 -0400
-X-IronPort-AV: i="4.20,203,1186372800"; 
-   d="scan'208"; a="50456936:sNHT28487102"
-Subject: Re: [PATCH] Blackfin BF54x NAND Flash Controller driver
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: bryan.wu@analog.com, David Woodhouse <dwmw2@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <8bd0f97a0709031057u1f4608f6y36bd20a8f6910a32@mail.gmail.com>
-References: <1188804323.29566.6.camel@roc-laptop>
-	 <8bd0f97a0709031057u1f4608f6y36bd20a8f6910a32@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Tue, 04 Sep 2007 11:21:49 +0800
-Message-Id: <1188876109.6319.9.camel@roc-desktop>
+	Mon, 3 Sep 2007 23:26:38 -0400
+Date: Tue, 4 Sep 2007 04:26:37 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Pallewatta Mano-FPCD67 <Mano.Pallewatta@motorola.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] linux-2.6.16.51 gzipped core dump patch
+Message-ID: <20070904032637.GY21089@ftp.linux.org.uk>
+References: <1188AA083E6C7C4EBCE34803004A84014FE921@de01exm72.ds.mot.com> <20070904013811.GX21089@ftp.linux.org.uk> <1188AA083E6C7C4EBCE34803004A84014FE926@de01exm72.ds.mot.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 04 Sep 2007 03:24:50.0738 (UTC) FILETIME=[27284920:01C7EEA3]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1188AA083E6C7C4EBCE34803004A84014FE926@de01exm72.ds.mot.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-03 at 13:57 -0400, Mike Frysinger wrote:
-> On 9/3/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> > --- a/drivers/mtd/nand/Kconfig
-> > +++ b/drivers/mtd/nand/Kconfig
-> > @@ -131,6 +131,24 @@ config MTD_NAND_AU1550
-> > +config MTD_NAND_BF54X
-> > +       tristate "NAND Flash support for Blackfin BF54X SoC DSP"
-> 
-> i'd just describe it as "Blackfin on-chip NAND" rather than sticking
-> in exact part numbers as i imagine we can extend it down the line
-> 
-> > +         This enables the NAND flash controller on the BF54X SoC DPSs
-> 
-> "BF54X SoC DPSs" -> "BF54x SoC DSPs"
-> 
-> > +         No board specific support is done by this driver, each board
-> > +         must advertise a platform_device for the driver to attach.
-> 
-> should mention the module name when built as a module
-> 
+On Mon, Sep 03, 2007 at 10:32:00PM -0400, Pallewatta Mano-FPCD67 wrote:
+> This patch was developed for embedded systems which had limited space
+> for file storage. If an external process is to compress core files you
+> will need to store those files somewhere first as core dump output
+> cannot be directly fed to the stdin of compression program.
 
-I will get rid of this BF54X and use BF5XX for (BF54x and BF52x and
-future processor)
+Why?  Create a pipe, start a new process, put the reader struct file
+into its descriptor table as stdin, do execve in new process and
+pass the writer struct file to ->core_dump().
 
-> > +config MTD_NAND_BF54X_HWECC
-> > +       bool "BF54X NAND Hardware ECC"
-> > +       depends on MTD_NAND_BF54X
-> > +       help
-> > +         Enable the use of the BF54X's internal ECC generator when
-> > +         using NAND. Early versions of the chip have had problems with
-> > +         incorrect ECC generation, and if using these, the default of
-> > +         software ECC is preferable.
-> 
-> rather than advertising this, i'd just keep it in the driver ...
-> presumably there are anomaly #'s for when the ECC is wrong, so we can
-> make the code depend on those
-> -mike
+As the matter of fact, it's already done - see
+        lock_kernel();
+        ispipe = format_corename(corename, core_pattern, signr);
+        unlock_kernel();
+        if (ispipe) {
+                /* SIGPIPE can happen, but it's just never processed */
+                if(call_usermodehelper_pipe(corename+1, NULL, NULL, &file)) {
+                        printk(KERN_INFO "Core dump to %s pipe failed\n",
+                               corename);
+                        goto fail_unlock;
+                }
+        } else
+                file = filp_open(corename,
+                                 O_CREAT | 2 | O_NOFOLLOW | O_LARGEFILE | flag,
+                                 0600);
+in do_coredump().  So take a look at fs/exec.c:format_corename() and see
+what to feed for it in order to get the equivalent of your patch.
+core_patttern is set by sysctl (just say
+echo [whatever] >/proc/sys/kernel/core_pattern 
+and don't forget quoting, since | should be the first character to indicate
+that you want to pipe coredump through a helper).
 
-This option is quite common in the NAND driver. If there are anomaly
-#'s, code can still depend on those by using hardware_ecc varible. This
-option is very useful when someone need software_ecc.
-
-Thanks
-- Bryan Wu
+I really don't see a reason to do that kind of work in the kernel, embedded
+system or not.
