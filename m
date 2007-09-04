@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbXIDPJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbXIDPLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbXIDPJU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 11:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbXIDPJM
+	id S1755530AbXIDPLP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 11:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbXIDPLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 11:09:12 -0400
-Received: from smtp.opengridcomputing.com ([71.42.183.126]:45635 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754542AbXIDPJL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 11:09:11 -0400
-Message-ID: <46DD7516.4090905@opengridcomputing.com>
-Date: Tue, 04 Sep 2007 10:09:10 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Divy Le Ray <divy@chelsio.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.23 0/2] cxgb3 - Fix dev->priv usage
-References: <46D4F12C.7090409@chelsio.com> <ada3ay26gys.fsf@cisco.com> <46D5B296.8020703@chelsio.com>
-In-Reply-To: <46D5B296.8020703@chelsio.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 4 Sep 2007 11:11:00 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:40558 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754250AbXIDPLA (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 11:11:00 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: davids@webmaster.com
+Cc: dhazelton@enter.net, espie@nerim.net, linux-kernel@vger.kernel.org
+Subject: Re: GPL weasels and the atheros stink
+In-Reply-To: Your message of "Mon, 03 Sep 2007 17:23:37 PDT."
+             <MDEHLPKNGKAHNMBLJOLKOEGFGJAC.davids@webmaster.com>
+From: Valdis.Kletnieks@vt.edu
+References: <MDEHLPKNGKAHNMBLJOLKOEGFGJAC.davids@webmaster.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1188918652_2860P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 04 Sep 2007 11:10:52 -0400
+Message-ID: <31129.1188918652@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland,
+--==_Exmh_1188918652_2860P
+Content-Type: text/plain; charset=us-ascii
 
-We'll work on upgrading you to T3B2 boards as well.
-
-Stay tuned.
-
-Steve.
-
-
-
-Divy Le Ray wrote:
-> Roland Dreier wrote:
->>
->> Looks OK to me but I would just roll up the second patch into the
->> first patch and let Jeff merge it as one commit.  There's no point in
->> creating an intermediate tree that doesn't build -- it just breaks git
->> bisect for no useful purpose.
->>
+On Mon, 03 Sep 2007 17:23:37 PDT, David Schwartz said:
 > 
-> Okay, Jeff agrees too, I'll do so.
+> > Wrong - I said "You can't complain about Person A doing X when
+> > you let Person
+> > B do X without complaint".
 > 
->> Also as a side note, when trying to test this I got the message
->>
->>     could not load TP SRAM: unable to load t3a_protocol_sram-1.0.44.bin
->>
->> and you guys seem to only have t3b protocol sram images on your web
->> site.  Could you send me the t3a file (or swap out my T3A boards for
->> T3B boards ;)?
->>
-> I'd rather fix the driver then:
-> First, HW folks tell me that there is no need for engine
-> microcode update for T3A.
-> Moreover, there is a bug when the file name is constructed.
-> We have T3B and T3B2 board revs, the driver looks for
-> t3b_protocol_sram-1.0.44.bin for T3B2 boards and defaults to
-> t3a_protocol_sram-1.0.44.bin even for T3B boards.
-> I submitted a patch fixing this in netdev#upstream.
-> I should propose the fix for 2.6.23 instead.
-> 
-> Cheers,
-> Divy
-> 
+> Yes, I can. There is no inconsistency between acting in one case and failing
+> to act in another. We need not act in every possible case where we could act
+> to preserve our right to act in a particular case.
+
+You *do* however need to be aware that in some cases, public inactivity and/or
+statements that something will not be acted on may estoppel any future attempts
+to enforce something.
+
+--==_Exmh_1188918652_2860P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG3XV8cC3lWbTT17ARAlGEAJ0UiGzlbVs7Nosb01JSiR1yR+RFFQCgoRb3
+AeaSJidNJlsMpgWbS32/oZ8=
+=MUeT
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1188918652_2860P--
