@@ -1,43 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752375AbXIDBDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752202AbXIDBiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752375AbXIDBDp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Sep 2007 21:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750965AbXIDBDi
+	id S1752202AbXIDBiU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Sep 2007 21:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbXIDBiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Sep 2007 21:03:38 -0400
-Received: from www.osadl.org ([213.239.205.134]:60362 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750748AbXIDBDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Sep 2007 21:03:38 -0400
-Subject: Re: 2.6.23-rc4-mm1: boot failure on HPC nx6325
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, john stultz <johnstul@us.ibm.com>
-In-Reply-To: <200709032251.22411.rjw@sisk.pl>
-References: <20070831215822.26e1432b.akpm@linux-foundation.org>
-	 <200709022239.14175.rjw@sisk.pl> <1188808600.5698.9.camel@chaos>
-	 <200709032251.22411.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Tue, 04 Sep 2007 03:03:18 +0200
-Message-Id: <1188867798.3271.1.camel@chaos>
+	Mon, 3 Sep 2007 21:38:13 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:55708 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbXIDBiM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Sep 2007 21:38:12 -0400
+Date: Tue, 4 Sep 2007 02:38:11 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Pallewatta Mano-FPCD67 <Mano.Pallewatta@motorola.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] linux-2.6.16.51 gzipped core dump patch
+Message-ID: <20070904013811.GX21089@ftp.linux.org.uk>
+References: <1188AA083E6C7C4EBCE34803004A84014FE921@de01exm72.ds.mot.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1188AA083E6C7C4EBCE34803004A84014FE921@de01exm72.ds.mot.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-03 at 22:51 +0200, Rafael J. Wysocki wrote:
-> > Also it would be interesting whether the -hrt patchset on top of rc5 has
-> > the same problem:
-> > 
-> > http://www.tglx.de/projects/hrtimers/2.6.23-rc5/patch-2.6.23-rc5-hrt1.patches.tar.bz2
-> 
-> This one boots normally.
+On Mon, Sep 03, 2007 at 08:49:00PM -0400, Pallewatta Mano-FPCD67 wrote:
+> Hi,
+> The attached patch is based on Jan Frey's previous patch posted in 2004
+> for the Linux 2.4 kernel. It has been tested on X86 and MIPS platforms.
+> If the core pattern doesn't end in ".gz" it will be added to the name of
+> the core file. It's offered under GPL v2 without any warranties. If you
+> have any questions, please contact me directly at Mano.Pallewatta "at"
+> motorola.com. 
 
-Thanks. that narrows down the wreckage window substantially.
-
-	tglx
-
-
+This is silly, IMO - why do in kernel what can be done in userland?  External
+process can damn well gzip/bzip2/uuencode and post to alt.sex.cthulhu.binaries/
+whatever.  Just feed the usual data to its stdin...
