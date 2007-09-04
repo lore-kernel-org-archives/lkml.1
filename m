@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbXIDXIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbXIDXOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbXIDXIZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 19:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbXIDXIR
+	id S1755910AbXIDXOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 19:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXIDXN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 19:08:17 -0400
-Received: from keil-draco.com ([216.193.185.50]:50651 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403AbXIDXIQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 19:08:16 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Michael Poole <mdpoole@troilus.org>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Date: Tue, 4 Sep 2007 19:08:04 -0400
-User-Agent: KMail/1.9.6
-Cc: "Chris Friesen" <cfriesen@nortel.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-References: <MDEHLPKNGKAHNMBLJOLKOEDKGJAC.davids@webmaster.com> <46DDB1CB.8080306@nortel.com> <87ejherza8.fsf@graviton.dyn.troilus.org>
-In-Reply-To: <87ejherza8.fsf@graviton.dyn.troilus.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 4 Sep 2007 19:13:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51475 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754316AbXIDXN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 19:13:57 -0400
+Date: Tue, 04 Sep 2007 19:13:18 -0400 (EDT)
+Message-Id: <20070904.191318.23007091.k-ueda@ct.jp.nec.com>
+To: bhalevy@panasas.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, jens.axboe@oracle.com, mike.miller@hp.com,
+       grant.likely@secretlab.ca, bharrosh@panasas.com, dm-devel@redhat.com,
+       j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: Re: [PATCH 6/7] blk_end_request: remove/unexport end_that_request_*
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <E472128B1EB43941B4E7FB268020C89B02992D9B@riverside.int.panasas.com>
+References: <20070831.184335.85683085.k-ueda@ct.jp.nec.com>
+	<E472128B1EB43941B4E7FB268020C89B02992D9B@riverside.int.panasas.com>
+X-Mailer: Mew version 3.3 on Emacs 21.3 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709041908.04232.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 September 2007 15:44:31 Michael Poole wrote:
-> Chris Friesen writes:
-> > Daniel Hazelton wrote:
-> >> On Tuesday 04 September 2007 09:27:02 Krzysztof Halasa wrote:
-> >>>Daniel Hazelton <dhazelton@enter.net> writes:
-> >>>>US Copyright law. A copyright holder, regardless of what license he/she
-> >>>>may have released the work under, can still revoke the license for a
-> >>>>specific person or group of people. (There are some exceptions, but
-> >>>> they do not apply to the situation that is being discussed)
-> >
-> > The OpenBSD policy page doesn't agree with you:
-> >
-> > "...That means that having granted a permission, the copyright holder
-> > can not retroactively say that an individual or class of individuals
-> > are no longer granted those permissions. Likewise should the copyright
-> > holder decide to "go commercial" he can not revoke permissions already
-> > granted for the use of the work as distributed, though he may impose
-> > more restrictive permissions in his future distributions of that work."
-> >
-> > http://www.openbsd.org/policy.html
->
-> By my reading, this is supported by 17 USC 203(a)(3):
->
->   (3) Termination of the grant may be effected at any time during a
->       period of five years beginning at the end of thirty-five years
->       from the date of execution of the grant; or, if the grant covers
->       the right of publication of the work, the period begins at the
->       end of thirty-five years from the date of publication of the
->       work under the grant or at the end of forty years from the date
->       of execution of the grant, whichever term ends earlier.
->
-> (from
-> http://www.law.cornell.edu/uscode/html/uscode17/usc_sec_17_00000203----000-
->.html )
+Hi,
 
-Ah, I am both right and wrong, it seems. Apparently you have to wait anywhere 
-form 35 to 40 years, and then you only have a five year window. Seems damned 
-strange to me, but oh well.
+On Tue, 4 Sep 2007 17:25:14 -0400, "Halevy, Benny" <bhalevy@panasas.com> wrote:
+> We suspect we'll still need the extern entry points for handling the bidi 
+> request in the scsi_io_completion() path as we only want to call
+> end_that_request_chunk on req->next_rq and never
+> end_that_request_last.
+>  
+> (see 
+> http://www.bhalevy.com/open-osd/download/linux-2.6.23-rc2_and_iscsi-iscsi-2007_08_09/0005-SCSI-bidi-support.patch)
 
-(I'd totally forgotten that part of the law - or my mind decided to play 
-tricks on me.)
+If this patch-set is merged, there may be other way to do that.
 
-DRH
+For tricky drivers, special interface, blk_end_request_callback(),
+is added in the patch 5/7.
+(http://marc.info/?l=linux-kernel&m=118860027714753&w=2)
+Currently, only user of the interface is ide-cd (cdrom_newpc_intr()).
+It needs to call only end_that_request_first() too.
 
-PS: See, I will admit it when I'm shown evidence that I'm wrong :)
+With the patch 7/7, you can set your own handler in rq->end_io()
+to complete the request by your own way.
 
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+Thanks,
+Kiyoshi Ueda
