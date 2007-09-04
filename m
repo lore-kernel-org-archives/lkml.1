@@ -1,74 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbXIDOjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXIDOmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884AbXIDOjl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 10:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbXIDOiG
+	id S1755259AbXIDOmB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 10:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbXIDOlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 10:38:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49844 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754337AbXIDOiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 10:38:03 -0400
-Date: Tue, 4 Sep 2007 10:37:55 -0400
-Message-Id: <200709041437.l84EbtRZ010033@dantu.rdu.redhat.com>
-From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 7/7] unionfs: fix unionfs_create and unionfs_setattr to handle ATTR_KILL_S*ID
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
-       ecryptfs-devel@lists.sourceforge.net, reiserfs-devel@vger.kernel.org,
-       unionfs@filesystems.org
+	Tue, 4 Sep 2007 10:41:53 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:8404 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754068AbXIDOlw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 10:41:52 -0400
+X-IronPort-AV: i="4.20,207,1186372800"; 
+   d="scan'208"; a="38851230:sNHT913746134"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: the Linux kernel, testsuites, and maybe *you*
+Date: Tue, 4 Sep 2007 10:41:31 -0400
+User-Agent: KMail/1.9.5
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+References: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com> <p733axyxcli.fsf@bingen.suse.de>
+In-Reply-To: <p733axyxcli.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709041041.31353.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 04 Sep 2007 14:41:21.0217 (UTC) FILETIME=[A8F7DB10:01C7EF01]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't allow either function to trip the BUG() in notify_change. For
-unionfs_setattr, clear ATTR_MODE if the either ATTR_KILL_S*ID is set.
+On Sat 1 Sep 2007 18:08, Andi Kleen pondered:
+> "Mike Frysinger" <vapier.adi@gmail.com> writes:
+> 
+> > is there any sort of standard for testing and integration into
+> > mainline ?  
+> 
+> Everybody does their own.
 
-unionfs_create is setting the mode explicitly already.  Don't set
-ATTR_KILL_S*ID. Just fix up the mode to have the same effect. Also, move
-locking the i_mutex to lower in the function. It's not needed until it
-checks the i_size.
+That kind of stinks - and seems to be a potential duplication of effort all 
+over the place.
 
-(Jeff Sipek indicated that he was planning to change some of this code,
-so this patch may need changes if it goes in after his patchset)
+> > in the Blackfin world, we've been developing little
+> > external kernel modules and adding them to our own testsuite, but
+> > often times these things are not Blackfin specific.  case in point,
+> > we're integrating a string testsuite to make sure all of the fun str*
+> > and mem* functions are sane and operate as they expected, but rather
+> > than having just Blackfin benefit here, i'd like to see this pushed
+> > upstream ...
+> 
+> I would like to see this too. I wrote a couple of unit tests
+> during x86-64 development too and they would be handy
+> to have in a central place.
+> 
+> The SUSE kernel also has a crasher module that exercises the
+> allocators and is pretty useful to stress code in general.
+> 
+> Disadvantage is that test code tends to be hackish and ugly
+> and very specialized and will probably not pass standard review
+> procedures.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/unionfs/inode.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+Then this makes perfect sense to actually have it in the proper places, and 
+have it go through the standard review process. I have run into problems 
+recently, where ugly hackish tests seem never really catch actual faults. 
+(Since they were written by the same person who wrote the driver - Design a 
+fault in, code the fault, test the fault is there).
 
-diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
-index 59bb418..f2e7f25 100644
---- a/fs/unionfs/inode.c
-+++ b/fs/unionfs/inode.c
-@@ -78,15 +78,14 @@ static int unionfs_create(struct inode *parent, struct dentry *dentry,
- 		struct dentry *lower_dir_dentry;
- 		struct iattr newattrs;
- 
--		mutex_lock(&wh_dentry->d_inode->i_mutex);
- 		newattrs.ia_valid = ATTR_CTIME | ATTR_MODE | ATTR_ATIME
--			| ATTR_MTIME | ATTR_UID | ATTR_GID | ATTR_FORCE
--			| ATTR_KILL_SUID | ATTR_KILL_SGID;
-+			| ATTR_MTIME | ATTR_UID | ATTR_GID | ATTR_FORCE;
- 
--		newattrs.ia_mode = mode & ~current->fs->umask;
-+		newattrs.ia_mode = mode & ~(current->fs->umask|S_ISUID|S_ISGID);
- 		newattrs.ia_uid = current->fsuid;
- 		newattrs.ia_gid = current->fsgid;
- 
-+		mutex_lock(&wh_dentry->d_inode->i_mutex);
- 		if (wh_dentry->d_inode->i_size != 0) {
- 			newattrs.ia_valid |= ATTR_SIZE;
- 			newattrs.ia_size = 0;
-@@ -1032,6 +1031,9 @@ static int unionfs_setattr(struct dentry *dentry, struct iattr *ia)
- 	bend = dbend(dentry);
- 	inode = dentry->d_inode;
- 
-+	if (ia->ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID))
-+		ia->ia_valid &= ~ATTR_MODE;
-+
- 	for (bindex = bstart; (bindex <= bend) || (bindex == bstart);
- 	     bindex++) {
- 		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
--- 
-1.5.2.1
+With many eyes - and all that stuff - hopefully we would catch things.
 
+> Also the rt people seem to have pushed a couple of tests in already, 
+> but I always hated it that they're in the standard directories.
+> RCU also has, in fact they added a "eat all my CPU in tests"
+> CONFIG option. Just making that dependent on a CONFIG_UNIT_TESTS
+> would be a good change in itself. And then there are the slab
+> failure inducers of course.
+
+Putting them close to the standard directories might be OK - keeping the tests 
+close to the thing that is being tested may help with maintainers keeping an 
+eye on things that might be missed otherwise.
+
+Maybe these types of tests should go into a separate directory - power on self 
+tests (post) directories in the respective places? ./kernel/post 
+and ./drivers/xxxx/post?
+
+So Mike's proposed string tests would go into ./lib/post/strings.c
+
+When things pass - you get a single indication (all tests for unit X passed) 
+or a pass for each test?
+
+-Robin
