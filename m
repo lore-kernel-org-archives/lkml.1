@@ -1,113 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbXIDUJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbXIDU0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755270AbXIDUJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 16:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbXIDUJK
+	id S1754834AbXIDU0t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 16:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbXIDU0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 16:09:10 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:53538 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753442AbXIDUJJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 16:09:09 -0400
-Date: Tue, 4 Sep 2007 16:03:56 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@redhat.com,
-       linux-ia64@vger.kernel.org
-Subject: [PATCH] local_t protection (critical section)
-Message-ID: <20070904200356.GC8157@Krystal>
-References: <20070827202203.GB5653@Krystal> <Pine.LNX.4.64.0708271324001.5884@schroedinger.engr.sgi.com> <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com> <20070827211003.GA10627@Krystal> <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com> <20070827213845.GB9748@Krystal> <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com> <20070827222715.GA16982@Krystal> <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
+	Tue, 4 Sep 2007 16:26:41 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4337 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753281AbXIDU0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 16:26:40 -0400
+Date: Tue, 4 Sep 2007 16:24:33 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: rusty@rustcorp.com.au, adam@yggdrasil.com, jcm@jonmasters.org,
+       kaber@trash.net, netfilter-devel@lists.netfilter.org,
+       linux-kernel@vger.kernel.org
+Cc: nhorman@tuxdriver.com
+Subject: [PATCH 0/2] Fix (improve) deadlock condition on module removal netfilter socket option removal
+Message-ID: <20070904202433.GA19083@hmsreliant.think-freely.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:02:44 up 36 days, 20:21,  6 users,  load average: 0.13, 0.25, 0.37
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-local_t protection (critical section)
+Hey all-
+	So I've had a deadlock reported to me.  I've found that the sequence of
+events goes like this:
 
-Adds local_enter(flags) and local_exit(flags) as primitives to surround critical
-sections using local_t types.
+1) process A (modprobe) runs to remove ip_tables.ko
 
-On architectures providing fast atomic primitives, this turns into a preempt
-disable/enable().
-However, on architectures not providing such fast primitives, such as ia64, it
-turns into a local irq disable/enable so that we can use *_local primitives that
-are non atomic.
+2) process B (iptables-restore) runs and calls setsockopt on a netfilter socket,
+increasing the ip_tables socket_ops use count
 
-This is only the primary work here: made for testing ia64 with cmpxchg_local
-(other local_* primitives still use atomic_long_t operations as fallback).
+3) process A acquires a file lock on the file ip_tables.ko, calls remove_module
+in the kernel, which in turn executes the ip_tables module cleanup routine,
+which calls nf_unregister_sockopt
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Christoph Lameter <clameter@sgi.com>
----
- include/asm-generic/local.h   |    3 +++
- include/asm-i386/local.h      |    3 +++
- include/asm-ia64/intrinsics.h |   14 ++++++++++++--
- 3 files changed, 18 insertions(+), 2 deletions(-)
+4) nf_unregister_sockopt, seeing that the use count is non-zero, puts the
+calling process into uninterruptible sleep, expecting the process using the
+socket option code to wake it up when it exits the kernel
 
-Index: linux-2.6-lttng/include/asm-generic/local.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-generic/local.h	2007-09-04 15:32:02.000000000 -0400
-+++ linux-2.6-lttng/include/asm-generic/local.h	2007-09-04 15:36:41.000000000 -0400
-@@ -46,6 +46,9 @@ typedef struct
- #define local_add_unless(l, a, u) atomic_long_add_unless((&(l)->a), (a), (u))
- #define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
- 
-+#define local_enter(flags) local_irq_save(flags)
-+#define local_exit(flags) local_irq_restore(flags)
-+
- /* Non-atomic variants, ie. preemption disabled and won't be touched
-  * in interrupt, etc.  Some archs can optimize this case well. */
- #define __local_inc(l)		local_set((l), local_read(l) + 1)
-Index: linux-2.6-lttng/include/asm-i386/local.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-i386/local.h	2007-09-04 15:28:52.000000000 -0400
-+++ linux-2.6-lttng/include/asm-i386/local.h	2007-09-04 15:31:54.000000000 -0400
-@@ -194,6 +194,9 @@ static __inline__ long local_sub_return(
- })
- #define local_inc_not_zero(l) local_add_unless((l), 1, 0)
- 
-+#define local_enter(flags) preempt_disable()
-+#define local_exit(flags) preempt_enable()
-+
- /* On x86, these are no better than the atomic variants. */
- #define __local_inc(l)		local_inc(l)
- #define __local_dec(l)		local_dec(l)
-Index: linux-2.6-lttng/include/asm-ia64/intrinsics.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-ia64/intrinsics.h	2007-09-04 15:47:24.000000000 -0400
-+++ linux-2.6-lttng/include/asm-ia64/intrinsics.h	2007-09-04 15:49:41.000000000 -0400
-@@ -160,8 +160,18 @@ extern long ia64_cmpxchg_called_with_bad
- #define cmpxchg(ptr,o,n)	cmpxchg_acq(ptr,o,n)
- #define cmpxchg64(ptr,o,n)	cmpxchg_acq(ptr,o,n)
- 
--#define cmpxchg_local		cmpxchg
--#define cmpxchg64_local		cmpxchg64
-+/* Must be executed between local_enter/local_exit. */
-+static inline void *cmpxchg_local(void **p, void *old, void *new)
-+{
-+	unsigned long flags;
-+	void *before;
-+
-+	before = *p;
-+	if (likely(before == old))
-+		*p = new;
-+	return before;
-+}
-+#define cmpxchg64_local		cmpxchg_local
- 
- #ifdef CONFIG_IA64_DEBUG_CMPXCHG
- # define CMPXCHG_BUGCHECK_DECL	int _cmpxchg_bugcheck_count = 128;
+4) the user of the socket option code (process B) in do_ipt_get_ctl, calls
+ipt_find_table_lock, which in this case calls request_module to load
+ip_tables_nat.ko
+
+5) request_module forks a copy of modprobe (process C) to load the module and
+blocks until modprobe exits.
+
+6) Process C. forked by request_module process the dependencies of
+ip_tables_nat.ko, of which ip_tables.ko is one.
+
+7) Process C attempts to lock the request module and all its dependencies, it
+blocks when it attempts to lock ip_tables.ko (which was previously locked in
+step 3)
+
+Theres not really any great permanent solution to this that I can see, but I've
+developed a two part solution that corrects the problem
+
+Part 1) Modifies the nf_sockopt registration code so that, instead of using a
+use counter internal to the nf_sockopt_ops structure, we instead use a pointer
+to the registering modules owner to do module reference counting when nf_sockopt
+calls a modules set/get routine.  This prevents the deadlock by preventing set 4
+from happening.
+
+Part 2) Enhances the modprobe utilty so that by default it preforms non-blocking
+remove operations (the same way rmmod does), and add an option to explicity
+request blocking operation.  So if you select blocking operation in modprobe you
+can still cause the above deadlock, but only if you explicity try (and since
+root can do any old stupid thing it would like.... :) ).
+
+The following 2 patches have been tested out by me.
+
+Thanks & Regards
+Neil
+
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
