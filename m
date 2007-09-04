@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbXIDRRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755740AbXIDRUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755608AbXIDRRU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 13:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbXIDRRM
+	id S1755740AbXIDRUp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 13:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbXIDRUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 13:17:12 -0400
-Received: from mga02.intel.com ([134.134.136.20]:22767 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754738AbXIDRRL convert rfc822-to-8bit (ORCPT
+	Tue, 4 Sep 2007 13:20:38 -0400
+Received: from keil-draco.com ([216.193.185.50]:50259 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754824AbXIDRUh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 13:17:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,207,1186383600"; 
-   d="scan'208";a="287962797"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 4 Sep 2007 13:20:37 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: GPL weasels and the atheros stink
+Date: Tue, 4 Sep 2007 13:20:27 -0400
+User-Agent: KMail/1.9.6
+Cc: davids@webmaster.com, espie@nerim.net, linux-kernel@vger.kernel.org
+References: <MDEHLPKNGKAHNMBLJOLKOEGFGJAC.davids@webmaster.com> <31129.1188918652@turing-police.cc.vt.edu>
+In-Reply-To: <31129.1188918652@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2.6.23-rc4] irq: irq and pci_ids patch for Intel Tolapai
-Date: Tue, 4 Sep 2007 10:17:09 -0700
-Message-ID: <39B20DF628532344BC7A2692CB6AEE0701B9997D@orsmsx420.amr.corp.intel.com>
-In-Reply-To: <46D9DA12.6050805@garzik.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.23-rc4] irq: irq and pci_ids patch for Intel Tolapai
-thread-index: Acfs32euwUX9Yy0hT5KyScUWuUsrVgCN+Nuw
-References: <200708301546.56998.jason.d.gaston@intel.com> <20070901211939.GA10442@colo.lackof.org> <46D9DA12.6050805@garzik.org>
-From: "Gaston, Jason D" <jason.d.gaston@intel.com>
-To: "Jeff Garzik" <jeff@garzik.org>,
-       "Grant Grundler" <grundler@parisc-linux.org>
-Cc: <gregkh@suse.de>, <linux-kernel@vger.kernel.org>,
-       <linux-pci@atrey.karlin.mff.cuni.cz>, <khali@linux-fr.org>,
-       <i2c@lm-sensors.nu>
-X-OriginalArrivalTime: 04 Sep 2007 17:17:10.0492 (UTC) FILETIME=[6D9201C0:01C7EF17]
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709041320.27610.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Please do submit new PCI device IDs to pciids.sf.net project.
+On Tuesday 04 September 2007 11:10:52 Valdis.Kletnieks@vt.edu wrote:
+> On Mon, 03 Sep 2007 17:23:37 PDT, David Schwartz said:
+> > > Wrong - I said "You can't complain about Person A doing X when
+> > > you let Person
+> > > B do X without complaint".
+> >
+> > Yes, I can. There is no inconsistency between acting in one case and
+> > failing to act in another. We need not act in every possible case where
+> > we could act to preserve our right to act in a particular case.
 >
->Yep.
+> You *do* however need to be aware that in some cases, public inactivity
+> and/or statements that something will not be acted on may estoppel any
+> future attempts to enforce something.
 
+Exactly. However, inactivity can be construed as lack of knowledge that 
+something is occurring. (ie: the RIAA didn't start acting on file-sharing 
+until they became aware of Napster)
 
-FYI:  I have already posted the Tolapai DID's and device strings to
-pciids.sf.net.
+But for said estoppel to not be a factor you will have to prosecute and/or 
+file suit on all instances of the activity. (And filing a suit and then 
+dropping it against some of the people that you filed suit against - ie: you 
+file suit against persons A and B and then drop the suit against person A in 
+its entirety - because you only wanted to prosecute person B for the action, 
+you are leaving yourself open to lawsuits on a number of counts.)
 
-Thanks,
+DRH
 
-Jason
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
