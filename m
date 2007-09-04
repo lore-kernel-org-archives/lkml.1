@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbXIDGzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752423AbXIDHTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbXIDGzP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 02:55:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbXIDGzD
+	id S1752423AbXIDHTl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 03:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbXIDHTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 02:55:03 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:52754 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751319AbXIDGzA (ORCPT
+	Tue, 4 Sep 2007 03:19:33 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:57825 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319AbXIDHTc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 02:55:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hD6/s6Ayk4wzx1gS9jbRBHHex/eh6BE2Sprz7wq+rfhBof0k7qmPVvOWoKh+Fx2kfy3pdBboNutiwjBE2eQnRhBXo2KVvxAoe5m3bxZx2ToQZpTnFmMQhmW4nelmHKzuZWEUUmNs0k+GQFJkrq8y+amcaDZ2oDJmbJbegEe6WLQ=
-Message-ID: <86802c440709032354w46395c72m954e53b5685be11e@mail.gmail.com>
-Date: Mon, 3 Sep 2007 23:54:58 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space access for AMD Barcelona
-Cc: "Robert Richter" <robert.richter@amd.com>, patches@x86-64.org,
-       "Andreas Herrmann" <andreas.herrmann3@amd.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200709031448.42285.ak@suse.de>
+	Tue, 4 Sep 2007 03:19:32 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=H/uRnzdoGonLOGkf4bfrgc09CeeCSN97HzSYFjGECj+WUGL5cKIbpOjoPn0VLgtTN
+	hpFJTrLjmzHggzAP739hA==
+Message-ID: <6599ad830709040019r17861771we2a0893c0c160723@mail.gmail.com>
+Date: Tue, 4 Sep 2007 00:19:22 -0700
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [-mm PATCH] Memory controller improve user interface (v3)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linux Containers" <containers@lists.osdl.org>,
+       "Linux MM Mailing List" <linux-mm@kvack.org>,
+       "David Rientjes" <rientjes@google.com>,
+       "Dave Hansen" <haveblue@us.ibm.com>
+In-Reply-To: <46DC6543.3000607@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070830174311.221133000@amd.com> <200709031215.03473.ak@suse.de>
-	 <20070903112746.GH7916@erda.amd.com> <200709031448.42285.ak@suse.de>
+References: <20070902105021.3737.31251.sendpatchset@balbir-laptop>
+	 <6599ad830709022153g1720bcedsb61d7cf7a783bd3f@mail.gmail.com>
+	 <46DC6543.3000607@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/3/07, Andi Kleen <ak@suse.de> wrote:
-> On Monday 03 September 2007 13:27, Robert Richter wrote:
->
-> > On 03.09.07 12:15:03, Andi Kleen wrote:
-> > > > But it is needed for some devices for full functionality.
-> > >
-> > > Examples? I can only think of PCI express error reporting, which
-> > > few drivers implement anyways and isn't really a show stopper
-> > > if it doesn't work. Besides I would be surprised if it even works
-> > > on the cheap desktop boards which have MCFG less BIOS.
+On 9/3/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> Paul Menage wrote:
+> > On 9/2/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >> -       s += sprintf(s, "%lu\n", *val);
+> >> +       if (read_strategy)
+> >> +               s += read_strategy(*val, s);
+> >> +       else
+> >> +               s += sprintf(s, "%lu\n", *val);
 > >
-> > As you say, there are BIOSs that do not support MMCONFIG. Thus, CF8
-> > access is not only a workaround to boot a system.
+> > This would be better as %llu
+> >
 >
-> We're talking about accessing the extended part of config spaces. I'm not
-> aware of any case where that is required to boot a system.
+> Hi, Paul,
+>
+> This does not need fixing, since the other counters like failcnt are
+> still unsigned long
+>
 
-in the bios for the new cpu, CF8 is used for ext conf space
-accessing...(for ht and mem init).
+But val is an unsigned long long*. So printing *val with %lu will
+break (at least a warning, and maybe corruption if you had other
+parameters) on 32-bit archs.
 
-for setting mmio to accessing pci conf space, need to set sth on MSR.
-So the BIOS need to make it right..., otherwise OS need to set that
-when booting every cpu...to workaround it to make MMCONFIG working.
-
-YH
+Paul
