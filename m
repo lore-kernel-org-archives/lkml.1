@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbXIDIQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbXIDITs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753240AbXIDIQV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 04:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbXIDIQH
+	id S1753388AbXIDITs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 04:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbXIDITk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 04:16:07 -0400
-Received: from john.hrz.tu-chemnitz.de ([134.109.132.2]:59792 "EHLO
-	john.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751616AbXIDIQF (ORCPT
+	Tue, 4 Sep 2007 04:19:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35789 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752115AbXIDITj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 04:16:05 -0400
-X-Greylist: delayed 1221 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Sep 2007 04:16:05 EDT
-Date: Tue, 4 Sep 2007 10:16:02 +0200
-From: Steffen Klassert <klassert@mathematik.tu-chemnitz.de>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev Mailing List <netdev@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Mark Hindley <mark@hindley.org.uk>
-Subject: Re: [PATCH -mm 1/2] 3c59x: Fix uninitialized variable bug
-Message-ID: <20070904081602.GB4241@newton.mathematik.tu-chemnitz.de>
-References: <alpine.LFD.0.999.0709040340250.8504@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709040340250.8504@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: --- Start der SpamAssassin 3.2.3 Textanalyse (-1.4 Punkte)
-	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
-	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
-	weitergeleitet
-	--- Ende der SpamAssassin Textanalyse
-X-Scan-Signature: 0e3fbd3f50959cf49c69ab43e98fd2b3
+	Tue, 4 Sep 2007 04:19:39 -0400
+Date: Tue, 4 Sep 2007 01:18:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Kerrisk <mtk-manpages@gmx.net>
+Cc: davidel@xmailserver.org, rdunlap@xenotime.net, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       drepper@redhat.com, stable@kernel.org, hch@lst.de,
+       jengelh@computergmbh.de, corbet@lwn.net
+Subject: Re: [PATCH] Revised timerfd() interface
+Message-Id: <20070904011800.762523a4.akpm@linux-foundation.org>
+In-Reply-To: <46DD116C.4040301@gmx.net>
+References: <20070825064114.107820@gmx.net>
+	<Pine.LNX.4.64.0708300458120.7717@alien.or.mcafeemobile.com>
+	<46DD116C.4040301@gmx.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 04, 2007 at 03:45:55AM +0530, Satyam Sharma wrote:
+> On Tue, 04 Sep 2007 10:03:56 +0200 Michael Kerrisk <mtk-manpages@gmx.net> wrote:
+> Davide,
 > 
-> drivers/net/3c59x.c: In function 'vortex_up':
-> drivers/net/3c59x.c:1495: warning: 'err' may be used uninitialized in this function
+> >> Davide -- ping!  Can you please offer your comments about this change, and
+> >> also thoughts on Jon's and my comments about a more radical API change
+> >> later  in this thread.
+> > 
+> > IMO the complexity of the resulting API (and resulting patch), and the ABI 
+> > change, is not justified by the added value.
+> 
+> Neither of the proposed APIs (either my multiplexed version of timerfd()
+> or Jon's/my idea of using three system calls (like POSIX timers), or
+> the notion of timerfd() integrated with POSIX timers) is more
+> complicated than the existing POSIX timers API.
+> 
+> The ABI change doesn't really matter, since timerfd() was broken in 2.6.22
+> anyway.
+> 
+> Both previous APIs provided the features I have described provide:
+> 
+> * the ability to fetch the old timer value when applying
+>   a new setting
+> 
+> * the ability to non-destructively fetch the amount of time remaining
+>   on a timer.
+> 
+> This is clearly useful for timers -- but you have not explained why
+> you think this is not necessary for timerfd timers.
 
-This came in with the recently applied 3c59x-check-return-of-pci_enable_device patch
-from Mark Hindley. I just compiled it on a PCI only machine so far, therefore I did
-not notice the warning yet.
+<wakes up>
 
-> 
-> is a genuine bug. The function returns an uninitialized value of 'err'
-> back to the caller, which expects it to be 0 for success cases. Let's
-> fix this by explicitly initializing 'err' to zero.
-> 
-> Signed-off-by: Satyam Sharma <satyam@infradead.org>
-Acked-by: Steffen Klassert <klassert@mathematik.tu-chemnitz.de>
+I'd have thought that the existing stuff would be near-useless without the
+capabilities which you describe?
+
+
