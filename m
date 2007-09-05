@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbXIEFqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbXIEFs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756525AbXIEFqN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 01:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbXIEFp4
+	id S1756573AbXIEFs5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 01:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbXIEFsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 01:45:56 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:23651 "EHLO
+	Wed, 5 Sep 2007 01:48:50 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:27822 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751897AbXIEFpz (ORCPT
+	with ESMTP id S1754866AbXIEFst (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 01:45:55 -0400
+	Wed, 5 Sep 2007 01:48:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=Oz+A4fAR7OMyxE8FGt77FKFPtLyMT4lEKeS+BB0uM+P2W8zpqkSwKdA05WdfBrazg1NZbNc8tb4qDIniqDXiQNVNK5ru/b7M9NrdvYlyiV7R27uiFy5ZgHjZmzaY6XzQLixhnTUWB95K8aTIwWdFHsW7qJxvXPn7pGNlYlIuGZ0=
-Message-ID: <46DE42D9.2040200@gmail.com>
-Date: Wed, 05 Sep 2007 13:47:05 +0800
+        b=B6MBHg8PlZZCA13b4ZrF3VBh9JgDVGC29mXyoAQE8Vx734r5NlPjKyfLTb81nMVEJ+qCaoaddA8iVeeHSFUjKyY6ddtOrNnjCRtK2ZDvTxBn1g2MtxpJlfkML15jOg/GClzuOCKG6rLzjJFVx0SKpTX3tQfz/CeK6V0KCbbAPfc=
+Message-ID: <46DE4386.5050107@gmail.com>
+Date: Wed, 05 Sep 2007 13:49:58 +0800
 From: Micah Gruber <micah.gruber@gmail.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] Remove unneeded pointer newdp from dccp_v4_request_recv_sock()
- in net/dccp/ipv4.c
+To: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: [PATCH] Remove unneeded pointer intf from speedtch_upload_firmware()
+ in drivers/usb/atm/speedtch.c
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This trivial patch removes the unneeded pointer newdp, which is never used.
+This trivial patch removes the unneeded pointer intf returned from usb_ifnum_to_if(), which is never used. The check for NULL can be simply done by if (!usb_ifnum_to_if(usb_dev, 2)).
 
 Signed-off-by: Micah Gruber <micah.gruber@gmail.com>
 ---
 
---- a/net/dccp/ipv4.c	2007-09-04 23:18:42.000000000 +0800
-+++ b/net/dccp/ipv4.c	2007-09-05 00:49:54.000000000 +0800
-@@ -381,7 +381,6 @@
+--- a/drivers/usb/atm/speedtch.c	2007-09-04 23:18:17.000000000 +0800
++++ b/drivers/usb/atm/speedtch.c	2007-09-05 00:51:19.000000000 +0800
+@@ -251,7 +251,6 @@
  {
- 	struct inet_request_sock *ireq;
- 	struct inet_sock *newinet;
--	struct dccp_sock *newdp;
- 	struct sock *newsk;
+ 	unsigned char *buffer;
+ 	struct usbatm_data *usbatm = instance->usbatm;
+-	struct usb_interface *intf;
+ 	struct usb_device *usb_dev = usbatm->usb_dev;
+ 	int actual_length;
+ 	int ret = 0;
+@@ -265,7 +264,7 @@
+ 		goto out;
+ 	}
  
- 	if (sk_acceptq_is_full(sk))
-@@ -396,7 +395,6 @@
- 
- 	sk_setup_caps(newsk, dst);
- 
--	newdp		   = dccp_sk(newsk);
- 	newinet		   = inet_sk(newsk);
- 	ireq		   = inet_rsk(req);
- 	newinet->daddr	   = ireq->rmt_addr;
+-	if (!(intf = usb_ifnum_to_if(usb_dev, 2))) {
++	if (!usb_ifnum_to_if(usb_dev, 2)) {
+ 		ret = -ENODEV;
+ 		usb_dbg(usbatm, "%s: interface not found!\n", __func__);
+ 		goto out_free;
 
