@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbXIEVk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbXIEVtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758521AbXIEVk6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 17:40:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757087AbXIEVkr
+	id S1758072AbXIEVtT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 17:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756726AbXIEVtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 17:40:47 -0400
-Received: from panic.printk.net ([217.147.83.20]:46949 "EHLO panic.printk.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757022AbXIEVkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 17:40:46 -0400
-Subject: Re: [PATCH 0/2] Fix (improve) deadlock condition on module removal
-	netfilter socket option removal
-From: Jon Masters <jonathan@jonmasters.org>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Patrick McHardy <kaber@trash.net>,
-       adam@yggdrasil.com, jcm@jonmasters.org,
-       netfilter-devel@lists.netfilter.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070905192744.GB25050@hmsreliant.think-freely.org>
-References: <20070904202433.GA19083@hmsreliant.think-freely.org>
-	 <46DEC9BF.9010807@trash.net>
-	 <1189008806.10802.150.camel@localhost.localdomain>
-	 <20070905170831.GA25050@hmsreliant.think-freely.org>
-	 <1189014097.10802.174.camel@localhost.localdomain>
-	 <20070905192744.GB25050@hmsreliant.think-freely.org>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Wed, 05 Sep 2007 17:39:11 -0400
-Message-Id: <1189028351.12261.166.camel@jcmlaptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Sep 2007 17:49:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44226 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755718AbXIEVtH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 17:49:07 -0400
+Date: Thu, 6 Sep 2007 03:32:15 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Jean Delvare <khali@linux-fr.org>
+cc: Patrick Mau <mau@oscar.ping.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Hang in 2.6.23-rc5
+In-Reply-To: <20070905191145.31003be2@hyperion.delvare>
+Message-ID: <alpine.LFD.0.999.0709060326430.26804@enigma.security.iitk.ac.in>
+References: <994260.18490.qm@web57301.mail.re1.yahoo.com>
+ <6cf66ee10709021205u7d57b93fv777f414dbba4373f@mail.gmail.com>
+ <5a4c581d0709021338s1e9e0dc0md490a032781b60e8@mail.gmail.com>
+ <20070902232939.f2c8acbb.francois.cami@free.fr> <20070903063904.GA1935@oscar.prima.de>
+ <20070905191145.31003be2@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-05 at 15:27 -0400, Neil Horman wrote:
-
-> Now, I suppose its possible that I've not been looking at the right source tree
-> when doing my work.  I've based my modprobe patch on this git tree:
-> http://git.kernel.org/?p=linux/kernel/git/kyle/module-init-tools.git;a=summary
-> If theres a newer one, if you could please point it out to me, I'd appreciate
-> it.  If the functional equivalent of my second patch is already in there, then
-> we just need my first patch to be good to go.
-
-Neil, please test:
-
-http://www.kernel.org/pub/linux/kernel/people/jcm/module-init-tools/module-init-tools-3.3-pre12.tar.bz2
-
-Jon.
 
 
+On Wed, 5 Sep 2007, Jean Delvare wrote:
+
+> > On Mon, Sep 03, 2007 at 04:15:01AM +0530, Satyam Sharma wrote:
+> > > That's my impression as well. That's way too core/busy a codepath to have
+> > > a bug in. As I said earlier, almost anybody testing -rc5 is sure to hit
+> > > this within a few hours (probably less)
+> [...]
+> 
+> (Satyam's estimation that everybody would hit the bug within an hour
+
+... within a *few* hours, not "an" :-)
+
+> doesn't match my experience, I had "only" 2 freezes in 60 hours or so.)
+
+~10 people bothered to report this on LKML -- and there could easily have
+been others who didn't, and simply switched to -rc4. And then many more
+might've hit it, foudn this thread immediately (like you did), and hence
+didn't report again ... so I still pretty much stand by what I'd said :-)
+But in any case as you said it's fixed already so no bother.
