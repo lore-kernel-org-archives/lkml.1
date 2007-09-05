@@ -1,96 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbXIELf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbXIELmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbXIELf5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 07:35:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbXIELft
+	id S1755931AbXIELmy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 07:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbXIELmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 07:35:49 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:19782 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbXIELfs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 07:35:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NVb5POC8MqQKAPGZhBAY9Ffa3zf8dyY1n3T0fuBLEhzMtYr0MDHi4XCkqlQwKUG45/gcdTtKqfrGNcdTXVips6612/pBLXfNDhJplq1GVfBrJciqS9ZSsfZXjoO3lXlDq6Nya/qvDQ+za/kze22qZqGojHp4+MA4sPIh2Z9tgw0=
-Message-ID: <ab40e9c0709050435y69cf04d6kfebf0e29faecb09d@mail.gmail.com>
-Date: Wed, 5 Sep 2007 13:35:46 +0200
-From: "Xu Yang" <risingsunxy@googlemail.com>
-To: "Uli Luckas" <u.luckas@road.de>
-Subject: Re: ramdisk
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>
-In-Reply-To: <ab40e9c0709050422s413df8c9v4a4fcf6c2437d6b4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Sep 2007 07:42:45 -0400
+Received: from ns2.suse.de ([195.135.220.15]:43818 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752933AbXIELmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 07:42:45 -0400
+Date: Wed, 5 Sep 2007 13:42:43 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Daniel Phillips <phillips@phunq.net>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dkegel@google.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+Message-ID: <20070905114242.GA19938@wotan.suse.de>
+References: <20070814142103.204771292@sgi.com> <200709050220.53801.phillips@phunq.net> <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <ab40e9c0709030604u5fecf34dr945ece01b95e622d@mail.gmail.com>
-	 <Pine.LNX.4.61.0709041101290.7968@chaos.analogic.com>
-	 <200709051007.41085.u.luckas@road.de>
-	 <ab40e9c0709050422s413df8c9v4a4fcf6c2437d6b4@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-then is there any new hint about that?
-I didn't do the memory patition , would this cause the problem?
+On Wed, Sep 05, 2007 at 03:42:35AM -0700, Christoph Lameter wrote:
+> On Wed, 5 Sep 2007, Daniel Phillips wrote:
+> 
+> > If we remove our anti-deadlock measures, including the ddsnap.vm.fixes 
+> > (a roll-up of Peter's patch set) and the request throttling code in 
+> > dm-ddsnap.c, and apply your patch set instead, we hit deadlock on the 
+> > socket write path after a few hours (traceback tomorrow).  So your 
+> > patch set by itself is a stability regression.
+> 
+> Na, that cannot be the case since it only activates when an OOM condition 
+> would otherwise result.
+> 
+> > There is also some good news for you here.  The combination of our 
+> > throttling code, plus your recursive reclaim patches and some fiddling 
+> > with PF_LESS_THROTTLE has so far survived testing without deadlocking.  
+> > In other words, as far as we have tested it, your patch set can 
+> > substitute for Peter's and produce the same effect, provided that we 
+> > throttle the block IO traffic.
+> 
+> Ah. That is good news.
+> 
+> > It is clear which approach is more efficient: Peter's.  This is because 
+> > no scanning is required to pop a free page off a free list, so scanning 
+> > work is not duplicated.  How much more efficient is an open question.  
+> > Hopefully we will measure that soon.
+> 
+> Efficiency is not a criterion for a rarely used emergency recovery 
+> measure.
+> 
+> > Briefly touching on other factors:
+> > 
+> >   * Peter's patch set is much bigger than yours.  The active ingredients
+> >     need to be separated out from the other peterz bits such as reserve
+> >     management APIs so we can make a fairer comparison.
+> 
+> Peters patch is much more invasive and requires a coupling of various 
+> subsystems that is not good.
+> 
+> >   * Your patch set here does not address the question of atomic
+> >      allocation, though I see you have been busy with that elsewhere.
+> >      Adding code to take care of this means you will start catching up
+> >      with Peter in complexity.
+> 
+> Given your tests: It looks like we do not need it.
+> 
+> >   * The questions Peter raised about how you will deal with loads
+> >      involving heavy anonymous allocations are still open.   This looks
+> >      like more complexity on the way.
+> 
+> Either not necessary or also needed without these patches.
+> 
+> >   * You depend on maintaining a global dirty page limit while Peter's
+> >      approach does not.  So we see the peterz approach as progress
+> >      towards eliminating one of the great thorns in our side:
+> >      congestion_wait deadlocks, which we currently hack around in a
+> >      thoroughly disgusting way (PF_LESS_THROTTLE abuse).
+> 
+> We have a global dirty page limit already. I fully support Peters work on 
+> dirty throttling.
+> 
+> These results show that Peters invasive approach is not needed. Reclaiming 
+> easy reclaimable pages when necessary is sufficient.
 
-2007/9/5, Xu Yang <risingsunxy@googlemail.com>:
-> Hi Uli,
->
-> yes, it is my mistake. actually in the boot option line It was
-> root=/dev/ram0 . sorry for the misleading.
->
-> regards,
->
-> yang
->
->
-> 2007/9/5, Uli Luckas <u.luckas@road.de>:
-> > On Tuesday, 4. September 2007, linux-os (Dick Johnson) wrote:
-> > > On Mon, 3 Sep 2007, Xu Yang wrote:
-> > > > Hi everyone,
-> > > >
-> > > > I want to use ramdisk to boot my filesystem, as I can't use NFS and
-> > > > harddisk.
-> > > >
-> > > > I have load the ramdisk into the ram memory (start address :0x4000000)
-> > > >
-> > > > and in the boot options I specified : root =dev/ram0 initrd=0x4000000
-> > >
-> > > Since you don't know what the default directory is, perhaps
-> > > root should be /dev/ram0. Also, make sure you actually create
-> > > those device nodes in /dev
-> > >
-> > Hey Dick,
-> > where exactly (on which file system) is Xu supposed to create the device
-> > nodes? ;-)
-> > Xu's problem is, he can't mount his _root_ filesystem in the first place.
-> > Therefore I doubt it'd help to have some device nodes somewhere ...
-> >
-> > Xu,
-> > all answers to your posting commented on your kernel command line. The command
-> > line you quoted contains "root =dev/ram0".
-> > You probably meant to write "root=/dev/ram0". To not waste our time, please
-> > clarify if this was a typo before asking further questions.
-> >
-> > regards,
-> > Uli
-> >
-> > --
-> >
-> > ------- ROAD ...the handyPC Company - - -  ) ) )
-> >
-> > Uli Luckas
-> > Software Development
-> >
-> > ROAD GmbH
-> > Bennigsenstr. 14 | 12159 Berlin | Germany
-> > fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
-> > url: www.road.de
-> >
-> > Amtsgericht Charlottenburg: HRB 96688 B
-> > Managing directors: Hans-Peter Constien, Hubertus von Streit
-> >
->
+
+First of all, I'm not surprised these patches solve the deadlock here.
+And that's a good thing, and it means it is likely that we want to merge
+it (actually, I quite like the idea in general, regardless of whether it
+solves the deadlock or not).
+
+However I really have an aversion to the near enough is good enough way of
+thinking. Especially when it comes to fundamental deadlocks in the VM. I
+don't know whether Peter's patch is completely clean yet, but fixing the
+fundamentally broken code has my full support.
+
+I hate it that there are theoretical bugs still left even if they would
+be hit less frequently than hardware failure. And that people are really
+happy to put even more of these things in :(
+
+Anyway, as you know I like your patch and if that gives Peter a little
+more breathing space then it's a good thing. But I really hope he doesn't
+give up on it, and it should be merged one day.
+
