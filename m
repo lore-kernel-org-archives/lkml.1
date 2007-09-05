@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbXIEPVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbXIEPW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757141AbXIEPVw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 11:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbXIEPVn
+	id S1757567AbXIEPW1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 11:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbXIEPWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 11:21:43 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:25074 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757122AbXIEPVl (ORCPT
+	Wed, 5 Sep 2007 11:22:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41799 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752137AbXIEPWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 11:21:41 -0400
-Date: Wed, 5 Sep 2007 08:19:37 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Zhenyu Wang <zhenyu.z.wang@intel.com>
-Cc: Dave Airlie <airlied@linux.ie>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [AGPGART] intel_agp: fix stolen mem range on G33
-Message-Id: <20070905081937.35965e97.randy.dunlap@oracle.com>
-In-Reply-To: <20070905071152.GA5817@zhen-devel.sh.intel.com>
-References: <20070905071152.GA5817@zhen-devel.sh.intel.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 5 Sep 2007 11:22:13 -0400
+Date: Wed, 5 Sep 2007 08:15:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Travis <travis@sgi.com>
+Cc: ak@suse.de, clameter@sgi.com, steiner@sgi.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kamalesh@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu
+ variable (v2) (fwd)
+Message-Id: <20070905081542.dfd4f1ef.akpm@linux-foundation.org>
+In-Reply-To: <46DEC14C.8050001@sgi.com>
+References: <Pine.LNX.4.64.0708312028400.24049@schroedinger.engr.sgi.com>
+	<20070904141055.e00a60d7.akpm@linux-foundation.org>
+	<46DDE623.1090402@sgi.com>
+	<200709050910.10954.ak@suse.de>
+	<20070905014057.bf3d2f22.akpm@linux-foundation.org>
+	<46DEC14C.8050001@sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Sep 2007 15:11:52 +0800 Zhenyu Wang wrote:
-
->  drivers/char/agp/intel-agp.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
+> On Wed, 05 Sep 2007 07:46:36 -0700 Mike Travis <travis@sgi.com> wrote:
 > 
-> diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-> index 2c9ca2c..20d50d0 100644
-> --- a/drivers/char/agp/intel-agp.c
-> +++ b/drivers/char/agp/intel-agp.c
-> @@ -506,6 +506,11 @@ static void intel_i830_init_gtt_entries(void)
->  			break;
->  		}
->  	} else {
-> +		/* G33's GTT stolen memory is seperate from gfx data
+> 
+> Andrew Morton wrote:
+> >> On Wed, 5 Sep 2007 09:10:10 +0100 Andi Kleen <ak@suse.de> wrote:
+> >>> I can easily do the changes for ia64 and test them.  I don't have the
+> >>> capability of testing on the powerpc.
+> >> You can get cross compilers and make it compile
+> > 
+> > http://userweb.kernel.org/~akpm/cross-compilers/
+> 
+> Thanks Andrew!
+> 
+> It's an extensive list but I didn't see one for ppc64?
+> 
 
-                                              separate
+argh, yes, my ppc64 cross-compiler doesn't work, and I have powerpc
+machines so I didn't pursue it.
 
-> +		 * stolen memory.
-> +		 */
-> +	        if (IS_G33)
-> +		    size = 0;
->  		switch (gmch_ctrl & I830_GMCH_GMS_MASK) {
->  		case I855_GMCH_GMS_STOLEN_1M:
->  			gtt_entries = MB(1) - KB(size);
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Oh well. Please cc powerpc developers on the patch and if it later
+breaks we can blame them :)  I'll be the first to compile and runtime
+test it, so please just do a best-effort thing.
