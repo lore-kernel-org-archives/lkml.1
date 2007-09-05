@@ -1,72 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbXIECHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbXIEDOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756210AbXIECHg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 22:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755779AbXIECH3
+	id S1755892AbXIEDOv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 23:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbXIEDOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 22:07:29 -0400
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:53316 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755659AbXIECH2 (ORCPT
+	Tue, 4 Sep 2007 23:14:44 -0400
+Received: from mxsf01.insightbb.com ([74.128.0.71]:33880 "EHLO
+	mxsf01.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751853AbXIEDOn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 22:07:28 -0400
-Subject: [ANNOUNCE] Lguest64 - fatter puppies!
-From: Steven Rostedt <rostedt@goodmis.org>
-To: lguest <lguest@ozlabs.org>
-Cc: virtualization <virtualization@lists.osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Glauber de Oliveira Costa <glommer@gmail.com>
-Content-Type: text/plain
-Date: Tue, 04 Sep 2007 22:06:40 -0400
-Message-Id: <1188958000.7913.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Tue, 4 Sep 2007 23:14:43 -0400
+X-Greylist: delayed 586 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Sep 2007 23:14:43 EDT
+X-IronPort-AV: E=Sophos;i="4.20,209,1186372800"; 
+   d="scan'208";a="22593720"
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAEO53UZKhRO4/2dsb2JhbACBWQ
+X-IronPort-AV: E=Sophos;i="4.20,209,1186372800"; 
+   d="scan'208";a="113341117"
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Adrian McMenamin <lkmladrian@gmail.com>
+Subject: Re: [PATCH] Add support for keyboard on SEGA Dreamcast
+Date: Tue, 4 Sep 2007 23:04:50 -0400
+User-Agent: KMail/1.9.3
+Cc: Paul Mundt <lethal@linux-sh.org>, linuxsh-dev@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+References: <8b67d60709041634l198d29f0ja049989acdb30b67@mail.gmail.com>
+In-Reply-To: <8b67d60709041634l198d29f0ja049989acdb30b67@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709042304.51510.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a formal announcement of Lguest64.
+Hi Adrian,
 
-Most are aware of the little puppies (lguest32, or simply lguest, or in
-some circles "rustyvisor").  But this time the puppies ate a bit too
-much.  No more lean and mean puppies, now we got big fat lazy ones.
-Running on the hardware that's too lazy to do full virutalization. Yes,
-lguest now runs on x86_64!
+On Tuesday 04 September 2007 19:34, Adrian McMenamin wrote:
+> This patch will add support for the Dreamcast keyboard when used
+> alongside the maple bus patch (http://lkml.org/lkml/2007/9/4/165) and
+> the pvr2 patch.
+> 
+> Signed off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+>
 
-As you know, puppies are young, and so is lguest64. And like most new
-born puppies, lguest64 might crap on your floor. But if it's in a good
-mood, it will make it to the door and give you a login prompt (or maybe
-even ssh into it and run firefox!
-http://rostedt.homelinux.com/pics/firefox-on-lguest64.png ).
+Thnank you very much for your patch. Couple of comments:
+ 
+> +
+> +static unsigned char dc_kbd_keycode[256] = {
 
-lguest64 is still going through a bit of growth pains, but its getting
-better. It's to a point that we are not that afraid to bring it to the
-dog show.
+Const?
 
-So for those that love puppies, and want even bigger ones, you can
-download the code at:
+> +
+> +static int dc_kbd_connect(struct maple_device *dev)
+> +{
+> +	int i, retval;
+> +	unsigned long data = be32_to_cpu(dev->devinfo.function_data[0]);
+> +	struct dc_kbd *kbd;
+> +	if (dev->function != MAPLE_FUNC_KEYBOARD)
+> +		return -EINVAL;
+> +
+> +	kbd = kzalloc(sizeof(struct dc_kbd), GFP_KERNEL);
+> +	if (unlikely(!kbd))
+> +		return -ENOMEM;
+> +
+> +	dev->private_data = kbd;
+> +	kbd->dev = input_allocate_device();
+> +	if (unlikely(!kbd->dev))
+> +		goto cleanup;
+> +
+> +	kbd->dev->evbit[0] = BIT(EV_KEY) | BIT(EV_REP);
+> +
+> +	for (i = 0; i < 255; i++)
+> +		set_bit(dc_kbd_keycode[i], kbd->dev->keybit);
+> +
+> +	clear_bit(0, kbd->dev->keybit);
+> +
+> +	kbd->dev->private = kbd;
+> +
+> +	kbd->dev->name = dev->product_name;
+> +	kbd->dev->id.bustype = BUS_MAPLE;
 
-  git://git.et.redhat.com/kernel-lguest-64.git
+Do we really need a new bus type? Would not BUS_HOST suffice?
 
-TODO:
- Many things! but here's what's on the near future list.
+> +
+> +	retval = input_register_device(kbd->dev);
+> +	if (unlikely(retval))
+> +		goto cleanup;
+> +
+> +	maple_getcond_callback(dev, dc_kbd_callback, (25 * HZ) / 1000,
+> +			       MAPLE_FUNC_KEYBOARD);
+> +
+> +	printk(KERN_INFO "input: keyboard(0x%lx): %s\n", data,
+> +	       kbd->dev->name);
 
- - SMP first for host then for guest. We had it working a while
-   ago, but we decided to update to catchup to lguest32, and we
-   broke it.
+Input core already prints a line when a new input device is registered,
+do we need another one?
 
- - get closer to lguest32. Rusty just likes to annoy us ;-)
+> +
+> +	return 0;
+> +
+> +      cleanup:
+> +	kfree(kbd);
+> +	return -EINVAL;
 
- - optimization, optimization, optimization (did I say it's still slow?)
+It loks like call to input_free_device() is missing here. You would leak
+memory if input_register_device would fail. 
 
- - oh, and hopefully to get it merged!
+I would also get rid of all likelys/unlikelys here - driver registration is
+not a hot path...
 
-well, there's lots more to do, but we can think about it later.
+> +}
+> +
+> +static void dc_kbd_disconnect(struct maple_device *dev)
+> +{
+> +	struct dc_kbd *kbd = dev->private_data;
+> +
+> +	input_unregister_device(kbd->dev);
+> +	kfree(kbd);
 
-Want to help? test it out, and let us know how big a mess it made on
-your floor.
+Are we guaranteed that the dc_kbd_callback is not running in a separate
+thread?
 
--- Steve
+Please also consider implementing support for changing keyma. Since
+the keymap is pretty full I think the best way is to copy the vanilla
+keymap into a per-device memory and set up keymap, keycodesize and
+keycodemax in input device structure.
 
+Thank you.
 
+-- 
+Dmitry
