@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbXIESv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbXIESxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756810AbXIESv2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 14:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbXIESvV
+	id S1757040AbXIESxT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 14:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXIESxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 14:51:21 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:17365 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754204AbXIESvU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 14:51:20 -0400
-Subject: Re: [PATCH 0/3] build system: section garbage collection for
-	vmlinux
-From: Daniel Walker <dwalker@mvista.com>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: sam@ravnborg.org, kai@germaschewski.name, linux-kernel@vger.kernel.org
-In-Reply-To: <200709051937.04014.vda.linux@googlemail.com>
-References: <200709051443.21522.vda.linux@googlemail.com>
-	 <1189009748.4442.19.camel@imap.mvista.com>
-	 <200709051937.04014.vda.linux@googlemail.com>
+	Wed, 5 Sep 2007 14:53:12 -0400
+Received: from panic.printk.net ([217.147.83.20]:46178 "EHLO panic.printk.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754072AbXIESxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 14:53:11 -0400
+X-Greylist: delayed 1844 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 14:53:11 EDT
+Subject: Re: [PATCH 0/2] Fix (improve) deadlock condition on module removal
+	netfilter socket option removal
+From: Jon Masters <jonathan@jonmasters.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Neil Horman <nhorman@tuxdriver.com>, Patrick McHardy <kaber@trash.net>,
+       adam@yggdrasil.com, jcm@jonmasters.org,
+       netfilter-devel@lists.netfilter.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1189014097.10802.174.camel@localhost.localdomain>
+References: <20070904202433.GA19083@hmsreliant.think-freely.org>
+	 <46DEC9BF.9010807@trash.net>
+	 <1189008806.10802.150.camel@localhost.localdomain>
+	 <20070905170831.GA25050@hmsreliant.think-freely.org>
+	 <1189014097.10802.174.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Wed, 05 Sep 2007 11:38:39 -0700
-Message-Id: <1189017519.4442.24.camel@imap.mvista.com>
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Wed, 05 Sep 2007 14:19:23 -0400
+Message-Id: <1189016363.12261.122.camel@jcmlaptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-05 at 19:37 +0100, Denys Vlasenko wrote:
-> On Wednesday 05 September 2007 17:29, Daniel Walker wrote:
-> > On Wed, 2007-09-05 at 14:43 +0100, Denys Vlasenko wrote:
-> > > Build system: section garbage collection for vmlinux
+On Thu, 2007-09-06 at 03:41 +1000, Rusty Russell wrote:
+> On Wed, 2007-09-05 at 13:08 -0400, Neil Horman wrote:
+> > On Thu, Sep 06, 2007 at 02:13:26AM +1000, Rusty Russell wrote:
+> > > On Wed, 2007-09-05 at 17:22 +0200, Patrick McHardy wrote:
+> > > > But I'm wondering, wouldn't module refcounting alone fix this problem?
+> > > > If we make nf_sockopt() call try_module_get(ops->owner), remove_module()
+> > > > on ip_tables.ko would simply fail because the refcount is above zero
+> > > > (so it would fail at point 3 above). Am I missing something important?
 > > > 
+> > > Yes, that seems the correct solution to me, too.  ISTR that this code
+> > > predates the current module code.
 > > > 
-> > > Newer gcc and binutils can do dead code and data removal
-> > > at link time. It is achieved using combination of
-> > > -ffunction-sections -fdata-sections options for gcc and
-> > > --gc-sections for ld.
-> > > 
-> > > Theory of operation:
-> > > 
-> > > Option -ffunction-sections instructs gcc to place each function
-> > > (including static ones) in it's own section named .text.function_name
-> > > instead of placing all functions in one big .text section.
-> > > 
-> > > At link time, ld normally coalesce all such sections into one
-> > > output section .text again. It is achieved by having *(.text.*) spec
-> > > along with *(.text) spec in built-in linker scripts.
+> > > Rusty.
 > > 
-> > You version doesn't work with CONFIG_MODULES right?
-> 
-> It works with CONFIG_MODULES.
+> > Thanks guys-
+> > 	When I first started looking at this problem I would have agreed with
+> > you, that module reference counting alone would fix the problem.  However,
+> > delete_module can work in either a non-blocking or a blocking mode.  rmmod
+> > passes O_NONBLOCK to delete module, and so is fine, but modprobe does not.
 
-Really? Take a look at this version,
+> 	You have this backwards: O_NONBLOCK is the default.  That seems to be
+> what everyone wants, although I implemented 'rmmod -w' because it seemed
+> like a good option.
 
-http://lkml.org/lkml/2006/6/4/169
+:-)
 
-Marcello had to implement a two pass build to add back symbol used in
-modules which got removed from the main kernel.. You don't appear to do
-that. Marcelo also claims better size reduction than you .
+Thanks for keeping me copied. I'll think about the in-kernel module
+situation when I get some time over the weekend - but shout if there's
+an external impact sooner! :-)
 
-Daniel
+Jon.
+
 
