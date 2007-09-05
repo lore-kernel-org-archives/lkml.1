@@ -1,97 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932616AbXIETq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932656AbXIETro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932616AbXIETq4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 15:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932223AbXIETqq
+	id S932656AbXIETro (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 15:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932169AbXIETrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 15:46:46 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:38388 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932094AbXIETqp (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 15:46:45 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.23-rc4-mm1 - git-alsa.patch breaks audio on Dell Latitude D820
-In-Reply-To: Your message of "Fri, 31 Aug 2007 21:58:22 PDT."
-             <20070831215822.26e1432b.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070831215822.26e1432b.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1189021594_2892P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Wed, 5 Sep 2007 15:47:36 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:60708 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932201AbXIETrf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 15:47:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jyItUvpAY5gV4d4Zr+HNRz3rx38VbewBXT91fZxhGCqDA1Ie1AELRu6EI1/SmZ+axWCJwvwI2GyCehma5N5pEIpoXiyA5fLfiQeA4h/Atr8Od6s7obnuKTkBBYfM5CCua23npCH+JzAqCuEWk/OmK5a980T7gY15TL8TboUMO/k=
+Message-ID: <dda83e780709051247u447d9f0eg5033bd88fb4ee83f@mail.gmail.com>
+Date: Wed, 5 Sep 2007 12:47:33 -0700
+From: "Bret Towe" <magnade@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: nfs4 hang regression
+Cc: linux-kernel@vger.kernel.org, Trond.Myklebust@netapp.com
+In-Reply-To: <20070905085120.bc90ffe2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Wed, 05 Sep 2007 15:46:34 -0400
-Message-ID: <4658.1189021594@turing-police.cc.vt.edu>
+Content-Disposition: inline
+References: <dda83e780708221541x4fabd27er64e6ecaa33ddccbf@mail.gmail.com>
+	 <20070905085120.bc90ffe2.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1189021594_2892P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <4647.1189021586.1@turing-police.cc.vt.edu>
+On 9/5/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Wed, 22 Aug 2007 15:41:18 -0700 "Bret Towe" <magnade@gmail.com> wrote:
+>
+> More than two weeks, you've bisected it and there's no sign of any action?
+>
+> I don't see this on Michal's list so perhaps it already got fixed in a different
+> thread.  Have you tested current mainline?
 
-On Fri, 31 Aug 2007 21:58:22 PDT, Andrew Morton said: 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
+It's been fixed, this thread was never replied to since I replied to
+another thread
+someone else started that was the same issue
 
-git-alsa.patch breaks audio on my laptop, worked fine in -rc3-mm1.  Almost
-certainly bustification in the Intel HDA rewrite.
+Thanks for keeping watch tho :)
 
-Symptoms:  alsamixer finds the chipset, can adjust the volumes and mute/unmute,
-and /usr/bin/play is able to write a .wav to the ALSA device without complaint.
-However, no sound actually comes out.  Very "lights are on but nobody is home".
-
-Dell Latitude D820, lspci reports:
-
-00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 01)
-and alsamixer reports finding a "SigmaTel STAC9200"
-
-% grep HDA_ .config
-CONFIG_SND_HDA_INTEL=y
-# CONFIG_SND_HDA_HWDEP is not set
-CONFIG_SND_HDA_CODEC_REALTEK=y
-CONFIG_SND_HDA_CODEC_ANALOG=y
-CONFIG_SND_HDA_CODEC_SIGMATEL=y
-# CONFIG_SND_HDA_CODEC_VIA is not set
-# CONFIG_SND_HDA_CODEC_ATIHDMI is not set
-# CONFIG_SND_HDA_CODEC_CONEXANT is not set
-# CONFIG_SND_HDA_CODEC_CMEDIA is not set
-# CONFIG_SND_HDA_CODEC_SI3054 is not set
-CONFIG_SND_HDA_GENERIC=y
-# CONFIG_SND_HDA_POWER_SAVE is not set
-
-dmesg under -rc4-mm1:
-Advanced Linux Sound Architecture Driver Version 1.0.14 (Fri Jul 20 09:12:58 2007 UTC).
-ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 21 (level, low) -> IRQ 21
-hda_intel: position_fix set to 1 for device 1028:01cc
-ALSA device list:
-  #0: HDA Intel at 0xefffc000 irq 506
-
-dmesg under -rc3-mm1:
-
-Advanced Linux Sound Architecture Driver Version 1.0.14 (Fri Jul 20 09:12:58 2007 UTC).
-ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 21 (level, low) -> IRQ 21
-hda_intel: position_fix set to 1 for device 1028:01cc
-ALSA device list:
-  #0: HDA Intel at 0xefffc000 irq 506
-
-(Yes, they look the same to me, too...)
-
-I'd provide more info, if I had a clue what else to add...
-
- 
-
-
---==_Exmh_1189021594_2892P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG3weacC3lWbTT17ARAvMrAJ9dn+tdKYx5VHtquT2SerodSOMzQwCgvD9e
-CnD1eDwGYsJQ99FmDM0y5rk=
-=qHaV
------END PGP SIGNATURE-----
-
---==_Exmh_1189021594_2892P--
+> > as of commit 3d39c691ff486142dd9aaeac12f553f4476b7a62
+> > I got a hang on my clients after something around 26 minutes of uptime
+> > the keyboard would stop accepting input
+> > mouse would work still, plugging in a spare usb keyboard made no difference
+> > another couple odd bits is shutting down would hang, below is a trace
+> > of that hang
+> > also if your logged into that machine via ssh when you log out it would hang
+> > and would require a force terminate
+> >
+> > I'm seeing this on 2 machines 1 a g4 mac mini and 2 a athlon64
+> > both have a home directory mounted via nfs4
+> > reverting the commit above found via bisecting on both machines allows me
+> > to use the computers for several hours with no issues
+> >
+> > and here is the trace from the athlon64 taken during its hang on shutdown
+> > as you can tell from the dates in the trace ive been a bit busy and just
+> > now got around to sending this email
+> > I'm surprised tho I hadn't seen anyone hitting it
+> > let me know what else is needed I'll do what I can and get it out quickly
+> >
+> > Aug 12 17:06:35 ghoststar kernel: [ 4791.801262] SysRq : Show State
+> > Aug 12 17:06:35 ghoststar kernel: [ 4791.801325]   task
+> >         PC stack   pid father
+> > Aug 12 17:06:35 ghoststar kernel: [ 4791.801327] init          S
+> > 00000000ffffffff     0     1      0
+> > Aug 12 17:06:35 ghoststar kernel: [ 4791.801331]  ffff81003ff879b8
+> > 0000000000000086 0000000000000008 ffff81003ff84000
+>
+> I really wish that hadn't been wordwrapped.
+>
+> As a random stab-in-the-dark, does this help?
+>
+> --- a/fs/nfs/nfs4renewd.c~a
+> +++ a/fs/nfs/nfs4renewd.c
+> @@ -133,9 +133,7 @@ nfs4_renewd_prepare_shutdown(struct nfs_
+>  void
+>  nfs4_kill_renewd(struct nfs_client *clp)
+>  {
+> -       down_read(&clp->cl_sem);
+>         cancel_delayed_work_sync(&clp->cl_renewd);
+> -       up_read(&clp->cl_sem);
+>  }
+>
+>  /*
+> _
+>
+>
