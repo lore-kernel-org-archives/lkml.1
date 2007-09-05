@@ -1,38 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbXIEUM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbXIEUNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757836AbXIEUM7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 16:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756594AbXIEUMv
+	id S1758048AbXIEUNk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 16:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757028AbXIEUNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 16:12:51 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:56286 "EHLO pasmtpB.tele.dk"
+	Wed, 5 Sep 2007 16:13:30 -0400
+Received: from ozlabs.org ([203.10.76.45]:40262 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754364AbXIEUMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 16:12:50 -0400
-Date: Wed, 5 Sep 2007 22:14:13 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] docproc: style & typo cleanups
-Message-ID: <20070905201412.GD30812@uranus.ravnborg.org>
-References: <20070904212322.cd5ba596.randy.dunlap@oracle.com>
+	id S1756950AbXIEUN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 16:13:29 -0400
+Subject: Re: [kvm-devel] [PATCH][RFC] pte notifiers -- support for external
+	page tables
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Avi Kivity <avi@qumranet.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org
+In-Reply-To: <11890207643068-git-send-email-avi@qumranet.com>
+References: <11890207643068-git-send-email-avi@qumranet.com>
+Content-Type: text/plain
+Date: Thu, 06 Sep 2007 05:56:23 +1000
+Message-Id: <1189022183.10802.184.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070904212322.cd5ba596.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 04, 2007 at 09:23:22PM -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, 2007-09-05 at 22:32 +0300, Avi Kivity wrote:
+> [resend due to bad alias expansion resulting in some recipients
+>  being bogus]
 > 
-> - fix typos/spellos in docproc.c and Makefile
-> - add a little whitespace {while, switch} (coding style)
-> - use NULL instead of 0 for pointer testing
-> 
+> Some hardware and software systems maintain page tables outside the normal
+> Linux page tables, which reference userspace memory.  This includes
+> Infiniband, other RDMA-capable devices, and kvm (with a pending patch).
 
-Looks good - thanks.
-I will apply it when I'm back at my dev machine.
+And lguest.  I can't tell until I've actually implemented it, but I
+think it will seriously reduce the need for page pinning which is why
+only root can currently launch guests.
 
-	Sam
+My concern is locking: this is called with the page lock held, and I
+guess we have to bump the guest out if it's currently running.
+
+(Oh, and this means lguest needs to do a reverse mapping somehow, but
+I'll come up with something).
+
+Cheers,
+Rusty.
+
