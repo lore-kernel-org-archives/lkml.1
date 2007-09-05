@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbXIEMzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbXIEM4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756918AbXIEMzF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 08:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbXIEMyy
+	id S1756838AbXIEM4b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 08:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbXIEM4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 08:54:54 -0400
-Received: from pne-smtpout4-sn1.fre.skanova.net ([81.228.11.168]:42653 "EHLO
-	pne-smtpout4-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754865AbXIEMyy (ORCPT
+	Wed, 5 Sep 2007 08:56:24 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:2413 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753867AbXIEM4X convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 08:54:54 -0400
-X-Greylist: delayed 4145 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 08:54:54 EDT
-Date: Wed, 5 Sep 2007 14:45:46 +0300
-From: Sami Farin <safari-kernel@safari.iki.fi>
-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kernel 2.6.22: what IS the VM doing?
-Message-ID: <20070905114545.2hydqpasqx56afkf@m.safari.iki.fi>
-Mail-Followup-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20070830115429.w2puzet5sllhccdk@m.safari.iki.fi> <46DE085F.2040306@redhat.com>
+	Wed, 5 Sep 2007 08:56:23 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46DE085F.2040306@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 05 Sep 2007 12:55:56.0113 (UTC) FILETIME=[19535410:01C7EFBC]
+Content-class: urn:content-classes:message
+Subject: Re: file system for solid state disks
+Date: Wed, 5 Sep 2007 08:56:20 -0400
+Message-ID: <Pine.LNX.4.61.0709050847020.11599@chaos.analogic.com>
+In-Reply-To: <200709051334.14599.vda.linux@googlemail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: file system for solid state disks
+Thread-Index: AcfvvBlmtJuIMIfqSM+sidkVjgHQPA==
+References: <6278d2220708230155j18248f2cr3cc697a7acbaa930@mail.gmail.com> <200709051334.14599.vda.linux@googlemail.com>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Denys Vlasenko" <vda.linux@googlemail.com>
+Cc: "Daniel J Blueman" <daniel.blueman@gmail.com>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Richard Ballantyne" <richardballantyne@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 04, 2007 at 21:37:35 -0400, Rik van Riel wrote:
-> Sami Farin wrote:
->> Using SMP kernel 2.6.22.6pre-CFS-v20.5 on Pentium D (IA-32).
->> I think this bug (or whatever you want to call it) got triggered
->> when you first allocate several megabytes of memory in a kernel module
->> and then free them, and then run e.g. X and when memory gets tight,
->> you end up with this situation...
->> Top 2 /proc/vmstat Biggest Winners:
->> pgrefill_normal:49900/second
->> pgrefill_high:20810/second
+
+On Wed, 5 Sep 2007, Denys Vlasenko wrote:
+
+> On Thursday 23 August 2007 09:55, Daniel J Blueman wrote:
+>> On 23 Aug, 07:00, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>>> On Aug 23 2007 01:01, Richard Ballantyne wrote:
+>>>> What file system that is already in the linux kernel do people recommend
+>>>> I use for my laptop that now contains a solid state disk?
+>>>
+>>> If I had to choose, the list of options seems to be:
+>>>
+>>> - logfs
+>>>   [unmerged]
+>>>
+>>> - UBI layer with any fs you like
+>>>   [just a guess]
+>>>
+>>> - UDF in Spared Flavor (mkudffs --media-type=cdrw --utf8)
+>>>   [does not support ACLs/quotas]
+>>
+>> Isn't it that with modern rotational wear-levelling, re-writing hot
+>> blocks many times is not an issue, as they are internally moved around
+>> anyway? So, using a journalled filesystem such as ext3 is still good
+>> (robustness and maturity in mind).
 >
-> That means the pageout code was scanning about 70000 pages
-> per second on your system during peak stress.  You may have
-> run into a scalability problem in the Linux kernel, where it
-> wants to clear the referenced bit off all the anonymous pages
-> before swapping something out.
+> Crap hardware (one which only _claim_ to do it) is out there,
+> and is typically cheaper, so users preferentially buy that ;)
+> --
+> vda
 
-Thanks for analysis...
+You might want to check and see what is actually being
+used for the solid-state disk. Some solid state disks
+are SRAM and DRAM. SRAM is fast, it doesn't require refresh,
+is now as cheap as flash, and does R/W forever. It retains
+its data for 10 years of power being removed by using an
+embedded battery.
 
-Why turning off swap did not make any difference?
-Why does is not keep e.g. xterm in memory (which I had 700MB free)?
+http://en.wikipedia.org/wiki/Solid_state_drive
 
-> To make matters worse, that unlucky page gets chosen because
-> it was the page where kswapd started scanning.  It has little
-> to do with being the least recently used page, because every
-> anonymous page tends to have its referenced bit set by the time
-> we start scanning.
->
-> On truly enormous systems, say with 256GB of memory, kswapd
-> sometimes needs to scan hundreds of thousands or even millions
-> of pages before finding something to swap out.  Not fun.
->
->> Did I forget to include some info???
->> Oh, and I need to reboot in order to get usable system
->> when this bug happens.
->
-> Is the system trying to evict pages like crazy when your
-> system becomes unusable?
+This is exactly what I proposed on this list a long
+time ago. It is now a reality.
 
-I think so..
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
-> If so, I wonder if kswapd is simply doing the wrong thing
-> and trying to evict data from all zones, simply because the
-> highmem zone is low on free pages...
 
-*shrug*
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
--- 
-"If we put the Pentagon's personnel managers in charge of the Sahara
-Desert, they would run out of sand in five years." -Sayen Report
-
+Thank you.
