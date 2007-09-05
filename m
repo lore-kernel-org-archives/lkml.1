@@ -1,73 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932065AbXIEMqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756457AbXIEMvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932065AbXIEMqW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 08:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbXIEMqO
+	id S1756457AbXIEMvb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 08:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbXIEMvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 08:46:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42068 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754137AbXIEMqN (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 08:46:13 -0400
-Date: Wed, 5 Sep 2007 05:45:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: pomac@vapor.com
-Cc: Linux-kernel@vger.kernel.org
-Subject: Re: Cache not being reclaimed?
-Message-Id: <20070905054501.9c59dc56.akpm@linux-foundation.org>
-In-Reply-To: <1188955687.8365.5.camel@localhost>
-References: <1188955687.8365.5.camel@localhost>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Sep 2007 08:51:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40630 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754297AbXIEMvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 08:51:21 -0400
+Message-ID: <46DEA644.4060908@redhat.com>
+Date: Wed, 05 Sep 2007 07:51:16 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+MIME-Version: 1.0
+To: Jarek Poplawski <jarkao2@o2.pl>
+CC: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] detect & print stack overruns at oops time
+References: <20070905093047.GA1938@ff.dom.local>
+In-Reply-To: <20070905093047.GA1938@ff.dom.local>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 05 Sep 2007 03:28:07 +0200 Ian Kumlien <pomac@vapor.com> wrote:
-> Hi, 
+Jarek Poplawski wrote:
+> On 31-08-2007 07:28, Eric Sandeen wrote:
+>> In thinking about the 4KSTACKS + STACKOVERFLOW problems, I thought
+> ...
+>> Thoughts?  This is a separate problem from the piggy dump_stack()
+>> path, but it seems to me it might be useful in looking at stack-related
+>> oopses when they do occur.  With this change, it seems feasible
+>> to turn off DEBUG_STACKOVERFLOW, turn on DEBUG_STACK_USAGE, and just
+>> get the bad news when it's actually happened.  :) 
 > 
-> I have just had a quite unexpected 'low memory situation'...
-> 
-> This is a AMD64 machine with 2 gig memory, running 64 bit userland.
-> 
-> Kernel: 2.6.23-rc3-git10, updating to -rc5-* as soon as i can.
-> I'm using SLUB:s
-> 
-> 
-> To me, this looks odd... I thought that any cached memory would be
-> reclamed but it was always full.
-> 
-> Ideas?
-> 
-> One example from dmesg:
-> swapper: page allocation failure. order:1, mode:0x4020
-> 
-> Call Trace:
->  <IRQ>  [<ffffffff8026c7ef>] __alloc_pages+0x30f/0x330
->  [<ffffffff8028a0a1>] __slab_alloc+0x141/0x590
->  [<ffffffff805a5937>] __netdev_alloc_skb+0x17/0x40
->  [<ffffffff805a5937>] __netdev_alloc_skb+0x17/0x40
->  [<ffffffff8028b470>] __kmalloc_track_caller+0xa0/0xc0
->  [<ffffffff805a4b3f>] __alloc_skb+0x6f/0x150
->  [<ffffffff805a5937>] __netdev_alloc_skb+0x17/0x40
->  [<ffffffff88010945>] :sky2:sky2_rx_alloc+0x25/0xf0
->  [<ffffffff88013b0c>] :sky2:sky2_poll+0x6dc/0xcf0
->  [<ffffffff805e5f60>] tcp_delack_timer+0x0/0x210
->  [<ffffffff805ac38a>] net_rx_action+0x8a/0x140
->  [<ffffffff80242ac9>] __do_softirq+0x69/0xe0
->  [<ffffffff8020cd9c>] call_softirq+0x1c/0x30
->  [<ffffffff8020eb75>] do_softirq+0x35/0x90
->  [<ffffffff8020ede0>] do_IRQ+0x80/0x100
->  [<ffffffff8020ad00>] default_idle+0x0/0x40
->  [<ffffffff8020c121>] ret_from_intr+0x0/0xa
->  <EOI>  [<ffffffff8020ad29>] default_idle+0x29/0x40
->  [<ffffffff8020ade1>] cpu_idle+0xa1/0xf0
-> 
+> Very good idea, but maybe, at least for some time, it should be with
+> ifdef CONFIG_4KSTACKS, to check if it's really needed if some other
+> similar checks also set.
 
-An order-1 GFP_ATOMIC allocation can fail, and networking should recover
-from it.
+Hi Jarek - thanks for the comments.
 
-If this is happening a lot then someting might have been broken.  Do you
-have reason to believe that the frequency of this happening has inreased?
+I don't see much, if any, runtime impact to having it on all the time,
+except maybe the end-of-stack zeroing, which would have at least some
+impact.  Everything except that single " = 0;" only runs if you've
+already oopsed...  I'd hate to clutter it with #ifdefs unless there's a
+good reason.
+
+
+>> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+>>
+>> Index: linux-2.6.22-rc4/arch/i386/mm/fault.c
+>> ===================================================================
+>> --- linux-2.6.22-rc4.orig/arch/i386/mm/fault.c
+>> +++ linux-2.6.22-rc4/arch/i386/mm/fault.c
+>> @@ -525,6 +525,8 @@ no_context:
+>>  
+>>  	if (oops_may_print()) {
+>>  		__typeof__(pte_val(__pte(0))) page;
+>> +		unsigned long *stackend = end_of_stack(tsk);
+>> +		int overrun;
+>>  
+>>  #ifdef CONFIG_X86_PAE
+>>  		if (error_code & 16) {
+>> @@ -543,6 +545,27 @@ no_context:
+>>  			printk(KERN_ALERT "BUG: unable to handle kernel paging"
+>>  					" request");
+>>  		printk(" at virtual address %08lx\n",address);
+>> +
+>> +		overrun = (unsigned long)stackend - (unsigned long)(&regs->esp);
+>> +		if (overrun > 0) {
+>> +			printk(KERN_ALERT "Thread overrunning stack by %d "
+>> +							"bytes\n", overrun);
+>> +		} else {
+>> +#ifdef CONFIG_DEBUG_STACK_USAGE
+>> +			int free;
+>> +			unsigned long *n = stackend;
+>> +			while (!*n)
+>> +				n++;
+>> +			free = (unsigned long)n - (unsigned long)stackend;
+>> +			if (free)
+> 
+> Maybe there should be some min 'free' and max number of printks? There
+> could be also considered if, with some minimal values of 'free', prink
+> is the best thing we can do before stack overruning?
+
+You mean, don't print unless the free value is in some range?  My
+thought was, if you always print *something*, then you know for sure
+you're looking at an oops from a kernel with this code in place.
+Though, if "all's well" I suppose the bytes remaining isn't so
+important; it would really be enough to just say:
+
+	if (!(*stackend))
+		printk("Thread stayed within stack space\n");
+	else
+		printk("Thread overran stack\n");
+
+
+>> +				printk(KERN_ALERT "Thread used within %d bytes"
+>> +					" of stack end\n", free);
+>> +#endif
+>> +			/* won't catch 100% - stack may have 0s here by chance */
+>> +			if (*stackend)  /* was init'd to 0 */
+> 
+> Isn't a MAGIC number better for this? (Then of course above n should
+> start a bit higher.)
+
+I thought about that, though really *anything* could legitimately be on
+the stack, so I guess it's a question of probabilities.  And, "0" is
+compatible with CONFIG_DEBUG_STACK_USAGE, which sets the the whole stack
+to 0 and uses that to detect max stack excursion...  I guess that option
+could probably be tweaked to zero the whole stack, and then also set the
+last position to something magic (0xDEAD57AC - deadstack?), and check
+for that as well.  (I had thought about making helper functions for
+DEBUG_STACK_OVERFLOW, right now the checks are open coded in a few places).
+
+Thanks,
+
+-Eric
+
+> 
+> Regards,
+> Jarek P.
+
