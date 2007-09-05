@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756339AbXIEGCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbXIEGGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756339AbXIEGCi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 02:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbXIEGCa
+	id S1756537AbXIEGGR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 02:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbXIEGGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 02:02:30 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58555 "EHLO
+	Wed, 5 Sep 2007 02:06:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37288 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbXIEGC3 (ORCPT
+	with ESMTP id S1751328AbXIEGGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 02:02:29 -0400
-Message-ID: <46DE45A2.40403@zytor.com>
-Date: Wed, 05 Sep 2007 06:58:58 +0100
+	Wed, 5 Sep 2007 02:06:04 -0400
+Message-ID: <46DE473D.6010805@zytor.com>
+Date: Wed, 05 Sep 2007 07:05:49 +0100
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Robert Richter <robert.richter@amd.com>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space access
- for AMD Barcelona
-References: <20070903081736.288288000@amd.com> <20070903081736.588599000@amd.com> <20070903013157.72c94891@laptopd505.fenrus.org> <20070903091718.GB22144@alberich.amd.com> <20070903043319.7573875b@laptopd505.fenrus.org> <20070903154734.GC22086@alberich.amd.com>
-In-Reply-To: <20070903154734.GC22086@alberich.amd.com>
+To: Jeff Garzik <jeff@garzik.org>
+CC: "Jonathan A. George" <jageorge@austin.rr.com>,
+       Matthew Jacob <lydianconcepts@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: "GPL weasels and the atheros stink"
+References: <46DAF70E.9060800@austin.rr.com> <7579f7fb0709021131g43768bcet5a0895b5e56540ef@mail.gmail.com> <46DB0960.9060405@austin.rr.com> <46DB1080.5060502@garzik.org>
+In-Reply-To: <46DB1080.5060502@garzik.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Herrmann wrote:
-> On Mon, Sep 03, 2007 at 04:33:19AM -0700, Arjan van de Ven wrote:
->> On Mon, 3 Sep 2007 11:17:18 +0200
->> "Andreas Herrmann" <andreas.herrmann3@amd.com> wrote:
->> \> 
->>> Do you see any other issues besides the naming of the bit?
->> I wonder if we should key this off a PCI ID of the chipset rather than
->> the cpu id... I mean, how sure are you that all via chipsets connected
->> to the barcelona cpu will deal well?
+Jeff Garzik wrote:
+> Jonathan A. George wrote:
+>> ... But is it _ethical_ (as opposed to legal) to violate the expressed 
+>> intent of the original author ...
 > 
-> In general they should be able to deal with those accesses. They result in
-> extended type 0/1 configuration cycles which are defined already in HT I/O Link
-> Spec 1.10. So if unexpectedly problems arise then it is time to add a pci-quirk.
-> 
-> But at the moment there is no need for further discussion on this subject
-> because Andi refuses to add support for Barcelona CF8/CFC ECS access.
+> The author expresses his intent primarily by choice of license text, and 
+> it's very important to all of us that we follow the rules set forth by 
+> the author in that license text.
 > 
 
-Well, they don't add any functionality, do they?  As such, I would agree 
-with Andi -- we only need one method which can (correctly) access the 
-full configuration space, since it'll look the same on the bus anyway.
+I have released software on more on one occasion where I have given a 
+very liberal license (like MIT), and then put a "however, if you like 
+this, X would be appreciated."  I wouldn't consider it unethical if 
+someone didn't obey the optional request (it's optional for a reason), 
+however, it does mean that I do genuinely appreciate someone doing X.
+
+So there is a difference between what is legal and ethical, and what is 
+the nice/friendly thing to do.
 
 	-hpa
 
