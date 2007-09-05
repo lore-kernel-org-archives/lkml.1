@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbXIEPW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbXIEPYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbXIEPW1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 11:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbXIEPWP
+	id S1757334AbXIEPYO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 11:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbXIEPX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 11:22:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41799 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752137AbXIEPWN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 11:22:13 -0400
-Date: Wed, 5 Sep 2007 08:15:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Travis <travis@sgi.com>
-Cc: ak@suse.de, clameter@sgi.com, steiner@sgi.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kamalesh@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu
- variable (v2) (fwd)
-Message-Id: <20070905081542.dfd4f1ef.akpm@linux-foundation.org>
-In-Reply-To: <46DEC14C.8050001@sgi.com>
-References: <Pine.LNX.4.64.0708312028400.24049@schroedinger.engr.sgi.com>
-	<20070904141055.e00a60d7.akpm@linux-foundation.org>
-	<46DDE623.1090402@sgi.com>
-	<200709050910.10954.ak@suse.de>
-	<20070905014057.bf3d2f22.akpm@linux-foundation.org>
-	<46DEC14C.8050001@sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Sep 2007 11:23:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41253 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756535AbXIEPX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 11:23:56 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: Make BSG declarations dependent on CONFIG_BLOCK
+To: jens.axboe@oracle.com
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Date: Wed, 05 Sep 2007 16:23:06 +0100
+Message-ID: <20070905152306.3282.70289.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 05 Sep 2007 07:46:36 -0700 Mike Travis <travis@sgi.com> wrote:
-> 
-> 
-> Andrew Morton wrote:
-> >> On Wed, 5 Sep 2007 09:10:10 +0100 Andi Kleen <ak@suse.de> wrote:
-> >>> I can easily do the changes for ia64 and test them.  I don't have the
-> >>> capability of testing on the powerpc.
-> >> You can get cross compilers and make it compile
-> > 
-> > http://userweb.kernel.org/~akpm/cross-compilers/
-> 
-> Thanks Andrew!
-> 
-> It's an extensive list but I didn't see one for ppc64?
-> 
+From: David Howells <dhowells@redhat.com>
 
-argh, yes, my ppc64 cross-compiler doesn't work, and I have powerpc
-machines so I didn't pursue it.
+Make BSG function declarations dependent on CONFIG_BLOCK as they are not
+compilable if the block layer is compiled out.
 
-Oh well. Please cc powerpc developers on the patch and if it later
-breaks we can blame them :)  I'll be the first to compile and runtime
-test it, so please just do a best-effort thing.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ include/linux/bsg.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/bsg.h b/include/linux/bsg.h
+index 60e377b..28f5d44 100644
+--- a/include/linux/bsg.h
++++ b/include/linux/bsg.h
+@@ -52,6 +52,7 @@ struct sg_io_v4 {
+ };
+ 
+ #ifdef __KERNEL__
++#ifdef CONFIG_BLOCK
+ 
+ #if defined(CONFIG_BLK_DEV_BSG)
+ struct bsg_class_device {
+@@ -73,6 +74,7 @@ static inline void bsg_unregister_queue(struct request_queue *rq)
+ }
+ #endif
+ 
++#endif /* CONFIG_BLOCK */
+ #endif /* __KERNEL__ */
+ 
+ #endif
+
