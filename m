@@ -1,101 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbXIEPd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbXIEPgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757464AbXIEPd3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 11:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbXIEPdW
+	id S1757357AbXIEPgQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 11:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbXIEPgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 11:33:22 -0400
-Received: from edunivtw01.ad.umassmed.edu ([146.189.195.116]:3663 "EHLO
-	nlb-securemail.umassmed.edu" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756550AbXIEPdV (ORCPT
+	Wed, 5 Sep 2007 11:36:06 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:34832 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752844AbXIEPgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 11:33:21 -0400
-X-Greylist: delayed 3625 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 11:33:20 EDT
-X-Server-Uuid: D1A27D3C-4100-4955-B400-0F8801E7DACA
-Message-ID: <46DEBE06.5010401@umassmed.edu>
-Date: Wed, 05 Sep 2007 10:32:38 -0400
-From: "Karl Bellve" <Karl.Bellve@umassmed.edu>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: PCI: Unable to reserve mem region problem
-X-OriginalArrivalTime: 05 Sep 2007 14:32:38.0934 (UTC)
- FILETIME=[9C138B60:01C7EFC9]
-X-WSS-ID: 6AC0619B24810959765-02-01
-Content-Type: multipart/mixed;
- boundary=------------040804070901090606060202
+	Wed, 5 Sep 2007 11:36:03 -0400
+Date: Wed, 5 Sep 2007 08:35:29 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Bernd Schubert <bs@q-leap.de>
+Cc: linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
+       brian@clusterfs.com
+Subject: Re: patch: improve generic_file_buffered_write()
+Message-Id: <20070905083529.a1c8a0a9.randy.dunlap@oracle.com>
+In-Reply-To: <200709051546.06224.bs@q-leap.de>
+References: <200709051546.06224.bs@q-leap.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040804070901090606060202
-Content-Type: text/plain;
- charset=iso-8859-1;
- format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, 5 Sep 2007 15:45:36 +0200 Bernd Schubert wrote:
+
+> Hi,
+
+meta-comments:
+
+> filemap.c |  144 
+> +++++++++++++++++++++++++++++++++++++++++---------------------
+>  1 file changed, 96 insertions(+), 48 deletions(-)
+
+Use "diffstat -p 1 -w 70" per Documentation/SubmittingPatches.
 
 
-Please CC any response. Thanks.
+> Index: linux-2.6.20.3/mm/filemap.c
+> ===================================================================
+> --- linux-2.6.20.3.orig/mm/filemap.c	2007-09-04 13:43:04.000000000 +0200
+> +++ linux-2.6.20.3/mm/filemap.c	2007-09-05 12:39:23.000000000 +0200
+> @@ -2057,6 +2057,19 @@
+>  }
+>  EXPORT_SYMBOL(generic_file_direct_write);
+>  
+> +/**
+> + * This function will do 3 main tasks for each iov:
+> + * - prepare a write
+> + * - copy the data from iov into a new page
+> + * - commit this page
+> + * @iob:	file operations
+> + * @iov:	vector of data to write
+> + * @nr_segs:	number of iov segments
+> + * @pos:	position in the file
+> + * @ppos:	position in the file after this function
+> + * @count:	number of bytes to write
+> + * written:	offset in iov->base (data to skip on write)
+> + */
+>  ssize_t
+>  generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
+>  		unsigned long nr_segs, loff_t pos, loff_t *ppos,
 
-I am having an issue with a Supermicro h8dce motherboard and failure to 
-recognize a 5th SATA drive after upgrading to Fedora 7.
+Use proper kernel-doc notation, per Documentation/kernel-doc-nano-HOWTO.txt.
 
-This motherboard has 8 sata ports that use the sata_nv driver.
+This comment block should be:
 
-The lack of seeing the 5th SATA drive shows up in 2.6.22 kernels, such 
-as kernel-2.6.22.2-42.fc6 and kernel-2.6.22.1-41.fc7.
+/**
+ * generic_file_buffered_write - handle an iov
+ * @iocb:	file operations
+ * @iov:	vector of data to write
+ * @nr_segs:	number of iov segments
+ * @pos:	position in the file
+ * @ppos:	position in the file after this function
+ * @count:	number of bytes to write
+ * @written:	offset in iov->base (data to skip on write)
+ *
+ * This function will do 3 main tasks for each iov:
+ * - prepare a write
+ * - copy the data from iov into a new page
+ * - commit this page
+ */
 
-The 5th SATA drive can still be detected in 2.6.20 kernels such as 
-kernel-2.6.20-1.2933.fc6 (I am currently using this kernel).
-
- From dmesg, it appears the reason I am not seeing the 5th SATA drive 
-(second SATA controller) is the following error:
-
-Aug 30 14:08:03 alcor kernel: sata_nv 0000:80:08.0: Using ADMA mode
-Aug 30 14:08:03 alcor kernel: PCI: *Unable to reserve mem region* 
-#6:1000@dfefd000 for device 0000:80:08.0
-Aug 30 14:08:03 alcor kernel: ACPI: PCI interrupt for device 
-0000:80:08.0 disabled
-Aug 30 14:08:03 alcor kernel: sata_nv: probe of 0000:80:08.0 failed with 
-error -16
-
-sata_nv that comes with the 2.6.22 kernels appear to be version 3.4 
-while the older kernels comes with version 3.2 (which work). I contacted 
-Robert Hancock directly about this and he suggested I post an email to LKML.
-
-Motherboard: 
-http://www.supermicro.com/Aplus/motherboard/Opteron/nForce/H8DCE.cfm
-Single AMD Opteron(tm) Processor 244
-1 GB of memory.
-
-I can send you the complete dmesg output if you would like.
-
-Thanks!
-
-
-
-
---------------040804070901090606060202
-Content-Type: text/plain;
- charset=utf-8;
- name=Karl.Bellve.vcf
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename=Karl.Bellve.vcf
-
-begin:vcard
-fn:Karl Bellve
-n:Bellve;Karl
-org:Biomedical Imaging Group;Department of Physiology
-adr:2 Biotech, Suite 114;;373 Plantation Street;Worcester;Massachusetts;01655;United States of America
-email;internet:Karl.Bellve@umassmed.edu
-title:Assistant Professor
-tel;work:508-856-6514
-tel;fax:508-856-6514
-x-mozilla-html:TRUE
-version:2.1
-end:vcard
-
-
---------------040804070901090606060202--
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
