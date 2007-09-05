@@ -1,40 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbXIEPga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbXIEPhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757725AbXIEPga (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 11:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbXIEPgN
+	id S1756878AbXIEPhQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 11:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbXIEPgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 11:36:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46168 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757010AbXIEPgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 11:36:12 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <46DEA293.9020705@tmr.com>
-References: <46DEA293.9020705@tmr.com> <46DA0AB1.8050504@tmr.com> <000701c7eb49$cff701c0$6fe50540$@com> <1188513433.6626.24.camel@heimdal.trondhjem.org> <alpine.LFD.0.999.0708302038310.25853@woody.linux-foundation.org> <1188577275.6649.133.camel@heimdal.trondhjem.org> <5813.1188892468@redhat.com> 
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: dhowells@redhat.com, Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Frank van Maarseveen <frankvm@frankvm.com>,
-       Hua Zhong <hzhong@gmail.com>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: recent nfs change causes autofs regression
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Wed, 05 Sep 2007 16:34:41 +0100
-Message-ID: <3495.1189006481@redhat.com>
+	Wed, 5 Sep 2007 11:36:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42314 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756784AbXIEPgw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 11:36:52 -0400
+Date: Wed, 5 Sep 2007 08:35:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: landwer@free.fr
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-acpi@vger.kernel.org,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>
+Subject: Re: Macbook bug after suspend to disk
+Message-Id: <20070905083535.d9e8373a.akpm@linux-foundation.org>
+In-Reply-To: <1187650790.5194.2.camel@cocoduo.atr>
+References: <1187650790.5194.2.camel@cocoduo.atr>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen <davidsen@tmr.com> wrote:
+> On Tue, 21 Aug 2007 00:59:50 +0200 Lionel Landwerlin <landwer@free.fr> wrote:
 
-> I think Al had a good idea there, that is nice and clean. What about bind
-> mounts, will that just fall out?
+Three weeks, no responses.
 
-I don't see that it should be a problem since the vfsmount is copied.
+> I'm using 2.6.22.1 on my macbook (32bits). I had got this trace a few
+> hours after a suspend to disk. I never got this kind of trace without
+> suspend. I will try to reproduce with 2.6.22.3.
 
-David
+And was it reproducible?
+
+> Here is the trace :
+> 
+> Aug 20 14:14:23 cocoduo kernel: kernel BUG at mm/slab.c:2980!
+
+That's here:
+
+
+               /*
+                 * The slab was either on partial or free list so
+                 * there must be at least one object available for
+                 * allocation.
+                 */
+                BUG_ON(slabp->inuse < 0 || slabp->inuse >= cachep->num);
+
+
+> Aug 20 14:14:23 cocoduo kernel: invalid opcode: 0000 [#1]
+> Aug 20 14:14:23 cocoduo kernel: SMP 
+> Aug 20 14:14:23 cocoduo kernel: Modules linked in: wlan_tkip wlan_ccmp usbkbd ath_pci button nfs lockd nfs_acl sunrpc ac battery cpufreq_ondemand cpufreq_powersave i915 drm binfmt_misc hci_usb rfcomm l2cap bluetooth ppdev lp parport ipv6 dm_snapshot dm_mirror dm_mod cpufreq_userspace acpi_cpufreq freq_table firewire_sbp2 loop joydev usbmouse appletouch snd_hda_intel tsdev sky2 rtc_cmos rtc_core intelfb i2c_i801 wlan_scan_sta iTCO_wdt snd_pcm snd_timer snd soundcore rtc_lib i2c_algo_bit ath_rate_sample intel_agp agpgart i2c_core snd_page_alloc wlan ath_hal(P) evdev ext3 jbd mbcache usbhid hid sd_mod ide_cd cdrom ata_piix ata_generic libata scsi_mod piix firewire_ohci firewire_core crc_itu_t ehci_hcd generic ide_core uhci_hcd usbcore thermal processor fan
+> Aug 20 14:14:23 cocoduo kernel: CPU:    0
+> Aug 20 14:14:23 cocoduo kernel: EIP:    0060:[<c016706a>]    Tainted: P       VLI
+
+People might want to see this reproduced on an untainted kernel.  Did you
+try disabling ath_hal?
+
+
+> Aug 20 14:14:23 cocoduo kernel: EFLAGS: 00210092   (2.6.22-1-686 #1)
+> Aug 20 14:14:23 cocoduo kernel: EIP is at cache_alloc_refill+0xe9/0x451
+> Aug 20 14:14:23 cocoduo kernel: eax: 0000007f   ebx: c20bf800   ecx: df9e8d40   edx: 00000000
+> Aug 20 14:14:23 cocoduo kernel: esi: db91c000   edi: 00000010   ebp: dfff1600   esp: eecdddbc
+> Aug 20 14:14:23 cocoduo kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> Aug 20 14:14:23 cocoduo kernel: Process hald (pid: 5167, ti=eecdc000 task=ef3a8a50 task.ti=eecdc000)
+> Aug 20 14:14:23 cocoduo kernel: Stack: 00000000 00000000 000000d0 df9e8d40 df9e0c00 00000000 c0152f3b 00000044 
+> Aug 20 14:14:23 cocoduo kernel:        000000d0 c0327ff4 ef3a8a50 00000000 000000a4 df9e8d40 00200202 c210ac24 
+> Aug 20 14:14:23 cocoduo kernel:        c0167553 000000a4 00000001 000000a4 c02017f4 00000004 c210ac00 00000000 
+> Aug 20 14:14:23 cocoduo kernel: Call Trace:
+> Aug 20 14:14:23 cocoduo kernel:  [<c0152f3b>] __alloc_pages+0x52/0x294
+> Aug 20 14:14:23 cocoduo kernel:  [<c0167553>] kmem_cache_zalloc+0x42/0x79
+> Aug 20 14:14:23 cocoduo kernel:  [<c02017f4>] acpi_ps_alloc_op+0x5d/0x9e
+> Aug 20 14:14:23 cocoduo kernel:  [<c02014a7>] acpi_ps_parse_loop+0x6f6/0x737
+> Aug 20 14:14:23 cocoduo kernel:  [<c02007b2>] acpi_ps_parse_aml+0x60/0x237
+> Aug 20 14:14:23 cocoduo kernel:  [<c01f444c>] acpi_ds_init_aml_walk+0xb4/0xfe
+> Aug 20 14:14:23 cocoduo kernel:  [<c02019f0>] acpi_ps_execute_method+0x11b/0x1bb
+> Aug 20 14:14:23 cocoduo kernel:  [<c01fed59>] acpi_ns_evaluate+0x99/0xf0
+> Aug 20 14:14:23 cocoduo kernel:  [<c01fe9c1>] acpi_evaluate_object+0x139/0x1dc
+> Aug 20 14:14:23 cocoduo kernel:  [<c01f0a6d>] acpi_evaluate_integer+0x80/0xb3
+> Aug 20 14:14:23 cocoduo kernel:  [<f8e01096>] acpi_ac_get_state+0x26/0x61 [ac]
+> Aug 20 14:14:23 cocoduo kernel:  [<c015d3ed>] vma_link+0x54/0xc9
+> Aug 20 14:14:23 cocoduo kernel:  [<f8e01130>] acpi_ac_seq_show+0x12/0x4e [ac]
+> Aug 20 14:14:23 cocoduo kernel:  [<c017fc87>] seq_read+0xe7/0x274
+> Aug 20 14:14:23 cocoduo kernel:  [<c017fba0>] seq_read+0x0/0x274
+> Aug 20 14:14:23 cocoduo kernel:  [<c016a5b9>] vfs_read+0xa6/0x128
+> Aug 20 14:14:23 cocoduo kernel:  [<c016a9b5>] sys_read+0x41/0x67
+> Aug 20 14:14:23 cocoduo kernel:  [<c0103d0e>] sysenter_past_esp+0x6b/0xa1
+> Aug 20 14:14:23 cocoduo kernel:  =======================
+> Aug 20 14:14:23 cocoduo kernel: Code: 00 00 00 8b 75 00 39 ee 75 15 8b 75 10 8d 45 10 c7 45 34 01 00 00 00 39 c6 0f 84 9c 00 00 00 8b 4c 24 0c 8b 41 38 39 46 10 72 34 <0f> 0b eb fe 8b 44 24 10 8b 5e 14 8b 08 8b 44 24 0c 8b 50 2c 8b 
+> Aug 20 14:14:23 cocoduo kernel: EIP: [<c016706a>] cache_alloc_refill+0xe9/0x451 SS:ESP 0068:eecdddbc
+
+Well it seems to think that some ACPI slab cache is wrecked.
+
+It would be interesting to see if the same happens with CONFIG_SLUB=n,
+CONFIG_SLAB=y.
+
+Is this a regression?  Was 2.6.21 OK?  2.6.20?
+
+If you didn't have all slab debug options enabled, please do so.
+
+If this is repeatable and if nobody fixes it (likely) then please raise a
+reports against acpi at bugzilla.kernel.org, thanks.
+
