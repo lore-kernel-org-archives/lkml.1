@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbXIEMZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbXIEMci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756442AbXIEMZW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 08:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbXIEMZK
+	id S1756360AbXIEMci (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 08:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbXIEMca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 08:25:10 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:11321 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754142AbXIEMZI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 08:25:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=EJPySU4vr5ZcpU6yYLItaO72fwPFVSgzJ6R4yttA+/bsJ/pfVv/vcUnjwXzpk4MhIDzd00Fhw1kr7oqxSUJrSOX8e/Y62/1T8r3H3Jr1Mak1z3oU9xXLO052dJQtzVCof4pz3cKAmGL7LYeFjz9emmofrt3wBTmuO1++opgsYZM=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: [RFC][PATCH] /proc/<pid>/pmaps - memory maps in granularity of pages
-Date: Wed, 5 Sep 2007 13:24:59 +0100
-User-Agent: KMail/1.9.1
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       David Rientjes <rientjes@google.com>,
-       John Berthels <jjberthels@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-References: <20070814085204.GA10884@mail.ustc.edu.cn> <20070814162618.GV30556@waste.org>
-In-Reply-To: <20070814162618.GV30556@waste.org>
+	Wed, 5 Sep 2007 08:32:30 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:48675 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753782AbXIEMc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 08:32:29 -0400
+Subject: Re: [BUG?] 2.6.23-rc3 on alpha
+In-Reply-To: <Pine.LNX.4.64.0708220906080.9716@anakin> "from Geert Uytterhoeven
+ at Aug 22, 2007 09:06:54 am"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 5 Sep 2007 07:32:28 -0500 (CDT)
+CC: linux-kernel@vger.kernel.org
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709051324.59283.vda.linux@googlemail.com>
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070905123228.A99E2DBA2@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 14 August 2007 17:26, Matt Mackall wrote:
-> On Tue, Aug 14, 2007 at 04:52:04PM +0800, Fengguang Wu wrote:
-> > Here is a sample output:
+Geert Uytterhoeven wrote:
+> On Tue, 21 Aug 2007, Bob Tracy wrote:
+> > I'm seeing something new and strange with 2.6.23-rc3 that I wasn't
+> > seeing in the 2.6.22+ kernels.  I've got the bootlogo code enabled,
+> > and at the point during system initialization where the logo
+> > disappears, the console switches from tty1 to tty2.  I can switch
+> > back to tty1, so other than the unexpected console tty switch, there
+> > doesn't seem to be anything "unfortunate" happening.
 > > 
-> > # cat /proc/$$/pmaps
-> > 080c9000-080f6000 rwxp 080c9000 00:00 0                                  [heap]
-> > 32969   45      Y_A_P__ 1
-...
-> > f7de1000-f7de3000 rwxp 00011000 03:00 176630                             /lib/libnsl-2.3.6.so
-> > 17      2       Y_A_P__ 1
-> > [...]
+> > Any ideas/explanations?  It's completely repeatable.  I don't think
+> > it's related to the "aboot" patches :-).
 > 
-> That's a _lot_ of data to generate and parse. I doubt we can watch a
-> larger app in realtime with this interface. And it doesn't give us
-> physical page numbers either.
+> The kernel doesn't make the logo disappear, the boot scripts (in
+> userspace) do that. So I guess they also switch the console from tty1 to
+> tty2.
 
+I don't disagree with Geert's statement (the console was switching when
+the console fonts got loaded during system initialization), but the
+problem no longer exists in 2.6.23-rc5.  Weird.  N.B.: it could have
+been fixed in 2.6.23-rc4, but I didn't try that kernel.  In any event,
+I'll quit looking for the cause unless the problem recurs :-).
 
-> > 080c9000-080f6000 rwxp 080c9000 00:00 0                                  [heap]
-> > 32969   45      Y_A_P__ 1
-    ^^^^^   ^^
-> > f7dba000-f7dc3000 r-xp 00000000 03:00 176633                             /lib/libnss_files-2.3.6.so
-                                    ^^ ^^ ^^^^^^
-
-Since it's a new /proc file, we are not bound by compatibility.
-
-Export *all* numbers in hex, and ensure that they are always even-chars wide
-("fff" bad, "0fff" good). This way you can do binary<->string conversions
-(both in kernel and in userspace) 8 bits per CPU cycle, or even faster.
---
-vda
+-- 
+------------------------------------------------------------------------
+Bob Tracy          |  "They couldn't hit an elephant at this dist- "
+rct@frus.com       |   - Last words of Union General John Sedgwick,
+                   |  Battle of Spotsylvania Court House, U.S. Civil War
+------------------------------------------------------------------------
