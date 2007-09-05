@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbXIEVRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbXIEVW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbXIEVRJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 17:17:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXIEVQ4
+	id S1757556AbXIEVW0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 17:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756784AbXIEVWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 17:16:56 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:35156 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754838AbXIEVQz (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 17:16:55 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc4-mm1 - git-alsa.patch breaks audio on Dell Latitude D820
-In-Reply-To: Your message of "Wed, 05 Sep 2007 22:27:35 +0200."
-             <s5hfy1srh6w.wl%tiwai@suse.de>
-From: Valdis.Kletnieks@vt.edu
-References: <20070831215822.26e1432b.akpm@linux-foundation.org> <4658.1189021594@turing-police.cc.vt.edu> <s5hir6orhxz.wl%tiwai@suse.de>
-            <s5hfy1srh6w.wl%tiwai@suse.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1189027009_2962P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 05 Sep 2007 17:16:49 -0400
-Message-ID: <3705.1189027009@turing-police.cc.vt.edu>
+	Wed, 5 Sep 2007 17:22:18 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:60912 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755560AbXIEVWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 17:22:17 -0400
+From: "J. Bruce Fields" <bfields@citi.umich.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: [PATCH 1/2] knfsd: Fixed problem with NFS exporting directories which are mounted on.
+Date: Wed,  5 Sep 2007 17:22:12 -0400
+Message-Id: <11890273334076-git-send-email-bfields@citi.umich.edu>
+X-Mailer: git-send-email 1.5.3
+In-Reply-To: <1189027333981-git-send-email-bfields@citi.umich.edu>
+References: <1189027333981-git-send-email-bfields@citi.umich.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1189027009_2962P
-Content-Type: text/plain; charset=us-ascii
+From: Neil Brown <neilb@suse.de>
 
-On Wed, 05 Sep 2007 22:27:35 +0200, Takashi Iwai said:
+Recent changes in NFSd cause a directory which is mounted-on
+to not appear properly when the filesystem containing it is exported.
 
-> BTW, there are 10 different models to test for Dell with STAC9200
-> (dell-d2[1-3] and dell-m2[1-7], see
+*exp_get* not returns -ENOENT rather than NULL and when
+  commit 5d3dbbeaf56d0365ac6b5c0a0da0bd31cc4781e1
+removed the NULL checks, it didn't add a check for -ENOENT.
 
-modprobe snd_hda_intel model=dell-m23 
+Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+---
+ fs/nfsd/vfs.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-was the magic incantation.  I'm sure that every user who trips over this
-is going to call it a regression, since the -rc3-mm1 module was able to
-get it right without hints. ;)
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index a0c2b25..7867151 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -115,7 +115,8 @@ nfsd_cross_mnt(struct svc_rqst *rqstp, struct dentry **dpp,
+ 
+ 	exp2 = rqst_exp_get_by_name(rqstp, mnt, mounts);
+ 	if (IS_ERR(exp2)) {
+-		err = PTR_ERR(exp2);
++		if (PTR_ERR(exp2) != -ENOENT)
++			err = PTR_ERR(exp2);
+ 		dput(mounts);
+ 		mntput(mnt);
+ 		goto out;
+-- 
+1.5.3
 
---==_Exmh_1189027009_2962P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG3xzBcC3lWbTT17ARAi/yAJsF8QoXXwwGuvnUtYr0Pw3O1O/OYQCgkqzR
-4TpniAZ4xo0uCbfrEouWBvc=
-=+xHB
------END PGP SIGNATURE-----
-
---==_Exmh_1189027009_2962P--
