@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbXIETqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932557AbXIETqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932443AbXIETqA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 15:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbXIETpw
+	id S932557AbXIETqY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 15:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932283AbXIETqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 15:45:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37367 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932118AbXIETpv (ORCPT
+	Wed, 5 Sep 2007 15:46:13 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:40543 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932151AbXIETqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 15:45:51 -0400
-Date: Wed, 5 Sep 2007 12:44:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: rael@edge.ping.de, michal.k.k.piotrowski@gmail.com, rbrito@gmail.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       debian-powerpc@lists.debian.org, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org, krh@redhat.com
-Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
-Message-Id: <20070905124411.bc15f48c.akpm@linux-foundation.org>
-In-Reply-To: <46DEEBBE.4070201@s5r6.in-berlin.de>
-References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
-	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
-	<20070827065246.GA21220@ime.usp.br>
-	<46D279E8.10001@edge.ping.de>
-	<46D72BC6.3020809@edge.ping.de>
-	<20070905100754.57ab4e3e.akpm@linux-foundation.org>
-	<46DEEBBE.4070201@s5r6.in-berlin.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Sep 2007 15:46:11 -0400
+Date: Wed, 5 Sep 2007 21:46:13 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] build system: section garbage collection for
+	vmlinux
+Message-ID: <20070905194613.GJ16016@stusta.de>
+References: <200709051443.21522.vda.linux@googlemail.com> <200709051937.04014.vda.linux@googlemail.com> <1189017519.4442.24.camel@imap.mvista.com> <200709052014.12653.vda.linux@googlemail.com> <20070905193150.GI16016@stusta.de> <1189020244.4442.32.camel@imap.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1189020244.4442.32.camel@imap.mvista.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 05 Sep 2007 19:47:42 +0200 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> Andrew Morton wrote:
-> >>> Trying to free already-free IRQ 40
-> >>> pci_set_power_state(): 0002:20:0e.0: state=3, current state=5
-> >>> firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+On Wed, Sep 05, 2007 at 12:24:04PM -0700, Daniel Walker wrote:
+> On Wed, 2007-09-05 at 21:31 +0200, Adrian Bunk wrote:
+> > On Wed, Sep 05, 2007 at 08:14:12PM +0100, Denys Vlasenko wrote:
+> > > On Wednesday 05 September 2007 19:38, Daniel Walker wrote:
+> > > > > > You version doesn't work with CONFIG_MODULES right?
+> > > > > 
+> > > > > It works with CONFIG_MODULES.
+> > > > 
+> > > > Really? Take a look at this version,
+> > > > 
+> > > > http://lkml.org/lkml/2006/6/4/169
+> > > > 
+> > > > Marcello had to implement a two pass build to add back symbol used in
+> > > > modules which got removed from the main kernel.. You don't appear to do
+> > > > that. Marcelo also claims better size reduction than you.
+> > > 
+> > > This will discard EXPORT_SYMBOLs potentially used by
+> > > out-of-tree modules.
+> > > 
+> > > I also saw ~10% size reductions, but then at run-time test modules
+> > > failed to load, they didn't find needed symbols.
+> > > 
+> > > OTOH if I know that I am not going to be using such modules,
+> > > then this can be done. Will require another CONFIG_xxx, though.
 > > 
-> > I grepped the whole tree for firewire_ohci and came up blank.  What is it?
+> > One point to keep in mind is that the space penalty of CONFIG_MODULES=y 
+> > is so big that CONFIG_MODULES=n is actually the most interesting case 
+> > for small systems that really need small kernels.
 > 
-> drivers/firewire/fw-ohci.c -> fw-ohci.o -> firewire-ohci.o ->
-> firewire-ohci.ko
+> Marcelo's version actual deals with the CONFIG_MODULES=y penalty , which
+> is interesting to me .. It removes symbols added for CONFIG_MODULES
+> which actually aren't used .. So CONFIG_MODULES=y is just as interesting
+> as without (to me at least..).
 
-argh.  It's not the first time that the module system's weird
-replace-dash-with-underscore thing has fooled me.
+There's still stuff like kernel/module.c or the additional space each 
+used EXPORT_SYMBOL takes that make CONFIG_MODULES=n kernels smaller.
 
-> > But yes, a failed pci_set_power_state() will hurt.  Perhaps this is
-> > a result of some recently-added return-value checking fix but as I
-> > cannot find the dang code I cannot tell.
-> 
-> The old ohci1394.c used to ignore pci_set_power_state's return value.
-> In the pre 2.6.19-rc1 commit ea6104c22468239083857fa07425c312b1ecb424, I
-> added a fail-on-error.  This was toned down to a printk-on-err by pre
-> 2.6.19-rc4 commit 346f5c7ee7fa4ebee0e4c96415a7e59716bfa1d0.
+But it depends on the use case:
+If you are aiming for the smallest possible runtime memory usage 
+CONFIG_MODULES=n is the best choice, while for some applications
+where the bzimage (or similar) size is for some reason limited but
+the size of the modules doesn't matter the approach you mention might 
+be the best.
 
-OK.
+> Daniel
 
-> This was because of Benjamin Herrenschmidt's regression report:
-> http://lkml.org/lkml/2006/10/24/13
+cu
+Adrian
 
-It's not clear _why_ pci_set_power_state() is failing.
+-- 
 
-> A trivial post -rc1 compatible fix is coming in a minute.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-neato, thanks.
