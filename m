@@ -1,111 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbXIELmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbXIEMEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbXIELmy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 07:42:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbXIELmp
+	id S1755884AbXIEMEg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 08:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbXIEME3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 07:42:45 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43818 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752933AbXIELmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 07:42:45 -0400
-Date: Wed, 5 Sep 2007 13:42:43 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Daniel Phillips <phillips@phunq.net>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dkegel@google.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-Message-ID: <20070905114242.GA19938@wotan.suse.de>
-References: <20070814142103.204771292@sgi.com> <200709050220.53801.phillips@phunq.net> <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
+	Wed, 5 Sep 2007 08:04:29 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47831 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753782AbXIEME2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 08:04:28 -0400
+Date: Wed, 5 Sep 2007 05:02:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Michael Kerrisk" <mtk-manpages@gmx.net>
+Cc: davidel@xmailserver.org, rdunlap@xenotime.net, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       drepper@redhat.com, stable@kernel.org, hch@lst.de,
+       jengelh@computergmbh.de, corbet@lwn.net
+Subject: Re: [PATCH] Revised timerfd() interface
+Message-Id: <20070905050225.d6355ab3.akpm@linux-foundation.org>
+In-Reply-To: <20070905000831.313400@gmx.net>
+References: <20070825064114.107820@gmx.net>
+	<Pine.LNX.4.64.0708300458120.7717@alien.or.mcafeemobile.com>
+	<46DD116C.4040301@gmx.net>
+	<20070904011800.762523a4.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0709040805490.6887@alien.or.mcafeemobile.com>
+	<20070904204932.208520@gmx.net>
+	<Pine.LNX.4.64.0709041541500.7326@alien.or.mcafeemobile.com>
+	<20070905000831.313400@gmx.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 05, 2007 at 03:42:35AM -0700, Christoph Lameter wrote:
-> On Wed, 5 Sep 2007, Daniel Phillips wrote:
+> On Wed, 05 Sep 2007 02:08:31 +0200 "Michael Kerrisk" <mtk-manpages@gmx.net> wrote:
+> Davide,
 > 
-> > If we remove our anti-deadlock measures, including the ddsnap.vm.fixes 
-> > (a roll-up of Peter's patch set) and the request throttling code in 
-> > dm-ddsnap.c, and apply your patch set instead, we hit deadlock on the 
-> > socket write path after a few hours (traceback tomorrow).  So your 
-> > patch set by itself is a stability regression.
-> 
-> Na, that cannot be the case since it only activates when an OOM condition 
-> would otherwise result.
-> 
-> > There is also some good news for you here.  The combination of our 
-> > throttling code, plus your recursive reclaim patches and some fiddling 
-> > with PF_LESS_THROTTLE has so far survived testing without deadlocking.  
-> > In other words, as far as we have tested it, your patch set can 
-> > substitute for Peter's and produce the same effect, provided that we 
-> > throttle the block IO traffic.
-> 
-> Ah. That is good news.
-> 
-> > It is clear which approach is more efficient: Peter's.  This is because 
-> > no scanning is required to pop a free page off a free list, so scanning 
-> > work is not duplicated.  How much more efficient is an open question.  
-> > Hopefully we will measure that soon.
-> 
-> Efficiency is not a criterion for a rarely used emergency recovery 
-> measure.
-> 
-> > Briefly touching on other factors:
+> > > As I think about this more, I see more problems with
+> > > your argument.  timerfd needs the ability to get and 
+> > > get-while-setting just as much as the earlier APIs.
+> > > Consider a library that creates a timerfd file descriptor that
+> > > is handed off to an application: that library may want
+> > > to modify the timer settings without having to create a
+> > > new file descriptor (the app mey not be able to be told about
+> > > the new fd).  Your argument just doesn't hold, AFAICS.
 > > 
-> >   * Peter's patch set is much bigger than yours.  The active ingredients
-> >     need to be separated out from the other peterz bits such as reserve
-> >     management APIs so we can make a fairer comparison.
+> > Such hypotethical library, in case it really wanted to offer such 
+> > functionality, could simply return an handle instead of the raw fd, and 
+> > take care of all that stuff in userspace.
 > 
-> Peters patch is much more invasive and requires a coupling of various 
-> subsystems that is not good.
+> Did I miss something?  Is it not the case that as soon as the
+> library returns a handle, rather than an fd, then the whole
+> advantage of timerfd() (being able to select/poll/epoll on 
+> the timer as well as other fds) is lost?  
 > 
-> >   * Your patch set here does not address the question of atomic
-> >      allocation, though I see you have been busy with that elsewhere.
-> >      Adding code to take care of this means you will start catching up
-> >      with Peter in complexity.
+> > Again, mimicking POSIX APIs doesn't always take you in the right place.
 > 
-> Given your tests: It looks like we do not need it.
+> POSIX may goof in places, but in general it is the result of
+> many smart people thinking about how to design/standardize APIs.
+> So the onus is on us to explain why they got this point wrong.
+> And it is not merely POSIX that did things things in the
+> way I've described: so did the earlier setitimer()/getitimer().
 > 
-> >   * The questions Peter raised about how you will deal with loads
-> >      involving heavy anonymous allocations are still open.   This looks
-> >      like more complexity on the way.
-> 
-> Either not necessary or also needed without these patches.
-> 
-> >   * You depend on maintaining a global dirty page limit while Peter's
-> >      approach does not.  So we see the peterz approach as progress
-> >      towards eliminating one of the great thorns in our side:
-> >      congestion_wait deadlocks, which we currently hack around in a
-> >      thoroughly disgusting way (PF_LESS_THROTTLE abuse).
-> 
-> We have a global dirty page limit already. I fully support Peters work on 
-> dirty throttling.
-> 
-> These results show that Peters invasive approach is not needed. Reclaiming 
-> easy reclaimable pages when necessary is sufficient.
 
+<wakes up even more>
 
-First of all, I'm not surprised these patches solve the deadlock here.
-And that's a good thing, and it means it is likely that we want to merge
-it (actually, I quite like the idea in general, regardless of whether it
-solves the deadlock or not).
+Seems that we need to pay some more attention to this, as time is pressing
+and we should get this stuff finalised in 2.6.23.
 
-However I really have an aversion to the near enough is good enough way of
-thinking. Especially when it comes to fundamental deadlocks in the VM. I
-don't know whether Peter's patch is completely clean yet, but fixing the
-fundamentally broken code has my full support.
+Which means that most of us have some catching-up to do.
 
-I hate it that there are theoretical bugs still left even if they would
-be hit less frequently than hardware failure. And that people are really
-happy to put even more of these things in :(
-
-Anyway, as you know I like your patch and if that gives Peter a little
-more breathing space then it's a good thing. But I really hope he doesn't
-give up on it, and it should be merged one day.
-
+Michael, could you please refresh our memories with a brief, from-scratch
+summary of what the current interface is, followed by a summary of what you
+believe to be the shortcomings to be?  
