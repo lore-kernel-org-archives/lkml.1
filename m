@@ -1,99 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbXIER4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbXIER7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756801AbXIER4a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 13:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbXIER4W
+	id S1757316AbXIER7i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 13:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXIER7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 13:56:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:33936 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754072AbXIER4V (ORCPT
+	Wed, 5 Sep 2007 13:59:31 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:37656 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753001AbXIER7a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 13:56:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=fQepiauKm14zwWsOLGM5Rius3TL0OQLTElAPlmcIDS0naXDQ6LP4r7g0xi8Z73+MsW0rZTWQJ2hLgyxkf2v3fV5gZjCT+PKVbhikq5RRYZF5+xXiYOSAhq4Pnt8eb+BZnYFmqA+oxyGW+bB2p5CWbnu3tfpq1DZ6cqQHB4lSlJI=
-Date: Wed, 5 Sep 2007 21:56:11 +0400
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org,
-       T Taneli Vahakangas <vahakang@cs.helsinki.fi>
-Subject: [PATCH] Fix select on /proc files without ->poll
-Message-ID: <20070905175611.GA1826@martell.zuzino.mipt.ru>
+	Wed, 5 Sep 2007 13:59:30 -0400
+Message-ID: <46DEEE41.6090309@oracle.com>
+Date: Wed, 05 Sep 2007 10:58:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Tim Teulings <rael@edge.ping.de>, michal.k.k.piotrowski@gmail.com,
+       rbrito@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       debian-powerpc@lists.debian.org, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>	<20070827065246.GA21220@ime.usp.br>	<46D279E8.10001@edge.ping.de>	<46D72BC6.3020809@edge.ping.de>	<20070905100754.57ab4e3e.akpm@linux-foundation.org> <20070905102824.a481060c.randy.dunlap@oracle.com> <46DEEAC1.7020900@s5r6.in-berlin.de>
+In-Reply-To: <46DEEAC1.7020900@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-T Taneli Vahakangas <vahakang@cs.helsinki.fi> reported that
-commit 786d7e1612f0b0adb6046f19b906609e4fe8b1ba aka
-"Fix rmmod/read/write races in /proc entries"
-broke SBCL + SLIME combo.
+Stefan Richter wrote:
+> Randy Dunlap wrote:
+>> On Wed, 5 Sep 2007 10:07:54 -0700 Andrew Morton wrote:
+>>>> So here is the output from dmesg that suggested to me that firewire 
+>>>> might be a problem:
+>>> Straightforward regression, two reporters, nothing happening.
+>> (material for ksummit discussion, e.g.)
+> 
+> It's a simple thing in this incident:  I don't read all posts on LKML.
+> But I typically catch everything where I am in the CC list thanks to the
+> wonders of sieve.  Andrew, thanks for putting me in the CCs.
 
-Old code in do_select() used DEFAULT_POLLMASK, if couldn't find ->poll
-handler. New code makes ->poll always there and returns 0 by default,
-which is not correct. Return DEFAULT_POLLMASK instead.
+I understand.  I just meant the general trend, nothing specific
+to this thread.
 
-Steps to reproduce:
-
-	install emacs, SBCL, SLIME
-	emacs
-	M-x slime	in *inferior-lisp* buffer
-	[watch it doing "Connecting to Swank on port X.."]
-
-Please, apply before 2.6.23.
-
-P.S.: why SBCL can't just read(2) /proc/cpuinfo is a mystery.
-
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
-
- fs/proc/inode.c      |    3 ++-
- fs/select.c          |    2 --
- include/linux/poll.h |    2 ++
- 3 files changed, 4 insertions(+), 3 deletions(-)
-
---- a/fs/proc/inode.c
-+++ b/fs/proc/inode.c
-@@ -11,6 +11,7 @@
- #include <linux/string.h>
- #include <linux/stat.h>
- #include <linux/completion.h>
-+#include <linux/poll.h>
- #include <linux/file.h>
- #include <linux/limits.h>
- #include <linux/init.h>
-@@ -232,7 +233,7 @@ static ssize_t proc_reg_write(struct file *file, const char __user *buf, size_t
- static unsigned int proc_reg_poll(struct file *file, struct poll_table_struct *pts)
- {
- 	struct proc_dir_entry *pde = PDE(file->f_path.dentry->d_inode);
--	unsigned int rv = 0;
-+	unsigned int rv = DEFAULT_POLLMASK;
- 	unsigned int (*poll)(struct file *, struct poll_table_struct *);
- 
- 	spin_lock(&pde->pde_unload_lock);
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -26,8 +26,6 @@
- 
- #include <asm/uaccess.h>
- 
--#define DEFAULT_POLLMASK (POLLIN | POLLOUT | POLLRDNORM | POLLWRNORM)
--
- struct poll_table_page {
- 	struct poll_table_page * next;
- 	struct poll_table_entry * entry;
---- a/include/linux/poll.h
-+++ b/include/linux/poll.h
-@@ -21,6 +21,8 @@
- #define WQUEUES_STACK_ALLOC	(MAX_STACK_ALLOC - FRONTEND_STACK_ALLOC)
- #define N_INLINE_POLL_ENTRIES	(WQUEUES_STACK_ALLOC / sizeof(struct poll_table_entry))
- 
-+#define DEFAULT_POLLMASK (POLLIN | POLLOUT | POLLRDNORM | POLLWRNORM)
-+
- struct poll_table_struct;
- 
- /* 
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
