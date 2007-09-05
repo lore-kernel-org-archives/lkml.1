@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbXIERXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbXIERXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756837AbXIERXR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 13:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbXIERXF
+	id S1757699AbXIERXc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 13:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbXIERXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 13:23:05 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:51216 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752700AbXIERXE (ORCPT
+	Wed, 5 Sep 2007 13:23:11 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:59697 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754133AbXIERXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 13:23:04 -0400
+	Wed, 5 Sep 2007 13:23:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RaKGWjq+IxsACc5vHBBpTaiRBsoLpY3SM2tbWgCZXtTIiTkqx6YSQEECm5Roymp6hhioOvCd//oTHSCuJshMkRtowfMHT4s4//6H7BH4QVdJBxeJRVLRceSPLbx8V4TYByEjUUenRYY1ggY+Gci99dBkzoTCg1CTyvBcfv7ugvo=
-Message-ID: <5d6222a80709051023h1ea55154k8dc6bf8cd638e2be@mail.gmail.com>
-Date: Wed, 5 Sep 2007 14:23:00 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [ANNOUNCE] Lguest64 - fatter puppies!
-Cc: "Steven Rostedt" <rostedt@goodmis.org>, lguest <lguest@ozlabs.org>,
-       virtualization <virtualization@lists.osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>
-In-Reply-To: <46DE4036.6080100@zytor.com>
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=fuT/9XLIecsOgtGK2D6hjg5LBdOJk9tykmgl9qAnUYpGsg7svVSlqY4H8tyN+Lu9G+OL+IQfXecBjvV1Sl2RICe+AkQfxqQ2C+xxnWnZgZVxy2E5cQEMfuThdPomjmyF7/yLMrbPuHUPJZrDzXs+JwToI9Jt3u2AF19DzQ1WS2M=
+Date: Wed, 5 Sep 2007 21:22:52 +0400
+To: James Pearson <james-p@moving-picture.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Anton Arapov <aarapov@redhat.com>,
+       Guy Streeter <guy.streeter@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 4096 byte limit to /proc/PID/environ ?
+Message-ID: <20070905172252.GA2104@martell.zuzino.mipt.ru>
+References: <4474B7DB.8000304@moving-picture.com> <200605242029.k4OKTn9C031700@terminus.zytor.com> <447EF58C.6000605@moving-picture.com> <52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com> <46C33700.1060605@zytor.com> <46D6CBED.4040301@moving-picture.com> <h87in5sgal.fsf@pepelac.englab.brq.redhat.com> <46DE6196.3050605@zytor.com> <46DEE0C9.1000402@moving-picture.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1188958000.7913.16.camel@localhost.localdomain>
-	 <46DE4036.6080100@zytor.com>
+In-Reply-To: <46DEE0C9.1000402@moving-picture.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/5/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> Steven Rostedt wrote:
-> > This is a formal announcement of Lguest64.
+On Wed, Sep 05, 2007 at 06:00:57PM +0100, James Pearson wrote:
+> H. Peter Anvin wrote:
+> >Anton Arapov wrote:
 > >
-> > Most are aware of the little puppies (lguest32, or simply lguest, or in
-> > some circles "rustyvisor").  But this time the puppies ate a bit too
-> > much.  No more lean and mean puppies, now we got big fat lazy ones.
-> > Running on the hardware that's too lazy to do full virutalization. Yes,
-> > lguest now runs on x86_64!
->
-> Totally phat!
+> >>  Hey guys, the future of this patch is important for me. What do you 
+> >>think, has this patch any chances to be committed to upstream?
+> >>
+> >>James Pearson <james-p@moving-picture.com> writes:
+> >>
+> >>>H. Peter Anvin wrote:
+> >>>There isn't that much that is duplicated - and there are also bits of
+> >>>the /proc/PID/mem code that are not needed in this case, so I'm not
+> >>>really sure if it is worth doing.
+> >>>
+> >>>I did submit a patch a few months ago - see:
+> >>>
+> >>><http://marc.info/?l=linux-kernel&m=117862109623007&w=2>
+> >>
+> >>
+> >
+> >Looks reasonable to me, except for the one overlong line.
+> >
+> 
+> OK, here is the patch (without the long line) against 2.6.23-rc5 - what 
+> else needs to be done to get it committed?
 
-Whatever this means!
-
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
-
-"The less confident you are, the more serious you have to act."
+Remove duplicate ptrace_may_attach() checks, unecessary (), {} and
+spaces before pointer names -- char *buf.
