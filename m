@@ -1,125 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932257AbXIEXCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbXIEXCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932257AbXIEXCD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 19:02:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757908AbXIEW7f
+	id S1757924AbXIEXCc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 19:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbXIEXAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 18:59:35 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:31693 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758092AbXIEW7b (ORCPT
+	Wed, 5 Sep 2007 19:00:17 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33149 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758207AbXIEXAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 18:59:31 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 5/7 RESEND] cxgb3 - CQ context operations time out too soon.
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Wed, 05 Sep 2007 15:58:30 -0700
-Message-ID: <20070905225830.17290.99454.stgit@speedy5>
-User-Agent: StGIT/0.12
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 5 Sep 2007 19:00:14 -0400
+Date: Thu, 6 Sep 2007 00:00:47 +0100
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Kyle Rose <krose@krose.org>
+Cc: James Corey <ploversegg@yahoo.com>, Rob Sims <lkml-z@robsims.com>,
+       Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org
+Subject: Re: sk98lin for 2.6.23-rc1
+Message-ID: <20070906000047.5c4f7d11@oldman>
+In-Reply-To: <46DF19FB.3020702@krose.org>
+References: <782111.42803.qm@web90413.mail.mud.yahoo.com>
+	<46DF19FB.3020702@krose.org>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+On Wed, 05 Sep 2007 17:04:59 -0400
+Kyle Rose <krose@krose.org> wrote:
 
-Currently, the driver only tries up to 5 times (5us) to get the results
-of a CQ context operation.  Testing has shown the chip can take as much
-as 50us to return the response on SG_CONTEXT_CMD operations.  So we up
-the retry count to 100 to cover high loads.
+> 
+> > However, it really DOES lock up under load. I even 
+> > tried 2.6.23-rc4 and the absolute latest version of
+> > the
+> > driver and it still locks up, as in
+> >   
+> Yich.  I'm glad I'm still using sk98lin on my unmanned colo box.
+> 
+> Kyle
+> 
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+Great for you, when I was testing sk98lin crashed my machine on
+overnight stress run. My intuition is that there is a bug in sk98lin
+on Yukon EC-U chips (those without ram buffer) and a hardware
+problem on Yukon XL chips (those with ram buffer) and the sky2
+driver doesn't have workaround for getting the ram buffer stuck (yet).
 
- drivers/net/cxgb3/t3_hw.c |   19 +++++++++++--------
- 1 files changed, 11 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index bff1d02..0583293 100644
---- a/drivers/net/cxgb3/t3_hw.c
-+++ b/drivers/net/cxgb3/t3_hw.c
-@@ -1870,6 +1870,8 @@ void t3_port_intr_clear(struct adapter *adapter, int idx)
- 	phy->ops->intr_clear(phy);
- }
- 
-+#define SG_CONTEXT_CMD_ATTEMPTS 100
-+
- /**
-  * 	t3_sge_write_context - write an SGE context
-  * 	@adapter: the adapter
-@@ -1889,7 +1891,7 @@ static int t3_sge_write_context(struct adapter *adapter, unsigned int id,
- 	t3_write_reg(adapter, A_SG_CONTEXT_CMD,
- 		     V_CONTEXT_CMD_OPCODE(1) | type | V_CONTEXT(id));
- 	return t3_wait_op_done(adapter, A_SG_CONTEXT_CMD, F_CONTEXT_CMD_BUSY,
--			       0, 5, 1);
-+			       0, SG_CONTEXT_CMD_ATTEMPTS, 1);
- }
- 
- /**
-@@ -2075,7 +2077,7 @@ int t3_sge_enable_ecntxt(struct adapter *adapter, unsigned int id, int enable)
- 	t3_write_reg(adapter, A_SG_CONTEXT_CMD,
- 		     V_CONTEXT_CMD_OPCODE(1) | F_EGRESS | V_CONTEXT(id));
- 	return t3_wait_op_done(adapter, A_SG_CONTEXT_CMD, F_CONTEXT_CMD_BUSY,
--			       0, 5, 1);
-+			       0, SG_CONTEXT_CMD_ATTEMPTS, 1);
- }
- 
- /**
-@@ -2099,7 +2101,7 @@ int t3_sge_disable_fl(struct adapter *adapter, unsigned int id)
- 	t3_write_reg(adapter, A_SG_CONTEXT_CMD,
- 		     V_CONTEXT_CMD_OPCODE(1) | F_FREELIST | V_CONTEXT(id));
- 	return t3_wait_op_done(adapter, A_SG_CONTEXT_CMD, F_CONTEXT_CMD_BUSY,
--			       0, 5, 1);
-+			       0, SG_CONTEXT_CMD_ATTEMPTS, 1);
- }
- 
- /**
-@@ -2123,7 +2125,7 @@ int t3_sge_disable_rspcntxt(struct adapter *adapter, unsigned int id)
- 	t3_write_reg(adapter, A_SG_CONTEXT_CMD,
- 		     V_CONTEXT_CMD_OPCODE(1) | F_RESPONSEQ | V_CONTEXT(id));
- 	return t3_wait_op_done(adapter, A_SG_CONTEXT_CMD, F_CONTEXT_CMD_BUSY,
--			       0, 5, 1);
-+			       0, SG_CONTEXT_CMD_ATTEMPTS, 1);
- }
- 
- /**
-@@ -2147,7 +2149,7 @@ int t3_sge_disable_cqcntxt(struct adapter *adapter, unsigned int id)
- 	t3_write_reg(adapter, A_SG_CONTEXT_CMD,
- 		     V_CONTEXT_CMD_OPCODE(1) | F_CQ | V_CONTEXT(id));
- 	return t3_wait_op_done(adapter, A_SG_CONTEXT_CMD, F_CONTEXT_CMD_BUSY,
--			       0, 5, 1);
-+			       0, SG_CONTEXT_CMD_ATTEMPTS, 1);
- }
- 
- /**
-@@ -2172,7 +2174,7 @@ int t3_sge_cqcntxt_op(struct adapter *adapter, unsigned int id, unsigned int op,
- 	t3_write_reg(adapter, A_SG_CONTEXT_CMD, V_CONTEXT_CMD_OPCODE(op) |
- 		     V_CONTEXT(id) | F_CQ);
- 	if (t3_wait_op_done_val(adapter, A_SG_CONTEXT_CMD, F_CONTEXT_CMD_BUSY,
--				0, 5, 1, &val))
-+				0, SG_CONTEXT_CMD_ATTEMPTS, 1, &val))
- 		return -EIO;
- 
- 	if (op >= 2 && op < 7) {
-@@ -2182,7 +2184,8 @@ int t3_sge_cqcntxt_op(struct adapter *adapter, unsigned int id, unsigned int op,
- 		t3_write_reg(adapter, A_SG_CONTEXT_CMD,
- 			     V_CONTEXT_CMD_OPCODE(0) | F_CQ | V_CONTEXT(id));
- 		if (t3_wait_op_done(adapter, A_SG_CONTEXT_CMD,
--				    F_CONTEXT_CMD_BUSY, 0, 5, 1))
-+				    F_CONTEXT_CMD_BUSY, 0,
-+				    SG_CONTEXT_CMD_ATTEMPTS, 1))
- 			return -EIO;
- 		return G_CQ_INDEX(t3_read_reg(adapter, A_SG_CONTEXT_DATA0));
- 	}
-@@ -2208,7 +2211,7 @@ static int t3_sge_read_context(unsigned int type, struct adapter *adapter,
- 	t3_write_reg(adapter, A_SG_CONTEXT_CMD,
- 		     V_CONTEXT_CMD_OPCODE(0) | type | V_CONTEXT(id));
- 	if (t3_wait_op_done(adapter, A_SG_CONTEXT_CMD, F_CONTEXT_CMD_BUSY, 0,
--			    5, 1))
-+			    SG_CONTEXT_CMD_ATTEMPTS, 1))
- 		return -EIO;
- 	data[0] = t3_read_reg(adapter, A_SG_CONTEXT_DATA0);
- 	data[1] = t3_read_reg(adapter, A_SG_CONTEXT_DATA1);
+I don't like putting workarounds in for problems I can't reproduce.
+After KS, I'll rerun more stress tests on all the chip flavors
+and see if the hang is reproducible.
