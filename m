@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbXIET7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932325AbXIEUGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757524AbXIET7u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 15:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbXIET7m
+	id S932325AbXIEUGg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 16:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXIEUG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 15:59:42 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:58666 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755403AbXIET7m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 15:59:42 -0400
-Subject: Re: [PATCH 0/3] build system: section garbage collection for
-	vmlinux
-From: Daniel Walker <dwalker@mvista.com>
+	Wed, 5 Sep 2007 16:06:28 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:40991 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754377AbXIEUG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 16:06:28 -0400
+Date: Wed, 5 Sep 2007 22:07:50 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: sam@ravnborg.org, kai@germaschewski.name, linux-kernel@vger.kernel.org
-In-Reply-To: <200709052049.30649.vda.linux@googlemail.com>
-References: <200709051443.21522.vda.linux@googlemail.com>
-	 <200709052014.12653.vda.linux@googlemail.com>
-	 <1189019235.4442.27.camel@imap.mvista.com>
-	 <200709052049.30649.vda.linux@googlemail.com>
-Content-Type: text/plain
-Date: Wed, 05 Sep 2007 12:46:59 -0700
-Message-Id: <1189021619.4442.36.camel@imap.mvista.com>
+Cc: kai@germaschewski.name, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] build system: section garbage collection for vmlinux
+Message-ID: <20070905200750.GA30812@uranus.ravnborg.org>
+References: <200709051443.21522.vda.linux@googlemail.com> <200709051447.00774.vda.linux@googlemail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709051447.00774.vda.linux@googlemail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-05 at 20:49 +0100, Denys Vlasenko wrote:
-
-> What does "it" stand for in this sentence?
-
-"it" is your patches, and I think we got to bottom of it .. "it" (i.e.
-your patches) don't actually work with modules, which is what you
-originally contended ..
-
-> My patch was tested to work in my limited testing,
-> but it is very conservative.
+On Wed, Sep 05, 2007 at 02:47:00PM +0100, Denys Vlasenko wrote:
+> On Wednesday 05 September 2007 14:43, Denys Vlasenko wrote:
+> > These patches fix section names and add
+> > CONFIG_DISCARD_UNUSED_SECTIONS. It is not enabled
+> > unconditionally because only newest binutils have
+> > ld --gc-sections which is stable enough for kernel use.
+> > IOW: this is an experimental feature for now.
 > 
-> I can't talk for Marcelo, but his patch probably worked too,
-> it just didn't guarantee that you can install kernel, and
-> then compile and load external module. Wel, it will compile,
-> but maybe will fail to load.
+> Part 1: fix section names over entire source (all arches).
+> 
+> Patch is big and boring global s/.text.lock/.text_lock/
+> type thing.
 
-At least you should modify your Kconfig changes so that you don't allow
-people to select your new option unless they have CONFIG_MODULES off..
+The normal naming scheme seems to be:
+.<usage>.text so in your example it would be: .lock.text
+See the naming og init and exit sections (that was renamed
+during 2.5 to be compatible with -ffunction-sections).
 
-Daniel
-
+	Sam
