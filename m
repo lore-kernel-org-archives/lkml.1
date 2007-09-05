@@ -1,89 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbXIEPY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbXIEP0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756739AbXIEPY0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 11:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756698AbXIEPX7
+	id S1757417AbXIEP0a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 11:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756635AbXIEP0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 11:23:59 -0400
-Received: from stinky.trash.net ([213.144.137.162]:40143 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756615AbXIEPX6 (ORCPT
+	Wed, 5 Sep 2007 11:26:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40800 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756367AbXIEP0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 11:23:58 -0400
-Message-ID: <46DEC9BF.9010807@trash.net>
-Date: Wed, 05 Sep 2007 17:22:39 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Neil Horman <nhorman@tuxdriver.com>
-CC: rusty@rustcorp.com.au, adam@yggdrasil.com, jcm@jonmasters.org,
-       netfilter-devel@lists.netfilter.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] Fix (improve) deadlock condition on module removal
- netfilter socket option removal
-References: <20070904202433.GA19083@hmsreliant.think-freely.org>
-In-Reply-To: <20070904202433.GA19083@hmsreliant.think-freely.org>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Wed, 5 Sep 2007 11:26:17 -0400
+Date: Wed, 5 Sep 2007 08:24:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: gshan <gshan@alcatel-lucent.com>
+Cc: linux-kernel@vger.kernel.org, Dale Farnsworth <dale@farnsworth.org>,
+       netdev@vger.kernel.org
+Subject: Re: kernel crashes inside MV643xx driver
+Message-Id: <20070905082452.4a20387b.akpm@linux-foundation.org>
+In-Reply-To: <46C93701.7050509@alcatel-lucent.com>
+References: <46C93701.7050509@alcatel-lucent.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman wrote:
-> Hey all-
-> 	So I've had a deadlock reported to me.  I've found that the sequence of
-> events goes like this:
+> On Mon, 20 Aug 2007 14:38:57 +0800 gshan <gshan@alcatel-lucent.com> wrote:
+> Hi All,
 > 
-> 1) process A (modprobe) runs to remove ip_tables.ko
+> After I started the NFS server, it crashed:
 > 
-> 2) process B (iptables-restore) runs and calls setsockopt on a netfilter socket,
-> increasing the ip_tables socket_ops use count
+> <3>Badness in local_bh_enable at 
+> /home/cli4/sandbox/main/TelicaRoot/components/mvlinux/cge/devkit/lsp/7xx/linux/kernel/softirq.c:195
+> Badness in local_bh_enable at 
+> /home/cli4/sandbox/main/TelicaRoot/components/mvlinux/cge/devkit/lsp/7xx/linux/kernel/softirq.c:195
+> Call trace:
+>  [c0005340] check_bug_trap+0xbc/0x11c
+>  [c0005604] ProgramCheckException+0x264/0x2bc
+>  [c0004ac4] ret_from_except_full+0x0/0x4c
+>  [c0022ae4] local_bh_enable+0x18/0x80
+>  [c024648c] skb_copy_bits+0x168/0x3b8
+>  [c024db44] __skb_linearize+0x90/0x150
+>  [c020e8a4] mv643xx_eth_start_xmit+0x4c0/0x5bc
+>  [c025c934] qdisc_restart+0xac/0x2bc
+>  [c024de9c] dev_queue_xmit+0x298/0x34c
+>  [c0269814] ip_finish_output+0x140/0x2b8
+>  [c026a3ac] ip_fragment+0x3cc/0x6e0
+>  [c026bac8] ip_push_pending_frames+0x3dc/0x46c
+>  [c0289ec4] udp_push_pending_frames+0x10c/0x1cc
+>  [c028a7c4] udp_sendpage+0x104/0x188
+>  [c0292fc8] inet_sendpage+0x90/0xb8
 > 
-> 3) process A acquires a file lock on the file ip_tables.ko, calls remove_module
-> in the kernel, which in turn executes the ip_tables module cleanup routine,
-> which calls nf_unregister_sockopt
+> I searched the webs and found the similar problems:
+> http://www.mail-archive.com/netdev@vger.kernel.org/msg05199.html
+> http://oss.sgi.com/archives/netdev/2005-09/msg00025.html
 > 
-> 4) nf_unregister_sockopt, seeing that the use count is non-zero, puts the
-> calling process into uninterruptible sleep, expecting the process using the
-> socket option code to wake it up when it exits the kernel
+> Who knew there are fixes for the problem?
 > 
-> 4) the user of the socket option code (process B) in do_ipt_get_ctl, calls
-> ipt_find_table_lock, which in this case calls request_module to load
-> ip_tables_nat.ko
-> 
-> 5) request_module forks a copy of modprobe (process C) to load the module and
-> blocks until modprobe exits.
-> 
-> 6) Process C. forked by request_module process the dependencies of
-> ip_tables_nat.ko, of which ip_tables.ko is one.
-> 
-> 7) Process C attempts to lock the request module and all its dependencies, it
-> blocks when it attempts to lock ip_tables.ko (which was previously locked in
-> step 3)
-> 
-> Theres not really any great permanent solution to this that I can see, but I've
-> developed a two part solution that corrects the problem
-> 
-> Part 1) Modifies the nf_sockopt registration code so that, instead of using a
-> use counter internal to the nf_sockopt_ops structure, we instead use a pointer
-> to the registering modules owner to do module reference counting when nf_sockopt
-> calls a modules set/get routine.  This prevents the deadlock by preventing set 4
-> from happening.
-> 
-> Part 2) Enhances the modprobe utilty so that by default it preforms non-blocking
-> remove operations (the same way rmmod does), and add an option to explicity
-> request blocking operation.  So if you select blocking operation in modprobe you
-> can still cause the above deadlock, but only if you explicity try (and since
-> root can do any old stupid thing it would like.... :) ).
-> 
-> The following 2 patches have been tested out by me.
 
+Well that got a tremendous response, didn't it?
 
-Nice catch, we've had a report of this ages ago, but I never figured
-out what happend.
+What do you mean by "crashed"?  The above is a warning and the system
+should have survived.
 
-But I'm wondering, wouldn't module refcounting alone fix this problem?
-If we make nf_sockopt() call try_module_get(ops->owner), remove_module()
-on ip_tables.ko would simply fail because the refcount is above zero
-(so it would fail at point 3 above). Am I missing something important?
+Which kernel version is being used?
+
 
