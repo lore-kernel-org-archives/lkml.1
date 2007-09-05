@@ -1,86 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbXIER1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbXIERbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbXIER1Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 13:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbXIER1L
+	id S1757017AbXIERbX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 13:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXIERbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 13:27:11 -0400
-Received: from smtp.opengridcomputing.com ([71.42.183.126]:45414 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752442AbXIER1K (ORCPT
+	Wed, 5 Sep 2007 13:31:11 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:34613 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753014AbXIERbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 13:27:10 -0400
-Message-ID: <46DEE6ED.7070000@opengridcomputing.com>
-Date: Wed, 05 Sep 2007 12:27:09 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: general@lists.openfabrics.org, ewg@lists.openfabrics.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sean.hefty@intel.com
-Subject: Re: [PATCH RFC] iw_cxgb3: Support "iwarp-only" interfaces to avoid
- 4-tuple conflicts with the host stack.
-References: <1187905185.5547.13.camel@stevo-desktop>	<adaveawwcpz.fsf@cisco.com> <46DD762F.80904@opengridcomputing.com> <ada642puonr.fsf@cisco.com> <46DECDED.90903@opengridcomputing.com>
-In-Reply-To: <46DECDED.90903@opengridcomputing.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 5 Sep 2007 13:31:09 -0400
+Date: Wed, 5 Sep 2007 10:28:24 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Tim Teulings" <rael@edge.ping.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       michal.k.k.piotrowski@gmail.com, rbrito@gmail.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       debian-powerpc@lists.debian.org, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+Message-Id: <20070905102824.a481060c.randy.dunlap@oracle.com>
+In-Reply-To: <20070905100754.57ab4e3e.akpm@linux-foundation.org>
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
+	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
+	<20070827065246.GA21220@ime.usp.br>
+	<46D279E8.10001@edge.ping.de>
+	<46D72BC6.3020809@edge.ping.de>
+	<20070905100754.57ab4e3e.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 5 Sep 2007 10:07:54 -0700 Andrew Morton wrote:
 
+> > On 30 Aug 2007 22:42:46 +0200 "Tim Teulings" <rael@edge.ping.de> wrote:
+> > Hello!
+> > 
+> > > I don't have traces at hand and due to lack of time cannot reproduce it 
+> > > up to tomorrow. However this hint may speed up your analysis!
+> > 
+> > Sorry for the delay, but my desktop PC had an urgent hard disk problem I 
+> > had to fix ASASP.
+> > 
+> > So here is the output from dmesg that suggested to me that firewire 
+> > might be a problem:
+> 
+> Straightforward regression, two reporters, nothing happening.
 
-Steve Wise wrote:
-> 
-> 
-> Roland Dreier wrote:
->>  > > What's wrong with my suggestion of having the iwarp driver create an
->>  > > "iwX" interface to go with the normal "ethX" interface?  It seems
->>  > > simpler to me, and there's a somewhat similar precedent with how
->>  > > mac80211 devices create both wlan0 and wmaster0 interfaces.
->>  > >  - R.
->>  >  > It seemed much more painful for me to implement. :-)
->>  >  > I'll look into this, but I think for this to be done, the 
->> changes must
->>  > be in the cxgb3 driver, not the rdma driver, because the guts of the
->>  > netdev struct are all private to cxgb3.  Remember that this interface
->>  > needs to still do non TCP traffic (like ARP and UDP)...
->>  >  > Maybe you have something in mind here that I'm not thinking about?
->>
->> No, I was just spouting off.
->>
-> 
-> At least someone is looking at my patch. ;-)
-> 
->> But the whole "create a magic alias" seems kind of unfriendly to the
->> user.  Maybe as you said, the cxgb3 net driver could create the alias
->> for the iw_cxgb3 driver?
-> 
-> I agree that it is not very user friendly.
-> 
-> My current patch just utilizes the IP address alias logic in the IP 
-> stack.  So when you do 'ifconfig ethxx:blah ipaddr up' it creates a 
-> struct in_ifaddr which contains a ptr to the real struct net_device that 
-> services this alias.  However, from what I can tell, I cannot just 
-> create one of these without binding an address.  So the driver cannot 
-> create the alias interface until it knows the ipaddr/netmask/etc.  IE: 
-> if you say 'ifconfig ethxx:blah up' it fails...  You must supply an 
-> address to get one of these created.
-> 
-> To have the cxgb3 driver create something like 'iw0', I think it would 
-> need to create a full net_device struct.  This makes the change much 
-> more complex.  But perhaps its the right thing to do...
-> 
-> Steve.
-> 
+(material for ksummit discussion, e.g.)
 
-Also, I could defer registering the device with the rdma core until the 
-alias interface is created by the user.  Thus the T3 device wouldn't be 
-available for use until the ethxx:iw interface is created.
+> > > usb_endpoint usbdev2.2_ep81: PM: suspend 0->2, parent 2-1:1.0 already 2
+> > > usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
+> > > usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
+> > > hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
+> > > usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
+> > > eth2: Airport entering sleep mode
+> > > eth0: suspending, WakeOnLan disabled
+> > > pci_set_power_state(): 0002:20:0e.0: state=3, current state=5
+> > > firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+> > > suspend_device(): pci_device_suspend+0x0/0x98() returns -22
+> > > Could not suspend device 0002:20:0e.0: error -22
+> > > eth0: resuming
+> > > PHY ID: 4061e4, addr: 0
+> > > eth2: Airport waking up
+> > > eth2: New link status: Connected (0001)
+> > > hda: Enabling Ultra DMA 2
+> > > eth0: Link is up at 100 Mbps, full-duplex.
+> > > eth0: Pause is disabled
+> > > ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+> > > hdb: Enabling Ultra DMA 2
+> > > usb_endpoint usbdev1.1_ep00: PM: resume from 0, parent usb1 still 2
+> > > usb_endpoint usbdev1.1_ep81: PM: resume from 0, parent 1-0:1.0 still 2
+> > > usb_device usbdev1.1: PM: resume from 0, parent usb1 still 2
+> > > Driver sleep failed
+> > > Sleep rejected by devices
+> > > adb: starting probe task...
+> > > adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
+> > > ADB keyboard at 2, handler 1
+> > > ADB mouse at 3, handler set to 4 (trackpad)
+> > > adb: finished probe task...
+> > > usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
+> > > usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
+> > > hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
+> > > usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
+> > > eth2: Airport entering sleep mode
+> > > eth0: suspending, WakeOnLan disabled
+> > > Trying to free already-free IRQ 40
+> > > pci_set_power_state(): 0002:20:0e.0: state=3, current state=5
+> > > firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+> 
+> I grepped the whole tree for firewire_ohci and came up blank.  What is it?
 
-And I could log a WARN or INFO message if the iw_cxgb3 module is loaded 
-and no ethxx:iw alias exists.  This would help clue in the user...
+See drivers/firewire/Makefile
 
-Steve.
-
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
