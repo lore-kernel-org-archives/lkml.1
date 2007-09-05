@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbXIEW7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbXIEW7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758071AbXIEW7X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 18:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757597AbXIEW60
+	id S1758168AbXIEW7x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 18:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757732AbXIEW6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 18:58:26 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:16127 "EHLO
+	Wed, 5 Sep 2007 18:58:30 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:26426 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757549AbXIEW6Y (ORCPT
+	with ESMTP id S1757601AbXIEW61 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 18:58:24 -0400
+	Wed, 5 Sep 2007 18:58:27 -0400
 From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 2/7 RESEND] cxgb3 - log and clear PEX errors
+Subject: [PATCH 3/7 RESEND] cxgb3 - remove false positive in xgmac workaround
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Wed, 05 Sep 2007 15:58:15 -0700
-Message-ID: <20070905225815.17236.38766.stgit@speedy5>
+Date: Wed, 05 Sep 2007 15:58:20 -0700
+Message-ID: <20070905225820.17254.83706.stgit@speedy5>
 User-Agent: StGIT/0.12
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,36 +26,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Clear pciE PEX errors late at module load time.
-Log details when PEX errors occur.
+Qualify toggling of xgmac tx enable with not getting pause frames, 
+we might not make forward progress because the peer is sending 
+lots of pause frames.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/t3_hw.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/net/cxgb3/common.h |    1 +
+ drivers/net/cxgb3/xgmac.c  |    4 +++-
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index 2b49b96..cdcfc13 100644
---- a/drivers/net/cxgb3/t3_hw.c
-+++ b/drivers/net/cxgb3/t3_hw.c
-@@ -1358,6 +1358,10 @@ static void pcie_intr_handler(struct adapter *adapter)
- 		{0}
- 	};
+diff --git a/drivers/net/cxgb3/common.h b/drivers/net/cxgb3/common.h
+index ada5e4b..7e9e43d 100644
+--- a/drivers/net/cxgb3/common.h
++++ b/drivers/net/cxgb3/common.h
+@@ -513,6 +513,7 @@ struct cmac {
+ 	u64 rx_mcnt;
+ 	unsigned int toggle_cnt;
+ 	unsigned int txen;
++	u64 rx_pause;
+ 	struct mac_stats stats;
+ };
  
-+	if (t3_read_reg(adapter, A_PCIE_INT_CAUSE) & F_PEXERR)
-+		CH_ALERT(adapter, "PEX error code 0x%x\n",
-+			 t3_read_reg(adapter, A_PCIE_PEX_ERR));
-+
- 	if (t3_handle_intr_status(adapter, A_PCIE_INT_CAUSE, PCIE_INTR_MASK,
- 				  pcie_intr_info, adapter->irq_stats))
- 		t3_fatal_err(adapter);
-@@ -1809,6 +1813,8 @@ void t3_intr_clear(struct adapter *adapter)
- 	for (i = 0; i < ARRAY_SIZE(cause_reg_addr); ++i)
- 		t3_write_reg(adapter, cause_reg_addr[i], 0xffffffff);
- 
-+	if (is_pcie(adapter))
-+		t3_write_reg(adapter, A_PCIE_PEX_ERR, 0xffffffff);
- 	t3_write_reg(adapter, A_PL_INT_CAUSE0, 0xffffffff);
- 	t3_read_reg(adapter, A_PL_INT_CAUSE0);	/* flush */
- }
+diff --git a/drivers/net/cxgb3/xgmac.c b/drivers/net/cxgb3/xgmac.c
+index 1d1c391..ff9e9dc 100644
+--- a/drivers/net/cxgb3/xgmac.c
++++ b/drivers/net/cxgb3/xgmac.c
+@@ -452,6 +452,7 @@ int t3_mac_enable(struct cmac *mac, int which)
+ 						A_XGM_TX_SPI4_SOP_EOP_CNT +
+ 						oft)));
+ 		mac->rx_mcnt = s->rx_frames;
++		mac->rx_pause = s->rx_pause;
+ 		mac->rx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
+ 						A_XGM_RX_SPI4_SOP_EOP_CNT +
+ 						oft)));
+@@ -504,7 +505,7 @@ int t3b2_mac_watchdog_task(struct cmac *mac)
+ 	tx_xcnt = 1;		/* By default tx_xcnt is making progress */
+ 	tx_tcnt = mac->tx_tcnt;	/* If tx_mcnt is progressing ignore tx_tcnt */
+ 	rx_xcnt = 1;		/* By default rx_xcnt is making progress */
+-	if (tx_mcnt == mac->tx_mcnt) {
++	if (tx_mcnt == mac->tx_mcnt && mac->rx_pause == s->rx_pause) {
+ 		tx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
+ 						A_XGM_TX_SPI4_SOP_EOP_CNT +
+ 					       	mac->offset)));
+@@ -560,6 +561,7 @@ out:
+ 	mac->tx_mcnt = s->tx_frames;
+ 	mac->rx_xcnt = rx_xcnt;
+ 	mac->rx_mcnt = s->rx_frames;
++	mac->rx_pause = s->rx_pause;
+ 	if (status == 1) {
+ 		t3_write_reg(adap, A_XGM_TX_CTRL + mac->offset, 0);
+ 		t3_read_reg(adap, A_XGM_TX_CTRL + mac->offset);  /* flush */
