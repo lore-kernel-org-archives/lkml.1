@@ -1,112 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbXIEWvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbXIEWwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756909AbXIEWvA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 18:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbXIEWug
+	id S1757345AbXIEWwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 18:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbXIEWwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 18:50:36 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56358 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756492AbXIEWuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 18:50:35 -0400
-Cc: rdunlap@xenotime.net, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, drepper@redhat.com, stable@kernel.org,
-       hch@lst.de, jengelh@computergmbh.de, corbet@lwn.net,
-       akpm@linux-foundation.org
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 06 Sep 2007 00:50:33 +0200
-From: "Michael Kerrisk" <mtk-manpages@gmx.net>
-In-Reply-To: <Pine.LNX.4.64.0709051251290.11804@alien.or.mcafeemobile.com>
-Message-ID: <20070905225033.236700@gmx.net>
+	Wed, 5 Sep 2007 18:52:12 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:51641 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754838AbXIEWwL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 18:52:11 -0400
+Message-ID: <46DF3306.7030608@onlinehome.de>
+Date: Thu, 06 Sep 2007 00:51:50 +0200
+From: Felix Homann <fexpop@onlinehome.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-References: <20070825064114.107820@gmx.net>
- <Pine.LNX.4.64.0708300458120.7717@alien.or.mcafeemobile.com>
- <46DD116C.4040301@gmx.net>
- <20070904011800.762523a4.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0709040805490.6887@alien.or.mcafeemobile.com>
- <20070904204932.208520@gmx.net>
- <Pine.LNX.4.64.0709041541500.7326@alien.or.mcafeemobile.com>
- <20070905000831.313400@gmx.net>
- <Pine.LNX.4.64.0709050901420.11426@alien.or.mcafeemobile.com>
- <20070905162352.236680@gmx.net>
- <Pine.LNX.4.64.0709051251290.11804@alien.or.mcafeemobile.com>
-Subject: Re: [PATCH] Revised timerfd() interface
-To: Davide Libenzi <davidel@xmailserver.org>
-X-Authenticated: #24879014
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX19n9DMprOBn8Me7VxzDJ2fP3XtHEPErivHZW8ifUl
- 9k7jYT6kgKfY1LpT2/muO3S00Mo2PDB26x9Q== 
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: Regressions w.r.t. suspend behaviour in recent kernel versions
+References: <46CED24F.1020400@onlinehome.de> <20070905093605.ac755ce6.akpm@linux-foundation.org>
+In-Reply-To: <20070905093605.ac755ce6.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-GMX-UID: 11+9EjF8bXB+MsPtSTU2yBEiLyUmZUgZ
+X-Provags-ID: V01U2FsdGVkX18Sv+uJhLe3inUnBKPzZeFmplPMw3VOQxU9o1k
+ Z4NvQkn30Tvv/N8oJxKLfHnAjcQHAwbPLkpNDE3uMHSwPZ5nM+
+ 9Pz0WelKJ37tZAaZIFoBifR0V8eDDlX
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Davide,
-
-> > > > > > As I think about this more, I see more problems with
-> > > > > > your argument.  timerfd needs the ability to get and 
-> > > > > > get-while-setting just as much as the earlier APIs.
-> > > > > > Consider a library that creates a timerfd file descriptor that
-> > > > > > is handed off to an application: that library may want
-> > > > > > to modify the timer settings without having to create a
-> > > > > > new file descriptor (the app mey not be able to be told about
-> > > > > > the new fd).  Your argument just doesn't hold, AFAICS.
-> > > > > 
-> > > > > Such hypotethical library, in case it really wanted to offer such 
-> > > > > functionality, could simply return an handle instead of the raw
-> > > > > fd, and take care of all that stuff in userspace.
-> > > > 
-> > > > Did I miss something?  Is it not the case that as soon as the
-> > > > library returns a handle, rather than an fd, then the whole
-> > > > advantage of timerfd() (being able to select/poll/epoll on 
-> > > > the timer as well as other fds) is lost?  
-> > > 
-> > > Why? The handle would simply be a little struct where the timerfd fd
-> > > is 
-> > > stored, and a XXX_getfd() would return it.
-> > > So my point is, I doubt such functionalities are really needed, and I 
-> > > also argue that the kernel is the best place for such wrapper code
-> > > to go.
-> > 
-> > So what happens if one thread (via the library) wants modify
-> > a timer's settings at the same timer as another thread is 
-> > select()ing on it?  The first thread can't do this by creating
-> > a new timerfd timer, since it wants to affect the select()
-> > in the other thread?
+Andrew Morton wrote:
+>> On Fri, 24 Aug 2007 14:42:55 +0200 Felix Homann <fexpop@onlinehome.de> wrote:
 > 
-> It can be done w/out any problems. The select thread will be notified 
-> whenever the new timer setting expires.
+> Nearly two weeks, zero replies.
 
-We are going in circles here.  I think you are missing my point.
-Consider the following
+Thanks for caring :-)
 
-[[
-Thread A: calls library function which creates a timerfd file
-descriptor.
+> 
+>> Aug  9 00:22:13 jawaka kernel: EXT3-fs: mounted filesystem with ordered
+>> data mode.
+>> Aug  9 00:22:13 jawaka kernel: WARNING: at kernel/irq/resend.c:70
+>> check_irq_resend()
+> 
+> I expect that got fixed in later kernels.
 
-Thread B: calls select() on the timerfd file descriptor.
+Yes, I've just tried 2.6.23-rc5-git1 and the warning has gone!
 
-Thread A: calls library function which wants to:
-   a) modify timer settings, and retrieve copy of current timer
-      settings, and later
-   b) restore old timer settings.
-]]
 
-This seems a quite reasonable use-case to me, and the existing
-interface simply can't support it.
+>> Without the nolapic option the kernel will panic when trying to suspend 
+>> to disk.
+> 
+> A *large* number of people need noapic or nolapic to get Linux to work.
 
-Cheers,
+Even better, on 2.6.23-rc5-git1 I don't need nolapic anymore!
 
-Michael
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
 
-Want to help with man page maintenance?  
-Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages , 
-read the HOWTOHELP file and grep the source 
-files for 'FIXME'.
+>> Here are the last lines of the kernel output:
+>>
+>> EIP: [<c01127fd> lapic_nmi_suspend+0x1d/0x30 ss:ESP 0068:c1ae3ec8
+>> Kernel panic - not syncing: Attempted to kill init!
+> 
+> Are you able to provide us with more information about this bug? 
+
+If you're still interested in more more information now that the bug has 
+apparently been solved "en passant" I can take a photograph tomorrow. 
+Please, let me know.
+
+>> With more recent kernels the system will hang with 
+>> "Suspending console(s)".
+> 
+> My Vaio reliably hangs at the same place with 2.6.23-rc4.  I'll bisect that
+> next week sometime.  Hopefully the result of that effort will fix your bug.
+>  Please test Linus's tree regularly and don't let us release 2.6.23 until
+> it is fixed.
+
+Great!
+
+
+>> 3. Even with the 2.6.18 kernel sound won't work after suspending to ram. 
+>> I don't know when this started, but I know that this has not been an 
+>> issue in the past.
+> 
+> Please provide full details in a separate bug report.  Send that report to
+> myself, linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz> and
+> Takashi Iwai <tiwai@suse.de>
+
+I'll do that in the next couple of days.
+
+Thanks again,
+
+Felix
 
