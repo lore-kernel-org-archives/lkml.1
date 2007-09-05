@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757858AbXIEPkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbXIEPk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757858AbXIEPkl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 11:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756852AbXIEPk2
+	id S1758046AbXIEPk5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 11:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757437AbXIEPkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 11:40:28 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40128 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756769AbXIEPk1 (ORCPT
+	Wed, 5 Sep 2007 11:40:32 -0400
+Received: from smtp.opengridcomputing.com ([71.42.183.126]:55490 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757150AbXIEPka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 11:40:27 -0400
-Date: Wed, 5 Sep 2007 08:38:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roger Gammans <roger@computer-surgery.co.uk>
-Cc: linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: Re: hda_intel : Patch + Regression in 2.6.18 -> 2.6.22
-Message-Id: <20070905083844.6637da1e.akpm@linux-foundation.org>
-In-Reply-To: <20070822222902.GA28563@computer-surgery.co.uk>
-References: <20070822222902.GA28563@computer-surgery.co.uk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Sep 2007 11:40:30 -0400
+Message-ID: <46DECDED.90903@opengridcomputing.com>
+Date: Wed, 05 Sep 2007 10:40:29 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: general@lists.openfabrics.org, ewg@lists.openfabrics.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sean.hefty@intel.com
+Subject: Re: [PATCH RFC] iw_cxgb3: Support "iwarp-only" interfaces to avoid
+ 4-tuple conflicts with the host stack.
+References: <1187905185.5547.13.camel@stevo-desktop>	<adaveawwcpz.fsf@cisco.com> <46DD762F.80904@opengridcomputing.com> <ada642puonr.fsf@cisco.com>
+In-Reply-To: <ada642puonr.fsf@cisco.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 22 Aug 2007 23:29:02 +0100 Roger Gammans <roger@computer-surgery.co.uk> wrote:
-> Hi
 
-A distinct regression, a confirmed fix, yet no reply after more than two weeks.
 
-> I'm fighting a problem with my (new) Acer laptop.  (Aspire 9303)
+Roland Dreier wrote:
+>  > > What's wrong with my suggestion of having the iwarp driver create an
+>  > > "iwX" interface to go with the normal "ethX" interface?  It seems
+>  > > simpler to me, and there's a somewhat similar precedent with how
+>  > > mac80211 devices create both wlan0 and wmaster0 interfaces.
+>  > >  - R.
+>  > 
+>  > It seemed much more painful for me to implement. :-)
+>  > 
+>  > I'll look into this, but I think for this to be done, the changes must
+>  > be in the cxgb3 driver, not the rdma driver, because the guts of the
+>  > netdev struct are all private to cxgb3.  Remember that this interface
+>  > needs to still do non TCP traffic (like ARP and UDP)...
+>  > 
+>  > Maybe you have something in mind here that I'm not thinking about?
 > 
-> In 2.6.18 the audio worked fine, but now I've upgraded to 2.6.22
-> it has stopped working. 
-> 
-> I note that there is a acer specific quirk mode in patch_realtek.c
-> enabled for all acer devices introduced in the timeframe. Disabling
-> the quirk so that the driver uses it auot mode makes playback work
-> fine again.
-> 
-> To be clear this pathc seems to work for me:-
-> 
-> --- /usr/src/linux-source-2.6.22/sound/pci/hda/patch_realtek.c 2007-07-09 00:32:17.000000000 +0100
-> +++ linux-source-2.6.22/sound/pci/hda/patch_realtek.c   2007-08-20 22:21:37.000000000 +0100
-> @@ -6392,7 +6392,7 @@
->         SND_PCI_QUIRK(0x1462, 0x4319, "MSI", ALC883_TARGA_DIG),
->         SND_PCI_QUIRK(0x1462, 0x4324, "MSI", ALC883_TARGA_DIG),
->         SND_PCI_QUIRK(0x1462, 0xa422, "MSI", ALC883_TARGA_2ch_DIG),
-> -       SND_PCI_QUIRK(0x1025, 0, "Acer laptop", ALC883_ACER),
-> +/*     SND_PCI_QUIRK(0x1025, 0, "Acer laptop", ALC883_ACER) , */
->         SND_PCI_QUIRK(0x15d9, 0x8780, "Supermicro PDSBA", ALC883_3ST_6ch),
->         SND_PCI_QUIRK(0x161f, 0x2054, "Medion laptop", ALC883_MEDION),
->         SND_PCI_QUIRK(0x1071, 0x8258, "Evesham Voyaeger", ALC883_LAPTOP_EAPD), 
-> 
-> 
-> Unfortunately I think it's pretty clear it will break for others.
-> 
-> The lspci reports the following on the appropriate device:-
->   00:10.1 0403: 10de:026c (rev a2)
->         Subsystem: 1025:0112
->         Flags: 66MHz, fast devsel, IRQ 19
->         Memory at c0000000 (32-bit, non-prefetchable) [size=16K]
->         Capabilities: <access denied>
-> 
+> No, I was just spouting off.
+>
 
-Jaroslav, Takashi: can you please comment on this?
+At least someone is looking at my patch. ;-)
 
-Thanks.
+> But the whole "create a magic alias" seems kind of unfriendly to the
+> user.  Maybe as you said, the cxgb3 net driver could create the alias
+> for the iw_cxgb3 driver?
+
+I agree that it is not very user friendly.
+
+My current patch just utilizes the IP address alias logic in the IP 
+stack.  So when you do 'ifconfig ethxx:blah ipaddr up' it creates a 
+struct in_ifaddr which contains a ptr to the real struct net_device that 
+services this alias.  However, from what I can tell, I cannot just 
+create one of these without binding an address.  So the driver cannot 
+create the alias interface until it knows the ipaddr/netmask/etc.  IE: 
+if you say 'ifconfig ethxx:blah up' it fails...  You must supply an 
+address to get one of these created.
+
+To have the cxgb3 driver create something like 'iw0', I think it would 
+need to create a full net_device struct.  This makes the change much 
+more complex.  But perhaps its the right thing to do...
+
+Steve.
+
