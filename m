@@ -1,82 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbXIEVXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbXIEVbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758136AbXIEVXB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 17:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756904AbXIEVWU
+	id S1757636AbXIEVbd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 17:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbXIEVbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 17:22:20 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:60914 "EHLO fieldses.org"
+	Wed, 5 Sep 2007 17:31:25 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:41412 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756698AbXIEVWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 17:22:18 -0400
-From: "J. Bruce Fields" <bfields@citi.umich.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Neil Brown <neilb@suse.de>,
-       "Luiz Fernando N. Capitulino" <lcapitulino@gmail.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [PATCH 2/2] knfsd: Validate filehandle type in fsid_source
-Date: Wed,  5 Sep 2007 17:22:13 -0400
-Message-Id: <11890273332461-git-send-email-bfields@citi.umich.edu>
-X-Mailer: git-send-email 1.5.3
-In-Reply-To: <11890273334076-git-send-email-bfields@citi.umich.edu>
-References: <1189027333981-git-send-email-bfields@citi.umich.edu>
- <11890273334076-git-send-email-bfields@citi.umich.edu>
+	id S1752574AbXIEVbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 17:31:23 -0400
+Date: Wed, 5 Sep 2007 14:31:20 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-rt-users@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, tytso@us.ibm.com,
+       dvhltc@us.ibm.com, tglx@linutronix.de, a.p.zijlstra@chello.nl,
+       bunk@kernel.org, ego@in.ibm.com, oleg@tv-sign.ru, srostedt@redhat.com
+Subject: [PATCH RFC 0/8] RCU: Preemptible RCU
+Message-ID: <20070905213120.GA29204@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Neil Brown <neilb@suse.de>
+Work in progress, still not for inclusion.
 
-fsid_source decided where to get the 'fsid' number to
-return for a GETATTR based on the type of filehandle.
-It can be from the device, from the fsid, or from the
-UUID.
+This is a respin of the following prior postings:
 
-It is possible for the filehandle to be inconsistent
-with the export information, so make sure the export information
-actually has the info implied by the value returned by
-fsid_source.
+http://lkml.org/lkml/2007/8/7/276 (the four initial preemptible RCU patches)
+http://lkml.org/lkml/2007/8/17/262 (hotplug CPU for preemptible RCU)
+http://lkml.org/lkml/2007/8/22/348 (RCU priority boosting)
+http://lkml.org/lkml/2007/8/22/373 (rcutorture for RCU priority boosting)
 
-Signed-off-by: Neil Brown <neilb@suse.de>
-Cc: "Luiz Fernando N. Capitulino" <lcapitulino@gmail.com>
-Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
----
- fs/nfsd/nfsfh.c |   20 +++++++++++++++-----
- 1 files changed, 15 insertions(+), 5 deletions(-)
+This release adds an additional patch that makes the RCU priority booster
+more friendly to power-savings measures by causing the booster task to
+sleep if there is no cause to believe that priority boosting will be
+required in the near future.  An additional fixup and documentation patch
+is forthcoming.  And of course, the whole thing will be rebased to a more
+recent version of Linux.
 
-diff --git a/fs/nfsd/nfsfh.c b/fs/nfsd/nfsfh.c
-index 0eb464a..7011d62 100644
---- a/fs/nfsd/nfsfh.c
-+++ b/fs/nfsd/nfsfh.c
-@@ -566,13 +566,23 @@ enum fsid_source fsid_source(struct svc_fh *fhp)
- 	case FSID_DEV:
- 	case FSID_ENCODE_DEV:
- 	case FSID_MAJOR_MINOR:
--		return FSIDSOURCE_DEV;
-+		if (fhp->fh_export->ex_dentry->d_inode->i_sb->s_type->fs_flags
-+		    & FS_REQUIRES_DEV)
-+			return FSIDSOURCE_DEV;
-+		break;
- 	case FSID_NUM:
--		return FSIDSOURCE_FSID;
--	default:
- 		if (fhp->fh_export->ex_flags & NFSEXP_FSID)
- 			return FSIDSOURCE_FSID;
--		else
--			return FSIDSOURCE_UUID;
-+		break;
-+	default:
-+		break;
- 	}
-+	/* either a UUID type filehandle, or the filehandle doesn't
-+	 * match the export.
-+	 */
-+	if (fhp->fh_export->ex_flags & NFSEXP_FSID)
-+		return FSIDSOURCE_FSID;
-+	if (fhp->fh_export->ex_uuid)
-+		return FSIDSOURCE_UUID;
-+	return FSIDSOURCE_DEV;
- }
--- 
-1.5.3
+These patches take prior feedback into account, including the bit about
+running checkpatch.pl.  ;-)
 
+						Thanx, Paul
