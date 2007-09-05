@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757718AbXIEQCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbXIEQER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757718AbXIEQCS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 12:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbXIEQCG
+	id S1757945AbXIEQER (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 12:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbXIEQEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 12:02:06 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:47009 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756831AbXIEQCE (ORCPT
+	Wed, 5 Sep 2007 12:04:00 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48233 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756701AbXIEQD7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 12:02:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oXY8loaPZb8mu3430h1zsGQ18Yda4dQTODfBImI+tXiTgVSwiG0wgivx04fBspDK0qt2cxB3kU9rRSabF882vEC7XlcV4bJ+Cu9wCbuEvFGTDZqPEgGd8QRPOOHq6d1sz/qDOXYRDxs+8WY8kHUHH/PIeSN33VKOZWW7lq4pF3k=
-Message-ID: <6bffcb0e0709050902q5379bd40pe5370a9dd73c88e4@mail.gmail.com>
-Date: Wed, 5 Sep 2007 18:02:03 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: nfs4 hang regression
-Cc: "Bret Towe" <magnade@gmail.com>, linux-kernel@vger.kernel.org,
-       Trond.Myklebust@netapp.com
-In-Reply-To: <6bffcb0e0709050856i5531bb87l1235b402e51d0556@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 5 Sep 2007 12:03:59 -0400
+Date: Wed, 5 Sep 2007 17:03:56 +0100
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: gshan <gshan@alcatel-lucent.com>, linux-kernel@vger.kernel.org,
+       Dale Farnsworth <dale@farnsworth.org>, netdev@vger.kernel.org
+Subject: Re: kernel crashes inside MV643xx driver
+Message-ID: <20070905170356.0e644978@oldman>
+In-Reply-To: <20070905082452.4a20387b.akpm@linux-foundation.org>
+References: <46C93701.7050509@alcatel-lucent.com>
+	<20070905082452.4a20387b.akpm@linux-foundation.org>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dda83e780708221541x4fabd27er64e6ecaa33ddccbf@mail.gmail.com>
-	 <20070905085120.bc90ffe2.akpm@linux-foundation.org>
-	 <6bffcb0e0709050856i5531bb87l1235b402e51d0556@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/09/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> Hi Andrew,
->
-> On 05/09/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > On Wed, 22 Aug 2007 15:41:18 -0700 "Bret Towe" <magnade@gmail.com> wrote:
-> >
-> > More than two weeks, you've bisected it and there's no sign of any action?
-> >
-> > I don't see this on Michal's list so perhaps it already got fixed in a different
-> > thread.  Have you tested current mainline?
->
-> AFAIK it is fixed - commit 3d39c691ff486142dd9aaeac12f553f4476b7a62
+On Wed, 5 Sep 2007 08:24:52 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-commit 560aef74503e928f44ddbf481b8b02d9cef37dbf
+> > On Mon, 20 Aug 2007 14:38:57 +0800 gshan <gshan@alcatel-lucent.com> wrote:
+> > Hi All,
+> > 
+> > After I started the NFS server, it crashed:
+> > 
+> > <3>Badness in local_bh_enable at 
+> > /home/cli4/sandbox/main/TelicaRoot/components/mvlinux/cge/devkit/lsp/7xx/linux/kernel/softirq.c:195
+> > Badness in local_bh_enable at 
+> > /home/cli4/sandbox/main/TelicaRoot/components/mvlinux/cge/devkit/lsp/7xx/linux/kernel/softirq.c:195
+> > Call trace:
+> >  [c0005340] check_bug_trap+0xbc/0x11c
+> >  [c0005604] ProgramCheckException+0x264/0x2bc
+> >  [c0004ac4] ret_from_except_full+0x0/0x4c
+> >  [c0022ae4] local_bh_enable+0x18/0x80
+> >  [c024648c] skb_copy_bits+0x168/0x3b8
+> >  [c024db44] __skb_linearize+0x90/0x150
+> >  [c020e8a4] mv643xx_eth_start_xmit+0x4c0/0x5bc
+> >  [c025c934] qdisc_restart+0xac/0x2bc
+> >  [c024de9c] dev_queue_xmit+0x298/0x34c
+> >  [c0269814] ip_finish_output+0x140/0x2b8
+> >  [c026a3ac] ip_fragment+0x3cc/0x6e0
+> >  [c026bac8] ip_push_pending_frames+0x3dc/0x46c
+> >  [c0289ec4] udp_push_pending_frames+0x10c/0x1cc
+> >  [c028a7c4] udp_sendpage+0x104/0x188
+> >  [c0292fc8] inet_sendpage+0x90/0xb8
+> > 
+> > I searched the webs and found the similar problems:
+> > http://www.mail-archive.com/netdev@vger.kernel.org/msg05199.html
+> > http://oss.sgi.com/archives/netdev/2005-09/msg00025.html
+> > 
+> > Who knew there are fixes for the problem?
+> > 
+> 
+> Well that got a tremendous response, didn't it?
+> 
+> What do you mean by "crashed"?  The above is a warning and the system
+> should have survived.
+> 
+> Which kernel version is being used?
 
-Regards,
-Michal
+The transmit start rework look like it should have already fixed the problem.
+The driver was calling spin_lock_irqsave before calling skb_linearize, now
+it checks first.
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+commit c8aaea25e0b069e9572caa74f984e109899c1765
+Author: Dale Farnsworth <dale@farnsworth.org>
+Date:   Fri Mar 3 10:02:05 2006 -0700
+
+    [PATCH] mv643xx_eth: Refactor tx command queuing code
+    
+    Simplify and remove redundant code for filling transmit descriptors.
+    No changes in features; it's just a code reorganization/cleanup.
+    
+    Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+    Signed-off-by: Jeff Garzik <jeff@garzik.org>
