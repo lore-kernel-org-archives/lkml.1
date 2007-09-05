@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbXIEGMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbXIEGuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756566AbXIEGMu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 02:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbXIEGMn
+	id S1755993AbXIEGuj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 02:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbXIEGuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 02:12:43 -0400
-Received: from donetsk.donpac.ru ([80.254.111.38]:40803 "EHLO
-	donetsk.donpac.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbXIEGMm (ORCPT
+	Wed, 5 Sep 2007 02:50:32 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:50993 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751328AbXIEGuc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 02:12:42 -0400
-Date: Wed, 5 Sep 2007 10:12:37 +0400
-From: Andrey Panin <pazke@donpac.ru>
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: Tejun Heo <htejun@gmail.com>, jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ICH Intel PATA short cable override...
-Message-ID: <20070905061237.GC6882@pazke.donpac.ru>
-Mail-Followup-To: Daniel J Blueman <daniel.blueman@gmail.com>,
-	Tejun Heo <htejun@gmail.com>, jgarzik@pobox.com,
-	linux-ide@vger.kernel.org,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <6278d2220709040537n4c96ffcagd9c25c94ddd29ca1@mail.gmail.com>
+	Wed, 5 Sep 2007 02:50:32 -0400
+Date: Tue, 4 Sep 2007 23:17:53 -0700
+From: Greg KH <greg@kroah.com>
+To: Renuka Pampana <prenuka@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: query regarding usb-hotplug
+Message-ID: <20070905061753.GA31005@kroah.com>
+References: <9b23fc710709030457l4286781es81ae4c45c4716462@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2JFBq9zoW8cOFH7v"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6278d2220709040537n4c96ffcagd9c25c94ddd29ca1@mail.gmail.com>
-X-Uname: Linux 2.6.23-rc3 x86_64
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <9b23fc710709030457l4286781es81ae4c45c4716462@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Sep 03, 2007 at 05:27:23PM +0530, Renuka Pampana wrote:
+> hi all,
+> 
+>  iam having one doubt about the usb driver application. i written one
+> small application  (u can see this file usbthread.c
+> in attachment 
 
---2JFBq9zoW8cOFH7v
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Nothing was attached :(
 
-On 247, 09 04, 2007 at 01:37:22PM +0100, Daniel J Blueman wrote:
-> We see that in ata_piix.c, there is a whitelist for (laptop) Intel ICH
-> controllers with short cables, tied to specific vendor subsystem IDs.
-> Since my mini-ITX Ibase MI910F has the subsystem IDs specified as
-> Intel [1], this is unusable.
->=20
-> I can't find another existing mechanism to add short cable
-> information, to allow UDMA/66 for my on-board CF socket.
 
-If this board has useful DMI information, you can add DMI quirk for it.
-You can look at pata_via.c or pata_ali.c for example.
+> , cc -o usbthread usbthread.c -lpthread -lusb (for
+> compilation) ) on usb device drivers using LIBUSB-0.1.12
+> in user space. my project leader has given one task about the usb
+> device drivers in user space. so using lib usb library and
+> written application in user space. we are getting out put as device
+> properties in userspace. but we are using polling
+> mechanism ( declaring one thread and calling one usb function as
+> subroutine in thread, this thread calling usb function
+>  continuously and it  has put in  infinity loop). but my task have to
+> develop  this same application with out using poling.
+> 
+> i heared an event mechanism for with out polling. but i dont know how
+> to develop event mechanism.
+> 
+> plz give me any idea to develop the hot plugging system by using event
+> mechanism...
+> 
+> i hope to get reply as soon as possible .
 
-> Do you suggest I cook a patch to pass a kernel argument eg 'ich=3Dshort'
-> or 'pata=3Dshort', or can you think of a better mechanism?
->=20
-> Thanks,
->   Daniel
->=20
-> --- [1]
->=20
-> # lspci -vs 00:1f.2
-> 00:1f.2 IDE interface: Intel Corporation 82801HBM/HEM (ICH8M/ICH8M-E)
-> SATA IDE Controller (rev 03) (prog-if 80 [Master])
->         Subsystem: Intel Corporation 82801HBM/HEM (ICH8M/ICH8M-E) SATA
-> IDE Controller
->=20
-> # lspci -vns 00:1f.2
-> 00:1f.2 0101: 8086:2828 (rev 03) (prog-if 80 [Master])
->         Subsystem: 8086:2828
-> --=20
-> Daniel J Blueman
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->=20
+Try asking this on the libusb mailing list, the developers there should
+be able to help you out.
 
---=20
-Andrey Panin		| Linux and UNIX system administrator
-pazke@donpac.ru		| PGP key: wwwkeys.pgp.net
+good luck,
 
---2JFBq9zoW8cOFH7v
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG3kjVIWZCBzwS8mkRAukxAKCPanOf1sslnzkqfa4KjXdaa+vC4gCgwMVn
-GBUrjMuHlwDexLiOwWRBsxw=
-=028w
------END PGP SIGNATURE-----
-
---2JFBq9zoW8cOFH7v--
+greg k-h
