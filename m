@@ -1,116 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbXIEQQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbXIEQS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757337AbXIEQQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 12:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932129AbXIEQQQ
+	id S1757541AbXIEQS1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 12:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbXIEQST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 12:16:16 -0400
-Received: from phunq.net ([64.81.85.152]:39967 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932140AbXIEQQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 12:16:15 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-Date: Wed, 5 Sep 2007 09:16:03 -0700
-User-Agent: KMail/1.9.5
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dkegel@google.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>
-References: <20070814142103.204771292@sgi.com> <200709050220.53801.phillips@phunq.net> <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 5 Sep 2007 12:18:19 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35465 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753359AbXIEQSS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 12:18:18 -0400
+Date: Wed, 5 Sep 2007 09:16:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: roger@computer-surgery.co.uk, linux-kernel@vger.kernel.org, perex@suse.cz
+Subject: Re: hda_intel : Patch + Regression in 2.6.18 -> 2.6.22
+Message-Id: <20070905091633.87cfaa81.akpm@linux-foundation.org>
+In-Reply-To: <s5hlkbl6qsn.wl%tiwai@suse.de>
+References: <20070822222902.GA28563@computer-surgery.co.uk>
+	<20070905083844.6637da1e.akpm@linux-foundation.org>
+	<s5hlkbl6qsn.wl%tiwai@suse.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709050916.04477.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 05 September 2007 03:42, Christoph Lameter wrote:
-> On Wed, 5 Sep 2007, Daniel Phillips wrote:
-> > If we remove our anti-deadlock measures, including the
-> > ddsnap.vm.fixes (a roll-up of Peter's patch set) and the request
-> > throttling code in dm-ddsnap.c, and apply your patch set instead,
-> > we hit deadlock on the socket write path after a few hours
-> > (traceback tomorrow).  So your patch set by itself is a stability
-> > regression.
->
-> Na, that cannot be the case since it only activates when an OOM
-> condition would otherwise result.
+> On Wed, 05 Sep 2007 18:05:44 +0200 Takashi Iwai <tiwai@suse.de> wrote:
+> Roger, could you try git-alsa patch in the latest mm together with
+> model=acer-aspiore option?  If it works, I can easily add your device
+> ID to the table.
 
-I did not express myself clearly then.  Compared to our current 
-anti-deadlock patch set, you patch set is a regression.  Because 
-without help from some of our other patches, it does deadlock.  
-Obviously, we cannot have that.
+http://userweb.kernel.org/~akpm/git-alsa.patch is a copy of the alsa git
+tree as of two minutes ago.  That applies against current Linus mainline,
+but should apply OK on 2.6.23-rc5 as well.  Please test that, thanks.
 
-> > It is clear which approach is more efficient: Peter's.  This is
-> > because no scanning is required to pop a free page off a free list,
-> > so scanning work is not duplicated.  How much more efficient is an
-> > open question. Hopefully we will measure that soon.
->
-> Efficiency is not a criterion for a rarely used emergency recovery
-> measure.
+Takashi, perhaps that is 2.6.23 material?
 
-That depends on how rarely used.  Under continuous, heavy load this may 
-not be rare at all.  This must be measured.
-
-> > Briefly touching on other factors:
-> >
-> >   * Peter's patch set is much bigger than yours.  The active
-> > ingredients need to be separated out from the other peterz bits
-> > such as reserve management APIs so we can make a fairer comparison.
->
-> Peters patch is much more invasive and requires a coupling of various
-> subsystems that is not good.
-
-I agree that Peter's patch set is larger than necessary.  I do not agree 
-that it couples subsystems unnecessarily.
-
-> >   * Your patch set here does not address the question of atomic
-> >      allocation, though I see you have been busy with that
-> > elsewhere. Adding code to take care of this means you will start
-> > catching up with Peter in complexity.
->
-> Given your tests: It looks like we do not need it.
-
-I do not agree with that line of thinking.  A single test load only 
-provides evidence, not proof.  Your approach is not obviously correct, 
-quite the contrary.  The tested patch set does not help atomic alloc at 
-all, which is clearly a problem we can hit, we just did not hit it this 
-time.
-
-> >   * The questions Peter raised about how you will deal with loads
-> >      involving heavy anonymous allocations are still open.   This
-> > looks like more complexity on the way.
->
-> Either not necessary or also needed without these patches.
-
-Your proof?
-
-> >   * You depend on maintaining a global dirty page limit while
-> > Peter's approach does not.  So we see the peterz approach as
-> > progress towards eliminating one of the great thorns in our side:
-> > congestion_wait deadlocks, which we currently hack around in a
-> > thoroughly disgusting way (PF_LESS_THROTTLE abuse).
->
-> We have a global dirty page limit already. I fully support Peters
-> work on dirty throttling.
-
-Alas, I communicated exactly the opposite of what I intended.  We do not 
-like the global dirty limit.  It makes the vm complex and fragile, 
-unnecessarily.  We favor an approach that places less reliance on the 
-global dirty limit so that we can remove some of the fragile and hard 
-to support workarounds we have had to implement because of it.
-
-> These results show that Peters invasive approach is not needed.
-> Reclaiming easy reclaimable pages when necessary is sufficient.
-
-These results do not show that at all, I apologize for not making that 
-sufficiently clear.
-
-Regards,
-
-Daniel
