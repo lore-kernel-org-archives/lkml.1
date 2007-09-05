@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025AbXIENOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbXIENPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbXIENOS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 09:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755696AbXIENOF
+	id S1757212AbXIENPw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 09:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbXIENPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 09:14:05 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:55695 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756185AbXIENOE (ORCPT
+	Wed, 5 Sep 2007 09:15:44 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:44363 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755058AbXIENPo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 09:14:04 -0400
-Date: Wed, 5 Sep 2007 09:03:44 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@redhat.com,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH] slub - Use local_t protection
-Message-ID: <20070905130344.GA11880@Krystal>
-References: <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com> <20070827211003.GA10627@Krystal> <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com> <20070827213845.GB9748@Krystal> <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com> <20070827222715.GA16982@Krystal> <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com> <20070904200429.GD8157@Krystal> <Pine.LNX.4.64.0709041344040.6376@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
+	Wed, 5 Sep 2007 09:15:44 -0400
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Rescanning SCSI/SATA bus
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <Pine.LNX.4.64.0709051140130.5419@fbirervta.pbzchgretzou.qr>
+Date: Wed, 05 Sep 2007 09:15:35 -0400
+In-Reply-To: <Pine.LNX.4.64.0709051140130.5419@fbirervta.pbzchgretzou.qr> (Jan Engelhardt's message of "Wed, 5 Sep 2007 11:41:39 +0200 (CEST)")
+Message-ID: <yq1zm01l0co.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.50 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709041344040.6376@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:02:17 up 37 days, 13:21,  4 users,  load average: 0.89, 0.63, 0.50
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (clameter@sgi.com) wrote:
-> On Tue, 4 Sep 2007, Mathieu Desnoyers wrote:
-> 
-> > @@ -1566,12 +1565,13 @@ redo:
-> >  		object[c->offset]) != object))
-> >  			goto redo;
-> >  
-> > -	put_cpu();
-> > +	local_exit(flags);
-> >  	if (unlikely((gfpflags & __GFP_ZERO)))
-> >  		memset(object, 0, c->objsize);
-> >  
-> >  	return object;
-> >  slow:
-> > +	local_exit(flags);
-> 
-> Here we can be rescheduled to another processors.
-> 
-> >  	return __slab_alloc(s, gfpflags, node, addr, c)
-> 
-> c may point to the wrong processor.
+>>>>> "Jan" == Jan Engelhardt <jengelh@computergmbh.de> writes:
 
-Good point. the current CPU is not updated at the beginning of the
-slow path.
+Jan> 11:40 sun:../scsi_host/host0 # echo 1 >scan 
+Jan> -bash: echo: write error: Invalid argument
 
-I'll post the updated patchset. Comments are welcome, especially about
-the naming scheme which is currently awkward.
+Jan> What is the proper way to trigger a rescan, if it comes to be
+Jan> necessary?
 
-Mathieu
+echo "- - -" > scan
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Martin K. Petersen	Oracle Linux Engineering
+
