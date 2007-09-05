@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbXIEVtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932472AbXIEVwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758072AbXIEVtT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 17:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756726AbXIEVtJ
+	id S932472AbXIEVwS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 17:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbXIEVwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 17:49:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44226 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755718AbXIEVtH (ORCPT
+	Wed, 5 Sep 2007 17:52:04 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:32977 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756726AbXIEVwC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 17:49:07 -0400
-Date: Thu, 6 Sep 2007 03:32:15 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Jean Delvare <khali@linux-fr.org>
-cc: Patrick Mau <mau@oscar.ping.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Hang in 2.6.23-rc5
-In-Reply-To: <20070905191145.31003be2@hyperion.delvare>
-Message-ID: <alpine.LFD.0.999.0709060326430.26804@enigma.security.iitk.ac.in>
-References: <994260.18490.qm@web57301.mail.re1.yahoo.com>
- <6cf66ee10709021205u7d57b93fv777f414dbba4373f@mail.gmail.com>
- <5a4c581d0709021338s1e9e0dc0md490a032781b60e8@mail.gmail.com>
- <20070902232939.f2c8acbb.francois.cami@free.fr> <20070903063904.GA1935@oscar.prima.de>
- <20070905191145.31003be2@hyperion.delvare>
+	Wed, 5 Sep 2007 17:52:02 -0400
+Date: Wed, 5 Sep 2007 23:52:04 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] build system: section garbage collection for
+	vmlinux
+Message-ID: <20070905215204.GK16016@stusta.de>
+References: <200709051443.21522.vda.linux@googlemail.com> <E1ISxBz-00040p-EO@flower> <200709051946.12096.vda.linux@googlemail.com> <20070905203438.GG475@flower.upol.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070905203438.GG475@flower.upol.cz>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 5 Sep 2007, Jean Delvare wrote:
-
-> > On Mon, Sep 03, 2007 at 04:15:01AM +0530, Satyam Sharma wrote:
-> > > That's my impression as well. That's way too core/busy a codepath to have
-> > > a bug in. As I said earlier, almost anybody testing -rc5 is sure to hit
-> > > this within a few hours (probably less)
-> [...]
+On Wed, Sep 05, 2007 at 10:34:38PM +0200, Oleg Verych wrote:
+> On Wed, Sep 05, 2007 at 07:46:11PM +0100, Denys Vlasenko wrote:
+> > On Wednesday 05 September 2007 16:53, Oleg Verych wrote:
+> > > * Wed, 5 Sep 2007 14:43:21 +0100
+> > > * User-Agent: KMail/1.9.1
+> > > >
+> > > > Build system: section garbage collection for vmlinux
+> > > 
+> > > Maybe this is just a test suit to get finish with `make XYZ static`?
+> > 
+> > They are vaguely connected in a sense that unused function which is
+> > not marked static doesn't generate gcc warning, but will be discarded
+> > by --gc-sections. "make XYZ static" also tends to find them - you make
+> > function static, you recompile the file, and gcc informs you that
+> > the function is not used at all!
+> > 
+> > This happened to me when I did aic7xxx patches.
+> > 
+> > You may yse --print-gc-sections to see the list of discarded sections.
 > 
-> (Satyam's estimation that everybody would hit the bug within an hour
+> Anyway, this is gccism/binutilizm. That about other possible/future
+> options?
 
-... within a *few* hours, not "an" :-)
+The kernel requires GNU gcc and GNU binutils, and if you want to use 
+other tools for building the kernel they have to be sufficiently 
+compatible.
 
-> doesn't match my experience, I had "only" 2 freezes in 60 hours or so.)
+> Give me example, please, why function must be non static if not used.
 
-~10 people bothered to report this on LKML -- and there could easily have
-been others who didn't, and simply switched to -rc4. And then many more
-might've hit it, foudn this thread immediately (like you did), and hence
-didn't report again ... so I still pretty much stand by what I'd said :-)
-But in any case as you said it's fixed already so no bother.
+s/not used/not used in this kernel configuration/
+
+> If usage requires kconfig tuning, then this is a better way to go, than
+> to adopt yet another GNU/Luxury.
+
+The alternative would be to use an unmaintainable amount of #ifdef's.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
