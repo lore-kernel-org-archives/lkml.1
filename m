@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbXIEVGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbXIEVRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757745AbXIEVGv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 17:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbXIEVGn
+	id S1757373AbXIEVRJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 17:17:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXIEVQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 17:06:43 -0400
-Received: from fydelkass.inl.fr ([195.101.59.116]:49414 "EHLO fydelkass.inl.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753772AbXIEVGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 17:06:42 -0400
-X-Greylist: delayed 2933 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 17:06:41 EDT
-Subject: [Patch] Add support for PCMCIA card Sierra WIreless AC850
-From: Eric Leblond <eric@inl.fr>
-To: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-Cc: linux-serial@vger.kernel.org
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-R2NJj+LrnobE4wcLLMfv"
-Organization: INL SARL
-Date: Wed, 05 Sep 2007 22:15:59 +0200
-Message-Id: <1189023359.4228.6.camel@ghlodit.inl.fr>
+	Wed, 5 Sep 2007 17:16:56 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:35156 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754838AbXIEVQz (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 17:16:55 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc4-mm1 - git-alsa.patch breaks audio on Dell Latitude D820
+In-Reply-To: Your message of "Wed, 05 Sep 2007 22:27:35 +0200."
+             <s5hfy1srh6w.wl%tiwai@suse.de>
+From: Valdis.Kletnieks@vt.edu
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <4658.1189021594@turing-police.cc.vt.edu> <s5hir6orhxz.wl%tiwai@suse.de>
+            <s5hfy1srh6w.wl%tiwai@suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: multipart/signed; boundary="==_Exmh_1189027009_2962P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 05 Sep 2007 17:16:49 -0400
+Message-ID: <3705.1189027009@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1189027009_2962P
+Content-Type: text/plain; charset=us-ascii
 
---=-R2NJj+LrnobE4wcLLMfv
-Content-Type: multipart/mixed; boundary="=-cc4HNoCEDHc3b8Tzsaw9"
+On Wed, 05 Sep 2007 22:27:35 +0200, Takashi Iwai said:
 
+> BTW, there are 10 different models to test for Dell with STAC9200
+> (dell-d2[1-3] and dell-m2[1-7], see
 
---=-cc4HNoCEDHc3b8Tzsaw9
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+modprobe snd_hda_intel model=dell-m23 
 
-Hi,
+was the magic incantation.  I'm sure that every user who trips over this
+is going to call it a regression, since the -rc3-mm1 module was able to
+get it right without hints. ;)
 
-This patch adds support for Sierra Wireless AC850 which has the same Ids
-as the AC710/750 but has a different firmware.
-
-PS: Please CC answer as I've not subscribed to the list.
-
-BR,
---=20
-Eric Leblond <eric@inl.fr>
-INL SARL
-
---=-cc4HNoCEDHc3b8Tzsaw9
-Content-Disposition: attachment; filename=Add-support-for-Sierra-Wireless-AC850.txt
-Content-Type: text/plain; name=Add-support-for-Sierra-Wireless-AC850.txt;
-	charset=UTF-8
-Content-Transfer-Encoding: base64
-
-U2lnbmVkLW9mZi1ieTogRXJpYyBMZWJsb25kIDxlcmljQGlubC5mcj4NCi0tLQ0KIGRyaXZlcnMv
-c2VyaWFsL3NlcmlhbF9jcy5jIHwgICAgMSArDQogMSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlv
-bnMoKyksIDAgZGVsZXRpb25zKC0pDQoNCmRpZmYgLS1naXQgYS9kcml2ZXJzL3NlcmlhbC9zZXJp
-YWxfY3MuYyBiL2RyaXZlcnMvc2VyaWFsL3NlcmlhbF9jcy5jDQppbmRleCBhMGVhNDM1Li5mMGU5
-YmE2IDEwMDY0NA0KLS0tIGEvZHJpdmVycy9zZXJpYWwvc2VyaWFsX2NzLmMNCisrKyBiL2RyaXZl
-cnMvc2VyaWFsL3NlcmlhbF9jcy5jDQpAQCAtOTExLDYgKzkxMSw3IEBAIHN0YXRpYyBzdHJ1Y3Qg
-cGNtY2lhX2RldmljZV9pZCBzZXJpYWxfaWRzW10gPSB7DQogCVBDTUNJQV9NRkNfREVWSUNFX0NJ
-U19NQU5GX0NBUkQoMSwgMHgwMTc1LCAweDAwMDAsICJEUDgzOTAzLmNpcyIpLA0KIAlQQ01DSUFf
-TUZDX0RFVklDRV9DSVNfTUFORl9DQVJEKDEsIDB4MDEwMSwgMHgwMDM1LCAiM0NYRU01NTYuY2lz
-IiksDQogCVBDTUNJQV9NRkNfREVWSUNFX0NJU19NQU5GX0NBUkQoMSwgMHgwMTAxLCAweDAwM2Qs
-ICIzQ1hFTTU1Ni5jaXMiKSwNCisJUENNQ0lBX0RFVklDRV9DSVNfUFJPRF9JRDEyKCJTaWVycmEg
-V2lyZWxlc3MiLCAiQUM4NTAiLCAweGQ4NWY2MjA2LCAweDQyYTJjMDE4LCAiU1dfOHh4X1NFUi5j
-aXMiKSwgIC8qIFNpZXJyYSBXaXJlbGVzcyBBQzg1MCAzRyBOZXR3b3JrIEFkYXB0ZXIgUjEgKi8N
-CiAJUENNQ0lBX0RFVklDRV9DSVNfTUFORl9DQVJEKDB4MDE5MiwgMHgwNzEwLCAiU1dfN3h4X1NF
-Ui5jaXMiKSwJLyogU2llcnJhIFdpcmVsZXNzIEFDNzEwL0FDNzUwIEdQUlMgTmV0d29yayBBZGFw
-dGVyIFIxICovDQogCVBDTUNJQV9ERVZJQ0VfQ0lTX01BTkZfQ0FSRCgweDAxOTIsIDB4YTU1NSwg
-IlNXXzU1NV9TRVIuY2lzIiksICAvKiBTaWVycmEgQWlyY2FyZCA1NTUgQ0RNQSAxeHJ0dCBNb2Rl
-bSAtLSBwcmUgdXBkYXRlICovDQogCVBDTUNJQV9ERVZJQ0VfQ0lTX01BTkZfQ0FSRCgweDAxM2Ys
-IDB4YTU1NSwgIlNXXzU1NV9TRVIuY2lzIiksICAvKiBTaWVycmEgQWlyY2FyZCA1NTUgQ0RNQSAx
-eHJ0dCBNb2RlbSAtLSBwb3N0IHVwZGF0ZSAqLw0KLS0gDQoxLjQuNC40DQoNCg==
-
-
---=-cc4HNoCEDHc3b8Tzsaw9--
-
---=-R2NJj+LrnobE4wcLLMfv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+--==_Exmh_1189027009_2962P
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQBG3w5/nxA7CdMWjzIRAu9kAKCGSI2wmdpu8DGyBMA1SrC5Rv4+OACfTPFn
-kEym9xGyftxcM8P9Bb6NbSA=
-=ZuXt
+iD8DBQFG3xzBcC3lWbTT17ARAi/yAJsF8QoXXwwGuvnUtYr0Pw3O1O/OYQCgkqzR
+4TpniAZ4xo0uCbfrEouWBvc=
+=+xHB
 -----END PGP SIGNATURE-----
 
---=-R2NJj+LrnobE4wcLLMfv--
-
+--==_Exmh_1189027009_2962P--
