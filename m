@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbXIEOAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbXIEOEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756918AbXIEOAU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 10:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbXIEOAH
+	id S1756997AbXIEOEX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 10:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbXIEOEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 10:00:07 -0400
-Received: from smtp.opengridcomputing.com ([71.42.183.126]:33955 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756107AbXIEOAF (ORCPT
+	Wed, 5 Sep 2007 10:04:15 -0400
+Received: from qb-out-0506.google.com ([72.14.204.226]:54528 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755524AbXIEOEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 10:00:05 -0400
-Message-ID: <46DEB664.2090704@opengridcomputing.com>
-Date: Wed, 05 Sep 2007 09:00:04 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 5 Sep 2007 10:04:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uoMxrUXT95sOZZ8FxnQkc3gXPg2xB2PiVLyN/9vbsFvzZ9p9R/5BHpjmLE2WKxBLnl2zQsE5vy4z3b3lcig2sT4jei4O+UThTm5UtxIGF3Nyut5T+hyJIi+lEReyLKuyJDQmEwguNGFb7Ekp5K3lFZeXuQ6S4ygWacd3VSK8vsU=
+Message-ID: <d00698fb0709050704j1014b87al20cfb451ac609e81@mail.gmail.com>
+Date: Wed, 5 Sep 2007 16:04:13 +0200
+From: noah <noah123@gmail.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Subject: Re: Rescanning SCSI/SATA bus
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <yq1zm01l0co.fsf@sermon.lab.mkp.net>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Divy Le Ray <divy@chelsio.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 9/11] cxgb3 - engine microcode update
-References: <20070822034947.9404.87301.stgit@speedy5> <46D819CE.5050207@garzik.org>
-In-Reply-To: <46D819CE.5050207@garzik.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0709051140130.5419@fbirervta.pbzchgretzou.qr>
+	 <yq1zm01l0co.fsf@sermon.lab.mkp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2007/9/5, Martin K. Petersen <martin.petersen@oracle.com>:
+> >>>>> "Jan" == Jan Engelhardt <jengelh@computergmbh.de> writes:
+>
+> Jan> 11:40 sun:../scsi_host/host0 # echo 1 >scan
+> Jan> -bash: echo: write error: Invalid argument
+>
+> Jan> What is the proper way to trigger a rescan, if it comes to be
+> Jan> necessary?
+>
+> echo "- - -" > scan
+>
 
+This doesn't appear to work either (2.6.22, sata_nv).
+# find /sys -name scan
+/sys/module/scsi_mod/parameters/scan
+/sys/class/scsi_host/host9/scan
+/sys/class/scsi_host/host8/scan
+/sys/class/scsi_host/host7/scan
+/sys/class/scsi_host/host6/scan
+/sys/class/scsi_host/host5/scan
+/sys/class/scsi_host/host4/scan
+/sys/class/scsi_host/host3/scan
+/sys/class/scsi_host/host2/scan
+/sys/class/scsi_host/host1/scan
+/sys/class/scsi_host/host0/scan
 
-Jeff Garzik wrote:
-> Divy Le Ray wrote:
->> From: Divy Le Ray <divy@chelsio.com>
->>
->> Load microcode engine when the interface
->> is configured up.
->> Bump up version to 1.1.0.
->> Allow the driver to be and running with
->> older microcode images.
->> Allow ethtool to log the microcode version.
->>
->> Signed-off-by: Divy Le Ray <divy@chelsio.com>
-> 
-> ACK patches 9-14, but dropped, since they do not apply to #upstream 
-> (probably due to fixes sent into 2.6.23-rc)
-> 
+# echo --- > /sys/class/scsi_host/host9/scan
+-bash: echo: write error: Invalid argument
 
-Hey Jeff,
+# echo --- > /sys/module/scsi_mod/parameters/scan
+-bash: /sys/module/scsi_mod/parameters/scan: Permission denied
 
-I think 9-14 still need to be incorporated.  I don't see them in your 
-upstream branch, and they aren't in linus' tree either.
-
-Steve.
-
+  -- noah
