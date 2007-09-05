@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbXIEKey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbXIEKgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756686AbXIEKey (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 06:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbXIEKeq
+	id S1756537AbXIEKgM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 06:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbXIEKf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 06:34:46 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:39740 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756089AbXIEKep (ORCPT
+	Wed, 5 Sep 2007 06:35:58 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:20820 "EHLO
+	outbound6-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755868AbXIEKf5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 06:34:45 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 5 Sep 2007 06:23:05 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: building a specific in-tree module is currently a bit broken
-In-Reply-To: <Pine.LNX.4.64.0709051202200.5419@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0709050621160.2509@localhost.localdomain>
-References: <Pine.LNX.4.64.0709050509150.27539@localhost.localdomain>
- <6bffcb0e0709050237m7d948782iffec36253c6fccb2@mail.gmail.com>
- <Pine.LNX.4.64.0709051142080.5419@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0709050536410.31804@localhost.localdomain>
- <Pine.LNX.4.64.0709051202200.5419@fbirervta.pbzchgretzou.qr>
+	Wed, 5 Sep 2007 06:35:57 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+Date: Wed, 5 Sep 2007 12:35:25 +0200
+From: "Robert Richter" <robert.richter@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>,
+       "Arjan van de Ven" <arjan@infradead.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space
+ access for AMD Barcelona
+Message-ID: <20070905103525.GA10749@erda.amd.com>
+References: <20070903081736.288288000@amd.com>
+ <20070903081736.588599000@amd.com>
+ <20070903013157.72c94891@laptopd505.fenrus.org>
+ <20070903091718.GB22144@alberich.amd.com>
+ <20070903043319.7573875b@laptopd505.fenrus.org>
+ <20070903154734.GC22086@alberich.amd.com> <46DE45A2.40403@zytor.com>
+ <20070905084427.GE6409@erda.amd.com> <46DE80F0.4000706@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+In-Reply-To: <46DE80F0.4000706@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 05 Sep 2007 10:35:26.0394 (UTC)
+ FILETIME=[78D249A0:01C7EFA8]
+X-WSS-ID: 6AC059FA0X86610041-03-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Sep 2007, Jan Engelhardt wrote:
+On 05.09.07 11:12:00, H. Peter Anvin wrote:
+> >PCI Devices will not be the same on the bus since PCI read/write
+> >functions will have different behavior. Without the patches you will
+> >get an error when accessing ECS with CF8. We need ECS access for
+> >patches that setups local interrupt vectors. This patches will be
+> >released soon.
+> 
+> You're missing the point.   How will the PCI bus transactions be 
+> different when using MMCONFIG versus your extended CF8 version?
 
->
-> On Sep 5 2007 05:42, Robert P. J. Day wrote:
-> >that doesn't solve the problem.  i should have mentioned that i
-> >already (unnecessarily, i suggest) ran "make modules_prepare", but
-> >the problem persists.
-> >
-> >the issue seems to be that running that last make command to build
-> >the module visor.ko doesn't somehow signal the Makefile that this
-> >is a *module* build, and therefore no module-related initialization
-> >is done, such as creating that directory or setting the Makefile
-> >variable MODVERDIR, etc, etc.
->
-> ah... make M=drivers/foo/bar/
-> it builds the whole directory, but at least it builds it.
+Misunderstood you, with this patch there will be the same behavior,
+that's the intention. There might be slightly differences in ordering
+rules for read/write cycles. IO config cycles are serialized while
+ordering rules for MMIO config cycles may result in unexpected
+behavior for PCI devices on the bus.
 
-oh, i know *that* works but, as you can see, that make command has
-enough info (the "M=" variable) to kick the Makefile into
-module-building mode, so things work properly.
+-Robert
 
-the original problem, of course, is still there.  but i think i've
-flogged this sufficiently.  i'll leave someone else to do the fixing.
-
-rday
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
-http://crashcourse.ca
-========================================================================
+
