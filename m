@@ -1,154 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbXIEXqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbXIEXtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757603AbXIEXqA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 19:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756896AbXIEXpx
+	id S1757763AbXIEXtz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 19:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932116AbXIEXts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 19:45:53 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:47734 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756489AbXIEXpw (ORCPT
+	Wed, 5 Sep 2007 19:49:48 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53762 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752942AbXIEXtr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 19:45:52 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 5 Sep 2007 16:45:45 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Michael Kerrisk <mtk-manpages@gmx.net>
-cc: rdunlap@xenotime.net, tglx@linutronix.de,
+	Wed, 5 Sep 2007 19:49:47 -0400
+Subject: Re: [PATCH] Fix preemptible lazy mode bug
+From: Zachary Amsden <zach@vmware.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linus Torvalds <torvalds@osdl.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>, stable@kernel.org, hch@lst.de,
-       jengelh@computergmbh.de, corbet@lwn.net,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Revised timerfd() interface
-In-Reply-To: <20070905225033.236700@gmx.net>
-Message-ID: <Pine.LNX.4.64.0709051604320.5320@alien.or.mcafeemobile.com>
-References: <20070825064114.107820@gmx.net> <Pine.LNX.4.64.0708300458120.7717@alien.or.mcafeemobile.com>
- <46DD116C.4040301@gmx.net> <20070904011800.762523a4.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0709040805490.6887@alien.or.mcafeemobile.com>
- <20070904204932.208520@gmx.net> <Pine.LNX.4.64.0709041541500.7326@alien.or.mcafeemobile.com>
- <20070905000831.313400@gmx.net> <Pine.LNX.4.64.0709050901420.11426@alien.or.mcafeemobile.com>
- <20070905162352.236680@gmx.net> <Pine.LNX.4.64.0709051251290.11804@alien.or.mcafeemobile.com>
- <20070905225033.236700@gmx.net>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>, stable@kernel.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Andi Kleen <ak@suse.de>
+In-Reply-To: <1189024666.10802.197.camel@localhost.localdomain>
+References: <46CE70C8.2030005@vmware.com>
+	 <1189024666.10802.197.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 05 Sep 2007 16:49:35 -0700
+Message-Id: <1189036175.21516.31.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Sep 2007, Michael Kerrisk wrote:
-
-> Hi Davide,
+On Thu, 2007-09-06 at 06:37 +1000, Rusty Russell wrote:
+> On Thu, 2007-08-23 at 22:46 -0700, Zachary Amsden wrote:
+> > I recently sent off a fix for lazy vmalloc faults which can happen under 
+> > paravirt when lazy mode is enabled.  Unfortunately, I jumped the gun a 
+> > bit on fixing this.  I neglected to notice that since the new call to 
+> > flush the MMU update queue is called from the page fault handler, it can 
+> > be pre-empted.  Both VMI and Xen use per-cpu variables to track lazy 
+> > mode state, as all previous calls to set, disable, or flush lazy mode 
+> > happened from a non-preemptable state.
 > 
-> > > > > > > As I think about this more, I see more problems with
-> > > > > > > your argument.  timerfd needs the ability to get and 
-> > > > > > > get-while-setting just as much as the earlier APIs.
-> > > > > > > Consider a library that creates a timerfd file descriptor that
-> > > > > > > is handed off to an application: that library may want
-> > > > > > > to modify the timer settings without having to create a
-> > > > > > > new file descriptor (the app mey not be able to be told about
-> > > > > > > the new fd).  Your argument just doesn't hold, AFAICS.
-> > > > > > 
-> > > > > > Such hypotethical library, in case it really wanted to offer such 
-> > > > > > functionality, could simply return an handle instead of the raw
-> > > > > > fd, and take care of all that stuff in userspace.
-> > > > > 
-> > > > > Did I miss something?  Is it not the case that as soon as the
-> > > > > library returns a handle, rather than an fd, then the whole
-> > > > > advantage of timerfd() (being able to select/poll/epoll on 
-> > > > > the timer as well as other fds) is lost?  
-> > > > 
-> > > > Why? The handle would simply be a little struct where the timerfd fd
-> > > > is 
-> > > > stored, and a XXX_getfd() would return it.
-> > > > So my point is, I doubt such functionalities are really needed, and I 
-> > > > also argue that the kernel is the best place for such wrapper code
-> > > > to go.
-> > > 
-> > > So what happens if one thread (via the library) wants modify
-> > > a timer's settings at the same timer as another thread is 
-> > > select()ing on it?  The first thread can't do this by creating
-> > > a new timerfd timer, since it wants to affect the select()
-> > > in the other thread?
-> > 
-> > It can be done w/out any problems. The select thread will be notified 
-> > whenever the new timer setting expires.
+> Hi Zach,
 > 
-> We are going in circles here.  I think you are missing my point.
-> Consider the following
+> 	I don't think this patch does anything.  The flush is because we want
+> the just-completed "set_pte" to have immediate effect, so if preempt is
+> enabled we're already screwed because we can be moved between set_pte
+> and the arch_flush_lazy_mmu_mode() call.
 > 
-> [[
-> Thread A: calls library function which creates a timerfd file
-> descriptor.
-> 
-> Thread B: calls select() on the timerfd file descriptor.
-> 
-> Thread A: calls library function which wants to:
->    a) modify timer settings, and retrieve copy of current timer
->       settings, and later
->    b) restore old timer settings.
-> ]]
-> 
-> This seems a quite reasonable use-case to me, and the existing
-> interface simply can't support it.
+> Now, where's the problem caller?  By my reading or rc4, vmalloc faults
+> are fixed up before enabling interrupts.
 
-"Quite reasonable"? :)
-I honestly doubt it, but anyway. Modulo error checking:
+I agree.  The patch is a nop.  I just got overly paranoid.  The whole
+thing is just very prone to bugs.
 
-struct tfd {
-	int fd, clockid;
-	struct itimerspec ts;
-};
+So let's go over it carefully:
 
-struct tfd *tfd_create(int clockid, int flags, const struct itimerspec *ts) {
-	struct tfd *th;
-	th = malloc(sizeof(*th));
-	th->clockid = clockid;
-	th->ts = *ts;
-	th->fd = timerfd(-1, clockid, flags, ts);
-	return th;
-}
+1) Lazy mode can't be entered unless preempt is disabled
+2) Flushes are needed in two known cases: kmap_atomic and vmalloc sync
+3) kmap_atomic can only be used when preempt is disabled
+4) vmalloc sync happens under protection of interrupts disabled
 
-void tfd_close(struct tfd *th) {
-	close(th->fd);
-	free(th);
-}
+Good logically.  What can break this logic?
 
-int tfd_getfd(const struct tfd *th) {
-	return th->fd;
-}
+#1 is defined by us
+#2 is our currently believed complete list of flush scenarios
+#3 is impossible to change by design
+#4 seems very unlikely to change anytime soon
 
-int tfd_gettime(const struct tfd *th, int *clockid, struct itimerspec *ts) {
-	*clockid = th->clockid;
-	*ts = th->ts;
-	return 0;
-}
+Seeing #2 appears weak, let us elaborate:
 
-int tfd_settime(struct tfd *th, int clockid, int flags,
-		const struct itimerspec *ts) {
-	th->fd = timerfd(th->fd, clockid, flags, ts);
-	th->clockid = clockid;
-	th->ts = *ts;
-	return 0;
-}
+A) Lazy mode is used in a couple of controlled paths for user page table
+updates which requires no immediately updated mapping; further, they are
+protected under spinlocks, thus never preempted
+B) Thus only kernel mapping updates require explicit flushes
+C) Any interrupt / fault during lazy mode can only use kmap_atomic or a
+set_pmd to sync a vmalloc region, thus proving my point by circular
+logic (for interrupt / fault cases).
+D) Or better, other kernel mapping changes (kmap, the pageattr code,
+boot_ioremap, vmap, vm86 mark_screen_rdonly) are not usable by
+interrupt / fault handlers, thus proving C by exclusion.
 
-Wrap the get/set with a mutex in case you plan to shoot yourself in a foot 
-by doing get/set from multiple threads ;)
-So, once again:
+So I'm fairly certain there is no further issues with interrupt handlers
+or faults, where update semantics are heavily constrained.  What of the
+actual lazy mode code itself doing kernel remapping?
 
-- I sincerly doubt the above is common usage/design patters for timerfds
+Most of these are clearly bogus (pageattr, boot_ioremap, vm86 stuff) for
+the mm code to use inside a spinlock protected lazy mode region; it does
+seem perfectly acceptable though for the mm code to use kmap or vmap
+(not kmap_atomic) internally somewhere in the pagetable code.
 
-  * timerfds are not a common global resource, ala signals, that requires 
-    get+set+restore pattern - you can have many of them set to different 
-    times
+We can exclude the trivial lazy mode regions (zeromap, unmap, and
+remap).  Easily by inspection.  The PTE copy routine gets deep enough
+that not all paths are immediately obvious, though, we should keep it in
+mind for bug checking.
 
-- Those IMO *very* special use cases can be handled in userspace with few 
-  lines of code, *if* really needed
-
-
-
-- Davide
-
+Zach
 
