@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbXIERtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758366AbXIERt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758215AbXIERtl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 13:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757357AbXIERtb
+	id S1758366AbXIERt5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 13:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758093AbXIERte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 13:49:31 -0400
-Received: from ns1.q-leap.de ([153.94.51.193]:59279 "EHLO mail.q-leap.de"
+	Wed, 5 Sep 2007 13:49:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:55630 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753800AbXIERta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 13:49:30 -0400
-From: Bernd Schubert <bs@q-leap.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: patch: improve generic_file_buffered_write() (2nd try 2/2)
-Date: Wed, 5 Sep 2007 19:49:28 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
-       brian@clusterfs.com,
-       Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
-       bs@q-leap.de
-References: <200709051546.06224.bs@q-leap.de> <20070905083529.a1c8a0a9.randy.dunlap@oracle.com> <200709051941.56145.bs@q-leap.de>
-In-Reply-To: <200709051941.56145.bs@q-leap.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1758011AbXIERtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 13:49:33 -0400
+Subject: Re: [PATCH] Fix preemptible lazy mode bug
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Zachary Amsden <zach@vmware.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Chris Wright <chrisw@sous-sol.org>,
+       stable@kernel.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Andi Kleen <ak@suse.de>, Anthony Liguori <anthony@codemonkey.ws>
+In-Reply-To: <1189011909.21516.1.camel@bodhitayantram.eng.vmware.com>
+References: <46CE70C8.2030005@vmware.com> <46CE8069.9070404@goop.org>
+	 <46CE81DC.90103@vmware.com>  <46D9D517.6010201@goop.org>
+	 <1188850468.10802.66.camel@localhost.localdomain>
+	 <46DD60A9.8080203@goop.org>
+	 <1189010022.10802.161.camel@localhost.localdomain>
+	 <1189011909.21516.1.camel@bodhitayantram.eng.vmware.com>
+Content-Type: text/plain
+Date: Thu, 06 Sep 2007 03:48:59 +1000
+Message-Id: <1189014539.10802.177.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709051949.28585.bs@q-leap.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I guess when aio was introduced this was probably forgotten. For small chunks 
-or synchronous i/o the likehood is correct, but for big data chunks and aio 
-the likehood is false.
+On Wed, 2007-09-05 at 10:05 -0700, Zachary Amsden wrote:
+> On Thu, 2007-09-06 at 02:33 +1000, Rusty Russell wrote:
 
-Signed-off-by: Bernd Schubert <bs@q-leap.de>
-Signed-off-by: Goswin von Brederlow <goswin@vonbrederlow.de>
+> > +	BUG_ON(get_lazy_mode() && !(mode == PARAVIRT_LAZY_NONE |
+> > +				    | mode == PARAVIRT_LAZY_FLUSH));
+> 
+> That's a pretty strange line break.
 
-Index: linux-2.6.20.3/mm/filemap.c
-===================================================================
---- linux-2.6.20.3.orig/mm/filemap.c	2007-09-05 18:51:59.000000000 +0200
-+++ linux-2.6.20.3/mm/filemap.c	2007-09-05 18:53:12.000000000 +0200
-@@ -2100,7 +2100,7 @@
- 	/*
- 	 * handle partial DIO write.  Adjust cur_iov if needed.
- 	 */
--	if (likely(nr_segs == 1))
-+	if (nr_segs == 1)
- 		buf = iov->iov_base + written;
- 	else {
- 		filemap_set_next_iovec(&cur_iov, &iov_base, written);
-@@ -2167,7 +2167,7 @@
- 					vmtruncate(inode, isize);
- 			}
- 		}
--		if (likely(nr_segs == 1))
-+		if (nr_segs == 1)
- 			copied = filemap_copy_from_user(page, offset,
- 							buf, bytes);
- 		else
-@@ -2213,7 +2213,7 @@
- 				count -= copied;
- 				pos += copied;
- 				buf += copied;
--				if (unlikely(nr_segs > 1)) {
-+				if (nr_segs > 1) {
- 					filemap_set_next_iovec(&cur_iov,
- 							&iov_base, copied);
- 					if (count)
+Sorry, should have mentioned it's completely untested: too far from my
+test machine 8(
+
+Thanks,
+Rusty.
+
