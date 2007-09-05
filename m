@@ -1,39 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbXIEXf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbXIEXkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757480AbXIEXf1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 19:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXIEXfT
+	id S1757609AbXIEXkI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 19:40:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbXIEXjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 19:35:19 -0400
-Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:59411
-	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754325AbXIEXfS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 19:35:18 -0400
-X-Greylist: delayed 2532 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 19:35:18 EDT
-Date: Wed, 5 Sep 2007 15:52:53 -0700
-To: linux-kernel@vger.kernel.org
-Cc: "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-Subject: NetApp sues Sun regarding ZFS
-Message-ID: <20070905225253.GA1650@gnuppy.monkey.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: Bill Huey (hui) <billh@gnuppy.monkey.org>
+	Wed, 5 Sep 2007 19:39:55 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44894 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755335AbXIEXjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 19:39:54 -0400
+Date: Thu, 6 Sep 2007 09:39:43 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, sparclinux@vger.kernel.org,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: use of asm/prom.h
+Message-Id: <20070906093943.95037b79.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__6_Sep_2007_09_39_43_+1000_O6x2KOb=HuJVEOYG"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__6_Sep_2007_09_39_43_+1000_O6x2KOb=HuJVEOYG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Folks,
+Hi all,
 
-The official announcement.
+I noticed in the ALSA tree:
 
-	http://www.netapp.com/news/press/news_rel_20070905
+------------------------------ sound/sparc/dbri.c -------------------------=
+-----
+index 12d11fc..e96023f 100644
+@@ -66,6 +66,7 @@
+ #include <sound/control.h>
+ #include <sound/initval.h>
+=20
++#include <asm/prom.h>
+ #include <asm/sbus.h>
+ #include <asm/atomic.h>
 
-Dave Hitz's blog about it.
+(I don't mean to pick on this particular example, it is just what was in
+front of me.)
 
-	http://blogs.netapp.com/dave/
+Could people please consider using linux/{of,of_device,of_platform}.h
+instead of asm/prom.h now that these exist.  Using asm/prom.h only works
+now because it includes the above files, but that may (will?) change
+eventually.
 
-bill
+Most includes of asm/prom.h are there to get access to the routines and
+data structures associated with the Open Firmware device tree, and these
+are now all available from the above files instead.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__6_Sep_2007_09_39_43_+1000_O6x2KOb=HuJVEOYG
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG3z5DTgG2atn1QN8RAoHGAJ9yjtabflhdM1Nv3px2GJgbZlmXwQCbBY5y
+gl3or8BlSbUkAu99u9qtXEY=
+=hUZa
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__6_Sep_2007_09_39_43_+1000_O6x2KOb=HuJVEOYG--
