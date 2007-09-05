@@ -1,103 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbXIEHqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbXIEHtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756255AbXIEHqz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 03:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844AbXIEHqp
+	id S1756498AbXIEHtf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 03:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbXIEHt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 03:46:45 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:14279 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755597AbXIEHqn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 03:46:43 -0400
-Message-ID: <46DE5EB2.4050505@panasas.com>
-Date: Wed, 05 Sep 2007 10:45:54 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 5 Sep 2007 03:49:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44077 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753618AbXIEHt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 03:49:27 -0400
+To: James Pearson <james-p@moving-picture.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Guy Streeter <guy.streeter@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 4096 byte limit to /proc/PID/environ ?
+References: <4474B7DB.8000304@moving-picture.com>
+	<200605242029.k4OKTn9C031700@terminus.zytor.com>
+	<447EF58C.6000605@moving-picture.com>
+	<52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com>
+	<46C33700.1060605@zytor.com> <46D6CBED.4040301@moving-picture.com>
+From: Anton Arapov <aarapov@redhat.com>
+X-URL: http://people.redhat.com/aarapov
+Date: Wed, 05 Sep 2007 09:49:22 +0200
+In-Reply-To: <46D6CBED.4040301@moving-picture.com> (James Pearson's message of "Thu\, 30 Aug 2007 14\:53\:49 +0100")
+Message-ID: <h87in5sgal.fsf@pepelac.englab.brq.redhat.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, jens.axboe@oracle.com, mike.miller@hp.com,
-       grant.likely@secretlab.ca, dm-devel@redhat.com, j-nomura@ce.jp.nec.com
-Subject: Re: [PATCH 3/7] blk_end_request: changing "normal" drivers
-References: <20070831.184219.95065632.k-ueda@ct.jp.nec.com>
-In-Reply-To: <20070831.184219.95065632.k-ueda@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Sep 2007 07:46:04.0382 (UTC) FILETIME=[CFCA4FE0:01C7EF90]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 01 2007 at 1:42 +0300, Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote:
-> This patch converts "normal" drivers, which complete request
-> in a standard way shown below, to use blk_end_request().
-> 
->  a) end_that_request_{chunk/first}
->     spin_lock_irqsave()
->     (add_disk_randomness(), blk_queue_end_tag(), blkdev_dequeue_request())
->     end_that_request_last()
->     spin_unlock_irqrestore()
->     => blk_end_request()
-> 
->  b) spin_lock_irqsave()
->     end_that_request_{chunk/first}
->     (add_disk_randomness(), blk_queue_end_tag(), blkdev_dequeue_request())
->     end_that_request_last()
->     spin_unlock_irqrestore()
->     => spin_lock_irqsave()
->        __blk_end_request()
->        spin_unlock_irqsave()
-> 
->  c) end_that_request_last()
->     => __blk_end_request()
-> 
-> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-> ---
->  arch/arm/plat-omap/mailbox.c    |    9 ++++++---
->  arch/um/drivers/ubd_kern.c      |   10 +---------
->  block/elevator.c                |    4 ++--
->  block/ll_rw_blk.c               |   15 +++++----------
->  drivers/block/DAC960.c          |    6 ++----
->  drivers/block/floppy.c          |    8 +++-----
->  drivers/block/lguest_blk.c      |    5 +----
->  drivers/block/nbd.c             |    4 +---
->  drivers/block/ps3disk.c         |    6 +-----
->  drivers/block/sunvdc.c          |    5 +----
->  drivers/block/sx8.c             |    4 +---
->  drivers/block/ub.c              |    4 ++--
->  drivers/block/viodasd.c         |    5 +----
->  drivers/block/xen-blkfront.c    |    5 ++---
->  drivers/cdrom/viocd.c           |    5 +----
->  drivers/ide/ide-cd.c            |    6 +++---
->  drivers/ide/ide-io.c            |   22 +++++++---------------
->  drivers/message/i2o/i2o_block.c |    8 ++------
->  drivers/mmc/card/block.c        |   24 +++++-------------------
->  drivers/mmc/card/queue.c        |    4 ++--
->  drivers/s390/block/dasd.c       |    4 +---
->  drivers/s390/char/tape_block.c  |    3 +--
->  drivers/scsi/ide-scsi.c         |    8 ++++----
->  drivers/scsi/scsi_lib.c         |   13 ++-----------
->  24 files changed, 57 insertions(+), 130 deletions(-)
-> 
-> diff -rupN 02-sect2byte-macro/arch/arm/plat-omap/mailbox.c 03-normal-caller-change/arch/arm/plat-omap/mailbox.c
-> --- 02-sect2byte-macro/arch/arm/plat-omap/mailbox.c	2007-08-13 00:25:24.000000000 -0400
-> +++ 03-normal-caller-change/arch/arm/plat-omap/mailbox.c	2007-08-23 17:51:33.000000000 -0400
-> @@ -117,7 +117,8 @@ static void mbox_tx_work(struct work_str
->  
-> ...
+  Hey guys, the future of this patch is important for me. What do you think, has this patch any chances to be committed to upstream?
 
-Please Separate this patch to at least three patches.
-1. Block layer - block/elevator.c block/ll_rw_blk.c
-2. SCSI-ML - drivers/scsi/scsi_lib.c
-3. Normal drivers, can also be separated into logical
-   groups like scsi/block etc..
+James Pearson <james-p@moving-picture.com> writes:
+> H. Peter Anvin wrote:
+> There isn't that much that is duplicated - and there are also bits of
+> the /proc/PID/mem code that are not needed in this case, so I'm not
+> really sure if it is worth doing.
+>
+> I did submit a patch a few months ago - see:
+>
+> <http://marc.info/?l=linux-kernel&m=117862109623007&w=2>
 
-This is because these patches introduce conflicts
-to lots of queued work I have, and if you separate
-them it will help me with my giting. Also I think
-that this is logical. Block-layer and scsi_lib are
-not drivers, the Subject of the patch does not match.
-
-Thanks
-Boaz
+-- 
+Anton Arapov, <aarapov@redhat.com>
