@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbXIEW1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757282AbXIEWlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757272AbXIEW1Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 18:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbXIEW1D
+	id S1757282AbXIEWlo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 18:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXIEWlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 18:27:03 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39028 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754325AbXIEW1A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 18:27:00 -0400
-Date: Thu, 6 Sep 2007 04:10:11 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Willy Tarreau <w@1wt.eu>
-cc: Axel Reinhold <axel@freakout.de>,
-       Richard Kojedzinszky <krichy@tvnetwork.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.4.35.1 and panic at boot with arch=c3 and gcc-4.x
-In-Reply-To: <20070905220027.GB11602@1wt.eu>
-Message-ID: <alpine.LFD.0.999.0709060404070.26804@enigma.security.iitk.ac.in>
-References: <20070905220027.GB11602@1wt.eu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+	Wed, 5 Sep 2007 18:41:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:36762 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752942AbXIEWlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 18:41:36 -0400
+Subject: Re: [PATCH 2/2] Fix (improve) deadlock condition on module removal
+	netfilter socket option removal
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Neil Horman <nhorman@tuxdriver.com>, adam@yggdrasil.com,
+       jcm@jonmasters.org, kaber@trash.net,
+       netfilter-devel@lists.netfilter.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1189023999.12261.147.camel@jcmlaptop>
+References: <20070904203053.GC19083@hmsreliant.think-freely.org>
+	 <1189023999.12261.147.camel@jcmlaptop>
+Content-Type: text/plain
+Date: Thu, 06 Sep 2007 08:41:09 +1000
+Message-Id: <1189032069.10802.212.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 6 Sep 2007, Willy Tarreau wrote:
+On Wed, 2007-09-05 at 16:26 -0400, Jon Masters wrote:
+> On Tue, 2007-09-04 at 16:30 -0400, Neil Horman wrote:
 > 
-> I finally tracked the problem down to a dirty trick used to prevent
-> do_test_wp_bit() from being inlined (Axel, you identified the right
-> file). Unfortunately, this trick does not work anymore when gcc-4.x
-> is used without -fno-unit-at-a-time, so let's use the correct method
-> instead.
+> > 	2nd of two patches.  This patch enhances modprobe to operate like rmmod
+> > in non-blocking mode.  It also adds a -w option to allow for explicit blocking
+> > operation.
 > 
->  
-> -/* Put this after the callers, so that it cannot be inlined */
-> -static int do_test_wp_bit(unsigned long vaddr)
+> As I suspected, this patch isn't in the tree. I am going to commit it
+> now because it makes sense. I'm also going to sort out moving things to
+> kernel.org this afternoon while I'm at it - I don't want to confuse
+> people with kerneltools.org any more now I've got a kernel.org acc.
 
-Ick, that was horrible indeed!
+1) You don't want to hand the "wait" flag (ie ~O_NONBLOCK) to
+sub-rmmods,
 
-> I really hope that this trick is not used anywhere else!
+2) You need to do something about this code if wait is specified:
 
-Me too ... funnily enough, 2.6.23-rc5 still has that wrong comment in it!
+	if (usecount != 0) {
+		if (!ignore_inuse)
+			error("Module %s is in use.\n", name);
+		goto remove_rest;
+	}
+
+Cheers,
+Rusty.
+
+
