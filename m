@@ -1,83 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbXIEJOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbXIEJPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756509AbXIEJOY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 05:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbXIEJOQ
+	id S1756660AbXIEJPk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 05:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbXIEJPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 05:14:16 -0400
-Received: from mga05.intel.com ([192.55.52.89]:55509 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754909AbXIEJOP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 05:14:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,210,1186383600"; 
-   d="scan'208";a="293602402"
-Subject: Re: tbench regression - Why process scheduler has impact on tbench
-	and why small per-cpu slab (SLUB) cache creates the scenario?
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu
-In-Reply-To: <Pine.LNX.4.64.0709042354290.7527@schroedinger.engr.sgi.com>
-References: <1188953218.26438.34.camel@ymzhang>
-	 <Pine.LNX.4.64.0709042053320.7231@schroedinger.engr.sgi.com>
-	 <1188969725.26438.46.camel@ymzhang>
-	 <Pine.LNX.4.64.0709042354290.7527@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 05 Sep 2007 17:13:23 +0800
-Message-Id: <1188983603.26438.55.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Wed, 5 Sep 2007 05:15:32 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58351 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755882AbXIEJPb (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 05:15:31 -0400
+Message-ID: <46DE73AA.1090706@sgi.com>
+Date: Wed, 05 Sep 2007 19:15:22 +1000
+From: Timothy Shimmin <tes@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, xfs-oss <xfs@oss.sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: some XFS fixes for 2.6.23
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-04 at 23:58 -0700, Christoph Lameter wrote:
-> On Wed, 5 Sep 2007, Zhang, Yanmin wrote:
-> 
-> > On Tue, 2007-09-04 at 20:59 -0700, Christoph Lameter wrote:
-> > > On Wed, 5 Sep 2007, Zhang, Yanmin wrote:
-> > > 
-> > > > 8) kmalloc-4096 order is 1 which means one slab consists of 2 objects. So a
-> > > 
-> > > You can change that by booting with slub_max_order=0. Then we can also use 
-> > > the per cpu queues to get these order 0 objects which may speed up the 
-> > > allocations because we do not have to take zone locks on slab allocation.
-> > > 
-> > > Note also that Andrew's tree has a page allocator pass through for SLUB 
-> > > for 4k kmallocs bypassing slab completely. That may also address the 
-> > > issue.
-> > > 
-> > > If you want SLUB to handle more objects in the 4k kmalloc cache 
-> > > without going to the page allocator then you can boot f.e. with
-> > > 
-> > > slub_max_order=3 slub_min_objects=8
-> > I tried this approach. The testing result showed 2.6.23-rc4 is about
-> > 2.5% better than 2.6.22. It really resovles the issue.
-> > 
-> > However, the approach treats the slabs in the same policy. Could we
-> > implement a per-slab specific approach like direct b)?
-> 
-> I am not sure what you mean by same policy. Same configuration for all 
-> slabs?
-Yes.
+Hi Linus,
 
-> 
-> > > Try the ways to address the issue that I mentioned above.
-> > I really appreciate your kind comments!
-> 
-> Would it be possible to try the two other approaches that I suggested? I 
-> think both of those may also solve the issue. Try booting with
-> slab_max_order=0
-1) I tried slab_max_order=0 and the regression becomes 12.5%. It's still not good.
+We have a few XFS fixes for 2.6.23 (meant to do this earlier).
+They have been in sgi dev tree and mm tree for a while.
 
-2) I apllied patch slub-direct-pass-through-of-page-size-or-higher-kmalloc.patch
-to kernel 2.6.23-rc4. The new testing result is much better, only 1% less than
-2.6.22.
+Please pull from the for-linus branch:
+     git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 
-So the best solution is booting kernel with "slub_max_order=3 slub_min_objects=8".
 
->  and see what effect it has. The queues of the page 
-> allocator can be much larger than what slab has for 4k pages. There is 
-> really not much of a point in using a slab allocator for page sized 
-> allocations.
+With shortlog:
+-------------------------
+Christoph Hellwig (4):
+       [XFS] Fix sparse NULL vs 0 warnings
+       [XFS] Fix sparse warning in kmem_shake_allow
+       [XFS] fix ASSERT and ASSERT_ALWAYS
+       [XFS] fix sparse shadowed variable warnings
+
+David Chinner (1):
+       [XFS] Set filestreams object timeout to something sane.
+
+Eric Sandeen (1):
+       [XFS] fix nasty quota hashtable allocation bug
+-------------------------
+
+This will update the following files:
+
+  fs/xfs/linux-2.6/kmem.h        |    2 +-
+  fs/xfs/linux-2.6/xfs_aops.c    |    8 ++++----
+  fs/xfs/linux-2.6/xfs_globals.c |    2 +-
+  fs/xfs/quota/xfs_qm.c          |    3 ++-
+  fs/xfs/support/debug.h         |   10 ++++++----
+  fs/xfs/xfs_da_btree.c          |    1 -
+  fs/xfs/xfs_log.c               |   12 ++++++------
+  fs/xfs/xfs_log_recover.c       |   12 ++++++------
+  8 files changed, 26 insertions(+), 24 deletions(-)
+
+through these commits:
+
+commit 5995cb7d805496362e5af73235145667096fbc6f
+Author: Eric Sandeen <sandeen@sandeen.net>
+Date:   Thu Aug 16 16:49:11 2007 +1000
+
+     [XFS] fix nasty quota hashtable allocation bug
+
+     This git mod: 77e4635ae191774526ed695482a151ac986f3806
+     converted to a "greedy" allocation interface, but for the quota hashtables
+     it switched from allocating XFS_QM_HASHSIZE (nr of elements)
+     xfs_dqhash_t's to allocating only XFS_QM_HASHSIZE *bytes* - quite a lot
+     smaller! Then when we converted hsize "back" to nr of elements (the
+     division line) hsize went to 0. This was leading to oopses when running
+     any quota tests on the Fedora 8 test kernel, but the problem has been
+     there for almost a year.
+
+     SGI-PV: 968837
+     SGI-Modid: xfs-linux-melb:xfs-kern:29354a
+
+     Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+     Signed-off-by: David Chinner <dgc@sgi.com>
+     Signed-off-by: Tim Shimmin <tes@sgi.com>
+
+commit 265c1fac38e37e828df09965406e9cc20bfa3588
+Author: Christoph Hellwig <hch@infradead.org>
+Date:   Thu Aug 16 15:38:19 2007 +1000
+
+     [XFS] fix sparse shadowed variable warnings
+
+     - in xfs_probe_cluster rename the inner len to pg_len. There's no harm
+       here because the outer len isn't used after the inner len comes into
+       existence but it keeps the code clean.
+     - in xfs_da_do_buf remove the inner i because they don't overlap
+       and they are both the same type.
+
+     SGI-PV: 968555
+     SGI-Modid: xfs-linux-melb:xfs-kern:29311a
+
+     Signed-off-by: Christoph Hellwig <hch@infradead.org>
+     Signed-off-by: David Chinner <dgc@sgi.com>
+     Signed-off-by: Tim Shimmin <tes@sgi.com>
+
+commit ee5c80239d5f152d99f69165afbd115518353563
+Author: Christoph Hellwig <hch@infradead.org>
+Date:   Thu Aug 16 15:38:08 2007 +1000
+
+     [XFS] fix ASSERT and ASSERT_ALWAYS
+
+     - remove the != 0 inside the unlikely in ASSERT_ALWAYS because sparse now
+       complains about comparisons between pointers and 0
+     - add a standalone ASSERT implementation because defining it to
+       ASSERT_ALWAYS means the string is expanded before the token passing
+       stringification. This way we get the actual content of the
+       assertion in the assfail message and don't overflow sparse's
+       stringification buffer leading to sparse error messages.
+
+     SGI-PV: 968555
+     SGI-Modid: xfs-linux-melb:xfs-kern:29310a
+
+     Signed-off-by: Christoph Hellwig <hch@infradead.org>
+     Signed-off-by: David Chinner <dgc@sgi.com>
+     Signed-off-by: Tim Shimmin <tes@sgi.com>
+
+commit 34521c5e4971d01f6ef650fdee59e07be6c2c5e3
+Author: Christoph Hellwig <hch@infradead.org>
+Date:   Thu Aug 16 15:37:57 2007 +1000
+
+     [XFS] Fix sparse warning in kmem_shake_allow
+
+     We can't return a masked result of a __bitwise type. Compare it to 0 first
+     to keep the behaviour without the warning.
+
+     SGI-PV: 968555
+     SGI-Modid: xfs-linux-melb:xfs-kern:29309a
+
+     Signed-off-by: Christoph Hellwig <hch@infradead.org>
+     Signed-off-by: David Chinner <dgc@sgi.com>
+     Signed-off-by: Tim Shimmin <tes@sgi.com>
+
+commit 4b80916b29170744632356dd2e801f7c374676eb
+Author: Christoph Hellwig <hch@infradead.org>
+Date:   Thu Aug 16 15:37:36 2007 +1000
+
+     [XFS] Fix sparse NULL vs 0 warnings
+
+     Sparse now warns about comparing pointers to 0, so change all instance
+     where that happens to NULL instead.
+
+     SGI-PV: 968555
+     SGI-Modid: xfs-linux-melb:xfs-kern:29308a
+
+     Signed-off-by: Christoph Hellwig <hch@infradead.org>
+     Signed-off-by: David Chinner <dgc@sgi.com>
+     Signed-off-by: Tim Shimmin <tes@sgi.com>
+
+commit 8da22d7a3690818f6d340baa0ea585e71f0c506f
+Author: David Chinner <dgc@sgi.com>
+Date:   Thu Aug 16 15:20:56 2007 +1000
+
+     [XFS] Set filestreams object timeout to something sane.
+
+     SGI-PV: 968554
+     SGI-Modid: xfs-linux-melb:xfs-kern:29303a
+
+     Signed-off-by: David Chinner <dgc@sgi.com>
+     Signed-off-by: Christoph Hellwig <hch@infradead.org>
+     Signed-off-by: Tim Shimmin <tes@sgi.com>
