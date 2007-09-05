@@ -1,92 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbXIEFRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbXIEFcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755976AbXIEFRW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 01:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbXIEFRO
+	id S1756176AbXIEFcn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 01:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXIEFcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 01:17:14 -0400
-Received: from sslsrv.de ([62.75.159.123]:59910 "EHLO sslsrv.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753453AbXIEFRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 01:17:13 -0400
-X-Greylist: delayed 881 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 01:17:13 EDT
-Message-ID: <38292.193.171.152.61.1188968546.squirrel@webmail.marek.priv.at>
-Date: Wed, 5 Sep 2007 07:02:26 +0200 (CEST)
-Subject: 2.6.23.rc5: Problem with procfs -- schedstat
-From: "Ph. Marek" <philipp@marek.priv.at>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6-4.fc1.1.legacy
-MIME-Version: 1.0
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+	Wed, 5 Sep 2007 01:32:35 -0400
+Received: from mga10.intel.com ([192.55.52.92]:62142 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751897AbXIEFcf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 01:32:35 -0400
+X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 01:32:34 EDT
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,209,1186383600"; 
+   d="scan'208";a="293520297"
+Subject: Re: tbench regression - Why process scheduler has impact on tbench
+	and why small per-cpu slab (SLUB) cache creates the scenario?
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu
+In-Reply-To: <Pine.LNX.4.64.0709042053320.7231@schroedinger.engr.sgi.com>
+References: <1188953218.26438.34.camel@ymzhang>
+	 <Pine.LNX.4.64.0709042053320.7231@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 05 Sep 2007 13:22:05 +0800
+Message-Id: <1188969725.26438.46.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everybody,
+On Tue, 2007-09-04 at 20:59 -0700, Christoph Lameter wrote:
+> On Wed, 5 Sep 2007, Zhang, Yanmin wrote:
+> 
+> > 8) kmalloc-4096 order is 1 which means one slab consists of 2 objects. So a
+> 
+> You can change that by booting with slub_max_order=0. Then we can also use 
+> the per cpu queues to get these order 0 objects which may speed up the 
+> allocations because we do not have to take zone locks on slab allocation.
+> 
+> Note also that Andrew's tree has a page allocator pass through for SLUB 
+> for 4k kmallocs bypassing slab completely. That may also address the 
+> issue.
+> 
+> If you want SLUB to handle more objects in the 4k kmalloc cache 
+> without going to the page allocator then you can boot f.e. with
+> 
+> slub_max_order=3 slub_min_objects=8
+I tried this approach. The testing result showed 2.6.23-rc4 is about
+2.5% better than 2.6.22. It really resovles the issue.
 
-I found a problem in /proc/self/schedstat: a simple "cat" can give "wrong"
-results.
+However, the approach treats the slabs in the same policy. Could we
+implement a per-slab specific approach like direct b)?
 
-        /proc# cat self/schedstat
-        91117 26027 2
-        /proc# cat self/schedstat
-        90691 27872 2
-        /proc# cat self/schedstat
-        995483 15675 3
+> 
+> which will result in a kmalloc-4096 that caches 8 objects.
+> 
+> > 	b) Change SLUB per-cpu slab cache, to cache more slabs instead of only one
+> > slab. This way could use page->lru to creates a list linked in kmem_cache->cpu_slab[]
+> > whose members need to be changed to as list_head. As for how many slabs could be in
+> > a per-cpu slab cache, it might be implemented as a sysfs parameter under /sys/slab/XXX/.
+> > Default could be 1 to satisfy big machines.
+Above direction b) looks more flexible.
 
-        /proc# cat self/schedstat
-        478050 124422 3
-        /proc# cat self/schedstat
-        87912 21539 2
-        /proc# cat self/schedstat
-        81382 19722 2
-        /proc# cat self/schedstat
-        87999 119699 2
-        /proc# cat self/schedstat
-        87192 25990 2
-        /proc# cat self/schedstat
-        80114 15113 2
-        3
-        /proc# cat self/schedstat
-        93064 28817 2
-        /proc# cat self/schedstat
-        90834 22816 2
-        /proc# cat self/schedstat
-        87806 37581 2
-        /proc# cat self/schedstat
-        80187 20283 2
-        3
-        /proc#
+In addition, could process scheduler also have an enhancement to schedule waken
+processes firstly or do some favor for waken processes? From cache-hot point of view,
+this enhancement might help performance, because mostly, waken process and waker share
+some data.
 
-Please note the extra newline and possible other digits.
+> Try the ways to address the issue that I mentioned above.
+I really appreciate your kind comments!
 
-A strace reveals that cat does
-        open("self/schedstat", O_RDONLY|O_LARGEFILE) = 3
-        fstat64(3, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
-        read(3, "946533 98256 64\n", 4096)      = 16
-        write(1, "946533 98256 64\n", 16)       = 16
-        read(3, "8\n", 4096)                    = 2
-        write(1, "8\n", 2)                      = 2
-        read(3, "", 4096)                       = 0
-        close(3)                                = 0
-        close(1)                                = 0
-        exit_group(0)                           = ?
-
-The simple fix would be to change the format in proc_pid_schedstat(), so
-that it always returns the same number of bytes.
-
-Or proc_info_read() gets changed - if less bytes than wanted (by userspace)
-were returned, mark that file for returning EOF next time. But I fear that
-that might break other entries that rely on getting repeatedly called.
-
-
-Regards,
-
-Phil
-
-
--- 
-Versioning your /etc, /home or even your whole installation?
-             Try fsvs (fsvs.tigris.org)!
+-yanmin
