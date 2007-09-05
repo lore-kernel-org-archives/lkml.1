@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756452AbXIEINY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbXIEIOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756452AbXIEINY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 04:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbXIEINS
+	id S1756605AbXIEIOf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 04:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbXIEIO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 04:13:18 -0400
-Received: from ns2.suse.de ([195.135.220.15]:60399 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753618AbXIEINR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 04:13:17 -0400
-From: Andi Kleen <ak@suse.de>
-To: Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu variable (v2) (fwd)
-Date: Wed, 5 Sep 2007 09:10:10 +0100
-User-Agent: KMail/1.9.1
-Cc: Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
-       steiner@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kamalesh@linux.vnet.ibm.com
-References: <Pine.LNX.4.64.0708312028400.24049@schroedinger.engr.sgi.com> <20070904141055.e00a60d7.akpm@linux-foundation.org> <46DDE623.1090402@sgi.com>
-In-Reply-To: <46DDE623.1090402@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709050910.10954.ak@suse.de>
+	Wed, 5 Sep 2007 04:14:28 -0400
+Received: from bay0-omc1-s23.bay0.hotmail.com ([65.54.246.95]:3225 "EHLO
+	bay0-omc1-s23.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753154AbXIEIO1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 04:14:27 -0400
+Message-ID: <BAY103-DAV12D93B7C4F6214C867EE70B2CB0@phx.gbl>
+X-Originating-IP: [85.36.106.198]
+X-Originating-Email: [pupilla@hotmail.com]
+From: "Marco Berizzi" <pupilla@hotmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Cc: <linux-kernel@vger.kernel.org>, "David Chinner" <dgc@sgi.com>,
+       <xfs@oss.sgi.com>, <mel@skynet.ie>,
+       "Marco Berizzi" <pupilla@hotmail.com>
+References: <BAY103-DAV11CCE8C757E221217A0176B2EA0@phx.gbl> <Pine.LNX.4.64.0708030937280.17307@schroedinger.engr.sgi.com> <BAY103-DAV602D6B6D39BC875BBCB69B2CA0@phx.gbl> <Pine.LNX.4.64.0709040952570.5768@schroedinger.engr.sgi.com>
+Subject: Re: kernel BUG at mm/slab.c:2980 (was Re: [<c019c63f>] xfs_bmap_search_multi_extents+0x6f/0xe0)
+Date: Wed, 5 Sep 2007 10:12:56 +0200
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1123
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1123
+X-OriginalArrivalTime: 05 Sep 2007 08:14:26.0404 (UTC) FILETIME=[C6464240:01C7EF94]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Christoph Lameter" wrote:
 
-> > It'd be better to convert the unconverted architectures?
 
-Agreed.
+> On Tue, 4 Sep 2007, Marco Berizzi wrote:
+>
+> > After a week uptime I got this error. I hope it
+> > will be useful for you.
+>
+> Yes indeed but this is a different type of failure. Looks like a
+higher
+> allocation failure in the networking code. Someone created objects
+that
+> required an order 2 allocations that failed.
+>
+> > SLUB: Genslabs=22, HWalign=32, Order=0-1, MinObjects=4, CPUs=1,
+Nodes=1
+>
+> Slub is restricted to order 0 and 1 allocs.
+>
+> >   PREFETCH window: e5c00000-e7cfffff
+> > NET: Registered protocol family 2
+> > IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
+> > TCP established hash table entries: 8192 (order: 4, 65536 bytes)
+> > TCP bind hash table entries: 8192 (order: 3, 32768 bytes)
+>
+> Hmmmm.
+>
+> > eth2:  setting full-duplex.
+> > swapper: page allocation failure. order:2, mode:0x4020
+> >  [<c013b21d>] __alloc_pages+0x1ed/0x2e0
+> >  [<c014ee3b>] allocate_slab+0x4b/0x90
+> >  [<c014eef2>] new_slab+0x32/0x150
+> >  [<c014f47b>] __slab_alloc+0xcb/0x120
+> >  [<c014f429>] __slab_alloc+0x79/0x120
+> >  [<c02b0183>] tcp_collapse+0x113/0x3b0
+>
+> tcp_collapse? This is due to a network configuration that required an
+> order 2 kmalloc block. Jumbo frames?
 
-> I can easily do the changes for ia64 and test them.  I don't have the
-> capability of testing on the powerpc.
+I don't use jumbo frames. Hardware is
+very old (celeron with 3com 3c905).
 
-You can get cross compilers and make it compile and I'm sure some
-powerpc person will be happy to test it then when you post the patches
 
-> And are you asking for just the changes to fix the build problem, or the
-> whole set of the changes that were made for x86_64 and i386 in regards to
-> converting NR_CPU arrays to per cpu data?
-
-At least the variables that are used by non architecture specific code 
-(like cpu_sibling_map) should be probably all converted. For architecture
-specific variables it's ok to leave it to the architecture people.
-
--Andi
