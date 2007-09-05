@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbXIEQ77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757796AbXIERAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757312AbXIEQ77 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 12:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbXIEQ7v
+	id S1757796AbXIERAd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 13:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbXIERAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 12:59:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59281 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751155AbXIEQ7u (ORCPT
+	Wed, 5 Sep 2007 13:00:19 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:34596 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754870AbXIERAR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 12:59:50 -0400
-Date: Wed, 5 Sep 2007 09:58:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Udo van den Heuvel <udovdh@xs4all.nl>
-Cc: linux-kernel@vger.kernel.org, bunk@kernel.org, mpm@selenic.com,
-       mb@bu3sch.de
-Subject: Re: possible BUG while doing gpg --gen-key
-Message-Id: <20070905095802.e21c507e.akpm@linux-foundation.org>
-In-Reply-To: <46DEDE23.1090607@xs4all.nl>
-References: <46CF079C.7010304@xs4all.nl>
-	<20070825011419.GL30705@stusta.de>
-	<46CFCA78.2090500@xs4all.nl>
-	<46D0272D.4010800@xs4all.nl>
-	<20070902045520.47b0eafe.akpm@linux-foundation.org>
-	<20070905094023.3542dacc.akpm@linux-foundation.org>
-	<46DEDE23.1090607@xs4all.nl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Sep 2007 13:00:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XG7nTLdf0CvZDz5XBuBJJEXLIT8ZA0KCJFlEHTPEAaCytZEaKSr6raCCSRg8AItI9SeDNdbyE+nTV9IeFap9sMGXJuftkEGIDw+JPA5J4SESKTXab8so+9R9hlTW/lWgylbPhyhGbHWrZmiDU4R5eNFAYmqQMfZJZFEecoHR9pY=
+Message-ID: <43e72e890709051000m74252604paff3eb1651f55d22@mail.gmail.com>
+Date: Wed, 5 Sep 2007 13:00:15 -0400
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: request for information about the "ath5k" licensing
+Cc: "Reyk Floeter" <reyk@openbsd.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, linux-netdev@vger.kernel.org,
+       jirislaby@gmail.com, moglen@softwarefreedom.org
+In-Reply-To: <200709051835.33572.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070905151823.GA1384@slim.vantronix.net>
+	 <200709051835.33572.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 05 Sep 2007 18:49:39 +0200 Udo van den Heuvel <udovdh@xs4all.nl> wrote:
-> Andrew Morton wrote:
-> >> On Sun, 2 Sep 2007 04:55:20 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> >>> On Sat, 25 Aug 2007 14:57:17 +0200 Udo van den Heuvel <udovdh@xs4all.nl> wrote:
-> >>> Udo van den Heuvel wrote:
-> >>>> Now it works:
-> >>> Stranger even:
-> >>>
-> >>> With audio-entropyd, rngd active and the netdev-random patch working I
-> >>> cannot reproduce the crash. Even after a fresh boot.
-> >> It would really help if your oops stack trace wasn't truncated.  Can you
-> >> see if you can generate a complete one using a recent kernel?  Enabling
-> >> CONFIG_FRAME_POINTER and disabling CONFIG_4K_STACKS might help in this.
-> >>
-> > 
-> > So... what's happening here?  Did the trail go cold?
-> 
-> Well, I just rebooted the box for an other problem (see
-> http://bugzilla.kernel.org/show_bug.cgi?id=8377 for details)
+On 9/5/07, Michael Buesch <mb@bu3sch.de> wrote:
+> On Wednesday 05 September 2007, Reyk Floeter wrote:
+> > I'm the author of the free hardware driver layer for wireless Atheros
+> > devices in OpenBSD, also known as "OpenHAL".
+> >
+> > I'm still trying to get an idea about the facts and the latest state
+> > of the incidence that violated the copyright of my code, because I
+> > just returned from vacation.
+>
+> > Could you please give me some feedback about the latest state? Please
+> > reply in private, I'm not subscribed to any of the Linux lists and I'm
+> > rather interested in facts than in the usual trolling.
+> >
+> > - Has this issue been fixed?
+>
+> It has never been applied to any repository.
+> -> No issue and no copyright violation.
+>
+> > - Is there any repository available with the "ath5k" code using a
+> > modified/"extended" license?
+>
+> No.
 
-erp, the bug report from hell #2.
+Well that is not accurate. Please give us a few we are working on
+verifying some information for you.
 
-> and did a
-> fresh try:
-> 
->  strace gpg --gen-key 2> ~/gpg.txt
-> 
-> Oddly enough the action completes successfully. This is with both
-> audio-entropyd and rngd running and netdev-random patch in the kernel.
-> The very same thing triggered the bug without problem before trying with
-> the mentioned deamons stopped.
-> Now even doing rm -rf .gnupg/ does not help in reproducing.
-> 
-> So yes, all is OK, and no, I don't know why.
+> > I don't know how to find the relevant bits in the various Linux git
+> > repositories. Sorry, I don't get the structure of it. Are there any
+> > other sources online except this diff on the linux kernel mailing
+> > list?
+> >
+> > - Are there any plans to release the "ath5k" code using a
+> > modified/"extended" license?
+>
+> No.
+>
 
-oh well, thanks.  If there's really a bug in there then someone will
-reliably hit it one day.  Thanks for following up.
+Same here. Apologies for this taking so long. It'll all be sorted out soon.
 
+  Luis
