@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbXIET1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbXIET3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbXIET1Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 15:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756464AbXIET1S
+	id S1757456AbXIET3Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 15:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbXIET3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 15:27:18 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60080 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756422AbXIET1R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 15:27:17 -0400
-Date: Wed, 5 Sep 2007 21:27:19 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: sam@ravnborg.org, kai@germaschewski.name, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] build system: section garbage collection for
-	vmlinux
-Message-ID: <20070905192719.GH16016@stusta.de>
-References: <200709051443.21522.vda.linux@googlemail.com>
+	Wed, 5 Sep 2007 15:29:16 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4235 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754510AbXIET3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 15:29:15 -0400
+Date: Wed, 5 Sep 2007 15:27:44 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Patrick McHardy <kaber@trash.net>, adam@yggdrasil.com, jcm@jonmasters.org,
+       netfilter-devel@lists.netfilter.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Fix (improve) deadlock condition on module removal netfilter socket option removal
+Message-ID: <20070905192744.GB25050@hmsreliant.think-freely.org>
+References: <20070904202433.GA19083@hmsreliant.think-freely.org> <46DEC9BF.9010807@trash.net> <1189008806.10802.150.camel@localhost.localdomain> <20070905170831.GA25050@hmsreliant.think-freely.org> <1189014097.10802.174.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200709051443.21522.vda.linux@googlemail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <1189014097.10802.174.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 05, 2007 at 02:43:21PM +0100, Denys Vlasenko wrote:
-
-> Build system: section garbage collection for vmlinux
+On Thu, Sep 06, 2007 at 03:41:37AM +1000, Rusty Russell wrote:
+> On Wed, 2007-09-05 at 13:08 -0400, Neil Horman wrote:
+> > On Thu, Sep 06, 2007 at 02:13:26AM +1000, Rusty Russell wrote:
+> > > On Wed, 2007-09-05 at 17:22 +0200, Patrick McHardy wrote:
+> > > > But I'm wondering, wouldn't module refcounting alone fix this problem?
+> > > > If we make nf_sockopt() call try_module_get(ops->owner), remove_module()
+> > > > on ip_tables.ko would simply fail because the refcount is above zero
+> > > > (so it would fail at point 3 above). Am I missing something important?
+> > > 
+> > > Yes, that seems the correct solution to me, too.  ISTR that this code
+> > > predates the current module code.
+> > > 
+> > > Rusty.
+> > 
+> > Thanks guys-
+> > 	When I first started looking at this problem I would have agreed with
+> > you, that module reference counting alone would fix the problem.  However,
+> > delete_module can work in either a non-blocking or a blocking mode.  rmmod
+> > passes O_NONBLOCK to delete module, and so is fine, but modprobe does not.
 > 
-> Newer gcc and binutils can do dead code and data removal
-> at link time. It is achieved using combination of
-> -ffunction-sections -fdata-sections options for gcc and
-> --gc-sections for ld.
->...
+> Hi Neil,
+> 
+> 	You have this backwards: O_NONBLOCK is the default.  That seems to be
+> what everyone wants, although I implemented 'rmmod -w' because it seemed
+> like a good option.
+> 
+Thats really the point I'm trying to make.  O_NONBLOCK should be the default,
+but it isn't in the case of modprobe. If you look at the rmmod sources,
+O_NONBLOCK is set in the flags field in the main routine, and cleared if the -w
+option is set.  Whereas in the modprobe sources the only call ever made to
+delete_module passes the O_EXLC flag only, and never sets O_NONBLOCK, resulting
+in persistent blocking operation.  My 2nd patch corrects this by adding a flags
+variable to modprobe and setting it to O_NONBLOCK|O_EXLC, and clearing it if the
+(new) -w option is specified to modprobe, just like in rmmod.
 
-In the long term I'd like us to be able to compile the whole (or at 
-least most of) the kernel with one "-combine -fwhole-program" gcc call 
-which should bring the same positive effect plus enables gcc to do 
-additional optimizations.
+Now, I suppose its possible that I've not been looking at the right source tree
+when doing my work.  I've based my modprobe patch on this git tree:
+http://git.kernel.org/?p=linux/kernel/git/kyle/module-init-tools.git;a=summary
+If theres a newer one, if you could please point it out to me, I'd appreciate
+it.  If the functional equivalent of my second patch is already in there, then
+we just need my first patch to be good to go.
 
-That's meant as a remark, not against your patch (which is for a lower 
-hanging fruit).
+Thanks & Regards
+Neil
 
-> vda
-
-cu
-Adrian
+> Rusty.
+> 
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
