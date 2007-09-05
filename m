@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbXIEMTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbXIEMZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756472AbXIEMTs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 08:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbXIEMTk
+	id S1756442AbXIEMZW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 08:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbXIEMZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 08:19:40 -0400
-Received: from cantor.suse.de ([195.135.220.2]:54071 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754073AbXIEMTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 08:19:39 -0400
-Date: Wed, 5 Sep 2007 14:19:38 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Daniel Phillips <phillips@phunq.net>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dkegel@google.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-Message-ID: <20070905121937.GA9246@wotan.suse.de>
-References: <20070814142103.204771292@sgi.com> <200709050220.53801.phillips@phunq.net> <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com> <20070905114242.GA19938@wotan.suse.de> <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 5 Sep 2007 08:25:10 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:11321 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754142AbXIEMZI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 08:25:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=EJPySU4vr5ZcpU6yYLItaO72fwPFVSgzJ6R4yttA+/bsJ/pfVv/vcUnjwXzpk4MhIDzd00Fhw1kr7oqxSUJrSOX8e/Y62/1T8r3H3Jr1Mak1z3oU9xXLO052dJQtzVCof4pz3cKAmGL7LYeFjz9emmofrt3wBTmuO1++opgsYZM=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: [RFC][PATCH] /proc/<pid>/pmaps - memory maps in granularity of pages
+Date: Wed, 5 Sep 2007 13:24:59 +0100
+User-Agent: KMail/1.9.1
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Rientjes <rientjes@google.com>,
+       John Berthels <jjberthels@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+References: <20070814085204.GA10884@mail.ustc.edu.cn> <20070814162618.GV30556@waste.org>
+In-Reply-To: <20070814162618.GV30556@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200709051324.59283.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 05, 2007 at 05:14:06AM -0700, Christoph Lameter wrote:
-> On Wed, 5 Sep 2007, Nick Piggin wrote:
+On Tuesday 14 August 2007 17:26, Matt Mackall wrote:
+> On Tue, Aug 14, 2007 at 04:52:04PM +0800, Fengguang Wu wrote:
+> > Here is a sample output:
+> > 
+> > # cat /proc/$$/pmaps
+> > 080c9000-080f6000 rwxp 080c9000 00:00 0                                  [heap]
+> > 32969   45      Y_A_P__ 1
+...
+> > f7de1000-f7de3000 rwxp 00011000 03:00 176630                             /lib/libnsl-2.3.6.so
+> > 17      2       Y_A_P__ 1
+> > [...]
 > 
-> > However I really have an aversion to the near enough is good enough way of
-> > thinking. Especially when it comes to fundamental deadlocks in the VM. I
-> > don't know whether Peter's patch is completely clean yet, but fixing the
-> > fundamentally broken code has my full support.
-> 
-> Uhh. There are already numerous other issues why the VM is failing that is 
-> independent of Peter's approach.
-
-I don't know what your point is? We either ignore it, or try to fix things
-one at a time.
+> That's a _lot_ of data to generate and parse. I doubt we can watch a
+> larger app in realtime with this interface. And it doesn't give us
+> physical page numbers either.
 
 
-> > I hate it that there are theoretical bugs still left even if they would
-> > be hit less frequently than hardware failure. And that people are really
-> > happy to put even more of these things in :(
-> 
-> Theoretical bugs? Depends on one's creativity to come up with them I 
-> guess. So far we do not even get around to address the known issues and 
-> this multi subsystem patch has the potential of creating more.
+> > 080c9000-080f6000 rwxp 080c9000 00:00 0                                  [heap]
+> > 32969   45      Y_A_P__ 1
+    ^^^^^   ^^
+> > f7dba000-f7dc3000 r-xp 00000000 03:00 176633                             /lib/libnss_files-2.3.6.so
+                                    ^^ ^^ ^^^^^^
 
-I can't direct people as to what bugs to work on.
+Since it's a new /proc file, we are not bound by compatibility.
 
-
-> > Anyway, as you know I like your patch and if that gives Peter a little
-> > more breathing space then it's a good thing. But I really hope he doesn't
-> > give up on it, and it should be merged one day.
-> 
-> Using the VM to throttle networking is a pretty bad thing because it 
-> assumes single critical user of memory. There are other consumers of 
-> memory and if you have a load that depends on other things than networking 
-> then you should not kill the other things that want memory.
-
-Implementation issues aside, the problem is there and I would like to
-see it fixed regardless if some/most/or all users in practice don't
-hit it.
-
+Export *all* numbers in hex, and ensure that they are always even-chars wide
+("fff" bad, "0fff" good). This way you can do binary<->string conversions
+(both in kernel and in userspace) 8 bits per CPU cycle, or even faster.
+--
+vda
