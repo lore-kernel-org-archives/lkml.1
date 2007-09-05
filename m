@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758366AbXIERt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757116AbXIERvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758366AbXIERt5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 13:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758093AbXIERte
+	id S1757116AbXIERvY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 13:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbXIERvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 13:49:34 -0400
-Received: from ozlabs.org ([203.10.76.45]:55630 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758011AbXIERtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 13:49:33 -0400
-Subject: Re: [PATCH] Fix preemptible lazy mode bug
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Zachary Amsden <zach@vmware.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Linus Torvalds <torvalds@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Chris Wright <chrisw@sous-sol.org>,
-       stable@kernel.org,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Andi Kleen <ak@suse.de>, Anthony Liguori <anthony@codemonkey.ws>
-In-Reply-To: <1189011909.21516.1.camel@bodhitayantram.eng.vmware.com>
-References: <46CE70C8.2030005@vmware.com> <46CE8069.9070404@goop.org>
-	 <46CE81DC.90103@vmware.com>  <46D9D517.6010201@goop.org>
-	 <1188850468.10802.66.camel@localhost.localdomain>
-	 <46DD60A9.8080203@goop.org>
-	 <1189010022.10802.161.camel@localhost.localdomain>
-	 <1189011909.21516.1.camel@bodhitayantram.eng.vmware.com>
-Content-Type: text/plain
-Date: Thu, 06 Sep 2007 03:48:59 +1000
-Message-Id: <1189014539.10802.177.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 5 Sep 2007 13:51:14 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:7287 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752601AbXIERvL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 13:51:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LseFE19K9irSfz7VQBJ4w+H5xrmb50qD+f60eb/mSxgSNHQDjxb+X/nf3Onqtgu1nxM1OHUMoPxCVSSvrfczSyLd2QSqc5cFxXkQprpa9ArRuGj660fzexkRZYAiNm1B+Ad0dP70Up0fmYSOBLLI48kp/NxKt6kkjvblbWrWtKU=
+Message-ID: <8bd0f97a0709051051y1c0328ffx24068da775f8bad2@mail.gmail.com>
+Date: Wed, 5 Sep 2007 13:51:10 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: the Linux kernel, testsuites, and maybe *you*
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <8bd0f97a0709040805y233cf07yc60ec0fedadb706d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8bd0f97a0708311422u309ff09cs24dfe64ff535a982@mail.gmail.com>
+	 <p733axyxcli.fsf@bingen.suse.de>
+	 <8bd0f97a0709011550y833fb5ax7d40cae937789fd8@mail.gmail.com>
+	 <20070902065926.GA15487@one.firstfloor.org>
+	 <8bd0f97a0709020815r75fcb225lf44bcb57783b436c@mail.gmail.com>
+	 <20070902154351.GA21230@one.firstfloor.org>
+	 <8bd0f97a0709040805y233cf07yc60ec0fedadb706d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-05 at 10:05 -0700, Zachary Amsden wrote:
-> On Thu, 2007-09-06 at 02:33 +1000, Rusty Russell wrote:
+On 9/4/07, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> On 9/2/07, Andi Kleen <andi@firstfloor.org> wrote:
+> > On Sun, Sep 02, 2007 at 11:15:23AM -0400, Mike Frysinger wrote:
+> > > there is still the ABI issue ... code written in kernel space in pure
+> > > asm cannot always be compiled in userspace and work properly/the same
+> >
+> > Is that a blackfin weirdness?
+>
+> yes, Blackfin is weird in this respect due to being a no-mmu and
+> wanting ELF, but i was being sufficiently general to bolster my claims
+> and to leave the door open for any other port out there i'm not
+> familiar with and any port that comes along
 
-> > +	BUG_ON(get_lazy_mode() && !(mode == PARAVIRT_LAZY_NONE |
-> > +				    | mode == PARAVIRT_LAZY_FLUSH));
-> 
-> That's a pretty strange line break.
-
-Sorry, should have mentioned it's completely untested: too far from my
-test machine 8(
-
-Thanks,
-Rusty.
-
+actually, there was another case i was thinking of ... it isnt
+uncommon for architectures to use compiler flags which affect the ABI
+and thus make userland not a 1-to-1 test example for the kernel ...
+consider the regparam stuff we use on i386
+-mike
