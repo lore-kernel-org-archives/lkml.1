@@ -1,170 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbXIEJPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbXIEJSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbXIEJPk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 05:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbXIEJPc
+	id S1756676AbXIEJSa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 05:18:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXIEJSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 05:15:32 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58351 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755882AbXIEJPb (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 05:15:31 -0400
-Message-ID: <46DE73AA.1090706@sgi.com>
-Date: Wed, 05 Sep 2007 19:15:22 +1000
-From: Timothy Shimmin <tes@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+	Wed, 5 Sep 2007 05:18:23 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:21610 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755812AbXIEJSW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 05:18:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=g+BbMgGq1+oHo5Gc+SfI2HjHVuBB8csV1Llz3+ygRHnQG7vpumVcFrC1Gfp6gTIn5xkE1WY0Z8NCU/XvfALIDO54lI01uXhozP87hfqcz66se3HOGcRSoPjZUQjj9DX5Fnt0h+u44JO2ZzvFls0wQjDxQU9aFe4DGg0qdRPgTXg=
+Message-ID: <653402b90709050218v1b2db724na43dc342d4b8d408@mail.gmail.com>
+Date: Wed, 5 Sep 2007 11:18:21 +0200
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+To: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+Subject: Re: _syscall0 exists or obsolete in 2.6
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <3f9a31f40709050140p698c37e3q403e2d1cadca1cf@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, xfs-oss <xfs@oss.sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: some XFS fixes for 2.6.23
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3f9a31f40709050140p698c37e3q403e2d1cadca1cf@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On 9/5/07, Jaswinder Singh <jaswinderlinux@gmail.com> wrote:
+> Hello all,
+>
+> I am trying to add syscall in include/asm/unistd.h:
 
-We have a few XFS fixes for 2.6.23 (meant to do this earlier).
-They have been in sgi dev tree and mm tree for a while.
+Which platform?
 
-Please pull from the for-linus branch:
-     git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
+>
+> static inline _syscall0(int,my_sys_call);
+>
+> But I am getting following errors :
+>
+>   AS      arch/arm/kernel/entry-common.o
 
+Assuming arm, I don't see that include/asm-arm/unistd.h has 622 lines.
 
-With shortlog:
--------------------------
-Christoph Hellwig (4):
-       [XFS] Fix sparse NULL vs 0 warnings
-       [XFS] Fix sparse warning in kmem_shake_allow
-       [XFS] fix ASSERT and ASSERT_ALWAYS
-       [XFS] fix sparse shadowed variable warnings
+> include/asm/unistd.h: Assembler messages:
+> include/asm/unistd.h:622: Error: bad instruction `static inline int
+> my_sys_call(void){register long __res_r0 __asm__("r0")'
+> include/asm/unistd.h:622: Error: bad instruction `long __res'
+> include/asm/unistd.h:622: Error: bad instruction `__asm__
+> __volatile__("swi\t""(0x900000+322)""":"=r"(__res_r0)::"memory")'
+> include/asm/unistd.h:622: Error: bad instruction `do {if((unsigned
+> long)(__res)>=(unsigned long)(-129)){errno=-(__res)'
+> include/asm/unistd.h:622: Error: junk at end of line, first
+> unrecognized character is `}'
+> include/asm/unistd.h:622: Error: junk at end of line, first
+> unrecognized character is `}'
+> include/asm/unistd.h:622: Error: junk at end of line, first
+> unrecognized character is `}'
+> make[1]: *** [arch/arm/kernel/entry-common.o] Error 1
+> make: *** [arch/arm/kernel] Error 2
+>
+>
+> This was working in older versions.
+>
+> I am curious _syscall0 still exists or obsolete in 2.6 linux.
+>
+> And I have noticed even if I commented _syscall0 macro, I do not get
+> any errors so no body is using it , then why _syscall0 is in kernel
+> header files and what is the substitute of _syscall0.
 
-David Chinner (1):
-       [XFS] Set filestreams object timeout to something sane.
+Well, if you look at
 
-Eric Sandeen (1):
-       [XFS] fix nasty quota hashtable allocation bug
--------------------------
+http://lxr.linux.no/ident?i=_syscall0
 
-This will update the following files:
+it seems it is pretty obsolete.
 
-  fs/xfs/linux-2.6/kmem.h        |    2 +-
-  fs/xfs/linux-2.6/xfs_aops.c    |    8 ++++----
-  fs/xfs/linux-2.6/xfs_globals.c |    2 +-
-  fs/xfs/quota/xfs_qm.c          |    3 ++-
-  fs/xfs/support/debug.h         |   10 ++++++----
-  fs/xfs/xfs_da_btree.c          |    1 -
-  fs/xfs/xfs_log.c               |   12 ++++++------
-  fs/xfs/xfs_log_recover.c       |   12 ++++++------
-  8 files changed, 26 insertions(+), 24 deletions(-)
-
-through these commits:
-
-commit 5995cb7d805496362e5af73235145667096fbc6f
-Author: Eric Sandeen <sandeen@sandeen.net>
-Date:   Thu Aug 16 16:49:11 2007 +1000
-
-     [XFS] fix nasty quota hashtable allocation bug
-
-     This git mod: 77e4635ae191774526ed695482a151ac986f3806
-     converted to a "greedy" allocation interface, but for the quota hashtables
-     it switched from allocating XFS_QM_HASHSIZE (nr of elements)
-     xfs_dqhash_t's to allocating only XFS_QM_HASHSIZE *bytes* - quite a lot
-     smaller! Then when we converted hsize "back" to nr of elements (the
-     division line) hsize went to 0. This was leading to oopses when running
-     any quota tests on the Fedora 8 test kernel, but the problem has been
-     there for almost a year.
-
-     SGI-PV: 968837
-     SGI-Modid: xfs-linux-melb:xfs-kern:29354a
-
-     Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
-     Signed-off-by: David Chinner <dgc@sgi.com>
-     Signed-off-by: Tim Shimmin <tes@sgi.com>
-
-commit 265c1fac38e37e828df09965406e9cc20bfa3588
-Author: Christoph Hellwig <hch@infradead.org>
-Date:   Thu Aug 16 15:38:19 2007 +1000
-
-     [XFS] fix sparse shadowed variable warnings
-
-     - in xfs_probe_cluster rename the inner len to pg_len. There's no harm
-       here because the outer len isn't used after the inner len comes into
-       existence but it keeps the code clean.
-     - in xfs_da_do_buf remove the inner i because they don't overlap
-       and they are both the same type.
-
-     SGI-PV: 968555
-     SGI-Modid: xfs-linux-melb:xfs-kern:29311a
-
-     Signed-off-by: Christoph Hellwig <hch@infradead.org>
-     Signed-off-by: David Chinner <dgc@sgi.com>
-     Signed-off-by: Tim Shimmin <tes@sgi.com>
-
-commit ee5c80239d5f152d99f69165afbd115518353563
-Author: Christoph Hellwig <hch@infradead.org>
-Date:   Thu Aug 16 15:38:08 2007 +1000
-
-     [XFS] fix ASSERT and ASSERT_ALWAYS
-
-     - remove the != 0 inside the unlikely in ASSERT_ALWAYS because sparse now
-       complains about comparisons between pointers and 0
-     - add a standalone ASSERT implementation because defining it to
-       ASSERT_ALWAYS means the string is expanded before the token passing
-       stringification. This way we get the actual content of the
-       assertion in the assfail message and don't overflow sparse's
-       stringification buffer leading to sparse error messages.
-
-     SGI-PV: 968555
-     SGI-Modid: xfs-linux-melb:xfs-kern:29310a
-
-     Signed-off-by: Christoph Hellwig <hch@infradead.org>
-     Signed-off-by: David Chinner <dgc@sgi.com>
-     Signed-off-by: Tim Shimmin <tes@sgi.com>
-
-commit 34521c5e4971d01f6ef650fdee59e07be6c2c5e3
-Author: Christoph Hellwig <hch@infradead.org>
-Date:   Thu Aug 16 15:37:57 2007 +1000
-
-     [XFS] Fix sparse warning in kmem_shake_allow
-
-     We can't return a masked result of a __bitwise type. Compare it to 0 first
-     to keep the behaviour without the warning.
-
-     SGI-PV: 968555
-     SGI-Modid: xfs-linux-melb:xfs-kern:29309a
-
-     Signed-off-by: Christoph Hellwig <hch@infradead.org>
-     Signed-off-by: David Chinner <dgc@sgi.com>
-     Signed-off-by: Tim Shimmin <tes@sgi.com>
-
-commit 4b80916b29170744632356dd2e801f7c374676eb
-Author: Christoph Hellwig <hch@infradead.org>
-Date:   Thu Aug 16 15:37:36 2007 +1000
-
-     [XFS] Fix sparse NULL vs 0 warnings
-
-     Sparse now warns about comparing pointers to 0, so change all instance
-     where that happens to NULL instead.
-
-     SGI-PV: 968555
-     SGI-Modid: xfs-linux-melb:xfs-kern:29308a
-
-     Signed-off-by: Christoph Hellwig <hch@infradead.org>
-     Signed-off-by: David Chinner <dgc@sgi.com>
-     Signed-off-by: Tim Shimmin <tes@sgi.com>
-
-commit 8da22d7a3690818f6d340baa0ea585e71f0c506f
-Author: David Chinner <dgc@sgi.com>
-Date:   Thu Aug 16 15:20:56 2007 +1000
-
-     [XFS] Set filestreams object timeout to something sane.
-
-     SGI-PV: 968554
-     SGI-Modid: xfs-linux-melb:xfs-kern:29303a
-
-     Signed-off-by: David Chinner <dgc@sgi.com>
-     Signed-off-by: Christoph Hellwig <hch@infradead.org>
-     Signed-off-by: Tim Shimmin <tes@sgi.com>
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm
