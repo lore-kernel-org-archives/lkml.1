@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbXIEEu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbXIEFRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbXIEEu2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 00:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXIEEuT
+	id S1755976AbXIEFRW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 01:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbXIEFRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 00:50:19 -0400
-Received: from mxsf06.insightbb.com ([74.128.0.76]:65206 "EHLO
-	mxsf06.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751897AbXIEEuR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 00:50:17 -0400
-X-IronPort-AV: E=Sophos;i="4.20,209,1186372800"; 
-   d="scan'208";a="42288859"
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAN/R3UZKhRO4/2dsb2JhbACBWQ
-X-IronPort-AV: E=Sophos;i="4.20,209,1186372800"; 
-   d="scan'208";a="113360184"
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Mike Frysinger <vapier@gentoo.org>
-Subject: Re: [PATCH] Add support for keyboard on SEGA Dreamcast
-Date: Wed, 5 Sep 2007 00:50:13 -0400
-User-Agent: KMail/1.9.3
-Cc: linuxsh-dev@lists.sourceforge.net, Adrian McMenamin <lkmladrian@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
-References: <8b67d60709041634l198d29f0ja049989acdb30b67@mail.gmail.com> <200709050034.57010.vapier@gentoo.org>
-In-Reply-To: <200709050034.57010.vapier@gentoo.org>
+	Wed, 5 Sep 2007 01:17:14 -0400
+Received: from sslsrv.de ([62.75.159.123]:59910 "EHLO sslsrv.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753453AbXIEFRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 01:17:13 -0400
+X-Greylist: delayed 881 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 01:17:13 EDT
+Message-ID: <38292.193.171.152.61.1188968546.squirrel@webmail.marek.priv.at>
+Date: Wed, 5 Sep 2007 07:02:26 +0200 (CEST)
+Subject: 2.6.23.rc5: Problem with procfs -- schedstat
+From: "Ph. Marek" <philipp@marek.priv.at>
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6-4.fc1.1.legacy
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200709050050.14259.dtor@insightbb.com>
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike,
+Hello everybody,
 
-On Wednesday 05 September 2007 00:34, Mike Frysinger wrote:
-> > +     kbd->dev = input_allocate_device();
-> > ...
-> > +     retval = input_register_device(kbd->dev);
-> > +     if (unlikely(retval))
-> > +             goto cleanup;
-> > ...
-> > +      cleanup:
-> > +     kfree(kbd);
-> > +     return -EINVAL;
-> 
-> i'm not familiar with the input layer, but do you need to deallocate that 
-> input device if the register fails ?  if so, i guess dc_kbd_disconnect() 
-> would need tweaking too ...
+I found a problem in /proc/self/schedstat: a simple "cat" can give "wrong"
+results.
 
-No, dc_kbd_disconnect() is fine - the structure is refcounted and so
-input core will free it when the last reference drops. But you are
-right, input_free_device() is still needed in error path.
+        /proc# cat self/schedstat
+        91117 26027 2
+        /proc# cat self/schedstat
+        90691 27872 2
+        /proc# cat self/schedstat
+        995483 15675 3
+
+        /proc# cat self/schedstat
+        478050 124422 3
+        /proc# cat self/schedstat
+        87912 21539 2
+        /proc# cat self/schedstat
+        81382 19722 2
+        /proc# cat self/schedstat
+        87999 119699 2
+        /proc# cat self/schedstat
+        87192 25990 2
+        /proc# cat self/schedstat
+        80114 15113 2
+        3
+        /proc# cat self/schedstat
+        93064 28817 2
+        /proc# cat self/schedstat
+        90834 22816 2
+        /proc# cat self/schedstat
+        87806 37581 2
+        /proc# cat self/schedstat
+        80187 20283 2
+        3
+        /proc#
+
+Please note the extra newline and possible other digits.
+
+A strace reveals that cat does
+        open("self/schedstat", O_RDONLY|O_LARGEFILE) = 3
+        fstat64(3, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+        read(3, "946533 98256 64\n", 4096)      = 16
+        write(1, "946533 98256 64\n", 16)       = 16
+        read(3, "8\n", 4096)                    = 2
+        write(1, "8\n", 2)                      = 2
+        read(3, "", 4096)                       = 0
+        close(3)                                = 0
+        close(1)                                = 0
+        exit_group(0)                           = ?
+
+The simple fix would be to change the format in proc_pid_schedstat(), so
+that it always returns the same number of bytes.
+
+Or proc_info_read() gets changed - if less bytes than wanted (by userspace)
+were returned, mark that file for returning EOF next time. But I fear that
+that might break other entries that rely on getting repeatedly called.
+
+
+Regards,
+
+Phil
+
 
 -- 
-Dmitry
+Versioning your /etc, /home or even your whole installation?
+             Try fsvs (fsvs.tigris.org)!
