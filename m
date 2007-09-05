@@ -1,37 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbXIEVWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbXIEVXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757975AbXIEVWl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 17:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbXIEVWT
+	id S1758136AbXIEVXB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 17:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756904AbXIEVWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 17:22:19 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:60913 "EHLO fieldses.org"
+	Wed, 5 Sep 2007 17:22:20 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:60914 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756435AbXIEVWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 17:22:17 -0400
+	id S1756698AbXIEVWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 17:22:18 -0400
 From: "J. Bruce Fields" <bfields@citi.umich.edu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: nfsd patches for 2.6.23
-Date: Wed,  5 Sep 2007 17:22:11 -0400
-Message-Id: <1189027333981-git-send-email-bfields@citi.umich.edu>
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>,
+       "Luiz Fernando N. Capitulino" <lcapitulino@gmail.com>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: [PATCH 2/2] knfsd: Validate filehandle type in fsid_source
+Date: Wed,  5 Sep 2007 17:22:13 -0400
+Message-Id: <11890273332461-git-send-email-bfields@citi.umich.edu>
 X-Mailer: git-send-email 1.5.3
+In-Reply-To: <11890273334076-git-send-email-bfields@citi.umich.edu>
+References: <1189027333981-git-send-email-bfields@citi.umich.edu>
+ <11890273334076-git-send-email-bfields@citi.umich.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We've got two nfsd patches that fix a regression and a possible oops, so
-both should probably go in before the 2.6.23 release.
+From: Neil Brown <neilb@suse.de>
 
-Patches will follow, but they're also available from "for-linus" at:
+fsid_source decided where to get the 'fsid' number to
+return for a GETATTR based on the type of filehandle.
+It can be from the device, from the fsid, or from the
+UUID.
 
-  ssh://linux-nfs.org/~bfields/exports/linux.git for-linus
+It is possible for the filehandle to be inconsistent
+with the export information, so make sure the export information
+actually has the info implied by the value returned by
+fsid_source.
 
---b.
-
-Neil Brown (2):
-      knfsd: Fixed problem with NFS exporting directories which are mounted on.
-      knfsd: Validate filehandle type in fsid_source
-
+Signed-off-by: Neil Brown <neilb@suse.de>
+Cc: "Luiz Fernando N. Capitulino" <lcapitulino@gmail.com>
+Signed-off-by: "J. Bruce Fields" <bfields@citi.umich.edu>
+---
  fs/nfsd/nfsfh.c |   20 +++++++++++++++-----
- fs/nfsd/vfs.c   |    3 ++-
- 2 files changed, 17 insertions(+), 6 deletions(-)
+ 1 files changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/fs/nfsd/nfsfh.c b/fs/nfsd/nfsfh.c
+index 0eb464a..7011d62 100644
+--- a/fs/nfsd/nfsfh.c
++++ b/fs/nfsd/nfsfh.c
+@@ -566,13 +566,23 @@ enum fsid_source fsid_source(struct svc_fh *fhp)
+ 	case FSID_DEV:
+ 	case FSID_ENCODE_DEV:
+ 	case FSID_MAJOR_MINOR:
+-		return FSIDSOURCE_DEV;
++		if (fhp->fh_export->ex_dentry->d_inode->i_sb->s_type->fs_flags
++		    & FS_REQUIRES_DEV)
++			return FSIDSOURCE_DEV;
++		break;
+ 	case FSID_NUM:
+-		return FSIDSOURCE_FSID;
+-	default:
+ 		if (fhp->fh_export->ex_flags & NFSEXP_FSID)
+ 			return FSIDSOURCE_FSID;
+-		else
+-			return FSIDSOURCE_UUID;
++		break;
++	default:
++		break;
+ 	}
++	/* either a UUID type filehandle, or the filehandle doesn't
++	 * match the export.
++	 */
++	if (fhp->fh_export->ex_flags & NFSEXP_FSID)
++		return FSIDSOURCE_FSID;
++	if (fhp->fh_export->ex_uuid)
++		return FSIDSOURCE_UUID;
++	return FSIDSOURCE_DEV;
+ }
+-- 
+1.5.3
+
