@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbXIEQuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbXIEQua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892AbXIEQuF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 12:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbXIEQtx
+	id S1756802AbXIEQua (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 12:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbXIEQuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 12:49:53 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:18299 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751177AbXIEQtw (ORCPT
+	Wed, 5 Sep 2007 12:50:05 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34474 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755335AbXIEQuA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 12:49:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=KNLl1C3lkCo7WBueM5QvLZuq/eQ8jXUGNdmtx2N9mJBIVxcx5wWr7/pszzYlMK7Wt5g1TsrepbEYkLqivVR9fXNwULApNxkN4oC0EYWjirLXKXasq2aAXLcDDnIBhm2o7asJ7i/bSNqY2jCOTLDKN/mF/50TKlmwI1du+6Sj1bw=
-Message-ID: <46DE89C9.7060403@gmail.com>
-Date: Wed, 05 Sep 2007 04:49:45 -0600
-From: Sean Robert McGuffee <sean.mcguffee@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Bug Report Requested
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 5 Sep 2007 12:50:00 -0400
+Date: Wed, 5 Sep 2007 09:48:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Maarten Maathuis" <madman2003@gmail.com>
+Cc: jengelh@computergmbh.de, linux-kernel@vger.kernel.org,
+       Robert Hancock <hancockr@shaw.ca>, linux-ide@vger.kernel.org
+Subject: Re: [sata_nv] timeout waiting for ADMA IDLE, stat=0x440
+Message-Id: <20070905094845.1d2f84cb.akpm@linux-foundation.org>
+In-Reply-To: <6d4bc9fc0708280706q278fe285kdf90a27f40d2a55@mail.gmail.com>
+References: <fa.JryGluomV43EviuSMJKX+JI+tvU@ifi.uio.no>
+	<46CF68C4.9040506@shaw.ca>
+	<6d4bc9fc0708250637g10c75f44x20ae1533874c986a@mail.gmail.com>
+	<Pine.LNX.4.64.0708281515340.3018@fbirervta.pbzchgretzou.qr>
+	<6d4bc9fc0708280706q278fe285kdf90a27f40d2a55@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Something popped up and told me to send this information as a bug report 
-even though it didn't have a button to click to do that automatically 
-which is a bug in itself I think:
+> On Tue, 28 Aug 2007 16:06:41 +0200 "Maarten Maathuis" <madman2003@gmail.com> wrote:
+> I have not had any issues, i swapped the cable because a while ago i
+> had to check the connection of the drive after the bios failed to
+> detect the drive. That is why i considered that a posibility. Kernel
+> 2.6.18 does not have NCQ support for nvidia chipsets, so that cannot
+> be it.
+> 
+> Maarten.
+> 
+> On 8/28/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> >
+> > On Aug 25 2007 15:37, Maarten Maathuis wrote:
+> > >
+> > >A broken cable seems like a realistic possibility, so i swapped it for
+> > >another cable. I will try if that solves the problem.
+> >
+> > Hi, did you have any success/failure, other updates?
+> > I am facing a similar problem (just posted to linux-ide@vger.kernel.org),
+> > but also with 2.6.18, and it does not look like an NCQ or loose cable problem (got a
+> > backplane, and sda is working normal).
+> >
 
-Component: pirut
-Summary: TB253c984a 
-depsolve.py:574:_requiringFromTransaction:IndexError: list index out of 
-range
+This is a rather comedic email thread, with people top-posting, others
+leaving others off the cc list, Robert's MUA reliably and inexplicably
+mangling both In-Reply-To: and References: thus breaking threading, no
+visible sign of how Jan got involved and no linux-ide cc's.
 
-Traceback (most recent call last):
-  File "/usr/sbin/pup", line 409, in _apply
-    self.applyChanges(self.mainwin)
-  File "/usr/lib/python2.5/site-packages/pirut/__init__.py", line 734, 
-in applyChanges
-    self.checkDeps(mainwin)
-  File "/usr/lib/python2.5/site-packages/pirut/__init__.py", line 493, 
-in checkDeps
-    (result, msgs) = self.buildTransaction()
-  File "/usr/lib/python2.5/site-packages/yum/__init__.py", line 540, in 
-buildTransaction
-    (rescode, restring) = self.resolveDeps()
-  File "/usr/lib/python2.5/site-packages/yum/depsolve.py", line 885, in 
-resolveDeps
-    (checkdep, missing, conflict, errormsgs) = self._processReq(dep, 
-prcoformat_need)
-  File "/usr/lib/python2.5/site-packages/yum/depsolve.py", line 334, in 
-_processReq
-    requirementTuple, errormsgs)
-  File "/usr/lib/python2.5/site-packages/yum/depsolve.py", line 469, in 
-_requiringFromInstalled
-    return self._requiringFromTransaction(reqpkg, requirement, errorlist)
-  File "/usr/lib/python2.5/site-packages/yum/depsolve.py", line 574, in 
-_requiringFromTransaction
-    reqpkg = self.tsInfo.matchNaevr(name=name, ver=version, rel=release)[0]
-IndexError: list index out of range
+Enough time has passed for everyone to forget all about this.  So Maarten,
+if you still believe that this is still a kernel bug then please update us
+on its status and provide a full description for linux-ide..  Please use
+reply-to-all for that.
 
-Local variables in innermost frame:
-requirement: ('perl(DCOP)', 0, '')
-checkdeps: 0
-needname: perl(DCOP)
-pkg: kdebindings-dcopperl - 3.5.7-1.fc7.1.x86_64
-missingdep: 0
-self: <__main__.PackageUpdater object at 0xfaeb50>
-tspkgs: []
-dbpkgs: []
-version: 3.5.7
-msg: Potential resolving package kdebindings - 3.5.6-1.fc7.x86_64 has 
-newer instance installed.
-needflags: 0
-needversion:
-dbpkg: kdebindings - 3.5.7-1.fc7.1.x86_64
-errorlist: []
-pkgmode: None
-a: x86_64
-e: 0
-name: kdesdk
-n: kdebindings-dcopperl
-r: 1.fc7.1
-v: 3.5.7
-release: 7.fc7
-requiringPkg: ('kdesdk', '3.5.7', '7.fc7', None)
-tsState: None
-provSack: <yum.packageSack.ListPackageSack object at 0x9c0be50>
-
+Thanks.
