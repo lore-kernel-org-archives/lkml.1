@@ -1,90 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbXIEM4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbXIEM4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756838AbXIEM4b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 08:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbXIEM4Y
+	id S1757121AbXIEM4z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 08:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbXIEM4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 08:56:24 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:2413 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753867AbXIEM4X convert rfc822-to-8bit (ORCPT
+	Wed, 5 Sep 2007 08:56:44 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:24587 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753867AbXIEM4n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 08:56:23 -0400
+	Wed, 5 Sep 2007 08:56:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=P3Sckjxf1a7tRTKR15sB/Yc4bLSZ+HyDz37SaryiYfdlIxRkb2vwq+OvRtffruZkp4g58GuBZqUBgcGhoWXIzWr10Gtu2cf2vnJ9mUHP3oK3f3HBxUCzl3TrmT+/b1HvjsWydG7mOxkITuBGZqwaxSJssCszU/Qd7TUev0HqpcU=
+Message-ID: <46DEA755.4030604@googlemail.com>
+Date: Wed, 05 Sep 2007 14:55:49 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 05 Sep 2007 12:55:56.0113 (UTC) FILETIME=[19535410:01C7EFBC]
-Content-class: urn:content-classes:message
-Subject: Re: file system for solid state disks
-Date: Wed, 5 Sep 2007 08:56:20 -0400
-Message-ID: <Pine.LNX.4.61.0709050847020.11599@chaos.analogic.com>
-In-Reply-To: <200709051334.14599.vda.linux@googlemail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: file system for solid state disks
-Thread-Index: AcfvvBlmtJuIMIfqSM+sidkVjgHQPA==
-References: <6278d2220708230155j18248f2cr3cc697a7acbaa930@mail.gmail.com> <200709051334.14599.vda.linux@googlemail.com>
-From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
-To: "Denys Vlasenko" <vda.linux@googlemail.com>
-Cc: "Daniel J Blueman" <daniel.blueman@gmail.com>,
-       "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Richard Ballantyne" <richardballantyne@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: LKML <linux-kernel@vger.kernel.org>, CK Mailinglist <ck@vds.kolivas.org>
+Subject: [ANNOUNCE] DeskOpt 005 (completely unfair scheduling ;))
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Wed, 5 Sep 2007, Denys Vlasenko wrote:
+Completely fair scheduling is really good thing, but if you want the best
+performance for certain application you need to tune up some things.
 
-> On Thursday 23 August 2007 09:55, Daniel J Blueman wrote:
->> On 23 Aug, 07:00, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->>> On Aug 23 2007 01:01, Richard Ballantyne wrote:
->>>> What file system that is already in the linux kernel do people recommend
->>>> I use for my laptop that now contains a solid state disk?
->>>
->>> If I had to choose, the list of options seems to be:
->>>
->>> - logfs
->>>   [unmerged]
->>>
->>> - UBI layer with any fs you like
->>>   [just a guess]
->>>
->>> - UDF in Spared Flavor (mkudffs --media-type=cdrw --utf8)
->>>   [does not support ACLs/quotas]
->>
->> Isn't it that with modern rotational wear-levelling, re-writing hot
->> blocks many times is not an issue, as they are internally moved around
->> anyway? So, using a journalled filesystem such as ext3 is still good
->> (robustness and maturity in mind).
->
-> Crap hardware (one which only _claim_ to do it) is out there,
-> and is typically cheaper, so users preferentially buy that ;)
-> --
-> vda
+DeskOpt is designed to help people tune up their systems for certain tasks.
 
-You might want to check and see what is actually being
-used for the solid-state disk. Some solid state disks
-are SRAM and DRAM. SRAM is fast, it doesn't require refresh,
-is now as cheap as flash, and does R/W forever. It retains
-its data for 10 years of power being removed by using an
-embedded battery.
+Here are the results from the Nexuiz benchmark
 
-http://en.wikipedia.org/wiki/Solid_state_drive
+|------------------------------------------------------------------------|
+|                          |    CFS + CFQ      |   CFS + CFQ + DeskOpt * |
+|------------------------------------------------------------------------|
+| timedemo demos/demo2     | 41,395896833 fps  |   41,460051233 fps      |
+|--------------------------|-------------------|-------------------------|
+| timedemo demos/demo2     | 18,343223633 fps  |   37,814504933 fps      |
+| + massive_intr 4 1000    |                   |                         |
+|--------------------------|-------------------|-------------------------|
+| timedemo demos/demo2     | 9,334974533 fps   |   37,376611267 fps      |
+| + massive_intr 8 1000    |                   |                         |
+|------------------------------------------------------------------------|
 
-This is exactly what I proposed on this list a long
-time ago. It is now a reality.
+* default class for games
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+Software requirements:
+- Python 2.x (http://python.org/)
+- elementtree (http://effbot.org/downloads/#elementtree)
+
+DeskOpt installation:
+cp deskopt /usr/local/bin/
+mkdir /etc/deskopt/
+cp deskopt.conf /etc/deskopt/
+cp deskopt.rc /etc/init.d/
+
+The configuration file must be a valid XML file.
+
+CFQ tuning:
+back_seek_max
+back_seek_penalty
+fifo_batch_expire
+fifo_batch_async
+fifo_batch_sync
+quantum
+slice_sync
+slice_idle
+slice_async
+slice_async_rq
+
+http://lwn.net/Articles/101029/
+http://lwn.net/Articles/114273/
+
+Anticipatory tuning:
+antic_expire
+read_batch_expire
+read_expire
+write_batch_expire
+write_expire
+
+Documentation/block/as-iosched.txt
+
+Deadline tuning:
+fifo_batch
+front_merges
+read_expire
+write_expire
+writes_starved
+
+Documentation/block/deadline-iosched.txt
+http://kerneltrap.org/node/431
 
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+Usage: deskopt [options]
 
-Thank you.
+Options:
+  -h, --help            show this help message and exit
+  -c CONFIG_FILE, --config-file=CONFIG_FILE
+                        Configuration file
+  -d, --debug           Debug
+  -H HDD, --hard-drives=HDD
+                        List of hard drives
+  -l LOOP_TIME, --loop-time=LOOP_TIME
+                        Loop time
+  -q, --quit            Quit
+  -v, --version         Show version number
+
+Example:
+# deskopt -c /path/to/my/config/file.conf --hard-drives="sda hdb" -l 60
+or
+# deskopt -c /path/to/my/config/file.conf
+
+The latest version of DeskOpt can be downloaded from 
+http://www.stardust.webpages.pl/files/tools/deskopt/
+
+Changelog:
+- support for Anticipatory and Deadline scheduler (requested by Chris Snook)
+- support for a different hard drives (previous version was limited to hdd
+  with /usr partition)
+- something like a documentation (requested by Satyam Sharma)
+- the code looks a bit better now
+
+diff -uprN deskopt-004/deskopt deskopt-005/deskopt | diffstat
+ deskopt |  870 +++++++++++++++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 562 insertions(+), 308 deletions(-)
+
+TODO:
+- support for device queue length tuning (suggested by Andi Kleen)
+- kill signal handling, bug fixes etc.
+
+Comments and suggestions are welcome.
+
+It still has many flaws :)
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
