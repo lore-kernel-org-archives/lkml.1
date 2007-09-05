@@ -1,104 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbXIEQyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbXIEQzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbXIEQyx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 12:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbXIEQyo
+	id S1757454AbXIEQzS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 12:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756831AbXIEQy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 12:54:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53087 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752220AbXIEQyn (ORCPT
+	Wed, 5 Sep 2007 12:54:56 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:43931 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756616AbXIEQyy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 12:54:43 -0400
-Date: Wed, 5 Sep 2007 09:53:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tejun Heo <htejun@gmail.com>
-Cc: michal.k.k.piotrowski@gmail.com, bryan@arbores.ca,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Stardom SATA HSM violation
-Message-Id: <20070905095327.6277d054.akpm@linux-foundation.org>
-In-Reply-To: <46DBCB6C.8080206@gmail.com>
-References: <46CFA08E.6090604@arbores.ca>
-	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>
-	<46DBCB6C.8080206@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Sep 2007 12:54:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iqsw/T85gxjpvqtv226YZgKqwJ9bXZnOtUgY/F76MY3ipn2Q4f8t2c8weQ4ehU6a8xg550Li0LLxZcxtsLcsmUXJGsPPAxnzdzdu0RtGEUnKIzDRFUtRPA+dCFHlZBnW6Z/t9btqjTsPjRGIQkilio++s1WWOVcsAyC/PO9L+lY=
+Message-ID: <6d4bc9fc0709050954p5c769864q1088310c0a70061b@mail.gmail.com>
+Date: Wed, 5 Sep 2007 18:54:52 +0200
+From: "Maarten Maathuis" <madman2003@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [sata_nv] timeout waiting for ADMA IDLE, stat=0x440
+Cc: jengelh@computergmbh.de, linux-kernel@vger.kernel.org,
+       "Robert Hancock" <hancockr@shaw.ca>, linux-ide@vger.kernel.org
+In-Reply-To: <20070905094845.1d2f84cb.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <fa.JryGluomV43EviuSMJKX+JI+tvU@ifi.uio.no>
+	 <46CF68C4.9040506@shaw.ca>
+	 <6d4bc9fc0708250637g10c75f44x20ae1533874c986a@mail.gmail.com>
+	 <Pine.LNX.4.64.0708281515340.3018@fbirervta.pbzchgretzou.qr>
+	 <6d4bc9fc0708280706q278fe285kdf90a27f40d2a55@mail.gmail.com>
+	 <20070905094845.1d2f84cb.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 03 Sep 2007 17:53:00 +0900 Tejun Heo <htejun@gmail.com> wrote:
-> Michal Piotrowski wrote:
-> > Hi,
-> > 
-> > [Adding linux-ide to CC]
-> > 
-> > On 25/08/07, Bryan Woods <bryan@arbores.ca> wrote:
-> >> Hi KML
-> >>
-> >> I am installing gentoo 2007.0 (kernel 2.6.19) on a dual AMD Opteron server (total of 4 cores). The hard disk is a Stardom 2611-2S-S1 device: actually two 250GB drives in a RAID0 config managed by the device itself - it should appear to the kernel as one SATA drive. If it matters, the underlying HDs are "Seagate Barracuda 7200 10"s. Here's the device:
-> >>
-> >>  http://www.synetic.net/Synetic-Products/Stardoms/SR-2611-SA/Stardom-2611.htm
-> >>
-> >> During the install and at different points in the process I get an "HSM violation" and the system becomes unresponsive. It looks like a similar situation to:
-> >>
-> >>   http://lkml.org/lkml/2007/6/6/195
-> >>
-> >> Will more recent kernels work with this hardware (should I keep it and try the install again) or should I switch hardware to something more compatible (like an Adaptec card)?
-> >>
-> >> Thanks!
-> >> Bryan
-> >>
-> >> --
-> >> console output:
-> >>
-> >> tag 0 cmd 0x39 Emask 0x2 stat 0x58 err 0x0 (HSM violation)
-> >> exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-> >>
-> >> --
-> >> Output from hdparm -I /dev/sda:
-> >>
-> >> /dev/sda:
-> >>
-> >> ATA device, with non-removable media
-> >>         Model Number:   STARDOM V.36.A0B
-> >>         Serial Number:
-> >>         Firmware Revision:      V.36.A0B
-> >> Standards:
-> >>         Used: ATA/ATAPI-6 T13 1410D revision 0
-> >>
-> >> [snip]
-> >>
-> >> Commands/features:
-> >>         Enabled Supported:
-> >>         *       SMART feature set
-> >>         *       Power Management feature set
-> >>         *       Advanced Power Management feature set
-> >>         *       48-bit Address feature set
-> >>         *       Mandatory FLUSH_CACHE
-> >>         *       SATA-I signaling speed (1.5 Gb/s)
-> >>         *       SATA-II signaling speed (3.0 Gb/s)
-> >>
-> >> --
-> >> Parts of dmesg:
-> >> libata version 2.00 loaded
-> >> sata_nv 0000:00:05.0: version 2.0
-> >> ata1: SATA max UDMA/133 cmd 0xD480 ctl 0xD402 bmdma 0xCC00 irq 21
-> >> ata2: SATA max UDMA/133 cmd 0xD080 ctl 0xD002 bmdma 0xCC08 irq 21
-> >> scsi0 : sata_nv
-> >> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> >> ata1.00: ATA-6, max UDMA/133,976794112 sectors: LBA48
-> >> ata1.00: ata1: dev 0 multi count 1
-> >> ata1.00: applying bridge limits
-> >> ata1.00: configured for UDMA/100
-> 
-> Please post full dmesg and full 'hdparm -I' result.  Also, if possible,
-> please try 2.6.22.5.  Even if it doesn't fix the problem, it would
-> report error conditions better.
+At this point it safe to say that it was a cable related issue.
 
-Presumably in the week and a half between Bryan's report and your request,
-Bryan has gone off and got an adaptec card.  Bryan, it would be helpful if
-you could rebuild the original systam and help us get to the bottom of this
-bug, thanks.
+I swapped it to be sure and i haven't had issues since.
 
+Sincerely,
+
+Maarten Maathuis.
+
+On 9/5/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Tue, 28 Aug 2007 16:06:41 +0200 "Maarten Maathuis" <madman2003@gmail.com> wrote:
+> > I have not had any issues, i swapped the cable because a while ago i
+> > had to check the connection of the drive after the bios failed to
+> > detect the drive. That is why i considered that a posibility. Kernel
+> > 2.6.18 does not have NCQ support for nvidia chipsets, so that cannot
+> > be it.
+> >
+> > Maarten.
+> >
+> > On 8/28/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> > >
+> > > On Aug 25 2007 15:37, Maarten Maathuis wrote:
+> > > >
+> > > >A broken cable seems like a realistic possibility, so i swapped it for
+> > > >another cable. I will try if that solves the problem.
+> > >
+> > > Hi, did you have any success/failure, other updates?
+> > > I am facing a similar problem (just posted to linux-ide@vger.kernel.org),
+> > > but also with 2.6.18, and it does not look like an NCQ or loose cable problem (got a
+> > > backplane, and sda is working normal).
+> > >
+>
+> This is a rather comedic email thread, with people top-posting, others
+> leaving others off the cc list, Robert's MUA reliably and inexplicably
+> mangling both In-Reply-To: and References: thus breaking threading, no
+> visible sign of how Jan got involved and no linux-ide cc's.
+>
+> Enough time has passed for everyone to forget all about this.  So Maarten,
+> if you still believe that this is still a kernel bug then please update us
+> on its status and provide a full description for linux-ide..  Please use
+> reply-to-all for that.
+>
+> Thanks.
+>
