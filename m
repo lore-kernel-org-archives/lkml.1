@@ -1,49 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbXIEKvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756610AbXIELWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756772AbXIEKvf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 06:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbXIEKv2
+	id S1756610AbXIELWr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 07:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbXIELWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 06:51:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55341 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755454AbXIEKv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 06:51:27 -0400
-Date: Wed, 5 Sep 2007 12:51:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>, nickpiggin@yahoo.com.au,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [patch] sched: fix broken smt/mc optimizations with CFS
-Message-ID: <20070905105115.GB29959@elte.hu>
-References: <20070816010150.GG10033@linux-os.sc.intel.com> <20070823115416.GA31027@elte.hu> <20070823121341.GA5775@elte.hu> <20070827191905.GE1894@linux-os.sc.intel.com> <20070827192324.GA29441@elte.hu> <20070827193103.GF1894@linux-os.sc.intel.com> <20070828222718.GI1894@linux-os.sc.intel.com> <46DDEBB9.3080501@redhat.com> <20070904234626.GB5187@linux-os.sc.intel.com>
+	Wed, 5 Sep 2007 07:22:39 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:64403 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756218AbXIELWj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 07:22:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=P+tB1lhCFx1dxYq0yXk9FK4hiDr6OoxpTmrYTwIseehbiCrpNk78hz0qZHq9z+7uW3NMSmHevovl65LuK6XEWdSYN818sG7izdt9hf0trEJFBRH5O2hacuhP9LkCj4G66nwWd9tBXiYmS0jrN1HNm+JOcku5bkfM6wVGrOTG4ac=
+Message-ID: <ab40e9c0709050422s413df8c9v4a4fcf6c2437d6b4@mail.gmail.com>
+Date: Wed, 5 Sep 2007 13:22:37 +0200
+From: "Xu Yang" <risingsunxy@googlemail.com>
+To: "Uli Luckas" <u.luckas@road.de>
+Subject: Re: ramdisk
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-os (Dick Johnson)" <linux-os@analogic.com>
+In-Reply-To: <200709051007.41085.u.luckas@road.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070904234626.GB5187@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.0.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1548]
+References: <ab40e9c0709030604u5fecf34dr945ece01b95e622d@mail.gmail.com>
+	 <Pine.LNX.4.61.0709041101290.7968@chaos.analogic.com>
+	 <200709051007.41085.u.luckas@road.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Uli,
 
-* Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
+yes, it is my mistake. actually in the boot option line It was
+root=/dev/ram0 . sorry for the misleading.
 
-> > Seems this didn't get merged? Latest git as of today still has the code
-> > as it was before this patch.
-> 
-> This is must fix for .23 and Ingo previously mentioned that he will push it
-> for .23
+regards,
 
-yep, it's queued up and it will send it with the next batch. (this is 
-the most important scheduler fix we have at the moment - there are 3 
-other, smaller items queued up as well)
+yang
 
-	Ingo
+
+2007/9/5, Uli Luckas <u.luckas@road.de>:
+> On Tuesday, 4. September 2007, linux-os (Dick Johnson) wrote:
+> > On Mon, 3 Sep 2007, Xu Yang wrote:
+> > > Hi everyone,
+> > >
+> > > I want to use ramdisk to boot my filesystem, as I can't use NFS and
+> > > harddisk.
+> > >
+> > > I have load the ramdisk into the ram memory (start address :0x4000000)
+> > >
+> > > and in the boot options I specified : root =dev/ram0 initrd=0x4000000
+> >
+> > Since you don't know what the default directory is, perhaps
+> > root should be /dev/ram0. Also, make sure you actually create
+> > those device nodes in /dev
+> >
+> Hey Dick,
+> where exactly (on which file system) is Xu supposed to create the device
+> nodes? ;-)
+> Xu's problem is, he can't mount his _root_ filesystem in the first place.
+> Therefore I doubt it'd help to have some device nodes somewhere ...
+>
+> Xu,
+> all answers to your posting commented on your kernel command line. The command
+> line you quoted contains "root =dev/ram0".
+> You probably meant to write "root=/dev/ram0". To not waste our time, please
+> clarify if this was a typo before asking further questions.
+>
+> regards,
+> Uli
+>
+> --
+>
+> ------- ROAD ...the handyPC Company - - -  ) ) )
+>
+> Uli Luckas
+> Software Development
+>
+> ROAD GmbH
+> Bennigsenstr. 14 | 12159 Berlin | Germany
+> fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
+> url: www.road.de
+>
+> Amtsgericht Charlottenburg: HRB 96688 B
+> Managing directors: Hans-Peter Constien, Hubertus von Streit
+>
