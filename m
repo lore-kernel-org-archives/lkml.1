@@ -1,207 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbXIEPcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbXIEPd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757276AbXIEPcR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 11:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755938AbXIEPcG
+	id S1757464AbXIEPd3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 11:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbXIEPdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 11:32:06 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36152 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755231AbXIEPcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 11:32:04 -0400
-Cc: corbet@lwn.net, jengelh@computergmbh.de, hch@lst.de, stable@kernel.org,
-       drepper@redhat.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, rdunlap@xenotime.net,
-       vda.linux@googlemail.com, davidel@xmailserver.org
-Content-Type: text/plain; charset="us-ascii"
-Date: Wed, 05 Sep 2007 17:32:01 +0200
-From: "Michael Kerrisk" <mtk-manpages@gmx.net>
-In-Reply-To: <200709051312.21873.vda.linux@googlemail.com>
-Message-ID: <20070905153201.236690@gmx.net>
+	Wed, 5 Sep 2007 11:33:22 -0400
+Received: from edunivtw01.ad.umassmed.edu ([146.189.195.116]:3663 "EHLO
+	nlb-securemail.umassmed.edu" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756550AbXIEPdV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 11:33:21 -0400
+X-Greylist: delayed 3625 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 11:33:20 EDT
+X-Server-Uuid: D1A27D3C-4100-4955-B400-0F8801E7DACA
+Message-ID: <46DEBE06.5010401@umassmed.edu>
+Date: Wed, 05 Sep 2007 10:32:38 -0400
+From: "Karl Bellve" <Karl.Bellve@umassmed.edu>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-References: <20070825064114.107820@gmx.net>
- <20070904011800.762523a4.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0709040805490.6887@alien.or.mcafeemobile.com>
- <200709051312.21873.vda.linux@googlemail.com>
-Subject: timerfd redux
-To: akpm@linux-foundation.org
-X-Authenticated: #24879014
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1/8uGFGRFX8dNOp0U5dX/VWWUM+bZ0Hfb0CkNhV/j
- YeW1m++uocMb0tjcbSnSf1XrMh6FdECnnHpA== 
-Content-Transfer-Encoding: 7bit
-X-GMX-UID: w/LtfkBoMmA6IM3zEGBn7KY5MjQ1N536
+To: linux-kernel@vger.kernel.org
+Subject: PCI: Unable to reserve mem region problem
+X-OriginalArrivalTime: 05 Sep 2007 14:32:38.0934 (UTC)
+ FILETIME=[9C138B60:01C7EFC9]
+X-WSS-ID: 6AC0619B24810959765-02-01
+Content-Type: multipart/mixed;
+ boundary=------------040804070901090606060202
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Was: Re: [PATCH] Revised timerfd() interface]
-
-> Michael, could you please refresh our memories with a brief,
-> from-scratch summary of what the current interface is, followed
-> by a summary of what you believe to be the shortcomings to be? 
-
-Andrew,
-
-I'll break this up into parts:
-
-1. the existing timerfd interface
-2. timerfd limitations
-3. possible solutions
-     a) Add an argument
-     b) Create an interface similar to POSIX timers
-     c) Integrate timerfd with POSIX timers
-
-Cheers,
-
-Michael
+This is a multi-part message in MIME format.
+--------------040804070901090606060202
+Content-Type: text/plain;
+ charset=iso-8859-1;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 
 
-1: the existing timerfd interface
-=================================
+Please CC any response. Thanks.
 
-In 2.6.22, Davide added timerfd() with the following interface:
+I am having an issue with a Supermicro h8dce motherboard and failure to 
+recognize a 5th SATA drive after upgrading to Fedora 7.
 
-returned_fd = timerfd(int fd, int clockid, int flags,
-                      struct itimerspec *utimer);
+This motherboard has 8 sata ports that use the sata_nv driver.
 
-If fd is -1, a new timer is created and started.  The syscall
-returns a file descriptor for the timer. 'utimer' specifies
-the initial expiration and interval of the timer.
-'clockid' is CLOCK_REALTIME or CLOCK_REALTIME.  The 'utimer'
-value is relative, unless TFD_TIMER_ABSTIME is specified in
-'flags', in which case the initial expiration is specified
-absolutely.
+The lack of seeing the 5th SATA drive shows up in 2.6.22 kernels, such 
+as kernel-2.6.22.2-42.fc6 and kernel-2.6.22.1-41.fc7.
 
-If 'fd' is not -1, then the call modifies the existing timer
-referred to by the file descriptor 'fd'.  The 'clockid', 'flags',
-and 'utimer' can all be modified.  The return value is 'fd'.
+The 5th SATA drive can still be detected in 2.6.20 kernels such as 
+kernel-2.6.20-1.2933.fc6 (I am currently using this kernel).
 
-The key feature of timerfd() is that the caller can use
-select/poll/epoll to wait on traditional file descriptors and
-one or more timers.
+ From dmesg, it appears the reason I am not seeing the 5th SATA drive 
+(second SATA controller) is the following error:
 
-read() from a timerfd file descriptor (should) return a 4-byte
-integer that is the number of timer expirations since the last
-read.  (If no expiration has so far occurred, read() will block.)
+Aug 30 14:08:03 alcor kernel: sata_nv 0000:80:08.0: Using ADMA mode
+Aug 30 14:08:03 alcor kernel: PCI: *Unable to reserve mem region* 
+#6:1000@dfefd000 for device 0000:80:08.0
+Aug 30 14:08:03 alcor kernel: ACPI: PCI interrupt for device 
+0000:80:08.0 disabled
+Aug 30 14:08:03 alcor kernel: sata_nv: probe of 0000:80:08.0 failed with 
+error -16
 
-IMPORTANT POINT: as implemented in 2.6.22, timerfd was broken:
-only a single byte of info was returned by read().  I regard
-this as a virtue: it gives us something closer to a blank slate
-for fixing the problems described below; furthermore,
-arguably at this point we could buy ourselves time by
-pulling timerfd() from 2.6.23, and taking more time to get
-things right in 2.6.24.
+sata_nv that comes with the 2.6.22 kernels appear to be version 3.4 
+while the older kernels comes with version 3.2 (which work). I contacted 
+Robert Hancock directly about this and he suggested I post an email to LKML.
 
-(More details on timerfd() can be found here: 
-http://lwn.net/Articles/245533/)
+Motherboard: 
+http://www.supermicro.com/Aplus/motherboard/Opteron/nForce/H8DCE.cfm
+Single AMD Opteron(tm) Processor 244
+1 GB of memory.
 
-2. timerfd limitations
-======================
+I can send you the complete dmesg output if you would like.
 
-Unix has two older timer interfaces:
+Thanks!
 
-* setitimer/getitimer and
 
-* POSIX timers (timer_create/timer_settime/timer_gettime).
 
-timerfd() lacks two features that are present in the older
-interfaces:
 
-* Retrieve the previous setting of an existing timer when
-  setting a new value for the timer.
+--------------040804070901090606060202
+Content-Type: text/plain;
+ charset=utf-8;
+ name=Karl.Bellve.vcf
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename=Karl.Bellve.vcf
 
-* Non-destructively fetch the timer remaining until the
-  next expiration of the timer.
+begin:vcard
+fn:Karl Bellve
+n:Bellve;Karl
+org:Biomedical Imaging Group;Department of Physiology
+adr:2 Biotech, Suite 114;;373 Plantation Street;Worcester;Massachusetts;01655;United States of America
+email;internet:Karl.Bellve@umassmed.edu
+title:Assistant Professor
+tel;work:508-856-6514
+tel;fax:508-856-6514
+x-mozilla-html:TRUE
+version:2.1
+end:vcard
 
-The fact that this functionality is present in both older APIs
-strongly suggests that various applications really need both
-functionalities.  
 
-(Davide has argued that timerfd() doesn't need the
-get-while-setting functionality because we can create multiple
-timerfd timers.  However, POSIX timers also allow multiple
-timer instances, but nevertheless provide get-while-setting.
-I would estimate that this functionality would be useful for
-libraries that want to create and control a (single) timerfd
-file descriptor that is returned to the caller.)
+--------------040804070901090606060202--
 
-3. possible solutions
-=====================
-
-====> a) Add an argument
-
-I proposed adding a further argument to timerfd(): old_utmr,
-which could be used to return the time remaining until
-expiry for an existing timer 
-(http://marc.info/?l=linux-kernel&m=118669430305788&w=2 ).
-I proposed semantics that would allow get and
-get-while-setting functionality.
-
-Jon Corbet pointed out that my suggestion was starting
-to look like a multiplexing syscall.  I agree.  I now
-favor one of the remaining solutions.
-
-====> b) Create an interface similar to POSIX timers
-
-Create an interface analogous to POSIX timers:
-
-fd = timerfd_create(clockid, flags);
-
-timerfd_settime(fd, flags, newtimervalue, &time_to_next_expire);
-
-timerfd_gettime(fd, &time_to_next_expire);
-
-Advantage: this would be a clean, fully functional API, and well
-understood by virtue of its analogy with the POSIX timers API.
-
-Disadvantage: three new system calls, rather than 1.
-
-This solution would be sufficient, IMO, but the
-next solution might be better.
-
-====> c) Integrate timerfd with POSIX timers
-
-Make a very simple timerfd call that is integrated with
-the POSIX timers API.  A POSIX timer is created using:
-
-int timer_create(clockid_t clockid, struct sigevent *evp,
-        timer_t *timerid);
-
-We could then have a timerfd() call that returns a file descriptor
-for the newly created 'timerid':
-
-fd = timerfd(timer_t timerid);
-
-We could then use the POSIX timers API to operate on the timer
-(start it / modify it / fetch timer value):
-
-int timer_gettime(timer_t timerid, struct itimerspec *value);
-int timer_settime(timer_t timerid, int flags,
-        const struct itimerspec *value,
-        struct itimerspec *ovalue); 
-
-And then read from 'fd' as before.
-
-Advantages:
-  1. Integration with an existing API.
-  2. Adds just a single system call
-  3. This strikes me as the most beautiful solution,
-     if we can do it properly.
-
-Disadvantage: I'm not yet completely clear whether there are some
-features of the POSIX timers API that might preclude a clean
-integration.  In particular, we would need to think a little
-about the semantics of timer_getoverrun():
-
-int timer_getoverrun(timer_t timerid);
-
-I suspect it's fine, but we better think about it a little.
-
-We would also have to think about how the 'evp' argument
-of timer_create() would be used.  This might be trickier.
-(Simplest might be to require evp.sigev_notify to be
-SIGEV_NONE, or perhaps a new flag, SIGEV_TIMERFD.)
-
-=== END ===
