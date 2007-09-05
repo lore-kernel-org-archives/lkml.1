@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbXIESxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbXIETDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757040AbXIESxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 14:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXIESxM
+	id S1756713AbXIETDH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 15:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbXIETC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 14:53:12 -0400
-Received: from panic.printk.net ([217.147.83.20]:46178 "EHLO panic.printk.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754072AbXIESxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 14:53:11 -0400
-X-Greylist: delayed 1844 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 14:53:11 EDT
-Subject: Re: [PATCH 0/2] Fix (improve) deadlock condition on module removal
-	netfilter socket option removal
-From: Jon Masters <jonathan@jonmasters.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Neil Horman <nhorman@tuxdriver.com>, Patrick McHardy <kaber@trash.net>,
-       adam@yggdrasil.com, jcm@jonmasters.org,
-       netfilter-devel@lists.netfilter.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1189014097.10802.174.camel@localhost.localdomain>
-References: <20070904202433.GA19083@hmsreliant.think-freely.org>
-	 <46DEC9BF.9010807@trash.net>
-	 <1189008806.10802.150.camel@localhost.localdomain>
-	 <20070905170831.GA25050@hmsreliant.think-freely.org>
-	 <1189014097.10802.174.camel@localhost.localdomain>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Wed, 05 Sep 2007 14:19:23 -0400
-Message-Id: <1189016363.12261.122.camel@jcmlaptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+	Wed, 5 Sep 2007 15:02:56 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:46804 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754275AbXIETCz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 15:02:55 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46DEFD08.8060402@s5r6.in-berlin.de>
+Date: Wed, 05 Sep 2007 21:01:28 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: debian-powerpc@lists.debian.org
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Tim Teulings <rael@edge.ping.de>, michal.k.k.piotrowski@gmail.com,
+       rbrito@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
+       =?ISO-8859-1?Q?Kristian_H=F8gsber?= =?ISO-8859-1?Q?g?= 
+	<krh@redhat.com>
+Subject: firewire in prebuilt kernel packages (was Re: Sleep problems with
+ kernels >= 2.6.21 on powerpc)
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>	<20070827065246.GA21220@ime.usp.br>	<46D279E8.10001@edge.ping.de>	<46D72BC6.3020809@edge.ping.de> <20070905100754.57ab4e3e.akpm@linux-foundation.org> <46DEEBBE.4070201@s5r6.in-berlin.de>
+In-Reply-To: <46DEEBBE.4070201@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-06 at 03:41 +1000, Rusty Russell wrote:
-> On Wed, 2007-09-05 at 13:08 -0400, Neil Horman wrote:
-> > On Thu, Sep 06, 2007 at 02:13:26AM +1000, Rusty Russell wrote:
-> > > On Wed, 2007-09-05 at 17:22 +0200, Patrick McHardy wrote:
-> > > > But I'm wondering, wouldn't module refcounting alone fix this problem?
-> > > > If we make nf_sockopt() call try_module_get(ops->owner), remove_module()
-> > > > on ip_tables.ko would simply fail because the refcount is above zero
-> > > > (so it would fail at point 3 above). Am I missing something important?
-> > > 
-> > > Yes, that seems the correct solution to me, too.  ISTR that this code
-> > > predates the current module code.
-> > > 
-> > > Rusty.
-> > 
-> > Thanks guys-
-> > 	When I first started looking at this problem I would have agreed with
-> > you, that module reference counting alone would fix the problem.  However,
-> > delete_module can work in either a non-blocking or a blocking mode.  rmmod
-> > passes O_NONBLOCK to delete module, and so is fine, but modprobe does not.
+>>> On 30 Aug 2007 22:42:46 +0200 "Tim Teulings" <rael@edge.ping.de> wrote:
+>>> The kernel is:
+>>>> Linux kismet 2.6.22-1-powerpc #1 Sun Jul 29 13:58:06 CEST 2007 ppc GNU/Linux
+>>> The relveant debian package:
+>>>> linux-image-2.6.22-1-powerpc_2.6.22-3_powerpc.deb
+>>> I'm running a mixture of debian testing/unstable.
 
-> 	You have this backwards: O_NONBLOCK is the default.  That seems to be
-> what everyone wants, although I implemented 'rmmod -w' because it seemed
-> like a good option.
-
-:-)
-
-Thanks for keeping me copied. I'll think about the in-kernel module
-situation when I get some time over the weekend - but shout if there's
-an external impact sooner! :-)
-
-Jon.
-
-
+At the moment, distributors should not provide the experimental
+firewire-* drivers as the only or primary FireWire drivers, unless they
+know exactly what the gotchas are.  As a hint, CONFIG_FIREWIRE currently
+depends on EXPERIMENTAL, CONFIG_IEEE1394 does not.  Some basic
+information can be found at http://wiki.linux1394.org/JujuMigration.
+-- 
+Stefan Richter
+-=====-=-=== =--= --=-=
+http://arcgraph.de/sr/
