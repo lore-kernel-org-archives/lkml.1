@@ -1,34 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932415AbXIEXaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757480AbXIEXf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932415AbXIEXaX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 19:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbXIEXaL
+	id S1757480AbXIEXf1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 19:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXIEXfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 19:30:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51616 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754205AbXIEXaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 19:30:09 -0400
-Message-ID: <46DF3BFF.9000809@redhat.com>
-Date: Wed, 05 Sep 2007 19:30:07 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Wed, 5 Sep 2007 19:35:19 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:59411
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754325AbXIEXfS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 19:35:18 -0400
+X-Greylist: delayed 2532 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 19:35:18 EDT
+Date: Wed, 5 Sep 2007 15:52:53 -0700
+To: linux-kernel@vger.kernel.org
+Cc: "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: NetApp sues Sun regarding ZFS
+Message-ID: <20070905225253.GA1650@gnuppy.monkey.org>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Why do so many machines need "noapic"?
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some systems lock up without the noapic option. I found one
-that will freeze while trying to set up the timer interrupt.
-Passing 'nolapic' makes it freeze just after:
 
-   Setting up timer through ExtINT... works
+Folks,
 
-Sometimes it will boot up and then freeze during the startup
-scripts. Passing the noapic option fixes all that, but it
-then gets 1000 spurious interrupts per second on IRQ7 (which
-only shows ehci using it.) Kernel version is 2.6.22.
+The official announcement.
+
+	http://www.netapp.com/news/press/news_rel_20070905
+
+Dave Hitz's blog about it.
+
+	http://blogs.netapp.com/dave/
+
+bill
+
