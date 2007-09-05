@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbXIEIku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbXIEIpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbXIEIku (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 04:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755947AbXIEIkm
+	id S1756570AbXIEIpf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 04:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbXIEIp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 04:40:42 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:49531 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753961AbXIEIkm (ORCPT
+	Wed, 5 Sep 2007 04:45:28 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:12439 "EHLO
+	outbound9-blu-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755971AbXIEIp0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 04:40:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Qc/D98mXDNVkWb6ClslLvcBhQuuWBzs9eWHN1qpaVhBh2O5BlN4gT+K+S8Efj6qW1BQqh2Yu5nakIWOWMXLEtaDvNFfK+/iGPTO4nBia71nc7+fzkAfAOIa6NEso7HhquU4r3uSfG7e6E8MT/LFNbABMTQyTTl0OjeaSQmcqndY=
-Message-ID: <3f9a31f40709050140p698c37e3q403e2d1cadca1cf@mail.gmail.com>
-Date: Wed, 5 Sep 2007 14:10:41 +0530
-From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: _syscall0 exists or obsolete in 2.6
+	Wed, 5 Sep 2007 04:45:26 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+Date: Wed, 5 Sep 2007 10:44:27 +0200
+From: "Robert Richter" <robert.richter@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>,
+       "Arjan van de Ven" <arjan@infradead.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space
+ access for AMD Barcelona
+Message-ID: <20070905084427.GE6409@erda.amd.com>
+References: <20070903081736.288288000@amd.com>
+ <20070903081736.588599000@amd.com>
+ <20070903013157.72c94891@laptopd505.fenrus.org>
+ <20070903091718.GB22144@alberich.amd.com>
+ <20070903043319.7573875b@laptopd505.fenrus.org>
+ <20070903154734.GC22086@alberich.amd.com> <46DE45A2.40403@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <46DE45A2.40403@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 05 Sep 2007 08:44:27.0529 (UTC)
+ FILETIME=[F7D41F90:01C7EF98]
+X-WSS-ID: 6AC0B3F11A46651931-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On 05.09.07 06:58:58, H. Peter Anvin wrote:
 
-I am trying to add syscall in include/asm/unistd.h:
+> >But at the moment there is no need for further discussion on this subject
+> >because Andi refuses to add support for Barcelona CF8/CFC ECS access.
+> >
+> 
+> Well, they don't add any functionality, do they?  As such, I would agree 
+> with Andi -- we only need one method which can (correctly) access the 
+> full configuration space, since it'll look the same on the bus anyway.
 
-static inline _syscall0(int,my_sys_call);
+PCI Devices will not be the same on the bus since PCI read/write
+functions will have different behavior. Without the patches you will
+get an error when accessing ECS with CF8. We need ECS access for
+patches that setups local interrupt vectors. This patches will be
+released soon.
 
-But I am getting following errors :
+Btw, this patch fixes also config space access with proc/sys fs and
+lspci. I see this as an added functionality as well.
 
-  AS      arch/arm/kernel/entry-common.o
-include/asm/unistd.h: Assembler messages:
-include/asm/unistd.h:622: Error: bad instruction `static inline int
-my_sys_call(void){register long __res_r0 __asm__("r0")'
-include/asm/unistd.h:622: Error: bad instruction `long __res'
-include/asm/unistd.h:622: Error: bad instruction `__asm__
-__volatile__("swi\t""(0x900000+322)""":"=r"(__res_r0)::"memory")'
-include/asm/unistd.h:622: Error: bad instruction `do {if((unsigned
-long)(__res)>=(unsigned long)(-129)){errno=-(__res)'
-include/asm/unistd.h:622: Error: junk at end of line, first
-unrecognized character is `}'
-include/asm/unistd.h:622: Error: junk at end of line, first
-unrecognized character is `}'
-include/asm/unistd.h:622: Error: junk at end of line, first
-unrecognized character is `}'
-make[1]: *** [arch/arm/kernel/entry-common.o] Error 1
-make: *** [arch/arm/kernel] Error 2
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
 
-This was working in older versions.
-
-I am curious _syscall0 still exists or obsolete in 2.6 linux.
-
-And I have noticed even if I commented _syscall0 macro, I do not get
-any errors so no body is using it , then why _syscall0 is in kernel
-header files and what is the substitute of _syscall0.
-
-Thanks for help,
-
-Jaswinder Singh.
