@@ -1,75 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbXIEFcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbXIEFgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbXIEFcn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 01:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXIEFcf
+	id S1756382AbXIEFgW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 01:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbXIEFgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 01:32:35 -0400
-Received: from mga10.intel.com ([192.55.52.92]:62142 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751897AbXIEFcf (ORCPT
+	Wed, 5 Sep 2007 01:36:15 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33611 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203AbXIEFgO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 01:32:35 -0400
-X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 01:32:34 EDT
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,209,1186383600"; 
-   d="scan'208";a="293520297"
-Subject: Re: tbench regression - Why process scheduler has impact on tbench
-	and why small per-cpu slab (SLUB) cache creates the scenario?
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu
-In-Reply-To: <Pine.LNX.4.64.0709042053320.7231@schroedinger.engr.sgi.com>
-References: <1188953218.26438.34.camel@ymzhang>
-	 <Pine.LNX.4.64.0709042053320.7231@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 05 Sep 2007 13:22:05 +0800
-Message-Id: <1188969725.26438.46.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Wed, 5 Sep 2007 01:36:14 -0400
+Message-ID: <46DE4036.6080100@zytor.com>
+Date: Wed, 05 Sep 2007 06:35:50 +0100
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: lguest <lguest@ozlabs.org>, virtualization <virtualization@lists.osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Glauber de Oliveira Costa <glommer@gmail.com>
+Subject: Re: [ANNOUNCE] Lguest64 - fatter puppies!
+References: <1188958000.7913.16.camel@localhost.localdomain>
+In-Reply-To: <1188958000.7913.16.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-04 at 20:59 -0700, Christoph Lameter wrote:
-> On Wed, 5 Sep 2007, Zhang, Yanmin wrote:
+Steven Rostedt wrote:
+> This is a formal announcement of Lguest64.
 > 
-> > 8) kmalloc-4096 order is 1 which means one slab consists of 2 objects. So a
-> 
-> You can change that by booting with slub_max_order=0. Then we can also use 
-> the per cpu queues to get these order 0 objects which may speed up the 
-> allocations because we do not have to take zone locks on slab allocation.
-> 
-> Note also that Andrew's tree has a page allocator pass through for SLUB 
-> for 4k kmallocs bypassing slab completely. That may also address the 
-> issue.
-> 
-> If you want SLUB to handle more objects in the 4k kmalloc cache 
-> without going to the page allocator then you can boot f.e. with
-> 
-> slub_max_order=3 slub_min_objects=8
-I tried this approach. The testing result showed 2.6.23-rc4 is about
-2.5% better than 2.6.22. It really resovles the issue.
+> Most are aware of the little puppies (lguest32, or simply lguest, or in
+> some circles "rustyvisor").  But this time the puppies ate a bit too
+> much.  No more lean and mean puppies, now we got big fat lazy ones.
+> Running on the hardware that's too lazy to do full virutalization. Yes,
+> lguest now runs on x86_64!
 
-However, the approach treats the slabs in the same policy. Could we
-implement a per-slab specific approach like direct b)?
+Totally phat!
 
-> 
-> which will result in a kmalloc-4096 that caches 8 objects.
-> 
-> > 	b) Change SLUB per-cpu slab cache, to cache more slabs instead of only one
-> > slab. This way could use page->lru to creates a list linked in kmem_cache->cpu_slab[]
-> > whose members need to be changed to as list_head. As for how many slabs could be in
-> > a per-cpu slab cache, it might be implemented as a sysfs parameter under /sys/slab/XXX/.
-> > Default could be 1 to satisfy big machines.
-Above direction b) looks more flexible.
-
-In addition, could process scheduler also have an enhancement to schedule waken
-processes firstly or do some favor for waken processes? From cache-hot point of view,
-this enhancement might help performance, because mostly, waken process and waker share
-some data.
-
-> Try the ways to address the issue that I mentioned above.
-I really appreciate your kind comments!
-
--yanmin
+	-hpa
