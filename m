@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757071AbXIENrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbXIENtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757071AbXIENrh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 09:47:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbXIENrS
+	id S1756849AbXIENtj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 09:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265AbXIENtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 09:47:18 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:45715 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755902AbXIENrR (ORCPT
+	Wed, 5 Sep 2007 09:49:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:33693 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755400AbXIENta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 09:47:17 -0400
+	Wed, 5 Sep 2007 09:49:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MP5XE7lFeCtaMqFzjgCHcVkEbcYEwSpggFk2JWOJqh5beCUVaA0xKE3PiW4Ltrxqw6z2o5oVNK9ckjNnpuYZ3jBSOiuvf0gjC2iJ7H+ktoXSLoo2LHTINWKLhG81xnvUwKYeKsdIR1eM77r/606fnoVUwuBokUtN80Ry3XKAWYI=
-Message-ID: <d120d5000709050647v516d042av3975117c97e6e65d@mail.gmail.com>
-Date: Wed, 5 Sep 2007 09:47:15 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
-Subject: Re: Kernel 2.6.22.6 iPod conflict with PS/2 device.
-Cc: "Satyam Sharma" <satyam@infradead.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       apiszcz@solarrain.com, "Jiri Kosina" <jkosina@suse.cz>,
-       linux-usb-devel@lists.sourceforge.net
-In-Reply-To: <Pine.LNX.4.64.0709050613260.10967@p34.internal.lan>
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:message-id;
+        b=AC/V771nJpYVxDZAG7o2U6n9Ps7eZq+Kb4496cYtR7/Hf+geauBlNnPjj4y55aHmaUDtxRI8lBrDNctFz8Hx1Xnu+YwwpnfnCyjNJgZ4IfBYqozZ0QXr94KKvMNJXTafkDwClWnvKTJYW6C/5ZrVoYPj0sRpakvP6kGlBpHHPgw=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: sam@ravnborg.org
+Subject: [PATCH 2/3] build system: section garbage collection for vmlinux
+Date: Wed, 5 Sep 2007 14:49:22 +0100
+User-Agent: KMail/1.9.1
+Cc: kai@germaschewski.name, linux-kernel@vger.kernel.org
+References: <200709051443.21522.vda.linux@googlemail.com> <200709051447.00774.vda.linux@googlemail.com>
+In-Reply-To: <200709051447.00774.vda.linux@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0708310755210.17987@p34.internal.lan>
-	 <alpine.LFD.0.999.0709051513150.23793@enigma.security.iitk.ac.in>
-	 <Pine.LNX.4.64.0709050613260.10967@p34.internal.lan>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_iPr3G+hulxhbJKM"
+Message-Id: <200709051449.22567.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Justin,
+--Boundary-00=_iPr3G+hulxhbJKM
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On 9/5/07, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
->
->
-> On Wed, 5 Sep 2007, Satyam Sharma wrote:
->
-> >
-> >
-> > On Fri, 31 Aug 2007, Justin Piszcz wrote:
-> >
-> >> When I have an iPod attached via USB to an ABIT IC7-G board before it boots up
-> >> and let X start etc, the mouse (PS/2) does not function, but the keyboard
-> >> works OK.
-> >>
-> >> GPM does not work either.
-> >>
-> >> When I attach the iPod after the machine has booted up, everything is OK,
-> >> until the next reboot (with the iPod still attached via USB)
-> >
-> > Interesting :-) And this happens reproducibly?
-> >
-> > You see this on 2.6.22.6 right? It'll be useful if you could test latest
-> > mainline -git (or -rc5). If you still find this problem, then often the
-> > best way to hunt such bugs is to find a previous kernel where this did
-> > *not* occur, and then git-bisect ...
-> >
-> >
-> >> Any idea why this happens?
-> >
-> > CC'es added.
-> >
->
-> My guess is it will occur with all kernels, it is probably a motherboard
-> or IRQ issue and not kernel related.  I have seen a few bugs over 5-6
-> years with these boards and this is another that can be added to the
-> list.
->
+On Wednesday 05 September 2007 14:47, Denys Vlasenko wrote:
+> On Wednesday 05 September 2007 14:43, Denys Vlasenko wrote:
+> > These patches fix section names and add
+> > CONFIG_DISCARD_UNUSED_SECTIONS. It is not enabled
+> > unconditionally because only newest binutils have
+> > ld --gc-sections which is stable enough for kernel use.
+> > IOW: this is an experimental feature for now.
+> 
+> Part 1: fix section names over entire source (all arches).
 
-What do you have in your BIOS under "USB Keyboard support" and "USB
-Mouse support" (in "OnChip PCI device" section) ?
+Part 2: fix x86_64 vdso linker script to not produce
+broken vdso image with gcc -ffunction-sections -fdata-sections.
 
--- 
-Dmitry
+Does not affect normal build.
+--
+vda
+
+--Boundary-00=_iPr3G+hulxhbJKM
+Content-Type: text/x-diff;
+  charset="iso-8859-15";
+  name="linux-2.6.23-rc4.2.vdso.lds.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="linux-2.6.23-rc4.2.vdso.lds.patch"
+
+--- linux-2.6.23-rc4.gc1/arch/x86_64/vdso/vdso.lds.S	Tue Sep  4 21:48:52 2007
++++ linux-2.6.23-rc4.gc2/arch/x86_64/vdso/vdso.lds.S	Tue Sep  4 21:49:17 2007
+@@ -26,11 +26,11 @@
+      is insufficient, ld -shared will barf.  Just increase it here.  */
+   . = VDSO_PRELINK + VDSO_TEXT_OFFSET;
+ 
+-  .text           : { *(.text) }		:text
++  .text           : { *(.text) *(.text.*) }	:text
+   .text_ptr       : { *(.text_ptr) }		:text
+   . = VDSO_PRELINK + 0x900;
+-  .data           : { *(.data) }		:text
+-  .bss            : { *(.bss) }			:text
++  .data           : { *(.data) *(.data.*) }	:text
++  .bss            : { *(.bss) *(.bss.*) }	:text
+ 
+   .altinstructions : { *(.altinstructions) }			:text
+   .altinstr_replacement  : { *(.altinstr_replacement) }	:text
+
+--Boundary-00=_iPr3G+hulxhbJKM--
