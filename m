@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbXIEPYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbXIEPY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757334AbXIEPYO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 11:24:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbXIEPX6
+	id S1756739AbXIEPY0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 11:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756698AbXIEPX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 5 Sep 2007 11:23:59 -0400
+Received: from stinky.trash.net ([213.144.137.162]:40143 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756615AbXIEPX6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Sep 2007 11:23:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41253 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756535AbXIEPX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 11:23:56 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FRV: Make BSG declarations dependent on CONFIG_BLOCK
-To: jens.axboe@oracle.com
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Wed, 05 Sep 2007 16:23:06 +0100
-Message-ID: <20070905152306.3282.70289.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.13
+Message-ID: <46DEC9BF.9010807@trash.net>
+Date: Wed, 05 Sep 2007 17:22:39 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Neil Horman <nhorman@tuxdriver.com>
+CC: rusty@rustcorp.com.au, adam@yggdrasil.com, jcm@jonmasters.org,
+       netfilter-devel@lists.netfilter.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Fix (improve) deadlock condition on module removal
+ netfilter socket option removal
+References: <20070904202433.GA19083@hmsreliant.think-freely.org>
+In-Reply-To: <20070904202433.GA19083@hmsreliant.think-freely.org>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+Neil Horman wrote:
+> Hey all-
+> 	So I've had a deadlock reported to me.  I've found that the sequence of
+> events goes like this:
+> 
+> 1) process A (modprobe) runs to remove ip_tables.ko
+> 
+> 2) process B (iptables-restore) runs and calls setsockopt on a netfilter socket,
+> increasing the ip_tables socket_ops use count
+> 
+> 3) process A acquires a file lock on the file ip_tables.ko, calls remove_module
+> in the kernel, which in turn executes the ip_tables module cleanup routine,
+> which calls nf_unregister_sockopt
+> 
+> 4) nf_unregister_sockopt, seeing that the use count is non-zero, puts the
+> calling process into uninterruptible sleep, expecting the process using the
+> socket option code to wake it up when it exits the kernel
+> 
+> 4) the user of the socket option code (process B) in do_ipt_get_ctl, calls
+> ipt_find_table_lock, which in this case calls request_module to load
+> ip_tables_nat.ko
+> 
+> 5) request_module forks a copy of modprobe (process C) to load the module and
+> blocks until modprobe exits.
+> 
+> 6) Process C. forked by request_module process the dependencies of
+> ip_tables_nat.ko, of which ip_tables.ko is one.
+> 
+> 7) Process C attempts to lock the request module and all its dependencies, it
+> blocks when it attempts to lock ip_tables.ko (which was previously locked in
+> step 3)
+> 
+> Theres not really any great permanent solution to this that I can see, but I've
+> developed a two part solution that corrects the problem
+> 
+> Part 1) Modifies the nf_sockopt registration code so that, instead of using a
+> use counter internal to the nf_sockopt_ops structure, we instead use a pointer
+> to the registering modules owner to do module reference counting when nf_sockopt
+> calls a modules set/get routine.  This prevents the deadlock by preventing set 4
+> from happening.
+> 
+> Part 2) Enhances the modprobe utilty so that by default it preforms non-blocking
+> remove operations (the same way rmmod does), and add an option to explicity
+> request blocking operation.  So if you select blocking operation in modprobe you
+> can still cause the above deadlock, but only if you explicity try (and since
+> root can do any old stupid thing it would like.... :) ).
+> 
+> The following 2 patches have been tested out by me.
 
-Make BSG function declarations dependent on CONFIG_BLOCK as they are not
-compilable if the block layer is compiled out.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Nice catch, we've had a report of this ages ago, but I never figured
+out what happend.
 
- include/linux/bsg.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/bsg.h b/include/linux/bsg.h
-index 60e377b..28f5d44 100644
---- a/include/linux/bsg.h
-+++ b/include/linux/bsg.h
-@@ -52,6 +52,7 @@ struct sg_io_v4 {
- };
- 
- #ifdef __KERNEL__
-+#ifdef CONFIG_BLOCK
- 
- #if defined(CONFIG_BLK_DEV_BSG)
- struct bsg_class_device {
-@@ -73,6 +74,7 @@ static inline void bsg_unregister_queue(struct request_queue *rq)
- }
- #endif
- 
-+#endif /* CONFIG_BLOCK */
- #endif /* __KERNEL__ */
- 
- #endif
+But I'm wondering, wouldn't module refcounting alone fix this problem?
+If we make nf_sockopt() call try_module_get(ops->owner), remove_module()
+on ip_tables.ko would simply fail because the refcount is above zero
+(so it would fail at point 3 above). Am I missing something important?
 
