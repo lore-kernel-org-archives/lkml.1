@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbXIEQpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbXIEQrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753818AbXIEQpO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 12:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbXIEQo7
+	id S1754551AbXIEQrN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 12:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbXIEQq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 12:44:59 -0400
-Received: from mail.suse.de ([195.135.220.2]:44436 "EHLO mx1.suse.de"
+	Wed, 5 Sep 2007 12:46:59 -0400
+Received: from ns1.suse.de ([195.135.220.2]:44557 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751018AbXIEQo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 12:44:58 -0400
-Date: Wed, 05 Sep 2007 18:44:57 +0200
-Message-ID: <s5hhcm96oza.wl%tiwai@suse.de>
+	id S1751018AbXIEQq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 12:46:58 -0400
+Date: Wed, 05 Sep 2007 18:46:57 +0200
+Message-ID: <s5hfy1t6ovy.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: roger@computer-surgery.co.uk, linux-kernel@vger.kernel.org, perex@suse.cz
+To: Roger Gammans <roger@computer-surgery.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jaroslav Kysela <perex@suse.cz>
 Subject: Re: hda_intel : Patch + Regression in 2.6.18 -> 2.6.22
-In-Reply-To: <20070905091633.87cfaa81.akpm@linux-foundation.org>
+In-Reply-To: <20070905162650.GC31328@computer-surgery.co.uk>
 References: <20070822222902.GA28563@computer-surgery.co.uk>
 	<20070905083844.6637da1e.akpm@linux-foundation.org>
 	<s5hlkbl6qsn.wl%tiwai@suse.de>
-	<20070905091633.87cfaa81.akpm@linux-foundation.org>
+	<20070905162650.GC31328@computer-surgery.co.uk>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -28,23 +29,53 @@ Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Wed, 5 Sep 2007 09:16:33 -0700,
-Andrew Morton wrote:
+At Wed, 5 Sep 2007 17:26:50 +0100,
+Roger Gammans wrote:
 > 
-> > On Wed, 05 Sep 2007 18:05:44 +0200 Takashi Iwai <tiwai@suse.de> wrote:
+> Thanks for picking this up again Andew.
+> 
+> On Wed, Sep 05, 2007 at 06:05:44PM +0200, Takashi Iwai wrote:
+> > The patch would definitely break many other machines, so no, it can't
+> > be applied as is.  Note that there is an equivalent workaround by
+> > adding "model=auto" module option.
+> 
+> Ah, I hadn't spotted that.
+> 
+> > The support for Acer Aspire was already improved in mm tree.  At
+> > least, we have the support for Aspire 9810 and co.  If it's the
+> > compatible one, the chance is high.
+> 
+> Yes, I played a little with that, looking back at what Ive got 
+> here the following patch worked on what I pulled about
+> 2weeks ago byi:-
+>  git pull git://git.kernel.org/pub/scm/linux/kernel/git/perex/alsa.git/
+>  
+> 
 > > Roger, could you try git-alsa patch in the latest mm together with
 > > model=acer-aspiore option?  If it works, I can easily add your device
 > > ID to the table.
 > 
-> http://userweb.kernel.org/~akpm/git-alsa.patch is a copy of the alsa git
-> tree as of two minutes ago.  That applies against current Linus mainline,
-> but should apply OK on 2.6.23-rc5 as well.  Please test that, thanks.
+> I assume youe think of somehting like this which I tried earlier -
+> but would have been wasier if I'd have known about the mode option..
 > 
-> Takashi, perhaps that is 2.6.23 material?
+>         SND_PCI_QUIRK(0x1462, 0xa422, "MSI", ALC883_TARGA_2ch_DIG),
+>         SND_PCI_QUIRK(0x1025, 0x006c, "Acer Aspire 9810", ALC883_ACER_ASPIRE),
+>         SND_PCI_QUIRK(0x1025, 0x0110, "Acer Aspire", ALC883_ACER_ASPIRE),
+> +       SND_PCI_QUIRK(0x1025, 0x0112, "Acer Aspire", ALC883_ACER_ASPIRE),
+>         SND_PCI_QUIRK(0x15d9, 0x8780, "Supermicro PDSBA", ALC883_3ST_6ch),
+>         SND_PCI_QUIRK(0x161f, 0x2054, "Medion laptop", ALC883_MEDION),
+> 
+> (Patch headers removed as patch manually editted  I appeat to got onto some on 
+> branch mode with git and it producing odd patches (ones with '++' at the start
+>  of some lines)) 
+> 
+> This does indeed work. I'm sorry I should have replied with this sooner, 
+> buts since it appeared noone was listening...
 
-The changes for Acer Aspire is quite big, surely not for 2.6.23.
-Let's fix in 2.6.24 in a better way than a temporary hack (that
-would work only in a very limited way).
+Great, then I'll add this entry to ALSA tree.
+It's Aspire 9303, right?
 
+
+thanks,
 
 Takashi
