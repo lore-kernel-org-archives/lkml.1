@@ -1,134 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbXIENB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbXIENEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652AbXIENB7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 09:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbXIENBv
+	id S1756747AbXIENEY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 09:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbXIENEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 09:01:51 -0400
-Received: from proxy3.bredband.net ([195.54.101.73]:47126 "EHLO
-	proxy3.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754482AbXIENBv (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 09:01:51 -0400
-Subject: Re: Cache not being reclaimed?
-From: Ian Kumlien <pomac@vapor.com>
-Reply-To: pomac@vapor.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux-kernel@vger.kernel.org
-In-Reply-To: <20070905054501.9c59dc56.akpm@linux-foundation.org>
-References: <1188955687.8365.5.camel@localhost>
-	 <20070905054501.9c59dc56.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-YZ+DSFEmVJFZVDODb0eW"
-Date: Wed, 05 Sep 2007 15:01:37 +0200
-Message-Id: <1188997297.8365.21.camel@localhost>
+	Wed, 5 Sep 2007 09:04:16 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:39545 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755524AbXIENEO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 09:04:14 -0400
+Date: Wed, 5 Sep 2007 09:04:11 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mingo@redhat.com,
+       linux-ia64@vger.kernel.org
+Subject: [PATCH] local_t protection (critical section)
+Message-ID: <20070905130411.GB11880@Krystal>
+References: <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com> <20070827211003.GA10627@Krystal> <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com> <20070827213845.GB9748@Krystal> <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com> <20070827222715.GA16982@Krystal> <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com> <20070904200429.GD8157@Krystal> <Pine.LNX.4.64.0709041344040.6376@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0709041344040.6376@schroedinger.engr.sgi.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:03:46 up 37 days, 13:22,  4 users,  load average: 0.46, 0.63, 0.52
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+local_t protection (critical section)
 
---=-YZ+DSFEmVJFZVDODb0eW
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Adds local_enter_save(flags) and local_exit_restore(flags) as primitives to
+surround critical sections using local_t types.
 
-On ons, 2007-09-05 at 05:45 -0700, Andrew Morton wrote:
-> > On Wed, 05 Sep 2007 03:28:07 +0200 Ian Kumlien <pomac@vapor.com> wrote:
-> > Hi,=20
-> >=20
-> > I have just had a quite unexpected 'low memory situation'...
-> >=20
-> > This is a AMD64 machine with 2 gig memory, running 64 bit userland.
-> >=20
-> > Kernel: 2.6.23-rc3-git10, updating to -rc5-* as soon as i can.
-> > I'm using SLUB:s
-> >=20
-> >=20
-> > To me, this looks odd... I thought that any cached memory would be
-> > reclamed but it was always full.
-> >=20
-> > Ideas?
-> >=20
-> > One example from dmesg:
-> > swapper: page allocation failure. order:1, mode:0x4020
-> >=20
-> > Call Trace:
-> >  <IRQ>  [<ffffffff8026c7ef>] __alloc_pages+0x30f/0x330
-> >  [<ffffffff8028a0a1>] __slab_alloc+0x141/0x590
-> >  [<ffffffff805a5937>] __netdev_alloc_skb+0x17/0x40
-> >  [<ffffffff805a5937>] __netdev_alloc_skb+0x17/0x40
-> >  [<ffffffff8028b470>] __kmalloc_track_caller+0xa0/0xc0
-> >  [<ffffffff805a4b3f>] __alloc_skb+0x6f/0x150
-> >  [<ffffffff805a5937>] __netdev_alloc_skb+0x17/0x40
-> >  [<ffffffff88010945>] :sky2:sky2_rx_alloc+0x25/0xf0
-> >  [<ffffffff88013b0c>] :sky2:sky2_poll+0x6dc/0xcf0
-> >  [<ffffffff805e5f60>] tcp_delack_timer+0x0/0x210
-> >  [<ffffffff805ac38a>] net_rx_action+0x8a/0x140
-> >  [<ffffffff80242ac9>] __do_softirq+0x69/0xe0
-> >  [<ffffffff8020cd9c>] call_softirq+0x1c/0x30
-> >  [<ffffffff8020eb75>] do_softirq+0x35/0x90
-> >  [<ffffffff8020ede0>] do_IRQ+0x80/0x100
-> >  [<ffffffff8020ad00>] default_idle+0x0/0x40
-> >  [<ffffffff8020c121>] ret_from_intr+0x0/0xa
-> >  <EOI>  [<ffffffff8020ad29>] default_idle+0x29/0x40
-> >  [<ffffffff8020ade1>] cpu_idle+0xa1/0xf0
-> >=20
->=20
-> An order-1 GFP_ATOMIC allocation can fail, and networking should recover
-> from it.
+On architectures providing fast atomic primitives, this turns into a preempt
+disable/enable().
+However, on architectures not providing such fast primitives, such as ia64, it
+turns into a local irq disable/enable so that we can use *_local primitives that
+are non atomic.
 
-Well, this isn't only networking, It started with all the apps running
-and ended up with a pretty basic desktop with almost nothing running...
-(due to continued freezes that caused me to shut down more and more
-programs)
+This is only the primary work here: made for testing ia64 with cmpxchg_local
+(other local_* primitives still use atomic_long_t operations as fallback).
 
-> If this is happening a lot then someting might have been broken.  Do you
-> have reason to believe that the frequency of this happening has inreased?
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Christoph Lameter <clameter@sgi.com>
+---
+ include/asm-generic/local.h   |    9 +++++++++
+ include/asm-i386/local.h      |   17 +++++++++++++++++
+ include/asm-ia64/intrinsics.h |   14 ++++++++++++--
+ 3 files changed, 38 insertions(+), 2 deletions(-)
 
-I have never, to my knowledge, had this happen before...=20
+Index: linux-2.6-lttng/include/asm-generic/local.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-generic/local.h	2007-09-04 15:32:02.000000000 -0400
++++ linux-2.6-lttng/include/asm-generic/local.h	2007-09-05 08:50:47.000000000 -0400
+@@ -46,6 +46,15 @@ typedef struct
+ #define local_add_unless(l, a, u) atomic_long_add_unless((&(l)->a), (a), (u))
+ #define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
+ 
++#define local_enter_save(flags) local_irq_save(flags)
++#define local_exit_restore(flags) local_irq_restore(flags)
++#define local_enter() local_irq_disable()
++#define local_exit() local_irq_enable()
++#define local_nest_irq_save(flags) (flags)
++#define local_nest_irq_restore(flags) (flags)
++#define local_nest_irq_disable()
++#define local_nest_irq_enable()
++
+ /* Non-atomic variants, ie. preemption disabled and won't be touched
+  * in interrupt, etc.  Some archs can optimize this case well. */
+ #define __local_inc(l)		local_set((l), local_read(l) + 1)
+Index: linux-2.6-lttng/include/asm-i386/local.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-i386/local.h	2007-09-04 15:28:52.000000000 -0400
++++ linux-2.6-lttng/include/asm-i386/local.h	2007-09-05 08:49:19.000000000 -0400
+@@ -194,6 +194,23 @@ static __inline__ long local_sub_return(
+ })
+ #define local_inc_not_zero(l) local_add_unless((l), 1, 0)
+ 
++#define local_enter_save(flags) \
++	do { \
++		(flags); \
++		preempt_disable(); \
++	} while (0)
++#define local_exit_restore(flags) \
++	do { \
++		(flags); \
++		preempt_enable(); \
++	} while (0)
++#define local_enter() preempt_disable()
++#define local_exit() preempt_enable()
++#define local_nest_irq_save(flags) local_irq_save(flags)
++#define local_nest_irq_restore(flags) local_irq_restore(flags)
++#define local_nest_irq_disable() local_irq_disable()
++#define local_nest_irq_enable() local_irq_enable()
++
+ /* On x86, these are no better than the atomic variants. */
+ #define __local_inc(l)		local_inc(l)
+ #define __local_dec(l)		local_dec(l)
+Index: linux-2.6-lttng/include/asm-ia64/intrinsics.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-ia64/intrinsics.h	2007-09-04 15:47:24.000000000 -0400
++++ linux-2.6-lttng/include/asm-ia64/intrinsics.h	2007-09-04 15:49:41.000000000 -0400
+@@ -160,8 +160,18 @@ extern long ia64_cmpxchg_called_with_bad
+ #define cmpxchg(ptr,o,n)	cmpxchg_acq(ptr,o,n)
+ #define cmpxchg64(ptr,o,n)	cmpxchg_acq(ptr,o,n)
+ 
+-#define cmpxchg_local		cmpxchg
+-#define cmpxchg64_local		cmpxchg64
++/* Must be executed between local_enter/local_exit. */
++static inline void *cmpxchg_local(void **p, void *old, void *new)
++{
++	unsigned long flags;
++	void *before;
++
++	before = *p;
++	if (likely(before == old))
++		*p = new;
++	return before;
++}
++#define cmpxchg64_local		cmpxchg_local
+ 
+ #ifdef CONFIG_IA64_DEBUG_CMPXCHG
+ # define CMPXCHG_BUGCHECK_DECL	int _cmpxchg_bugcheck_count = 128;
 
-I just happened to start a few downloads with rtorrent and watched the
-machine slow down to a crawl... All this with over a gig in cache.
-
-The machine was actually deadlocked for almost a minute at one time.
-
-Top memory usage:
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND       =
-          =20
- 2395 pomac     20   0  440m 289m 238m S    2 14.4  32:56.54 rtorrent
-21647 root      20   0  203m 120m  10m S    1  6.0 569:45.31 X             =
-          =20
- 2351 pomac     20   0  170m 111m  53m S    0  5.5  15:43.66 rtorrent      =
-   =20
-
-At peak time, one of the rtorrent processes consumed more, but i still
-had 1.x gig as cache, which imho should have been reclaimed.
-
-vmstat now:
-procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu--=
---
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id =
-wa
- 0  0 365204  16628  30644 1445316    2    1   362    92   18   21  4  2 91=
-  3
-
-PS. I have a dmesg dump from the incident, it's not long enough to
-contain all but it could be seen as a snapshot...
-DS.
-
---=20
-Ian Kumlien <pomac () vapor ! com> -- http://pomac.netswarm.net
-
---=-YZ+DSFEmVJFZVDODb0eW
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7-ecc0.1.6 (GNU/Linux)
-
-iD8DBQBG3qix7F3Euyc51N8RAhAXAJ0XIUxjdqpRNFM9DUAdlEZdsrxIcQCeMByx
-nvzFkJMqKjWjrvpvkLHkY7o=
-=68Wd
------END PGP SIGNATURE-----
-
---=-YZ+DSFEmVJFZVDODb0eW--
-
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
