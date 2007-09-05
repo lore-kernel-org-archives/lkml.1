@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbXIEKqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbXIEKvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756710AbXIEKqQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 06:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbXIEKqB
+	id S1756772AbXIEKvf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 06:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbXIEKv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 06:46:01 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58936 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755454AbXIEKqA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 06:46:00 -0400
-Date: Wed, 5 Sep 2007 03:45:58 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu
-Subject: Re: tbench regression - Why process scheduler has impact on tbench
- and why small per-cpu slab (SLUB) cache creates the scenario?
-In-Reply-To: <1188983603.26438.55.camel@ymzhang>
-Message-ID: <Pine.LNX.4.64.0709050342520.8127@schroedinger.engr.sgi.com>
-References: <1188953218.26438.34.camel@ymzhang> 
- <Pine.LNX.4.64.0709042053320.7231@schroedinger.engr.sgi.com> 
- <1188969725.26438.46.camel@ymzhang>  <Pine.LNX.4.64.0709042354290.7527@schroedinger.engr.sgi.com>
- <1188983603.26438.55.camel@ymzhang>
+	Wed, 5 Sep 2007 06:51:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55341 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755454AbXIEKv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 06:51:27 -0400
+Date: Wed, 5 Sep 2007 12:51:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, nickpiggin@yahoo.com.au,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [patch] sched: fix broken smt/mc optimizations with CFS
+Message-ID: <20070905105115.GB29959@elte.hu>
+References: <20070816010150.GG10033@linux-os.sc.intel.com> <20070823115416.GA31027@elte.hu> <20070823121341.GA5775@elte.hu> <20070827191905.GE1894@linux-os.sc.intel.com> <20070827192324.GA29441@elte.hu> <20070827193103.GF1894@linux-os.sc.intel.com> <20070828222718.GI1894@linux-os.sc.intel.com> <46DDEBB9.3080501@redhat.com> <20070904234626.GB5187@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070904234626.GB5187@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.0.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.1548]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Sep 2007, Zhang, Yanmin wrote:
 
-> > > However, the approach treats the slabs in the same policy. Could we
-> > > implement a per-slab specific approach like direct b)?
-> > 
-> > I am not sure what you mean by same policy. Same configuration for all 
-> > slabs?
-> Yes.
+* Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
 
-Ok. I could add the ability to specify parameters for some slabs.
-
-> > Would it be possible to try the two other approaches that I suggested? I 
-> > think both of those may also solve the issue. Try booting with
-> > slab_max_order=0
-> 1) I tried slab_max_order=0 and the regression becomes 12.5%. It's still 
-> not good.
+> > Seems this didn't get merged? Latest git as of today still has the code
+> > as it was before this patch.
 > 
-> 2) I apllied patch 
-> slub-direct-pass-through-of-page-size-or-higher-kmalloc.patch to kernel 
-> 2.6.23-rc4. The new testing result is much better, only 1% less than 
-> 2.6.22.
+> This is must fix for .23 and Ingo previously mentioned that he will push it
+> for .23
 
-Ok. That seems to indicate that we should improve the alloc path in the 
-page allocator. The page allocator performance needs to be competitive on 
-page sized allocations. The problem will be largely going away when we 
-merge the pass through patch in 2.6.24.
+yep, it's queued up and it will send it with the next batch. (this is 
+the most important scheduler fix we have at the moment - there are 3 
+other, smaller items queued up as well)
+
+	Ingo
