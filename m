@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbXIEMci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbXIEMef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756360AbXIEMci (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 08:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbXIEMca
+	id S1756584AbXIEMef (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 08:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbXIEMe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 08:32:30 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:48675 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753782AbXIEMc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 08:32:29 -0400
-Subject: Re: [BUG?] 2.6.23-rc3 on alpha
-In-Reply-To: <Pine.LNX.4.64.0708220906080.9716@anakin> "from Geert Uytterhoeven
- at Aug 22, 2007 09:06:54 am"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 5 Sep 2007 07:32:28 -0500 (CDT)
-CC: linux-kernel@vger.kernel.org
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	Wed, 5 Sep 2007 08:34:28 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:21045 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753984AbXIEMe1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 08:34:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Y0JK8xQVYKCU9la0hgICOl1HqSnjQRkcvHe0TZTuZLRrz3P+4E4DO/6/K0S1eaRxGp6vg7EnQPkTdtpihwRyUnQPQy0nVUcnYIfpg8KyuFriJWWycYwivLpHLArQKepx4tfBkz/i7anceBOSHJEyvesrHNXZGF8UF34R29XnuHw=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: "Daniel J Blueman" <daniel.blueman@gmail.com>
+Subject: Re: file system for solid state disks
+Date: Wed, 5 Sep 2007 13:34:14 +0100
+User-Agent: KMail/1.9.1
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Richard Ballantyne" <richardballantyne@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+References: <6278d2220708230155j18248f2cr3cc697a7acbaa930@mail.gmail.com>
+In-Reply-To: <6278d2220708230155j18248f2cr3cc697a7acbaa930@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20070905123228.A99E2DBA2@gherkin.frus.com>
-From: rct@gherkin.frus.com (Bob Tracy)
+Content-Disposition: inline
+Message-Id: <200709051334.14599.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Tue, 21 Aug 2007, Bob Tracy wrote:
-> > I'm seeing something new and strange with 2.6.23-rc3 that I wasn't
-> > seeing in the 2.6.22+ kernels.  I've got the bootlogo code enabled,
-> > and at the point during system initialization where the logo
-> > disappears, the console switches from tty1 to tty2.  I can switch
-> > back to tty1, so other than the unexpected console tty switch, there
-> > doesn't seem to be anything "unfortunate" happening.
-> > 
-> > Any ideas/explanations?  It's completely repeatable.  I don't think
-> > it's related to the "aboot" patches :-).
+On Thursday 23 August 2007 09:55, Daniel J Blueman wrote:
+> On 23 Aug, 07:00, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> > On Aug 23 2007 01:01, Richard Ballantyne wrote:
+> > >What file system that is already in the linux kernel do people recommend
+> > >I use for my laptop that now contains a solid state disk?
+> >
+> > If I had to choose, the list of options seems to be:
+> >
+> > - logfs
+> >   [unmerged]
+> >
+> > - UBI layer with any fs you like
+> >   [just a guess]
+> >
+> > - UDF in Spared Flavor (mkudffs --media-type=cdrw --utf8)
+> >   [does not support ACLs/quotas]
 > 
-> The kernel doesn't make the logo disappear, the boot scripts (in
-> userspace) do that. So I guess they also switch the console from tty1 to
-> tty2.
+> Isn't it that with modern rotational wear-levelling, re-writing hot
+> blocks many times is not an issue, as they are internally moved around
+> anyway? So, using a journalled filesystem such as ext3 is still good
+> (robustness and maturity in mind).
 
-I don't disagree with Geert's statement (the console was switching when
-the console fonts got loaded during system initialization), but the
-problem no longer exists in 2.6.23-rc5.  Weird.  N.B.: it could have
-been fixed in 2.6.23-rc4, but I didn't try that kernel.  In any event,
-I'll quit looking for the cause unless the problem recurs :-).
-
--- 
-------------------------------------------------------------------------
-Bob Tracy          |  "They couldn't hit an elephant at this dist- "
-rct@frus.com       |   - Last words of Union General John Sedgwick,
-                   |  Battle of Spotsylvania Court House, U.S. Civil War
-------------------------------------------------------------------------
+Crap hardware (one which only _claim_ to do it) is out there,
+and is typically cheaper, so users preferentially buy that ;)
+--
+vda
