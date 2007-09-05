@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757882AbXIEU2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbXIEU3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757882AbXIEU2b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 16:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756789AbXIEU2Y
+	id S1757975AbXIEU3a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 16:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755757AbXIEU3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 16:28:24 -0400
-Received: from panic.printk.net ([217.147.83.20]:46565 "EHLO panic.printk.net"
+	Wed, 5 Sep 2007 16:29:23 -0400
+Received: from 1wt.eu ([62.212.114.60]:2397 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754300AbXIEU2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 16:28:23 -0400
-Subject: Re: [PATCH 2/2] Fix (improve) deadlock condition on module removal
-	netfilter socket option removal
-From: Jon Masters <jonathan@jonmasters.org>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: rusty@rustcorp.com.au, adam@yggdrasil.com, jcm@jonmasters.org,
-       kaber@trash.net, netfilter-devel@lists.netfilter.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070904203053.GC19083@hmsreliant.think-freely.org>
-References: <20070904203053.GC19083@hmsreliant.think-freely.org>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Wed, 05 Sep 2007 16:26:39 -0400
-Message-Id: <1189023999.12261.147.camel@jcmlaptop>
+	id S1755046AbXIEU3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 16:29:22 -0400
+Date: Wed, 5 Sep 2007 22:29:08 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Beschorner Daniel <Daniel.Beschorner@facton.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.4.35.1 md problem
+Message-ID: <20070905202908.GA11602@1wt.eu>
+References: <3C59DB883F7B0B4D8096010D45ACCD134F1D24@exch.facton.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3C59DB883F7B0B4D8096010D45ACCD134F1D24@exch.facton.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-04 at 16:30 -0400, Neil Horman wrote:
+On Wed, Sep 05, 2007 at 03:45:45PM +0200, Beschorner Daniel wrote:
+> I got a strange problem after I updated from 2.4.34.4 to 2.4.35.1:
+> 
+> The kernel raid autodetection assembles my 2 raid-1 arrays, but mdstat
+> shows "0 blocks" for each md.
+> So the filesystem check complains about no valid superblock, but the
+> arrays seem to run fine.
+> After raidstop/raidstart the blocks are displayed correctly and all is
+> fine.
+> But this is no solution, because the root fs is raid.
+> 
+> Could it be a compiler issue, I assume there is no change in raid since
+> 2.4.34?!?
+> 
+> I use GCC 4.1.2 and no LVM.
 
-> 	2nd of two patches.  This patch enhances modprobe to operate like rmmod
-> in non-blocking mode.  It also adds a -w option to allow for explicit blocking
-> operation.
+Also, I forgot one important thing: could you please send me your .config ?
 
-As I suspected, this patch isn't in the tree. I am going to commit it
-now because it makes sense. I'm also going to sort out moving things to
-kernel.org this afternoon while I'm at it - I don't want to confuse
-people with kerneltools.org any more now I've got a kernel.org acc.
-
-Jon.
-
+Thanks in advance,
+Willy
 
