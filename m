@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbXIEBhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbXIEBoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756203AbXIEBhp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 21:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbXIEBhi
+	id S1756251AbXIEBoS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 21:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755710AbXIEBoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 21:37:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35356 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755642AbXIEBhh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 21:37:37 -0400
-Message-ID: <46DE085F.2040306@redhat.com>
-Date: Tue, 04 Sep 2007 21:37:35 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Tue, 4 Sep 2007 21:44:05 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49270 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755689AbXIEBoE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Sep 2007 21:44:04 -0400
+Message-ID: <46DE08EA.1050705@zytor.com>
+Date: Wed, 05 Sep 2007 02:39:54 +0100
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Linux kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kernel 2.6.22: what IS the VM doing?
-References: <20070830115429.w2puzet5sllhccdk@m.safari.iki.fi>
-In-Reply-To: <20070830115429.w2puzet5sllhccdk@m.safari.iki.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Christoph Hellwig <hch@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christian Ehrhardt <lk@c--e.de>
+Subject: Re: [GIT PULL] x86 setup: work around bug in Xen HVM
+References: <200709041655.l84GtjiJ008962@tazenda.hos.anvin.org> <20070904223303.GA22306@infradead.org>
+In-Reply-To: <20070904223303.GA22306@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sami Farin wrote:
-> Using SMP kernel 2.6.22.6pre-CFS-v20.5 on Pentium D (IA-32).
-> I think this bug (or whatever you want to call it) got triggered
-> when you first allocate several megabytes of memory in a kernel module
-> and then free them, and then run e.g. X and when memory gets tight,
-> you end up with this situation...
+Christoph Hellwig wrote:
+> On Tue, Sep 04, 2007 at 09:55:45AM -0700, H. Peter Anvin wrote:
+>>     
+>>     Apparently XEN does not keep the contents of the 48-bit gdt_48 data
+>>     structure that is passed to lgdt in the XEN machine state. Instead it
+>>     appears to save the _address_ of the 48-bit descriptor
+>>     somewhere. Unfortunately this data happens to reside on the stack and
+>>     is probably no longer availiable at the time of the actual protected
+>>     mode jump.
+>>     
+>>     This is Xen bug but given that there is a one-line patch to work
+>>     around this problem, the linux kernel should probably do this.  My fix
+>>     is to make the gdt_48 description in setup_gdt static (in setup_idt
+>>     this is already the case). This allows the kernel to boot under
+>>     Xen HVM again.
 > 
-> Top 2 /proc/vmstat Biggest Winners:
+>> -	struct gdt_ptr gdt;
+>> +	static struct gdt_ptr gdt;
 > 
-> pgrefill_normal:49900/second
-> pgrefill_high:20810/second
+> It might make sense to add your above commit message to the code as a comment.
 
-That means the pageout code was scanning about 70000 pages
-per second on your system during peak stress.  You may have
-run into a scalability problem in the Linux kernel, where it
-wants to clear the referenced bit off all the anonymous pages
-before swapping something out.
+Good point; I have amended the commit with a brief comment:
 
-To make matters worse, that unlucky page gets chosen because
-it was the page where kswapd started scanning.  It has little
-to do with being the least recently used page, because every
-anonymous page tends to have its referenced bit set by the time
-we start scanning.
+diff --git a/arch/i386/boot/pm.c b/arch/i386/boot/pm.c
+index 6be9ca8..09fb342 100644
+--- a/arch/i386/boot/pm.c
++++ b/arch/i386/boot/pm.c
+@@ -122,7 +122,11 @@ static void setup_gdt(void)
+                 /* DS: data, read/write, 4 GB, base 0 */
+                 [GDT_ENTRY_BOOT_DS] = GDT_ENTRY(0xc093, 0, 0xfffff),
+         };
+-       struct gdt_ptr gdt;
++       /* Xen HVM incorrectly stores a pointer to the gdt_ptr, instead
++          of the gdt_ptr contents.  Thus, make it static so it will
++          stay in memory, at least long enough that we switch to the
++          proper kernel GDT. */
++       static struct gdt_ptr gdt;
 
-On truly enormous systems, say with 256GB of memory, kswapd
-sometimes needs to scan hundreds of thousands or even millions
-of pages before finding something to swap out.  Not fun.
+         gdt.len = sizeof(boot_gdt)-1;
+         gdt.ptr = (u32)&boot_gdt + (ds() << 4);
 
-> Did I forget to include some info???
-> Oh, and I need to reboot in order to get usable system
-> when this bug happens.
-
-Is the system trying to evict pages like crazy when your
-system becomes unusable?
-
-If so, I wonder if kswapd is simply doing the wrong thing
-and trying to evict data from all zones, simply because the
-highmem zone is low on free pages...
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+	-hpa
