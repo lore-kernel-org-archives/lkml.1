@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbXIEQhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932276AbXIEQly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757902AbXIEQhp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 12:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbXIEQh3
+	id S932276AbXIEQly (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 12:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756630AbXIEQlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 12:37:29 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55814 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756936AbXIEQh2 (ORCPT
+	Wed, 5 Sep 2007 12:41:47 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:1775 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756604AbXIEQlq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 12:37:28 -0400
-Date: Wed, 5 Sep 2007 18:37:24 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Stefan Becker <Stefan.Becker@nokia.com>
-Cc: ext Andi Kleen <andi@firstfloor.org>,
-       ext Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [pre-2.6.23 REGRESSION] 2.6.23-rc3-git1 crash/stuck on VIA CN700 system
-Message-ID: <20070905163724.GC31880@one.firstfloor.org>
-References: <46C9D148.5080505@nokia.com> <p734pibbbex.fsf@bingen.suse.de> <46DDA366.8090806@nokia.com> <20070905102525.GB31880@one.firstfloor.org> <46DECDC9.9050407@nokia.com>
+	Wed, 5 Sep 2007 12:41:46 -0400
+Subject: Re: [PATCH 0/3] build system: section garbage collection for
+	vmlinux
+From: Daniel Walker <dwalker@mvista.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: sam@ravnborg.org, kai@germaschewski.name, linux-kernel@vger.kernel.org
+In-Reply-To: <200709051443.21522.vda.linux@googlemail.com>
+References: <200709051443.21522.vda.linux@googlemail.com>
+Content-Type: text/plain
+Date: Wed, 05 Sep 2007 09:29:08 -0700
+Message-Id: <1189009748.4442.19.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46DECDC9.9050407@nokia.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic mtrr pge cmov pat 
-> clflush acpi mmx fxsr sse sse2 tm up pni est tm2 rng rng_en ace ace_en 
+On Wed, 2007-09-05 at 14:43 +0100, Denys Vlasenko wrote:
+> Build system: section garbage collection for vmlinux
+> 
+> 
+> Newer gcc and binutils can do dead code and data removal
+> at link time. It is achieved using combination of
+> -ffunction-sections -fdata-sections options for gcc and
+> --gc-sections for ld.
+> 
+> Theory of operation:
+> 
+> Option -ffunction-sections instructs gcc to place each function
+> (including static ones) in it's own section named .text.function_name
+> instead of placing all functions in one big .text section.
+> 
+> At link time, ld normally coalesce all such sections into one
+> output section .text again. It is achieved by having *(.text.*) spec
+> along with *(.text) spec in built-in linker scripts.
 
-Hmm, I can't really see anything wrong. This means the original
-version of the patch you found had a few problems, but they
-were all fixed later and only applied with CONFIG_PARAVIRT enabled anyways.
+You version doesn't work with CONFIG_MODULES right?
 
-As a stab in the dark since the CPU has clflush can you please 
-comment out the  
+Also, why do you need this patch,
 
-  if (cpu_has_clflush)
-                asm("clflush (%0) " :: "r" (addr) : "memory");
+[PATCH 1/3] build system: section garbage collection for vmlinux
 
-statement in arch/i386/kernel/alternative.c and see if it makes a difference?
-Perhaps your CPU doesn't like that (it seems to have clflush) 
+Daniel
 
-If that doesn't help it might be needed to revert the patch
-hunk by hunk to see which text_poke() invocation caused it.
-
--Andi
