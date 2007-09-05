@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbXIEQER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbXIEQEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757945AbXIEQER (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 12:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbXIEQEA
+	id S1758116AbXIEQEc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 12:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757512AbXIEQEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 12:04:00 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48233 "EHLO
+	Wed, 5 Sep 2007 12:04:16 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38795 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756701AbXIEQD7 (ORCPT
+	by vger.kernel.org with ESMTP id S1757342AbXIEQEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 12:03:59 -0400
-Date: Wed, 5 Sep 2007 17:03:56 +0100
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: gshan <gshan@alcatel-lucent.com>, linux-kernel@vger.kernel.org,
-       Dale Farnsworth <dale@farnsworth.org>, netdev@vger.kernel.org
-Subject: Re: kernel crashes inside MV643xx driver
-Message-ID: <20070905170356.0e644978@oldman>
-In-Reply-To: <20070905082452.4a20387b.akpm@linux-foundation.org>
-References: <46C93701.7050509@alcatel-lucent.com>
-	<20070905082452.4a20387b.akpm@linux-foundation.org>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+	Wed, 5 Sep 2007 12:04:15 -0400
+Date: Wed, 5 Sep 2007 09:03:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: greg@kroah.com, j@fuster.org, linux-kernel@vger.kernel.org
+Subject: Re: sysfs_dir_cache growing out of control
+Message-Id: <20070905090332.27eae31f.akpm@linux-foundation.org>
+In-Reply-To: <46CE33DA.9010501@googlemail.com>
+References: <46CCD3DF.4080303@fuster.org>
+	<46CD057C.3080106@fuster.org>
+	<20070823095933.GA6742@kroah.com>
+	<46CE29DA.60409@fuster.org>
+	<20070824005429.GA32265@kroah.com>
+	<46CE33DA.9010501@googlemail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Sep 2007 08:24:52 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 24 Aug 2007 03:26:50 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+> Greg KH wrote:
+> > On Thu, Aug 23, 2007 at 08:44:10PM -0400, Joel Fuster wrote:
+> >> Greg KH wrote:
+> >>> On Wed, Aug 22, 2007 at 11:56:44PM -0400, Joel Fuster wrote:
+> >>>> Joel Fuster wrote:
+> >>>>> Hi,
+> >>>>> I am running 2.6.22.3.  For reasons that escape me, over time (days) the 
+> >>>>> sysfs_dir_cache, dentry, and inode_cache SLUB entries grow until they 
+> >>>>> consume all the memory on my system, requiring a reboot.
+> >>> Hm, those items should consume all the memory, but it should be freed if
+> >>> you have memory pressure from other places.  Does it cause the machine
+> >>> to lock up, or you just got scared when seeing them?
+> >> Right.  The problem is that the memory never seems to get freed no matter 
+> >> what I do.  I've tried setting /proc/sys/vm/vfs_cache_pressure to 10000, 
+> >> but after a few days all my programs are running out of swap and I have to 
+> >> reboot to get things back to a usable state.
+> >>
+> >>> Oh, and does the same thing happen if you do not use SLUB, but rather
+> >>> the older SLAB?
+> >> OK I just rebuilt 2.6.22.3 with SLAB and I seem to be getting the same 
+> >> result..obviously I haven't waited several days, but 
+> >> sysfs_dir_cache/dentry/inode_cache grow continuously when scanbuttond is 
+> >> running, and stop growing when it isn't.
+> > 
+> > Do you have a pointer to the scanbuttond source code?  I'll try to take
+> > a look at this tomorrow.
+> > 
 
-> > On Mon, 20 Aug 2007 14:38:57 +0800 gshan <gshan@alcatel-lucent.com> wrote:
-> > Hi All,
-> > 
-> > After I started the NFS server, it crashed:
-> > 
-> > <3>Badness in local_bh_enable at 
-> > /home/cli4/sandbox/main/TelicaRoot/components/mvlinux/cge/devkit/lsp/7xx/linux/kernel/softirq.c:195
-> > Badness in local_bh_enable at 
-> > /home/cli4/sandbox/main/TelicaRoot/components/mvlinux/cge/devkit/lsp/7xx/linux/kernel/softirq.c:195
-> > Call trace:
-> >  [c0005340] check_bug_trap+0xbc/0x11c
-> >  [c0005604] ProgramCheckException+0x264/0x2bc
-> >  [c0004ac4] ret_from_except_full+0x0/0x4c
-> >  [c0022ae4] local_bh_enable+0x18/0x80
-> >  [c024648c] skb_copy_bits+0x168/0x3b8
-> >  [c024db44] __skb_linearize+0x90/0x150
-> >  [c020e8a4] mv643xx_eth_start_xmit+0x4c0/0x5bc
-> >  [c025c934] qdisc_restart+0xac/0x2bc
-> >  [c024de9c] dev_queue_xmit+0x298/0x34c
-> >  [c0269814] ip_finish_output+0x140/0x2b8
-> >  [c026a3ac] ip_fragment+0x3cc/0x6e0
-> >  [c026bac8] ip_push_pending_frames+0x3dc/0x46c
-> >  [c0289ec4] udp_push_pending_frames+0x10c/0x1cc
-> >  [c028a7c4] udp_sendpage+0x104/0x188
-> >  [c0292fc8] inet_sendpage+0x90/0xb8
-> > 
-> > I searched the webs and found the similar problems:
-> > http://www.mail-archive.com/netdev@vger.kernel.org/msg05199.html
-> > http://oss.sgi.com/archives/netdev/2005-09/msg00025.html
-> > 
-> > Who knew there are fixes for the problem?
-> > 
+that was a long day?
+
+> I guess this one :
 > 
-> Well that got a tremendous response, didn't it?
-> 
-> What do you mean by "crashed"?  The above is a warning and the system
-> should have survived.
-> 
-> Which kernel version is being used?
+> https://sourceforge.net/projects/scanbuttond/
 
-The transmit start rework look like it should have already fixed the problem.
-The driver was calling spin_lock_irqsave before calling skb_linearize, now
-it checks first.
+I needed `setenv LD_LIBRARY_PATH /usr/local/lib' to be able to run
+`scanbuttond -p 1000'
 
-commit c8aaea25e0b069e9572caa74f984e109899c1765
-Author: Dale Farnsworth <dale@farnsworth.org>
-Date:   Fri Mar 3 10:02:05 2006 -0700
-
-    [PATCH] mv643xx_eth: Refactor tx command queuing code
-    
-    Simplify and remove redundant code for filling transmit descriptors.
-    No changes in features; it's just a code reorganization/cleanup.
-    
-    Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+and after a few minutes I'm seeing zero growth of
+/proc/spabinfo:sysfs_dir_cache over a few minutes, with 2.6.23-rc4. 
+Perhaps it's a specific device driver?  
