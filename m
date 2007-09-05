@@ -1,203 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbXIERB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbXIERBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757864AbXIERB2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 13:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbXIERBU
+	id S1758037AbXIERBn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 13:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbXIERBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 13:01:20 -0400
-Received: from mpc-26.sohonet.co.uk ([193.203.82.251]:33514 "EHLO
-	moving-picture.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753690AbXIERBT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 13:01:19 -0400
-Message-ID: <46DEE0C9.1000402@moving-picture.com>
-Date: Wed, 05 Sep 2007 18:00:57 +0100
-From: James Pearson <james-p@moving-picture.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040524
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Anton Arapov <aarapov@redhat.com>, Guy Streeter <guy.streeter@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 4096 byte limit to /proc/PID/environ ?
-References: <4474B7DB.8000304@moving-picture.com>	<200605242029.k4OKTn9C031700@terminus.zytor.com>	<447EF58C.6000605@moving-picture.com>	<52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com>	<46C33700.1060605@zytor.com> <46D6CBED.4040301@moving-picture.com> <h87in5sgal.fsf@pepelac.englab.brq.redhat.com> <46DE6196.3050605@zytor.com>
-In-Reply-To: <46DE6196.3050605@zytor.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 5 Sep 2007 13:01:23 -0400
+Received: from xenotime.net ([66.160.160.81]:49837 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754943AbXIERBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 13:01:22 -0400
+Date: Wed, 5 Sep 2007 10:01:17 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Sean Robert McGuffee <sean.mcguffee@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Bug Report Requested
+Message-Id: <20070905100117.8adde154.rdunlap@xenotime.net>
+In-Reply-To: <46DE89C9.7060403@gmail.com>
+References: <46DE89C9.7060403@gmail.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Disclaimer: This email and any attachments are confidential, may be legally
-X-Disclaimer: privileged and intended solely for the use of addressee. If you
-X-Disclaimer: are not the intended recipient of this message, any disclosure,
-X-Disclaimer: copying, distribution or any action taken in reliance on it is
-X-Disclaimer: strictly prohibited and may be unlawful. If you have received
-X-Disclaimer: this message in error, please notify the sender and delete all
-X-Disclaimer: copies from your system.
-X-Disclaimer: 
-X-Disclaimer: Email may be susceptible to data corruption, interception and
-X-Disclaimer: unauthorised amendment, and we do not accept liability for any
-X-Disclaimer: such corruption, interception or amendment or the consequences
-X-Disclaimer: thereof.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Anton Arapov wrote:
-> 
->>   Hey guys, the future of this patch is important for me. What do you 
->> think, has this patch any chances to be committed to upstream?
->>
->> James Pearson <james-p@moving-picture.com> writes:
->>
->>> H. Peter Anvin wrote:
->>> There isn't that much that is duplicated - and there are also bits of
->>> the /proc/PID/mem code that are not needed in this case, so I'm not
->>> really sure if it is worth doing.
->>>
->>> I did submit a patch a few months ago - see:
->>>
->>> <http://marc.info/?l=linux-kernel&m=117862109623007&w=2>
->>
->>
-> 
-> Looks reasonable to me, except for the one overlong line.
-> 
+On Wed, 05 Sep 2007 04:49:45 -0600 Sean Robert McGuffee wrote:
 
-OK, here is the patch (without the long line) against 2.6.23-rc5 - what 
-else needs to be done to get it committed?
+> Something popped up and told me to send this information as a bug report 
+> even though it didn't have a button to click to do that automatically 
+> which is a bug in itself I think:
 
-James Pearson
+Did it ask you to send this info to linux-kernel@vger.kernel.org ?
 
---- ./fs/proc/base.c.dist       2007-09-01 07:08:24.000000000 +0100
-+++ ./fs/proc/base.c    2007-09-05 14:08:15.762518000 +0100
-@@ -199,27 +199,6 @@ static int proc_root_link(struct inode *
-          (task->state == TASK_STOPPED || task->state == TASK_TRACED) && \
-          security_ptrace(current,task) == 0))
+> Component: pirut
+> Summary: TB253c984a 
+> depsolve.py:574:_requiringFromTransaction:IndexError: list index out of 
+> range
 
--static int proc_pid_environ(struct task_struct *task, char * buffer)
--{
--       int res = 0;
--       struct mm_struct *mm = get_task_mm(task);
--       if (mm) {
--               unsigned int len;
--
--               res = -ESRCH;
--               if (!ptrace_may_attach(task))
--                       goto out;
--
--               len  = mm->env_end - mm->env_start;
--               if (len > PAGE_SIZE)
--                       len = PAGE_SIZE;
--               res = access_process_vm(task, mm->env_start, buffer, 
-len, 0);
--out:
--               mmput(mm);
--       }
--       return res;
--}
--
-  static int proc_pid_cmdline(struct task_struct *task, char * buffer)
-  {
-         int res = 0;
-@@ -658,6 +637,85 @@ static const struct file_operations proc
-         .open           = mem_open,
-  };
+This and the AUTO LOGIN emails are not directly related to linux kernel.
+Please use some other appropriate mailing list for them.
+Thanks.
 
-+static ssize_t environ_read(struct file * file, char __user * buf,
-+                       size_t count, loff_t *ppos)
-+{
-+       struct task_struct *task = get_proc_task(file->f_dentry->d_inode);
-+       char *page;
-+       unsigned long src = *ppos;
-+       int ret = -ESRCH;
-+       struct mm_struct *mm;
-+       size_t max_len;
-+
-+       if (!task)
-+               goto out_no_task;
-+
-+       if (!ptrace_may_attach(task))
-+               goto out;
-+
-+       ret = -ENOMEM;
-+       page = (char *)__get_free_page(GFP_USER);
-+       if (!page)
-+               goto out;
-+
-+       ret = 0;
-+
-+       mm = get_task_mm(task);
-+       if (!mm)
-+               goto out_free;
-+
-+       max_len = (count > PAGE_SIZE) ? PAGE_SIZE : count;
-+
-+       while (count > 0) {
-+               int this_len, retval;
-+
-+               this_len = mm->env_end - (mm->env_start + src);
-+
-+               if (this_len <= 0) {
-+                       break;
-+               }
-+
-+               if (this_len > max_len)
-+                       this_len = max_len;
-+
-+               retval = access_process_vm(task, (mm->env_start + src),
-+                       page, this_len, 0);
-+
-+               if (!ptrace_may_attach(task)) {
-+                       ret = -ESRCH;
-+                       break;
-+               }
-+
-+               if (retval <= 0) {
-+                       ret = retval;
-+                       break;
-+               }
-+
-+               if (copy_to_user(buf, page, retval)) {
-+                       ret = -EFAULT;
-+                       break;
-+               }
-+
-+               ret += retval;
-+               src += retval;
-+               buf += retval;
-+               count -= retval;
-+       }
-+       *ppos = src;
-+
-+       mmput(mm);
-+out_free:
-+       free_page((unsigned long) page);
-+out:
-+       put_task_struct(task);
-+out_no_task:
-+       return ret;
-+}
-+
-+static const struct file_operations proc_environ_operations = {
-+       .read           = environ_read,
-+};
-+
-  static ssize_t oom_adjust_read(struct file *file, char __user *buf,
-                                 size_t count, loff_t *ppos)
-  {
-@@ -2048,7 +2106,7 @@ static const struct pid_entry tgid_base_
-         DIR("task",       S_IRUGO|S_IXUGO, task),
-         DIR("fd",         S_IRUSR|S_IXUSR, fd),
-         DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
--       INF("environ",    S_IRUSR, pid_environ),
-+       REG("environ",    S_IRUSR, environ),
-         INF("auxv",       S_IRUSR, pid_auxv),
-         INF("status",     S_IRUGO, pid_status),
-  #ifdef CONFIG_SCHED_DEBUG
-@@ -2335,7 +2393,7 @@ out_no_task:
-  static const struct pid_entry tid_base_stuff[] = {
-         DIR("fd",        S_IRUSR|S_IXUSR, fd),
-         DIR("fdinfo",    S_IRUSR|S_IXUSR, fdinfo),
--       INF("environ",   S_IRUSR, pid_environ),
-+       REG("environ",   S_IRUSR, environ),
-         INF("auxv",      S_IRUSR, pid_auxv),
-         INF("status",    S_IRUGO, pid_status),
-  #ifdef CONFIG_SCHED_DEBUG
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
