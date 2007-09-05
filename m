@@ -1,68 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbXIEKgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbXIEKmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756537AbXIEKgM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 06:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbXIEKf6
+	id S1756718AbXIEKmr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 06:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbXIEKmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 06:35:58 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:20820 "EHLO
-	outbound6-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755868AbXIEKf5 (ORCPT
+	Wed, 5 Sep 2007 06:42:39 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34383 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755977AbXIEKmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 06:35:57 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Date: Wed, 5 Sep 2007 12:35:25 +0200
-From: "Robert Richter" <robert.richter@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>,
-       "Arjan van de Ven" <arjan@infradead.org>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space
- access for AMD Barcelona
-Message-ID: <20070905103525.GA10749@erda.amd.com>
-References: <20070903081736.288288000@amd.com>
- <20070903081736.588599000@amd.com>
- <20070903013157.72c94891@laptopd505.fenrus.org>
- <20070903091718.GB22144@alberich.amd.com>
- <20070903043319.7573875b@laptopd505.fenrus.org>
- <20070903154734.GC22086@alberich.amd.com> <46DE45A2.40403@zytor.com>
- <20070905084427.GE6409@erda.amd.com> <46DE80F0.4000706@zytor.com>
+	Wed, 5 Sep 2007 06:42:38 -0400
+Date: Wed, 5 Sep 2007 03:42:35 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Daniel Phillips <phillips@phunq.net>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+In-Reply-To: <200709050220.53801.phillips@phunq.net>
+Message-ID: <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
+References: <20070814142103.204771292@sgi.com> <200709050220.53801.phillips@phunq.net>
 MIME-Version: 1.0
-In-Reply-To: <46DE80F0.4000706@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 05 Sep 2007 10:35:26.0394 (UTC)
- FILETIME=[78D249A0:01C7EFA8]
-X-WSS-ID: 6AC059FA0X86610041-03-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05.09.07 11:12:00, H. Peter Anvin wrote:
-> >PCI Devices will not be the same on the bus since PCI read/write
-> >functions will have different behavior. Without the patches you will
-> >get an error when accessing ECS with CF8. We need ECS access for
-> >patches that setups local interrupt vectors. This patches will be
-> >released soon.
+On Wed, 5 Sep 2007, Daniel Phillips wrote:
+
+> If we remove our anti-deadlock measures, including the ddsnap.vm.fixes 
+> (a roll-up of Peter's patch set) and the request throttling code in 
+> dm-ddsnap.c, and apply your patch set instead, we hit deadlock on the 
+> socket write path after a few hours (traceback tomorrow).  So your 
+> patch set by itself is a stability regression.
+
+Na, that cannot be the case since it only activates when an OOM condition 
+would otherwise result.
+
+> There is also some good news for you here.  The combination of our 
+> throttling code, plus your recursive reclaim patches and some fiddling 
+> with PF_LESS_THROTTLE has so far survived testing without deadlocking.  
+> In other words, as far as we have tested it, your patch set can 
+> substitute for Peter's and produce the same effect, provided that we 
+> throttle the block IO traffic.
+
+Ah. That is good news.
+
+> It is clear which approach is more efficient: Peter's.  This is because 
+> no scanning is required to pop a free page off a free list, so scanning 
+> work is not duplicated.  How much more efficient is an open question.  
+> Hopefully we will measure that soon.
+
+Efficiency is not a criterion for a rarely used emergency recovery 
+measure.
+
+> Briefly touching on other factors:
 > 
-> You're missing the point.   How will the PCI bus transactions be 
-> different when using MMCONFIG versus your extended CF8 version?
+>   * Peter's patch set is much bigger than yours.  The active ingredients
+>     need to be separated out from the other peterz bits such as reserve
+>     management APIs so we can make a fairer comparison.
 
-Misunderstood you, with this patch there will be the same behavior,
-that's the intention. There might be slightly differences in ordering
-rules for read/write cycles. IO config cycles are serialized while
-ordering rules for MMIO config cycles may result in unexpected
-behavior for PCI devices on the bus.
+Peters patch is much more invasive and requires a coupling of various 
+subsystems that is not good.
 
--Robert
+>   * Your patch set here does not address the question of atomic
+>      allocation, though I see you have been busy with that elsewhere.
+>      Adding code to take care of this means you will start catching up
+>      with Peter in complexity.
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Given your tests: It looks like we do not need it.
 
+>   * The questions Peter raised about how you will deal with loads
+>      involving heavy anonymous allocations are still open.   This looks
+>      like more complexity on the way.
 
+Either not necessary or also needed without these patches.
+
+>   * You depend on maintaining a global dirty page limit while Peter's
+>      approach does not.  So we see the peterz approach as progress
+>      towards eliminating one of the great thorns in our side:
+>      congestion_wait deadlocks, which we currently hack around in a
+>      thoroughly disgusting way (PF_LESS_THROTTLE abuse).
+
+We have a global dirty page limit already. I fully support Peters work on 
+dirty throttling.
+
+These results show that Peters invasive approach is not needed. Reclaiming 
+easy reclaimable pages when necessary is sufficient.
