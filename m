@@ -1,89 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbXIEX1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932415AbXIEXaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430AbXIEX1R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 19:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbXIEX07
+	id S932415AbXIEXaX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 19:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbXIEXaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 19:26:59 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40202 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754275AbXIEX06 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 19:26:58 -0400
-Date: Thu, 6 Sep 2007 05:10:05 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Dale Farnsworth <dale@farnsworth.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       gshan <gshan@alcatel-lucent.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Netdev Mailing List <netdev@vger.kernel.org>
-Subject: Re: kernel crashes inside MV643xx driver
-In-Reply-To: <20070905165452.GA18396@xyzzy.farnsworth.org>
-Message-ID: <alpine.LFD.0.999.0709060455350.26804@enigma.security.iitk.ac.in>
-References: <46C93701.7050509@alcatel-lucent.com>
- <20070905082452.4a20387b.akpm@linux-foundation.org>
- <20070905165452.GA18396@xyzzy.farnsworth.org>
+	Wed, 5 Sep 2007 19:30:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51616 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754205AbXIEXaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 19:30:09 -0400
+Message-ID: <46DF3BFF.9000809@redhat.com>
+Date: Wed, 05 Sep 2007 19:30:07 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Why do so many machines need "noapic"?
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Some systems lock up without the noapic option. I found one
+that will freeze while trying to set up the timer interrupt.
+Passing 'nolapic' makes it freeze just after:
 
+   Setting up timer through ExtINT... works
 
-On Wed, 5 Sep 2007, Dale Farnsworth wrote:
-
-> On Wed, Sep 05, 2007 at 08:24:52AM -0700, Andrew Morton wrote:
-> > > On Mon, 20 Aug 2007 14:38:57 +0800 gshan <gshan@alcatel-lucent.com> wrote:
-> > > Hi All,
-> > > 
-> > > After I started the NFS server, it crashed:
-> > > 
-> > > <3>Badness in local_bh_enable at 
-> > > /home/cli4/sandbox/main/TelicaRoot/components/mvlinux/cge/devkit/lsp/7xx/linux/kernel/softirq.c:195
-> > > Badness in local_bh_enable at 
-> > > /home/cli4/sandbox/main/TelicaRoot/components/mvlinux/cge/devkit/lsp/7xx/linux/kernel/softirq.c:195
-> > > Call trace:
-> > >  [c0005340] check_bug_trap+0xbc/0x11c
-> > >  [c0005604] ProgramCheckException+0x264/0x2bc
-> > >  [c0004ac4] ret_from_except_full+0x0/0x4c
-> > >  [c0022ae4] local_bh_enable+0x18/0x80
-> > >  [c024648c] skb_copy_bits+0x168/0x3b8
-> > >  [c024db44] __skb_linearize+0x90/0x150
-> > >  [c020e8a4] mv643xx_eth_start_xmit+0x4c0/0x5bc
-> > >  [c025c934] qdisc_restart+0xac/0x2bc
-> > >  [c024de9c] dev_queue_xmit+0x298/0x34c
-> > >  [c0269814] ip_finish_output+0x140/0x2b8
-> > >  [c026a3ac] ip_fragment+0x3cc/0x6e0
-> > >  [c026bac8] ip_push_pending_frames+0x3dc/0x46c
-> > >  [c0289ec4] udp_push_pending_frames+0x10c/0x1cc
-> > >  [c028a7c4] udp_sendpage+0x104/0x188
-> > >  [c0292fc8] inet_sendpage+0x90/0xb8
-> > > 
-> > > I searched the webs and found the similar problems:
-
-> > > http://www.mail-archive.com/netdev@vger.kernel.org/msg05199.html
-
-> > > http://oss.sgi.com/archives/netdev/2005-09/msg00025.html
-> > > 
-> > > Who knew there are fixes for the problem?
-> > 
-> > Well that got a tremendous response, didn't it?
-
-I thought of replying to this post when I saw it couple weeks back, but
-didn't because (1) that's an ancient kernel and (2) the first link that
-was mentioned up there in the original post itself pointed to a patch to
-solve it (which I verified was since applied to mainline too).
-
-
-> > What do you mean by "crashed"?  The above is a warning and the system
-> > should have survived.
-> > 
-> > Which kernel version is being used?
-> 
-> That is the key question.  From the pathnames, I suspect that gshan is
-> using a MontaVista version.  I'm still (especially) interested, since
-> MontaVista pays me.
-> 
-> BTW, I never received the original message on netdev or linux-kernel.
-> Hmm.  Thanks to Andrew for replying.
+Sometimes it will boot up and then freeze during the startup
+scripts. Passing the noapic option fixes all that, but it
+then gets 1000 spurious interrupts per second on IRQ7 (which
+only shows ehci using it.) Kernel version is 2.6.22.
