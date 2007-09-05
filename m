@@ -1,68 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757421AbXIETb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbXIETc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757421AbXIETb7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 15:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbXIETbw
+	id S1757561AbXIETc4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 15:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbXIETcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 15:31:52 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:36799 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755044AbXIETbv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 15:31:51 -0400
-Date: Wed, 5 Sep 2007 21:31:50 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: Daniel Walker <dwalker@mvista.com>, sam@ravnborg.org,
-       kai@germaschewski.name, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] build system: section garbage collection for
-	vmlinux
-Message-ID: <20070905193150.GI16016@stusta.de>
-References: <200709051443.21522.vda.linux@googlemail.com> <200709051937.04014.vda.linux@googlemail.com> <1189017519.4442.24.camel@imap.mvista.com> <200709052014.12653.vda.linux@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200709052014.12653.vda.linux@googlemail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 5 Sep 2007 15:32:48 -0400
+Received: from il.qumranet.com ([82.166.9.18]:56727 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756018AbXIETcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 15:32:47 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: kvm-devel@lists.sourceforge.net, general@lists.openfabrics.org,
+       shaohua.li@intel.com, Avi Kivity <avi@qumranet.com>
+Subject: [PATCH][RFC] pte notifiers -- support for external page tables
+Date: Wed,  5 Sep 2007 22:32:44 +0300
+Message-Id: <11890207643068-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 05, 2007 at 08:14:12PM +0100, Denys Vlasenko wrote:
-> On Wednesday 05 September 2007 19:38, Daniel Walker wrote:
-> > > > You version doesn't work with CONFIG_MODULES right?
-> > > 
-> > > It works with CONFIG_MODULES.
-> > 
-> > Really? Take a look at this version,
-> > 
-> > http://lkml.org/lkml/2006/6/4/169
-> > 
-> > Marcello had to implement a two pass build to add back symbol used in
-> > modules which got removed from the main kernel.. You don't appear to do
-> > that. Marcelo also claims better size reduction than you.
-> 
-> This will discard EXPORT_SYMBOLs potentially used by
-> out-of-tree modules.
-> 
-> I also saw ~10% size reductions, but then at run-time test modules
-> failed to load, they didn't find needed symbols.
-> 
-> OTOH if I know that I am not going to be using such modules,
-> then this can be done. Will require another CONFIG_xxx, though.
+[resend due to bad alias expansion resulting in some recipients
+ being bogus]
 
-One point to keep in mind is that the space penalty of CONFIG_MODULES=y 
-is so big that CONFIG_MODULES=n is actually the most interesting case 
-for small systems that really need small kernels.
+Some hardware and software systems maintain page tables outside the normal
+Linux page tables, which reference userspace memory.  This includes
+Infiniband, other RDMA-capable devices, and kvm (with a pending patch).
 
-> vda
+Because these systems maintain external page tables (and external tlbs),
+Linux cannot demand page this memory and it must be locked.  For kvm at
+least, this is a significant reduction in functionality.
 
-cu
-Adrian
+This sample patch adds a new mechanism, pte notifiers, that allows drivers
+to register an interest in a changes to ptes. Whenever Linux changes a
+pte, it will call a notifier to allow the driver to adjust the external
+page table and flush its tlb.
 
--- 
+Note that only one notifier is implemented, ->clear(), but others should be
+similar.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+pte notifiers are different from paravirt_ops: they extend the normal
+page tables rather than replace them; and they provide high-level information
+such as the vma and the virtual address for the driver to use.
 
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 655094d..5d2bbee 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -14,6 +14,7 @@
+ #include <linux/debug_locks.h>
+ #include <linux/backing-dev.h>
+ #include <linux/mm_types.h>
++#include <linux/pte_notifier.h>
+ 
+ struct mempolicy;
+ struct anon_vma;
+@@ -108,6 +109,9 @@ struct vm_area_struct {
+ #ifndef CONFIG_MMU
+ 	atomic_t vm_usage;		/* refcount (VMAs shared if !MMU) */
+ #endif
++#ifdef CONFIG_PTE_NOTIFIERS
++	struct list_head pte_notifier_list;
++#endif
+ #ifdef CONFIG_NUMA
+ 	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
+ #endif
+diff --git a/include/linux/pte_notifier.h b/include/linux/pte_notifier.h
+new file mode 100644
+index 0000000..d28832b
+--- /dev/null
++++ b/include/linux/pte_notifier.h
+@@ -0,0 +1,52 @@
++#ifndef _LINUX_PTE_NOTIFIER_H
++#define _LINUX_PTE_NOTIFIER_H
++
++#include <linux/list.h>
++
++struct vm_area_struct;
++
++#ifdef CONFIG_PTE_NOTIFIERS
++
++struct pte_notifier;
++
++struct pte_notifier_ops {
++	void (*close)(struct pte_notifier *pn, struct vm_area_struct *vma);
++	void (*clear)(struct pte_notifier *pn, struct vm_area_struct *vma,
++		      unsigned long address);
++};
++
++struct pte_notifier {
++	struct list_head link;
++	const struct pte_notifier_ops *ops;
++};
++
++
++void vma_init_pte_notifiers(struct vm_area_struct *vma);
++void vma_close_pte_notifiers(struct vm_area_struct *vma);
++void pte_notifier_register(struct pte_notifier *pn,
++			   struct vm_area_struct *vma);
++void pte_notifier_unregister(struct pte_notifier *pn);
++
++#define pte_notifier_call(vma, function, args...)			\
++	do {								\
++		struct pte_notifier *__pn;				\
++									\
++		list_for_each_entry(__pn, &vma->pte_notifier_list, link) \
++			__pn->ops->function(__pn, vma, args);		\
++	} while (0)
++
++#else
++
++static inline void vma_init_pte_notifiers(struct vm_area_struct *vma) {}
++static inline void vma_close_pte_notifiers(struct vm_area_struct *vma) {}
++static inline void pte_notifier_register(struct pte_notifier *pn,
++					 struct vm_area_struct *vma) {}
++static inline void pte_notifier_unregister(struct pte_notifier *pn) {}
++
++#define pte_notifier_call(vma, function, args...) \
++	do { } while (0)
++
++#endif
++
++
++#endif
+diff --git a/mm/Kconfig b/mm/Kconfig
+index e24d348..7b10151 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -176,3 +176,6 @@ config NR_QUICK
+ config VIRT_TO_BUS
+ 	def_bool y
+ 	depends on !ARCH_NO_VIRT_TO_BUS
++
++config PTE_NOTIFIERS
++       bool
+diff --git a/mm/Makefile b/mm/Makefile
+index 245e33a..59f6a03 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -29,4 +29,5 @@ obj-$(CONFIG_FS_XIP) += filemap_xip.o
+ obj-$(CONFIG_MIGRATION) += migrate.o
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
++obj-$(CONFIG_PTE_NOTIFIERS) += pte_notifiers.o
+ 
+diff --git a/mm/mmap.c b/mm/mmap.c
+index b653721..cc6c4fe 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1134,6 +1134,7 @@ munmap_back:
+ 	vma->vm_page_prot = protection_map[vm_flags &
+ 				(VM_READ|VM_WRITE|VM_EXEC|VM_SHARED)];
+ 	vma->vm_pgoff = pgoff;
++	vma_init_pte_notifiers(vma);
+ 
+ 	if (file) {
+ 		error = -EINVAL;
+diff --git a/mm/pte_notifier.c b/mm/pte_notifier.c
+new file mode 100644
+index 0000000..0b9076c
+--- /dev/null
++++ b/mm/pte_notifier.c
+@@ -0,0 +1,32 @@
++
++#include <linux/pte_notifier.h>
++
++void vma_init_pte_notifiers(struct vm_area_struct *vma)
++{
++	INIT_LIST_HEAD(&vma->pte_notifier_list);
++}
++EXPORT_SYMBOL_GPL(vma_init_pte_notifiers);
++
++void vma_destroy_pte_notifiers(struct vm_area_struct *vma)
++{
++	struct pte_notifier *pn;
++	struct list_head *n;
++
++	list_for_each_entry_safe(pn, n, &vma->pte_notifier_list, link) {
++		pn->ops->close(__pn, vma);
++		__list_del(n);
++	}
++}
++
++void pte_notifier_register(struct pte_notifier *pn, struct vm_area_struct *vma)
++{
++	list_add(&pn->link, &vma->pte_notifier_list);
++}
++EXPORT_SYMBOL_GPL(pte_notifier_register);
++
++void pte_notifier_unregister(struct pte_notifier *pn)
++{
++	list_del(&pn->link);
++}
++EXPORT_SYMBOL_GPL(pte_notifier_unregister);
++
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 41ac397..3f61d38 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -682,6 +682,7 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
+ 	}
+ 
+ 	/* Nuke the page table entry. */
++	pte_notifier_call(vma, clear, address);
+ 	flush_cache_page(vma, address, page_to_pfn(page));
+ 	pteval = ptep_clear_flush(vma, address, pte);
+ 
