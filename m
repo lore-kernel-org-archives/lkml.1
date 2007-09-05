@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbXIEJ1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbXIEJ3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbXIEJ1w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 05:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbXIEJ1p
+	id S1756805AbXIEJ3W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 05:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbXIEJ3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 05:27:45 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:38702 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756031AbXIEJ1o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 05:27:44 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 5 Sep 2007 05:16:12 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: building a specific in-tree module is currently a bit broken
-Message-ID: <Pine.LNX.4.64.0709050509150.27539@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	TW_VN 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 5 Sep 2007 05:29:15 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:35128 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755882AbXIEJ3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 05:29:14 -0400
+Date: Wed, 5 Sep 2007 11:30:47 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] detect & print stack overruns at oops time
+Message-ID: <20070905093047.GA1938@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46D7A71A.7050800@redhat.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 31-08-2007 07:28, Eric Sandeen wrote:
+> In thinking about the 4KSTACKS + STACKOVERFLOW problems, I thought
+...
+> Thoughts?  This is a separate problem from the piggy dump_stack()
+> path, but it seems to me it might be useful in looking at stack-related
+> oopses when they do occur.  With this change, it seems feasible
+> to turn off DEBUG_STACKOVERFLOW, turn on DEBUG_STACK_USAGE, and just
+> get the bad news when it's actually happened.  :) 
 
-  i know sam ravnborg has been Cc'ed on a janitors list posting
-mentioning this but, just in case this note can get a fix snuck in
-there quickly before 2.6.23 (this is on i386, but i'm guessing applies
-to all arches):
+Very good idea, but maybe, at least for some time, it should be with
+ifdef CONFIG_4KSTACKS, to check if it's really needed if some other
+similar checks also set.
 
-$ make distclean
-$ make defconfig
-$ make menuconfig      (select visor.ko to be built a module)
-$ make drivers/usb/serial/visor.ko
-scripts/kconfig/conf -s arch/i386/Kconfig
-  CHK     include/linux/version.h
-  UPD     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-i386
-  CC      arch/i386/kernel/asm-offsets.s
-  GEN     include/asm-i386/asm-offsets.h
-  CALL    scripts/checksyscalls.sh
-  CC      scripts/mod/empty.o
-  HOSTCC  scripts/mod/mk_elfconfig
-  MKELF   scripts/mod/elfconfig.h
-  HOSTCC  scripts/mod/file2alias.o
-  HOSTCC  scripts/mod/modpost.o
-  HOSTCC  scripts/mod/sumversion.o
-  HOSTLD  scripts/mod/modpost
-  HOSTCC  scripts/kallsyms
-  HOSTCC  scripts/conmakehash
-  HOSTCC  scripts/bin2c
-  CC [M]  drivers/usb/serial/visor.o
-/bin/sh: .tmp_versions/visor.mod: No such file or directory
-  MODPOST 0 modules
-$
+> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+> 
+> Index: linux-2.6.22-rc4/arch/i386/mm/fault.c
+> ===================================================================
+> --- linux-2.6.22-rc4.orig/arch/i386/mm/fault.c
+> +++ linux-2.6.22-rc4/arch/i386/mm/fault.c
+> @@ -525,6 +525,8 @@ no_context:
+>  
+>  	if (oops_may_print()) {
+>  		__typeof__(pte_val(__pte(0))) page;
+> +		unsigned long *stackend = end_of_stack(tsk);
+> +		int overrun;
+>  
+>  #ifdef CONFIG_X86_PAE
+>  		if (error_code & 16) {
+> @@ -543,6 +545,27 @@ no_context:
+>  			printk(KERN_ALERT "BUG: unable to handle kernel paging"
+>  					" request");
+>  		printk(" at virtual address %08lx\n",address);
+> +
+> +		overrun = (unsigned long)stackend - (unsigned long)(&regs->esp);
+> +		if (overrun > 0) {
+> +			printk(KERN_ALERT "Thread overrunning stack by %d "
+> +							"bytes\n", overrun);
+> +		} else {
+> +#ifdef CONFIG_DEBUG_STACK_USAGE
+> +			int free;
+> +			unsigned long *n = stackend;
+> +			while (!*n)
+> +				n++;
+> +			free = (unsigned long)n - (unsigned long)stackend;
+> +			if (free)
 
-  whoops.  manually creating the directory .tmp_versions first fixes
-this, but i'm not conversant enough with the Makefile to want to take
-a shot at repairing this.
+Maybe there should be some min 'free' and max number of printks? There
+could be also considered if, with some minimal values of 'free', prink
+is the best thing we can do before stack overruning?
 
-rday
+> +				printk(KERN_ALERT "Thread used within %d bytes"
+> +					" of stack end\n", free);
+> +#endif
+> +			/* won't catch 100% - stack may have 0s here by chance */
+> +			if (*stackend)  /* was init'd to 0 */
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Isn't a MAGIC number better for this? (Then of course above n should
+start a bit higher.)
 
-http://crashcourse.ca
-========================================================================
+Regards,
+Jarek P.
