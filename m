@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932533AbXIEUWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757503AbXIEU1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932533AbXIEUWy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 16:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbXIEUWo
+	id S1757503AbXIEU1o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 16:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbXIEU1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 16:22:44 -0400
-Received: from ns1.suse.de ([195.135.220.2]:59831 "EHLO mx1.suse.de"
+	Wed, 5 Sep 2007 16:27:37 -0400
+Received: from ns1.suse.de ([195.135.220.2]:60300 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756838AbXIEUWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 16:22:44 -0400
-Date: Wed, 05 Sep 2007 22:22:38 +0200
-Message-ID: <s5hhcm8rhf5.wl%tiwai@suse.de>
+	id S1754300AbXIEU1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 16:27:36 -0400
+Date: Wed, 05 Sep 2007 22:27:35 +0200
+Message-ID: <s5hfy1srh6w.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Valdis.Kletnieks@vt.edu
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 Subject: Re: 2.6.23-rc4-mm1 - git-alsa.patch breaks audio on Dell Latitude D820
-In-Reply-To: <5129.1189022095@turing-police.cc.vt.edu>
+In-Reply-To: <s5hir6orhxz.wl%tiwai@suse.de>
 References: <20070831215822.26e1432b.akpm@linux-foundation.org>
 	<4658.1189021594@turing-police.cc.vt.edu>
-	<5129.1189022095@turing-police.cc.vt.edu>
+	<s5hir6orhxz.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -27,11 +27,27 @@ Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Wed, 05 Sep 2007 15:54:55 -0400,
-Valdis.Kletnieks@vt.edu wrote:
+At Wed, 05 Sep 2007 22:11:20 +0200,
+I wrote:
 > 
-> On Wed, 05 Sep 2007 15:46:34 EDT, Valdis.Kletnieks@vt.edu said:
-> >
+> At Wed, 05 Sep 2007 15:46:34 -0400,
+> Valdis.Kletnieks@vt.edu wrote:
+> > 
+> > On Fri, 31 Aug 2007 21:58:22 PDT, Andrew Morton said: 
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
+> > 
+> > git-alsa.patch breaks audio on my laptop, worked fine in -rc3-mm1.  Almost
+> > certainly bustification in the Intel HDA rewrite.
+> > 
+> > Symptoms:  alsamixer finds the chipset, can adjust the volumes and mute/unmute,
+> > and /usr/bin/play is able to write a .wav to the ALSA device without complaint.
+> > However, no sound actually comes out.  Very "lights are on but nobody is home".
+> > 
+> > Dell Latitude D820, lspci reports:
+> > 
+> > 00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 01)
+> > and alsamixer reports finding a "SigmaTel STAC9200"
+> > 
 > > % grep HDA_ .config
 > > CONFIG_SND_HDA_INTEL=y
 > > # CONFIG_SND_HDA_HWDEP is not set
@@ -45,14 +61,39 @@ Valdis.Kletnieks@vt.edu wrote:
 > > # CONFIG_SND_HDA_CODEC_SI3054 is not set
 > > CONFIG_SND_HDA_GENERIC=y
 > > # CONFIG_SND_HDA_POWER_SAVE is not set
+> > 
+> > dmesg under -rc4-mm1:
+> > Advanced Linux Sound Architecture Driver Version 1.0.14 (Fri Jul 20 09:12:58 2007 UTC).
+> > ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 21 (level, low) -> IRQ 21
+> > hda_intel: position_fix set to 1 for device 1028:01cc
+> > ALSA device list:
+> >   #0: HDA Intel at 0xefffc000 irq 506
+> > 
+> > dmesg under -rc3-mm1:
+> > 
+> > Advanced Linux Sound Architecture Driver Version 1.0.14 (Fri Jul 20 09:12:58 2007 UTC).
+> > ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 21 (level, low) -> IRQ 21
+> > hda_intel: position_fix set to 1 for device 1028:01cc
+> > ALSA device list:
+> >   #0: HDA Intel at 0xefffc000 irq 506
+> > 
+> > (Yes, they look the same to me, too...)
+> > 
+> > I'd provide more info, if I had a clue what else to add...
 > 
-> For the record, REALTEK and ANALOG got set to Y in my bisect build because of
-> the infamous "defaults to Y" syndrome - after I saw Sigmatel go by I wised up
-> and started saying N, but forgot to clean up the first two.  Those two are
-> disabled in the live -rc4-mm1 .config, and it has the same issue.
+> First, check /proc/asound/card0/codec#* whether STAC9200 is identified
+> properly?  If yes, check the mixer contents (at best, run
+> "alsactl -f somefile store"), see whether "Master Playback Volume" is
+> raised, "Master Playback Switch" unmuted, "Front..." raised/unmuted,
+> and "PCM ..." raised/unmuted, etc.
+> 
+> If this still doesn't work, try to give model=ref option to
+> snd-hda-intel. 
 
-The "default Y" is the correct behavior in this case.  These configs
-are just splits from a single config, corresponding to all Y.
+BTW, there are 10 different models to test for Dell with STAC9200
+(dell-d2[1-3] and dell-m2[1-7], see
+Documentation/sound/alsa/ALSA-Configuration.txt), so I recommend to
+build it as a module so that you can save the boot time :)
 
 
 Takashi
