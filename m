@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbXIEMQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbXIEMTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756492AbXIEMQu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 08:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbXIEMQm
+	id S1756472AbXIEMTs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 08:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbXIEMTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 08:16:42 -0400
-Received: from khc.piap.pl ([195.187.100.11]:40958 "EHLO khc.piap.pl"
+	Wed, 5 Sep 2007 08:19:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54071 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753984AbXIEMQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 08:16:42 -0400
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-References: <MDEHLPKNGKAHNMBLJOLKOEDKGJAC.davids@webmaster.com>
-	<200709032020.04989.dhazelton@enter.net>
-	<m34piaftnd.fsf@maximus.localdomain>
-	<200709041313.22831.dhazelton@enter.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 05 Sep 2007 14:16:39 +0200
-In-Reply-To: <200709041313.22831.dhazelton@enter.net> (Daniel Hazelton's message of "Tue, 4 Sep 2007 13:13:22 -0400")
-Message-ID: <m3642pl32w.fsf@maximus.localdomain>
-MIME-Version: 1.0
+	id S1754073AbXIEMTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 08:19:39 -0400
+Date: Wed, 5 Sep 2007 14:19:38 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Daniel Phillips <phillips@phunq.net>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dkegel@google.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+Message-ID: <20070905121937.GA9246@wotan.suse.de>
+References: <20070814142103.204771292@sgi.com> <200709050220.53801.phillips@phunq.net> <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com> <20070905114242.GA19938@wotan.suse.de> <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Hazelton <dhazelton@enter.net> writes:
+On Wed, Sep 05, 2007 at 05:14:06AM -0700, Christoph Lameter wrote:
+> On Wed, 5 Sep 2007, Nick Piggin wrote:
+> 
+> > However I really have an aversion to the near enough is good enough way of
+> > thinking. Especially when it comes to fundamental deadlocks in the VM. I
+> > don't know whether Peter's patch is completely clean yet, but fixing the
+> > fundamentally broken code has my full support.
+> 
+> Uhh. There are already numerous other issues why the VM is failing that is 
+> independent of Peter's approach.
 
->> Actually (and I think it's the same in the USA), a copyrighted work
->> has an implicit "all rights reserved". A licence is just exception.
->
-> And? The fact remains that "All Rights Reserved" means "I am reserving all 
-> rights I do not specifically grant or waive".
+I don't know what your point is? We either ignore it, or try to fix things
+one at a time.
 
-Sure.
-That means you can't use a work without obtaining a licence first
-(unless you are the copyright holder and don't need (can't have)
-the licence).
 
-I.e., as the author, you don't have to write those "copyright xxx"
-and the work is still protected.
+> > I hate it that there are theoretical bugs still left even if they would
+> > be hit less frequently than hardware failure. And that people are really
+> > happy to put even more of these things in :(
+> 
+> Theoretical bugs? Depends on one's creativity to come up with them I 
+> guess. So far we do not even get around to address the known issues and 
+> this multi subsystem patch has the potential of creating more.
 
-> ie: If a license doesn't 
-> state 'The licenser hereby waives the right to revoke this license at any 
-> time' then that right hasn't been lost.
+I can't direct people as to what bugs to work on.
 
-Yes, it hasn't been *lost*. It just never existed :-)
-(with exception of those things starting 40 or so years after the
-original publication, I think we can safely skip this part).
 
-Obviously, the copyright holder is free to distribute the work
-under a different licence next time (but (s)he has to make sure it's
-ok with licences (s)he uses, if it's a derived work).
--- 
-Krzysztof Halasa
+> > Anyway, as you know I like your patch and if that gives Peter a little
+> > more breathing space then it's a good thing. But I really hope he doesn't
+> > give up on it, and it should be merged one day.
+> 
+> Using the VM to throttle networking is a pretty bad thing because it 
+> assumes single critical user of memory. There are other consumers of 
+> memory and if you have a load that depends on other things than networking 
+> then you should not kill the other things that want memory.
+
+Implementation issues aside, the problem is there and I would like to
+see it fixed regardless if some/most/or all users in practice don't
+hit it.
+
