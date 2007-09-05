@@ -1,138 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbXIDXtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbXIEAHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974AbXIDXtR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 19:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbXIDXtE
+	id S1755869AbXIEAHS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 20:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbXIEAHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 19:49:04 -0400
-Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:40295 "HELO
-	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754316AbXIDXtD (ORCPT
+	Tue, 4 Sep 2007 20:07:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57102 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754316AbXIEAHF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 19:49:03 -0400
-X-YMail-OSG: vf6JvBYVM1n3JNEWjIBvs5lsurybqSVdvYo1odS3ys1FjctZKJMXBF9UML4SGt25z7ilK2JALQ--
-Date: Tue, 4 Sep 2007 18:48:52 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Jan Kara <jack@suse.cz>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "Serge E. Hallyn" <serge@hallyn.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@in.ibm.com>, containers@lists.osdl.org
-Subject: Re: [PATCH] Send quota messages via netlink
-Message-ID: <20070904234852.GA12592@vino.hallyn.com>
-References: <m1mywa42g7.fsf@ebiederm.dsl.xmission.com> <20070829192653.GD7814@duck.suse.cz> <m1wsve2gpo.fsf@ebiederm.dsl.xmission.com> <20070830092548.GB16336@duck.suse.cz> <20070830191010.GA23464@vino.hallyn.com> <20070830221825.GB21298@duck.suse.cz> <20070830221447.GA25675@vino.hallyn.com> <20070903142123.GG7524@duck.suse.cz> <20070904213210.GD30980@sergelap.austin.ibm.com> <20070904224921.GA19693@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070904224921.GA19693@duck.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 4 Sep 2007 20:07:05 -0400
+Date: Tue, 4 Sep 2007 17:00:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Travis <travis@sgi.com>
+Cc: clameter@sgi.com, steiner@sgi.com, ak@suse.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kamalesh@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/6] x86: Convert cpu_sibling_map to be a per cpu
+ variable (v2) (fwd)
+Message-Id: <20070904170058.a55b4284.akpm@linux-foundation.org>
+In-Reply-To: <46DDE623.1090402@sgi.com>
+References: <Pine.LNX.4.64.0708312028400.24049@schroedinger.engr.sgi.com>
+	<46DDC017.4040301@sgi.com>
+	<20070904141055.e00a60d7.akpm@linux-foundation.org>
+	<46DDE623.1090402@sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Jan Kara (jack@suse.cz):
-> On Tue 04-09-07 16:32:10, Serge E. Hallyn wrote:
-> > Quoting Jan Kara (jack@suse.cz):
-> > > On Thu 30-08-07 17:14:47, Serge E. Hallyn wrote:
-> > > > Quoting Jan Kara (jack@suse.cz):
-> > > > >   I imagine it so that you have a machine and on it several virtual
-> > > > > machines which are sharing a filesystem (or it could be a cluster). Now you
-> > > > > want UIDs to be independent between these virtual machines. That's it,
-> > > > > right?
-> > > > >   Now to continue the example: Alice has UID 100 on machineA, Bob has
-> > > > >  UID 100 on machineB. These translate to UIDs 1000 and 1001 on the common
-> > > > > filesystem. Process of Alice writes to a file and Bob becomes to be over
-> > > > > quota. In this situation, there would be probably two processes (from
-> > > > > machineA and machineB) listening on the netlink socket. We want to send a
-> > > > > message so that on Alice's desktop we can show a message: "You caused
-> > > > > Bob to exceed his quotas" and of Bob's desktop: "Alice has caused that you
-> > > > > are over quota.".
-> > > > 
-> > > > Since this is over NFS, you handle it the way you would any other time
-> > > > that user Alice on some other machine managed to do this.
-> > >   I meant this would actually happen over a local filesystem (imagine
-> > > something like "hostfs" from UML).
+> On Tue, 04 Sep 2007 16:11:31 -0700 Mike Travis <travis@sgi.com> wrote:
 > > 
-> > Ok, then that is where I was previously suggesting that we use an api to
-> > report a uid meaningful in bob's context, where we currently (in the
-> > absense of meaningful mount uids and uid equivalence) tell Bob that root
-> > was the one who brought him over quota.  From a user pov 'nobody' would
-> > make more sense, but I don't think we want the kernel to know about user
-> > nobody, right?
->   But what is the problem with using the filesystem ids? All virtual
-> machines in my example should have a notion of those...
-
-I don't know what you mean by filesystem ids.  Do you mean the uid
-stored on the fs?  I imagine a network fs could get fancy and store
-something more detailed than the unix uid, based on the user's keys.
-
-Do you mean the inode->i_uid?  Nothing wrong with that.  Then we just
-assume that either you are in the superblock or mount's user namespace
-(depending on how we implement it, probably superblock), or can figure
-out what that is.
-
-> > So if the msg weren't broadcast, or netlink sockets were tied to one
-> > user namespace, we could call a
-> > 	int uid_in_user_ns(struct user *, struct user_ns *)
-> > sending in Alice's user struct and Bob's userns, and use the result in
-> > the netlink message.  Otherwise I'm not sure what is the right answer.
-> > We just might need the equivalent of 'struct pid' to struct user, or
-> > persistant global user namespace ids (persistant after user namespace
-> > destruction, not across reboot) so we can safely send the user_ns * in a
-> > netlink msg.
->   Yes, that could also be a solution.
+> > It'd be better to convert the unconverted architectures?
 > 
-> > > > >   Because there may be is not a notion of Bob on machineA or of Alice on
-> > > > > machineB, we are in trouble, right? What I like the most is to use the
-> > > > > filesystem identities (as you suggested in some other email). I. e. because
-> > > > > both Alice and Bob share a filesystem, identities of both have to make sense
-> > > > > to it (for example for purposes of permission checking). So we can probably
-> > > > 
-> > > > Right, so long as we're talking about local filesystems that's the way
-> > > > to go.  If a file write was allowed which brought bob over quota,
-> > > > clearly the person responsible had some uid valid on the filesystem to
-> > > > allow him to do so.
-> > >   Fine. So I'll keep UID in the quota netlink protocol with the meaning
-> > > "the identity of the user for filesystem operations".
-> > 
-> > I think that's ok.
-> > 
-> > Hopefully when that changes to accomodate user namespaces, we can use
-> > netlink field versioning to make that transition pretty seamless?
->   Yes, we'd just assign the attribute a different number and teach
-> userspace about the new attribute format...
+> I can easily do the changes for ia64 and test them.  I don't have the capability
+> of testing on the powerpc.  
+> 
+> And are you asking for just the changes to fix the build problem, or the whole
+> set of the changes that were made for x86_64 and i386 in regards to converting
+> NR_CPU arrays to per cpu data?
 
-Ok.
-
-> > If not, then we probably should in fact make some decision now so as not
-> > to change the api.
-> > 
-> > > > > send via netlink these (in our example ids 1000 and 1001) and hope that
-> > > > > inside machineA and machineB there will be a way to translate these
-> > > > > identities to names "Alice" and "Bob". So that user can understand what
-> > > > > is happenning. Does this sound plausible?
-> > > > >   If we go this route, then we only need a kernel function, that will
-> > > > > for a pair ($filesystem, $task) return indentity of that $task used
-> > > > > for operations on $filesystem...
-> > > > 
-> > > > Ok, now I see.  This is again unrelated to user namespaces, it's an
-> > > > issue regardless.
-> > > > 
-> > > > Is there no way to just report Alice as the guilty party to Bob on his
-> > > > machine as (host=nfsserver,uid=1000)?
-> > >   You know, in fact this contains all the information but it is quite useless
-> > > for an ordinary user. The message should be understandable to average desktop
-> > 
-> > What is the ordinary user going to do about it?  If the user didn't set
-> > up the nfsserver and/or the second client, the only thing he can do is
-> > report the guilty user to an admin.  In which case the tuple
-> > (host=nfsserver,uid=1000) is exactly the data he needs to report.
->   Maybe write him an email or go and bang him with a baseball bat ;)
-> Seriously, if someone (like admin) is able to find a physical identity of the
-> guilty user, then we should be able to do this in a software too, shouldn't
-> we?
-
-Sure, and in many ways.  But if working with NFS, as far as I know the
-most common way to solve it is to enforce a common /etc/passwd across
-all the valid NFS clients  :)
-
--serge
+Well...  it'd be better to have all architectures doing the same thing.  If
+that's impractical then we should at least implement suitable accessor
+functions into the arch so that core code doesn't need to handle some
+architectures one way and others the other way.
