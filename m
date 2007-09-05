@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbXIEOHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbXIEOLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbXIEOHU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 10:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbXIEOHH
+	id S1756970AbXIEOLo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 10:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbXIEOLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 10:07:07 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:42795 "EHLO atlrel6.hp.com"
+	Wed, 5 Sep 2007 10:11:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41776 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756201AbXIEOHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 10:07:05 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett Packard
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Subject: Re: [TOMOYO 15/15] LSM expansion for TOMOYO Linux.
-Date: Wed, 5 Sep 2007 10:06:28 -0400
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       chrisw@sous-sol.org
-References: <46CED214.6050505@gmail.com> <200709040753.32204.paul.moore@hp.com> <200709042302.CDE26023.MJOOLQVFFOtHSF@I-love.SAKURA.ne.jp>
-In-Reply-To: <200709042302.CDE26023.MJOOLQVFFOtHSF@I-love.SAKURA.ne.jp>
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 2180
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200709051006.28429.paul.moore@hp.com>
+	id S1756009AbXIEOLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 10:11:37 -0400
+Date: Wed, 5 Sep 2007 10:11:34 -0400
+From: Prarit Bhargava <prarit@redhat.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, gbeshers@sgi.com,
+       mingo@redhat.com, mingo@elte.hu
+Cc: Prarit Bhargava <prarit@redhat.com>
+Message-Id: <20070905141134.25743.98581.sendpatchset@prarit.boston.redhat.com>
+Subject: [PATCH]: Stop bogus softlockup warnings in debug_show_all_locks (2nd try)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 September 2007 10:02:46 am Tetsuo Handa wrote:
-> According to Patrick McHardy's posting at
-> http://www.mail-archive.com/linux-security-module@vger.kernel.org/msg00999.
->html netfilter *socket filters* cannot know final recipient process.
-> Can netfilter *userspace queue mechanism* know final recipient process?
+Trying this again with a wider audience.
 
-Okay, I just went back and re-read the conversation from July as well as the 
-description of your current patches and I think what is basically comes down 
-to is that your design makes use of userspace intervention to allow/reject 
-connections and/or packets based on the application's domain.  Unfortunately 
-for TOMOYO, the current LSM network hooks are placed in such a way that you 
-can not block and query a userspace agent for an access control decision.
+Prevent bogus softlockup warnings when dumping lock debug info during a
+sysrq-t.
 
-Myself and some others have suggested using the netfilter userspace queue 
-mechanism[1].  However, I understand this may cause you problems when you try 
-to determine the incoming packet's destination/domain.  With these 
-requirements I understand why you are pushing so hard to introduce these new 
-LSM hooks, but for many reasons I would really prefer to try and find a way 
-to utilize the existing hooks.  I've tried to think of a way to do this over 
-the past day and have not been able to arrive at a clean solution.  
-Personally, I still question the wisdom of receiving a packet/connection only 
-to drop/reject it later when an application tries to read it but I might be 
-the only one.
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 
-Based on some of the other discussion around this patch there appears to be 
-other, larger issues which you still need to sort out (language parser in the 
-kernel, /proc issues, etc.).  I would recommend addressing those concerns and 
-including the netdev mailing list on your next patchset as they might have 
-some thoughts on your network design.
-
-[1]http://www.netfilter.org/projects/libnetfilter_queue/index.html
-
--- 
-paul moore
-linux security @ hp
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 734da57..376b398 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -3183,8 +3183,10 @@ retry:
+ 	printk("\n");
+ 	printk("=============================================\n\n");
+ 
+-	if (unlock)
++	if (unlock) {
++		touch_all_softlockup_watchdogs();
+ 		read_unlock(&tasklist_lock);
++	}
+ }
+ 
+ EXPORT_SYMBOL_GPL(debug_show_all_locks);
