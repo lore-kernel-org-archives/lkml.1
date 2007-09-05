@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbXIERXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbXIER1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757699AbXIERXc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 13:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbXIERXL
+	id S1757527AbXIER1Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 13:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbXIER1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 13:23:11 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:59697 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754133AbXIERXI (ORCPT
+	Wed, 5 Sep 2007 13:27:11 -0400
+Received: from smtp.opengridcomputing.com ([71.42.183.126]:45414 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752442AbXIER1K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 13:23:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=fuT/9XLIecsOgtGK2D6hjg5LBdOJk9tykmgl9qAnUYpGsg7svVSlqY4H8tyN+Lu9G+OL+IQfXecBjvV1Sl2RICe+AkQfxqQ2C+xxnWnZgZVxy2E5cQEMfuThdPomjmyF7/yLMrbPuHUPJZrDzXs+JwToI9Jt3u2AF19DzQ1WS2M=
-Date: Wed, 5 Sep 2007 21:22:52 +0400
-To: James Pearson <james-p@moving-picture.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Anton Arapov <aarapov@redhat.com>,
-       Guy Streeter <guy.streeter@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 4096 byte limit to /proc/PID/environ ?
-Message-ID: <20070905172252.GA2104@martell.zuzino.mipt.ru>
-References: <4474B7DB.8000304@moving-picture.com> <200605242029.k4OKTn9C031700@terminus.zytor.com> <447EF58C.6000605@moving-picture.com> <52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com> <46C33700.1060605@zytor.com> <46D6CBED.4040301@moving-picture.com> <h87in5sgal.fsf@pepelac.englab.brq.redhat.com> <46DE6196.3050605@zytor.com> <46DEE0C9.1000402@moving-picture.com>
+	Wed, 5 Sep 2007 13:27:10 -0400
+Message-ID: <46DEE6ED.7070000@opengridcomputing.com>
+Date: Wed, 05 Sep 2007 12:27:09 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46DEE0C9.1000402@moving-picture.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Roland Dreier <rdreier@cisco.com>
+CC: general@lists.openfabrics.org, ewg@lists.openfabrics.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sean.hefty@intel.com
+Subject: Re: [PATCH RFC] iw_cxgb3: Support "iwarp-only" interfaces to avoid
+ 4-tuple conflicts with the host stack.
+References: <1187905185.5547.13.camel@stevo-desktop>	<adaveawwcpz.fsf@cisco.com> <46DD762F.80904@opengridcomputing.com> <ada642puonr.fsf@cisco.com> <46DECDED.90903@opengridcomputing.com>
+In-Reply-To: <46DECDED.90903@opengridcomputing.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 05, 2007 at 06:00:57PM +0100, James Pearson wrote:
-> H. Peter Anvin wrote:
-> >Anton Arapov wrote:
-> >
-> >>  Hey guys, the future of this patch is important for me. What do you 
-> >>think, has this patch any chances to be committed to upstream?
-> >>
-> >>James Pearson <james-p@moving-picture.com> writes:
-> >>
-> >>>H. Peter Anvin wrote:
-> >>>There isn't that much that is duplicated - and there are also bits of
-> >>>the /proc/PID/mem code that are not needed in this case, so I'm not
-> >>>really sure if it is worth doing.
-> >>>
-> >>>I did submit a patch a few months ago - see:
-> >>>
-> >>><http://marc.info/?l=linux-kernel&m=117862109623007&w=2>
-> >>
-> >>
-> >
-> >Looks reasonable to me, except for the one overlong line.
-> >
-> 
-> OK, here is the patch (without the long line) against 2.6.23-rc5 - what 
-> else needs to be done to get it committed?
 
-Remove duplicate ptrace_may_attach() checks, unecessary (), {} and
-spaces before pointer names -- char *buf.
+
+Steve Wise wrote:
+> 
+> 
+> Roland Dreier wrote:
+>>  > > What's wrong with my suggestion of having the iwarp driver create an
+>>  > > "iwX" interface to go with the normal "ethX" interface?  It seems
+>>  > > simpler to me, and there's a somewhat similar precedent with how
+>>  > > mac80211 devices create both wlan0 and wmaster0 interfaces.
+>>  > >  - R.
+>>  >  > It seemed much more painful for me to implement. :-)
+>>  >  > I'll look into this, but I think for this to be done, the 
+>> changes must
+>>  > be in the cxgb3 driver, not the rdma driver, because the guts of the
+>>  > netdev struct are all private to cxgb3.  Remember that this interface
+>>  > needs to still do non TCP traffic (like ARP and UDP)...
+>>  >  > Maybe you have something in mind here that I'm not thinking about?
+>>
+>> No, I was just spouting off.
+>>
+> 
+> At least someone is looking at my patch. ;-)
+> 
+>> But the whole "create a magic alias" seems kind of unfriendly to the
+>> user.  Maybe as you said, the cxgb3 net driver could create the alias
+>> for the iw_cxgb3 driver?
+> 
+> I agree that it is not very user friendly.
+> 
+> My current patch just utilizes the IP address alias logic in the IP 
+> stack.  So when you do 'ifconfig ethxx:blah ipaddr up' it creates a 
+> struct in_ifaddr which contains a ptr to the real struct net_device that 
+> services this alias.  However, from what I can tell, I cannot just 
+> create one of these without binding an address.  So the driver cannot 
+> create the alias interface until it knows the ipaddr/netmask/etc.  IE: 
+> if you say 'ifconfig ethxx:blah up' it fails...  You must supply an 
+> address to get one of these created.
+> 
+> To have the cxgb3 driver create something like 'iw0', I think it would 
+> need to create a full net_device struct.  This makes the change much 
+> more complex.  But perhaps its the right thing to do...
+> 
+> Steve.
+> 
+
+Also, I could defer registering the device with the rdma core until the 
+alias interface is created by the user.  Thus the T3 device wouldn't be 
+available for use until the ethxx:iw interface is created.
+
+And I could log a WARN or INFO message if the iw_cxgb3 module is loaded 
+and no ethxx:iw alias exists.  This would help clue in the user...
+
+Steve.
+
+
