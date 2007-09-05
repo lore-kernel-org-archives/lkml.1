@@ -1,95 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbXIEVFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbXIEVGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757497AbXIEVFU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 17:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbXIEVFG
+	id S1757745AbXIEVGv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 17:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbXIEVGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 17:05:06 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:14582 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752966AbXIEVFE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 17:05:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=tkdbWpB07T1sAZ7S0h5G/A4YTJXTj/QaPLsemnBUXcmM5g4iHYPF03CIu+aV/rtjKI0fV9/MBNnxAUVqq1cjX6yZ3RFhnPoUdKAQAtyNSz4ZTwLpnnCXCowVR6cHL8R2ZJXreZ2VvulMsRdeQ7Io52BEwSsh5PnQzHGk3vvRsp8=
-Message-ID: <6bffcb0e0709051405v1e7ff4abjabe39373e4668d26@mail.gmail.com>
-Date: Wed, 5 Sep 2007 23:05:03 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.23-rc5-git1-krf1 (known regressions fixes)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Wed, 5 Sep 2007 17:06:43 -0400
+Received: from fydelkass.inl.fr ([195.101.59.116]:49414 "EHLO fydelkass.inl.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753772AbXIEVGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 17:06:42 -0400
+X-Greylist: delayed 2933 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Sep 2007 17:06:41 EDT
+Subject: [Patch] Add support for PCMCIA card Sierra WIreless AC850
+From: Eric Leblond <eric@inl.fr>
+To: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+Cc: linux-serial@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-R2NJj+LrnobE4wcLLMfv"
+Organization: INL SARL
+Date: Wed, 05 Sep 2007 22:15:59 +0200
+Message-Id: <1189023359.4228.6.camel@ghlodit.inl.fr>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
+--=-R2NJj+LrnobE4wcLLMfv
+Content-Type: multipart/mixed; boundary="=-cc4HNoCEDHc3b8Tzsaw9"
+
+
+--=-cc4HNoCEDHc3b8Tzsaw9
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
 Hi,
 
-There are a few patches for regressions that was not merged yet.
+This patch adds support for Sierra Wireless AC850 which has the same Ids
+as the AC710/750 but has a different firmware.
 
-Subject         : 8250 claims non existing device blocking IO port
-References      : http://lkml.org/lkml/2007/8/18/20
-Last known good : ?
-Submitter       : Andrey Borzenkov <arvidjaar@mail.ru>
-Caused-By       : ?
-Handled-By      : Bjorn Helgaas <bjorn.helgaas@hp.com>
-Patch           : http://lkml.org/lkml/2007/8/21/291
-Status          : patch available
+PS: Please CC answer as I've not subscribed to the list.
 
-Subject         : Oops while modprobing phy fixed module
-References      : http://lkml.org/lkml/2007/7/14/63
-Last known good : ?
-Submitter       : Gabriel C <nix.or.die@googlemail.com>
-Caused-By       : ?
-Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
-                  Vitaly Bordug <vitb@kernel.crashing.org>
-Patch1          : http://lkml.org/lkml/2007/7/18/506
-Status          : patch available
+BR,
+--=20
+Eric Leblond <eric@inl.fr>
+INL SARL
 
-Subject         : NFSv3 server error in LOOKUP after READDIRPLUS Call
-References      : http://bugzilla.kernel.org/show_bug.cgi?id=8966
-Last known good : ?
-Submitter       : Peter Kovar <peter.kovar@gmail.com>
-Caused-By       : ?
-Handled-By      : Neil Brown <neilb@suse.de>
-Patch           : http://bugzilla.kernel.org/attachment.cgi?id=12689
-Status          : patch available
+--=-cc4HNoCEDHc3b8Tzsaw9
+Content-Disposition: attachment; filename=Add-support-for-Sierra-Wireless-AC850.txt
+Content-Type: text/plain; name=Add-support-for-Sierra-Wireless-AC850.txt;
+	charset=UTF-8
+Content-Transfer-Encoding: base64
 
-Subject         : linux-2.6.23-rc4 ppc build failure
-References      : http://lkml.org/lkml/2007/8/29/154
-Last known good : ?
-Submitter       : Bret Towe <magnade@gmail.com>
-Caused-By       : ?
-Handled-By      : Tony Breeds <tony@bakeyournoodle.com>
-Patch           : http://lkml.org/lkml/2007/8/31/1
-Status          : patch was suggested
+U2lnbmVkLW9mZi1ieTogRXJpYyBMZWJsb25kIDxlcmljQGlubC5mcj4NCi0tLQ0KIGRyaXZlcnMv
+c2VyaWFsL3NlcmlhbF9jcy5jIHwgICAgMSArDQogMSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlv
+bnMoKyksIDAgZGVsZXRpb25zKC0pDQoNCmRpZmYgLS1naXQgYS9kcml2ZXJzL3NlcmlhbC9zZXJp
+YWxfY3MuYyBiL2RyaXZlcnMvc2VyaWFsL3NlcmlhbF9jcy5jDQppbmRleCBhMGVhNDM1Li5mMGU5
+YmE2IDEwMDY0NA0KLS0tIGEvZHJpdmVycy9zZXJpYWwvc2VyaWFsX2NzLmMNCisrKyBiL2RyaXZl
+cnMvc2VyaWFsL3NlcmlhbF9jcy5jDQpAQCAtOTExLDYgKzkxMSw3IEBAIHN0YXRpYyBzdHJ1Y3Qg
+cGNtY2lhX2RldmljZV9pZCBzZXJpYWxfaWRzW10gPSB7DQogCVBDTUNJQV9NRkNfREVWSUNFX0NJ
+U19NQU5GX0NBUkQoMSwgMHgwMTc1LCAweDAwMDAsICJEUDgzOTAzLmNpcyIpLA0KIAlQQ01DSUFf
+TUZDX0RFVklDRV9DSVNfTUFORl9DQVJEKDEsIDB4MDEwMSwgMHgwMDM1LCAiM0NYRU01NTYuY2lz
+IiksDQogCVBDTUNJQV9NRkNfREVWSUNFX0NJU19NQU5GX0NBUkQoMSwgMHgwMTAxLCAweDAwM2Qs
+ICIzQ1hFTTU1Ni5jaXMiKSwNCisJUENNQ0lBX0RFVklDRV9DSVNfUFJPRF9JRDEyKCJTaWVycmEg
+V2lyZWxlc3MiLCAiQUM4NTAiLCAweGQ4NWY2MjA2LCAweDQyYTJjMDE4LCAiU1dfOHh4X1NFUi5j
+aXMiKSwgIC8qIFNpZXJyYSBXaXJlbGVzcyBBQzg1MCAzRyBOZXR3b3JrIEFkYXB0ZXIgUjEgKi8N
+CiAJUENNQ0lBX0RFVklDRV9DSVNfTUFORl9DQVJEKDB4MDE5MiwgMHgwNzEwLCAiU1dfN3h4X1NF
+Ui5jaXMiKSwJLyogU2llcnJhIFdpcmVsZXNzIEFDNzEwL0FDNzUwIEdQUlMgTmV0d29yayBBZGFw
+dGVyIFIxICovDQogCVBDTUNJQV9ERVZJQ0VfQ0lTX01BTkZfQ0FSRCgweDAxOTIsIDB4YTU1NSwg
+IlNXXzU1NV9TRVIuY2lzIiksICAvKiBTaWVycmEgQWlyY2FyZCA1NTUgQ0RNQSAxeHJ0dCBNb2Rl
+bSAtLSBwcmUgdXBkYXRlICovDQogCVBDTUNJQV9ERVZJQ0VfQ0lTX01BTkZfQ0FSRCgweDAxM2Ys
+IDB4YTU1NSwgIlNXXzU1NV9TRVIuY2lzIiksICAvKiBTaWVycmEgQWlyY2FyZCA1NTUgQ0RNQSAx
+eHJ0dCBNb2RlbSAtLSBwb3N0IHVwZGF0ZSAqLw0KLS0gDQoxLjQuNC40DQoNCg==
 
-Subject         : Unable to access memory card reader anymore
-References      : http://bugzilla.kernel.org/show_bug.cgi?id=8885
-Last known good : ?
-Submitter       : Christian Casteyde <casteyde.christian@free.fr>
-Caused-By       : ?
-Handled-By      : Alan Stern <stern@rowland.harvard.edu>
-Patch           : http://bugzilla.kernel.org/attachment.cgi?id=12438
-Status          : patch available
 
-Subject         : error: implicit declaration of function 'cfi_interleave'
-References      : http://lkml.org/lkml/2007/8/6/272
-Last known good : ?
-Submitter       : Ingo Molnar <mingo@elte.hu>
-Caused-By       : ?
-Handled-By      : David Woodhouse <dwmw2@infradead.org>
-Patch           : http://lkml.org/lkml/2007/8/9/586
-Status          : patch available
+--=-cc4HNoCEDHc3b8Tzsaw9--
 
-http://www.stardust.webpages.pl/files/patches/krf/2.6.23-rc5-git1/
+--=-R2NJj+LrnobE4wcLLMfv
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
 
-Regards,
-Michal
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+iD8DBQBG3w5/nxA7CdMWjzIRAu9kAKCGSI2wmdpu8DGyBMA1SrC5Rv4+OACfTPFn
+kEym9xGyftxcM8P9Bb6NbSA=
+=ZuXt
+-----END PGP SIGNATURE-----
+
+--=-R2NJj+LrnobE4wcLLMfv--
+
