@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932319AbXIEQHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932352AbXIEQNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932319AbXIEQHK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 12:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756874AbXIEQG5
+	id S932352AbXIEQNg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 12:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756488AbXIEQN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 12:06:57 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55710 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756821AbXIEQG4 (ORCPT
+	Wed, 5 Sep 2007 12:13:29 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:32391 "EHLO
+	outbound8-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756462AbXIEQN2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 12:06:56 -0400
-Date: Wed, 5 Sep 2007 09:05:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel@vger.kernel.org, christian.mandery@sap.com,
-       amy.griffis@hp.com, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: Race in the inotify debug code
-Message-Id: <20070905090547.1bd50b33.akpm@linux-foundation.org>
-In-Reply-To: <46CDA6DE.6010102@redhat.com>
-References: <46CDA6DE.6010102@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Sep 2007 12:13:28 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+Date: Wed, 5 Sep 2007 18:13:00 +0200
+From: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+To: "Arne Georg Gleditsch" <argggh@dolphinics.no>
+cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "Robert Richter" <robert.richter@amd.com>,
+       "Arjan van de Ven" <arjan@infradead.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space
+ access for AMD Barcelona
+Message-ID: <20070905161300.GE22086@alberich.amd.com>
+References: <20070903081736.288288000@amd.com>
+ <20070903081736.588599000@amd.com>
+ <20070903013157.72c94891@laptopd505.fenrus.org>
+ <20070903091718.GB22144@alberich.amd.com>
+ <20070903043319.7573875b@laptopd505.fenrus.org>
+ <20070903154734.GC22086@alberich.amd.com> <46DE45A2.40403@zytor.com>
+ <20070905084427.GE6409@erda.amd.com> <46DE80F0.4000706@zytor.com>
+ <kjmd4wxz822.fsf@pelargir.dolphinics.no>
+MIME-Version: 1.0
+In-Reply-To: <kjmd4wxz822.fsf@pelargir.dolphinics.no>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 05 Sep 2007 16:12:57.0949 (UTC)
+ FILETIME=[9FB058D0:01C7EFD7]
+X-WSS-ID: 6AC00A061A46708606-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 23 Aug 2007 11:25:18 -0400 Chuck Ebbert <cebbert@redhat.com> wrote:
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=248355
+On Wed, Sep 05, 2007 at 01:05:25PM +0200, Arne Georg Gleditsch wrote:
+> "H. Peter Anvin" <hpa@zytor.com> writes:
+> > You're missing the point.   How will the PCI bus transactions be
+> > different when using MMCONFIG versus your extended CF8 version?
 > 
-> Description of problem:
-> Warnings in the kernel log (dmesg):
-> BUG: warning at fs/inotify.c:172/set_dentry_child_flags() (Not tainted)
->  [<c0497a37>] set_dentry_child_flags+0x67/0x13d
->  [<c0497c27>] remove_watch_no_event+0x2f/0x3b
->  [<c0497d15>] inotify_remove_watch_locked+0x12/0x3e
->  [<c0600c17>] mutex_lock+0x1a/0x29
->  [<c0497fdd>] inotify_rm_wd+0x6d/0x8a
->  [<c04983b1>] sys_inotify_rm_watch+0x38/0x4f
->  [<c0404f70>] syscall_call+0x7/0xb
+> Conceivably this is useful if the IO hub does not support MMCONFIG
+> accesses.  The AMD 8111 does not, as far as I can see.  At least I
+> have an Opteron system where MMCONFIG is not supported, and I assume
+> it's because the 8111 doesn't provide it.  I don't know if this is
+> going to be a realistic scenario for Barcelona systems.
 > 
-> Appears randomly, about every second/third day.
-> 
-> Still happening in kernel 2.6.22.
-> 
-> 
-> static void set_dentry_child_flags(struct inode *inode, int watched)
-> ...
->         spin_lock(&dcache_lock);
->         list_for_each_entry(alias, &inode->i_dentry, d_alias) {
->                 struct dentry *child;
-> 
->                 list_for_each_entry(child, &alias->d_subdirs, d_u.d_child) {
->                         if (!child->d_inode) {
->                                 WARN_ON(child->d_flags & DCACHE_INOTIFY_PARENT_WATCHED);
->                                 continue;
->                         }
-> 
-> But in dcache.c, the locks are dropped before this flag is cleared, leaving
-> a race window:
-> 
-> void d_delete(struct dentry * dentry)
-> ...
->         spin_lock(&dcache_lock);
->         spin_lock(&dentry->d_lock);
->         isdir = S_ISDIR(dentry->d_inode->i_mode);
->         if (atomic_read(&dentry->d_count) == 1) {
->                 dentry_iput(dentry);  <================ drops dcache_lock and dentry->d_lock
->                 fsnotify_nameremove(dentry, isdir);
-> 
->                 /* remove this and other inotify debug checks after 2.6.18 */
->                 dentry->d_flags &= ~DCACHE_INOTIFY_PARENT_WATCHED;
->                 return;
->         }
-> 
-> (The comment is nice, it says the debug code should have been removed long ago.)
+> -- 
+> 								Arne.
 
-We've been chasing this bug for a year or so.  Thanks for maybe-solving it.
-I forwarded your email to Nick a few days ago but he's presently tied up
-with kernel slummit.  Please let us not forget about this?
+Not sure how many AMD 8111 based systems are out there which are
+upgradeable to Barcelona.
+
+I guess the BIOS won't setup MCFG for systems with 8111/8131 
+because both lack ECS MMIO Base Address Register. 
+(Because 8111 and 8131 are not Mode2-PCI-X and PCI-express
+capable.)
+
+So if such a board is upgradeable, the way to access extended
+config space of the northbridge functions is to use CF8/CFC
+ECS access.
+
+
+Regards,
+
+Andreas
+
+-- 
+Operating | AMD Saxony Limited Liability Company & Co. KG,
+  System  | Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ Research | Register Court Dresden: HRA 4896, General Partner authorized
+  Center  | to represent: AMD Saxony LLC (Wilmington, Delaware, US)
+  (OSRC)  | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+
+
