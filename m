@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbXIEANz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbXIEA1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbXIEANz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Sep 2007 20:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbXIEANs
+	id S1756067AbXIEA1k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Sep 2007 20:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbXIEA1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Sep 2007 20:13:48 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34332 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755347AbXIEANr (ORCPT
+	Tue, 4 Sep 2007 20:27:32 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:20737 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754023AbXIEA1b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Sep 2007 20:13:47 -0400
-Date: Wed, 5 Sep 2007 05:56:47 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Eugene Teo <eugeneteo@kernel.sg>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix tsk->exit_state usage (resend)
-In-Reply-To: <20070819142401.GA27823@kernel.sg>
-Message-ID: <alpine.LFD.0.999.0709050544070.20571@enigma.security.iitk.ac.in>
-References: <20070819142401.GA27823@kernel.sg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+	Tue, 4 Sep 2007 20:27:31 -0400
+Subject: Re: 2.6.22.6 + rt9: suspend/hibernate not working
+From: Daniel Walker <dwalker@mvista.com>
+To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       planetccrma@ccrma.Stanford.EDU
+In-Reply-To: <1188951154.26511.90.camel@cmn3.stanford.edu>
+References: <1188951154.26511.90.camel@cmn3.stanford.edu>
+Content-Type: text/plain
+Date: Tue, 04 Sep 2007 17:15:09 -0700
+Message-Id: <1188951309.4442.1.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eugene,
-
-This already got merged into -mm, but ...
-
-
-On Sun, 19 Aug 2007, Eugene Teo wrote:
+On Tue, 2007-09-04 at 17:12 -0700, Fernando Lopez-Lezcano wrote:
+> Hi Ingo... I'm getting reports from some of my Planet CCRMA users (which
+> I confirmed) that the latest rt kernel I released has broken suspend
+> (tested on fc6 & fc7, stock Fedora kernel works fine - the rt
+> configuration files are virtual clones as far as possible of the
+> standard Fedora kernel config files). 
 > 
-> tsk->exit_state can only be 0, EXIT_ZOMBIE, or EXIT_DEAD. A non-zero test
-> is the same as tsk->exit_state & (EXIT_ZOMBIE | EXIT_DEAD), so just testing
-> tsk->exit_state is sufficient.
+> I don't know where to start debugging this. When suspend is initiated it
+> freezes with a "Stopping tasks ... " message in the text console - a
+> hard power cycle is the only way to get the machine back to normal. 
+> 
+> kernel/power/process.c seems to contain that string in the
+> freeze_processes function so it looks like the freezer is not freezing
+> tasks as no "done" message is ever printed. 
+> 
+> What could we do to help?
 
-... IMHO this change harms the readability of the code.
+If you have high resolution timers enabled you could try disabling it,
+and see if the problem persists .
 
+Daniel
 
-> +++ b/fs/proc/array.c
-> @@ -145,8 +145,7 @@ static inline const char *get_task_state(struct task_struct *tsk)
->  					    TASK_UNINTERRUPTIBLE |
->  					    TASK_STOPPED |
->  					    TASK_TRACED)) |
-> -			(tsk->exit_state & (EXIT_ZOMBIE |
-> -					    EXIT_DEAD));
-> +					   tsk->exit_state;
-
-Here, for example, the code is /purposefully/ enumerating all the task
-states, probably it makes sense to explicitly enumerate the exit states
-as well?
-
-
-> +++ b/kernel/fork.c
-> @@ -115,7 +115,7 @@ EXPORT_SYMBOL(free_task);
->  
->  void __put_task_struct(struct task_struct *tsk)
->  {
-> -	WARN_ON(!(tsk->exit_state & (EXIT_DEAD | EXIT_ZOMBIE)));
-> +	WARN_ON(!tsk->exit_state);
-
-
-> +++ b/kernel/sched.c
-> @@ -5190,7 +5190,7 @@ static void migrate_dead(unsigned int dead_cpu, struct task_struct *p)
->  	struct rq *rq = cpu_rq(dead_cpu);
->  
->  	/* Must be exiting, otherwise would be on tasklist. */
-> -	BUG_ON(p->exit_state != EXIT_ZOMBIE && p->exit_state != EXIT_DEAD);
-> +	BUG_ON(!p->exit_state);
-
-Regarding above two changes -- agreed, we want to catch /any/ exiting task
-state, so (!p->exit_state) is /correct/, but still, enumerating those
-explicitly helps readability. And although it's unlikely, in the future,
-we may have an exit_state value for which we may _not_ want to complain
-(WARN or BUG) in this code. So I'd still vote to keep the code explicit
-like it was ...
-
-
-Satyam
