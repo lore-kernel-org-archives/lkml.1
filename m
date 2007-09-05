@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbXIETtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbXIETzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756946AbXIETtv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 15:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbXIETtm
+	id S1757182AbXIETzN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 15:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbXIETzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 15:49:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:11475 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754072AbXIETtl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 15:49:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=dklPzvAKyseLH03wDA+tGimX8dxIFAfJF45WIpua7IEtb5apXT7opa2DAXRjYTYM9X8TyZhc72NeXJeTtgtws3b68VTAnXLgpDKFmVOFMXp9RnIxlbKkqkj56Ru/vY++gKlpdjl0nblsx8WePwAhVuni9GMh71SfI0eky8CK5PQ=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Daniel Walker <dwalker@mvista.com>
-Subject: Re: [PATCH 0/3] build system: section garbage collection for vmlinux
-Date: Wed, 5 Sep 2007 20:49:29 +0100
-User-Agent: KMail/1.9.1
-Cc: sam@ravnborg.org, kai@germaschewski.name, linux-kernel@vger.kernel.org
-References: <200709051443.21522.vda.linux@googlemail.com> <200709052014.12653.vda.linux@googlemail.com> <1189019235.4442.27.camel@imap.mvista.com>
-In-Reply-To: <1189019235.4442.27.camel@imap.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Wed, 5 Sep 2007 15:55:00 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:41702 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754364AbXIETy7 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 15:54:59 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc4-mm1 - git-alsa.patch breaks audio on Dell Latitude D820
+In-Reply-To: Your message of "Wed, 05 Sep 2007 15:46:34 EDT."
+             <4658.1189021594@turing-police.cc.vt.edu>
+From: Valdis.Kletnieks@vt.edu
+References: <20070831215822.26e1432b.akpm@linux-foundation.org>
+            <4658.1189021594@turing-police.cc.vt.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1189022095_2892P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709052049.30649.vda.linux@googlemail.com>
+Date: Wed, 05 Sep 2007 15:54:55 -0400
+Message-ID: <5129.1189022095@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 05 September 2007 20:07, Daniel Walker wrote:
-> On Wed, 2007-09-05 at 20:14 +0100, Denys Vlasenko wrote:
-> > On Wednesday 05 September 2007 19:38, Daniel Walker wrote:
-> > > > > You version doesn't work with CONFIG_MODULES right?
-> > > > 
-> > > > It works with CONFIG_MODULES.
-> > > 
-> > > Really? Take a look at this version,
-> > > 
-> > > http://lkml.org/lkml/2006/6/4/169
-> > > 
-> > > Marcello had to implement a two pass build to add back symbol used in
-> > > modules which got removed from the main kernel.. You don't appear to do
-> > > that. Marcelo also claims better size reduction than you.
-> > 
-> > This will discard EXPORT_SYMBOLs potentially used by
-> > out-of-tree modules.
-> 
-> Right, so it doesn't work with modules..
+--==_Exmh_1189022095_2892P
+Content-Type: text/plain; charset=us-ascii
 
-What does "it" stand for in this sentence?
+On Wed, 05 Sep 2007 15:46:34 EDT, Valdis.Kletnieks@vt.edu said:
+>
+> % grep HDA_ .config
+> CONFIG_SND_HDA_INTEL=y
+> # CONFIG_SND_HDA_HWDEP is not set
+> CONFIG_SND_HDA_CODEC_REALTEK=y
+> CONFIG_SND_HDA_CODEC_ANALOG=y
+> CONFIG_SND_HDA_CODEC_SIGMATEL=y
+> # CONFIG_SND_HDA_CODEC_VIA is not set
+> # CONFIG_SND_HDA_CODEC_ATIHDMI is not set
+> # CONFIG_SND_HDA_CODEC_CONEXANT is not set
+> # CONFIG_SND_HDA_CODEC_CMEDIA is not set
+> # CONFIG_SND_HDA_CODEC_SI3054 is not set
+> CONFIG_SND_HDA_GENERIC=y
+> # CONFIG_SND_HDA_POWER_SAVE is not set
 
-My patch was tested to work in my limited testing,
-but it is very conservative.
+For the record, REALTEK and ANALOG got set to Y in my bisect build because of
+the infamous "defaults to Y" syndrome - after I saw Sigmatel go by I wised up
+and started saying N, but forgot to clean up the first two.  Those two are
+disabled in the live -rc4-mm1 .config, and it has the same issue.
 
-I can't talk for Marcelo, but his patch probably worked too,
-it just didn't guarantee that you can install kernel, and
-then compile and load external module. Wel, it will compile,
-but maybe will fail to load.
 
-It sounds like *in-tree modules* were loading
-just fine for Marcelo.
---
-vda
+--==_Exmh_1189022095_2892P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG3wmPcC3lWbTT17ARAvLjAKDaR06Tk5ZJXo/58wKecUNaZ7WOCQCg+bGU
+mQfvcnspYDR1ccG1oVqGQBU=
+=4RWd
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1189022095_2892P--
