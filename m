@@ -1,107 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbXIERbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbXIERbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757017AbXIERbX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 13:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXIERbL
+	id S1757927AbXIERbm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 13:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757208AbXIERb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 13:31:11 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:34613 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753014AbXIERbJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 13:31:09 -0400
-Date: Wed, 5 Sep 2007 10:28:24 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Tim Teulings" <rael@edge.ping.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       michal.k.k.piotrowski@gmail.com, rbrito@gmail.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       debian-powerpc@lists.debian.org, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
-Message-Id: <20070905102824.a481060c.randy.dunlap@oracle.com>
-In-Reply-To: <20070905100754.57ab4e3e.akpm@linux-foundation.org>
-References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
-	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
-	<20070827065246.GA21220@ime.usp.br>
-	<46D279E8.10001@edge.ping.de>
-	<46D72BC6.3020809@edge.ping.de>
-	<20070905100754.57ab4e3e.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 5 Sep 2007 13:31:26 -0400
+Received: from lucidpixels.com ([75.144.35.66]:55539 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757164AbXIERbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Sep 2007 13:31:25 -0400
+Date: Wed, 5 Sep 2007 13:31:24 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Andreas Schwab <schwab@suse.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: modinfo <modulename> question
+In-Reply-To: <jesl5tuj41.fsf@sykes.suse.de>
+Message-ID: <Pine.LNX.4.64.0709051331190.22864@p34.internal.lan>
+References: <Pine.LNX.4.64.0709051232440.22864@p34.internal.lan>
+ <jesl5tuj41.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-1231663185-1189013484=:22864"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Sep 2007 10:07:54 -0700 Andrew Morton wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> > On 30 Aug 2007 22:42:46 +0200 "Tim Teulings" <rael@edge.ping.de> wrote:
-> > Hello!
-> > 
-> > > I don't have traces at hand and due to lack of time cannot reproduce it 
-> > > up to tomorrow. However this hint may speed up your analysis!
-> > 
-> > Sorry for the delay, but my desktop PC had an urgent hard disk problem I 
-> > had to fix ASASP.
-> > 
-> > So here is the output from dmesg that suggested to me that firewire 
-> > might be a problem:
-> 
-> Straightforward regression, two reporters, nothing happening.
+---1463747160-1231663185-1189013484=:22864
+Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-(material for ksummit discussion, e.g.)
 
-> > > usb_endpoint usbdev2.2_ep81: PM: suspend 0->2, parent 2-1:1.0 already 2
-> > > usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
-> > > usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
-> > > hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
-> > > usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
-> > > eth2: Airport entering sleep mode
-> > > eth0: suspending, WakeOnLan disabled
-> > > pci_set_power_state(): 0002:20:0e.0: state=3, current state=5
-> > > firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
-> > > suspend_device(): pci_device_suspend+0x0/0x98() returns -22
-> > > Could not suspend device 0002:20:0e.0: error -22
-> > > eth0: resuming
-> > > PHY ID: 4061e4, addr: 0
-> > > eth2: Airport waking up
-> > > eth2: New link status: Connected (0001)
-> > > hda: Enabling Ultra DMA 2
-> > > eth0: Link is up at 100 Mbps, full-duplex.
-> > > eth0: Pause is disabled
-> > > ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
-> > > hdb: Enabling Ultra DMA 2
-> > > usb_endpoint usbdev1.1_ep00: PM: resume from 0, parent usb1 still 2
-> > > usb_endpoint usbdev1.1_ep81: PM: resume from 0, parent 1-0:1.0 still 2
-> > > usb_device usbdev1.1: PM: resume from 0, parent usb1 still 2
-> > > Driver sleep failed
-> > > Sleep rejected by devices
-> > > adb: starting probe task...
-> > > adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
-> > > ADB keyboard at 2, handler 1
-> > > ADB mouse at 3, handler set to 4 (trackpad)
-> > > adb: finished probe task...
-> > > usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
-> > > usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2
-> > > hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
-> > > usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
-> > > eth2: Airport entering sleep mode
-> > > eth0: suspending, WakeOnLan disabled
-> > > Trying to free already-free IRQ 40
-> > > pci_set_power_state(): 0002:20:0e.0: state=3, current state=5
-> > > firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
-> 
-> I grepped the whole tree for firewire_ohci and came up blank.  What is it?
 
-See drivers/firewire/Makefile
+On Wed, 5 Sep 2007, Andreas Schwab wrote:
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+> Justin Piszcz <jpiszcz@lucidpixels.com> writes:
+>
+>> Is there anyway to get/see what parameters were passed to a kernel modul=
+e?
+>
+> /sys/module/<module>/parameters
+>
+> Andreas.
+>
+> --=20
+> Andreas Schwab, SuSE Labs, schwab@suse.de
+> SuSE Linux Products GmbH, Maxfeldstra=DFe 5, 90409 N=FCrnberg, Germany
+> PGP key fingerprint =3D 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED=
+5
+> "And now for something completely different."
+>
+
+And under 2.4?
+
+Justin.
+---1463747160-1231663185-1189013484=:22864--
