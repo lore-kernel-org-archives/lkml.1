@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbXIESZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932170AbXIESh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097AbXIESZS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 14:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbXIESZE
+	id S932170AbXIESh2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 14:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbXIEShS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 14:25:04 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45983 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753556AbXIESZB (ORCPT
+	Wed, 5 Sep 2007 14:37:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:19202 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754072AbXIEShO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 14:25:01 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46DEF44E.8070003@s5r6.in-berlin.de>
-Date: Wed, 05 Sep 2007 20:24:14 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
+	Wed, 5 Sep 2007 14:37:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=EOUhDy5zl0eiRshEeJlnBBFcDzvfoqTpMcC4hlqcG/Kjqxlk8Yi7JZxXLWX6VPuaJ3sSxjUf6Nu+26TcKBy9K0Os40i5/rhlVYGvGJOfPCzUoE9E/5gr0uQUE1o8A5/UoyupEqg7aHu/gKGVyyop22Z4/e1Wlasz/dlaEF401rE=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH 0/3] build system: section garbage collection for vmlinux
+Date: Wed, 5 Sep 2007 19:37:03 +0100
+User-Agent: KMail/1.9.1
+Cc: sam@ravnborg.org, kai@germaschewski.name, linux-kernel@vger.kernel.org
+References: <200709051443.21522.vda.linux@googlemail.com> <1189009748.4442.19.camel@imap.mvista.com>
+In-Reply-To: <1189009748.4442.19.camel@imap.mvista.com>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Tim Teulings <rael@edge.ping.de>, michal.k.k.piotrowski@gmail.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       debian-powerpc@lists.debian.org, rjw@sisk.pl,
-       linux-pm@lists.linux-foundation.org,
-       =?ISO-8859-1?Q?Kristian_H=F8gsber?= =?ISO-8859-1?Q?g?= 
-	<krh@redhat.com>
-Subject: Re: [PATCH] Re: Sleep problems with kernels >= 2.6.21 on powerpc
-References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com> <6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com> <20070827065246.GA21220@ime.usp.br> <46D279E8.10001@edge.ping.de> <46D72BC6.3020809@edge.ping.de> <20070905100754.57ab4e3e.akpm@linux-foundation.org> <46DEEBBE.4070201@s5r6.in-berlin.de> <tkrat.7174534bdd0ddaff@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.7174534bdd0ddaff@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709051937.04014.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rogério Brito wrote on 2007-08-27:
-> If things progress well, I will incrementally include features on the
-> kernel that I need (I left out, for instance, the Firewire subsystem, so
-> that compilation wouldn't take more than an hour here, despite the fact
-> that I do need Firewire support on the kernel) and see the point where
-> things are not normal.
+On Wednesday 05 September 2007 17:29, Daniel Walker wrote:
+> On Wed, 2007-09-05 at 14:43 +0100, Denys Vlasenko wrote:
+> > Build system: section garbage collection for vmlinux
+> > 
+> > 
+> > Newer gcc and binutils can do dead code and data removal
+> > at link time. It is achieved using combination of
+> > -ffunction-sections -fdata-sections options for gcc and
+> > --gc-sections for ld.
+> > 
+> > Theory of operation:
+> > 
+> > Option -ffunction-sections instructs gcc to place each function
+> > (including static ones) in it's own section named .text.function_name
+> > instead of placing all functions in one big .text section.
+> > 
+> > At link time, ld normally coalesce all such sections into one
+> > output section .text again. It is achieved by having *(.text.*) spec
+> > along with *(.text) spec in built-in linker scripts.
+> 
+> You version doesn't work with CONFIG_MODULES right?
 
-The trivial pci_set_power_state issue aside, resume is currently
-defective with the new firewire-ohci driver:
-  - The version in Linus' tree doesn't restore a certain detail of
-    IEEE 1394 state during resume, hence some protocols like SBP-2 don't
-    work after resume unless you unload and reload the drivers.
-  - The version in -mm restores everything but panics soon after resume
-    on an APM notebook in combination with some SBP-2 targets.  I have
-    yet to try netconsole or so to gather more information.
--- 
-Stefan Richter
--=====-=-=== =--= --=-=
-http://arcgraph.de/sr/
+It works with CONFIG_MODULES.
+
+> Also, why do you need this patch,
+> 
+> [PATCH 1/3] build system: section garbage collection for vmlinux
+
+Because otherwise, for example, .data.percpu sections we already have
+get picked up by *(.data.*), and then *(.data.percpu) end up empty:
+
+                __per_cpu_start = .;
+                       *(.data.percpu)
+                       *(.data.percpu.shared_aligned)
+                __per_cpu_end = .;
+
+and all hell breaks loose.
+
+We need to stop using sections named like
+
+.text.xxxx
+.data.xxxx
+.rodata.xxxx
+.bss.xxxx
+
+--
+vda
