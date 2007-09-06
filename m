@@ -1,99 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbXIFR2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbXIFRr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757394AbXIFR2O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 13:28:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbXIFR16
+	id S1757164AbXIFRr2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 13:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbXIFRrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 13:27:58 -0400
-Received: from mga03.intel.com ([143.182.124.21]:34167 "EHLO mga03.intel.com"
+	Thu, 6 Sep 2007 13:47:21 -0400
+Received: from mga03.intel.com ([143.182.124.21]:55830 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750936AbXIFR15 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 13:27:57 -0400
+	id S1754562AbXIFRrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 13:47:20 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.20,216,1186383600"; 
-   d="scan'208";a="273359359"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+   d="scan'208";a="273367081"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space access for AMD Barcelona
+Date: Thu, 6 Sep 2007 10:41:14 -0700
+User-Agent: KMail/1.9.7
+Cc: Arne Georg Gleditsch <argggh@dolphinics.no>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+References: <20070903081736.288288000@amd.com> <kjmps0w9ou8.fsf@pelargir.dolphinics.no> <46DFCCD9.2010306@zytor.com>
+In-Reply-To: <46DFCCD9.2010306@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch for Intel Tolapai
-Date: Thu, 6 Sep 2007 10:27:55 -0700
-Message-ID: <39B20DF628532344BC7A2692CB6AEE0701B9A4CA@orsmsx420.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch for Intel Tolapai
-thread-index: AcfroyjKgfQ2QoQvS56po7XeVOgmmgATkLwgAS5jbgA=
-References: <200708302127.19535.jason.d.gaston@intel.com> <46D7C783.8050803@pobox.com> 
-From: "Gaston, Jason D" <jason.d.gaston@intel.com>
-To: "Jeff Garzik" <jgarzik@pobox.com>
-Cc: <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       "Gaston, Jason D" <jason.d.gaston@intel.com>
-X-OriginalArrivalTime: 06 Sep 2007 17:27:56.0386 (UTC) FILETIME=[43611C20:01C7F0AB]
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709061041.15488.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Gaston, Jason D
->Sent: Friday, August 31, 2007 10:10 AM
->To: 'Jeff Garzik'
->Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
->Subject: RE: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch
-for
->Intel Tolapai
+On Thursday, September 6, 2007 2:48 am H. Peter Anvin wrote:
+> Arne Georg Gleditsch wrote:
+> > "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+> >> mmconfig is set in NB ( in new CPU), Do we still need to set
+> >> mmconfig in SB like mcp55?
+> >
+> > I wasn't aware that the family 10h-chips had MSRs for setting the
+> > mmconfig address space directly in the NB (core?).  Please
+> > disregard my previous comment...
 >
->This device has both AHCI and RAID modes that use the ahci driver.
-Only
->the RAID mode DID's are being added as the PCI class code support will
->cover the AHCI mode.  Looking at the Generic, PCI class code support
->section, it uses "board_ahci".  I assumed that they should be the same
-as
->the generic class code support is working on this platform.
->
->Thanks,
->
->Jason
->
->
->>-----Original Message-----
->>From: Jeff Garzik [mailto:jgarzik@pobox.com]
->>Sent: Friday, August 31, 2007 12:47 AM
->>To: Gaston, Jason D
->>Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
->>Subject: Re: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch
-for
->>Intel Tolapai
->>
->>Jason Gaston wrote:
->>> Resend trying to remove 8-bit characters in the email.
->>>
->>> This patch adds the Intel Tolapai RAID controller DID's for SATA
->support.
->>>
->>> Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
->>>
->>> --- linux-2.6.23-rc4/drivers/ata/ahci.c.orig	2007-08-27
->>18:32:35.000000000 -0700
->>> +++ linux-2.6.23-rc4/drivers/ata/ahci.c	2007-08-28
->16:58:11.000000000 -
->>0700
->>> @@ -411,6 +411,8 @@
->>>  	{ PCI_VDEVICE(INTEL, 0x292f), board_ahci_pi }, /* ICH9M */
->>>  	{ PCI_VDEVICE(INTEL, 0x294d), board_ahci_pi }, /* ICH9 */
->>>  	{ PCI_VDEVICE(INTEL, 0x294e), board_ahci_pi }, /* ICH9M */
->>> +	{ PCI_VDEVICE(INTEL, 0x502a), board_ahci }, /* Tolapai */
->>> +	{ PCI_VDEVICE(INTEL, 0x502b), board_ahci }, /* Tolapai */
->>
->>Why did you not use board_ahci_pi?  Is the AHCI ports-implemented
->>register unreliable on this platform?
+> Well, to a first order of approximations, *all* northbridges have
+> some sort of hardware registers to set mmconfig.  We were talking
+> yesterday that it might just make more sense to have code for various
+> northbridges to configure mmconfig directly, just like we do for IRQ
+> routing (we can't trust the BIOS there, either.)
 
-Jeff,
+The problem with doing that is it would mean reserving some address 
+space for mmconfig usage.  If the BIOS doesn't completely describe all 
+the reserved regions via e820 or similar (apparently a common problem) 
+we may end up making mmconfig overlap with another important area...  
+It's pretty hard not to trust the BIOS here without completely 
+replacing big chunks of it.
 
-Do I need to change this to board_ahci_pi or is it ok to leave it at
-board_ahci, which will be used by the AHCI class code devices?
-
-Thanks,
-
-Jason
+Jesse
