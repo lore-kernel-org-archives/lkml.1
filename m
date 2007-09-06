@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbXIFPGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757804AbXIFPKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757961AbXIFPGh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 11:06:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbXIFPGa
+	id S1757804AbXIFPKG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 11:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756133AbXIFPJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 11:06:30 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:56528 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754108AbXIFPG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 11:06:29 -0400
-Date: Thu, 6 Sep 2007 11:06:16 -0400
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: NFS4 authentification / fsuid
-Message-ID: <20070906150616.GA28565@fieldses.org>
-References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr> <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr> <1188486240.6755.51.camel@heimdal.trondhjem.org> <20070830214431.GF10808@fieldses.org> <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Thu, 6 Sep 2007 11:09:55 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:55069 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754917AbXIFPJy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 11:09:54 -0400
+Subject: Re: hda_intel : Patch + Regression in 2.6.18 -> 2.6.22
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, roger@computer-surgery.co.uk,
+       linux-kernel@vger.kernel.org, perex@suse.cz
+In-Reply-To: <s5hhcm96oza.wl%tiwai@suse.de>
+References: <20070822222902.GA28563@computer-surgery.co.uk> 
+	<20070905083844.6637da1e.akpm@linux-foundation.org> 
+	<s5hlkbl6qsn.wl%tiwai@suse.de> 
+	<20070905091633.87cfaa81.akpm@linux-foundation.org> 
+	<s5hhcm96oza.wl%tiwai@suse.de>
+Content-Type: text/plain;
+	charset=utf-8
+Date: Thu, 06 Sep 2007 17:09:50 +0200
+Message-Id: <1189091390.3212.3.camel@rukbat>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 06, 2007 at 01:44:05PM +0530, Satyam Sharma wrote:
-> /dev/kmem was just an example -- IMHO differentiating between kernel and
-> userspace from a security p.o.v. is always tricky.
+On Wed, 2007-09-05 at 18:44 +0200, Takashi Iwai wrote:
+> At Wed, 5 Sep 2007 09:16:33 -0700,
+> Andrew Morton wrote:
+> >
+> > > On Wed, 05 Sep 2007 18:05:44 +0200 Takashi Iwai <tiwai@suse.de> wrote:
+> > > Roger, could you try git-alsa patch in the latest mm together with
+> > > model=acer-aspiore option?  If it works, I can easily add your device
+> > > ID to the table.
+> >
+> > http://userweb.kernel.org/~akpm/git-alsa.patch is a copy of the alsa git
+> > tree as of two minutes ago.  That applies against current Linus mainline,
+> > but should apply OK on 2.6.23-rc5 as well.  Please test that, thanks.
+> >
+> > Takashi, perhaps that is 2.6.23 material?
+>
+> The changes for Acer Aspire is quite big, surely not for 2.6.23.
+> Let's fix in 2.6.24 in a better way than a temporary hack (that
+> would work only in a very limited way).
 
-The things that come to mind are /dev/kmem and module-loading.  What
-else is there?  And what is it that makes this inherently difficult?
+Just one hand up: I haven't tested the patch pointed to by Andrew, will
+do asap, but it seems that contains the changes from
 
-> Like Trond said, there are very high number of ways in which
-> privileged userspace can compromise a running kernel if it really
-> wants to do that, root-is-God has always been *the* major problem with
-> Unix :-)
-> 
-> The only _real_ way a kernel can lock itself completely against
-> malicious userspace involves trusted tamperproof hardware,
+https://bugtrack.alsa-project.org/alsa-bug/view.php?id=3104
 
-The question of how to protect against someone with *physical* access
-certainly is more difficult, but surely that's a separate problem.
+which are needed to have sound at all on my toshiba (although with some
+remaining problems). I am not able to say if it's .23 material or not,
+nor if it's a regression or not, being this a quite new laptop... but
+maybe it's better to have a release with some sound and then fix it
+properly after?
 
---b.
+Thanks for your hard work,
+
+	Romano
+
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
+
