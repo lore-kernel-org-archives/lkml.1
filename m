@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbXIFJwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbXIFJ5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756839AbXIFJwn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 05:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbXIFJwf
+	id S1756155AbXIFJ5K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 05:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbXIFJ45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 05:52:35 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39262 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751639AbXIFJwf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 05:52:35 -0400
-Message-ID: <46DFCCD9.2010306@zytor.com>
-Date: Thu, 06 Sep 2007 10:48:09 +0100
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Thu, 6 Sep 2007 05:56:57 -0400
+Received: from gw.goop.org ([64.81.55.164]:38632 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753541AbXIFJ44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 05:56:56 -0400
+Message-ID: <46DFCEE3.8010903@goop.org>
+Date: Thu, 06 Sep 2007 10:56:51 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Arne Georg Gleditsch <argggh@dolphinics.no>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space access
- for AMD Barcelona
-References: <20070903081736.288288000@amd.com>	<20070903013157.72c94891@laptopd505.fenrus.org>	<20070903091718.GB22144@alberich.amd.com>	<20070903043319.7573875b@laptopd505.fenrus.org>	<20070903154734.GC22086@alberich.amd.com> <46DE45A2.40403@zytor.com>	<20070905084427.GE6409@erda.amd.com> <46DE80F0.4000706@zytor.com>	<kjmd4wxz822.fsf@pelargir.dolphinics.no>	<20070905161300.GE22086@alberich.amd.com>	<86802c440709051542w1950e28bhb21cf5c380527a6e@mail.gmail.com> <kjmps0w9ou8.fsf@pelargir.dolphinics.no>
-In-Reply-To: <kjmps0w9ou8.fsf@pelargir.dolphinics.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <ak@suse.de>
+CC: Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Chris Wright <chrisw@sous-sol.org>,
+       stable@kernel.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+Subject: Re: [PATCH] Fix preemptible lazy mode bug
+References: <46CE70C8.2030005@vmware.com> <1189024666.10802.197.camel@localhost.localdomain> <1189036175.21516.31.camel@bodhitayantram.eng.vmware.com> <200709060641.36855.ak@suse.de>
+In-Reply-To: <200709060641.36855.ak@suse.de>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arne Georg Gleditsch wrote:
-> "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
->> mmconfig is set in NB ( in new CPU), Do we still need to set mmconfig
->> in SB like mcp55?
-> 
-> I wasn't aware that the family 10h-chips had MSRs for setting the
-> mmconfig address space directly in the NB (core?).  Please disregard
-> my previous comment...
-> 
+Andi Kleen wrote:
+>> ; it does
+>> seem perfectly acceptable though for the mm code to use kmap or vmap
+>> (not kmap_atomic) internally somewhere in the pagetable code.
+>>     
+>
+> i386 does it all the time for highmem pagetables in fact.
+>   
 
-Well, to a first order of approximations, *all* northbridges have some 
-sort of hardware registers to set mmconfig.  We were talking yesterday 
-that it might just make more sense to have code for various northbridges 
-to configure mmconfig directly, just like we do for IRQ routing (we 
-can't trust the BIOS there, either.)
+Yes, it uses kmap_atomic(_pte) all the time.  Is that what you meant?
 
-	-hpa
+    J
