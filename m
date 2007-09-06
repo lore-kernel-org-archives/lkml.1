@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbXIFMt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbXIFM5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932409AbXIFMt1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 08:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbXIFMtT
+	id S1757437AbXIFM5d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 08:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbXIFM5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 08:49:19 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:33468 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756623AbXIFMtS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 08:49:18 -0400
-Date: Thu, 6 Sep 2007 14:49:17 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: davide rossetti <davide.rossetti@gmail.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: origin of __tmp1930643048 network device name: kernel-space or
- user-space
-In-Reply-To: <6e7a378f0709041014m24448117s96d6f9b60fad7872@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0709061448390.25942@fbirervta.pbzchgretzou.qr>
-References: <6e7a378f0709041014m24448117s96d6f9b60fad7872@mail.gmail.com>
+	Thu, 6 Sep 2007 08:57:24 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4550 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754153AbXIFM5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 08:57:23 -0400
+Date: Thu, 6 Sep 2007 08:55:54 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Patrick McHardy <kaber@trash.net>,
+       adam@yggdrasil.com, jcm@jonmasters.org,
+       netfilter-devel@lists.netfilter.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Fix (improve) deadlock condition on module removal netfilter socket option removal
+Message-ID: <20070906125554.GB31868@hmsreliant.think-freely.org>
+References: <20070904202433.GA19083@hmsreliant.think-freely.org> <46DEC9BF.9010807@trash.net> <1189008806.10802.150.camel@localhost.localdomain> <20070905170831.GA25050@hmsreliant.think-freely.org> <1189014097.10802.174.camel@localhost.localdomain> <20070905192744.GB25050@hmsreliant.think-freely.org> <1189028351.12261.166.camel@jcmlaptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1189028351.12261.166.camel@jcmlaptop>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 05, 2007 at 05:39:11PM -0400, Jon Masters wrote:
+> On Wed, 2007-09-05 at 15:27 -0400, Neil Horman wrote:
+> 
+> > Now, I suppose its possible that I've not been looking at the right source tree
+> > when doing my work.  I've based my modprobe patch on this git tree:
+> > http://git.kernel.org/?p=linux/kernel/git/kyle/module-init-tools.git;a=summary
+> > If theres a newer one, if you could please point it out to me, I'd appreciate
+> > it.  If the functional equivalent of my second patch is already in there, then
+> > we just need my first patch to be good to go.
+> 
+> Neil, please test:
+> 
+> http://www.kernel.org/pub/linux/kernel/people/jcm/module-init-tools/module-init-tools-3.3-pre12.tar.bz2
+> 
+> Jon.
+> 
+Good to go.  Thanks Jon!
+Neil
 
-On Sep 4 2007 19:14, davide rossetti wrote:
->
->dear all,
->I'm trying to track down a problem on a Sun V40Z server with 4 network
->devices grabbing random ethX device names. now, trying to force the
->device names to what I want, I got a __tmpXXXXX form of device name,
->which I think is a half-configured device... but which piece of
->software is to blame ??? kernel, udev, hotplug
 
-
-Look into dmesg. If the device was once known as ethX or similar,
-then it is userspace to blame.
-
-
-
-	Jan
 -- 
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
