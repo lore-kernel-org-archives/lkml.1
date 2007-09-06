@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932857AbXIFXIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932860AbXIFXWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932857AbXIFXIW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 19:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932575AbXIFXIO
+	id S932860AbXIFXWW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 19:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932578AbXIFXWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 19:08:14 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43361 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932474AbXIFXIO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 19:08:14 -0400
-Date: Thu, 6 Sep 2007 16:04:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: mathieu.desnoyers@polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/6] Linux Kernel Markers - Architecture Independent
- Code
-Message-Id: <20070906160429.629c9497.akpm@linux-foundation.org>
-In-Reply-To: <20070906160001.cfe48d78.randy.dunlap@oracle.com>
-References: <20070906200733.194442762@polymtl.ca>
-	<20070906200825.893834634@polymtl.ca>
-	<20070906160001.cfe48d78.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
+	Thu, 6 Sep 2007 19:22:14 -0400
+Received: from pat.uio.no ([129.240.10.15]:40145 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932593AbXIFXWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 19:22:13 -0400
+Subject: Re: NFS4 authentification / fsuid
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Satyam Sharma <satyam@infradead.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070906151118.GB28565@fieldses.org>
+References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr>
+	 <1188484155.6755.38.camel@heimdal.trondhjem.org>
+	 <1188484337.6755.41.camel@heimdal.trondhjem.org>
+	 <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr>
+	 <1188486240.6755.51.camel@heimdal.trondhjem.org>
+	 <20070830214431.GF10808@fieldses.org>
+	 <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in>
+	 <alpine.LFD.0.999.0709061355350.3781@enigma.security.iitk.ac.in>
+	 <20070906151118.GB28565@fieldses.org>
+Content-Type: text/plain
+Date: Fri, 07 Sep 2007 01:21:50 +0200
+Message-Id: <1189120910.6672.30.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
+X-UiO-Scanned: BDAFD61DF66B32C9CF6480FEA23A145743CBAED8
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 102 total 3719373 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 6 Sep 2007 16:00:01 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Thu, 06 Sep 2007 16:07:34 -0400 Mathieu Desnoyers wrote:
+On Thu, 2007-09-06 at 11:11 -0400, J. Bruce Fields wrote:
+> On Thu, Sep 06, 2007 at 01:59:50PM +0530, Satyam Sharma wrote:
+> > Oh and btw, note that we're talking of the (lack of) security of a
+> > "running kernel" here -- because across reboots, there is /really/
+> > *absolutely* no such thing as "kernelspace security" because the superuser
+> > will simply switch the vmlinuz itself ...
 > 
-> > Changelog:
-> > - markers_mutex now nests inside module_mutex rather than the opposite.
-> > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > Reviewed-by: Christoph Hellwig <hch@infradead.org>
-> > Reviewed-by: Rusty Russell <rusty@rustcorp.com.au>
-> > Reviewed-by: "Frank Ch. Eigler" <fche@redhat.com>
-> 
-> Documentation/SubmittingPatches recognizes Signed-off-by: and
-> Acked-by:.  Nothing about Reviewed-by.  Quote:
-> 
->   Acked-by: is not as formal as Signed-off-by:.  It is a record that the acker
->   has at least reviewed the patch and has indicated acceptance.
-> 
-> Reviewed-by: carries no such connotation or indication IMO.
-> Please use Acked-by if that's what these reviewers have done.
+> Well, the machine could be booting from cdrom, and could live in a
+> locked machine room.  Or people with root on a virtual host don't
+> necessarily have the ability to replace the kernel for that host.
 
-Yeah.  We will start introducing Reviewed-by: (I haven't yet quite worked
-out how yet) but it will be a quite formal thing and it would be something
-which the reviewer explicitly provided.  For now, let's please stick with
-acked-by (if those individuals did indeed send an acked-by)
+mount -t tmpfs none /my_tmpfs
+cd /my_tmpfs
+cp -a /bin bin
+cp -p my_keylogging_pam_module.so lib
+pivot_root . /old-root
+
+to take another example....
+
