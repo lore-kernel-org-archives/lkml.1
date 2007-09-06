@@ -1,110 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbXIFKNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbXIFKQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756155AbXIFKNr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 06:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbXIFKNj
+	id S1755940AbXIFKQL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 06:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbXIFKP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 06:13:39 -0400
-Received: from lec.cs.unibo.it ([130.136.1.103]:53222 "EHLO lec.cs.unibo.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751077AbXIFKNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 06:13:39 -0400
-Date: Thu, 6 Sep 2007 11:38:44 +0200
-To: linux-kernel@vger.kernel.org
-Cc: "Mathiasen, Torben" <Torben.Mathiasen@hp.com>
-Subject: [PATCH] drivers/char/misc.c: deprecated call register_chrdev, and 256 minor limit eliminated
-Message-ID: <20070906093844.GC8222@cs.unibo.it>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="5QAgd0e35j3NYeGe"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: renzo@cs.unibo.it (Renzo Davoli)
+	Thu, 6 Sep 2007 06:15:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36402 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751085AbXIFKP5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 06:15:57 -0400
+Date: Thu, 6 Sep 2007 11:14:37 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "Robert Richter" <robert.richter@amd.com>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space access
+ for AMD Barcelona
+Message-ID: <20070906111437.76343d44@laptopd505.fenrus.org>
+In-Reply-To: <20070905150027.GD22086@alberich.amd.com>
+References: <20070903081736.288288000@amd.com>
+	<20070903081736.588599000@amd.com>
+	<20070903013157.72c94891@laptopd505.fenrus.org>
+	<20070903091718.GB22144@alberich.amd.com>
+	<20070903043319.7573875b@laptopd505.fenrus.org>
+	<20070903154734.GC22086@alberich.amd.com>
+	<46DE45A2.40403@zytor.com>
+	<20070905150027.GD22086@alberich.amd.com>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 5 Sep 2007 17:00:27 +0200
+"Andreas Herrmann" <andreas.herrmann3@amd.com> wrote:
 
---5QAgd0e35j3NYeGe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On Wed, Sep 05, 2007 at 06:58:58AM +0100, H. Peter Anvin wrote:
+> > Well, they don't add any functionality, do they?
+> 
+> They allow CF8/CFC to access ECS in cases where mmcfg is not working.
+> 
 
-Dear Kernel Developers,
-
-I have seen that drivers/char/misc.c already used the deprecated 
-register_chrdev call and this limited the number of minors to 256.
-
-I recetly asked for a misc minor number attribution for View-OS/kmview
-and Torben Mathiasen told me about this issue.
-
-I propose this patch that eliminate both problems. With this patch 
-misc allocates the entire major 10 and avoids the deprecated call.
-
-These are just my 2 (euro) cents, I hope it can be useful.
-
-	renzo
--- 
-============================================================================
-Renzo Davoli				| Dept. of Computer Science
-(NIC rd235, HAM IZ4DJE)                 | University of Bologna	
-Tel. +39 051 2094501			| Mura Anteo Zamboni, 7
-Fax. +39 051 2094510			| I-40127 Bologna  ITALY
-Key fingerprint = A019 17E2 5562 06F6 77BB  2E93 1A01 F646 30EA B487
-============================================================================
-
---5QAgd0e35j3NYeGe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="drivers_char_misc.patch"
-
---- drivers/char/misc.orig.c	2007-08-05 16:56:59.000000000 +0200
-+++ drivers/char/misc.c	2007-09-06 11:07:51.000000000 +0200
-@@ -56,6 +56,8 @@
- static LIST_HEAD(misc_list);
- static DEFINE_MUTEX(misc_mtx);
- 
-+static struct cdev misc_cdev;
-+
- /*
-  * Assigned numbers, used for dynamic minors
-  */
-@@ -273,6 +275,31 @@
- EXPORT_SYMBOL(misc_register);
- EXPORT_SYMBOL(misc_deregister);
- 
-+static int misc_register_chrdev(void)
-+{
-+	dev_t from=MKDEV(MISC_MAJOR,0);
-+	int rv;
-+	int err = -ENOMEM;
-+	char *s;
-+
-+	if ((rv=register_chrdev_region(from,MINORMASK,"misc")) != 0)
-+		return rv;
-+
-+	cdev_init(&misc_cdev, &misc_fops);
-+	misc_cdev.owner=misc_fops.owner;
-+	kobject_set_name(&misc_cdev.kobj, "%s", "misc");
-+	for (s = strchr(kobject_name(&misc_cdev.kobj),'/'); s; s = strchr(s, '/'))
-+		    *s = '!';
-+	err = cdev_add(&misc_cdev, from, MINORMASK);
-+	if (err)
-+		goto out;
-+	return 0;
-+out:
-+	kobject_put(&misc_cdev.kobj);
-+	unregister_chrdev_region(from,MINORMASK);
-+  return err;
-+}
-+
- static int __init misc_init(void)
- {
- #ifdef CONFIG_PROC_FS
-@@ -286,7 +313,7 @@
- 	if (IS_ERR(misc_class))
- 		return PTR_ERR(misc_class);
- 
--	if (register_chrdev(MISC_MAJOR,"misc",&misc_fops)) {
-+	if (misc_register_chrdev()) {
- 		printk("unable to get major %d for misc devices\n",
- 		       MISC_MAJOR);
- 		class_destroy(misc_class);
-
---5QAgd0e35j3NYeGe--
+just for the record; I have absolutely no problem with allowing the new
+cf8 method (I'm assuming that it's obvious that if mmio is available,
+that will be used instead for performance reasons). What I was/am
+concerned/uncomfortable about is keying this off the CPU level rather
+than a PCI level property; I much rather would see this keyed of, say,
+the PCI ID of the root bridge, or ideally from some PCI property.
