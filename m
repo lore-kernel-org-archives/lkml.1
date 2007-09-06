@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbXIFNj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbXIFNil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758221AbXIFNj0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 09:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756436AbXIFNjB
+	id S1758154AbXIFNil (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 09:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbXIFNib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 09:39:01 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53364 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756216AbXIFNjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 09:39:00 -0400
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 06 Sep 2007 15:38:58 +0200
-From: "Michael Kerrisk" <mtk-manpages@gmx.net>
-In-Reply-To: <a36005b50709060434u35d8db01n7cc448e98fdbdd37@mail.gmail.com>
-Message-ID: <20070906133858.19080@gmx.net>
-MIME-Version: 1.0
-References: <200705312320.l4VNKS44030545@shell0.pdx.osdl.net>	
- <46DEFD3F.8020502@gmx.net>
- <a36005b50709060434u35d8db01n7cc448e98fdbdd37@mail.gmail.com>
-Subject: Re: O_CLOEXEC / MSG_CMSG_CLOEXEC documentation
-To: "Ulrich Drepper" <drepper@gmail.com>
-X-Authenticated: #24879014
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1+5mTJ3+fS5tcUR03H2kKZhsCle4Q0TxNXitGTfvr
- 2coTUnz17zSflpRgEVJ//15IZRkI0yMZBEaw== 
+	Thu, 6 Sep 2007 09:38:31 -0400
+Received: from panic.printk.net ([217.147.83.20]:59416 "EHLO panic.printk.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757495AbXIFNia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 09:38:30 -0400
+Subject: Re: [PATCH 0/2] Fix (improve) deadlock condition on module removal
+	netfilter socket option removal
+From: Jon Masters <jonathan@jonmasters.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Patrick McHardy <kaber@trash.net>,
+       adam@yggdrasil.com, jcm@jonmasters.org,
+       netfilter-devel@lists.netfilter.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070906125554.GB31868@hmsreliant.think-freely.org>
+References: <20070904202433.GA19083@hmsreliant.think-freely.org>
+	 <46DEC9BF.9010807@trash.net>
+	 <1189008806.10802.150.camel@localhost.localdomain>
+	 <20070905170831.GA25050@hmsreliant.think-freely.org>
+	 <1189014097.10802.174.camel@localhost.localdomain>
+	 <20070905192744.GB25050@hmsreliant.think-freely.org>
+	 <1189028351.12261.166.camel@jcmlaptop>
+	 <20070906125554.GB31868@hmsreliant.think-freely.org>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Thu, 06 Sep 2007 09:35:32 -0400
+Message-Id: <1189085732.12261.187.camel@jcmlaptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-X-GMX-UID: yjXTcjZ1f2IsOfH2F21oqXZ4dWxlc1Zm
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich,
+On Thu, 2007-09-06 at 08:55 -0400, Neil Horman wrote:
+> On Wed, Sep 05, 2007 at 05:39:11PM -0400, Jon Masters wrote:
+> > On Wed, 2007-09-05 at 15:27 -0400, Neil Horman wrote:
+> > 
+> > > Now, I suppose its possible that I've not been looking at the right source tree
+> > > when doing my work.  I've based my modprobe patch on this git tree:
+> > > http://git.kernel.org/?p=linux/kernel/git/kyle/module-init-tools.git;a=summary
+> > > If theres a newer one, if you could please point it out to me, I'd appreciate
+> > > it.  If the functional equivalent of my second patch is already in there, then
+> > > we just need my first patch to be good to go.
+> > 
+> > Neil, please test:
+> > 
+> > http://www.kernel.org/pub/linux/kernel/people/jcm/module-init-tools/module-init-tools-3.3-pre12.tar.bz2
+> > 
+> > Jon.
+> > 
+> Good to go.  Thanks Jon!
 
-> On 9/5/07, Michael Kerrisk <mtk-manpages@gmx.net> wrote:
-> >     O_CLOEXEC (Since Linux 2.6.23)
-> >           Enable   the  close-on-exec  flag  for  the  new  file
-> >           descriptor.  This is useful in multithreaded  programs
-> >           since  using  a separate fcntl(2) F_SETFD operation to
-> >           set the FD_CLOEXEC flag does not suffice to avoid race
-> >           conditions  in multithreaded programs where one thread
-> >           opens a file descriptor at the same  time  as  another
-> >           thread does a fork(2) plus execve(2).
-> 
-> Correct,
+Yeah, except I need to play "listen to Rusty" and "Rusty knows best",
+then refix it again, after doing so (see his email).
 
-Good.  Thanks.
+Jon.
 
-> although you might want to reconsider the repetition of "in
-> multithreaded programs".
-
-Yes.
-
-> Plus, it's also useful in other programs since it avoids the
-> additional system call to fcntl.
-
-Okay, I may add some words about this.
-
-Cheers,
-
-Michael
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
-
-Want to help with man page maintenance?  
-Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages , 
-read the HOWTOHELP file and grep the source 
-files for 'FIXME'.
 
