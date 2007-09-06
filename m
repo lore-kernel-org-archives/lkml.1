@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932316AbXIFMfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbXIFMiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932316AbXIFMfU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 08:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757970AbXIFMe7
+	id S1757653AbXIFMiu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 08:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbXIFMik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 08:34:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47387 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756565AbXIFMe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 08:34:58 -0400
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: James Pearson <james-p@moving-picture.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Guy Streeter <guy.streeter@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 4096 byte limit to /proc/PID/environ ?
-References: <4474B7DB.8000304@moving-picture.com>
-	<200605242029.k4OKTn9C031700@terminus.zytor.com>
-	<447EF58C.6000605@moving-picture.com>
-	<52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com>
-	<46C33700.1060605@zytor.com> <46D6CBED.4040301@moving-picture.com>
-	<h87in5sgal.fsf@pepelac.englab.brq.redhat.com>
-	<46DE6196.3050605@zytor.com> <46DEE0C9.1000402@moving-picture.com>
-	<Pine.LNX.4.64.0709061429331.25942@fbirervta.pbzchgretzou.qr>
-From: Anton Arapov <aarapov@redhat.com>
-X-URL: http://people.redhat.com/aarapov
-Date: Thu, 06 Sep 2007 14:34:51 +0200
-In-Reply-To: <Pine.LNX.4.64.0709061429331.25942@fbirervta.pbzchgretzou.qr> (Jan Engelhardt's message of "Thu\, 6 Sep 2007 14\:31\:28 +0200 \(CEST\)")
-Message-ID: <h8wsv4nf9w.fsf@pepelac.englab.brq.redhat.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 6 Sep 2007 08:38:40 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2274 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755488AbXIFMij (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 08:38:39 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: johannes@sipsolutions.net (Johannes Berg)
+Subject: Re: BUG: scheduling while atomic: ifconfig/0x00000002/4170
+Cc: herbert@gondor.apana.org.au, satyam@infradead.org, flo@rfc822.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, michal.k.k.piotrowski@gmail.com,
+       ipw3945-devel@lists.sourceforge.net, yi.zhu@intel.com,
+       flamingice@sourmilk.net
+Organization: Core
+In-Reply-To: <1189080575.28781.65.camel@johannes.berg>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev,apana.lists.os.linux.wireless
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1ITGb2-0006Be-00@gondolin.me.apana.org.au>
+Date: Thu, 06 Sep 2007 20:36:32 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt <jengelh@computergmbh.de> writes:
-> On Sep 5 2007 18:00, James Pearson wrote:
->>
->> OK, here is the patch (without the long line) against 2.6.23-rc5 - what else
->> needs to be done to get it committed?
+Johannes Berg <johannes@sipsolutions.net> wrote:
 >
-> Someone has to point out CodingStyle, so I'll ruin everyone's day now :)
->
-  Already pointed out! :) By Alexey Dobriyan. 
+> Hah, I suspected as much but didn't have a chance to look yet. I had
+> plans to replace that sub_if_list with an RCU list and not require the
+> lock there, but that's far off. Any ideas how to fix this? We can't
+> reject the master stop so we have to walk the list, I guess we'll have
+> to audit the other list manipulation places, I think they're all under
+> RTNL.
 
->> +static ssize_t environ_read(struct file * file, char __user * buf,
->                                             ^                   ^
-> be gone these spaces.
->
->> +       while (count > 0) {
->> +               int this_len, retval;
->> +
->> +               this_len = mm->env_end - (mm->env_start + src);
->> +
->> +               if (this_len <= 0) {
->> +                       break;
->> +               }
->
-> Be gone, braces.
->
->
->
+Yeah I think they're all under RTNL too.  So you don't need to
+take the lock here at all since you should already have the RTNL.
 
+Cheers,
 -- 
-Anton Arapov, <aarapov@redhat.com>
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
