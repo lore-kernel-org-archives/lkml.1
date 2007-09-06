@@ -1,30 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbXIFUEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbXIFUEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758584AbXIFUEb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 16:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932556AbXIFUDU
+	id S1758656AbXIFUEu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 16:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932553AbXIFUDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 16:03:20 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:39668 "EHLO smtp.polymtl.ca"
+	Thu, 6 Sep 2007 16:03:21 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:39670 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932557AbXIFUDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 16:03:18 -0400
-Message-Id: <20070906200228.086651361@polymtl.ca>
+	id S932563AbXIFUDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 16:03:19 -0400
+Message-Id: <20070906200314.079453533@polymtl.ca>
+References: <20070906200228.086651361@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 06 Sep 2007 16:02:28 -0400
+Date: Thu, 06 Sep 2007 16:02:29 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [patch 0/8] Immediate Values for 2.6.23-rc4-mm1
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 1/8] Immediate Values - Global Modules List and Module Mutex
+Content-Disposition: inline; filename=immediate-values-global-modules-list-and-mutex.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Sep 2007 20:03:14 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Remove "static" from module_mutex and the modules list so it can be used by
+other builtin objects in the kernel. Otherwise, every code depending on the
+module list would have to be put in kernel/module.c. Since the immediate values
+depends on the module list but can be considered as logically different, it
+makes sense to implement them in their own file.
 
-Here are the clean/tested/updated immediate values for 2.6.23-rc4-mm1. They
-should be all good now.
+The alternative to this would be to disable preemption in code path that need
+such synchronization, so they can be protected against module unload by
+stop_machine(), but not being able to sleep within while needing such
+synchronization is limiting.
 
-Mathieu
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ include/linux/module.h |    4 ++++
+ kernel/module.c        |    4 ++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+Index: linux-2.6-lttng/kernel/module.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/module.c	2007-08-07 11:03:56.000000000 -0400
++++ linux-2.6-lttng/kernel/module.c	2007-08-07 11:40:22.000000000 -0400
+@@ -64,8 +64,8 @@ extern int module_sysfs_initialized;
+ 
+ /* List of modules, protected by module_mutex or preempt_disable
+  * (add/delete uses stop_machine). */
+-static DEFINE_MUTEX(module_mutex);
+-static LIST_HEAD(modules);
++DEFINE_MUTEX(module_mutex);
++LIST_HEAD(modules);
+ static DECLARE_MUTEX(notify_mutex);
+ 
+ static BLOCKING_NOTIFIER_HEAD(module_notify_list);
+Index: linux-2.6-lttng/include/linux/module.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/module.h	2007-08-07 11:03:48.000000000 -0400
++++ linux-2.6-lttng/include/linux/module.h	2007-08-07 11:39:55.000000000 -0400
+@@ -60,6 +60,10 @@ struct module_kobject
+ 	struct kobject *drivers_dir;
+ };
+ 
++/* Protects the list of modules. */
++extern struct mutex module_mutex;
++extern struct list_head modules;
++
+ /* These are either module local, or the kernel's dummy ones. */
+ extern int init_module(void);
+ extern void cleanup_module(void);
 
 -- 
 Mathieu Desnoyers
