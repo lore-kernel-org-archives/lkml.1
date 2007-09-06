@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbXIFOGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbXIFOLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755022AbXIFOGy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 10:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbXIFOGr
+	id S1756592AbXIFOLR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 10:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbXIFOLB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 10:06:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35559 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751660AbXIFOGq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 10:06:46 -0400
-Message-ID: <46E00962.7080903@zytor.com>
-Date: Thu, 06 Sep 2007 15:06:26 +0100
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add CONFIG_VT_UNICODE
-References: <20070831201820.GF31970@nostromo.devel.redhat.com> <46D9D587.9020605@zytor.com> <Pine.LNX.4.64.0709061404120.25942@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0709061404120.25942@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 6 Sep 2007 10:11:01 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:34634 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbXIFOLB (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 10:11:01 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc4-mm1 - git-alsa.patch breaks audio on Dell Latitude D820
+In-Reply-To: Your message of "Wed, 05 Sep 2007 23:39:45 +0200."
+             <s5hlkbkx04e.wl%tiwai@suse.de>
+From: Valdis.Kletnieks@vt.edu
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <4658.1189021594@turing-police.cc.vt.edu> <s5hir6orhxz.wl%tiwai@suse.de> <s5hfy1srh6w.wl%tiwai@suse.de> <3705.1189027009@turing-police.cc.vt.edu>
+            <s5hlkbkx04e.wl%tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1189087854_2844P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Thu, 06 Sep 2007 10:10:54 -0400
+Message-ID: <21226.1189087854@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> 
-> sysfs, and you were on the discussion (your idea won, basically....)
-> And the way I see it, it got merged.
-> Commit 042f10ec6533e53181284c96d22ae051e49ac707
-> 
-> As I further see it, this CONFIG_VT_UNICODE patch defines the 
-> starting value for the default.
-> 
-> E.g. CONFIG_VT_UNICODE=y, you start with utf8, and can, at will, at 
-> runtime, change it. CONFIG_VT_UNICODE=n, you start with 8bit, and can, 
-> at will, at runtime, too, change it ;-)
-> 
+--==_Exmh_1189087854_2844P
+Content-Type: text/plain; charset=us-ascii
 
-Hmmm...
+On Wed, 05 Sep 2007 23:39:45 +0200, Takashi Iwai said:
+> At Wed, 05 Sep 2007 17:16:49 -0400, Valdis.Kletnieks@vt.edu wrote:
+> > modprobe snd_hda_intel model=dell-m23 
+> > 
+> > was the magic incantation.  I'm sure that every user who trips over this
+> > is going to call it a regression, since the -rc3-mm1 module was able to
+> > get it right without hints. ;)
+> 
+> Well, it's indeed a regression.  There seems to be mistakes in the pin
+> configuration orders. 
+> 
+> Could you try the patch below (without model option)?
 
-Personally I'd suggest making it the default unless overridden in 
-/etc/sysctl.conf.  My second preference would be a command-line option, 
-not a compile-time default.
+That patch makes it work as expected, at least on my Dell.  Do we need to
+find testers for the other 9 varieties of Dell Sigmatel chipsets, or was it
+the same basic error on all 10, so if it works on one it should be OK for
+the others?
 
-This is 2007, after all, and it seems Unicode should be the default, 
-anything else legacy...
 
-	-hpa
+--==_Exmh_1189087854_2844P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG4ApucC3lWbTT17ARAnKTAJ0VdlR9IZBj2JrqZsCQrXu7YzaZ9ACg6T+8
+g4VZIlmI0N68vhvhitH/YOg=
+=tToF
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1189087854_2844P--
