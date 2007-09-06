@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbXIFKmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXIFKoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757243AbXIFKmu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 06:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbXIFKmn
+	id S1757213AbXIFKoa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 06:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbXIFKoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 06:42:43 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:34257 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753745AbXIFKmm (ORCPT
+	Thu, 6 Sep 2007 06:44:23 -0400
+Received: from smtp.nokia.com ([131.228.20.171]:47340 "EHLO
+	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751017AbXIFKoW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 06:42:42 -0400
-Date: Thu, 6 Sep 2007 03:38:22 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       planetccrma@ccrma.Stanford.EDU
-Subject: Re: 2.6.22.6 + rt9: suspend/hibernate not working
-Message-ID: <20070906033822.GA6940@ucw.cz>
-References: <1188951154.26511.90.camel@cmn3.stanford.edu>
+	Thu, 6 Sep 2007 06:44:22 -0400
+Message-ID: <46DFD9F7.9070109@nokia.com>
+Date: Thu, 06 Sep 2007 13:44:07 +0300
+From: Stefan Becker <Stefan.Becker@nokia.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1188951154.26511.90.camel@cmn3.stanford.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Dave Jones <davej@redhat.com>, Stefan Becker <Stefan.Becker@nokia.com>,
+       ext Andi Kleen <andi@firstfloor.org>,
+       ext Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [pre-2.6.23 REGRESSION] 2.6.23-rc3-git1 crash/stuck on VIA	CN700
+ system
+References: <46C9D148.5080505@nokia.com> <p734pibbbex.fsf@bingen.suse.de> <46DDA366.8090806@nokia.com> <20070905102525.GB31880@one.firstfloor.org> <46DECDC9.9050407@nokia.com> <20070905163724.GC31880@one.firstfloor.org> <46DF0257.5050303@nokia.com> <20070906104102.GA14070@redhat.com>
+In-Reply-To: <20070906104102.GA14070@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Sep 2007 10:44:08.0417 (UTC) FILETIME=[DA626D10:01C7F072]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi,
 
-> Hi Ingo... I'm getting reports from some of my Planet CCRMA users (which
-> I confirmed) that the latest rt kernel I released has broken suspend
-> (tested on fc6 & fc7, stock Fedora kernel works fine - the rt
-> configuration files are virtual clones as far as possible of the
-> standard Fedora kernel config files). 
+ext Dave Jones wrote:
 > 
-> I don't know where to start debugging this. When suspend is initiated it
-> freezes with a "Stopping tasks ... " message in the text console - a
-> hard power cycle is the only way to get the machine back to normal.
+> Could be that even though it advertises clflush support there are
+> errata on some revs of the CPU.  Can you paste your /proc/cpuinfo,
+> and I'll check with VIA to find out if they're aware of any
+> known problems and if so, find out the range of steppings we
+> need to not use clflush on.
 
-It should print what went wrong about ~20 seconds. If it does not,
-verify that timers work properly for you.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Please see <http://lkml.org/lkml/2007/9/5/135>
+
+Regards,
+
+	Stefan
+
+---
+Stefan Becker
+E-Mail: Stefan.Becker@nokia.com
