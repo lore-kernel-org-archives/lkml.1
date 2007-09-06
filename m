@@ -1,58 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbXIFKAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbXIFKEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757314AbXIFKAO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 06:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbXIFKAA
+	id S1757216AbXIFKEl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 06:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbXIFKEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 06:00:00 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:58304 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752212AbXIFJ77 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 05:59:59 -0400
-Subject: Re: [2/2] 2.6.23-rc5: known regressions with patches
-From: David Woodhouse <dwmw2@infradead.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <46DBDDC6.9030602@googlemail.com>
-References: <46DBDCF4.6040805@googlemail.com>
-	 <46DBDDC6.9030602@googlemail.com>
-Content-Type: text/plain
-Date: Thu, 06 Sep 2007 10:59:59 +0100
-Message-Id: <1189072799.2745.68.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-3.fc7.dwmw2.1) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 6 Sep 2007 06:04:34 -0400
+Received: from leb.cs.unibo.it ([130.136.1.102]:52240 "EHLO leb.cs.unibo.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755561AbXIFKEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 06:04:33 -0400
+X-Greylist: delayed 1542 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Sep 2007 06:04:32 EDT
+Date: Thu, 6 Sep 2007 12:04:31 +0200
+To: linux-kernel@vger.kernel.org
+Cc: "Mathiasen, Torben" <Torben.Mathiasen@hp.com>
+Subject: Re: [PATCH] drivers/char/misc.c: deprecated call register_chrdev, and 256 minor limit eliminated
+Message-ID: <20070906100431.GD8222@cs.unibo.it>
+References: <20070906093844.GC8222@cs.unibo.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070906093844.GC8222@cs.unibo.it>
+User-Agent: Mutt/1.5.11
+From: renzo@cs.unibo.it (Renzo Davoli)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-03 at 12:11 +0200, Michal Piotrowski wrote:
-> MTD
-> 
-> Subject         : error: implicit declaration of function 'cfi_interleave'
-> References      : http://lkml.org/lkml/2007/8/6/272
-> Last known good : ?
-> Submitter       : Ingo Molnar <mingo@elte.hu>
-> Caused-By       : ?
-> Handled-By      : David Woodhouse <dwmw2@infradead.org>
-> Patch           : http://lkml.org/lkml/2007/8/9/586
-> Status          : patch available 
+On Thu, Sep 06, 2007 at 11:38:44AM +0200, Renzo Davoli wrote:
+Dear Kernel Developers,
 
-This isn't really a regression -- it's been like this for years. It's a
-non-functional configuration which doesn't really make sense, and would
-only crop up with randconfig (or crack).
+I have seen that drivers/char/misc.c already used the deprecated 
+register_chrdev call and this limited the number of minors to 256.
 
-Linus was offered the patch a few weeks ago, but didn't take it -- it's
-not really a priority for 2.6.23. It's in my git tree and will be pushed
-when the 2.6.24 merge window opens.
+I recetly asked for a misc minor number attribution for View-OS/kmview
+and Torben Mathiasen told me about this issue.
 
-http://git.infradead.org/?p=mtd-2.6.git;a=commitdiff;h=241651d04d672fb685b2874707016cbbf95931e5
+I propose this patch that eliminate both problems. With this patch 
+misc allocates the entire major 10 and avoids the deprecated call.
+
+These are just my 2 (euro) cents, I hope it can be useful.
+
+	renzo
+
+Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
 
 -- 
-dwmw2
+============================================================================
+Renzo Davoli				| Dept. of Computer Science
+(NIC rd235, HAM IZ4DJE)                 | University of Bologna	
+Tel. +39 051 2094501			| Mura Anteo Zamboni, 7
+Fax. +39 051 2094510			| I-40127 Bologna  ITALY
+Key fingerprint = A019 17E2 5562 06F6 77BB  2E93 1A01 F646 30EA B487
+============================================================================
 
+--- drivers/char/misc.orig.c	2007-08-05 16:56:59.000000000 +0200
++++ drivers/char/misc.c	2007-09-06 11:07:51.000000000 +0200
+@@ -56,6 +56,8 @@
+ static LIST_HEAD(misc_list);
+ static DEFINE_MUTEX(misc_mtx);
+ 
++static struct cdev misc_cdev;
++
+ /*
+  * Assigned numbers, used for dynamic minors
+  */
+@@ -273,6 +275,31 @@
+ EXPORT_SYMBOL(misc_register);
+ EXPORT_SYMBOL(misc_deregister);
+ 
++static int misc_register_chrdev(void)
++{
++	dev_t from=MKDEV(MISC_MAJOR,0);
++	int rv;
++	int err = -ENOMEM;
++	char *s;
++
++	if ((rv=register_chrdev_region(from,MINORMASK,"misc")) != 0)
++		return rv;
++
++	cdev_init(&misc_cdev, &misc_fops);
++	misc_cdev.owner=misc_fops.owner;
++	kobject_set_name(&misc_cdev.kobj, "%s", "misc");
++	for (s = strchr(kobject_name(&misc_cdev.kobj),'/'); s; s = strchr(s, '/'))
++		    *s = '!';
++	err = cdev_add(&misc_cdev, from, MINORMASK);
++	if (err)
++		goto out;
++	return 0;
++out:
++	kobject_put(&misc_cdev.kobj);
++	unregister_chrdev_region(from,MINORMASK);
++  return err;
++}
++
+ static int __init misc_init(void)
+ {
+ #ifdef CONFIG_PROC_FS
+@@ -286,7 +313,7 @@
+ 	if (IS_ERR(misc_class))
+ 		return PTR_ERR(misc_class);
+ 
+-	if (register_chrdev(MISC_MAJOR,"misc",&misc_fops)) {
++	if (misc_register_chrdev()) {
+ 		printk("unable to get major %d for misc devices\n",
+ 		       MISC_MAJOR);
+ 		class_destroy(misc_class);
+
+
+-- 
+============================================================================
+Renzo Davoli				| Dept. of Computer Science
+(NIC rd235, HAM IZ4DJE)                 | University of Bologna	
+Tel. +39 051 2094501			| Mura Anteo Zamboni, 7
+Fax. +39 051 2094510			| I-40127 Bologna  ITALY
+Key fingerprint = A019 17E2 5562 06F6 77BB  2E93 1A01 F646 30EA B487
+============================================================================
