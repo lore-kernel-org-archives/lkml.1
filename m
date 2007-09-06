@@ -1,46 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbXIFQik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932112AbXIFQoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758194AbXIFQik (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 12:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757609AbXIFQi0
+	id S932112AbXIFQoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 12:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbXIFQoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 12:38:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54246 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757575AbXIFQiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 12:38:25 -0400
-Message-ID: <46E02CF5.3020301@redhat.com>
-Date: Thu, 06 Sep 2007 12:38:13 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Thu, 6 Sep 2007 12:44:08 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:44025 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750936AbXIFQoH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 12:44:07 -0400
+Date: Thu, 6 Sep 2007 12:43:06 -0400
+From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org, viro@ftp.linux.org.uk, bharata@linux.vnet.ibm.com,
+       j.blunck@tu-harburg.de, jengelh@computergmbh.de,
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: Re: [PATCH 1/1] Unionfs: cache-coherency - dentries
+Message-ID: <20070906164306.GC25035@filer.fsl.cs.sunysb.edu>
+References: <Pine.LNX.4.64.0709030849260.4454@fbirervta.pbzchgretzou.qr> <11888627882517-git-send-email-jsipek@cs.sunysb.edu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       safari-kernel@safari.iki.fi
-Subject: Re: [PATCH] prevent kswapd from freeing excessive amounts of lowmem
-References: <46DF3545.4050604@redhat.com> <20070905182305.e5d08acf.akpm@linux-foundation.org>
-In-Reply-To: <20070905182305.e5d08acf.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <11888627882517-git-send-email-jsipek@cs.sunysb.edu>
+User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+On Mon, Sep 03, 2007 at 07:39:48PM -0400, Josef 'Jeff' Sipek wrote:
+...
+>  /*
+> + * Determine if the lower inode objects have changed from below the unionfs
+> + * inode.  Return 1 if changed, 0 otherwise.
+> + */
+> +bool is_newer_lower(const struct dentry *dentry)
+> +{
+> +	int bindex;
+> +	struct inode *inode;
+> +	struct inode *lower_inode;
+> +
+> +	/* ignore if we're called on semi-initialized dentries/inodes */
+> +	if (!dentry || !UNIONFS_D(dentry))
+> +		return false;
+> +	inode = dentry->d_inode;
+> +	if (!inode || !UNIONFS_I(inode) ||
+> +	    ibstart(inode) < 0 || ibend(inode) < 0)
+> +		return false;
+> +
+> +	for (bindex = ibstart(inode); bindex <= ibend(inode); bindex++) {
+> +		lower_inode = unionfs_lower_inode_idx(inode, bindex);
+> +		if (!lower_inode)
+> +			continue;
+> +		/*
+> +		 * We may want to apply other tests to determine if the
+> +		 * lower inode's data has changed, but checking for changed
+> +		 * ctime and mtime on the lower inode should be enough.
+> +		 */
+> +		if (timespec_compare(&inode->i_mtime,
+> +				     &lower_inode->i_mtime) < 0) {
+> +			printk("unionfs: new lower inode mtime "
+> +			       "(bindex=%d, name=%s)\n", bindex,
+> +			       dentry->d_name.name);
+> +			return true; /* mtime changed! */
+> +		}
+> +		if (timespec_compare(&inode->i_ctime,
+> +				     &lower_inode->i_ctime) < 0) {
+> +			printk("unionfs: new lower inode ctime "
+> +			       "(bindex=%d, name=%s)\n", bindex,
+> +			       dentry->d_name.name);
+> +			return true; /* ctime changed! */
+> +		}
+> +	}
+> +	return true;		/* default: lower is not newer */
 
-> I guess for a very small upper zone and a very large lower zone this could
-> still put the scan balancing out of whack, fixable by a smarter version of
-> "8*zone->pages_high" but it doesn't seem very likely that this will affect
-> things much.
-> 
-> Why doesn't direct reclaim need similar treatment?
+This was a thinko, it should have returned false. I'll send an updated
+patch for completeness.
 
-Because we only go into the direct reclaim path once
-every zone is at or below zone->pages_low, and the
-direct reclaim path will exit once we have freed more
-than swap_cluster_max pages.
+Josef 'Jeff' Sipek.
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Only two things are infinite, the universe and human stupidity, and I'm not
+sure about the former.
+		- Albert Einstein
