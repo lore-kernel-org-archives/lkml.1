@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbXIFMj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbXIFMkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757149AbXIFMj3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 08:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbXIFMjR
+	id S1758096AbXIFMkz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 08:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbXIFMks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 08:39:17 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50928 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756165AbXIFMjQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 08:39:16 -0400
-Date: Thu, 6 Sep 2007 18:22:24 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Johannes Berg <johannes@sipsolutions.net>
-cc: Herbert Xu <herbert@gondor.apana.org.au>, Florian Lohoff <flo@rfc822.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, linux-wireless@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       ipw3945-devel@lists.sourceforge.net, yi.zhu@intel.com,
-       Michael Wu <flamingice@sourmilk.net>
-Subject: Re: BUG: scheduling while atomic: ifconfig/0x00000002/4170
-In-Reply-To: <1189080575.28781.65.camel@johannes.berg>
-Message-ID: <alpine.LFD.0.999.0709061818270.3781@enigma.security.iitk.ac.in>
-References: <20070902184439.GA14306@paradigm.rfc822.org> 
- <6bffcb0e0709021659o3856cd06gabc054c949a84397@mail.gmail.com> 
- <alpine.LFD.0.999.0709060923340.26804@enigma.security.iitk.ac.in> 
- <20070906082301.GB21929@gondor.apana.org.au>
- <1189080575.28781.65.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+	Thu, 6 Sep 2007 08:40:48 -0400
+Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:33258
+	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755805AbXIFMkr convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 08:40:47 -0400
+Date: Thu, 06 Sep 2007 05:40:38 -0700 (PDT)
+Message-Id: <20070906.054038.74750747.davem@davemloft.net>
+To: matthew@wil.cx
+Cc: shaohua.li@intel.com, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, akpm@linux-foundation.org,
+       gregkh@suse.de
+Subject: Re: [RFC] disable PCIE 'Enable No Snoop' bit by default
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070906115730.GE14130@parisc-linux.org>
+References: <1189056908.24368.9.camel@sli10-conroe.sh.intel.com>
+	<20070906115730.GE14130@parisc-linux.org>
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Matthew Wilcox <matthew@wil.cx>
+Date: Thu, 6 Sep 2007 05:57:31 -0600
 
-
-On Thu, 6 Sep 2007, Johannes Berg wrote:
-
-> On Thu, 2007-09-06 at 16:23 +0800, Herbert Xu wrote:
-> > On Thu, Sep 06, 2007 at 10:32:33AM +0530, Satyam Sharma wrote:
-> > > 
-> > > > > [  382.529041]  [<c02c8abc>] dev_close+0x24/0x67
-> > > > > [  382.529052]  [<e01f402b>] ieee80211_master_stop+0x4a/0x6d [mac80211]
-> > 
-> > This is where the bug is.  You cannot call dev_close from an
-> > atomic context as i33380211_master_stop does it within spin
-> > locks.
+> I'm not sure your analysis is correct.  Here's what my draft copy of
+> the pcie 2.0 spec says:
 > 
-> Hah, I suspected as much but didn't have a chance to look yet. I had
-> plans to replace that sub_if_list with an RCU list and not require the
-> lock there, but that's far off.
+>   Enble No Snoop ­ If this bit is Set, the Function is permitted to
+>   Set the No Snoop bit in the Requester Attributes of transactions it
+>   initiates that do not require hardware enforced cache coherency (see
+>   Section 2.2.6.5). Note that setting this bit to 1b should not cause
+>   a Function to Set the No Snoop attribute on all transactions that it
+>   initiates. Even when this bit is Set, a Function is only permitted
+>   to Set the No Snoop attribute on a transaction when it can guarantee
+>   that the address of the transaction is not stored in any cache in
+>   the system.  This bit permitted to be hardwired to 0b if a Function
+>   would never Set the No Snoop attribute in transactions it initiates.
+>   Default value of this bit is 1b.
+> 
+> That implies that devices are only allowed to set it when it's safe to
+> do so ... and we don't need to turn it off.
 
-Unless I missed something obvious (let me know if that's the case! :-)
-an RCU-protected list would suffer the same fate. list_for_each_xxx_rcu()
-must be under rcu_read_lock() which == preempt_disable() ...
+This is my understanding of this area of PCI-E as well, and I
+also agree that therefore we should not turn this bit off.
+
