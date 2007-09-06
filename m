@@ -1,92 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932742AbXIFUHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932695AbXIFUIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932742AbXIFUHy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 16:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932141AbXIFUDd
+	id S932695AbXIFUIV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 16:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932598AbXIFUDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 16:03:33 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:39755 "EHLO smtp.polymtl.ca"
+	Thu, 6 Sep 2007 16:03:40 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:39778 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932472AbXIFUDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 16:03:31 -0400
-Message-Id: <20070906200314.986455310@polymtl.ca>
+	id S932589AbXIFUDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 16:03:38 -0400
+Message-Id: <20070906200314.692565803@polymtl.ca>
 References: <20070906200228.086651361@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 06 Sep 2007 16:02:32 -0400
+Date: Thu, 06 Sep 2007 16:02:31 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Christoph Hellwig <hch@infradead.org>, prasanna@in.ibm.com,
-       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: [patch 4/8] Immediate Values - Move Kprobes i386 restore_interrupt to kdebug.h
-Content-Disposition: inline; filename=immediate-values-move-kprobes-i386-restore-interrupt-to-kdebug-h.patch
+       Adrian Bunk <bunk@stusta.de>, Andi Kleen <andi@firstfloor.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: [patch 3/8] Immediate Values - Kconfig menu in EMBEDDED
+Content-Disposition: inline; filename=immediate-values-kconfig-embedded.patch
 X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Sep 2007 20:03:15 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the breakpoint handler is useful both to kprobes and immediate values, it
-makes sense to make the required restore_interrupt() available through
-asm-i386/kdebug.h.
+Immediate values provide a way to use dynamic code patching to update variables
+sitting within the instruction stream. It saves caches lines normally used by
+static read mostly variables. Enable it by default, but let users disable it
+through the EMBEDDED menu with the "Disable immediate values" submenu entry.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Adrian Bunk <bunk@stusta.de>
+CC: Andi Kleen <andi@firstfloor.org>
+CC: Alexey Dobriyan <adobriyan@gmail.com>
 CC: Christoph Hellwig <hch@infradead.org>
-CC: prasanna@in.ibm.com
-CC: ananth@in.ibm.com
-CC: anil.s.keshavamurthy@intel.com
-CC: davem@davemloft.net
 ---
- include/asm-i386/kdebug.h  |   12 ++++++++++++
- include/asm-i386/kprobes.h |    9 ---------
- 2 files changed, 12 insertions(+), 9 deletions(-)
+ init/Kconfig |   21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-i386/kdebug.h
+Index: linux-2.6-lttng/init/Kconfig
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-i386/kdebug.h	2007-09-04 11:52:37.000000000 -0400
-+++ linux-2.6-lttng/include/asm-i386/kdebug.h	2007-09-04 12:12:06.000000000 -0400
-@@ -6,6 +6,9 @@
-  * from x86_64 architecture.
-  */
+--- linux-2.6-lttng.orig/init/Kconfig	2007-09-04 11:53:59.000000000 -0400
++++ linux-2.6-lttng/init/Kconfig	2007-09-04 12:12:03.000000000 -0400
+@@ -407,6 +407,17 @@ config CC_OPTIMIZE_FOR_SIZE
+ config SYSCTL
+ 	bool
  
-+#include <asm/ptrace.h>
-+#include <asm/system.h>
++config IMMEDIATE
++	default y if !DISABLE_IMMEDIATE
++	depends on X86_32 || PPC || PPC64
++	bool
++	help
++	  Immediate values are used as read mostly variables that are rarely
++	  updated. They use code patching to modify the values inscribed in the
++	  instruction stream. It provides a way to save precious cache lines
++	  that would otherwise have to be used by these variables. Can be
++	  disabled through the EMBEDDED menu.
 +
- struct pt_regs;
+ menuconfig EMBEDDED
+ 	bool "Configure standard kernel features (for small systems)"
+ 	help
+@@ -645,6 +656,16 @@ config PROC_KPAGEMAP
+           information on page-level memory usage. Disabling this interface
+           will reduce the size of the kernel by around 600 bytes.
  
- /* Grossly misnamed. */
-@@ -25,4 +28,13 @@ enum die_val {
- 	DIE_PAGE_FAULT_NO_CONTEXT,
- };
- 
-+/* trap3/1 are intr gates for kprobes.  So, restore the status of IF,
-+ * if necessary, before executing the original int3/1 (trap) handler.
-+ */
-+static inline void restore_interrupts(struct pt_regs *regs)
-+{
-+	if (regs->eflags & IF_MASK)
-+		local_irq_enable();
-+}
++config DISABLE_IMMEDIATE
++	default y if EMBEDDED
++	bool "Disable immediate values" if EMBEDDED
++	depends on X86_32 || PPC || PPC64
++	help
++	  Disable code patching based immediate values for embedded systems. It
++	  consumes slightly more memory and requires to modify the instruction
++	  stream each time a variable is updated. Should really be disabled for
++	  embedded systems with read-only text.
 +
- #endif
-Index: linux-2.6-lttng/include/asm-i386/kprobes.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-i386/kprobes.h	2007-09-04 11:53:26.000000000 -0400
-+++ linux-2.6-lttng/include/asm-i386/kprobes.h	2007-09-04 12:12:06.000000000 -0400
-@@ -79,15 +79,6 @@ struct kprobe_ctlblk {
- 	struct prev_kprobe prev_kprobe;
- };
+ endmenu		# General setup
  
--/* trap3/1 are intr gates for kprobes.  So, restore the status of IF,
-- * if necessary, before executing the original int3/1 (trap) handler.
-- */
--static inline void restore_interrupts(struct pt_regs *regs)
--{
--	if (regs->eflags & IF_MASK)
--		local_irq_enable();
--}
--
- extern int kprobe_exceptions_notify(struct notifier_block *self,
- 				    unsigned long val, void *data);
- extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
+ config RT_MUTEXES
 
 -- 
 Mathieu Desnoyers
