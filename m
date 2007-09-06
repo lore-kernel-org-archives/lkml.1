@@ -1,43 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbXIFTVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbXIFTYG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758011AbXIFTVg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 15:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbXIFTV2
+	id S1758278AbXIFTYG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 15:24:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbXIFTX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 15:21:28 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:51077 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751532AbXIFTV1 (ORCPT
+	Thu, 6 Sep 2007 15:23:56 -0400
+Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:59926
+	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752096AbXIFTXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 15:21:27 -0400
-Date: Thu, 6 Sep 2007 21:21:18 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc4-mm1 build issue for arm and m68k (hrtimer)
-Message-ID: <20070906192118.GC4480@stusta.de>
-References: <20070906182437.GA795@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070906182437.GA795@Krystal>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 6 Sep 2007 15:23:55 -0400
+Date: Thu, 06 Sep 2007 12:23:45 -0700 (PDT)
+Message-Id: <20070906.122345.74744962.davem@davemloft.net>
+To: anders.blomdell@control.lth.se
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Stray nulls when reading from AF_UNIX sockets
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <46E02137.8030600@control.lth.se>
+References: <46E02137.8030600@control.lth.se>
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Already reported in an answer to the 2.6.23-rc4-mm1 announcement on 
-linux-kernel [1].
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+Date: Thu, 06 Sep 2007 17:48:07 +0200
 
-cu
-Adrian
+>     return copied ? : err;
+>   }
+> 
+> Shouldn't this read:
+> 
+>     return copied ? copied : err;
+> 
+> Or am I missing something?
 
-[1] http://lkml.org/lkml/2007/9/1/83
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+These two statements are equivalent, the first version is
+a shorthand allowed by gcc.
