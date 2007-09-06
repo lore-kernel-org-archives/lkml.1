@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbXIFJ5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbXIFJ57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756155AbXIFJ5K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 05:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbXIFJ45
+	id S1757298AbXIFJ57 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 05:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXIFJ5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 05:56:57 -0400
-Received: from gw.goop.org ([64.81.55.164]:38632 "EHLO mail.goop.org"
+	Thu, 6 Sep 2007 05:57:51 -0400
+Received: from gw.goop.org ([64.81.55.164]:38650 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753541AbXIFJ44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 05:56:56 -0400
-Message-ID: <46DFCEE3.8010903@goop.org>
-Date: Thu, 06 Sep 2007 10:56:51 +0100
+	id S1753265AbXIFJ5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 05:57:51 -0400
+Message-ID: <46DFCF1A.8090808@goop.org>
+Date: Thu, 06 Sep 2007 10:57:46 +0100
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
@@ -31,14 +31,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Andi Kleen wrote:
->> ; it does
->> seem perfectly acceptable though for the mm code to use kmap or vmap
->> (not kmap_atomic) internally somewhere in the pagetable code.
+>> I agree.  The patch is a nop.  I just got overly paranoid.  The whole
+>> thing is just very prone to bugs.
 >>     
->
-> i386 does it all the time for highmem pagetables in fact.
+> So do we need a patch for .23 or not?
 >   
 
-Yes, it uses kmap_atomic(_pte) all the time.  Is that what you meant?
+Forgot this bit.  No, I think the upshot is that it isn't necessary (nor
+Rusty's).
 
     J
