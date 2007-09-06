@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbXIFOVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbXIFOmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757315AbXIFOVA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 10:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbXIFOUx
+	id S1756656AbXIFOmm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 10:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbXIFOmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 10:20:53 -0400
-Received: from smtp.nokia.com ([131.228.20.173]:53240 "EHLO
-	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752617AbXIFOUw (ORCPT
+	Thu, 6 Sep 2007 10:42:33 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:45998 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751742AbXIFOmc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 10:20:52 -0400
-Message-ID: <46E00C60.7040107@nokia.com>
-Date: Thu, 06 Sep 2007 17:19:12 +0300
-From: Stefan Becker <Stefan.Becker@nokia.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: ext Andi Kleen <andi@firstfloor.org>
-CC: ext Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, davej@codemonkey.org.uk
-Subject: Re: [pre-2.6.23 REGRESSION] 2.6.23-rc3-git1 crash/stuck on VIA CN700
- system
-References: <46C9D148.5080505@nokia.com> <p734pibbbex.fsf@bingen.suse.de> <46DDA366.8090806@nokia.com> <20070905102525.GB31880@one.firstfloor.org> <46DECDC9.9050407@nokia.com> <20070905163724.GC31880@one.firstfloor.org> <46DF0257.5050303@nokia.com> <20070906053654.GD31880@one.firstfloor.org>
-In-Reply-To: <20070906053654.GD31880@one.firstfloor.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 6 Sep 2007 10:42:32 -0400
+Subject: [GIT PATCH] SCSI bug fixes for 2.6.23-rc5
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 06 Sep 2007 15:42:27 +0100
+Message-Id: <1189089747.3466.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Sep 2007 14:20:17.0103 (UTC) FILETIME=[0C52DDF0:01C7F091]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+These are basically three sets of bug fixes for drivers (qla2xxx, iscsi
+and zfcp) including a blocking show stopper for zfcp.  The patch is
+available at:
 
-ext Andi Kleen wrote:
->> This kernel boots up OK. Looking at the preprocessed C code the 
-> 
-> I assume you tested it a few times to make sure it really was the 
-> problem? Perhaps reenable it also once again and see if it hangs
-> again just to be sure.
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-I booted each kernel at least 5 times:
+The short changelog is:
 
-kernel-2.6.23-rc5-git WITH clflush:      always crashes
-kernel-2.6.23-rc5-git WITHOUT clflush:   always boots
+Andrew Vasquez (6):
+      qla2xxx: Update version number to 8.02.00-k3.
+      qla2xxx: Correct mailbox register dump for FWI2 capable ISPs.
+      qla2xxx: Correct 8GB iIDMA support.
+      qla2xxx: Correct management-server login-state synchronization issue.
+      qla2xxx: Don't modify parity bits during ISP25XX restart.
+      qla2xxx: Allocate enough space for the full PCI descriptor.
 
-The only difference between the two kernels is the commented line in 
-alternative.c/text_poke().
+Heiko Carstens (3):
+      zfcp: fix the data buffer accessor patch
+      zfcp: allocate gid_pn_data objects from gid_pn_cache
+      zfcp: fix memory leak
 
-Regards,
+Mike Christie (2):
+      libiscsi: sync up iscsi and scsi eh's access to the connection
+      libiscsi: fix null ptr regression when aborting a command with data to transfer
 
-	Stefan
+and the diffstat:
 
----
-Stefan Becker
-E-Mail: Stefan.Becker@nokia.com
+ drivers/s390/scsi/zfcp_aux.c       |    4 +-
+ drivers/s390/scsi/zfcp_qdio.c      |   10 +----
+ drivers/s390/scsi/zfcp_scsi.c      |    4 +-
+ drivers/scsi/libiscsi.c            |   65 +++++++++++++++++++++++++++++--------
+ drivers/scsi/qla2xxx/qla_dbg.c     |   21 +++++------
+ drivers/scsi/qla2xxx/qla_def.h     |    1 
+ drivers/scsi/qla2xxx/qla_gs.c      |   28 ++++++++++-----
+ drivers/scsi/qla2xxx/qla_init.c    |   51 ++++++++---------------------
+ drivers/scsi/qla2xxx/qla_isr.c     |    1 
+ drivers/scsi/qla2xxx/qla_os.c      |    2 -
+ drivers/scsi/qla2xxx/qla_version.h |    2 -
+ include/scsi/libiscsi.h            |    7 +++
+ 12 files changed, 113 insertions(+), 83 deletions(-)
+
+James
+
+
