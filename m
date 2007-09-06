@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756610AbXIFLIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbXIFLPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756610AbXIFLIQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 07:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbXIFLH7
+	id S1756461AbXIFLPc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 07:15:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbXIFLPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 07:07:59 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:45441 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbXIFLH6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 07:07:58 -0400
-Date: Thu, 6 Sep 2007 13:07:57 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Maarten Maathuis <madman2003@gmail.com>, linux-kernel@vger.kernel.org,
-       Robert Hancock <hancockr@shaw.ca>, linux-ide@vger.kernel.org
-Subject: Re: [sata_nv] timeout waiting for ADMA IDLE, stat=0x440
-In-Reply-To: <20070905094845.1d2f84cb.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0709061302370.25942@fbirervta.pbzchgretzou.qr>
-References: <fa.JryGluomV43EviuSMJKX+JI+tvU@ifi.uio.no> <46CF68C4.9040506@shaw.ca>
- <6d4bc9fc0708250637g10c75f44x20ae1533874c986a@mail.gmail.com>
- <Pine.LNX.4.64.0708281515340.3018@fbirervta.pbzchgretzou.qr>
- <6d4bc9fc0708280706q278fe285kdf90a27f40d2a55@mail.gmail.com>
- <20070905094845.1d2f84cb.akpm@linux-foundation.org>
+	Thu, 6 Sep 2007 07:15:24 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:2351 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755161AbXIFLPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 07:15:23 -0400
+Date: Thu, 6 Sep 2007 07:08:36 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, adam@yggdrasil.com,
+       jcm@jonmasters.org, netfilter-devel@lists.netfilter.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Fix (improve) deadlock condition on module removal netfilter socket option removal
+Message-ID: <20070906110836.GA31868@hmsreliant.think-freely.org>
+References: <20070904202433.GA19083@hmsreliant.think-freely.org> <46DEC9BF.9010807@trash.net> <1189008806.10802.150.camel@localhost.localdomain> <20070905170831.GA25050@hmsreliant.think-freely.org> <46DFD790.6040908@trash.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46DFD790.6040908@trash.net>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Sep 06, 2007 at 12:33:52PM +0200, Patrick McHardy wrote:
+> Neil Horman wrote:
+> > On Thu, Sep 06, 2007 at 02:13:26AM +1000, Rusty Russell wrote:
+> > 
+> >>On Wed, 2007-09-05 at 17:22 +0200, Patrick McHardy wrote:
+> >>
+> >>>But I'm wondering, wouldn't module refcounting alone fix this problem?
+> >>>If we make nf_sockopt() call try_module_get(ops->owner), remove_module()
+> >>>on ip_tables.ko would simply fail because the refcount is above zero
+> >>>(so it would fail at point 3 above). Am I missing something important?
+> >>
+> >>Yes, that seems the correct solution to me, too.  ISTR that this code
+> >>predates the current module code.
+> >>
+> >>Rusty.
+> > 
+> > 
+> > Thanks guys-
+> > 	When I first started looking at this problem I would have agreed with
+> > you, that module reference counting alone would fix the problem.  However,
+> > delete_module can work in either a non-blocking or a blocking mode.  rmmod
+> > passes O_NONBLOCK to delete module, and so is fine, but modprobe does not.  So
+> > if you currently use modprobe -r to remove modules (as the iptables service
+> > script nominally does), modprobe winds up waiting in the kernel for the module
+> > reference count to become zero.  Since we can hold a reference to the module
+> > being removed in the same path that forks a modprobe request to load that same
+> > module (which then blocks on the first modprobes fcntl lock), we still get
+> > deadlock.  The way I fixed this was by use of the second patch, which brings
+> > modprobes behavior into line with the rmmod utility (which is to default to
+> > non-blocking operation), leading to the remove_module failure and breaking of
+> > the deadlock that you describe above.
+> 
+> 
+> Thanks for the explanation, I've applied your patch.
+Thanks Patrick!
+Neil
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-On Sep 5 2007 09:48, Andrew Morton wrote:
->> On 8/28/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->> > On Aug 25 2007 15:37, Maarten Maathuis wrote:
->> > >
->> > >A broken cable seems like a realistic possibility, so i swapped it for
->> > >another cable. I will try if that solves the problem.
->> >
->> > Hi, did you have any success/failure, other updates?
->> > I am facing a similar problem (just posted to linux-ide@vger.kernel.org),
->> > but also with 2.6.18, and it does not look like an NCQ or loose cable problem (got a
->> > backplane, and sda is working normal).
->
->This is a rather comedic email thread, with people top-posting, others
->leaving others off the cc list, Robert's MUA reliably and inexplicably
->mangling both In-Reply-To: and References: thus breaking threading, no
->visible sign of how Jan got involved and no linux-ide cc's.
-
-I wrote Maarten a private mail, w/o any mailing lists CCed or BCCed, 
-but with References: (just hit reply button and removed CCs) because I 
-assumed his problem was really just the cabling in the end, which does 
-not apply to me at all.
-
->Enough time has passed for everyone to forget all about this.  So Maarten,
->if you still believe that this is still a kernel bug then please update us
->on its status and provide a full description for linux-ide..  Please use
->reply-to-all for that.
+-- 
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
