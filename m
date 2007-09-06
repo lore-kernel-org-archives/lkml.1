@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757920AbXIFBDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbXIFBYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757920AbXIFBDY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Sep 2007 21:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757218AbXIFBDQ
+	id S1757836AbXIFBYw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Sep 2007 21:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757271AbXIFBYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Sep 2007 21:03:16 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50025 "EHLO
+	Wed, 5 Sep 2007 21:24:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57467 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757149AbXIFBDP (ORCPT
+	by vger.kernel.org with ESMTP id S1756983AbXIFBYn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Sep 2007 21:03:15 -0400
-Date: Wed, 5 Sep 2007 18:01:43 -0700
+	Wed, 5 Sep 2007 21:24:43 -0400
+Date: Wed, 5 Sep 2007 18:23:05 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Felix Homann <fexpop@onlinehome.de>
-Cc: linux-kernel@vger.kernel.org, rjw@sisk.pl, ak@suse.de
-Subject: Re: Regressions w.r.t. suspend behaviour in recent kernel versions
-Message-Id: <20070905180143.b747f472.akpm@linux-foundation.org>
-In-Reply-To: <46DF3306.7030608@onlinehome.de>
-References: <46CED24F.1020400@onlinehome.de>
-	<20070905093605.ac755ce6.akpm@linux-foundation.org>
-	<46DF3306.7030608@onlinehome.de>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       safari-kernel@safari.iki.fi
+Subject: Re: [PATCH] prevent kswapd from freeing excessive amounts of lowmem
+Message-Id: <20070905182305.e5d08acf.akpm@linux-foundation.org>
+In-Reply-To: <46DF3545.4050604@redhat.com>
+References: <46DF3545.4050604@redhat.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,69 +26,69 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 06 Sep 2007 00:51:50 +0200 Felix Homann <fexpop@onlinehome.de> wrote:
-> Andrew Morton wrote:
-> >> On Fri, 24 Aug 2007 14:42:55 +0200 Felix Homann <fexpop@onlinehome.de> wrote:
-> > 
-> > Nearly two weeks, zero replies.
+> On Wed, 05 Sep 2007 19:01:25 -0400 Rik van Riel <riel@redhat.com> wrote:
+> The current VM can get itself into trouble fairly easily on systems
+> with a small ZONE_HIGHMEM, which is common on i686 computers with
+> 1GB of memory.
 > 
-> Thanks for caring :-)
+> On one side, page_alloc() will allocate down to zone->pages_low,
+> while on the other side, kswapd() and balance_pgdat() will try
+> to free memory from every zone, until every zone has more free
+> pages than zone->pages_high.
 > 
-> > 
-> >> Aug  9 00:22:13 jawaka kernel: EXT3-fs: mounted filesystem with ordered
-> >> data mode.
-> >> Aug  9 00:22:13 jawaka kernel: WARNING: at kernel/irq/resend.c:70
-> >> check_irq_resend()
-> > 
-> > I expect that got fixed in later kernels.
-> 
-> Yes, I've just tried 2.6.23-rc5-git1 and the warning has gone!
-> 
-> 
-> >> Without the nolapic option the kernel will panic when trying to suspend 
-> >> to disk.
-> > 
-> > A *large* number of people need noapic or nolapic to get Linux to work.
-> 
-> Even better, on 2.6.23-rc5-git1 I don't need nolapic anymore!
-> 
+> Highmem can be filled up to zone->pages_low with page tables,
+> ramfs, vmalloc allocations and other unswappable things quite
+> easily and without many bad side effects, since we still have
+> a huge ZONE_NORMAL to do future allocations from.
+>
+> However, as long as the number of free pages in the highmem
+> zone is below zone->pages_high, kswapd will continue swapping
+> things out from ZONE_NORMAL, too!
 
-damn, we break so much stuff that now we're breaking our old bugs too!
+crap.  I guess suitably-fashioned mlock could do the same thing.
 
+> Sami Farin managed to get his system into a stage where kswapd
+> had freed about 700MB of low memory and was still "going strong".
 > 
-> >> Here are the last lines of the kernel output:
-> >>
-> >> EIP: [<c01127fd> lapic_nmi_suspend+0x1d/0x30 ss:ESP 0068:c1ae3ec8
-> >> Kernel panic - not syncing: Attempted to kill init!
-> > 
-> > Are you able to provide us with more information about this bug? 
-> 
-> If you're still interested in more more information now that the bug has 
-> apparently been solved "en passant" I can take a photograph tomorrow. 
-> Please, let me know.
+> The attached patch will make kswapd stop paging out data from
+> zones when there is more than enough memory free.
 
-No thanks, let's just move on..
+hm.  Did highmem's all_unreclaimable get set?  If so perhaps we could use
+that in some way.
 
-> >> With more recent kernels the system will hang with 
-> >> "Suspending console(s)".
-> > 
-> > My Vaio reliably hangs at the same place with 2.6.23-rc4.  I'll bisect that
-> > next week sometime.  Hopefully the result of that effort will fix your bug.
-> >  Please test Linus's tree regularly and don't let us release 2.6.23 until
-> > it is fixed.
+>  We do go above
+> zone->pages_high in order to keep pressure between zones equal
+> in normal circumstances, but the patch should prevent the kind
+> of excesses that made Sami's computer totally unusable.
 > 
-> Great!
+> Please merge this into -mm.
+> 
+> Signed-off-by: Rik van Riel <riel@redhat.com>
 > 
 > 
-> >> 3. Even with the 2.6.18 kernel sound won't work after suspending to ram. 
-> >> I don't know when this started, but I know that this has not been an 
-> >> issue in the past.
-> > 
-> > Please provide full details in a separate bug report.  Send that report to
-> > myself, linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@suse.cz> and
-> > Takashi Iwai <tiwai@suse.de>
-> 
-> I'll do that in the next couple of days.
-> 
+> [linux-2.6-excessive-pageout.patch  text/x-patch (715B)]
+> --- linux-2.6.22.noarch/mm/vmscan.c.excessive	2007-09-05 12:19:49.000000000 -0400
+> +++ linux-2.6.22.noarch/mm/vmscan.c	2007-09-05 12:21:40.000000000 -0400
+> @@ -1371,7 +1371,13 @@ loop_again:
+>  			temp_priority[i] = priority;
+>  			sc.nr_scanned = 0;
+>  			note_zone_scanning_priority(zone, priority);
+> -			nr_reclaimed += shrink_zone(priority, zone, &sc);
+> +			/*
+> +			 * We put equal pressure on every zone, unless one
+> +			 * zone has way too many pages free already.
+> +			 */
+> +			if (!zone_watermark_ok(zone, order, 8*zone->pages_high,
+> +						end_zone, 0))
+> +				nr_reclaimed += shrink_zone(priority, zone, &sc);
+>  			reclaim_state->reclaimed_slab = 0;
+>  			nr_slab = shrink_slab(sc.nr_scanned, GFP_KERNEL,
+>  						lru_pages);
 
-Thanks.
+I guess for a very small upper zone and a very large lower zone this could
+still put the scan balancing out of whack, fixable by a smarter version of
+"8*zone->pages_high" but it doesn't seem very likely that this will affect
+things much.
+
+Why doesn't direct reclaim need similar treatment?
+
