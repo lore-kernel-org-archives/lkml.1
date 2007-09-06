@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933052AbXIFVAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933116AbXIFVBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933052AbXIFVAM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 17:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932304AbXIFU74
+	id S933116AbXIFVBU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 17:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932233AbXIFVBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 16:59:56 -0400
-Received: from main.gmane.org ([80.91.229.2]:46589 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932279AbXIFU74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 16:59:56 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
-Subject: Re: udev: Inconsistency between %b and %p?
-Date: Thu, 06 Sep 2007 23:05:24 +0200
-Message-ID: <fbppo0$rli$1@sea.gmane.org>
-References: <fbp6a3$k6r$1@sea.gmane.org> <jeodgfu6pz.fsf@sykes.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: p4fd4c237.dip0.t-ipconnect.de
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.6) Gecko/20070809 SeaMonkey/1.1.4
-In-Reply-To: <jeodgfu6pz.fsf@sykes.suse.de>
+	Thu, 6 Sep 2007 17:01:11 -0400
+Received: from barikada.upol.cz ([158.194.242.200]:51472 "EHLO
+	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932144AbXIFVBK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 17:01:10 -0400
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] build system: section garbage collection for vmlinux
+In-Reply-To: <20070906203931.GE4480@stusta.de>
+References: <200709051443.21522.vda.linux@googlemail.com> <200709051946.12096.vda.linux@googlemail.com> <20070905203438.GG475@flower.upol.cz> <200709061155.46667.vda.linux@googlemail.com> <20070906114044.GM475@flower.upol.cz> <20070906122143.GM16016@stusta.de> <20070906204349.GO475@flower.upol.cz> <20070906203931.GE4480@stusta.de>
+User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
+Date: Thu, 6 Sep 2007 23:16:15 +0200
+Message-Id: <E1ITOhz-0001wd-Uu@flower>
+From: Oleg Verych <olecom@flower.upol.cz>
+Organization: Palacky University in Olomouc, experimental physics department
+X-OS: x86_64-pc-linux-glibc-debian
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Schwab wrote:
->> As I would prefer to use the USB device information (idVendor, idProduct)
->> to detect the device, I also tried this one:
->>
->> ATTRS{idVendor}=="0dda", ATTRS{idProduct}=="2005", SUBSYSTEM=="scsi",
->> ACTION=="add", PROGRAM+="/usr/bin/test.sh %b %p"
->>
->> Now this version returns the USB device ID ($NUM-$NUM) to the test script,
->> but the device path (%p) is still OK and still goes down up to the SCSI
->> device ID.
->>
->> Why does %b not return the SCSI device ID in the second rule?
-> 
-> Because ATTRS has matched the USB device, not the SCSI device.
+* Thu, 6 Sep 2007 22:39:31 +0200
 
-Yes, that's right, but "SUBSYSTEM" matched the SCSI device...
+[]
+>> > His patch improves the build process.
+>> 
+>> I would like to know timing, btw. Size, especially shown 1%, doesn't
+>> matter if link time increased dramatically. `Allyes' config, when i
+>> had fast and rammish machine was terrible thing (last winter). If 32
+>> cores/cpus is will of author, then i'm even more suspicious.
+>
+> For non-developers size and speed of the kernel matter much more than 
+> compile time.
 
-If I use udevinfo, then this tool tells me:
+I'm talking about benefits for the process (developers, testers) and
+the result (end users, dogs eating own food :).
 
-| A rule to match, can be composed by the attributes of the device
-| and the attributes from one single parent device.
+> When you go towards embedded systems with limited resources a 1% size 
+> decrease would often be worth it even if it would (hypothetically) 
+> increase the compile time by a factor of 10.
 
-So I thought, that I've matched the SCSI device now. To prove this, I 
-just replaced "SUBSYSTEM=="scsi"" with "SUBSYSTEM=="usb"" and removed 
-the "S" in the "ATTRS" of the above rule, and now, I get the USB-device 
-in %b (as expected) and the path in %p only goes down up to the USB 
-device ID.
+   text    data     bss     dec     hex filename
+   5159478 1005139  406784 6571401  644589 linux-2.6.23-rc4.org/vmlinux
+   5131822  996090  401439 6529351  63a147 linux-2.6.23-rc4.gc/vmlinux
 
-So, if all rules match for the same device, then %b and %p are both 
-pointing to this, right, device.
+Are this numbers show embedded target? I think no. Also time factor of
+*10* can be spent more productively reviewing actual code of parts, that
+are going to be embedded, no?
 
-If I try to match, using one of the parent devices (using the "S" 
-"extension" to the property names) and the device, to match to, itself, 
-then the two are inconsistent. Then, %b holds the device name of the 
-parent and %p holds the patch of the device, I want to match.
+[]
+>> > There's nothing that requires treatment.
+>> 
+>> [Help for] The developers/contributors of those drivers, no?
+>>...
+>
+> They did everything right.
+>
+> You should better try to understand the problem first before behaving as 
+> if you knew everything better than everyone else...
 
-For me, this looks like a bug, or am I wrong?
-
-Yours
-
-Manuel
-
+OK, thank you very much. Now, describe what problem you are talking
+about, please. I see non.
+____
