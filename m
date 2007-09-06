@@ -1,42 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964874AbXIFVrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932922AbXIFVsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964874AbXIFVrV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 17:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932635AbXIFVqz
+	id S932922AbXIFVsp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 17:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932446AbXIFVsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 17:46:55 -0400
-Received: from mail.suse.de ([195.135.220.2]:37649 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932597AbXIFVqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 17:46:54 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: udev: Inconsistency between %b and %p?
-References: <fbp6a3$k6r$1@sea.gmane.org> <jeodgfu6pz.fsf@sykes.suse.de>
-	<fbppo0$rli$1@sea.gmane.org>
-X-Yow: I selected E5...  but I didn't hear ``Sam the Sham and the Pharaohs''!
-Date: Thu, 06 Sep 2007 23:46:52 +0200
-In-Reply-To: <fbppo0$rli$1@sea.gmane.org> (Manuel Reimer's message of "Thu\, 06
-	Sep 2007 23\:05\:24 +0200")
-Message-ID: <jelkbjfovn.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Thu, 6 Sep 2007 17:48:38 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:57287 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932417AbXIFVsh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 17:48:37 -0400
+Subject: Re: hda_intel : Patch + Regression in 2.6.18 -> 2.6.22
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, roger@computer-surgery.co.uk,
+       linux-kernel@vger.kernel.org, perex@suse.cz
+In-Reply-To: <s5hir6n6ck6.wl%tiwai@suse.de>
+References: <20070822222902.GA28563@computer-surgery.co.uk> 
+	<20070905083844.6637da1e.akpm@linux-foundation.org> 
+	<s5hlkbl6qsn.wl%tiwai@suse.de> 
+	<20070905091633.87cfaa81.akpm@linux-foundation.org> 
+	<s5hhcm96oza.wl%tiwai@suse.de> <1189091390.3212.3.camel@rukbat> 
+	<s5hir6n6ck6.wl%tiwai@suse.de>
+Content-Type: text/plain;
+	charset=utf-8
+Date: Thu, 06 Sep 2007 23:48:33 +0200
+Message-Id: <1189115313.7275.5.camel@rukbat>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manuel Reimer <Manuel.Spam@nurfuerspam.de> writes:
+On Thu, 2007-09-06 at 17:25 +0200, Takashi Iwai wrote:
+> At Thu, 06 Sep 2007 17:09:50 +0200,
+> Romano Giannetti wrote:
+> >
+> >
+> > Just one hand up: I haven't tested the patch pointed to by Andrew, will
+> > do asap, but it seems that contains the changes from
+> >
+> > https://bugtrack.alsa-project.org/alsa-bug/view.php?id=3104
+> >
+> > which are needed to have sound at all on my toshiba (although with some
+> > remaining problems).
+>
+> No, it's a different one.  This Toshiba model is still not supported
+> well.  The patch in mm tree is basically equivalent with the latest
+> ALSA HG tree, so if you tested ALSA HG version (or daily snapshot),
+> it should be same.
 
-> For me, this looks like a bug, or am I wrong?
+Unfortunately you're right. The patch I posted to the alsa bugtrack,
+extracted from the pshou files, works for me. The alsa-git patch gives
+me a system without sound.
 
-It's a feature. It's documented.
+>
+> I'm still waiting for a patch from pshou for the latest version, but
+> no reply yet.	m here. I can  try to "merge" pshou patch with the
+> alsa-git, but I'm not so confident about my understanding of the
+> thing...
 
-Andreas.
+Thanks again
+	Romano
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstra遝 5, 90409 N黵nberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+
+--
+La presente comunicaci贸n tiene car谩cter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribuci贸n, reproducci贸n o uso de esta comunicaci贸n y/o de la informaci贸n contenida en la misma est谩n estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicaci贸n por error, por favor, notif铆quelo inmediatamente al remitente contestando a este mensaje y proceda a continuaci贸n a destruirlo. Gracias por su colaboraci贸n.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
+
