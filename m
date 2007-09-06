@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757489AbXIFL3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbXIFLb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757489AbXIFL3B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 07:29:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbXIFL2x
+	id S1757407AbXIFLb7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 07:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbXIFLbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 07:28:53 -0400
-Received: from gw.goop.org ([64.81.55.164]:43292 "EHLO mail.goop.org"
+	Thu, 6 Sep 2007 07:31:52 -0400
+Received: from ns.suse.de ([195.135.220.2]:47318 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753322AbXIFL2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 07:28:53 -0400
-Message-ID: <46DFE46F.5020001@goop.org>
-Date: Thu, 06 Sep 2007 12:28:47 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S1752101AbXIFLbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 07:31:52 -0400
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Why do so many machines need "noapic"?
+References: <46DF3BFF.9000809@redhat.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 06 Sep 2007 13:31:50 +0200
+In-Reply-To: <46DF3BFF.9000809@redhat.com>
+Message-ID: <p73veao9gih.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-CC: Rik van Riel <riel@redhat.com>, linux-mm@kvack.org, shaohua.li@intel.com,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC]: pte notifiers -- support for external page tables
-References: <11890103283456-git-send-email-avi@qumranet.com> <46DEFDF4.5000900@redhat.com> <46DF0013.4060804@qumranet.com> <46DF0234.7090504@redhat.com> <46DF045F.4020806@qumranet.com>
-In-Reply-To: <46DF045F.4020806@qumranet.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> It is, but the hooks are in much the same places.  It could be argued
-> that you'd embed pte notifiers in paravirt_ops for a host kernel, but
-> that's not doable because pte notifiers use higher-level data
-> strutures (like vmas).
+Chuck Ebbert <cebbert@redhat.com> writes:
 
-Also, I wouldn't like to preclude the possibility of having a kernel
-that's both a guest and a host (ie, nested vmms).
+> Some systems lock up without the noapic option.
 
-    J
+Please find patterns: cpu type, chipsets, mainboard vendors etc.
+
+> I found one
+> that will freeze while trying to set up the timer interrupt.
+> Passing 'nolapic' makes it freeze just after:
+> 
+>    Setting up timer through ExtINT... works
+
+Always boot with apic=debug
+
+The messages means the primary timer setup methods already didn't work.
+ExtInt is really a crappy fallback that was originally only
+needed for some early SMP systems which where the timer was not wired
+according to specs.
+
+But the real problem is that the standard timer access method
+through the local APIC didn't work.
+
+I had a rewrite of the timer probing some time ago that tried
+more combinations automatically. It had some problems so it 
+never went in, but perhaps it's worth revisiting.
+
+-Andi 
