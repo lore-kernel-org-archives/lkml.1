@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbXIFMeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbXIFMew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbXIFMeR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 08:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755631AbXIFMeF
+	id S1757822AbXIFMew (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 08:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbXIFMen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 08:34:05 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:27642 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754580AbXIFMeC (ORCPT
+	Thu, 6 Sep 2007 08:34:43 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40648 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753904AbXIFMem (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 08:34:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=pJloJ/nNbMie8GcfGtwo2jCs12cp76xZmNeStIYvtrCSJjuywQyBeTyUSWxr1/LdQ3Ym4WuWZABYfmjBngkatJXWF5VPv+q2jDIAUtd54n6ohXJeFrErggak1dBbfW3pwJ3jsLL7iesTDYecDTswR2pewQMlzcffxB3ZmKFXqy4=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Oleg Verych <olecom@flower.upol.cz>
-Subject: Re: [PATCH 0/3] build system: section garbage collection for vmlinux
-Date: Thu, 6 Sep 2007 13:33:47 +0100
-User-Agent: KMail/1.9.1
-Cc: sam@ravnborg.org, linux-kernel@vger.kernel.org
-References: <200709051443.21522.vda.linux@googlemail.com> <200709061155.46667.vda.linux@googlemail.com> <20070906114044.GM475@flower.upol.cz>
-In-Reply-To: <20070906114044.GM475@flower.upol.cz>
+	Thu, 6 Sep 2007 08:34:42 -0400
+Message-ID: <46DFF3BC.6060104@zytor.com>
+Date: Thu, 06 Sep 2007 13:34:04 +0100
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: James Pearson <james-p@moving-picture.com>,
+       Anton Arapov <aarapov@redhat.com>,
+       Guy Streeter <guy.streeter@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 4096 byte limit to /proc/PID/environ ?
+References: <4474B7DB.8000304@moving-picture.com> <200605242029.k4OKTn9C031700@terminus.zytor.com> <447EF58C.6000605@moving-picture.com> <52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com> <46C33700.1060605@zytor.com> <46D6CBED.4040301@moving-picture.com> <h87in5sgal.fsf@pepelac.englab.brq.redhat.com> <46DE6196.3050605@zytor.com> <46DEE0C9.1000402@moving-picture.com> <Pine.LNX.4.64.0709061429331.25942@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0709061429331.25942@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709061333.48084.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 September 2007 12:40, Oleg Verych wrote:
-> On Thu, Sep 06, 2007 at 11:55:46AM +0100, Denys Vlasenko wrote:
-> > We already do it, but we don't have enough developers to audit
-> > every driver for every possible combination of config options.
-> > As a result, there always be some amount of unused functions and data.
-> > Using --gc-sections will discard that.
+Jan Engelhardt wrote:
+> On Sep 5 2007 18:00, James Pearson wrote:
+>> OK, here is the patch (without the long line) against 2.6.23-rc5 - what else
+>> needs to be done to get it committed?
 > 
-> You've did a tool. Documenting this tool to have it available for
-> testers/janitors/maintainers is a better way, than to have all that
-> opinions/problems with merging-to-mainline.
+> Someone has to point out CodingStyle, so I'll ruin everyone's day now :)
 > 
-> > > than to adopt yet another GNU/Luxury.
-> > 
-> > Actually, this is how linkers should have worked long ago.
-> > Borland's Turbo Pascal was doing it ten+ years ago.
-> > 
-> > I don't understand why you are opposed to toolchain helping
-> > humans to get optimized result. But it's fine with me.
-> > I won't force anyone to select CONFIG_DISCARD_UNUSED_SECTIONS.
+>> +static ssize_t environ_read(struct file * file, char __user * buf,
+>                                             ^                   ^
+> be gone these spaces.
 > 
-> That's why. It's treating symptoms, isn't it?
+>> +       while (count > 0) {
+>> +               int this_len, retval;
+>> +
+>> +               this_len = mm->env_end - (mm->env_start + src);
+>> +
+>> +               if (this_len <= 0) {
+>> +                       break;
+>> +               }
+> 
+> Be gone, braces.
+> 
 
-If I understand you correctly, you seem to think that this work
-of identifying every piece of code which can end up unused under
-specific combination of CONFIGs, and #ifdef'ing it out,
-should be done by people, not machines.
+Right, also please use use checkpatch.pl.
 
-I disagree.
+	-hpa
 
-Allyesconfig kernel has ~1700 unused functions/data objects,
-and it is only *one* of possible .configs.
-There is more than 2900 CONFIG options in kernel, giving you
-about 3^2000 possible permutations.
-
-If you find it interesting to work on making them
-to not have unused functions, more power to you,
-and good luck convincing people to accept tons
-of additional #ifdefs.
---
-vda
