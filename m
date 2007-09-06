@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbXIFIcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbXIFIiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbXIFIcO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 04:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbXIFIb7
+	id S1756029AbXIFIiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 04:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbXIFIiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 04:31:59 -0400
-Received: from poesci.dolphinics.no ([81.175.23.36]:33975 "EHLO
-	poesci.dolphinics.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753887AbXIFIb6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 04:31:58 -0400
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Robert Richter" <robert.richter@amd.com>,
-       "Arjan van de Ven" <arjan@infradead.org>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space access for AMD Barcelona
-References: <20070903081736.288288000@amd.com>
-	<20070903013157.72c94891@laptopd505.fenrus.org>
-	<20070903091718.GB22144@alberich.amd.com>
-	<20070903043319.7573875b@laptopd505.fenrus.org>
-	<20070903154734.GC22086@alberich.amd.com> <46DE45A2.40403@zytor.com>
-	<20070905084427.GE6409@erda.amd.com> <46DE80F0.4000706@zytor.com>
-	<kjmd4wxz822.fsf@pelargir.dolphinics.no>
-	<20070905161300.GE22086@alberich.amd.com>
-	<86802c440709051542w1950e28bhb21cf5c380527a6e@mail.gmail.com>
-From: Arne Georg Gleditsch <argggh@dolphinics.no>
-Date: Thu, 06 Sep 2007 10:31:59 +0200
-In-Reply-To: <86802c440709051542w1950e28bhb21cf5c380527a6e@mail.gmail.com> (Yinghai Lu's message of "Wed\, 5 Sep 2007 15\:42\:31 -0700")
-Message-ID: <kjmps0w9ou8.fsf@pelargir.dolphinics.no>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/23.0.0 (gnu/linux)
+	Thu, 6 Sep 2007 04:38:07 -0400
+Received: from hydra.gt.owl.de ([195.71.99.218]:38792 "EHLO hydra.gt.owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753970AbXIFIiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 04:38:06 -0400
+Date: Thu, 6 Sep 2007 10:38:04 +0200
+From: Florian Lohoff <flo@rfc822.org>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, linux-wireless@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       ipw3945-devel@lists.sourceforge.net, yi.zhu@intel.com
+Subject: Re: BUG: scheduling while atomic: ifconfig/0x00000002/4170
+Message-ID: <20070906083804.GB20644@paradigm.rfc822.org>
+References: <20070902184439.GA14306@paradigm.rfc822.org> <6bffcb0e0709021659o3856cd06gabc054c949a84397@mail.gmail.com> <alpine.LFD.0.999.0709060923340.26804@enigma.security.iitk.ac.in> <20070906082301.GB21929@gondor.apana.org.au> <alpine.LFD.0.999.0709061409120.3781@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="TakKZr9L6Hm6aLOc"
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0709061409120.3781@enigma.security.iitk.ac.in>
+Organization: rfc822 - pure communication
+X-SpiderMe: mh-200709061006@listme.rfc822.org
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
-> mmconfig is set in NB ( in new CPU), Do we still need to set mmconfig
-> in SB like mcp55?
 
-I wasn't aware that the family 10h-chips had MSRs for setting the
-mmconfig address space directly in the NB (core?).  Please disregard
-my previous comment...
+--TakKZr9L6Hm6aLOc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-								Arne.
+On Thu, Sep 06, 2007 at 02:11:46PM +0530, Satyam Sharma wrote:
+> On Thu, 6 Sep 2007, Herbert Xu wrote:
+>=20
+> > On Thu, Sep 06, 2007 at 10:32:33AM +0530, Satyam Sharma wrote:
+> > >=20
+> > > > > [  382.529041]  [<c02c8abc>] dev_close+0x24/0x67
+> > > > > [  382.529052]  [<e01f402b>] ieee80211_master_stop+0x4a/0x6d [mac=
+80211]
+> >=20
+> > This is where the bug is.  You cannot call dev_close from an
+> > atomic context as i33380211_master_stop does it within spin
+> > locks.
+>=20
+> Doh, of course! I must be blind ... and wait_for_completion()'s
+> might_sleep() clearly didn't trigger earlier because Florian must've
+> had CONFIG_DEBUG_SPINLOCK_SLEEP off in his .config ...
+
+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+
+Exactly ...
+
+Flo
+--=20
+Florian Lohoff                  flo@rfc822.org             +49-171-2280134
+	Those who would give up a little freedom to get a little=20
+          security shall soon have neither - Benjamin Franklin
+
+--TakKZr9L6Hm6aLOc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG37xsUaz2rXW+gJcRAi1SAKC7KncTgeJYtwDQFVhjhml5ucKshgCfS5GD
+PRtbaTuS2rBmcMMjwKMPjaE=
+=fIGc
+-----END PGP SIGNATURE-----
+
+--TakKZr9L6Hm6aLOc--
