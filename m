@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXIFXDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932857AbXIFXIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932840AbXIFXDS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 19:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932483AbXIFXDB
+	id S932857AbXIFXIW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 19:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932575AbXIFXIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 19:03:01 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35731 "EHLO
+	Thu, 6 Sep 2007 19:08:14 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43361 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932444AbXIFXDA (ORCPT
+	by vger.kernel.org with ESMTP id S932474AbXIFXIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 19:03:00 -0400
-Date: Thu, 6 Sep 2007 16:00:09 -0700
+	Thu, 6 Sep 2007 19:08:14 -0400
+Date: Thu, 6 Sep 2007 16:04:29 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: 2.6.23-rc4-mm1 compile error for ppc 32
-Message-Id: <20070906160009.fa52e8d2.akpm@linux-foundation.org>
-In-Reply-To: <20070906184011.GA1776@Krystal>
-References: <20070906184011.GA1776@Krystal>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: mathieu.desnoyers@polymtl.ca, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/6] Linux Kernel Markers - Architecture Independent
+ Code
+Message-Id: <20070906160429.629c9497.akpm@linux-foundation.org>
+In-Reply-To: <20070906160001.cfe48d78.randy.dunlap@oracle.com>
+References: <20070906200733.194442762@polymtl.ca>
+	<20070906200825.893834634@polymtl.ca>
+	<20070906160001.cfe48d78.randy.dunlap@oracle.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,42 +28,27 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 6 Sep 2007 14:40:11 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> Hi Andrew,
+> On Thu, 6 Sep 2007 16:00:01 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Thu, 06 Sep 2007 16:07:34 -0400 Mathieu Desnoyers wrote:
 > 
-> Guess what, another one ;)
+> > Changelog:
+> > - markers_mutex now nests inside module_mutex rather than the opposite.
+> > 
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > Reviewed-by: Christoph Hellwig <hch@infradead.org>
+> > Reviewed-by: Rusty Russell <rusty@rustcorp.com.au>
+> > Reviewed-by: "Frank Ch. Eigler" <fche@redhat.com>
 > 
->   /opt/crosstool/gcc-4.1.1-glibc-2.3.6/powerpc-405-linux-gnu/bin/powerpc-405-linux-gnu-gcc -m32 -Wp,-MD,arch/ppc/kernel/.asm-offsets.s.d  -nostdinc -isystem /opt/crosstool/gcc-4.1.1-glibc-2.3.6/powerpc-405-linux-gnu/lib/gcc/powerpc-405-linux-gnu/4.1.1/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/compudj/git/linux-2.6-lttng/include -include include/linux/autoconf.h -Iarch/ppc -Iarch/ppc/include -I/home/compudj/git/linux-2.6-lttng/. -I. -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Os -I/home/compudj/git/linux-2.6-lttng/arch/ppc -Iarch/ppc -msoft-float -pipe -ffixed-r2 -mmultiple -mno-altivec -mstring -Wa,-m405 -fomit-frame-pointer -g -fno-stack-protector -Wdeclaration-after-statement -Wno-pointer-sign  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(asm_offsets)"  -D"KBUILD_MODNAME=KBUILD_STR(asm_offsets)" -fverbose-asm -S -o arch/ppc/kernel/asm-offsets.s /home/compudj/git/linux-2.6-lttng/arc!
- h/ppc/kernel/asm-offsets.c
-> In file included from /home/compudj/git/linux-2.6-lttng/include/linux/bitops.h:17,
->                  from /home/compudj/git/linux-2.6-lttng/include/linux/kernel.h:15,
->                  from include2/asm/system.h:7,
->                  from /home/compudj/git/linux-2.6-lttng/include/linux/list.h:9,
->                  from /home/compudj/git/linux-2.6-lttng/include/linux/signal.h:8,
->                  from /home/compudj/git/linux-2.6-lttng/arch/ppc/kernel/asm-offsets.c:11:
-> arch/ppc/include/asm/bitops.h: In function '__clear_bit_unlock':
-> arch/ppc/include/asm/bitops.h:229: error: expected string literal before ':' token
-> arch/ppc/include/asm/bitops.h:229: confused by earlier errors, bailing out
-> make[2]: *** [arch/ppc/kernel/asm-offsets.s] Error 1
-> make[1]: *** [prepare0] Error 2
-> make: *** [_all] Error 2
+> Documentation/SubmittingPatches recognizes Signed-off-by: and
+> Acked-by:.  Nothing about Reviewed-by.  Quote:
+> 
+>   Acked-by: is not as formal as Signed-off-by:.  It is a record that the acker
+>   has at least reviewed the patch and has indicated acceptance.
+> 
+> Reviewed-by: carries no such connotation or indication IMO.
+> Please use Acked-by if that's what these reviewers have done.
 
-What the heck is arch/ppc/include/asm/bitops.h?  I assume that it's
-include/asm-powerpc/bitops.h via some wormhole.
-
-
-If so, the finger points at this:
-
-static __inline__ void __clear_bit_unlock(int nr, volatile unsigned long *addr)
-{
-	__asm__ __volatile__(LWSYNC_ON_SMP ::: "memory");
-	__clear_bit(nr, addr);
-}
-
-which was added by Nick's powerpc-lock-bitops.patch.  I am suspecting that
-this isn't pp32 code?
-
-(what's with the newly-added old-style __inline__, btw?  That's just more
-stuff we need to clean up later, so there doesn't seem much point in adding
-it).
-
+Yeah.  We will start introducing Reviewed-by: (I haven't yet quite worked
+out how yet) but it will be a quite formal thing and it would be something
+which the reviewer explicitly provided.  For now, let's please stick with
+acked-by (if those individuals did indeed send an acked-by)
