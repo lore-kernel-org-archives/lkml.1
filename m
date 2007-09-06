@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbXIFLjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbXIFL5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757374AbXIFLjv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 07:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbXIFLjo
+	id S1756187AbXIFL5k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 07:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbXIFL5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 07:39:44 -0400
-Received: from main.gmane.org ([80.91.229.2]:41607 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751974AbXIFLjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 07:39:43 -0400
-To: Avi Kivity <public-avi-atKUWr5tajBWk0Htik3J/w@ciao.gmane.org>
-Cc: public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@ciao.gmane.org,
-       public-linux-mm-Bw31MaZKKs3YtjvyW6yDsg@ciao.gmane.org,
-       public-kvm-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@ciao.gmane.org,
-       public-general-ZwoEplunGu1OwGhvXhtEPSCwEArCW2h5@ciao.gmane.org
-Subject: Re: [PATCH][RFC] pte notifiers -- support for external page	tables
-References: <11890207643068-git-send-email-avi@qumranet.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 06 Sep 2007 13:39:23 +0200
-In-Reply-To: <11890207643068-git-send-email-avi@qumranet.com>
-Message-ID: <p73myw09g5w.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Thu, 6 Sep 2007 07:57:33 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:37654 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753322AbXIFL5c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 07:57:32 -0400
+Date: Thu, 6 Sep 2007 05:57:31 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>
+Subject: Re: [RFC] disable PCIE 'Enable No Snoop' bit by default
+Message-ID: <20070906115730.GE14130@parisc-linux.org>
+References: <1189056908.24368.9.camel@sli10-conroe.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1189056908.24368.9.camel@sli10-conroe.sh.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Sep 06, 2007 at 01:35:08PM +0800, Shaohua Li wrote:
+> PCIE 'Enable No Snoop' bit is set by default per PCIE spec, but OS
+> assumes PCI DMA is snooped, which is legacy PCI device does. Enabling no
+> snoop might cause potential DMA issues. This patch disables it, if a
+> driver can work with no snoop, we can provide a helper to enable it.
 
+I'm not sure your analysis is correct.  Here's what my draft copy of
+the pcie 2.0 spec says:
 
-Avi Kivity <avi-atKUWr5tajBWk0Htik3J/w@public.gmane.org> writes:
-> 
-> pte notifiers are different from paravirt_ops: they extend the normal
-> page tables rather than replace them; and they provide high-level information
-> such as the vma and the virtual address for the driver to use.
+  Enble No Snoop ­ If this bit is Set, the Function is permitted to
+  Set the No Snoop bit in the Requester Attributes of transactions it
+  initiates that do not require hardware enforced cache coherency (see
+  Section 2.2.6.5). Note that setting this bit to 1b should not cause
+  a Function to Set the No Snoop attribute on all transactions that it
+  initiates. Even when this bit is Set, a Function is only permitted
+  to Set the No Snoop attribute on a transaction when it can guarantee
+  that the address of the transaction is not stored in any cache in
+  the system.  This bit permitted to be hardwired to 0b if a Function
+  would never Set the No Snoop attribute in transactions it initiates.
+  Default value of this bit is 1b.
 
-Sounds like a locking horror to me.  To do anything with page tables
-you need locks. Both for the kernel page tables and for your new tables.
+That implies that devices are only allowed to set it when it's safe to
+do so ... and we don't need to turn it off.
 
-What happens when people add all
-things of complicated operations in these notifiers? That will likely
-happen and then everytime you change something in VM code they 
-will break. This has the potential to increase the cost of maintaining
-VM code considerably, which would be a bad thing.
-
-This is quite different from paravirt ops because low level pvops
-can typically run lockless by just doing some kind of hypercall directly.
-But that won't work for maintaining your custom page tables.
-
--Andi
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
