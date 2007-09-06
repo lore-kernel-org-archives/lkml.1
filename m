@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbXIFKEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbXIFKNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757216AbXIFKEl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 06:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbXIFKEe
+	id S1756155AbXIFKNr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 06:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbXIFKNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 06:04:34 -0400
-Received: from leb.cs.unibo.it ([130.136.1.102]:52240 "EHLO leb.cs.unibo.it"
+	Thu, 6 Sep 2007 06:13:39 -0400
+Received: from lec.cs.unibo.it ([130.136.1.103]:53222 "EHLO lec.cs.unibo.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755561AbXIFKEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 06:04:33 -0400
-X-Greylist: delayed 1542 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Sep 2007 06:04:32 EDT
-Date: Thu, 6 Sep 2007 12:04:31 +0200
+	id S1751077AbXIFKNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 06:13:39 -0400
+Date: Thu, 6 Sep 2007 11:38:44 +0200
 To: linux-kernel@vger.kernel.org
 Cc: "Mathiasen, Torben" <Torben.Mathiasen@hp.com>
-Subject: Re: [PATCH] drivers/char/misc.c: deprecated call register_chrdev, and 256 minor limit eliminated
-Message-ID: <20070906100431.GD8222@cs.unibo.it>
-References: <20070906093844.GC8222@cs.unibo.it>
+Subject: [PATCH] drivers/char/misc.c: deprecated call register_chrdev, and 256 minor limit eliminated
+Message-ID: <20070906093844.GC8222@cs.unibo.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="5QAgd0e35j3NYeGe"
 Content-Disposition: inline
-In-Reply-To: <20070906093844.GC8222@cs.unibo.it>
 User-Agent: Mutt/1.5.11
 From: renzo@cs.unibo.it (Renzo Davoli)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 06, 2007 at 11:38:44AM +0200, Renzo Davoli wrote:
+
+--5QAgd0e35j3NYeGe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
 Dear Kernel Developers,
 
 I have seen that drivers/char/misc.c already used the deprecated 
@@ -40,9 +41,6 @@ misc allocates the entire major 10 and avoids the deprecated call.
 These are just my 2 (euro) cents, I hope it can be useful.
 
 	renzo
-
-Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
-
 -- 
 ============================================================================
 Renzo Davoli				| Dept. of Computer Science
@@ -51,6 +49,10 @@ Tel. +39 051 2094501			| Mura Anteo Zamboni, 7
 Fax. +39 051 2094510			| I-40127 Bologna  ITALY
 Key fingerprint = A019 17E2 5562 06F6 77BB  2E93 1A01 F646 30EA B487
 ============================================================================
+
+--5QAgd0e35j3NYeGe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="drivers_char_misc.patch"
 
 --- drivers/char/misc.orig.c	2007-08-05 16:56:59.000000000 +0200
 +++ drivers/char/misc.c	2007-09-06 11:07:51.000000000 +0200
@@ -105,12 +107,4 @@ Key fingerprint = A019 17E2 5562 06F6 77BB  2E93 1A01 F646 30EA B487
  		       MISC_MAJOR);
  		class_destroy(misc_class);
 
-
--- 
-============================================================================
-Renzo Davoli				| Dept. of Computer Science
-(NIC rd235, HAM IZ4DJE)                 | University of Bologna	
-Tel. +39 051 2094501			| Mura Anteo Zamboni, 7
-Fax. +39 051 2094510			| I-40127 Bologna  ITALY
-Key fingerprint = A019 17E2 5562 06F6 77BB  2E93 1A01 F646 30EA B487
-============================================================================
+--5QAgd0e35j3NYeGe--
