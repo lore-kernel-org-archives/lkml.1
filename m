@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbXIFWRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932644AbXIFWXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbXIFWRW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 18:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbXIFWQ7
+	id S932644AbXIFWXg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 18:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbXIFWX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 18:16:59 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:27036 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757576AbXIFWQ6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 18:16:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:subject:date:message-id:x-mailer;
-        b=rkDKW54naC7YRYnqL8fkSkfeWCRD07URc0b0g/wprP3ux83Sa6wrB/ZG9P9mwdLjZzkqzfC0Cq1D70QdsQYJRxjljbLN6iMtdhfw++669uwgkUsq+6Aan+xBk+k+8H6/QyK+sj11gDmyvQPB0qF95nOU5or/cYW1m9KvgBTASSQ=
-From: Vladimir Shebordaev <vladimir.shebordaev@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Vladimir Shebordaev <vshebordaev@mail.ru>
-Subject: [PATCH] [input] USB touchscreen
-Date: Fri,  7 Sep 2007 02:14:14 +0400
-Message-Id: <1189116854924-git-send-email-vladimir.shebordaev@gmail.com>
-X-Mailer: git-send-email 1.5.2.2
+	Thu, 6 Sep 2007 18:23:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42531 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755132AbXIFWX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 18:23:27 -0400
+Message-ID: <46E07DDA.2040907@redhat.com>
+Date: Thu, 06 Sep 2007 18:23:22 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: David Brownell <david-b@pacbell.net>
+Subject: Two identical entries for "rtc" in /proc/devices
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Vladimir Shebordaev <vshebordaev@mail.ru>
+# ls -li
+total 0
+4026532007 -r--r--r-- 1 root root 0 Sep  6 18:18 nvram
+4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
+4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
+4026532056 -rw-r--r-- 1 root root 0 Sep  6 18:18 snd-page-alloc
 
-This patch fixes a nasty typo in usbtouchscreen driver.
+kernel 2.6.22.6 on a Dell Precision 390:
 
-The typo is inherited from the original mtouchusb. It
-used to make the input subsytem to incorrectly
-report the physical device ids to userspace that in turn
-is much confusing for, e.g. XInput hotplug facilities in
-setups with multiple identical touchscreens.
+# CONFIG_RTC is not set
+# CONFIG_RTC_DEBUG is not set
+CONFIG_GEN_RTC=y
+CONFIG_GEN_RTC_X=y
+CONFIG_RTC_CLASS=y
+CONFIG_RTC_HCTOSYS=y
+CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+CONFIG_RTC_INTF_SYSFS=y
+CONFIG_RTC_INTF_PROC=y
+CONFIG_RTC_INTF_DEV=y
+# CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
+CONFIG_RTC_DRV_CMOS=m
+CONFIG_RTC_DRV_DS1307=m
+CONFIG_RTC_DRV_DS1553=m
+CONFIG_RTC_DRV_DS1672=m
+CONFIG_RTC_DRV_DS1742=m
+# CONFIG_RTC_DRV_EP93XX is not set
+CONFIG_RTC_DRV_ISL1208=m
+CONFIG_RTC_DRV_MAX6900=m
+# CONFIG_RTC_DRV_M48T86 is not set
+CONFIG_RTC_DRV_PCF8563=m
+CONFIG_RTC_DRV_PCF8583=m
+CONFIG_RTC_DRV_RS5C372=m
+# CONFIG_RTC_DRV_SA1100 is not set
+# CONFIG_RTC_DRV_TEST is not set
+CONFIG_RTC_DRV_X1205=m
+CONFIG_RTC_DRV_V3020=m
 
-Signed-off-by: Vladimir Shebordaev <vladimir.shebordaev@gmail.com>
----
- drivers/input/touchscreen/usbtouchscreen.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+CONFIG_HPET_EMULATE_RTC=y
 
-diff --git a/drivers/input/touchscreen/usbtouchscreen.c b/drivers/input/touchscreen/usbtouchscreen.c
-index e3f2285..c32f447 100644
---- a/drivers/input/touchscreen/usbtouchscreen.c
-+++ b/drivers/input/touchscreen/usbtouchscreen.c
-@@ -734,7 +734,7 @@ static int usbtouch_probe(struct usb_interface *intf,
- 			 le16_to_cpu(udev->descriptor.idProduct));
- 
- 	usb_make_path(udev, usbtouch->phys, sizeof(usbtouch->phys));
--	strlcpy(usbtouch->phys, "/input0", sizeof(usbtouch->phys));
-+	strlcat(usbtouch->phys, "/input0", sizeof(usbtouch->phys));
- 
- 	input_dev->name = usbtouch->name;
- 	input_dev->phys = usbtouch->phys;
--- 
-1.5.2.2
-
+CONFIG_EFI_RTC=y
