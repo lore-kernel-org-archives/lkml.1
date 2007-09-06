@@ -1,866 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933173AbXIFVUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933096AbXIFVWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933173AbXIFVUu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 17:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932813AbXIFVUD
+	id S933096AbXIFVWS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 17:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932446AbXIFVWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 17:20:03 -0400
-Received: from 184.5.221.87.dynamic.jazztel.es ([87.221.5.184]:46552 "EHLO
-	traven.no-ip.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932526AbXIFVT7 (ORCPT
+	Thu, 6 Sep 2007 17:22:01 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:49491 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932435AbXIFVWA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 17:19:59 -0400
-Date: Thu, 6 Sep 2007 23:19:58 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: gregkh@suse.de, linux-usb-users@lists.sourceforge.net,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH 2/2] ELAN U132 Host Controller Driver: convert
-	scheduler_lock to mutex
-Message-ID: <20070906211958.GE3081@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	gregkh@suse.de, linux-usb-users@lists.sourceforge.net,
-	linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20070906210922.GC3081@traven>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070906210922.GC3081@traven>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 6 Sep 2007 17:22:00 -0400
+Date: Thu, 6 Sep 2007 14:20:33 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 8/8] Immediate Values - Documentation
+Message-Id: <20070906142033.c0047718.randy.dunlap@oracle.com>
+In-Reply-To: <20070906200316.343198308@polymtl.ca>
+References: <20070906200228.086651361@polymtl.ca>
+	<20070906200316.343198308@polymtl.ca>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ELAN U132 Host Controller Driver uses the semaphore scheduler_lock
-as mutex. Use the mutex API instead of the (binary) semaphore.
+On Thu, 06 Sep 2007 16:02:36 -0400 Mathieu Desnoyers wrote:
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+>  Documentation/immediate.txt |  232 ++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 232 insertions(+)
+> 
+> Index: linux-2.6-lttng/Documentation/immediate.txt
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6-lttng/Documentation/immediate.txt	2007-08-20 15:55:26.000000000 -0400
+> @@ -0,0 +1,232 @@
+> +		        Using the Immediate Values
+> +
+> +			    Mathieu Desnoyers
+> +
+> +
+> +This document introduces Immediate Values and their use.
+> +
+> +* Purpose of immediate values
+> +
+> +An immediate value is used to compile into the kernel variables that sits within
 
---
+s/sits/sit/
 
-diff --git a/drivers/usb/host/u132-hcd.c b/drivers/usb/host/u132-hcd.c
-index b88eb3c..e299992 100644
---- a/drivers/usb/host/u132-hcd.c
-+++ b/drivers/usb/host/u132-hcd.c
-@@ -185,7 +185,7 @@ struct u132 {
-         struct kref kref;
-         struct list_head u132_list;
-         struct semaphore sw_lock;
--        struct semaphore scheduler_lock;
-+        struct mutex scheduler_lock;
-         struct u132_platform_data *board;
-         struct platform_device *platform_dev;
-         struct u132_ring ring[MAX_U132_RINGS];
-@@ -536,12 +536,12 @@ static void u132_hcd_giveback_urb(struct u132 *u132, struct u132_endp *endp,
-                 endp->active = 0;
-                 spin_unlock_irqrestore(&endp->queue_lock.slock, irqs);
-                 kfree(urbq);
--        } down(&u132->scheduler_lock);
-+        } mutex_lock(&u132->scheduler_lock);
-         ring = endp->ring;
-         ring->in_use = 0;
-         u132_ring_cancel_work(u132, ring);
-         u132_ring_queue_work(u132, ring, 0);
--        up(&u132->scheduler_lock);
-+        mutex_unlock(&u132->scheduler_lock);
-         u132_endp_put_kref(u132, endp);
-         usb_hcd_giveback_urb(hcd, urb);
-         return;
-@@ -633,22 +633,22 @@ static void u132_hcd_interrupt_recv(void *data, struct urb *urb, u8 *buf,
-         struct u132 *u132 = endp->u132;
-         u8 address = u132->addr[endp->usb_addr].address;
-         struct u132_udev *udev = &u132->udev[address];
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
-@@ -667,7 +667,7 @@ static void u132_hcd_interrupt_recv(void *data, struct urb *urb, u8 *buf,
-                                 1 & toggle_bits);
-                         if (urb->actual_length > 0) {
-                                 int retval;
--                                up(&u132->scheduler_lock);
-+                                mutex_unlock(&u132->scheduler_lock);
-                                 retval = edset_single(u132, ring, endp, urb,
-                                         address, endp->toggle_bits,
-                                         u132_hcd_interrupt_recv);
-@@ -682,7 +682,7 @@ static void u132_hcd_interrupt_recv(void *data, struct urb *urb, u8 *buf,
-                                         msecs_to_jiffies(urb->interval);
-                                 u132_ring_cancel_work(u132, ring);
-                                 u132_ring_queue_work(u132, ring, 0);
--                                up(&u132->scheduler_lock);
-+                                mutex_unlock(&u132->scheduler_lock);
-                                 u132_endp_put_kref(u132, endp);
-                         }
-                         return;
-@@ -691,7 +691,7 @@ static void u132_hcd_interrupt_recv(void *data, struct urb *urb, u8 *buf,
-                         endp->toggle_bits = toggle_bits;
-                         usb_settoggle(udev->usb_device, endp->usb_endp, 0,
-                                 1 & toggle_bits);
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_hcd_giveback_urb(u132, endp, urb, 0);
-                         return;
-                 } else {
-@@ -711,7 +711,7 @@ static void u132_hcd_interrupt_recv(void *data, struct urb *urb, u8 *buf,
-                                         "g back INTERRUPT %s\n", urb,
-                                         cc_to_text[condition_code]);
-                         }
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_hcd_giveback_urb(u132, endp, urb,
-                                 cc_to_error[condition_code]);
-                         return;
-@@ -719,7 +719,7 @@ static void u132_hcd_interrupt_recv(void *data, struct urb *urb, u8 *buf,
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -732,22 +732,22 @@ static void u132_hcd_bulk_output_sent(void *data, struct urb *urb, u8 *buf,
-         struct u132_endp *endp = data;
-         struct u132 *u132 = endp->u132;
-         u8 address = u132->addr[endp->usb_addr].address;
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
-@@ -756,7 +756,7 @@ static void u132_hcd_bulk_output_sent(void *data, struct urb *urb, u8 *buf,
-                 endp->toggle_bits = toggle_bits;
-                 if (urb->transfer_buffer_length > urb->actual_length) {
-                         int retval;
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         retval = edset_output(u132, ring, endp, urb, address,
-                                 endp->toggle_bits, u132_hcd_bulk_output_sent);
-                         if (retval == 0) {
-@@ -764,14 +764,14 @@ static void u132_hcd_bulk_output_sent(void *data, struct urb *urb, u8 *buf,
-                                 u132_hcd_giveback_urb(u132, endp, urb, retval);
-                         return;
-                 } else {
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_hcd_giveback_urb(u132, endp, urb, 0);
-                         return;
-                 }
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -785,22 +785,22 @@ static void u132_hcd_bulk_input_recv(void *data, struct urb *urb, u8 *buf,
-         struct u132 *u132 = endp->u132;
-         u8 address = u132->addr[endp->usb_addr].address;
-         struct u132_udev *udev = &u132->udev[address];
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
-@@ -818,7 +818,7 @@ static void u132_hcd_bulk_input_recv(void *data, struct urb *urb, u8 *buf,
-                         endp->toggle_bits = toggle_bits;
-                         usb_settoggle(udev->usb_device, endp->usb_endp, 0,
-                                 1 & toggle_bits);
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         retval = usb_ftdi_elan_edset_input(u132->platform_dev,
-                                 ring->number, endp, urb, address,
-                                 endp->usb_endp, endp->toggle_bits,
-@@ -831,7 +831,7 @@ static void u132_hcd_bulk_input_recv(void *data, struct urb *urb, u8 *buf,
-                         endp->toggle_bits = toggle_bits;
-                         usb_settoggle(udev->usb_device, endp->usb_endp, 0,
-                                 1 & toggle_bits);
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_hcd_giveback_urb(u132, endp, urb,
-                                 cc_to_error[condition_code]);
-                         return;
-@@ -840,7 +840,7 @@ static void u132_hcd_bulk_input_recv(void *data, struct urb *urb, u8 *buf,
-                         endp->toggle_bits = toggle_bits;
-                         usb_settoggle(udev->usb_device, endp->usb_endp, 0,
-                                 1 & toggle_bits);
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_hcd_giveback_urb(u132, endp, urb, 0);
-                         return;
-                 } else if (condition_code == TD_DATAUNDERRUN) {
-@@ -850,13 +850,13 @@ static void u132_hcd_bulk_input_recv(void *data, struct urb *urb, u8 *buf,
-                         dev_warn(&u132->platform_dev->dev, "urb=%p(SHORT NOT OK"
-                                 ") giving back BULK IN %s\n", urb,
-                                 cc_to_text[condition_code]);
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_hcd_giveback_urb(u132, endp, urb, 0);
-                         return;
-                 } else if (condition_code == TD_CC_STALL) {
-                         endp->toggle_bits = 0x2;
-                         usb_settoggle(udev->usb_device, endp->usb_endp, 0, 0);
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_hcd_giveback_urb(u132, endp, urb,
-                                 cc_to_error[condition_code]);
-                         return;
-@@ -866,7 +866,7 @@ static void u132_hcd_bulk_input_recv(void *data, struct urb *urb, u8 *buf,
-                         dev_err(&u132->platform_dev->dev, "urb=%p giving back B"
-                                 "ULK IN code=%d %s\n", urb, condition_code,
-                                 cc_to_text[condition_code]);
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_hcd_giveback_urb(u132, endp, urb,
-                                 cc_to_error[condition_code]);
-                         return;
-@@ -874,7 +874,7 @@ static void u132_hcd_bulk_input_recv(void *data, struct urb *urb, u8 *buf,
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -886,32 +886,32 @@ static void u132_hcd_configure_empty_sent(void *data, struct urb *urb, u8 *buf,
- {
-         struct u132_endp *endp = data;
-         struct u132 *u132 = endp->u132;
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, 0);
-                 return;
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -924,22 +924,22 @@ static void u132_hcd_configure_input_recv(void *data, struct urb *urb, u8 *buf,
-         struct u132_endp *endp = data;
-         struct u132 *u132 = endp->u132;
-         u8 address = u132->addr[endp->usb_addr].address;
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
-@@ -955,7 +955,7 @@ static void u132_hcd_configure_input_recv(void *data, struct urb *urb, u8 *buf,
-                         TD_DATAUNDERRUN) && ((urb->transfer_flags &
-                         URB_SHORT_NOT_OK) == 0))) {
-                         int retval;
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         retval = usb_ftdi_elan_edset_empty(u132->platform_dev,
-                                 ring->number, endp, urb, address,
-                                 endp->usb_endp, 0x3,
-@@ -965,14 +965,14 @@ static void u132_hcd_configure_input_recv(void *data, struct urb *urb, u8 *buf,
-                                 u132_hcd_giveback_urb(u132, endp, urb, retval);
-                         return;
-                 } else if (condition_code == TD_CC_STALL) {
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         dev_warn(&u132->platform_dev->dev, "giving back SETUP I"
-                                 "NPUT STALL urb %p\n", urb);
-                         u132_hcd_giveback_urb(u132, endp, urb,
-                                 cc_to_error[condition_code]);
-                         return;
-                 } else {
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         dev_err(&u132->platform_dev->dev, "giving back SETUP IN"
-                                 "PUT %s urb %p\n", cc_to_text[condition_code],
-                                 urb);
-@@ -983,7 +983,7 @@ static void u132_hcd_configure_input_recv(void *data, struct urb *urb, u8 *buf,
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -995,32 +995,32 @@ static void u132_hcd_configure_empty_recv(void *data, struct urb *urb, u8 *buf,
- {
-         struct u132_endp *endp = data;
-         struct u132 *u132 = endp->u132;
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, 0);
-                 return;
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -1033,29 +1033,29 @@ static void u132_hcd_configure_setup_sent(void *data, struct urb *urb, u8 *buf,
-         struct u132_endp *endp = data;
-         struct u132 *u132 = endp->u132;
-         u8 address = u132->addr[endp->usb_addr].address;
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
-                 if (usb_pipein(urb->pipe)) {
-                         int retval;
-                         struct u132_ring *ring = endp->ring;
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         retval = usb_ftdi_elan_edset_input(u132->platform_dev,
-                                 ring->number, endp, urb, address,
-                                 endp->usb_endp, 0,
-@@ -1067,7 +1067,7 @@ static void u132_hcd_configure_setup_sent(void *data, struct urb *urb, u8 *buf,
-                 } else {
-                         int retval;
-                         struct u132_ring *ring = endp->ring;
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         retval = usb_ftdi_elan_edset_input(u132->platform_dev,
-                                 ring->number, endp, urb, address,
-                                 endp->usb_endp, 0,
-@@ -1080,7 +1080,7 @@ static void u132_hcd_configure_setup_sent(void *data, struct urb *urb, u8 *buf,
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -1094,34 +1094,34 @@ static void u132_hcd_enumeration_empty_recv(void *data, struct urb *urb,
-         struct u132 *u132 = endp->u132;
-         u8 address = u132->addr[endp->usb_addr].address;
-         struct u132_udev *udev = &u132->udev[address];
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
-                 u132->addr[0].address = 0;
-                 endp->usb_addr = udev->usb_addr;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, 0);
-                 return;
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -1133,28 +1133,28 @@ static void u132_hcd_enumeration_address_sent(void *data, struct urb *urb,
- {
-         struct u132_endp *endp = data;
-         struct u132 *u132 = endp->u132;
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
-                 int retval;
-                 struct u132_ring *ring = endp->ring;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 retval = usb_ftdi_elan_edset_input(u132->platform_dev,
-                         ring->number, endp, urb, 0, endp->usb_endp, 0,
-                         u132_hcd_enumeration_empty_recv);
-@@ -1165,7 +1165,7 @@ static void u132_hcd_enumeration_address_sent(void *data, struct urb *urb,
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -1177,32 +1177,32 @@ static void u132_hcd_initial_empty_sent(void *data, struct urb *urb, u8 *buf,
- {
-         struct u132_endp *endp = data;
-         struct u132 *u132 = endp->u132;
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, 0);
-                 return;
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -1215,22 +1215,22 @@ static void u132_hcd_initial_input_recv(void *data, struct urb *urb, u8 *buf,
-         struct u132_endp *endp = data;
-         struct u132 *u132 = endp->u132;
-         u8 address = u132->addr[endp->usb_addr].address;
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
-@@ -1243,7 +1243,7 @@ static void u132_hcd_initial_input_recv(void *data, struct urb *urb, u8 *buf,
-                         *u++ = *b++;
-                 }
-                 urb->actual_length = len;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 retval = usb_ftdi_elan_edset_empty(u132->platform_dev,
-                         ring->number, endp, urb, address, endp->usb_endp, 0x3,
-                         u132_hcd_initial_empty_sent);
-@@ -1254,7 +1254,7 @@ static void u132_hcd_initial_input_recv(void *data, struct urb *urb, u8 *buf,
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -1267,28 +1267,28 @@ static void u132_hcd_initial_setup_sent(void *data, struct urb *urb, u8 *buf,
-         struct u132_endp *endp = data;
-         struct u132 *u132 = endp->u132;
-         u8 address = u132->addr[endp->usb_addr].address;
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (u132->going > 1) {
-                 dev_err(&u132->platform_dev->dev, "device has been removed %d\n"
-                         , u132->going);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_forget_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (endp->dequeueing) {
-                 endp->dequeueing = 0;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -EINTR);
-                 return;
-         } else if (u132->going > 0) {
-                 dev_err(&u132->platform_dev->dev, "device is being removed urb="
-                         "%p status=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, -ENODEV);
-                 return;
-         } else if (urb->status == -EINPROGRESS) {
-                 int retval;
-                 struct u132_ring *ring = endp->ring;
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 retval = usb_ftdi_elan_edset_input(u132->platform_dev,
-                         ring->number, endp, urb, address, endp->usb_endp, 0,
-                         u132_hcd_initial_input_recv);
-@@ -1299,7 +1299,7 @@ static void u132_hcd_initial_setup_sent(void *data, struct urb *urb, u8 *buf,
-         } else {
-                 dev_err(&u132->platform_dev->dev, "CALLBACK called urb=%p statu"
-                         "s=%d\n", urb, urb->status);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_hcd_giveback_urb(u132, endp, urb, urb->status);
-                 return;
-         }
-@@ -1314,9 +1314,9 @@ static void u132_hcd_ring_work_scheduler(struct work_struct *work)
-         struct u132_ring *ring =
- 		container_of(work, struct u132_ring, scheduler.work);
-         struct u132 *u132 = ring->u132;
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         if (ring->in_use) {
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_ring_put_kref(u132, ring);
-                 return;
-         } else if (ring->curr_endp) {
-@@ -1333,7 +1333,7 @@ static void u132_hcd_ring_work_scheduler(struct work_struct *work)
-                                 ring->curr_endp = endp;
-                                 u132_endp_cancel_work(u132, last_endp);
-                                 u132_endp_queue_work(u132, last_endp, 0);
--                                up(&u132->scheduler_lock);
-+                                mutex_unlock(&u132->scheduler_lock);
-                                 u132_ring_put_kref(u132, ring);
-                                 return;
-                         } else {
-@@ -1347,7 +1347,7 @@ static void u132_hcd_ring_work_scheduler(struct work_struct *work)
-                         last_endp->jiffies)) {
-                         u132_endp_cancel_work(u132, last_endp);
-                         u132_endp_queue_work(u132, last_endp, 0);
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_ring_put_kref(u132, ring);
-                         return;
-                 } else {
-@@ -1357,15 +1357,15 @@ static void u132_hcd_ring_work_scheduler(struct work_struct *work)
-                 }
-                 if (wakeup > 0) {
-                         u132_ring_requeue_work(u132, ring, wakeup);
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         return;
-                 } else {
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_ring_put_kref(u132, ring);
-                         return;
-                 }
-         } else {
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_ring_put_kref(u132, ring);
-                 return;
-         }
-@@ -1377,32 +1377,32 @@ static void u132_hcd_endp_work_scheduler(struct work_struct *work)
-         struct u132_endp *endp =
- 		container_of(work, struct u132_endp, scheduler.work);
-         struct u132 *u132 = endp->u132;
--        down(&u132->scheduler_lock);
-+        mutex_lock(&u132->scheduler_lock);
-         ring = endp->ring;
-         if (endp->edset_flush) {
-                 endp->edset_flush = 0;
-                 if (endp->dequeueing)
-                         usb_ftdi_elan_edset_flush(u132->platform_dev,
-                                 ring->number, endp);
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_endp_put_kref(u132, endp);
-                 return;
-         } else if (endp->active) {
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_endp_put_kref(u132, endp);
-                 return;
-         } else if (ring->in_use) {
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_endp_put_kref(u132, endp);
-                 return;
-         } else if (endp->queue_next == endp->queue_last) {
--                up(&u132->scheduler_lock);
-+                mutex_unlock(&u132->scheduler_lock);
-                 u132_endp_put_kref(u132, endp);
-                 return;
-         } else if (endp->pipetype == PIPE_INTERRUPT) {
-                 u8 address = u132->addr[endp->usb_addr].address;
-                 if (ring->in_use) {
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_endp_put_kref(u132, endp);
-                         return;
-                 } else {
-@@ -1412,7 +1412,7 @@ static void u132_hcd_endp_work_scheduler(struct work_struct *work)
-                         endp->active = 1;
-                         ring->curr_endp = endp;
-                         ring->in_use = 1;
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         retval = edset_single(u132, ring, endp, urb, address,
-                                 endp->toggle_bits, u132_hcd_interrupt_recv);
-                         if (retval == 0) {
-@@ -1423,7 +1423,7 @@ static void u132_hcd_endp_work_scheduler(struct work_struct *work)
-         } else if (endp->pipetype == PIPE_CONTROL) {
-                 u8 address = u132->addr[endp->usb_addr].address;
-                 if (ring->in_use) {
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         u132_endp_put_kref(u132, endp);
-                         return;
-                 } else if (address == 0) {
-@@ -1433,7 +1433,7 @@ static void u132_hcd_endp_work_scheduler(struct work_struct *work)
-                         endp->active = 1;
-                         ring->curr_endp = endp;
-                         ring->in_use = 1;
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         retval = edset_setup(u132, ring, endp, urb, address,
-                                 0x2, u132_hcd_initial_setup_sent);
-                         if (retval == 0) {
-@@ -1447,7 +1447,7 @@ static void u132_hcd_endp_work_scheduler(struct work_struct *work)
-                         endp->active = 1;
-                         ring->curr_endp = endp;
-                         ring->in_use = 1;
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         retval = edset_setup(u132, ring, endp, urb, 0, 0x2,
-                                 u132_hcd_enumeration_address_sent);
-                         if (retval == 0) {
-@@ -1462,7 +1462,7 @@ static void u132_hcd_endp_work_scheduler(struct work_struct *work)
-                         endp->active = 1;
-                         ring->curr_endp = endp;
-                         ring->in_use = 1;
--                        up(&u132->scheduler_lock);
-+                        mutex_unlock(&u132->scheduler_lock);
-                         retval = edset_setup(u132, ring, endp, urb, address,
-                                 0x2, u132_hcd_configure_setup_sent);
-                         if (retval == 0) {
-@@ -1474,7 +1474,7 @@ static void u132_hcd_endp_work_scheduler(struct work_struct *work)
-                 if (endp->input) {
-                         u8 address = u132->addr[endp->usb_addr].address;
-                         if (ring->in_use) {
--                                up(&u132->scheduler_lock);
-+                                mutex_unlock(&u132->scheduler_lock);
-                                 u132_endp_put_kref(u132, endp);
-                                 return;
-                         } else {
-@@ -1484,7 +1484,7 @@ static void u132_hcd_endp_work_scheduler(struct work_struct *work)
-                                 endp->active = 1;
-                                 ring->curr_endp = endp;
-                                 ring->in_use = 1;
--                                up(&u132->scheduler_lock);
-+                                mutex_unlock(&u132->scheduler_lock);
-                                 retval = edset_input(u132, ring, endp, urb,
-                                         address, endp->toggle_bits,
-                                         u132_hcd_bulk_input_recv);
-@@ -1497,7 +1497,7 @@ static void u132_hcd_endp_work_scheduler(struct work_struct *work)
-                 } else {        /* output pipe */
-                         u8 address = u132->addr[endp->usb_addr].address;
-                         if (ring->in_use) {
--                                up(&u132->scheduler_lock);
-+                                mutex_unlock(&u132->scheduler_lock);
-                                 u132_endp_put_kref(u132, endp);
-                                 return;
-                         } else {
-@@ -1507,7 +1507,7 @@ static void u132_hcd_endp_work_scheduler(struct work_struct *work)
-                                 endp->active = 1;
-                                 ring->curr_endp = endp;
-                                 ring->in_use = 1;
--                                up(&u132->scheduler_lock);
-+                                mutex_unlock(&u132->scheduler_lock);
-                                 retval = edset_output(u132, ring, endp, urb,
-                                         address, endp->toggle_bits,
-                                         u132_hcd_bulk_output_sent);
+> +the instruction stream. They are meant to be rarely updated but read often.
+> +Using immediate values for these variables will save cache lines.
+> +
+> +This infrastructure is specialized in supporting dynamic patching of the values
+> +in the instruction stream when multiple CPUs are running without disturbing the
+> +normal system behavior.
+> +
+> +Compiling code meant to be rarely enabled at runtime can be done using
+> +immediate_if() as condition surrounding the code.
+> +
+> +* Usage
+> +
+> +In order to use the macro immediate, you should include linux/immediate.h.
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+                       "immediate" macros,
 
-                       El camino se hace al andar
-                           (Antonio Machado)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+> +#include <linux/immediate.h>
+> +
+> +immediate_char_t this_immediate;
+> +EXPORT_SYMBOL(this_immediate);
+> +
+> +
+> +Add, in your code :
+
+   And,  (?)
+
+> +Use immediate_set(&this_immediate) to set the immediate value.
+> +
+> +Use immediate_read(&this_immediate) to read the immediate value.
+> +
+> +The immediate mechanism supports inserting multiple instances of the same
+> +immediate. Immediate values can be put in inline functions, inlined static
+> +functions, and unrolled loops.
+> +
+> +If you have to read the immediate values from a function declared as __init or
+> +__exit, you should explicitly use _immediate_read(), which will fall back on a
+> +global variable read. Failing to do so will leave a reference to the __init
+> +section after it is freed (it would generate a modpost warning).
+> +
+> +The prefered idiom to dynamically enable compiled-in code is to use
+
+       preferred
+
+> +immediate_if (&this_immediate), which may eventually use gcc improvements to
+> +provide a jump instruction patching based condition instead of a immediate value
+
+                                                               of an
+
+> +feeding a conditional jump. You should use _immediate_if () instead of
+> +immediate_if () in functions marked __init or __exit.
+> +
+> +immediate_set_early() should be used only at early kernel boot time, before SMP
+> +is activated.
+
+More explanation of immediate_set_early() would be good, such as
+What?  Why?  How?
+
+> +
+> +If you need to declare your own immediate types (for instance, a pointer to
+> +struct task_struct), use:
+> +
+> +DEFINE_IMMEDIATE_TYPE(struct task_struct*, immediate_task_struct_ptr_t);
+> +
+> +and declare your variable with:
+> +immediate_task_struct_ptr_t myptr;
+> +
+> +You can choose to set an initial static value to the immediate by using, for
+> +instance:
+> +
+> +immediate_task_struct_ptr_t myptr = IMMEDIATE_INIT(10);
+> +
+> +
+> +* Optimization for a given architecture
+> +
+> +One can implement optimized immediate values for a given architecture by
+> +replacing asm-$ARCH/immediate.h.
+> +
+> +* Performance improvement
+> +
+> +* Memory hit for a data-based branch
+> +
+> +Here are the results on a 3GHz Pentium 4:
+> +
+> +number of tests : 100
+> +number of branches per test : 100000
+> +memory hit cycles per iteration (mean) : 636.611
+> +L1 cache hit cycles per iteration (mean) : 89.6413
+> +instruction stream based test, cycles per iteration (mean) : 85.3438
+> +Just getting the pointer from a modulo on a pseudo-random value, doing
+> +  noting with it, cycles per iteration (mean) : 77.5044
+
+     nothing
+
+> +
+> +So:
+> +Base case:                      77.50 cycles
+> +instruction stream based test:  +7.8394 cycles
+> +L1 cache hit based test:        +12.1369 cycles
+> +Memory load based test:         +559.1066 cycles
+> +
+> +So let's say we have a ping flood coming at
+> +(14014 packets transmitted, 14014 received, 0% packet loss, time 1826ms)
+> +7674 packets per second. If we put 2 markers for irq entry/exit, it
+> +brings us to 15348 markers sites executed per second.
+> +
+> +(15348 exec/s) * (559 cycles/exec) / (3G cycles/s) = 0.0029
+> +We therefore have a 0.29% slowdown just on this case.
+> +
+> +Compared to this, the instruction stream based test will cause a
+> +slowdown of:
+> +
+> +(15348 exec/s) * (7.84 cycles/exec) / (3G cycles/s) = 0.00004
+> +For a 0.004% slowdown.
+> +
+> +If we plan to use this for memory allocation, spinlock, and all sort of
+> +very high event rate tracing, we can assume it will execute 10 to 100
+> +times more sites per second, which brings us to 0.4% slowdown with the
+> +instruction stream based test compared to 29% slowdown with the memory
+> +load based test on a system with high memory pressure.
+> +
+> +
+> +
+> +* Markers impact under heavy memory load
+> +
+> +Running a kernel with my LTTng instrumentation set, in a test that
+> +generates memory pressure (from userspace) by trashing L1 and L2 caches
+> +between calls to getppid() (note: syscall_trace is active and calls
+> +a marker upon syscall entry and syscall exit; markers are disarmed).
+> +This test is done in user-space, so there are some delays due to IRQs
+> +coming and to the scheduler. (UP 2.6.22-rc6-mm1 kernel, task with -20
+> +nice level)
+> +
+> +My first set of results : Linear cache trashing, turned out not to be
+> +very interesting, because it seems like the linearity of the memset on a
+> +full array is somehow detected and it does not "really" trash the
+> +caches.
+> +
+> +Now the most interesting result : Random walk L1 and L2 trashing
+> +surrounding a getppid() call.
+> +
+> +- Markers compiled out (but syscall_trace execution forced)
+> +number of tests : 10000
+> +No memory pressure
+> +Reading timestamps takes 108.033 cycles
+> +getppid : 1681.4 cycles
+> +With memory pressure
+> +Reading timestamps takes 102.938 cycles
+> +getppid : 15691.6 cycles
+> +
+> +
+> +- With the immediate values based markers:
+> +number of tests : 10000
+> +No memory pressure
+> +Reading timestamps takes 108.006 cycles
+> +getppid : 1681.84 cycles
+> +With memory pressure
+> +Reading timestamps takes 100.291 cycles
+> +getppid : 11793 cycles
+> +
+> +
+> +- With global variables based markers:
+> +number of tests : 10000
+> +No memory pressure
+> +Reading timestamps takes 107.999 cycles
+> +getppid : 1669.06 cycles
+> +With memory pressure
+> +Reading timestamps takes 102.839 cycles
+> +getppid : 12535 cycles
+> +
+> +The result is quite interesting in that the kernel is slower without
+> +markers than with markers. I explain it by the fact that the data
+> +accessed is not layed out in the same manner in the cache lines when the
+
+                   laid out
+
+> +markers are compiled in or out. It seems that it aligns the function's
+> +data better to compile-in the markers in this case.
+> +
+> +But since the interesting comparison is between the immediate values and
+> +global variables based markers, and because they share the same memory
+> +layout, except for the movl being replaced by a movz, we see that the
+> +global variable based markers (2 markers) adds 742 cycles to each system
+> +call (syscall entry and exit are traced and memory locations for both
+> +global variables lie on the same cache line).
+> +
+> +
+> +- Test redone with less iterations, but with error estimates
+> +
+> +10 runs of 100 iterations each: Tests done on a 3GHz P4. Here I run getppid with
+> +syscall trace inactive, comparing memory pressure and w/o memory pressure.
+
+                                    ^ +with (?)
+also, spell out "without", please.
+
+> +(sorry, my system is not setup to execute syscall_trace this time, but it will
+> +make the point anyway).
+> +
+> +No memory pressure
+> +Reading timestamps:     150.92 cycles,     std dev.    1.01 cycles
+> +getppid:               1462.09 cycles,     std dev.   18.87 cycles
+> +
+> +With memory pressure
+> +Reading timestamps:     578.22 cycles,     std dev.  269.51 cycles
+> +getppid:              17113.33 cycles,     std dev. 1655.92 cycles
+> +
+> +
+> +Now for memory read timing: (10 runs, branches per test: 100000)
+> +Memory read based branch:
+> +                       644.09 cycles,      std dev.   11.39 cycles
+> +L1 cache hit based branch:
+> +                        88.16 cycles,      std dev.    1.35 cycles
+> +
+> +
+> +So, now that we have the raw results, let's calculate:
+> +
+> +Memory read:
+> +644.09±11.39 - 88.16±1.35 = 555.93±11.46 cycles
+
+What character is this that I cannot read (not displayed properly
+by my email client maybe)?  <something> after 644.09 and before the
++- symbol, repeated just before all of the +- symbols.
+
+
+> +Getppid without memory pressure:
+> +1462.09±18.87 - 150.92±1.01 = 1311.17±18.90 cycles
+> +
+> +Getppid with memory pressure:
+> +17113.33±1655.92 - 578.22±269.51 = 16535.11±1677.71 cycles
+> +
+> +Therefore, if we add 2 markers not based on immediate values to the getppid
+> +code, which would add 2 memory reads, we would add
+> +2 * 555.93±12.74 = 1111.86±25.48 cycles
+> +
+> +Therefore,
+> +
+> +1111.86±25.48 / 16535.11±1677.71 = 0.0672
+> + relative error: sqrt(((25.48/1111.86)^2)+((1677.71/16535.11)^2))
+> +                     = 0.1040
+> + absolute error: 0.1040 * 0.0672 = 0.0070
+> +
+> +Therefore: 0.0672±0.0070 * 100% = 6.72±0.70 %
+> +
+> +We can therefore affirm that adding 2 markers to getppid, on a system with high
+> +memory pressure, would have a performance hit of at least 6.0% on the system
+> +call time, all within the uncertainty limits of these tests. The same applies to
+> +other kernel code paths. The smaller those code paths are, the highest the
+> +impact ratio will be.
+> +
+> +Therefore, not only is it interesting to use the immediate values to dynamically
+> +activate dormant code such as the markers, but I think it should also be
+> +considered as a replacement for many of the "read mostly" static variables.
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
