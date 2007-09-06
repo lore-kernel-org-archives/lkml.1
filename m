@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbXIFPSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758311AbXIFPU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757888AbXIFPSv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 11:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756491AbXIFPSm
+	id S1758311AbXIFPU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 11:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756838AbXIFPUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 11:18:42 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:35015 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751796AbXIFPSl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 11:18:41 -0400
-Subject: Re: BUG: scheduling while atomic: ifconfig/0x00000002/4170
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Satyam Sharma <satyam@infradead.org>, Florian Lohoff <flo@rfc822.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, linux-wireless@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       ipw3945-devel@lists.sourceforge.net, yi.zhu@intel.com
-In-Reply-To: <20070906082301.GB21929@gondor.apana.org.au>
-References: <20070902184439.GA14306@paradigm.rfc822.org>
-	 <6bffcb0e0709021659o3856cd06gabc054c949a84397@mail.gmail.com>
-	 <alpine.LFD.0.999.0709060923340.26804@enigma.security.iitk.ac.in>
-	 <20070906082301.GB21929@gondor.apana.org.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-P0JM25PSs9MHCk1RoLrB"
-Date: Thu, 06 Sep 2007 17:19:55 +0200
-Message-Id: <1189091995.28781.99.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Thu, 6 Sep 2007 11:20:22 -0400
+Received: from il.qumranet.com ([82.166.9.18]:44710 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756491AbXIFPUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 11:20:21 -0400
+Message-ID: <46E019FC.5000001@qumranet.com>
+Date: Thu, 06 Sep 2007 18:17:16 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       general@lists.openfabrics.org
+Subject: Re: [PATCH][RFC] pte notifiers -- support for external page	tables
+References: <11890207643068-git-send-email-avi@qumranet.com> <p73myw09g5w.fsf@bingen.suse.de>
+In-Reply-To: <p73myw09g5w.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> Avi Kivity <avi-atKUWr5tajBWk0Htik3J/w@public.gmane.org> writes:
+>   
+>> pte notifiers are different from paravirt_ops: they extend the normal
+>> page tables rather than replace them; and they provide high-level information
+>> such as the vma and the virtual address for the driver to use.
+>>     
+>
+> Sounds like a locking horror to me.  To do anything with page tables
+> you need locks. Both for the kernel page tables and for your new tables.
+>
+> What happens when people add all
+> things of complicated operations in these notifiers? That will likely
+> happen and then everytime you change something in VM code they 
+> will break. This has the potential to increase the cost of maintaining
+> VM code considerably, which would be a bad thing.
+>
+> This is quite different from paravirt ops because low level pvops
+> can typically run lockless by just doing some kind of hypercall directly.
+> But that won't work for maintaining your custom page tables.
+>   
 
---=-P0JM25PSs9MHCk1RoLrB
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Okay, here's a possible fix: add ->lock() and ->unlock() callbacks, to 
+be called when mmap_sem is taken either for read or write.  Also add a 
+->release() for when the mm goes away to avoid the need to care about 
+the entire data structure going away.
 
-On Thu, 2007-09-06 at 16:23 +0800, Herbert Xu wrote:
-> On Thu, Sep 06, 2007 at 10:32:33AM +0530, Satyam Sharma wrote:
-> >=20
-> > > > [  382.529041]  [<c02c8abc>] dev_close+0x24/0x67
-> > > > [  382.529052]  [<e01f402b>] ieee80211_master_stop+0x4a/0x6d [mac80=
-211]
->=20
-> This is where the bug is.  You cannot call dev_close from an
-> atomic context as i33380211_master_stop does it within spin
-> locks.
+The notifier list would need to be kept sorted to avoid deadlocks.
 
-Oh btw. Can we stick a might_sleep() into dev_close() *before* the test
-whether the device is up? That way, we'd have seen the bug, but
-apparently nobody before Florian ever did a 'ip link set wmaster0 down'
-while the other interfaces were still open.
-
-johannes
-
---=-P0JM25PSs9MHCk1RoLrB
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBG4Bqb/ETPhpq3jKURAodYAJ9Ue7BZ2OM/mODT3BxY5BZTViKo5gCgrEkC
-LpH1f969DmQIZpNHoSH2Ank=
-=vRYa
------END PGP SIGNATURE-----
-
---=-P0JM25PSs9MHCk1RoLrB--
+-- 
+Any sufficiently difficult bug is indistinguishable from a feature.
 
