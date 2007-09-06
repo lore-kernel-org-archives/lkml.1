@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbXIFKQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbXIFKV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940AbXIFKQL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 06:16:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbXIFKP6
+	id S1755340AbXIFKV3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 06:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbXIFKVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 06:15:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36402 "EHLO
+	Thu, 6 Sep 2007 06:21:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44293 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751085AbXIFKP5 (ORCPT
+	with ESMTP id S1751019AbXIFKVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 06:15:57 -0400
-Date: Thu, 6 Sep 2007 11:14:37 +0100
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Andreas Herrmann" <andreas.herrmann3@amd.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Robert Richter" <robert.richter@amd.com>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space access
- for AMD Barcelona
-Message-ID: <20070906111437.76343d44@laptopd505.fenrus.org>
-In-Reply-To: <20070905150027.GD22086@alberich.amd.com>
-References: <20070903081736.288288000@amd.com>
-	<20070903081736.588599000@amd.com>
-	<20070903013157.72c94891@laptopd505.fenrus.org>
-	<20070903091718.GB22144@alberich.amd.com>
-	<20070903043319.7573875b@laptopd505.fenrus.org>
-	<20070903154734.GC22086@alberich.amd.com>
-	<46DE45A2.40403@zytor.com>
-	<20070905150027.GD22086@alberich.amd.com>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 6 Sep 2007 06:21:21 -0400
+Date: Thu, 6 Sep 2007 16:04:28 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [2/2] 2.6.23-rc5: known regressions with patches
+In-Reply-To: <1189072799.2745.68.camel@shinybook.infradead.org>
+Message-ID: <alpine.LFD.0.999.0709061600250.3781@enigma.security.iitk.ac.in>
+References: <46DBDCF4.6040805@googlemail.com>  <46DBDDC6.9030602@googlemail.com>
+ <1189072799.2745.68.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Sep 2007 17:00:27 +0200
-"Andreas Herrmann" <andreas.herrmann3@amd.com> wrote:
 
-> On Wed, Sep 05, 2007 at 06:58:58AM +0100, H. Peter Anvin wrote:
-> > Well, they don't add any functionality, do they?
-> 
-> They allow CF8/CFC to access ECS in cases where mmcfg is not working.
-> 
 
-just for the record; I have absolutely no problem with allowing the new
-cf8 method (I'm assuming that it's obvious that if mmio is available,
-that will be used instead for performance reasons). What I was/am
-concerned/uncomfortable about is keying this off the CPU level rather
-than a PCI level property; I much rather would see this keyed of, say,
-the PCI ID of the root bridge, or ideally from some PCI property.
+On Thu, 6 Sep 2007, David Woodhouse wrote:
+> 
+> This isn't really a regression -- it's been like this for years. It's a
+> non-functional configuration which doesn't really make sense, and would
+> only crop up with randconfig (or crack).
+> 
+> Linus was offered the patch a few weeks ago, but didn't take it -- it's
+> not really a priority for 2.6.23. It's in my git tree and will be pushed
+> when the 2.6.24 merge window opens.
+> 
+> http://git.infradead.org/?p=mtd-2.6.git;a=commitdiff;h=241651d04d672fb685b2874707016cbbf95931e5
+
+You shouldn't push this even for 2.6.24 ... I can't see why/how a runtime
+BUG() scores over erroring out at build-time itself. And if there is no
+codepath that leads to that BUG() at runtime, then what's the point of
+adding dead code ...
+
+So I wonder if what you're actually looking for is some kind of Kconfig
+dependencies that will *prevent* the kind of .config from being generated
+that Ingo ran into ?
+
+
+Satyam
