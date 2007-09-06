@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbXIFJ57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbXIFKAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbXIFJ57 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 05:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXIFJ5v
+	id S1757314AbXIFKAO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 06:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbXIFKAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 05:57:51 -0400
-Received: from gw.goop.org ([64.81.55.164]:38650 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753265AbXIFJ5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 05:57:51 -0400
-Message-ID: <46DFCF1A.8090808@goop.org>
-Date: Thu, 06 Sep 2007 10:57:46 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Chris Wright <chrisw@sous-sol.org>,
-       stable@kernel.org,
-       Virtualization Mailing List <virtualization@lists.osdl.org>
-Subject: Re: [PATCH] Fix preemptible lazy mode bug
-References: <46CE70C8.2030005@vmware.com> <1189024666.10802.197.camel@localhost.localdomain> <1189036175.21516.31.camel@bodhitayantram.eng.vmware.com> <200709060641.36855.ak@suse.de>
-In-Reply-To: <200709060641.36855.ak@suse.de>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=UTF-8
+	Thu, 6 Sep 2007 06:00:00 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:58304 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752212AbXIFJ77 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 05:59:59 -0400
+Subject: Re: [2/2] 2.6.23-rc5: known regressions with patches
+From: David Woodhouse <dwmw2@infradead.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <46DBDDC6.9030602@googlemail.com>
+References: <46DBDCF4.6040805@googlemail.com>
+	 <46DBDDC6.9030602@googlemail.com>
+Content-Type: text/plain
+Date: Thu, 06 Sep 2007 10:59:59 +0100
+Message-Id: <1189072799.2745.68.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-3.fc7.dwmw2.1) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> I agree.  The patch is a nop.  I just got overly paranoid.  The whole
->> thing is just very prone to bugs.
->>     
-> So do we need a patch for .23 or not?
->   
+On Mon, 2007-09-03 at 12:11 +0200, Michal Piotrowski wrote:
+> MTD
+> 
+> Subject         : error: implicit declaration of function 'cfi_interleave'
+> References      : http://lkml.org/lkml/2007/8/6/272
+> Last known good : ?
+> Submitter       : Ingo Molnar <mingo@elte.hu>
+> Caused-By       : ?
+> Handled-By      : David Woodhouse <dwmw2@infradead.org>
+> Patch           : http://lkml.org/lkml/2007/8/9/586
+> Status          : patch available 
 
-Forgot this bit.  No, I think the upshot is that it isn't necessary (nor
-Rusty's).
+This isn't really a regression -- it's been like this for years. It's a
+non-functional configuration which doesn't really make sense, and would
+only crop up with randconfig (or crack).
 
-    J
+Linus was offered the patch a few weeks ago, but didn't take it -- it's
+not really a priority for 2.6.23. It's in my git tree and will be pushed
+when the 2.6.24 merge window opens.
+
+http://git.infradead.org/?p=mtd-2.6.git;a=commitdiff;h=241651d04d672fb685b2874707016cbbf95931e5
+
+-- 
+dwmw2
+
