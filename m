@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbXIFINp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbXIFIQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbXIFINp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 04:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbXIFIN3
+	id S1755418AbXIFIQs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 04:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbXIFIQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 04:13:29 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:56125 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753157AbXIFIN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 04:13:28 -0400
-Date: Thu, 6 Sep 2007 10:13:26 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Divy Le Ray <divy@chelsio.com>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, takamiya@po.ntts.co.jp
-Subject: Re: net-26.24 broken with XFRM off
-Message-Id: <20070906101326.34a81abb.dada1@cosmosbay.com>
-In-Reply-To: <46DFAB7F.7060406@chelsio.com>
-References: <46DFAB7F.7060406@chelsio.com>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Sep 2007 04:16:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51487 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753265AbXIFIQk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 04:16:40 -0400
+Date: Thu, 6 Sep 2007 13:59:50 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: "J. Bruce Fields" <bfields@fieldses.org>
+cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: NFS4 authentification / fsuid
+In-Reply-To: <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0709061355350.3781@enigma.security.iitk.ac.in>
+References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr>
+ <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org>
+ <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr>
+ <1188486240.6755.51.camel@heimdal.trondhjem.org> <20070830214431.GF10808@fieldses.org>
+ <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Sep 2007 00:25:51 -0700
-Divy Le Ray <divy@chelsio.com> wrote:
 
-> Hi Dave,
-> 
-> I get this error compiling net-2.6.24 with XFRM off:
-> 
-> [root@aries net-2.6.24]# make O=/opt/build/net-2.6.24
-> fatal: corrupted pack file 
-> .git/objects/pack/pack-39c494e9d4c6488e5911ee5c06926450679e6b78.pack
-> fatal: corrupted pack file 
-> .git/objects/pack/pack-39c494e9d4c6488e5911ee5c06926450679e6b78.pack
->   Using /mnt/net-2.6.24 as source for kernel
->   GEN     /opt/build/net-2.6.24/Makefile
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CALL    /mnt/net-2.6.24/scripts/checksyscalls.sh
->   CHK     include/linux/compile.h
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> net/built-in.o(.text+0x73ac2): In function `inet6_csk_xmit':
-> : undefined reference to `flow_cache_genid'
-> net/built-in.o(.text+0x73b9e): In function `inet6_csk_xmit':
-> : undefined reference to `flow_cache_genid'
-> make[1]: *** [.tmp_vmlinux1] Error 1
-> make: *** [_all] Error 2
-> 
-> I believe this commit introduced it:
-> commit a85d5450ddeb959bdf9e4603f9c06e9d79217cfa
-> Author: Noriaki TAKAMIYA <takamiya@po.ntts.co.jp>
-> Date:   Fri Aug 24 23:31:39 2007 -0700
-> 
->     [IPV6] XFRM: Fix connected socket to use transformation.
-> 
 
-Hi Divy
+On Thu, 6 Sep 2007, Satyam Sharma wrote:
+> 
+> On Thu, 30 Aug 2007, J. Bruce Fields wrote:
+> 
+> > On Thu, Aug 30, 2007 at 11:04:00AM -0400, Trond Myklebust wrote:
+> > 
+> > > What I'm saying is that the superuser can pretty much do whatever it
+> > > takes to grab either your kerberos password (e.g. install a keyboard
+> > > listener), a stored credential (read the contents of your kerberos
+> > > on-disk credential cache), or s/he can access the cached contents of the
+> > > file by hunting through /dev/kmem.
+> > > 
+> > > IOW: There is no such thing as security on a root-compromised machine.
+> > 
+> > And in theory a kernel could provide *some* guarantees against root,
+> > right?  (Is there some reason a unix-like kernel must provide such
+> > things as /dev/kmem?)
+> 
+> /dev/kmem was just an example -- IMHO differentiating between kernel and
+> userspace from a security p.o.v. is always tricky. Like Trond said, there
+> are very high number of ways in which privileged userspace can compromise
+> a running kernel if it really wants to do that, root-is-God has always
+    ^^^^^^^^^^^^^^
 
-I believe this problem is known.
+Oh and btw, note that we're talking of the (lack of) security of a
+"running kernel" here -- because across reboots, there is /really/
+*absolutely* no such thing as "kernelspace security" because the superuser
+will simply switch the vmlinuz itself ...
 
-Please check http://marc.info/?l=linux-netdev&m=118881627028135&w=2 
 
-Eric
+> been *the* major problem with Unix :-)
+> 
+> The only _real_ way a kernel can lock itself completely against malicious
+> userspace involves trusted tamperproof hardware, but even that only if
+> you can get yourself to believe such a thing exists in the first place ;-)
