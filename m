@@ -1,85 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757791AbXIFNA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbXIFNEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757791AbXIFNA3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 09:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbXIFNAW
+	id S1757562AbXIFNEK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 09:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbXIFNDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 09:00:22 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:35809 "EHLO gir.skynet.ie"
+	Thu, 6 Sep 2007 09:03:55 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:57626 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755979AbXIFNAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 09:00:21 -0400
-Subject: Re: [PATCH][-mm] Fix setup_per_zone_pages_min() lock.
-From: Mel Gorman <mel@csn.ul.ie>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070903194629.aa24ecc5.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070903194629.aa24ecc5.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Thu, 06 Sep 2007 14:53:01 +0100
-Message-Id: <1189086781.3834.10.camel@machina.109elm.lan>
+	id S1754318AbXIFNDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 09:03:54 -0400
+To: paul.moore@hp.com
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       chrisw@sous-sol.org, netdev@vger.kernel.org
+Subject: Re: [TOMOYO 15/15] LSM expansion for TOMOYO Linux.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <46CED214.6050505@gmail.com>
+	<200709040753.32204.paul.moore@hp.com>
+	<200709042302.CDE26023.MJOOLQVFFOtHSF@I-love.SAKURA.ne.jp>
+	<200709051006.28429.paul.moore@hp.com>
+In-Reply-To: <200709051006.28429.paul.moore@hp.com>
+Message-Id: <200709062204.DFH97819.JLOHVOOSFMtFQF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50]
+X-Accept-Language: ja,en
+Date: Thu, 6 Sep 2007 22:04:01 +0900
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-03 at 19:46 +0900, KAMEZAWA Hiroyuki wrote:
-> Fix setup_per_zone_pages_min().
-> 
-> Now setup_per_zone_pages_min() uses zone->lru_lock. This has 2 problems.
-> 
-> 1. setup_page_zone_pages_min() modifies zone->pages_min,pages_low,pages_high.
->    in atomic. But readers of these values tend not to take lru_lock.
->    (At least, we need lock between memory hotplug vs. sysctl)
-> 2. setup_zone_migrate_reserve() should take zone->lock instead of lru_lock.
-> 
-> This patch replaces zone->lru_lock with zone->lock.
-> 
+Hello.
 
-Does it really matter as they routinely do not take zone->lru_lock
-either? pages_min, pages_low and pages_high are currently examined on a
-regular basis by zone_watermark_ok() without any locks held in the page
-allocator and page reclaim path. Glancing through this, it would appear
-that the code in question has the same level of locking protection with
-zone->lru_lock or zone->lock.
+Thank you very much for your time, Paul.
+Yes, you understood what I wanted to do.
 
-Is memory hotadd specifically taking the lru_lock somewhere? I can only
-think of the seqlock at the moment.
+TOMOYO Linux's approach:
 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+(1) It uses userspace intervention to allow/reject
+    connections and/or packets based on the application's domain.
+    Since existent hooks can't be used for this purpose,
+    I inserted a new hook post_recv_datagram() at skb_recv_datagram()
+    and I modified socket_post_accept() to return error so that
+    I can drop/disconnect based on the application's domain.
 
-> 
-> 
-> ---
->  mm/page_alloc.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: devel-2.6.23-rc4-mm1-zone/mm/page_alloc.c
-> ===================================================================
-> --- devel-2.6.23-rc4-mm1-zone.orig/mm/page_alloc.c
-> +++ devel-2.6.23-rc4-mm1-zone/mm/page_alloc.c
-> @@ -4176,8 +4176,8 @@ void setup_per_zone_pages_min(void)
->  
->  	for_each_zone(zone) {
->  		u64 tmp;
-> +		spin_lock_irqsave(&zone->lock, flags);
->  
-> -		spin_lock_irqsave(&zone->lru_lock, flags);
->  		tmp = (u64)pages_min * zone->present_pages;
->  		do_div(tmp, lowmem_pages);
->  		if (is_highmem(zone)) {
-> @@ -4208,8 +4208,9 @@ void setup_per_zone_pages_min(void)
->  
->  		zone->pages_low   = zone->pages_min + (tmp >> 2);
->  		zone->pages_high  = zone->pages_min + (tmp >> 1);
-> +
->  		setup_zone_migrate_reserve(zone);
-> -		spin_unlock_irqrestore(&zone->lru_lock, flags);
-> +		spin_unlock_irqrestore(&zone->lock, flags);
->  	}
->  
->  	/* update totalreserve_pages */
-> 
+    I think skb_recv_datagram() is the only place that can remove
+    a message picked up with MSG_PEEK flags from the receive queue.
+    To remove a message picked up with MSG_PEEK flags, I noticed that
+    I have to do skb_kill_datagram()-like operation so that
+    "the head message that must not be delivered to the caller" won't prevent
+    picking up of "the non-head message that should be delivered to the caller"
+    when the caller repeats only recv(MSG_PEEK) requests.
+    Since skb_recv_datagram() can be called from interrupt context,
+    I have to use spin_lock_irqsave() instead for spin_lock_bh(), am I right?
 
+/* from net/core/datagram.c */
+@@ -178,6 +179,27 @@ struct sk_buff *skb_recv_datagram(struct
+ 		} else
+ 			skb = skb_dequeue(&sk->sk_receive_queue);
+ 
++		error = security_post_recv_datagram(sk, skb, flags);
++		if (error) {
++			unsigned long cpu_flags;
++
++			if (!(flags & MSG_PEEK))
++				goto no_peek;
++
++			spin_lock_irqsave(&sk->sk_receive_queue.lock,
++					  cpu_flags);
++			if (skb == skb_peek(&sk->sk_receive_queue)) {
++				__skb_unlink(skb,
++					     &sk->sk_receive_queue);
++				atomic_dec(&skb->users);
++			}
++			spin_unlock_irqrestore(&sk->sk_receive_queue.lock,
++					       cpu_flags);
++no_peek:
++			skb_free_datagram(sk, skb);
++			goto no_packet;
++		}
++
+ 		if (skb)
+ 			return skb;
+
+
+
+    By the way, why can't socket_post_accept() fail?
+    Someone may wish to do memory allocation at socket_post_accept().
+    socket_accept() is too early for memory allocation because
+    there is no chance to free allocated memory
+    when sock->ops->accept() failed.
+    I think socket_post_accept() should be able to fail.
+
+(2) It allows the administrator judge interactively
+    using a userspace agent.
+    Thus, the new hook has to be inserted at blockable location,
+    Since skb_recv_datagram() can be called from interrupt context,
+    I do nothing in post_recv_datagram() if called from interrupt context.
+
++static int tmy_post_recv_datagram(struct sock *sk,
++				  struct sk_buff *skb,
++				  unsigned int flags)
++{
++	int error = 0;
++	const unsigned int type = sk->sk_type;
++
++	/* skb_recv_datagram() didn't dequeue. */
++	if (!skb)
++		return 0;
++
++	/* skb_recv_datagram() can be called from interrupt context. */
++	if (in_interrupt())
++		return 0;
++	/* I don't check if called by kernel process. */
++	if (segment_eq(get_fs(), KERNEL_DS))
++		return 0;
++
++	if (type != SOCK_DGRAM && type != SOCK_RAW)
++		return 0;
+...(sniped)...
++}
+
+
+
+Regards.
