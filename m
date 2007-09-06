@@ -1,119 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964823AbXIFUmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964811AbXIFUml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964823AbXIFUmV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 16:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932382AbXIFUkV
+	id S964811AbXIFUml (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 16:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932365AbXIFUkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 16:40:21 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:50977 "EHLO smtp.polymtl.ca"
+	Thu, 6 Sep 2007 16:40:23 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:50991 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932344AbXIFUkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 16:40:19 -0400
-Message-Id: <20070906200211.746287223@polymtl.ca>
+	id S932401AbXIFUkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 16:40:22 -0400
+Message-Id: <20070906200213.076724554@polymtl.ca>
 References: <20070906200124.595238505@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 06 Sep 2007 16:01:28 -0400
+Date: Thu, 06 Sep 2007 16:01:32 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: [patch 04/10] Text Edit Lock - Architecture Independent Code
-Content-Disposition: inline; filename=text-edit-lock-architecture-independent-code.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Sep 2007 20:40:12 +0000
+       Andi Kleen <andi@firstfloor.org>, prasanna@in.ibm.com,
+       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net
+Subject: [patch 08/10] Text Edit Lock - kprobes x86_64
+Content-Disposition: inline; filename=text-edit-lock-kprobes-x86_64.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Sep 2007 20:40:08 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an architecture independant synchronization around kernel text
-modifications through use of a global mutex.
-
-A mutex has been chosen so that kprobes, the main user of this, can sleep during
-memory allocation between the memory read of the instructions it must replace
-and the memory write of the breakpoint.
-
-Other user of this interface: immediate values.
-
-Paravirt and alternatives are always done when SMP is inactive, so there is no
-need to use locks.
+Make kprobes use text_set instead of text_poke.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: Andi Kleen <andi@firstfloor.org>
+CC: prasanna@in.ibm.com
+CC: ananth@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
 ---
- include/linux/memory.h |    7 +++++++
- mm/memory.c            |   34 ++++++++++++++++++++++++++++++++++
- 2 files changed, 41 insertions(+)
+ arch/x86_64/kernel/kprobes.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/include/linux/memory.h
+Index: linux-2.6-lttng/arch/x86_64/kernel/kprobes.c
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/memory.h	2007-09-04 11:09:26.000000000 -0400
-+++ linux-2.6-lttng/include/linux/memory.h	2007-09-04 12:10:45.000000000 -0400
-@@ -86,4 +86,11 @@ extern int remove_memory_block(unsigned 
- 	register_memory_notifier(&fn##_mem_nb);			\
- }
+--- linux-2.6-lttng.orig/arch/x86_64/kernel/kprobes.c	2007-09-04 12:10:34.000000000 -0400
++++ linux-2.6-lttng/arch/x86_64/kernel/kprobes.c	2007-09-04 12:11:28.000000000 -0400
+@@ -216,12 +216,12 @@ static void __kprobes arch_copy_kprobe(s
  
-+/*
-+ * Take and release the kernel text modification lock, used for code patching.
-+ * Users of this lock can sleep.
-+ */
-+extern void kernel_text_lock(void);
-+extern void kernel_text_unlock(void);
-+
- #endif /* _LINUX_MEMORY_H_ */
-Index: linux-2.6-lttng/mm/memory.c
-===================================================================
---- linux-2.6-lttng.orig/mm/memory.c	2007-09-04 11:53:59.000000000 -0400
-+++ linux-2.6-lttng/mm/memory.c	2007-09-04 12:11:14.000000000 -0400
-@@ -51,6 +51,8 @@
- #include <linux/init.h>
- #include <linux/writeback.h>
- #include <linux/memcontrol.h>
-+#include <linux/kprobes.h>
-+#include <linux/mutex.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/uaccess.h>
-@@ -85,6 +87,12 @@ EXPORT_SYMBOL(high_memory);
- 
- int randomize_va_space __read_mostly = 1;
- 
-+/*
-+ * mutex protecting text section modification (dynamic code patching).
-+ * some users need to sleep (allocating memory...) while they hold this lock.
-+ */
-+static DEFINE_MUTEX(text_mutex);
-+
- static int __init disable_randmaps(char *s)
+ void __kprobes arch_arm_kprobe(struct kprobe *p)
  {
- 	randomize_va_space = 0;
-@@ -2787,3 +2795,29 @@ int access_process_vm(struct task_struct
- 	return buf - old_buf;
+-	text_poke(p->addr, ((unsigned char []){BREAKPOINT_INSTRUCTION}), 1);
++	text_set(p->addr, BREAKPOINT_INSTRUCTION, 1);
  }
- EXPORT_SYMBOL_GPL(access_process_vm);
-+
-+/**
-+ * kernel_text_lock     -   Take the kernel text modification lock
-+ *
-+ * Insures mutual write exclusion of kernel and modules text live text
-+ * modification. Should be used for code patching.
-+ * Users of this lock can sleep.
-+ */
-+void __kprobes kernel_text_lock(void)
-+{
-+	mutex_lock(&text_mutex);
-+}
-+EXPORT_SYMBOL_GPL(kernel_text_lock);
-+
-+/**
-+ * kernel_text_unlock   -   Release the kernel text modification lock
-+ *
-+ * Insures mutual write exclusion of kernel and modules text live text
-+ * modification. Should be used for code patching.
-+ * Users of this lock can sleep.
-+ */
-+void __kprobes kernel_text_unlock(void)
-+{
-+	mutex_unlock(&text_mutex);
-+}
-+EXPORT_SYMBOL_GPL(kernel_text_unlock);
+ 
+ void __kprobes arch_disarm_kprobe(struct kprobe *p)
+ {
+-	text_poke(p->addr, &p->opcode, 1);
++	text_set(p->addr, p->opcode, 1);
+ }
+ 
+ void __kprobes arch_remove_kprobe(struct kprobe *p)
 
 -- 
 Mathieu Desnoyers
