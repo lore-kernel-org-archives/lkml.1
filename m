@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbXIFJAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbXIFJYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbXIFJAe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 05:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbXIFJAX
+	id S1755621AbXIFJYS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 05:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbXIFJYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 05:00:23 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:44179 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753541AbXIFJAW (ORCPT
+	Thu, 6 Sep 2007 05:24:06 -0400
+Received: from mpc-26.sohonet.co.uk ([193.203.82.251]:47186 "EHLO
+	moving-picture.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753695AbXIFJYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 05:00:22 -0400
-Date: Thu, 6 Sep 2007 01:56:03 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH -mm] Hibernation: Check if ACPI is enabled during restore in the right place
-Message-ID: <20070906015603.GA5097@ucw.cz>
-References: <200709020021.37881.rjw@sisk.pl>
+	Thu, 6 Sep 2007 05:24:04 -0400
+Message-ID: <46DFC711.6090100@moving-picture.com>
+Date: Thu, 06 Sep 2007 10:23:29 +0100
+From: James Pearson <james-p@moving-picture.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040524
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200709020021.37881.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Anton Arapov <aarapov@redhat.com>,
+       Guy Streeter <guy.streeter@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 4096 byte limit to /proc/PID/environ ?
+References: <4474B7DB.8000304@moving-picture.com>	<200605242029.k4OKTn9C031700@terminus.zytor.com>	<447EF58C.6000605@moving-picture.com>	<52dd17640708150954q798d137cn1b07739785917c5b@mail.gmail.com>	<46C33700.1060605@zytor.com>	<46D6CBED.4040301@moving-picture.com>	<h87in5sgal.fsf@pepelac.englab.brq.redhat.com>	<46DE6196.3050605@zytor.com>	<46DEE0C9.1000402@moving-picture.com> <20070905101804.eafd0da4.randy.dunlap@oracle.com>
+In-Reply-To: <20070905101804.eafd0da4.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Disclaimer: This email and any attachments are confidential, may be legally
+X-Disclaimer: privileged and intended solely for the use of addressee. If you
+X-Disclaimer: are not the intended recipient of this message, any disclosure,
+X-Disclaimer: copying, distribution or any action taken in reliance on it is
+X-Disclaimer: strictly prohibited and may be unlawful. If you have received
+X-Disclaimer: this message in error, please notify the sender and delete all
+X-Disclaimer: copies from your system.
+X-Disclaimer: 
+X-Disclaimer: Email may be susceptible to data corruption, interception and
+X-Disclaimer: unauthorised amendment, and we do not accept liability for any
+X-Disclaimer: such corruption, interception or amendment or the consequences
+X-Disclaimer: thereof.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2007-09-02 00:21:37, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+Randy Dunlap wrote:
+>>
+>>OK, here is the patch (without the long line) against 2.6.23-rc5 - what 
+>>else needs to be done to get it committed?
 > 
-> The following scenario leads to total confusion of the platform firmware on
-> some boxes (eg. HPC nx6325):
-> * Hibernate with ACPI enabled
-> * Pass "acpi=off" to the boot kernel
 > 
-> To prevent this from happening it's necessary to check if ACPI is enabled (and
-> enable it if that's not the case) _right_ _after_ control has been transfered
-> from the boot kernel to the image kernel, before device_power_up() is called
-> (ie. with interrupts disabled).  Enabling ACPI after calling device_power_up()
-> turns out to be insufficient.
+> Hi,
 > 
-> For this reason, introduce new hibernation callback ->leave() that will be
-> executed before device_power_up() by the restored image kernel.  To make it
-> work, it also is necessary to move swsusp_suspend() from swsusp.c to disk.c
-> (it's name is changed to "create_image", which is more up to the point).
+> a.  It needs a changelog that describes the problem and the patch.
+> b.  It needs to apply cleanly to a current kernel.
+>     (It does not apply cleanly now due to some odd line breaks [see #1
+>     below.)
+> c.  It needs to use tabs instead of spaces.  That will probably help
+>     on item b as well.
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> linux-2.6.23-rc5> dryrun < ~/fs-proc-read-sizes.patch 
+> 4 out of 4 hunks FAILED -- saving rejects to file fs/proc/base.c.rej
 
-ACK.
+I think a 'cut-n-paste' to my mail app mangled the patch - I'll 
+re-submit it 'cleanly' ...
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks
+
+James Pearson
