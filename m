@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbXIFJcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756239AbXIFJnO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756472AbXIFJcy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 05:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbXIFJcr
+	id S1756239AbXIFJnO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 05:43:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbXIFJm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 05:32:47 -0400
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:1233 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751884AbXIFJcq (ORCPT
+	Thu, 6 Sep 2007 05:42:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50640 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752932AbXIFJm5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 05:32:46 -0400
-Date: Thu, 6 Sep 2007 11:34:29 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [lm-sensors] [PATCH] hwmon: Add power meters to
- Documentation/hwmon/sysfs-interface
-Message-ID: <20070906113429.1c88c844@hyperion.delvare>
-In-Reply-To: <20070903232225.GD3899@khazad-dum.debian.net>
-References: <20070827211446.GG32667@tree.beaverton.ibm.com>
-	<20070828015029.GA10107@khazad-dum.debian.net>
-	<20070828131942.18449886@hyperion.delvare>
-	<20070828164440.GL32667@tree.beaverton.ibm.com>
-	<20070901171048.GA3883@ucw.cz>
-	<41840b750709011105s6c434217t50d965a0b17df643@mail.gmail.com>
-	<20070901194417.GA24897@khazad-dum.debian.net>
-	<20070902213837.7293d6fa@hyperion.delvare>
-	<20070903020200.GA8948@khazad-dum.debian.net>
-	<20070903180636.4096e7d5@hyperion.delvare>
-	<20070903232225.GD3899@khazad-dum.debian.net>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Sep 2007 05:42:57 -0400
+Date: Thu, 6 Sep 2007 15:25:55 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Mark Hindley <mark@hindley.org.uk>
+cc: Steffen Klassert <klassert@mathematik.tu-chemnitz.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev Mailing List <netdev@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH -mm 1/2] 3c59x: Fix uninitialized variable bug
+In-Reply-To: <20070904085331.GH5944@hindley.org.uk>
+Message-ID: <alpine.LFD.0.999.0709061515090.3781@enigma.security.iitk.ac.in>
+References: <alpine.LFD.0.999.0709040340250.8504@enigma.security.iitk.ac.in>
+ <20070904081602.GB4241@newton.mathematik.tu-chemnitz.de>
+ <20070904085331.GH5944@hindley.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Sep 2007 20:22:25 -0300, Henrique de Moraes Holschuh wrote:
-> On Mon, 03 Sep 2007, Jean Delvare wrote:
-> > I see that the power supply class units are 10^-6 A and 10^-6 W, so if
-> > we are supposed to be compatible, I guess we'll have to use this too.
+
+
+On Tue, 4 Sep 2007, Mark Hindley wrote:
+
+> On Tue, Sep 04, 2007 at 02:09:47PM +0530, Satyam Sharma wrote:
+> > Hi Steffen,
+> > 
+> > 
+> > On Tue, 4 Sep 2007, Steffen Klassert wrote:
+> > 
+> > > On Tue, Sep 04, 2007 at 03:45:55AM +0530, Satyam Sharma wrote:
+> > > > 
+> > > > drivers/net/3c59x.c: In function 'vortex_up':
+> > > > drivers/net/3c59x.c:1495: warning: 'err' may be used uninitialized in this function
+> > > 
+> > > This came in with the recently applied 3c59x-check-return-of-pci_enable_device patch
+> > > from Mark Hindley. I just compiled it on a PCI only machine so far, therefore I did
+> > > not notice the warning yet.
+> > 
+> > Hmm, the .config I built with had PCI=y as well. Probably a compiler
+> > version difference -- Jeff also mentioned yesterday that some newer
+> > GCC versions fail to warn about uninitialized variables cases.
+> > 
 > 
-> There was a good reason for that, and people who deal with small portables
-> said that they needed 10^-4 A or somesuch, at which point it makes more
-> sense to just go to 10^-6 already.  I don't recall why 10^-6 W, though.
+> Sorry, this is my bad. I have just checked: there is no warning with gcc
+> 4.2 or 4.1, but 3.3 emits the warning. 
 
-Well, if we need 10^-4 A, and we use voltages in the 1-2 V range
-(that's what CPU, AGP etc. use these days), then we obviously need
-10^-4 W as well.
+This is a GCC bug (regression, actually, as you've found out) -- no two
+ways about it. Although different from the kind Jeff mentioned couple days
+back -- that was about wising GCC up to false positives and /not/ emitting
+warnings. But here a genuine problem was not complained about, so this is
+more serious. Do you plan to open up a bug at gcc.gnu.org/bugzilla/ ?
 
--- 
-Jean Delvare
+
+Satyam
