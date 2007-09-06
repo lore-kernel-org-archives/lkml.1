@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933116AbXIFVBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932607AbXIFVQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933116AbXIFVBU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 17:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932233AbXIFVBL
+	id S932607AbXIFVQT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 17:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbXIFVQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 17:01:11 -0400
-Received: from barikada.upol.cz ([158.194.242.200]:51472 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932144AbXIFVBK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 17:01:10 -0400
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] build system: section garbage collection for vmlinux
-In-Reply-To: <20070906203931.GE4480@stusta.de>
-References: <200709051443.21522.vda.linux@googlemail.com> <200709051946.12096.vda.linux@googlemail.com> <20070905203438.GG475@flower.upol.cz> <200709061155.46667.vda.linux@googlemail.com> <20070906114044.GM475@flower.upol.cz> <20070906122143.GM16016@stusta.de> <20070906204349.GO475@flower.upol.cz> <20070906203931.GE4480@stusta.de>
-User-Agent: slrn + jed (x86_64-pc-linux-glibc-debian)
-Date: Thu, 6 Sep 2007 23:16:15 +0200
-Message-Id: <E1ITOhz-0001wd-Uu@flower>
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+	Thu, 6 Sep 2007 17:16:09 -0400
+Received: from mailbox2.myri.com ([64.172.73.26]:1860 "EHLO myri.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754814AbXIFVQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 17:16:08 -0400
+X-Greylist: delayed 2357 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Sep 2007 17:16:08 EDT
+Message-ID: <46E064C9.9000307@myri.com>
+Date: Thu, 06 Sep 2007 16:36:25 -0400
+From: Myricom Technical Support <help@myri.com>
+Organization: Myricom, Inc.
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: mathieu.desnoyers@polymtl.ca
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Myricom Technical Support <help@myri.com>
+Subject: Re: [Myricom help #53553] Re: 2.6.23-rc4-mm1 myri10ge module link
+ error on x86_64
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Thu, 6 Sep 2007 22:39:31 +0200
+Mathieu,
 
-[]
->> > His patch improves the build process.
->> 
->> I would like to know timing, btw. Size, especially shown 1%, doesn't
->> matter if link time increased dramatically. `Allyes' config, when i
->> had fast and rammish machine was terrible thing (last winter). If 32
->> cores/cpus is will of author, then i'm even more suspicious.
->
-> For non-developers size and speed of the kernel matter much more than 
-> compile time.
+>> # CONFIG_INET_LRO is not set
 
-I'm talking about benefits for the process (developers, testers) and
-the result (end users, dogs eating own food :).
+The in-kernel driver now depends on CONFIG_INET_LRO.
 
-> When you go towards embedded systems with limited resources a 1% size 
-> decrease would often be worth it even if it would (hypothetically) 
-> increase the compile time by a factor of 10.
+The kconfig needs to be changed to reflect this, and we will submit a patch.
 
-   text    data     bss     dec     hex filename
-   5159478 1005139  406784 6571401  644589 linux-2.6.23-rc4.org/vmlinux
-   5131822  996090  401439 6529351  63a147 linux-2.6.23-rc4.gc/vmlinux
+In the meantime, you could alternatively use the Myri10GE 1.3.1 driver 
+from the download page:
+    http://www.myri.com/scs/download-Myri10GE.html
 
-Are this numbers show embedded target? I think no. Also time factor of
-*10* can be spent more productively reviewing actual code of parts, that
-are going to be embedded, no?
+Feel free to contact us if you have additional questions.
 
-[]
->> > There's nothing that requires treatment.
->> 
->> [Help for] The developers/contributors of those drivers, no?
->>...
->
-> They did everything right.
->
-> You should better try to understand the problem first before behaving as 
-> if you knew everything better than everyone else...
+Susan
 
-OK, thank you very much. Now, describe what problem you are talking
-about, please. I see non.
-____
+
+-- 
+Susan Blackford
+Member of Technical Staff
+Myricom Inc.
