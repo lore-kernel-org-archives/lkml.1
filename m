@@ -1,192 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758727AbXIFUJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758514AbXIFUKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758727AbXIFUJv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 16:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932582AbXIFUHc
+	id S1758514AbXIFUKk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 16:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932344AbXIFUIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 16:07:32 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:40883 "EHLO smtp.polymtl.ca"
+	Thu, 6 Sep 2007 16:08:32 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41180 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932306AbXIFUH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 16:07:27 -0400
-Message-Id: <20070906200721.651066075@polymtl.ca>
-References: <20070906200550.992474987@polymtl.ca>
+	id S932843AbXIFUIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 16:08:30 -0400
+Message-Id: <20070906200733.194442762@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 06 Sep 2007 16:05:52 -0400
+Date: Thu, 06 Sep 2007 16:07:33 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 2/2] Sort module list by pointer address to get coherent sleepable seq_file iterators
-Content-Disposition: inline; filename=module.c-sort-module-list.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Sep 2007 20:07:21 +0000
+Subject: [patch 0/6] Linux Kernel Markers for 2.6.23-rc4-mm1
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Sep 2007 20:08:25 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A race that appears both in /proc/modules and in kallsyms: if, between the
-seq file reads, the process is put to sleep and at this moment a module is
-or removed from the module list, the listing will skip an amount of
-modules/symbols corresponding to the amount of elements present in the unloaded
-module, but at the current position in the list if the iteration is located
-after the removed module.
+Hi Andrew,
 
-The cleanest way I found to deal with this problem is to sort the module list.
-We can then keep the old struct module * as the old iterator, knowing the it may
-be removed between the seq file reads, but we only use it as "get next". If it
-is not present in the module list, the next pointer will be used.
+Here are the Linux Kernel Markers for 2.6.23-rc4-mm1. They depend on the sorted
+module list and on the immediate values.
 
-By doing this, removing a given module will now only fuzz the output related to
-this specific module, not any random module anymore. Since modprobe uses
-/proc/modules, it might be important to make sure multiple concurrent running
-modprobes won't interfere with each other.
-
-
-Small test program for this:
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#define BUFSIZE 1024
-
-int main()
-{
-	int fd = open("/proc/modules", O_RDONLY);
-	char buf[BUFSIZE];
-	ssize_t size;
-
-	do {
-		size = read(fd, buf, 1);
-		printf("%c", buf[0]);
-		usleep(100000);
-	} while(size > 0);
-
-	close(fd);
-	return 0;
-}
-
-
-Actual test (kernel 2.6.23-rc3):
-
-dijkstra:~# lsmod
-Module                  Size  Used by
-pl2303                 18564  0
-usbserial              29032  1 pl2303
-ppdev                   7844  0
-sky2                   37476  0
-skge                   36368  0
-rtc                    10104  0
-snd_hda_intel         265628  0
-
-  (here, while we are printing the 2nd line, I rmmod pl2303)
-compudj@dijkstra:~/test$ ./module
-pl2303 18564 0 - Live 0xf886e000
-usbserial 29032 1 pl2303, Live 0xf8865000
-sky2 37476 0 - Live 0xf884f000
-skge 36368 0 - Live 0xf8838000
-rtc 10104 0 - Live 0xf8825000
-
-We see the the 2nd line is garbage.
-
-Now, with my patch applied:
-  (here, while we are printing the rtc module, I rmmod rtc)
-nd_hda_intel 268708 0 - Live 0xf8820000
-ltt_control 2372 0 - Live 0xf8866000
-rtc 10392 0 - Live 0xf886d000
-skge 36768 0 - Live 0xf8871000
-ltt_statedump 8516 0 - Live 0xf887b000
-
-We see that since the rtc line was already in the buffer, it has been
-printed completely.
-
-
-  (here, while we are printing the skge module, I rmmod rtc)
-snd_hda_intel 268708 0 - Live 0xf8820000
-ltt_control 2372 0 - Live 0xf8866000
-rtc 10392 0 - Live 0xf886d000
-skge 36768 0 - Live 0xf8871000
-ltt_statedump 8516 0 - Live 0xf887b000
-sky2 38420 0 - Live 0xf88cd000
-
-We see that the iteration continued at the same position even though the
-rtc module, located in earlier addresses, was removed.
-
-Changelog:
-
-When reading the data by small chunks (i.e. byte by byte), the index (ppos) is
-incremented by seq_read() directly and no "next" callback is called when going
-to the next module.
-
-Therefore, use ppos instead of m->private to deal with the fact that this index
-is incremented directly to pass to the next module in seq_read() after the
-buffer has been emptied.
-
-Before fix, it prints the first module indefinitely. The patch fixes
-this.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- kernel/module.c |   26 +++++++++++++++++++++-----
- 1 file changed, 21 insertions(+), 5 deletions(-)
-
-Index: linux-2.6-lttng/kernel/module.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2007-09-06 15:07:16.000000000 -0400
-+++ linux-2.6-lttng/kernel/module.c	2007-09-06 15:07:19.000000000 -0400
-@@ -63,8 +63,10 @@ extern int module_sysfs_initialized;
- /* If this is set, the section belongs in the init part of the module */
- #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
- 
--/* List of modules, protected by module_mutex or preempt_disable
-- * (add/delete uses stop_machine). */
-+/*
-+ * List of modules, protected by module_mutex or preempt_disable
-+ * (add/delete uses stop_machine). Sorted by ascending list node address.
-+ */
- DEFINE_MUTEX(module_mutex);
- LIST_HEAD(modules);
- static DECLARE_MUTEX(notify_mutex);
-@@ -2126,10 +2128,24 @@ nomodsectinfo:
- /*
-  * link the module with the whole machine is stopped with interrupts off
-  * - this defends against kallsyms not taking locks
-+ * We sort the modules by struct module pointer address to permit correct
-+ * iteration over modules of, at least, kallsyms for preemptible operations,
-+ * such as read(). Sorting by struct module pointer address is equivalent to
-+ * sort by list node address.
-  */
- static int __link_module(void *_mod)
- {
--	struct module *mod = _mod;
-+	struct module *mod = _mod, *iter;
-+
-+	list_for_each_entry_reverse(iter, &modules, list) {
-+		BUG_ON(iter == mod);	/* Should never be in the list twice */
-+		if (iter < mod) {
-+			/* We belong to the location right after iter. */
-+			list_add(&mod->list, &iter->list);
-+			return 0;
-+		}
-+	}
-+	/* We should be added at the head of the list */
- 	list_add(&mod->list, &modules);
- 	return 0;
- }
-@@ -2394,12 +2410,12 @@ unsigned long module_kallsyms_lookup_nam
- static void *m_start(struct seq_file *m, loff_t *pos)
- {
- 	mutex_lock(&module_mutex);
--	return seq_list_start(&modules, *pos);
-+	return seq_sorted_list_start(&modules, pos);
- }
- 
- static void *m_next(struct seq_file *m, void *p, loff_t *pos)
- {
--	return seq_list_next(p, &modules, pos);
-+	return seq_sorted_list_next(p, &modules, pos);
- }
- 
- static void m_stop(struct seq_file *m, void *p)
+Mathieu
 
 -- 
 Mathieu Desnoyers
