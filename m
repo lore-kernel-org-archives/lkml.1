@@ -1,80 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932323AbXIFUDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758423AbXIFUEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932323AbXIFUDf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 16:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932246AbXIFUCe
+	id S1758423AbXIFUEA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 16:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932170AbXIFUDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 16:02:34 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:39418 "EHLO smtp.polymtl.ca"
+	Thu, 6 Sep 2007 16:03:05 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:39548 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932223AbXIFUCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 16:02:33 -0400
-Message-Id: <20070906200213.712460149@polymtl.ca>
+	id S932536AbXIFUDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 16:03:00 -0400
+Message-Id: <20070906200210.846859819@polymtl.ca>
 References: <20070906200124.595238505@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Thu, 06 Sep 2007 16:01:34 -0400
+Date: Thu, 06 Sep 2007 16:01:25 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu
-Subject: [patch 10/10] Text Edit Lock - x86_64 standardize debug rodata
-Content-Disposition: inline; filename=text-edit-lock-x86_64-standardize-debug-rodata.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Sep 2007 20:02:14 +0000
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, hch@infradead.org,
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net
+Subject: [patch 01/10] Kprobes - use a mutex to protect the instruction pages list.
+Content-Disposition: inline; filename=kprobes-use-mutex-for-insn-pages.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu,  6 Sep 2007 20:02:11 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Standardize DEBUG_RODATA, removing special cases for hotplug and kprobes.
+Protect the instruction pages list by a specific insn pages mutex, called in 
+get_insn_slot() and free_insn_slot(). It makes sure that architectures that does
+not need to call arch_remove_kprobe() does not take an unneeded kprobes mutex.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: pageexec@freemail.hu
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: hch@infradead.org
+CC: prasanna@in.ibm.com
+CC: anil.s.keshavamurthy@intel.com
+CC: davem@davemloft.net
 ---
- arch/x86_64/mm/init.c           |   23 +++++------------------
- include/asm-x86_64/cacheflush.h |   22 ++++++++++++++++++++++
- 2 files changed, 27 insertions(+), 18 deletions(-)
+ kernel/kprobes.c |   27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
 
-Index: linux-2.6-lttng/arch/x86_64/mm/init.c
+Index: linux-2.6-lttng/kernel/kprobes.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/x86_64/mm/init.c	2007-08-18 10:02:58.000000000 -0400
-+++ linux-2.6-lttng/arch/x86_64/mm/init.c	2007-08-18 10:04:14.000000000 -0400
-@@ -598,25 +598,11 @@ void free_initmem(void)
+--- linux-2.6-lttng.orig/kernel/kprobes.c	2007-08-27 11:48:56.000000000 -0400
++++ linux-2.6-lttng/kernel/kprobes.c	2007-08-27 11:48:58.000000000 -0400
+@@ -95,6 +95,10 @@ enum kprobe_slot_state {
+ 	SLOT_USED = 2,
+ };
  
- void mark_rodata_ro(void)
++/*
++ * Protects the kprobe_insn_pages list. Can nest into kprobe_mutex.
++ */
++static DEFINE_MUTEX(kprobe_insn_mutex);
+ static struct hlist_head kprobe_insn_pages;
+ static int kprobe_garbage_slots;
+ static int collect_garbage_slots(void);
+@@ -131,7 +135,9 @@ kprobe_opcode_t __kprobes *get_insn_slot
  {
--	unsigned long start = (unsigned long)_stext, end;
-+	unsigned long start = PFN_ALIGN(_stext);
-+	unsigned long end = PFN_ALIGN(__end_rodata);
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos;
++	kprobe_opcode_t *ret;
  
--#ifdef CONFIG_HOTPLUG_CPU
--	/* It must still be possible to apply SMP alternatives. */
--	if (num_possible_cpus() > 1)
--		start = (unsigned long)_etext;
--#endif
--
--#ifdef CONFIG_KPROBES
--	start = (unsigned long)__start_rodata;
--#endif
--	
--	end = (unsigned long)__end_rodata;
--	start = (start + PAGE_SIZE - 1) & PAGE_MASK;
--	end &= PAGE_MASK;
--	if (end <= start)
--		return;
--
--	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT, PAGE_KERNEL_RO);
-+	change_page_attr_addr(start, (end - start) >> PAGE_SHIFT,
-+				PAGE_KERNEL_RO);
++	mutex_lock(&kprobe_insn_mutex);
+  retry:
+ 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
+ 		if (kip->nused < INSNS_PER_PAGE) {
+@@ -140,7 +146,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 				if (kip->slot_used[i] == SLOT_CLEAN) {
+ 					kip->slot_used[i] = SLOT_USED;
+ 					kip->nused++;
+-					return kip->insns + (i * MAX_INSN_SIZE);
++					ret = kip->insns + (i * MAX_INSN_SIZE);
++					goto end;
+ 				}
+ 			}
+ 			/* Surprise!  No unused slots.  Fix kip->nused. */
+@@ -154,8 +161,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	}
+ 	/* All out of space.  Need to allocate a new page. Use slot 0. */
+ 	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
+-	if (!kip)
+-		return NULL;
++	if (!kip) {
++		ret = NULL;
++		goto end;
++	}
  
- 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
- 	       (end - start) >> 10);
-@@ -629,6 +615,7 @@ void mark_rodata_ro(void)
- 	 */
- 	global_flush_tlb();
+ 	/*
+ 	 * Use module_alloc so this page is within +/- 2GB of where the
+@@ -165,7 +174,8 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	kip->insns = module_alloc(PAGE_SIZE);
+ 	if (!kip->insns) {
+ 		kfree(kip);
+-		return NULL;
++		ret = NULL;
++		goto end;
+ 	}
+ 	INIT_HLIST_NODE(&kip->hlist);
+ 	hlist_add_head(&kip->hlist, &kprobe_insn_pages);
+@@ -173,7 +183,10 @@ kprobe_opcode_t __kprobes *get_insn_slot
+ 	kip->slot_used[0] = SLOT_USED;
+ 	kip->nused = 1;
+ 	kip->ngarbage = 0;
+-	return kip->insns;
++	ret = kip->insns;
++end:
++	mutex_unlock(&kprobe_insn_mutex);
++	return ret;
  }
-+
+ 
+ /* Return 1 if all garbages are collected, otherwise 0. */
+@@ -207,7 +220,7 @@ static int __kprobes collect_garbage_slo
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos, *next;
+ 
+-	/* Ensure no-one is preepmted on the garbages */
++	/* Ensure no-one is preempted on the garbages */
+ 	if (check_safety() != 0)
+ 		return -EAGAIN;
+ 
+@@ -231,6 +244,7 @@ void __kprobes free_insn_slot(kprobe_opc
+ 	struct kprobe_insn_page *kip;
+ 	struct hlist_node *pos;
+ 
++	mutex_lock(&kprobe_insn_mutex);
+ 	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
+ 		if (kip->insns <= slot &&
+ 		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
+@@ -247,6 +261,7 @@ void __kprobes free_insn_slot(kprobe_opc
+ 
+ 	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
+ 		collect_garbage_slots();
++	mutex_unlock(&kprobe_insn_mutex);
+ }
  #endif
  
- #ifdef CONFIG_BLK_DEV_INITRD
 
 -- 
 Mathieu Desnoyers
