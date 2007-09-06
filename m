@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbXIFRr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757652AbXIFRs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757164AbXIFRr2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 13:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbXIFRrV
+	id S1757652AbXIFRs2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 13:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbXIFRsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 13:47:21 -0400
-Received: from mga03.intel.com ([143.182.124.21]:55830 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754562AbXIFRrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 13:47:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,216,1186383600"; 
-   d="scan'208";a="273367081"
-From: Jesse Barnes <jesse.barnes@intel.com>
+	Thu, 6 Sep 2007 13:48:20 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:49173 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbXIFRsT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 13:48:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oi5ItLegChAP/iYM7i96T2XOBeVAdrfTZhyP9D9fCFAykgIJAeIRhpe4Dq43TMStUCSrhP+jMh15fMZwgUbq6csEurSWW1rS+VJfZB0JsCqdIoifA8U+fq4VH3hQXSwbgcD6VXTpR1/AdfhH5OlPD6zjjBBDUiA8NqdkenTdqnQ=
+Message-ID: <86802c440709061048w30021c4kad0b9d903c236896@mail.gmail.com>
+Date: Thu, 6 Sep 2007 10:48:18 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [patches] [patch 3/5] x86: Add PCI extended config space access for AMD Barcelona
-Date: Thu, 6 Sep 2007 10:41:14 -0700
-User-Agent: KMail/1.9.7
-Cc: Arne Georg Gleditsch <argggh@dolphinics.no>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, patches@x86-64.org,
+Cc: "Arne Georg Gleditsch" <argggh@dolphinics.no>,
+       "Andreas Herrmann" <andreas.herrmann3@amd.com>,
+       "Robert Richter" <robert.richter@amd.com>,
+       "Arjan van de Ven" <arjan@infradead.org>, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-References: <20070903081736.288288000@amd.com> <kjmps0w9ou8.fsf@pelargir.dolphinics.no> <46DFCCD9.2010306@zytor.com>
 In-Reply-To: <46DFCCD9.2010306@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709061041.15488.jesse.barnes@intel.com>
+References: <20070903081736.288288000@amd.com>
+	 <20070903154734.GC22086@alberich.amd.com> <46DE45A2.40403@zytor.com>
+	 <20070905084427.GE6409@erda.amd.com> <46DE80F0.4000706@zytor.com>
+	 <kjmd4wxz822.fsf@pelargir.dolphinics.no>
+	 <20070905161300.GE22086@alberich.amd.com>
+	 <86802c440709051542w1950e28bhb21cf5c380527a6e@mail.gmail.com>
+	 <kjmps0w9ou8.fsf@pelargir.dolphinics.no> <46DFCCD9.2010306@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, September 6, 2007 2:48 am H. Peter Anvin wrote:
-> Arne Georg Gleditsch wrote:
-> > "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
-> >> mmconfig is set in NB ( in new CPU), Do we still need to set
-> >> mmconfig in SB like mcp55?
-> >
-> > I wasn't aware that the family 10h-chips had MSRs for setting the
-> > mmconfig address space directly in the NB (core?).  Please
-> > disregard my previous comment...
->
-> Well, to a first order of approximations, *all* northbridges have
-> some sort of hardware registers to set mmconfig.  We were talking
-> yesterday that it might just make more sense to have code for various
-> northbridges to configure mmconfig directly, just like we do for IRQ
-> routing (we can't trust the BIOS there, either.)
+On 9/6/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> Well, to a first order of approximations, *all* northbridges have some
+> sort of hardware registers to set mmconfig.  We were talking yesterday
+> that it might just make more sense to have code for various northbridges
+> to configure mmconfig directly, just like we do for IRQ routing (we
+> can't trust the BIOS there, either.)
 
-The problem with doing that is it would mean reserving some address 
-space for mmconfig usage.  If the BIOS doesn't completely describe all 
-the reserved regions via e820 or similar (apparently a common problem) 
-we may end up making mmconfig overlap with another important area...  
-It's pretty hard not to trust the BIOS here without completely 
-replacing big chunks of it.
-
-Jesse
+that is good idea.
