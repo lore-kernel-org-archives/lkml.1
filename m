@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbXIFP5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbXIFQB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757777AbXIFP5y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 11:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbXIFP5q
+	id S1758099AbXIFQB1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 12:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbXIFQBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 11:57:46 -0400
-Received: from ns.suse.de ([195.135.220.2]:38140 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756142AbXIFP5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 11:57:45 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: udev: Inconsistency between %b and %p?
-References: <fbp6a3$k6r$1@sea.gmane.org>
-X-Yow: First, I'm going to give you all the ANSWERS to today's test..
- So just plug in your SONY WALKMANS and relax!!
-Date: Thu, 06 Sep 2007 17:57:44 +0200
-In-Reply-To: <fbp6a3$k6r$1@sea.gmane.org> (Manuel Reimer's message of "Thu\, 06
-	Sep 2007 17\:33\:44 +0200")
-Message-ID: <jeodgfu6pz.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	Thu, 6 Sep 2007 12:01:20 -0400
+Received: from sperry-02.control.lth.se ([130.235.83.189]:59279 "EHLO
+	sperry-02.control.lth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756142AbXIFQBT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 12:01:19 -0400
+X-Greylist: delayed 785 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Sep 2007 12:01:19 EDT
+Message-ID: <46E02137.8030600@control.lth.se>
+Date: Thu, 06 Sep 2007 17:48:07 +0200
+From: Anders Blomdell <anders.blomdell@control.lth.se>
+User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Subject: Stray nulls when reading from AF_UNIX sockets
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manuel Reimer <Manuel.Spam@nurfuerspam.de> writes:
+Hi,
 
-> As I would prefer to use the USB device information (idVendor, idProduct)
-> to detect the device, I also tried this one:
->
-> ATTRS{idVendor}=="0dda", ATTRS{idProduct}=="2005", SUBSYSTEM=="scsi",
-> ACTION=="add", PROGRAM+="/usr/bin/test.sh %b %p"
->
-> Now this version returns the USB device ID ($NUM-$NUM) to the test script,
-> but the device path (%p) is still OK and still goes down up to the SCSI
-> device ID.
->
-> Why does %b not return the SCSI device ID in the second rule?
+With recent kernels (2.6.22.x), we are experiencing that random null characters
+are read by  our mySQL server (i.e. the number of bytes read by the server is
+larger than the number of bytes written). I'm currently investigating the
+problem (that occurs every 1-35 hours on a loaded system). A current suspect is
+the following code in  net/unix/af_unix.c:
 
-Because ATTRS has matched the USB device, not the SCSI device.
+  static int unix_stream_recvmsg(struct kiocb *iocb, struct socket *sock,
+                                 struct msghdr *msg, size_t size,
+                                 int flags)
+  {
+    ...
+    return copied ? : err;
+  }
 
-Andreas.
+Shouldn't this read:
+
+    return copied ? copied : err;
+
+Or am I missing something?
+
+Please CC me personally.
+
+Regards
+
+Anders Blomdell
+
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Anders Blomdell                  Email: anders.blomdell@control.lth.se
+Department of Automatic Control
+Lund University                  Phone:    +46 46 222 4625
+P.O. Box 118                     Fax:      +46 46 138118
+SE-221 00 Lund, Sweden
