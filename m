@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932161AbXIFP0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbXIFP1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932161AbXIFP0e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 11:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbXIFP0X
+	id S932358AbXIFP1P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 11:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbXIFP06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 11:26:23 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:57487 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755421AbXIFP0V convert rfc822-to-8bit (ORCPT
+	Thu, 6 Sep 2007 11:26:58 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:16753 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756107AbXIFP04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 11:26:21 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Subject: Re: [TOMOYO 15/15] LSM expansion for TOMOYO Linux.
-Date: Thu, 6 Sep 2007 11:25:39 -0400
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       chrisw@sous-sol.org, netdev@vger.kernel.org
-References: <46CED214.6050505@gmail.com> <200709051006.28429.paul.moore@hp.com> <200709062204.DFH97819.JLOHVOOSFMtFQF@I-love.SAKURA.ne.jp>
-In-Reply-To: <200709062204.DFH97819.JLOHVOOSFMtFQF@I-love.SAKURA.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Content-Disposition: inline
-Message-Id: <200709061125.39815.paul.moore@hp.com>
+	Thu, 6 Sep 2007 11:26:56 -0400
+Subject: Re: [PATCH 0/3] build system: section garbage collection for
+	vmlinux
+From: Daniel Walker <dwalker@mvista.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: sam@ravnborg.org, kai@germaschewski.name, linux-kernel@vger.kernel.org
+In-Reply-To: <200709061157.44080.vda.linux@googlemail.com>
+References: <200709051443.21522.vda.linux@googlemail.com>
+	 <200709052049.30649.vda.linux@googlemail.com>
+	 <1189021619.4442.36.camel@imap.mvista.com>
+	 <200709061157.44080.vda.linux@googlemail.com>
+Content-Type: text/plain
+Date: Thu, 06 Sep 2007 08:13:50 -0700
+Message-Id: <1189091630.8490.1.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, September 6 2007 9:04:01 am Tetsuo Handa wrote:
-> (1) It uses userspace intervention to allow/reject
->     connections and/or packets based on the application's domain.
->     Since existent hooks can't be used for this purpose,
->     I inserted a new hook post_recv_datagram() at skb_recv_datagram()
->     and I modified socket_post_accept() to return error so that
->     I can drop/disconnect based on the application's domain.
->
->     I think skb_recv_datagram() is the only place that can remove
->     a message picked up with MSG_PEEK flags from the receive queue.
->     To remove a message picked up with MSG_PEEK flags, I noticed that
->     I have to do skb_kill_datagram()-like operation so that
->     "the head message that must not be delivered to the caller" won't
-> prevent picking up of "the non-head message that should be delivered to the
-> caller" when the caller repeats only recv(MSG_PEEK) requests.
->     Since skb_recv_datagram() can be called from interrupt context,
->     I have to use spin_lock_irqsave() instead for spin_lock_bh(), am I
-> right?
+On Thu, 2007-09-06 at 11:57 +0100, Denys Vlasenko wrote:
+> On Wednesday 05 September 2007 20:46, Daniel Walker wrote:
+> > On Wed, 2007-09-05 at 20:49 +0100, Denys Vlasenko wrote:
+> > 
+> > > What does "it" stand for in this sentence?
+> > 
+> > "it" is your patches, and I think we got to bottom of it .. "it" (i.e.
+> > your patches) don't actually work with modules, which is what you
+> > originally contended ..
+> 
+> Kernel builds, loads and runs with my patches, and modules load just fine.
 
-There are almost certainly better people to answer locking questions, but here 
-is my take on it ... If you are accessing data both in a bottom half and 
-elsewhere you need to make sure you disable bottom halfs from running before 
-you access the data outside the bottom half (spin_lock_bh()).  If you are 
-accessing data both in an interrupt handler and elsewhere you need to make 
-sure you disable interrupts when accessing data outside the irq handler 
-(spin_lock_irqsave()).
+Ok, so I guess we're not clear on this point .. In your last email you
+said that module exports might get removed? Is that what you intended to
+say or not?
 
->     By the way, why can't socket_post_accept() fail?
->     Someone may wish to do memory allocation at socket_post_accept().
->     socket_accept() is too early for memory allocation because
->     there is no chance to free allocated memory
->     when sock->ops->accept() failed.
->     I think socket_post_accept() should be able to fail.
+Daniel
 
->From my experience the community disapproves of approaches which go through 
-the entire TCP handshake and then terminate the connection, which is what 
-allowing security_socket_post_accept() to fail would do.
-
--- 
-paul moore
-linux security @ hp
