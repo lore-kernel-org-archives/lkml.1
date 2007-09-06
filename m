@@ -1,118 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbXIFQNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932319AbXIFQ3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758235AbXIFQNt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 12:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757141AbXIFQNm
+	id S932319AbXIFQ3b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 12:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXIFQ3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 12:13:42 -0400
-Received: from mail.artecdesign.ee ([62.65.32.9]:40729 "EHLO
-	postikukk.artecdesign.ee" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756206AbXIFQNl (ORCPT
+	Thu, 6 Sep 2007 12:29:23 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58922 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752220AbXIFQ3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 12:13:41 -0400
-X-Greylist: delayed 2105 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Sep 2007 12:13:41 EDT
-Message-ID: <46E01EF7.7010605@artecdesign.ee>
-Date: Thu, 06 Sep 2007 18:38:31 +0300
-From: Anti Sullin <anti.sullin@artecdesign.ee>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	Thu, 6 Sep 2007 12:29:22 -0400
+X-Sasl-enc: nntpPlaFOI4ZQtUk48CLpLpgw4gMz5lWX7kWIHUe2YVA 1189096161
+Date: Thu, 6 Sep 2007 13:29:17 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [lm-sensors] [PATCH] hwmon: Add power meters to
+	Documentation/hwmon/sysfs-interface
+Message-ID: <20070906162917.GA1616@khazad-dum.debian.net>
+References: <20070828131942.18449886@hyperion.delvare> <20070828164440.GL32667@tree.beaverton.ibm.com> <20070901171048.GA3883@ucw.cz> <41840b750709011105s6c434217t50d965a0b17df643@mail.gmail.com> <20070901194417.GA24897@khazad-dum.debian.net> <20070902213837.7293d6fa@hyperion.delvare> <20070903020200.GA8948@khazad-dum.debian.net> <20070903180636.4096e7d5@hyperion.delvare> <20070903232225.GD3899@khazad-dum.debian.net> <20070906113429.1c88c844@hyperion.delvare>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Add suspend and resume to gpio_keys driver
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-ADG-Spam-Score: -5.9 (-----)
-X-ADG-Spam-ScoreInt: -58
-X-ADG-Spam-Report: Content analysis details:   (-5.9 points, 5.5 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
-	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-X-ADG-ExiScan-Signature: 424c9a4de33dbfb08789f72b0af0e53c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070906113429.1c88c844@hyperion.delvare>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds suspend/resume support and enables wakeup from gpio_keys 
-buttons.
+On Thu, 06 Sep 2007, Jean Delvare wrote:
+> On Mon, 3 Sep 2007 20:22:25 -0300, Henrique de Moraes Holschuh wrote:
+> > On Mon, 03 Sep 2007, Jean Delvare wrote:
+> > > I see that the power supply class units are 10^-6 A and 10^-6 W, so if
+> > > we are supposed to be compatible, I guess we'll have to use this too.
+> > 
+> > There was a good reason for that, and people who deal with small portables
+> > said that they needed 10^-4 A or somesuch, at which point it makes more
+> > sense to just go to 10^-6 already.  I don't recall why 10^-6 W, though.
+> 
+> Well, if we need 10^-4 A, and we use voltages in the 1-2 V range
+> (that's what CPU, AGP etc. use these days), then we obviously need
+> 10^-4 W as well.
 
-Signed-off-by: Anti Sullin <anti.sullin@artecdesign.ee>
-
-diff -pur linux-2.6.23-rc5-old/drivers/input/keyboard/gpio_keys.c linux-2.6.23-rc5/drivers/input/keyboard/gpio_keys.c
---- linux-2.6.23-rc5-old/drivers/input/keyboard/gpio_keys.c	2007-09-06 18:24:23.000000000 +0300
-+++ linux-2.6.23-rc5/drivers/input/keyboard/gpio_keys.c	2007-09-06 18:23:37.000000000 +0300
-@@ -59,6 +59,7 @@ static int __devinit gpio_keys_probe(str
- 	if (!input)
- 		return -ENOMEM;
- 
-+	device_init_wakeup(&pdev->dev, 1);
- 	platform_set_drvdata(pdev, input);
- 
- 	input->evbit[0] = BIT(EV_KEY);
-@@ -103,6 +104,7 @@ static int __devinit gpio_keys_probe(str
- 		free_irq(gpio_to_irq(pdata->buttons[i].gpio), pdev);
- 
- 	input_free_device(input);
-+	device_init_wakeup(&pdev->dev, 0);
- 
- 	return error;
- }
-@@ -118,14 +120,51 @@ static int __devexit gpio_keys_remove(st
- 		free_irq(irq, pdev);
- 	}
- 
-+	device_init_wakeup(&pdev->dev, 0);
- 	input_unregister_device(input);
- 
- 	return 0;
- }
- 
-+
-+#ifdef CONFIG_PM
-+static int gpio_keys_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
-+	int i;
-+
-+	if (device_may_wakeup(&pdev->dev)) {
-+		for (i = 0; i < pdata->nbuttons; i++) {
-+			int irq = gpio_to_irq(pdata->buttons[i].gpio);
-+			enable_irq_wake(irq);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int gpio_keys_resume(struct platform_device *pdev)
-+{
-+	struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
-+	int i;
-+
-+	for (i = 0; i < pdata->nbuttons; i++) {
-+		int irq = gpio_to_irq(pdata->buttons[i].gpio);
-+		disable_irq_wake(irq);
-+	}
-+
-+	return 0;
-+}
-+#else
-+#define gpio_keys_suspend	NULL
-+#define gpio_keys_resume	NULL
-+#endif
-+
- struct platform_driver gpio_keys_device_driver = {
- 	.probe		= gpio_keys_probe,
- 	.remove		= __devexit_p(gpio_keys_remove),
-+	.suspend	= gpio_keys_suspend,
-+	.resume		= gpio_keys_resume,	
- 	.driver		= {
- 		.name	= "gpio-keys",
- 	}
-
+I see, and in that case it is safer to just go to 10^-6 for both.  It is more
+future-proof.
 
 -- 
-Anti Sullin
-Embedded Software Engineer
-Artec Design LLC
-Türi 10C, 11313, Tallinn, Estonia
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
