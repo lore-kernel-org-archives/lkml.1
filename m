@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbXIFUNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932625AbXIFUTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932908AbXIFUNl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 16:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbXIFUNb
+	id S932625AbXIFUTO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 16:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757345AbXIFUS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 16:13:31 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:57841 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754814AbXIFUNa (ORCPT
+	Thu, 6 Sep 2007 16:18:57 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:19451 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757559AbXIFUS4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 16:13:30 -0400
-Date: Thu, 6 Sep 2007 16:13:26 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Combined patchset and series file for 2.6.23-rc4-mm1
-Message-ID: <20070906201326.GA6300@Krystal>
+	Thu, 6 Sep 2007 16:18:56 -0400
+Date: Thu, 6 Sep 2007 13:17:06 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: hpa@zytor.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org
+Subject: Re: Warning about init section reference in start_kernel
+ (2.6.23-rc4-mm1)
+Message-Id: <20070906131706.376af88b.randy.dunlap@oracle.com>
+In-Reply-To: <20070906194632.GB4518@Krystal>
+References: <20070906194632.GB4518@Krystal>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:08:43 up 38 days, 20:27,  4 users,  load average: 0.29, 0.56, 0.58
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Thu, 6 Sep 2007 15:46:32 -0400 Mathieu Desnoyers wrote:
 
-Some people asdked me for a tarball easy to apply of my patches. I give
-a link to it for those interested.
+> Hi Peter,
+> 
+> I have seen the following warning on the recent -mm kernels when
+> compiling a i386 kernel:
+> 
+>   scripts/mod/modpost   -o /home/compudj/git/morestable/linux-2.6-lttng/Module.symvers    vmlinux.o
+> WARNING: vmlinux.o(.text.head+0x223): Section mismatch: reference to .init.text.1:start_kernel (between 'is386' and 'check_x87')
+> 
+> It looks like head.S jumps to start_kernel at the end of is386. Is this
+> ok and valid ? If yes, then I guess modpost should be updated.
 
-http://ltt.polymtl.ca/markers/markers-patches-for-2.6.23-rc4-mm1-06-09-2007.tar.bz2
+[added Sam]
 
-Mathieu
+This has come up several times.  Yes, it's OK.
 
-It comes along with this series file:
+If we could add __init_refok to is386 in head.S, this problem would
+be fixed, but afaik we cannot do that.
+Or modpost could have special knowledge of this one quirk, but that's
+not desirable either.
 
 
-kprobes-use-mutex-for-insn-pages.patch
-kprobes-dont-use-kprobes-mutex-in-arch-code.patch
-kprobes-declare-kprobes-mutex-static.patch
-text-edit-lock-architecture-independent-code.patch
-text-edit-lock-alternative-i386-and-x86_64.patch
-text-edit-lock-kprobes-architecture-independent.patch
-text-edit-lock-kprobes-i386.patch
-text-edit-lock-kprobes-x86_64.patch
-text-edit-lock-i386-standardize-debug-rodata.patch
-text-edit-lock-x86_64-standardize-debug-rodata.patch
-#
-immediate-values-global-modules-list-and-mutex.patch
-immediate-values-architecture-independent-code.patch
-immediate-values-kconfig-embedded.patch
-immediate-values-move-kprobes-i386-restore-interrupt-to-kdebug-h.patch
-immediate-values-i386-optimization.patch
-immediate-values-powerpc-optimization.patch
-immediate-values-powerpc-optimization-fix.patch
-immediate-values-documentation.patch
-#
-profiling-use-immediate-values.patch
-#
-seq_file_sorted.patch
-module.c-sort-module-list.patch
-#
-linux-kernel-markers-architecture-independent-code.patch
-linux-kernel-markers-kconfig-menus.patch
-linux-kernel-markers-documentation.patch
-linux-kernel-markers-documentation-fix.patch
-linux-kernel-markers-port-blktrace-to-markers.patch
-linux-kernel-markers-port-spu-to-markers.patch
-#
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
