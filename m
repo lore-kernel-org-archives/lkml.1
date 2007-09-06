@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbXIFKoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbXIFK4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbXIFKoa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 06:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbXIFKoX
+	id S1756436AbXIFK4O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 06:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbXIFKz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 06:44:23 -0400
-Received: from smtp.nokia.com ([131.228.20.171]:47340 "EHLO
-	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751017AbXIFKoW (ORCPT
+	Thu, 6 Sep 2007 06:55:59 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:22464 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbXIFKz6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 06:44:22 -0400
-Message-ID: <46DFD9F7.9070109@nokia.com>
-Date: Thu, 06 Sep 2007 13:44:07 +0300
-From: Stefan Becker <Stefan.Becker@nokia.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 6 Sep 2007 06:55:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Xn1I11WvoGIYXFrfCtg5js2MzWlyQNDmwV/PaqiumwHXhd0nA6r78hrYTwD6YXfEgJfG/VhgZ1wzpo2S5yix1Stzo54/0BmoSng+Lu0ClqtslaM1HbxFjuWWh9/1Ef966r8TtQjVqW3N/31Z07/aBTdlNrqsMRKGLaa4r6NA1MI=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Oleg Verych <olecom@flower.upol.cz>
+Subject: Re: [PATCH 0/3] build system: section garbage collection for vmlinux
+Date: Thu, 6 Sep 2007 11:55:46 +0100
+User-Agent: KMail/1.9.1
+Cc: sam@ravnborg.org, linux-kernel@vger.kernel.org
+References: <200709051443.21522.vda.linux@googlemail.com> <200709051946.12096.vda.linux@googlemail.com> <20070905203438.GG475@flower.upol.cz>
+In-Reply-To: <20070905203438.GG475@flower.upol.cz>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Stefan Becker <Stefan.Becker@nokia.com>,
-       ext Andi Kleen <andi@firstfloor.org>,
-       ext Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [pre-2.6.23 REGRESSION] 2.6.23-rc3-git1 crash/stuck on VIA	CN700
- system
-References: <46C9D148.5080505@nokia.com> <p734pibbbex.fsf@bingen.suse.de> <46DDA366.8090806@nokia.com> <20070905102525.GB31880@one.firstfloor.org> <46DECDC9.9050407@nokia.com> <20070905163724.GC31880@one.firstfloor.org> <46DF0257.5050303@nokia.com> <20070906104102.GA14070@redhat.com>
-In-Reply-To: <20070906104102.GA14070@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Sep 2007 10:44:08.0417 (UTC) FILETIME=[DA626D10:01C7F072]
-X-Nokia-AV: Clean
+Content-Disposition: inline
+Message-Id: <200709061155.46667.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-ext Dave Jones wrote:
+On Wednesday 05 September 2007 21:34, Oleg Verych wrote:
+> > > > Build system: section garbage collection for vmlinux
+> > > 
+> > > Maybe this is just a test suit to get finish with `make XYZ static`?
+> > 
+> > They are vaguely connected in a sense that unused function which is
+> > not marked static doesn't generate gcc warning, but will be discarded
+> > by --gc-sections. "make XYZ static" also tends to find them - you make
+> > function static, you recompile the file, and gcc informs you that
+> > the function is not used at all!
+> > 
+> > This happened to me when I did aic7xxx patches.
+> > 
+> > You may yse --print-gc-sections to see the list of discarded sections.
 > 
-> Could be that even though it advertises clflush support there are
-> errata on some revs of the CPU.  Can you paste your /proc/cpuinfo,
-> and I'll check with VIA to find out if they're aware of any
-> known problems and if so, find out the range of steppings we
-> need to not use clflush on.
+> Anyway, this is gccism/binutilizm. That about other possible/future
+> options?
+> 
+> Give me example, please, why function must be non static if not used.
 
-Please see <http://lkml.org/lkml/2007/9/5/135>
+Where do you see I'm saying that they must be non-static?
+I'm all for marking functions static. I just did it for aic7xxx.
 
-Regards,
+> If usage requires kconfig tuning, then this is a better way to go,
 
-	Stefan
+We already do it, but we don't have enough developers to audit
+every driver for every possible combination of config options.
+As a result, there always be some amount of unused functions and data.
+Using --gc-sections will discard that.
 
----
-Stefan Becker
-E-Mail: Stefan.Becker@nokia.com
+> than to adopt yet another GNU/Luxury.
+
+Actually, this is how linkers should have worked long ago.
+Borland's Turbo Pascal was doing it ten+ years ago.
+
+I don't understand why you are opposed to toolchain helping
+humans to get optimized result. But it's fine with me.
+I won't force anyone to select CONFIG_DISCARD_UNUSED_SECTIONS.
+--
+vda
