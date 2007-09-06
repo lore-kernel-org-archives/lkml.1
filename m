@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758311AbXIFPU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbXIFPUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758311AbXIFPU3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 11:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756838AbXIFPUW
+	id S1758534AbXIFPUm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 11:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbXIFPUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 6 Sep 2007 11:20:22 -0400
-Received: from il.qumranet.com ([82.166.9.18]:44710 "EHLO il.qumranet.com"
+Received: from main.gmane.org ([80.91.229.2]:54762 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756491AbXIFPUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756826AbXIFPUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 6 Sep 2007 11:20:21 -0400
-Message-ID: <46E019FC.5000001@qumranet.com>
-Date: Thu, 06 Sep 2007 18:17:16 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       general@lists.openfabrics.org
-Subject: Re: [PATCH][RFC] pte notifiers -- support for external page	tables
-References: <11890207643068-git-send-email-avi@qumranet.com> <p73myw09g5w.fsf@bingen.suse.de>
-In-Reply-To: <p73myw09g5w.fsf@bingen.suse.de>
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Manuel Reimer <Manuel.Spam@nurfuerspam.de>
+Subject: Re: video4linux, bttv, vbi and missing lines in teletext...
+Date: Thu, 06 Sep 2007 17:25:52 +0200
+Message-ID: <fbp5ra$ih7$1@sea.gmane.org>
+References: <fbdr9c$hqi$1@sea.gmane.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: p4fd4c237.dip0.t-ipconnect.de
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.6) Gecko/20070809 SeaMonkey/1.1.4
+In-Reply-To: <fbdr9c$hqi$1@sea.gmane.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Avi Kivity <avi-atKUWr5tajBWk0Htik3J/w@public.gmane.org> writes:
->   
->> pte notifiers are different from paravirt_ops: they extend the normal
->> page tables rather than replace them; and they provide high-level information
->> such as the vma and the virtual address for the driver to use.
->>     
->
-> Sounds like a locking horror to me.  To do anything with page tables
-> you need locks. Both for the kernel page tables and for your new tables.
->
-> What happens when people add all
-> things of complicated operations in these notifiers? That will likely
-> happen and then everytime you change something in VM code they 
-> will break. This has the potential to increase the cost of maintaining
-> VM code considerably, which would be a bad thing.
->
-> This is quite different from paravirt ops because low level pvops
-> can typically run lockless by just doing some kind of hypercall directly.
-> But that won't work for maintaining your custom page tables.
->   
+Manuel Reimer wrote:
+> Today I'll visit someone, who has a Windows PC. I've already removed the 
+> bt878 card from my PC. I'll try at his PC, if I get the same problem 
+> with the original driver and TV watching software. If this works, I'll 
+> boot Knoppix from his PC to get sure, that I also get the same problems 
+> on his PC with his video source. I'll tell you about the results of my 
+> test.
 
-Okay, here's a possible fix: add ->lock() and ->unlock() callbacks, to 
-be called when mmap_sem is taken either for read or write.  Also add a 
-->release() for when the mm goes away to avoid the need to care about 
-the entire data structure going away.
+I tried my card on the windows PC, but we wasn't able to install the 
+original driver, as it is outdated and didn't install on Windows XP. So 
+we used:
 
-The notifier list would need to be kept sorted to avoid deadlocks.
+http://sourceforge.net/projects/btwincap
 
--- 
-Any sufficiently difficult bug is indistinguishable from a feature.
+Using this driver, I had exactly the same problem, I also have on Linux. 
+I was able to get a second card, which is the same model, I have. I 
+tried the second one, too and also have the missing lines with the 
+second card.
+
+Now I don't know, if this is a driver problem, or if this model of bt878 
+card is just cheap shit.
+
+CU
+
+Manuel
 
