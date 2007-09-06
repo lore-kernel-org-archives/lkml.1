@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932644AbXIFWXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758003AbXIFW0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932644AbXIFWXg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 18:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbXIFWX2
+	id S1758003AbXIFW0B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 18:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbXIFWZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 18:23:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42531 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755132AbXIFWX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 18:23:27 -0400
-Message-ID: <46E07DDA.2040907@redhat.com>
-Date: Thu, 06 Sep 2007 18:23:22 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 6 Sep 2007 18:25:54 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:32942 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755680AbXIFWZx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 18:25:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ZkizRKQXLelI3Zswci0tRAx8mAwza3gLrC+SaklRWxiciprgXkkcq3/GnnomXkLeBXkNn4lABCG0SFVMzUXbHn1aiHw29JNlYOe6DMWsBPCASAk4aNJs9vnzOi6o7KJVKDjHzQIm4XlVabPSOFGcVMloKS8miHAwSwQd1S1JMqM=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: "Shahbaz Khan" <shaz.linux@gmail.com>
+Subject: Re: Relevant mailing list
+Date: Fri, 7 Sep 2007 00:22:30 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+References: <20cbb9450709030301q2d7269eel474dcc04cb7d17aa@mail.gmail.com>
+In-Reply-To: <20cbb9450709030301q2d7269eel474dcc04cb7d17aa@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: David Brownell <david-b@pacbell.net>
-Subject: Two identical entries for "rtc" in /proc/devices
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709070022.30432.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-# ls -li
-total 0
-4026532007 -r--r--r-- 1 root root 0 Sep  6 18:18 nvram
-4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
-4026532067 -r--r--r-- 1 root root 0 Sep  6 18:18 rtc
-4026532056 -rw-r--r-- 1 root root 0 Sep  6 18:18 snd-page-alloc
+On Monday 03 September 2007 12:01:17 Shahbaz Khan wrote:
+> Hi,
+> 
+> I am searching for a linux kernel, network and system programming
+> related mailing list for a newbie to intermediate level programmer.
+> Kernel newbie seems to be not working. Anyone know of others?
+> 
+The Kernel Newbies list may be what you are looking for - http://kernelnewbies.org/MailingList
 
-kernel 2.6.22.6 on a Dell Precision 390:
 
-# CONFIG_RTC is not set
-# CONFIG_RTC_DEBUG is not set
-CONFIG_GEN_RTC=y
-CONFIG_GEN_RTC_X=y
-CONFIG_RTC_CLASS=y
-CONFIG_RTC_HCTOSYS=y
-CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
-CONFIG_RTC_INTF_SYSFS=y
-CONFIG_RTC_INTF_PROC=y
-CONFIG_RTC_INTF_DEV=y
-# CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
-CONFIG_RTC_DRV_CMOS=m
-CONFIG_RTC_DRV_DS1307=m
-CONFIG_RTC_DRV_DS1553=m
-CONFIG_RTC_DRV_DS1672=m
-CONFIG_RTC_DRV_DS1742=m
-# CONFIG_RTC_DRV_EP93XX is not set
-CONFIG_RTC_DRV_ISL1208=m
-CONFIG_RTC_DRV_MAX6900=m
-# CONFIG_RTC_DRV_M48T86 is not set
-CONFIG_RTC_DRV_PCF8563=m
-CONFIG_RTC_DRV_PCF8583=m
-CONFIG_RTC_DRV_RS5C372=m
-# CONFIG_RTC_DRV_SA1100 is not set
-# CONFIG_RTC_DRV_TEST is not set
-CONFIG_RTC_DRV_X1205=m
-CONFIG_RTC_DRV_V3020=m
+-- 
+Jesper Juhl
 
-CONFIG_HPET_EMULATE_RTC=y
-
-CONFIG_EFI_RTC=y
