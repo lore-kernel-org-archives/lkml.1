@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932226AbXIFFYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbXIFFhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932226AbXIFFYp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 01:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbXIFFYh
+	id S1757631AbXIFFhH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 01:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbXIFFg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 01:24:37 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:33526 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751653AbXIFFYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 01:24:36 -0400
-Subject: [BUG] 2.6.23-rc5 panics
-To: linux-kernel@vger.kernel.org
-Date: Thu, 6 Sep 2007 00:24:34 -0500 (CDT)
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20070906052434.B7420DBA2@gherkin.frus.com>
-From: rct@gherkin.frus.com (Bob Tracy)
+	Thu, 6 Sep 2007 01:36:56 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45982 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826AbXIFFg4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 01:36:56 -0400
+Date: Thu, 6 Sep 2007 07:36:54 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Stefan Becker <Stefan.Becker@nokia.com>
+Cc: ext Andi Kleen <andi@firstfloor.org>,
+       ext Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, davej@codemonkey.org.uk
+Subject: Re: [pre-2.6.23 REGRESSION] 2.6.23-rc3-git1 crash/stuck on VIA CN700 system
+Message-ID: <20070906053654.GD31880@one.firstfloor.org>
+References: <46C9D148.5080505@nokia.com> <p734pibbbex.fsf@bingen.suse.de> <46DDA366.8090806@nokia.com> <20070905102525.GB31880@one.firstfloor.org> <46DECDC9.9050407@nokia.com> <20070905163724.GC31880@one.firstfloor.org> <46DF0257.5050303@nokia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46DF0257.5050303@nokia.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This may be the most worthless bug report ever filed, but maybe someone
-else is seeing this that can shed some light on the matter.  Everything
-was rock-solid with -rc3, but I've had two panics with -rc5 in as many
-days.  The first occurred within five minutes of booting.  The second
-was after nearly 48 hours of uptime.  Nothing is getting written to
-syslog, and the second panic happened while X11 was active, so I didn't
-even get so much as a stack dump on the console -- just the flashing
-keyboard leds that signaled entry into "brick emulation" mode :-(.
+> This kernel boots up OK. Looking at the preprocessed C code the 
 
-System is a k6-III/450 w/SCSI drives (AIC7XXX) and a Netgear FA311 NIC.
-At this point, I have no idea what's triggering the panics.  Doesn't
-seem related to load that I can tell...
+I assume you tested it a few times to make sure it really was the 
+problem? Perhaps reenable it also once again and see if it hangs
+again just to be sure.
 
--- 
-------------------------------------------------------------------------
-Bob Tracy          |  "They couldn't hit an elephant at this dist- "
-rct@frus.com       |   - Last words of Union General John Sedgwick,
-                   |  Battle of Spotsylvania Court House, U.S. Civil War
-------------------------------------------------------------------------
+
+> So what can we do about the clflush on this CPU?
+
+I'll just remove that CLFLUSH statement. It was just supposed
+to be an optimization, but is not strictly needed.
+
+The only thing that worries me is that CLFLUSH might be broken
+in more ways on those VIA CPUs and we also use it in other places.
+Of course it would be possible to remove it from the kernel capabilities
+but we can't really stop user space using it.  We don't know how many 
+VIA CPU models are affected by this problem. Dave, didn't you have Centaur 
+contacts that could be asked? It seems like CLFLUSH causes kernel 
+hangs
+
+-Andi
+
