@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbXIFFks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbXIFFmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757902AbXIFFks (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 01:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbXIFFkl
+	id S1758012AbXIFFmx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 01:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXIFFmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 01:40:41 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:15702 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbXIFFkk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 01:40:40 -0400
-X-IronPort-AV: E=Sophos;i="4.20,213,1186383600"; 
-   d="scan'208";a="174609587"
-To: rct@gherkin.frus.com (Bob Tracy)
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.23-rc5 panics
-X-Message-Flag: Warning: May contain useful information
-References: <20070906052434.B7420DBA2@gherkin.frus.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 05 Sep 2007 22:40:39 -0700
-In-Reply-To: <20070906052434.B7420DBA2@gherkin.frus.com> (Bob Tracy's message of "Thu, 6 Sep 2007 00:24:34 -0500 (CDT)")
-Message-ID: <adar6lctkq0.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Thu, 6 Sep 2007 01:42:45 -0400
+Received: from mx1.suse.de ([195.135.220.2]:55721 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752519AbXIFFmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 01:42:45 -0400
+From: Andi Kleen <ak@suse.de>
+To: Zachary Amsden <zach@vmware.com>
+Subject: Re: [PATCH] Fix preemptible lazy mode bug
+Date: Thu, 6 Sep 2007 06:41:36 +0100
+User-Agent: KMail/1.9.1
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Chris Wright <chrisw@sous-sol.org>, stable@kernel.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+References: <46CE70C8.2030005@vmware.com> <1189024666.10802.197.camel@localhost.localdomain> <1189036175.21516.31.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1189036175.21516.31.camel@bodhitayantram.eng.vmware.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 06 Sep 2007 05:40:39.0533 (UTC) FILETIME=[750B39D0:01C7F048]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709060641.36855.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FWIW, I was running 2.6.23-rc5 on my laptop (along with iwlwifi-0.1.14
-for wireless) and I saw the same symptom: panic (blinking capslock)
-while in X.  I saw one panic out of maybe 12 hours of uptime over a
-few reboots.  The same system is quite stable with the stock Ubuntu
-2.6.22 kernel.
+>I agree.  The patch is a nop.  I just got overly paranoid.  The whole
+>thing is just very prone to bugs.
+So do we need a patch for .23 or not?
 
-My laptop is a Thinkpad X60s (core duo) so quite a different system.
+>; it does
+> seem perfectly acceptable though for the mm code to use kmap or vmap
+> (not kmap_atomic) internally somewhere in the pagetable code.
 
-I'm traveling at the moment so I probably won't be able to gather much
-debugging info until next week.
+i386 does it all the time for highmem pagetables in fact.
 
- - R.
+-Andi
