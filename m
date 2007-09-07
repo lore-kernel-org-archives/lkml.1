@@ -1,152 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965125AbXIGInp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965025AbXIGIoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965125AbXIGInp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 04:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964986AbXIGIng
+	id S965025AbXIGIoB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 04:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965091AbXIGInn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 04:43:36 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:43856 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964985AbXIGIne (ORCPT
+	Fri, 7 Sep 2007 04:43:43 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4673 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965072AbXIGInl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 04:43:34 -0400
-Date: Fri, 7 Sep 2007 14:13:15 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu
-Subject: Re: [patch 05/10] Text Edit Lock - Alternative code for i386 and x86_64
-Message-ID: <20070907084315.GA28915@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20070906200124.595238505@polymtl.ca> <20070906200212.080849869@polymtl.ca>
-Mime-Version: 1.0
+	Fri, 7 Sep 2007 04:43:41 -0400
+Date: Fri, 7 Sep 2007 09:43:22 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Shannon Nelson <shannon.nelson@intel.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] [RFC] IOAT: Add support for version 2 of ioatdma device
+Message-ID: <20070907084322.GA10837@shadowen.org>
+References: <20070906170712.7444.34573.stgit@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070906200212.080849869@polymtl.ca>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070906170712.7444.34573.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 06, 2007 at 04:01:29PM -0400, Mathieu Desnoyers wrote:
+On Thu, Sep 06, 2007 at 10:07:12AM -0700, Shannon Nelson wrote:
+>  	list_for_each_entry(iter, &desc->async_tx.tx_list, node) {
+>  		iter->hw->src_addr = addr;
+>  		addr += ioat_chan->xfercap;
+> +
+> +		if (--cnt == 0);
+> +			break;
+>  	}
+>  
+>  }
+> @@ -166,20 +177,28 @@ static void ioat_set_dest(dma_addr_t addr,
+>  {
+>  	struct ioat_desc_sw *iter, *desc = tx_to_ioat_desc(tx);
+>  	struct ioat_dma_chan *ioat_chan = to_ioat_chan(tx->chan);
+> +	int cnt = desc->tx_cnt;
+>  
+>  	pci_unmap_addr_set(desc, dst, addr);
+>  
+>  	list_for_each_entry(iter, &desc->async_tx.tx_list, node) {
+>  		iter->hw->dst_addr = addr;
+>  		addr += ioat_chan->xfercap;
+> +
+> +		if (--cnt == 0);
+> +			break;
+>  	}
 
-<snip>
+Those two look suspect to checkpatch, and I have to agree with it.
 
-> Index: linux-2.6-lttng/arch/i386/kernel/alternative.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/arch/i386/kernel/alternative.c	2007-09-06 14:32:11.000000000 -0400
-> +++ linux-2.6-lttng/arch/i386/kernel/alternative.c	2007-09-06 14:59:19.000000000 -0400
-> @@ -16,6 +16,99 @@
->  #ifdef CONFIG_HOTPLUG_CPU
->  static int smp_alt_once;
-> 
-> +/*
-> + * Warning:
-> + * When you use this code to patch more than one byte of an instruction
-> + * you need to make sure that other CPUs cannot execute this code in parallel.
-> + * Also no thread must be currently preempted in the middle of these
-> + * instructions.  And on the local CPU you need to be protected again NMI or MCE
-> + * handlers seeing an inconsistent instruction while you patch.
-> + * Warning: read_cr0 is modified by paravirt, this is why we have _early
-> + * versions. They are not in the __init section because they can be used at
-> + * module load time.
-> + */
-> +static inline void text_sync(void *addr, size_t len)
-> +{
-> +	void *faddr;
-> +
-> +	sync_core();
-> +	/* Not strictly needed, but can speed CPU recovery up. */
-> +	if (cpu_has_clflush)
-> +		for (faddr = addr; faddr < addr + len;
-> +				faddr += boot_cpu_data.x86_clflush_size)
-> +			asm("clflush (%0) " :: "r" (faddr) : "memory");
-> +}
-> +
-> +void * text_poke_early(void *addr, const void *opcode,
-> +					size_t len)
-> +{
-> +	memcpy(addr, opcode, len);
-> +	text_sync(addr, len);
-> +	return addr;
-> +}
-> +
-> +void * text_set_early(void *addr, int c, size_t len)
-> +{
-> +	memset(addr, c, len);
-> +	text_sync(addr, len);
-> +	return addr;
-> +}
-> +
-> +/*
-> + * Only atomic text poke/set should be allowed when not doing early patching.
-> + * It means the size must be writable atomically and the address must be aligned
-> + * in a way that permits an atomic write.
-> + */
-> +void * __kprobes text_poke(void *addr, const void *opcode, size_t len)
-> +{
-> +	unsigned long cr0;
-> +	int unaligned;
-> +
-> +	if (len > sizeof(long)) {
-> +		printk(KERN_ERR "text_poke of len %zu too big (max %lu)\n",
-> +			len, sizeof(long));
-> +		BUG_ON(1);
-> +	}
-> +	unaligned = (((long)addr + len - 1) & ~(sizeof(long) - 1))
-> +		- ((long)addr & ~(sizeof(long) - 1));
-> +	if (unlikely(unaligned)) {
-> +		printk(KERN_ERR "text_poke of at addr %p of len %zu is "
-> +				"unaligned (%d)\n",
-> +			addr, len, unaligned);
-> +		BUG_ON(1);
-> +	}
-> +	kernel_wp_save(cr0);
-> +	memcpy(addr, opcode, len);
-> +	kernel_wp_restore(cr0);
-> +	text_sync(addr, len);
-> +	return addr;
-> +}
-> +
-> +void * __kprobes text_set(void *addr, int c, size_t len)
-> +{
-> +	unsigned long cr0;
-> +	int unaligned;
-> +
-> +	if (len > sizeof(long)) {
-> +		printk(KERN_ERR "text_set of len %zu too big (max %lu)\n",
-> +			len, sizeof(long));
-> +		BUG_ON(1);
-> +	}
-> +	unaligned = (((long)addr + len - 1) & ~(sizeof(long) - 1))
-> +		- ((long)addr & ~(sizeof(long) - 1));
-> +	if (unlikely(unaligned)) {
-> +		printk(KERN_ERR "text_set of at addr %p of len %zu is "
-> +				"unaligned (%d)\n",
-> +			addr, len, unaligned);
-> +		BUG_ON(1);
-> +	}
-> +	kernel_wp_save(cr0);
-> +	memset(addr, c, len);
-> +	kernel_wp_restore(cr0);
-> +	text_sync(addr, len);
-> +	return addr;
-> +}
-> +
+WARNING: Trailing semicolon indicates no statements, indent implies
+otherwise
+#346: FILE: drivers/dma/ioat_dma.c:168:
++               if (--cnt == 0);
++                       break;
+WARNING: Trailing semicolon indicates no statements, indent implies
+otherwise
+#363: FILE: drivers/dma/ioat_dma.c:188:
++               if (--cnt == 0);
++                       break;
 
-The above chunk is within ifdef CONFIG_HOTPLUG_CPU. This breaks a CONFIG_SMP=n
-build:
-
-  CHK     include/linux/compile.h
-  UPD     include/linux/compile.h
-arch/i386/kernel/built-in.o: In function `apply_alternatives':
-/home/ananth/kprobes/marker/linux-2.6.23-rc4/arch/i386/kernel/alternative.c:293:
-undefined reference to `text_poke_early'
-arch/i386/kernel/built-in.o: In function `arch_disarm_kprobe':
-/home/ananth/kprobes/marker/linux-2.6.23-rc4/arch/i386/kernel/kprobes.c:185:
-undefined reference to `text_set'
-arch/i386/kernel/built-in.o: In function `arch_arm_kprobe':
-/home/ananth/kprobes/marker/linux-2.6.23-rc4/arch/i386/kernel/kprobes.c:180:
-undefined reference to `text_set'
-make: *** [.tmp_vmlinux1] Error 1
-
-Ananth
+-apw
