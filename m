@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965045AbXIGA6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965102AbXIGA7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965045AbXIGA6i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 20:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964878AbXIGA62
+	id S965102AbXIGA7W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 20:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964899AbXIGA7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 20:58:28 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:43847 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964864AbXIGA61 (ORCPT
+	Thu, 6 Sep 2007 20:59:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:42372 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964892AbXIGA7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 20:58:27 -0400
+	Thu, 6 Sep 2007 20:59:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=iysnJCpemYC8VxToEIfFssRr9O85fw5QMOSH41mIn4oAfFikClPgxYqv9SkuTn6a2+hqPljRRVhbRET5G5E+ZkGfqJM2dts0At/LQ3By4aerqusatOKTJqT0CUKTUpafOPzjVlLuxS1WThN5HmYdltS+KnF7LcijOibB5xW9Tr8=
-Message-ID: <46E0A22B.6040202@gmail.com>
-Date: Fri, 07 Sep 2007 09:58:19 +0900
+        b=nB4okT20/yR81YTj8obDRZ12V9wMjizsxYG5s0DjLTD1Y2Tys5dN/10FALSkM8qNKHUEBPvT2mjbYj4uIuVVUzL8dh8q0PHYOneKDwNU3w0iB6gr33R0OMYvfvXit2es+Rs7qkODAUbgtHGqPN2CGYc2/b5X+Gy7W3JBAwsOIkw=
+Message-ID: <46E0A253.7060803@gmail.com>
+Date: Fri, 07 Sep 2007 09:58:59 +0900
 From: Tejun Heo <htejun@gmail.com>
 User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: bryan@arbores.ca
-CC: linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Michal.k.k.Piotrowski@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>
+To: Mark Lord <liml@rtr.ca>
+CC: Andrew Morton <akpm@linux-foundation.org>, michal.k.k.piotrowski@gmail.com,
+       bryan@arbores.ca, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
 Subject: Re: Stardom SATA HSM violation
-References: <46CFA08E.6090604@arbores.ca> <6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com> <46DBCB6C.8080206@gmail.com> <46E01601.9010907@arbores.ca>
-In-Reply-To: <46E01601.9010907@arbores.ca>
+References: <46CFA08E.6090604@arbores.ca>	<6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com>	<46DBCB6C.8080206@gmail.com> <20070905095327.6277d054.akpm@linux-foundation.org> <46DEE617.4050004@rtr.ca>
+In-Reply-To: <46DEE617.4050004@rtr.ca>
 X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan Woods wrote:
+Hello,
 
-> The full dmesg and hdparm -I command output are attached.
+Mark Lord wrote:
+> I reported a very similar bug back a few releases ago.
+> Anyone who wants to try it themselves, can do this with hdparm-7.7 (from
+> sourceforge):
 > 
-> I have received word from the vendor that the Stardom 2611 will do
-> RAID0 or 1 under windows, but only RAID1 under Linux. (Their manual
-> said it worked with Linux but failed to mention the RAID mode
-> restriction: argh!)
+>    hdparm --drq-hsm-error /dev/sda
 > 
-> They recommended the 2600 model for RAID0 with Linux, but that model
-> is only SATA-I so I will probably go with alternate hardware.
-> 
-> The vendor also suggested the possibility of a firmware upgrade to
-> the 2611 - I am still waiting to hear. I will post a followup if
-> this happens.
+> Whether or not it hangs the machine does depend upon exactly which SATA
+> LLD is used,
+> and what model/revision of drive is installed.  But if it hangs for you
+> (eg. Tejun),
+> then you now have a way to reproduce a HSM error "on demand" for
+> testing.  :)
 
-If possible, please post dmesg from 2.6.22.5.
+Neat.  Is this the FIFO-draining issue?
 
 Thanks.
 
