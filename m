@@ -1,46 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbXIGPef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758378AbXIGPfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758204AbXIGPef (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 11:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757469AbXIGPe0
+	id S1758378AbXIGPfL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 11:35:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757541AbXIGPe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 11:34:26 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:35295 "EHLO fieldses.org"
+	Fri, 7 Sep 2007 11:34:57 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:41704 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757089AbXIGPeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 11:34:25 -0400
-Date: Fri, 7 Sep 2007 11:34:08 -0400
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Satyam Sharma <satyam@infradead.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: NFS4 authentification / fsuid
-Message-ID: <20070907153408.GG24638@fieldses.org>
-References: <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr> <1188486240.6755.51.camel@heimdal.trondhjem.org> <20070830214431.GF10808@fieldses.org> <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0709061355350.3781@enigma.security.iitk.ac.in> <20070906151118.GB28565@fieldses.org> <1189120910.6672.30.camel@heimdal.trondhjem.org> <1189121572.6672.36.camel@heimdal.trondhjem.org>
+	id S1757469AbXIGPez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 11:34:55 -0400
+Date: Fri, 7 Sep 2007 08:34:53 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Pavel Emelianov <xemul@openvz.org>, Zach Brown <zach.brown@oracle.com>,
+       Dave Jones <davej@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH] list.h: add list_for_each_entry_continue_rcu
+Message-ID: <20070907153453.GD8864@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1189175688.28781.167.camel@johannes.berg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1189121572.6672.36.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <1189175688.28781.167.camel@johannes.berg>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 07, 2007 at 01:32:52AM +0200, Trond Myklebust wrote:
-> Sorry. Of course, you have to copy the entire /lib, etc. onto the tmpfs,
-> but you get the gist....
+On Fri, Sep 07, 2007 at 04:34:48PM +0200, Johannes Berg wrote:
+> To implement the multicast list callback in mac80211 we need to
+> do partial list iteration. Since I want to convert the interface
+> list to an RCU list, I need a new list walking primitive:
+> list_for_each_entry_continue_rcu().
 > 
-> The point is that it is easy to subvert userspace if you have enough
-> privileges. In the above example it may not be entirely undetectable,
-> but who here is running a script on every login to check that / is
-> indeed uncompromised?
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Pavel Emelianov <xemul@openvz.org>
+> Cc: Zach Brown <zach.brown@oracle.com>
+> Cc: Dave Jones <davej@redhat.com>
+> Cc: Oleg Nesterov <oleg@tv-sign.ru>
+> 
+> ---
+> How do we want to handle this? Is it ok to push this via net-2.6.24 so
+> we can merge it along with the fix that needs it?
+> 
+>  include/linux/list.h |   20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+> 
+> --- wireless-dev.orig/include/linux/list.h	2007-09-07 00:16:07.374444290 +0200
+> +++ wireless-dev/include/linux/list.h	2007-08-29 21:08:14.802054000 +0200
+> @@ -665,6 +665,26 @@ static inline void list_splice_init_rcu(
+>  		prefetch(rcu_dereference((pos))->next), (pos) != (head); \
+>          	(pos) = (pos)->next)
+> 
+> +
+> +/**
+> + * list_for_each_entry_continue_rcu - continue iteration over rcu list
+> + * @pos:	the type * to use as a loop cursor.
+> + * @head:	the head for your list.
+> + * @member:	the name of the list_struct within the struct.
+> + *
+> + * Continue to iterate over rcu list of given type, continuing after
+> + * the current position.
 
-I suppose this is the motivation for things like the "secure attention
-key"?
+Please add something like the following to this comment:
 
-But I'm most curious actually about to what degree the kernel itself is
-vulnerable to root (without a reboot).  Is disabling /dev/kmem and
-module-loading in theory enough?  (Modulo bugs like filesystems that
-aren't secure against untrusted filesystems, etc.)
+	Note that the caller is responsible for making sure that
+	the element remains in place between the earlier iterator
+	and this one.  One way to do this is to ensure that
+	both iterators are covered by the same rcu_read_lock(),
+	while others involve reference counts, flags, or mutexes.
 
---b.
+						Thanx, Paul
+
+> + *
+> + * This list-traversal primitive may safely run concurrently with
+> + * the _rcu list-mutation primitives such as list_add_rcu()
+> + * as long as the traversal is guarded by rcu_read_lock().
+> + */
+> +#define list_for_each_entry_continue_rcu(pos, head, member) \
+> +	for ((pos) = list_entry((pos)->member.next, typeof(*pos), member); \
+> +		prefetch(rcu_dereference((pos))->member.next), \
+> +			 &pos->member != (head); \
+> +        	(pos) = list_entry(pos->member.next, typeof(*pos), member))
+> +
+>  /*
+>   * Double linked lists with a single pointer list head.
+>   * Mostly useful for hash tables where the two pointer list head is
+> 
+> 
