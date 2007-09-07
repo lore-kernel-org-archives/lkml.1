@@ -1,162 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965643AbXIGOJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965410AbXIGONb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965643AbXIGOJx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 10:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965410AbXIGOJp
+	id S965410AbXIGONb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 10:13:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965427AbXIGONY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 10:09:45 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:56024 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965296AbXIGOJo (ORCPT
+	Fri, 7 Sep 2007 10:13:24 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:37334 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965380AbXIGONX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 10:09:44 -0400
-Date: Fri, 7 Sep 2007 10:09:42 -0400
+	Fri, 7 Sep 2007 10:13:23 -0400
+Date: Fri, 7 Sep 2007 10:13:21 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu
-Subject: Re: [patch 05/10] Text Edit Lock - Alternative code for i386 and x86_64
-Message-ID: <20070907140942.GF9735@Krystal>
-References: <20070906200124.595238505@polymtl.ca> <20070906200212.080849869@polymtl.ca> <20070907084315.GA28915@in.ibm.com>
+       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       davem@davemloft.net
+Subject: Re: [patch 06/10] Text Edit Lock - kprobes architecture independent support
+Message-ID: <20070907141321.GG9735@Krystal>
+References: <20070906200124.595238505@polymtl.ca> <20070906200212.399420921@polymtl.ca> <20070907102805.GA10389@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070907084315.GA28915@in.ibm.com>
+In-Reply-To: <20070907102805.GA10389@in.ibm.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:09:34 up 39 days, 14:28,  4 users,  load average: 0.74, 0.66, 0.55
+X-Uptime: 10:13:10 up 39 days, 14:32,  4 users,  load average: 0.09, 0.39, 0.46
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Ananth N Mavinakayanahalli (ananth@in.ibm.com) wrote:
-> On Thu, Sep 06, 2007 at 04:01:29PM -0400, Mathieu Desnoyers wrote:
+> On Thu, Sep 06, 2007 at 04:01:30PM -0400, Mathieu Desnoyers wrote:
 > 
 > <snip>
 > 
-> > Index: linux-2.6-lttng/arch/i386/kernel/alternative.c
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/arch/i386/kernel/alternative.c	2007-09-06 14:32:11.000000000 -0400
-> > +++ linux-2.6-lttng/arch/i386/kernel/alternative.c	2007-09-06 14:59:19.000000000 -0400
-> > @@ -16,6 +16,99 @@
-> >  #ifdef CONFIG_HOTPLUG_CPU
-> >  static int smp_alt_once;
-> > 
-> > +/*
-> > + * Warning:
-> > + * When you use this code to patch more than one byte of an instruction
-> > + * you need to make sure that other CPUs cannot execute this code in parallel.
-> > + * Also no thread must be currently preempted in the middle of these
-> > + * instructions.  And on the local CPU you need to be protected again NMI or MCE
-> > + * handlers seeing an inconsistent instruction while you patch.
-> > + * Warning: read_cr0 is modified by paravirt, this is why we have _early
-> > + * versions. They are not in the __init section because they can be used at
-> > + * module load time.
-> > + */
-> > +static inline void text_sync(void *addr, size_t len)
-> > +{
-> > +	void *faddr;
-> > +
-> > +	sync_core();
-> > +	/* Not strictly needed, but can speed CPU recovery up. */
-> > +	if (cpu_has_clflush)
-> > +		for (faddr = addr; faddr < addr + len;
-> > +				faddr += boot_cpu_data.x86_clflush_size)
-> > +			asm("clflush (%0) " :: "r" (faddr) : "memory");
-> > +}
-> > +
-> > +void * text_poke_early(void *addr, const void *opcode,
-> > +					size_t len)
-> > +{
-> > +	memcpy(addr, opcode, len);
-> > +	text_sync(addr, len);
-> > +	return addr;
-> > +}
-> > +
-> > +void * text_set_early(void *addr, int c, size_t len)
-> > +{
-> > +	memset(addr, c, len);
-> > +	text_sync(addr, len);
-> > +	return addr;
-> > +}
-> > +
-> > +/*
-> > + * Only atomic text poke/set should be allowed when not doing early patching.
-> > + * It means the size must be writable atomically and the address must be aligned
-> > + * in a way that permits an atomic write.
-> > + */
-> > +void * __kprobes text_poke(void *addr, const void *opcode, size_t len)
-> > +{
-> > +	unsigned long cr0;
-> > +	int unaligned;
-> > +
-> > +	if (len > sizeof(long)) {
-> > +		printk(KERN_ERR "text_poke of len %zu too big (max %lu)\n",
-> > +			len, sizeof(long));
-> > +		BUG_ON(1);
-> > +	}
-> > +	unaligned = (((long)addr + len - 1) & ~(sizeof(long) - 1))
-> > +		- ((long)addr & ~(sizeof(long) - 1));
-> > +	if (unlikely(unaligned)) {
-> > +		printk(KERN_ERR "text_poke of at addr %p of len %zu is "
-> > +				"unaligned (%d)\n",
-> > +			addr, len, unaligned);
-> > +		BUG_ON(1);
-> > +	}
-> > +	kernel_wp_save(cr0);
-> > +	memcpy(addr, opcode, len);
-> > +	kernel_wp_restore(cr0);
-> > +	text_sync(addr, len);
-> > +	return addr;
-> > +}
-> > +
-> > +void * __kprobes text_set(void *addr, int c, size_t len)
-> > +{
-> > +	unsigned long cr0;
-> > +	int unaligned;
-> > +
-> > +	if (len > sizeof(long)) {
-> > +		printk(KERN_ERR "text_set of len %zu too big (max %lu)\n",
-> > +			len, sizeof(long));
-> > +		BUG_ON(1);
-> > +	}
-> > +	unaligned = (((long)addr + len - 1) & ~(sizeof(long) - 1))
-> > +		- ((long)addr & ~(sizeof(long) - 1));
-> > +	if (unlikely(unaligned)) {
-> > +		printk(KERN_ERR "text_set of at addr %p of len %zu is "
-> > +				"unaligned (%d)\n",
-> > +			addr, len, unaligned);
-> > +		BUG_ON(1);
-> > +	}
-> > +	kernel_wp_save(cr0);
-> > +	memset(addr, c, len);
-> > +	kernel_wp_restore(cr0);
-> > +	text_sync(addr, len);
-> > +	return addr;
-> > +}
-> > +
+> > @@ -716,8 +720,9 @@ static int __kprobes pre_handler_kretpro
+> >  				 struct kretprobe_instance, uflist);
+> >  		ri->rp = rp;
+> >  		ri->task = current;
+> > +		kernel_text_lock();
+> >  		arch_prepare_kretprobe(ri, regs);
+> > -
+> > +		kernel_text_unlock();
 > 
-> The above chunk is within ifdef CONFIG_HOTPLUG_CPU. This breaks a CONFIG_SMP=n
-> build:
+> pre_handler_kretprobe() is run when the entry probe for a retprobed
+> function is hit and cannot block. You can't take a mutex here.
 > 
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
-> arch/i386/kernel/built-in.o: In function `apply_alternatives':
-> /home/ananth/kprobes/marker/linux-2.6.23-rc4/arch/i386/kernel/alternative.c:293:
-> undefined reference to `text_poke_early'
-> arch/i386/kernel/built-in.o: In function `arch_disarm_kprobe':
-> /home/ananth/kprobes/marker/linux-2.6.23-rc4/arch/i386/kernel/kprobes.c:185:
-> undefined reference to `text_set'
-> arch/i386/kernel/built-in.o: In function `arch_arm_kprobe':
-> /home/ananth/kprobes/marker/linux-2.6.23-rc4/arch/i386/kernel/kprobes.c:180:
-> undefined reference to `text_set'
-> make: *** [.tmp_vmlinux1] Error 1
+> And why do we need to take the kernel_text_lock() here anyway? All
+> arch_prepare_kretprobe() does is modify the return address stored either
+> on stack or a register (arch specific) to the trampoline. We don't
+> change any kernel text here.
 > 
-> Ananth
 
-Thanks, fixing for next release.
+Yep, good catch. Fixing.
+
+> Ananth
 
 -- 
 Mathieu Desnoyers
