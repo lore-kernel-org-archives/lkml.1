@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbXIGU7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbXIGVAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758735AbXIGU7T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 16:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbXIGU7N
+	id S1758783AbXIGVAZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 17:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758475AbXIGVAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 16:59:13 -0400
-Received: from antispam.upcomillas.es ([130.206.70.245]:40798 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbXIGU7M convert rfc822-to-8bit (ORCPT
+	Fri, 7 Sep 2007 17:00:13 -0400
+Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:35675 "EHLO
+	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751769AbXIGVAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 16:59:12 -0400
-Subject: Re: easy alsa patches for the stable kernel?
-From: Romano Giannetti <romano@dea.icai.upcomillas.es>
-To: Thorsten Leemhuis <fedora@leemhuis.info>
-Cc: Takashi Iwai <tiwai@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       roger@computer-surgery.co.uk, linux-kernel@vger.kernel.org,
-       perex@suse.cz
-In-Reply-To: <46E1A9AC.1050601@leemhuis.info>
-References: <20070822222902.GA28563@computer-surgery.co.uk> 
-	<20070905083844.6637da1e.akpm@linux-foundation.org> 
-	<s5hlkbl6qsn.wl%tiwai@suse.de> 
-	<20070905091633.87cfaa81.akpm@linux-foundation.org> 
-	<s5hhcm96oza.wl%tiwai@suse.de>	<1189091390.3212.3.camel@rukbat> 
-	<s5hir6n6ck6.wl%tiwai@suse.de>	<1189115313.7275.5.camel@rukbat> 
-	<1189153347.15955.5.camel@rukbat>	<s5h7in26aj3.wl%tiwai@suse.de> 
-	<46E13E31.1050409@leemhuis.info> <s5hy7fi4oou.wl%tiwai@suse.de> 
-	<46E1A9AC.1050601@leemhuis.info>
-Content-Type: text/plain;
-	charset=utf-8
-Date: Fri, 07 Sep 2007 22:59:07 +0200
-Message-Id: <1189198747.13399.10.camel@rukbat>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 8BIT
+	Fri, 7 Sep 2007 17:00:11 -0400
+From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Bernd Schubert <bs@q-leap.de>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
+       brian@clusterfs.com,
+       Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
+Subject: Re: patch: improve generic_file_buffered_write() (2nd try 1/2)
+References: <200709051546.06224.bs@q-leap.de>
+	<20070905083529.a1c8a0a9.randy.dunlap@oracle.com>
+	<200709051941.56145.bs@q-leap.de>
+	<200709081415.54211.nickpiggin@yahoo.com.au>
+Date: Fri, 07 Sep 2007 23:00:00 +0200
+In-Reply-To: <200709081415.54211.nickpiggin@yahoo.com.au> (Nick Piggin's
+	message of "Sat, 8 Sep 2007 14:15:53 +1000")
+Message-ID: <87hcm6chtb.fsf@informatik.uni-tuebingen.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-07 at 21:42 +0200, Thorsten Leemhuis wrote:
-> On 07.09.2007 14:58, Takashi Iwai wrote:
-> >>> Ah good.  I added it to ALSA HG tree now.
+Nick Piggin <nickpiggin@yahoo.com.au> writes:
 
-Thanks. BTW, is anywhere visible the current hg tree? It seems that
-http://hg-mirror.alsa-project.org/alsa-kernel/ lags a bit behind...
+> Anyway, there are fixes for this deadlock in Andrew's -mm tree, but
+> also a workaround for the NFSD problem in git commit 29dbb3fc. Did
+> you try a later kernel to see if it is fixed there?
 
+I had a chance to look up that commit (git clone took a while so sorry
+for writing 2 mails). It is present in 2.6.23-rc5 so I already noticed
+it when merging our patch in 2.6.23-rc5.
 
-> It's just this line afaics...
-> +       SND_PCI_QUIRK(0x1179, 0xff50, "TOSHIBA A305", ALC268_TOSHIBA),
-> ...which afaics is doing nothing more then "if DMI-Data matches FOO then
-> apply know workaround BAR". Is that correct or am I missing something
-> here (another patch that this one depends on that isn't in 2.6.23 yet
-> maybe?)?
->
+Upon closer reading of the patch though I see that it will indeed
+prevent writes by the nfsd to be split smaller than PAGE_SIZE and it
+will cause filemap_copy_from_user[_iovec] to be called with a source
+spanning multiple pages.
 
-Your second guess is right. That line is a patch with respect to current
-mercurial tree, which is quite ahead of the current kernel alsa code.
-Although I'd like to know from where Andrew pulled it, because I was not
-able to find that tree on git.kernel nor alsa-project.org... :-)
-
-> Nevertheless let me use to use this moment and say: thx for all your
-> work Takashi!
-
-Seconded. I only hope I will be able to continue to find this patch for
-the next releases of the 2.6.23 kernel...
-
-Romano
+So the commit 29dbb3fc should have a simmilar, slightly better even,
+gain for the nfsd and other kernel space segments. But it will not
+improve writes from user space, where ~14% of the commits were saved
+during a days work for me.
 
 
+Now I have a question about fault_in_pages_readable(). Can I call that
+for multiple pages and then call __grab_cache_page() without risking
+one of the pages from getting lost again and causing a deadlock?
 
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
-
+MfG
+        Goswin
