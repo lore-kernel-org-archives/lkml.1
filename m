@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965002AbXIGA5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965045AbXIGA6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965002AbXIGA5Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 20:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964878AbXIGA5R
+	id S965045AbXIGA6i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 20:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964878AbXIGA62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 20:57:17 -0400
-Received: from smtpoutm.mac.com ([17.148.16.73]:54233 "EHLO smtpoutm.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964877AbXIGA5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 20:57:16 -0400
-In-Reply-To: <1189121714.6672.38.camel@heimdal.trondhjem.org>
-References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr> <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr> <1188486240.6755.51.camel@heimdal.trondhjem.org> <20070830214431.GF10808@fieldses.org> <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in> <20070906150616.GA28565@fieldses.org> <0D66E86D-8D97-45D7-9C2A-7AB5F42845B5@mac.com> <1189121714.6672.38.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5B1FC03A-6819-4C6C-91D3-F3022B798EF4@mac.com>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       Satyam Sharma <satyam@infradead.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Thu, 6 Sep 2007 20:58:28 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:43847 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964864AbXIGA61 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 20:58:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=iysnJCpemYC8VxToEIfFssRr9O85fw5QMOSH41mIn4oAfFikClPgxYqv9SkuTn6a2+hqPljRRVhbRET5G5E+ZkGfqJM2dts0At/LQ3By4aerqusatOKTJqT0CUKTUpafOPzjVlLuxS1WThN5HmYdltS+KnF7LcijOibB5xW9Tr8=
+Message-ID: <46E0A22B.6040202@gmail.com>
+Date: Fri, 07 Sep 2007 09:58:19 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: bryan@arbores.ca
+CC: linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Michal.k.k.Piotrowski@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Stardom SATA HSM violation
+References: <46CFA08E.6090604@arbores.ca> <6bffcb0e0708261610g10d9c59ck5789fac6feca9f42@mail.gmail.com> <46DBCB6C.8080206@gmail.com> <46E01601.9010907@arbores.ca>
+In-Reply-To: <46E01601.9010907@arbores.ca>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: NFS4 authentification / fsuid
-Date: Thu, 6 Sep 2007 20:56:12 -0400
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 06, 2007, at 19:35:14, Trond Myklebust wrote:
-> On Thu, 2007-09-06 at 19:30 -0400, Kyle Moffett wrote:
->> Actually, that's a fairly simple problem (barring disassembling  
->> the system and attaching a hardware debugger).  You encrypt the  
->> root filesystem and require a password to boot (See: LUKS).   
->> Debian has built-in support for installing onto fs-on-LVM-on-crypt- 
->> on-RAID, and it works quite well on all the laptops I use  
->> regularly.  It's not even much of a speed penalty; once you take  
->> the overhead of hitting a 5400RPM laptop drive you can chew  
->> thousands of cycles of CPU without anybody noticing (much).  Then  
->> all you have to do is burn a copy of your /boot with bootloader  
->> onto some read-only media (like a finalized CDROM/DVDROM) and  
->> you're set to go.
->
-> Disconnect battery, and watch boot password go 'poof!'.
+Bryan Woods wrote:
 
-Umm, I did say "encrypt the root filesystem", didn't I?  Booting my  
-laptops this way follows this procedure:
-   1) Enter BIOS boot menu
-   2) Insert /boot CDROM
-   3) Select the "CDROM" entry
-   4) Wait for kernel to start and run through initramfs
-   5) Type password into the initramfs prompt so that it can DECRYPT  
-THE ROOT FILESYSTEM
-   6) Continue to boot the system.
+> The full dmesg and hdparm -I command output are attached.
+> 
+> I have received word from the vendor that the Stardom 2611 will do
+> RAID0 or 1 under windows, but only RAID1 under Linux. (Their manual
+> said it worked with Linux but failed to mention the RAID mode
+> restriction: argh!)
+> 
+> They recommended the 2600 model for RAID0 with Linux, but that model
+> is only SATA-I so I will probably go with alternate hardware.
+> 
+> The vendor also suggested the possibility of a firmware upgrade to
+> the 2611 - I am still waiting to hear. I will post a followup if
+> this happens.
 
-Under this setup, tinkering with my BIOS does virtually nothing; the  
-only avenues of attack are strictly of the "Install a hardware  
-keylogger" variety.  Without my "boot" password you are looking at a  
-block device which appears to be little more than a random bit- 
-bucket, using AES-256 encryption.  If you can break that by  
-disconnecting the BIOS battery a lot of governments would be very  
-interested in the exact procedure. :-D  Furthermore if I think that  
-the hardware has been compromised I can pull out the HDD and my CDROM  
-and take them to a trusted computer to gain access to my data.
+If possible, please post dmesg from 2.6.22.5.
 
-That said, a useful BIOS password helps keep somebody from casually  
-setting a supervisor password or mucking with the critical-to-boot  
-settings and making _me_ unplug the battery.
+Thanks.
 
-Cheers,
-Kyle Moffett
+-- 
+tejun
