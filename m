@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbXIGFxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbXIGGOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758233AbXIGFxc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 01:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXIGFxY
+	id S1758078AbXIGGOT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 02:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbXIGGOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 01:53:24 -0400
-Received: from smtp.nokia.com ([131.228.20.173]:62042 "EHLO
-	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbXIGFxX convert rfc822-to-8bit (ORCPT
+	Fri, 7 Sep 2007 02:14:11 -0400
+Received: from 184.5.221.87.dynamic.jazztel.es ([87.221.5.184]:49803 "EHLO
+	traven.no-ip.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750824AbXIGGOK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 01:53:23 -0400
-Subject: Re: [PATCH try #2] Blackfin on-chip NAND Flash Controller driver
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: bryan.wu@analog.com
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, linux-mtd@lists.infradead.org,
+	Fri, 7 Sep 2007 02:14:10 -0400
+Date: Fri, 7 Sep 2007 08:14:11 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: Oleg Verych <olecom@flower.upol.cz>
+Cc: gregkh@suse.de, linux-usb-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <1188885450.7074.7.camel@roc-laptop>
-References: <1188885450.7074.7.camel@roc-laptop>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 07 Sep 2007 08:52:21 +0300
-Message-Id: <1189144341.14370.77.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 07 Sep 2007 05:52:21.0782 (UTC) FILETIME=[4207AB60:01C7F113]
-X-Nokia-AV: Clean
+Subject: Re: [PATCH 1/2] ELAN U132 Host Controller Driver: convert sw_lock
+	to mutex
+Message-ID: <20070907061411.GF3081@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	Oleg Verych <olecom@flower.upol.cz>, gregkh@suse.de,
+	linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20070906210922.GC3081@traven> <20070906211815.GD3081@traven> <E1ITPWc-0004rC-Kr@flower>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1ITPWc-0004rC-Kr@flower>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-04 at 13:57 +0800, Bryan Wu wrote:
-> This is the driver for latest Blackfin on-chip nand flash controller
+El Fri, Sep 07, 2007 at 12:08:34AM +0200 Oleg Verych ha dit:
+
+> * Thu, 6 Sep 2007 23:18:15 +0200
 > 
->  - use nand_chip and mtd_info common nand driver interface
->  - provide both PIO and dma operation
->  - compiled with ezkit bf548 configuration
->  - use hardware 1-bit ECC
->  - tested with YAFFS2 and can mount YAFFS2 filesystem as rootfs
+> []
+> > @@ -184,7 +184,7 @@ struct u132_ring {
+> >  struct u132 {
 > 
-> ChangeLog from try#1
->  - use hweight32() instead of count_bits()
->  - replace bf54x with bf5xx and BF54X with BF5XX
->  - compare against plat->page_size in 2 cases when enable hardware ECC
+> Subject: [PATCH 1/2] ELAN U132 Host Controller Driver: convert sw_lock to mutex
+> []
+> >          struct list_head u132_list;
+> > -        struct semaphore sw_lock;
+> > +        struct mutex sw_lock;
+> >          struct semaphore scheduler_lock;
 > 
-> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+> Subject: [PATCH 2/2] ELAN U132 Host Controller Driver: convert  scheduler_lock t
+> []
+> >         struct list_head u132_list;
+> >         struct semaphore sw_lock;
+> >-        struct semaphore scheduler_lock;
+> >+        struct mutex scheduler_lock;
+> 
+> Are you sure, you have right patch sequence?
 
-Bryan,
-
-I'd suggest you to test your NAND driver with the following NAND tests:
-
-git://git.infradead.org/~ahunter/nand-tests.git
-
-(http://git.infradead.org/?p=users/ahunter/nand-tests.git;a=summary)
-
-
-You may want to avoid the torture test, but it is useful to run it with
-limited amount of erase cycles to make sure your flash/driver survives
-really high I/O load.For example, we caught occasional DMA transfer
-problems while running the torture test for few days.
+my idea was to sent two independent patches, would it be better to
+have one patch based on the other?
 
 -- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
+              Insanity: doing the same thing over and over
+                again and expecting different results
+                            (Albert Einstein)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
