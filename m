@@ -1,101 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbXIGWgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbXIGWj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758895AbXIGWgL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 18:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758651AbXIGWf5
+	id S1758888AbXIGWj3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 18:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758666AbXIGWjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 18:35:57 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38694 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758627AbXIGWf4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 18:35:56 -0400
-Date: Sat, 8 Sep 2007 00:35:54 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, pageexec@freemail.hu
-Subject: Re: [patch 05/10] Text Edit Lock - Alternative code for i386 and x86_64
-Message-ID: <20070907223554.GA22646@one.firstfloor.org>
-References: <20070906200124.595238505@polymtl.ca> <20070906200212.080849869@polymtl.ca> <20070907065936.GH31880@one.firstfloor.org> <20070907140442.GE9735@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070907140442.GE9735@Krystal>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 7 Sep 2007 18:39:21 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49065 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758480AbXIGWjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 18:39:19 -0400
+Message-ID: <46E1D313.2060302@pobox.com>
+Date: Fri, 07 Sep 2007 18:39:15 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: "Gaston, Jason D" <jason.d.gaston@intel.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch for Intel
+ Tolapai
+References: <200708302127.19535.jason.d.gaston@intel.com> <46D7C783.8050803@pobox.com> <39B20DF628532344BC7A2692CB6AEE0701B9A4CA@orsmsx420.amr.corp.intel.com>
+In-Reply-To: <39B20DF628532344BC7A2692CB6AEE0701B9A4CA@orsmsx420.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 07, 2007 at 10:04:42AM -0400, Mathieu Desnoyers wrote:
-> * Andi Kleen (andi@firstfloor.org) wrote:
-> > On Thu, Sep 06, 2007 at 04:01:29PM -0400, Mathieu Desnoyers wrote:
-> > > +	sync_core();
-> > > +	/* Not strictly needed, but can speed CPU recovery up. */
-> > 
-> > That turned out to break on some VIA CPUs. Should be removed.
-> > 
+Gaston, Jason D wrote:
+>> -----Original Message-----
+>> From: Gaston, Jason D
+>> Sent: Friday, August 31, 2007 10:10 AM
+>> To: 'Jeff Garzik'
+>> Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
+>> Subject: RE: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch
+> for
+>> Intel Tolapai
+>>
+>> This device has both AHCI and RAID modes that use the ahci driver.
+> Only
+>> the RAID mode DID's are being added as the PCI class code support will
+>> cover the AHCI mode.  Looking at the Generic, PCI class code support
+>> section, it uses "board_ahci".  I assumed that they should be the same
+> as
+>> the generic class code support is working on this platform.
+>>
+>> Thanks,
+>>
+>> Jason
+>>
+>>
+>>> -----Original Message-----
+>>> From: Jeff Garzik [mailto:jgarzik@pobox.com]
+>>> Sent: Friday, August 31, 2007 12:47 AM
+>>> To: Gaston, Jason D
+>>> Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
+>>> Subject: Re: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch
+> for
+>>> Intel Tolapai
+>>>
+>>> Jason Gaston wrote:
+>>>> Resend trying to remove 8-bit characters in the email.
+>>>>
+>>>> This patch adds the Intel Tolapai RAID controller DID's for SATA
+>> support.
+>>>> Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+>>>>
+>>>> --- linux-2.6.23-rc4/drivers/ata/ahci.c.orig	2007-08-27
+>>> 18:32:35.000000000 -0700
+>>>> +++ linux-2.6.23-rc4/drivers/ata/ahci.c	2007-08-28
+>> 16:58:11.000000000 -
+>>> 0700
+>>>> @@ -411,6 +411,8 @@
+>>>>  	{ PCI_VDEVICE(INTEL, 0x292f), board_ahci_pi }, /* ICH9M */
+>>>>  	{ PCI_VDEVICE(INTEL, 0x294d), board_ahci_pi }, /* ICH9 */
+>>>>  	{ PCI_VDEVICE(INTEL, 0x294e), board_ahci_pi }, /* ICH9M */
+>>>> +	{ PCI_VDEVICE(INTEL, 0x502a), board_ahci }, /* Tolapai */
+>>>> +	{ PCI_VDEVICE(INTEL, 0x502b), board_ahci }, /* Tolapai */
+>>> Why did you not use board_ahci_pi?  Is the AHCI ports-implemented
+>>> register unreliable on this platform?
 > 
-> Hrm, when does it break ? At boot time ? Is it the cpuid that breaks or
-
-Yes.
-
-> the clflush ? How do you work around the problem when sync_core or
-
-The CLFLUSH
-
-> clflush is called from elsewhere; does it cause a problem if I call it
-> when I update immediate values ?
-
-Unknown currently what are the exact circumstances.
-
-For the other cases it is ignored right now, but when we get 
-more information it might be needed to clear the CLFLUSH 
-feature bit on those CPUs.
-
-> Is it me or __inline_memcpy is simply a copy of i386's __memcpy ?
-> Is there any reason for this name change ?
-
-x86-64 __memcpy does something different. 
-
-It might make more sense
-
-At some point I hope to change the i386 setup to be more like x86-64
-anyways -- the x86-64 version is imho much better.
-
->   A- ugly
->   B- breaking vim syntax highlighting. (actually, all the rest of the
->   file becomes weird after that. The problem is similar to declaration
->   of #defile name ({ some code }). It does not really matter as long as
->   it is in a header, but at the middle of a C file it gets rather
->   annoying). (it never though I would use vim as a coding style
->   reference) ;)
-
-Then define a macro
-
-#define BREAKPOINTS(x) \
-	((unsigned char [x]){ [0 ... x] = BREAKPOINT_INSTRUCTIONS })
-
-and use that
-
-> And what is rather different between the 2 functions is when we want to
-> fill multiple bytes with the same pattern (I fill the unused part of my
-> immediate values bypass with 0x90 nops, but I agree that I could use
-> add_nops if it was exported).
+> Jeff,
 > 
-> Declaration of a variable length array on text_set's stack would break
-> older compilers, so I don't think it is a neat solution neither. kmalloc
+> Do I need to change this to board_ahci_pi or is it ok to leave it at
+> board_ahci, which will be used by the AHCI class code devices?
 
-All supported gccs support variable length arrays.
+You are the one who needs to answer this question ;-)
 
-> The idea is to mimic the local_irq_save/restore semantic, where the
-> flags argument is passed without &. This is why I use a macro instead of
-> an inline function
+Most new Intel AHCI have a sane and reliable Ports-Implemented register 
+value even across reset, unlike earlier ones or some clones.  For those, 
+we use board_ahci_pi.
 
-Sounds like a bogus idea to me.
+If PI is not reliable across reset or if BIOS is absent (yes we care 
+about that case, when we do our own PCI resume for example), then you 
+should use board_ahci.
 
-> The good effect of disabling interrupts is that it would make sure no
-> interrupt handler will run with WP flag cleared on the CPU.  However, it
+	Jeff
 
-Yes that was my point. Not a very strong one admittedly.
 
--Andi
+
