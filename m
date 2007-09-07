@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965409AbXIGLw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965463AbXIGLxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965409AbXIGLw7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 07:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965227AbXIGLwx
+	id S965463AbXIGLxx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 07:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965233AbXIGLxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 07:52:53 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:39347 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965226AbXIGLww (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 07:52:52 -0400
-Date: Fri, 7 Sep 2007 13:52:51 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: David Miller <davem@davemloft.net>
-cc: anders.blomdell@control.lth.se, linux-kernel@vger.kernel.org
-Subject: Re: Stray nulls when reading from AF_UNIX sockets
-In-Reply-To: <20070906.122345.74744962.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0709071350040.25942@fbirervta.pbzchgretzou.qr>
-References: <46E02137.8030600@control.lth.se> <20070906.122345.74744962.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 7 Sep 2007 07:53:45 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3227 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965205AbXIGLxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 07:53:45 -0400
+Date: Fri, 7 Sep 2007 11:53:34 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Oeser <ioe-lkml@rameria.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFD] new syscalls: suspend_other/resume_other?
+Message-ID: <20070907115333.GA3901@ucw.cz>
+References: <200709021704.22325.ioe-lkml@rameria.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709021704.22325.ioe-lkml@rameria.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun 2007-09-02 17:04:21, Ingo Oeser wrote:
+> Hi there,
+> 
+> at the moment implementing a mark and sweep garbage collection 
+> subsystem is quite a hack, because you always have to use up
+> some signals for suspend/resume all threads to implement this.
+> 
+> For runtime environments (like D system libraries or JVMs) this is 
+> a hack, since you take away flexibility from the application.
+> 
+> A possible solution would be a syscall or a PTRACE extension
+> to realize the suspend/resume. I best describe the possible
+> syscall manpages here, so you get an idea.
+> 
+> NAME 
+> 	suspend_other - suspends execution of all but the calling thread
 
-On Sep 6 2007 12:23, David Miller wrote:
->>     return copied ? : err;
->>   }
->> 
->> Shouldn't this read:
->> 
->>     return copied ? copied : err;
->> 
->> Or am I missing something?
->
->These two statements are equivalent, the first version is
->a shorthand allowed by gcc.
-
-Not only that. With x?x:z, x is evaluated twice,
-while with x?:z, x is only evaluated once. That's for stuff when you 
-want to, say [dumb example follows],
-
-size_t my_read(..) {
-    return read(..) ? : -1
-}
-
-and the only other way would be to use a temporary,
-
-size_t my_read(..) {
-	size_t x = read(..);
-	return x ? x : -1;
-}
-
-gcc should be smart enough to also do optimization in the second case..
-
-
-	Jan
+aha, this should really be named stop_other / cont_other, suspend is
+already taken :-).
+							Pavel
 -- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
