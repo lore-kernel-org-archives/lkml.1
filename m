@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbXIGXrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbXIGXsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbXIGXrR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 19:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbXIGXrI
+	id S1753165AbXIGXsr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 19:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXIGXsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 19:47:08 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:57848 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750791AbXIGXrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 19:47:07 -0400
-Message-ID: <46E1E2F6.5060307@garzik.org>
-Date: Fri, 07 Sep 2007 19:47:02 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Fri, 7 Sep 2007 19:48:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:35470 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbXIGXsg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 19:48:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rXhr1D5Z/Vlg64c18oX8Ml7o+KeSD3con6YwzFaNBMlCKCeC/gvdakTN2zmuOZ64uVsWO+Tfv16YDdBR8RyPKcMdckeIjh+sQ+1yQ9oDUzvNmYHCN8VvQO0lpdufpfp77YAc6+wqyVRp2saoy855RkKqKX01R0WmAzmscryvCpI=
+Message-ID: <6bffcb0e0709071648y3e18fe23s24fdff3923690448@mail.gmail.com>
+Date: Sat, 8 Sep 2007 01:48:36 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Mark Nipper" <nipsy@bitgnome.net>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference<1>
+Cc: linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
+In-Reply-To: <20070907052720.GA3122@king.bitgnome.net>
 MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>, n <xellos@bluebottle.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: limiting to UDMA/33 instead of UDMA/100 - pata_pdc202xx_old (also
- XFS error)?
-References: <007d01c7eaf6$74b9b350$0100a8c0@hak> <20070907130212.GI995458@sgi.com>
-In-Reply-To: <20070907130212.GI995458@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <20070907052720.GA3122@king.bitgnome.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>         res 51/84:00:3f:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus error)
->>         res 51/84:00:3f:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus error)
->>         res 51/84:00:21:9d:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus error)
+Hi Mark,
 
+[Adding netdev to CC]
 
-ATA bus error == straight-from-hardware reported error
+On 07/09/2007, Mark Nipper <nipsy@bitgnome.net> wrote:
+>         I've received two oopses now from my kernel while running
+> the 2.6.22 series.  The first was with 2.6.22.1 back in July and
+> the second which happened just within the last day is 2.6.22.5.
+> They both appear to be the same bug and I don't think it's
+> hardware related.  I'm attaching the entries from logcheck which
+> I received when they happened.
+>
+>         I'm not subscribed to the mailing list, so please make
+> sure to copy me directly on any replies.  And let me know if
+> anyone needs any additional information to try to track this
+> down.  Thanks for reading...
 
-Cable or connector is dying maybe?  Bad power supplies also sometimes 
-manifest this way.
+Regards,
+Michal
 
-	Jeff
-
-
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
