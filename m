@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758777AbXIGV1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758837AbXIGVas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758777AbXIGV1t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 17:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758555AbXIGV1l
+	id S1758837AbXIGVas (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 17:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758575AbXIGVal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 17:27:41 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:29752 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758480AbXIGV1k (ORCPT
+	Fri, 7 Sep 2007 17:30:41 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:35986 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758574AbXIGVaj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 17:27:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=EKYz460rs2LEFRQZ3tjsZrgj6kzDd0a4Da2couMvBfuOzyS2ypCWCUBMd/oUJ10TC/B91VMXpQUi/bDTKxyB4kW/zN6dQRujehrl72xwMbnCOkwuoZkwKbbtEJIweHyBIgoN36wtwhHWhYT5eaXqyR8/WITNT357l3ck9j6XB+4=  ;
-X-YMail-OSG: LmFshL4VM1lXbQk9V3uSkTdZL7_DJyu7vX7l3uU3FMxt4SmVL.1w21FP_d1ww_jJZHnaXEYlKA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-Subject: Re: patch: improve generic_file_buffered_write() (2nd try 1/2)
-Date: Sat, 8 Sep 2007 17:25:06 +1000
-User-Agent: KMail/1.9.5
-Cc: Bernd Schubert <bs@q-leap.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
-       brian@clusterfs.com
-References: <200709051546.06224.bs@q-leap.de> <200709081628.27310.nickpiggin@yahoo.com.au> <87d4wuch8y.fsf@informatik.uni-tuebingen.de>
-In-Reply-To: <87d4wuch8y.fsf@informatik.uni-tuebingen.de>
+	Fri, 7 Sep 2007 17:30:39 -0400
+X-IronPort-AV: E=Sophos;i="4.20,222,1186383600"; 
+   d="scan'208";a="214206459"
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Valdis.Kletnieks@vt.edu, Theodore Tso <tytso@mit.edu>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/6] Linux Kernel Markers - Architecture Independent Code
+X-Message-Flag: Warning: May contain useful information
+References: <20070906200733.194442762@polymtl.ca>
+	<20070906200825.893834634@polymtl.ca>
+	<20070906160001.cfe48d78.randy.dunlap@oracle.com>
+	<20070906160429.629c9497.akpm@linux-foundation.org>
+	<20070906163737.9cc91307.randy.dunlap@oracle.com>
+	<20070907160445.GB8911@thunk.org>
+	<6791.1189185054@turing-police.cc.vt.edu>
+	<20070907193159.GA3023@infradead.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 07 Sep 2007 14:30:36 -0700
+In-Reply-To: <20070907193159.GA3023@infradead.org> (Christoph Hellwig's message of "Fri, 7 Sep 2007 20:31:59 +0100")
+Message-ID: <adalkbirwn7.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709081725.06343.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 07 Sep 2007 21:30:36.0628 (UTC) FILETIME=[545F7940:01C7F196]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 08 September 2007 07:12, Goswin von Brederlow wrote:
-> Nick Piggin <nickpiggin@yahoo.com.au> writes:
-> > On Saturday 08 September 2007 06:01, Goswin von Brederlow wrote:
+ > > Anybody got a proposed scheme for the case where somebody like myself
+ > > who is *not* a member of the Maintainer Cabal has looked at a patch, and
+ > > found a valid show-stopper that's bigger than just whitespace (breaks on
+ > > 64-bit, locking issues, etc), or other commentary that *should* be addressed
+ > > before it gets merged?  I'd like *some* way to tag a patch with "I had an
+ > > issue with V1, but the author addressed it to my satisfaction in V2"....
 
-> >>   b) a segment boundary
-> >
-> > This is done, as I said, because of the deadlock issue. While the issue
-> > is more completely fixed in -mm, a special case for kernel memory (eg.
-> > nfsd) is in the latest mainline kernels.
->
-> Can you tell me where to get the fix from -mm? If it is completly
-> fixed there then that could make our patch obsolete.
+ > I think that'd be Reviewed-By.  While you are not part of the smokey room
+ > cabal you have shown technical expertise in various areas so it seems
+ > perfectly fine to have reviewed-by from you.  The fix vs a previous version
+ > should probably be just in the text with a paragraph ala:
 
-In the latest -mm series file, they start at
-mm-revert-kernel_ds-buffered-write-optimisation.patch
-...
-and go to
-ocfs2-convert-to-new-aops.patch
+ > Issue blah in a previous version as found by Valdis Kletnieks has been fixed
+ > by doing foo.
 
+At ksummit Andrew also mentioned including a link to the relevant
+mailing list discussion too, and I think this would be a good example
+of when that would be useful.
 
-> >> What actually locks the page? Is it __grab_cache_page or
-> >> a_ops->prepare_write?
-> >
-> > prepare_write must be given a locked page.
->
-> Then that means __grab_cache_page does return a locked page because
-> there is nothing between the two calls that would.
-
-That's right.
-
-
-> > No it would be included earlier. The "segment_eq" check should be
-> > allowing kernel writes (nfsd) to write multiple segments. If you have a
-> > patch which changes this significantly, then it would indicate the
-> > existing logic has a problem (or you've got a userspace application doing
-> > the writev, which should be fixed by the write_begin patches in -mm).
->
-> I've got userspace application doing the writev. To be exact 14% of
-> the commits were saved by combining multiple segments into a single
-> prepare/write pair. Since the kernel segments don't fragment anymore
-> in 2.6.23-rc5 those savings must come from user space stuff.
->
-> From the stats posted earlier you can see that there is a substantial
-> amount of calls with 6 segments all (alot) smaller than a page. Lots
-> of calls our patch or the write_begin/end will save.
-
-OK. The write_begin/write_end patchset is intrusive, no question. I'm not sure
-what you're intending to do with it. They have been tested in -mm for quite a
-while now, but just going with a simple patch that tries to copy more segments
-might be OK for you if you're backporting. The deadlock is pretty uncommon.
+ - R.
