@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbXIGVl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758737AbXIGWBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758833AbXIGVl1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 17:41:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758597AbXIGVlT
+	id S1758737AbXIGWBt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 18:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758476AbXIGWBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 17:41:19 -0400
-Received: from smtp108.sbc.mail.re2.yahoo.com ([68.142.229.97]:48973 "HELO
-	smtp108.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758595AbXIGVlS (ORCPT
+	Fri, 7 Sep 2007 18:01:42 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:15188 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758436AbXIGWBl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 17:41:18 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=SKJBbmMoMmr/Nd/AMX4UjG2v5cSOuagqoeCpemOn5rXTDFgpJYvwRB4rXYMdtkIBKYCL196q+8fItIqVqMBgKfksR3OIF2CoSQqqynffBpIBqTD8SH3ca6g7flvoBsQEOSvHE7cCj38OlAcDVOUkum3nEfTRkGlivp05Q5AMyHg=  ;
-Date: Fri, 07 Sep 2007 14:41:15 -0700
-From: David Brownell <david-b@pacbell.net>
-To: hmh@hmh.eng.br
-Subject: Re: Platform device id
-Cc: linux-kernel@vger.kernel.org, khali@linux-fr.org, gregkh@suse.de,
-       dmitry.torokhov@gmail.com
-References: <20070907153559.17faf9d1@hyperion.delvare>
- <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com>
- <20070907164129.65816B9389@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <20070907210029.GB4357@khazad-dum.debian.net>
-In-Reply-To: <20070907210029.GB4357@khazad-dum.debian.net>
+	Fri, 7 Sep 2007 18:01:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YJrPdOh0lXMe0Y1t81XdH6hOPjCWc0FoVkrbnU0LVq9M5TkqYn4HzfxsyZofcZPM6uKEQEBk4PW8qNBh+QtmVa3xST/IvaSZtt2Lz4xmny1rkexBJoJpi3GXJMA8ae7JztZO/rxWwv4NTrmL5HjnXEp+r1YWvqq7vmn75889OYM=
+Message-ID: <8b67d60709071501r61914b64tf8a179c192a9fa2e@mail.gmail.com>
+Date: Fri, 7 Sep 2007 23:01:40 +0100
+From: "Adrian McMenamin" <lkmladrian@gmail.com>
+To: "Dmitry Torokhov" <dtor@insightbb.com>
+Subject: Re: [PATCH] Add support for keyboard on SEGA Dreamcast
+Cc: "Paul Mundt" <lethal@linux-sh.org>, linuxsh-dev@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200709042304.51510.dtor@insightbb.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070907214116.5051B237214@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Disposition: inline
+References: <8b67d60709041634l198d29f0ja049989acdb30b67@mail.gmail.com>
+	 <200709042304.51510.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > For that matter, a *driver* should never create its own device node(s)
-> > in the first place.  Device creation belongs elsewhere, like as part of
-> > platform setup or, for busses with integral enumeration support like
-> > PCI or USB, bus glue.  Linux is moving away from that legacy model.
+On 05/09/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
+
 >
-> This assumes that we have a better bus than "platform" to dump drivers like
-> thinkpad-acpi, hdaps, and a host of other host-specific stuff.
-
-I don't follow.  If it's host-specific, then it's easy enough to
-have a host-specific routine creating those platform devices.
-A different host wouldn't call that routine.
-
-Embedded Linux platforms do that *ALL* the time.  ARM keys on a
-board ID provided early in boot (e.g. by U-Boot).  PowerPC uses
-a device tree, which ISTR evolved from the OpenBoot as first used
-on SPARC.  Worst comes to worst, the kernel command line can say
-which board is involved, and thus which setup code to run.
-
-(Also, note that "platform", "host", and "board" are ambiguous.
-In some contexts each is synonymous; in others, not.  I avoid
-using "host" except in the protocol sense.  Usually "board" is
-pretty specific -- this cpu, those peripherals -- although it
-gets messy when the system is really a board stack, or when the
-CPU may be socketed or be in a customizable FPGA etc.)
-
-
-> > I realize that may be more easily said than done in some cases,
-> > like i8042 on non-PNP systems.
+> Are we guaranteed that the dc_kbd_callback is not running in a separate
+> thread?
 >
-> Yes, and there is a LOT of non-PNP stuff involved, since platform became the
-> dumping ground for host-specific devices (as opposed to platform-specific
-> devices).
+> Please also consider implementing support for changing keyma. Since
+> the keymap is pretty full I think the best way is to copy the vanilla
+> keymap into a per-device memory and set up keymap, keycodesize and
+> keycodemax in input device structure.
+>
+> Thank you.
+>
+> --
+> Dmitry
+>
 
-See above ... most embedded systems aren't x86, so lack of PNP is
-less of an issue than plain old legacy system designs -- designed
-in ways that complicate or prevent probe/discovery schemes, which
-gets to be a mess (like the one preceding PNP with DOS/x86/ISA).
+Dmitry - have now worked out at least one alternative keymap - for
+European keyboards. But could you explain the above point? I have to
+admit I am not too familiar with the input layer - having really taken
+an old, and bit rot infested 2.4 driver and brought it up to standard
+for 2.6 - and so I don't follow this point too well!
 
-Less clear cases include orphaned drivers, especially ones for
-hardware that's on its way out or already obsolete.  Most folk
-don't want to touch those, for fear of getting stuck to them.  :)
+Can I treat keymaps as firmware and load from userspace? Or is there a
+way of making this completely user configurable at runtime?
 
-- Dave
+Any help from you, or any other reader, much appreciated.
 
+Adrian
