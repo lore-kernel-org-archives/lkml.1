@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbXIGXsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751889AbXIGXtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753165AbXIGXsr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 19:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbXIGXsi
+	id S1751889AbXIGXtE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 19:49:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbXIGXsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 19:48:38 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:35470 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751428AbXIGXsg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 19:48:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rXhr1D5Z/Vlg64c18oX8Ml7o+KeSD3con6YwzFaNBMlCKCeC/gvdakTN2zmuOZ64uVsWO+Tfv16YDdBR8RyPKcMdckeIjh+sQ+1yQ9oDUzvNmYHCN8VvQO0lpdufpfp77YAc6+wqyVRp2saoy855RkKqKX01R0WmAzmscryvCpI=
-Message-ID: <6bffcb0e0709071648y3e18fe23s24fdff3923690448@mail.gmail.com>
-Date: Sat, 8 Sep 2007 01:48:36 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Mark Nipper" <nipsy@bitgnome.net>
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference<1>
-Cc: linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
-In-Reply-To: <20070907052720.GA3122@king.bitgnome.net>
+	Fri, 7 Sep 2007 19:48:51 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57873 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753242AbXIGXst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 19:48:49 -0400
+Message-ID: <46E1E35F.1010907@garzik.org>
+Date: Fri, 07 Sep 2007 19:48:47 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Gaston, Jason D" <jason.d.gaston@intel.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, htejun@gmail.com
+Subject: Re: [PATCH 2.6.23-rc4][reRESEND] ata_piix: IDE mode SATA patch for
+ Intel Tolapai
+References: <200708302136.57215.jason.d.gaston@intel.com> <46D7C856.5070901@garzik.org> <39B20DF628532344BC7A2692CB6AEE0701BCF3BF@orsmsx420.amr.corp.intel.com>
+In-Reply-To: <39B20DF628532344BC7A2692CB6AEE0701BCF3BF@orsmsx420.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070907052720.GA3122@king.bitgnome.net>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+Gaston, Jason D wrote:
+>> -----Original Message-----
+>> From: Jeff Garzik [mailto:jeff@garzik.org]
+>> Sent: Friday, August 31, 2007 12:51 AM
+>> To: Gaston, Jason D
+>> Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org;
+>> htejun@gmail.com
+>> Subject: Re: [PATCH 2.6.23-rc4][reRESEND] ata_piix: IDE mode SATA patch
+> for
+>> Intel Tolapai
+>>
+>> Jason Gaston wrote:
+>>> Resend trying to remove 8-bit characters in the email.
+>>>
+>>> This patch adds the Intel Tolapai IDE mode SATA controller DID's.
+>>>
+>>> Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+>> applied
+> 
+> Jeff,
+> 
+> I just noticed that the following section came through as spaces instead
+> of tabs.  Do I need to resend a corrected version?
+> 
+> +static const struct piix_map_db tolapai_map_db = {
+> +        .mask = 0x3,
+> +        .port_enable = 0x3,
+> +        .map = {
+> +                /* PM   PS   SM   SS       MAP */
+> +                {  P0,  NA,  P1,  NA }, /* 00b */
+> +                {  RV,  RV,  RV,  RV }, /* 01b */
+> +                {  RV,  RV,  RV,  RV }, /* 10b */
+> +                {  RV,  RV,  RV,  RV },
+> +        },
+> +};
 
-[Adding netdev to CC]
+that's always nice, yes :)
 
-On 07/09/2007, Mark Nipper <nipsy@bitgnome.net> wrote:
->         I've received two oopses now from my kernel while running
-> the 2.6.22 series.  The first was with 2.6.22.1 back in July and
-> the second which happened just within the last day is 2.6.22.5.
-> They both appear to be the same bug and I don't think it's
-> hardware related.  I'm attaching the entries from logcheck which
-> I received when they happened.
->
->         I'm not subscribed to the mailing list, so please make
-> sure to copy me directly on any replies.  And let me know if
-> anyone needs any additional information to try to track this
-> down.  Thanks for reading...
+even better would be to run a script through #upstream, accomplishing 
+the same thing but for many drivers ;-)
 
-Regards,
-Michal
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
