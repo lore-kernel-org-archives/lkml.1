@@ -1,72 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751992AbXIGXGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbXIGXIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751992AbXIGXGf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 19:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbXIGXG1
+	id S1752176AbXIGXIY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 19:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbXIGXIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 19:06:27 -0400
-Received: from smtp-vbr7.xs4all.nl ([194.109.24.27]:1029 "EHLO
-	smtp-vbr7.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750993AbXIGXG0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 19:06:26 -0400
-Date: Sat, 8 Sep 2007 01:05:29 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: sata & scsi suggestion for make menuconfig
-Message-ID: <20070907230529.GX16806@vanheusden.com>
-References: <20070907124800.GP16806@vanheusden.com> <20070907083522.3191a4ba.randy.dunlap@oracle.com> <20070907155903.GR16806@vanheusden.com> <46E17A81.7020304@s5r6.in-berlin.de>
+	Fri, 7 Sep 2007 19:08:15 -0400
+Received: from doppler.zen.co.uk ([212.23.3.27]:41079 "EHLO doppler.zen.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751028AbXIGXIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 19:08:14 -0400
+Message-ID: <46E1D8E1.2060702@gmail.com>
+Date: Sat, 08 Sep 2007 00:04:01 +0100
+From: Matt Keenan <tank.en.mate@gmail.com>
+User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46E17A81.7020304@s5r6.in-berlin.de>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Reply-By: Fri Sep  7 11:31:04 CEST 2007
-X-Message-Flag: PGP key-id: 0x1f28d8ae - consider encrypting your e-mail to
-	me with PGP!
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: hooanon05@yahoo.co.jp
+CC: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, hch@infradead.org,
+       Jan Blunck <jblunck@suse.de>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: Re: [RFC] Union Mount: Readdir approaches
+References: <20070907054618.GD1692@in.ibm.com> <E1ITYJK-0000xP-8h@jroun>
+In-Reply-To: <E1ITYJK-0000xP-8h@jroun>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Originating-Heisenberg-IP: [82.69.27.224]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> I know that it's difficult to get people to read docs & help text,
-> >> and maybe it is needed in more places, but CONFIG_ATA (SATA/PATA)
-> >> help text says:
-> >>   NOTE: ATA enables basic SCSI support; *however*,
-> >>   'SCSI disk support', 'SCSI tape support', or
-> >>   'SCSI CDROM support' may also be needed,
-> >>   depending on your hardware configuration.
-> > 
-> > Yes but that would mean that you have to open the help for each item
-> > that you add.
-> > 
-> >> A popup makes some sense, but I don't know if menuconfig knows how to
-> >> do popup warnings... and it needs to be done for all *configs,
-> >> not just menuconfig.
-> > 
-> > Maybe add a new type?
-> 
-> How about
-> comment "Note: 'SCSI disk support' is required for SATA/PATA HDDs!"
-> 	depends on ATA && !BLK_DEV_SD
+hooanon05@yahoo.co.jp wrote:
+> Hello Bharata,
+> I am developing a linux stackable/unification filesystem too.
+>
+> Bharata B Rao:
+>   
+>> Questions
+>> ---------
+>>     
+> 	:::
+>   
+>> First of all, should we even expect a sane lseek(2) on union mounted
+>> directories ? If not, will the Approach 2, which works uniformly for
+>> all filesystem types be acceptable ?
+>>
+>> If lseek(2) needs to be supported, then how do we define the seek behaviour
+>> when two different types of directories are union'ed ? For eg. how do we define
+>> lseek(2) on a union of ext2 directory on top of a nfs directory ? Since both
+>> of them use different encoding methods for filp->f_pos, how do we establish
+>> a common lseek(2) behaviour here ?
+>>
+>> And finally, what is the use case for directory seek ? Would anybody walk
+>> directory by directory by seeking into a directory file ?
+>>     
+>
+> Although I don't remember exactly, NFS or smbfs seek for a
+> directory. Additionally, any user process can call seekdir or
+> something. So I believe any stackable/unification filesystem should
+> support it.
+>
+> Here is my approach. While I don't think it is the best approach since
+> it consumes much memory and cpu, I hope it help you. (or assist
+> you? Sorry, I don't know correct English word)
+>
+> - the stackable fs has its own inode, file, dentry object, which has an
+>   array for the underlying inode pointers. and the whiteout is a regular
+>   file with a special name, instead of a flag in inode. this is the most
+>   different architecture from your unification embeded in VFS.
+> - the vritual dir inode object has a cache for its child entries. it is
+>   called vdir. the cache has a version and a customizlable lifetime too.
+> - all the existing underlying (same-named) dir are opened too. the file
+>   objects are stored in the virtual file object as an array.
+> - the virtual file object has a cache for its child entries too. it is a
+>   copy of the one in the inode object.
+>
+> When the first readdir is issued:
+> - call vfs_readdir for every underlying opened dir (file) object.
+> - store every entry to either the hash table for the result or the
+>   whiteout, when the same-named entry didn't exist in the tables.
+> - to improvement the performance, the allocated memory for the hash
+>   tables are managed in a pointer array. and the elements are
+>   concatinated logically by the pointer.
+> - the pointer for the result-table, the version, and the currect jiffies
+>   are set to vdir, which is a cache in an inode.
+> - all cache are copied to a member in a file object.
+> - the index of the cache memory block and the offset in an array is
+>   handled as the seek position.
+>
+> In the case of the application issued this sequence:
+> - opendir()
+> - readdir()
+> - creat or unlink an entry under the dir
+> - readdir()
+>
+> When an entry under the dir was removed or added, the inode version will
+> be updated. Since readdir can compare it with the cached version or the
+> lifetime (jiffies) in the file object, it can refresh the entries. But
+> in this case, it doesn't, since the file position is not 0. If the
+> application needs the latest entries, it has to call rewinddir.
+> The cache in the file object will updated only the case of obsoleted AND
+> the file position is 0.
+>
+> When a dir who has already its vdir is opened, the cache in the inode
+> object will be used without calling vfs_readdir, after checking the
+> version and the lifetime which are stored in the inode object. If it is
+> obsoleted, vfs_readdir will be called again in order to update the cache
+> in the inode.
+>
+>   
+This sounds like a good approach. How does aufs handle low memory
+situations? Union mounts seem to be quite common on low memory embedded
+systems. Is there a way for the VM to signal to aufs/the union
+filesystem to trim its cache? Also on the memory consumption front I
+guess you could get the union fs to refer to a singleton name entry
+directly instead of creating a new virtual inode et al. This may lead to
+some unusualness though for mounts over different filesystems that have
+different length directory files (eg vfat and ext3). This does run
+counter to the model described above in some ways.
 
-Yes! Maybe create some status-line at the bottom of the screen in which
-these hints scrollby. Like powertop does.
+Matt
 
-
-Folkert van Heusden
-
--- 
-MultiTail är en flexibel redskap för att fälja logfilar, utför av
-commandoer, filtrera, ge färg, sammanfoga, o.s.v. följa.
-http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
