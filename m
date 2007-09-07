@@ -1,170 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965626AbXIGNBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965684AbXIGNBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965626AbXIGNBR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 09:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965516AbXIGNA7
+	id S965684AbXIGNBz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 09:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965341AbXIGNBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 09:00:59 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:40169 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965214AbXIGNA6 (ORCPT
+	Fri, 7 Sep 2007 09:01:46 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:40527 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965344AbXIGNBo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 09:00:58 -0400
-Message-ID: <46E14B37.4030007@linux.vnet.ibm.com>
-Date: Fri, 07 Sep 2007 18:29:35 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: travis@sgi.com
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] ppc64: Convert cpu_sibling_map to a per_cpu data
- array
-References: <20070907040943.467530005@sgi.com> <20070907040944.380253345@sgi.com> <46E1337D.3090005@linux.vnet.ibm.com>
-In-Reply-To: <46E1337D.3090005@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+	Fri, 7 Sep 2007 09:01:44 -0400
+Date: Fri, 7 Sep 2007 09:01:42 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/6] Linux Kernel Markers - Architecture Independent Code
+Message-ID: <20070907130142.GD9735@Krystal>
+References: <20070906200733.194442762@polymtl.ca> <20070906200825.893834634@polymtl.ca> <20070906160001.cfe48d78.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070906160001.cfe48d78.randy.dunlap@oracle.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:49:02 up 39 days, 13:07,  4 users,  load average: 0.67, 0.76, 0.98
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kamalesh Babulal wrote:
-> travis@sgi.com wrote:
->> Convert cpu_sibling_map to a per_cpu cpumask_t array for the ppc64
->> architecture.
->>
->> Note: these changes have not been built nor tested.
->>
->> Note: I also don't know if these changes are particularly
->> relevant for the ppc64 architecture.
->>
->> Signed-off-by: Mike Travis <travis@sgi.com>
->> ---
->>  arch/powerpc/kernel/setup-common.c        |    4 ++--
->>  arch/powerpc/kernel/smp.c                 |    4 ++--
->>  arch/powerpc/platforms/cell/cbe_cpufreq.c |    2 +-
->>  include/asm-powerpc/smp.h                 |    3 ++-
->>  include/asm-powerpc/topology.h            |    2 +-
->>  5 files changed, 8 insertions(+), 7 deletions(-)
->>
->> --- a/arch/powerpc/kernel/setup-common.c
->> +++ b/arch/powerpc/kernel/setup-common.c
->> @@ -415,9 +415,9 @@
->>       * Do the sibling map; assume only two threads per processor.
->>       */
->>      for_each_possible_cpu(cpu) {
->> -        cpu_set(cpu, cpu_sibling_map[cpu]);
->> +        cpu_set(cpu, cpu_sibling_map(cpu));
->>          if (cpu_has_feature(CPU_FTR_SMT))
->> -            cpu_set(cpu ^ 0x1, cpu_sibling_map[cpu]);
->> +            cpu_set(cpu ^ 0x1, cpu_sibling_map(cpu));
->>      }
->>
->>      vdso_data->processorCount = num_present_cpus();
->> --- a/arch/powerpc/kernel/smp.c
->> +++ b/arch/powerpc/kernel/smp.c
->> @@ -61,11 +61,11 @@
->>
->>  cpumask_t cpu_possible_map = CPU_MASK_NONE;
->>  cpumask_t cpu_online_map = CPU_MASK_NONE;
->> -cpumask_t cpu_sibling_map[NR_CPUS] = { [0 ... NR_CPUS-1] = 
->> CPU_MASK_NONE };
->> +DEFINE_PER_CPU(cpumask_t, cpu_sibling_map) = CPU_MASK_NONE;
->>
->>  EXPORT_SYMBOL(cpu_online_map);
->>  EXPORT_SYMBOL(cpu_possible_map);
->> -EXPORT_SYMBOL(cpu_sibling_map);
->> +EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
->>
->>  /* SMP operations for this machine */
->>  struct smp_ops_t *smp_ops;
->> --- a/arch/powerpc/platforms/cell/cbe_cpufreq.c
->> +++ b/arch/powerpc/platforms/cell/cbe_cpufreq.c
->> @@ -117,7 +117,7 @@
->>      policy->cur = cbe_freqs[cur_pmode].frequency;
->>
->>  #ifdef CONFIG_SMP
->> -    policy->cpus = cpu_sibling_map[policy->cpu];
->> +    policy->cpus = cpu_sibling_map(policy->cpu);
->>  #endif
->>
->>      cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
->> --- a/include/asm-powerpc/smp.h
->> +++ b/include/asm-powerpc/smp.h
->> @@ -58,7 +58,8 @@
->>                      (smp_hw_index[(cpu)] = (phys))
->>  #endif
->>
->> -extern cpumask_t cpu_sibling_map[NR_CPUS];
->> +DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
->> +#define cpu_sibling_map(cpu) per_cpu(cpu_sibling_map, cpu)
->>
->>  /* Since OpenPIC has only 4 IPIs, we use slightly different message 
->> numbers.
->>   *
->> --- a/include/asm-powerpc/topology.h
->> +++ b/include/asm-powerpc/topology.h
->> @@ -108,7 +108,7 @@
->>  #ifdef CONFIG_PPC64
->>  #include <asm/smp.h>
->>
->> -#define topology_thread_siblings(cpu)    (cpu_sibling_map[cpu])
->> +#define topology_thread_siblings(cpu)    (cpu_sibling_map(cpu))
->>  #endif
->>  #endif
->>
->>
->>   
-> Hi Mike,
->
-> After applying the patch, the build fails with following error
->
-> CHK include/linux/version.h
-> CHK include/linux/utsrelease.h
-> CC arch/powerpc/kernel/asm-offsets.s
-> In file included from include/linux/smp.h:19,
-> from include/linux/topology.h:33,
-> from include/linux/mmzone.h:660,
-> from include/linux/gfp.h:4,
-> from include/linux/slab.h:14,
-> from include/linux/percpu.h:5,
-> from include/asm/time.h:18,
-> from include/asm/cputime.h:26,
-> from include/linux/sched.h:65,
-> from arch/powerpc/kernel/asm-offsets.c:17:
-> include/asm/smp.h:61: error: expected declaration specifiers or ‘...’ 
-> before ‘cpu_sibling_map’
-> include/asm/smp.h:61: warning: data definition has no type or storage 
-> class
-> include/asm/smp.h:61: warning: type defaults to ‘int’ in declaration 
-> of ‘DECLARE_PER_CPU’
-> make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
-> make: *** [prepare0] Error 2
->
-> Thanks & Regards,
-> Kamalesh Babulal.
-Hi Make,
+* Randy Dunlap (randy.dunlap@oracle.com) wrote:
+ [snip]
+> 
+> > +/*
+> > + * Sets the probe callback corresponding to one marker.
+> > + */
+> > +static int set_marker(struct marker_entry **entry,
+> > +			struct __mark_marker *elem)
+> > +{
+> > +	int ret;
+> > +	BUG_ON(strcmp((*entry)->name, elem->name) != 0);
+> 
+> You can't return -ENOENT here?
+> 
 
-I tried to debug and probably the patch below could help the build error
+I could, but it's really a bug: if this condition happens, there would
+be an inconsistency in the hash table get_marker() function. Therefore I
+prefer to yell if this happens rather than simply telling the caller
+that the entry does not exist.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-----
+And actually, marker_update_probe_range ignores errors from set_marker
+(there is even a comment saying that in the code) :
 
---- a/include/asm-powerpc/smp.h 2007-09-07 18:15:43.000000000 +0530
-+++ b/include/asm-powerpc/smp.h 2007-09-07 18:16:02.000000000 +0530
-@@ -25,6 +25,7 @@
+                if (mark_entry && mark_entry->refcount) {
+                        set_marker(&mark_entry, iter);
+                        /*
+                         * ignore error, continue
+                         */
+
+It is done on purpose: if a marker does not have the right arguments, it
+will simply be skipped and a printk warning will be emitted. I prefer
+this approach rather than stopping marker activation/disactivation as
+soon as a bad marker is found.
+
+[...]
  
- #ifdef CONFIG_PPC64
- #include <asm/paca.h>
-+#include <asm/percpu.h>
- #endif
- 
- extern int boot_cpuid;
+> > +#ifdef CONFIG_MODULES
+> > +/*
+> > + * Update module probes.
+> > + * Must be called with markers_mutex held.
+> > + */
+> > +static inline void marker_update_probes_modules(struct module *probe_module,
+> > +	int *refcount)
+> > +{
+> > +	struct module *mod;
+> > +
+> > +	list_for_each_entry(mod, &modules, list) {
+> > +		if (!mod->taints) {
+> > +			marker_update_probe_range(mod->markers,
+> > +				mod->markers+mod->num_markers,
+> > +				probe_module, refcount);
+> > +		}
+> > +	}
+> > +}
+> 
+> hm, so if the module is tainted, markers won't be applied to it?
+> That's OK IMO.
 
----
-Thanks & Regards,
-Kamalesh Babulal.
+Yep, 
 
+> However, I tend to think that something that
+> modifies code on the fly (like kprobes or text edit) should set some
+> flag somewhere so that when the system crashes, we can know that
+> code was modified.  This could be done via taints flags or some other
+> mechanism.  Has this already been discussed?
+> 
 
+I am not aware of discussions about this. But then we would have to do
+the same for paravirt, alternatives, kprobes and immediate values.
 
+As soon as the kernel code of a crashing kernel may have been modified
+in memory, the image of the crashed kernel should be used instead of the
+compiled image to analyze the crash. But code patching becomes so common
+that we will have to start using core dumps more and more.
 
+Yes, your idea makes sense. printking that kind of information in a OOPS
+would be useful IMO.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
