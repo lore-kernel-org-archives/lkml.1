@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964947AbXIGAgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965002AbXIGA5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964947AbXIGAgg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Sep 2007 20:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964821AbXIGAg3
+	id S965002AbXIGA5Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Sep 2007 20:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964878AbXIGA5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Sep 2007 20:36:29 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2378 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S964823AbXIGAg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Sep 2007 20:36:28 -0400
-Date: Thu, 6 Sep 2007 19:12:07 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: davids@webmaster.com,
-       "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: Re: Fwd: That whole "Linux stealing our code" thing
-Message-ID: <20070906191206.GB4040@ucw.cz>
-References: <MDEHLPKNGKAHNMBLJOLKOECFGJAC.davids@webmaster.com> <46DBCCD2.70800@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46DBCCD2.70800@garzik.org>
-User-Agent: Mutt/1.5.9i
+	Thu, 6 Sep 2007 20:57:17 -0400
+Received: from smtpoutm.mac.com ([17.148.16.73]:54233 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964877AbXIGA5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Sep 2007 20:57:16 -0400
+In-Reply-To: <1189121714.6672.38.camel@heimdal.trondhjem.org>
+References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr> <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr> <1188486240.6755.51.camel@heimdal.trondhjem.org> <20070830214431.GF10808@fieldses.org> <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in> <20070906150616.GA28565@fieldses.org> <0D66E86D-8D97-45D7-9C2A-7AB5F42845B5@mac.com> <1189121714.6672.38.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5B1FC03A-6819-4C6C-91D3-F3022B798EF4@mac.com>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>,
+       Satyam Sharma <satyam@infradead.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: NFS4 authentification / fsuid
+Date: Thu, 6 Sep 2007 20:56:12 -0400
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2007-09-03 04:58:58, Jeff Garzik wrote:
-> David Schwartz wrote:
-> >Either license can grant you the right to distribute 
-> >it, but how you get the
-> >rights to distribute has *NO* effect on the recipient. 
-> >They receive a lawful
-> >copy and any rights the original author grants them 
-> >under a license from
-> >that original author. You have no power to grant or 
-> >modify rights to the
-> >original work.
-> 
-> Secondary parties have the power to grant or modify 
-> rights, if delegated to them by the original author.
-> 
-> Relicensing and transfer of rights happens all the time. 
-> How do you think most music gets into consumer hands?
+On Sep 06, 2007, at 19:35:14, Trond Myklebust wrote:
+> On Thu, 2007-09-06 at 19:30 -0400, Kyle Moffett wrote:
+>> Actually, that's a fairly simple problem (barring disassembling  
+>> the system and attaching a hardware debugger).  You encrypt the  
+>> root filesystem and require a password to boot (See: LUKS).   
+>> Debian has built-in support for installing onto fs-on-LVM-on-crypt- 
+>> on-RAID, and it works quite well on all the laptops I use  
+>> regularly.  It's not even much of a speed penalty; once you take  
+>> the overhead of hitting a 5400RPM laptop drive you can chew  
+>> thousands of cycles of CPU without anybody noticing (much).  Then  
+>> all you have to do is burn a copy of your /boot with bootloader  
+>> onto some read-only media (like a finalized CDROM/DVDROM) and  
+>> you're set to go.
+>
+> Disconnect battery, and watch boot password go 'poof!'.
 
-License is only a promise not to sue. Only original author is permitted to
-sue in BSD/GPL case. David seems right here.
+Umm, I did say "encrypt the root filesystem", didn't I?  Booting my  
+laptops this way follows this procedure:
+   1) Enter BIOS boot menu
+   2) Insert /boot CDROM
+   3) Select the "CDROM" entry
+   4) Wait for kernel to start and run through initramfs
+   5) Type password into the initramfs prompt so that it can DECRYPT  
+THE ROOT FILESYSTEM
+   6) Continue to boot the system.
 
-If Linus releases GPL/BSD program, you choose GPL and distribute it to
-me, and I put it into proprietary evil app, I am _ok_.
+Under this setup, tinkering with my BIOS does virtually nothing; the  
+only avenues of attack are strictly of the "Install a hardware  
+keylogger" variety.  Without my "boot" password you are looking at a  
+block device which appears to be little more than a random bit- 
+bucket, using AES-256 encryption.  If you can break that by  
+disconnecting the BIOS battery a lot of governments would be very  
+interested in the exact procedure. :-D  Furthermore if I think that  
+the hardware has been compromised I can pull out the HDD and my CDROM  
+and take them to a trusted computer to gain access to my data.
 
-You can't sue me, because you are not copyright holder.
+That said, a useful BIOS password helps keep somebody from casually  
+setting a supervisor password or mucking with the critical-to-boot  
+settings and making _me_ unplug the battery.
 
-Linus can't sue me, because he BSD licensed it.
-
-=> I'm fine. Yep, copyright law is strange, and you may be right
-outside U.S.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Cheers,
+Kyle Moffett
