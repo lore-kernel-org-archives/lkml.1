@@ -1,103 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbXIGXhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbXIGXiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752083AbXIGXhV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 19:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbXIGXhJ
+	id S1752547AbXIGXiS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 19:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbXIGXiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 19:37:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42092 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750908AbXIGXhH (ORCPT
+	Fri, 7 Sep 2007 19:38:07 -0400
+Received: from mga03.intel.com ([143.182.124.21]:20088 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751222AbXIGXiF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 19:37:07 -0400
-From: Jonathan Lim <jlim@sgi.com>
-Message-Id: <200709072337.l87Nbv7j430732@sabah.engr.sgi.com>
-Subject: Re: [PATCH] Add all thread stats for TASKSTATS_CMD_ATTR_TGID
-To: balbir@linux.vnet.ibm.com
-Date: Fri, 7 Sep 2007 16:37:57 -0700 (PDT)
-Cc: guichaz@yahoo.fr (Guillaume Chazarain),
-       akpm@linux-foundation.org (Andrew Morton),
-       linux-kernel@vger.kernel.org (Linux Kernel Mailing List),
-       jlan@cthulhu.engr.sgi.com (Jay Lan)
-In-Reply-To: <46D7C23F.7020509@linux.vnet.ibm.com> from "Balbir Singh" at Aug 31, 2007 12:54:47 PM
-X-Mailer: ELM [version 2.5 PL6]
+	Fri, 7 Sep 2007 19:38:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,222,1186383600"; 
+   d="scan'208";a="274256866"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch for Intel Tolapai
+Date: Fri, 7 Sep 2007 16:37:58 -0700
+Message-ID: <39B20DF628532344BC7A2692CB6AEE0701BCF3B5@orsmsx420.amr.corp.intel.com>
+In-Reply-To: <46E1D313.2060302@pobox.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch for Intel Tolapai
+thread-index: Acfxn/E2DCTyf5mfQtWiS/mZeElj3QAB+2WQ
+References: <200708302127.19535.jason.d.gaston@intel.com> <46D7C783.8050803@pobox.com> <39B20DF628532344BC7A2692CB6AEE0701B9A4CA@orsmsx420.amr.corp.intel.com> <46E1D313.2060302@pobox.com>
+From: "Gaston, Jason D" <jason.d.gaston@intel.com>
+To: "Jeff Garzik" <jgarzik@pobox.com>
+Cc: <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 07 Sep 2007 23:37:58.0765 (UTC) FILETIME=[1F7109D0:01C7F1A8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri Aug 31 00:24:47 2007, balbir@linux.vnet.ibm.com wrote:
-> 
-> Jonathan Lim wrote:
-> > On Sat Aug 25 21:58:44 2007, balbir@linux.vnet.ibm.com wrote:
-> >>> Also, I don't understand why the code to update btime:
-> >>>
-> >>>         /* calculate task elapsed time in timespec */
-> >>>         do_posix_clock_monotonic_gettime(&uptime);
-> >>>         ts = timespec_sub(uptime, tsk->start_time);
-> >>> 	...
-> >>>         stats->ac_btime = get_seconds() - ts.tv_sec;
-> >>>
-> >>> does not simply use tsk->start_time or tsk->real_start_time without
-> >>> comparing it to the current time.
-> >> From what I understand, task->start_time and task->real_start_time
-> >> are taken from the realtime clock. The accounting in CSA seems
-> >> to be very similar to the accounting done in do_acct_process()
-> >> (kernel/acct.c).
-> > 
-> > In CSA 3.0 ...
-> > 
-> > csa_acct_eop(int exitcode, struct task_struct *p)
-> > 
-> >         csa->ac_btime = boottime +
-> >                         ((p->start_time.tv_nsec < NSEC_PER_SEC/2) ?
-> >                          p->start_time.tv_sec :
-> >                          p->start_time.tv_sec +1);
-> > 
-> > where 
-> > 
-> >         do_posix_clock_monotonic_gettime(&uptime);
-> >         boottime = xtime.tv_sec - uptime.tv_sec;
-> > 
-> > In an upcoming version of CSA ...
-> > 
-> > csa_acct_eop(struct taskstats *p)
-> > 
-> >         csa->ac_btime = p->ac_btime;
-> > 
-> > where
-> > 
-> >         do_posix_clock_monotonic_gettime(&uptime);
-> >         ts = uptime - tsk->start_time;
-> >         p->ac_btime = get_seconds() - ts.tv_sec;
-> >                     = xtime.tv_sec - (uptime - tsk->start_time);
-> >                     = (xtime.tv_sec - uptime) + tsk->start_time;
-> > 
-> > So they're basically equivalent.
-> 
-> Excellent, so can Guillaume change ac_btime to be just tsk->start_time?
+>-----Original Message-----
+>From: Jeff Garzik [mailto:jgarzik@pobox.com]
+>Sent: Friday, September 07, 2007 3:39 PM
+>To: Gaston, Jason D
+>Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
+>Subject: Re: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch
+for
+>Intel Tolapai
+>
+>Gaston, Jason D wrote:
+>>> -----Original Message-----
+>>> From: Gaston, Jason D
+>>> Sent: Friday, August 31, 2007 10:10 AM
+>>> To: 'Jeff Garzik'
+>>> Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
+>>> Subject: RE: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA patch
+>> for
+>>> Intel Tolapai
+>>>
+>>> This device has both AHCI and RAID modes that use the ahci driver.
+>> Only
+>>> the RAID mode DID's are being added as the PCI class code support
+will
+>>> cover the AHCI mode.  Looking at the Generic, PCI class code support
+>>> section, it uses "board_ahci".  I assumed that they should be the
+same
+>> as
+>>> the generic class code support is working on this platform.
+>>>
+>>> Thanks,
+>>>
+>>> Jason
+>>>
+>>>
+>>>> -----Original Message-----
+>>>> From: Jeff Garzik [mailto:jgarzik@pobox.com]
+>>>> Sent: Friday, August 31, 2007 12:47 AM
+>>>> To: Gaston, Jason D
+>>>> Cc: linux-ide@vger.kernel.org; linux-kernel@vger.kernel.org
+>>>> Subject: Re: [PATCH 2.6.23-rc4][reRESEND] ahci: RAID mode SATA
+patch
+>> for
+>>>> Intel Tolapai
+>>>>
+>>>> Jason Gaston wrote:
+>>>>> Resend trying to remove 8-bit characters in the email.
+>>>>>
+>>>>> This patch adds the Intel Tolapai RAID controller DID's for SATA
+>>> support.
+>>>>> Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+>>>>>
+>>>>> --- linux-2.6.23-rc4/drivers/ata/ahci.c.orig	2007-08-27
+>>>> 18:32:35.000000000 -0700
+>>>>> +++ linux-2.6.23-rc4/drivers/ata/ahci.c	2007-08-28
+>>> 16:58:11.000000000 -
+>>>> 0700
+>>>>> @@ -411,6 +411,8 @@
+>>>>>  	{ PCI_VDEVICE(INTEL, 0x292f), board_ahci_pi }, /* ICH9M */
+>>>>>  	{ PCI_VDEVICE(INTEL, 0x294d), board_ahci_pi }, /* ICH9 */
+>>>>>  	{ PCI_VDEVICE(INTEL, 0x294e), board_ahci_pi }, /* ICH9M */
+>>>>> +	{ PCI_VDEVICE(INTEL, 0x502a), board_ahci }, /* Tolapai */
+>>>>> +	{ PCI_VDEVICE(INTEL, 0x502b), board_ahci }, /* Tolapai */
+>>>> Why did you not use board_ahci_pi?  Is the AHCI ports-implemented
+>>>> register unreliable on this platform?
+>>
+>> Jeff,
+>>
+>> Do I need to change this to board_ahci_pi or is it ok to leave it at
+>> board_ahci, which will be used by the AHCI class code devices?
+>
+>You are the one who needs to answer this question ;-)
+>
+>Most new Intel AHCI have a sane and reliable Ports-Implemented register
+>value even across reset, unlike earlier ones or some clones.  For
+those,
+>we use board_ahci_pi.
+>
+>If PI is not reliable across reset or if BIOS is absent (yes we care
+>about that case, when we do our own PCI resume for example), then you
+>should use board_ahci.
+>
+>	Jeff
 
-I don't think so.  Current time (xtime) is relative to the epoch; uptime and
-tsk->start_time (jiffies) are both relative to some boot time.  So you need to
-subtract uptime from xtime to get the boot time relative to the epoch, then add
-tsk->start_time.  The result is what ac_btime should be set to.
+At this time, I don't have any way to test those particular DeviceID's
+and I know that the AHCI mode DeviceID works by using the class code
+support.  So, I would like to just leave them at they are, if that is
+ok.
 
-I think his recent changes are as follows:
+Thanks,
 
---- a/kernel/tsacct.c   Fri Aug 31 01:42:23 2007 -0700
-+++ b/kernel/tsacct.c   Tue Aug 28 20:35:27 2007 +0200
-...
--void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
-+static void fill_wall_times(struct taskstats *stats, struct task_struct *task)
-...
--       ts = timespec_sub(uptime, tsk->start_time);
-+       ts = timespec_sub(uptime, task->start_time);
-...
--       stats->ac_btime = get_seconds() - ts.tv_sec;
-...
-+       stats->ac_btime = get_seconds() - ts.tv_sec;
-
-So really no different from before, which is correct.
-
-Jonathan
+Jason
