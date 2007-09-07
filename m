@@ -1,218 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965647AbXIGQ0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbXIGQec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965647AbXIGQ0z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 12:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757775AbXIGQ0r
+	id S1758197AbXIGQec (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 12:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964877AbXIGQeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 12:26:47 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:58055 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757675AbXIGQ0r (ORCPT
+	Fri, 7 Sep 2007 12:34:25 -0400
+Received: from smtp-105-friday.noc.nerim.net ([62.4.17.105]:2871 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757715AbXIGQeZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 12:26:47 -0400
-Date: Fri, 07 Sep 2007 11:26:46 -0500
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1] mspec: handle shrinking virtual memory areas
-User-Agent: nail 11.25 7/29/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 7 Sep 2007 12:34:25 -0400
+Date: Fri, 7 Sep 2007 18:36:15 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: "Greg KH" <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       "David Brownell" <david-b@pacbell.net>
+Subject: Re: Platform device id
+Message-ID: <20070907183615.3a54b8e9@hyperion.delvare>
+In-Reply-To: <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com>
+References: <20070907153559.17faf9d1@hyperion.delvare>
+	<d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070907162646.2C0D52FC056@attica.americas.sgi.com>
-From: cpw@sgi.com (Cliff Wickman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Dmitry,
 
-The shrinking of a virtual memory area that is mmap(2)'d to a memory
-special file (device drivers/char/mspec.c) can cause a panic.
+Thanks for your answer.
 
-If the mapped size of the vma (vm_area_struct) is very large, mspec allocates
-a large vma_data structure with vmalloc(). But such a vma can be shrunk by
-an munmap(2).  The current driver uses the current size of each vma to
-deduce whether its vma_data structure was allocated by kmalloc() or vmalloc().
-So if the vma was shrunk it appears to have been allocated by kmalloc(),
-and mspec attempts to free it with kfree().  This results in a panic.
+On Fri, 7 Sep 2007 10:58:31 -0400, Dmitry Torokhov wrote:
+> On 9/7/07, Jean Delvare <khali@linux-fr.org> wrote:
+> > While platform_device.id is a u32, platform_device_add() handles "-1" as
+> > a special id value. This has potential for confusion and bugs. One such
+> > bug was reported to me by David Brownell:
+> >
+> > http://lists.lm-sensors.org/pipermail/i2c/2007-September/001787.html
+> >
+> > And since then I've found two other drivers  affected (uartlite and
+> > i2c-pxa).
+> >
+> > Could we at least make platform_device.id an int so as to clear up the
+> > confusion? I doubt that the id will ever be a large number anyway.
+> >
+> > To go one step further, I am questioning the real value of this naming
+> > exception for these "unique" platform devices. On top of the bugs I
+> > mentioned above, it has potential for compatibility breakage: adding a
+> > second device of the same type will rename the first one from "foo" to
+> > "foo.0". It also requires specific checks in many individual platform
+> > drivers. All this, as I understand it, for a purely aesthetic reason. I
+> > don't think this is worth it. Would there be any objection to simply
+> > getting rid of this exception and having all platform devices named
+> > "foo.%d"?
+> 
+> If a device has a <name>.<instance> scheme this implies possibility of
+> having several instances of said device in a box.
 
-This patch avoids the panic (by preserving the type of the allocation) and
-also makes mspec work correctly as the vma is split into pieces by the
-munmap(2)'s.
+This "allows" more than "implies".
 
-All vma's derived from such a split vma share the same vma_data structure that
-represents all the pages mapped into this set of vma's.  The mpec driver
-must be made capable of using the right portion of the structure for each
-member vma.  In other words, it must index into the array of page addresses
-using the portion of the array that represents the current vma. This is
-enabled by storing the vma group's vm_start in the vma_data structure.
+>                                                   There are a few of
+> platform devices that can only have one instance - for example i8042
+> keyboard controller (the -1 special handling came from me because
+> i80420 name was very confusing - there wasn't a dot separator in the
+> name back then).
 
-The vma's are protected by mm->mmap_sem, so the reference count was changed
-from an atomic_t to an int.
+I agree that in general there is a single i8042 keyboard controller on
+a system, but what prevents someone to build a system with several of
+these (e.g. in a multi-console computer)?
 
-Diffed against 2.6.13-rc5
+I agree that "i80420" was a confusing name, but now that a dot was
+inserted between the name and the id, it wouldn't be a problem to have
+a device named "i8042.0", would it?
 
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-Acked-by: Jes Sorensen <jes@sgi.com>
--
----
- drivers/char/mspec.c |   68 +++++++++++++++++++++++++++++++++------------------
- 1 file changed, 45 insertions(+), 23 deletions(-)
+>                  Drivers that allow multiple devices should not
+> attempt to use -1 for the very first instance - this should eliminate
+> potential for error and special handling that you are talking about.
 
-Index: mspec_community/drivers/char/mspec.c
-===================================================================
---- mspec_community.orig/drivers/char/mspec.c
-+++ mspec_community/drivers/char/mspec.c
-@@ -67,7 +67,7 @@
- /*
-  * Page types allocated by the device.
-  */
--enum {
-+enum mspec_page_type {
- 	MSPEC_FETCHOP = 1,
- 	MSPEC_CACHED,
- 	MSPEC_UNCACHED
-@@ -83,15 +83,26 @@ static int is_sn2;
-  * One of these structures is allocated when an mspec region is mmaped. The
-  * structure is pointed to by the vma->vm_private_data field in the vma struct.
-  * This structure is used to record the addresses of the mspec pages.
-+ * This structure is shared by all vma's that are split off from the
-+ * original vma when split_vma()'s are done.
-+ *
-+ * The refcnt is incremented non-atomically because all paths leading
-+ * to mspec_open() and mspec_close() are single threaded by the exclusive
-+ * locking of mm->mmap_sem.
-  */
- struct vma_data {
--	atomic_t refcnt;	/* Number of vmas sharing the data. */
-+	int refcnt;		/* Number of vmas sharing the data. */
- 	spinlock_t lock;	/* Serialize access to the vma. */
- 	int count;		/* Number of pages allocated. */
--	int type;		/* Type of pages allocated. */
-+	enum mspec_page_type type; /* Type of pages allocated. */
-+	int flags;		/* See VMD_xxx below. */
-+	unsigned long vm_start;	/* Original (unsplit) base. */
-+	unsigned long vm_end;	/* Original (unsplit) end. */
- 	unsigned long maddr[0];	/* Array of MSPEC addresses. */
- };
- 
-+#define VMD_VMALLOCED 0x1	/* vmalloc'd rather than kmalloc'd */
-+
- /* used on shub2 to clear FOP cache in the HUB */
- static unsigned long scratch_page[MAX_NUMNODES];
- #define SH2_AMO_CACHE_ENTRIES	4
-@@ -129,8 +140,8 @@ mspec_zero_block(unsigned long addr, int
-  * mspec_open
-  *
-  * Called when a device mapping is created by a means other than mmap
-- * (via fork, etc.).  Increments the reference count on the underlying
-- * mspec data so it is not freed prematurely.
-+ * (via fork, munmap, etc.).  Increments the reference count on the
-+ * underlying mspec data so it is not freed prematurely.
-  */
- static void
- mspec_open(struct vm_area_struct *vma)
-@@ -138,7 +149,7 @@ mspec_open(struct vm_area_struct *vma)
- 	struct vma_data *vdata;
- 
- 	vdata = vma->vm_private_data;
--	atomic_inc(&vdata->refcnt);
-+	vdata->refcnt++;
- }
- 
- /*
-@@ -151,34 +162,38 @@ static void
- mspec_close(struct vm_area_struct *vma)
- {
- 	struct vma_data *vdata;
--	int i, pages, result, vdata_size;
-+	int index, last_index, result;
- 
- 	vdata = vma->vm_private_data;
--	if (!atomic_dec_and_test(&vdata->refcnt))
--		return;
- 
--	pages = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
--	vdata_size = sizeof(struct vma_data) + pages * sizeof(long);
--	for (i = 0; i < pages; i++) {
--		if (vdata->maddr[i] == 0)
-+	BUG_ON(vma->vm_start < vdata->vm_start || vma->vm_end > vdata->vm_end);
-+
-+	index = (vma->vm_start - vdata->vm_start) >> PAGE_SHIFT;
-+	last_index = (vma->vm_end - vdata->vm_start) >> PAGE_SHIFT;
-+	for (; index < last_index; index++) {
-+		if (vdata->maddr[index] == 0)
- 			continue;
- 		/*
- 		 * Clear the page before sticking it back
- 		 * into the pool.
- 		 */
--		result = mspec_zero_block(vdata->maddr[i], PAGE_SIZE);
-+		result = mspec_zero_block(vdata->maddr[index], PAGE_SIZE);
- 		if (!result)
--			uncached_free_page(vdata->maddr[i]);
-+			uncached_free_page(vdata->maddr[index]);
- 		else
- 			printk(KERN_WARNING "mspec_close(): "
- 			       "failed to zero page %i\n",
- 			       result);
-+		vdata->maddr[index] = 0;
- 	}
- 
--	if (vdata_size <= PAGE_SIZE)
--		kfree(vdata);
--	else
-+	if (--vdata->refcnt)
-+		return;
-+
-+	if (vdata->flags & VMD_VMALLOCED)
- 		vfree(vdata);
-+	else
-+		kfree(vdata);
- }
- 
- 
-@@ -195,7 +210,8 @@ mspec_nopfn(struct vm_area_struct *vma, 
- 	int index;
- 	struct vma_data *vdata = vma->vm_private_data;
- 
--	index = (address - vma->vm_start) >> PAGE_SHIFT;
-+	BUG_ON(address < vdata->vm_start || address >= vdata->vm_end);
-+	index = (address - vdata->vm_start) >> PAGE_SHIFT;
- 	maddr = (volatile unsigned long) vdata->maddr[index];
- 	if (maddr == 0) {
- 		maddr = uncached_alloc_page(numa_node_id());
-@@ -237,10 +253,11 @@ static struct vm_operations_struct mspec
-  * underlying pages.
-  */
- static int
--mspec_mmap(struct file *file, struct vm_area_struct *vma, int type)
-+mspec_mmap(struct file *file, struct vm_area_struct *vma,
-+					enum mspec_page_type type)
- {
- 	struct vma_data *vdata;
--	int pages, vdata_size;
-+	int pages, vdata_size, flags = 0;
- 
- 	if (vma->vm_pgoff != 0)
- 		return -EINVAL;
-@@ -255,15 +272,20 @@ mspec_mmap(struct file *file, struct vm_
- 	vdata_size = sizeof(struct vma_data) + pages * sizeof(long);
- 	if (vdata_size <= PAGE_SIZE)
- 		vdata = kmalloc(vdata_size, GFP_KERNEL);
--	else
-+	else {
- 		vdata = vmalloc(vdata_size);
-+		flags = VMD_VMALLOCED;
-+	}
- 	if (!vdata)
- 		return -ENOMEM;
- 	memset(vdata, 0, vdata_size);
- 
-+	vdata->vm_start = vma->vm_start;
-+	vdata->vm_end = vma->vm_end;
-+	vdata->flags = flags;
- 	vdata->type = type;
- 	spin_lock_init(&vdata->lock);
--	vdata->refcnt = ATOMIC_INIT(1);
-+	vdata->refcnt = 1;
- 	vma->vm_private_data = vdata;
- 
- 	vma->vm_flags |= (VM_IO | VM_RESERVED | VM_PFNMAP);
+This isn't that easy. For a given kind of device, some systems might
+have only one, it might even be strictly impossible to ever have more
+than one by design, but other systems might not have this limitation
+and may actually have several instances of said device. As we try to
+make our drivers as platform-independent as possible, the drivers
+themselves can't assume that only either scheme is used, they have to
+support both.
+
+-- 
+Jean Delvare
