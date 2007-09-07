@@ -1,174 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932867AbXIGPn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932856AbXIGPui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932867AbXIGPn3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 11:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932404AbXIGPnV
+	id S932856AbXIGPui (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 11:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932448AbXIGPu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 11:43:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40849 "EHLO
+	Fri, 7 Sep 2007 11:50:29 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55535 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932334AbXIGPnU (ORCPT
+	with ESMTP id S932531AbXIGPu3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 11:43:20 -0400
-Message-ID: <46E17002.1080706@sgi.com>
-Date: Fri, 07 Sep 2007 08:36:34 -0700
+	Fri, 7 Sep 2007 11:50:29 -0400
+Message-ID: <46E171AF.8060502@sgi.com>
+Date: Fri, 07 Sep 2007 08:43:43 -0700
 From: Mike Travis <travis@sgi.com>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
        Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] ppc64: Convert cpu_sibling_map to a per_cpu data
- array
-References: <20070907040943.467530005@sgi.com> <20070907040944.380253345@sgi.com> <46E1337D.3090005@linux.vnet.ibm.com> <46E14B37.4030007@linux.vnet.ibm.com>
-In-Reply-To: <46E14B37.4030007@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH 0/3] core: fix build error when referencing arch specific
+ structures
+References: <20070907040943.467530005@sgi.com> <200709070828.05730.ak@suse.de>
+In-Reply-To: <200709070828.05730.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kamalesh Babulal wrote:
-> Kamalesh Babulal wrote:
->> travis@sgi.com wrote:
->>> Convert cpu_sibling_map to a per_cpu cpumask_t array for the ppc64
->>> architecture.
->>>
->>> Note: these changes have not been built nor tested.
->>>
->>> Note: I also don't know if these changes are particularly
->>> relevant for the ppc64 architecture.
->>>
->>> Signed-off-by: Mike Travis <travis@sgi.com>
->>> ---
->>>  arch/powerpc/kernel/setup-common.c        |    4 ++--
->>>  arch/powerpc/kernel/smp.c                 |    4 ++--
->>>  arch/powerpc/platforms/cell/cbe_cpufreq.c |    2 +-
->>>  include/asm-powerpc/smp.h                 |    3 ++-
->>>  include/asm-powerpc/topology.h            |    2 +-
->>>  5 files changed, 8 insertions(+), 7 deletions(-)
->>>
->>> --- a/arch/powerpc/kernel/setup-common.c
->>> +++ b/arch/powerpc/kernel/setup-common.c
->>> @@ -415,9 +415,9 @@
->>>       * Do the sibling map; assume only two threads per processor.
->>>       */
->>>      for_each_possible_cpu(cpu) {
->>> -        cpu_set(cpu, cpu_sibling_map[cpu]);
->>> +        cpu_set(cpu, cpu_sibling_map(cpu));
->>>          if (cpu_has_feature(CPU_FTR_SMT))
->>> -            cpu_set(cpu ^ 0x1, cpu_sibling_map[cpu]);
->>> +            cpu_set(cpu ^ 0x1, cpu_sibling_map(cpu));
->>>      }
->>>
->>>      vdso_data->processorCount = num_present_cpus();
->>> --- a/arch/powerpc/kernel/smp.c
->>> +++ b/arch/powerpc/kernel/smp.c
->>> @@ -61,11 +61,11 @@
->>>
->>>  cpumask_t cpu_possible_map = CPU_MASK_NONE;
->>>  cpumask_t cpu_online_map = CPU_MASK_NONE;
->>> -cpumask_t cpu_sibling_map[NR_CPUS] = { [0 ... NR_CPUS-1] =
->>> CPU_MASK_NONE };
->>> +DEFINE_PER_CPU(cpumask_t, cpu_sibling_map) = CPU_MASK_NONE;
->>>
->>>  EXPORT_SYMBOL(cpu_online_map);
->>>  EXPORT_SYMBOL(cpu_possible_map);
->>> -EXPORT_SYMBOL(cpu_sibling_map);
->>> +EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
->>>
->>>  /* SMP operations for this machine */
->>>  struct smp_ops_t *smp_ops;
->>> --- a/arch/powerpc/platforms/cell/cbe_cpufreq.c
->>> +++ b/arch/powerpc/platforms/cell/cbe_cpufreq.c
->>> @@ -117,7 +117,7 @@
->>>      policy->cur = cbe_freqs[cur_pmode].frequency;
->>>
->>>  #ifdef CONFIG_SMP
->>> -    policy->cpus = cpu_sibling_map[policy->cpu];
->>> +    policy->cpus = cpu_sibling_map(policy->cpu);
->>>  #endif
->>>
->>>      cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
->>> --- a/include/asm-powerpc/smp.h
->>> +++ b/include/asm-powerpc/smp.h
->>> @@ -58,7 +58,8 @@
->>>                      (smp_hw_index[(cpu)] = (phys))
->>>  #endif
->>>
->>> -extern cpumask_t cpu_sibling_map[NR_CPUS];
->>> +DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
->>> +#define cpu_sibling_map(cpu) per_cpu(cpu_sibling_map, cpu)
->>>
->>>  /* Since OpenPIC has only 4 IPIs, we use slightly different message
->>> numbers.
->>>   *
->>> --- a/include/asm-powerpc/topology.h
->>> +++ b/include/asm-powerpc/topology.h
->>> @@ -108,7 +108,7 @@
->>>  #ifdef CONFIG_PPC64
->>>  #include <asm/smp.h>
->>>
->>> -#define topology_thread_siblings(cpu)    (cpu_sibling_map[cpu])
->>> +#define topology_thread_siblings(cpu)    (cpu_sibling_map(cpu))
->>>  #endif
->>>  #endif
->>>
->>>
->>>   
->> Hi Mike,
+Andi Kleen wrote:
+> On Friday 07 September 2007 05:09, travis@sgi.com wrote:
+>> Since the core kernel routines need to reference cpu_sibling_map,
+>> whether it be a static array or a per_cpu data variable, an access
+>> function has been defined.
 >>
->> After applying the patch, the build fails with following error
+>> In addition, changes have been made to the ia64 and ppc64 arch's to
+>> move the cpu_sibling_map from a static cpumask_t array [NR_CPUS] to
+>> be per_cpu cpumask_t arrays.
 >>
->> CHK include/linux/version.h
->> CHK include/linux/utsrelease.h
->> CC arch/powerpc/kernel/asm-offsets.s
->> In file included from include/linux/smp.h:19,
->> from include/linux/topology.h:33,
->> from include/linux/mmzone.h:660,
->> from include/linux/gfp.h:4,
->> from include/linux/slab.h:14,
->> from include/linux/percpu.h:5,
->> from include/asm/time.h:18,
->> from include/asm/cputime.h:26,
->> from include/linux/sched.h:65,
->> from arch/powerpc/kernel/asm-offsets.c:17:
->> include/asm/smp.h:61: error: expected declaration specifiers or ‘...’
->> before ‘cpu_sibling_map’
->> include/asm/smp.h:61: warning: data definition has no type or storage
->> class
->> include/asm/smp.h:61: warning: type defaults to ‘int’ in declaration
->> of ‘DECLARE_PER_CPU’
->> make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
->> make: *** [prepare0] Error 2
+>> Note that I do not have the ability to build or test patch 3/3, the
+>> ppc64 changes.
 >>
->> Thanks & Regards,
->> Kamalesh Babulal.
-> Hi Make,
+>> Patches are referenced against 2.6.23-rc4-mm1 .
 > 
-> I tried to debug and probably the patch below could help the build error
-> 
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> ----
-> 
-> --- a/include/asm-powerpc/smp.h 2007-09-07 18:15:43.000000000 +0530
-> +++ b/include/asm-powerpc/smp.h 2007-09-07 18:16:02.000000000 +0530
-> @@ -25,6 +25,7 @@
-> 
-> #ifdef CONFIG_PPC64
-> #include <asm/paca.h>
-> +#include <asm/percpu.h>
-> #endif
-> 
-> extern int boot_cpuid;
-> 
-> ---
-> Thanks & Regards,
-> Kamalesh Babulal.
-> 
-> 
-> 
+> It would be better if you could redo the patches with the original patches
+> reverted, not incremental changes. In the end we'll need a full patch set
+> with full changelog anyways, not a series of incremental fixes.
 
-Thanks!   I'll merge the above in...
+Will do.  Thanks.
 
+I take it I should run a diff against rc4 (w/o mm1) to regenerate a
+complete patch, including the prior ones?
+
+> 
+> Also I guess some powerpc testers would be needed. Perhaps cc the
+> maintainers?
+
+I've been looking for where to Cc: those guys (as Andrew probably realizes
+from his extra "spam" from me. ;-)
+
+Thanks!
 Mike
