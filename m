@@ -1,72 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbXIGGOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932833AbXIGGiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758078AbXIGGOT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 02:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbXIGGOL
+	id S932833AbXIGGiR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 02:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932522AbXIGGiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 02:14:11 -0400
-Received: from 184.5.221.87.dynamic.jazztel.es ([87.221.5.184]:49803 "EHLO
-	traven.no-ip.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750824AbXIGGOK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 02:14:10 -0400
-Date: Fri, 7 Sep 2007 08:14:11 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: gregkh@suse.de, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/2] ELAN U132 Host Controller Driver: convert sw_lock
-	to mutex
-Message-ID: <20070907061411.GF3081@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Oleg Verych <olecom@flower.upol.cz>, gregkh@suse.de,
-	linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20070906210922.GC3081@traven> <20070906211815.GD3081@traven> <E1ITPWc-0004rC-Kr@flower>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1ITPWc-0004rC-Kr@flower>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 7 Sep 2007 02:38:03 -0400
+Received: from quechua.inka.de ([193.197.184.2]:59231 "EHLO mail.inka.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932441AbXIGGiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 02:38:01 -0400
+From: Bernd Eckenfels <ecki@lina.inka.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: NFS4 authentification / fsuid
+Organization: Private Site running Debian GNU/Linux
+In-Reply-To: <3BBEDBBC-FD71-4A6F-81B3-EC0978A37024@mac.com>
+X-Newsgroups: ka.lists.linux.kernel
+User-Agent: tin/1.7.8-20050315 ("Scalpay") (UNIX) (Linux/2.6.13.4 (i686))
+Message-Id: <E1ITXTb-0004uv-00@calista.eckenfels.net>
+Date: Fri, 07 Sep 2007 08:37:59 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Fri, Sep 07, 2007 at 12:08:34AM +0200 Oleg Verych ha dit:
+In article <3BBEDBBC-FD71-4A6F-81B3-EC0978A37024@mac.com> you wrote:
+> So you can't draw any relationships between "Protect the end-user"  
+> with "Protect the device FROM the end-user", the former can be done  
+> very reliably to whatever level of risk-reduction you need and the  
+> latter can't practically be done at all.
 
-> * Thu, 6 Sep 2007 23:18:15 +0200
-> 
-> []
-> > @@ -184,7 +184,7 @@ struct u132_ring {
-> >  struct u132 {
-> 
-> Subject: [PATCH 1/2] ELAN U132 Host Controller Driver: convert sw_lock to mutex
-> []
-> >          struct list_head u132_list;
-> > -        struct semaphore sw_lock;
-> > +        struct mutex sw_lock;
-> >          struct semaphore scheduler_lock;
-> 
-> Subject: [PATCH 2/2] ELAN U132 Host Controller Driver: convert  scheduler_lock t
-> []
-> >         struct list_head u132_list;
-> >         struct semaphore sw_lock;
-> >-        struct semaphore scheduler_lock;
-> >+        struct mutex scheduler_lock;
-> 
-> Are you sure, you have right patch sequence?
+Unless you use a TPM Chip.
 
-my idea was to sent two independent patches, would it be better to
-have one patch based on the other?
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-              Insanity: doing the same thing over and over
-                again and expecting different results
-                            (Albert Einstein)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Gruss
+Bernd
