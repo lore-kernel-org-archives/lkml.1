@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbXIGRcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758486AbXIGRk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758497AbXIGRcY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 13:32:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757983AbXIGRcR
+	id S1758486AbXIGRk1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 13:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965415AbXIGRkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 13:32:17 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:13763 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757960AbXIGRcQ (ORCPT
+	Fri, 7 Sep 2007 13:40:13 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:51650 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758059AbXIGRkL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 13:32:16 -0400
-Subject: Re: [PATCH 0/3] build system: section garbage collection for
-	vmlinux
-From: Daniel Walker <dwalker@mvista.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070907172425.GA12977@uranus.ravnborg.org>
-References: <200709051443.21522.vda.linux@googlemail.com>
-	 <200709061157.44080.vda.linux@googlemail.com>
-	 <1189091630.8490.1.camel@imap.mvista.com>
-	 <200709061807.33740.vda.linux@googlemail.com>
-	 <1189182671.6303.42.camel@imap.mvista.com>
-	 <20070907172425.GA12977@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Fri, 07 Sep 2007 10:19:58 -0700
-Message-Id: <1189185598.7636.4.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Sep 2007 13:40:11 -0400
+Date: Fri, 7 Sep 2007 13:39:41 -0400
+From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: hooanon05@yahoo.co.jp, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, hch@infradead.org,
+       Jan Blunck <jblunck@suse.de>
+Subject: Re: [RFC] Union Mount: Readdir approaches
+Message-ID: <20070907173941.GB20360@filer.fsl.cs.sunysb.edu>
+References: <20070907054618.GD1692@in.ibm.com> <E1ITYJK-0000xP-8h@jroun> <20070907075855.GG1692@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070907075855.GG1692@in.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-09-07 at 19:24 +0200, Sam Ravnborg wrote:
-> Hi Daniel.
-> 
-> > > I did that before I posted patches to lkml.
-> > > IOW: posted patches are not broken versus module loading.
+On Fri, Sep 07, 2007 at 01:28:55PM +0530, Bharata B Rao wrote:
+> On Fri, Sep 07, 2007 at 04:31:26PM +0900, hooanon05@yahoo.co.jp wrote:
 > > 
-> > Ok, this is more like the explanation I was looking for..
-> > 
-> > During this thread you seemed to indicate the patches you release
-> > reduced the kernel ~10% , but now your saying that was pre-release ,
-> > right? 
+> > When the first readdir is issued:
+> > - call vfs_readdir for every underlying opened dir (file) object.
+> > - store every entry to either the hash table for the result or the
+> >   whiteout, when the same-named entry didn't exist in the tables.
+> > - to improvement the performance, the allocated memory for the hash
+> >   tables are managed in a pointer array. and the elements are
+> >   concatinated logically by the pointer.
+> > - the pointer for the result-table, the version, and the currect jiffies
+> >   are set to vdir, which is a cache in an inode.
+> > - all cache are copied to a member in a file object.
+> > - the index of the cache memory block and the offset in an array is
+> >   handled as the seek position.
 > 
-> What are you after here?
-> 
-> If you read the inital post you see the actual savings and you also
-> can read that it works wiht modules. The precentage can be calculated
-> from these numbers if you are interested.
+> Ok, interesting approach. So you define the seek behaviour on your
+> directory cache rather than allowing the underlying filesystems to
+> interpret the seek. I guess we can do something similar with Union
+> Mounts also.
 
-Right, but he contradicted that during the course of this thread.. Which
-is why I'm asking about it..
+Unless I missunderstood something, Unionfs uses the same approach. Even
+Unionfs's ODF branch does the same thing. The major difference is that we
+keep the cache in a file on a disk.
 
-Daniel
+Josef 'Jeff' Sipek. 
 
+-- 
+Evolution, n.:
+  A hypothetical process whereby infinitely improbable events occur with
+  alarming frequency, order arises from chaos, and no one is given credit.
