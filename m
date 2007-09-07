@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbXIGUEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbXIGU22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758771AbXIGUEj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 16:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbXIGUEc
+	id S1758595AbXIGU22 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 16:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbXIGU2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 16:04:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45452 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752190AbXIGUEb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 16:04:31 -0400
-Message-ID: <46E1AD0A.3080006@ncsu.edu>
-Date: Fri, 07 Sep 2007 15:56:58 -0400
-From: Casey Dahlin <cjdahlin@ncsu.edu>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070105)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Josh Boyer <jwboyer@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: USB Key light on/off state depending on mount
-References: <46CF468E.1080607@ncsu.edu> <625fc13d0708241413s1086527id377b49e7adacc5e@mail.gmail.com> <Pine.LNX.4.60.0708252116580.3809@poirot.grange> <46D0AB7B.1080709@s5r6.in-berlin.de>
-In-Reply-To: <46D0AB7B.1080709@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Sep 2007 16:28:21 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:34782 "EHLO
+	dwalker5.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752104AbXIGU2U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 16:28:20 -0400
+Message-Id: <20070907202625.702755508@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 07 Sep 2007 13:26:25 -0700
+From: Daniel Walker <dwalker@mvista.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] net: myri10ge: force select inet_lro
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry to have left this dormant for so long.
+This driver uses the inet_lro facilities , but it doesn't force it
+to be enabled .. Someone would have to know to enable inet_lro if
+they select the driver .. 
 
-Running eject in either of the ways suggested still leaves the light on 
-my particular key turned on.
+Instead, just force INET_LRO if this driver is selected..
 
-Stefan Richter wrote:
-> Guennadi Liakhovetski wrote:
->   
->> I might imagine how windows turns the LED off on 
->> unmount. Try "eject /dev/sdX", where sdX is your USB storage, after you 
->> unmount it. Be careful, especially if you have SATA (or SCSI) discs in 
->> your system or if you use libata for PATA discs not to eject the wrong 
->> one...
->>     
->
-> If there is only one USB disk connected:
-> # eject /dev/disk/by-path/*usb*:0
->
-> Provided you let udev create links for you.  BTW, the /dev/disk/by-id/
-> symlinks are nice for static mount points in /etc/fstab.
->
-> After a disk was mounted, eject also accepts the mountpoint as parameter
-> and will unmount the disk before it tries to eject it.
->   
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
+---
+ drivers/net/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-2.6.22/drivers/net/Kconfig
+===================================================================
+--- linux-2.6.22.orig/drivers/net/Kconfig
++++ linux-2.6.22/drivers/net/Kconfig
+@@ -2103,6 +2103,7 @@ source "drivers/net/ixp2000/Kconfig"
+ config MYRI_SBUS
+ 	tristate "MyriCOM Gigabit Ethernet support"
+ 	depends on SBUS
++	select INET_LRO
+ 	help
+ 	  This driver supports MyriCOM Sbus gigabit Ethernet cards.
+ 
+-- 
+
+-- 
