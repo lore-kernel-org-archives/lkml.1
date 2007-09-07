@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965802AbXIGO3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965780AbXIGOdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965802AbXIGO3U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 10:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965460AbXIGO3F
+	id S965780AbXIGOdd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 10:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965398AbXIGOdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 10:29:05 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:49899 "EHLO
+	Fri, 7 Sep 2007 10:33:25 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:48994 "EHLO
 	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965409AbXIGO3B (ORCPT
+	with ESMTP id S965374AbXIGOdY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 10:29:01 -0400
-Subject: Re: BUG: scheduling while atomic: ifconfig/0x00000002/4170
+	Fri, 7 Sep 2007 10:33:24 -0400
+Subject: [PATCH] list.h: add list_for_each_entry_continue_rcu
 From: Johannes Berg <johannes@sipsolutions.net>
-To: paulmck@linux.vnet.ibm.com
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, satyam@infradead.org,
-       flo@rfc822.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, michal.k.k.piotrowski@gmail.com,
-       ipw3945-devel@lists.sourceforge.net, yi.zhu@intel.com,
-       flamingice@sourmilk.net
-In-Reply-To: <20070907142538.GC8864@linux.vnet.ibm.com>
-References: <E1ITGb2-0006Be-00@gondolin.me.apana.org.au>
-	 <1189085815.28781.78.camel@johannes.berg>
-	 <20070906154612.GD8030@linux.vnet.ibm.com>
-	 <1189171635.28781.134.camel@johannes.berg>
-	 <20070907142538.GC8864@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-4XdgTktjVHwooodKhzoa"
-Date: Fri, 07 Sep 2007 16:30:15 +0200
-Message-Id: <1189175415.28781.165.camel@johannes.berg>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Pavel Emelianov <xemul@openvz.org>, Zach Brown <zach.brown@oracle.com>,
+       Dave Jones <davej@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>
+Content-Type: text/plain
+Date: Fri, 07 Sep 2007 16:34:48 +0200
+Message-Id: <1189175688.28781.167.camel@johannes.berg>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+To implement the multicast list callback in mac80211 we need to
+do partial list iteration. Since I want to convert the interface
+list to an RCU list, I need a new list walking primitive:
+list_for_each_entry_continue_rcu().
 
---=-4XdgTktjVHwooodKhzoa
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-kernel@vger.kernel.org
+Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Pavel Emelianov <xemul@openvz.org>
+Cc: Zach Brown <zach.brown@oracle.com>
+Cc: Dave Jones <davej@redhat.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
 
-On Fri, 2007-09-07 at 07:25 -0700, Paul E. McKenney wrote:
+---
+How do we want to handle this? Is it ok to push this via net-2.6.24 so
+we can merge it along with the fix that needs it?
 
-> > I don't like ASSERT_RTNL() much because it actually tries to lock it.
-> > I'd be much happer if it was WARN_ON(!mutex_locked(&rtnl_mutex)) or
-> > something equivalent.
->=20
-> Ah!  It would indeed be nice to have a lower-overhead ASSERT_RTNL_LIGHT()
-> or whatever.
+ include/linux/list.h |   20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-I don't know why it tries that anyway. Maybe it's from semaphore days
-where you couldn't check _is_locked()?
+--- wireless-dev.orig/include/linux/list.h	2007-09-07 00:16:07.374444290 +0200
++++ wireless-dev/include/linux/list.h	2007-08-29 21:08:14.802054000 +0200
+@@ -665,6 +665,26 @@ static inline void list_splice_init_rcu(
+ 		prefetch(rcu_dereference((pos))->next), (pos) != (head); \
+         	(pos) = (pos)->next)
+ 
++
++/**
++ * list_for_each_entry_continue_rcu - continue iteration over rcu list
++ * @pos:	the type * to use as a loop cursor.
++ * @head:	the head for your list.
++ * @member:	the name of the list_struct within the struct.
++ *
++ * Continue to iterate over rcu list of given type, continuing after
++ * the current position.
++ *
++ * This list-traversal primitive may safely run concurrently with
++ * the _rcu list-mutation primitives such as list_add_rcu()
++ * as long as the traversal is guarded by rcu_read_lock().
++ */
++#define list_for_each_entry_continue_rcu(pos, head, member) \
++	for ((pos) = list_entry((pos)->member.next, typeof(*pos), member); \
++		prefetch(rcu_dereference((pos))->member.next), \
++			 &pos->member != (head); \
++        	(pos) = list_entry(pos->member.next, typeof(*pos), member))
++
+ /*
+  * Double linked lists with a single pointer list head.
+  * Mostly useful for hash tables where the two pointer list head is
 
-> > In any case, I have an updated patch I'll be sending soon, and it
-> > requires a new list walking primitive I'll also send.
->=20
-> Look forward to seeing it!
-
-Will send in a minute.
-
-johannes
-
---=-4XdgTktjVHwooodKhzoa
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBG4WB3/ETPhpq3jKURAmOZAJ9TOGSuLJfpuooUTU6yWlbckOv5NACggVSj
-Ken1ushUM1w6gKLvDZtlbCo=
-=iT/x
------END PGP SIGNATURE-----
-
---=-4XdgTktjVHwooodKhzoa--
 
