@@ -1,84 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965559AbXIGMEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965409AbXIGMOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965559AbXIGMEm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 08:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965200AbXIGMEf
+	id S965409AbXIGMOm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 08:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965214AbXIGMOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 08:04:35 -0400
-Received: from tzmxr02.htp-tel.de ([81.14.243.18]:50703 "EHLO
-	TZMXR02.htp-tel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965170AbXIGMEe (ORCPT
+	Fri, 7 Sep 2007 08:14:34 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:38920 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965184AbXIGMOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 08:04:34 -0400
-Message-ID: <46E13E31.1050409@leemhuis.info>
-Date: Fri, 07 Sep 2007 14:04:01 +0200
-From: Thorsten Leemhuis <fedora@leemhuis.info>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070727)
-MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Romano Giannetti <romano@dea.icai.upcomillas.es>,
-       Andrew Morton <akpm@linux-foundation.org>, roger@computer-surgery.co.uk,
-       linux-kernel@vger.kernel.org, perex@suse.cz
-Subject: easy alsa patches for the stable kernel? (was: Re: hda_intel : Patch
- + Regression in 2.6.18 -> 2.6.22)
-References: <20070822222902.GA28563@computer-surgery.co.uk>	<20070905083844.6637da1e.akpm@linux-foundation.org>	<s5hlkbl6qsn.wl%tiwai@suse.de>	<20070905091633.87cfaa81.akpm@linux-foundation.org>	<s5hhcm96oza.wl%tiwai@suse.de>	<1189091390.3212.3.camel@rukbat>	<s5hir6n6ck6.wl%tiwai@suse.de>	<1189115313.7275.5.camel@rukbat>	<1189153347.15955.5.camel@rukbat> <s5h7in26aj3.wl%tiwai@suse.de>
-In-Reply-To: <s5h7in26aj3.wl%tiwai@suse.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Fri, 7 Sep 2007 08:14:33 -0400
+Date: Fri, 7 Sep 2007 08:14:30 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Scheduler Profiling - Use Immediate Values
+Message-ID: <20070907121430.GA9735@Krystal>
+References: <20070906200537.GA5999@Krystal> <20070906135552.e26da051.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070906135552.e26da051.randy.dunlap@oracle.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:10:20 up 39 days, 12:29,  3 users,  load average: 1.70, 1.67, 1.30
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07.09.2007 12:21, Takashi Iwai wrote:
-> At Fri, 07 Sep 2007 10:22:27 +0200,
-> Romano Giannetti wrote:
->> Takashi: good news!
->>
->> diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
->> index 3557865..496d119 100644
->> --- a/sound/pci/hda/patch_realtek.c
->> +++ b/sound/pci/hda/patch_realtek.c
->> @@ -9044,6 +9044,7 @@ static const char *alc268_models[ALC268_MODEL_LAST] = {
->>  static struct snd_pci_quirk alc268_cfg_tbl[] = {
->>         SND_PCI_QUIRK(0x1043, 0x1205, "ASUS W7J", ALC268_3ST),
->>         SND_PCI_QUIRK(0x1179, 0xff10, "TOSHIBA A205", ALC268_TOSHIBA),
->> +       SND_PCI_QUIRK(0x1179, 0xff50, "TOSHIBA A305", ALC268_TOSHIBA),
->>         SND_PCI_QUIRK(0x103c, 0x30cc, "TOSHIBA", ALC268_TOSHIBA),
->>         SND_PCI_QUIRK(0x1025, 0x0126, "Acer", ALC268_ACER),
->>         SND_PCI_QUIRK(0x1025, 0x0130, "Acer Extensa 5210", ALC268_ACER),
+Hi Randy,
+
+* Randy Dunlap (randy.dunlap@oracle.com) wrote:
+> On Thu, 6 Sep 2007 16:05:37 -0400 Mathieu Desnoyers wrote:
 > 
-> Ah good.  I added it to ALSA HG tree now.
+> > Scheduler Profiling - Use Immediate Values
+> > 
+> > Use immediate values with lower d-cache hit in optimized version as a
+> > condition for scheduler profiling call.
+> > 
+> > Depends on the Immediate values patches, applies to 2.6.23-rc4-mm1.
+> > 
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > ---
+> >  drivers/kvm/svm.c       |    2 +-
+> >  drivers/kvm/vmx.c       |    2 +-
+> >  include/linux/profile.h |   10 ++++------
+> >  kernel/profile.c        |   38 ++++++++++++++++++++++++++------------
+> >  kernel/sched.c          |    3 ++-
+> >  5 files changed, 34 insertions(+), 21 deletions(-)
+> > 
+> > Index: linux-2.6-lttng/kernel/profile.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/kernel/profile.c	2007-09-04 11:53:23.000000000 -0400
+> > +++ linux-2.6-lttng/kernel/profile.c	2007-09-04 12:12:16.000000000 -0400
+> > @@ -42,9 +42,6 @@ static int (*timer_hook)(struct pt_regs 
+> >  static atomic_t *prof_buffer;
+> >  static unsigned long prof_len, prof_shift;
+> >  
+> > -int prof_on __read_mostly;
+> > -EXPORT_SYMBOL_GPL(prof_on);
+> > -
+> >  static cpumask_t prof_cpu_mask = CPU_MASK_ALL;
+> >  #ifdef CONFIG_SMP
+> >  static DEFINE_PER_CPU(struct profile_hit *[2], cpu_profile_hits);
+> > @@ -52,6 +49,14 @@ static DEFINE_PER_CPU(int, cpu_profile_f
+> >  static DEFINE_MUTEX(profile_flip_mutex);
+> >  #endif /* CONFIG_SMP */
+> >  
+> > +/* Immediate values */
+> > +immediate_char_t sleep_profiling __read_mostly,
+> > +			sched_profiling __read_mostly,
+> > +			kvm_profiling __read_mostly,
+> > +			cpu_profiling __read_mostly;
+> > +EXPORT_SYMBOL_GPL(kvm_profiling);
+> > +EXPORT_SYMBOL_GPL(cpu_profiling);
+> > +
+> >  static int __init profile_setup(char * str)
+> >  {
+> >  	static char __initdata schedstr[] = "schedule";
+> > @@ -60,7 +65,7 @@ static int __init profile_setup(char * s
+> >  	int par;
+> >  
+> >  	if (!strncmp(str, sleepstr, strlen(sleepstr))) {
+> > -		prof_on = SLEEP_PROFILING;
+> > +		immediate_set_early(&sleep_profiling, 1);
+> 
+> These are booleans, eh?  so one could use            , true);
+> 
+> etc.
+> 
+> >  		if (str[strlen(sleepstr)] == ',')
+> >  			str += strlen(sleepstr) + 1;
+> >  		if (get_option(&str, &par))
+> > @@ -99,7 +104,10 @@ __setup("profile=", profile_setup);
+> >  
+> >  void __init profile_init(void)
+> >  {
+> > -	if (!prof_on) 
+> > +	if (!_immediate_read(&sleep_profiling) &&
+> > +		!_immediate_read(&sched_profiling) &&
+> > +		!_immediate_read(&kvm_profiling) &&
+> > +		!_immediate_read(&cpu_profiling))
+> 
+> Looks like this (in multiple places) needs to use prof_on, where
+> prof_on is set earlier as the logical 'or' of all (4 now, could be more)
+> profiling flags.
 
-Just wondering: should easy-and-obvious and less-risky patches like this
-one be send to the stable-kernel-maintainers in parallel to adding them
-to the HG-Tree (or shortly afterwards)? It could safe users lots of
-trouble if such improvements make it quickly into production-ready
-kernel-releases (and from there they might even find their way into some
-distribution kernels quickly). Hardware then would "just work".
+I first did this patch when the immediate values only supported
+booleans. I just redid it encoding the original prof_on values in a
+signle immediate_char_t variable. It makes the change must less
+intrusive.
 
-Sure, before the stable-maintainer will take such patches they needs to
-be added to linus git-tree beforehand as well. And sure, patches like
-the one above are not fixing a regression (at least in this case if I
-read the thread correctly; the old subject thus is misleading afaics),
-but it's similar to a new PCI-ID that gets added to a existing driver --
-and that's done now in the stable-series afaics (¹).
+Since there seem to be only one type of profiling possible at a given
+time, there is no need for a bitfield : just doing the same as prof_on
+currently does seems ok.
 
-The alsa-maintainers seem to be in the best position to do this, but it
-seems they rarely do it. I for example was hit by a regression (sound
-worked in 2.6.20 and broke afterwards; was fixed in 2.6.23-git by the
-following patch in case anybody is wondering:
-http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a4eed138add1018846d17e813560b0c7c0ae8e01
-), but the alsa-developers did not submit it for stable afaics. Sure, I
-could do that myself, but as I said: the alsa-maintainers really have
-the best overview over the alsa-patches and should know which patches
-are safe to apply for older kernels.
+> Or below, sometimes you just check prof_buffer.  Is that sufficient
+> here also?
+> 
 
-CU
-knurd
+Yes, before we already do the check early in profile_hit (inline
+function checking the same condition). In this patch, I moved the check
+out of profile_hit, but since I now re-use prof_on with values, I can
+put it back in profile_hit().
 
-(¹) -- see for example
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.22.y.git;a=commit;h=fd2efeae63567dde934bb54772bb1b991275b04a
-or
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.22.y.git;a=commit;h=3443d563dc53875b15d919c4bece391f1ffd4776
-which made in into
-http://kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.22.3
+> >  		return;
+> >   
+> >  	/* only text is profiled */
+> > @@ -288,7 +296,7 @@ void profile_hits(int type, void *__pc, 
+> >  	int i, j, cpu;
+> >  	struct profile_hit *hits;
+> >  
+> > -	if (prof_on != type || !prof_buffer)
+> > +	if (!prof_buffer)
+> >  		return;
+> >  	pc = min((pc - (unsigned long)_stext) >> prof_shift, prof_len - 1);
+> >  	i = primary = (pc & (NR_PROFILE_GRP - 1)) << PROFILE_GRPSHIFT;
+> > @@ -398,7 +406,7 @@ void profile_hits(int type, void *__pc, 
+> >  {
+> >  	unsigned long pc;
+> >  
+> > -	if (prof_on != type || !prof_buffer)
+> > +	if (!prof_buffer)
+> >  		return;
+> >  	pc = ((unsigned long)__pc - (unsigned long)_stext) >> prof_shift;
+> >  	atomic_add(nr_hits, &prof_buffer[min(pc, prof_len - 1)]);
+> > @@ -555,7 +563,10 @@ static int __init create_hash_tables(voi
+> >  	}
+> >  	return 0;
+> >  out_cleanup:
+> > -	prof_on = 0;
+> > +	immediate_set_early(&sleep_profiling, 0);
+> > +	immediate_set_early(&sched_profiling, 0);
+> > +	immediate_set_early(&kvm_profiling, 0);
+> > +	immediate_set_early(&cpu_profiling, 0);
+> >  	smp_mb();
+> >  	on_each_cpu(profile_nop, NULL, 0, 1);
+> >  	for_each_online_cpu(cpu) {
+> > @@ -582,7 +593,10 @@ static int __init create_proc_profile(vo
+> >  {
+> >  	struct proc_dir_entry *entry;
+> >  
+> > -	if (!prof_on)
+> > +	if (!_immediate_read(&sleep_profiling) &&
+> > +		!_immediate_read(&sched_profiling) &&
+> > +		!_immediate_read(&kvm_profiling) &&
+> > +		!_immediate_read(&cpu_profiling))
+> >  		return 0;
+> >  	if (create_hash_tables())
+> >  		return -1;
+> 
+> 
+> ---
+> ~Randy
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
