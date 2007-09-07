@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbXIHKth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbXIHKwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753199AbXIHKth (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 06:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXIHKt3
+	id S1753382AbXIHKwe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 06:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1749667AbXIHKw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 06:49:29 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:49053 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751356AbXIHKt3 (ORCPT
+	Sat, 8 Sep 2007 06:52:26 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:42031 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751156AbXIHKwZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 06:49:29 -0400
+	Sat, 8 Sep 2007 06:52:25 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=5d0caVr75f3vKwTHiJ+gZ5xd7gclA4yJEseg9tobBhosjaDuEAFZAE/6wVxe19eq6YDeiuHUj4kJkqQjrGo5xvsp8Mrr0dP800Qodl1/uX1bCwsge8MVUHUS5ncPJ7KW4WcSubTDxlcJf9Hvccj0X9s0+WoapC35E8uE6E3EQPg=  ;
-X-YMail-OSG: WX7BiUIVM1nl4ZS5MbZyTLb3h2GBJVcg9dKbkflPpyaOD64D2VpWMD2BRpZPQFmeroaJo47FqpfxU7Oxwhww5uF_TOdJFtn3ZeOY7lFj2XjvkvR1xzq2x2yhLzyEQyL5eCbisNZXU2Y0bOuK
+  b=xiITumfA8Y+jmVx49oMu0hoJ4vvRqSkHcSPKh8kgqzIXrwgC9mbM2AZSAr/13s3v3zThBpG+piCFuC8N5fJVgfpH1Au0cX2LhqrNpFXHBDN4a5Kxx7tBvwSLRxqNfzYUuQBPpkg4IqCMxhLzokemyOB/Ha9aO0K/eG5DxVEiBc4=  ;
+X-YMail-OSG: T72W.w4VM1mTaRpPeLtu.oj69BfUIu3NAnkJ7jIfcnoKz74WZAswndSIey4PiyZA4W61dL_ogbPlKEHUmydn3Q2gO_9pyY2KHKkB
 From: Nick Piggin <nickpiggin@yahoo.com.au>
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: Intel Memory Ordering White Paper
-Date: Sat, 8 Sep 2007 06:46:56 +1000
+Date: Sat, 8 Sep 2007 06:49:53 +1000
 User-Agent: KMail/1.9.5
 Cc: Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
-References: <200709071526.51169.jesse.barnes@intel.com> <200709081854.57549.nickpiggin@yahoo.com.au> <20070908113056.66fc97b7@the-village.bc.nu>
-In-Reply-To: <20070908113056.66fc97b7@the-village.bc.nu>
+References: <200709071526.51169.jesse.barnes@intel.com> <20070908112922.3fd41adc@the-village.bc.nu>
+In-Reply-To: <20070908112922.3fd41adc@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709080646.56200.nickpiggin@yahoo.com.au>
+Message-Id: <200709080649.53876.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 08 September 2007 20:30, Alan Cox wrote:
-> On Sat, 8 Sep 2007 18:54:57 +1000
+On Saturday 08 September 2007 20:29, Alan Cox wrote:
+> On Fri, 7 Sep 2007 15:26:50 -0700
 >
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > On Saturday 08 September 2007 08:26, Jesse Barnes wrote:
-> > > FYI, we just released a new white paper describing memory ordering for
-> > > Intel processors:
-> > > http://developer.intel.com/products/processor/manuals/index.htm
-> > >
-> > > Should help answer some questions about some of the ordering primitives
-> > > we use on i386 and x86_64.
+> Jesse Barnes <jesse.barnes@intel.com> wrote:
+> > FYI, we just released a new white paper describing memory ordering for
+> > Intel processors:
+> > http://developer.intel.com/products/processor/manuals/index.htm
 > >
-> > So, can we finally noop smp_rmb and smp_wmb on x86?
+> > Should help answer some questions about some of the ordering primitives
+> > we use on i386 and x86_64.
 >
-> Nakked-by: Alan Cox <alan@redhat.com>
->
-> You can only no-op it on 64bit Intel processors. On 32bit it needs to be
-> conditional on whether your processor family (or back compat for it) as
-> the Pentium Pro has some serious store ordering errata (hence the way it
-> needs lock decb for spin_unlock)
+> Nice - but it appears to be 64bit only - and indeed it appears to be
+> untrue for real 32bit because of the Pentium Pro fencing errata.
 
-We already noop smp_wmb on i386 even when CONFIG_X86_PPRO_FENCE.
+As I said, we're not doing anything special in barriers for the ppro errata
+today anyway.
 
-I'm not sure if either errata can be solved completely by adding lock ops
-in barrier instructions anyway: they both seem to involve situations where
-there is just a single problematic cacheline in question.
+
+> The kernel also runs on IDT Winchip, Cyrix and AMD processors not all of
+> which have exactly the same behaviour (the IDT Winchip as we run it
+> profoundly differs)
+
+AMD processors guarantee loads are ordered and stores are ordered
+(with exceptions of non-temporal, and non-wb policy).
+
+As for the others that do out of order stores, are any of them SMP?
