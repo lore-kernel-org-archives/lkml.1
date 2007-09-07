@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965585AbXIGQll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758287AbXIGQng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965585AbXIGQll (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 12:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757872AbXIGQld
+	id S1758287AbXIGQng (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 12:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757877AbXIGQn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 12:41:33 -0400
-Received: from smtp123.sbc.mail.re3.yahoo.com ([66.196.96.96]:25269 "HELO
-	smtp123.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757676AbXIGQlc (ORCPT
+	Fri, 7 Sep 2007 12:43:29 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:40022 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757788AbXIGQn2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 12:41:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=cbnjHkhBfQkcry5i0bqaI74POFF/AT8gxdWAstNBi6Ua9EE9x5oBjRMVWySNWVhLEX0utHYwELEELA0mmd+QyPnns1RjzfJNpa1HsvxkB6OhWbDHZwoF8wuHcwte42dD6LViGjAGXXAYzwxNRDZfoOUfPaHGDTEq5GSnnaaPSQY=  ;
-X-YMail-OSG: yfu3ilkVM1lcjRczKw4g8EzI9Bw4FTq2Uli8TojGZTYgc4RBeM1BoGYBFgbU5_am95X7NqA.pw--
-Date: Fri, 07 Sep 2007 09:41:29 -0700
-From: David Brownell <david-b@pacbell.net>
-To: khali@linux-fr.org, dmitry.torokhov@gmail.com
-Subject: Re: Platform device id
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-References: <20070907153559.17faf9d1@hyperion.delvare>
- <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com>
-In-Reply-To: <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 7 Sep 2007 12:43:28 -0400
+Subject: Re: [PATCH 0/3] build system: section garbage collection for
+	vmlinux
+From: Daniel Walker <dwalker@mvista.com>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: sam@ravnborg.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200709061807.33740.vda.linux@googlemail.com>
+References: <200709051443.21522.vda.linux@googlemail.com>
+	 <200709061157.44080.vda.linux@googlemail.com>
+	 <1189091630.8490.1.camel@imap.mvista.com>
+	 <200709061807.33740.vda.linux@googlemail.com>
+Content-Type: text/plain
+Date: Fri, 07 Sep 2007 09:31:11 -0700
+Message-Id: <1189182671.6303.42.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070907164129.65816B9389@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If a device has a <name>.<instance> scheme this implies possibility of
-> having several instances of said device in a box. There are a few of
-> platform devices that can only have one instance
+On Thu, 2007-09-06 at 18:07 +0100, Denys Vlasenko wrote:
 
-Like USB peripheral controllers.  Only one external "B" type
-connector is allowed.
+> A bit extended version:
+> 
+> In the process in making it work I saw ~10% vmlinux size reductions
+> (which basically matches what Marcelo says) when I wasn't retaining
+> sections needed for EXPORT_SYMBOLs, but module loading didn't work.
+> 
+> Thus I fixed that by adding KEEP() directives so that EXPORT_SYMBOLs
+> are never discarded. This was just one of many fixes until kernel
+> started to actually boot and work.
+> 
+> I did that before I posted patches to lkml.
+> IOW: posted patches are not broken versus module loading.
 
+Ok, this is more like the explanation I was looking for..
 
->	- for example i8042
-> keyboard controller (the -1 special handling came from me because
-> i80420 name was very confusing - there wasn't a dot separator in the
-> name back then).
+During this thread you seemed to indicate the patches you release
+reduced the kernel ~10% , but now your saying that was pre-release ,
+right? 
 
-There were other devices with similar issues.
-
-
->	Drivers that allow multiple devices should not
-> attempt to use -1 for the very first instance - this should eliminate
-> potential for error and special handling that you are talking about.
-
-For that matter, a *driver* should never create its own device node(s)
-in the first place.  Device creation belongs elsewhere, like as part of
-platform setup or, for busses with integral enumeration support like
-PCI or USB, bus glue.  Linux is moving away from that legacy model.
-
-I realize that may be more easily said than done in some cases,
-like i8042 on non-PNP systems.
-
-- Dave
+Daniel
 
