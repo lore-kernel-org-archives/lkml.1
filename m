@@ -1,108 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbXIGEKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbXIGELY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757564AbXIGEKw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 00:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbXIGEJt
+	id S1758260AbXIGELY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 00:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbXIGEJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 00:09:49 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55513 "EHLO
+	Fri, 7 Sep 2007 00:09:50 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45330 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750824AbXIGEJr (ORCPT
+	with ESMTP id S1750812AbXIGEJr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 7 Sep 2007 00:09:47 -0400
-Message-Id: <20070907040944.380253345@sgi.com>
+Message-Id: <20070907040943.826587152@sgi.com>
 References: <20070907040943.467530005@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 06 Sep 2007 21:09:46 -0700
+Date: Thu, 06 Sep 2007 21:09:44 -0700
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] ppc64: Convert cpu_sibling_map to a per_cpu data array
-Content-Disposition: inline; filename=ppc64-convert-cpu_sibling_map-to-per_cpu_data
+Subject: [PATCH 1/3] core: Provide an arch independent means of accessing cpu_sibling_map
+Content-Disposition: inline; filename=fix-sched-build-error-with-cpu_sibling_map
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert cpu_sibling_map to a per_cpu cpumask_t array for the ppc64
-architecture.
-
-Note: these changes have not been built nor tested.
-
-Note: I also don't know if these changes are particularly
-relevant for the ppc64 architecture.
+As the block/blktrace.c and kernel/sched.c are common (core) files for
+all architectures, an access function has been defined for referencing
+the cpu_sibling_map array.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/powerpc/kernel/setup-common.c        |    4 ++--
- arch/powerpc/kernel/smp.c                 |    4 ++--
- arch/powerpc/platforms/cell/cbe_cpufreq.c |    2 +-
- include/asm-powerpc/smp.h                 |    3 ++-
- include/asm-powerpc/topology.h            |    2 +-
- 5 files changed, 8 insertions(+), 7 deletions(-)
+ arch/ia64/Kconfig        |    1 -
+ block/blktrace.c         |    2 +-
+ include/asm-i386/smp.h   |    1 +
+ include/asm-x86_64/smp.h |    1 +
+ include/linux/smp.h      |    6 ++++++
+ kernel/sched.c           |    8 ++++----
+ 6 files changed, 13 insertions(+), 6 deletions(-)
 
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -415,9 +415,9 @@
- 	 * Do the sibling map; assume only two threads per processor.
- 	 */
- 	for_each_possible_cpu(cpu) {
--		cpu_set(cpu, cpu_sibling_map[cpu]);
-+		cpu_set(cpu, cpu_sibling_map(cpu));
- 		if (cpu_has_feature(CPU_FTR_SMT))
--			cpu_set(cpu ^ 0x1, cpu_sibling_map[cpu]);
-+			cpu_set(cpu ^ 0x1, cpu_sibling_map(cpu));
- 	}
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -308,7 +308,6 @@
+ config SCHED_SMT
+ 	bool "SMT scheduler support"
+ 	depends on SMP
+-	depends on BROKEN
+ 	help
+ 	  Improves the CPU scheduler's decision making when dealing with
+ 	  Intel IA64 chips with MultiThreading at a cost of slightly increased
+--- a/block/blktrace.c
++++ b/block/blktrace.c
+@@ -536,7 +536,7 @@
+ 	for_each_online_cpu(cpu) {
+ 		unsigned long long *cpu_off, *sibling_off;
  
- 	vdso_data->processorCount = num_present_cpus();
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -61,11 +61,11 @@
+-		for_each_cpu_mask(i, per_cpu(cpu_sibling_map, cpu)) {
++		for_each_cpu_mask(i, cpu_sibling_map(cpu)) {
+ 			if (i == cpu)
+ 				continue;
  
- cpumask_t cpu_possible_map = CPU_MASK_NONE;
- cpumask_t cpu_online_map = CPU_MASK_NONE;
--cpumask_t cpu_sibling_map[NR_CPUS] = { [0 ... NR_CPUS-1] = CPU_MASK_NONE };
-+DEFINE_PER_CPU(cpumask_t, cpu_sibling_map) = CPU_MASK_NONE;
- 
- EXPORT_SYMBOL(cpu_online_map);
- EXPORT_SYMBOL(cpu_possible_map);
--EXPORT_SYMBOL(cpu_sibling_map);
-+EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
- 
- /* SMP operations for this machine */
- struct smp_ops_t *smp_ops;
---- a/arch/powerpc/platforms/cell/cbe_cpufreq.c
-+++ b/arch/powerpc/platforms/cell/cbe_cpufreq.c
-@@ -117,7 +117,7 @@
- 	policy->cur = cbe_freqs[cur_pmode].frequency;
- 
- #ifdef CONFIG_SMP
--	policy->cpus = cpu_sibling_map[policy->cpu];
-+	policy->cpus = cpu_sibling_map(policy->cpu);
- #endif
- 
- 	cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
---- a/include/asm-powerpc/smp.h
-+++ b/include/asm-powerpc/smp.h
-@@ -58,7 +58,8 @@
- 					(smp_hw_index[(cpu)] = (phys))
- #endif
- 
--extern cpumask_t cpu_sibling_map[NR_CPUS];
-+DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5905,7 +5905,7 @@
+ 			     struct sched_group **sg)
+ {
+ 	int group;
+-	cpumask_t mask = per_cpu(cpu_sibling_map, cpu);
++	cpumask_t mask = cpu_sibling_map(cpu);
+ 	cpus_and(mask, mask, *cpu_map);
+ 	group = first_cpu(mask);
+ 	if (sg)
+@@ -5934,7 +5934,7 @@
+ 	cpus_and(mask, mask, *cpu_map);
+ 	group = first_cpu(mask);
+ #elif defined(CONFIG_SCHED_SMT)
+-	cpumask_t mask = per_cpu(cpu_sibling_map, cpu);
++	cpumask_t mask = cpu_sibling_map(cpu);
+ 	cpus_and(mask, mask, *cpu_map);
+ 	group = first_cpu(mask);
+ #else
+@@ -6169,7 +6169,7 @@
+ 		p = sd;
+ 		sd = &per_cpu(cpu_domains, i);
+ 		*sd = SD_SIBLING_INIT;
+-		sd->span = per_cpu(cpu_sibling_map, i);
++		sd->span = cpu_sibling_map(i);
+ 		cpus_and(sd->span, sd->span, *cpu_map);
+ 		sd->parent = p;
+ 		p->child = sd;
+@@ -6180,7 +6180,7 @@
+ #ifdef CONFIG_SCHED_SMT
+ 	/* Set up CPU (sibling) groups */
+ 	for_each_cpu_mask(i, *cpu_map) {
+-		cpumask_t this_sibling_map = per_cpu(cpu_sibling_map, i);
++		cpumask_t this_sibling_map = cpu_sibling_map(i);
+ 		cpus_and(this_sibling_map, this_sibling_map, *cpu_map);
+ 		if (i != first_cpu(this_sibling_map))
+ 			continue;
+--- a/include/asm-i386/smp.h
++++ b/include/asm-i386/smp.h
+@@ -32,6 +32,7 @@
+ extern int smp_num_siblings;
+ DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
+ DECLARE_PER_CPU(cpumask_t, cpu_core_map);
 +#define cpu_sibling_map(cpu) per_cpu(cpu_sibling_map, cpu)
  
- /* Since OpenPIC has only 4 IPIs, we use slightly different message numbers.
-  *
---- a/include/asm-powerpc/topology.h
-+++ b/include/asm-powerpc/topology.h
-@@ -108,7 +108,7 @@
- #ifdef CONFIG_PPC64
+ extern void (*mtrr_hook) (void);
+ extern void zap_low_mappings (void);
+--- a/include/asm-x86_64/smp.h
++++ b/include/asm-x86_64/smp.h
+@@ -47,6 +47,7 @@
+ DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
+ DECLARE_PER_CPU(cpumask_t, cpu_core_map);
+ DECLARE_PER_CPU(u8, cpu_llc_id);
++#define cpu_sibling_map(cpu) per_cpu(cpu_sibling_map, cpu)
+ 
+ #define SMP_TRAMPOLINE_BASE 0x6000
+ 
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -18,6 +18,12 @@
+ #include <linux/thread_info.h>
  #include <asm/smp.h>
  
--#define topology_thread_siblings(cpu)	(cpu_sibling_map[cpu])
-+#define topology_thread_siblings(cpu)	(cpu_sibling_map(cpu))
- #endif
- #endif
- 
++#ifdef CONFIG_SCHED_SMT
++#ifndef cpu_sibling_map
++#define cpu_sibling_map(cpu) cpu_sibling_map[cpu]
++#endif
++#endif
++
+ /*
+  * main cross-CPU interfaces, handles INIT, TLB flush, STOP, etc.
+  * (defined in asm header):
 
 -- 
