@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752328AbXIGXSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752484AbXIGXTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752328AbXIGXSU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 19:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbXIGXSM
+	id S1752484AbXIGXTZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 19:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbXIGXTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 19:18:12 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:41449 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751211AbXIGXSL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 19:18:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ru1Z+agL1RzZXcSfPoippcZL+Y5t6p9PrAtQCqKTROUhRgBgUSFtrE+XpBvZMmn7Hcl8rGtOTUlIea6f0qm9gDlYvrELxK1+iX9FgUgRDiGemccNRt0hNjMtHkqQwHn/m/h6ZQWOaBLSyfYZ4C2nyYgeslZZK4zSB5kn7rgCDsc=
-Message-ID: <6bffcb0e0709071618j200005d3t6aa461c34201d783@mail.gmail.com>
-Date: Sat, 8 Sep 2007 01:18:10 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Alex Riesen" <raa.lkml@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: crash while playing bzflag
-In-Reply-To: <20070907195611.GA3259@steel.home>
+	Fri, 7 Sep 2007 19:19:17 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41949 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750908AbXIGXTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 19:19:16 -0400
+Message-ID: <46E1DC6E.9060001@pobox.com>
+Date: Fri, 07 Sep 2007 19:19:10 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Mark Lord <liml@rtr.ca>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ICH Intel PATA short cable override...
+References: <6278d2220709040537n4c96ffcagd9c25c94ddd29ca1@mail.gmail.com> <20070906014209.142382c8@the-village.bc.nu> <46DF63F8.8070805@rtr.ca>
+In-Reply-To: <46DF63F8.8070805@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070907195611.GA3259@steel.home>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex,
+Mark Lord wrote:
+> Ditto for selecting transfer modes.
 
-On 07/09/2007, Alex Riesen <raa.lkml@gmail.com> wrote:
-> Kernel: v2.6.23-rc5+ (b21010ed6498391c0f359f2a89c907533fe07fec)
 
-Is this a post 2.6.22 regression?
+Waiting on one thing AFAICS:
 
-Regards,
-Michal
+	ability to drain/idle all ports +
+	issue a command on one port +
+	resume normal parallel port operation
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+SET FEATURES - XFER MODE is special in that it requires all sorts of 
+additional controller handling and careful cross-port synchronization.
+
+	Jeff
+
+
