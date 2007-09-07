@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbXIGTIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbXIGTRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758490AbXIGTIm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 15:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbXIGTIe
+	id S1758544AbXIGTRP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 15:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758158AbXIGTRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 15:08:34 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:49762 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758059AbXIGTId (ORCPT
+	Fri, 7 Sep 2007 15:17:00 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:22366 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758161AbXIGTQ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 15:08:33 -0400
-Subject: Re: [PATCH] list.h: add list_for_each_entry_continue_rcu
-From: Johannes Berg <johannes@sipsolutions.net>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Pavel Emelianov <xemul@openvz.org>, Zach Brown <zach.brown@oracle.com>,
-       Dave Jones <davej@redhat.com>, Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <20070907153453.GD8864@linux.vnet.ibm.com>
-References: <1189175688.28781.167.camel@johannes.berg>
-	 <20070907153453.GD8864@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-IkP2PUIw3XZk9Odxs8Gv"
-Date: Fri, 07 Sep 2007 21:09:52 +0200
-Message-Id: <1189192192.28781.182.camel@johannes.berg>
+	Fri, 7 Sep 2007 15:16:59 -0400
+Date: Fri, 7 Sep 2007 12:15:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Bernd Schubert <bs@q-leap.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2][RESEND] improve generic_file_buffered_write()
+Message-Id: <20070907121525.8a6dd582.randy.dunlap@oracle.com>
+In-Reply-To: <200709072052.48396.bs@q-leap.de>
+References: <200709072052.48396.bs@q-leap.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 7 Sep 2007 20:52:38 +0200 Bernd Schubert wrote:
 
---=-IkP2PUIw3XZk9Odxs8Gv
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+>  mm/filemap.c |  139 +++++++++++++++++++++++++++++++++----------------
+>  1 file changed, 95 insertions(+), 44 deletions(-)
+> 
+>  
+> Index: linux-2.6.23-rc5/mm/filemap.c
+> ===================================================================
+> --- linux-2.6.23-rc5.orig/mm/filemap.c	2007-09-06 18:33:11.000000000 +0200
+> +++ linux-2.6.23-rc5/mm/filemap.c	2007-09-06 18:33:15.000000000 +0200
+> @@ -1834,6 +1834,21 @@
+>  }
+>  EXPORT_SYMBOL(generic_file_direct_write);
+>  
 
-On Fri, 2007-09-07 at 08:34 -0700, Paul E. McKenney wrote:
+The kernel-doc still needs fixes as indicated below:
 
-> > + * Continue to iterate over rcu list of given type, continuing after
-> > + * the current position.
->=20
-> Please add something like the following to this comment:
->=20
-> 	Note that the caller is responsible for making sure that
-> 	the element remains in place between the earlier iterator
-> 	and this one.  One way to do this is to ensure that
-> 	both iterators are covered by the same rcu_read_lock(),
-> 	while others involve reference counts, flags, or mutexes.
+> +/**
+> + * generic_file_buffered_write - handle iov'ectors
+> + * @iob:	file operations
 
-Sure, will do. Should this comment also be added to
-list_for_each_continue_rcu()?
+s/iob/iocb/
 
-johannes
+> + * @iov:	vector of data to write
+> + * @nr_segs:	number of iov segments
+> + * @pos:	position in the file
+> + * @ppos:	position in the file after this function
+> + * @count:	number of bytes to write
+> + * written:	offset in iov->base (data to skip on write)
 
+s/written/@written/
 
---=-IkP2PUIw3XZk9Odxs8Gv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> + *
+> + * This function will do 3 main tasks for each iov:
+> + * - prepare a write
+> + * - copy the data from iov into a new page
+> + * - commit this page
+> + */
+>  ssize_t
+>  generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
+>  		unsigned long nr_segs, loff_t pos, loff_t *ppos,
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBG4aIA/ETPhpq3jKURAiX0AJ9mnzmhkYKaVCBNW89nX9EhppgptgCdEOgX
-T/8yyKeIw3gQQzI3yLfpkBU=
-=gdRP
------END PGP SIGNATURE-----
-
---=-IkP2PUIw3XZk9Odxs8Gv--
-
+Thanks.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
