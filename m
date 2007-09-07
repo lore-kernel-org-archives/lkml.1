@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbXIGFtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbXIGFxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbXIGFtj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 01:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXIGFtb
+	id S1758233AbXIGFxc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 01:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbXIGFxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 01:49:31 -0400
-Received: from smtpoutm.mac.com ([17.148.16.71]:50179 "EHLO smtpoutm.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752216AbXIGFta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 01:49:30 -0400
-In-Reply-To: <1189142049.6681.29.camel@heimdal.trondhjem.org>
-References: <Pine.LNX.4.64.0708301610290.24730@fbirervta.pbzchgretzou.qr> <1188484155.6755.38.camel@heimdal.trondhjem.org> <1188484337.6755.41.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0708301640030.24730@fbirervta.pbzchgretzou.qr> <1188486240.6755.51.camel@heimdal.trondhjem.org> <20070830214431.GF10808@fieldses.org> <alpine.LFD.0.999.0709061333410.3781@enigma.security.iitk.ac.in> <20070906150616.GA28565@fieldses.org> <0D66E86D-8D97-45D7-9C2A-7AB5F42845B5@mac.com> <1189121714.6672.38.camel@heimdal.trondhjem.org> <5B1FC03A-6819-4C6C-91D3-F3022B798EF4@mac.com> <1189142049.6681.29.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3BBEDBBC-FD71-4A6F-81B3-EC0978A37024@mac.com>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       Satyam Sharma <satyam@infradead.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: NFS4 authentification / fsuid
-Date: Fri, 7 Sep 2007 01:47:28 -0400
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-X-Mailer: Apple Mail (2.752.2)
+	Fri, 7 Sep 2007 01:53:24 -0400
+Received: from smtp.nokia.com ([131.228.20.173]:62042 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752216AbXIGFxX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 01:53:23 -0400
+Subject: Re: [PATCH try #2] Blackfin on-chip NAND Flash Controller driver
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: bryan.wu@analog.com
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Mike Frysinger <vapier.adi@gmail.com>,
+       Robin Getz <rgetz@blackfin.uclinux.org>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <1188885450.7074.7.camel@roc-laptop>
+References: <1188885450.7074.7.camel@roc-laptop>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 07 Sep 2007 08:52:21 +0300
+Message-Id: <1189144341.14370.77.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 07 Sep 2007 05:52:21.0782 (UTC) FILETIME=[4207AB60:01C7F113]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 07, 2007, at 01:14:09, Trond Myklebust wrote:
-> On Thu, 2007-09-06 at 20:56 -0400, Kyle Moffett wrote:
->> Umm, I did say "encrypt the root filesystem", didn't I?  Booting  
->> my laptops this way follows this procedure:
->>    1) Enter BIOS boot menu
->>    2) Insert /boot CDROM
->>    3) Select the "CDROM" entry
->>    4) Wait for kernel to start and run through initramfs
->>    5) Type password into the initramfs prompt so that it can  
->> DECRYPT THE ROOT FILESYSTEM
->>    6) Continue to boot the system.
->>
->> [...] the only avenues of attack are strictly of the "Install a  
->> hardware keylogger" variety.
->
-> So an attacker will instead install a hardware keylogger, or swap  
-> out your boot cdrom with a compromised but almost identical boot  
-> cdrom instead, or mod your bios, ...
->
-> A fully self-certifying system that can prevent any attack is  
-> _very_ hard to achieve. Just ask apple (iPhone) or any games  
-> console vendor...
+On Tue, 2007-09-04 at 13:57 +0800, Bryan Wu wrote:
+> This is the driver for latest Blackfin on-chip nand flash controller
+> 
+>  - use nand_chip and mtd_info common nand driver interface
+>  - provide both PIO and dma operation
+>  - compiled with ezkit bf548 configuration
+>  - use hardware 1-bit ECC
+>  - tested with YAFFS2 and can mount YAFFS2 filesystem as rootfs
+> 
+> ChangeLog from try#1
+>  - use hweight32() instead of count_bits()
+>  - replace bf54x with bf5xx and BF54X with BF5XX
+>  - compare against plat->page_size in 2 cases when enable hardware ECC
+> 
+> Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 
-A fully self-certifying system that can prevent any attack is  
-impossible to achieve.  If I have the device and can devote as many  
-hours as I want to breaking into it, there is exactly ZERO way to  
-prevent that, aside from encrypting things and not giving out the key  
-(which sorta makes it useless but is precisely the point of real  
-crypto).
+Bryan,
 
-There is a HUGE difference between "I don't want the end-user to hack  
-into this" and "The end-user wants a certain degree of assurance that  
-his data can't be compromised.  In the former case (IE: DRM) you are  
-NOT using cryptography because you are giving the user: (A) the data,  
-(B) the algorithm, and (C) the key, which means they can decrypt it  
-ANY TIME THEY WANT.  In the latter case the attacker DOES NOT have  
-the key and virtually all of the attacks forms of "How do I get the  
-key?".  The end-user is REQUIRED to provide an appropriate level of  
-physical security based on the nature of the data;  If I'm that  
-worried about somebody substituting my /boot CD, then I'm going to  
-make DAMN sure that I keep it on my person at all times.
+I'd suggest you to test your NAND driver with the following NAND tests:
 
-So you can't draw any relationships between "Protect the end-user"  
-with "Protect the device FROM the end-user", the former can be done  
-very reliably to whatever level of risk-reduction you need and the  
-latter can't practically be done at all.
+git://git.infradead.org/~ahunter/nand-tests.git
 
-Cheers,
-Kyle Moffett
+(http://git.infradead.org/?p=users/ahunter/nand-tests.git;a=summary)
+
+
+You may want to avoid the torture test, but it is useful to run it with
+limited amount of erase cycles to make sure your flash/driver survives
+really high I/O load.For example, we caught occasional DMA transfer
+problems while running the torture test for few days.
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
