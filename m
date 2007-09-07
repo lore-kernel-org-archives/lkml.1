@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbXIGVAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbXIGVAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758783AbXIGVAZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 17:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758475AbXIGVAN
+	id S1758856AbXIGVAq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 17:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758475AbXIGVAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 17:00:13 -0400
-Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:35675 "EHLO
-	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751769AbXIGVAL (ORCPT
+	Fri, 7 Sep 2007 17:00:34 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39244 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758481AbXIGVAd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 17:00:11 -0400
-From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Bernd Schubert <bs@q-leap.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
-       brian@clusterfs.com,
-       Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-Subject: Re: patch: improve generic_file_buffered_write() (2nd try 1/2)
-References: <200709051546.06224.bs@q-leap.de>
-	<20070905083529.a1c8a0a9.randy.dunlap@oracle.com>
-	<200709051941.56145.bs@q-leap.de>
-	<200709081415.54211.nickpiggin@yahoo.com.au>
-Date: Fri, 07 Sep 2007 23:00:00 +0200
-In-Reply-To: <200709081415.54211.nickpiggin@yahoo.com.au> (Nick Piggin's
-	message of "Sat, 8 Sep 2007 14:15:53 +1000")
-Message-ID: <87hcm6chtb.fsf@informatik.uni-tuebingen.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+	Fri, 7 Sep 2007 17:00:33 -0400
+X-Sasl-enc: zfAXG0ScjKaTqJqxgqUbWvlYWGZBhln3Vf9n0ToiRlb1 1189198832
+Date: Fri, 7 Sep 2007 18:00:29 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: David Brownell <david-b@pacbell.net>
+Cc: khali@linux-fr.org, dmitry.torokhov@gmail.com,
+       linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: Platform device id
+Message-ID: <20070907210029.GB4357@khazad-dum.debian.net>
+References: <20070907153559.17faf9d1@hyperion.delvare> <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com> <20070907164129.65816B9389@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070907164129.65816B9389@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <nickpiggin@yahoo.com.au> writes:
+On Fri, 07 Sep 2007, David Brownell wrote:
+> For that matter, a *driver* should never create its own device node(s)
+> in the first place.  Device creation belongs elsewhere, like as part of
+> platform setup or, for busses with integral enumeration support like
+> PCI or USB, bus glue.  Linux is moving away from that legacy model.
 
-> Anyway, there are fixes for this deadlock in Andrew's -mm tree, but
-> also a workaround for the NFSD problem in git commit 29dbb3fc. Did
-> you try a later kernel to see if it is fixed there?
+This assumes that we have a better bus than "platform" to dump drivers like
+thinkpad-acpi, hdaps, and a host of other host-specific stuff.
 
-I had a chance to look up that commit (git clone took a while so sorry
-for writing 2 mails). It is present in 2.6.23-rc5 so I already noticed
-it when merging our patch in 2.6.23-rc5.
+> I realize that may be more easily said than done in some cases,
+> like i8042 on non-PNP systems.
 
-Upon closer reading of the patch though I see that it will indeed
-prevent writes by the nfsd to be split smaller than PAGE_SIZE and it
-will cause filemap_copy_from_user[_iovec] to be called with a source
-spanning multiple pages.
+Yes, and there is a LOT of non-PNP stuff involved, since platform became the
+dumping ground for host-specific devices (as opposed to platform-specific
+devices).
 
-So the commit 29dbb3fc should have a simmilar, slightly better even,
-gain for the nfsd and other kernel space segments. But it will not
-improve writes from user space, where ~14% of the commits were saved
-during a days work for me.
-
-
-Now I have a question about fault_in_pages_readable(). Can I call that
-for multiple pages and then call __grab_cache_page() without risking
-one of the pages from getting lost again and causing a deadlock?
-
-MfG
-        Goswin
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
