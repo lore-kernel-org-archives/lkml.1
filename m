@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbXIGH3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965024AbXIGHfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbXIGH3U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 03:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757311AbXIGH3N
+	id S965024AbXIGHfS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 03:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbXIGHfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 03:29:13 -0400
-Received: from mail.suse.de ([195.135.220.2]:39886 "EHLO mx1.suse.de"
+	Fri, 7 Sep 2007 03:35:04 -0400
+Received: from mga09.intel.com ([134.134.136.24]:12708 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757089AbXIGH3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 03:29:12 -0400
-From: Andi Kleen <ak@suse.de>
-To: travis@sgi.com
-Subject: Re: [PATCH 0/3] core: fix build error when referencing arch specific structures
-Date: Fri, 7 Sep 2007 08:28:05 +0100
-User-Agent: KMail/1.9.1
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-References: <20070907040943.467530005@sgi.com>
-In-Reply-To: <20070907040943.467530005@sgi.com>
+	id S1753895AbXIGHfD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 03:35:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,219,1186383600"; 
+   d="scan'208";a="127706651"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709070828.05730.ak@suse.de>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: 2.6.23-rc4-mm1 build issue: ia64 link error
+Date: Fri, 7 Sep 2007 00:34:59 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A025B103D@scsmsx411.amr.corp.intel.com>
+In-reply-to: <20070906183546.GA1449@Krystal>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.23-rc4-mm1 build issue: ia64 link error
+Thread-Index: AcfwtMHi8biGzO0dTUuT39wqyE2MXQAbFXqA
+References: <20070906183546.GA1449@Krystal>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
+       <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 07 Sep 2007 07:35:00.0692 (UTC) FILETIME=[9906C140:01C7F121]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 September 2007 05:09, travis@sgi.com wrote:
-> Since the core kernel routines need to reference cpu_sibling_map,
-> whether it be a static array or a per_cpu data variable, an access
-> function has been defined.
->
-> In addition, changes have been made to the ia64 and ppc64 arch's to
-> move the cpu_sibling_map from a static cpumask_t array [NR_CPUS] to
-> be per_cpu cpumask_t arrays.
->
-> Note that I do not have the ability to build or test patch 3/3, the
-> ppc64 changes.
->
-> Patches are referenced against 2.6.23-rc4-mm1 .
+> local symbol 0: discarded in section `.exit.text' from arch/ia64/kernel/built-in.o
 
-It would be better if you could redo the patches with the original patches
-reverted, not incremental changes. In the end we'll need a full patch set
-with full changelog anyways, not a series of incremental fixes.
+This usually means that there is a static __exit function (or __devexit etc.)
+somewhere in the object being linked.  The error message is pretty unhelpful
+in figuring out *where* in the module.  Look at the 'mm' patches that touch
+arch/ia64/kernel to see if one of them tinkers with __exit* attributes.
 
-Also I guess some powerpc testers would be needed. Perhaps cc the
-maintainers?
-
--Andi
+-Tony
