@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965479AbXIGMsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965519AbXIGMuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965479AbXIGMsR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 08:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965231AbXIGMsF
+	id S965519AbXIGMuV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 08:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965305AbXIGMuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 08:48:05 -0400
-Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:4927 "EHLO
-	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965188AbXIGMsE (ORCPT
+	Fri, 7 Sep 2007 08:50:06 -0400
+Received: from vsmtp03.dti.ne.jp ([202.216.231.138]:41633 "EHLO
+	vsmtp03.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965188AbXIGMuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 08:48:04 -0400
-Date: Fri, 7 Sep 2007 14:48:00 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Subject: sata & scsi suggestion for make menuconfig
-Message-ID: <20070907124800.GP16806@vanheusden.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Reply-By: Fri Sep  7 11:31:04 CEST 2007
-X-Message-Flag: PGP key-id: 0x1f28d8ae - consider encrypting your e-mail to
-	me with PGP!
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Fri, 7 Sep 2007 08:50:05 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [RFC] Union Mount: Readdir approaches 
+To: Al Boldi <a1426z@gawab.com>
+Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, hch@infradead.org,
+       Jan Blunck <jblunck@suse.de>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+In-Reply-To: <200709071454.32451.a1426z@gawab.com>
+References: <20070907054618.GD1692@in.ibm.com> <E1ITYJK-0000xP-8h@jroun> <200709071454.32451.a1426z@gawab.com>
+Date: Fri, 07 Sep 2007 21:49:25 +0900
+Message-Id: <E1ITdH3-0000sb-N4@jroun>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Maybe it is a nice enhancement for make menuconfig to more explicitly
-give a pop-up or so when someone selects for example a sata controller
-while no 'scsi-disk' support was selected?
+Al Boldi:
+> > If you are interested in this approach, please refer to
+> > http://aufs.sf.net. It is working and used by several people.
+> 
+> Any chance you can post a patch against 2.6.22?
+
+Unfortunately there are many reasons to keep me away from sending a
+patch.
+- it is large (48 source files).
+- it supports linux-2.6.16 and later, and uses
+	#if ... LINUX_VERSION_CODE ...
+  condition a lot. I want to keep handling them as long as possible
+  since some users use it.
+- there are sereral codes I want to rewrite cleanly or well-behaved.
+- and other reasons.
+
+But if you really want to read or try it, you can get all source files
+from sourceforge. Read http://aufs.sf.net and try,
+$ cvs -d:pserver:anonymous@aufs.cvs.sourceforge.net:/cvsroot/aufs login
+(CVS password is empty)
+$ cvs -z3 -d:pserver:anonymous@aufs.cvs.sourceforge.net:/cvsroot/aufs co aufs
 
 
-Folkert van Heusden
-
--- 
-Multi tail barnamaj mowahib li mora9abat attasjilat wa nataij awamir
-al 7asoub. damj, talwin, mora9abat attarchi7 wa ila akhirih.
-http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+Regards,
+Junjiro Okajima
