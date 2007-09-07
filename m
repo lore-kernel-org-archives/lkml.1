@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbXIGTRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965636AbXIGTUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758544AbXIGTRP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 15:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758158AbXIGTRA
+	id S965636AbXIGTUG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 15:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbXIGTTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 15:17:00 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:22366 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758161AbXIGTQ7 (ORCPT
+	Fri, 7 Sep 2007 15:19:52 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:37879 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751071AbXIGTTv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 15:16:59 -0400
-Date: Fri, 7 Sep 2007 12:15:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Bernd Schubert <bs@q-leap.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2][RESEND] improve generic_file_buffered_write()
-Message-Id: <20070907121525.8a6dd582.randy.dunlap@oracle.com>
-In-Reply-To: <200709072052.48396.bs@q-leap.de>
-References: <200709072052.48396.bs@q-leap.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 7 Sep 2007 15:19:51 -0400
+Subject: Re: BUG: scheduling while atomic: ifconfig/0x00000002/4170
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: paulmck@linux.vnet.ibm.com, Herbert Xu <herbert@gondor.apana.org.au>,
+       satyam@infradead.org, flo@rfc822.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       michal.k.k.piotrowski@gmail.com, ipw3945-devel@lists.sourceforge.net,
+       yi.zhu@intel.com, flamingice@sourmilk.net
+In-Reply-To: <200709071801.34909.mb@bu3sch.de>
+References: <E1ITGb2-0006Be-00@gondolin.me.apana.org.au>
+	 <20070906154612.GD8030@linux.vnet.ibm.com>
+	 <1189171635.28781.134.camel@johannes.berg>
+	 <200709071801.34909.mb@bu3sch.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qm8tG29p0YzHqNLT+RI2"
+Date: Fri, 07 Sep 2007 21:17:50 +0200
+Message-Id: <1189192671.28781.191.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Mailer: Evolution 2.10.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Sep 2007 20:52:38 +0200 Bernd Schubert wrote:
 
->  mm/filemap.c |  139 +++++++++++++++++++++++++++++++++----------------
->  1 file changed, 95 insertions(+), 44 deletions(-)
-> 
->  
-> Index: linux-2.6.23-rc5/mm/filemap.c
-> ===================================================================
-> --- linux-2.6.23-rc5.orig/mm/filemap.c	2007-09-06 18:33:11.000000000 +0200
-> +++ linux-2.6.23-rc5/mm/filemap.c	2007-09-06 18:33:15.000000000 +0200
-> @@ -1834,6 +1834,21 @@
->  }
->  EXPORT_SYMBOL(generic_file_direct_write);
->  
+--=-qm8tG29p0YzHqNLT+RI2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The kernel-doc still needs fixes as indicated below:
+On Fri, 2007-09-07 at 18:01 +0200, Michael Buesch wrote:
 
-> +/**
-> + * generic_file_buffered_write - handle iov'ectors
-> + * @iob:	file operations
+> What's the problem with trying to lock it?
 
-s/iob/iocb/
+I think I had a problem with it once when I inserted it into some code
+that was atomic and it all blew up badly ;) Nothing important really but
+it sort of made me not like it much.
 
-> + * @iov:	vector of data to write
-> + * @nr_segs:	number of iov segments
-> + * @pos:	position in the file
-> + * @ppos:	position in the file after this function
-> + * @count:	number of bytes to write
-> + * written:	offset in iov->base (data to skip on write)
+johannes
 
-s/written/@written/
+--=-qm8tG29p0YzHqNLT+RI2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> + *
-> + * This function will do 3 main tasks for each iov:
-> + * - prepare a write
-> + * - copy the data from iov into a new page
-> + * - commit this page
-> + */
->  ssize_t
->  generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
->  		unsigned long nr_segs, loff_t pos, loff_t *ppos,
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Thanks.
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+iD8DBQBG4aPe/ETPhpq3jKURAjYfAJ9HadGEto39HmJSGYkB5drHHTJMnQCeIkoW
+b3tas7IMlLzntMI/l/eOg/I=
+=9P2b
+-----END PGP SIGNATURE-----
+
+--=-qm8tG29p0YzHqNLT+RI2--
+
