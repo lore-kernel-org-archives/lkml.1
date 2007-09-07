@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbXIHKpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbXIHKth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbXIHKpp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 06:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbXIHKpf
+	id S1753199AbXIHKth (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 06:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXIHKt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 06:45:35 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:36630 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751859AbXIHKpe (ORCPT
+	Sat, 8 Sep 2007 06:49:29 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:49053 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751356AbXIHKt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 06:45:34 -0400
-Date: Sat, 8 Sep 2007 12:45:32 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Patrizio Bassi <patrizio.bassi@gmail.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       "Kernel," <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Alan Cox <alan@redhat.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: libata not working for sis5533
-In-Reply-To: <46E26DAF.9020906@gmail.com>
-Message-ID: <Pine.LNX.4.64.0709081243050.25942@fbirervta.pbzchgretzou.qr>
-References: <46D132C5.5000803@gmail.com> <6bffcb0e0708261627s12e5a9acqef92d0261264a40c@mail.gmail.com>
- <46D8921E.3010304@gmail.com> <46D89429.7080802@gmail.com>
- <20070902114032.7dbfb21a@the-village.bc.nu>
- <Pine.LNX.4.64.0709031957390.24179@fbirervta.pbzchgretzou.qr>
- <Pine.LNX.4.64.0709061156220.25942@fbirervta.pbzchgretzou.qr>
- <46E26DAF.9020906@gmail.com>
+	Sat, 8 Sep 2007 06:49:29 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=5d0caVr75f3vKwTHiJ+gZ5xd7gclA4yJEseg9tobBhosjaDuEAFZAE/6wVxe19eq6YDeiuHUj4kJkqQjrGo5xvsp8Mrr0dP800Qodl1/uX1bCwsge8MVUHUS5ncPJ7KW4WcSubTDxlcJf9Hvccj0X9s0+WoapC35E8uE6E3EQPg=  ;
+X-YMail-OSG: WX7BiUIVM1nl4ZS5MbZyTLb3h2GBJVcg9dKbkflPpyaOD64D2VpWMD2BRpZPQFmeroaJo47FqpfxU7Oxwhww5uF_TOdJFtn3ZeOY7lFj2XjvkvR1xzq2x2yhLzyEQyL5eCbisNZXU2Y0bOuK
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Intel Memory Ordering White Paper
+Date: Sat, 8 Sep 2007 06:46:56 +1000
+User-Agent: KMail/1.9.5
+Cc: Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
+References: <200709071526.51169.jesse.barnes@intel.com> <200709081854.57549.nickpiggin@yahoo.com.au> <20070908113056.66fc97b7@the-village.bc.nu>
+In-Reply-To: <20070908113056.66fc97b7@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709080646.56200.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sep 8 2007 11:38, Patrizio Bassi wrote:
->Jan Engelhardt wrote:
->>
->> I shall give this a spin too, since I happen to have sis5513.
->>
->> Just booted this fresh ata-enabled system (a matter of mkinitrd). It has 
->>not exploded yet.
+On Saturday 08 September 2007 20:30, Alan Cox wrote:
+> On Sat, 8 Sep 2007 18:54:57 +1000
 >
->don't you have the "irq 14" issue?
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > On Saturday 08 September 2007 08:26, Jesse Barnes wrote:
+> > > FYI, we just released a new white paper describing memory ordering for
+> > > Intel processors:
+> > > http://developer.intel.com/products/processor/manuals/index.htm
+> > >
+> > > Should help answer some questions about some of the ordering primitives
+> > > we use on i386 and x86_64.
+> >
+> > So, can we finally noop smp_rmb and smp_wmb on x86?
+>
+> Nakked-by: Alan Cox <alan@redhat.com>
+>
+> You can only no-op it on 64bit Intel processors. On 32bit it needs to be
+> conditional on whether your processor family (or back compat for it) as
+> the Pentium Pro has some serious store ordering errata (hence the way it
+> needs lock decb for spin_unlock)
 
-No, does not seem so.
+We already noop smp_wmb on i386 even when CONFIG_X86_PPRO_FENCE.
 
->can you post here your .config?
-
-http://rafb.net/p/vfTX0966.html
-
-Maybe it is solved in 2.6.22.3? (I don't remember what your version 
-was.)
-
-
-	Jan
--- 
+I'm not sure if either errata can be solved completely by adding lock ops
+in barrier instructions anyway: they both seem to involve situations where
+there is just a single problematic cacheline in question.
