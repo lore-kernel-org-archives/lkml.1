@@ -1,135 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbXIGELY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757677AbXIGELp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbXIGELY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 00:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbXIGEJu
+	id S1757677AbXIGELp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 00:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758128AbXIGEKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 00:09:50 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:45330 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750812AbXIGEJr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 00:09:47 -0400
-Message-Id: <20070907040943.826587152@sgi.com>
-References: <20070907040943.467530005@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 06 Sep 2007 21:09:44 -0700
-From: travis@sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] core: Provide an arch independent means of accessing cpu_sibling_map
-Content-Disposition: inline; filename=fix-sched-build-error-with-cpu_sibling_map
+	Fri, 7 Sep 2007 00:10:52 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:34755 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757872AbXIGEKu (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 00:10:50 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/6] Linux Kernel Markers - Architecture Independent Code
+In-Reply-To: Your message of "Thu, 06 Sep 2007 16:37:37 PDT."
+             <20070906163737.9cc91307.randy.dunlap@oracle.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20070906200733.194442762@polymtl.ca> <20070906200825.893834634@polymtl.ca> <20070906160001.cfe48d78.randy.dunlap@oracle.com> <20070906160429.629c9497.akpm@linux-foundation.org>
+            <20070906163737.9cc91307.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1189137904_2844P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 07 Sep 2007 00:05:04 -0400
+Message-ID: <20679.1189137904@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As the block/blktrace.c and kernel/sched.c are common (core) files for
-all architectures, an access function has been defined for referencing
-the cpu_sibling_map array.
+--==_Exmh_1189137904_2844P
+Content-Type: text/plain; charset=us-ascii
 
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/ia64/Kconfig        |    1 -
- block/blktrace.c         |    2 +-
- include/asm-i386/smp.h   |    1 +
- include/asm-x86_64/smp.h |    1 +
- include/linux/smp.h      |    6 ++++++
- kernel/sched.c           |    8 ++++----
- 6 files changed, 13 insertions(+), 6 deletions(-)
+On Thu, 06 Sep 2007 16:37:37 PDT, Randy Dunlap said:
 
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -308,7 +308,6 @@
- config SCHED_SMT
- 	bool "SMT scheduler support"
- 	depends on SMP
--	depends on BROKEN
- 	help
- 	  Improves the CPU scheduler's decision making when dealing with
- 	  Intel IA64 chips with MultiThreading at a cost of slightly increased
---- a/block/blktrace.c
-+++ b/block/blktrace.c
-@@ -536,7 +536,7 @@
- 	for_each_online_cpu(cpu) {
- 		unsigned long long *cpu_off, *sibling_off;
- 
--		for_each_cpu_mask(i, per_cpu(cpu_sibling_map, cpu)) {
-+		for_each_cpu_mask(i, cpu_sibling_map(cpu)) {
- 			if (i == cpu)
- 				continue;
- 
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5905,7 +5905,7 @@
- 			     struct sched_group **sg)
- {
- 	int group;
--	cpumask_t mask = per_cpu(cpu_sibling_map, cpu);
-+	cpumask_t mask = cpu_sibling_map(cpu);
- 	cpus_and(mask, mask, *cpu_map);
- 	group = first_cpu(mask);
- 	if (sg)
-@@ -5934,7 +5934,7 @@
- 	cpus_and(mask, mask, *cpu_map);
- 	group = first_cpu(mask);
- #elif defined(CONFIG_SCHED_SMT)
--	cpumask_t mask = per_cpu(cpu_sibling_map, cpu);
-+	cpumask_t mask = cpu_sibling_map(cpu);
- 	cpus_and(mask, mask, *cpu_map);
- 	group = first_cpu(mask);
- #else
-@@ -6169,7 +6169,7 @@
- 		p = sd;
- 		sd = &per_cpu(cpu_domains, i);
- 		*sd = SD_SIBLING_INIT;
--		sd->span = per_cpu(cpu_sibling_map, i);
-+		sd->span = cpu_sibling_map(i);
- 		cpus_and(sd->span, sd->span, *cpu_map);
- 		sd->parent = p;
- 		p->child = sd;
-@@ -6180,7 +6180,7 @@
- #ifdef CONFIG_SCHED_SMT
- 	/* Set up CPU (sibling) groups */
- 	for_each_cpu_mask(i, *cpu_map) {
--		cpumask_t this_sibling_map = per_cpu(cpu_sibling_map, i);
-+		cpumask_t this_sibling_map = cpu_sibling_map(i);
- 		cpus_and(this_sibling_map, this_sibling_map, *cpu_map);
- 		if (i != first_cpu(this_sibling_map))
- 			continue;
---- a/include/asm-i386/smp.h
-+++ b/include/asm-i386/smp.h
-@@ -32,6 +32,7 @@
- extern int smp_num_siblings;
- DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
- DECLARE_PER_CPU(cpumask_t, cpu_core_map);
-+#define cpu_sibling_map(cpu) per_cpu(cpu_sibling_map, cpu)
- 
- extern void (*mtrr_hook) (void);
- extern void zap_low_mappings (void);
---- a/include/asm-x86_64/smp.h
-+++ b/include/asm-x86_64/smp.h
-@@ -47,6 +47,7 @@
- DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
- DECLARE_PER_CPU(cpumask_t, cpu_core_map);
- DECLARE_PER_CPU(u8, cpu_llc_id);
-+#define cpu_sibling_map(cpu) per_cpu(cpu_sibling_map, cpu)
- 
- #define SMP_TRAMPOLINE_BASE 0x6000
- 
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -18,6 +18,12 @@
- #include <linux/thread_info.h>
- #include <asm/smp.h>
- 
-+#ifdef CONFIG_SCHED_SMT
-+#ifndef cpu_sibling_map
-+#define cpu_sibling_map(cpu) cpu_sibling_map[cpu]
-+#endif
-+#endif
-+
- /*
-  * main cross-CPU interfaces, handles INIT, TLB flush, STOP, etc.
-  * (defined in asm header):
+> Thanks.  I look forward to the explanation of Reviewed-by, what it
+> means, and how it differs from Acked-by.
 
--- 
+As long as you're at it,  the only tag *I* seem to need is 'Tested-By:' :)
+
+--==_Exmh_1189137904_2844P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG4M3wcC3lWbTT17ARAsZbAKCDeMbIz99++M20Yk3HtM+zi+6siwCgsnhK
+6peBJZgvv2x2VQhaHXGY8cw=
+=xQf6
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1189137904_2844P--
