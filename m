@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965615AbXIGOEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965643AbXIGOJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965615AbXIGOEw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 10:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965328AbXIGOEp
+	id S965643AbXIGOJx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 10:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965410AbXIGOJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 10:04:45 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:36226 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965309AbXIGOEo (ORCPT
+	Fri, 7 Sep 2007 10:09:45 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:56024 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S965296AbXIGOJo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 10:04:44 -0400
-Date: Fri, 7 Sep 2007 10:04:42 -0400
+	Fri, 7 Sep 2007 10:09:44 -0400
+Date: Fri, 7 Sep 2007 10:09:42 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andi Kleen <andi@firstfloor.org>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       pageexec@freemail.hu
+       Andi Kleen <andi@firstfloor.org>, pageexec@freemail.hu
 Subject: Re: [patch 05/10] Text Edit Lock - Alternative code for i386 and x86_64
-Message-ID: <20070907140442.GE9735@Krystal>
-References: <20070906200124.595238505@polymtl.ca> <20070906200212.080849869@polymtl.ca> <20070907065936.GH31880@one.firstfloor.org>
+Message-ID: <20070907140942.GF9735@Krystal>
+References: <20070906200124.595238505@polymtl.ca> <20070906200212.080849869@polymtl.ca> <20070907084315.GA28915@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070907065936.GH31880@one.firstfloor.org>
+In-Reply-To: <20070907084315.GA28915@in.ibm.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:22:31 up 39 days, 13:41,  4 users,  load average: 1.23, 0.64, 0.70
+X-Uptime: 10:09:34 up 39 days, 14:28,  4 users,  load average: 0.74, 0.66, 0.55
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen (andi@firstfloor.org) wrote:
+* Ananth N Mavinakayanahalli (ananth@in.ibm.com) wrote:
 > On Thu, Sep 06, 2007 at 04:01:29PM -0400, Mathieu Desnoyers wrote:
+> 
+> <snip>
+> 
+> > Index: linux-2.6-lttng/arch/i386/kernel/alternative.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/arch/i386/kernel/alternative.c	2007-09-06 14:32:11.000000000 -0400
+> > +++ linux-2.6-lttng/arch/i386/kernel/alternative.c	2007-09-06 14:59:19.000000000 -0400
+> > @@ -16,6 +16,99 @@
+> >  #ifdef CONFIG_HOTPLUG_CPU
+> >  static int smp_alt_once;
+> > 
+> > +/*
+> > + * Warning:
+> > + * When you use this code to patch more than one byte of an instruction
+> > + * you need to make sure that other CPUs cannot execute this code in parallel.
+> > + * Also no thread must be currently preempted in the middle of these
+> > + * instructions.  And on the local CPU you need to be protected again NMI or MCE
+> > + * handlers seeing an inconsistent instruction while you patch.
+> > + * Warning: read_cr0 is modified by paravirt, this is why we have _early
+> > + * versions. They are not in the __init section because they can be used at
+> > + * module load time.
+> > + */
+> > +static inline void text_sync(void *addr, size_t len)
+> > +{
+> > +	void *faddr;
+> > +
 > > +	sync_core();
 > > +	/* Not strictly needed, but can speed CPU recovery up. */
-> 
-> That turned out to break on some VIA CPUs. Should be removed.
-> 
-
-Hrm, when does it break ? At boot time ? Is it the cpuid that breaks or
-the clflush ? How do you work around the problem when sync_core or
-clflush is called from elsewhere; does it cause a problem if I call it
-when I update immediate values ?
-
 > > +	if (cpu_has_clflush)
 > > +		for (faddr = addr; faddr < addr + len;
 > > +				faddr += boot_cpu_data.x86_clflush_size)
@@ -54,27 +71,31 @@ when I update immediate values ?
 > > +					size_t len)
 > > +{
 > > +	memcpy(addr, opcode, len);
-> 
-> It would be best to copy __inline_memcpy from x86-64 to i386
-> and use that here. That avoids the dependency on a patched
-> memcpy and is slightly safer.
-> 
-
-Is it me or __inline_memcpy is simply a copy of i386's __memcpy ?
-Is there any reason for this name change ?
-
+> > +	text_sync(addr, len);
+> > +	return addr;
+> > +}
+> > +
+> > +void * text_set_early(void *addr, int c, size_t len)
+> > +{
+> > +	memset(addr, c, len);
+> > +	text_sync(addr, len);
+> > +	return addr;
+> > +}
+> > +
+> > +/*
+> > + * Only atomic text poke/set should be allowed when not doing early patching.
+> > + * It means the size must be writable atomically and the address must be aligned
+> > + * in a way that permits an atomic write.
+> > + */
+> > +void * __kprobes text_poke(void *addr, const void *opcode, size_t len)
+> > +{
+> > +	unsigned long cr0;
+> > +	int unaligned;
 > > +
 > > +	if (len > sizeof(long)) {
 > > +		printk(KERN_ERR "text_poke of len %zu too big (max %lu)\n",
 > > +			len, sizeof(long));
 > > +		BUG_ON(1);
-> 
-> In general BUG_ON only should be enough because these values can
-> be recovered from the registers. 
-> 
-
-Ok.
-
 > > +	}
 > > +	unaligned = (((long)addr + len - 1) & ~(sizeof(long) - 1))
 > > +		- ((long)addr & ~(sizeof(long) - 1));
@@ -84,76 +105,58 @@ Ok.
 > > +			addr, len, unaligned);
 > > +		BUG_ON(1);
 > > +	}
+> > +	kernel_wp_save(cr0);
+> > +	memcpy(addr, opcode, len);
+> > +	kernel_wp_restore(cr0);
+> > +	text_sync(addr, len);
+> > +	return addr;
+> > +}
+> > +
+> > +void * __kprobes text_set(void *addr, int c, size_t len)
+> > +{
+> > +	unsigned long cr0;
+> > +	int unaligned;
+> > +
+> > +	if (len > sizeof(long)) {
+> > +		printk(KERN_ERR "text_set of len %zu too big (max %lu)\n",
+> > +			len, sizeof(long));
+> > +		BUG_ON(1);
+> > +	}
+> > +	unaligned = (((long)addr + len - 1) & ~(sizeof(long) - 1))
+> > +		- ((long)addr & ~(sizeof(long) - 1));
+> > +	if (unlikely(unaligned)) {
+> > +		printk(KERN_ERR "text_set of at addr %p of len %zu is "
+> > +				"unaligned (%d)\n",
+> > +			addr, len, unaligned);
+> > +		BUG_ON(1);
+> > +	}
+> > +	kernel_wp_save(cr0);
+> > +	memset(addr, c, len);
+> > +	kernel_wp_restore(cr0);
+> > +	text_sync(addr, len);
+> > +	return addr;
+> > +}
+> > +
 > 
-> The common code should be in a common function. In fact they're so 
-> similar that the caller could just pass a buffer for the text_set
-> case, couldn't it?
+> The above chunk is within ifdef CONFIG_HOTPLUG_CPU. This breaks a CONFIG_SMP=n
+> build:
 > 
-
-I found out that doing a text_set is relatively common. What I want to
-remove is things such as:
-
-text_poke(addr, ((unsigned char []){BREAKPOINT_INSTRUCTION}, 1);
-
-which is :
-  A- ugly
-  B- breaking vim syntax highlighting. (actually, all the rest of the
-  file becomes weird after that. The problem is similar to declaration
-  of #defile name ({ some code }). It does not really matter as long as
-  it is in a header, but at the middle of a C file it gets rather
-  annoying). (it never though I would use vim as a coding style
-  reference) ;)
-
-And what is rather different between the 2 functions is when we want to
-fill multiple bytes with the same pattern (I fill the unused part of my
-immediate values bypass with 0x90 nops, but I agree that I could use
-add_nops if it was exported).
-
-Declaration of a variable length array on text_set's stack would break
-older compilers, so I don't think it is a neat solution neither. kmalloc
-seems overkill to me.
-
-I'll try to come up with a single static function, called from both
-text_set and text_poke, that will merge the code and execute either
-memset or memcpy depending on a supplementary argument.
-
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+> arch/i386/kernel/built-in.o: In function `apply_alternatives':
+> /home/ananth/kprobes/marker/linux-2.6.23-rc4/arch/i386/kernel/alternative.c:293:
+> undefined reference to `text_poke_early'
+> arch/i386/kernel/built-in.o: In function `arch_disarm_kprobe':
+> /home/ananth/kprobes/marker/linux-2.6.23-rc4/arch/i386/kernel/kprobes.c:185:
+> undefined reference to `text_set'
+> arch/i386/kernel/built-in.o: In function `arch_arm_kprobe':
+> /home/ananth/kprobes/marker/linux-2.6.23-rc4/arch/i386/kernel/kprobes.c:180:
+> undefined reference to `text_set'
+> make: *** [.tmp_vmlinux1] Error 1
 > 
-> > +#define kernel_wp_save(cr0)					\
-> 
-> Is there a real reason this has to be an macro? It could 
-> be just a normal function. In fact a shared on in alternative.c.
-> That would also avoid adding more include dependencies.
-> 
+> Ananth
 
-The idea is to mimic the local_irq_save/restore semantic, where the
-flags argument is passed without &. This is why I use a macro instead of
-an inline function.
-
-> > +	do {							\
-> > +		typecheck(unsigned long, cr0);			\
-> 
-> typecheck is probably overkill
-> 
-
-ok, I'll remove it.
-
-> > +		preempt_disable();				\
-> 
-> Should disable interrupts too just to be safer? 
-> 
-
-Well, the only thing that we really don't want here is to be scheduled
-to a different CPU, so preempt disable should be enough.
-
-The good effect of disabling interrupts is that it would make sure no
-interrupt handler will run with WP flag cleared on the CPU.  However, it
-would add a flags parameter to kernel_wp_save/restore which would be
-rather ugly :( This is why I prefer to go with preempt_disable, but I am
-open to other considerations.
-
-Mathieu
-
-> -Andi
+Thanks, fixing for next release.
 
 -- 
 Mathieu Desnoyers
