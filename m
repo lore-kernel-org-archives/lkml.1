@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbXIGO7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbXIGPLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758058AbXIGO7M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 10:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbXIGO65
+	id S1758056AbXIGPLb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 11:11:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbXIGPLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 10:58:57 -0400
-Received: from smtp-vbr1.xs4all.nl ([194.109.24.21]:1305 "EHLO
-	smtp-vbr1.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754814AbXIGO64 (ORCPT
+	Fri, 7 Sep 2007 11:11:22 -0400
+Received: from mga09.intel.com ([134.134.136.24]:36582 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756310AbXIGPLV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 10:58:56 -0400
-Date: Fri, 7 Sep 2007 16:58:45 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sata & scsi suggestion for make menuconfig
-Message-ID: <20070907145845.GQ16806@vanheusden.com>
-References: <20070907124800.GP16806@vanheusden.com> <Pine.LNX.4.64.0709071639380.25942@fbirervta.pbzchgretzou.qr>
+	Fri, 7 Sep 2007 11:11:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,221,1186383600"; 
+   d="scan'208";a="128074254"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0709071639380.25942@fbirervta.pbzchgretzou.qr>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Reply-By: Fri Sep  7 11:31:04 CEST 2007
-X-Message-Flag: MultiTail - tail on steroids
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH -mm] [RFC] IOAT: Add support for version 2 of ioatdma device
+Date: Fri, 7 Sep 2007 08:11:19 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C02FF07A6@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20070907084322.GA10837@shadowen.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH -mm] [RFC] IOAT: Add support for version 2 of ioatdma device
+thread-index: AcfxKzEXpwx7RO2RTmW+0QcW8jLeuwANgRVA
+References: <20070906170712.7444.34573.stgit@localhost.localdomain> <20070907084322.GA10837@shadowen.org>
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Andy Whitcroft" <apw@shadowen.org>
+Cc: <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 07 Sep 2007 15:11:19.0552 (UTC) FILETIME=[58194000:01C7F161]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >Maybe it is a nice enhancement for make menuconfig to more explicitly
-> >give a pop-up or so when someone selects for example a sata controller
-> >while no 'scsi-disk' support was selected?
-> 
-> Having no sd support is perfectly valid. Imagine a diskless boot
-> with only sr support.
+>From: Andy Whitcroft [mailto:apw@shadowen.org] 
+>
+>Those two look suspect to checkpatch, and I have to agree with it.
+>
+>WARNING: Trailing semicolon indicates no statements, indent implies
+>otherwise
+>#346: FILE: drivers/dma/ioat_dma.c:168:
+>+               if (--cnt == 0);
+>+                       break;
+>WARNING: Trailing semicolon indicates no statements, indent implies
+>otherwise
+>#363: FILE: drivers/dma/ioat_dma.c:188:
+>+               if (--cnt == 0);
+>+                       break;
+>
+>-apw
+>
 
-Ok, but that's not the most common situaties. What I'm suggesting is a
-warning or a please note popup. Not neccessarily an error or refusing to
-continue thing.
+Ouch - how did I miss those?  Thanks!
 
-
-Folkert van Heusden
-
--- 
-www.vanheusden.com/multitail - win een vlaai van multivlaai! zorg
-ervoor dat multitail opgenomen wordt in Fedora Core, AIX, Solaris of
-HP/UX en win een vlaai naar keuze
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+sln
+--
+======================================================================
+Mr. Shannon Nelson                 LAN Access Division, Intel Corp.
+Shannon.Nelson@intel.com                I don't speak for Intel
+(503) 712-7659                    Parents can't afford to be squeamish.
