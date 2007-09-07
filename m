@@ -1,51 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965211AbXIGK2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965270AbXIGKar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965211AbXIGK2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 06:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965073AbXIGK2L
+	id S965270AbXIGKar (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 06:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965092AbXIGKaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 06:28:11 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:53738 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965027AbXIGK2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 06:28:10 -0400
-Date: Fri, 7 Sep 2007 15:58:05 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       prasanna@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       davem@davemloft.net
-Subject: Re: [patch 06/10] Text Edit Lock - kprobes architecture independent support
-Message-ID: <20070907102805.GA10389@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20070906200124.595238505@polymtl.ca> <20070906200212.399420921@polymtl.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 7 Sep 2007 06:30:35 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:63201 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965073AbXIGKad (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 06:30:33 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH 1/2][RESEND] ehea: propagate physical port state
+Date: Fri, 7 Sep 2007 12:30:17 +0200
+User-Agent: KMail/1.8.2
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20070906200212.399420921@polymtl.ca>
-User-Agent: Mutt/1.5.11
+To: Jeff Garzik <jeff@garzik.org>
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Message-Id: <200709071230.18395.ossthema@de.ibm.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 06, 2007 at 04:01:30PM -0400, Mathieu Desnoyers wrote:
+Introduces a module parameter to decide whether the physical
+port link state is propagated to the network stack or not.
+It makes sense not to take the physical port state into account
+on machines with more logical partitions that communicate
+with each other. This is always possible no matter what the physical
+port state is. Thus eHEA can be considered as a switch there.
 
-<snip>
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-> @@ -716,8 +720,9 @@ static int __kprobes pre_handler_kretpro
->  				 struct kretprobe_instance, uflist);
->  		ri->rp = rp;
->  		ri->task = current;
-> +		kernel_text_lock();
->  		arch_prepare_kretprobe(ri, regs);
-> -
-> +		kernel_text_unlock();
+---
+ drivers/net/ehea/ehea.h      |    5 ++++-
+ drivers/net/ehea/ehea_main.c |   14 +++++++++++++-
+ 2 files changed, 17 insertions(+), 2 deletions(-)
 
-pre_handler_kretprobe() is run when the entry probe for a retprobed
-function is hit and cannot block. You can't take a mutex here.
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index d67f97b..8d58be5 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -39,7 +39,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0073"
++#define DRV_VERSION	"EHEA_0074"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+@@ -402,6 +402,8 @@ struct ehea_mc_list {
+ 
+ #define EHEA_PORT_UP 1
+ #define EHEA_PORT_DOWN 0
++#define EHEA_PHY_LINK_UP 1
++#define EHEA_PHY_LINK_DOWN 0
+ #define EHEA_MAX_PORT_RES 16
+ struct ehea_port {
+ 	struct ehea_adapter *adapter;	 /* adapter that owns this port */
+@@ -427,6 +429,7 @@ struct ehea_port {
+ 	u32 msg_enable;
+ 	u32 sig_comp_iv;
+ 	u32 state;
++	u8 phy_link;
+ 	u8 full_duplex;
+ 	u8 autoneg;
+ 	u8 num_def_qps;
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index db57474..1e9fd6f 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -53,17 +53,21 @@ static int rq3_entries = EHEA_DEF_ENTRIES_RQ3;
+ static int sq_entries = EHEA_DEF_ENTRIES_SQ;
+ static int use_mcs = 0;
+ static int num_tx_qps = EHEA_NUM_TX_QP;
++static int prop_carrier_state = 0;
+ 
+ module_param(msg_level, int, 0);
+ module_param(rq1_entries, int, 0);
+ module_param(rq2_entries, int, 0);
+ module_param(rq3_entries, int, 0);
+ module_param(sq_entries, int, 0);
++module_param(prop_carrier_state, int, 0);
+ module_param(use_mcs, int, 0);
+ module_param(num_tx_qps, int, 0);
+ 
+ MODULE_PARM_DESC(num_tx_qps, "Number of TX-QPS");
+ MODULE_PARM_DESC(msg_level, "msg_level");
++MODULE_PARM_DESC(prop_carrier_state, "Propagate carrier state of physical "
++		 "port to stack. 1:yes, 0:no.  Default = 0 ");
+ MODULE_PARM_DESC(rq3_entries, "Number of entries for Receive Queue 3 "
+ 		 "[2^x - 1], x = [6..14]. Default = "
+ 		 __MODULE_STRING(EHEA_DEF_ENTRIES_RQ3) ")");
+@@ -814,7 +818,9 @@ int ehea_set_portspeed(struct ehea_port *port, u32 port_speed)
+ 			ehea_error("Failed setting port speed");
+ 		}
+ 	}
+-	netif_carrier_on(port->netdev);
++	if (!prop_carrier_state || (port->phy_link == EHEA_PHY_LINK_UP))
++		netif_carrier_on(port->netdev);
++
+ 	kfree(cb4);
+ out:
+ 	return ret;
+@@ -869,13 +875,19 @@ static void ehea_parse_eqe(struct ehea_adapter *adapter, u64 eqe)
+ 			}
+ 
+ 		if (EHEA_BMASK_GET(NEQE_EXTSWITCH_PORT_UP, eqe)) {
++			port->phy_link = EHEA_PHY_LINK_UP;
+ 			if (netif_msg_link(port))
+ 				ehea_info("%s: Physical port up",
+ 					  port->netdev->name);
++			if (prop_carrier_state)
++				netif_carrier_on(port->netdev);
+ 		} else {
++			port->phy_link = EHEA_PHY_LINK_DOWN;
+ 			if (netif_msg_link(port))
+ 				ehea_info("%s: Physical port down",
+ 					  port->netdev->name);
++			if (prop_carrier_state)
++				netif_carrier_off(port->netdev);
+ 		}
+ 
+ 		if (EHEA_BMASK_GET(NEQE_EXTSWITCH_PRIMARY, eqe))
+-- 
+1.5.2
 
-And why do we need to take the kernel_text_lock() here anyway? All
-arch_prepare_kretprobe() does is modify the return address stored either
-on stack or a register (arch specific) to the trampoline. We don't
-change any kernel text here.
-
-Ananth
