@@ -1,76 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965760AbXIGNGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965583AbXIGNM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965760AbXIGNGb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 09:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965395AbXIGNGA
+	id S965583AbXIGNM4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 09:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXIGNMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 09:06:00 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:63247 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965378AbXIGNF7 (ORCPT
+	Fri, 7 Sep 2007 09:12:48 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:48264 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965065AbXIGNMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 09:05:59 -0400
-Message-Id: <20070907130457.318201748@mai.lab.toulouse-stg.fr.ibm.com>
-References: <20070907130138.070393261@mai.lab.toulouse-stg.fr.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 07 Sep 2007 15:01:39 +0200
-From: dlezcano@fr.ibm.com
-To: linux-kernel@vger.kernel.org
-Subject: [GIT][patch 1/1] Fix some Kconfigs on net-2.6.24
-Content-Disposition: inline; filename=2.6-git-fix-Kconfig.patch
+	Fri, 7 Sep 2007 09:12:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YGfA2pt5DAAbCavVzx16u40sd29RV6dnUGa4gWGmDvKScm3K5pj5c9tsFNiq6MkcbcKtWVyWw1Z1aCaqb3M2lB+w+3+OVIIPxMvQF96gx6PdVx/AgTo/kjuS2M3AwigX5V8Vi8CCs2HYzgmMbA5BVtJX05qMzTEtdlVrGQK7tU0=
+Message-ID: <b6fcc0a0709070612t3d80ff6k982740cffe3abff1@mail.gmail.com>
+Date: Fri, 7 Sep 2007 17:12:46 +0400
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: "Marco Berizzi" <pupilla@hotmail.com>
+Subject: Re: EIP: [<c02d0069>] tcp_rto_min+0x8/0x12 SS:ESP 0068:c03bbd6c
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <BAY103-DAV19AEEDC8DA30835B958052B2C50@phx.gbl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <BAY103-DAV19AEEDC8DA30835B958052B2C50@phx.gbl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
+On 9/7/07, Marco Berizzi <pupilla@hotmail.com> wrote:
+> Linux 2.6.23-rc5 after 30 minutes crash with this
+> error message (taken from serial console):
 
-Three fixes for Kconfigs.
+> EIP is at tcp_rto_min+0x8/0x12
 
-Signed-off-by: Daniel Lezcano <dlezcano@fr.ibm.com>
-
----
- drivers/input/misc/Kconfig |    2 +-
- drivers/leds/Kconfig       |    2 +-
- drivers/telephony/Kconfig  |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
-Index: net-2.6.24/drivers/input/misc/Kconfig
-===================================================================
---- net-2.6.24.orig/drivers/input/misc/Kconfig
-+++ net-2.6.24/drivers/input/misc/Kconfig
-@@ -152,7 +152,7 @@
- 
- config INPUT_YEALINK
- 	tristate "Yealink usb-p1k voip phone"
--	depends EXPERIMENTAL
-+	depends on EXPERIMENTAL
- 	depends on USB_ARCH_HAS_HCD
- 	select USB
- 	help
-Index: net-2.6.24/drivers/leds/Kconfig
-===================================================================
---- net-2.6.24.orig/drivers/leds/Kconfig
-+++ net-2.6.24/drivers/leds/Kconfig
-@@ -83,7 +83,7 @@
- 
- config LEDS_H1940
- 	tristate "LED Support for iPAQ H1940 device"
--	depends LEDS_CLASS && ARCH_H1940
-+	depends on LEDS_CLASS && ARCH_H1940
- 	help
- 	  This option enables support for the LEDs on the h1940.
- 
-Index: net-2.6.24/drivers/telephony/Kconfig
-===================================================================
---- net-2.6.24.orig/drivers/telephony/Kconfig
-+++ net-2.6.24/drivers/telephony/Kconfig
-@@ -19,7 +19,7 @@
- 
- config PHONE_IXJ
- 	tristate "QuickNet Internet LineJack/PhoneJack support"
--	depends ISA || PCI
-+	depends on ISA || PCI
- 	---help---
- 	  Say M if you have a telephony card manufactured by Quicknet
- 	  Technologies, Inc.  These include the Internet PhoneJACK and
-
--- 
+get 2.6.23-rc5-git1, fix is in it.
+http://kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.23-rc5-git1.bz2
