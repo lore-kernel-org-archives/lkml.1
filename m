@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbXIHKWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbXIHKeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbXIHKWp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 06:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXIHKWi
+	id S1752789AbXIHKeq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 06:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbXIHKei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 06:22:38 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39577 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751867AbXIHKWh (ORCPT
+	Sat, 8 Sep 2007 06:34:38 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:39556 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751156AbXIHKeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 06:22:37 -0400
-Date: Sat, 8 Sep 2007 11:30:56 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
+	Sat, 8 Sep 2007 06:34:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=GQOHFOy8MrSuetwshZobxtS/zWiVoHseW59uK0SEwiMrHWzIZ64XCxtcqiCcjHyhYSBh691Jo6ZjIu8Vvlrn2xdicc5FepMcWHd16C3ZpkY3NlY0N/yIoYguWPhmd7OanAPsskaACqIIz92Lu7dx/jUYZw27KMvbD8EeGhjgPKw=  ;
+X-YMail-OSG: IBo0pm0VM1kdvm59v5f4z0I_32PXiDPxhziO36xtjUU.b9B6iQDa.v3sf1ptaxS_bv2Tsy9_BA--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andi Kleen <ak@suse.de>
 Subject: Re: Intel Memory Ordering White Paper
-Message-ID: <20070908113056.66fc97b7@the-village.bc.nu>
-In-Reply-To: <200709081854.57549.nickpiggin@yahoo.com.au>
-References: <200709071526.51169.jesse.barnes@intel.com>
-	<200709081854.57549.nickpiggin@yahoo.com.au>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Sat, 8 Sep 2007 06:32:05 +1000
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
+References: <200709071526.51169.jesse.barnes@intel.com> <200709080557.36021.nickpiggin@yahoo.com.au> <200709081219.43662.ak@suse.de>
+In-Reply-To: <200709081219.43662.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709080632.05389.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Sep 2007 18:54:57 +1000
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
-> On Saturday 08 September 2007 08:26, Jesse Barnes wrote:
-> > FYI, we just released a new white paper describing memory ordering for
-> > Intel processors:
-> > http://developer.intel.com/products/processor/manuals/index.htm
+On Saturday 08 September 2007 20:19, Andi Kleen wrote:
+> On Friday 07 September 2007 21:57:35 Nick Piggin wrote:
+> > > > Anyway, the lfence should be able to go away without so much trouble.
+> > >
+> > > You mean sfence? lfence in rmb is definitely needed.
 > >
-> > Should help answer some questions about some of the ordering primitives
-> > we use on i386 and x86_64.
-> 
-> So, can we finally noop smp_rmb and smp_wmb on x86?
+> > I mean lfence in smp_rmb().
+>
+> One point of rmb is to stop speculative loads and I don't think we
+> can get that without lfence.
 
-Nakked-by: Alan Cox <alan@redhat.com>
+smp_rmb() should not need to do anything because loads are done
+in order anyway. Both AMD and Intel have committed to this now.
 
-You can only no-op it on 64bit Intel processors. On 32bit it needs to be
-conditional on whether your processor family (or back compat for it) as
-the Pentium Pro has some serious store ordering errata (hence the way it
-needs lock decb for spin_unlock)
-
-Alan
+The important point is that they *appear* to be done in order. AFAIK,
+the CPUs can still do speculative and out of order loads, but throw
+out the results if they could be wrong.
