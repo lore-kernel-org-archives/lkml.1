@@ -1,94 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758836AbXIGVe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbXIGVl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758836AbXIGVe3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 17:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbXIGVeV
+	id S1758833AbXIGVl1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 17:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758597AbXIGVlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 17:34:21 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:36378 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751692AbXIGVeU (ORCPT
+	Fri, 7 Sep 2007 17:41:19 -0400
+Received: from smtp108.sbc.mail.re2.yahoo.com ([68.142.229.97]:48973 "HELO
+	smtp108.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758595AbXIGVlS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 17:34:20 -0400
+	Fri, 7 Sep 2007 17:41:18 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=vsZjhTQW3nOGq8RUoNp4o5DiYOvjC91PLbv0r5PVtkNClv0ZhyLPuHW2ReIk8R2cJxIelLRq27CY6hliGoI2qZpw1HxaHKNupK/gQjuQvIXDqDY8QosKiqwB+19UT+UUoMI2mFkW91dCMiUIOEyHbG1E/eB3/UZ04153dNJPFXQ=  ;
-X-YMail-OSG: Je6INTgVM1mZnp8uAUkpf9JhvDZ8wSS76jHwRVP6Eb1TLqaTDB98X3WqQdT89F0u1wULdOeVaw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
-Subject: Re: patch: improve generic_file_buffered_write() (2nd try 1/2)
-Date: Sat, 8 Sep 2007 17:31:50 +1000
-User-Agent: KMail/1.9.5
-Cc: Bernd Schubert <bs@q-leap.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
-       brian@clusterfs.com
-References: <200709051546.06224.bs@q-leap.de> <87d4wuch8y.fsf@informatik.uni-tuebingen.de> <200709081725.06343.nickpiggin@yahoo.com.au>
-In-Reply-To: <200709081725.06343.nickpiggin@yahoo.com.au>
+  s=s1024; d=pacbell.net;
+  h=Received:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=SKJBbmMoMmr/Nd/AMX4UjG2v5cSOuagqoeCpemOn5rXTDFgpJYvwRB4rXYMdtkIBKYCL196q+8fItIqVqMBgKfksR3OIF2CoSQqqynffBpIBqTD8SH3ca6g7flvoBsQEOSvHE7cCj38OlAcDVOUkum3nEfTRkGlivp05Q5AMyHg=  ;
+Date: Fri, 07 Sep 2007 14:41:15 -0700
+From: David Brownell <david-b@pacbell.net>
+To: hmh@hmh.eng.br
+Subject: Re: Platform device id
+Cc: linux-kernel@vger.kernel.org, khali@linux-fr.org, gregkh@suse.de,
+       dmitry.torokhov@gmail.com
+References: <20070907153559.17faf9d1@hyperion.delvare>
+ <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com>
+ <20070907164129.65816B9389@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+ <20070907210029.GB4357@khazad-dum.debian.net>
+In-Reply-To: <20070907210029.GB4357@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200709081731.51263.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20070907214116.5051B237214@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 08 September 2007 17:25, Nick Piggin wrote:
-> On Saturday 08 September 2007 07:12, Goswin von Brederlow wrote:
-> > Nick Piggin <nickpiggin@yahoo.com.au> writes:
-> > > On Saturday 08 September 2007 06:01, Goswin von Brederlow wrote:
-> > >>   b) a segment boundary
-> > >
-> > > This is done, as I said, because of the deadlock issue. While the issue
-> > > is more completely fixed in -mm, a special case for kernel memory (eg.
-> > > nfsd) is in the latest mainline kernels.
-> >
-> > Can you tell me where to get the fix from -mm? If it is completly
-> > fixed there then that could make our patch obsolete.
+> > For that matter, a *driver* should never create its own device node(s)
+> > in the first place.  Device creation belongs elsewhere, like as part of
+> > platform setup or, for busses with integral enumeration support like
+> > PCI or USB, bus glue.  Linux is moving away from that legacy model.
 >
-> In the latest -mm series file, they start at
-> mm-revert-kernel_ds-buffered-write-optimisation.patch
-> ...
-> and go to
-> ocfs2-convert-to-new-aops.patch
->
-> > >> What actually locks the page? Is it __grab_cache_page or
-> > >> a_ops->prepare_write?
-> > >
-> > > prepare_write must be given a locked page.
-> >
-> > Then that means __grab_cache_page does return a locked page because
-> > there is nothing between the two calls that would.
->
-> That's right.
->
-> > > No it would be included earlier. The "segment_eq" check should be
-> > > allowing kernel writes (nfsd) to write multiple segments. If you have a
-> > > patch which changes this significantly, then it would indicate the
-> > > existing logic has a problem (or you've got a userspace application
-> > > doing the writev, which should be fixed by the write_begin patches in
-> > > -mm).
-> >
-> > I've got userspace application doing the writev. To be exact 14% of
-> > the commits were saved by combining multiple segments into a single
-> > prepare/write pair. Since the kernel segments don't fragment anymore
-> > in 2.6.23-rc5 those savings must come from user space stuff.
-> >
-> > From the stats posted earlier you can see that there is a substantial
-> > amount of calls with 6 segments all (alot) smaller than a page. Lots
-> > of calls our patch or the write_begin/end will save.
->
-> OK. The write_begin/write_end patchset is intrusive, no question. I'm not
-> sure what you're intending to do with it. They have been tested in -mm for
-> quite a while now, but just going with a simple patch that tries to copy
-> more segments might be OK for you if you're backporting. The deadlock is
-> pretty uncommon.
+> This assumes that we have a better bus than "platform" to dump drivers like
+> thinkpad-acpi, hdaps, and a host of other host-specific stuff.
 
-Lustre should probably have to be ported over to write_begin/write_end in
-order to use it too. With the patches in -mm, if a filesystem is still using
-prepare_write/commit_write, the vm reverts to a safe path which avoids
-the deadlock (and allows multi-seg io copies), but copies the data twice.
+I don't follow.  If it's host-specific, then it's easy enough to
+have a host-specific routine creating those platform devices.
+A different host wouldn't call that routine.
 
-OTOH, this is very likely to go upstream, so your filesystem will need to be
-ported over sooner or later anyway.
+Embedded Linux platforms do that *ALL* the time.  ARM keys on a
+board ID provided early in boot (e.g. by U-Boot).  PowerPC uses
+a device tree, which ISTR evolved from the OpenBoot as first used
+on SPARC.  Worst comes to worst, the kernel command line can say
+which board is involved, and thus which setup code to run.
+
+(Also, note that "platform", "host", and "board" are ambiguous.
+In some contexts each is synonymous; in others, not.  I avoid
+using "host" except in the protocol sense.  Usually "board" is
+pretty specific -- this cpu, those peripherals -- although it
+gets messy when the system is really a board stack, or when the
+CPU may be socketed or be in a customizable FPGA etc.)
+
+
+> > I realize that may be more easily said than done in some cases,
+> > like i8042 on non-PNP systems.
+>
+> Yes, and there is a LOT of non-PNP stuff involved, since platform became the
+> dumping ground for host-specific devices (as opposed to platform-specific
+> devices).
+
+See above ... most embedded systems aren't x86, so lack of PNP is
+less of an issue than plain old legacy system designs -- designed
+in ways that complicate or prevent probe/discovery schemes, which
+gets to be a mess (like the one preceding PNP with DOS/x86/ISA).
+
+Less clear cases include orphaned drivers, especially ones for
+hardware that's on its way out or already obsolete.  Most folk
+don't want to touch those, for fear of getting stuck to them.  :)
+
+- Dave
+
