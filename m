@@ -1,106 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbXIGPjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932867AbXIGPn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758379AbXIGPjZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 11:39:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbXIGPjR
+	id S932867AbXIGPn3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 11:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932404AbXIGPnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 11:39:17 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:26705 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757509AbXIGPjQ (ORCPT
+	Fri, 7 Sep 2007 11:43:21 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40849 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932334AbXIGPnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 11:39:16 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=hRltS5Ax9UMiu0Z6MNuMVo6NiP1LDiLubrwBHGuspCAvfy6Dfe6aMEX0IRjJhQIzGlmDlu2trHEKin3utHOw0igPnM4UXlWndu7ScU+jbiF9iOylC0DfcnXxZ18tqWgs2QlEUjIyUT3F5nbq9cz1xmrMZFRmjIcX/Zburs7WhQY=  ;
-X-YMail-OSG: ZfI_7oEVM1mjF5I3le2SJCXTtGOvXpHCKrJUzzyV300team5Cs2X91Jsz5_xyWWSyqtlKS_sYw--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc4-mm1 compile error for ppc 32
-Date: Sat, 8 Sep 2007 11:36:46 +1000
-User-Agent: KMail/1.9.5
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org
-References: <20070906184011.GA1776@Krystal> <20070906160009.fa52e8d2.akpm@linux-foundation.org>
-In-Reply-To: <20070906160009.fa52e8d2.akpm@linux-foundation.org>
+	Fri, 7 Sep 2007 11:43:20 -0400
+Message-ID: <46E17002.1080706@sgi.com>
+Date: Fri, 07 Sep 2007 08:36:34 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709081136.46605.nickpiggin@yahoo.com.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] ppc64: Convert cpu_sibling_map to a per_cpu data
+ array
+References: <20070907040943.467530005@sgi.com> <20070907040944.380253345@sgi.com> <46E1337D.3090005@linux.vnet.ibm.com> <46E14B37.4030007@linux.vnet.ibm.com>
+In-Reply-To: <46E14B37.4030007@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 September 2007 09:00, Andrew Morton wrote:
-> > On Thu, 6 Sep 2007 14:40:11 -0400 Mathieu Desnoyers
-> > <mathieu.desnoyers@polymtl.ca> wrote: Hi Andrew,
-> >
-> > Guess what, another one ;)
-> >
-> >  
-> > /opt/crosstool/gcc-4.1.1-glibc-2.3.6/powerpc-405-linux-gnu/bin/powerpc-40
-> >5-linux-gnu-gcc -m32 -Wp,-MD,arch/ppc/kernel/.asm-offsets.s.d  -nostdinc
-> > -isystem
-> > /opt/crosstool/gcc-4.1.1-glibc-2.3.6/powerpc-405-linux-gnu/lib/gcc/powerp
-> >c-405-linux-gnu/4.1.1/include -D__KERNEL__ -Iinclude -Iinclude2
-> > -I/home/compudj/git/linux-2.6-lttng/include -include
-> > include/linux/autoconf.h -Iarch/ppc -Iarch/ppc/include
-> > -I/home/compudj/git/linux-2.6-lttng/. -I. -Wall -Wundef
-> > -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common
-> > -Werror-implicit-function-declaration -Os
-> > -I/home/compudj/git/linux-2.6-lttng/arch/ppc -Iarch/ppc -msoft-float
-> > -pipe -ffixed-r2 -mmultiple -mno-altivec -mstring -Wa,-m405
-> > -fomit-frame-pointer -g -fno-stack-protector
-> > -Wdeclaration-after-statement -Wno-pointer-sign  -D"KBUILD_STR(s)=#s"
-> > -D"KBUILD_BASENAME=KBUILD_STR(asm_offsets)" 
-> > -D"KBUILD_MODNAME=KBUILD_STR(asm_offsets)" -fverbose-asm -S -o
-> > arch/ppc/kernel/asm-offsets.s /home/compudj/git/linux-2.6-lttng/arc!
->
->  h/ppc/kernel/asm-offsets.c
->
-> > In file included from
-> > /home/compudj/git/linux-2.6-lttng/include/linux/bitops.h:17, from
-> > /home/compudj/git/linux-2.6-lttng/include/linux/kernel.h:15, from
-> > include2/asm/system.h:7,
-> >                  from
-> > /home/compudj/git/linux-2.6-lttng/include/linux/list.h:9, from
-> > /home/compudj/git/linux-2.6-lttng/include/linux/signal.h:8, from
-> > /home/compudj/git/linux-2.6-lttng/arch/ppc/kernel/asm-offsets.c:11:
-> > arch/ppc/include/asm/bitops.h: In function '__clear_bit_unlock':
-> > arch/ppc/include/asm/bitops.h:229: error: expected string literal before
-> > ':' token arch/ppc/include/asm/bitops.h:229: confused by earlier errors,
-> > bailing out make[2]: *** [arch/ppc/kernel/asm-offsets.s] Error 1
-> > make[1]: *** [prepare0] Error 2
-> > make: *** [_all] Error 2
->
-> What the heck is arch/ppc/include/asm/bitops.h?  I assume that it's
-> include/asm-powerpc/bitops.h via some wormhole.
->
->
-> If so, the finger points at this:
->
-> static __inline__ void __clear_bit_unlock(int nr, volatile unsigned long
-> *addr) {
-> 	__asm__ __volatile__(LWSYNC_ON_SMP ::: "memory");
-> 	__clear_bit(nr, addr);
-> }
->
-> which was added by Nick's powerpc-lock-bitops.patch.  I am suspecting that
-> this isn't pp32 code?
+Kamalesh Babulal wrote:
+> Kamalesh Babulal wrote:
+>> travis@sgi.com wrote:
+>>> Convert cpu_sibling_map to a per_cpu cpumask_t array for the ppc64
+>>> architecture.
+>>>
+>>> Note: these changes have not been built nor tested.
+>>>
+>>> Note: I also don't know if these changes are particularly
+>>> relevant for the ppc64 architecture.
+>>>
+>>> Signed-off-by: Mike Travis <travis@sgi.com>
+>>> ---
+>>>  arch/powerpc/kernel/setup-common.c        |    4 ++--
+>>>  arch/powerpc/kernel/smp.c                 |    4 ++--
+>>>  arch/powerpc/platforms/cell/cbe_cpufreq.c |    2 +-
+>>>  include/asm-powerpc/smp.h                 |    3 ++-
+>>>  include/asm-powerpc/topology.h            |    2 +-
+>>>  5 files changed, 8 insertions(+), 7 deletions(-)
+>>>
+>>> --- a/arch/powerpc/kernel/setup-common.c
+>>> +++ b/arch/powerpc/kernel/setup-common.c
+>>> @@ -415,9 +415,9 @@
+>>>       * Do the sibling map; assume only two threads per processor.
+>>>       */
+>>>      for_each_possible_cpu(cpu) {
+>>> -        cpu_set(cpu, cpu_sibling_map[cpu]);
+>>> +        cpu_set(cpu, cpu_sibling_map(cpu));
+>>>          if (cpu_has_feature(CPU_FTR_SMT))
+>>> -            cpu_set(cpu ^ 0x1, cpu_sibling_map[cpu]);
+>>> +            cpu_set(cpu ^ 0x1, cpu_sibling_map(cpu));
+>>>      }
+>>>
+>>>      vdso_data->processorCount = num_present_cpus();
+>>> --- a/arch/powerpc/kernel/smp.c
+>>> +++ b/arch/powerpc/kernel/smp.c
+>>> @@ -61,11 +61,11 @@
+>>>
+>>>  cpumask_t cpu_possible_map = CPU_MASK_NONE;
+>>>  cpumask_t cpu_online_map = CPU_MASK_NONE;
+>>> -cpumask_t cpu_sibling_map[NR_CPUS] = { [0 ... NR_CPUS-1] =
+>>> CPU_MASK_NONE };
+>>> +DEFINE_PER_CPU(cpumask_t, cpu_sibling_map) = CPU_MASK_NONE;
+>>>
+>>>  EXPORT_SYMBOL(cpu_online_map);
+>>>  EXPORT_SYMBOL(cpu_possible_map);
+>>> -EXPORT_SYMBOL(cpu_sibling_map);
+>>> +EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
+>>>
+>>>  /* SMP operations for this machine */
+>>>  struct smp_ops_t *smp_ops;
+>>> --- a/arch/powerpc/platforms/cell/cbe_cpufreq.c
+>>> +++ b/arch/powerpc/platforms/cell/cbe_cpufreq.c
+>>> @@ -117,7 +117,7 @@
+>>>      policy->cur = cbe_freqs[cur_pmode].frequency;
+>>>
+>>>  #ifdef CONFIG_SMP
+>>> -    policy->cpus = cpu_sibling_map[policy->cpu];
+>>> +    policy->cpus = cpu_sibling_map(policy->cpu);
+>>>  #endif
+>>>
+>>>      cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
+>>> --- a/include/asm-powerpc/smp.h
+>>> +++ b/include/asm-powerpc/smp.h
+>>> @@ -58,7 +58,8 @@
+>>>                      (smp_hw_index[(cpu)] = (phys))
+>>>  #endif
+>>>
+>>> -extern cpumask_t cpu_sibling_map[NR_CPUS];
+>>> +DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
+>>> +#define cpu_sibling_map(cpu) per_cpu(cpu_sibling_map, cpu)
+>>>
+>>>  /* Since OpenPIC has only 4 IPIs, we use slightly different message
+>>> numbers.
+>>>   *
+>>> --- a/include/asm-powerpc/topology.h
+>>> +++ b/include/asm-powerpc/topology.h
+>>> @@ -108,7 +108,7 @@
+>>>  #ifdef CONFIG_PPC64
+>>>  #include <asm/smp.h>
+>>>
+>>> -#define topology_thread_siblings(cpu)    (cpu_sibling_map[cpu])
+>>> +#define topology_thread_siblings(cpu)    (cpu_sibling_map(cpu))
+>>>  #endif
+>>>  #endif
+>>>
+>>>
+>>>   
+>> Hi Mike,
+>>
+>> After applying the patch, the build fails with following error
+>>
+>> CHK include/linux/version.h
+>> CHK include/linux/utsrelease.h
+>> CC arch/powerpc/kernel/asm-offsets.s
+>> In file included from include/linux/smp.h:19,
+>> from include/linux/topology.h:33,
+>> from include/linux/mmzone.h:660,
+>> from include/linux/gfp.h:4,
+>> from include/linux/slab.h:14,
+>> from include/linux/percpu.h:5,
+>> from include/asm/time.h:18,
+>> from include/asm/cputime.h:26,
+>> from include/linux/sched.h:65,
+>> from arch/powerpc/kernel/asm-offsets.c:17:
+>> include/asm/smp.h:61: error: expected declaration specifiers or ‘...’
+>> before ‘cpu_sibling_map’
+>> include/asm/smp.h:61: warning: data definition has no type or storage
+>> class
+>> include/asm/smp.h:61: warning: type defaults to ‘int’ in declaration
+>> of ‘DECLARE_PER_CPU’
+>> make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
+>> make: *** [prepare0] Error 2
+>>
+>> Thanks & Regards,
+>> Kamalesh Babulal.
+> Hi Make,
+> 
+> I tried to debug and probably the patch below could help the build error
+> 
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> ----
+> 
+> --- a/include/asm-powerpc/smp.h 2007-09-07 18:15:43.000000000 +0530
+> +++ b/include/asm-powerpc/smp.h 2007-09-07 18:16:02.000000000 +0530
+> @@ -25,6 +25,7 @@
+> 
+> #ifdef CONFIG_PPC64
+> #include <asm/paca.h>
+> +#include <asm/percpu.h>
+> #endif
+> 
+> extern int boot_cpuid;
+> 
+> ---
+> Thanks & Regards,
+> Kamalesh Babulal.
+> 
+> 
+> 
 
-Hmm, when LWSYNC_ON_SMP is a noop, it seems like it should probably
-be an empty string instead of nothing? ("") That should make behaviour
-more consistent I think.
+Thanks!   I'll merge the above in...
 
-Ben?
-
-
-> (what's with the newly-added old-style __inline__, btw?  That's just more
-> stuff we need to clean up later, so there doesn't seem much point in adding
-> it).
-
-Consistency really. Otherwise people ask why I've done it differently :P I
-don't suppose it makes a future cleanup any harder, while giving a better
-result until then.
+Mike
