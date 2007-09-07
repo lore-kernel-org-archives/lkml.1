@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbXIHQPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753969AbXIHQVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbXIHQPz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 12:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbXIHQPq
+	id S1753969AbXIHQVa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 12:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbXIHQVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 12:15:46 -0400
-Received: from homer.mvista.com ([63.81.120.158]:47073 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753153AbXIHQPq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 12:15:46 -0400
-Subject: Re: [PATCH] net: myri10ge: force select inet_lro
-From: Daniel Walker <dwalker@mvista.com>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070908.012214.41650322.davem@davemloft.net>
-References: <20070907202625.702755508@mvista.com>
-	 <20070908.012214.41650322.davem@davemloft.net>
-Content-Type: text/plain
-Date: Sat, 08 Sep 2007 09:03:06 -0700
-Message-Id: <1189267386.9688.28.camel@imap.mvista.com>
+	Sat, 8 Sep 2007 12:21:23 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1593 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753295AbXIHQVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 12:21:22 -0400
+Date: Fri, 7 Sep 2007 12:24:37 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Rik van Riel <riel@redhat.com>
+Cc: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, akpm@linux-foundation.org,
+       safari-kernel@safari.iki.fi
+Subject: Re: [PATCH] prevent kswapd from freeing excessive amounts of lowmem
+Message-ID: <20070907122437.GC3901@ucw.cz>
+References: <46DF3545.4050604@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46DF3545.4050604@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-09-08 at 01:22 -0700, David Miller wrote:
-> From: Daniel Walker <dwalker@mvista.com>
-> Date: Fri, 07 Sep 2007 13:26:25 -0700
+Hi!
+
+> The current VM can get itself into trouble fairly easily 
+> on systems
+> with a small ZONE_HIGHMEM, which is common on i686 
+> computers with
+> 1GB of memory.
 > 
-> > This driver uses the inet_lro facilities , but it doesn't force it
-> > to be enabled .. Someone would have to know to enable inet_lro if
-> > they select the driver .. 
-> > 
-> > Instead, just force INET_LRO if this driver is selected..
-> > 
-> > Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> On one side, page_alloc() will allocate down to 
+> zone->pages_low,
+> while on the other side, kswapd() and balance_pgdat() 
+> will try
+> to free memory from every zone, until every zone has 
+> more free
+> pages than zone->pages_high.
 > 
-> I put this exact fix into the net-2.6.24 tree several days ago
-> already, it's not nice that you didn't even bother checking.
-
-Sorry..
-
-> When I saw the response to the help@ address, I could almost predict
-> that the myri10ge developers would not even check if net-2.6.24 had
-> the issue cured already.
+> Highmem can be filled up to zone->pages_low with page 
+> tables,
+> ramfs, vmalloc allocations and other unswappable things 
+> quite
+> easily and without many bad side effects, since we still 
+> have
+> a huge ZONE_NORMAL to do future allocations from.
 > 
-> Therefore, your patch doesn't even apply to the tree where it is
-> relevant.  That sucks.
+> However, as long as the number of free pages in the 
+> highmem
+> zone is below zone->pages_high, kswapd will continue 
+> swapping
+> things out from ZONE_NORMAL, too!
+> 
+> Sami Farin managed to get his system into a stage where 
+> kswapd
+> had freed about 700MB of low memory and was still "going 
+> strong".
+> 
+> The attached patch will make kswapd stop paging out data 
+> from
+> zones when there is more than enough memory free.  We do 
+> go above
+> zone->pages_high in order to keep pressure between zones 
+> equal
+> in normal circumstances, but the patch should prevent 
+> the kind
+> of excesses that made Sami's computer totally unusable.
+> 
+> Please merge this into -mm.
+> 
+> Signed-off-by: Rik van Riel <riel@redhat.com>
 
-Not sure what the help@ address is ? I'm just trying to fix problems I
-find .. This problem is in -mm which is what I was using. The driver is
-pretty obscure, and I just assumed not many people would be building it.
-So I didn't check for fixes in git ..
+> --- linux-2.6.22.noarch/mm/vmscan.c.excessive	2007-09-05 12:19:49.000000000 -0400
+> +++ linux-2.6.22.noarch/mm/vmscan.c	2007-09-05 12:21:40.000000000 -0400
+> @@ -1371,7 +1371,13 @@ loop_again:
+>  			temp_priority[i] = priority;
+>  			sc.nr_scanned = 0;
+>  			note_zone_scanning_priority(zone, priority);
+> -			nr_reclaimed += shrink_zone(priority, zone, &sc);
+> +			/*
+> +			 * We put equal pressure on every zone, unless one
+> +			 * zone has way too many pages free already.
+> +			 */
 
-Did your fix go to LKML ?
+That does not seem right. Having empty HIGHMEM and full LOWMEM would
+be very bad, right? We may stop freeing when there's enough LOWMEM
+free, but not if there's only HIGHMEM free.
 
-Daniel
+							Pavel
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
