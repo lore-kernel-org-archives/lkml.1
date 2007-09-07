@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965627AbXIGUiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbXIGU5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965627AbXIGUiS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 16:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXIGUiH
+	id S1758674AbXIGU5S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 16:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758428AbXIGU5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 16:38:07 -0400
-Received: from mga11.intel.com ([192.55.52.93]:39339 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751722AbXIGUiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 16:38:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,222,1186383600"; 
-   d="scan'208";a="128411174"
-Date: Sat, 8 Sep 2007 13:50:45 -0700
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: akpm@osdl.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: suresh.b.siddha@intel.com
-Subject: [patch] Fix BIOS-e820 end address
-Message-ID: <20070908205044.GA16419@askeshav-devel.jf.intel.com>
-Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Mime-Version: 1.0
+	Fri, 7 Sep 2007 16:57:07 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:36646 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758420AbXIGU5G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 16:57:06 -0400
+X-Sasl-enc: 9d+e3+ulyExLghPDdNGKdcVLf/R/7EbRpv36AThiMxJ3 1189198623
+Date: Fri, 7 Sep 2007 17:56:59 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Jean Delvare <khali@linux-fr.org>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: Platform device id
+Message-ID: <20070907205659.GA4357@khazad-dum.debian.net>
+References: <20070907153559.17faf9d1@hyperion.delvare> <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [patch] Fix BIOS-e820 end address
+On Fri, 07 Sep 2007, Dmitry Torokhov wrote:
+> On 9/7/07, Jean Delvare <khali@linux-fr.org> wrote:
+> > To go one step further, I am questioning the real value of this naming
+> > exception for these "unique" platform devices. On top of the bugs I
+> > mentioned above, it has potential for compatibility breakage: adding a
 
---snip of boot message--
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 00000000000a0000 (usable)
- BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000007fe8cc00 (usable)
-----end snip---
+Agreed.  But the breakage might happen anyway, if you need to move
+attributes from foo.0 to foo.1.  After that first time, userspace will learn
+to hunt down all foo.* after what it wants, but still...
 
-As you see from above the address 0000000000100000 is both
-shown as reserved and usable which is confusing.
+> If a device has a <name>.<instance> scheme this implies possibility of
+> having several instances of said device in a box. There are a few of
 
-This patch fixes the BIOS-e820 end address.
+No, it doesn't. It allows for, but it does not imply anything.
 
-Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-
----
- arch/i386/kernel/e820.c   |    2 +-
- arch/x86_64/kernel/e820.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-Index: work/arch/i386/kernel/e820.c
-===================================================================
---- work.orig/arch/i386/kernel/e820.c	2007-09-08 12:00:33.000000000 -0700
-+++ work/arch/i386/kernel/e820.c	2007-09-08 13:39:12.000000000 -0700
-@@ -753,7 +753,7 @@
- 	for (i = 0; i < e820.nr_map; i++) {
- 		printk(" %s: %016Lx - %016Lx ", who,
- 			e820.map[i].addr,
--			e820.map[i].addr + e820.map[i].size);
-+			e820.map[i].addr + e820.map[i].size - 1);
- 		switch (e820.map[i].type) {
- 		case E820_RAM:	printk("(usable)\n");
- 				break;
-Index: work/arch/x86_64/kernel/e820.c
-===================================================================
---- work.orig/arch/x86_64/kernel/e820.c	2007-09-08 12:00:46.000000000 -0700
-+++ work/arch/x86_64/kernel/e820.c	2007-09-08 13:38:57.000000000 -0700
-@@ -368,7 +368,7 @@
- 	for (i = 0; i < e820.nr_map; i++) {
- 		printk(KERN_INFO " %s: %016Lx - %016Lx ", who,
- 			(unsigned long long) e820.map[i].addr,
--			(unsigned long long) (e820.map[i].addr + e820.map[i].size));
-+			(unsigned long long) (e820.map[i].addr + e820.map[i].size - 1));
- 		switch (e820.map[i].type) {
- 		case E820_RAM:	printk("(usable)\n");
- 				break;
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
