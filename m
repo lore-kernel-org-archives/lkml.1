@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965636AbXIGTUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932913AbXIGTcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965636AbXIGTUG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 15:20:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbXIGTTw
+	id S932913AbXIGTcg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 15:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758158AbXIGTc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 15:19:52 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:37879 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751071AbXIGTTv (ORCPT
+	Fri, 7 Sep 2007 15:32:28 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52173 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752110AbXIGTc2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 15:19:51 -0400
-Subject: Re: BUG: scheduling while atomic: ifconfig/0x00000002/4170
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: paulmck@linux.vnet.ibm.com, Herbert Xu <herbert@gondor.apana.org.au>,
-       satyam@infradead.org, flo@rfc822.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       michal.k.k.piotrowski@gmail.com, ipw3945-devel@lists.sourceforge.net,
-       yi.zhu@intel.com, flamingice@sourmilk.net
-In-Reply-To: <200709071801.34909.mb@bu3sch.de>
-References: <E1ITGb2-0006Be-00@gondolin.me.apana.org.au>
-	 <20070906154612.GD8030@linux.vnet.ibm.com>
-	 <1189171635.28781.134.camel@johannes.berg>
-	 <200709071801.34909.mb@bu3sch.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qm8tG29p0YzHqNLT+RI2"
-Date: Fri, 07 Sep 2007 21:17:50 +0200
-Message-Id: <1189192671.28781.191.camel@johannes.berg>
+	Fri, 7 Sep 2007 15:32:28 -0400
+Date: Fri, 7 Sep 2007 20:31:59 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Theodore Tso <tytso@mit.edu>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/6] Linux Kernel Markers - Architecture Independent Code
+Message-ID: <20070907193159.GA3023@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Valdis.Kletnieks@vt.edu, Theodore Tso <tytso@mit.edu>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	mathieu.desnoyers@polymtl.ca, linux-kernel@vger.kernel.org
+References: <20070906200733.194442762@polymtl.ca> <20070906200825.893834634@polymtl.ca> <20070906160001.cfe48d78.randy.dunlap@oracle.com> <20070906160429.629c9497.akpm@linux-foundation.org> <20070906163737.9cc91307.randy.dunlap@oracle.com> <20070907160445.GB8911@thunk.org> <6791.1189185054@turing-police.cc.vt.edu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6791.1189185054@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Sep 07, 2007 at 01:10:54PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> Anybody got a proposed scheme for the case where somebody like myself
+> who is *not* a member of the Maintainer Cabal has looked at a patch, and
+> found a valid show-stopper that's bigger than just whitespace (breaks on
+> 64-bit, locking issues, etc), or other commentary that *should* be addressed
+> before it gets merged?  I'd like *some* way to tag a patch with "I had an
+> issue with V1, but the author addressed it to my satisfaction in V2"....
+> 
+> (Note that includes "the author convinced me the patch was right and I was
+> wrong"...)
 
---=-qm8tG29p0YzHqNLT+RI2
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I think that'd be Reviewed-By.  While you are not part of the smokey room
+cabal you have shown technical expertise in various areas so it seems
+perfectly fine to have reviewed-by from you.  The fix vs a previous version
+should probably be just in the text with a paragraph ala:
 
-On Fri, 2007-09-07 at 18:01 +0200, Michael Buesch wrote:
-
-> What's the problem with trying to lock it?
-
-I think I had a problem with it once when I inserted it into some code
-that was atomic and it all blew up badly ;) Nothing important really but
-it sort of made me not like it much.
-
-johannes
-
---=-qm8tG29p0YzHqNLT+RI2
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBG4aPe/ETPhpq3jKURAjYfAJ9HadGEto39HmJSGYkB5drHHTJMnQCeIkoW
-b3tas7IMlLzntMI/l/eOg/I=
-=9P2b
------END PGP SIGNATURE-----
-
---=-qm8tG29p0YzHqNLT+RI2--
-
+Issue blah in a previous version as found by Valdis Kletnieks has been fixed
+by doing foo.
