@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932848AbXIGTix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933023AbXIGTjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932848AbXIGTix (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 15:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbXIGTim
+	id S933023AbXIGTjm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 15:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbXIGTjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 15:38:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44457 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758187AbXIGTil (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 15:38:41 -0400
-Date: Fri, 7 Sep 2007 20:38:36 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Bernd Schubert <bs@q-leap.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2][RESEND] improve generic_file_buffered_write()
-Message-ID: <20070907193836.GB3023@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Bernd Schubert <bs@q-leap.de>, linux-kernel@vger.kernel.org
-References: <200709072052.48396.bs@q-leap.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709072052.48396.bs@q-leap.de>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 7 Sep 2007 15:39:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38013 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758216AbXIGTjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 15:39:32 -0400
+Message-ID: <46E1A8ED.8090104@redhat.com>
+Date: Fri, 07 Sep 2007 15:39:25 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, Valdis.Kletnieks@vt.edu,
+       jakub@redhat.com, Ulrich Drepper <drepper@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc3-mm1 - vdso and gettimeofday issues with glibc
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <20070829161545.9fde1a5c.akpm@linux-foundation.org> <46D6F0C1.9080404@redhat.com> <200709011207.58201.ak@suse.de>
+In-Reply-To: <200709011207.58201.ak@suse.de>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 07, 2007 at 08:52:38PM +0200, Bernd Schubert wrote:
-> No further response to our patches yet, so we are sending them again, 
-> re-diffed against 2.6.23-rc5
+On 09/01/2007 06:07 AM, Andi Kleen wrote:
+>>         write_seqlock_irqsave(&vsyscall_gtod_data.lock, flags);
+>>         /* copy vsyscall data */
+>>         vsyscall_gtod_data.clock.vread = clock->vread;
+>>         vsyscall_gtod_data.clock.cycle_last = clock->cycle_last;
+>>         vsyscall_gtod_data.clock.mask = clock->mask;
+>>         vsyscall_gtod_data.clock.mult = clock->mult;
+>>         vsyscall_gtod_data.clock.shift = clock->shift;
+>>         vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
+>>         vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;  <===
+>>         vsyscall_gtod_data.sys_tz = sys_tz;
+>>         vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;  <===
 > 
-> Hi,
+> Must have been a (harmless) merging mistake, but I bet gcc optimizes it out
+> anyways.
 > 
-> recently we discovered writing to a nfs-exported lustre filesystem is rather 
-> slow (20-40 MB/s writing, but over 200 MB/s reading).
-> 
-> As I already explained on the nfs mailing list, this happens since there is an 
-> offset on the very first page due to the nfs header.
-> 
-> http://sourceforge.net/mailarchive/forum.php?thread_name=200708312003.30446.bernd-schubert%40gmx.de&forum_name=nfs
-> 
-> While this especially effects lustre, Olaf Kirch also noticed it on another 
-> filesystem before and wrote a nfs patch for it. This patch has two 
-> disadvantages  - it requires to move all data within the pages, IMHO rather 
-> cpu time consuming, furthermore, it presently causes data corruption when 
-> more than one nfs thread is running.
-> 
-> After thinking it over and over again we (Goswin and I) believe it would be 
-> best to improve generic_file_buffered_write().
-> If there is sufficient data now, as it is usual for aio writes, 
-> generic_file_buffered_write() will now fill each page as much as possible and 
-> only then prepare/commit it. Before generic_file_buffered_write() commited 
-> chunks of pages even though there were still more data.
 
-While the idea is sound in general the code your touching is almost entirely
-gone in -mm and hopefully in 2.6.24.  Can you take a look at the Nick's changes
-in -mm that introduce  begin_write and end_write methods replacing prepare_write
-and commit_write and see if they improve your situation already.  If not they
-should at least provide a framework to deal with it in a slightly cleaner way.
+I did find this after some digging:
+
+
+In the vdso code:
+
+static inline long vgetns(void)
+{
+        cycles_t (*vread)(void);
+        vread = gtod->clock.vread;
+        return ((vread() - gtod->clock.cycle_last) * gtod->clock.mult) >>
+                gtod->clock.shift;
+}
+
+
+Looks like an open-coded version of this in the kernel timekeeping code:
+
+static inline s64 __get_nsec_offset(void)
+{
+        cycle_t cycle_now, cycle_delta;
+        s64 ns_offset;
+
+        /* read clocksource: */
+        cycle_now = clocksource_read(clock);
+
+        /* calculate the delta since the last update_wall_time: */
+        cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
+
+        /* convert to nanoseconds: */
+        ns_offset = cyc2ns(clock, cycle_delta);
+
+        return ns_offset;
+}
+
+But the vdso version isn't doing any masking. And the mask is different for
+different clocksources, so it has to track the underlying kernel's clocksource
+when it gets changed.
 
