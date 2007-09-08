@@ -1,41 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbXIHMCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbXIHMI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753328AbXIHMCm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 08:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbXIHMCd
+	id S1753360AbXIHMI7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 08:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbXIHMIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 08:02:33 -0400
-Received: from h155.mvista.com ([63.81.120.155]:49200 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751532AbXIHMCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 08:02:32 -0400
-Message-ID: <46E2900D.5010004@ru.mvista.com>
-Date: Sat, 08 Sep 2007 16:05:33 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sat, 8 Sep 2007 08:08:52 -0400
+Received: from mailgw.cvut.cz ([147.32.3.235]:58734 "EHLO mailgw.cvut.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751541AbXIHMIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 08:08:51 -0400
+Message-ID: <46E290D3.10304@vc.cvut.cz>
+Date: Sat, 08 Sep 2007 05:08:51 -0700
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.6) Gecko/20070802 Iceape/1.1.4 (Debian-1.1.4-1)
 MIME-Version: 1.0
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] ide: make ide_rate_filter() also respect PIO and
- SW/MW DMA mode masks (take 2)
-References: <200709022344.18565.sshtylyov@ru.mvista.com>
-In-Reply-To: <200709022344.18565.sshtylyov@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: dean gaudet <dean@arctic.org>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>, ak@suse.de,
+       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: Intel Memory Ordering White Paper
+References: <200709071526.51169.jesse.barnes@intel.com> <alpine.LFD.0.999.0709080020040.9047@evo.linux-foundation.org> <200709090334.27677.nickpiggin@yahoo.com.au> <200709090348.28076.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709080429420.27088@twinlark.arctic.org>
+In-Reply-To: <Pine.LNX.4.64.0709080429420.27088@twinlark.arctic.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Once I quothed:
+dean gaudet wrote:
+> On Sun, 9 Sep 2007, Nick Piggin wrote:
+> 
+>> I've also heard that string operations do not follow the normal ordering, but
+>> that's just with respect to individual loads/stores in the one operation, I
+>> hope? And they will still follow ordering rules WRT surrounding loads and
+>> stores?
+> 
+> see section 7.2.3 of intel volume 3A...
+> 
+> "Code dependent upon sequential store ordering should not use the string 
+> operations for the entire data structure to be stored. Data and semaphores 
+> should be separated. Order dependent code should use a discrete semaphore 
+> uniquely stored to after any string operations to allow correctly ordered 
+> data to be seen by all processors."
+> 
+> i think we need sfence after things like copy_page, clear_page, and 
+> possibly copy_user... at least on intel processors with fast strings 
+> option enabled.
 
-> Make ide_rate_filter() also respect PIO/SWDMA/MWDMA mode masks.  While at it,
-> make the udma_filter() method calls take precedence over using the mode masks.
+I do not think.  I believe that authors are trying to say that
 
-    This one not looking to pretty -- I've geve some thought on how to 
-beautify all these switch fallthoughs but haven't got something much better 
-then uour original approach (AKA Occam's razor :-).
+struct { uint8 lock; uint8 data; } x;
 
-> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+lea (x.data),%edi
+mov $2,%ecx
+std
+rep movsb
 
-Farewell!
+to set both data and lock does not guarantee that x.lock will be set 
+after x.data and that you should do
+
+lea (x.data),%edi
+std
+movsb
+movsb  # or mov (%esi),%al; mov %al,(%edi), but movsb looks discrete 
+enough to me
+
+instead (and yes, I know that my example is silly).
+							Petr
+
