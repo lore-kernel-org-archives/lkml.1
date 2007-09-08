@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031AbXIHEMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbXIHEOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752031AbXIHEMo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 00:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750713AbXIHEMh
+	id S1752299AbXIHEOk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 00:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbXIHEOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 00:12:37 -0400
-Received: from [212.12.190.17] ([212.12.190.17]:32903 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750720AbXIHEMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 00:12:36 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Why do so many machines need "noapic"?
-Date: Sat, 8 Sep 2007 07:12:51 +0300
-User-Agent: KMail/1.5
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Sat, 8 Sep 2007 00:14:32 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:1510 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750713AbXIHEOb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 00:14:31 -0400
+Date: Sat, 8 Sep 2007 12:14:23 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Bob Gilligan <gilligan@vyatta.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: [PATCH] crypto: blkcipher_get_spot() handling of buffer at end of page
+Message-ID: <20070908041423.GA8961@gondor.apana.org.au>
+References: <5562608.649291189210157514.JavaMail.root@tahiti.vyatta.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709080712.51339.a1426z@gawab.com>
+In-Reply-To: <5562608.649291189210157514.JavaMail.root@tahiti.vyatta.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> On 09/06/2007 07:31 AM, Andi Kleen wrote:
-> > Chuck Ebbert <cebbert@redhat.com> writes:
-> >> Some systems lock up without the noapic option.
-> >
-> > Please find patterns: cpu type, chipsets, mainboard vendors etc.
+On Fri, Sep 07, 2007 at 05:09:17PM -0700, Bob Gilligan wrote:
 >
-> This is the first one I've actually had in front of me:
->
->   HP TX1000 notebook
->   Nvidia C51/MCP51 mobile chipset
->
-> Booting with "noapic" gives some very strange results. This is two
-> snapshots of /proc/interrupts taken one second apart. It almost looks
-> like timer interrupts are occurring on IRQ 0 and IRQ7 on different
-> CPUs:
->
->            CPU0       CPU1
->   0:     446096       6224    XT-PIC-XT        timer
->   1:        342          6    XT-PIC-XT        i8042
->   2:          0          0    XT-PIC-XT        cascade
->   5:       3099        865    XT-PIC-XT        sata_nv
->   7:       8145     494718    XT-PIC-XT        ehci_hcd:usb2
->   8:          0          0    XT-PIC-XT        rtc0
->   9:        323          9    XT-PIC-XT        acpi
->  10:        136         36    XT-PIC-XT        HDA Intel
->  11:      43884       1091    XT-PIC-XT        ohci_hcd:usb1, eth0
->  12:        104         19    XT-PIC-XT        i8042
->  14:       1011         25    XT-PIC-XT        libata
->  15:          0          0    XT-PIC-XT        libata
-> NMI:          0          0
-> LOC:       6212     445951
-> ERR:     403241
-> MIS:          0
+> Proposed patch is below.  We found the problem and tested this fix in
+> 2.6.20, but it looks like the relevant code in blkcipher.c is the same
+> in the latest tree.
 
-You may want to try to reconfigure your bios to reserve irq 5/7 for isa only.
+Good catch!
 
-Then post /proc/interrupts again.
+I've fixed this slightly differently.  Also, the kmalloc size
+in the case where it does straddle a page isn't enough either.
 
+[CRYPTO] blkcipher: Fix handling of kmalloc page straddling
 
-Thanks!
+The function blkcipher_get_spot tries to return a buffer of
+the specified length that does not straddle a page.  It has
+an off-by-one bug so it may advance a page unnecessarily.
 
+What's worse, one of its callers doesn't provide a buffer
+that's sufficiently long for this operation.
+
+This patch fixes both problems.  Thanks to Bob Gilligan for
+diagnosing this problem and providing a fix.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
 --
-Al
-
+diff --git a/crypto/blkcipher.c b/crypto/blkcipher.c
+index 7755834..469cb7f 100644
+--- a/crypto/blkcipher.c
++++ b/crypto/blkcipher.c
+@@ -59,11 +59,13 @@ static inline void blkcipher_unmap_dst(struct blkcipher_walk *walk)
+ 	scatterwalk_unmap(walk->dst.virt.addr, 1);
+ }
+ 
++/* Get a spot of the specified length that does not straddle a page.
++ * The caller needs to ensure that there is enough space for this operation.
++ */
+ static inline u8 *blkcipher_get_spot(u8 *start, unsigned int len)
+ {
+-	if (offset_in_page(start + len) < len)
+-		return (u8 *)((unsigned long)(start + len) & PAGE_MASK);
+-	return start;
++	u8 *end_page = (u8 *)(((unsigned long)(start + len - 1)) & PAGE_MASK);
++	return start < end_page ? start : end_page;
+ }
+ 
+ static inline unsigned int blkcipher_done_slow(struct crypto_blkcipher *tfm,
+@@ -155,7 +157,8 @@ static inline int blkcipher_next_slow(struct blkcipher_desc *desc,
+ 	if (walk->buffer)
+ 		goto ok;
+ 
+-	n = bsize * 2 + (alignmask & ~(crypto_tfm_ctx_alignment() - 1));
++	n = bsize * 3 - (alignmask + 1) +
++	    (alignmask & ~(crypto_tfm_ctx_alignment() - 1));
+ 	walk->buffer = kmalloc(n, GFP_ATOMIC);
+ 	if (!walk->buffer)
+ 		return blkcipher_walk_done(desc, walk, -ENOMEM);
