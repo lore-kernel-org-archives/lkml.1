@@ -1,60 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbXIHKwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbXIHLMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753382AbXIHKwe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 06:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1749667AbXIHKw0
+	id S1753008AbXIHLMp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 07:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXIHLMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 06:52:26 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:42031 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751156AbXIHKwZ (ORCPT
+	Sat, 8 Sep 2007 07:12:35 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:46093 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751568AbXIHLMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 06:52:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=xiITumfA8Y+jmVx49oMu0hoJ4vvRqSkHcSPKh8kgqzIXrwgC9mbM2AZSAr/13s3v3zThBpG+piCFuC8N5fJVgfpH1Au0cX2LhqrNpFXHBDN4a5Kxx7tBvwSLRxqNfzYUuQBPpkg4IqCMxhLzokemyOB/Ha9aO0K/eG5DxVEiBc4=  ;
-X-YMail-OSG: T72W.w4VM1mTaRpPeLtu.oj69BfUIu3NAnkJ7jIfcnoKz74WZAswndSIey4PiyZA4W61dL_ogbPlKEHUmydn3Q2gO_9pyY2KHKkB
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Intel Memory Ordering White Paper
-Date: Sat, 8 Sep 2007 06:49:53 +1000
-User-Agent: KMail/1.9.5
-Cc: Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
-References: <200709071526.51169.jesse.barnes@intel.com> <20070908112922.3fd41adc@the-village.bc.nu>
-In-Reply-To: <20070908112922.3fd41adc@the-village.bc.nu>
+	Sat, 8 Sep 2007 07:12:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=oBbSLpgoDcK9/ht8Gxxfb/MROGDHXg+1pKYmpgEi2q1fkyj6JPm+kpCdp139o6K7l/NcRcuOGl9atDRNuKj/48rxuv8qrp3kbZSFYwOqGirFYlaIA63xFytsSinhz1rTdt1kVcwUpBTkp7eDEI43gRcrDh3V47/4vXuKws+8ocY=
+Message-ID: <46E28343.1030002@googlemail.com>
+Date: Sat, 08 Sep 2007 13:10:59 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, linux-alpha@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Stefan Becker <Stefan.Becker@nokia.com>, Andi Kleen <ak@suse.de>,
+       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
+       Pavel Machek <pavel@ucw.cz>, "" <tglx@linutronix.de>,
+       Jakub Jelinek <jakub@redhat.com>, Jeff Dike <jdike@linux.intel.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       Adrian Bunk <bunk@kernel.org>
+Subject: [1/4] 2.6.23-rc5: known regressions v2
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709080649.53876.nickpiggin@yahoo.com.au>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 08 September 2007 20:29, Alan Cox wrote:
-> On Fri, 7 Sep 2007 15:26:50 -0700
->
-> Jesse Barnes <jesse.barnes@intel.com> wrote:
-> > FYI, we just released a new white paper describing memory ordering for
-> > Intel processors:
-> > http://developer.intel.com/products/processor/manuals/index.htm
-> >
-> > Should help answer some questions about some of the ordering primitives
-> > we use on i386 and x86_64.
->
-> Nice - but it appears to be 64bit only - and indeed it appears to be
-> untrue for real 32bit because of the Pentium Pro fencing errata.
+Hi all,
 
-As I said, we're not doing anything special in barriers for the ppro errata
-today anyway.
+Here is a list of some known regressions in 2.6.23-rc5.
+
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
+
+List of Aces
+
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            10
+Linus Torvalds                         6
+Andi Kleen                             5
+Hugh Dickins                           5
+Trond Myklebust                        5
+Andrew Morton                          4
+Al Viro                                3
+Alan Stern                             3
+Alexey Starikovskiy                    3
+Cornelia Huck                          3
+David S. Miller                        3
+Jens Axboe                             3
+Stephen Hemminger                      3
+Tejun Heo                              3
 
 
-> The kernel also runs on IDT Winchip, Cyrix and AMD processors not all of
-> which have exactly the same behaviour (the IDT Winchip as we run it
-> profoundly differs)
 
-AMD processors guarantee loads are ordered and stores are ordered
-(with exceptions of non-temporal, and non-wb policy).
+Unclassified
 
-As for the others that do out of order stores, are any of them SMP?
+Subject         : x86_64 vdso patch is broken somehow?
+References      : http://lkml.org/lkml/2007/8/29/136
+Last known good : ?
+Submitter       : Chuck Ebbert <cebbert@redhat.com>
+Caused-By       : Andi Kleen <ak@suse.de>
+                  commit 2aae950b21e4bc789d1fc6668faf67e8748300b7
+Handled-By      : ?
+Status          : unknown
+
+Subject         : cpu hotplug support broken in 2.6.23-rc3/highres timers break cpu hotplug in 2.6.23-rc5
+References      : http://lkml.org/lkml/2007/8/27/58
+                  http://lkml.org/lkml/2007/9/3/65
+Last known good : ?
+Submitter       : Pavel Machek <pavel@ucw.cz>
+Caused-By       : ?
+Handled-By      : ?
+Status          : problem is being debugged
+
+Subject         : 2.6.23-rc3-git1 crash/stuck on VIA CN700 system
+References      : http://lkml.org/lkml/2007/8/20/174
+Last known good : ?
+Submitter       : Stefan Becker <Stefan.Becker@nokia.com>
+Caused-By       : Andi Kleen <ak@suse.de>
+                  commit 19d36ccdc34f5ed444f8a6af0cbfdb6790eb1177
+Handled-By      : Andi Kleen <ak@suse.de>
+                  Dave Jones <davej@redhat.com>
+Workaround      : http://lkml.org/lkml/2007/9/5/221
+Status          : problem is being debugged
+
+Subject         : console is messed up after resume from s2ram or switching to console from X
+References      : http://lkml.org/lkml/2007/8/4/6
+Last known good : ?
+Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+Caused-By       : ?
+Handled-By      : H. Peter Anvin <hpa@zytor.com>
+                  Antonino A. Daplas <adaplas@gmail.com>
+Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
+Status          : problem is being debugged
+
+Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
+References      : http://lkml.org/lkml/2007/7/22/86
+Last known good : ?
+Submitter       : Markus <lists4me@web.de>
+Caused-By       : ?
+Handled-By      : Ingo Molnar <mingo@elte.hu>
+Status          : problem is being debugged
+
+Subject         : uml on x86_64 compile error
+References      : http://lkml.org/lkml/2007/9/3/86
+Last known good : ?
+Submitter       : Adrian Bunk <bunk@kernel.org>
+Caused-By       : Jeff Dike <jdike@linux.intel.com>
+                  commit d1254b12c93e1e586137a2ffef71fd33cf273f35
+Handled-By      : ?
+Status          : unknown
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
