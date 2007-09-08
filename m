@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbXIHODy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbXIHPCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030AbXIHODy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 10:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbXIHODi
+	id S1753533AbXIHPCq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 11:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbXIHPCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 10:03:38 -0400
-Received: from [212.12.190.216] ([212.12.190.216]:32982 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752719AbXIHODh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 10:03:37 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: sata & scsi suggestion for make menuconfig
-Date: Sat, 8 Sep 2007 17:03:31 +0300
-User-Agent: KMail/1.5
+	Sat, 8 Sep 2007 11:02:38 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:61477 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752929AbXIHPCh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 11:02:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ch4xB6nbbxcFM+5iTB+ou+13TJtB4ahpOcPgEFpSjdyseCDByK4SDEfPhdOglmPUP8TLgpYmtZTEzvbjfxtduC6m4Apn8fz1PpXkFmvG1/FnGJFtRTG5GxANRYj6ZcSR+JRb3R41rR2IZvOp2EbGd2qlKg7RHdsBsqArRjY+S8E=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 1/3] build system: section garbage collection for vmlinux
+Date: Sat, 8 Sep 2007 16:02:28 +0100
+User-Agent: KMail/1.9.1
 Cc: linux-kernel@vger.kernel.org
-References: <200709080652.02614.a1426z@gawab.com> <20070908144758.37ab3c76@the-village.bc.nu>
-In-Reply-To: <20070908144758.37ab3c76@the-village.bc.nu>
+References: <200709051443.21522.vda.linux@googlemail.com> <200709051447.00774.vda.linux@googlemail.com> <20070905200750.GA30812@uranus.ravnborg.org>
+In-Reply-To: <20070905200750.GA30812@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709081703.31280.a1426z@gawab.com>
+Message-Id: <200709081602.28216.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> > I once sent a patch to make libata a submenu of scsi.
->
-> Which is wrong
->
-> Nakked-by: Alan Cox <alan@redhat.com>
->
-> The general comments about moving this stuff around and making it clearer
-> what sd/sr etc are nowdays are good but hiding libata under SCSI will
-> cause even more confusion than it cures
+On Wednesday 05 September 2007 21:07, Sam Ravnborg wrote:
+> On Wed, Sep 05, 2007 at 02:47:00PM +0100, Denys Vlasenko wrote:
+> > On Wednesday 05 September 2007 14:43, Denys Vlasenko wrote:
+> > > These patches fix section names and add
+> > > CONFIG_DISCARD_UNUSED_SECTIONS. It is not enabled
+> > > unconditionally because only newest binutils have
+> > > ld --gc-sections which is stable enough for kernel use.
+> > > IOW: this is an experimental feature for now.
+> > 
+> > Part 1: fix section names over entire source (all arches).
+> > 
+> > Patch is big and boring global s/.text.lock/.text_lock/
+> > type thing.
+> 
+> The normal naming scheme seems to be:
+> .<usage>.text so in your example it would be: .lock.text
+> See the naming of init and exit sections (that was renamed
+> during 2.5 to be compatible with -ffunction-sections).
 
-That's easy to fix:  just change the SCSI heading to include a libata hint.
+Well, there seems to be a problem at least with .bss:
 
-Something like this:
+http://sourceware.org/bugzilla/show_bug.cgi?id=5006
 
-[PATCH] libata Kconfig: Allow libata to be selected from within the SCSI submenu
+With __attribute__((section(".bss.page_aligned")))
+gcc will produce .bss.page_aligned section
+with NOBITS attribute, purely on the basis
+of section name starting by '.bss.'
 
-Move libata Kconfig sourcing from the drivers Kconfig into the SCSI Kconfig,
-and change the SCSI menu heading to indicate libata submenu inclusion.
+With __attribute__((section(".bss_page_aligned"))),
+section will get PROGBITS attribute instead.
 
-This allows the user to quickly select additional disk/tape/cdrom support 
-from within the same menu.
+Combining NOBITS and PROGBITS sections into one .bss
+section is not funny.
 
-Signed-off-by: Al Boldi <a1426z@gawab.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
---- a/drivers/Kconfig   2007-05-02 17:25:30.000000000 +0300
-+++ b/drivers/Kconfig   2007-08-01 06:33:13.000000000 +0300
-@@ -22,8 +22,6 @@ source "drivers/ide/Kconfig"
- 
- source "drivers/scsi/Kconfig"
- 
--source "drivers/ata/Kconfig"
--
- source "drivers/cdrom/Kconfig"
- 
- source "drivers/md/Kconfig"
---- a/drivers/scsi/Kconfig      2007-07-09 06:38:37.000000000 +0300
-+++ b/drivers/scsi/Kconfig      2007-08-01 06:46:42.000000000 +0300
-@@ -7,6 +7,8 @@ config RAID_ATTRS
-        ---help---
-          Provides RAID
- 
-+source "drivers/ata/Kconfig"
-+
- config SCSI
--       tristate "SCSI device support"
-+       tristate "SCSI and Libata device support"
-        depends on BLOCK
+IOW: at least for bss, we _must_ use ".bss.xxx" names.
 
+I propose (and will implement in next round of patches)
+.bss.k.page_aligned ('k' for 'kernel').
 
+Lickily, we alctually have only one special bss section
+on kernel today.
 
-Thanks!
-
+Sam, my question - should I also do the same for text/rodata/data,
+just for paranoid reasons?
 --
-Al
+vda
