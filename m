@@ -1,107 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbXIHUVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbXIHUiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755312AbXIHUVG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 16:21:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbXIHUUz
+	id S1753373AbXIHUiR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 16:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbXIHUiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 16:20:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47039 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754002AbXIHUUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 16:20:54 -0400
-Message-ID: <46E30411.3070500@redhat.com>
-Date: Sat, 08 Sep 2007 16:20:33 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Sat, 8 Sep 2007 16:38:05 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60114 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751646AbXIHUiE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 16:38:04 -0400
+Message-ID: <46E3080E.9060403@zytor.com>
+Date: Sat, 08 Sep 2007 15:37:34 -0500
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, akpm@linux-foundation.org,
-       safari-kernel@safari.iki.fi
-Subject: Re: [PATCH] prevent kswapd from freeing excessive amounts of lowmem
-References: <46DF3545.4050604@redhat.com> <20070907122437.GC3901@ucw.cz>
-In-Reply-To: <20070907122437.GC3901@ucw.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: Intel Memory Ordering White Paper
+References: <200709071526.51169.jesse.barnes@intel.com> <200709080557.36021.nickpiggin@yahoo.com.au> <200709081219.43662.ak@suse.de> <200709080632.05389.nickpiggin@yahoo.com.au>
+In-Reply-To: <200709080632.05389.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
+Nick Piggin wrote:
+> smp_rmb() should not need to do anything because loads are done
+> in order anyway. Both AMD and Intel have committed to this now.
 > 
->> The current VM can get itself into trouble fairly easily 
->> on systems
->> with a small ZONE_HIGHMEM, which is common on i686 
->> computers with
->> 1GB of memory.
->>
->> On one side, page_alloc() will allocate down to 
->> zone->pages_low,
->> while on the other side, kswapd() and balance_pgdat() 
->> will try
->> to free memory from every zone, until every zone has 
->> more free
->> pages than zone->pages_high.
->>
->> Highmem can be filled up to zone->pages_low with page 
->> tables,
->> ramfs, vmalloc allocations and other unswappable things 
->> quite
->> easily and without many bad side effects, since we still 
->> have
->> a huge ZONE_NORMAL to do future allocations from.
->>
->> However, as long as the number of free pages in the 
->> highmem
->> zone is below zone->pages_high, kswapd will continue 
->> swapping
->> things out from ZONE_NORMAL, too!
->>
->> Sami Farin managed to get his system into a stage where 
->> kswapd
->> had freed about 700MB of low memory and was still "going 
->> strong".
->>
->> The attached patch will make kswapd stop paging out data 
->> from
->> zones when there is more than enough memory free.  We do 
->> go above
->> zone->pages_high in order to keep pressure between zones 
->> equal
->> in normal circumstances, but the patch should prevent 
->> the kind
->> of excesses that made Sami's computer totally unusable.
->>
->> Please merge this into -mm.
->>
->> Signed-off-by: Rik van Riel <riel@redhat.com>
-> 
->> --- linux-2.6.22.noarch/mm/vmscan.c.excessive	2007-09-05 12:19:49.000000000 -0400
->> +++ linux-2.6.22.noarch/mm/vmscan.c	2007-09-05 12:21:40.000000000 -0400
->> @@ -1371,7 +1371,13 @@ loop_again:
->>  			temp_priority[i] = priority;
->>  			sc.nr_scanned = 0;
->>  			note_zone_scanning_priority(zone, priority);
->> -			nr_reclaimed += shrink_zone(priority, zone, &sc);
->> +			/*
->> +			 * We put equal pressure on every zone, unless one
->> +			 * zone has way too many pages free already.
->> +			 */
-> 
-> That does not seem right. Having empty HIGHMEM and full LOWMEM would
-> be very bad, right? We may stop freeing when there's enough LOWMEM
-> free, but not if there's only HIGHMEM free.
+> The important point is that they *appear* to be done in order. AFAIK,
+> the CPUs can still do speculative and out of order loads, but throw
+> out the results if they could be wrong.
 
-Please read the code this patch applies to.
+Is there anything even semiofficial from VIA?  Not that the x86 
+architecture isn't pretty much definable as the AMD-Intel consensus...
 
-The check I add conditionalizes the individual
-calls to shrink_zone(), so we do not call
-shrink_zone() for a zone that has a ton of free
-pages.  We still call shrink_zone() for the
-other zones.
+	-hpa
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
