@@ -1,61 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbXIHQln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbXIHQoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199AbXIHQln (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 12:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbXIHQle
+	id S1754219AbXIHQoV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 12:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbXIHQoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 12:41:34 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:39597 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424AbXIHQld (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 12:41:33 -0400
-Subject: Re: [2/4] 2.6.23-rc5: known regressions v2
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       jfs-discussion@lists.sourceforge.net, Oliver Neukum <oliver@neukum.org>
-In-Reply-To: <46E28351.8050900@googlemail.com>
-References: <46E27DEF.7060109@googlemail.com>
-	 <46E28351.8050900@googlemail.com>
-Content-Type: text/plain
-Date: Sat, 08 Sep 2007 11:41:23 -0500
-Message-Id: <1189269683.6183.4.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Sat, 8 Sep 2007 12:44:12 -0400
+Received: from mail.tmr.com ([64.65.253.246]:43494 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753344AbXIHQoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 12:44:10 -0400
+Message-ID: <46E2D1D2.9020105@tmr.com>
+Date: Sat, 08 Sep 2007 12:46:10 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+Newsgroups: gmane.linux.kernel
+To: Howard Chu <hyc@symas.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22.6 pata_via cable detect
+References: <46DBE1FD.10409@symas.com>
+In-Reply-To: <46DBE1FD.10409@symas.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-09-08 at 13:11 +0200, Michal Piotrowski wrote:
-> Hi all,
+Howard Chu wrote:
+> Still have a slight glitch here. I have 2 hard drives on the primary 
+> channel, detected correctly as 80-wire and UDMA100. I have a DVD burner 
+> on the secondary channel, detected incorrectly as 40-wire. (It's sitting 
+> by itself on an 80-wire cable.) This is on an Asus A8V-Deluxe.
+
+Did you get any off-list feedback on this? I can move a burner back to 
+the VIA to test, but having another controller I took the easy way out 
+and recabled the device. It's production, so I have to test off hours.
 > 
-> Here is a list of some known regressions in 2.6.23-rc5.
+> Here's the dmesg output after a "modprobe pata_via"
 > 
-> Feel free to add new regressions/remove fixed etc.
-> http://kernelnewbies.org/known_regressions
-
-> FS
+> pata_via 0000:00:0f.1: version 0.3.1
+> ACPI: PCI Interrupt 0000:00:0f.1[A] -> GSI 20 (level, low) -> IRQ 20
+> scsi5 : pata_via
+> scsi6 : pata_via
+> ata6: PATA max UDMA/133 cmd 0x00000000000101f0 ctl 0x00000000000103f6 
+> bmdma 0x000000000001fc00 irq 14
+> ata7: PATA max UDMA/133 cmd 0x0000000000010170 ctl 0x0000000000010376 
+> bmdma 0x000000000001fc08 irq 15
+> ata6.00: ATA-6: WDC WD2000JB-00DUA0, 70.13G70, max UDMA/100
+> ata6.00: 390721968 sectors, multi 16: LBA48
+> ata6.01: ATA-7: WDC WD5000AAKB-00UKA0, 07.01N01, max UDMA/100
+> ata6.01: 976773168 sectors, multi 16: LBA48
+> ata6.00: configured for UDMA/100
+> ata6.01: configured for UDMA/100
+> ata7.00: ATAPI: LITE-ON DVDRW LH-20A1H, LL07, max UDMA/66
+> ata7.00: limited to UDMA/33 due to 40-wire cable
+> ata7.00: configured for UDMA/33
+> scsi 5:0:0:0: Direct-Access     ATA      WDC WD2000JB-00D 70.1 PQ: 0 
+> ANSI: 5
+> sd 5:0:0:0: [sde] 390721968 512-byte hardware sectors (200050 MB)
+> sd 5:0:0:0: [sde] Write Protect is off
+> sd 5:0:0:0: [sde] Mode Sense: 00 3a 00 00
+> sd 5:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't 
+> support DPO or FUA
+> sd 5:0:0:0: [sde] 390721968 512-byte hardware sectors (200050 MB)
+> sd 5:0:0:0: [sde] Write Protect is off
+> sd 5:0:0:0: [sde] Mode Sense: 00 3a 00 00
+> sd 5:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't 
+> support DPO or FUA
+>  sde: sde1
+> sd 5:0:0:0: [sde] Attached SCSI disk
+> sd 5:0:0:0: Attached scsi generic sg4 type 0
+> scsi 5:0:1:0: Direct-Access     ATA      WDC WD5000AAKB-0 07.0 PQ: 0 
+> ANSI: 5
+> sd 5:0:1:0: [sdf] 976773168 512-byte hardware sectors (500108 MB)
+> sd 5:0:1:0: [sdf] Write Protect is off
+> sd 5:0:1:0: [sdf] Mode Sense: 00 3a 00 00
+> sd 5:0:1:0: [sdf] Write cache: enabled, read cache: enabled, doesn't 
+> support DPO or FUA
+> sd 5:0:1:0: [sdf] 976773168 512-byte hardware sectors (500108 MB)
+> sd 5:0:1:0: [sdf] Write Protect is off
+> sd 5:0:1:0: [sdf] Mode Sense: 00 3a 00 00
+> sd 5:0:1:0: [sdf] Write cache: enabled, read cache: enabled, doesn't 
+> support DPO or FUA
+>  sdf: unknown partition table
+> sd 5:0:1:0: [sdf] Attached SCSI disk
+> sd 5:0:1:0: Attached scsi generic sg5 type 0
+> scsi 6:0:0:0: CD-ROM            LITE-ON  DVDRW LH-20A1H   LL07 PQ: 0 
+> ANSI: 5
+> sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
+> Uniform CD-ROM driver Revision: 3.20
+> sr 6:0:0:0: Attached scsi CD-ROM sr0
+> sr 6:0:0:0: Attached scsi generic sg6 type 5
 > 
-> Subject         : umount triggers a warning in jfs and takes almost a minute
-> References      : http://lkml.org/lkml/2007/9/4/73
-> Last known good : ?
-> Submitter       : Oliver Neukum <oliver@neukum.org>
-> Caused-By       : ?
-> Handled-By      : ?
-> Status          : unknown
+> Let me know what other info you need.
 
-Is this a regression?
 
-Oliver,
-Have you been using jfs on this flash previously?  If so, what was the
-most recent kernel that didn't have problems?
-
-Thanks,
-Shaggy
 -- 
-David Kleikamp
-IBM Linux Technology Center
-
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
