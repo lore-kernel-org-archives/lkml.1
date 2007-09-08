@@ -1,100 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbXIHQoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbXIHQpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbXIHQoV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 12:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbXIHQoM
+	id S1754309AbXIHQpH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 12:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbXIHQox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 12:44:12 -0400
-Received: from mail.tmr.com ([64.65.253.246]:43494 "EHLO gaimboi.tmr.com"
+	Sat, 8 Sep 2007 12:44:53 -0400
+Received: from lucidpixels.com ([75.144.35.66]:48711 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753344AbXIHQoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 12:44:10 -0400
-Message-ID: <46E2D1D2.9020105@tmr.com>
-Date: Sat, 08 Sep 2007 12:46:10 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1753533AbXIHQow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 12:44:52 -0400
+Date: Sat, 8 Sep 2007 12:44:51 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: linux-kernel@vger.kernel.org
+cc: linux-net@vger.kernel.org, apiszcz@solarrain.com
+Subject: In search of 10gbps cards/shootout in Linux?
+Message-ID: <Pine.LNX.4.64.0709081241100.22467@p34.internal.lan>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Howard Chu <hyc@symas.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22.6 pata_via cable detect
-References: <46DBE1FD.10409@symas.com>
-In-Reply-To: <46DBE1FD.10409@symas.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Howard Chu wrote:
-> Still have a slight glitch here. I have 2 hard drives on the primary 
-> channel, detected correctly as 80-wire and UDMA100. I have a DVD burner 
-> on the secondary channel, detected incorrectly as 40-wire. (It's sitting 
-> by itself on an 80-wire cable.) This is on an Asus A8V-Deluxe.
+There are various agencies/educational institutions doing testing but was 
+curious if anyone has 'found' a 10 gigabit card shootout measuring the 
+performance between 10 gigabit cards on the 2.6 kernel?  Most of the 
+benchmarks are from the vendors themselves Intel/etc-- was wondering if 
+there were any vendor-independent benchmarks out there?
 
-Did you get any off-list feedback on this? I can move a burner back to 
-the VIA to test, but having another controller I took the easy way out 
-and recabled the device. It's production, so I have to test off hours.
-> 
-> Here's the dmesg output after a "modprobe pata_via"
-> 
-> pata_via 0000:00:0f.1: version 0.3.1
-> ACPI: PCI Interrupt 0000:00:0f.1[A] -> GSI 20 (level, low) -> IRQ 20
-> scsi5 : pata_via
-> scsi6 : pata_via
-> ata6: PATA max UDMA/133 cmd 0x00000000000101f0 ctl 0x00000000000103f6 
-> bmdma 0x000000000001fc00 irq 14
-> ata7: PATA max UDMA/133 cmd 0x0000000000010170 ctl 0x0000000000010376 
-> bmdma 0x000000000001fc08 irq 15
-> ata6.00: ATA-6: WDC WD2000JB-00DUA0, 70.13G70, max UDMA/100
-> ata6.00: 390721968 sectors, multi 16: LBA48
-> ata6.01: ATA-7: WDC WD5000AAKB-00UKA0, 07.01N01, max UDMA/100
-> ata6.01: 976773168 sectors, multi 16: LBA48
-> ata6.00: configured for UDMA/100
-> ata6.01: configured for UDMA/100
-> ata7.00: ATAPI: LITE-ON DVDRW LH-20A1H, LL07, max UDMA/66
-> ata7.00: limited to UDMA/33 due to 40-wire cable
-> ata7.00: configured for UDMA/33
-> scsi 5:0:0:0: Direct-Access     ATA      WDC WD2000JB-00D 70.1 PQ: 0 
-> ANSI: 5
-> sd 5:0:0:0: [sde] 390721968 512-byte hardware sectors (200050 MB)
-> sd 5:0:0:0: [sde] Write Protect is off
-> sd 5:0:0:0: [sde] Mode Sense: 00 3a 00 00
-> sd 5:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't 
-> support DPO or FUA
-> sd 5:0:0:0: [sde] 390721968 512-byte hardware sectors (200050 MB)
-> sd 5:0:0:0: [sde] Write Protect is off
-> sd 5:0:0:0: [sde] Mode Sense: 00 3a 00 00
-> sd 5:0:0:0: [sde] Write cache: enabled, read cache: enabled, doesn't 
-> support DPO or FUA
->  sde: sde1
-> sd 5:0:0:0: [sde] Attached SCSI disk
-> sd 5:0:0:0: Attached scsi generic sg4 type 0
-> scsi 5:0:1:0: Direct-Access     ATA      WDC WD5000AAKB-0 07.0 PQ: 0 
-> ANSI: 5
-> sd 5:0:1:0: [sdf] 976773168 512-byte hardware sectors (500108 MB)
-> sd 5:0:1:0: [sdf] Write Protect is off
-> sd 5:0:1:0: [sdf] Mode Sense: 00 3a 00 00
-> sd 5:0:1:0: [sdf] Write cache: enabled, read cache: enabled, doesn't 
-> support DPO or FUA
-> sd 5:0:1:0: [sdf] 976773168 512-byte hardware sectors (500108 MB)
-> sd 5:0:1:0: [sdf] Write Protect is off
-> sd 5:0:1:0: [sdf] Mode Sense: 00 3a 00 00
-> sd 5:0:1:0: [sdf] Write cache: enabled, read cache: enabled, doesn't 
-> support DPO or FUA
->  sdf: unknown partition table
-> sd 5:0:1:0: [sdf] Attached SCSI disk
-> sd 5:0:1:0: Attached scsi generic sg5 type 0
-> scsi 6:0:0:0: CD-ROM            LITE-ON  DVDRW LH-20A1H   LL07 PQ: 0 
-> ANSI: 5
-> sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
-> Uniform CD-ROM driver Revision: 3.20
-> sr 6:0:0:0: Attached scsi CD-ROM sr0
-> sr 6:0:0:0: Attached scsi generic sg6 type 5
-> 
-> Let me know what other info you need.
+Until switches come down in price, 10gbps will be most relegated to 
+business/research use and therefore such benchmarks probably will be hard 
+to come by but I thought I'd ask..
+
+Thanks,
+
+Justin.
 
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
