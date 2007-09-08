@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbXIHOCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753814AbXIHODl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753587AbXIHOCo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 10:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbXIHOCh
+	id S1753814AbXIHODl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 10:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbXIHODd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 10:02:37 -0400
-Received: from mail1.bizmail.net.au ([60.246.2.164]:34253 "EHLO
-	mail1.bizmail.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752646AbXIHOCg (ORCPT
+	Sat, 8 Sep 2007 10:03:33 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40957 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752672AbXIHODc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 10:02:36 -0400
-X-Greylist: delayed 1438 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Sep 2007 10:02:36 EDT
-Message-ID: <46E2A5EF.1070908@gmail.com>
-Date: Sat, 08 Sep 2007 23:38:55 +1000
-From: development.jim@gmail.com
-Reply-To: development.jim@gmail.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.11) Gecko/20050729
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Device problems on Kernel 22
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Sat, 8 Sep 2007 10:03:32 -0400
+Date: Sat, 8 Sep 2007 15:11:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: Intel Memory Ordering White Paper
+Message-ID: <20070908151150.22ebcd4c@the-village.bc.nu>
+In-Reply-To: <200709080649.53876.nickpiggin@yahoo.com.au>
+References: <200709071526.51169.jesse.barnes@intel.com>
+	<20070908112922.3fd41adc@the-village.bc.nu>
+	<200709080649.53876.nickpiggin@yahoo.com.au>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> AMD processors guarantee loads are ordered and stores are ordered
+> (with exceptions of non-temporal, and non-wb policy).
+> 
+> As for the others that do out of order stores, are any of them SMP?
 
-I have an ARM hardware board works fine with USB and MMC in kernel 11. 
-Now, I've just upgraded it to kernel 22. The modules seem loaded fine, 
-please see following list, but both usb and mmc modules failed to detect 
-the USB stick or SD card when it was plugged in (I enabled module debug, 
-but nothing printed out). I understand that the devfs is no longer 
-supported by the kernel 22, but should the modules still be able to 
-detect the devices? I think something has been missing, could anyone 
-help, what I am missing here?
-
-K22 $ lsmod
-Module                  Size  Used by
-nls_utf8                1696  0
-nls_iso8859_1           3936  0
-nls_cp437               5600  0
-nls_ascii               3936  0
-vfat                   10336  0
-fat                    48028  1 vfat
-mmc_block               8580  0
-s3c2410mci              6560  0
-mmc_core               25876  2 mmc_block,s3c2410mci
-
-
-Thank you.
-
-Jim
+IDT winchip isn't, Geode isn't
