@@ -1,91 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbXIHEOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751963AbXIHFMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752299AbXIHEOk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 00:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbXIHEOc
+	id S1751963AbXIHFMe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 01:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbXIHFM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 00:14:32 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:1510 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750713AbXIHEOb (ORCPT
+	Sat, 8 Sep 2007 01:12:26 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:6707 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750865AbXIHFMZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 00:14:31 -0400
-Date: Sat, 8 Sep 2007 12:14:23 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Bob Gilligan <gilligan@vyatta.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: [PATCH] crypto: blkcipher_get_spot() handling of buffer at end of page
-Message-ID: <20070908041423.GA8961@gondor.apana.org.au>
-References: <5562608.649291189210157514.JavaMail.root@tahiti.vyatta.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 8 Sep 2007 01:12:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZSaVwHZ+mnqPsMV6nUONisH7smGxSd1RFYqVWZORn3nqiKF+5QB9CUQJ4B1lF5yY9hl9CocrRXhK0bof5Xg5ci7UCKVyUxW0ichwiZNuBFH7eK44W+TS/3B0i1hheaGLr62eeLHQhbWcY/m2w4YRxxyQrvI3ro9wJ3Ml8mF3StQ=
+Message-ID: <170fa0d20709072212m4563ce76sa83092640491e4f3@mail.gmail.com>
+Date: Sat, 8 Sep 2007 01:12:24 -0400
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Daniel Phillips" <phillips@phunq.net>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+Cc: "Christoph Lameter" <clameter@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dkegel@google.com, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "David Miller" <davem@davemloft.net>, "Nick Piggin" <npiggin@suse.de>
+In-Reply-To: <200709050916.04477.phillips@phunq.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <5562608.649291189210157514.JavaMail.root@tahiti.vyatta.com>
-User-Agent: Mutt/1.5.9i
+References: <20070814142103.204771292@sgi.com>
+	 <200709050220.53801.phillips@phunq.net>
+	 <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
+	 <200709050916.04477.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 07, 2007 at 05:09:17PM -0700, Bob Gilligan wrote:
+On 9/5/07, Daniel Phillips <phillips@phunq.net> wrote:
+> On Wednesday 05 September 2007 03:42, Christoph Lameter wrote:
+> > On Wed, 5 Sep 2007, Daniel Phillips wrote:
+> > > If we remove our anti-deadlock measures, including the
+> > > ddsnap.vm.fixes (a roll-up of Peter's patch set) and the request
+> > > throttling code in dm-ddsnap.c, and apply your patch set instead,
+> > > we hit deadlock on the socket write path after a few hours
+> > > (traceback tomorrow).  So your patch set by itself is a stability
+> > > regression.
+> >
+> > Na, that cannot be the case since it only activates when an OOM
+> > condition would otherwise result.
 >
-> Proposed patch is below.  We found the problem and tested this fix in
-> 2.6.20, but it looks like the relevant code in blkcipher.c is the same
-> in the latest tree.
+> I did not express myself clearly then.  Compared to our current
+> anti-deadlock patch set, you patch set is a regression.  Because
+> without help from some of our other patches, it does deadlock.
+> Obviously, we cannot have that.
 
-Good catch!
+Can you be specific about which changes to existing mainline code were
+needed to make recursive reclaim "work" in your tests (albeit less
+ideally than peterz's patchset in your view)?
 
-I've fixed this slightly differently.  Also, the kmalloc size
-in the case where it does straddle a page isn't enough either.
+Also, in a previous post you stated:
 
-[CRYPTO] blkcipher: Fix handling of kmalloc page straddling
+>   Just to recap, we have identified two essential ingredients in the
+> recipe for writeout deadlock prevention:
+>
+>  1) Throttle block IO traffic to a bounded maximum memory use.
+>
+>  2) Guarantee availability of the required amount of memory.
 
-The function blkcipher_get_spot tries to return a buffer of
-the specified length that does not straddle a page.  It has
-an off-by-one bug so it may advance a page unnecessarily.
+Which changes allowed you to address 1?  I had a look at the various
+patches you provided (via svn) and it wasn't clear which subset
+fulfilled 1 for you.  Does it work for all Block IO and not just
+specially tuned drivers like ddsnap et al?
 
-What's worse, one of its callers doesn't provide a buffer
-that's sufficiently long for this operation.
-
-This patch fixes both problems.  Thanks to Bob Gilligan for
-diagnosing this problem and providing a fix.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/crypto/blkcipher.c b/crypto/blkcipher.c
-index 7755834..469cb7f 100644
---- a/crypto/blkcipher.c
-+++ b/crypto/blkcipher.c
-@@ -59,11 +59,13 @@ static inline void blkcipher_unmap_dst(struct blkcipher_walk *walk)
- 	scatterwalk_unmap(walk->dst.virt.addr, 1);
- }
- 
-+/* Get a spot of the specified length that does not straddle a page.
-+ * The caller needs to ensure that there is enough space for this operation.
-+ */
- static inline u8 *blkcipher_get_spot(u8 *start, unsigned int len)
- {
--	if (offset_in_page(start + len) < len)
--		return (u8 *)((unsigned long)(start + len) & PAGE_MASK);
--	return start;
-+	u8 *end_page = (u8 *)(((unsigned long)(start + len - 1)) & PAGE_MASK);
-+	return start < end_page ? start : end_page;
- }
- 
- static inline unsigned int blkcipher_done_slow(struct crypto_blkcipher *tfm,
-@@ -155,7 +157,8 @@ static inline int blkcipher_next_slow(struct blkcipher_desc *desc,
- 	if (walk->buffer)
- 		goto ok;
- 
--	n = bsize * 2 + (alignmask & ~(crypto_tfm_ctx_alignment() - 1));
-+	n = bsize * 3 - (alignmask + 1) +
-+	    (alignmask & ~(crypto_tfm_ctx_alignment() - 1));
- 	walk->buffer = kmalloc(n, GFP_ATOMIC);
- 	if (!walk->buffer)
- 		return blkcipher_walk_done(desc, walk, -ENOMEM);
+regards,
+Mike
