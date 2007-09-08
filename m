@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbXIHI6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbXIHI6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839AbXIHI6J (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 04:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbXIHI55
+	id S1753227AbXIHI6Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 04:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbXIHI6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 04:57:57 -0400
-Received: from ns.suse.de ([195.135.220.2]:44509 "EHLO mx1.suse.de"
+	Sat, 8 Sep 2007 04:58:03 -0400
+Received: from ns2.suse.de ([195.135.220.15]:57861 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751370AbXIHI54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 04:57:56 -0400
+	id S1752237AbXIHI6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 04:58:00 -0400
 From: Andi Kleen <ak@suse.de>
 Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: 2.6.23-rc3-mm1 - vdso and gettimeofday issues with glibc
-Date: Sat, 8 Sep 2007 10:57:50 +0200
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: Intel Memory Ordering White Paper
+Date: Sat, 8 Sep 2007 10:53:36 +0200
 User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, Valdis.Kletnieks@vt.edu,
-       jakub@redhat.com, Ulrich Drepper <drepper@redhat.com>,
-       linux-kernel@vger.kernel.org
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <200709011207.58201.ak@suse.de> <46E1A8ED.8090104@redhat.com>
-In-Reply-To: <46E1A8ED.8090104@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
+References: <200709071526.51169.jesse.barnes@intel.com> <200709090348.28076.nickpiggin@yahoo.com.au> <200709080413.12282.nickpiggin@yahoo.com.au>
+In-Reply-To: <200709080413.12282.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709081057.51144.ak@suse.de>
+Message-Id: <200709081053.36842.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> In the vdso code:
+On Friday 07 September 2007 20:13:12 Nick Piggin wrote:
+> On Sunday 09 September 2007 03:48, Nick Piggin wrote:
 > 
-> static inline long vgetns(void)
-> {
->         cycles_t (*vread)(void);
->         vread = gtod->clock.vread;
->         return ((vread() - gtod->clock.cycle_last) * gtod->clock.mult) >>
->                 gtod->clock.shift;
-> }
+> > There is some suggestion in the source code that non-temporal stores
+> > (movntq) are weakly ordered. But AFAIKS from the documents, it is ordered
+> > when operating on wb memory. What's the situation there?
 > 
+> Sorry, it looks from the AMD document like nontemporal stores to wb
+> memory can go out of order.
+
+Yes, that is how NT stores are defined.
+ 
+> If this is the case, we can either retain the sfence in smp_wmb(), or noop
+> it, and put explicit sfences around any place that performs nontemporal
+> stores...
+
+We do this already, but in most cases it doesn't matter anyways. We AFAIK
+do not rely on any ordering for copy_*_user for example. There are not
+that many users of nt so it's not a huge issue.
+
 > 
-> Looks like an open-coded version of this in the kernel timekeeping code:
+> Anyway, the lfence should be able to go away without so much trouble.
 
-vdso code needs to be all inlined because the vdso runs in ring 3 and cannot
-access other kernel code.
+You mean sfence? lfence in rmb is definitely needed.
 
-It was opencoded it to have more control over the code (vdso requirements
-are a bit peculiar).
-
-> But the vdso version isn't doing any masking. And the mask is different for
-> different clocksources, so it has to track the underlying kernel's clocksource
-> when it gets changed.
-
-vdso effectively only supports TSC and HPET (the other clock sources are not accessible
-from ring 3)
-
-TSC doesn't need a mask, but many HPETs need a 32bit mask; good point.
-
-Does adding the mask to vgetns make the clock problems go away?
+sfence on x86-64 is not strictly needed, but also shouldn't hurt very much 
+so I always kept it in.
 
 -Andi
-
