@@ -1,36 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbXIHLMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbXIHLNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753008AbXIHLMp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 07:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbXIHLMf
+	id S1752563AbXIHLNL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 07:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbXIHLMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 07:12:35 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:46093 "EHLO
+	Sat, 8 Sep 2007 07:12:46 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:46022 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751568AbXIHLMd (ORCPT
+	with ESMTP id S1752713AbXIHLMn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 07:12:33 -0400
+	Sat, 8 Sep 2007 07:12:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=oBbSLpgoDcK9/ht8Gxxfb/MROGDHXg+1pKYmpgEi2q1fkyj6JPm+kpCdp139o6K7l/NcRcuOGl9atDRNuKj/48rxuv8qrp3kbZSFYwOqGirFYlaIA63xFytsSinhz1rTdt1kVcwUpBTkp7eDEI43gRcrDh3V47/4vXuKws+8ocY=
-Message-ID: <46E28343.1030002@googlemail.com>
-Date: Sat, 08 Sep 2007 13:10:59 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=OsQlr8N2GmClaCKSZim67PteMREKIMqQ3GAuE7yHphVQAv0bzkGyoSG/GHwulfBwNvSCLKbW5uYBHyUDW9PqtJhAz6aiq+uvGly29bXfVuhiosRyj4ZGzAtVqknQR7eVNLMsdFGPJbGkMMVikV3MvhabmTLy71filsCNr3Darq0=
+Message-ID: <46E28351.8050900@googlemail.com>
+Date: Sat, 08 Sep 2007 13:11:13 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>, linux-alpha@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Stefan Becker <Stefan.Becker@nokia.com>, Andi Kleen <ak@suse.de>,
-       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
-       Pavel Machek <pavel@ucw.cz>, "" <tglx@linutronix.de>,
-       Jakub Jelinek <jakub@redhat.com>, Jeff Dike <jdike@linux.intel.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Adrian Bunk <bunk@kernel.org>
-Subject: [1/4] 2.6.23-rc5: known regressions v2
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       nfs@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Clayton <andrew@digital-domain.net>, Ian Kent <raven@themaw.net>,
+       autofs@linux.kernel.org, Daniel J Blueman <daniel.blueman@gmail.com>,
+       Dave Kleikamp <shaggy@austin.ibm.com>,
+       jfs-discussion@lists.sourceforge.net,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>, Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: [2/4] 2.6.23-rc5: known regressions v2
+References: <46E27DEF.7060109@googlemail.com>
+In-Reply-To: <46E27DEF.7060109@googlemail.com>
 X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
@@ -65,63 +66,52 @@ Tejun Heo                              3
 
 
 
-Unclassified
+FS
 
-Subject         : x86_64 vdso patch is broken somehow?
-References      : http://lkml.org/lkml/2007/8/29/136
+Subject         : umount triggers a warning in jfs and takes almost a minute
+References      : http://lkml.org/lkml/2007/9/4/73
 Last known good : ?
-Submitter       : Chuck Ebbert <cebbert@redhat.com>
-Caused-By       : Andi Kleen <ak@suse.de>
-                  commit 2aae950b21e4bc789d1fc6668faf67e8748300b7
+Submitter       : Oliver Neukum <oliver@neukum.org>
+Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : cpu hotplug support broken in 2.6.23-rc3/highres timers break cpu hotplug in 2.6.23-rc5
-References      : http://lkml.org/lkml/2007/8/27/58
-                  http://lkml.org/lkml/2007/9/3/65
+Subject         : [NFSv4] 2.6.23-rc4 oops in nfs4_cb_recall
+References      : http://lkml.org/lkml/2007/9/4/53
 Last known good : ?
-Submitter       : Pavel Machek <pavel@ucw.cz>
+Submitter       : Daniel J Blueman <daniel.blueman@gmail.com>
 Caused-By       : ?
-Handled-By      : ?
-Status          : problem is being debugged
-
-Subject         : 2.6.23-rc3-git1 crash/stuck on VIA CN700 system
-References      : http://lkml.org/lkml/2007/8/20/174
-Last known good : ?
-Submitter       : Stefan Becker <Stefan.Becker@nokia.com>
-Caused-By       : Andi Kleen <ak@suse.de>
-                  commit 19d36ccdc34f5ed444f8a6af0cbfdb6790eb1177
-Handled-By      : Andi Kleen <ak@suse.de>
-                  Dave Jones <davej@redhat.com>
-Workaround      : http://lkml.org/lkml/2007/9/5/221
-Status          : problem is being debugged
-
-Subject         : console is messed up after resume from s2ram or switching to console from X
-References      : http://lkml.org/lkml/2007/8/4/6
-Last known good : ?
-Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-Caused-By       : ?
-Handled-By      : H. Peter Anvin <hpa@zytor.com>
-                  Antonino A. Daplas <adaplas@gmail.com>
-Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
-Status          : problem is being debugged
-
-Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
-References      : http://lkml.org/lkml/2007/7/22/86
-Last known good : ?
-Submitter       : Markus <lists4me@web.de>
-Caused-By       : ?
-Handled-By      : Ingo Molnar <mingo@elte.hu>
-Status          : problem is being debugged
-
-Subject         : uml on x86_64 compile error
-References      : http://lkml.org/lkml/2007/9/3/86
-Last known good : ?
-Submitter       : Adrian Bunk <bunk@kernel.org>
-Caused-By       : Jeff Dike <jdike@linux.intel.com>
-                  commit d1254b12c93e1e586137a2ffef71fd33cf273f35
 Handled-By      : ?
 Status          : unknown
+
+Subject         : [NFSD OOPS] 2.6.23-rc1-git10
+References      : http://lkml.org/lkml/2007/8/2/462
+Last known good : ?
+Submitter       : Andrew Clayton <andrew@digital-domain.net>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+
+
+USB
+
+Subject         : 2.6.23-rc1: USB hard disk broken
+References      : http://lkml.org/lkml/2007/7/25/62
+Last known good : ?
+Submitter       : Tino Keitel <tino.keitel@gmx.de>
+Caused-By       : ?
+Handled-By      : Oliver Neukum <oliver@neukum.org>
+Status          : unknown
+
+Subject         : USB hard disk broken in 2.6.23-rc3 (autosuspend related)
+References      : http://bugzilla.kernel.org/show_bug.cgi?id=8892
+Last known good : ?
+Submitter       : Roman Jarosz <kedgedev@centrum.cz>
+Caused-By       : ?
+Handled-By      : Alan Stern <stern@rowland.harvard.edu>
+Workaround      : echo -1 >/sys/bus/usb/devices/1-4/power/autosuspend
+Status          : possible hardware problem
 
 
 
