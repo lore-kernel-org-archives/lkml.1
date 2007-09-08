@@ -1,32 +1,36 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758847AbXIGWYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755929AbXIIA6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758847AbXIGWYj (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Fri, 7 Sep 2007 18:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758599AbXIGWYa
+	id S1755929AbXIIA6h (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Sat, 8 Sep 2007 20:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbXIIA62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 18:24:30 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:37495 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758480AbXIGWYa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 18:24:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=mLIGD+scfTLLXtQUgVzjmLcBaarC2R50+84xHYX7Hp3oldqlpJlCbauDNu+DmHZ1HuKOmiGfJm7MrKUMCu++z2N6uzUzBNGPJ9oA9RVop/Cu906+SahOZCzf0+R0iMJsBEGRbgKnqxZJWgFhPamzIvkO8Ee3QJCSnfDwtxkjB34=
-Message-ID: <46E1CE73.9090509@gmail.com>
-Date: Fri, 07 Sep 2007 16:19:31 -0600
-From: Jim Cromie <jim.cromie@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
+	Sat, 8 Sep 2007 20:58:28 -0400
+Received: from mail.ihb.hu ([87.229.102.31]:34796 "EHLO ihb.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752470AbXIIA62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 20:58:28 -0400
+X-Greylist: delayed 14380 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Sep 2007 20:58:27 EDT
 To: linux-kernel@vger.kernel.org
-Subject: (no subject)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Hello
+Date: Sat, 8 Sep 2007 23:49:29 +0200
+From: =?UTF-8?Q?H=C3=ADrlev=C3=A9l_Szolg=C3=A1lat?= <movie@freemail.hu>
+Message-ID: <c7e8932f4f89e115264744f5e1c0b3d3@hirlevel.ihb.hu>
+X-Priority: 3
+X-Mailer: PHPMailer [version 1.72]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	auth 2efbb938 subscribe linux-kernel jim.cromie@gmail.com
-	auth a339d34a subscribe linux-net jim.cromie@gmail.com
+Szia!
 
+Találtam egy jó letöltő oldalt legolcsóbb, és nagy tartalom van rajta
+Filmek, Játékok, Zenék stb...
+http://speed-ware.no-ip.org
+
+Bocsi a zavarásért.
+Szia, Dóri
+
+U.i: én már töltök!.
 
