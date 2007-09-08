@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752806AbXIHH21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbXIHH2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752806AbXIHH21 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 03:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbXIHH2T
+	id S1752822AbXIHH2k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 03:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXIHH23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 03:28:19 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:16861 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbXIHH2S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 03:28:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=msd5qj+3aBhTTj1CyiXKAAiH5FQrRwFfHggw4Ev4nPxTo/HH92sddT5oklLOWBxaLE5ZXISfFNUPGwYfnRfaEna69Z6Zy0Go08kY0oU4GEY/WVfEtC2d5D80z9nGU9RBN2ZbT2V/V9Q6Pfdw0Zow9ojFhhUxCiZWTU50NMf5LS8=
-Date: Sat, 8 Sep 2007 11:28:11 +0400
-To: rusty@rustcorp.com.au
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [patch 1/8] Immediate Values - Global Modules List and Module Mutex
-Message-ID: <20070908072811.GB1819@martell.zuzino.mipt.ru>
-References: <20070906200228.086651361@polymtl.ca> <20070906200314.079453533@polymtl.ca>
+	Sat, 8 Sep 2007 03:28:29 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:39918 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752816AbXIHH22 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 03:28:28 -0400
+Date: Sat, 8 Sep 2007 03:23:17 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/6] Linux Kernel Markers - Port SPU to markers
+Message-ID: <20070908072317.GA16854@Krystal>
+References: <20070906200733.194442762@polymtl.ca> <20070906200827.452767571@polymtl.ca> <20070908070438.GA1819@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070906200314.079453533@polymtl.ca>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20070908070438.GA1819@martell.zuzino.mipt.ru>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 03:21:14 up 40 days,  7:40,  4 users,  load average: 0.07, 0.33, 0.39
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 06, 2007 at 04:02:29PM -0400, Mathieu Desnoyers wrote:
-> Remove "static" from module_mutex and the modules list so it can be used by
-> other builtin objects in the kernel. Otherwise, every code depending on the
-> module list would have to be put in kernel/module.c. Since the immediate values
-> depends on the module list but can be considered as logically different, it
-> makes sense to implement them in their own file.
+* Alexey Dobriyan (adobriyan@gmail.com) wrote:
+> On Thu, Sep 06, 2007 at 04:07:39PM -0400, Mathieu Desnoyers wrote:
+> > Andrew, any chance to get this into -mm ASAP so we can have it in
+> > 2.6.24?
+> > 
+> > Just in case anyone wonders what this is usefulfor I've ported my
+> > hacking spu tracing code to it, and if markers get in I'd push a cleaned
+> > up version of this in the tree of the benefit of everyone trying to
+> > follow what's going on in the spufs code.  Similarly I'd like to port
+> > the xfs tracing code over to it which is very helpful in trying to
+> > debug filesystem issues.
+> > 
+> > Note that in this patch the actual logging code is rather nasty
+> > hand-crafted code lifted from the tcp probe in tree which would benefit
+> > of going away in favour of more general tracing code aswell.
+> > 
+> > Changelog:
+> > - Porting to 2.6.23-rc4-mm1 gave a reject (a trace point location disappeared)
+> >   from spufs_ps_nopfn() : spufs_ps_nopfn__sleep and spufs_ps_nopfn__wake.
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 > 
-> The alternative to this would be to disable preemption in code path that need
-> such synchronization, so they can be protected against module unload by
-> stop_machine(), but not being able to sleep within while needing such
-> synchronization is limiting.
+> Where are Christoph's attributions?
 
-> --- linux-2.6-lttng.orig/kernel/module.c
-> +++ linux-2.6-lttng/kernel/module.c
-> @@ -64,8 +64,8 @@ extern int module_sysfs_initialized;
->  
->  /* List of modules, protected by module_mutex or preempt_disable
->   * (add/delete uses stop_machine). */
-> -static DEFINE_MUTEX(module_mutex);
-> -static LIST_HEAD(modules);
-> +DEFINE_MUTEX(module_mutex);
-> +LIST_HEAD(modules);
->  static DECLARE_MUTEX(notify_mutex);
->  
->  static BLOCKING_NOTIFIER_HEAD(module_notify_list);
-> --- linux-2.6-lttng.orig/include/linux/module.h
-> +++ linux-2.6-lttng/include/linux/module.h
-> @@ -60,6 +60,10 @@ struct module_kobject
->  	struct kobject *drivers_dir;
->  };
->  
-> +/* Protects the list of modules. */
-> +extern struct mutex module_mutex;
-> +extern struct list_head modules;
+I realized only after sending this patch set that the 
 
-Rusty, do you still want to keep module_mutex virgin? If not, I can
-backout /proc/*/wchan vs rmmod race fix et al and use muuuch simpler version.
+From: Christoph Hellwig <hch@infradead.org>
+
+Has somehow been stripped off from the patch header.
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
