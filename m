@@ -1,42 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbXIHQsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbXIHQun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbXIHQsu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 12:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbXIHQsi
+	id S1754760AbXIHQun (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 12:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbXIHQue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 12:48:38 -0400
-Received: from lucidpixels.com ([75.144.35.66]:44247 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753508AbXIHQsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 12:48:37 -0400
-Date: Sat, 8 Sep 2007 12:48:36 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: linux-kernel@vger.kernel.org
-cc: linux-net@vger.kernel.org, linux-raid@vger.kernel.org,
-       apiszcz@solarrain.com
-Subject: AoE/2.6 Question (CORAID brand)
-Message-ID: <Pine.LNX.4.64.0709081246310.22467@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 8 Sep 2007 12:50:34 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:21752 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753411AbXIHQud (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 12:50:33 -0400
+Date: Sat, 8 Sep 2007 09:50:08 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Folkert van Heusden <folkert@vanheusden.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: sata & scsi suggestion for make menuconfig
+Message-Id: <20070908095008.08eb4930.randy.dunlap@oracle.com>
+In-Reply-To: <p73fy1p9m57.fsf@bingen.suse.de>
+References: <20070907124800.GP16806@vanheusden.com>
+	<p73fy1p9m57.fsf@bingen.suse.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The reason for the 10Gbps question was in most of the benchmarks I see 
-10Gbps achieves roughly 250 MiB/s as others have reported on other mailing 
-lists.
+On 08 Sep 2007 18:07:00 +0200 Andi Kleen wrote:
 
-This company makes AoE / RAIDs (24 disks) quite cheap and they offer 
-10Gbps on their units, has anyone done any independent benchmarking of 
-their units?
+> Folkert van Heusden <folkert@vanheusden.com> writes:
+> 
+> > Hi,
+> > 
+> > Maybe it is a nice enhancement for make menuconfig to more explicitly
+> > give a pop-up or so when someone selects for example a sata controller
+> > while no 'scsi-disk' support was selected?
+> 
+> This has also bitten me one or two times. A reasonable way would
+> be to just select SD automatically for !EMBEDDED
+> 
+> Here's a patch:
+> 
+> -Andi
+> 
+> Select BLK_DEV_SD for all SCSI/libata drivers
+> 
+> This avoid a common user mistake.
 
-They claim 550 MiB/s on them.
+I'd say that someone needs to use a vendor kernel, or at least
+begin with a vendor .config file...
 
-What type of RAID do they use for AoE?  Is it Linux SW Raid embedded in 
-the unit?
 
-http://www.coraid.com/
+> Signed-off-by: Andi Kleen <ak@suse.de>
 
-What type of speeds are typical on 1Gbps vs. 10Gbps AoE connections?
-
-Justin.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
