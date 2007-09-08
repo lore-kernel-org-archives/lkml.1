@@ -1,33 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbXIHLNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752442AbXIHLNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753676AbXIHLNe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 07:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXIHLMx
+	id S1752442AbXIHLNv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 07:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXIHLM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 07:12:53 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:7141 "EHLO
+	Sat, 8 Sep 2007 07:12:59 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:7419 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753159AbXIHLMt (ORCPT
+	with ESMTP id S1753354AbXIHLMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 07:12:49 -0400
+	Sat, 8 Sep 2007 07:12:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=ODSiPho7MTYmuRR55pHGKLuPg4j+hXJwmgaamHyM8FGG4ksstFXhVNEoyQVJxJPBDETGVyqxjqHWwezyFtu0tSl6JGmtEaQ5CS63l05Ibh6xOlacRPkg6Yc9QZaC6FBCikYWo8LT/bhxOuMKBUKmK+nnWWwm0PfdKH0rwYQBKzQ=
-Message-ID: <46E28358.9020408@googlemail.com>
-Date: Sat, 08 Sep 2007 13:11:20 +0200
+        b=WSjYtW1RSS2V8MRUHZYp6nEs7AGs0fvEwwzdfTHM2vyhHHpMOeJbvhfSVE3gXW6xkaskRdB6d95ATaBiyE7H/YxBxPtTdBpSyNlT4Hlb1dhzk2O3hhwyhzfLM1xbsKm8bnl5GLShndlSkNtDD8eSfOWEJdbi7PJmfbOTwABUg/s=
+Message-ID: <46E2835E.9010408@googlemail.com>
+Date: Sat, 08 Sep 2007 13:11:26 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       dth <dth@dth.net>, Netdev <netdev@vger.kernel.org>,
-       Shish <shish@shishnet.org>, Karl Meyer <adhocrocker@gmail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>, Daniel Drake <dsd@gentoo.org>,
-       Oliver Neukum <oliver@neukum.org>,
-       linux-usb-devel@lists.sourceforge.net,
-       Christian Kujau <lists@nerdbynature.de>
-Subject: Re: [3/4] 2.6.23-rc5: known regressions v2
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Arkadiusz Miskiewicz <arekm@maven.pl>,
+       Thomas Voegtle <tv@lio96.de>, Soeren Sonnenburg <kernel@nn7.de>,
+       Christian Leber <christian@leber.de>,
+       kbuild-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: [4/4] 2.6.23-rc5: known regressions v2
 References: <46E27DEF.7060109@googlemail.com>
 In-Reply-To: <46E27DEF.7060109@googlemail.com>
 X-Enigmail-Version: 0.95.3
@@ -64,55 +65,51 @@ Tejun Heo                              3
 
 
 
-CPUFREQ
+Kconfig/Kbuild
 
-Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-References      : http://lkml.org/lkml/2007/7/27/298
-                  http://lkml.org/lkml/2007/7/29/371
+Subject         : building a specific in-tree module is currently a bit broken
+References      : http://lkml.org/lkml/2007/9/5/40
 Last known good : ?
-Submitter       : dth <dth@dth.net>
-Caused-By       : Len Brown <lenb@kernel.org>
-                  commit f79e3185dd0f8650022518d7624c876d8929061b
-Handled-By      : Len Brown <lenb@kernel.org>
+Submitter       : Robert P. J. Day <rpjday@mindspring.com>
+Caused-By       : ?
+Handled-By      : Sam Ravnborg <sam@ravnborg.org>
 Status          : problem is being debugged
 
 
 
-Networking
+Power management
 
-Subject         : 2.6.23-rc5: possible irq lock inversion dependency detected
-References      : http://lkml.org/lkml/2007/9/2/97
+Subject         : powersaving degradation, (time spend in C0 goes up after a while)
+References      : http://lkml.org/lkml/2007/9/2/142
 Last known good : ?
-Submitter       : Christian Kujau <lists@nerdbynature.de>
+Submitter       : Christian Leber <christian@leber.de>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : zd1211rw regression, device does not enumerate
-References      : http://marc.info/?l=linux-usb-devel&m=118854967709322&w=2
-                  http://bugzilla.kernel.org/show_bug.cgi?id=8972
-Last known good : ?
-Submitter       : Oliver Neukum <oliver@neukum.org>
-Caused-By       : Daniel Drake <dsd@gentoo.org>
-                  commit 74553aedd46b3a2cae986f909cf2a3f99369decc
-Handled-By      : ?
+Subject         : something broke resume from s2ram on mbp c1d (??? :))
+References      : http://lkml.org/lkml/2007/8/28/67
+Last known good : 2.6.23-rc3
+Submitter       : Soeren Sonnenburg <kernel@nn7.de>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
 Status          : unknown
 
-Subject         : NETDEV WATCHDOG: eth0: transmit timed out
-References      : http://lkml.org/lkml/2007/8/13/737
+Subject         : 2.6.23-rc2 swsusp, suddenly increased uptime
+References      : http://lkml.org/lkml/2007/8/12/249
 Last known good : ?
-Submitter       : Karl Meyer <adhocrocker@gmail.com>
+Submitter       : Thomas Voegtle <tv@lio96.de>
 Caused-By       : ?
-Handled-By      : Francois Romieu <romieu@fr.zoreil.com>
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
 Status          : problem is being debugged
 
-Subject         : Weird network problems with 2.6.23-rc2
-References      : http://lkml.org/lkml/2007/8/11/40
-Last known good : ?
-Submitter       : Shish <shish@shishnet.org>
+Subject         : resume from ram much slower
+References      : http://lkml.org/lkml/2007/8/10/275
+Last known good : 2.6.23-rc1 ?
+Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
 Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : problem is being debugged
 
 
 
