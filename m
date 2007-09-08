@@ -1,78 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932961AbXIGPyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932919AbXIGP66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932961AbXIGPyP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 11:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932617AbXIGPx7
+	id S932919AbXIGP66 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 11:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932334AbXIGP6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 11:53:59 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55821 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757089AbXIGPx7 (ORCPT
+	Fri, 7 Sep 2007 11:58:50 -0400
+Received: from 81-86-72-125.dsl.pipex.com ([81.86.72.125]:26498 "EHLO
+	nick.local0.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755313AbXIGP6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 11:53:59 -0400
-Message-ID: <46E17282.9030902@sgi.com>
-Date: Fri, 07 Sep 2007 08:47:14 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
+	Fri, 7 Sep 2007 11:58:49 -0400
+X-Greylist: delayed 1757 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Sep 2007 11:58:48 EDT
+From: Nick Piggin <nickpiggin@yahoo.com.au>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Andi Kleen <ak@suse.de>, clameter@sgi.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] core: fix build error when referencing arch specific
- structures
-References: <20070907040943.467530005@sgi.com>	<200709070828.05730.ak@suse.de> <20070907035632.13ceb928.akpm@linux-foundation.org>
-In-Reply-To: <20070907035632.13ceb928.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: Race in the inotify debug code
+Date: Sat, 8 Sep 2007 11:27:06 +1000
+User-Agent: KMail/1.9.5
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       christian.mandery@sap.com, amy.griffis@hp.com
+References: <46CDA6DE.6010102@redhat.com> <20070905090547.1bd50b33.akpm@linux-foundation.org>
+In-Reply-To: <20070905090547.1bd50b33.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709081127.06652.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->> On Fri, 7 Sep 2007 08:28:05 +0100 Andi Kleen <ak@suse.de> wrote:
->> On Friday 07 September 2007 05:09, travis@sgi.com wrote:
->>> Since the core kernel routines need to reference cpu_sibling_map,
->>> whether it be a static array or a per_cpu data variable, an access
->>> function has been defined.
->>>
->>> In addition, changes have been made to the ia64 and ppc64 arch's to
->>> move the cpu_sibling_map from a static cpumask_t array [NR_CPUS] to
->>> be per_cpu cpumask_t arrays.
->>>
->>> Note that I do not have the ability to build or test patch 3/3, the
->>> ppc64 changes.
->>>
->>> Patches are referenced against 2.6.23-rc4-mm1 .
->> It would be better if you could redo the patches with the original patches
->> reverted, not incremental changes. In the end we'll need a full patch set
->> with full changelog anyways, not a series of incremental fixes.
-> 
-> yup
->  
->> Also I guess some powerpc testers would be needed. Perhaps cc the
->> maintainers?
->>
-> 
-> yup
-> 
-> All architectures except sparc64 are now done - please have a shot at doing
-> sparc64 as well.
+On Thursday 06 September 2007 02:05, Andrew Morton wrote:
+> > On Thu, 23 Aug 2007 11:25:18 -0400 Chuck Ebbert <cebbert@redhat.com>
+> > wrote: https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=248355
+> >
+> > Description of problem:
+> > Warnings in the kernel log (dmesg):
+> > BUG: warning at fs/inotify.c:172/set_dentry_child_flags() (Not tainted)
+> >  [<c0497a37>] set_dentry_child_flags+0x67/0x13d
+> >  [<c0497c27>] remove_watch_no_event+0x2f/0x3b
+> >  [<c0497d15>] inotify_remove_watch_locked+0x12/0x3e
+> >  [<c0600c17>] mutex_lock+0x1a/0x29
+> >  [<c0497fdd>] inotify_rm_wd+0x6d/0x8a
+> >  [<c04983b1>] sys_inotify_rm_watch+0x38/0x4f
+> >  [<c0404f70>] syscall_call+0x7/0xb
+> >
+> > Appears randomly, about every second/third day.
+> >
+> > Still happening in kernel 2.6.22.
+> >
+> >
+> > static void set_dentry_child_flags(struct inode *inode, int watched)
+> > ...
+> >         spin_lock(&dcache_lock);
+> >         list_for_each_entry(alias, &inode->i_dentry, d_alias) {
+> >                 struct dentry *child;
+> >
+> >                 list_for_each_entry(child, &alias->d_subdirs,
+> > d_u.d_child) { if (!child->d_inode) {
+> >                                 WARN_ON(child->d_flags &
+> > DCACHE_INOTIFY_PARENT_WATCHED); continue;
+> >                         }
+> >
+> > But in dcache.c, the locks are dropped before this flag is cleared,
+> > leaving a race window:
+> >
+> > void d_delete(struct dentry * dentry)
+> > ...
+> >         spin_lock(&dcache_lock);
+> >         spin_lock(&dentry->d_lock);
+> >         isdir = S_ISDIR(dentry->d_inode->i_mode);
+> >         if (atomic_read(&dentry->d_count) == 1) {
+> >                 dentry_iput(dentry);  <================ drops dcache_lock
+> > and dentry->d_lock fsnotify_nameremove(dentry, isdir);
+> >
+> >                 /* remove this and other inotify debug checks after
+> > 2.6.18 */ dentry->d_flags &= ~DCACHE_INOTIFY_PARENT_WATCHED; return;
+> >         }
+> >
+> > (The comment is nice, it says the debug code should have been removed
+> > long ago.)
+>
+> We've been chasing this bug for a year or so.  Thanks for maybe-solving it.
+> I forwarded your email to Nick a few days ago but he's presently tied up
+> with kernel slummit.  Please let us not forget about this?
 
-Ok, will do.  I didn't realize there was only one more that used the SCHED_SMT
-code.
 
-> 
-> I'd suggest that we not implement that cpu_sibling_map() macro and just
-> open-code the per_cpu() everywhere.  So henceforth any architecture which
-> implements CONFIG_SCHED_SMT must implement the per-cpu sibling map.
+There is some race in the debug code, yes, but I think there could also be
+a real race in there too. I've posted a trial patch for it in one of the other
+inotify bug reports.
 
-Yes, with only one more to do it's not that daunting. ;-)
+Anyway, yes I'm inclined to just fix that and rip out the debug code. OTOH,
+I have been trying to get some tester to reproduce with patches and had
+no takers as yet...
 
-> That's nice and simple, and avoids the unpleasant
-> pretend-function-used-as-an-lvalue trick.  (Well OK, per_cpu() does
-> that, but let's avoid resinning).
-
-Yes, the per_cpu macro is quite the specimen. ;-)
-
-Thanks!
-Mike
-
+BTW, I will be away for the next few weeks so I'll be going slower than usual
