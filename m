@@ -1,60 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbXIHWw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbXIHWyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbXIHWw3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 18:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbXIHWwW
+	id S1755707AbXIHWyl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 18:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbXIHWye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 18:52:22 -0400
-Received: from mail97.megamailservers.com ([216.251.36.97]:34083 "EHLO
-	mail97.megamailservers.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753684AbXIHWwV (ORCPT
+	Sat, 8 Sep 2007 18:54:34 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:38316 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754798AbXIHWyd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 18:52:21 -0400
-X-Authenticated-User: jgeorgas.georgas.ca
-Subject: broken ACPI NUMA config option
-From: "James C. Georgas" <jgeorgas@georgas.ca>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Georgas Software Solutions
-Date: Sat, 08 Sep 2007 18:51:39 -0400
-Message-Id: <1189291899.13467.20.camel@Tachyon.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Sat, 8 Sep 2007 18:54:33 -0400
+Date: Sun, 9 Sep 2007 00:54:32 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: development.jim@gmail.com
+cc: linux-kernel@vger.kernel.org
+Subject: Re: USB and MMC device problems on Kernel 2.6.22
+In-Reply-To: <46E32207.6080104@gmail.com>
+Message-ID: <Pine.LNX.4.64.0709090053450.8346@fbirervta.pbzchgretzou.qr>
+References: <46E32207.6080104@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If I select X86_64_ACPI_NUMA, then ACPI_NUMA is (properly) selected
-automatically, but ACPI is not selected automatically. This causes
-ACPI_NUMA to not be built, and the kernel compile fails with unresolved
-symbols.
 
-Steps to reproduce:
+On Sep 9 2007 08:28, development.jim@gmail.com wrote:
+>
+> I have an ARM hardware board works fine with USB and MMC on kernel
+> 2.6.11. Now, I've just upgraded it to kernel 2.6.22. The modules
+> seem loaded fine, please see following list, but neither USB nor
+> MMC could detect devices when a USB stick or SD card was plugged in
 
-	make clean
-	make mrproper
-	make noallconfig
-
-	select SMP
-	select NUMA
-	select X86_64_ACPI_NUMA
-
-	make
-	<boom>
-
-results:
-
-	  LD      .tmp_vmlinux1
-	drivers/built-in.o: In function `acpi_bus_generate_event':
-	(.text+0x23365): undefined reference to `event_is_open'
-	drivers/built-in.o: In function `acpi_bus_get_power':
-	(.text+0x2361d): undefined reference to `acpi_power_get_inferred_state'
-	drivers/built-in.o: In function `acpi_bus_set_power':
-	(.text+0x23733): undefined reference to `acpi_power_transition'
-	drivers/built-in.o: In function `acpi_bus_set_power':
-	(.text+0x237a5): undefined reference to `acpi_power_transition'
-	make: *** [.tmp_vmlinux1] Error 1
-
-James
-	/\V
-
+If it detects something, it should show up in `lsusb`.
