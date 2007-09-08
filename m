@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbXIHNjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbXIHNp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753448AbXIHNjv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 09:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbXIHNjo
+	id S1753423AbXIHNp6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 09:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbXIHNpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 09:39:44 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34412 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751130AbXIHNjn (ORCPT
+	Sat, 8 Sep 2007 09:45:50 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4778 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751983AbXIHNpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 09:39:43 -0400
-Date: Sat, 8 Sep 2007 14:47:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sata & scsi suggestion for make menuconfig
-Message-ID: <20070908144758.37ab3c76@the-village.bc.nu>
-In-Reply-To: <200709080652.02614.a1426z@gawab.com>
-References: <200709080652.02614.a1426z@gawab.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 8 Sep 2007 09:45:49 -0400
+Date: Sat, 8 Sep 2007 09:38:33 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Greg KH <gregkh@suse.de>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Oliver Neukum <oliver@neukum.org>, Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: [2/4] 2.6.23-rc5: known regressions v2
+In-Reply-To: <20070908122852.GA30315@suse.de>
+Message-ID: <Pine.LNX.4.44L0.0709080935400.20265-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I once sent a patch to make libata a submenu of scsi.
+On Sat, 8 Sep 2007, Greg KH wrote:
 
-Which is wrong
+> On Sat, Sep 08, 2007 at 01:11:13PM +0200, Michal Piotrowski wrote:
+> > USB
+> > 
+> > Subject         : 2.6.23-rc1: USB hard disk broken
+> > References      : http://lkml.org/lkml/2007/7/25/62
+> > Last known good : ?
+> > Submitter       : Tino Keitel <tino.keitel@gmx.de>
+> > Caused-By       : ?
+> > Handled-By      : Oliver Neukum <oliver@neukum.org>
+> > Status          : unknown
+> > 
+> > Subject         : USB hard disk broken in 2.6.23-rc3 (autosuspend related)
+> > References      : http://bugzilla.kernel.org/show_bug.cgi?id=8892
+> > Last known good : ?
+> > Submitter       : Roman Jarosz <kedgedev@centrum.cz>
+> > Caused-By       : ?
+> > Handled-By      : Alan Stern <stern@rowland.harvard.edu>
+> > Workaround      : echo -1 >/sys/bus/usb/devices/1-4/power/autosuspend
+> > Status          : possible hardware problem
+> 
+> Oliver and Alan, is there any info about these?  Anything that I can
+> help out with?
 
-Nakked-by: Alan Cox <alan@redhat.com>
+We're still waiting to hear back from Tino.
 
-The general comments about moving this stuff around and making it clearer
-what sd/sr etc are nowdays are good but hiding libata under SCSI will
-cause even more confusion than it cures
+Last week I submitted a patch adding Roman's device to the USB quirks 
+list.  IIRC the device is one of those troublesome Genesys USB-IDE 
+adapters; most of the time it resumes correctly but every now and then 
+it fails.  The patch should be somewhere on your input queue.
+
+Alan Stern
 
