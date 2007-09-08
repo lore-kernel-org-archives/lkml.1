@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbXIHN7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbXIHOCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbXIHN7U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 09:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbXIHN7N
+	id S1753587AbXIHOCo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 10:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbXIHOCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 09:59:13 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:48082 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752625AbXIHN7M (ORCPT
+	Sat, 8 Sep 2007 10:02:37 -0400
+Received: from mail1.bizmail.net.au ([60.246.2.164]:34253 "EHLO
+	mail1.bizmail.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752646AbXIHOCg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 09:59:12 -0400
-Message-ID: <a0738740709080659m34a78f2em7280facb64577a88@mail.gmail.com>
-Date: Sat, 8 Sep 2007 14:59:10 +0100
-From: "Alex Smith" <lkml@alex-smith.me.uk>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: Oops in pwc v4l driver
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <6bffcb0e0709021647m7ad694d7mf876bf4a6c8b4aca@mail.gmail.com>
+	Sat, 8 Sep 2007 10:02:36 -0400
+X-Greylist: delayed 1438 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Sep 2007 10:02:36 EDT
+Message-ID: <46E2A5EF.1070908@gmail.com>
+Date: Sat, 08 Sep 2007 23:38:55 +1000
+From: development.jim@gmail.com
+Reply-To: development.jim@gmail.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.11) Gecko/20050729
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: Device problems on Kernel 22
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a0738740709020457n3490ee52l49d29712f3ddbb75@mail.gmail.com>
-	 <6bffcb0e0709021647m7ad694d7mf876bf4a6c8b4aca@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/09/2007, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> Hi Alex,
->
-> On 02/09/07, Alex Smith <lkml@alex-smith.me.uk> wrote:
-> > Hi,
-> >
-> > I found an old Philips Askey VC010 webcam and attempted to get it
-> > working on Linux (latest git, x86_64).
->
-> Is this a regression? Does 2.6.22 work fine?
+Hi,
 
-Not sure, I haven't tested with .22. But that patch definitely fixes
-the issue - I can't cause it no matter what I do.
+I have an ARM hardware board works fine with USB and MMC in kernel 11. 
+Now, I've just upgraded it to kernel 22. The modules seem loaded fine, 
+please see following list, but both usb and mmc modules failed to detect 
+the USB stick or SD card when it was plugged in (I enabled module debug, 
+but nothing printed out). I understand that the devfs is no longer 
+supported by the kernel 22, but should the modules still be able to 
+detect the devices? I think something has been missing, could anyone 
+help, what I am missing here?
 
-Thanks,
-Alex
+K22 $ lsmod
+Module                  Size  Used by
+nls_utf8                1696  0
+nls_iso8859_1           3936  0
+nls_cp437               5600  0
+nls_ascii               3936  0
+vfat                   10336  0
+fat                    48028  1 vfat
+mmc_block               8580  0
+s3c2410mci              6560  0
+mmc_core               25876  2 mmc_block,s3c2410mci
 
-(P.S. Sorry for the late reply - I don't check my lkml email that often)
--- 
-Alex Smith - http://www.alex-smith.me.uk
+
+Thank you.
+
+Jim
