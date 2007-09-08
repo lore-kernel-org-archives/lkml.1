@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbXIHH2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbXIHH3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbXIHH2k (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 03:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbXIHH23
+	id S1753189AbXIHH3X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 03:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbXIHH3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 03:28:29 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:39918 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752816AbXIHH22 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 03:28:28 -0400
-Date: Sat, 8 Sep 2007 03:23:17 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/6] Linux Kernel Markers - Port SPU to markers
-Message-ID: <20070908072317.GA16854@Krystal>
-References: <20070906200733.194442762@polymtl.ca> <20070906200827.452767571@polymtl.ca> <20070908070438.GA1819@martell.zuzino.mipt.ru>
+	Sat, 8 Sep 2007 03:29:14 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:46557 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751678AbXIHH3M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 03:29:12 -0400
+Date: Sat, 8 Sep 2007 09:29:11 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Folkert van Heusden <folkert@vanheusden.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: sata & scsi suggestion for make menuconfig
+In-Reply-To: <46E249CB.5070505@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0709080927490.25942@fbirervta.pbzchgretzou.qr>
+References: <20070907124800.GP16806@vanheusden.com>
+ <20070907083522.3191a4ba.randy.dunlap@oracle.com> <20070907155903.GR16806@vanheusden.com>
+ <46E17A81.7020304@s5r6.in-berlin.de> <20070907230529.GX16806@vanheusden.com>
+ <46E249CB.5070505@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20070908070438.GA1819@martell.zuzino.mipt.ru>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 03:21:14 up 40 days,  7:40,  4 users,  load average: 0.07, 0.33, 0.39
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alexey Dobriyan (adobriyan@gmail.com) wrote:
-> On Thu, Sep 06, 2007 at 04:07:39PM -0400, Mathieu Desnoyers wrote:
-> > Andrew, any chance to get this into -mm ASAP so we can have it in
-> > 2.6.24?
-> > 
-> > Just in case anyone wonders what this is usefulfor I've ported my
-> > hacking spu tracing code to it, and if markers get in I'd push a cleaned
-> > up version of this in the tree of the benefit of everyone trying to
-> > follow what's going on in the spufs code.  Similarly I'd like to port
-> > the xfs tracing code over to it which is very helpful in trying to
-> > debug filesystem issues.
-> > 
-> > Note that in this patch the actual logging code is rather nasty
-> > hand-crafted code lifted from the tcp probe in tree which would benefit
-> > of going away in favour of more general tracing code aswell.
-> > 
-> > Changelog:
-> > - Porting to 2.6.23-rc4-mm1 gave a reject (a trace point location disappeared)
-> >   from spufs_ps_nopfn() : spufs_ps_nopfn__sleep and spufs_ps_nopfn__wake.
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> 
-> Where are Christoph's attributions?
 
-I realized only after sending this patch set that the 
+On Sep 8 2007 09:05, Stefan Richter wrote:
+>config ATA
+>	[...]
+>
+>comment "Controller drivers"
+>
+>[...low-level drivers go here...]
+>
+>comment "Storage device drivers"
+>
+>config ATA_SD
+>	tristate "SATA/PATA HDD support (via SCSI disk support)"
+>	depends on ATA
+>	select BLK_DEV_SD
+>	help
+>	  'SCSI disk support' is required to access SATA HDDs.  It is
+>	  also necessary for parallel ATA (IDE) HDDs if you use the
+>	  experimental parallel ATA option.
+>
+>	  You can say Y or M here to select SCSI disk support, or you
+>	  can do so in the 'SCSI device support' section.
+>
+>[...ditto for CD/DVD-ROMs, tapes, and generic support...]
 
-From: Christoph Hellwig <hch@infradead.org>
+And what uses ATA_SD, or is the user supposed to manually enable it?
 
-Has somehow been stripped off from the patch header.
 
+
+	Jan
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
