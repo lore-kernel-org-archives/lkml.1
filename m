@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbXIHDv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031AbXIHEMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbXIHDv5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 23:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbXIHDvu
+	id S1752031AbXIHEMo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 00:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750713AbXIHEMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 23:51:50 -0400
-Received: from [212.12.190.179] ([212.12.190.179]:32898 "EHLO raad.intranet"
+	Sat, 8 Sep 2007 00:12:37 -0400
+Received: from [212.12.190.17] ([212.12.190.17]:32903 "EHLO raad.intranet"
 	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751255AbXIHDvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 23:51:48 -0400
+	id S1750720AbXIHEMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 00:12:36 -0400
 From: Al Boldi <a1426z@gawab.com>
 To: linux-kernel@vger.kernel.org
-Subject: Re: sata & scsi suggestion for make menuconfig
-Date: Sat, 8 Sep 2007 06:52:02 +0300
+Subject: Re: Why do so many machines need "noapic"?
+Date: Sat, 8 Sep 2007 07:12:51 +0300
 User-Agent: KMail/1.5
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709080652.02614.a1426z@gawab.com>
+Message-Id: <200709080712.51339.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
->> Ok, but that's not the most common situaties. What I'm suggesting is a
->> warning or a please note popup. Not neccessarily an error or refusing to
->> continue thing.
+Chuck Ebbert wrote:
+> On 09/06/2007 07:31 AM, Andi Kleen wrote:
+> > Chuck Ebbert <cebbert@redhat.com> writes:
+> >> Some systems lock up without the noapic option.
+> >
+> > Please find patterns: cpu type, chipsets, mainboard vendors etc.
 >
->What IMHO makes sense is changing all references to SCSI CDROM,
->SCSI DISK etc. to just CDROM, DISK, and changing SCSI (menu) to
->something like MASS STORAGE.
+> This is the first one I've actually had in front of me:
+>
+>   HP TX1000 notebook
+>   Nvidia C51/MCP51 mobile chipset
+>
+> Booting with "noapic" gives some very strange results. This is two
+> snapshots of /proc/interrupts taken one second apart. It almost looks
+> like timer interrupts are occurring on IRQ 0 and IRQ7 on different
+> CPUs:
+>
+>            CPU0       CPU1
+>   0:     446096       6224    XT-PIC-XT        timer
+>   1:        342          6    XT-PIC-XT        i8042
+>   2:          0          0    XT-PIC-XT        cascade
+>   5:       3099        865    XT-PIC-XT        sata_nv
+>   7:       8145     494718    XT-PIC-XT        ehci_hcd:usb2
+>   8:          0          0    XT-PIC-XT        rtc0
+>   9:        323          9    XT-PIC-XT        acpi
+>  10:        136         36    XT-PIC-XT        HDA Intel
+>  11:      43884       1091    XT-PIC-XT        ohci_hcd:usb1, eth0
+>  12:        104         19    XT-PIC-XT        i8042
+>  14:       1011         25    XT-PIC-XT        libata
+>  15:          0          0    XT-PIC-XT        libata
+> NMI:          0          0
+> LOC:       6212     445951
+> ERR:     403241
+> MIS:          0
 
-I once sent a patch to make libata a submenu of scsi.
+You may want to try to reconfigure your bios to reserve irq 5/7 for isa only.
 
-[PATCH] libata Kconfig: Allow libata to be selected from within the SCSI submenu
-From: Al Boldi <a1426z@gawab.com>
-To: linux-ide@vger.kernel.org
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Date: 08/01/07 07:22 am
-
-Move libata Kconfig sourcing from the drivers Kconfig into the SCSI Kconfig.
-
-This allows the user to quickly select additional disk/tape/cdrom support 
-from within the same menu.
-
-Signed-off-by: Al Boldi <a1426z@gawab.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
---- a/drivers/Kconfig   2007-05-02 17:25:30.000000000 +0300
-+++ b/drivers/Kconfig   2007-08-01 06:33:13.000000000 +0300
-@@ -22,8 +22,6 @@ source "drivers/ide/Kconfig"
- 
- source "drivers/scsi/Kconfig"
- 
--source "drivers/ata/Kconfig"
--
- source "drivers/cdrom/Kconfig"
- 
- source "drivers/md/Kconfig"
---- a/drivers/scsi/Kconfig      2007-07-09 06:38:37.000000000 +0300
-+++ b/drivers/scsi/Kconfig      2007-08-01 06:46:42.000000000 +0300
-@@ -7,6 +7,8 @@ config RAID_ATTRS
-        ---help---
-          Provides RAID
- 
-+source "drivers/ata/Kconfig"
-+
- config SCSI
-        tristate "SCSI device support"
-        depends on BLOCK
-
+Then post /proc/interrupts again.
 
 
 Thanks!
