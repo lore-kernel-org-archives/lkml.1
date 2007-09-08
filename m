@@ -1,99 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbXIHRIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754399AbXIHRWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753966AbXIHRIU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 13:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbXIHRIE
+	id S1754399AbXIHRWh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 13:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbXIHRW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 13:08:04 -0400
-Received: from pne-smtpout4-sn2.hy.skanova.net ([81.228.8.154]:56031 "EHLO
-	pne-smtpout4-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753797AbXIHRID (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 13:08:03 -0400
-Message-ID: <46E2D712.1010402@gmail.com>
-Date: Sat, 08 Sep 2007 20:08:34 +0300
-From: Anssi Hannula <anssi.hannula@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070805)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dtor@insightbb.com>
-CC: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: sysfs change of input/event devices in 2.6.23rc breaks udev
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 8 Sep 2007 13:22:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41296 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753923AbXIHRW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 13:22:28 -0400
+Date: Sat, 8 Sep 2007 17:22:27 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.4.35.2
+Message-ID: <20070908172227.GA6308@hera.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+I've just released Linux 2.4.35.2.
 
-There seem to be changes in sysfs input structure between 2.6.22 and 
-2.6.23-rc5 which cause some breakage.
+The removal of -fno-unit-at-a-time in 2.4.35.1 in order to fix build
+with gcc-4.2 uncovered nasty optimization issues in the current code
+under gcc-4.x. This option not only prevents gcc from reordering
+sections, it also prevents it from doing a better optimization of some
+inlinable functions and from stripping out static variables which
+apparently never get assigned.
 
-With 2.6.22:
+Since the removal of the option, some users were caught by modules
+which had no symbol for certain parameters ; this is a very annoying
+regression which forced them to go back to 2.4.34.x.
 
-> # LC_ALL=C ls -l /sys/class/input/input4
-> total 0
-> drwxr-xr-x 2 root root    0 Sep  8 12:51 capabilities/
-> lrwxrwxrwx 1 root root    0 Sep  8 19:48 device -> ../../../devices/platform/pcspkr/
-> drwxr-xr-x 2 root root    0 Sep  8 12:51 event4/
-> drwxr-xr-x 2 root root    0 Sep  8 12:51 id/
-> -r--r--r-- 1 root root 4096 Sep  8 19:48 modalias
-> -r--r--r-- 1 root root 4096 Sep  8 19:48 name
-> -r--r--r-- 1 root root 4096 Sep  8 19:48 phys
-> lrwxrwxrwx 1 root root    0 Sep  8 19:48 subsystem -> ../../../class/input/
-> --w------- 1 root root 4096 Sep  8 19:48 uevent
-> -r--r--r-- 1 root root 4096 Sep  8 19:48 uniq
+So I have restored -fno-unit-at-a-time for now, and yes, it *will* break
+gcc-4.2. But the breakage will be detected at build time now, and people
+will not get randomly working modules. I am currently exploring several
+solutions to this issue, one of them consisting in fixing broken modules
+since -fno-unit-at-a-time is already deprecated. If I find something
+reasonably non-intrusive, I will consider it for 2.4.36-pre.
 
-> # ls -l /sys/class/input/event4
-> lrwxrwxrwx 1 root root 0 Sep  8 19:48 /sys/class/input/event4 -> ../../class/input/input4/event4/
-> # ls -l /sys/class/input/event4/
-> total 0
-> -r--r--r-- 1 root root 4096 Sep  8 19:58 dev
-> lrwxrwxrwx 1 root root    0 Sep  8 19:58 device -> ../../../../devices/platform/pcspkr/
-> lrwxrwxrwx 1 root root    0 Sep  8 19:58 subsystem -> ../../../../class/input/
-> --w------- 1 root root 4096 Sep  8 19:58 uevent
+Right now, I expect 2.4.35.2 to be safe for gcc-4.1 users.
 
-With 2.6.23-rc5:
+Willy
+--
 
-> # ls -l /sys/class/input/input5
-> total 0
-> drwxr-xr-x 2 root root    0 Sep  8 19:47 capabilities/
-> lrwxrwxrwx 1 root root    0 Sep  8 19:03 device -> ../../../devices/platform/pcspkr/
-> drwxr-xr-x 2 root root    0 Sep  8 19:47 id/
-> lrwxrwxrwx 1 root root    0 Sep  8 19:47 input:event5 -> ../../../class/input/event5/
-> -r--r--r-- 1 root root 4096 Sep  8 19:03 modalias
-> -r--r--r-- 1 root root 4096 Sep  8 19:03 name
-> -r--r--r-- 1 root root 4096 Sep  8 19:47 phys
-> drwxr-xr-x 2 root root    0 Sep  8 19:47 power/
-> lrwxrwxrwx 1 root root    0 Sep  8 19:03 subsystem -> ../../../class/input/
-> -rw-r--r-- 1 root root 4096 Sep  8 19:03 uevent
-> -r--r--r-- 1 root root 4096 Sep  8 19:47 uniq
+The patch and changelog will appear soon at the following locations:
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/patch-2.4.35.2.bz2
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.35.2
 
-> # ls -l /sys/class/input/event5
-> total 0
-> -r--r--r-- 1 root root 4096 Sep  8 19:03 dev
-> lrwxrwxrwx 1 root root    0 Sep  8 19:03 device -> ../../../class/input/input5/
-> drwxr-xr-x 2 root root    0 Sep  8 19:48 power/
-> lrwxrwxrwx 1 root root    0 Sep  8 19:03 subsystem -> ../../../class/input/
-> -rw-r--r-- 1 root root 4096 Sep  8 19:03 uevent
+Git repository:
+   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
+  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.35.y.git
 
-There are a few changes.
+Git repository through the gitweb interface:
+  http://git.kernel.org/?p=linux/kernel/git/stable/linux-v2.4.35.y.git
 
-There is no longer:
-/sys/class/input/eventX => /sys/class/input/inputX/eventX
-instead there is:
-/sys/class/inputX/input:eventX => /sys/class/input/eventX
-Notice the added "input:". I don't know if any software depends on this, 
-though.
 
-However, the change that broke id_path of udev is that 
-/sys/class/input/event5/device is now a symlink to the inputX directory 
-instead of being the same as the device symlink in inputX directory, 
-i.e. to ../../../devices/platform/pcspkr in this case.
 
-Udev id_path uses that directory to construct the ID_PATH variable. 
-Should the sysfs structure be reverted or should udev be adapted to 
-handle traversing /device symlink twice? I think the former, as there 
-should be considerably more time to adapt udev for coming changes in sysfs.
+Summary of changes from v2.4.35.1 to v2.4.35.2
+============================================
 
--- 
-Anssi Hannula
+Willy Tarreau (3):
+      i386: do_test_wp_bit() must not be inlined
+      restore -fno-unit-at-a-time on GCC >= 4
+      Change VERSION to 2.4.35.2
+
