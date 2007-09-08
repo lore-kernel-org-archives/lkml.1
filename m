@@ -1,48 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbXIHLeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753021AbXIHL6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753094AbXIHLeR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 07:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbXIHLeG
+	id S1753021AbXIHL6T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 07:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbXIHL6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 07:34:06 -0400
-Received: from twinlark.arctic.org ([207.29.250.54]:54985 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751017AbXIHLeF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 07:34:05 -0400
-Date: Sat, 8 Sep 2007 04:34:03 -0700 (PDT)
-From: dean gaudet <dean@arctic.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, ak@suse.de,
-       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: Intel Memory Ordering White Paper
-In-Reply-To: <200709090348.28076.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0709080429420.27088@twinlark.arctic.org>
-References: <200709071526.51169.jesse.barnes@intel.com>
- <alpine.LFD.0.999.0709080020040.9047@evo.linux-foundation.org>
- <200709090334.27677.nickpiggin@yahoo.com.au> <200709090348.28076.nickpiggin@yahoo.com.au>
+	Sat, 8 Sep 2007 07:58:07 -0400
+Received: from h155.mvista.com ([63.81.120.155]:49176 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752030AbXIHL6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 07:58:06 -0400
+Message-ID: <46E28F01.7010808@ru.mvista.com>
+Date: Sat, 08 Sep 2007 16:01:05 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] hpt366: MWDMA filter for SATA cards
+References: <200709030019.22732.sshtylyov@ru.mvista.com> <46DB1C50.2020205@ru.mvista.com>
+In-Reply-To: <46DB1C50.2020205@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Sep 2007, Nick Piggin wrote:
+Hello, I wrote:
+Sergei Shtylyov wrote:
 
-> I've also heard that string operations do not follow the normal ordering, but
-> that's just with respect to individual loads/stores in the one operation, I
-> hope? And they will still follow ordering rules WRT surrounding loads and
-> stores?
+>    The patch was 4/4 of course. :-<
+>     Probably I was too esctatic about the code. ;-)
 
-see section 7.2.3 of intel volume 3A...
+    Or rarher me. :-)
 
-"Code dependent upon sequential store ordering should not use the string 
-operations for the entire data structure to be stored. Data and semaphores 
-should be separated. Order dependent code should use a discrete semaphore 
-uniquely stored to after any string operations to allow correctly ordered 
-data to be seen by all processors."
+>> The Marvell bridge chips used on HighPoint SATA cards do not seem to 
+>> support
+>> the MWDMA modes (at least that caould be seen in their so-called 
+>> drivers :-),
+>> so the driver needs to account for this -- to achieve this:
 
-i think we need sfence after things like copy_page, clear_page, and 
-possibly copy_user... at least on intel processors with fast strings 
-option enabled.
+>> - add mdma_filter() method from the original patch by Bartlomiej 
+>> Zolnierkewicz
+>>   with his consent, also adding the method callout to ide_rate_filter();
 
--dean
+>> - installed the method for all chips to only return empty mask if a 
+>> SATA drive
+>>   is detected onHPT372{AN]/374 chips...
+
+>> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+>> ---
+>> This patch against the current Linus' tree and unfortunately I was 
+>> able to only
+>> compile test it since that tree gives MODPOST warning and dies early 
+>> on bootup.
+>> Will hopefully try to test if/when I have time... :-)
+
+    And it was still the same -- I'd bisected if I had time...
+
+>> Index: linux-2.6/drivers/ide/pci/hpt366.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/ide/pci/hpt366.c
+>> +++ linux-2.6/drivers/ide/pci/hpt366.c
+>> @@ -1,5 +1,5 @@
+>>  /*
+>> - * linux/drivers/ide/pci/hpt366.c        Version 1.12    Aug 25, 2007
+>> + * linux/drivers/ide/pci/hpt366.c        Version 1.13    Aug 22, 2007
+
+>    Errr... and version shuold Aug 02 -- thought I've fixed that. :-/
+
+    Hehe, thanks.  Those versions turned to be quite PITA a to keep.
+
+MBR, Sergei
