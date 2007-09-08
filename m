@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752247AbXIHGlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbXIHHEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752247AbXIHGlP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 02:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbXIHGlB
+	id S1752222AbXIHHEy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 03:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbXIHHEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 02:41:01 -0400
-Received: from mi1.bluebottle.com ([206.188.25.14]:34208 "EHLO
-	mi1.bluebottle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751157AbXIHGlA (ORCPT
+	Sat, 8 Sep 2007 03:04:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:45962 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751179AbXIHHEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 02:41:00 -0400
-DomainKey-Signature: a=rsa-sha1; s=mail; d=bluebottle.com; c=nofws; q=dns;
-	h=received:from:to:cc:references:subject:date:mime-version:
-	content-type:content-transfer-encoding:x-priority:
-	x-msmail-priority:x-mailer:x-mimeole:x-trusted-delivery;
-	b=IAqSpiPmOwQo/aR62HWixiPQ2WCmcO8rZmvE7+itwtdTWHkBuwnW8MGQ0K8ocBedx
-	jryVXupde04W8S4k+BxeQg0h+/ZTWWc6KNlIHxPF1vUVEad8XAZe2MnzfiA7N8E
-Message-Id: <200709080640.l886exPi003724@mi1.bluebottle.com>
-From: "n" <xellos@bluebottle.com>
-To: "Jeff Garzik" <jeff@garzik.org>, "David Chinner" <dgc@sgi.com>
-Cc: <linux-kernel@vger.kernel.org>
-References: <007d01c7eaf6$74b9b350$0100a8c0@hak> <20070907130212.GI995458@sgi.com> <46E1E2F6.5060307@garzik.org>
-Subject: Re: limiting to UDMA/33 instead of UDMA/100 - pata_pdc202xx_old (also XFS error)?
-Date: Fri, 7 Sep 2007 23:41:10 -0700
+	Sat, 8 Sep 2007 03:04:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=g8EgkjzlbMFCLv7j5ayc0fMpcVSc0LHaJcB9x0E3Al0wvi5gsDH9Aik5as4gD3+dyAX/koYaQUfKExItyaEA+SCiQlss8vbvWfjcvlkIS0mcbZyBwasr4z+u3QsAwc5oPniCrgXOWPd5pmgtZ70+wB6TW2zNt2VwV1o4G3MJVP0=
+Date: Sat, 8 Sep 2007 11:04:38 +0400
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/6] Linux Kernel Markers - Port SPU to markers
+Message-ID: <20070908070438.GA1819@martell.zuzino.mipt.ru>
+References: <20070906200733.194442762@polymtl.ca> <20070906200827.452767571@polymtl.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="Windows-1252";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-Trusted-Delivery: <3595b99efde2489f3a1ea5efc6fe0bea>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070906200827.452767571@polymtl.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i doubt its bad harddrive / powersupply (just replaced it) , i think this
-new driver has some bugs that need to be fixed, if i use the old ide
-pdc202xx_old the drive works fine maybe the new driver is detecting res
-51/84:00:3f:00:00/00:00:00:00:00/e0 as ata bus error when it might be
-seagates way of saying OK or success (im not sure), anyways for the time
-being im running the old ide drivers on the promise ide card untill the new
-drivers get some more bugs fixed, im using the new nforce2 ata drivers
-flawlessly for the system drives, the pdc card is just for backups..
+On Thu, Sep 06, 2007 at 04:07:39PM -0400, Mathieu Desnoyers wrote:
+> Andrew, any chance to get this into -mm ASAP so we can have it in
+> 2.6.24?
+> 
+> Just in case anyone wonders what this is usefulfor I've ported my
+> hacking spu tracing code to it, and if markers get in I'd push a cleaned
+> up version of this in the tree of the benefit of everyone trying to
+> follow what's going on in the spufs code.  Similarly I'd like to port
+> the xfs tracing code over to it which is very helpful in trying to
+> debug filesystem issues.
+> 
+> Note that in this patch the actual logging code is rather nasty
+> hand-crafted code lifted from the tcp probe in tree which would benefit
+> of going away in favour of more general tracing code aswell.
+> 
+> Changelog:
+> - Porting to 2.6.23-rc4-mm1 gave a reject (a trace point location disappeared)
+>   from spufs_ps_nopfn() : spufs_ps_nopfn__sleep and spufs_ps_nopfn__wake.
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-maybe when the next kernel comes out ill try the new pata_pdc202xx_old
-drivers again.
-
-
------ Original Message ----- 
-From: "Jeff Garzik" <jeff@garzik.org>
-To: "David Chinner" <dgc@sgi.com>; "n" <xellos@bluebottle.com>
-Cc: <linux-kernel@vger.kernel.org>
-Sent: Friday, September 07, 2007 4:47 PM
-Subject: Re: limiting to UDMA/33 instead of UDMA/100 - pata_pdc202xx_old
-(also XFS error)?
-
-
->>>         res 51/84:00:3f:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus
->>> error)
->>>         res 51/84:00:3f:00:00/00:00:00:00:00/e0 Emask 0x10 (ATA bus
->>> error)
->>>         res 51/84:00:21:9d:fc/00:00:00:00:00/e6 Emask 0x10 (ATA bus
->>> error)
->
->
-> ATA bus error == straight-from-hardware reported error
->
-> Cable or connector is dying maybe?  Bad power supplies also sometimes
-> manifest this way.
->
-> Jeff
->
->
-
-----------------------------------------------------------------------
-Get a free email account with anti spam protection.
-http://www.bluebottle.com/tag/2
-
+Where are Christoph's attributions?
