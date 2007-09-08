@@ -1,38 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753814AbXIHODl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbXIHODy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753814AbXIHODl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 10:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbXIHODd
+	id S1754030AbXIHODy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 10:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbXIHODi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 10:03:33 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40957 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752672AbXIHODc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 10:03:32 -0400
-Date: Sat, 8 Sep 2007 15:11:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: Intel Memory Ordering White Paper
-Message-ID: <20070908151150.22ebcd4c@the-village.bc.nu>
-In-Reply-To: <200709080649.53876.nickpiggin@yahoo.com.au>
-References: <200709071526.51169.jesse.barnes@intel.com>
-	<20070908112922.3fd41adc@the-village.bc.nu>
-	<200709080649.53876.nickpiggin@yahoo.com.au>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 8 Sep 2007 10:03:38 -0400
+Received: from [212.12.190.216] ([212.12.190.216]:32982 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752719AbXIHODh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 10:03:37 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: sata & scsi suggestion for make menuconfig
+Date: Sat, 8 Sep 2007 17:03:31 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+References: <200709080652.02614.a1426z@gawab.com> <20070908144758.37ab3c76@the-village.bc.nu>
+In-Reply-To: <20070908144758.37ab3c76@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709081703.31280.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> AMD processors guarantee loads are ordered and stores are ordered
-> (with exceptions of non-temporal, and non-wb policy).
-> 
-> As for the others that do out of order stores, are any of them SMP?
+Alan Cox wrote:
+> > I once sent a patch to make libata a submenu of scsi.
+>
+> Which is wrong
+>
+> Nakked-by: Alan Cox <alan@redhat.com>
+>
+> The general comments about moving this stuff around and making it clearer
+> what sd/sr etc are nowdays are good but hiding libata under SCSI will
+> cause even more confusion than it cures
 
-IDT winchip isn't, Geode isn't
+That's easy to fix:  just change the SCSI heading to include a libata hint.
+
+Something like this:
+
+[PATCH] libata Kconfig: Allow libata to be selected from within the SCSI submenu
+
+Move libata Kconfig sourcing from the drivers Kconfig into the SCSI Kconfig,
+and change the SCSI menu heading to indicate libata submenu inclusion.
+
+This allows the user to quickly select additional disk/tape/cdrom support 
+from within the same menu.
+
+Signed-off-by: Al Boldi <a1426z@gawab.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+---
+--- a/drivers/Kconfig   2007-05-02 17:25:30.000000000 +0300
++++ b/drivers/Kconfig   2007-08-01 06:33:13.000000000 +0300
+@@ -22,8 +22,6 @@ source "drivers/ide/Kconfig"
+ 
+ source "drivers/scsi/Kconfig"
+ 
+-source "drivers/ata/Kconfig"
+-
+ source "drivers/cdrom/Kconfig"
+ 
+ source "drivers/md/Kconfig"
+--- a/drivers/scsi/Kconfig      2007-07-09 06:38:37.000000000 +0300
++++ b/drivers/scsi/Kconfig      2007-08-01 06:46:42.000000000 +0300
+@@ -7,6 +7,8 @@ config RAID_ATTRS
+        ---help---
+          Provides RAID
+ 
++source "drivers/ata/Kconfig"
++
+ config SCSI
+-       tristate "SCSI device support"
++       tristate "SCSI and Libata device support"
+        depends on BLOCK
+
+
+
+Thanks!
+
+--
+Al
