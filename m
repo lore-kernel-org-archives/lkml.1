@@ -1,454 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbXIHT77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbXIHUVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbXIHT77 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 15:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbXIHT7u
+	id S1755312AbXIHUVG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 16:21:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbXIHUUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 15:59:50 -0400
-Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:60721 "EHLO
-	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754688AbXIHT7s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 15:59:48 -0400
-Message-id: <276116173913632310@pripojeni.net>
-In-reply-to: <30483262301654323266@pripojeni.net>
-Subject: [PATCH 2/2] forbid asm/bitops.h direct inclusion
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Cc: Adrian Bunk <bunk@kernel.org>
-Cc: <rth@twiddle.net>
-Cc: <hskinnemoen@atmel.com>
-Cc: <uclinux-dist-devel@blackfin.uclinux.org>
-Cc: <dev-etrax@axis.com>
-Cc: <dhowells@redhat.com>
-Cc: <discuss@x86-64.org>
-Cc: <linux-ia64@vger.kernel.org>
-Cc: <linux-mips@linux-mips.org>
-Cc: <parisc-linux@parisc-linux.org>
-Cc: <sparclinux@vger.kernel.org>
-Cc: <chris@zankel.net>
-Date: Sat, 8 Sep 2007 15:59:48 -0400
+	Sat, 8 Sep 2007 16:20:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47039 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754002AbXIHUUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 16:20:54 -0400
+Message-ID: <46E30411.3070500@redhat.com>
+Date: Sat, 08 Sep 2007 16:20:33 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, akpm@linux-foundation.org,
+       safari-kernel@safari.iki.fi
+Subject: Re: [PATCH] prevent kswapd from freeing excessive amounts of lowmem
+References: <46DF3545.4050604@redhat.com> <20070907122437.GC3901@ucw.cz>
+In-Reply-To: <20070907122437.GC3901@ucw.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-forbid asm/bitops.h direct inclusion
+Pavel Machek wrote:
+> Hi!
+> 
+>> The current VM can get itself into trouble fairly easily 
+>> on systems
+>> with a small ZONE_HIGHMEM, which is common on i686 
+>> computers with
+>> 1GB of memory.
+>>
+>> On one side, page_alloc() will allocate down to 
+>> zone->pages_low,
+>> while on the other side, kswapd() and balance_pgdat() 
+>> will try
+>> to free memory from every zone, until every zone has 
+>> more free
+>> pages than zone->pages_high.
+>>
+>> Highmem can be filled up to zone->pages_low with page 
+>> tables,
+>> ramfs, vmalloc allocations and other unswappable things 
+>> quite
+>> easily and without many bad side effects, since we still 
+>> have
+>> a huge ZONE_NORMAL to do future allocations from.
+>>
+>> However, as long as the number of free pages in the 
+>> highmem
+>> zone is below zone->pages_high, kswapd will continue 
+>> swapping
+>> things out from ZONE_NORMAL, too!
+>>
+>> Sami Farin managed to get his system into a stage where 
+>> kswapd
+>> had freed about 700MB of low memory and was still "going 
+>> strong".
+>>
+>> The attached patch will make kswapd stop paging out data 
+>> from
+>> zones when there is more than enough memory free.  We do 
+>> go above
+>> zone->pages_high in order to keep pressure between zones 
+>> equal
+>> in normal circumstances, but the patch should prevent 
+>> the kind
+>> of excesses that made Sami's computer totally unusable.
+>>
+>> Please merge this into -mm.
+>>
+>> Signed-off-by: Rik van Riel <riel@redhat.com>
+> 
+>> --- linux-2.6.22.noarch/mm/vmscan.c.excessive	2007-09-05 12:19:49.000000000 -0400
+>> +++ linux-2.6.22.noarch/mm/vmscan.c	2007-09-05 12:21:40.000000000 -0400
+>> @@ -1371,7 +1371,13 @@ loop_again:
+>>  			temp_priority[i] = priority;
+>>  			sc.nr_scanned = 0;
+>>  			note_zone_scanning_priority(zone, priority);
+>> -			nr_reclaimed += shrink_zone(priority, zone, &sc);
+>> +			/*
+>> +			 * We put equal pressure on every zone, unless one
+>> +			 * zone has way too many pages free already.
+>> +			 */
+> 
+> That does not seem right. Having empty HIGHMEM and full LOWMEM would
+> be very bad, right? We may stop freeing when there's enough LOWMEM
+> free, but not if there's only HIGHMEM free.
 
-Because of compile errors that may occur after bit changes if asm/bitops.h is
-included directly without e.g. linux/kernel.h which includes linux/bitops.h, forbid
-direct inclusion of asm/bitops.h. Thanks to Adrian Bunk.
+Please read the code this patch applies to.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Adrian Bunk <bunk@kernel.org>
+The check I add conditionalizes the individual
+calls to shrink_zone(), so we do not call
+shrink_zone() for a zone that has a ton of free
+pages.  We still call shrink_zone() for the
+other zones.
 
----
-commit cd28a228ae727b2224da736edc613c58a08c5ed9
-tree 483ca1765baaf80996484889ed3078c4af24be03
-parent 3c05eef3d0a98065323d7d6d9a78e0985eba4b10
-author Jiri Slaby <jirislaby@gmail.com> Sat, 08 Sep 2007 21:02:48 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Sat, 08 Sep 2007 21:02:48 +0200
-
- include/asm-alpha/bitops.h     |    4 ++++
- include/asm-arm/bitops.h       |    4 ++++
- include/asm-avr32/bitops.h     |    4 ++++
- include/asm-blackfin/bitops.h  |    4 ++++
- include/asm-cris/bitops.h      |    4 ++++
- include/asm-frv/bitops.h       |    4 ++++
- include/asm-generic/bitops.h   |    4 ++++
- include/asm-h8300/bitops.h     |    5 +++++
- include/asm-i386/bitops.h      |    4 ++++
- include/asm-ia64/bitops.h      |    4 ++++
- include/asm-m32r/bitops.h      |    4 ++++
- include/asm-m68k/bitops.h      |    4 ++++
- include/asm-m68knommu/bitops.h |    4 ++++
- include/asm-mips/bitops.h      |    4 ++++
- include/asm-parisc/bitops.h    |    4 ++++
- include/asm-powerpc/bitops.h   |    4 ++++
- include/asm-s390/bitops.h      |    4 ++++
- include/asm-sh/bitops.h        |    5 +++++
- include/asm-sh64/bitops.h      |    5 +++++
- include/asm-sparc/bitops.h     |    4 ++++
- include/asm-sparc64/bitops.h   |    4 ++++
- include/asm-um/bitops.h        |    4 ++++
- include/asm-v850/bitops.h      |    3 +++
- include/asm-x86_64/bitops.h    |    4 ++++
- include/asm-xtensa/bitops.h    |    4 ++++
- 25 files changed, 102 insertions(+), 0 deletions(-)
-
-diff --git a/include/asm-alpha/bitops.h b/include/asm-alpha/bitops.h
-index ffec8a8..6490e50 100644
---- a/include/asm-alpha/bitops.h
-+++ b/include/asm-alpha/bitops.h
-@@ -1,6 +1,10 @@
- #ifndef _ALPHA_BITOPS_H
- #define _ALPHA_BITOPS_H
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <asm/compiler.h>
- 
- /*
-diff --git a/include/asm-arm/bitops.h b/include/asm-arm/bitops.h
-index 52fe058..47a6b08 100644
---- a/include/asm-arm/bitops.h
-+++ b/include/asm-arm/bitops.h
-@@ -19,6 +19,10 @@
- 
- #ifdef __KERNEL__
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <linux/compiler.h>
- #include <asm/system.h>
- 
-diff --git a/include/asm-avr32/bitops.h b/include/asm-avr32/bitops.h
-index f3faddf..1a50b69 100644
---- a/include/asm-avr32/bitops.h
-+++ b/include/asm-avr32/bitops.h
-@@ -8,6 +8,10 @@
- #ifndef __ASM_AVR32_BITOPS_H
- #define __ASM_AVR32_BITOPS_H
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <asm/byteorder.h>
- #include <asm/system.h>
- 
-diff --git a/include/asm-blackfin/bitops.h b/include/asm-blackfin/bitops.h
-index 03ecedc..b39a175 100644
---- a/include/asm-blackfin/bitops.h
-+++ b/include/asm-blackfin/bitops.h
-@@ -11,6 +11,10 @@
- 
- #ifdef __KERNEL__
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <asm-generic/bitops/ffs.h>
- #include <asm-generic/bitops/__ffs.h>
- #include <asm-generic/bitops/sched.h>
-diff --git a/include/asm-cris/bitops.h b/include/asm-cris/bitops.h
-index 617151b..e2f49c2 100644
---- a/include/asm-cris/bitops.h
-+++ b/include/asm-cris/bitops.h
-@@ -14,6 +14,10 @@
- /* Currently this is unsuitable for consumption outside the kernel.  */
- #ifdef __KERNEL__ 
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <asm/arch/bitops.h>
- #include <asm/system.h>
- #include <asm/atomic.h>
-diff --git a/include/asm-frv/bitops.h b/include/asm-frv/bitops.h
-index 8dba74b..e29de71 100644
---- a/include/asm-frv/bitops.h
-+++ b/include/asm-frv/bitops.h
-@@ -21,6 +21,10 @@
- 
- #ifdef __KERNEL__
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <asm-generic/bitops/ffz.h>
- 
- /*
-diff --git a/include/asm-generic/bitops.h b/include/asm-generic/bitops.h
-index e022a0f..15e6f25 100644
---- a/include/asm-generic/bitops.h
-+++ b/include/asm-generic/bitops.h
-@@ -19,6 +19,10 @@
- 
- #ifdef __KERNEL__
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <asm-generic/bitops/sched.h>
- #include <asm-generic/bitops/ffs.h>
- #include <asm-generic/bitops/hweight.h>
-diff --git a/include/asm-h8300/bitops.h b/include/asm-h8300/bitops.h
-index e64ad31..cb18e3b 100644
---- a/include/asm-h8300/bitops.h
-+++ b/include/asm-h8300/bitops.h
-@@ -10,6 +10,11 @@
- #include <asm/system.h>
- 
- #ifdef __KERNEL__
-+
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- /*
-  * Function prototypes to keep gcc -Wall happy
-  */
-diff --git a/include/asm-i386/bitops.h b/include/asm-i386/bitops.h
-index c96641f..3268a34 100644
---- a/include/asm-i386/bitops.h
-+++ b/include/asm-i386/bitops.h
-@@ -5,6 +5,10 @@
-  * Copyright 1992, Linus Torvalds.
-  */
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <linux/compiler.h>
- #include <asm/alternative.h>
- 
-diff --git a/include/asm-ia64/bitops.h b/include/asm-ia64/bitops.h
-index 2144f1a..a977aff 100644
---- a/include/asm-ia64/bitops.h
-+++ b/include/asm-ia64/bitops.h
-@@ -9,6 +9,10 @@
-  * O(1) scheduler patch
-  */
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <linux/compiler.h>
- #include <linux/types.h>
- #include <asm/intrinsics.h>
-diff --git a/include/asm-m32r/bitops.h b/include/asm-m32r/bitops.h
-index 313a02c..6dc9b81 100644
---- a/include/asm-m32r/bitops.h
-+++ b/include/asm-m32r/bitops.h
-@@ -11,6 +11,10 @@
-  *    Copyright (C) 2004  Hirokazu Takata <takata at linux-m32r.org>
-  */
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <linux/compiler.h>
- #include <asm/assembler.h>
- #include <asm/system.h>
-diff --git a/include/asm-m68k/bitops.h b/include/asm-m68k/bitops.h
-index da151f7..2976b5d 100644
---- a/include/asm-m68k/bitops.h
-+++ b/include/asm-m68k/bitops.h
-@@ -8,6 +8,10 @@
-  * for more details.
-  */
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <linux/compiler.h>
- 
- /*
-diff --git a/include/asm-m68knommu/bitops.h b/include/asm-m68knommu/bitops.h
-index b8b2770..f8dfb7b 100644
---- a/include/asm-m68knommu/bitops.h
-+++ b/include/asm-m68knommu/bitops.h
-@@ -10,6 +10,10 @@
- 
- #ifdef __KERNEL__
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <asm-generic/bitops/ffs.h>
- #include <asm-generic/bitops/__ffs.h>
- #include <asm-generic/bitops/sched.h>
-diff --git a/include/asm-mips/bitops.h b/include/asm-mips/bitops.h
-index d00738e..3b773eb 100644
---- a/include/asm-mips/bitops.h
-+++ b/include/asm-mips/bitops.h
-@@ -9,6 +9,10 @@
- #ifndef _ASM_BITOPS_H
- #define _ASM_BITOPS_H
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <linux/compiler.h>
- #include <linux/irqflags.h>
- #include <linux/types.h>
-diff --git a/include/asm-parisc/bitops.h b/include/asm-parisc/bitops.h
-index 03ae287..f8eebcb 100644
---- a/include/asm-parisc/bitops.h
-+++ b/include/asm-parisc/bitops.h
-@@ -1,6 +1,10 @@
- #ifndef _PARISC_BITOPS_H
- #define _PARISC_BITOPS_H
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <linux/compiler.h>
- #include <asm/types.h>		/* for BITS_PER_LONG/SHIFT_PER_LONG */
- #include <asm/byteorder.h>
-diff --git a/include/asm-powerpc/bitops.h b/include/asm-powerpc/bitops.h
-index 27f6106..3c14f0d 100644
---- a/include/asm-powerpc/bitops.h
-+++ b/include/asm-powerpc/bitops.h
-@@ -38,6 +38,10 @@
- 
- #ifdef __KERNEL__
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <linux/compiler.h>
- #include <asm/asm-compat.h>
- #include <asm/synch.h>
-diff --git a/include/asm-s390/bitops.h b/include/asm-s390/bitops.h
-index d756b34..34d9a63 100644
---- a/include/asm-s390/bitops.h
-+++ b/include/asm-s390/bitops.h
-@@ -15,6 +15,10 @@
- 
- #ifdef __KERNEL__
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <linux/compiler.h>
- 
- /*
-diff --git a/include/asm-sh/bitops.h b/include/asm-sh/bitops.h
-index 9d70217..df805f2 100644
---- a/include/asm-sh/bitops.h
-+++ b/include/asm-sh/bitops.h
-@@ -2,6 +2,11 @@
- #define __ASM_SH_BITOPS_H
- 
- #ifdef __KERNEL__
-+
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <asm/system.h>
- /* For __swab32 */
- #include <asm/byteorder.h>
-diff --git a/include/asm-sh64/bitops.h b/include/asm-sh64/bitops.h
-index 444d5ea..600c59e 100644
---- a/include/asm-sh64/bitops.h
-+++ b/include/asm-sh64/bitops.h
-@@ -13,6 +13,11 @@
-  */
- 
- #ifdef __KERNEL__
-+
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <linux/compiler.h>
- #include <asm/system.h>
- /* For __swab32 */
-diff --git a/include/asm-sparc/bitops.h b/include/asm-sparc/bitops.h
-index 00bd0a6..cb3cefa 100644
---- a/include/asm-sparc/bitops.h
-+++ b/include/asm-sparc/bitops.h
-@@ -14,6 +14,10 @@
- 
- #ifdef __KERNEL__
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- extern unsigned long ___set_bit(unsigned long *addr, unsigned long mask);
- extern unsigned long ___clear_bit(unsigned long *addr, unsigned long mask);
- extern unsigned long ___change_bit(unsigned long *addr, unsigned long mask);
-diff --git a/include/asm-sparc64/bitops.h b/include/asm-sparc64/bitops.h
-index dd4bfe9..982ce89 100644
---- a/include/asm-sparc64/bitops.h
-+++ b/include/asm-sparc64/bitops.h
-@@ -7,6 +7,10 @@
- #ifndef _SPARC64_BITOPS_H
- #define _SPARC64_BITOPS_H
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <linux/compiler.h>
- #include <asm/byteorder.h>
- 
-diff --git a/include/asm-um/bitops.h b/include/asm-um/bitops.h
-index 46d7819..e4d38d4 100644
---- a/include/asm-um/bitops.h
-+++ b/include/asm-um/bitops.h
-@@ -1,6 +1,10 @@
- #ifndef __UM_BITOPS_H
- #define __UM_BITOPS_H
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include "asm/arch/bitops.h"
- 
- #endif
-diff --git a/include/asm-v850/bitops.h b/include/asm-v850/bitops.h
-index 8eafdb1..f82f5b4 100644
---- a/include/asm-v850/bitops.h
-+++ b/include/asm-v850/bitops.h
-@@ -13,6 +13,9 @@
- #ifndef __V850_BITOPS_H__
- #define __V850_BITOPS_H__
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
- 
- #include <linux/compiler.h>	/* unlikely  */
- #include <asm/byteorder.h>	/* swab32 */
-diff --git a/include/asm-x86_64/bitops.h b/include/asm-x86_64/bitops.h
-index 2607dbc..4dbf36d 100644
---- a/include/asm-x86_64/bitops.h
-+++ b/include/asm-x86_64/bitops.h
-@@ -5,6 +5,10 @@
-  * Copyright 1992, Linus Torvalds.
-  */
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <asm/alternative.h>
- 
- #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 1)
-diff --git a/include/asm-xtensa/bitops.h b/include/asm-xtensa/bitops.h
-index 78db04c..23261e8 100644
---- a/include/asm-xtensa/bitops.h
-+++ b/include/asm-xtensa/bitops.h
-@@ -15,6 +15,10 @@
- 
- #ifdef __KERNEL__
- 
-+#ifndef _LINUX_BITOPS_H
-+#error only <linux/bitops.h> can be included directly
-+#endif
-+
- #include <asm/processor.h>
- #include <asm/byteorder.h>
- #include <asm/system.h>
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
