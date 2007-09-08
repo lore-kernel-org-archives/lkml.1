@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753021AbXIGX7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752464AbXIHASq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753021AbXIGX7u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 19:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbXIGX7m
+	id S1752464AbXIHASq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 20:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbXIHASj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 19:59:42 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:56753 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbXIGX7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 19:59:42 -0400
-Message-ID: <46E1E5E7.4080508@garzik.org>
-Date: Fri, 07 Sep 2007 19:59:35 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Fri, 7 Sep 2007 20:18:39 -0400
+Received: from smtp123.sbc.mail.re3.yahoo.com ([66.196.96.96]:21591 "HELO
+	smtp123.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750791AbXIHASi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 20:18:38 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=M+DheW33iNq5soog1cABLNO5iIRAkNWDutgCYDvkle5hgWp2d1DOqhXDTtNEf5Fk4z3nC1Xl175kquZn6h81RJOuOf6onoG48fQd4Tbvn9rybcmSi6FMVlJtuz5zBRm00hKzcVqd+txmpKUNlUXpmEgOgl2R88mgfiiKXE9icyA=  ;
+X-YMail-OSG: eS2WZKQVM1lvH34YFCBMiBaYYwMvLjFzGpBhArpNSDRXKHby7gp0BP2Xn0HUy2fI3ec1txiomA--
+Date: Fri, 07 Sep 2007 17:18:35 -0700
+From: David Brownell <david-b@pacbell.net>
+To: hmh@hmh.eng.br
+Subject: Re: Platform device id
+Cc: linux-kernel@vger.kernel.org, khali@linux-fr.org, gregkh@suse.de,
+       dmitry.torokhov@gmail.com
+References: <20070907153559.17faf9d1@hyperion.delvare>
+ <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com>
+ <20070907164129.65816B9389@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+ <20070907210029.GB4357@khazad-dum.debian.net>
+ <20070907214116.5051B237214@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+ <20070907220407.GE4357@khazad-dum.debian.net>
+In-Reply-To: <20070907220407.GE4357@khazad-dum.debian.net>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: mathieu.desnoyers@polymtl.ca, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, help@myri.com
-Subject: Re: 2.6.23-rc4-mm1 myri10ge module link error on x86_64
-References: <20070831215822.26e1432b.akpm@linux-foundation.org>	<20070906193751.GA4518@Krystal>	<20070906.134038.85411315.davem@davemloft.net> <20070906.134831.39160997.davem@davemloft.net>
-In-Reply-To: <20070906.134831.39160997.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Message-Id: <20070908001835.C7F721B729B@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Thu, 06 Sep 2007 13:40:38 -0700 (PDT)
-> 
->> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->> Date: Thu, 6 Sep 2007 15:37:51 -0400
->>
->>> I got a link error on myri10ge when building 2.6.23-rc4-mm1 on x86_64 :
->>>
->>> ERROR: "lro_flush_all" [drivers/net/myri10ge/myri10ge.ko] undefined!
->>> ERROR: "lro_receive_frags" [drivers/net/myri10ge/myri10ge.ko] undefined!
->>> make[2]: *** [__modpost] Error 1
->>> make[1]: *** [modules] Error 2
->>> make: *** [_all] Error 2
->> myri10ge needs some LRO ifdeffery.
-> 
-> Actually the fix is even simpler, missing select in Kconfig.
-> 
-> I've checked the following fix for this into the net-2.6.24
-> tree.
-> 
-> commit 9fd380e892e078b582920325357292c07eeeecc9
-> Author: David S. Miller <davem@kimchee.(none)>
-> Date:   Thu Sep 6 21:44:36 2007 +0100
-> 
->     [MYRI10GE]: Need to select INET_LRO.
->     
->     Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-> index b92b7dc..7d1a84e 100644
-> --- a/drivers/net/Kconfig
-> +++ b/drivers/net/Kconfig
-> @@ -2496,6 +2496,7 @@ config MYRI10GE
->  	depends on PCI
->  	select FW_LOADER
->  	select CRC32
-> +	select INET_LRO
+> > (Also, note that "platform", "host", and "board" are ambiguous.
+> > In some contexts each is synonymous; in others, not.  I avoid
+>
+> In this specific case I am talking about, they're not.
 
-Yes, that's the correct fix.  ACK.
+That is, in *YOUR* usage context they're not.  I had to parse
+what you wrote a few times before your comments about $SUBJECT
+started to make sense.  I've *never* heard "host" used that way,
+and rarely hear "platform" used that way either.
 
+
+> The platform for a ThinkPad is either i386 or amd64.
+
+Both i386 and x86_64 are clearly an "arch".  They even live in
+an "arch" directory:  linux/arch/{i386,x86_64}.
+
+When folk talk about a "PC Platform", they're talking about a
+thing that doesn't quite exist in today's Linux tree.  If we
+ever get to an arch/x86, that could have a plat-pc (or mach-pc)
+subdirectory.  ThinkPads should then be a variant of that.
+
+
+> I don't feel like drivers like hdaps, thinkpad-acpi, dock, bay,
+> and many others really belong in the platform bus.  But that's
+> what happens right now.
+
+As a rule, there needs to be a Good Reason to create a new bus
+type.  A "feel" is a pretty weak reason...
+
+- Dave
 
