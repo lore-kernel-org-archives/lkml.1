@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbXIHIPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbXIHIWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752637AbXIHIPv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 04:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbXIHIPn
+	id S1752483AbXIHIWb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 04:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbXIHIWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 04:15:43 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:24085 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751370AbXIHIPm (ORCPT
+	Sat, 8 Sep 2007 04:22:23 -0400
+Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:58570
+	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751424AbXIHIWX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 04:15:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=VQjhI9O/hhH5wSDTaicivYHVsXXfoZD1O5MxGobCdEutUtm2ATH3WE6ZZrr5jb5ydzsZZr57xecU3xSJotOBIQG2naQuFR/laPSyJkkUKRoFhA8HhaH/+NOgCRvI7txvZNRJcObExj95K0N46+e/znxvpV+oi1xLgL2CSmTFHnA=  ;
-X-YMail-OSG: ckER2D0VM1lGfnyKWhapaJDRw1WBVHbpkaaIyTx1LUDSaqWdLGTjOrcK1dwVErKMaqa6wSbPVA--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Intel Memory Ordering White Paper
-Date: Sat, 8 Sep 2007 04:13:12 +1000
-User-Agent: KMail/1.9.5
-Cc: ak@suse.de, Jesse Barnes <jesse.barnes@intel.com>,
-       linux-kernel@vger.kernel.org
-References: <200709071526.51169.jesse.barnes@intel.com> <200709090334.27677.nickpiggin@yahoo.com.au> <200709090348.28076.nickpiggin@yahoo.com.au>
-In-Reply-To: <200709090348.28076.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 8 Sep 2007 04:22:23 -0400
+Date: Sat, 08 Sep 2007 01:22:14 -0700 (PDT)
+Message-Id: <20070908.012214.41650322.davem@davemloft.net>
+To: dwalker@mvista.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: myri10ge: force select inet_lro
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070907202625.702755508@mvista.com>
+References: <20070907202625.702755508@mvista.com>
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709080413.12282.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 09 September 2007 03:48, Nick Piggin wrote:
+From: Daniel Walker <dwalker@mvista.com>
+Date: Fri, 07 Sep 2007 13:26:25 -0700
 
-> There is some suggestion in the source code that non-temporal stores
-> (movntq) are weakly ordered. But AFAIKS from the documents, it is ordered
-> when operating on wb memory. What's the situation there?
+> This driver uses the inet_lro facilities , but it doesn't force it
+> to be enabled .. Someone would have to know to enable inet_lro if
+> they select the driver .. 
+> 
+> Instead, just force INET_LRO if this driver is selected..
+> 
+> Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-Sorry, it looks from the AMD document like nontemporal stores to wb
-memory can go out of order. It is a bit hard to decipher what the types
-mean.
+I put this exact fix into the net-2.6.24 tree several days ago
+already, it's not nice that you didn't even bother checking.
 
-If this is the case, we can either retain the sfence in smp_wmb(), or noop
-it, and put explicit sfences around any place that performs nontemporal
-stores...
+When I saw the response to the help@ address, I could almost predict
+that the myri10ge developers would not even check if net-2.6.24 had
+the issue cured already.
 
-Anyway, the lfence should be able to go away without so much trouble.
+Therefore, your patch doesn't even apply to the tree where it is
+relevant.  That sucks.
