@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752464AbXIHASq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbXIHATB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752464AbXIHASq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Sep 2007 20:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbXIHASj
+	id S1753189AbXIHATB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Sep 2007 20:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXIHASu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Sep 2007 20:18:39 -0400
-Received: from smtp123.sbc.mail.re3.yahoo.com ([66.196.96.96]:21591 "HELO
-	smtp123.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750791AbXIHASi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Sep 2007 20:18:38 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=M+DheW33iNq5soog1cABLNO5iIRAkNWDutgCYDvkle5hgWp2d1DOqhXDTtNEf5Fk4z3nC1Xl175kquZn6h81RJOuOf6onoG48fQd4Tbvn9rybcmSi6FMVlJtuz5zBRm00hKzcVqd+txmpKUNlUXpmEgOgl2R88mgfiiKXE9icyA=  ;
-X-YMail-OSG: eS2WZKQVM1lvH34YFCBMiBaYYwMvLjFzGpBhArpNSDRXKHby7gp0BP2Xn0HUy2fI3ec1txiomA--
-Date: Fri, 07 Sep 2007 17:18:35 -0700
-From: David Brownell <david-b@pacbell.net>
-To: hmh@hmh.eng.br
-Subject: Re: Platform device id
-Cc: linux-kernel@vger.kernel.org, khali@linux-fr.org, gregkh@suse.de,
-       dmitry.torokhov@gmail.com
-References: <20070907153559.17faf9d1@hyperion.delvare>
- <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com>
- <20070907164129.65816B9389@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <20070907210029.GB4357@khazad-dum.debian.net>
- <20070907214116.5051B237214@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <20070907220407.GE4357@khazad-dum.debian.net>
-In-Reply-To: <20070907220407.GE4357@khazad-dum.debian.net>
+	Fri, 7 Sep 2007 20:18:50 -0400
+Received: from mga02.intel.com ([134.134.136.20]:31878 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752524AbXIHASs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Sep 2007 20:18:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,223,1186383600"; 
+   d="scan'208";a="290266338"
+From: Jason Gaston <jason.d.gaston@intel.com>
+To: jgarzik@pobox.com, jason.d.gaston@intel.com
+Subject: [PATCH 2.6.23-rc5] ata_piix: replace spaces with tabs
+Date: Fri, 7 Sep 2007 17:21:03 -0700
+User-Agent: KMail/1.9.1
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, htejun@gmail.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070908001835.C7F721B729B@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Disposition: inline
+Message-Id: <200709071721.04170.jason.d.gaston@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > (Also, note that "platform", "host", and "board" are ambiguous.
-> > In some contexts each is synonymous; in others, not.  I avoid
->
-> In this specific case I am talking about, they're not.
+This patch removes some incorrect formatting spaces and replaces them with tabs.
 
-That is, in *YOUR* usage context they're not.  I had to parse
-what you wrote a few times before your comments about $SUBJECT
-started to make sense.  I've *never* heard "host" used that way,
-and rarely hear "platform" used that way either.
+Signed-off-by: Jason Gaston <jason.d.gaston@intel.com>
 
-
-> The platform for a ThinkPad is either i386 or amd64.
-
-Both i386 and x86_64 are clearly an "arch".  They even live in
-an "arch" directory:  linux/arch/{i386,x86_64}.
-
-When folk talk about a "PC Platform", they're talking about a
-thing that doesn't quite exist in today's Linux tree.  If we
-ever get to an arch/x86, that could have a plat-pc (or mach-pc)
-subdirectory.  ThinkPads should then be a variant of that.
-
-
-> I don't feel like drivers like hdaps, thinkpad-acpi, dock, bay,
-> and many others really belong in the platform bus.  But that's
-> what happens right now.
-
-As a rule, there needs to be a Good Reason to create a new bus
-type.  A "feel" is a pretty weak reason...
-
-- Dave
-
+--- linux-2.6.23-rc5/drivers/ata/ata_piix.c.orig	2007-09-07 17:11:55.000000000 -0700
++++ linux-2.6.23-rc5/drivers/ata/ata_piix.c	2007-09-07 17:13:24.000000000 -0700
+@@ -445,15 +445,15 @@
+ };
+ 
+ static const struct piix_map_db tolapai_map_db = {
+-        .mask = 0x3,
+-        .port_enable = 0x3,
+-        .map = {
+-                /* PM   PS   SM   SS       MAP */
+-                {  P0,  NA,  P1,  NA }, /* 00b */
+-                {  RV,  RV,  RV,  RV }, /* 01b */
+-                {  RV,  RV,  RV,  RV }, /* 10b */
+-                {  RV,  RV,  RV,  RV },
+-        },
++	.mask = 0x3,
++	.port_enable = 0x3,
++	.map = {
++		/* PM   PS   SM   SS       MAP */
++		{  P0,  NA,  P1,  NA }, /* 00b */
++		{  RV,  RV,  RV,  RV }, /* 01b */
++		{  RV,  RV,  RV,  RV }, /* 10b */
++		{  RV,  RV,  RV,  RV },
++	},
+ };
+ 
+ static const struct piix_map_db *piix_map_db_table[] = {
