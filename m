@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbXIHH3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbXIHHab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753189AbXIHH3X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 03:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbXIHH3O
+	id S1753241AbXIHHab (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 03:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbXIHHaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 03:29:14 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46557 "EHLO
+	Sat, 8 Sep 2007 03:30:23 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:46563 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbXIHH3M (ORCPT
+	with ESMTP id S1751710AbXIHHaV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 03:29:12 -0400
-Date: Sat, 8 Sep 2007 09:29:11 +0200 (CEST)
+	Sat, 8 Sep 2007 03:30:21 -0400
+Date: Sat, 8 Sep 2007 09:30:21 +0200 (CEST)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Folkert van Heusden <folkert@vanheusden.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: sata & scsi suggestion for make menuconfig
-In-Reply-To: <46E249CB.5070505@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.64.0709080927490.25942@fbirervta.pbzchgretzou.qr>
-References: <20070907124800.GP16806@vanheusden.com>
- <20070907083522.3191a4ba.randy.dunlap@oracle.com> <20070907155903.GR16806@vanheusden.com>
- <46E17A81.7020304@s5r6.in-berlin.de> <20070907230529.GX16806@vanheusden.com>
- <46E249CB.5070505@s5r6.in-berlin.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: patrizio.bassi@gmail.com,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       "Kernel," <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: libata not working for sis5533
+In-Reply-To: <Pine.LNX.4.64.0709031957390.24179@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0709061156220.25942@fbirervta.pbzchgretzou.qr>
+References: <46D132C5.5000803@gmail.com> <6bffcb0e0708261627s12e5a9acqef92d0261264a40c@mail.gmail.com>
+ <46D8921E.3010304@gmail.com> <46D89429.7080802@gmail.com>
+ <20070902114032.7dbfb21a@the-village.bc.nu>
+ <Pine.LNX.4.64.0709031957390.24179@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sep 8 2007 09:05, Stefan Richter wrote:
->config ATA
->	[...]
+>On Sep 2 2007 11:40, Alan Cox wrote:
+>>
+>>> i've been out for a week, but found no notice, did i lost any email or
+>>> no activity on this issue?
+>>
+>>I tagged it onto the obscure IDE report pile. It doesn't contain any
+>>really useful information and its probably not an IDE layer bug as of
+>>itself. But its on the todo list for further investigation and to see if
+>>patterns emerge
 >
->comment "Controller drivers"
->
->[...low-level drivers go here...]
->
->comment "Storage device drivers"
->
->config ATA_SD
->	tristate "SATA/PATA HDD support (via SCSI disk support)"
->	depends on ATA
->	select BLK_DEV_SD
->	help
->	  'SCSI disk support' is required to access SATA HDDs.  It is
->	  also necessary for parallel ATA (IDE) HDDs if you use the
->	  experimental parallel ATA option.
->
->	  You can say Y or M here to select SCSI disk support, or you
->	  can do so in the 'SCSI device support' section.
->
->[...ditto for CD/DVD-ROMs, tapes, and generic support...]
+>I shall give this a spin too, since I happen to have sis5513.
 
-And what uses ATA_SD, or is the user supposed to manually enable it?
 
+Just booted this fresh ata-enabled system (a matter of mkinitrd). It has 
+not exploded yet.
 
 
 	Jan
