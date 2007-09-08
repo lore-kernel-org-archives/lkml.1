@@ -1,34 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbXIHWyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbXIHWz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707AbXIHWyl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 18:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbXIHWye
+	id S1755890AbXIHWz2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 18:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbXIHWzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 18:54:34 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:38316 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754798AbXIHWyd (ORCPT
+	Sat, 8 Sep 2007 18:55:19 -0400
+Received: from mail99.megamailservers.com ([216.251.36.99]:45449 "EHLO
+	mail99.megamailservers.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754759AbXIHWzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 18:54:33 -0400
-Date: Sun, 9 Sep 2007 00:54:32 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: development.jim@gmail.com
-cc: linux-kernel@vger.kernel.org
-Subject: Re: USB and MMC device problems on Kernel 2.6.22
-In-Reply-To: <46E32207.6080104@gmail.com>
-Message-ID: <Pine.LNX.4.64.0709090053450.8346@fbirervta.pbzchgretzou.qr>
-References: <46E32207.6080104@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 8 Sep 2007 18:55:18 -0400
+X-Authenticated-User: jgeorgas.georgas.ca
+Subject: Re: broken ACPI NUMA config option
+From: "James C. Georgas" <jgeorgas@georgas.ca>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1189291899.13467.20.camel@Tachyon.home>
+References: <1189291899.13467.20.camel@Tachyon.home>
+Content-Type: text/plain
+Organization: Georgas Software Solutions
+Date: Sat, 08 Sep 2007 18:54:36 -0400
+Message-Id: <1189292076.13467.23.camel@Tachyon.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2007-08-09 at 18:51 -0400, James C. Georgas wrote:
+> Steps to reproduce:
+> 
+> 	make clean
+> 	make mrproper
+> 	make noallconfig
 
-On Sep 9 2007 08:28, development.jim@gmail.com wrote:
->
-> I have an ARM hardware board works fine with USB and MMC on kernel
-> 2.6.11. Now, I've just upgraded it to kernel 2.6.22. The modules
-> seem loaded fine, please see following list, but neither USB nor
-> MMC could detect devices when a USB stick or SD card was plugged in
+Excuse me; that should read allnoconfig, not noallconfig.
 
-If it detects something, it should show up in `lsusb`.
+James
+	/\V
+
