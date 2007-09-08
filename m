@@ -1,98 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753969AbXIHQVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbXIHQcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753969AbXIHQVa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 12:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbXIHQVX
+	id S1753974AbXIHQcb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 12:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbXIHQcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 12:21:23 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1593 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753295AbXIHQVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 12:21:22 -0400
-Date: Fri, 7 Sep 2007 12:24:37 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Rik van Riel <riel@redhat.com>
-Cc: Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, akpm@linux-foundation.org,
-       safari-kernel@safari.iki.fi
-Subject: Re: [PATCH] prevent kswapd from freeing excessive amounts of lowmem
-Message-ID: <20070907122437.GC3901@ucw.cz>
-References: <46DF3545.4050604@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46DF3545.4050604@redhat.com>
-User-Agent: Mutt/1.5.9i
+	Sat, 8 Sep 2007 12:32:22 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:20612 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752873AbXIHQcV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 12:32:21 -0400
+Message-ID: <46E2CE73.3000207@oracle.com>
+Date: Sat, 08 Sep 2007 09:31:47 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Folkert van Heusden <folkert@vanheusden.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: sata & scsi suggestion for make menuconfig
+References: <20070907124800.GP16806@vanheusden.com> <20070907083522.3191a4ba.randy.dunlap@oracle.com> <20070907155903.GR16806@vanheusden.com> <46E17A81.7020304@s5r6.in-berlin.de> <20070907230529.GX16806@vanheusden.com> <46E249CB.5070505@s5r6.in-berlin.de>
+In-Reply-To: <46E249CB.5070505@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Stefan Richter wrote:
+> (added Cc linux-ide)
+> 
+> Folkert van Heusden wrote:
+>>>>> A popup makes some sense, but I don't know if menuconfig knows how to
+>>>>> do popup warnings... and it needs to be done for all *configs,
+>>>>> not just menuconfig.
+>>>> Maybe add a new type?
+>>> How about
+>>> comment "Note: 'SCSI disk support' is required for SATA/PATA HDDs!"
+>>> 	depends on ATA && !BLK_DEV_SD
+>> Yes! Maybe create some status-line at the bottom of the screen in which
+>> these hints scrollby. Like powertop does.
+> 
+> 'comment' is already supported by make {menu,x,g}config and AFAIK by
+> make oldconfig too.  It is not effective in make oldconfig though
+> because it will scroll off the screen quickly.
+> 
+> I am not a friend of 'select', but maybe the following actually helps.
+> I didn't follow all of this and previous related discussions, so I guess
+> somebody else suggested something like this before:
+> 
 
-> The current VM can get itself into trouble fairly easily 
-> on systems
-> with a small ZONE_HIGHMEM, which is common on i686 
-> computers with
-> 1GB of memory.
-> 
-> On one side, page_alloc() will allocate down to 
-> zone->pages_low,
-> while on the other side, kswapd() and balance_pgdat() 
-> will try
-> to free memory from every zone, until every zone has 
-> more free
-> pages than zone->pages_high.
-> 
-> Highmem can be filled up to zone->pages_low with page 
-> tables,
-> ramfs, vmalloc allocations and other unswappable things 
-> quite
-> easily and without many bad side effects, since we still 
-> have
-> a huge ZONE_NORMAL to do future allocations from.
-> 
-> However, as long as the number of free pages in the 
-> highmem
-> zone is below zone->pages_high, kswapd will continue 
-> swapping
-> things out from ZONE_NORMAL, too!
-> 
-> Sami Farin managed to get his system into a stage where 
-> kswapd
-> had freed about 700MB of low memory and was still "going 
-> strong".
-> 
-> The attached patch will make kswapd stop paging out data 
-> from
-> zones when there is more than enough memory free.  We do 
-> go above
-> zone->pages_high in order to keep pressure between zones 
-> equal
-> in normal circumstances, but the patch should prevent 
-> the kind
-> of excesses that made Sami's computer totally unusable.
-> 
-> Please merge this into -mm.
-> 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
+The problem with 'select' here is that it will enable BLK_DEV_SD,
+but if SCSI is not enabled, it will not become enabled -- i.e.,
+select does not follow the dependency chain.  So usually the
+kernel will not build unless SCSI is enabled by the user.
 
-> --- linux-2.6.22.noarch/mm/vmscan.c.excessive	2007-09-05 12:19:49.000000000 -0400
-> +++ linux-2.6.22.noarch/mm/vmscan.c	2007-09-05 12:21:40.000000000 -0400
-> @@ -1371,7 +1371,13 @@ loop_again:
->  			temp_priority[i] = priority;
->  			sc.nr_scanned = 0;
->  			note_zone_scanning_priority(zone, priority);
-> -			nr_reclaimed += shrink_zone(priority, zone, &sc);
-> +			/*
-> +			 * We put equal pressure on every zone, unless one
-> +			 * zone has way too many pages free already.
-> +			 */
+> # drivers/ata/Kconfig
+> 
+> config ATA
+> 	[...]
+> 
+> comment "Controller drivers"
+> 
+> [...low-level drivers go here...]
+> 
+> comment "Storage device drivers"
+> 
+> config ATA_SD
+> 	tristate "SATA/PATA HDD support (via SCSI disk support)"
+> 	depends on ATA
+> 	select BLK_DEV_SD
+> 	help
+> 	  'SCSI disk support' is required to access SATA HDDs.  It is
+> 	  also necessary for parallel ATA (IDE) HDDs if you use the
+> 	  experimental parallel ATA option.
+> 
+> 	  You can say Y or M here to select SCSI disk support, or you
+> 	  can do so in the 'SCSI device support' section.
+> 
+> [...ditto for CD/DVD-ROMs, tapes, and generic support...]
 
-That does not seem right. Having empty HIGHMEM and full LOWMEM would
-be very bad, right? We may stop freeing when there's enough LOWMEM
-free, but not if there's only HIGHMEM free.
-
-							Pavel
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
