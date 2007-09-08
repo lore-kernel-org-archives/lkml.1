@@ -1,35 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbXIHLNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbXIHLNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752563AbXIHLNL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 07:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbXIHLMq
+	id S1753676AbXIHLNe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 07:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbXIHLMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 07:12:46 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:46022 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752713AbXIHLMn (ORCPT
+	Sat, 8 Sep 2007 07:12:53 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:7141 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753159AbXIHLMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 07:12:43 -0400
+	Sat, 8 Sep 2007 07:12:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=OsQlr8N2GmClaCKSZim67PteMREKIMqQ3GAuE7yHphVQAv0bzkGyoSG/GHwulfBwNvSCLKbW5uYBHyUDW9PqtJhAz6aiq+uvGly29bXfVuhiosRyj4ZGzAtVqknQR7eVNLMsdFGPJbGkMMVikV3MvhabmTLy71filsCNr3Darq0=
-Message-ID: <46E28351.8050900@googlemail.com>
-Date: Sat, 08 Sep 2007 13:11:13 +0200
+        b=ODSiPho7MTYmuRR55pHGKLuPg4j+hXJwmgaamHyM8FGG4ksstFXhVNEoyQVJxJPBDETGVyqxjqHWwezyFtu0tSl6JGmtEaQ5CS63l05Ibh6xOlacRPkg6Yc9QZaC6FBCikYWo8LT/bhxOuMKBUKmK+nnWWwm0PfdKH0rwYQBKzQ=
+Message-ID: <46E28358.9020408@googlemail.com>
+Date: Sat, 08 Sep 2007 13:11:20 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       nfs@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Andrew Clayton <andrew@digital-domain.net>, Ian Kent <raven@themaw.net>,
-       autofs@linux.kernel.org, Daniel J Blueman <daniel.blueman@gmail.com>,
-       Dave Kleikamp <shaggy@austin.ibm.com>,
-       jfs-discussion@lists.sourceforge.net,
-       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>, Tino Keitel <tino.keitel@gmx.de>
-Subject: Re: [2/4] 2.6.23-rc5: known regressions v2
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       dth <dth@dth.net>, Netdev <netdev@vger.kernel.org>,
+       Shish <shish@shishnet.org>, Karl Meyer <adhocrocker@gmail.com>,
+       Francois Romieu <romieu@fr.zoreil.com>, Daniel Drake <dsd@gentoo.org>,
+       Oliver Neukum <oliver@neukum.org>,
+       linux-usb-devel@lists.sourceforge.net,
+       Christian Kujau <lists@nerdbynature.de>
+Subject: Re: [3/4] 2.6.23-rc5: known regressions v2
 References: <46E27DEF.7060109@googlemail.com>
 In-Reply-To: <46E27DEF.7060109@googlemail.com>
 X-Enigmail-Version: 0.95.3
@@ -66,52 +64,55 @@ Tejun Heo                              3
 
 
 
-FS
+CPUFREQ
 
-Subject         : umount triggers a warning in jfs and takes almost a minute
-References      : http://lkml.org/lkml/2007/9/4/73
+Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
+References      : http://lkml.org/lkml/2007/7/27/298
+                  http://lkml.org/lkml/2007/7/29/371
+Last known good : ?
+Submitter       : dth <dth@dth.net>
+Caused-By       : Len Brown <lenb@kernel.org>
+                  commit f79e3185dd0f8650022518d7624c876d8929061b
+Handled-By      : Len Brown <lenb@kernel.org>
+Status          : problem is being debugged
+
+
+
+Networking
+
+Subject         : 2.6.23-rc5: possible irq lock inversion dependency detected
+References      : http://lkml.org/lkml/2007/9/2/97
+Last known good : ?
+Submitter       : Christian Kujau <lists@nerdbynature.de>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+Subject         : zd1211rw regression, device does not enumerate
+References      : http://marc.info/?l=linux-usb-devel&m=118854967709322&w=2
+                  http://bugzilla.kernel.org/show_bug.cgi?id=8972
 Last known good : ?
 Submitter       : Oliver Neukum <oliver@neukum.org>
-Caused-By       : ?
+Caused-By       : Daniel Drake <dsd@gentoo.org>
+                  commit 74553aedd46b3a2cae986f909cf2a3f99369decc
 Handled-By      : ?
 Status          : unknown
 
-Subject         : [NFSv4] 2.6.23-rc4 oops in nfs4_cb_recall
-References      : http://lkml.org/lkml/2007/9/4/53
+Subject         : NETDEV WATCHDOG: eth0: transmit timed out
+References      : http://lkml.org/lkml/2007/8/13/737
 Last known good : ?
-Submitter       : Daniel J Blueman <daniel.blueman@gmail.com>
+Submitter       : Karl Meyer <adhocrocker@gmail.com>
+Caused-By       : ?
+Handled-By      : Francois Romieu <romieu@fr.zoreil.com>
+Status          : problem is being debugged
+
+Subject         : Weird network problems with 2.6.23-rc2
+References      : http://lkml.org/lkml/2007/8/11/40
+Last known good : ?
+Submitter       : Shish <shish@shishnet.org>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
-
-Subject         : [NFSD OOPS] 2.6.23-rc1-git10
-References      : http://lkml.org/lkml/2007/8/2/462
-Last known good : ?
-Submitter       : Andrew Clayton <andrew@digital-domain.net>
-Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
-
-
-
-USB
-
-Subject         : 2.6.23-rc1: USB hard disk broken
-References      : http://lkml.org/lkml/2007/7/25/62
-Last known good : ?
-Submitter       : Tino Keitel <tino.keitel@gmx.de>
-Caused-By       : ?
-Handled-By      : Oliver Neukum <oliver@neukum.org>
-Status          : unknown
-
-Subject         : USB hard disk broken in 2.6.23-rc3 (autosuspend related)
-References      : http://bugzilla.kernel.org/show_bug.cgi?id=8892
-Last known good : ?
-Submitter       : Roman Jarosz <kedgedev@centrum.cz>
-Caused-By       : ?
-Handled-By      : Alan Stern <stern@rowland.harvard.edu>
-Workaround      : echo -1 >/sys/bus/usb/devices/1-4/power/autosuspend
-Status          : possible hardware problem
 
 
 
