@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbXIHSMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbXIHSNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbXIHSMY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 14:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbXIHSMQ
+	id S1754839AbXIHSNV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 14:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbXIHSNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 14:12:16 -0400
-Received: from mo-p07-ob.rzone.de ([81.169.146.189]:37407 "EHLO
-	mo-p07-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753536AbXIHSMP (ORCPT
+	Sat, 8 Sep 2007 14:13:13 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39112 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753298AbXIHSNM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 14:12:15 -0400
-Date: Sat, 8 Sep 2007 20:12:13 +0200
-From: Alex Riesen <raa.lkml@gmail.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: crash while playing bzflag
-Message-ID: <20070908181213.GB4019@steel.home>
-Reply-To: Alex Riesen <raa.lkml@gmail.com>
-Mail-Followup-To: Alex Riesen <raa.lkml@gmail.com>,
-	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20070907195611.GA3259@steel.home> <6bffcb0e0709071618j200005d3t6aa461c34201d783@mail.gmail.com>
-MIME-Version: 1.0
+	Sat, 8 Sep 2007 14:13:12 -0400
+Date: Sat, 8 Sep 2007 20:13:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: sata & scsi suggestion for make menuconfig
+Message-ID: <20070908181309.GA8647@one.firstfloor.org>
+References: <20070907124800.GP16806@vanheusden.com> <p73fy1p9m57.fsf@bingen.suse.de> <20070908095008.08eb4930.randy.dunlap@oracle.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6bffcb0e0709071618j200005d3t6aa461c34201d783@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-RZG-AUTH: z4gQVF2k5XWuW3Cculz1E31xFw==
-X-RZG-CLASS-ID: mo07
+In-Reply-To: <20070908095008.08eb4930.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski, Sat, Sep 08, 2007 01:18:10 +0200:
-> Hi Alex,
-> 
-> On 07/09/2007, Alex Riesen <raa.lkml@gmail.com> wrote:
-> > Kernel: v2.6.23-rc5+ (b21010ed6498391c0f359f2a89c907533fe07fec)
-> 
-> Is this a post 2.6.22 regression?
-> 
+> I'd say that someone needs to use a vendor kernel, or at least
+> begin with a vendor .config file...
 
-Can't say yet.
+Vendor kernels tend to compile forever and require initrds. For 
+just testing a kernel quickly compiling only a few drivers in
+is much more convenient.
 
+Also when you've been using CONFIG_IDE before it is not completely
+obvious you need BLK_SD for your hard disk.
+
+-Andi
