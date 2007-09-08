@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbXIHJfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbXIHJnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752637AbXIHJfF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 05:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbXIHJey
+	id S1752789AbXIHJnc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 05:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbXIHJnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 05:34:54 -0400
-Received: from postfix1-g20.free.fr ([212.27.60.42]:35582 "EHLO
-	postfix1-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751110AbXIHJex (ORCPT
+	Sat, 8 Sep 2007 05:43:24 -0400
+Received: from mx1.Informatik.Uni-Tuebingen.De ([134.2.12.5]:39310 "EHLO
+	mx1.informatik.uni-tuebingen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752118AbXIHJnX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 05:34:53 -0400
-Date: Sat, 8 Sep 2007 11:37:46 +0200
-From: FD Cami <francois.cami@free.fr>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Alessandro Suardi <alessandro.suardi@gmail.com>,
-       charles gagalac <charles.gagalac@gmail.com>,
-       daryll q <daryll_26m@yahoo.com.ph>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Hang in 2.6.23-rc5
-Message-Id: <20070908113746.d4fceb87.francois.cami@free.fr>
-In-Reply-To: <alpine.LFD.0.999.0709030411510.31154@enigma.security.iitk.ac.in>
-References: <994260.18490.qm@web57301.mail.re1.yahoo.com>
-	<6cf66ee10709021205u7d57b93fv777f414dbba4373f@mail.gmail.com>
-	<5a4c581d0709021338s1e9e0dc0md490a032781b60e8@mail.gmail.com>
-	<20070902232939.f2c8acbb.francois.cami@free.fr>
-	<20070902214631.GA1892@martell.zuzino.mipt.ru>
-	<alpine.LFD.0.999.0709030411510.31154@enigma.security.iitk.ac.in>
-X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.14; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sat, 8 Sep 2007 05:43:23 -0400
+From: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Goswin von Brederlow <brederlo@informatik.uni-tuebingen.de>,
+       Bernd Schubert <bs@q-leap.de>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org, "J. Bruce Fields" <bfields@fieldses.org>,
+       brian@clusterfs.com
+Subject: Re: patch: improve generic_file_buffered_write() (2nd try 1/2)
+References: <200709051546.06224.bs@q-leap.de>
+	<87d4wuch8y.fsf@informatik.uni-tuebingen.de>
+	<200709081725.06343.nickpiggin@yahoo.com.au>
+	<200709081731.51263.nickpiggin@yahoo.com.au>
+Date: Sat, 08 Sep 2007 11:43:03 +0200
+In-Reply-To: <200709081731.51263.nickpiggin@yahoo.com.au> (Nick Piggin's
+	message of "Sat, 8 Sep 2007 17:31:50 +1000")
+Message-ID: <874pi5cx20.fsf@informatik.uni-tuebingen.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Sep 2007 04:15:01 +0530 (IST)
-Satyam Sharma <satyam@infradead.org> wrote:
+Nick Piggin <nickpiggin@yahoo.com.au> writes:
 
-> On Mon, 3 Sep 2007, Alexey Dobriyan wrote:
-> > 
-> > Try this from net-2.6 tree:
-> > 
-> > --- a/net/ipv4/tcp_input.c
-> > +++ b/net/ipv4/tcp_input.c
-> > @@ -560,7 +560,7 @@ static u32 tcp_rto_min(struct sock *sk)
-> >  	struct dst_entry *dst = __sk_dst_get(sk);
-> >  	u32 rto_min = TCP_RTO_MIN;
-> >  
-> > -	if (dst_metric_locked(dst, RTAX_RTO_MIN))
-> > +	if (dst && dst_metric_locked(dst, RTAX_RTO_MIN))
-> >  		rto_min = dst->metrics[RTAX_RTO_MIN-1];
-> >  	return rto_min;
-> >  }
-> 
-> That's my impression as well. That's way too core/busy a codepath to
-> have a bug in. As I said earlier, almost anybody testing -rc5 is sure
-> to hit this within a few hours (probably less) -- sad, it greatly
-> erodes from the usefulness of -rc5 as a release candidate.
+> Lustre should probably have to be ported over to write_begin/write_end in
+> order to use it too. With the patches in -mm, if a filesystem is still using
+> prepare_write/commit_write, the vm reverts to a safe path which avoids
+> the deadlock (and allows multi-seg io copies), but copies the data twice.
 
-For the record, I haven't been able to reproduce the lockup with this
-patch.
+Not quite relevant for the performance problem. The situation is like
+this:
 
-Cheers
+lustre servers  <-lustre network protocol-> lustre client <-NFS-> desktop
 
-François
+The NFSd problem is on the lustre client that only plays gateway. That
+is not to say that the lustre servers or desktop loose performance due
+to fragmenting writes too but it isn't that noticeable there.
+
+> OTOH, this is very likely to go upstream, so your filesystem will need to be
+> ported over sooner or later anyway.
+
+Lustre copies the ext3 source from the kernel, patches in some extra
+features and renames them during build. So one the one hand it always
+breaks whenever someone meddles with the ext3 code. On the other hand
+improvement for ext3 get picked up by lustre semi automatically.
+
+In this case lustre would get the begin_write() function from ext3 and
+use it.
+
+MfG
+        Goswin
+
