@@ -1,588 +1,1375 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbXIHPQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbXIHQH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753578AbXIHPQa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 11:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbXIHPQW
+	id S1753533AbXIHQH0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 12:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbXIHQHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 11:16:22 -0400
-Received: from mail.gmx.net ([213.165.64.20]:44926 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752847AbXIHPQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 11:16:20 -0400
-X-Authenticated: #16541040
-X-Provags-ID: V01U2FsdGVkX1+wndcIn5uwcQ2RSExVAp5klKIdTxLEpHBG/kqoxq
-	wT3wRhjuhEUZmj
-Message-ID: <46E2BC6A.4070800@gmx.de>
-Date: Sat, 08 Sep 2007 17:14:50 +0200
-From: Werner Meurer <Werner_Meurer@gmx.de>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sat, 8 Sep 2007 12:07:09 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46507 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753085AbXIHQHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 12:07:02 -0400
+To: Folkert van Heusden <folkert@vanheusden.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: sata & scsi suggestion for make menuconfig
+References: <20070907124800.GP16806@vanheusden.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 08 Sep 2007 18:07:00 +0200
+In-Reply-To: <20070907124800.GP16806@vanheusden.com>
+Message-ID: <p73fy1p9m57.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: PROBLEM: Network sky2 Module
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[1.] One line summary of the problem:    
+Folkert van Heusden <folkert@vanheusden.com> writes:
 
-hw csum failure appears in syslog
+> Hi,
+> 
+> Maybe it is a nice enhancement for make menuconfig to more explicitly
+> give a pop-up or so when someone selects for example a sata controller
+> while no 'scsi-disk' support was selected?
 
-[2.] Full description of the problem/report:
+This has also bitten me one or two times. A reasonable way would
+be to just select SD automatically for !EMBEDDED
 
-hw csum failure appears in syslog and sometimes, under heavy network utilization, with NFS-Daemon the Network Device 
-totally fails. Then no Network Access is possible. Reboot is not required but i must restart the Network with 
-the following commands: "ifdown eth0" and "rmmod sky2", then "insmod sky2" and "ifup eth0".
+Here's a patch:
 
-[3.] Keywords (i.e., modules, networking, kernel):
+-Andi
 
-sky2 (Marvell Yukon Onboard Ethernet), networking, checksum
+Select BLK_DEV_SD for all SCSI/libata drivers
 
-[4.] Kernel version (from /proc/version):
-
-Linux version 2.6.18.8 (root@endeavour) (gcc version 4.1.2 20061115 (prerelease) (SUSE Linux)) #6 SMP Sun Aug 5 15:09:57 CEST 2007
-
-[5.] Output of Oops.. message (if applicable) with symbolic information 
-     resolved (see Documentation/oops-tracing.txt)
-
-endeavour:~ # dmesg -c
-<unknown>: hw csum failure.
-
-Call Trace:
- [<ffffffff80248cbc>] __skb_checksum_complete+0x4a/0x62
- [<ffffffff803bc9c4>] udp_poll+0x67/0xf3
- [<ffffffff8020f3f4>] do_select+0x285/0x46d
- [<ffffffff8021c589>] __pollwait+0x0/0xe0
- [<ffffffff8027ee8f>] default_wake_function+0x0/0xe
- [<ffffffff8025e0a0>] _spin_lock_bh+0x9/0x14
- [<ffffffff8022ec61>] release_sock+0x13/0xaa
- [<ffffffff8024da32>] udp_sendmsg+0x480/0x563
- [<ffffffff80250300>] sock_sendmsg+0xf3/0x110
- [<ffffffff8022e430>] sock_recvmsg+0x101/0x120
- [<ffffffff80292267>] autoremove_wake_function+0x0/0x2e
- [<ffffffff8024362b>] sock_aio_write+0x51/0x60
- [<ffffffff80242efe>] try_to_wake_up+0x3e2/0x3f3
- [<ffffffff80214323>] sys_select+0x26f/0x3d6
- [<ffffffff80388aa0>] sys_sendto+0x119/0x14c
- [<ffffffff80257b16>] system_call+0x7e/0x83
+This avoid a common user mistake.
 
 
-[6.] A small shell script or example program which triggers the
-     problem (if possible)
+Signed-off-by: Andi Kleen <ak@suse.de>
 
--
-
-[7.] Environment
-
-Homebrew Server (Asus P5WDG2-WS Motherboard).
-
-[7.1.] Software (add the output of the ver_linux script here)
-
-Linux endeavour 2.6.18.8 #6 SMP Sun Aug 5 15:09:57 CEST 2007 x86_64 x86_64 x86_6                                              4 GNU/Linux
-
-Gnu C                  4.1.2
-Gnu make               3.81
-binutils               2.17.50.0.5
-util-linux             2.12r
-mount                  2.12r
-module-init-tools      3.2.2
-e2fsprogs              1.39
-jfsutils               1.1.11
-reiserfsprogs          3.6.19
-xfsprogs               2.8.11
-PPP                    2.4.4
-Linux C Library        > libc.2.5
-Dynamic linker (ldd)   2.5
-Procps                 3.2.7
-Net-tools              1.60
-Kbd                    1.12
-Sh-utils               6.4
-udev                   103
-Modules Loaded         capability commoncap sky2 nfs lockd nfs_acl sunrpc iptabl                                              e_filter ip_tables x_tables nls_utf8 af_packet w83627ehf hwmon i2c_isa eeprom i2                                              c_dev joydev st sd_mod ide_cd truecrypt nls_iso8859_1 nls_cp437 vfat fat vmnet v                                              mmon ipv6 button battery ac sg sr_mod cdrom loop usb_storage scsi_mod dm_mod i2c                                              _i801 shpchp pci_hotplug ehci_hcd uhci_hcd i2c_core usbcore floppy parport_pc lp                                               parport ext3 mbcache jbd edd fan piix thermal processor ide_disk ide_core
-
-
-[7.2.] Processor information (from /proc/cpuinfo):
-
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 6
-model name      :               Intel(R) Pentium(R) D CPU 3.60GHz
-stepping        : 4
-cpu MHz         : 3612.869
-cache size      : 2048 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 2
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 6
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm syscall lm constant_tsc pni monitor ds_cpl vmx est cid cx16 xtpr lahf_lm
-bogomips        : 7231.81
-clflush size    : 64
-cache_alignment : 128
-address sizes   : 36 bits physical, 48 bits virtual
-
-[7.3.] Module information (from /proc/modules):
-
-capability 22536 0 - Live 0xffffffff88435000
-commoncap 25472 1 capability, Live 0xffffffff8842d000
-sky2 61444 0 - Live 0xffffffff8811b000
-nfs 275768 0 - Live 0xffffffff883e8000
-lockd 86800 1 nfs, Live 0xffffffff883d1000
-nfs_acl 20608 1 nfs, Live 0xffffffff883ca000
-sunrpc 193224 3 nfs,lockd,nfs_acl, Live 0xffffffff88399000
-iptable_filter 20096 0 - Live 0xffffffff88393000
-ip_tables 39656 1 iptable_filter, Live 0xffffffff88388000
-x_tables 35336 1 ip_tables, Live 0xffffffff8837e000
-nls_utf8 19072 0 - Live 0xffffffff88378000
-af_packet 57356 0 - Live 0xffffffff88368000
-w83627ehf 33548 0 - Live 0xffffffff8835e000
-hwmon 20488 1 w83627ehf, Live 0xffffffff88357000
-i2c_isa 23040 1 w83627ehf, Live 0xffffffff88350000
-eeprom 24976 0 - Live 0xffffffff88348000
-i2c_dev 28168 0 - Live 0xffffffff88340000
-joydev 28160 0 - Live 0xffffffff88338000
-st 57764 0 - Live 0xffffffff88328000
-sd_mod 39296 0 - Live 0xffffffff8831d000
-ide_cd 59552 0 - Live 0xffffffff8830d000
-truecrypt 173088 1 - Live 0xffffffff882c0000
-nls_iso8859_1 22144 1 - Live 0xffffffff88306000
-nls_cp437 23808 1 - Live 0xffffffff882ff000
-vfat 31104 1 - Live 0xffffffff88220000
-fat 73008 1 vfat, Live 0xffffffff882ec000
-vmnet 76976 21 - Live 0xffffffff882ac000
-vmmon 166252 28 - Live 0xffffffff88282000
-ipv6 358496 77 - Live 0xffffffff88229000
-button 24736 0 - Live 0xffffffff88218000
-battery 28168 0 - Live 0xffffffff88210000
-ac 22792 0 - Live 0xffffffff88209000
-sg 54952 0 - Live 0xffffffff881fa000
-sr_mod 34724 0 - Live 0xffffffff881f0000
-cdrom 54056 2 ide_cd,sr_mod, Live 0xffffffff881e1000
-loop 33296 0 - Live 0xffffffff881d7000
-usb_storage 105664 0 - Live 0xffffffff881bc000
-scsi_mod 174128 5 st,sd_mod,sg,sr_mod,usb_storage, Live 0xffffffff88190000
-dm_mod 81872 3 truecrypt, Live 0xffffffff8817b000
-i2c_i801 25364 0 - Live 0xffffffff88173000
-shpchp 56748 0 - Live 0xffffffff88162000
-pci_hotplug 52356 1 shpchp, Live 0xffffffff88154000
-ehci_hcd 51080 0 - Live 0xffffffff88144000
-uhci_hcd 42520 0 - Live 0xffffffff88138000
-i2c_core 41472 5 w83627ehf,i2c_isa,eeprom,i2c_dev,i2c_i801, Live 0xffffffff8812c000
-usbcore 163240 4 usb_storage,ehci_hcd,uhci_hcd, Live 0xffffffff880f2000
-floppy 82344 0 - Live 0xffffffff880dc000
-parport_pc 58984 1 - Live 0xffffffff880cc000
-lp 30664 0 - Live 0xffffffff880c1000
-parport 59788 2 parport_pc,lp, Live 0xffffffff880b1000
-ext3 163856 1 - Live 0xffffffff88087000
-mbcache 27016 1 ext3, Live 0xffffffff8807f000
-jbd 91000 1 ext3, Live 0xffffffff88067000
-edd 27912 0 - Live 0xffffffff8805f000
-fan 22408 0 - Live 0xffffffff88058000
-piix 28164 0 [permanent], Live 0xffffffff88050000
-thermal 33552 0 - Live 0xffffffff88046000
-processor 54120 1 thermal, Live 0xffffffff88037000
-ide_disk 34304 4 - Live 0xffffffff8802d000
-ide_core 171136 4 ide_cd,usb_storage,piix,ide_disk, Live 0xffffffff88002000
-
-[7.4.] Loaded driver and hardware information (/proc/ioports, /proc/iomem)
-
-0000-001f : dma1
-0020-0021 : pic1
-0040-0043 : timer0
-0050-0053 : timer1
-0060-006f : keyboard
-0070-0077 : rtc
-0080-008f : dma page reg
-00a0-00a1 : pic2
-00c0-00df : dma2
-00f0-00ff : fpu
-01f0-01f7 : ide0
-0295-0296 : w83627ehf
-0378-037a : parport0
-037b-037f : parport0
-03c0-03df : vga+
-03f2-03f5 : floppy
-03f6-03f6 : ide0
-03f7-03f7 : floppy DIR
-03f8-03ff : serial
-0400-041f : 0000:00:1f.3
-  0400-041f : i801_smbus
-0800-0803 : ACPI PM1a_EVT_BLK
-0804-0805 : ACPI PM1a_CNT_BLK
-0808-080b : ACPI PM_TMR
-0810-0815 : ACPI CPU throttle
-0820-0820 : ACPI PM2_CNT_BLK
-0828-082f : ACPI GPE0_BLK
-0cf8-0cff : PCI conf1
-b000-bfff : PCI Bus #01
-  b800-b8ff : 0000:01:00.0
-c000-cfff : PCI Bus #02
-  c800-c8ff : 0000:02:00.0
-    c800-c8ff : sky2
-d880-d88f : 0000:00:1f.2
-dc00-dc03 : 0000:00:1f.2
-e000-e007 : 0000:00:1f.2
-e080-e083 : 0000:00:1f.2
-e400-e407 : 0000:00:1f.2
-e480-e49f : 0000:00:1d.0
-  e480-e49f : uhci_hcd
-e800-e81f : 0000:00:1d.1
-  e800-e81f : uhci_hcd
-e880-e89f : 0000:00:1d.2
-  e880-e89f : uhci_hcd
-ec00-ec1f : 0000:00:1d.3
-  ec00-ec1f : uhci_hcd
-ffa0-ffaf : 0000:00:1f.1
-  ffa0-ffa7 : ide0
-  ffa8-ffaf : ide1
-
-00000000-0009fbff : System RAM
-  00000000-00000000 : Crash kernel
-0009fc00-0009ffff : reserved
-000a0000-000bffff : Video RAM area
-000c0000-000c7fff : Video ROM
-000f0000-000fffff : System ROM
-00100000-7ff7ffff : System RAM
-  00200000-003d71c7 : Kernel code
-  003d71c8-00513607 : Kernel data
-7ff80000-7ff8dfff : ACPI Tables
-7ff8e000-7ffdffff : ACPI Non-volatile Storage
-7ffe0000-7fffffff : reserved
-88000000-880fffff : PCI Bus #01
-  88000000-8800ffff : 0000:01:00.0
-fc900000-fe9fffff : PCI Bus #01
-  fd000000-fdffffff : 0000:01:00.0
-fea00000-feafffff : PCI Bus #02
-  feac0000-feadffff : 0000:02:00.0
-  feafc000-feafffff : 0000:02:00.0
-    feafc000-feafffff : sky2
-febff800-febffbff : 0000:00:1f.2
-febffc00-febfffff : 0000:00:1d.7
-  febffc00-febfffff : ehci_hcd
-ff800000-ff8fffff : PCI Bus #03
-ff900000-ff9fffff : PCI Bus #05
-ffb00000-ffffffff : reserved
-
-[7.5.] PCI information ('lspci -vvv' as root)
-
-00:00.0 Host bridge: Intel Corporation 82975X Memory Controller Hub (rev c0)
-	Subsystem: ASUSTeK Computer Inc. Unknown device 8178
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ >SERR- <PERR-
-	Latency: 0
-	Capabilities: [e0] Vendor Specific Information
-
-00:01.0 PCI bridge: Intel Corporation 82975X PCI Express Root Port (rev c0) (prog-if 00 [Normal decode])
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 16 bytes
-	Bus: primary=00, secondary=05, subordinate=05, sec-latency=0
-	I/O behind bridge: 0000f000-00000fff
-	Memory behind bridge: fff00000-000fffff
-	Prefetchable memory behind bridge: 00000000ff900000-00000000ff9fffff
-	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
-	BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
-	Capabilities: [88] Subsystem: Intel Corporation Unknown device 0000
-	Capabilities: [80] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [90] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable+
-		Address: fee00000  Data: 40b9
-	Capabilities: [a0] Express Root Port (Slot+) IRQ 0
-		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
-		Device: Latency L0s <64ns, L1 <1us
-		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
-		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
-		Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
-		Link: Supported Speed 2.5Gb/s, Width x16, ASPM L0s L1, Port 2
-		Link: Latency L0s <1us, L1 <4us
-		Link: ASPM Disabled RCB 64 bytes Disabled CommClk- ExtSynch-
-		Link: Speed 2.5Gb/s, Width x0
-		Slot: AtnBtn- PwrCtrl- MRL- AtnInd- PwrInd- HotPlug- Surpise-
-		Slot: Number 0, PowerLimit 0.000000
-		Slot: Enabled AtnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq-
-		Slot: AttnInd Off, PwrInd On, Power-
-		Root: Correctable- Non-Fatal- Fatal- PME-
-
-00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 1 (rev 01) (prog-if 00 [Normal decode])
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 16 bytes
-	Bus: primary=00, secondary=03, subordinate=04, sec-latency=0
-	I/O behind bridge: 0000f000-00000fff
-	Memory behind bridge: fff00000-000fffff
-	Prefetchable memory behind bridge: 00000000ff800000-00000000ff8fffff
-	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
-	BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
-	Capabilities: [40] Express Root Port (Slot-) IRQ 0
-		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
-		Device: Latency L0s unlimited, L1 unlimited
-		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
-		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
-		Device: MaxPayload 256 bytes, MaxReadReq 128 bytes
-		Link: Supported Speed 2.5Gb/s, Width x4, ASPM L0s L1, Port 1
-		Link: Latency L0s <1us, L1 <4us
-		Link: ASPM Disabled RCB 64 bytes CommClk- ExtSynch-
-		Link: Speed 2.5Gb/s, Width x4
-		Root: Correctable- Non-Fatal- Fatal- PME-
-	Capabilities: [80] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable+
-		Address: fee00000  Data: 40c1
-	Capabilities: [90] Subsystem: ASUSTeK Computer Inc. Unknown device 8179
-	Capabilities: [a0] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-
-00:1c.4 PCI bridge: Intel Corporation 82801GR/GH/GHM (ICH7 Family) PCI Express Port 5 (rev 01) (prog-if 00 [Normal decode])
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 16 bytes
-	Bus: primary=00, secondary=02, subordinate=02, sec-latency=0
-	I/O behind bridge: 0000c000-0000cfff
-	Memory behind bridge: fea00000-feafffff
-	Prefetchable memory behind bridge: 00000000fff00000-00000000000fffff
-	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
-	BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
-	Capabilities: [40] Express Root Port (Slot-) IRQ 0
-		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
-		Device: Latency L0s unlimited, L1 unlimited
-		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
-		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
-		Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
-		Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, Port 5
-		Link: Latency L0s <256ns, L1 <4us
-		Link: ASPM Disabled RCB 64 bytes CommClk+ ExtSynch-
-		Link: Speed 2.5Gb/s, Width x1
-		Root: Correctable- Non-Fatal- Fatal- PME-
-	Capabilities: [80] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable+
-		Address: fee00000  Data: 40c9
-	Capabilities: [90] Subsystem: ASUSTeK Computer Inc. Unknown device 8179
-	Capabilities: [a0] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-
-00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #1 (rev 01) (prog-if 00 [UHCI])
-	Subsystem: ASUSTeK Computer Inc. Unknown device 8179
-	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 225
-	Region 4: I/O ports at e480 [size=32]
-
-00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #2 (rev 01) (prog-if 00 [UHCI])
-	Subsystem: ASUSTeK Computer Inc. Unknown device 8179
-	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin B routed to IRQ 233
-	Region 4: I/O ports at e800 [size=32]
-
-00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #3 (rev 01) (prog-if 00 [UHCI])
-	Subsystem: ASUSTeK Computer Inc. Unknown device 8179
-	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin C routed to IRQ 50
-	Region 4: I/O ports at e880 [size=32]
-
-00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI #4 (rev 01) (prog-if 00 [UHCI])
-	Subsystem: ASUSTeK Computer Inc. Unknown device 8179
-	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin D routed to IRQ 58
-	Region 4: I/O ports at ec00 [size=32]
-
-00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI Controller (rev 01) (prog-if 20 [EHCI])
-	Subsystem: ASUSTeK Computer Inc. Unknown device 8179
-	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 225
-	Region 0: Memory at febffc00 (32-bit, non-prefetchable) [size=1K]
-	Capabilities: [50] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=375mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [58] Debug port
-
-00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev e1) (prog-if 01 [Subtractive decode])
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Bus: primary=00, secondary=01, subordinate=01, sec-latency=32
-	I/O behind bridge: 0000b000-0000bfff
-	Memory behind bridge: fc900000-fe9fffff
-	Prefetchable memory behind bridge: 0000000088000000-00000000880fffff
-	Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
-	BridgeCtl: Parity- SERR+ NoISA- VGA+ MAbort- >Reset- FastB2B-
-	Capabilities: [50] Subsystem: ASUSTeK Computer Inc. Unknown device 8179
-
-00:1f.0 ISA bridge: Intel Corporation 82801GB/GR (ICH7 Family) LPC Interface Bridge (rev 01)
-	Subsystem: ASUSTeK Computer Inc. Unknown device 8179
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Capabilities: [e0] Vendor Specific Information
-
-00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE Controller (rev 01) (prog-if 8a [Master SecP PriP])
-	Subsystem: ASUSTeK Computer Inc. Unknown device 8179
-	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin A routed to IRQ 209
-	Region 0: I/O ports at <unassigned>
-	Region 1: I/O ports at <unassigned>
-	Region 2: I/O ports at <unassigned>
-	Region 3: I/O ports at <unassigned>
-	Region 4: I/O ports at ffa0 [size=16]
-
-00:1f.2 SATA controller: Intel Corporation 82801GR/GH (ICH7 Family) Serial ATA Storage Controller AHCI (rev 01) (prog-if 01 [AHCI 1.0])
-	Subsystem: ASUSTeK Computer Inc. Unknown device 2606
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0
-	Interrupt: pin B routed to IRQ 11
-	Region 0: I/O ports at e400 [size=8]
-	Region 1: I/O ports at e080 [size=4]
-	Region 2: I/O ports at e000 [size=8]
-	Region 3: I/O ports at dc00 [size=4]
-	Region 4: I/O ports at d880 [size=16]
-	Region 5: Memory at febff800 (32-bit, non-prefetchable) [size=1K]
-	Capabilities: [80] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
-		Address: 00000000  Data: 0000
-	Capabilities: [70] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold-)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-
-00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 01)
-	Subsystem: ASUSTeK Computer Inc. Unknown device 8179
-	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Interrupt: pin B routed to IRQ 66
-	Region 4: I/O ports at 0400 [size=32]
-
-01:00.0 VGA compatible controller: ATI Technologies Inc 264VT [Mach64 VT] (rev 40) (prog-if 00 [VGA])
-	Subsystem: ATI Technologies Inc Mach64VT Reference
-	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop+ ParErr- Stepping+ SERR- FastB2B-
-	Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Region 0: Memory at fd000000 (32-bit, non-prefetchable) [size=16M]
-	Region 1: I/O ports at b800 [size=256]
-	Expansion ROM at 88000000 [disabled] [size=64K]
-
-02:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8062 PCI-E IPMI Gigabit Ethernet Controller (rev 14)
-	Subsystem: ASUSTeK Computer Inc. Unknown device 81da
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 16 bytes
-	Interrupt: pin A routed to IRQ 217
-	Region 0: Memory at feafc000 (64-bit, non-prefetchable) [size=16K]
-	Region 2: I/O ports at c800 [size=256]
-	Expansion ROM at feac0000 [disabled] [size=128K]
-	Capabilities: [48] Power Management version 2
-		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
-		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-	Capabilities: [50] Vital Product Data
-	Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable+
-		Address: 00000000fee00000  Data: 40d9
-	Capabilities: [e0] Express Legacy Endpoint IRQ 0
-		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
-		Device: Latency L0s unlimited, L1 unlimited
-		Device: AtnBtn- AtnInd- PwrInd-
-		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
-		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr+ NoSnoop-
-		Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
-		Link: Supported Speed 2.5Gb/s, Width x4, ASPM L0s, Port 0
-		Link: Latency L0s <256ns, L1 unlimited
-		Link: ASPM Disabled RCB 128 bytes CommClk+ ExtSynch-
-		Link: Speed 2.5Gb/s, Width x1
-
-03:00.0 PCI bridge: Intel Corporation 6702PXH PCI Express-to-PCI Bridge A (rev 09) (prog-if 00 [Normal decode])
-	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-	Latency: 0, Cache Line Size: 16 bytes
-	Bus: primary=03, secondary=04, subordinate=04, sec-latency=64
-	I/O behind bridge: 0000f000-00000fff
-	Memory behind bridge: fff00000-000fffff
-	Prefetchable memory behind bridge: 00000000fff00000-00000000000fffff
-	Secondary status: 66MHz+ FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
-	BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
-	Capabilities: [44] Express PCI/PCI-X Bridge IRQ 0
-		Device: Supported: MaxPayload 256 bytes, PhantFunc 0, ExtTag-
-		Device: Latency L0s <64ns, L1 <1us
-		Device: AtnBtn- AtnInd- PwrInd-
-		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
-		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
-		Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
-		Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s, Port 0
-		Link: Latency L0s unlimited, L1 unlimited
-		Link: ASPM Disabled CommClk- ExtSynch-
-		Link: Speed 2.5Gb/s, Width x4
-	Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
-		Address: 0000000000000000  Data: 0000
-	Capabilities: [6c] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [d8] PCI-X bridge device
-		Secondary Status: 64bit+ 133MHz+ SCD- USC- SCO- SRD- Freq=133MHz
-		Status: Dev=03:00.0 64bit- 133MHz- SCD- USC- SCO- SRD-
-		Upstream: Capacity=65535 CommitmentLimit=65535
-		Downstream: Capacity=65535 CommitmentLimit=65535
-
-[7.6.] SCSI information (from /proc/scsi/scsi)
-
-Attached devices:
-Host: scsi0 Channel: 00 Id: 00 Lun: 00
-  Vendor: PLEXTOR  Model: DVDR   PX-716A   Rev: 1.09
-  Type:   CD-ROM                           ANSI SCSI revision: 02
-
-[7.7.] Other information that might be relevant to the problem
-       (please look in /proc and include all information that you
-       think to be relevant):
-
-filename:       /lib/modules/2.6.18.8/kernel/drivers/net/sky2.ko
-description:    Marvell Yukon 2 Gigabit Ethernet driver
-author:         Stephen Hemminger <shemminger@osdl.org>
-license:        GPL
-version:        1.5
-vermagic:       2.6.18.8 SMP mod_unload gcc-4.1
-depends:
-alias:          pci:v00001148d00009000sv*sd*bc*sc*i*
-alias:          pci:v00001148d00009E00sv*sd*bc*sc*i*
-alias:          pci:v00001186d00004B00sv*sd*bc*sc*i*
-alias:          pci:v00001186d00004001sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004340sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004341sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004342sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004343sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004344sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004345sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004346sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004347sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004350sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004351sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004352sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004353sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004360sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004361sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004362sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004363sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004364sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004365sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004366sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004367sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004368sv*sd*bc*sc*i*
-alias:          pci:v000011ABd00004369sv*sd*bc*sc*i*
-srcversion:     B7CB0B95067486ED1B6EEEB
-parm:           idle_timeout:Idle timeout workaround for lost interrupts (ms) (int)
-parm:           disable_msi:Disable Message Signaled Interrupt (MSI) (int)
-parm:           copybreak:Receive copy threshold (int)
-parm:           debug:Debug level (0=none,...,16=all) (int)
-
-
-[X.] Other notes, patches, fixes, workarounds:
-
-
+Index: linux-2.6.23-rc1-misc/drivers/ata/Kconfig
+===================================================================
+--- linux-2.6.23-rc1-misc.orig/drivers/ata/Kconfig
++++ linux-2.6.23-rc1-misc/drivers/ata/Kconfig
+@@ -42,6 +42,7 @@ config ATA_ACPI
+ 
+ config SATA_AHCI
+ 	tristate "AHCI SATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for AHCI Serial ATA.
+@@ -50,6 +51,7 @@ config SATA_AHCI
+ 
+ config SATA_SVW
+ 	tristate "ServerWorks Frodo / Apple K2 SATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for Broadcom/Serverworks/Apple K2
+@@ -59,6 +61,7 @@ config SATA_SVW
+ 
+ config ATA_PIIX
+ 	tristate "Intel ESB, ICH, PIIX3, PIIX4 PATA/SATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for ICH5/6/7/8 Serial ATA
+@@ -69,6 +72,7 @@ config ATA_PIIX
+ 
+ config SATA_MV
+ 	tristate "Marvell SATA support (HIGHLY EXPERIMENTAL)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the Marvell Serial ATA family.
+@@ -78,6 +82,7 @@ config SATA_MV
+ 
+ config SATA_NV
+ 	tristate "NVIDIA SATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for NVIDIA Serial ATA.
+@@ -86,6 +91,7 @@ config SATA_NV
+ 
+ config PDC_ADMA
+ 	tristate "Pacific Digital ADMA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for Pacific Digital ADMA controllers
+@@ -94,6 +100,7 @@ config PDC_ADMA
+ 
+ config SATA_QSTOR
+ 	tristate "Pacific Digital SATA QStor support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for Pacific Digital Serial ATA QStor.
+@@ -102,6 +109,7 @@ config SATA_QSTOR
+ 
+ config SATA_PROMISE
+ 	tristate "Promise SATA TX2/TX4 support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for Promise Serial ATA TX2/TX4.
+@@ -110,6 +118,7 @@ config SATA_PROMISE
+ 
+ config SATA_SX4
+ 	tristate "Promise SATA SX4 support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for Promise Serial ATA SX4.
+@@ -118,6 +127,7 @@ config SATA_SX4
+ 
+ config SATA_SIL
+ 	tristate "Silicon Image SATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for Silicon Image Serial ATA.
+@@ -126,6 +136,7 @@ config SATA_SIL
+ 
+ config SATA_SIL24
+ 	tristate "Silicon Image 3124/3132 SATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for Silicon Image 3124/3132 Serial ATA.
+@@ -134,6 +145,7 @@ config SATA_SIL24
+ 
+ config SATA_SIS
+ 	tristate "SiS 964/965/966/180 SATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	select PATA_SIS
+ 	help
+@@ -145,6 +157,7 @@ config SATA_SIS
+ 
+ config SATA_ULI
+ 	tristate "ULi Electronics SATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for ULi Electronics SATA.
+@@ -153,6 +166,7 @@ config SATA_ULI
+ 
+ config SATA_VIA
+ 	tristate "VIA SATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for VIA Serial ATA.
+@@ -161,6 +175,7 @@ config SATA_VIA
+ 
+ config SATA_VITESSE
+ 	tristate "VITESSE VSC-7174 / INTEL 31244 SATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for Vitesse VSC7174 and Intel 31244 Serial ATA.
+@@ -169,12 +184,14 @@ config SATA_VITESSE
+ 
+ config SATA_INIC162X
+ 	tristate "Initio 162x SATA support (HIGHLY EXPERIMENTAL)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for Initio 162x Serial ATA.
+ 
+ config PATA_ALI
+ 	tristate "ALi PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the ALi ATA interfaces
+@@ -184,6 +201,7 @@ config PATA_ALI
+ 
+ config PATA_AMD
+ 	tristate "AMD/NVidia PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for the AMD and NVidia PATA
+@@ -193,6 +211,7 @@ config PATA_AMD
+ 
+ config PATA_ARTOP
+ 	tristate "ARTOP 6210/6260 PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for ARTOP PATA controllers.
+@@ -201,6 +220,7 @@ config PATA_ARTOP
+ 
+ config PATA_ATIIXP
+ 	tristate "ATI PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the ATI ATA interfaces
+@@ -210,6 +230,7 @@ config PATA_ATIIXP
+ 
+ config PATA_CMD640_PCI
+ 	tristate "CMD640 PCI PATA support (Very Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the CMD640 PCI IDE
+@@ -220,6 +241,7 @@ config PATA_CMD640_PCI
+ 
+ config PATA_CMD64X
+ 	tristate "CMD64x PATA support (Very Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI&& EXPERIMENTAL
+ 	help
+ 	  This option enables support for the CMD64x series chips
+@@ -229,6 +251,7 @@ config PATA_CMD64X
+ 
+ config PATA_CS5520
+ 	tristate "CS5510/5520 PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for the Cyrix 5510/5520
+@@ -238,6 +261,7 @@ config PATA_CS5520
+ 
+ config PATA_CS5530
+ 	tristate "CS5530 PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the Cyrix/NatSemi/AMD CS5530
+@@ -247,6 +271,7 @@ config PATA_CS5530
+ 
+ config PATA_CS5535
+ 	tristate "CS5535 PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && X86 && !X86_64 && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the NatSemi/AMD CS5535
+@@ -256,6 +281,7 @@ config PATA_CS5535
+ 
+ config PATA_CYPRESS
+ 	tristate "Cypress CY82C693 PATA support (Very Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the Cypress/Contaq CY82C693
+@@ -265,6 +291,7 @@ config PATA_CYPRESS
+ 
+ config PATA_EFAR
+ 	tristate "EFAR SLC90E66 support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for the EFAR SLC90E66
+@@ -274,6 +301,7 @@ config PATA_EFAR
+ 
+ config ATA_GENERIC
+ 	tristate "Generic ATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for generic BIOS configured
+@@ -283,6 +311,7 @@ config ATA_GENERIC
+ 
+ config PATA_HPT366
+ 	tristate "HPT 366/368 PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the HPT 366 and 368
+@@ -292,6 +321,7 @@ config PATA_HPT366
+ 
+ config PATA_HPT37X
+ 	tristate "HPT 370/370A/371/372/374/302 PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the majority of the later HPT
+@@ -301,6 +331,7 @@ config PATA_HPT37X
+ 
+ config PATA_HPT3X2N
+ 	tristate "HPT 372N/302N PATA support (Very Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the N variant HPT PATA
+@@ -310,6 +341,7 @@ config PATA_HPT3X2N
+ 
+ config PATA_HPT3X3
+ 	tristate "HPT 343/363 PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for the HPT 343/363
+@@ -327,6 +359,7 @@ config PATA_HPT3X3_DMA
+ 
+ config PATA_ISAPNP
+ 	tristate "ISA Plug and Play PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on EXPERIMENTAL && ISAPNP
+ 	help
+ 	  This option enables support for ISA plug & play ATA
+@@ -336,6 +369,7 @@ config PATA_ISAPNP
+ 
+ config PATA_IT821X
+ 	tristate "IT8211/2 PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for the ITE 8211 and 8212
+@@ -346,6 +380,7 @@ config PATA_IT821X
+ 
+ config PATA_IT8213
+ 	tristate "IT8213 PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the ITE 821 PATA
+@@ -355,6 +390,7 @@ config PATA_IT8213
+ 
+ config PATA_JMICRON
+ 	tristate "JMicron PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  Enable support for the JMicron IDE controller, via the new
+@@ -364,6 +400,7 @@ config PATA_JMICRON
+ 
+ config PATA_LEGACY
+ 	tristate "Legacy ISA PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && EXPERIMENTAL
+ 	help
+ 	  This option enables support for ISA/VLB bus legacy PATA
+@@ -373,6 +410,7 @@ config PATA_LEGACY
+ 
+ config PATA_TRIFLEX
+ 	tristate "Compaq Triflex PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  Enable support for the Compaq 'Triflex' IDE controller as found
+@@ -382,6 +420,7 @@ config PATA_TRIFLEX
+ 
+ config PATA_MARVELL
+ 	tristate "Marvell PATA support via legacy mode"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables limited support for the Marvell 88SE6145 ATA
+@@ -391,6 +430,7 @@ config PATA_MARVELL
+ 
+ config PATA_MPC52xx
+ 	tristate "Freescale MPC52xx SoC internal IDE"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PPC_MPC52xx
+ 	help
+ 	  This option enables support for integrated IDE controller
+@@ -400,6 +440,7 @@ config PATA_MPC52xx
+ 
+ config PATA_MPIIX
+ 	tristate "Intel PATA MPIIX support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for MPIIX PATA support.
+@@ -408,6 +449,7 @@ config PATA_MPIIX
+ 
+ config PATA_OLDPIIX
+ 	tristate "Intel PATA old PIIX support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for early PIIX PATA support.
+@@ -416,6 +458,7 @@ config PATA_OLDPIIX
+ 
+ config PATA_NETCELL
+ 	tristate "NETCELL Revolution RAID support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for the Netcell Revolution RAID
+@@ -425,6 +468,7 @@ config PATA_NETCELL
+ 
+ config PATA_NS87410
+ 	tristate "Nat Semi NS87410 PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the National Semiconductor
+@@ -434,6 +478,7 @@ config PATA_NS87410
+ 
+ config PATA_OPTI
+ 	tristate "OPTI621/6215 PATA support (Very Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables full PIO support for the early Opti ATA
+@@ -443,6 +488,7 @@ config PATA_OPTI
+ 
+ config PATA_OPTIDMA
+ 	tristate "OPTI FireStar PATA support (Very Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables DMA/PIO support for the later OPTi
+@@ -462,6 +508,7 @@ config PATA_PCMCIA
+ 
+ config PATA_PDC_OLD
+ 	tristate "Older Promise PATA controller support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the Promise 20246, 20262, 20263,
+@@ -471,12 +518,14 @@ config PATA_PDC_OLD
+ 
+ config PATA_QDI
+ 	tristate "QDI VLB PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA
+ 	help
+ 	  Support for QDI 6500 and 6580 PATA controllers on VESA local bus.
+ 
+ config PATA_RADISYS
+ 	tristate "RADISYS 82600 PATA support (Very Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the RADISYS 82600
+@@ -486,6 +535,7 @@ config PATA_RADISYS
+ 
+ config PATA_RZ1000
+ 	tristate "PC Tech RZ1000 PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables basic support for the PC Tech RZ1000/1
+@@ -495,6 +545,7 @@ config PATA_RZ1000
+ 
+ config PATA_SC1200
+ 	tristate "SC1200 PATA support (Very Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the NatSemi/AMD SC1200 SoC
+@@ -504,6 +555,7 @@ config PATA_SC1200
+ 
+ config PATA_SERVERWORKS
+ 	tristate "SERVERWORKS OSB4/CSB5/CSB6/HT1000 PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for the Serverworks OSB4/CSB5/CSB6 and
+@@ -513,6 +565,7 @@ config PATA_SERVERWORKS
+ 
+ config PATA_PDC2027X
+ 	tristate "Promise PATA 2027x support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for Promise PATA pdc20268 to pdc20277 host adapters.
+@@ -521,6 +574,7 @@ config PATA_PDC2027X
+ 
+ config PATA_SIL680
+ 	tristate "CMD / Silicon Image 680 PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for CMD / Silicon Image 680 PATA.
+@@ -529,6 +583,7 @@ config PATA_SIL680
+ 
+ config PATA_SIS
+ 	tristate "SiS PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This option enables support for SiS PATA controllers
+@@ -537,6 +592,7 @@ config PATA_SIS
+ 
+ config PATA_VIA
+ 	tristate "VIA PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for the VIA PATA interfaces
+@@ -546,6 +602,7 @@ config PATA_VIA
+ 
+ config PATA_WINBOND
+ 	tristate "Winbond SL82C105 PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	help
+ 	  This option enables support for SL82C105 PATA devices found in the
+@@ -555,6 +612,7 @@ config PATA_WINBOND
+ 
+ config PATA_WINBOND_VLB
+ 	tristate "Winbond W83759A VLB PATA support (Experimental)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && EXPERIMENTAL
+ 	help
+ 	  Support for the Winbond W83759A controller on Vesa Local Bus
+@@ -562,6 +620,7 @@ config PATA_WINBOND_VLB
+ 
+ config PATA_PLATFORM
+ 	tristate "Generic platform device PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on EMBEDDED || ARCH_RPC
+ 	help
+ 	  This option enables support for generic directly connected ATA
+@@ -571,6 +630,7 @@ config PATA_PLATFORM
+ 
+ config PATA_ICSIDE
+ 	tristate "Acorn ICS PATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ARM && ARCH_ACORN
+ 	help
+ 	  On Acorn systems, say Y here if you wish to use the ICS PATA
+@@ -579,6 +639,7 @@ config PATA_ICSIDE
+ 
+ config PATA_IXP4XX_CF
+ 	tristate "IXP4XX Compact Flash support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ARCH_IXP4XX
+ 	help
+ 	  This option enables support for a Compact Flash connected on
+@@ -589,6 +650,7 @@ config PATA_IXP4XX_CF
+ 
+ config PATA_SCC
+ 	tristate "Toshiba's Cell Reference Set IDE support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && PPC_CELLEB
+ 	help
+ 	  This option enables support for the built-in IDE controller on
+Index: linux-2.6.23-rc1-misc/drivers/scsi/Kconfig
+===================================================================
+--- linux-2.6.23-rc1-misc.orig/drivers/scsi/Kconfig
++++ linux-2.6.23-rc1-misc/drivers/scsi/Kconfig
+@@ -305,6 +305,7 @@ config ISCSI_TCP
+ 	select CRYPTO_MD5
+ 	select CRYPTO_CRC32C
+ 	select SCSI_ISCSI_ATTRS
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	 The iSCSI Driver provides a host with the ability to access storage
+ 	 through an IP network. The driver uses the iSCSI protocol to transport
+@@ -325,6 +326,7 @@ config ISCSI_TCP
+ config SGIWD93_SCSI
+ 	tristate "SGI WD93C93 SCSI Driver"
+ 	depends on SGI_IP22 && SCSI
++	select BLK_DEV_SD if !EMBEDDED
+   	help
+ 	  If you have a Western Digital WD93 SCSI controller on
+ 	  an SGI MIPS system, say Y.  Otherwise, say N.
+@@ -332,16 +334,19 @@ config SGIWD93_SCSI
+ config SCSI_DECNCR
+ 	tristate "DEC NCR53C94 Scsi Driver"
+ 	depends on MACH_DECSTATION && SCSI && TC
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	  Say Y here to support the NCR53C94 SCSI controller chips on IOASIC
+ 	  based TURBOchannel DECstations and TURBOchannel PMAZ-A cards.
+ 
+ config SCSI_DECSII
+ 	tristate "DEC SII Scsi Driver"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on MACH_DECSTATION && SCSI && 32BIT
+ 
+ config BLK_DEV_3W_XXXX_RAID
+ 	tristate "3ware 5/6/7/8xxx ATA-RAID support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	help
+ 	  3ware is the only hardware ATA-Raid product in Linux to date.
+@@ -355,6 +360,7 @@ config BLK_DEV_3W_XXXX_RAID
+ 
+ config SCSI_3W_9XXX
+ 	tristate "3ware 9xxx SATA-RAID support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	help
+ 	  This driver supports the 9000 series 3ware SATA-RAID cards.
+@@ -366,6 +372,7 @@ config SCSI_3W_9XXX
+ 
+ config SCSI_7000FASST
+ 	tristate "7000FASST SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && SCSI && ISA_DMA_API
+ 	help
+ 	  This driver supports the Western Digital 7000 SCSI host adapter
+@@ -377,6 +384,7 @@ config SCSI_7000FASST
+ 
+ config SCSI_ACARD
+ 	tristate "ACARD SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	help
+ 	  This driver supports the ACARD SCSI host adapter.
+@@ -387,6 +395,7 @@ config SCSI_ACARD
+ config SCSI_AHA152X
+ 	tristate "Adaptec AHA152X/2825 support"
+ 	depends on ISA && SCSI && !64BIT
++	select BLK_DEV_SD if !EMBEDDED
+ 	select SCSI_SPI_ATTRS
+ 	---help---
+ 	  This is a driver for the AHA-1510, AHA-1520, AHA-1522, and AHA-2825
+@@ -402,6 +411,7 @@ config SCSI_AHA152X
+ 
+ config SCSI_AHA1542
+ 	tristate "Adaptec AHA1542 support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && SCSI && ISA_DMA_API
+ 	---help---
+ 	  This is support for a SCSI host adapter.  It is explained in section
+@@ -416,6 +426,7 @@ config SCSI_AHA1542
+ 
+ config SCSI_AHA1740
+ 	tristate "Adaptec AHA1740 support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on EISA && SCSI
+ 	---help---
+ 	  This is support for a SCSI host adapter.  It is explained in section
+@@ -429,6 +440,7 @@ config SCSI_AHA1740
+ 
+ config SCSI_AACRAID
+ 	tristate "Adaptec AACRAID support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on SCSI && PCI
+ 	help
+ 	  This driver supports a variety of Dell, HP, Adaptec, IBM and
+@@ -443,6 +455,7 @@ source "drivers/scsi/aic7xxx/Kconfig.aic
+ 
+ config SCSI_AIC7XXX_OLD
+ 	tristate "Adaptec AIC7xxx support (old driver)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on (ISA || EISA || PCI ) && SCSI
+ 	help
+ 	  WARNING This driver is an older aic7xxx driver and is no longer
+@@ -487,6 +500,7 @@ source "drivers/scsi/aic94xx/Kconfig"
+ # All the I2O code and drivers do not seem to be 64bit safe.
+ config SCSI_DPT_I2O
+ 	tristate "Adaptec I2O RAID support "
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on !64BIT && SCSI && PCI && VIRT_TO_BUS
+ 	help
+ 	  This driver supports all of Adaptec's I2O based RAID controllers as 
+@@ -501,6 +515,7 @@ config SCSI_ADVANSYS
+ 	depends on SCSI
+ 	depends on ISA || EISA || PCI
+ 	depends on BROKEN || X86_32
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	  This is a driver for all SCSI host adapters manufactured by
+ 	  AdvanSys. It is documented in the kernel source in
+@@ -512,6 +527,7 @@ config SCSI_ADVANSYS
+ config SCSI_IN2000
+ 	tristate "Always IN2000 SCSI support"
+ 	depends on ISA && SCSI
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	  This is support for an ISA bus SCSI host adapter.  You'll find more
+ 	  information in <file:Documentation/scsi/in2000.txt>. If it doesn't work
+@@ -524,6 +540,7 @@ config SCSI_IN2000
+ config SCSI_ARCMSR
+ 	tristate "ARECA ARC11X0[PCI-X]/ARC12X0[PCI-EXPRESS] SATA-RAID support"
+ 	depends on PCI && SCSI
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	  This driver supports all of ARECA's SATA RAID controller cards.
+ 	  This is an ARECA-maintained driver by Erich Chen.
+@@ -540,6 +557,7 @@ source "drivers/scsi/megaraid/Kconfig.me
+ config SCSI_HPTIOP
+ 	tristate "HighPoint RocketRAID 3xxx Controller support"
+ 	depends on SCSI && PCI
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	  This option enables support for HighPoint RocketRAID 3xxx
+ 	  controllers.
+@@ -549,6 +567,7 @@ config SCSI_HPTIOP
+ 
+ config SCSI_BUSLOGIC
+ 	tristate "BusLogic SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on (PCI || ISA || MCA) && SCSI && ISA_DMA_API && VIRT_TO_BUS
+ 	---help---
+ 	  This is support for BusLogic MultiMaster and FlashPoint SCSI Host
+@@ -563,6 +582,7 @@ config SCSI_BUSLOGIC
+ config SCSI_OMIT_FLASHPOINT
+ 	bool "Omit FlashPoint support"
+ 	depends on SCSI_BUSLOGIC
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	  This option allows you to omit the FlashPoint support from the
+ 	  BusLogic SCSI driver. The FlashPoint SCCB Manager code is
+@@ -573,6 +593,7 @@ config SCSI_DMX3191D
+ 	tristate "DMX3191D SCSI support"
+ 	depends on PCI && SCSI
+ 	select SCSI_SPI_ATTRS
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	  This is support for Domex DMX3191D SCSI Host Adapters.
+ 
+@@ -583,6 +604,7 @@ config SCSI_DTC3280
+ 	tristate "DTC3180/3280 SCSI support"
+ 	depends on ISA && SCSI
+ 	select SCSI_SPI_ATTRS
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	  This is support for DTC 3180/3280 SCSI Host Adapters.  Please read
+ 	  the SCSI-HOWTO, available from
+@@ -595,6 +617,7 @@ config SCSI_DTC3280
+ config SCSI_EATA
+ 	tristate "EATA ISA/EISA/PCI (DPT and generic EATA/DMA-compliant boards) support"
+ 	depends on (ISA || EISA || PCI) && SCSI && ISA_DMA_API
++	select BLK_DEV_SD if !EMBEDDED
+ 	---help---
+ 	  This driver supports all EATA/DMA-compliant SCSI host adapters.  DPT
+ 	  ISA and all EISA I/O addresses are probed looking for the "EATA"
+@@ -656,6 +679,7 @@ config SCSI_EATA_PIO
+ 
+ config SCSI_FUTURE_DOMAIN
+ 	tristate "Future Domain 16xx SCSI/AHA-2920A support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on (ISA || PCI) && SCSI
+ 	---help---
+ 	  This is support for Future Domain's 16-bit SCSI host adapters
+@@ -675,6 +699,7 @@ config SCSI_FUTURE_DOMAIN
+ 
+ config SCSI_FD_MCS
+ 	tristate "Future Domain MCS-600/700 SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on MCA_LEGACY && SCSI
+ 	---help---
+ 	  This is support for Future Domain MCS 600/700 MCA SCSI adapters.
+@@ -688,6 +713,7 @@ config SCSI_FD_MCS
+ 
+ config SCSI_GDTH
+ 	tristate "Intel/ICP (former GDT SCSI Disk Array) RAID Controller support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on (ISA || EISA || PCI) && SCSI && ISA_DMA_API
+ 	---help---
+ 	  Formerly called GDT SCSI Disk Array Controller Support.
+@@ -702,6 +728,7 @@ config SCSI_GDTH
+ 
+ config SCSI_GENERIC_NCR5380
+ 	tristate "Generic NCR5380/53c400 SCSI PIO support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	---help---
+@@ -722,6 +749,7 @@ config SCSI_GENERIC_NCR5380
+ 
+ config SCSI_GENERIC_NCR5380_MMIO
+ 	tristate "Generic NCR5380/53c400 SCSI MMIO support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	---help---
+@@ -748,6 +776,7 @@ config SCSI_GENERIC_NCR53C400
+ 
+ config SCSI_IBMMCA
+ 	tristate "IBMMCA SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on MCA && SCSI
+ 	---help---
+ 	  This is support for the IBM SCSI adapter found in many of the PS/2
+@@ -818,6 +847,7 @@ config IBMMCA_SCSI_DEV_RESET
+ 
+ config SCSI_IPS
+ 	tristate "IBM ServeRAID support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	---help---
+ 	  This is support for the IBM ServeRAID hardware RAID controllers.
+@@ -831,6 +861,7 @@ config SCSI_IPS
+ 
+ config SCSI_IBMVSCSI
+ 	tristate "IBM Virtual SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PPC_PSERIES || PPC_ISERIES
+ 	help
+ 	  This is the IBM POWER Virtual SCSI Client
+@@ -840,6 +871,7 @@ config SCSI_IBMVSCSI
+ 
+ config SCSI_IBMVSCSIS
+ 	tristate "IBM Virtual SCSI Server support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PPC_PSERIES && SCSI_TGT && SCSI_SRP
+ 	help
+ 	  This is the SRP target driver for IBM pSeries virtual environments.
+@@ -854,6 +886,7 @@ config SCSI_IBMVSCSIS
+ 
+ config SCSI_INITIO
+ 	tristate "Initio 9100U(W) support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	help
+ 	  This is support for the Initio 91XXU(W) SCSI host adapter.  Please
+@@ -865,6 +898,7 @@ config SCSI_INITIO
+ 
+ config SCSI_INIA100
+ 	tristate "Initio INI-A100U2W support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	help
+ 	  This is support for the Initio INI-A100U2W SCSI host adapter.
+@@ -876,6 +910,7 @@ config SCSI_INIA100
+ 
+ config SCSI_PPA
+ 	tristate "IOMEGA parallel port (ppa - older drives)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on SCSI && PARPORT_PC
+ 	---help---
+ 	  This driver supports older versions of IOMEGA's parallel port ZIP
+@@ -903,6 +938,7 @@ config SCSI_PPA
+ 
+ config SCSI_IMM
+ 	tristate "IOMEGA parallel port (imm - newer drives)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on SCSI && PARPORT_PC
+ 	---help---
+ 	  This driver supports newer versions of IOMEGA's parallel port ZIP
+@@ -959,6 +995,7 @@ config SCSI_IZIP_SLOW_CTR
+ 
+ config SCSI_NCR53C406A
+ 	tristate "NCR53c406a SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && SCSI
+ 	help
+ 	  This is support for the NCR53c406a SCSI host adapter.  For user
+@@ -971,6 +1008,7 @@ config SCSI_NCR53C406A
+ 
+ config SCSI_NCR_D700
+ 	tristate "NCR Dual 700 MCA SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on MCA && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -983,6 +1021,7 @@ config SCSI_NCR_D700
+ 
+ config SCSI_LASI700
+ 	tristate "HP Lasi SCSI support for 53c700/710"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on GSC && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -992,6 +1031,7 @@ config SCSI_LASI700
+ 
+ config SCSI_SNI_53C710
+ 	tristate "SNI RM SCSI support for 53c710"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on SNI_RM && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	select 53C700_LE_ON_BE
+@@ -1006,6 +1046,7 @@ config 53C700_LE_ON_BE
+ 
+ config SCSI_STEX
+ 	tristate "Promise SuperTrak EX Series support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	---help---
+ 	  This driver supports Promise SuperTrak EX series storage controllers.
+@@ -1023,6 +1064,7 @@ config 53C700_BE_BUS
+ 
+ config SCSI_SYM53C8XX_2
+ 	tristate "SYM53C8XX Version 2 SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	---help---
+@@ -1090,6 +1132,7 @@ config SCSI_SYM53C8XX_MMIO
+ 
+ config SCSI_IPR
+ 	tristate "IBM Power Linux RAID adapter support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI && ATA
+ 	select FW_LOADER
+ 	---help---
+@@ -1117,6 +1160,7 @@ config SCSI_IPR_DUMP
+ 
+ config SCSI_ZALON
+ 	tristate "Zalon SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on GSC && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -1128,6 +1172,7 @@ config SCSI_ZALON
+ 
+ config SCSI_NCR_Q720
+ 	tristate "NCR Quad 720 MCA SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on MCA && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -1227,6 +1272,7 @@ config SCSI_NCR53C8XX_NO_DISCONNECT
+ 
+ config SCSI_MCA_53C9X
+ 	tristate "NCR MCA 53C9x SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on MCA_LEGACY && SCSI && BROKEN_ON_SMP
+ 	help
+ 	  Some MicroChannel machines, notably the NCR 35xx line, use a SCSI
+@@ -1238,6 +1284,7 @@ config SCSI_MCA_53C9X
+ 
+ config SCSI_PAS16
+ 	tristate "PAS16 SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	---help---
+@@ -1263,6 +1310,7 @@ config SCSI_PSI240I
+ 
+ config SCSI_QLOGIC_FAS
+ 	tristate "Qlogic FAS SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && SCSI
+ 	---help---
+ 	  This is a driver for the ISA, VLB, and PCMCIA versions of the Qlogic
+@@ -1291,6 +1339,7 @@ config SCSI_QLOGIC_FC_FIRMWARE
+ 
+ config SCSI_QLOGIC_1280
+ 	tristate "Qlogic QLA 1240/1x80/1x160 SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	help
+ 	  Say Y if you have a QLogic ISP1240/1x80/1x160 SCSI host adapter.
+@@ -1300,6 +1349,7 @@ config SCSI_QLOGIC_1280
+ 
+ config SCSI_QLOGICPTI
+ 	tristate "PTI Qlogic, ISP Driver"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on SBUS && SCSI
+ 	help
+ 	  This driver supports SBUS SCSI controllers from PTI or QLogic. These
+@@ -1315,6 +1365,7 @@ source "drivers/scsi/qla4xxx/Kconfig"
+ 
+ config SCSI_LPFC
+ 	tristate "Emulex LightPulse Fibre Channel Support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	select SCSI_FC_ATTRS
+ 	help
+@@ -1323,6 +1374,7 @@ config SCSI_LPFC
+ 
+ config SCSI_SEAGATE
+ 	tristate "Seagate ST-02 and Future Domain TMC-8xx SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on X86 && ISA && SCSI
+ 	---help---
+ 	  These are 8-bit SCSI controllers; the ST-01 is also supported by
+@@ -1337,6 +1389,7 @@ config SCSI_SEAGATE
+ # definitely looks not 64bit safe:
+ config SCSI_SIM710
+ 	tristate "Simple 53c710 SCSI support (Compaq, NCR machines)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on (EISA || MCA) && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	---help---
+@@ -1346,6 +1399,7 @@ config SCSI_SIM710
+ 
+ config SCSI_SYM53C416
+ 	tristate "Symbios 53c416 SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && SCSI
+ 	---help---
+ 	  This is support for the sym53c416 SCSI host adapter, the SCSI
+@@ -1364,6 +1418,7 @@ config SCSI_SYM53C416
+ 
+ config SCSI_DC395x
+ 	tristate "Tekram DC395(U/UW/F) and DC315(U) SCSI support (EXPERIMENTAL)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI && EXPERIMENTAL
+ 	---help---
+ 	  This driver supports PCI SCSI host adapters based on the ASIC
+@@ -1379,6 +1434,7 @@ config SCSI_DC395x
+ 
+ config SCSI_DC390T
+ 	tristate "Tekram DC390(T) and Am53/79C974 SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	---help---
+ 	  This driver supports PCI SCSI host adapters based on the Am53C974A
+@@ -1395,6 +1451,7 @@ config SCSI_DC390T
+ 
+ config SCSI_T128
+ 	tristate "Trantor T128/T128F/T228 SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	---help---
+@@ -1411,6 +1468,7 @@ config SCSI_T128
+ 
+ config SCSI_U14_34F
+ 	tristate "UltraStor 14F/34F support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ISA && SCSI && ISA_DMA_API
+ 	---help---
+ 	  This is support for the UltraStor 14F and 34F SCSI-2 host adapters.
+@@ -1460,6 +1518,7 @@ config SCSI_U14_34F_MAX_TAGS
+ 
+ config SCSI_ULTRASTOR
+ 	tristate "UltraStor SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on X86 && ISA && SCSI
+ 	---help---
+ 	  This is support for the UltraStor 14F, 24F and 34F SCSI-2 host
+@@ -1477,6 +1536,7 @@ config SCSI_ULTRASTOR
+ 
+ config SCSI_NSP32
+ 	tristate "Workbit NinjaSCSI-32Bi/UDE support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI && !64BIT
+ 	help
+ 	  This is support for the Workbit NinjaSCSI-32Bi/UDE PCI/Cardbus
+@@ -1501,6 +1561,7 @@ config SCSI_DEBUG
+ 
+ config SCSI_MESH
+ 	tristate "MESH (Power Mac internal SCSI) support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PPC32 && PPC_PMAC && SCSI
+ 	help
+ 	  Many Power Macintoshes and clones have a MESH (Macintosh Enhanced
+@@ -1555,6 +1616,7 @@ config JAZZ_ESP
+ 
+ config A3000_SCSI
+ 	tristate "A3000 WD33C93A support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on AMIGA && SCSI
+ 	help
+ 	  If you have an Amiga 3000 and have SCSI devices connected to the
+@@ -1565,6 +1627,7 @@ config A3000_SCSI
+ 
+ config A2091_SCSI
+ 	tristate "A2091/A590 WD33C93A support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ZORRO && SCSI
+ 	help
+ 	  If you have a Commodore A2091 SCSI controller, say Y. Otherwise,
+@@ -1575,6 +1638,7 @@ config A2091_SCSI
+ 
+ config GVP11_SCSI
+ 	tristate "GVP Series II WD33C93A support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ZORRO && SCSI
+ 	---help---
+ 	  If you have a Great Valley Products Series II SCSI controller,
+@@ -1588,6 +1652,7 @@ config GVP11_SCSI
+ 
+ config CYBERSTORM_SCSI
+ 	tristate "CyberStorm SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ZORRO && SCSI
+ 	help
+ 	  If you have an Amiga with an original (MkI) Phase5 Cyberstorm
+@@ -1596,6 +1661,7 @@ config CYBERSTORM_SCSI
+ 
+ config CYBERSTORMII_SCSI
+ 	tristate "CyberStorm Mk II SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ZORRO && SCSI
+ 	help
+ 	  If you have an Amiga with a Phase5 Cyberstorm MkII accelerator board
+@@ -1604,6 +1670,7 @@ config CYBERSTORMII_SCSI
+ 
+ config BLZ2060_SCSI
+ 	tristate "Blizzard 2060 SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ZORRO && SCSI
+ 	help
+ 	  If you have an Amiga with a Phase5 Blizzard 2060 accelerator board
+@@ -1612,6 +1679,7 @@ config BLZ2060_SCSI
+ 
+ config BLZ1230_SCSI
+ 	tristate "Blizzard 1230IV/1260 SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ZORRO && SCSI
+ 	help
+ 	  If you have an Amiga 1200 with a Phase5 Blizzard 1230IV or Blizzard
+@@ -1620,6 +1688,7 @@ config BLZ1230_SCSI
+ 
+ config FASTLANE_SCSI
+ 	tristate "Fastlane SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ZORRO && SCSI
+ 	help
+ 	  If you have the Phase5 Fastlane Z3 SCSI controller, or plan to use
+@@ -1627,6 +1696,7 @@ config FASTLANE_SCSI
+ 
+ config SCSI_A4000T
+ 	tristate "A4000T NCR53c710 SCSI support (EXPERIMENTAL)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on AMIGA && SCSI && EXPERIMENTAL
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -1638,6 +1708,7 @@ config SCSI_A4000T
+ 
+ config SCSI_ZORRO7XX
+ 	tristate "Zorro NCR53c710 SCSI support (EXPERIMENTAL)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ZORRO && SCSI && EXPERIMENTAL
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -1654,6 +1725,7 @@ config SCSI_ZORRO7XX
+ 
+ config OKTAGON_SCSI
+ 	tristate "BSC Oktagon SCSI support (EXPERIMENTAL)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ZORRO && SCSI && EXPERIMENTAL
+ 	help
+ 	  If you have the BSC Oktagon SCSI disk controller for the Amiga, say
+@@ -1663,6 +1735,7 @@ config OKTAGON_SCSI
+ 
+ config ATARI_SCSI
+ 	tristate "Atari native SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ATARI && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	---help---
+@@ -1715,6 +1788,7 @@ config MAC_SCSI
+ 
+ config SCSI_MAC_ESP
+ 	tristate "Macintosh NCR53c9[46] SCSI"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on MAC && SCSI
+ 	help
+ 	  This is the NCR 53c9x SCSI controller found on most of the 68040
+@@ -1735,6 +1809,7 @@ config MVME147_SCSI
+ 
+ config MVME16x_SCSI
+ 	tristate "NCR53C710 SCSI driver for MVME16x"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on MVME16x && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -1744,6 +1819,7 @@ config MVME16x_SCSI
+ 
+ config BVME6000_SCSI
+ 	tristate "NCR53C710 SCSI driver for BVME6000"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on BVME6000 && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -1753,6 +1829,7 @@ config BVME6000_SCSI
+ 
+ config SUN3_SCSI
+ 	tristate "Sun3 NCR5380 SCSI"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on SUN3 && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -1771,6 +1848,7 @@ config SUN3X_ESP
+ 
+ config SCSI_SUNESP
+ 	tristate "Sparc ESP Scsi Driver"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on SBUS && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -1782,6 +1860,7 @@ config SCSI_SUNESP
+ 
+ config ZFCP
+ 	tristate "FCP host bus adapter driver for IBM eServer zSeries"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on S390 && QDIO && SCSI
+ 	select SCSI_FC_ATTRS
+ 	help
+@@ -1796,6 +1875,7 @@ config ZFCP
+ 
+ config SCSI_SRP
+ 	tristate "SCSI RDMA Protocol helper library"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on SCSI && PCI
+ 	select SCSI_TGT
+ 	help
+Index: linux-2.6.23-rc1-misc/drivers/scsi/aic7xxx/Kconfig.aic79xx
+===================================================================
+--- linux-2.6.23-rc1-misc.orig/drivers/scsi/aic7xxx/Kconfig.aic79xx
++++ linux-2.6.23-rc1-misc/drivers/scsi/aic7xxx/Kconfig.aic79xx
+@@ -4,6 +4,7 @@
+ #
+ config SCSI_AIC79XX
+ 	tristate "Adaptec AIC79xx U320 support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	help
+Index: linux-2.6.23-rc1-misc/drivers/scsi/aic7xxx/Kconfig.aic7xxx
+===================================================================
+--- linux-2.6.23-rc1-misc.orig/drivers/scsi/aic7xxx/Kconfig.aic7xxx
++++ linux-2.6.23-rc1-misc/drivers/scsi/aic7xxx/Kconfig.aic7xxx
+@@ -4,6 +4,7 @@
+ #
+ config SCSI_AIC7XXX
+ 	tristate "Adaptec AIC7xxx Fast -> U160 support (New Driver)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on (PCI || EISA) && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	---help---
+Index: linux-2.6.23-rc1-misc/drivers/scsi/aic94xx/Kconfig
+===================================================================
+--- linux-2.6.23-rc1-misc.orig/drivers/scsi/aic94xx/Kconfig
++++ linux-2.6.23-rc1-misc/drivers/scsi/aic94xx/Kconfig
+@@ -26,6 +26,7 @@
+ 
+ config SCSI_AIC94XX
+ 	tristate "Adaptec AIC94xx SAS/SATA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI
+ 	select SCSI_SAS_LIBSAS
+ 	select FW_LOADER
+Index: linux-2.6.23-rc1-misc/drivers/scsi/arm/Kconfig
+===================================================================
+--- linux-2.6.23-rc1-misc.orig/drivers/scsi/arm/Kconfig
++++ linux-2.6.23-rc1-misc/drivers/scsi/arm/Kconfig
+@@ -3,6 +3,7 @@
+ #
+ config SCSI_ACORNSCSI_3
+ 	tristate "Acorn SCSI card (aka30) support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ARCH_ACORN && SCSI && BROKEN
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -32,6 +33,7 @@ config SCSI_ACORNSCSI_SYNC
+ 
+ config SCSI_ARXESCSI
+ 	tristate "ARXE SCSI support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ARCH_ACORN && SCSI
+ 	help
+ 	  Around 1991, Arxe Systems Limited released a high density floppy
+@@ -44,6 +46,7 @@ config SCSI_ARXESCSI
+ 
+ config SCSI_CUMANA_2
+ 	tristate "CumanaSCSI II support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ARCH_ACORN && SCSI
+ 	help
+ 	  This enables support for the Cumana SCSI II card. If you have an
+@@ -51,6 +54,7 @@ config SCSI_CUMANA_2
+ 
+ config SCSI_EESOXSCSI
+ 	tristate "EESOX support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ARCH_ACORN && SCSI
+ 	help
+ 	  This enables support for the EESOX SCSI card. If you have an Acorn
+@@ -58,6 +62,7 @@ config SCSI_EESOXSCSI
+ 
+ config SCSI_POWERTECSCSI
+ 	tristate "PowerTec support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ARCH_ACORN && SCSI
+ 	help
+ 	  This enables support for the Powertec SCSI card on Acorn systems. If
+@@ -68,6 +73,7 @@ comment "The following drivers are not f
+ 
+ config SCSI_CUMANA_1
+ 	tristate "CumanaSCSI I support (EXPERIMENTAL)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ARCH_ACORN && EXPERIMENTAL && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -76,6 +82,7 @@ config SCSI_CUMANA_1
+ 
+ config SCSI_ECOSCSI
+ 	tristate "EcoScsi support (EXPERIMENTAL)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on ARCH_ACORN && EXPERIMENTAL && (ARCH_ARC || ARCH_A5K) && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	help
+Index: linux-2.6.23-rc1-misc/drivers/scsi/megaraid/Kconfig.megaraid
+===================================================================
+--- linux-2.6.23-rc1-misc.orig/drivers/scsi/megaraid/Kconfig.megaraid
++++ linux-2.6.23-rc1-misc/drivers/scsi/megaraid/Kconfig.megaraid
+@@ -6,6 +6,7 @@ config MEGARAID_NEWGEN
+ 
+ config MEGARAID_MM
+ 	tristate "LSI Logic Management Module (New Driver)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI && MEGARAID_NEWGEN
+ 	help
+ 	Management Module provides ioctl, sysfs support for LSI Logic
+@@ -16,6 +17,7 @@ config MEGARAID_MM
+ 
+ config MEGARAID_MAILBOX
+ 	tristate "LSI Logic MegaRAID Driver (New Driver)"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI && MEGARAID_MM
+ 	help
+ 	List of supported controllers
+@@ -77,6 +79,7 @@ config MEGARAID_LEGACY
+ 
+ config MEGARAID_SAS
+ 	tristate "LSI Logic MegaRAID SAS RAID Module"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	help
+ 	Module for LSI Logic's SAS based RAID controllers.
+Index: linux-2.6.23-rc1-misc/drivers/scsi/pcmcia/Kconfig
+===================================================================
+--- linux-2.6.23-rc1-misc.orig/drivers/scsi/pcmcia/Kconfig
++++ linux-2.6.23-rc1-misc/drivers/scsi/pcmcia/Kconfig
+@@ -10,6 +10,7 @@ if SCSI_LOWLEVEL_PCMCIA && SCSI && PCMCI
+ 
+ config PCMCIA_AHA152X
+ 	tristate "Adaptec AHA152X PCMCIA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on !64BIT
+ 	select SCSI_SPI_ATTRS
+ 	help
+@@ -21,6 +22,7 @@ config PCMCIA_AHA152X
+ 
+ config PCMCIA_FDOMAIN
+ 	tristate "Future Domain PCMCIA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	  Say Y here if you intend to attach this type of PCMCIA SCSI host
+ 	  adapter to your computer.
+@@ -30,6 +32,7 @@ config PCMCIA_FDOMAIN
+ 
+ config PCMCIA_NINJA_SCSI
+ 	tristate "NinjaSCSI-3 / NinjaSCSI-32Bi (16bit) PCMCIA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on !64BIT
+ 	help
+ 	  If you intend to attach this type of PCMCIA SCSI host adapter to
+@@ -64,6 +67,7 @@ config PCMCIA_NINJA_SCSI
+ 
+ config PCMCIA_QLOGIC
+ 	tristate "Qlogic PCMCIA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	  Say Y here if you intend to attach this type of PCMCIA SCSI host
+ 	  adapter to your computer.
+@@ -73,6 +77,7 @@ config PCMCIA_QLOGIC
+ 
+ config PCMCIA_SYM53C500
+ 	tristate "Symbios 53c500 PCMCIA support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	help
+ 	  Say Y here if you have a New Media Bus Toaster or other PCMCIA
+ 	  SCSI adapter based on the Symbios 53c500 controller.
+Index: linux-2.6.23-rc1-misc/drivers/scsi/qla2xxx/Kconfig
+===================================================================
+--- linux-2.6.23-rc1-misc.orig/drivers/scsi/qla2xxx/Kconfig
++++ linux-2.6.23-rc1-misc/drivers/scsi/qla2xxx/Kconfig
+@@ -1,5 +1,6 @@
+ config SCSI_QLA_FC
+ 	tristate "QLogic QLA2XXX Fibre Channel Support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI
+ 	select SCSI_FC_ATTRS
+ 	select FW_LOADER
+Index: linux-2.6.23-rc1-misc/drivers/scsi/qla4xxx/Kconfig
+===================================================================
+--- linux-2.6.23-rc1-misc.orig/drivers/scsi/qla4xxx/Kconfig
++++ linux-2.6.23-rc1-misc/drivers/scsi/qla4xxx/Kconfig
+@@ -1,5 +1,6 @@
+ config SCSI_QLA_ISCSI
+ 	tristate "QLogic ISP4XXX host adapter family support"
++	select BLK_DEV_SD if !EMBEDDED
+ 	depends on PCI && SCSI && NET
+ 	select SCSI_ISCSI_ATTRS
+ 	---help---
