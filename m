@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbXIHQdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbXIHQkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbXIHQdt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 12:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbXIHQdm
+	id S1753956AbXIHQkt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 12:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbXIHQkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 12:33:42 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2257 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753345AbXIHQdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 12:33:42 -0400
-Date: Sat, 8 Sep 2007 16:33:28 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Sat, 8 Sep 2007 12:40:42 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54675 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753359AbXIHQkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 12:40:41 -0400
+Subject: Re: 2.6.23-rc4-mm1 compile error for ppc 32
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arkadiusz Miskiewicz <arekm@maven.pl>, Thomas Voegtle <tv@lio96.de>,
-       Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: [4/4] 2.6.23-rc5: known regressions v2
-Message-ID: <20070908163328.GB4457@ucw.cz>
-References: <46E27DEF.7060109@googlemail.com> <46E2835E.9010408@googlemail.com>
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200709081136.46605.nickpiggin@yahoo.com.au>
+References: <20070906184011.GA1776@Krystal>
+	 <20070906160009.fa52e8d2.akpm@linux-foundation.org>
+	 <200709081136.46605.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Sat, 08 Sep 2007 18:42:10 +0200
+Message-Id: <1189269730.5972.163.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46E2835E.9010408@googlemail.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> Subject         : resume from ram much slower
-> References      : http://lkml.org/lkml/2007/8/10/275
-> Last known good : 2.6.23-rc1 ?
-> Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
-> Caused-By       : ?
-> Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-> Status          : problem is being debugged
+> > If so, the finger points at this:
+> >
+> > static __inline__ void __clear_bit_unlock(int nr, volatile unsigned long
+> > *addr) {
+> > 	__asm__ __volatile__(LWSYNC_ON_SMP ::: "memory");
+> > 	__clear_bit(nr, addr);
+> > }
+> >
+> > which was added by Nick's powerpc-lock-bitops.patch.  I am suspecting that
+> > this isn't pp32 code?
+> 
+> Hmm, when LWSYNC_ON_SMP is a noop, it seems like it should probably
+> be an empty string instead of nothing? ("") That should make behaviour
+> more consistent I think.
 
-Can you try unloading acpi_cpufreq? I seen similar bug in suse
-kernel...
+The wormhole is arch/ppc's hack to get to include/asm-powerpc...
 
-If that does not help, try unloading as many modules as possible...
+As for having LWSYNC_ON_SMP be "" ... that might be the best way but I'd
+rather not take chances right now and go for the quick fix of making
+__clear_bit_unlock() do
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	LWSYNC_ON_SMP ""
+
+instead.
+
+Ben.
+
+
