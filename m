@@ -1,36 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752442AbXIHLNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbXIHLOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752442AbXIHLNv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 07:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXIHLM7
+	id S1752637AbXIHLOO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 07:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbXIHLNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 07:12:59 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:7419 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753354AbXIHLMz (ORCPT
+	Sat, 8 Sep 2007 07:13:11 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:46533 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753427AbXIHLNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 07:12:55 -0400
+	Sat, 8 Sep 2007 07:13:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=WSjYtW1RSS2V8MRUHZYp6nEs7AGs0fvEwwzdfTHM2vyhHHpMOeJbvhfSVE3gXW6xkaskRdB6d95ATaBiyE7H/YxBxPtTdBpSyNlT4Hlb1dhzk2O3hhwyhzfLM1xbsKm8bnl5GLShndlSkNtDD8eSfOWEJdbi7PJmfbOTwABUg/s=
-Message-ID: <46E2835E.9010408@googlemail.com>
-Date: Sat, 08 Sep 2007 13:11:26 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=VC36suo6XoKwRyFMRoOyypQMd6Z0yf40BaPL2YmsDKjREb6/Wodf/B0VOjjFgdPSAvgDZPVhY4ariQij876TCfPcK3sSgae0LwEvjV6gDdCa7BQsMC0kAvoLoRgHwyKecC/+WwGVW73ATL4a+LesjPKYPkI+YYDdNbe4X89ctCU=
+Message-ID: <46E28367.2070001@googlemail.com>
+Date: Sat, 08 Sep 2007 13:11:35 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, Arkadiusz Miskiewicz <arekm@maven.pl>,
-       Thomas Voegtle <tv@lio96.de>, Soeren Sonnenburg <kernel@nn7.de>,
-       Christian Leber <christian@leber.de>,
-       kbuild-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: [4/4] 2.6.23-rc5: known regressions v2
-References: <46E27DEF.7060109@googlemail.com>
-In-Reply-To: <46E27DEF.7060109@googlemail.com>
+       Gabriel C <nix.or.die@googlemail.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>,
+       Andrey Borzenkov <arvidjaar@mail.ru>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-fsdevel@vger.kernel.org,
+       nfs@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Peter Kovar <peter.kovar@gmail.com>, Neil Brown <neilb@suse.de>,
+       linux-ide@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Bret Towe <magnade@gmail.com>, Tony Breeds <tony@bakeyournoodle.com>
+Subject: [1/2] 2.6.23-rc5: known regressions with patches v2
 X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
@@ -40,7 +41,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi all,
 
-Here is a list of some known regressions in 2.6.23-rc5.
+Here is a list of some known regressions in 2.6.23-rc5
+with patches available.
 
 Feel free to add new regressions/remove fixed etc.
 http://kernelnewbies.org/known_regressions
@@ -65,51 +67,58 @@ Tejun Heo                              3
 
 
 
-Kconfig/Kbuild
+Some of these patches are available in -krf (known regressions fixes) tree
+http://www.stardust.webpages.pl/files/patches/krf/2.6.23-rc5-git1/linux-2.6.23-rc5-git1-krf1.patch.bz2
+http://www.stardust.webpages.pl/files/patches/krf/2.6.23-rc5-git1/linux-2.6.23-rc5-git1-krf1.tar.bz2
 
-Subject         : building a specific in-tree module is currently a bit broken
-References      : http://lkml.org/lkml/2007/9/5/40
+
+
+Unclassified
+
+Subject         : 8250 claims non existing device blocking IO port
+References      : http://lkml.org/lkml/2007/8/18/20
 Last known good : ?
-Submitter       : Robert P. J. Day <rpjday@mindspring.com>
+Submitter       : Andrey Borzenkov <arvidjaar@mail.ru>
 Caused-By       : ?
-Handled-By      : Sam Ravnborg <sam@ravnborg.org>
-Status          : problem is being debugged
+Handled-By      : Bjorn Helgaas <bjorn.helgaas@hp.com>
+Patch           : http://lkml.org/lkml/2007/8/21/291
+Status          : patch available
 
-
-
-Power management
-
-Subject         : powersaving degradation, (time spend in C0 goes up after a while)
-References      : http://lkml.org/lkml/2007/9/2/142
+Subject         : Oops while modprobing phy fixed module
+References      : http://lkml.org/lkml/2007/7/14/63
 Last known good : ?
-Submitter       : Christian Leber <christian@leber.de>
+Submitter       : Gabriel C <nix.or.die@googlemail.com>
 Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
+Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
+                  Vitaly Bordug <vitb@kernel.crashing.org>
+Patch1          : http://lkml.org/lkml/2007/7/18/506
+Status          : patch available
 
-Subject         : something broke resume from s2ram on mbp c1d (??? :))
-References      : http://lkml.org/lkml/2007/8/28/67
-Last known good : 2.6.23-rc3
-Submitter       : Soeren Sonnenburg <kernel@nn7.de>
-Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : unknown
 
-Subject         : 2.6.23-rc2 swsusp, suddenly increased uptime
-References      : http://lkml.org/lkml/2007/8/12/249
+
+FS
+
+Subject         : NFSv3 server error in LOOKUP after READDIRPLUS Call
+References      : http://bugzilla.kernel.org/show_bug.cgi?id=8966
 Last known good : ?
-Submitter       : Thomas Voegtle <tv@lio96.de>
+Submitter       : Peter Kovar <peter.kovar@gmail.com>
 Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : problem is being debugged
+Handled-By      : Neil Brown <neilb@suse.de>
+Patch           : http://bugzilla.kernel.org/attachment.cgi?id=12689
+Status          : patch available
 
-Subject         : resume from ram much slower
-References      : http://lkml.org/lkml/2007/8/10/275
-Last known good : 2.6.23-rc1 ?
-Submitter       : Arkadiusz Miskiewicz <arekm@maven.pl>
+
+
+IDE
+
+Subject         : linux-2.6.23-rc4 ppc build failure
+References      : http://lkml.org/lkml/2007/8/29/154
+Last known good : ?
+Submitter       : Bret Towe <magnade@gmail.com>
 Caused-By       : ?
-Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-Status          : problem is being debugged
+Handled-By      : Tony Breeds <tony@bakeyournoodle.com>
+Patch           : http://lkml.org/lkml/2007/8/31/1
+Status          : patch was suggested
 
 
 
