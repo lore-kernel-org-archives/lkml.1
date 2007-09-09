@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760461AbXIIVMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760311AbXIIVNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760461AbXIIVMs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 17:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759967AbXIIVLK
+	id S1760311AbXIIVNP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 17:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760003AbXIIVLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 17:11:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57959 "EHLO ogre.sisk.pl"
+	Sun, 9 Sep 2007 17:11:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57960 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759456AbXIIVLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 17:11:04 -0400
+	id S1759461AbXIIVLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 17:11:05 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH -mm 5/5] Hibernation: Introduce exportable suspend ioctls header (rev. 2)
-Date: Sun, 9 Sep 2007 23:18:50 +0200
+Subject: [PATCH -mm 4/5] Hibernation: Correct definitions of some ioctls (rev. 2)
+Date: Sun, 9 Sep 2007 23:12:52 +0200
 User-Agent: KMail/1.9.5
 Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
        Johannes Berg <johannes@sipsolutions.net>
@@ -23,142 +23,212 @@ Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709092318.51374.rjw@sisk.pl>
+Message-Id: <200709092312.52889.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Move the definitions of hibernation ioctls to a separate header file in
-include/linux, which can be exported to the user space.
+Three ioctl numbers belonging to the hibernation userland interface,
+SNAPSHOT_ATOMIC_SNAPSHOT, SNAPSHOT_SET_IMAGE_SIZE, SNAPSHOT_AVAIL_SWAP,
+SNAPSHOT_GET_SWAP_PAGE, are defined in a wrong way (eg. not portable).  Provide
+new ioctl numbers for these ioctls and mark the existing ones as deprecated.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- Documentation/power/userland-swsusp.txt |   10 +++++-----
- include/linux/Kbuild                    |    1 +
- include/linux/suspend_ioctls.h          |   32 ++++++++++++++++++++++++++++++++
- kernel/power/power.h                    |   29 +----------------------------
- 4 files changed, 39 insertions(+), 33 deletions(-)
+ Documentation/power/userland-swsusp.txt |   26 +++++++++++++-------------
+ kernel/power/power.h                    |   10 +++++-----
+ kernel/power/user.c                     |   18 ++++++++++++++++--
+ 3 files changed, 34 insertions(+), 20 deletions(-)
 
-Index: linux-2.6.23-rc5/include/linux/suspend_ioctls.h
+Index: linux-2.6.23-rc5/kernel/power/power.h
 ===================================================================
---- /dev/null
-+++ linux-2.6.23-rc5/include/linux/suspend_ioctls.h
-@@ -0,0 +1,32 @@
-+#ifndef _LINUX_SUSPEND_IOCTLS_H
-+#define _LINUX_SUSPEND_IOCTLS_H
-+
-+/*
-+ * This structure is used to pass the values needed for the identification
-+ * of the resume swap area from a user space to the kernel via the
-+ * SNAPSHOT_SET_SWAP_AREA ioctl
-+ */
-+struct resume_swap_area {
-+	loff_t offset;
-+	u_int32_t dev;
-+} __attribute__((packed));
-+
-+#define SNAPSHOT_IOC_MAGIC	'3'
-+#define SNAPSHOT_FREEZE			_IO(SNAPSHOT_IOC_MAGIC, 1)
-+#define SNAPSHOT_UNFREEZE		_IO(SNAPSHOT_IOC_MAGIC, 2)
-+#define SNAPSHOT_ATOMIC_RESTORE		_IO(SNAPSHOT_IOC_MAGIC, 4)
-+#define SNAPSHOT_FREE			_IO(SNAPSHOT_IOC_MAGIC, 5)
-+#define SNAPSHOT_FREE_SWAP_PAGES	_IO(SNAPSHOT_IOC_MAGIC, 9)
-+#define SNAPSHOT_S2RAM			_IO(SNAPSHOT_IOC_MAGIC, 11)
-+#define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
-+							struct resume_swap_area)
-+#define SNAPSHOT_GET_IMAGE_SIZE		_IOR(SNAPSHOT_IOC_MAGIC, 14, loff_t)
-+#define SNAPSHOT_PLATFORM_SUPPORT	_IO(SNAPSHOT_IOC_MAGIC, 15)
-+#define SNAPSHOT_POWER_OFF		_IO(SNAPSHOT_IOC_MAGIC, 16)
+--- linux-2.6.23-rc5.orig/kernel/power/power.h	2007-09-09 22:30:36.000000000 +0200
++++ linux-2.6.23-rc5/kernel/power/power.h	2007-09-09 22:36:10.000000000 +0200
+@@ -149,12 +149,8 @@ struct resume_swap_area {
+ #define SNAPSHOT_IOC_MAGIC	'3'
+ #define SNAPSHOT_FREEZE			_IO(SNAPSHOT_IOC_MAGIC, 1)
+ #define SNAPSHOT_UNFREEZE		_IO(SNAPSHOT_IOC_MAGIC, 2)
+-#define SNAPSHOT_ATOMIC_SNAPSHOT	_IOW(SNAPSHOT_IOC_MAGIC, 3, void *)
+ #define SNAPSHOT_ATOMIC_RESTORE		_IO(SNAPSHOT_IOC_MAGIC, 4)
+ #define SNAPSHOT_FREE			_IO(SNAPSHOT_IOC_MAGIC, 5)
+-#define SNAPSHOT_SET_IMAGE_SIZE		_IOW(SNAPSHOT_IOC_MAGIC, 6, unsigned long)
+-#define SNAPSHOT_AVAIL_SWAP		_IOR(SNAPSHOT_IOC_MAGIC, 7, void *)
+-#define SNAPSHOT_GET_SWAP_PAGE		_IOR(SNAPSHOT_IOC_MAGIC, 8, void *)
+ #define SNAPSHOT_FREE_SWAP_PAGES	_IO(SNAPSHOT_IOC_MAGIC, 9)
+ #define SNAPSHOT_S2RAM			_IO(SNAPSHOT_IOC_MAGIC, 11)
+ #define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
+@@ -162,7 +158,11 @@ struct resume_swap_area {
+ #define SNAPSHOT_GET_IMAGE_SIZE		_IOR(SNAPSHOT_IOC_MAGIC, 14, loff_t)
+ #define SNAPSHOT_PLATFORM_SUPPORT	_IO(SNAPSHOT_IOC_MAGIC, 15)
+ #define SNAPSHOT_POWER_OFF		_IO(SNAPSHOT_IOC_MAGIC, 16)
+-#define SNAPSHOT_IOC_MAXNR	16
 +#define SNAPSHOT_CREATE_IMAGE		_IOW(SNAPSHOT_IOC_MAGIC, 17, int)
 +#define SNAPSHOT_PREF_IMAGE_SIZE	_IO(SNAPSHOT_IOC_MAGIC, 18)
 +#define SNAPSHOT_AVAIL_SWAP_SIZE	_IOR(SNAPSHOT_IOC_MAGIC, 19, loff_t)
 +#define SNAPSHOT_ALLOC_SWAP_PAGE	_IOR(SNAPSHOT_IOC_MAGIC, 20, loff_t)
 +#define SNAPSHOT_IOC_MAXNR	20
-+
-+#endif /* _LINUX_SUSPEND_IOCTLS_H */
-Index: linux-2.6.23-rc5/kernel/power/power.h
-===================================================================
---- linux-2.6.23-rc5.orig/kernel/power/power.h
-+++ linux-2.6.23-rc5/kernel/power/power.h
-@@ -1,4 +1,5 @@
- #include <linux/suspend.h>
-+#include <linux/suspend_ioctls.h>
- #include <linux/utsname.h>
  
- struct swsusp_info {
-@@ -136,34 +137,6 @@ extern int snapshot_write_next(struct sn
- extern void snapshot_write_finalize(struct snapshot_handle *handle);
- extern int snapshot_image_loaded(struct snapshot_handle *handle);
- 
--/*
-- * This structure is used to pass the values needed for the identification
-- * of the resume swap area from a user space to the kernel via the
-- * SNAPSHOT_SET_SWAP_AREA ioctl
-- */
--struct resume_swap_area {
--	loff_t offset;
--	u_int32_t dev;
--} __attribute__((packed));
--
--#define SNAPSHOT_IOC_MAGIC	'3'
--#define SNAPSHOT_FREEZE			_IO(SNAPSHOT_IOC_MAGIC, 1)
--#define SNAPSHOT_UNFREEZE		_IO(SNAPSHOT_IOC_MAGIC, 2)
--#define SNAPSHOT_ATOMIC_RESTORE		_IO(SNAPSHOT_IOC_MAGIC, 4)
--#define SNAPSHOT_FREE			_IO(SNAPSHOT_IOC_MAGIC, 5)
--#define SNAPSHOT_FREE_SWAP_PAGES	_IO(SNAPSHOT_IOC_MAGIC, 9)
--#define SNAPSHOT_S2RAM			_IO(SNAPSHOT_IOC_MAGIC, 11)
--#define SNAPSHOT_SET_SWAP_AREA		_IOW(SNAPSHOT_IOC_MAGIC, 13, \
--							struct resume_swap_area)
--#define SNAPSHOT_GET_IMAGE_SIZE		_IOR(SNAPSHOT_IOC_MAGIC, 14, loff_t)
--#define SNAPSHOT_PLATFORM_SUPPORT	_IO(SNAPSHOT_IOC_MAGIC, 15)
--#define SNAPSHOT_POWER_OFF		_IO(SNAPSHOT_IOC_MAGIC, 16)
--#define SNAPSHOT_CREATE_IMAGE		_IOW(SNAPSHOT_IOC_MAGIC, 17, int)
--#define SNAPSHOT_PREF_IMAGE_SIZE	_IO(SNAPSHOT_IOC_MAGIC, 18)
--#define SNAPSHOT_AVAIL_SWAP_SIZE	_IOR(SNAPSHOT_IOC_MAGIC, 19, loff_t)
--#define SNAPSHOT_ALLOC_SWAP_PAGE	_IOR(SNAPSHOT_IOC_MAGIC, 20, loff_t)
--#define SNAPSHOT_IOC_MAXNR	20
--
  /* If unset, the snapshot device cannot be open. */
  extern atomic_t snapshot_device_available;
+Index: linux-2.6.23-rc5/kernel/power/user.c
+===================================================================
+--- linux-2.6.23-rc5.orig/kernel/power/user.c	2007-09-09 22:30:36.000000000 +0200
++++ linux-2.6.23-rc5/kernel/power/user.c	2007-09-09 22:37:11.000000000 +0200
+@@ -40,6 +40,16 @@
+ #define PMOPS_ENTER	2
+ #define PMOPS_FINISH	3
  
++/*
++ * NOTE: The following ioctl definitions are wrong and have been replaced with
++ * correct ones.  They are only preserved here for compatibility with existing
++ * userland utilities and will be removed in the future.
++ */
++#define SNAPSHOT_ATOMIC_SNAPSHOT	_IOW(SNAPSHOT_IOC_MAGIC, 3, void *)
++#define SNAPSHOT_SET_IMAGE_SIZE		_IOW(SNAPSHOT_IOC_MAGIC, 6, unsigned long)
++#define SNAPSHOT_AVAIL_SWAP		_IOR(SNAPSHOT_IOC_MAGIC, 7, void *)
++#define SNAPSHOT_GET_SWAP_PAGE		_IOR(SNAPSHOT_IOC_MAGIC, 8, void *)
++
+ 
+ #define SNAPSHOT_MINOR	231
+ 
+@@ -191,6 +201,7 @@ static int snapshot_ioctl(struct inode *
+ 		data->frozen = 0;
+ 		break;
+ 
++	case SNAPSHOT_CREATE_IMAGE:
+ 	case SNAPSHOT_ATOMIC_SNAPSHOT:
+ 		if (data->mode != O_RDONLY || !data->frozen  || data->ready) {
+ 			error = -EPERM;
+@@ -198,7 +209,7 @@ static int snapshot_ioctl(struct inode *
+ 		}
+ 		error = hibernation_snapshot(data->platform_support);
+ 		if (!error)
+-			error = put_user(in_suspend, (unsigned int __user *)arg);
++			error = put_user(in_suspend, (int __user *)arg);
+ 		if (!error)
+ 			data->ready = 1;
+ 		break;
+@@ -219,6 +230,7 @@ static int snapshot_ioctl(struct inode *
+ 		data->ready = 0;
+ 		break;
+ 
++	case SNAPSHOT_PREF_IMAGE_SIZE:
+ 	case SNAPSHOT_SET_IMAGE_SIZE:
+ 		image_size = arg;
+ 		break;
+@@ -233,12 +245,14 @@ static int snapshot_ioctl(struct inode *
+ 		error = put_user(size, (loff_t __user *)arg);
+ 		break;
+ 
++	case SNAPSHOT_AVAIL_SWAP_SIZE:
+ 	case SNAPSHOT_AVAIL_SWAP:
+ 		size = count_swap_pages(data->swap, 1);
+ 		size <<= PAGE_SHIFT;
+ 		error = put_user(size, (loff_t __user *)arg);
+ 		break;
+ 
++	case SNAPSHOT_ALLOC_SWAP_PAGE:
+ 	case SNAPSHOT_GET_SWAP_PAGE:
+ 		if (data->swap < 0 || data->swap >= MAX_SWAPFILES) {
+ 			error = -ENODEV;
+@@ -247,7 +261,7 @@ static int snapshot_ioctl(struct inode *
+ 		offset = alloc_swapdev_block(data->swap);
+ 		if (offset) {
+ 			offset <<= PAGE_SHIFT;
+-			error = put_user(offset, (sector_t __user *)arg);
++			error = put_user(offset, (loff_t __user *)arg);
+ 		} else {
+ 			error = -ENOSPC;
+ 		}
 Index: linux-2.6.23-rc5/Documentation/power/userland-swsusp.txt
 ===================================================================
---- linux-2.6.23-rc5.orig/Documentation/power/userland-swsusp.txt
-+++ linux-2.6.23-rc5/Documentation/power/userland-swsusp.txt
-@@ -14,7 +14,7 @@ are going to develop your own suspend/re
+--- linux-2.6.23-rc5.orig/Documentation/power/userland-swsusp.txt	2007-09-09 22:32:45.000000000 +0200
++++ linux-2.6.23-rc5/Documentation/power/userland-swsusp.txt	2007-09-09 22:38:02.000000000 +0200
+@@ -27,17 +27,17 @@ once at a time.
+ The ioctl() commands recognized by the device are:
  
- The interface consists of a character device providing the open(),
- release(), read(), and write() operations as well as several ioctl()
--commands defined in kernel/power/power.h.  The major and minor
-+commands defined in include/linux/suspend_ioctls.h .  The major and minor
- numbers of the device are, respectively, 10 and 231, and they can
- be read from /sys/class/misc/snapshot/dev.
+ SNAPSHOT_FREEZE - freeze user space processes (the current process is
+-	not frozen); this is required for SNAPSHOT_ATOMIC_SNAPSHOT
++	not frozen); this is required for SNAPSHOT_CREATE_IMAGE
+ 	and SNAPSHOT_ATOMIC_RESTORE to succeed
  
-@@ -70,10 +70,10 @@ SNAPSHOT_FREE_SWAP_PAGES - free all swap
+ SNAPSHOT_UNFREEZE - thaw user space processes frozen by SNAPSHOT_FREEZE
+ 
+-SNAPSHOT_ATOMIC_SNAPSHOT - create a snapshot of the system memory; the
++SNAPSHOT_CREATE_IMAGE - create a snapshot of the system memory; the
+ 	last argument of ioctl() should be a pointer to an int variable,
+ 	the value of which will indicate whether the call returned after
+ 	creating the snapshot (1) or after restoring the system memory state
+ 	from it (0) (after resume the system finds itself finishing the
+-	SNAPSHOT_ATOMIC_SNAPSHOT ioctl() again); after the snapshot
++	SNAPSHOT_CREATE_IMAGE ioctl() again); after the snapshot
+ 	has been created the read() operation can be used to transfer
+ 	it out of the kernel
+ 
+@@ -49,23 +49,23 @@ SNAPSHOT_ATOMIC_RESTORE - restore the sy
+ 
+ SNAPSHOT_FREE - free memory allocated for the snapshot image
+ 
+-SNAPSHOT_SET_IMAGE_SIZE - set the preferred maximum size of the image
++SNAPSHOT_PREF_IMAGE_SIZE - set the preferred maximum size of the image
+ 	(the kernel will do its best to ensure the image size will not exceed
+ 	this number, but if it turns out to be impossible, the kernel will
+ 	create the smallest image possible)
+ 
+ SNAPSHOT_GET_IMAGE_SIZE - return the actual size of the hibernation image
+ 
+-SNAPSHOT_AVAIL_SWAP - return the amount of available swap in bytes (the last
+-	argument should be a pointer to an unsigned int variable that will
++SNAPSHOT_AVAIL_SWAP_SIZE - return the amount of available swap in bytes (the
++	last argument should be a pointer to an unsigned int variable that will
+ 	contain the result if the call is successful).
+ 
+-SNAPSHOT_GET_SWAP_PAGE - allocate a swap page from the resume partition
++SNAPSHOT_ALLOC_SWAP_PAGE - allocate a swap page from the resume partition
+ 	(the last argument should be a pointer to a loff_t variable that
+ 	will contain the swap page offset if the call is successful)
+ 
+-SNAPSHOT_FREE_SWAP_PAGES - free all swap pages allocated with
+-	SNAPSHOT_GET_SWAP_PAGE
++SNAPSHOT_FREE_SWAP_PAGES - free all swap pages allocated by
++	SNAPSHOT_ALLOC_SWAP_PAGE
+ 
  SNAPSHOT_SET_SWAP_AREA - set the resume partition and the offset (in <PAGE_SIZE>
  	units) from the beginning of the partition at which the swap header is
- 	located (the last ioctl() argument should point to a struct
--	resume_swap_area, as defined in kernel/power/power.h, containing the
--	resume device specification and the offset); for swap partitions the
--	offset is always 0, but it is different from zero for swap files (see
--	Documentation/swsusp-and-swap-files.txt for details).
-+	resume_swap_area, as defined in kernel/power/suspend_ioctls.h,
-+	containing the resume device specification and the offset); for swap
-+	partitions the offset is always 0, but it is different from zero for
-+	swap files (see Documentation/swsusp-and-swap-files.txt for details).
+@@ -102,7 +102,7 @@ The device's write() operation is used f
+ into the kernel.  It has the same limitations as the read() operation.
  
- SNAPSHOT_PLATFORM_SUPPORT - enable/disable the hibernation platform support,
- 	depending on the argument value (enable, if the argument is nonzero)
-Index: linux-2.6.23-rc5/include/linux/Kbuild
-===================================================================
---- linux-2.6.23-rc5.orig/include/linux/Kbuild
-+++ linux-2.6.23-rc5/include/linux/Kbuild
-@@ -144,6 +144,7 @@ header-y += snmp.h
- header-y += sockios.h
- header-y += som.h
- header-y += sound.h
-+header-y += suspend_ioctls.h
- header-y += taskstats.h
- header-y += telephony.h
- header-y += termios.h
+ The release() operation frees all memory allocated for the snapshot image
+-and all swap pages allocated with SNAPSHOT_GET_SWAP_PAGE (if any).
++and all swap pages allocated with SNAPSHOT_ALLOC_SWAP_PAGE (if any).
+ Thus it is not necessary to use either SNAPSHOT_FREE or
+ SNAPSHOT_FREE_SWAP_PAGES before closing the device (in fact it will also
+ unfreeze user space processes frozen by SNAPSHOT_UNFREEZE if they are
+@@ -113,7 +113,7 @@ snapshot image from/to the kernel will u
+ partition, or a swap file as storage space (if a swap file is used, the resume
+ partition is the partition that holds this file).  However, this is not really
+ required, as they can use, for example, a special (blank) suspend partition or
+-a file on a partition that is unmounted before SNAPSHOT_ATOMIC_SNAPSHOT and
++a file on a partition that is unmounted before SNAPSHOT_CREATE_IMAGE and
+ mounted afterwards.
+ 
+ These utilities MUST NOT make any assumptions regarding the ordering of
+@@ -135,7 +135,7 @@ means, such as checksums, to ensure the 
+ The suspending and resuming utilities MUST lock themselves in memory,
+ preferrably using mlockall(), before calling SNAPSHOT_FREEZE.
+ 
+-The suspending utility MUST check the value stored by SNAPSHOT_ATOMIC_SNAPSHOT
++The suspending utility MUST check the value stored by SNAPSHOT_CREATE_IMAGE
+ in the memory location pointed to by the last argument of ioctl() and proceed
+ in accordance with it:
+ 1. 	If the value is 1 (ie. the system memory snapshot has just been
+@@ -149,7 +149,7 @@ in accordance with it:
+ 		image has been saved.
+ 	(b)	The suspending utility SHOULD NOT attempt to perform any
+ 		file system operations (including reads) on the file systems
+-		that were mounted before SNAPSHOT_ATOMIC_SNAPSHOT has been
++		that were mounted before SNAPSHOT_CREATE_IMAGE has been
+ 		called.  However, it MAY mount a file system that was not
+ 		mounted at that time and perform some operations on it (eg.
+ 		use it for saving the image).
