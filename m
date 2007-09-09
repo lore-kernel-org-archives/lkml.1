@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbXIILN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbXIILRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbXIILN2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 07:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbXIILNU
+	id S1756905AbXIILRE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 07:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbXIILQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 07:13:20 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59562 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752081AbXIILNU (ORCPT
+	Sun, 9 Sep 2007 07:16:55 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:46073 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753874AbXIILQy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 07:13:20 -0400
-Date: Sun, 9 Sep 2007 13:13:26 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Kyle Rose <krose@krose.org>
-Cc: Bill Davidsen <davidsen@tmr.com>, James Corey <ploversegg@yahoo.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Rob Sims <lkml-z@robsims.com>, linux-kernel@vger.kernel.org
-Subject: Re: sk98lin for 2.6.23-rc1
-Message-ID: <20070909111326.GF3563@stusta.de>
-References: <20070905102230.10b0bdcf@oldman> <782111.42803.qm@web90413.mail.mud.yahoo.com> <46E2DF74.7040307@tmr.com> <20070908191132.GD3563@stusta.de> <46E35D8C.1070909@krose.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sun, 9 Sep 2007 07:16:54 -0400
+Date: Sun, 9 Sep 2007 14:16:19 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+Cc: akpm@osdl.org, Greg KH <greg@kroah.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       kristen.c.accardi@intel.com
+Subject: Re: [RFC][Intel-IOMMU] Fix for IOMMU early crash
+Message-ID: <20070909111619.GF31099@rhun.haifa.ibm.com>
+References: <20070908200523.GA16204@askeshav-devel.jf.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46E35D8C.1070909@krose.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20070908200523.GA16204@askeshav-devel.jf.intel.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 08, 2007 at 10:42:20PM -0400, Kyle Rose wrote:
-> 
-> > You are a regular reader of linux-kernel, and therefore the sk98lin 
-> > removal can hardly be a surprise for you. If you prefer whining over 
-> > helping to improve the kernel that's your choice...
-> >   
-> In my case the issue is simply one of practicality: I cannot go to the
-> data center 5 times per day to reboot my colo box.  Therefore, I run
-> sk98lin.  It's really that simple.
+On Sat, Sep 08, 2007 at 01:05:24PM -0700, Keshavamurthy, Anil S wrote:
 
-When did you report this bug the first time?
+> Subject: [RFC][Intel-IOMMU] Fix for IOMMU early crash
 
-What we need is that people when testing a new kernel they plan to use 
-test the new drivers *and report the bugs if they run into any*.
+This patch feels like a huge hack. See below.
 
-What could we have done so that you reported your bug without removing 
-the sk98lin driver?
+> This patch removes sysdata from pci_dev struct and creates a new
+> field called sys_data which is exclusively used by IOMMU driver to
+> keep its per device context pointer.
 
-> Kyle
+Hmpf, why is this needed? with the pci_sysdata work that recently went
+into mainline we have a void *iommu member in pci_sysdata which should
+be all that's needed. Please elaborate if it's not enough for your
+needs.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks,
+Muli
