@@ -1,86 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbXIIQvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbXIIQzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758641AbXIIQvY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 12:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757778AbXIIQvQ
+	id S1758693AbXIIQzv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 12:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbXIIQzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 12:51:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56904 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757701AbXIIQvP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 12:51:15 -0400
-Date: Sun, 9 Sep 2007 17:49:35 +0100
-From: Arjan van de Ven <arjan@infradead.org>
-To: Dennis Lubert <plasmahh@gmx.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: tsc timer related problems/questions
-Message-ID: <20070909174935.7c00bbb7@laptopd505.fenrus.org>
-In-Reply-To: <1189355506.6255.60.camel@speedy.projectiwear.org>
-References: <1189355506.6255.60.camel@speedy.projectiwear.org>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 9 Sep 2007 12:55:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57390 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757905AbXIIQzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 12:55:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically hangs on resume from hibernation
+Date: Sun, 9 Sep 2007 19:07:14 +0200
+User-Agent: KMail/1.9.5
+Cc: michal.k.k.piotrowski@gmail.com, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
+References: <200706300859.47133.arvidjaar@mail.ru> <200706302237.50567.rjw@sisk.pl> <200709091800.05756.arvidjaar@mail.ru>
+In-Reply-To: <200709091800.05756.arvidjaar@mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200709091907.14642.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 09 Sep 2007 18:31:45 +0200
-Dennis Lubert <plasmahh@gmx.net> wrote:
-
-Hi,
-
+On Sunday, 9 September 2007 16:00, Andrey Borzenkov wrote:
+> On Sunday 01 July 2007, Rafael J. Wysocki wrote:
+> > On Saturday, 30 June 2007 06:59, Andrey Borzenkov wrote:
+> > > Since 2.6.18 I do not have suspend to RAM; now I am starting to lose
+> > > suspend to disk :)
+> > >
+> > > Environment - vanilla kernel (2.6.22-rc6 currently + squashfs + single
+> > > pata_ali patch to switch off DMA on CD-ROM), single root on reiserfs,
+> > > libata with pata_ali driver.
+> > >
+> > > Until 2.6.22-rc I never had problems with hibernation. With 2.6.22-rc
+> > > system hung at least once in every rcX. Up to rc6 those lockups were
+> > > absolutely silent (black screen without reaction to any key). In rc6 I
+> > > just got something different. After resume I got on screem:
+> > >
+> > > swsusp: Marking nosave pages: 000000000009f000-0000000000100000
+> > > swsusp: Basic memory bitmaps created
+> > > swsusp: Basic memory bitmaps freed
+> > >
+> > > After that it just sits there doing nothing. Ther was brief sound of HDD
+> > > but I suspect it was related more to power-on. System was responding to
+> > > power-on button press:
+> > >
+> > > ACPI Error (event-0305): No installed handler for fixed event [00000002
+> > > 20070125]
+> > >
+> > > And SysRq was functioning.
+> >
+> > That probably means that there's a deadlock somewhere in there.
+> >
+> > > Unfortunately I do not have serial console so I
+> > > copy manually stacks from several last screens of output; I have tried to
+> > > make a photo but right now my kbluetooth is refusing to work at all so I
+> > > cannot transfer them :( (but I suspect quality would be too bad anyway)
+> > >
+> > > laptop_mode D
+> > > 	io_schedule+0xe/0x20
+> >
+> > Looks suspicious to me.  Can you identify what line of code this points to?
+> >
+> > > 	sync_buffer+0x35/0x40
+> > > 	__wait_on_bit+0x45/0x70
+> > > 	out_of_line_wait_on_bit+0x6c/0x80
+> > > 	__wait_on_buffer+0x27/0x30
+> > > 	search_by_key+0x15e/0x1250 [reiserfs]
+> > > 	reiserfs_read_locked_inode+0x64/0x570 [reiserfs]
+> > > 	reiserfs_iget+0x7e/0xa0 [reiserfs]
+> > > 	reiserfs_lookup+0xc7/0x120 [reiserfs]
+> > > 	do_lookup+0x138/0x180
+> > > 	__link_path_walk+0x787/0xce0
+> > > 	link_path_walk+0x44/0xc0
+> > > 	path_walk+0x18/0x20
+> > > 	do_path_lookup_0x88/0x210
+> > > 	__path_lookupintent_open+0x4d/0x90
+> > > 	path_lookup_open+0x1f/0x30
+> > > 	open_exec+0x28/0xb0
+> > > 	do_execve+0x36/0x1d0
+> > > 	sys_execve+0x2e/0x80
+> > > 	sysenter_past_esp+0x5f/0x99
+> > >
+> > > 90clock D
+> > > 	__mutex_lock_slow_path+0xa1/0x290
+> > > 	mutex_lock+0x21/0x30
+> > > 	do_lookup+0xa1/0x180
+> > > 	__link_path_walk+0x44/0xc0
+> > > 	path_walk+0x18/0x20
+> > > 	do_path_lookup+0x78/0x210
+> > > 	__user_walk_fd+0x38/0x50
+> > > 	vfs_stat_fd+0x21/0x50
+> > > 	vfs_stat+0x11/0x20
+> > > 	sys_stat64+0x14/0x30
+> > > 	sysenter_past_esp+0x5f/0x99
+> > >
+> > > alsactl D
+> > > 	io_schedule+0xe/0x20
+> >
+> > Same here.  Hmm.
+> >
+> > > 	sync_page+0x35/0x40
+> > > 	__wait_on_bit_lock+0x3f/0x70
+> > > 	__lock_page+0x68/0x70
+> > > 	filemap_nopage+0x16c/0x300
+> > > 	__handle_mm_faul+0x1d7/0x610
+> > > 	do_page_fault+0x1d7/0x610
+> > > 	error_code+0x6a/0x70
+> > > 	padzero+0x1f/0x30
+> > > 	load_elf_binary+0x743/0x1ab0
+> > > 	search_binary_handler+0x7b/0x1f0
+> > > 	do_execve+0x137/0x1d0
+> > > 	sys_execve+0x2e/0x80
+> > > 	sysenter_past_esp+0x5f/0x90
+> > >
+> > > After that I could remount, sync and reboot using SysRq (well, after
+> > > reboot it still insisted on replaying insane number of transactions so
+> > > may be it did *not* remount / ro after all). Before reboot there was
+> > > brief output that resembled lockdep warnings, but it went too fast to be
+> > > readable.
+> > >
+> > > usual stuff follows
+> >
+> > I see you're using CFQ as the default IO scheduler.  Can you please switch
+> > to AS and see if that changes anything?
+> >
 > 
-> [105771.523771] BUG: soft lockup detected on CPU#1!
-> [105771.527869]
-> [105771.527871] Call Trace:
-> [105771.536079]  <IRQ>  [<ffffffff802619cc>] _spin_lock+0x9/0xb
-> [105771.540294]  [<ffffffff802a6f9d>] softlockup_tick+0xd2/0xe7
-> [105771.544359]  [<ffffffff8024bcbb>] run_local_timers+0x13/0x15
-> [105771.548541]  [<ffffffff80289fc1>] update_process_times+0x4c/0x79
-> [105771.552737]  [<ffffffff80270327>] smp_local_timer_interrupt
-> +0x34/0x54
-> [105771.556934]  [<ffffffff80270834>]
-> smp_apic_timer_interrupt+0x51/0x68 [105771.561022]
-> [<ffffffff80268121>] default_idle+0x0/0x42 [105771.565199]
-> [<ffffffff8025cce6>] apic_timer_interrupt+0x66/0x70 [105771.569386]
-> <EOI>  [<ffffffff8026814e>] default_idle+0x2d/0x42 [105771.573597]
-> [<ffffffff80247929>] enter_idle+0x22/0x24 [105771.577665]
-> [<ffffffff80247a92>] cpu_idle+0x5a/0x79 [105771.581838]
-> [<ffffffff806bc5f7>] start_secondary+0x474/0x483
-> 
-> Question: Is this a known bug already or should further investigation
-> take place?
+> I just had the same lockup on resume using AS with 2.6.23-rc5.
 
-this needs further investigation but note that this one can have many
-different causes; this kind of oops trace often is also found for
-certain types of BIOS bugs. (which makes it really painful to debug)
-
-> 
-> - Using Kernels from 2.6.21 on (random sampled) we experience that the
-> TSC isn't used per default anymore (we usually set the nopmtimer
-> option at boot for a while now). Looking briefly at the 2.6.23-rc5
-> code shows that in the function where the check is done whether the
-> tsc is stable the only code path where a "is stable" result could be
-> returned is one where the vendor of the CPU is detected as Intel.
-> Instead a much slower timesource (10ms instead of a few us
-> resolution, same for getting the time at all) is used which is
-> totally unusable for us (Within 10ms so much things happen).
-
-Please consider enabling the HPET in your bios; while it's not as fast
-as the tsc, it does provide the accuracy you want.
-> 
-> Question: Why are only Intel CPUs considered as stable? Could there be
-> implemented a more sophisticated heuristic, that actually does some
-> tests for tsc stability?
-
-on AMD multi-socket systems, afaik the tsc is not synchronized between
-packages. On Intel the tsc is derived from the FSB which is shared
-between the packages.
-
-
-HPET is central to the system and solves all the issues, but is a tad
-slower to access than the tsc.
+Hm.  Does your root partition sit on reiserfs?
