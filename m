@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759326AbXIIUXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbXIIUYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759326AbXIIUXa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 16:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758837AbXIIUXW
+	id S1759385AbXIIUYv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 16:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758881AbXIIUYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 16:23:22 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:33276 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758709AbXIIUXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 16:23:21 -0400
-Date: Sun, 9 Sep 2007 22:24:42 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Greg KH <greg@kroah.com>
-Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       len.brown@intel.com, linux-ide@vger.kernel.org, dz@debian.org,
-       minyard@acm.org, j.w.r.degoede@hhs.nl, lm-sensors@lm-sensors.org,
-       rlove@rlove.org, bzolnier@gmail.com, dmitry.torokhov@gmail.com,
-       mzxreary@0pointer.de, stelian@popies.net, ibm-acpi@hmh.eng.br,
-       ambx1@neo.rr.com, gimli@dark-green.com
-Subject: Re: [PATCH] drivers/firmware: const-ify DMI API and internals
-Message-ID: <20070909202442.GA21086@uranus.ravnborg.org>
-References: <20070901142719.GA31990@havoc.gtf.org> <20070901153644.GA530@kroah.com> <46D98CD0.9040206@garzik.org> <20070909175142.GB32447@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 9 Sep 2007 16:24:43 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60705 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755101AbXIIUYm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 16:24:42 -0400
+Date: Sun, 9 Sep 2007 22:24:48 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       rth@twiddle.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] alpha bitops.h must #include <asm/barrier.h>
+Message-ID: <20070909202448.GL3563@stusta.de>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070909175142.GB32447@kroah.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070831215822.26e1432b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >
-> > I was just going to push it myself, but have no strong feelings on the 
-> > matter.
-> 
-> Ok, you can push it, that's fine with me.  Feel free to add my:
-> 	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> if you want.
-That should be "Acked-by:" since the patch does not pass via you but you
-acknowledge it is OK by your Ack.
+On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.23-rc3-mm1:
+>...
+> +alpha-lock-bitops.patch
+>...
+>  various stuff
+>...
 
-	Sam
+This patch fixes the following compile error:
+
+<--  snip  -->
+
+...
+  CC      arch/alpha/kernel/asm-offsets.s
+In file included from /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/include/linux/bitops.h:17,
+                 from /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/include/linux/kernel.h:15,
+                 from /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/include/linux/sched.h:50,
+                 from /home/bunk/linux/kernel-2.6/linux-2.6.23-rc4-mm1/arch/alpha/kernel/asm-offsets.c:9:
+include2/asm/bitops.h: In function 'clear_bit_unlock':
+include2/asm/bitops.h:75: error: implicit declaration of function 'smp_mb'
+make[2]: *** [arch/alpha/kernel/asm-offsets.s] Error 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+6df784c9aa4ba1ff2062b63e733c645e8b1e5203 
+diff --git a/include/asm-alpha/bitops.h b/include/asm-alpha/bitops.h
+index ffec8a8..381b4f5 100644
+--- a/include/asm-alpha/bitops.h
++++ b/include/asm-alpha/bitops.h
+@@ -2,6 +2,7 @@
+ #define _ALPHA_BITOPS_H
+ 
+ #include <asm/compiler.h>
++#include <asm/barrier.h>
+ 
+ /*
+  * Copyright 1994, Linus Torvalds.
+
