@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759407AbXIIUF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbXIIUGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759407AbXIIUF5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 16:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759173AbXIIUEY
+	id S1759456AbXIIUGX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 16:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759250AbXIIUEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 16:04:24 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:51471 "EHLO
+	Sun, 9 Sep 2007 16:04:31 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:51475 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753504AbXIIUEX (ORCPT
+	with ESMTP id S1759239AbXIIUE3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 16:04:23 -0400
-Date: Sun, 9 Sep 2007 10:50:59 -0700
+	Sun, 9 Sep 2007 16:04:29 -0400
+Date: Sun, 9 Sep 2007 10:51:42 -0700
 From: Greg KH <greg@kroah.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] drivers/pci/: possible cleanups
-Message-ID: <20070909175059.GA32447@kroah.com>
-References: <20070827212822.GX4121@stusta.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       len.brown@intel.com, linux-ide@vger.kernel.org, dz@debian.org,
+       minyard@acm.org, j.w.r.degoede@hhs.nl, lm-sensors@lm-sensors.org,
+       rlove@rlove.org, bzolnier@gmail.com, dmitry.torokhov@gmail.com,
+       mzxreary@0pointer.de, stelian@popies.net, ibm-acpi@hmh.eng.br,
+       ambx1@neo.rr.com, gimli@dark-green.com
+Subject: Re: [PATCH] drivers/firmware: const-ify DMI API and internals
+Message-ID: <20070909175142.GB32447@kroah.com>
+References: <20070901142719.GA31990@havoc.gtf.org> <20070901153644.GA530@kroah.com> <46D98CD0.9040206@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070827212822.GX4121@stusta.de>
+In-Reply-To: <46D98CD0.9040206@garzik.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 27, 2007 at 11:28:22PM +0200, Adrian Bunk wrote:
-> This patch contains the following possible cleanups:
-> - make the following needlessly global function static:
->   - pci.c: pci_restore_bars()
-> - #if 0 the following unused global functions:
->   - rom.c: pci_map_rom_copy()
->   - rom.c: pci_remove_rom()
-> - remove the following unused EXPORT_SYMBOL's:
->  - pci-acpi.c: pci_osc_support_set
->  - proc.c: pci_proc_detach_bus
-> - remove the following unused EXPORT_SYMBOL_GPL's:
->   - bus.c: pci_walk_bus
->   - probe.c: pci_create_bus
->   - setup-res.c: pci_claim_resource
+On Sat, Sep 01, 2007 at 12:01:20PM -0400, Jeff Garzik wrote:
+> Greg KH wrote:
+>> On Sat, Sep 01, 2007 at 10:27:19AM -0400, Jeff Garzik wrote:
+>>> commit 457b6eb3bf3341d2e143518a0bb99ffbb8d754c4
+>>> Author: Jeff Garzik <jeff@garzik.org>
+>>> Date:   Sat Sep 1 10:16:45 2007 -0400
+>>>
+>>>     drivers/firmware: const-ify DMI API and internals
+>>>         Three main sets of changes:
+>>>         1) dmi_get_system_info() return value should have been marked 
+>>> const,
+>>>        since callers should not be changing that data.
+>>>         2) const-ify DMI internals, since DMI firmware tables should,
+>>>        whenever possible, be marked const to ensure we never ever write 
+>>> to
+>>>        that data area.
+>>>         3) const-ify DMI API, to enable marking tables const where 
+>>> possible
+>>>        in low-level drivers.
+>>>         And if we're really lucky, this might enable some additional
+>>>     optimizations on the part of the compiler.
+>>>         The bulk of the changes are #2 and #3, which are interrelated.  
+>>> #1 could
+>>>     have been a separate patch, but it was so small compared to the 
+>>> others,
+>>>     it was easier to roll it into this changeset.
+>> Looks great to me, do you want me to take this through my driver tree?
+>> I'd be glad to do so.
+>
+> I was just going to push it myself, but have no strong feelings on the 
+> matter.
 
-Care to split this up into 4 different patches so as to make it easier
-for people in case they cause problems in the future?
+Ok, you can push it, that's fine with me.  Feel free to add my:
+	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+if you want.
 
 thanks,
 
