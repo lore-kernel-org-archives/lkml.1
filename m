@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbXIIUZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759594AbXIIU0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759472AbXIIUZx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 16:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759405AbXIIUYy
+	id S1759594AbXIIU0Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 16:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759438AbXIIUY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 16:24:54 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60713 "EHLO
+	Sun, 9 Sep 2007 16:24:58 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60716 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759393AbXIIUYw (ORCPT
+	with ESMTP id S1759434AbXIIUY5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 16:24:52 -0400
-Date: Sun, 9 Sep 2007 22:24:59 +0200
+	Sun, 9 Sep 2007 16:24:57 -0400
+Date: Sun, 9 Sep 2007 22:25:04 +0200
 From: Adrian Bunk <bunk@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>,
-       Shannon Nelson <shannon.nelson@intel.com>, dan.j.williams@intel.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] drivers/dma/ioat_dma.c: make 3 functions static
-Message-ID: <20070909202459.GN3563@stusta.de>
+       Frank A Kingswood <frank@kingswood-consulting.co.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: [-mm patch] usb/serial/ch341.c: make 4 functions static
+Message-ID: <20070909202504.GO3563@stusta.de>
 References: <20070831215822.26e1432b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -30,52 +31,60 @@ On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
 >...
 > Changes since 2.6.23-rc3-mm1:
 >...
-> +i-oat-add-support-for-msi-and-msi-x.patch
+> +gregkh-usb-usb-driver-for-ch341-usb-serial-adaptor.patch
 >...
->  ioat tree
+>  USB tree updates
 >...
 
-This patch makes three needlessly global functions static.
+This patch makes four needlessly global functions static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/dma/ioat_dma.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/usb/serial/ch341.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-c633b44cd60648f456a11bb38fd9193ce4d6acdc 
-diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
-index e4c3afe..66c5bb5 100644
---- a/drivers/dma/ioat_dma.c
-+++ b/drivers/dma/ioat_dma.c
-@@ -47,8 +47,8 @@
- static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan);
- static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *ioat_chan);
- 
--struct ioat_dma_chan *ioat_lookup_chan_by_index(struct ioatdma_device *device,
--						int index)
-+static struct ioat_dma_chan *ioat_lookup_chan_by_index(struct ioatdma_device *device,
-+						       int index)
- {
- 	return device->idx[index];
+c7046a47d2d1dd5dc6a8fcc298b8c5f7497b3aaa 
+diff --git a/drivers/usb/serial/ch341.c b/drivers/usb/serial/ch341.c
+index eb68106..6b252ce 100644
+--- a/drivers/usb/serial/ch341.c
++++ b/drivers/usb/serial/ch341.c
+@@ -66,7 +66,8 @@ static int ch341_control_in(struct usb_device *dev,
+ 	return r;
  }
-@@ -716,7 +716,7 @@ MODULE_PARM_DESC(ioat_interrupt_style,
-  * ioat_dma_setup_interrupts - setup interrupt handler
-  * @device: ioat device
-  */
--int ioat_dma_setup_interrupts(struct ioatdma_device *device)
-+static int ioat_dma_setup_interrupts(struct ioatdma_device *device)
+ 
+-int ch341_set_baudrate(struct usb_device *dev, struct ch341_private *priv)
++static int ch341_set_baudrate(struct usb_device *dev,
++			      struct ch341_private *priv)
  {
- 	struct ioat_dma_chan *ioat_chan;
- 	int err, i, j, msixcnt;
-@@ -826,7 +826,7 @@ err_no_irq:
-  * ioat_dma_remove_interrupts - remove whatever interrupts were set
-  * @device: ioat device
-  */
--void ioat_dma_remove_interrupts(struct ioatdma_device *device)
-+static void ioat_dma_remove_interrupts(struct ioatdma_device *device)
+ 	short a, b;
+ 	int r;
+@@ -108,14 +109,15 @@ int ch341_set_baudrate(struct usb_device *dev, struct ch341_private *priv)
+ 	return r;
+ }
+ 
+-int ch341_set_handshake(struct usb_device *dev, struct ch341_private *priv)
++static int ch341_set_handshake(struct usb_device *dev,
++			       struct ch341_private *priv)
  {
- 	struct ioat_dma_chan *ioat_chan;
- 	int i;
+ 	dbg("ch341_set_handshake(%d,%d)", priv->dtr, priv->rts);
+ 	return ch341_control_out(dev, 0xa4,
+ 		~((priv->dtr?1<<5:0)|(priv->rts?1<<6:0)), 0);
+ }
+ 
+-int ch341_get_status(struct usb_device *dev)
++static int ch341_get_status(struct usb_device *dev)
+ {
+ 	char *buffer;
+ 	int r;
+@@ -142,7 +144,7 @@ out:	kfree(buffer);
+ 
+ /* -------------------------------------------------------------------------- */
+ 
+-int ch341_configure(struct usb_device *dev, struct ch341_private *priv)
++static int ch341_configure(struct usb_device *dev, struct ch341_private *priv)
+ {
+ 	char *buffer;
+ 	int r;
 
