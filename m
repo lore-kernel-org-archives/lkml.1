@@ -1,89 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbXIIPzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbXIIQBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758416AbXIIPzH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 11:55:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757644AbXIIPy4
+	id S1758393AbXIIQBJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 12:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbXIIQAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 11:54:56 -0400
-Received: from smtp-7.smtp.ucla.edu ([169.232.46.138]:49316 "EHLO
-	smtp-7.smtp.ucla.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757638AbXIIPyz (ORCPT
+	Sun, 9 Sep 2007 12:00:55 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:54118 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757039AbXIIQAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 11:54:55 -0400
-X-Greylist: delayed 10756 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Sep 2007 11:54:55 EDT
-Date: Sun, 9 Sep 2007 05:54:45 -0700 (PDT)
-From: Chris Stromsoe <cbs@cts.ucla.edu>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Bill Davidsen <davidsen@tmr.com>, James Corey <ploversegg@yahoo.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Rob Sims <lkml-z@robsims.com>, Kyle Rose <krose@akamai.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: sk98lin for 2.6.23-rc1
-In-Reply-To: <20070908191132.GD3563@stusta.de>
-Message-ID: <Pine.LNX.4.64.0709090542350.2617@potato.cts.ucla.edu>
-References: <20070905102230.10b0bdcf@oldman> <782111.42803.qm@web90413.mail.mud.yahoo.com>
- <46E2DF74.7040307@tmr.com> <20070908191132.GD3563@stusta.de>
+	Sun, 9 Sep 2007 12:00:54 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Sun, 9 Sep 2007 11:59:00 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Oleg Verych <olecom@flower.upol.cz>
+cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Early userspace, Linux development (Re: perhaps init/ should
+ update the reference to "change floppy")
+In-Reply-To: <E1IUBUG-0003nA-W2@flower>
+Message-ID: <Pine.LNX.4.64.0709091157540.15624@localhost.localdomain>
+References: <Pine.LNX.4.64.0709080802430.8930@localhost.localdomain>
+ <E1IUBUG-0003nA-W2@flower>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Probable-Spam: no
-X-Spam-Report: none
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Sep 2007, Adrian Bunk wrote:
-> On Sat, Sep 08, 2007 at 01:44:20PM -0400, Bill Davidsen wrote:
+On Sun, 9 Sep 2007, Oleg Verych wrote:
+
+> * Sat, 8 Sep 2007 08:08:06 -0400 (EDT)
+> []
+> >   from init/do_mounts_rd.c:
+> >
+> > ...
+> []
+> >         if (rd_prompt)
+> >                 change_floppy("root floppy disk to be loaded into RAM disk");
+> >         create_dev("/dev/root", ROOT_DEV);
+> >         create_dev("/dev/ram", MKDEV(RAMDISK_MAJOR, n));
+> >         return rd_load_image("/dev/root");
+> > }
+> > ...
+> >
+> >   but isn't it a bit archaic to suggest that an explicit ramdisk will
+> > be found only on a floppy?  can't one be provided on a CD or DVD?
+> > just suggesting that the terminology could probably be updated.
 >
->> Haven't tried later kernels, don't intend to, while no network is 
->> really secure, it not really useful.
+> All this is userspace code, ugly, unmaintained and all that kind of
+> things.
 >
-> You are a regular reader of linux-kernel, and therefore the sk98lin 
-> removal can hardly be a surprise for you. If you prefer whining over 
-> helping to improve the kernel that's your choice...
+> == Kernel panics without userspace, do you need such kernel? ==
 
-I've been trying to migrate off sk98lin to skge since earlier this year, 
-without success, starting with 2.6.18 or .19.
+um ... all i asked was whether that code should be updated to reflect
+more than just floppies.  i didn't foresee the can of worms here.
 
-I have several of these cards in production using the sk98lin driver:
-
-fresno:~# lspci -vv -s 02:01
-02:01.0 Ethernet controller: SysKonnect SK-9872 Gigabit Ethernet Server Adapter (SK-NET GE-ZX dual link) (rev 11)
-         Subsystem: SysKonnect SK-9844 Gigabit Ethernet Server Adapter (SK-NET GE-SX dual link)
-         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B-
-         Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-         Latency: 64 (5750ns min, 7750ns max), Cache Line Size: 32 bytes
-         Interrupt: pin A routed to IRQ 22
-         Region 0: Memory at febfc000 (32-bit, non-prefetchable) [size=16K]
-         Region 1: I/O ports at e800 [size=256]
-         Expansion ROM at febc0000 [disabled] [size=128K]
-         Capabilities: [48] Power Management version 1
-                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                 Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-         Capabilities: [50] Vital Product Data
-
-They are dual port SX fiber.  Both ports are connected.  If I do this:
-
-fresno:~# modprobe skge
-fresno:~# ip li set eth2 up
-fresno:~# ip li set eth2 down
-fresno:~# ip li set eth3 up
-
-the system locks up and I have to power cycle it.  The order doesn't 
-matter (if I do eth3 up/down, then eth2 up kills it).
-
-I don't have any problems with sk98lin.  This works fine:
-
-fresno:~# modprobe sk98lin RlmtMode=DualNet
-fresno:~# ip li set eth2 up
-fresno:~# ip li set eth2 down
-fresno:~# ip li set eth3 up
-fresno:~# ip li set eth3 down
+rday
 
 
-I am more than happy to test various driver changes, and have tried a few 
-suggested patches but nothing has worked so far.  I would like to be using 
-skge instead of sk98lin, but so far haven't had any success.
+--
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-
-
-
--Chris
+http://crashcourse.ca
+========================================================================
