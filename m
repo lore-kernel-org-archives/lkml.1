@@ -1,95 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757026AbXIINEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbXIINT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757026AbXIINEX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 09:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbXIINEP
+	id S1757003AbXIINT3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 09:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbXIINTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 09:04:15 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:26344 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754988AbXIINEP (ORCPT
+	Sun, 9 Sep 2007 09:19:22 -0400
+Received: from mail96.megamailservers.com ([216.251.36.96]:42044 "EHLO
+	mail96.megamailservers.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755104AbXIINTV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 09:04:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=OdTSWQiC7VmRgQ4aCSoP4oqx1ZUyBeTj5tH4IWUWdqH6vW2/3XiwnlB8H+2wjlhZW3E1J1tNa7l7PQ/Z1SCiyfAe1qoKgEEfPivg4Hgxy0XHvD+psKXqbCXWFtNQBrreZk4xz7o1QitIqdF+ZuQfHE0Ffzoadm8+v5zbAizudcY=
-Message-ID: <46E3EF49.90004@gmail.com>
-Date: Sun, 09 Sep 2007 15:04:09 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
-       airlied@linux.ie
-Subject: Re: X freezes kernel during exit [Re: 2.6.23-rc3-mm1]
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>	<46D17A7A.70609@gmail.com>	<46D409FC.1070305@gmail.com>	<46E3DCB8.5010709@gmail.com> <20070909054751.cbb27081.akpm@linux-foundation.org>
-In-Reply-To: <20070909054751.cbb27081.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 9 Sep 2007 09:19:21 -0400
+X-Authenticated-User: jgeorgas.georgas.ca
+Subject: [PATCH] KCONFIG: fix pseudo dependency between K8_NUMA and
+	X86_64_ACPI_NUMA config options
+From: "James C. Georgas" <jgeorgas@georgas.ca>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <p734pi4rytz.fsf@bingen.suse.de>
+References: <1189291899.13467.20.camel@Tachyon.home>
+	 <20070908180904.656f3d03.randy.dunlap@oracle.com>
+	 <1189300961.13467.47.camel@Tachyon.home>  <p734pi4rytz.fsf@bingen.suse.de>
+Content-Type: text/plain
+Organization: Georgas Software Solutions
+Date: Sun, 09 Sep 2007 09:19:05 -0400
+Message-Id: <1189343945.7365.9.camel@Tachyon.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Removed gareth@valinux.com (dead e-mail)
-
-On 09/09/2007 02:47 PM, Andrew Morton wrote:
-> On Sun, 09 Sep 2007 13:44:56 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
+On Sun, 2007-09-09 at 11:07 +0200, Andi Kleen wrote:
+> "James C. Georgas" <jgeorgas@georgas.ca> writes:
+> > 
+> > It's 2.6.22.6. I'm thinking a fix would be to add "select PM" to
+> > X86_64_ACPI_NUMA.
+> > 
+> > I'm also thinking that maybe K8_NUMA should be changed from "depends on
+> > PCI" to "select PCI", like X86_64_ACPI_NUMA is. That would fix the
+> > pseudo dependency they have between them (i.e. selecting
+> > X86_64_ACPI_NUMA causes PCI to be selected, which then makes K8_NUMA
+> > visible, because its PCI dependency is now satisfied).
 > 
->> On 08/28/2007 01:41 PM, Jiri Slaby wrote:
->>> Does this went through to your boxes? Any progress, clue, idea?
->>>
->>> Jiri Slaby napsal(a):
->>>> Andrew Morton napsal(a):
->>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc3/2.6.23-rc3-mm1/
->>>> Hi,
->>>>
->>>> I've found a regression against 2.6.23-rc2-mm2. X server shutdown freezes
->>>> (untainted) kernel hardly. Nothing on netconsole, X output follows:
-
---------------------------------^^^
-
-sorry, both netconsole and my usb devices (including my keyboard -- no numlock
-led switch) are dead. The trace I've taken appears on the screen after a while.
-
->>>> X Window System Version 1.3.0
->>>> Release Date: 19 April 2007
->>>> X Protocol Version 11, Revision 0, Release 1.3
->>>> Build Operating System: Fedora Core 7 Red Hat, Inc.
->>>> Current Operating System: Linux bellona 2.6.23-rc3-mm1 #315 SMP Wed Aug 22
-[...]
->>>> (**) RADEON(0): RADEONDRICloseScreen
->>>>
->>>>
->>>>
->>>> the only difference is, that 2.6.23-rc2-mm2 writes further
->>>>
->>>> FreeFontPath: FPE "/usr/share/X11/fonts/misc:unscaled" refcount is 2, should be
->>>> 1; fixing.
->>>>
->>>> and exits succesfully (note that these messages are taken on remote host, X
->>>> runned remotely).
->>>>
->>>> Both vesa and radeon + Option "NoAccel" "true" works obviously fine.
->> Also intel on integrated i915 causes this (NoAccell has no effect in this case).
->> Note that also 2.6.23-rc4-mm1 is affected by this behaviour.
->> I have a trace for you:
->> http://www.fi.muni.cz/~xslaby/sklad/panics/x-freeze.png
->> (this is the only what I'm able to grab so far)
->>
+> Sounds reasonable. Can you please submit a tested patch with proper
+> description and Signed-off-by lines?
 > 
-> afacit everything on that call trace is good.  I guess it's possible that
-> one of the higher-level loops has gone infinite (eg, the one in
-> agp_remove_controller()).
+> -Andi
 
-There is no loop in this function. Anyway, going to track this whole issue down.
-Hold on.
+How's this?
 
-> Are you able to get netconsole working, and run sysrq-P and sysrq-T
-> ten or so times, see if it's always stuck in the same place on the
-> same CPU?
 
-thanks so far,
+>From 6febbd64aaca5d54487d8f9df4949001e0fc4ec6 Mon Sep 17 00:00:00 2001
+From: James C. Georgas <jgeorgas@georgas.ca>
+Date: Sun, 9 Sep 2007 08:27:46 -0400
+Subject: [PATCH] Signed-off-by: James C. Georgas <jgeorgas@georgas.ca>
+
+Changed K8_NUMA from "depends on PCI" to "select PCI", like X86_64_ACPI_NUMA is. This fixes the pseudo dependency between X86_64_ACPI_NUMA and K8_NUMA (i.e. selecting X86_64_ACPI_NUMA would cause PCI to be selected, which then made K8_NUMA visible, because its PCI dependency was now satisfied).
+---
+ arch/x86_64/Kconfig |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
+index ffa0364..bdeeb25 100644
+--- a/arch/x86_64/Kconfig
++++ b/arch/x86_64/Kconfig
+@@ -357,7 +357,8 @@ config NUMA
+ 
+ config K8_NUMA
+        bool "Old style AMD Opteron NUMA detection"
+-       depends on NUMA && PCI
++       depends on NUMA
++       select PCI
+        default y
+        help
+         Enable K8 NUMA node topology detection.  You should say Y here if
 -- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+1.5.1.6
+
+
