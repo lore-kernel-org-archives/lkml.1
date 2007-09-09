@@ -1,105 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbXIINeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbXIINlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757084AbXIINeX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 09:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbXIINeQ
+	id S1757243AbXIINlz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 09:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755563AbXIINls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 09:34:16 -0400
-Received: from il.qumranet.com ([82.166.9.18]:52625 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755615AbXIINeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 09:34:15 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
-       Avi Kivity <avi@qumranet.com>
-Subject: [PATCH -rc] KVM: MMU: Fix rare oops on guest context switch
-Date: Sun,  9 Sep 2007 16:34:14 +0300
-Message-Id: <11893448541460-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.3
+	Sun, 9 Sep 2007 09:41:48 -0400
+Received: from mail96.megamailservers.com ([216.251.36.96]:44133 "EHLO
+	mail96.megamailservers.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754975AbXIINlr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 09:41:47 -0400
+X-Authenticated-User: jgeorgas.georgas.ca
+Subject: Re: broken ACPI NUMA config option
+From: "James C. Georgas" <jgeorgas@georgas.ca>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070908220043.8830512d.randy.dunlap@oracle.com>
+References: <1189291899.13467.20.camel@Tachyon.home>
+	 <20070908180904.656f3d03.randy.dunlap@oracle.com>
+	 <20070908181607.4f36479c.randy.dunlap@oracle.com>
+	 <1189309736.13467.77.camel@Tachyon.home>
+	 <20070908220043.8830512d.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Organization: Georgas Software Solutions
+Date: Sun, 09 Sep 2007 09:41:26 -0400
+Message-Id: <1189345287.7365.23.camel@Tachyon.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A guest context switch to an uncached cr3 can require allocation of
-shadow pages, but we only recycle shadow pages in kvm_mmu_page_fault().
+On Sat, 2007-08-09 at 22:00 -0700, Randy Dunlap wrote:
+> > For example, you would only need to specify one "select" directive in
+> > X86_64_ACPI_NUMA, (i.e. to turn on ACPI_NUMA). The configuration system
+> > would then recursively walk up ACPI_NUMA's dependency hierarchy, turning
+> > on what it needed.
+> 
+> That is highly desirable IMO.  Not having that is one of the things
+> that makes using 'select' "evil."
+> 
+> Have you looked at the code and given any thought to implementing this?
+> 
 
-Move shadow page recycling to mmu_topup_memory_caches(), which is called
-from both the page fault handler and from guest cr3 reload.
+I'd like to take a run at it. The only issue I foresee is what to do
+about multiple OR dependencies. There are some kconfig options that
+depend on at least one of a set of specified dependencies. For example,
+is ARCH_SPARSEMEM_ENABLE selectable if only one of NUMA || EXPERIMENTAL
+is selected? So do we abort, select one, or select all dependencies?
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
----
+Maybe I'm misunderstanding the usage of || here though. I'm assuming
+inclusive OR.
 
- drivers/kvm/kvm.h |   10 +++++++---
- drivers/kvm/mmu.c |    5 +++--
- 2 files changed, 10 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index 3ac9cbc..336be86 100644
---- a/drivers/kvm/kvm.h
-+++ b/drivers/kvm/kvm.h
-@@ -619,7 +619,7 @@ unsigned long segment_base(u16 selector);
- void kvm_mmu_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
- 		       const u8 *old, const u8 *new, int bytes);
- int kvm_mmu_unprotect_page_virt(struct kvm_vcpu *vcpu, gva_t gva);
--void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu);
-+void __kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu);
- int kvm_mmu_load(struct kvm_vcpu *vcpu);
- void kvm_mmu_unload(struct kvm_vcpu *vcpu);
- 
-@@ -628,11 +628,15 @@ int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run);
- static inline int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
- 				     u32 error_code)
- {
--	if (unlikely(vcpu->kvm->n_free_mmu_pages < KVM_MIN_FREE_MMU_PAGES))
--		kvm_mmu_free_some_pages(vcpu);
- 	return vcpu->mmu.page_fault(vcpu, gva, error_code);
- }
- 
-+static inline void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
-+{
-+	if (unlikely(vcpu->kvm->n_free_mmu_pages < KVM_MIN_FREE_MMU_PAGES))
-+		__kvm_mmu_free_some_pages(vcpu);
-+}
-+
- static inline int kvm_mmu_reload(struct kvm_vcpu *vcpu)
- {
- 	if (likely(vcpu->mmu.root_hpa != INVALID_PAGE))
-diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
-index 1a87ba9..23965aa 100644
---- a/drivers/kvm/mmu.c
-+++ b/drivers/kvm/mmu.c
-@@ -273,12 +273,14 @@ static int mmu_topup_memory_caches(struct kvm_vcpu *vcpu)
- 	int r;
- 
- 	r = __mmu_topup_memory_caches(vcpu, GFP_NOWAIT);
-+	kvm_mmu_free_some_pages(vcpu);
- 	if (r < 0) {
- 		spin_unlock(&vcpu->kvm->lock);
- 		kvm_arch_ops->vcpu_put(vcpu);
- 		r = __mmu_topup_memory_caches(vcpu, GFP_KERNEL);
- 		kvm_arch_ops->vcpu_load(vcpu);
- 		spin_lock(&vcpu->kvm->lock);
-+		kvm_mmu_free_some_pages(vcpu);
- 	}
- 	return r;
- }
-@@ -1208,7 +1210,7 @@ int kvm_mmu_unprotect_page_virt(struct kvm_vcpu *vcpu, gva_t gva)
- 	return kvm_mmu_unprotect_page(vcpu, gpa >> PAGE_SHIFT);
- }
- 
--void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
-+void __kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
- {
- 	while (vcpu->kvm->n_free_mmu_pages < KVM_REFILL_PAGES) {
- 		struct kvm_mmu_page *page;
-@@ -1218,7 +1220,6 @@ void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
- 		kvm_mmu_zap_page(vcpu->kvm, page);
- 	}
- }
--EXPORT_SYMBOL_GPL(kvm_mmu_free_some_pages);
- 
- static void free_mmu_pages(struct kvm_vcpu *vcpu)
- {
--- 
-1.5.3
+James
+	/\V
 
