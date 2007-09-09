@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbXIIVjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbXIIVsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759597AbXIIVjX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 17:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbXIIVjO
+	id S1754397AbXIIVsD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 17:48:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbXIIVry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 17:39:14 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:36063 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757267AbXIIVjN (ORCPT
+	Sun, 9 Sep 2007 17:47:54 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:56474 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750700AbXIIVry (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 17:39:13 -0400
-Subject: Re: sata & scsi suggestion for make menuconfig
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20070909212159.GF25798@one.firstfloor.org>
-References: <20070907124800.GP16806@vanheusden.com>
-	 <p73fy1p9m57.fsf@bingen.suse.de>
-	 <1189371621.3526.28.camel@localhost.localdomain>
-	 <20070909210329.GE25798@one.firstfloor.org> <46E46190.6080607@garzik.org>
-	 <20070909212159.GF25798@one.firstfloor.org>
-Content-Type: text/plain
-Date: Sun, 09 Sep 2007 17:39:11 -0400
-Message-Id: <1189373951.3526.37.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Sun, 9 Sep 2007 17:47:54 -0400
+Message-ID: <46E46A3F.2050708@freescale.com>
+Date: Sun, 09 Sep 2007 16:48:47 -0500
+From: Timur Tabi <timur@freescale.com>
+Organization: Freescale
+User-Agent: Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.8.1.6) Gecko/20070802 SeaMonkey/1.1.4
+MIME-Version: 1.0
+To: Dan Williams <dan.j.williams@intel.com>
+CC: Zhang Wei <wei.zhang@freescale.com>, shannon.nelson@intel.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx	processors.
+References: <11891624582950-git-send-email-wei.zhang@freescale.com> <e9c3a7c20709091053u607e710ay1eb76c53312706ea@mail.gmail.com>
+In-Reply-To: <e9c3a7c20709091053u607e710ay1eb76c53312706ea@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-09-09 at 23:22 +0200, Andi Kleen wrote:
-> > The current setup expresses the dependencies as they exist -- OPTIONAL 
-> > extras, and that is a problem once a year or so, when someone builds 
-> 
-> Disk support over SCSI/SATA is hardly an "optional extra". It's more the 99+%
-> case.
+Dan Williams wrote:
 
-Using that argument, there's an equal case for always requiring SCSI to
-be built for every kernel, since very few people can boot a system
-without a disk.  However, the 1% case is the embedded flash booting
-community plus a few others, so we allow SCSI to be optional for our 1%
-who don't want it.
+> This routine implies that there is a piece of code somewhere that
+> wants to select which channels it can use.  A similar effect can be
+> achieved by registering a dma_client with the dmaengine interface
+> ('dma_async_client_register').  Then when the client code makes a call
+> to 'dma_async_client_chan_request' it receives a 'dma_event_callback'
+> for each channel in the system.  It will also be asynchronously
+> notified of channels entering and leaving the system.  The goal is to
+> share a common infrastructure for channel management.
 
-At base, the Kconfig system is designed to give the greatest flexibility
-with the fewest foot shooting opportunities.  However, we do tend to err
-on the side of flexibility if there's a conflict between the two design
-goals.
+Are you familiar with the "flat device tree" used for PowerPC systems?  The 
+"piece of code somewhere" is the device tree subsystem that parses the device 
+tree, which is compiled from the .dts files in arch/powerpc/boot/dts.
 
-> > their own kernel but must learn this fact anew.
-> 
-> When it costs 10000 people half an hour to learn and correct this it 
-> wasted 5000 hours of previous livetime.
->
-> Besides there is no good reason to have ever learned this imho.
+The FDT is how PowerPC systems specify hardware configuration.  In the case of 
+85xx, the FDT contains entries for each DMA device (typically 2), and the 
+entries contain sub-entries for each DMA channel as well as the address of the 
+register sets for each channel.
 
-The process of becoming an expert in the kernel build system naturally
-involves making mistakes and learning from them, so this is probably
-time reasonably well spent.
-
-James
-
-
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
