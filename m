@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbXIIUbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbXIIUbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760187AbXIIUbY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 16:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759378AbXIIUZx
+	id S1760252AbXIIUbm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 16:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759545AbXIIUZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 16:25:53 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60762 "EHLO
+	Sun, 9 Sep 2007 16:25:55 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60765 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759392AbXIIUZv (ORCPT
+	with ESMTP id S1759473AbXIIUZy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 16:25:51 -0400
-Date: Sun, 9 Sep 2007 22:25:58 +0200
+	Sun, 9 Sep 2007 16:25:54 -0400
+Date: Sun, 9 Sep 2007 22:26:01 +0200
 From: Adrian Bunk <bunk@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [-mm patch] make tcp_splice_data_recv() static
-Message-ID: <20070909202558.GZ3563@stusta.de>
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] make do_try_to_free_pages() static
+Message-ID: <20070909202601.GA3563@stusta.de>
 References: <20070831215822.26e1432b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -30,31 +31,30 @@ On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
 >...
 > Changes since 2.6.23-rc3-mm1:
 >...
->  git-block.patch
+> +memory-controller-add-per-container-lru-and-reclaim-v7.patch
 >...
->  git trees
+>  memory containment
 >...
 
-tcp_splice_data_recv() can become static.
+do_try_to_free_pages() can become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-233aefd2a215430c16bd02eca06fb8a4b6079f7a 
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index 22576e4..6623796 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -515,8 +515,9 @@ static inline void tcp_push(struct sock *sk, int flags, int mss_now,
- 	}
- }
- 
--int tcp_splice_data_recv(read_descriptor_t *rd_desc, struct sk_buff *skb,
--			 unsigned int offset, size_t len)
-+static int tcp_splice_data_recv(read_descriptor_t *rd_desc,
-+				struct sk_buff *skb,
-+				unsigned int offset, size_t len)
+23781fa6792c518c8581ceeaf08db251574e8430 
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index b34b29d..9104cf8 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1248,8 +1248,8 @@ static unsigned long shrink_zones(int priority, struct zone **zones,
+  * holds filesystem locks which prevent writeout this might not work, and the
+  * allocation attempt will fail.
+  */
+-unsigned long do_try_to_free_pages(struct zone **zones, gfp_t gfp_mask,
+-					struct scan_control *sc)
++static unsigned long do_try_to_free_pages(struct zone **zones, gfp_t gfp_mask,
++					  struct scan_control *sc)
  {
- 	struct tcp_splice_state *tss = rd_desc->arg.data;
- 
+ 	int priority;
+ 	int ret = 0;
 
