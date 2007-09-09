@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbXIIPtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbXIIPzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758260AbXIIPtf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 11:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbXIIPt1
+	id S1758416AbXIIPzH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 11:55:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757644AbXIIPy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 11:49:27 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:61855 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752931AbXIIPt0 (ORCPT
+	Sun, 9 Sep 2007 11:54:56 -0400
+Received: from smtp-7.smtp.ucla.edu ([169.232.46.138]:49316 "EHLO
+	smtp-7.smtp.ucla.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757638AbXIIPyz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 11:49:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ANDFLA5LWHmCvNQexwUJkCRI6KbwGESfMLkzuE1DoGTbdjKAtlBhhBO/6/ch9Rdum+QWLXDk5TMymeMty0m2IC/+2Rj8WE7Fsjt20ZrG9ntgRirnF0xfQDd7lY0IQQ0ulAZxJyWvBg4j2IJZskqqbZ4mnHOHlizN9X5M+cqzAno=
-Message-ID: <46E41601.7030600@gmail.com>
-Date: Sun, 09 Sep 2007 17:49:21 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 9 Sep 2007 11:54:55 -0400
+X-Greylist: delayed 10756 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Sep 2007 11:54:55 EDT
+Date: Sun, 9 Sep 2007 05:54:45 -0700 (PDT)
+From: Chris Stromsoe <cbs@cts.ucla.edu>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Bill Davidsen <davidsen@tmr.com>, James Corey <ploversegg@yahoo.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Rob Sims <lkml-z@robsims.com>, Kyle Rose <krose@akamai.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: sk98lin for 2.6.23-rc1
+In-Reply-To: <20070908191132.GD3563@stusta.de>
+Message-ID: <Pine.LNX.4.64.0709090542350.2617@potato.cts.ucla.edu>
+References: <20070905102230.10b0bdcf@oldman> <782111.42803.qm@web90413.mail.mud.yahoo.com>
+ <46E2DF74.7040307@tmr.com> <20070908191132.GD3563@stusta.de>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net, airlied@linux.ie
-Subject: Re: X freezes kernel during exit [Re: 2.6.23-rc3-mm1]
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46D17A7A.70609@gmail.com> <46D409FC.1070305@gmail.com> <46E3DCB8.5010709@gmail.com> <20070909054751.cbb27081.akpm@linux-foundation.org> <46E3FE6B.7010209@gmail.com> <20070909141730.GB25798@one.firstfloor.org> <46E4028E.9050007@gmail.com> <20070909143324.GC25798@one.firstfloor.org> <46E40699.7060000@gmail.com> <20070909150158.GD25798@one.firstfloor.org>
-In-Reply-To: <20070909150158.GD25798@one.firstfloor.org>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Probable-Spam: no
+X-Spam-Report: none
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/09/2007 05:01 PM, Andi Kleen wrote:
-> On Sun, Sep 09, 2007 at 04:43:37PM +0200, Jiri Slaby wrote:
->> On 09/09/2007 04:33 PM, Andi Kleen wrote:
->>> On Sun, Sep 09, 2007 at 04:26:22PM +0200, Jiri Slaby wrote:
->>>> BTW it is reproducible for me on two different machines (i386-x86_64,
->>>> radeon-intel), don't you have the problem too?
->>> No problems here with a radeon, no.
->>>
->>> Does your CPU have clflush or not in /proc/cpuinfo?
->> BTW this is how my flush_kernel_map looks like:
-> 
-> Can you stick a printk into change_page_attr to log in which order
-> it changes pages (including their addresses and the pgattr)? 
+On Sat, 8 Sep 2007, Adrian Bunk wrote:
+> On Sat, Sep 08, 2007 at 01:44:20PM -0400, Bill Davidsen wrote:
+>
+>> Haven't tried later kernels, don't intend to, while no network is 
+>> really secure, it not really useful.
+>
+> You are a regular reader of linux-kernel, and therefore the sk98lin 
+> removal can hardly be a surprise for you. If you prefer whining over 
+> helping to improve the kernel that's your choice...
 
-printk("%s: %p %p %.16lx %d\n", __func__, page, page_address(page),
-pgprot_val(prot), numpages);
-http://www.fi.muni.cz/~xslaby/sklad/panics/x-freeze_chpa.png
+I've been trying to migrate off sk98lin to skge since earlier this year, 
+without success, starting with 2.6.18 or .19.
 
-What other info needed?
+I have several of these cards in production using the sk98lin driver:
 
--- 
-Jiri Slaby (jirislaby@gmail.com)
-Faculty of Informatics, Masaryk University
+fresno:~# lspci -vv -s 02:01
+02:01.0 Ethernet controller: SysKonnect SK-9872 Gigabit Ethernet Server Adapter (SK-NET GE-ZX dual link) (rev 11)
+         Subsystem: SysKonnect SK-9844 Gigabit Ethernet Server Adapter (SK-NET GE-SX dual link)
+         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B-
+         Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+         Latency: 64 (5750ns min, 7750ns max), Cache Line Size: 32 bytes
+         Interrupt: pin A routed to IRQ 22
+         Region 0: Memory at febfc000 (32-bit, non-prefetchable) [size=16K]
+         Region 1: I/O ports at e800 [size=256]
+         Expansion ROM at febc0000 [disabled] [size=128K]
+         Capabilities: [48] Power Management version 1
+                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                 Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+         Capabilities: [50] Vital Product Data
+
+They are dual port SX fiber.  Both ports are connected.  If I do this:
+
+fresno:~# modprobe skge
+fresno:~# ip li set eth2 up
+fresno:~# ip li set eth2 down
+fresno:~# ip li set eth3 up
+
+the system locks up and I have to power cycle it.  The order doesn't 
+matter (if I do eth3 up/down, then eth2 up kills it).
+
+I don't have any problems with sk98lin.  This works fine:
+
+fresno:~# modprobe sk98lin RlmtMode=DualNet
+fresno:~# ip li set eth2 up
+fresno:~# ip li set eth2 down
+fresno:~# ip li set eth3 up
+fresno:~# ip li set eth3 down
+
+
+I am more than happy to test various driver changes, and have tried a few 
+suggested patches but nothing has worked so far.  I would like to be using 
+skge instead of sk98lin, but so far haven't had any success.
+
+
+
+
+-Chris
