@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932341AbXIIScb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbXIISdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932341AbXIIScb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 14:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758364AbXIIScX
+	id S1758934AbXIISdi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 14:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758364AbXIISdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 14:32:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39194 "EHLO
+	Sun, 9 Sep 2007 14:33:31 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39205 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758337AbXIIScX (ORCPT
+	with ESMTP id S1758204AbXIISda (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 14:32:23 -0400
-Date: Sun, 9 Sep 2007 19:30:40 +0100
+	Sun, 9 Sep 2007 14:33:30 -0400
+Date: Sun, 9 Sep 2007 19:31:48 +0100
 From: Arjan van de Ven <arjan@infradead.org>
-To: "Adrian McMenamin" <lkmladrian@gmail.com>
-Cc: "Dmitry Torokhov" <dtor@insightbb.com>, "Paul Mundt" <lethal@linux-sh.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] Maple bus support for the Sega Dreamcast - keyboard
- support
-Message-ID: <20070909193040.2fb9d010@laptopd505.fenrus.org>
-In-Reply-To: <8b67d60709091001l3cd6adf6m2dab8e815f47435d@mail.gmail.com>
-References: <8b67d60709091001l3cd6adf6m2dab8e815f47435d@mail.gmail.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Dennis Lubert <plasmahh@gmx.net>, linux-kernel@vger.kernel.org
+Subject: Re: tsc timer related problems/questions
+Message-ID: <20070909193148.6372dcc9@laptopd505.fenrus.org>
+In-Reply-To: <Pine.LNX.4.64.0709092016120.11640@fbirervta.pbzchgretzou.qr>
+References: <1189355506.6255.60.camel@speedy.projectiwear.org>
+	<20070909174935.7c00bbb7@laptopd505.fenrus.org>
+	<Pine.LNX.4.64.0709092016120.11640@fbirervta.pbzchgretzou.qr>
 Organization: Intel
 X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -30,22 +30,27 @@ X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafl
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Sep 2007 18:01:26 +0100
-"Adrian McMenamin" <lkmladrian@gmail.com> wrote:
+On Sun, 9 Sep 2007 20:17:28 +0200 (CEST)
+Jan Engelhardt <jengelh@computergmbh.de> wrote:
 
-> This patch adds support for the SEGA Dreamcast keyboard.
 > 
-> Following suggestions from the inout maintainer it has been somewhat
-> rewritten since the previous posting
-> (http://lkml.org/lkml/2007/9/4/168).
+> On Sep 9 2007 17:49, Arjan van de Ven wrote:
+> >> 
+> >> Question: Why are only Intel CPUs considered as stable? Could
+> >> there be implemented a more sophisticated heuristic, that actually
+> >> does some tests for tsc stability?
+> >
+> >on AMD multi-socket systems, afaik the tsc is not synchronized
+> >between packages. On Intel the tsc is derived from the FSB which is
+> >shared between the packages.
+> 
+> Also, the TSC is not necessarily constant wrt. CPU clock speed.
+> If your program stalls, the core may reduce frequency and hence
+> TSC values are not linear to time anymore.
+> 
 
-Hi,
+that depends on the CPU generation; most current cpus have
+constant-rate tscs (at least constant wrt their own concept of time,
+but at least independent of cpu frequency)...
 
-this driver in general is quite clean as well; I have only one
-suggestion for improvement. Right now you use a semaphore for locking,
-while all you really use it for is mutex semantics, I think it would be
-a good idea to convert the driver to use the actual mutex primitive;
-this will buy you a lot of extra automatic checking for bugs...
-
-Greetings,
-   Arjan van de Ven
+it gets more iffy on idle; on deep idle the tsc tends to stop ;(
