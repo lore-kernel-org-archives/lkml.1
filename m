@@ -1,56 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbXIIDt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbXIIELp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755999AbXIIDt6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 23:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXIIDtv
+	id S1755288AbXIIELp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 00:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbXIIELh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 23:49:51 -0400
-Received: from mail95.megamailservers.com ([216.251.36.95]:58150 "EHLO
-	mail95.megamailservers.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752429AbXIIDtu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 23:49:50 -0400
-X-Authenticated-User: jgeorgas.georgas.ca
-Subject: Re: broken ACPI NUMA config option
-From: "James C. Georgas" <jgeorgas@georgas.ca>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070908181607.4f36479c.randy.dunlap@oracle.com>
-References: <1189291899.13467.20.camel@Tachyon.home>
-	 <20070908180904.656f3d03.randy.dunlap@oracle.com>
-	 <20070908181607.4f36479c.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Organization: Georgas Software Solutions
-Date: Sat, 08 Sep 2007 23:48:56 -0400
-Message-Id: <1189309736.13467.77.camel@Tachyon.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Sun, 9 Sep 2007 00:11:37 -0400
+Received: from [212.12.190.30] ([212.12.190.30]:32801 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750703AbXIIELh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 00:11:37 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: sata & scsi suggestion for make menuconfig
+Date: Sun, 9 Sep 2007 07:11:44 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+References: <200709080652.02614.a1426z@gawab.com> <20070908144758.37ab3c76@the-village.bc.nu> <200709081703.31280.a1426z@gawab.com>
+In-Reply-To: <200709081703.31280.a1426z@gawab.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200709090711.44048.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-08-09 at 18:16 -0700, Randy Dunlap wrote:
+Al Boldi wrote:
+> Alan Cox wrote:
+> > > I once sent a patch to make libata a submenu of scsi.
+> >
+> > Which is wrong
+> >
+> > Nakked-by: Alan Cox <alan@redhat.com>
+> >
+> > The general comments about moving this stuff around and making it
+> > clearer what sd/sr etc are nowdays are good but hiding libata under SCSI
+> > will cause even more confusion than it cures
+>
+> That's easy to fix:  just change the SCSI heading to include a libata
+> hint.
+>
+> Something like this:
+>
+> [PATCH] libata Kconfig: Allow libata to be selected from within the SCSI
+> submenu
+>
+> Move libata Kconfig sourcing from the drivers Kconfig into the SCSI
+> Kconfig, and change the SCSI menu heading to indicate libata submenu
+> inclusion.
+>
+> This allows the user to quickly select additional disk/tape/cdrom support
+> from within the same menu.
+>
+> Signed-off-by: Al Boldi <a1426z@gawab.com>
+> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> ---
+> --- a/drivers/Kconfig   2007-05-02 17:25:30.000000000 +0300
+> +++ b/drivers/Kconfig   2007-08-01 06:33:13.000000000 +0300
+> @@ -22,8 +22,6 @@ source "drivers/ide/Kconfig"
+>
+>  source "drivers/scsi/Kconfig"
+>
+> -source "drivers/ata/Kconfig"
+> -
+>  source "drivers/cdrom/Kconfig"
+>
+>  source "drivers/md/Kconfig"
+> --- a/drivers/scsi/Kconfig      2007-07-09 06:38:37.000000000 +0300
+> +++ b/drivers/scsi/Kconfig      2007-08-01 06:46:42.000000000 +0300
+> @@ -7,6 +7,8 @@ config RAID_ATTRS
+>         ---help---
+>           Provides RAID
+>
+> +source "drivers/ata/Kconfig"
+> +
+>  config SCSI
+> -       tristate "SCSI device support"
+> +       tristate "SCSI and Libata device support"
+>         depends on BLOCK
 
-> 2.6.23-rc5-git1 builds for me when I follow those steps...
-> except for some Section mismatch warnings.
-> 
+Actually, this should have read:
 
-OK, it worked for me also, using torvalds/linux-2.6.git. The behaviour
-of the "select" directive in Kconfig appears to have changed since
-2.6.22.6. It now turns on ACPI, even when PM is not selected.
+--- a/drivers/scsi/Kconfig	2007-07-09 06:38:37.000000000 +0300
++++ a/drivers/scsi/Kconfig	2007-09-09 06:48:11.000000000 +0300
+@@ -1,4 +1,4 @@
+-menu "SCSI device support"
++menu "SCSI and Libata (SATA/PATA/new IDE) device support"
+ 
+ config RAID_ATTRS
+        tristate "RAID Transport Class"
+@@ -7,6 +7,8 @@ config RAID_ATTRS
+        ---help---
+          Provides RAID
+ 
++source "drivers/ata/Kconfig"
++
+ config SCSI
+        tristate "SCSI device support"
+        depends on BLOCK
 
-This still looks broken to me, because ACPI gets selected by ACPI_NUMA,
-and ACPI depends on PM, but PM is not selected. It works out in the end,
-as far as the build is concerned, but it still bugs me.
 
-Does anyone object to the idea of a selected item automatically
-selecting its own dependencies?
+I would think that with this minimal change it would make it crystal clear, 
+to anybody who can read, where to enable libata support, and at the same 
+time not to forget/overlook sd/sr selection.
 
-For example, you would only need to specify one "select" directive in
-X86_64_ACPI_NUMA, (i.e. to turn on ACPI_NUMA). The configuration system
-would then recursively walk up ACPI_NUMA's dependency hierarchy, turning
-on what it needed.
 
-James
-	/\V
+Thanks!
+
+--
+Al
 
