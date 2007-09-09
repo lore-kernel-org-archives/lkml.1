@@ -1,157 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbXIIN01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbXIINeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbXIIN01 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 09:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbXIIN0S
+	id S1757084AbXIINeX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 09:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbXIINeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 09:26:18 -0400
-Received: from kumera.dghda.com ([80.68.90.171]:3867 "EHLO kumera.dghda.com"
+	Sun, 9 Sep 2007 09:34:16 -0400
+Received: from il.qumranet.com ([82.166.9.18]:52625 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754701AbXIIN0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 09:26:17 -0400
-From: "Duane Griffin" <duaneg@dghda.com>
-Date: Sun, 9 Sep 2007 14:19:33 +0100
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ext4 development <linux-ext4@vger.kernel.org>
-Subject: Re: [RESEND][PATCH] dir_index: error out instead of BUG on corrupt
-	hash dir limit
-Message-ID: <20070909131933.GA15229@dastardly.plus.com>
-References: <46D8D30B.6090703@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46D8D30B.6090703@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1755615AbXIINeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 09:34:15 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
+       Avi Kivity <avi@qumranet.com>
+Subject: [PATCH -rc] KVM: MMU: Fix rare oops on guest context switch
+Date: Sun,  9 Sep 2007 16:34:14 +0300
+Message-Id: <11893448541460-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,
+A guest context switch to an uncached cr3 can require allocation of
+shadow pages, but we only recycle shadow pages in kvm_mmu_page_fault().
 
-On Fri, Aug 31, 2007 at 09:48:43PM -0500, Eric Sandeen wrote:
-> (resend, this one got lost?  Got an acked-by from Andreas
-> last go-round)
+Move shadow page recycling to mmu_topup_memory_caches(), which is called
+from both the page fault handler and from guest cr3 reload.
 
-Sorry I missed this first time around. I came up with a very similar
-fix recently, following a gentoo bug report.  However there are a few
-more asserts later that you aren't currently handling. Below is an
-incremental patch on top of yours that converts them too. Note that one
-of them is in an if (0) block and maybe should be left alone -- what do
-you think?
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+---
 
-I tested all the changed code paths, except the if (0) one, using a
-utility that appropriately corrupts ext3 images. The source code is
-attached to the gentoo bug report here:
+ drivers/kvm/kvm.h |   10 +++++++---
+ drivers/kvm/mmu.c |    5 +++--
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
-http://bugs.gentoo.org/show_bug.cgi?id=183207
-
-Signed-off-by: Duane Griffin <duaneg@dghda.com>
-
-Index: linux-2.6-git/fs/ext3/namei.c
-===================================================================
---- linux-2.6-git.orig/fs/ext3/namei.c
-+++ linux-2.6-git/fs/ext3/namei.c
-@@ -393,7 +393,15 @@ dx_probe(struct dentry *dentry, struct i
- 	while (1)
- 	{
- 		count = dx_get_count(entries);
--		assert (count && count <= dx_get_limit(entries));
-+		if (!count || count > dx_get_limit(entries)) {
-+			ext3_warning(dir->i_sb, __FUNCTION__,
-+				     "Corrupt limit in dir inode %ld\n",
-+				     dir->i_ino);
-+			brelse(bh);
-+			*err = ERR_BAD_DX_DIR;
-+			goto fail2;
-+		}
-+
- 		p = entries + 1;
- 		q = entries + count - 1;
- 		while (p <= q)
-@@ -419,7 +427,11 @@ dx_probe(struct dentry *dentry, struct i
- 					break;
- 				}
- 			}
--			assert (at == p - 1);
-+			if (at != p - 1) {
-+				brelse(bh);
-+				*err = ERR_BAD_DX_DIR;
-+				goto fail2;
-+			}
- 		}
+diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
+index 3ac9cbc..336be86 100644
+--- a/drivers/kvm/kvm.h
++++ b/drivers/kvm/kvm.h
+@@ -619,7 +619,7 @@ unsigned long segment_base(u16 selector);
+ void kvm_mmu_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
+ 		       const u8 *old, const u8 *new, int bytes);
+ int kvm_mmu_unprotect_page_virt(struct kvm_vcpu *vcpu, gva_t gva);
+-void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu);
++void __kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu);
+ int kvm_mmu_load(struct kvm_vcpu *vcpu);
+ void kvm_mmu_unload(struct kvm_vcpu *vcpu);
  
- 		at = p - 1;
-@@ -431,8 +443,16 @@ dx_probe(struct dentry *dentry, struct i
- 		if (!(bh = ext3_bread (NULL,dir, dx_get_block(at), 0, err)))
- 			goto fail2;
- 		at = entries = ((struct dx_node *) bh->b_data)->entries;
--		assert (dx_get_limit(entries) == dx_node_limit (dir));
-+		if (dx_get_limit(entries) != dx_node_limit (dir)) {
-+			ext3_warning(dir->i_sb, __FUNCTION__,
-+				     "Corrupt limit in dir inode %ld\n",
-+				     dir->i_ino);
-+			brelse(bh);
-+			*err = ERR_BAD_DX_DIR;
-+			goto fail2;
-+		}
- 		frame++;
-+		frame->bh = NULL;
- 	}
- fail2:
- 	while (frame >= frame_in) {
-Index: linux-2.6-git/fs/ext4/namei.c
-===================================================================
---- linux-2.6-git.orig/fs/ext4/namei.c
-+++ linux-2.6-git/fs/ext4/namei.c
-@@ -393,7 +393,15 @@ dx_probe(struct dentry *dentry, struct i
- 	while (1)
- 	{
- 		count = dx_get_count(entries);
--		assert (count && count <= dx_get_limit(entries));
-+		if (!count || count > dx_get_limit(entries)) {
-+			ext3_warning(dir->i_sb, __FUNCTION__,
-+				     "Corrupt limit in dir inode %ld\n",
-+				     dir->i_ino);
-+			brelse(bh);
-+			*err = ERR_BAD_DX_DIR;
-+			goto fail2;
-+		}
-+
- 		p = entries + 1;
- 		q = entries + count - 1;
- 		while (p <= q)
-@@ -419,7 +427,11 @@ dx_probe(struct dentry *dentry, struct i
- 					break;
- 				}
- 			}
--			assert (at == p - 1);
-+			if (at != p - 1) {
-+				brelse(bh);
-+				*err = ERR_BAD_DX_DIR;
-+				goto fail2;
-+			}
- 		}
+@@ -628,11 +628,15 @@ int kvm_hypercall(struct kvm_vcpu *vcpu, struct kvm_run *run);
+ static inline int kvm_mmu_page_fault(struct kvm_vcpu *vcpu, gva_t gva,
+ 				     u32 error_code)
+ {
+-	if (unlikely(vcpu->kvm->n_free_mmu_pages < KVM_MIN_FREE_MMU_PAGES))
+-		kvm_mmu_free_some_pages(vcpu);
+ 	return vcpu->mmu.page_fault(vcpu, gva, error_code);
+ }
  
- 		at = p - 1;
-@@ -431,8 +443,16 @@ dx_probe(struct dentry *dentry, struct i
- 		if (!(bh = ext4_bread (NULL,dir, dx_get_block(at), 0, err)))
- 			goto fail2;
- 		at = entries = ((struct dx_node *) bh->b_data)->entries;
--		assert (dx_get_limit(entries) == dx_node_limit (dir));
-+		if (dx_get_limit(entries) != dx_node_limit (dir)) {
-+			ext3_warning(dir->i_sb, __FUNCTION__,
-+				     "Corrupt limit in dir inode %ld\n",
-+				     dir->i_ino);
-+			brelse(bh);
-+			*err = ERR_BAD_DX_DIR;
-+			goto fail2;
-+		}
- 		frame++;
-+		frame->bh = NULL;
++static inline void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
++{
++	if (unlikely(vcpu->kvm->n_free_mmu_pages < KVM_MIN_FREE_MMU_PAGES))
++		__kvm_mmu_free_some_pages(vcpu);
++}
++
+ static inline int kvm_mmu_reload(struct kvm_vcpu *vcpu)
+ {
+ 	if (likely(vcpu->mmu.root_hpa != INVALID_PAGE))
+diff --git a/drivers/kvm/mmu.c b/drivers/kvm/mmu.c
+index 1a87ba9..23965aa 100644
+--- a/drivers/kvm/mmu.c
++++ b/drivers/kvm/mmu.c
+@@ -273,12 +273,14 @@ static int mmu_topup_memory_caches(struct kvm_vcpu *vcpu)
+ 	int r;
+ 
+ 	r = __mmu_topup_memory_caches(vcpu, GFP_NOWAIT);
++	kvm_mmu_free_some_pages(vcpu);
+ 	if (r < 0) {
+ 		spin_unlock(&vcpu->kvm->lock);
+ 		kvm_arch_ops->vcpu_put(vcpu);
+ 		r = __mmu_topup_memory_caches(vcpu, GFP_KERNEL);
+ 		kvm_arch_ops->vcpu_load(vcpu);
+ 		spin_lock(&vcpu->kvm->lock);
++		kvm_mmu_free_some_pages(vcpu);
  	}
- fail2:
- 	while (frame >= frame_in) {
-
+ 	return r;
+ }
+@@ -1208,7 +1210,7 @@ int kvm_mmu_unprotect_page_virt(struct kvm_vcpu *vcpu, gva_t gva)
+ 	return kvm_mmu_unprotect_page(vcpu, gpa >> PAGE_SHIFT);
+ }
+ 
+-void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
++void __kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
+ {
+ 	while (vcpu->kvm->n_free_mmu_pages < KVM_REFILL_PAGES) {
+ 		struct kvm_mmu_page *page;
+@@ -1218,7 +1220,6 @@ void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
+ 		kvm_mmu_zap_page(vcpu->kvm, page);
+ 	}
+ }
+-EXPORT_SYMBOL_GPL(kvm_mmu_free_some_pages);
+ 
+ static void free_mmu_pages(struct kvm_vcpu *vcpu)
+ {
 -- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+1.5.3
+
