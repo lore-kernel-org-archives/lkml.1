@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbXIIDVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbXIIDt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755933AbXIIDVS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Sep 2007 23:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbXIIDVJ
+	id S1755999AbXIIDt6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Sep 2007 23:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbXIIDtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Sep 2007 23:21:09 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:37012 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbXIIDVI (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Sep 2007 23:21:08 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andi Kleen <ak@suse.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, jakub@redhat.com,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3-mm1 - vdso and gettimeofday issues with glibc
-In-Reply-To: Your message of "Sat, 08 Sep 2007 10:57:50 +0200."
-             <200709081057.51144.ak@suse.de>
-From: Valdis.Kletnieks@vt.edu
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <200709011207.58201.ak@suse.de> <46E1A8ED.8090104@redhat.com>
-            <200709081057.51144.ak@suse.de>
+	Sat, 8 Sep 2007 23:49:51 -0400
+Received: from mail95.megamailservers.com ([216.251.36.95]:58150 "EHLO
+	mail95.megamailservers.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752429AbXIIDtu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Sep 2007 23:49:50 -0400
+X-Authenticated-User: jgeorgas.georgas.ca
+Subject: Re: broken ACPI NUMA config option
+From: "James C. Georgas" <jgeorgas@georgas.ca>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070908181607.4f36479c.randy.dunlap@oracle.com>
+References: <1189291899.13467.20.camel@Tachyon.home>
+	 <20070908180904.656f3d03.randy.dunlap@oracle.com>
+	 <20070908181607.4f36479c.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Organization: Georgas Software Solutions
+Date: Sat, 08 Sep 2007 23:48:56 -0400
+Message-Id: <1189309736.13467.77.camel@Tachyon.home>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1189308056_2988P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.10.2 
 Content-Transfer-Encoding: 7bit
-Date: Sat, 08 Sep 2007 23:20:56 -0400
-Message-ID: <16909.1189308056@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1189308056_2988P
-Content-Type: text/plain; charset=us-ascii
+On Sat, 2007-08-09 at 18:16 -0700, Randy Dunlap wrote:
 
-On Sat, 08 Sep 2007 10:57:50 +0200, Andi Kleen said:
+> 2.6.23-rc5-git1 builds for me when I follow those steps...
+> except for some Section mismatch warnings.
+> 
 
-> vdso effectively only supports TSC and HPET (the other clock sources are not accessible
-> from ring 3)
+OK, it worked for me also, using torvalds/linux-2.6.git. The behaviour
+of the "select" directive in Kconfig appears to have changed since
+2.6.22.6. It now turns on ACPI, even when PM is not selected.
 
-Ahh.. that explains why acpi_pm clocksource doesn't trip over the problem....
+This still looks broken to me, because ACPI gets selected by ACPI_NUMA,
+and ACPI depends on PM, but PM is not selected. It works out in the end,
+as far as the build is concerned, but it still bugs me.
 
---==_Exmh_1189308056_2988P
-Content-Type: application/pgp-signature
+Does anyone object to the idea of a selected item automatically
+selecting its own dependencies?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+For example, you would only need to specify one "select" directive in
+X86_64_ACPI_NUMA, (i.e. to turn on ACPI_NUMA). The configuration system
+would then recursively walk up ACPI_NUMA's dependency hierarchy, turning
+on what it needed.
 
-iD8DBQFG42aYcC3lWbTT17ARAijuAKC7QRLhQK8ZrFfrFAONKVKSza8I8wCcCQ0/
-P+AXaEIdpdjPkqbgWYk5WTQ=
-=pelD
------END PGP SIGNATURE-----
+James
+	/\V
 
---==_Exmh_1189308056_2988P--
