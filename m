@@ -1,50 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758767AbXIIRGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbXIIR2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758767AbXIIRGy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 13:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbXIIRGp
+	id S1758333AbXIIR2R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 13:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbXIIR2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 13:06:45 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:59148 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754109AbXIIRGp (ORCPT
+	Sun, 9 Sep 2007 13:28:03 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:17410 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756272AbXIIR2B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 13:06:45 -0400
+	Sun, 9 Sep 2007 13:28:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=LSdcfCid89pPHa6mCPSGqOYHmav7ySptwGXiWnLv39Wo0cxtXXTX5fB+4fxf/BX9cM8+p6gmjmNXD6/S+hYIo1FEVIAUSRse+mFFDyAGhH4fXPIrQSwXVjP986tE8pD51KY3exGLvybw7CL1P5yXxobHwDGvk5zTIzpVp2/s5oE=
-Message-ID: <8b67d60709091006h5388483fyaf5dd3f87a078b0f@mail.gmail.com>
-Date: Sun, 9 Sep 2007 18:06:41 +0100
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/3] Maple bus support for the Sega Dreamcast - consequential change to pvr2 driver
-Cc: "Paul Mundt" <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iuaGV980TtUPybgKgHMgmhKreNkH2bwdPYqttsTf97m2JhYL0i2hYLTc44uNk2XdicmzzXTGIKt+GC0XOyTHoN13fH3vuQVJZPxAQZd8hCSpumOPKyh8y7pEWRwppHP5gGseGQMihTamvACEJMWA6vfPXUqZrxXz9+IEm4ogKRY=
+Message-ID: <86802c440709091027o32a63d11w629bad87abcc19c2@mail.gmail.com>
+Date: Sun, 9 Sep 2007 10:27:19 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Bernhard Walle" <bwalle@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Vivek Goyal" <vgoyal@in.ibm.com>
+Subject: Re: [discuss] [patch 3/5] Use extended crashkernel command line on x86_64
+Cc: kexec@lists.infradead.org, linux-arch@vger.kernel.org, discuss@x86-64.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070909083914.951336895@strauss.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20070909083914.065380136@strauss.suse.de>
+	 <20070909083914.951336895@strauss.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the VBLANK interrupt shareable.
+On 9/9/07, Bernhard Walle <bwalle@suse.de> wrote:
+> This patch removes the crashkernel parsing from
+> arch/x86_64/kernel/machine_kexec.c and calls the generic function, introduced in
+> the last patch, in setup_bootmem_allocator().
+>
+> This is necessary because the amount of System RAM must be known in this
+> function now because of the new syntax.
+>
+>
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+>
+>
+> ---
+>  arch/x86_64/kernel/e820.c          |    3 ++-
+>  arch/x86_64/kernel/machine_kexec.c |   27 ---------------------------
+>  arch/x86_64/kernel/setup.c         |   35 ++++++++++++++++++++++++++++-------
+>  3 files changed, 30 insertions(+), 35 deletions(-)
+>
+> --- a/arch/x86_64/kernel/e820.c
+> +++ b/arch/x86_64/kernel/e820.c
+> @@ -226,7 +226,8 @@ void __init e820_reserve_resources(void)
+>                         request_resource(res, &code_resource);
+>                         request_resource(res, &data_resource);
+>  #ifdef CONFIG_KEXEC
+...
+> --- a/arch/x86_64/kernel/machine_kexec.c
+> +++ b/arch/x86_64/kernel/machine_kexec.c
+> @@ -231,33 +231,6 @@ NORET_TYPE void machine_kexec(struct kim
+>                         image->start);
+>  }
+>
+> -/* crashkernel=size@addr specifies the location to reserve for
+> - * a crash kernel.  By reserving this memory we guarantee
+> - * that linux never set's it up as a DMA target.
+> - * Useful for holding code to do something appropriate
+> - * after a kernel panic.
+> - */
+> -static int __init setup_crashkernel(char *arg)
+> -{
+> -       unsigned long size, base;
+> -       char *p;
+> -       if (!arg)
+> -               return -EINVAL;
+> -       size = memparse(arg, &p);
+> -       if (arg == p)
+> -               return -EINVAL;
+> -       if (*p == '@') {
+> -               base = memparse(p+1, &p);
+> -               /* FIXME: Do I want a sanity check to validate the
+> -                * memory range?  Yes you do, but it's too early for
+> -                * e820 -AK */
+> -               crashk_res.start = base;
+> -               crashk_res.end   = base + size - 1;
+> -       }
+> -       return 0;
+> -}
+> -early_param("crashkernel", setup_crashkernel);
+> -
+>  void arch_crash_save_vmcoreinfo(void)
+>  {
+>  #ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
+> --- a/arch/x86_64/kernel/setup.c
+> +++ b/arch/x86_64/kernel/setup.c
+> @@ -196,6 +196,33 @@ static inline void copy_edd(void)
+>  }
+>  #endif
+>
+> +#ifdef CONFIG_KEXEC
+...
 
-This is the third time I have posted this patch. This is required to
-allow the Maple bus driver to work (Maple hardware is synced with the
-VBLANK interrupt).
+CONFIG_KEXEC or CONFIG_CRASH_DUMP?
 
-Signed off: Adrian McMenamin <adrian@mcmen.demon.co.uk>
-
-diff --git a/drivers/video/pvr2fb.c b/drivers/video/pvr2fb.c
-index 7d6c298..13de07f 100644
---- a/drivers/video/pvr2fb.c
-+++ b/drivers/video/pvr2fb.c
-@@ -890,7 +890,7 @@ static int __init pvr2fb_dc_init(void)
- 	pvr2_fix.mmio_start	= 0xa05f8000;	/* registers start here */
- 	pvr2_fix.mmio_len	= 0x2000;
-
--	if (request_irq(HW_EVENT_VSYNC, pvr2fb_interrupt, 0,
-+	if (request_irq(HW_EVENT_VSYNC, pvr2fb_interrupt, IRQF_SHARED,
- 	                "pvr2 VBL handler", fb_info)) {
- 		return -EBUSY;
- 	}
+YH
