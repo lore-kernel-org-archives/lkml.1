@@ -1,88 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760035AbXIIU3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759048AbXIIUaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760035AbXIIU3o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 16:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758979AbXIIUZn
+	id S1759048AbXIIUaX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 16:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759541AbXIIUZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 16:25:43 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60746 "EHLO
+	Sun, 9 Sep 2007 16:25:47 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60750 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759513AbXIIUZl (ORCPT
+	with ESMTP id S1759535AbXIIUZn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 16:25:41 -0400
-Date: Sun, 9 Sep 2007 22:25:48 +0200
+	Sun, 9 Sep 2007 16:25:43 -0400
+Date: Sun, 9 Sep 2007 22:25:50 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] mm/memcontrol.c: clenups
-Message-ID: <20070909202548.GW3563@stusta.de>
-References: <20070831215822.26e1432b.akpm@linux-foundation.org>
+To: Wei Yongjun <yjwei@cn.fujitsu.com>,
+       Vlad Yasevich <vladislav.yasevich@hp.com>, sri@us.ibm.com,
+       davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org, lksctp-developers@lists.sourceforge.net,
+       netdev@vger.kernel.org
+Subject: [2.6 patch] make sctp_addto_param() static
+Message-ID: <20070909202550.GX3563@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070831215822.26e1432b.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.23-rc3-mm1:
->...
-> +memory-controller-add-switch-to-control-what-type-of-pages-to-limit-v7.patch
->...
->  memory containment
->...
-
-This patch makes the following needlessly global functions static:
-- lock_page_container()
-- unlock_page_container()
-- __mem_container_move_lists()
-
-Additionally, there was no reason for the "mem_control_type" object.
+sctp_addto_param() can become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- mm/memcontrol.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ include/net/sctp/structs.h |    1 
+ net/sctp/sm_make_chunk.c   |   39 ++++++++++++++++++-------------------
+ 2 files changed, 20 insertions(+), 20 deletions(-)
 
-b582cc510b6b0a182dc56025828e7a3c566b9724 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 8162d98..49bf04f 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -91,7 +91,7 @@ enum {
- 	MEM_CONTAINER_TYPE_CACHED,
- 	MEM_CONTAINER_TYPE_ALL,
- 	MEM_CONTAINER_TYPE_MAX,
--} mem_control_type;
-+};
- 
- static struct mem_container init_mem_container;
- 
-@@ -156,18 +156,18 @@ struct page_container *page_get_page_container(struct page *page)
- 		(page->page_container & ~PAGE_CONTAINER_LOCK);
+38f8064114b9e89a6a911b2e3625a41cdb477bcd 
+diff --git a/include/net/sctp/structs.h b/include/net/sctp/structs.h
+index c0d5848..ee4559b 100644
+--- a/include/net/sctp/structs.h
++++ b/include/net/sctp/structs.h
+@@ -726,7 +726,6 @@ int sctp_user_addto_chunk(struct sctp_chunk *chunk, int off, int len,
+ 			  struct iovec *data);
+ void sctp_chunk_free(struct sctp_chunk *);
+ void  *sctp_addto_chunk(struct sctp_chunk *, int len, const void *data);
+-void  *sctp_addto_param(struct sctp_chunk *, int len, const void *data);
+ struct sctp_chunk *sctp_chunkify(struct sk_buff *,
+ 				 const struct sctp_association *,
+ 				 struct sock *);
+diff --git a/net/sctp/sm_make_chunk.c b/net/sctp/sm_make_chunk.c
+index 79856c9..cf3b560 100644
+--- a/net/sctp/sm_make_chunk.c
++++ b/net/sctp/sm_make_chunk.c
+@@ -839,6 +839,26 @@ err_chunk:
+ 	return retval;
  }
  
--void __always_inline lock_page_container(struct page *page)
-+static void __always_inline lock_page_container(struct page *page)
- {
- 	bit_spin_lock(PAGE_CONTAINER_LOCK_BIT, &page->page_container);
- 	VM_BUG_ON(!page_container_locked(page));
++/* Append bytes to the end of a parameter.  Will panic if chunk is not big
++ * enough.
++ */
++static void *sctp_addto_param(struct sctp_chunk *chunk, int len,
++			      const void *data)
++{
++	void *target;
++	int chunklen = ntohs(chunk->chunk_hdr->length);
++
++	target = skb_put(chunk->skb, len);
++
++	memcpy(target, data, len);
++
++	/* Adjust the chunk length field.  */
++	chunk->chunk_hdr->length = htons(chunklen + len);
++	chunk->chunk_end = skb_tail_pointer(chunk->skb);
++
++	return target;
++}
++
+ /* Make an ABORT chunk with a PROTOCOL VIOLATION cause code. */
+ struct sctp_chunk *sctp_make_abort_violation(
+ 	const struct sctp_association *asoc,
+@@ -1146,25 +1166,6 @@ void *sctp_addto_chunk(struct sctp_chunk *chunk, int len, const void *data)
+ 	return target;
  }
  
--void __always_inline unlock_page_container(struct page *page)
-+static void __always_inline unlock_page_container(struct page *page)
- {
- 	bit_spin_unlock(PAGE_CONTAINER_LOCK_BIT, &page->page_container);
- }
- 
--void __mem_container_move_lists(struct page_container *pc, bool active)
-+static void __mem_container_move_lists(struct page_container *pc, bool active)
- {
- 	if (active)
- 		list_move(&pc->lru, &pc->mem_container->active_list);
+-/* Append bytes to the end of a parameter.  Will panic if chunk is not big
+- * enough.
+- */
+-void *sctp_addto_param(struct sctp_chunk *chunk, int len, const void *data)
+-{
+-	void *target;
+-	int chunklen = ntohs(chunk->chunk_hdr->length);
+-
+-	target = skb_put(chunk->skb, len);
+-
+-	memcpy(target, data, len);
+-
+-	/* Adjust the chunk length field.  */
+-	chunk->chunk_hdr->length = htons(chunklen + len);
+-	chunk->chunk_end = skb_tail_pointer(chunk->skb);
+-
+-	return target;
+-}
+-
+ /* Append bytes from user space to the end of a chunk.  Will panic if
+  * chunk is not big enough.
+  * Returns a kernel err value.
 
