@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760435AbXIIVNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760544AbXIIVOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760435AbXIIVNq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 17:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759879AbXIIVLp
+	id S1760544AbXIIVOF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 17:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760166AbXIIVLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 17:11:45 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42910 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759685AbXIIVLo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 17:11:44 -0400
-Date: Sun, 9 Sep 2007 14:12:56 -0700
-From: Greg KH <greg@kroah.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       len.brown@intel.com, linux-ide@vger.kernel.org, dz@debian.org,
-       minyard@acm.org, j.w.r.degoede@hhs.nl, lm-sensors@lm-sensors.org,
-       rlove@rlove.org, bzolnier@gmail.com, dmitry.torokhov@gmail.com,
-       mzxreary@0pointer.de, stelian@popies.net, ibm-acpi@hmh.eng.br,
-       ambx1@neo.rr.com, gimli@dark-green.com
-Subject: Re: [PATCH] drivers/firmware: const-ify DMI API and internals
-Message-ID: <20070909211256.GB6310@kroah.com>
-References: <20070901142719.GA31990@havoc.gtf.org> <20070901153644.GA530@kroah.com> <46D98CD0.9040206@garzik.org> <20070909175142.GB32447@kroah.com> <20070909202442.GA21086@uranus.ravnborg.org>
+	Sun, 9 Sep 2007 17:11:53 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33897 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760148AbXIIVLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 17:11:51 -0400
+Message-ID: <46E46190.6080607@garzik.org>
+Date: Sun, 09 Sep 2007 17:11:44 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070909202442.GA21086@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andi Kleen <andi@firstfloor.org>
+CC: James Bottomley <James.Bottomley@SteelEye.com>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: sata & scsi suggestion for make menuconfig
+References: <20070907124800.GP16806@vanheusden.com> <p73fy1p9m57.fsf@bingen.suse.de> <1189371621.3526.28.camel@localhost.localdomain> <20070909210329.GE25798@one.firstfloor.org>
+In-Reply-To: <20070909210329.GE25798@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 09, 2007 at 10:24:42PM +0200, Sam Ravnborg wrote:
-> > >
-> > > I was just going to push it myself, but have no strong feelings on the 
-> > > matter.
-> > 
-> > Ok, you can push it, that's fine with me.  Feel free to add my:
-> > 	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > if you want.
-> That should be "Acked-by:" since the patch does not pass via you but you
-> acknowledge it is OK by your Ack.
+Andi Kleen wrote:
+>> I can see where you're coming from, but logically, this is wrong.
+>> There's a huge slew of enterprise machines that only have DVD on SATA.
+> 
+> ... and enterprise systems don't really care about a few KB more of code.
+> In fact you definitely want to have SATA compiled in in case you need
+> to recover the machine later when the SAN is down.
+> 
+>> On the other hand, all of these machines will have SCSI disk devices on
+>> various other transports, so no harm is done, it's just an inelegant
+>> solution.
+> 
+> Do you know of a better one?
 
-Well, as I am the maintainer for that subsystem, and I did review the
-patch and it looks good, that is a bit more than just an "ack" :)
+Let's step back a moment and consider the actual scale and impact of the 
+problem at hand.
 
-But whatever you want, I'm not going to get technical here with
-"reviewed-by" and such right now...
+The vast majority of users are consumers of pre-compiled kernels, built 
+by People With Clue(tm), who figured this stuff out as soon as it was 
+introduced.
 
-thanks,
+The current setup expresses the dependencies as they exist -- OPTIONAL 
+extras, and that is a problem once a year or so, when someone builds 
+their own kernel but must learn this fact anew.
 
-greg k-h
+There is simply no compelling need at all to change things from the 
+current setup.
+
+Our Kconfig system is for people who already know the kernel, not Aunt 
+Tillie.
+
+	Jeff
+
+
+
