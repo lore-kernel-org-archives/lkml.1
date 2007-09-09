@@ -1,108 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbXIIR2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758616AbXIIReP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758333AbXIIR2R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 13:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbXIIR2D
+	id S1758616AbXIIReP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 13:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbXIIReA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 13:28:03 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:17410 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756272AbXIIR2B (ORCPT
+	Sun, 9 Sep 2007 13:34:00 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:22058 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754699AbXIIRd7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 13:28:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iuaGV980TtUPybgKgHMgmhKreNkH2bwdPYqttsTf97m2JhYL0i2hYLTc44uNk2XdicmzzXTGIKt+GC0XOyTHoN13fH3vuQVJZPxAQZd8hCSpumOPKyh8y7pEWRwppHP5gGseGQMihTamvACEJMWA6vfPXUqZrxXz9+IEm4ogKRY=
-Message-ID: <86802c440709091027o32a63d11w629bad87abcc19c2@mail.gmail.com>
-Date: Sun, 9 Sep 2007 10:27:19 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Bernhard Walle" <bwalle@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Vivek Goyal" <vgoyal@in.ibm.com>
-Subject: Re: [discuss] [patch 3/5] Use extended crashkernel command line on x86_64
-Cc: kexec@lists.infradead.org, linux-arch@vger.kernel.org, discuss@x86-64.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070909083914.951336895@strauss.suse.de>
+	Sun, 9 Sep 2007 13:33:59 -0400
+Message-ID: <46E42E19.4040701@oracle.com>
+Date: Sun, 09 Sep 2007 10:32:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "James C. Georgas" <jgeorgas@georgas.ca>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: broken ACPI NUMA config option
+References: <1189291899.13467.20.camel@Tachyon.home>	 <20070908180904.656f3d03.randy.dunlap@oracle.com>	 <20070908181607.4f36479c.randy.dunlap@oracle.com>	 <1189309736.13467.77.camel@Tachyon.home>	 <20070908220043.8830512d.randy.dunlap@oracle.com> <1189345287.7365.23.camel@Tachyon.home>
+In-Reply-To: <1189345287.7365.23.camel@Tachyon.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070909083914.065380136@strauss.suse.de>
-	 <20070909083914.951336895@strauss.suse.de>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/9/07, Bernhard Walle <bwalle@suse.de> wrote:
-> This patch removes the crashkernel parsing from
-> arch/x86_64/kernel/machine_kexec.c and calls the generic function, introduced in
-> the last patch, in setup_bootmem_allocator().
->
-> This is necessary because the amount of System RAM must be known in this
-> function now because of the new syntax.
->
->
-> Signed-off-by: Bernhard Walle <bwalle@suse.de>
->
->
-> ---
->  arch/x86_64/kernel/e820.c          |    3 ++-
->  arch/x86_64/kernel/machine_kexec.c |   27 ---------------------------
->  arch/x86_64/kernel/setup.c         |   35 ++++++++++++++++++++++++++++-------
->  3 files changed, 30 insertions(+), 35 deletions(-)
->
-> --- a/arch/x86_64/kernel/e820.c
-> +++ b/arch/x86_64/kernel/e820.c
-> @@ -226,7 +226,8 @@ void __init e820_reserve_resources(void)
->                         request_resource(res, &code_resource);
->                         request_resource(res, &data_resource);
->  #ifdef CONFIG_KEXEC
-...
-> --- a/arch/x86_64/kernel/machine_kexec.c
-> +++ b/arch/x86_64/kernel/machine_kexec.c
-> @@ -231,33 +231,6 @@ NORET_TYPE void machine_kexec(struct kim
->                         image->start);
->  }
->
-> -/* crashkernel=size@addr specifies the location to reserve for
-> - * a crash kernel.  By reserving this memory we guarantee
-> - * that linux never set's it up as a DMA target.
-> - * Useful for holding code to do something appropriate
-> - * after a kernel panic.
-> - */
-> -static int __init setup_crashkernel(char *arg)
-> -{
-> -       unsigned long size, base;
-> -       char *p;
-> -       if (!arg)
-> -               return -EINVAL;
-> -       size = memparse(arg, &p);
-> -       if (arg == p)
-> -               return -EINVAL;
-> -       if (*p == '@') {
-> -               base = memparse(p+1, &p);
-> -               /* FIXME: Do I want a sanity check to validate the
-> -                * memory range?  Yes you do, but it's too early for
-> -                * e820 -AK */
-> -               crashk_res.start = base;
-> -               crashk_res.end   = base + size - 1;
-> -       }
-> -       return 0;
-> -}
-> -early_param("crashkernel", setup_crashkernel);
-> -
->  void arch_crash_save_vmcoreinfo(void)
->  {
->  #ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
-> --- a/arch/x86_64/kernel/setup.c
-> +++ b/arch/x86_64/kernel/setup.c
-> @@ -196,6 +196,33 @@ static inline void copy_edd(void)
->  }
->  #endif
->
-> +#ifdef CONFIG_KEXEC
-...
+James C. Georgas wrote:
+> On Sat, 2007-08-09 at 22:00 -0700, Randy Dunlap wrote:
+>>> For example, you would only need to specify one "select" directive in
+>>> X86_64_ACPI_NUMA, (i.e. to turn on ACPI_NUMA). The configuration system
+>>> would then recursively walk up ACPI_NUMA's dependency hierarchy, turning
+>>> on what it needed.
+>> That is highly desirable IMO.  Not having that is one of the things
+>> that makes using 'select' "evil."
+>>
+>> Have you looked at the code and given any thought to implementing this?
+>>
+> 
+> I'd like to take a run at it. The only issue I foresee is what to do
+> about multiple OR dependencies. There are some kconfig options that
+> depend on at least one of a set of specified dependencies. For example,
+> is ARCH_SPARSEMEM_ENABLE selectable if only one of NUMA || EXPERIMENTAL
+> is selected? So do we abort, select one, or select all dependencies?
 
-CONFIG_KEXEC or CONFIG_CRASH_DUMP?
+It's a logical OR, meaning one or more of them is enabled.
 
-YH
+I expect that there are some places that enabling all dependencies
+would very much be the wrong thing to do, and choosing only one is
+just a wild guess, so it looks like you would have to abort, with a
+helpful message.
+
+> Maybe I'm misunderstanding the usage of || here though. I'm assuming
+> inclusive OR.
+
+
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
