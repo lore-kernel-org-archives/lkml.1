@@ -1,161 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbXIIRlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbXIIRsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbXIIRlR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 13:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757340AbXIIRlE
+	id S1758749AbXIIRsZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 13:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757627AbXIIRsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 13:41:04 -0400
-Received: from mx7.mail.ru ([194.67.23.27]:6851 "EHLO mx7.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757101AbXIIRlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 13:41:03 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [possible regression] 2.6.22 reiserfs/libata sporadically hangs on resume from hibernation
-Date: Sun, 9 Sep 2007 21:40:48 +0400
-User-Agent: KMail/1.9.7
-Cc: michal.k.k.piotrowski@gmail.com, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
-References: <200706300859.47133.arvidjaar@mail.ru> <200709091800.05756.arvidjaar@mail.ru> <200709091907.14642.rjw@sisk.pl>
-In-Reply-To: <200709091907.14642.rjw@sisk.pl>
+	Sun, 9 Sep 2007 13:48:15 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:33494 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757294AbXIIRsO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 13:48:14 -0400
+Date: Sun, 9 Sep 2007 11:48:11 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 16/22] advansys: Eliminate prototypes
+Message-ID: <20070909174811.GH6809@parisc-linux.org>
+References: <20070909145358.GG6809@parisc-linux.org> <11893498072821-git-send-email-matthew@wil.cx> <46E4115E.7050203@garzik.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1635818.mvio4kmv2S";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200709092140.57653.arvidjaar@mail.ru>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46E4115E.7050203@garzik.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1635818.mvio4kmv2S
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sun, Sep 09, 2007 at 11:29:34AM -0400, Jeff Garzik wrote:
+> What thoughts, if any, have been given to post-patch code arrangement, 
+> besides eliminating prototypes?
+> This always struck me as a counterproductive exercise when taken by 
+> itself.
 
-On Sunday 09 September 2007, Rafael J. Wysocki wrote:
-> On Sunday, 9 September 2007 16:00, Andrey Borzenkov wrote:
-> > On Sunday 01 July 2007, Rafael J. Wysocki wrote:
-> > > On Saturday, 30 June 2007 06:59, Andrey Borzenkov wrote:
-> > > > Since 2.6.18 I do not have suspend to RAM; now I am starting to lose
-> > > > suspend to disk :)
-> > > >
-> > > > Environment - vanilla kernel (2.6.22-rc6 currently + squashfs +
-> > > > single pata_ali patch to switch off DMA on CD-ROM), single root on
-> > > > reiserfs, libata with pata_ali driver.
-> > > >
-> > > > Until 2.6.22-rc I never had problems with hibernation. With 2.6.22-rc
-> > > > system hung at least once in every rcX. Up to rc6 those lockups were
-> > > > absolutely silent (black screen without reaction to any key). In rc6
-> > > > I just got something different. After resume I got on screem:
-> > > >
-> > > > swsusp: Marking nosave pages: 000000000009f000-0000000000100000
-> > > > swsusp: Basic memory bitmaps created
-> > > > swsusp: Basic memory bitmaps freed
-> > > >
-> > > > After that it just sits there doing nothing. Ther was brief sound of
-> > > > HDD but I suspect it was related more to power-on. System was
-> > > > responding to power-on button press:
-> > > >
-> > > > ACPI Error (event-0305): No installed handler for fixed event
-> > > > [00000002 20070125]
-> > > >
-> > > > And SysRq was functioning.
-> > >
-> > > That probably means that there's a deadlock somewhere in there.
-> > >
-> > > > Unfortunately I do not have serial console so I
-> > > > copy manually stacks from several last screens of output; I have
-> > > > tried to make a photo but right now my kbluetooth is refusing to work
-> > > > at all so I cannot transfer them :( (but I suspect quality would be
-> > > > too bad anyway)
-> > > >
-> > > > laptop_mode D
-> > > > 	io_schedule+0xe/0x20
-> > >
-> > > Looks suspicious to me.  Can you identify what line of code this points
-> > > to?
-> > >
-> > > > 	sync_buffer+0x35/0x40
-> > > > 	__wait_on_bit+0x45/0x70
-> > > > 	out_of_line_wait_on_bit+0x6c/0x80
-> > > > 	__wait_on_buffer+0x27/0x30
-> > > > 	search_by_key+0x15e/0x1250 [reiserfs]
-> > > > 	reiserfs_read_locked_inode+0x64/0x570 [reiserfs]
-> > > > 	reiserfs_iget+0x7e/0xa0 [reiserfs]
-> > > > 	reiserfs_lookup+0xc7/0x120 [reiserfs]
-> > > > 	do_lookup+0x138/0x180
-> > > > 	__link_path_walk+0x787/0xce0
-> > > > 	link_path_walk+0x44/0xc0
-> > > > 	path_walk+0x18/0x20
-> > > > 	do_path_lookup_0x88/0x210
-> > > > 	__path_lookupintent_open+0x4d/0x90
-> > > > 	path_lookup_open+0x1f/0x30
-> > > > 	open_exec+0x28/0xb0
-> > > > 	do_execve+0x36/0x1d0
-> > > > 	sys_execve+0x2e/0x80
-> > > > 	sysenter_past_esp+0x5f/0x99
-> > > >
-> > > > 90clock D
-> > > > 	__mutex_lock_slow_path+0xa1/0x290
-> > > > 	mutex_lock+0x21/0x30
-> > > > 	do_lookup+0xa1/0x180
-> > > > 	__link_path_walk+0x44/0xc0
-> > > > 	path_walk+0x18/0x20
-> > > > 	do_path_lookup+0x78/0x210
-> > > > 	__user_walk_fd+0x38/0x50
-> > > > 	vfs_stat_fd+0x21/0x50
-> > > > 	vfs_stat+0x11/0x20
-> > > > 	sys_stat64+0x14/0x30
-> > > > 	sysenter_past_esp+0x5f/0x99
-> > > >
-> > > > alsactl D
-> > > > 	io_schedule+0xe/0x20
-> > >
-> > > Same here.  Hmm.
-> > >
-> > > > 	sync_page+0x35/0x40
-> > > > 	__wait_on_bit_lock+0x3f/0x70
-> > > > 	__lock_page+0x68/0x70
-> > > > 	filemap_nopage+0x16c/0x300
-> > > > 	__handle_mm_faul+0x1d7/0x610
-> > > > 	do_page_fault+0x1d7/0x610
-> > > > 	error_code+0x6a/0x70
-> > > > 	padzero+0x1f/0x30
-> > > > 	load_elf_binary+0x743/0x1ab0
-> > > > 	search_binary_handler+0x7b/0x1f0
-> > > > 	do_execve+0x137/0x1d0
-> > > > 	sys_execve+0x2e/0x80
-> > > > 	sysenter_past_esp+0x5f/0x90
-> > > >
-> > > > After that I could remount, sync and reboot using SysRq (well, after
-> > > > reboot it still insisted on replaying insane number of transactions
-> > > > so may be it did *not* remount / ro after all). Before reboot there
-> > > > was brief output that resembled lockdep warnings, but it went too
-> > > > fast to be readable.
-> > > >
-> > > > usual stuff follows
-> > >
-> > > I see you're using CFQ as the default IO scheduler.  Can you please
-> > > switch to AS and see if that changes anything?
-> >
-> > I just had the same lockup on resume using AS with 2.6.23-rc5.
->
-> Hm.  Does your root partition sit on reiserfs?
+Eliminating prototypes saves me from an extra go round of the edit-compile
+testcycle when I change the signature of a function.  It probably doesn't
+matter to you, but it adds a small amount of annoyance to my day.
 
-yes - "single root on reiserfs"
+> Sure, prototypes were eliminated, but was code packed together 
+> in an efficient way afterwards?  Ideally hot path code should be close 
+> together, ditto for various other things like error handling code.
 
---nextPart1635818.mvio4kmv2S
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+I tried to place functions close together that seemed like they were
+called together and called from each other.   It's hard to know,
+of course, because GCC will make its own decisions about inlining,
+for example.  At the end of the day, this is an NP problem.  I remmber
+Nat writing grope and using simulated annealing to solve the problem.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+> Without further explanation or details about your post-patch analysis, 
+> how do we even know the new code arrangement doesn't negatively impact 
+> i-cache overall?
 
-iD8DBQBG5DAiR6LMutpd94wRApdDAJ0d8Cl7fY/ZYjYIN7OYDzZV7hMgawCgtZiD
-lOqR9PFlX05L8HP0kgWN1pM=
-=6IkO
------END PGP SIGNATURE-----
+We don't, but the new layout is more likely to be good than bad, given
+how I did the rearrangement (delete prototypes, try to compile.  Move
+called function to before its first caller.  Repeat).  Plus, with all
+the other changes I'm making, there's a serious reduction in driver
+size.  I haven't compared i-cache sizes specifically, but I'm mostly
+removing code, so it should be better.
 
---nextPart1635818.mvio4kmv2S--
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
