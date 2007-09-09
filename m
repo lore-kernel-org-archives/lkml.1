@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbXIIUaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbXIIUbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760127AbXIIUaz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 16:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758906AbXIIUZu
+	id S1760187AbXIIUbY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 16:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759378AbXIIUZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 16:25:50 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60758 "EHLO
+	Sun, 9 Sep 2007 16:25:53 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:60762 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759451AbXIIUZr (ORCPT
+	with ESMTP id S1759392AbXIIUZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 16:25:47 -0400
-Date: Sun, 9 Sep 2007 22:25:54 +0200
+	Sun, 9 Sep 2007 16:25:51 -0400
+Date: Sun, 9 Sep 2007 22:25:58 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>, vladislav.yasevich@hp.com,
-       sri@us.ibm.com, davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, lksctp-developers@lists.sourceforge.net,
-       netdev@vger.kernel.org
-Subject: [-mm patch] net/sctp/socket.c: make 3 variables static
-Message-ID: <20070909202554.GY3563@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [-mm patch] make tcp_splice_data_recv() static
+Message-ID: <20070909202558.GZ3563@stusta.de>
 References: <20070831215822.26e1432b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -31,35 +30,31 @@ On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
 >...
 > Changes since 2.6.23-rc3-mm1:
 >...
->  git-net.patch
+>  git-block.patch
 >...
 >  git trees
 >...
 
-This patch makes the following needlessly globalvariables static:
-- sctp_memory_pressure
-- sctp_memory_allocated
-- sctp_sockets_allocated
+tcp_splice_data_recv() can become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-3c211ad074038414ebc156b1abbc3df78dc60cb2 
-diff --git a/net/sctp/socket.c b/net/sctp/socket.c
-index 37e7306..f53545a 100644
---- a/net/sctp/socket.c
-+++ b/net/sctp/socket.c
-@@ -112,9 +112,9 @@ extern int sysctl_sctp_mem[3];
- extern int sysctl_sctp_rmem[3];
- extern int sysctl_sctp_wmem[3];
+233aefd2a215430c16bd02eca06fb8a4b6079f7a 
+diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+index 22576e4..6623796 100644
+--- a/net/ipv4/tcp.c
++++ b/net/ipv4/tcp.c
+@@ -515,8 +515,9 @@ static inline void tcp_push(struct sock *sk, int flags, int mss_now,
+ 	}
+ }
  
--int sctp_memory_pressure;
--atomic_t sctp_memory_allocated;
--atomic_t sctp_sockets_allocated;
-+static int sctp_memory_pressure;
-+static atomic_t sctp_memory_allocated;
-+static atomic_t sctp_sockets_allocated;
- 
- static void sctp_enter_memory_pressure(void)
+-int tcp_splice_data_recv(read_descriptor_t *rd_desc, struct sk_buff *skb,
+-			 unsigned int offset, size_t len)
++static int tcp_splice_data_recv(read_descriptor_t *rd_desc,
++				struct sk_buff *skb,
++				unsigned int offset, size_t len)
  {
+ 	struct tcp_splice_state *tss = rd_desc->arg.data;
+ 
 
