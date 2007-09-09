@@ -1,68 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbXIIWKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbXIIWWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752788AbXIIWKb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 18:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbXIIWKX
+	id S1753311AbXIIWWJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 18:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbXIIWV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 18:10:23 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:42429 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751441AbXIIWKW (ORCPT
+	Sun, 9 Sep 2007 18:21:57 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:57170 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751925AbXIIWV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 18:10:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=Nvxj0wEM04+TPoscvN4x/HEWpEJFP7ttrXd314/X/dZOyOdZWkva2wAAlTNdWLgiyU4sYq30UflbYe5cZL7UCMaT4IU16KkRzfyjrGtGxGfiwa514dtDLbn5+vbPC5phYKSBdoTOg5NlYuwGAU9k8rSKJJKyZ8yUrp96gGAvpEE=
-Message-ID: <e9c3a7c20709091510i723ca2b8sb08b3b1f9d4e031a@mail.gmail.com>
-Date: Sun, 9 Sep 2007 15:10:12 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx processors.
-Cc: "Zhang Wei" <wei.zhang@freescale.com>, shannon.nelson@intel.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org
-In-Reply-To: <46E46A3F.2050708@freescale.com>
+	Sun, 9 Sep 2007 18:21:57 -0400
+Date: Mon, 10 Sep 2007 00:22:03 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, perex@suse.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] unexport sys_{open,read}
+Message-ID: <20070909222202.GB3563@stusta.de>
+References: <20070909202527.GT3563@stusta.de> <20070909203920.GA11764@infradead.org> <20070909145940.0b41c8a5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <11891624582950-git-send-email-wei.zhang@freescale.com>
-	 <e9c3a7c20709091053u607e710ay1eb76c53312706ea@mail.gmail.com>
-	 <46E46A3F.2050708@freescale.com>
-X-Google-Sender-Auth: 54825c0e941469f0
+In-Reply-To: <20070909145940.0b41c8a5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/9/07, Timur Tabi <timur@freescale.com> wrote:
-> Dan Williams wrote:
->
-> > This routine implies that there is a piece of code somewhere that
-> > wants to select which channels it can use.  A similar effect can be
-> > achieved by registering a dma_client with the dmaengine interface
-> > ('dma_async_client_register').  Then when the client code makes a call
-> > to 'dma_async_client_chan_request' it receives a 'dma_event_callback'
-> > for each channel in the system.  It will also be asynchronously
-> > notified of channels entering and leaving the system.  The goal is to
-> > share a common infrastructure for channel management.
->
-> Are you familiar with the "flat device tree" used for PowerPC systems?  The
-> "piece of code somewhere" is the device tree subsystem that parses the device
-> tree, which is compiled from the .dts files in arch/powerpc/boot/dts.
->
-> The FDT is how PowerPC systems specify hardware configuration.  In the case of
-> 85xx, the FDT contains entries for each DMA device (typically 2), and the
-> entries contain sub-entries for each DMA channel as well as the address of the
-> register sets for each channel.
->
-Ahh, ok then this code is replacing what would normally be handled by
-the PCI bus enumeration code, or the platform device registrations for
-iop-adma in arch/arm/mach-iop13xx.  Sorry for the noise with this
-comment.
+On Sun, Sep 09, 2007 at 02:59:40PM -0700, Andrew Morton wrote:
+> On Sun, 9 Sep 2007 21:39:20 +0100 Christoph Hellwig <hch@infradead.org> wrote:
+> 
+> > On Sun, Sep 09, 2007 at 10:25:28PM +0200, Adrian Bunk wrote:
+> > > sys_{open,read} can finally be unexported.
+> > 
+> > Andrew, can you please put this in?  Having these exports for syscalls around
+> > hsa been a long-time annoyance that can finally be fixed now.
+> 
+> Sure.  But I think it is better to give people some warning when we're
+> planning on breaking out-of-tree things.  I do occasionally receive reports
+> of "hey, the X driver which I get from Y doesn't work any more".  Often
+> it's open-source stuff, too.  I see no point in irritating our users more than
+> we need to.
+> 
+> If we're changing an API or removing a function then there's nothing we can
+> do, but in the case where we're simply deleting an export, it's exceedingly
+> easy for us to EXPORT_UNUSED_SYMBOL (and __deprecated_for_modules?) for a
+> few months.
+> 
+> Adrian knows this, yet he habitually sends zero-warning export-removal
+> patches and I habitually ignore them.  I guess we must both enjoy this or
+> something.
 
-> --
-> Timur Tabi
-> Linux Kernel Developer @ Freescale
-> -
+You might rename EXPORT_UNUSED_SYMBOL to EXPORT_UNUSED_SYMBOL_ADRIAN 
+because AFAIK I am still the only person who was ever dumb enough to
+use it after you wanted me to do so...
 
-Thanks,
-Dan
+Everyone else is allowed to always add, remove and change exports
+as he likes, but I should go through this special process.
+
+It makes no sense (except for keeping me busy) to treat some patches I 
+send special while changes made by other people that break the modules 
+API are still allowed.
+
+Andrew, please define API rules, IOW rules for addition, removal and 
+changing of exported code, that are valid for *everyone* or go to hell 
+with your EXPORT_UNUSED_SYMBOL.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
