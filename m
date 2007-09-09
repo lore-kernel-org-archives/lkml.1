@@ -1,78 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbXIIQBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbXIIQbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758393AbXIIQBJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 12:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbXIIQAz
+	id S1758166AbXIIQbq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 12:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756852AbXIIQbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 12:00:55 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:54118 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757039AbXIIQAy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 12:00:54 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sun, 9 Sep 2007 11:59:00 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Oleg Verych <olecom@flower.upol.cz>
-cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Early userspace, Linux development (Re: perhaps init/ should
- update the reference to "change floppy")
-In-Reply-To: <E1IUBUG-0003nA-W2@flower>
-Message-ID: <Pine.LNX.4.64.0709091157540.15624@localhost.localdomain>
-References: <Pine.LNX.4.64.0709080802430.8930@localhost.localdomain>
- <E1IUBUG-0003nA-W2@flower>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sun, 9 Sep 2007 12:31:39 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49394 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756811AbXIIQbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 12:31:38 -0400
+X-Authenticated: #217404
+X-Provags-ID: V01U2FsdGVkX18Fuq1k5xYF4p9s92W9Qy4wbkQqJHWuyTYrVBh9e4
+	yXR5rcMYuK568K
+Subject: tsc timer related problems/questions
+From: Dennis Lubert <plasmahh@gmx.net>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sun, 09 Sep 2007 18:31:45 +0200
+Message-Id: <1189355506.6255.60.camel@speedy.projectiwear.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Sep 2007, Oleg Verych wrote:
+Hello list,
 
-> * Sat, 8 Sep 2007 08:08:06 -0400 (EDT)
-> []
-> >   from init/do_mounts_rd.c:
-> >
-> > ...
-> []
-> >         if (rd_prompt)
-> >                 change_floppy("root floppy disk to be loaded into RAM disk");
-> >         create_dev("/dev/root", ROOT_DEV);
-> >         create_dev("/dev/ram", MKDEV(RAMDISK_MAJOR, n));
-> >         return rd_load_image("/dev/root");
-> > }
-> > ...
-> >
-> >   but isn't it a bit archaic to suggest that an explicit ramdisk will
-> > be found only on a floppy?  can't one be provided on a CD or DVD?
-> > just suggesting that the terminology could probably be updated.
->
-> All this is userspace code, ugly, unmaintained and all that kind of
-> things.
->
-> == Kernel panics without userspace, do you need such kernel? ==
+we are encountering a few behaviours regarding the ways to get accurate
+timer values under Linux that we would call bugs, and where we are
+currently stuck in further diagnosing and/or fixing.
 
-um ... all i asked was whether that code should be updated to reflect
-more than just floppies.  i didn't foresee the can of worms here.
-
-rday
+Background: We are developing for SMP servers with up to 8 CPUs (mostly
+AMD64) and for various reasons would like to have time measurements with
+a resolution of maybe a few microseconds.
 
 
---
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+- Using Kernel 2.6.20.7 and surroundings per default the TSC Timer is
+used. We are very happy with that (accuracy ~400nanoseconds) but after a
+while the system goes wild with the following message for each CPU:
 
-http://crashcourse.ca
-========================================================================
+[105771.523771] BUG: soft lockup detected on CPU#1!
+[105771.527869]
+[105771.527871] Call Trace:
+[105771.536079]  <IRQ>  [<ffffffff802619cc>] _spin_lock+0x9/0xb
+[105771.540294]  [<ffffffff802a6f9d>] softlockup_tick+0xd2/0xe7
+[105771.544359]  [<ffffffff8024bcbb>] run_local_timers+0x13/0x15
+[105771.548541]  [<ffffffff80289fc1>] update_process_times+0x4c/0x79
+[105771.552737]  [<ffffffff80270327>] smp_local_timer_interrupt
++0x34/0x54
+[105771.556934]  [<ffffffff80270834>] smp_apic_timer_interrupt+0x51/0x68
+[105771.561022]  [<ffffffff80268121>] default_idle+0x0/0x42
+[105771.565199]  [<ffffffff8025cce6>] apic_timer_interrupt+0x66/0x70
+[105771.569386]  <EOI>  [<ffffffff8026814e>] default_idle+0x2d/0x42
+[105771.573597]  [<ffffffff80247929>] enter_idle+0x22/0x24
+[105771.577665]  [<ffffffff80247a92>] cpu_idle+0x5a/0x79
+[105771.581838]  [<ffffffff806bc5f7>] start_secondary+0x474/0x483
+
+Question: Is this a known bug already or should further investigation
+take place?
+
+- Using Kernels from 2.6.21 on (random sampled) we experience that the
+TSC isn't used per default anymore (we usually set the nopmtimer option
+at boot for a while now). Looking briefly at the 2.6.23-rc5 code shows
+that in the function where the check is done whether the tsc is stable
+the only code path where a "is stable" result could be returned is one
+where the vendor of the CPU is detected as Intel. Instead a much slower
+timesource (10ms instead of a few us resolution, same for getting the
+time at all) is used which is totally unusable for us (Within 10ms so
+much things happen).
+
+Question: Why are only Intel CPUs considered as stable? Could there be
+implemented a more sophisticated heuristic, that actually does some
+tests for tsc stability?
+
+- Enabling tsc explicitly as a time source via sysfs we had good results
+so far, with quit good resolution, and also various tests about
+synchronization between the CPUs didn't show any measurable changes in
+the deviation over time.
+However, once accidentally someone enabled cpufrequency scaling and
+scaled down two of four CPUs. From then on the time on the slower CPU
+was totally wrong, and all time displaying programs (simple date
+program) showed different (hours in difference) results, depending on
+which CPU they where run, so results were randomly. Programs doing a
+simple usleep() could hang (likely because the time to wakeup was
+gathered from another CPU whith time in the future). The system
+was essentially unusable and also after setting the CPUs back to the
+correct speed, things were still wrong.
+
+Question: Is this a known problem? It looks like there is a huge problem
+in synchronizing the way the time is calculated from the TSC and the cpu
+frequency scaling, also something else seems to be buggy since also
+after setting things back even after a few seconds only, times are off
+by hours.
+
+Is there maybe a mechanism (or could it be implemented) that
+synchronizes the TSCs on demand? It usually isn't a huge problem if they
+are off a few nanoseconds, maybe even a few microseconds. For quite some
+programs they could even be off a few hundred microseconds, so a
+synchronization every now and then could still be useful.
+
+greets
+
+Dennis
+
+
