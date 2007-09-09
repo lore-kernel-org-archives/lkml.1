@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbXIIOvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758075AbXIIPCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757973AbXIIOvB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 10:51:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757105AbXIIOux
+	id S1758075AbXIIPCQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 11:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757018AbXIIPCB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 10:50:53 -0400
-Received: from emerald.lightlink.com ([205.232.34.14]:21211 "EHLO
-	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757035AbXIIOux (ORCPT
+	Sun, 9 Sep 2007 11:02:01 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49339 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756723AbXIIPCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 10:50:53 -0400
-Date: Sun, 9 Sep 2007 10:50:36 -0400
-From: "Mark M. Hoffman" <mhoffman@lightlink.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: Jean Delvare <khali@linux-fr.org>, lm-sensors <lm-sensors@lm-sensors.org>
-Subject: [GIT PATCH] hwmon update against v2.6.23-rc5-git1
-Message-ID: <20070909145036.GC31992@jupiter.solarsys.private>
+	Sun, 9 Sep 2007 11:02:00 -0400
+Date: Sun, 9 Sep 2007 17:01:59 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net, airlied@linux.ie
+Subject: Re: X freezes kernel during exit [Re: 2.6.23-rc3-mm1]
+Message-ID: <20070909150158.GD25798@one.firstfloor.org>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46D17A7A.70609@gmail.com> <46D409FC.1070305@gmail.com> <46E3DCB8.5010709@gmail.com> <20070909054751.cbb27081.akpm@linux-foundation.org> <46E3FE6B.7010209@gmail.com> <20070909141730.GB25798@one.firstfloor.org> <46E4028E.9050007@gmail.com> <20070909143324.GC25798@one.firstfloor.org> <46E40699.7060000@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <46E40699.7060000@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+On Sun, Sep 09, 2007 at 04:43:37PM +0200, Jiri Slaby wrote:
+> On 09/09/2007 04:33 PM, Andi Kleen wrote:
+> > On Sun, Sep 09, 2007 at 04:26:22PM +0200, Jiri Slaby wrote:
+> >> BTW it is reproducible for me on two different machines (i386-x86_64,
+> >> radeon-intel), don't you have the problem too?
+> > 
+> > No problems here with a radeon, no.
+> > 
+> > Does your CPU have clflush or not in /proc/cpuinfo?
+> 
+> BTW this is how my flush_kernel_map looks like:
 
-Please pull from:
-	git://lm-sensors.org/kernel/mhoffman/hwmon-2.6.git release
+Can you stick a printk into change_page_attr to log in which order
+it changes pages (including their addresses and the pgattr)? 
 
-You will get one patch (below), which fixes a potential regression from v2.6.22
-(although AFAIK there have been no reports about this one.)
-
-commit 15bde2f1a8e819213f54314505a5a0509673109b
-Author: Jean Delvare <khali@linux-fr.org>
-Date:   Wed Aug 29 10:39:57 2007 +0200
-
-    hwmon: End of I/O region off-by-one
-    
-    Fix an off-by-one error in the I/O region declaration of two
-    hardware monitoring drivers (lm78 and w83781d.) We were requesting
-    one extra port at the end of the region.
-    
-    Signed-off-by: Jean Delvare <khali@linux-fr.org>
-    Signed-off-by: Mark M. Hoffman <mhoffman@lightlink.com>
-
-diff --git a/drivers/hwmon/lm78.c b/drivers/hwmon/lm78.c
-index 565c4e6..6eea347 100644
---- a/drivers/hwmon/lm78.c
-+++ b/drivers/hwmon/lm78.c
-@@ -882,7 +882,7 @@ static int __init lm78_isa_device_add(unsigned short address)
- {
-        struct resource res = {
-                .start  = address,
--               .end    = address + LM78_EXTENT,
-+               .end    = address + LM78_EXTENT - 1,
-                .name   = "lm78",
-                .flags  = IORESOURCE_IO,
-        };
-diff --git a/drivers/hwmon/w83781d.c b/drivers/hwmon/w83781d.c
-index c95909c..dcc941a 100644
---- a/drivers/hwmon/w83781d.c
-+++ b/drivers/hwmon/w83781d.c
-@@ -1746,7 +1746,7 @@ w83781d_isa_device_add(unsigned short address)
- {
-        struct resource res = {
-                .start  = address,
--               .end    = address + W83781D_EXTENT,
-+               .end    = address + W83781D_EXTENT - 1,
-                .name   = "w83781d",
-                .flags  = IORESOURCE_IO,
-        };
-
--- 
-Mark M. Hoffman
-mhoffman@lightlink.com
-
+-Andi 
