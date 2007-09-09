@@ -1,64 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbXIIU20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759783AbXIIU2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbXIIU20 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 16:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759076AbXIIUZX
+	id S1759783AbXIIU2t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 16:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759502AbXIIUZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 16:25:23 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60735 "EHLO
+	Sun, 9 Sep 2007 16:25:35 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:60738 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759502AbXIIUZV (ORCPT
+	with ESMTP id S1759464AbXIIUZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 16:25:21 -0400
-Date: Sun, 9 Sep 2007 22:25:28 +0200
+	Sun, 9 Sep 2007 16:25:33 -0400
+Date: Sun, 9 Sep 2007 22:25:40 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>, perex@suse.cz
-Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] unexport sys_{open,read}
-Message-ID: <20070909202527.GT3563@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Robert Olsson <robert.olsson@its.uu.se>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [-mm patch] really unexport do_softirq
+Message-ID: <20070909202540.GU3563@stusta.de>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20070831215822.26e1432b.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sys_{open,read} can finally be unexported.
+On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.23-rc3-mm1:
+>...
+>  git-net.patch
+>...
+>  git trees
+>...
+
+This hydra had more than one head...
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
-This patch has been sent on:
-- 27 Aug 2007
+ arch/i386/kernel/irq.c    |    2 --
+ arch/powerpc/kernel/irq.c |    1 -
+ arch/s390/kernel/irq.c    |    1 -
+ arch/sh/kernel/irq.c      |    1 -
+ arch/x86_64/kernel/irq.c  |    1 -
+ 5 files changed, 6 deletions(-)
 
- fs/open.c       |    1 -
- fs/read_write.c |    1 -
- 2 files changed, 2 deletions(-)
-
-6f6884f9ee675f2e804c6c58ca46337f9765dd0d 
-diff --git a/fs/open.c b/fs/open.c
-index 23f334d..c0814de 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -1057,7 +1057,6 @@ asmlinkage long sys_open(const char __user *filename, int flags, int mode)
- 	prevent_tail_call(ret);
- 	return ret;
+68791fe88172ac3c2dbb0fbbffb8befc7b59e3f7 
+diff --git a/arch/i386/kernel/irq.c b/arch/i386/kernel/irq.c
+index a6b2c7e..de1601f 100644
+--- a/arch/i386/kernel/irq.c
++++ b/arch/i386/kernel/irq.c
+@@ -231,8 +231,6 @@ asmlinkage void do_softirq(void)
+ 
+ 	local_irq_restore(flags);
  }
--EXPORT_SYMBOL_GPL(sys_open);
+-
+-EXPORT_SYMBOL(do_softirq);
+ #endif
  
- asmlinkage long sys_openat(int dfd, const char __user *filename, int flags,
- 			   int mode)
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 507ddff..d913d1e 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -370,7 +370,6 @@ asmlinkage ssize_t sys_read(unsigned int fd, char __user * buf, size_t count)
+ /*
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index dfad0e4..65c2409 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -395,7 +395,6 @@ void do_softirq(void)
  
- 	return ret;
+ 	local_irq_restore(flags);
  }
--EXPORT_SYMBOL_GPL(sys_read);
+-EXPORT_SYMBOL(do_softirq);
  
- asmlinkage ssize_t sys_write(unsigned int fd, const char __user * buf, size_t count)
+ 
+ /*
+diff --git a/arch/s390/kernel/irq.c b/arch/s390/kernel/irq.c
+index 8f0cbca..c36d812 100644
+--- a/arch/s390/kernel/irq.c
++++ b/arch/s390/kernel/irq.c
+@@ -95,7 +95,6 @@ asmlinkage void do_softirq(void)
+ 
+ 	local_irq_restore(flags);
+ }
+-EXPORT_SYMBOL(do_softirq);
+ 
+ void init_irq_proc(void)
  {
+diff --git a/arch/sh/kernel/irq.c b/arch/sh/kernel/irq.c
+index 0340498..4b49d03 100644
+--- a/arch/sh/kernel/irq.c
++++ b/arch/sh/kernel/irq.c
+@@ -245,7 +245,6 @@ asmlinkage void do_softirq(void)
+ 
+ 	local_irq_restore(flags);
+ }
+-EXPORT_SYMBOL(do_softirq);
+ #endif
+ 
+ void __init init_IRQ(void)
+diff --git a/arch/x86_64/kernel/irq.c b/arch/x86_64/kernel/irq.c
+index 87423b7..3542f0c 100644
+--- a/arch/x86_64/kernel/irq.c
++++ b/arch/x86_64/kernel/irq.c
+@@ -236,4 +236,3 @@ asmlinkage void do_softirq(void)
+ 	}
+  	local_irq_restore(flags);
+ }
+-EXPORT_SYMBOL(do_softirq);
 
