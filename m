@@ -1,134 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbXIIIkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbXIIIkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbXIIIkA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 04:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbXIIIjU
+	id S1756483AbXIIIkd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 04:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbXIIIjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 04:39:20 -0400
-Received: from ns2.suse.de ([195.135.220.15]:35627 "EHLO mx2.suse.de"
+	Sun, 9 Sep 2007 04:39:21 -0400
+Received: from mx1.suse.de ([195.135.220.2]:33999 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbXIIIjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752503AbXIIIjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 9 Sep 2007 04:39:16 -0400
-Message-Id: <20070909083914.742208463@strauss.suse.de>
+Message-Id: <20070909083915.377226752@strauss.suse.de>
 References: <20070909083914.065380136@strauss.suse.de>
 User-Agent: quilt/0.46-57
-Date: Sun, 09 Sep 2007 10:39:16 +0200
+Date: Sun, 09 Sep 2007 10:39:19 +0200
 From: Bernhard Walle <bwalle@suse.de>
 To: kexec@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: [patch 2/5] Use extended crashkernel command line on i386
-Content-Disposition: inline; filename=crashkernel-i386
+Subject: [patch 5/5] Add documentation for extended crashkernel syntax
+Content-Disposition: inline; filename=crashkernel-documentation
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the crashkernel parsing from
-arch/i386/kernel/machine_kexec.c and calls the generic function, introduced in
-the last patch, in setup_bootmem_allocator().
-
-This is necessary because the amount of System RAM must be known in this
-function now because of the new syntax.
-
+This adds the documentation for the extended crashkernel syntax into
+Documentation/kdump/kdump.txt.
 
 Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
-
 ---
- arch/i386/kernel/e820.c          |    3 ++-
- arch/i386/kernel/machine_kexec.c |   22 ----------------------
- arch/i386/kernel/setup.c         |   33 ++++++++++++++++++++++++++++-----
- 3 files changed, 30 insertions(+), 28 deletions(-)
+ Documentation/kdump/kdump.txt |   26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
---- a/arch/i386/kernel/e820.c
-+++ b/arch/i386/kernel/e820.c
-@@ -288,7 +288,8 @@ legacy_init_iomem_resources(struct resou
- 			request_resource(res, code_resource);
- 			request_resource(res, data_resource);
- #ifdef CONFIG_KEXEC
--			request_resource(res, &crashk_res);
-+			if (crashk_res.start != crashk_res.end)
-+				request_resource(res, &crashk_res);
- #endif
- 		}
- 	}
---- a/arch/i386/kernel/machine_kexec.c
-+++ b/arch/i386/kernel/machine_kexec.c
-@@ -149,28 +149,6 @@ NORET_TYPE void machine_kexec(struct kim
- 			image->start, cpu_has_pae);
- }
+--- a/Documentation/kdump/kdump.txt
++++ b/Documentation/kdump/kdump.txt
+@@ -231,6 +231,32 @@ Dump-capture kernel config options (Arch
+   any space below the alignment point will be wasted.
  
--/* crashkernel=size@addr specifies the location to reserve for
-- * a crash kernel.  By reserving this memory we guarantee
-- * that linux never sets it up as a DMA target.
-- * Useful for holding code to do something appropriate
-- * after a kernel panic.
-- */
--static int __init parse_crashkernel(char *arg)
--{
--	unsigned long size, base;
--	size = memparse(arg, &arg);
--	if (*arg == '@') {
--		base = memparse(arg+1, &arg);
--		/* FIXME: Do I want a sanity check
--		 * to validate the memory range?
--		 */
--		crashk_res.start = base;
--		crashk_res.end   = base + size - 1;
--	}
--	return 0;
--}
--early_param("crashkernel", parse_crashkernel);
--
- void arch_crash_save_vmcoreinfo(void)
- {
- #ifdef CONFIG_ARCH_DISCONTIGMEM_ENABLE
---- a/arch/i386/kernel/setup.c
-+++ b/arch/i386/kernel/setup.c
-@@ -381,6 +381,33 @@ extern unsigned long __init setup_memory
- extern void zone_sizes_init(void);
- #endif /* !CONFIG_NEED_MULTIPLE_NODES */
  
-+#ifdef CONFIG_KEXEC
-+static void reserve_crashkernel(void)
-+{
-+	unsigned long long 	free_mem;
-+	unsigned long long 	crash_size, crash_base;
-+	int			ret;
++Extended crashkernel syntax
++===========================
 +
-+	free_mem = (max_low_pfn + highend_pfn - highstart_pfn) << PAGE_SHIFT;
++While the "crashkernel=size[@offset]" syntax is sufficient for most
++configurations, sometimes it's handy to have the reserved memory dependent
++on the value of System RAM -- that's mostly for distributors that pre-setup
++the kernel command line to avoid a unbootable system after some memory has
++been removed from the machine.
 +
-+	ret = parse_crashkernel(boot_command_line, free_mem,
-+			&crash_size, &crash_base);
-+	if (ret == 0 && crash_size > 0) {
-+		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
-+				"for crashkernel (System RAM: %ldMB)\n",
-+				(unsigned long)(crash_size >> 20),
-+				(unsigned long)(crash_base >> 20),
-+				(unsigned long)(free_mem >> 20));
-+		crashk_res.start = crash_base;
-+		crashk_res.end   = crash_base + crash_size;
-+		reserve_bootmem(crash_base, crash_size);
-+	}
-+}
-+#else
-+static inline void reserve_crashkernel(void)
-+{}
-+#endif
++The syntax is:
 +
- void __init setup_bootmem_allocator(void)
- {
- 	unsigned long bootmap_size;
-@@ -456,11 +483,7 @@ void __init setup_bootmem_allocator(void
- 		}
- 	}
- #endif
--#ifdef CONFIG_KEXEC
--	if (crashk_res.start != crashk_res.end)
--		reserve_bootmem(crashk_res.start,
--			crashk_res.end - crashk_res.start + 1);
--#endif
-+	reserve_crashkernel();
- }
++    crashkernel=<range1>:<size1>[,<range2>:<size2>,...][@offset]
++    range=start-[end]
++
++For example:
++
++    crashkernel=512M-2G:64M,2G-:128M
++
++This would mean:
++
++    1) if the RAM is smaller than 512M, then don't reserve anything
++       (this is the "rescue" case)
++    2) if the RAM size is between 512M and 2G, then reserve 64M
++    3) if the RAM size is larger than 2G, then reserve 128M
++
++
+ Boot into System Kernel
+ =======================
  
- /*
 
 -- 
