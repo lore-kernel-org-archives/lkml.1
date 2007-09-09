@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbXIIEZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbXIIEtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755767AbXIIEZD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 00:25:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbXIIEYy
+	id S1755909AbXIIEtK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 00:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbXIIEs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 00:24:54 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:38101 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbXIIEYx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 00:24:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=a2YiE2FD9dbpSrcsn2ury3hFCde0eaPvaNdNZ+QsCIFbFXYPGKX49AEd+o2rCLQiXKSgfjGHv3Ok7pzPcHmXNSsj65b1q2WsevDKM7gRUCKc6dh2UeYcH2Fg34W3o044NhraF/Unza5hAYvnvdkK4gxIkYjXwhUD/OTnl3Mq4PI=
-Message-ID: <86802c440709082124q518b5873v5f8a4d6416b1186a@mail.gmail.com>
-Date: Sat, 8 Sep 2007 21:24:53 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "James C. Georgas" <jgeorgas@georgas.ca>, "Andi Kleen" <ak@suse.de>
-Subject: Re: broken ACPI NUMA config option
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1189309736.13467.77.camel@Tachyon.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 9 Sep 2007 00:48:57 -0400
+Received: from 1wt.eu ([62.212.114.60]:2440 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752011AbXIIEs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 00:48:56 -0400
+Date: Sun, 9 Sep 2007 06:48:32 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Kyle Rose <krose@krose.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Bill Davidsen <davidsen@tmr.com>,
+       James Corey <ploversegg@yahoo.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Rob Sims <lkml-z@robsims.com>, linux-kernel@vger.kernel.org
+Subject: Re: sk98lin for 2.6.23-rc1
+Message-ID: <20070909044832.GA9941@1wt.eu>
+References: <20070905102230.10b0bdcf@oldman> <782111.42803.qm@web90413.mail.mud.yahoo.com> <46E2DF74.7040307@tmr.com> <20070908191132.GD3563@stusta.de> <46E35D8C.1070909@krose.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1189291899.13467.20.camel@Tachyon.home>
-	 <20070908180904.656f3d03.randy.dunlap@oracle.com>
-	 <20070908181607.4f36479c.randy.dunlap@oracle.com>
-	 <1189309736.13467.77.camel@Tachyon.home>
+In-Reply-To: <46E35D8C.1070909@krose.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/8/07, James C. Georgas <jgeorgas@georgas.ca> wrote:
-> On Sat, 2007-08-09 at 18:16 -0700, Randy Dunlap wrote:
->
-> > 2.6.23-rc5-git1 builds for me when I follow those steps...
-> > except for some Section mismatch warnings.
-> >
->
-> OK, it worked for me also, using torvalds/linux-2.6.git. The behaviour
-> of the "select" directive in Kconfig appears to have changed since
-> 2.6.22.6. It now turns on ACPI, even when PM is not selected.
->
-> This still looks broken to me, because ACPI gets selected by ACPI_NUMA,
-> and ACPI depends on PM, but PM is not selected. It works out in the end,
-> as far as the build is concerned, but it still bugs me.
->
-> Does anyone object to the idea of a selected item automatically
-> selecting its own dependencies?
->
-> For example, you would only need to specify one "select" directive in
-> X86_64_ACPI_NUMA, (i.e. to turn on ACPI_NUMA). The configuration system
-> would then recursively walk up ACPI_NUMA's dependency hierarchy, turning
-> on what it needed.
+On Sat, Sep 08, 2007 at 10:42:20PM -0400, Kyle Rose wrote:
+> 
+> > You are a regular reader of linux-kernel, and therefore the sk98lin 
+> > removal can hardly be a surprise for you. If you prefer whining over 
+> > helping to improve the kernel that's your choice...
+> >   
+> In my case the issue is simply one of practicality: I cannot go to the
+> data center 5 times per day to reboot my colo box.  Therefore, I run
+> sk98lin.  It's really that simple.
 
-dont know my old patch still can be applied or not..
-http://lkml.org/lkml/2007/4/4/17
+Adrian generally wants to force "normal" users to test new drivers in order
+to quickly find bugs and fade out older ones. While this is often possible
+on the desktop, it's not possible for production servers. And not everyone
+can run 2.6.16.x to get a long-term stable kernel.
 
-Andi was talking about to use ACPI numa aka SRAT table, but not use dsdt ....
+I think that what is really needed is to add the opposite of "experimental"
+in the config options. Something like "deprecated drivers" which would be
+disabled by default. Desktop users would normally not care about that and
+rely only on newer drivers. Server users would have to enable the option if
+they want their old driver to be present because they have no other choice.
 
-YH
+With each driver's help text, it would be wise to add some text indicating
+what will replace the driver in question, so that their users know how to
+test it on non-production machines.
+
+But I agree with Kyle that on production systems, it is not acceptable to
+have a driver hang even once a month. This generally implies loss of service
+and customers going away. Ideology has no place in this area, is is quickly
+replaced by pragmatism.
+
+It was the same reason I spent time trying to get sky2 to reliably work in
+2.4 ; sk98lin v8 was horribly unstable. Sky2 was fairly better but did not
+support some basic operations such as ifdown/ifup. sk98lin v10 finally worked
+fine, and I upgraded my customer's system with it because I needed anything
+which would reliably work. It was not acceptable anymore to have the customer
+phone twice a week complaining that their server had crashed again.
+
+In the long term, I would really like to get sky2 to work well in 2.4
+because I'm more confident it in, it's cleaner, less obscure and less
+bloated. Having passed terabytes of data through both drivers I have
+not observed any glitch with sky2 as I had with sk98lin v8.
+
+Fortunately, sky2 chips are mostly found on desktop motherboards, so that
+helps the driver stabilize very quickly. It should not take as long as
+the transition from eepro100 to e100.
+
+Willy
+
