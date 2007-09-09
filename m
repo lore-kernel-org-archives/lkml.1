@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbXIIFCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbXIIG7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755989AbXIIFCS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 01:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbXIIFCH
+	id S1755218AbXIIG7f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 02:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbXIIG72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 01:02:07 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:43524 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751531AbXIIFCG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 01:02:06 -0400
-Date: Sat, 8 Sep 2007 22:00:43 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "James C. Georgas" <jgeorgas@georgas.ca>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: broken ACPI NUMA config option
-Message-Id: <20070908220043.8830512d.randy.dunlap@oracle.com>
-In-Reply-To: <1189309736.13467.77.camel@Tachyon.home>
-References: <1189291899.13467.20.camel@Tachyon.home>
-	<20070908180904.656f3d03.randy.dunlap@oracle.com>
-	<20070908181607.4f36479c.randy.dunlap@oracle.com>
-	<1189309736.13467.77.camel@Tachyon.home>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sun, 9 Sep 2007 02:59:28 -0400
+Received: from tag.witbe.net ([81.88.96.48]:46654 "EHLO tag.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750893AbXIIG72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 02:59:28 -0400
+Date: Sun, 9 Sep 2007 08:59:23 +0200
+From: Paul Rolland <rol@as2917.net>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: [2.6.22.5] irq X: nobody cared but X is successfully used by
+ libata
+Message-ID: <20070909085923.76cebcb1@tux.DEF.witbe.net>
+In-Reply-To: <46E24DE8.4050603@gmail.com>
+References: <20070826203513.4fa35f68@tux.DEF.witbe.net>
+	<46E24DE8.4050603@gmail.com>
+Organization: AS2917.net
+X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.14; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 08 Sep 2007 23:48:56 -0400 James C. Georgas wrote:
+Hello Tejun,
 
-> On Sat, 2007-08-09 at 18:16 -0700, Randy Dunlap wrote:
-> 
-> > 2.6.23-rc5-git1 builds for me when I follow those steps...
-> > except for some Section mismatch warnings.
+On Sat, 08 Sep 2007 16:23:20 +0900
+Tejun Heo <htejun@gmail.com> wrote:
+
+> Paul Rolland wrote:
+> > Hello,
 > > 
+> > My machine (an ASUS P5W-DH-Deluxe, Core2, 4Go RAM, 3 SATA and 2IDE) is
+> > reporting a :
+> > irq 23: nobody cared (try booting with the "irqpoll" option)
+> > together with a Call Trace, but :
+> >  - irqpoll is present on the command line,
+> >  - the irq is reported to be used by libata,
+> >  - the irqpoll option is mandatory if I want _some_ of my SATA disks to
+> > be accessible.
 > 
-> OK, it worked for me also, using torvalds/linux-2.6.git. The behaviour
-> of the "select" directive in Kconfig appears to have changed since
-> 2.6.22.6. It now turns on ACPI, even when PM is not selected.
-> 
-> This still looks broken to me, because ACPI gets selected by ACPI_NUMA,
-> and ACPI depends on PM, but PM is not selected. It works out in the end,
-> as far as the build is concerned, but it still bugs me.
-> 
-> Does anyone object to the idea of a selected item automatically
-> selecting its own dependencies?
-> 
-> For example, you would only need to specify one "select" directive in
-> X86_64_ACPI_NUMA, (i.e. to turn on ACPI_NUMA). The configuration system
-> would then recursively walk up ACPI_NUMA's dependency hierarchy, turning
-> on what it needed.
+> So, if you don't add the 'irqpoll' option, IO to disks don't work at all
+> after nobody cared message, right?
 
-That is highly desirable IMO.  Not having that is one of the things
-that makes using 'select' "evil."
+IO to disks don't work for SOME disks, but some others are still Ok (I've
+three SATA and two IDE).
 
-Have you looked at the code and given any thought to implementing this?
+Also, what is weird is the content of dmesg : after the nobody care, it looks
+as if IRQ 23 is reuse for another device (SMBus), but /proc/interrupts still
+reports it being used by libata.
 
-Thanks,
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+I've been trying 2.6.23-rc5, and I'm still having this IRQ 23 nobody cared 
+message.
+
+Regards,
+Paul
+
+
+
+-- 
+Paul Rolland                                E-Mail : rol(at)witbe.net
+Witbe.net SA                                Tel. +33 (0)1 47 67 77 77
+Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
+F-92057 Paris La Defense                    RIPE : PR12-RIPE
+
+Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un navigateur 
+"Some people dream of success... while others wake up and work hard at it" 
+
+"I worry about my child and the Internet all the time, even though she's too 
+young to have logged on yet. Here's what I worry about. I worry that 10 or 15 
+years from now, she will come to me and say 'Daddy, where were you when they 
+took freedom of the press away from the Internet?'"
+--Mike Godwin, Electronic Frontier Foundation 
