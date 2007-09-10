@@ -1,91 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761625AbXIJX1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761913AbXIJX26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761625AbXIJX1o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 19:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbXIJX1e
+	id S1761913AbXIJX26 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 19:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbXIJX2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 19:27:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34855 "EHLO mx1.redhat.com"
+	Mon, 10 Sep 2007 19:28:50 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:33632 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751004AbXIJX1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 19:27:32 -0400
-Date: Mon, 10 Sep 2007 19:19:44 -0400
-From: Chris Snook <csnook@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Nick Piggin <piggin@cyberone.com.au>,
-       Satyam Sharma <satyam@infradead.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: [PATCH] Document non-semantics of atomic_read() and atomic_set()
-Message-ID: <20070910231944.GA3484@shell.boston.redhat.com>
-References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <6370BBDF-0C79-41EB-BD2A-02AA0D216924@mac.com> <200709101438.36710.vda.linux@googlemail.com> <200709101516.03234.vda.linux@googlemail.com> <alpine.LFD.0.999.0709100807260.16478@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709100807260.16478@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	id S1753015AbXIJX2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 19:28:50 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: linuxsh-dev@lists.sourceforge.net
+Subject: Re: [PATCH 1/2] Maple Bus support for SEGA Dreamcast
+Date: Mon, 10 Sep 2007 19:28:47 -0400
+User-Agent: KMail/1.9.7
+Cc: "Adrian McMenamin" <lkmladrian@gmail.com>,
+       "Paul Mundt" <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+References: <8b67d60709101616p7430a572w3ed0921a846805@mail.gmail.com>
+In-Reply-To: <8b67d60709101616p7430a572w3ed0921a846805@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart9384362.cqbl0AjOeP";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200709101928.48719.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Snook <csnook@redhat.com>
+--nextPart9384362.cqbl0AjOeP
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Unambiguously document the fact that atomic_read() and atomic_set()
-do not imply any ordering or memory access, and that callers are
-obligated to explicitly invoke barriers as needed to ensure that
-changes to atomic variables are visible in all contexts that need
-to see them.
+On Monday 10 September 2007, Adrian McMenamin wrote:
+> +config MAPLE
+> +	tristate "Maple Bus Support"
+> +	depends on SH_DREAMCAST
+> +	help
+> +	  The Maple Bus is SEGA's serial communication bus for peripherals
+> +	  on the Dreamcast. Without this bus support you won't be able to
+> +	  get your Dreamcast keyboard etc to work, so most users
+> +	  probably want to say 'Y' here, unless you are only using the
+> +	  Dreamcast with a serial line terminal or a remote network
+> +	  connection.
 
-Signed-off-by: Chris Snook <csnook@redhat.com>
+hmm, tristate means you can build it as a module ... so please add a line t=
+hat=20
+says what the module name is if 'M' is selected ...
 
---- a/Documentation/atomic_ops.txt	2007-07-08 19:32:17.000000000 -0400
-+++ b/Documentation/atomic_ops.txt	2007-09-10 19:02:50.000000000 -0400
-@@ -12,7 +12,11 @@
- C integer type will fail.  Something like the following should
- suffice:
- 
--	typedef struct { volatile int counter; } atomic_t;
-+	typedef struct { int counter; } atomic_t;
-+
-+	Historically, counter has been declared volatile.  This is now
-+discouraged.  See Documentation/volatile-considered-harmful.txt for the
-+complete rationale.
- 
- 	The first operations to implement for atomic_t's are the
- initializers and plain reads.
-@@ -42,6 +46,22 @@
- 
- which simply reads the current value of the counter.
- 
-+*** WARNING: atomic_read() and atomic_set() DO NOT IMPLY BARRIERS! ***
-+
-+Some architectures may choose to use the volatile keyword, barriers, or
-+inline assembly to guarantee some degree of immediacy for atomic_read()
-+and atomic_set().  This is not uniformly guaranteed, and may change in
-+the future, so all users of atomic_t should treat atomic_read() and
-+atomic_set() as simple C assignment statements that may be reordered or
-+optimized away entirely by the compiler or processor, and explicitly
-+invoke the appropriate compiler and/or memory barrier for each use case.
-+Failure to do so will result in code that may suddenly break when used with
-+different architectures or compiler optimizations, or even changes in
-+unrelated code which changes how the compiler optimizes the section
-+accessing atomic_t variables.
-+
-+*** YOU HAVE BEEN WARNED! ***
-+
- Now, we move onto the actual atomic operation interfaces.
- 
- 	void atomic_add(int i, atomic_t *v);
+> --- a/drivers/sh/Makefile
+> +++ b/drivers/sh/Makefile
+> +obj-$(CONFIG_MAPLE) +=3D maple/
+
+ok ...
+
+> --- /dev/null
+> +++ b/drivers/sh/maple/Makefile
+> +obj-y	:=3D maplebus.o
+
+erp, shouldnt that be obj-$(CONFIG_MAPLE) ?
+=2Dmike
+
+--nextPart9384362.cqbl0AjOeP
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.6 (GNU/Linux)
+
+iQIVAwUARuXTMEFjO5/oN/WBAQJQwg/+KpD0gA9NLx00DBwDQtVHpKMrMkx/OGP5
+z2qm/uFchNa0K7LWWXNjb17uFOYK2YzwoMNGwcv/WawQqzkait0YUIL+iD4xvv2e
+9rt0eM8CGeaVO/OoAqnDj7qr8lkihwXbMoTrfumuwhYOpHdo/y+YTL7kUo1Bi2qg
+GwwB0WGfuAzWGwH97zLUHwWnhX3XDajj3xzNErnRTMnYgKW0AW46q0lw1KBCcZo5
+rr7+IyktlN4UqhO+ocAek/ojgDbkl1cMrPWZoLkf1erZh9SCbdJnwyTFCT+2bUUS
+M7PsKO+8a5VNDmRQ1ZwbMCOFX214oH8jLnjPeEKhnRN5RG57a+SMq1ICw4IDici6
+ihfkRJwc5wQzx8JxIkdWxBRtNKoP7NUoHQela9C0Ci1unfoCI5b3joVjZPrK31P/
+6kQ6hBDibAiYFgcE1t6i35v4eI6xvJNbeoHp90uL9NhmoJTsXaJT+Z4qwKw9ng1g
+/9PMrLrqL0uIaiN+QImvBMpB++GyWM2HQHSpYzuIHsdsYoPMr0rwUJxJie2APlIh
+xoIV4lPnEHIhRXxRCmerA4BUiz1RLg7aiYvKIYwBDdidRIMz39i1LXdvUM895Muv
+dQuKb5inA9NGf/7fZav1lMqwbe3rJIc9jZ5qXW9l4MlG+BmiJytP8vJaixAmZ2rY
+KuNrEA7EcJU=
+=pypr
+-----END PGP SIGNATURE-----
+
+--nextPart9384362.cqbl0AjOeP--
