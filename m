@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbXIJOu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760445AbXIJOwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760180AbXIJOu6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 10:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758353AbXIJOuu
+	id S1760445AbXIJOwr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 10:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759486AbXIJOwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 10:50:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59220 "EHLO mx1.redhat.com"
+	Mon, 10 Sep 2007 10:52:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59912 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756985AbXIJOuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 10:50:50 -0400
-Message-ID: <46E55996.8050009@redhat.com>
-Date: Mon, 10 Sep 2007 10:49:58 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Laurent Vivier <Laurent.Vivier@bull.net>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND][PATCH 1/4] Introduce a new field "guest" in cpustat
-References: <46E53267.3010305@bull.net>
-In-Reply-To: <46E53267.3010305@bull.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1759432AbXIJOwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 10:52:32 -0400
+Date: Mon, 10 Sep 2007 10:52:16 -0400
+Message-Id: <200709101452.l8AEqGFw016262@dantu.rdu.redhat.com>
+From: Jeff Layton <jlayton@redhat.com>
+Subject: [PATCH 0/7] fix setuid/setgid clearing in networked filesystems (take 6)
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
+       ecryptfs-devel@lists.sourceforge.net, reiserfs-devel@vger.kernel.org,
+       unionfs@filesystems.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Laurent Vivier wrote:
-> [PATCH 1/4] as recent CPUs introduce a third running state, after "user" and
-> "system", we need a new field, "guest", in cpustat to store the time used by
-> the CPU to run virtual CPU. Modify /proc/stat to display this new field.
+When an unprivileged process attempts to modify a file that has the
+setuid or setgid bits set, the VFS will attempt to clear these bits. The
+VFS will set the ATTR_KILL_SUID or ATTR_KILL_SGID bits in the ia_valid
+mask, and then call notify_change to clear these bits and set the mode
+accordingly.
 
-I think it would be good to always print out that number, even if
-it is zero without the CONFIG option set.
+With a networked filesystem (NFS and CIFS in particular but likely
+others), the client machine or process may not have credentials that
+allow for setting the mode. In some situations, this can lead to file
+corruption, an operation failing outright because the setattr fails, or
+to races that lead to a mode change being reverted.
 
-Changing the format of /proc/stat depending on config options is
-probably worse than changing it when moving kernel versions.
+In this situation, we'd like to just leave the handling of this to the
+server and ignore these bits. The problem is that by the time the
+setattr op is called, the VFS has already reinterpreted the ATTR_KILL_*
+bits into a mode change and the setattr operation has no way to
+know its intent.
 
-I guess reusing the "steal" field is not a good idea, since your
-new "guest time" has different semantics than the steal time field.
+The following patchset fixes this by making notify_change no longer
+clear the ATTR_KILL_SUID and ATTR_KILL_SGID bits in the ia_valid before
+handing it off to the setattr inode op. setattr can then check for the
+presence of these bits, and if they're set it can assume that the mode
+change was only for the purposes of clearing these bits.
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+This means that we now have an implicit assumption that notify_change is
+never called with ATTR_MODE and either ATTR_KILL_S*ID bit set. Nothing
+currently enforces that, so the main patch (5/7) adds a BUG() if that
+occurs.
+
+The first four patches fix up callers of notify_change to make sure that
+they don't trip the new BUG() call. The last two patches change CIFS and
+NFS to ignore the mode change if either ATTR_KILL_S*ID is set.
+
+This patchset should apply cleanly to 2.6.23-rc4-mm1. This is
+basically the same patchset as take 5. The only differences are that
+the patches have been reordered to make the tree cleanly bisectable,
+and the comment in notify_change is now a bit more descriptive.
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
