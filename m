@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbXIJTqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761390AbXIJTtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761366AbXIJTqU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 15:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728AbXIJTqH
+	id S1761390AbXIJTtS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 15:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757785AbXIJTtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 15:46:07 -0400
-Received: from smtprelay07.ispgateway.de ([80.67.29.7]:37070 "EHLO
-	smtprelay07.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757400AbXIJTqG (ORCPT
+	Mon, 10 Sep 2007 15:49:08 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35275 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757331AbXIJTtG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 15:46:06 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH] crypto: blkcipher_get_spot() handling of buffer at end of page
-Date: Mon, 10 Sep 2007 21:46:46 +0200
-User-Agent: KMail/1.9.6
-Cc: Bob Gilligan <gilligan@vyatta.com>, linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-References: <5562608.649291189210157514.JavaMail.root@tahiti.vyatta.com> <20070908041423.GA8961@gondor.apana.org.au> <20070910075829.GA25851@gondor.apana.org.au>
-In-Reply-To: <20070910075829.GA25851@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 10 Sep 2007 15:49:06 -0400
+Date: Mon, 10 Sep 2007 12:48:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: Jason Gaston <jason.d.gaston@intel.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       khali@linux-fr.org, i2c@lm-sensors.nu
+Subject: Re: [PATCH 2.6.23-rc4][RESEND] irq: irq and pci_ids patch for Intel
+ Tolapai
+Message-Id: <20070910124841.4a6c66d0.akpm@linux-foundation.org>
+In-Reply-To: <20070910140913.GC6171@kroah.com>
+References: <200708301750.57189.jason.d.gaston@intel.com>
+	<20070910024525.4e90b29d.akpm@linux-foundation.org>
+	<20070910140913.GC6171@kroah.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709102146.47655.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Herbert,
+On Mon, 10 Sep 2007 07:09:13 -0700 Greg KH <greg@kroah.com> wrote:
 
-On Monday 10 September 2007, Herbert Xu wrote:
-> On Sat, Sep 08, 2007 at 12:14:23PM +0800, Herbert Xu wrote:
+> On Mon, Sep 10, 2007 at 02:45:25AM -0700, Andrew Morton wrote:
+> > On Thu, 30 Aug 2007 17:50:56 -0700 Jason Gaston <jason.d.gaston@intel.com> wrote:
 > > 
-> > [CRYPTO] blkcipher: Fix handling of kmalloc page straddling
+> > > Resend without wordwrap.
+> > > 
+> > > This updated patch adds the Intel Tolapai LPC and SMBus Controller DID's.
+> > > 
+> > > Signed-off-by: ?Jason Gaston <jason.d.gaston@intel.com>
+> > > 
+> > > --- linux-2.6.23-rc4/arch/i386/pci/irq.c.orig	2007-08-27 18:32:35.000000000 -0700
+> > > +++ linux-2.6.23-rc4/arch/i386/pci/irq.c	2007-08-28 16:58:31.000000000 -0700
+> > > @@ -550,6 +550,7 @@
+> > >  		case PCI_DEVICE_ID_INTEL_ICH9_3:
+> > >  		case PCI_DEVICE_ID_INTEL_ICH9_4:
+> > >  		case PCI_DEVICE_ID_INTEL_ICH9_5:
+> > > +		case PCI_DEVICE_ID_INTEL_Tolapai_0:
+> > >  			r->name = "PIIX/ICH";
+> > >  			r->get = pirq_piix_get;
+> > >  			r->set = pirq_piix_set;
+> > > --- linux-2.6.23-rc4/include/linux/pci_ids.h.orig	2007-08-27 18:32:35.000000000 -0700
+> > > +++ linux-2.6.23-rc4/include/linux/pci_ids.h	2007-08-28 16:58:31.000000000 -0700
+> > > @@ -2293,6 +2293,8 @@
+> > >  #define PCI_DEVICE_ID_INTEL_MCH_PC	0x3599
+> > >  #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
+> > >  #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
+> > > +#define PCI_DEVICE_ID_INTEL_Tolapai_0	0x5031
+> > > +#define PCI_DEVICE_ID_INTEL_Tolapai_1	0x5032
+> > >  #define PCI_DEVICE_ID_INTEL_82371SB_0	0x7000
+> > >  #define PCI_DEVICE_ID_INTEL_82371SB_1	0x7010
+> > >  #define PCI_DEVICE_ID_INTEL_82371SB_2	0x7020
+> > 
+> > I agree with Matthew that the lower-case shouldn't be in there, so I queued
+> > a patch to fix that up.
+> > 
+> > Given that your I2C patch (and potentially others?) depend upon this one, I
+> > shall plan on getting this patch into mainline this week to make everyone's
+> > life simpler.
 > 
-> As Bob correctly noted, I had the boolean test inverted.
-> Here is the correction:
+> I agree, that's why it's in my queue to go to Linus in a day or so :)
 > 
-> [CRYPTO] blkcipher: Fix inverted test in blkcipher_get_spot
-> 
-> The previous patch had the conditional inverted.  This patch fixes it
-> so that we return the original position if it does not straddle a page.
 
-What about using max() for this to make your intention obvious?
-
-static inline u8 *blkcipher_get_spot(u8 *start, unsigned int len)
-{
-	u8 *end_page = (u8 *)(((unsigned long)(start + len - 1)) & PAGE_MASK); 
-	return max(start, end_page);
-}
-
-
-Best Regards
-
-Ingo Oeser 
+I can't find it.  Did you queue the all-caps version or the above version?
