@@ -1,91 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760385AbXIJPMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbXIJPQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760385AbXIJPMK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 11:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759462AbXIJPLx
+	id S1760716AbXIJPQV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 11:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759956AbXIJPQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 11:11:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34514 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758697AbXIJPLv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 11:11:51 -0400
-Date: Mon, 10 Sep 2007 08:09:08 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-cc: Kyle Moffett <mrmacman_g4@mac.com>, Arjan van de Ven <arjan@infradead.org>,
-       Nick Piggin <piggin@cyberone.com.au>,
-       Satyam Sharma <satyam@infradead.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
-       Chris Snook <csnook@redhat.com>,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-In-Reply-To: <200709101516.03234.vda.linux@googlemail.com>
-Message-ID: <alpine.LFD.0.999.0709100807260.16478@woody.linux-foundation.org>
-References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
- <6370BBDF-0C79-41EB-BD2A-02AA0D216924@mac.com> <200709101438.36710.vda.linux@googlemail.com>
- <200709101516.03234.vda.linux@googlemail.com>
+	Mon, 10 Sep 2007 11:16:13 -0400
+Received: from sacred.ru ([62.205.161.221]:47380 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759886AbXIJPQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 11:16:13 -0400
+X-Greylist: delayed 3423 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Sep 2007 11:16:12 EDT
+Message-ID: <46E551BD.5020404@openvz.org>
+Date: Mon, 10 Sep 2007 18:16:29 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Andrew Morton <akpm@osdl.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
+Subject: [PATCH] Leases can be hidden by flocks
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 10 Sep 2007 18:18:53 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The inode->i_flock list contains the leases, flocks and posix
+locks in the specified order. However, the flocks are added in
+the head of this list thus hiding the leases from F_GETLEASE
+command, from time_out_leases() and other code that expects
+the leases to come first.
 
-On Mon, 10 Sep 2007, Denys Vlasenko wrote:
-> 
-> static inline int
-> qla2x00_wait_for_loop_ready(scsi_qla_host_t *ha)
-> {
->         int      return_status = QLA_SUCCESS;
->         unsigned long loop_timeout ;
->         scsi_qla_host_t *pha = to_qla_parent(ha);
-> 
->         /* wait for 5 min at the max for loop to be ready */
->         loop_timeout = jiffies + (MAX_LOOP_TIMEOUT * HZ);
-> 
->         while ((!atomic_read(&pha->loop_down_timer) &&
->             atomic_read(&pha->loop_state) == LOOP_DOWN) ||
->             atomic_read(&pha->loop_state) != LOOP_READY) {
->                 if (atomic_read(&pha->loop_state) == LOOP_DEAD) {
-...
-> Is above correct or buggy? Correct, because msleep is a barrier.
-> Is it obvious? No.
+The following example will demonstrate this:
 
-It's *buggy*. But it has nothing to do with any msleep() in the loop, or 
-anything else.
+#define _GNU_SOURCE
 
-And more importantly, it would be equally buggy even *with* a "volatile" 
-atomic_read().
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <sys/file.h>
 
-Why is this so hard for people to understand? You're all acting like 
-morons.
+static void show_lease(int fd)
+{
+        int res;
 
-The reason it is buggy has absolutely nothing to do with whether the read 
-is done or not, it has to do with the fact that the CPU may re-order the 
-reads *regardless* of whether the read is done in some specific order by 
-the compiler ot not! In effect, there is zero ordering between all those 
-three reads, and if you don't have memory barriers (or a lock or other 
-serialization), that code is buggy.
+        res = fcntl(fd, F_GETLEASE);
+        switch (res) {
+                case F_RDLCK:
+                        printf("Read lease\n");
+                        break;
+                case F_WRLCK:
+                        printf("Write lease\n");
+                        break;
+                case F_UNLCK:
+                        printf("No leases\n");
+                        break;
+                default:
+                        printf("Some shit\n");
+                        break;
+        }
+}
 
-So stop this idiotic discussion thread already. The above kind of code 
-needs memory barriers to be non-buggy. The whole "volatile or not" 
-discussion is totally idiotic, and pointless, and anybody who doesn't 
-understand that by now needs to just shut up and think about it more, 
-rather than make this discussion drag out even further.
+int main(int argc, char **argv)
+{
+        int fd, res;
 
-The fact is, "volatile" *only* makes things worse. It generates worse 
-code, and never fixes any real bugs. This is a *fact*.
+        fd = open(argv[1], O_RDONLY);
+        if (fd == -1) {
+                perror("Can't open file");
+                return 1;
+        }
 
-			Linus
+        res = fcntl(fd, F_SETLEASE, F_WRLCK);
+        if (res == -1) {
+                perror("Can't set lease");
+                return 1;
+        }
+
+        show_lease(fd);
+
+        if (flock(fd, LOCK_SH) == -1) {
+                perror("Can't flock shared");
+                return 1;
+        }
+
+        show_lease(fd);
+
+        return 0;
+}
+
+The first call to show_lease() will show the write lease set, but
+the second will show no leases.
+
+Fix the flock adding so that the leases always stay in the head
+of this list.
+
+Found during making the flocks pid-namespaces aware.
+
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+
+---
+
+diff --git a/fs/locks.c b/fs/locks.c
+index 6068f82..0db1a14 100644
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -781,7 +781,7 @@ find_conflict:
+ 	if (request->fl_flags & FL_ACCESS)
+ 		goto out;
+ 	locks_copy_lock(new_fl, request);
+-	locks_insert_lock(&inode->i_flock, new_fl);
++	locks_insert_lock(before, new_fl);
+ 	new_fl = NULL;
+ 	error = 0;
+ 
