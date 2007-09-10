@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933249AbXIJOzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933154AbXIJO4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933249AbXIJOzz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 10:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759826AbXIJOxE
+	id S933154AbXIJO4V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 10:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760629AbXIJOxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 10:53:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60116 "EHLO mx1.redhat.com"
+	Mon, 10 Sep 2007 10:53:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60096 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760643AbXIJOxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 10:53:00 -0400
-Date: Mon, 10 Sep 2007 10:52:52 -0400
-Message-Id: <200709101452.l8AEqqse016299@dantu.rdu.redhat.com>
+	id S1760587AbXIJOw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 10:52:58 -0400
+Date: Mon, 10 Sep 2007 10:52:47 -0400
+Message-Id: <200709101452.l8AEqlcP016294@dantu.rdu.redhat.com>
 From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 7/7] CIFS: ignore mode change if it's just for clearing setuid/setgid bits
+Subject: [PATCH 6/7] NFS: if ATTR_KILL_S*ID bits are set, then skip mode change
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
        ecryptfs-devel@lists.sourceforge.net, reiserfs-devel@vger.kernel.org,
@@ -21,30 +21,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 If the ATTR_KILL_S*ID bits are set then any mode change is only for
-clearing the setuid/setgid bits. For CIFS, skip the mode change and
+clearing the setuid/setgid bits. For NFS skip the mode change and
 let the server handle it.
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
- fs/cifs/inode.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ fs/nfs/inode.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
-index 66436f5..8fa3d63 100644
---- a/fs/cifs/inode.c
-+++ b/fs/cifs/inode.c
-@@ -1547,6 +1547,11 @@ int cifs_setattr(struct dentry *direntry, struct iattr *attrs)
- 	}
+diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
+index 45633f9..441bd8b 100644
+--- a/fs/nfs/inode.c
++++ b/fs/nfs/inode.c
+@@ -327,6 +327,10 @@ nfs_setattr(struct dentry *dentry, struct iattr *attr)
  
- 	time_buf.Attributes = 0;
-+
+ 	nfs_inc_stats(inode, NFSIOS_VFSSETATTR);
+ 
 +	/* skip mode change if it's just for clearing setuid/setgid */
-+	if (attrs->ia_valid & (ATTR_KILL_SUID|ATTR_KILL_SGID))
-+		attrs->ia_valid &= ~ATTR_MODE;
++	if (attr->ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID))
++		attr->ia_valid &= ~ATTR_MODE;
 +
- 	if (attrs->ia_valid & ATTR_MODE) {
- 		cFYI(1, ("Mode changed to 0x%x", attrs->ia_mode));
- 		mode = attrs->ia_mode;
+ 	if (attr->ia_valid & ATTR_SIZE) {
+ 		if (!S_ISREG(inode->i_mode) || attr->ia_size == i_size_read(inode))
+ 			attr->ia_valid &= ~ATTR_SIZE;
 -- 
 1.5.2.1
 
