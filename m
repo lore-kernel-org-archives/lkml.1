@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbXIJJIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbXIJJJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbXIJJIX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 05:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbXIJJIQ
+	id S1756753AbXIJJJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 05:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbXIJJJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 05:08:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47057 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbXIJJIP (ORCPT
+	Mon, 10 Sep 2007 05:09:49 -0400
+Received: from smtp.nokia.com ([131.228.20.172]:33506 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbXIJJJs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 05:08:15 -0400
-Date: Mon, 10 Sep 2007 10:08:08 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Adrian Bunk <bunk@kernel.org>,
-       perex@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] unexport sys_{open,read}
-Message-ID: <20070910090808.GA31204@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Adrian Bunk <bunk@kernel.org>, perex@suse.cz,
-	linux-kernel@vger.kernel.org
-References: <20070909202527.GT3563@stusta.de> <20070909203920.GA11764@infradead.org> <20070909145940.0b41c8a5.akpm@linux-foundation.org>
+	Mon, 10 Sep 2007 05:09:48 -0400
+Subject: What's in ubi-2.6.git
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 10 Sep 2007 12:09:03 +0300
+Message-Id: <1189415343.14370.97.camel@sauron>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070909145940.0b41c8a5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 10 Sep 2007 09:09:03.0597 (UTC) FILETIME=[3BB2F9D0:01C7F38A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 09, 2007 at 02:59:40PM -0700, Andrew Morton wrote:
-> Sure.  But I think it is better to give people some warning when we're
-> planning on breaking out-of-tree things.  I do occasionally receive reports
-> of "hey, the X driver which I get from Y doesn't work any more".  Often
-> it's open-source stuff, too.  I see no point in irritating our users more than
-> we need to.
+The following are UBI changes I'd like to push to 2.6.24. The amount of
+changes is small, so no additional comments.
 
-There is no fucking reason they should have used it in the first place.
-Until we have something like a coherent export API instead of random crap
-exported because someone once needed it to do a dumb thing it'll happen.
-Only way to avoid it is to merge the driver and shake out their dumb ideas
-in the review process.
+URL: git://git.infradead.org/~dedekind/ubi-2.6.git master
+(based on top of -rc2 for now).
 
-> Adrian knows this, yet he habitually sends zero-warning export-removal
-> patches and I habitually ignore them.  I guess we must both enjoy this or
-> something.
+Artem Bityutskiy (6):
+      UBI: fix sparse warnings
+      UBI: add more prints
+      UBI: use linux print_hex_dump(), not home-grown one
+      UBI: allocate memory with GFP_NOFS
+      UBI: do not use vmalloc on I/O path
+      UBI: use byte hexdump
 
-And I think almost everyone disagrees with you.  We just carry too much
-crap around because of your subborness in this issue, and it gets really
-annoying to have some high up on the food chain fighting his longly flight
-against the other people.
+Florin Malita (1):
+      UBI: fix leak in ubi_scan_erase_peb
+
+Jesper Juhl (1):
+      UBI: don't use array index before testing if it is negative
+
+ drivers/mtd/ubi/build.c |   28 +++++++++++++++-
+ drivers/mtd/ubi/debug.c |   37 +--------------------
+ drivers/mtd/ubi/debug.h |    2 -
+ drivers/mtd/ubi/eba.c   |   82 +++++++++++++++++-----------------------------
+ drivers/mtd/ubi/io.c    |   75 ++++++++++++++++++++-----------------------
+ drivers/mtd/ubi/kapi.c  |    9 ++++-
+ drivers/mtd/ubi/scan.c  |   45 ++++++++++++--------------
+ drivers/mtd/ubi/scan.h  |    8 ++--
+ drivers/mtd/ubi/ubi.h   |   36 +++++++++++++++------
+ drivers/mtd/ubi/vmt.c   |   70 +++++++++++++++++++++-------------------
+ drivers/mtd/ubi/vtbl.c  |    8 ++--
+ drivers/mtd/ubi/wl.c    |   17 +++++----
+ 12 files changed, 202 insertions(+), 215 deletions(-)
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
