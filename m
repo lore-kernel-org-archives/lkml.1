@@ -1,47 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965797AbXIJXdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761668AbXIJXos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965797AbXIJXdm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 19:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756394AbXIJXdf
+	id S1761668AbXIJXos (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 19:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbXIJXoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 19:33:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36543 "EHLO mx1.redhat.com"
+	Mon, 10 Sep 2007 19:44:37 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:39134 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbXIJXde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 19:33:34 -0400
-Message-ID: <46E5D44A.5000201@redhat.com>
-Date: Mon, 10 Sep 2007 19:33:30 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1751465AbXIJXog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 19:44:36 -0400
+Date: Mon, 10 Sep 2007 16:44:31 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Nick Piggin <piggin@cyberone.com.au>,
+       Satyam Sharma <satyam@infradead.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH] Document non-semantics of atomic_read() and atomic_set()
+Message-ID: <20070910234431.GN11801@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <6370BBDF-0C79-41EB-BD2A-02AA0D216924@mac.com> <200709101438.36710.vda.linux@googlemail.com> <200709101516.03234.vda.linux@googlemail.com> <alpine.LFD.0.999.0709100807260.16478@woody.linux-foundation.org> <20070910231944.GA3484@shell.boston.redhat.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Prakash Punnoor <prakash@punnoor.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Why do so many machines need "noapic"?
-References: <46DF3BFF.9000809@redhat.com> <p73veao9gih.fsf@bingen.suse.de> <46E1A7B5.6000104@redhat.com> <200709080717.58271.prakash@punnoor.de> <46E59716.6020404@redhat.com> <20070910194421.GA1819@one.firstfloor.org>
-In-Reply-To: <20070910194421.GA1819@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070910231944.GA3484@shell.boston.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/10/2007 03:44 PM, Andi Kleen wrote:
->> Yes, it has an hpet. And I tried every combination of options I could
->> think of.
+On Mon, Sep 10, 2007 at 07:19:44PM -0400, Chris Snook wrote:
+> From: Chris Snook <csnook@redhat.com>
 > 
->> But, even stranger, x86_64 works (only i386 fails.)
-> 
-> x86-64 has quite different time code (at least until the dyntick patches
-> currently in mm) 
-> 
-> Obvious thing would be to diff the boot messages and see if anything
-> jumps out (e.g. in interrupt routing).  
-> 
-> Or check with mm and if x86-64 is broken there too then it's likely
-> the new time code.
+> Unambiguously document the fact that atomic_read() and atomic_set()
+> do not imply any ordering or memory access, and that callers are
+> obligated to explicitly invoke barriers as needed to ensure that
+> changes to atomic variables are visible in all contexts that need
+> to see them.
 
-This is Fedora 8 and it already has the highres-timers code in x86_64.
-But I was still comparing 2.6.22 on i386 to 2.6.23-rc5-git1 + highres-timers
-on x86_64. 2.6.23-rc5 on i386 seems okay too, so whatever is happening it
-only occurs on 2.6.22 here.
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Chris Snook <csnook@redhat.com>
+> 
+> --- a/Documentation/atomic_ops.txt	2007-07-08 19:32:17.000000000 -0400
+> +++ b/Documentation/atomic_ops.txt	2007-09-10 19:02:50.000000000 -0400
+> @@ -12,7 +12,11 @@
+>  C integer type will fail.  Something like the following should
+>  suffice:
+> 
+> -	typedef struct { volatile int counter; } atomic_t;
+> +	typedef struct { int counter; } atomic_t;
+> +
+> +	Historically, counter has been declared volatile.  This is now
+> +discouraged.  See Documentation/volatile-considered-harmful.txt for the
+> +complete rationale.
+> 
+>  	The first operations to implement for atomic_t's are the
+>  initializers and plain reads.
+> @@ -42,6 +46,22 @@
+> 
+>  which simply reads the current value of the counter.
+> 
+> +*** WARNING: atomic_read() and atomic_set() DO NOT IMPLY BARRIERS! ***
+> +
+> +Some architectures may choose to use the volatile keyword, barriers, or
+> +inline assembly to guarantee some degree of immediacy for atomic_read()
+> +and atomic_set().  This is not uniformly guaranteed, and may change in
+> +the future, so all users of atomic_t should treat atomic_read() and
+> +atomic_set() as simple C assignment statements that may be reordered or
+> +optimized away entirely by the compiler or processor, and explicitly
+> +invoke the appropriate compiler and/or memory barrier for each use case.
+> +Failure to do so will result in code that may suddenly break when used with
+> +different architectures or compiler optimizations, or even changes in
+> +unrelated code which changes how the compiler optimizes the section
+> +accessing atomic_t variables.
+> +
+> +*** YOU HAVE BEEN WARNED! ***
+> +
+>  Now, we move onto the actual atomic operation interfaces.
+> 
+>  	void atomic_add(int i, atomic_t *v);
