@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760813AbXIJTlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761251AbXIJTl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760813AbXIJTlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 15:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbXIJTlG
+	id S1761251AbXIJTl5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 15:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbXIJTlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 15:41:06 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:45545 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755333AbXIJTlF (ORCPT
+	Mon, 10 Sep 2007 15:41:47 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46874 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755564AbXIJTlp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 15:41:05 -0400
-Date: Mon, 10 Sep 2007 07:09:13 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jason Gaston <jason.d.gaston@intel.com>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       khali@linux-fr.org, i2c@lm-sensors.nu
-Subject: Re: [PATCH 2.6.23-rc4][RESEND] irq: irq and pci_ids patch for
-	Intel Tolapai
-Message-ID: <20070910140913.GC6171@kroah.com>
-References: <200708301750.57189.jason.d.gaston@intel.com> <20070910024525.4e90b29d.akpm@linux-foundation.org>
+	Mon, 10 Sep 2007 15:41:45 -0400
+Date: Mon, 10 Sep 2007 12:41:45 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Nick Piggin <npiggin@suse.de>, Daniel Phillips <phillips@phunq.net>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+In-Reply-To: <1189453031.21778.28.camel@twins>
+Message-ID: <Pine.LNX.4.64.0709101238510.24941@schroedinger.engr.sgi.com>
+References: <20070814142103.204771292@sgi.com>  <200709050220.53801.phillips@phunq.net>
+  <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com> 
+ <20070905114242.GA19938@wotan.suse.de>  <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
+  <20070905121937.GA9246@wotan.suse.de>  <Pine.LNX.4.64.0709101225350.24735@schroedinger.engr.sgi.com>
+ <1189453031.21778.28.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070910024525.4e90b29d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 10, 2007 at 02:45:25AM -0700, Andrew Morton wrote:
-> On Thu, 30 Aug 2007 17:50:56 -0700 Jason Gaston <jason.d.gaston@intel.com> wrote:
-> 
-> > Resend without wordwrap.
-> > 
-> > This updated patch adds the Intel Tolapai LPC and SMBus Controller DID's.
-> > 
-> > Signed-off-by: ?Jason Gaston <jason.d.gaston@intel.com>
-> > 
-> > --- linux-2.6.23-rc4/arch/i386/pci/irq.c.orig	2007-08-27 18:32:35.000000000 -0700
-> > +++ linux-2.6.23-rc4/arch/i386/pci/irq.c	2007-08-28 16:58:31.000000000 -0700
-> > @@ -550,6 +550,7 @@
-> >  		case PCI_DEVICE_ID_INTEL_ICH9_3:
-> >  		case PCI_DEVICE_ID_INTEL_ICH9_4:
-> >  		case PCI_DEVICE_ID_INTEL_ICH9_5:
-> > +		case PCI_DEVICE_ID_INTEL_Tolapai_0:
-> >  			r->name = "PIIX/ICH";
-> >  			r->get = pirq_piix_get;
-> >  			r->set = pirq_piix_set;
-> > --- linux-2.6.23-rc4/include/linux/pci_ids.h.orig	2007-08-27 18:32:35.000000000 -0700
-> > +++ linux-2.6.23-rc4/include/linux/pci_ids.h	2007-08-28 16:58:31.000000000 -0700
-> > @@ -2293,6 +2293,8 @@
-> >  #define PCI_DEVICE_ID_INTEL_MCH_PC	0x3599
-> >  #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
-> >  #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
-> > +#define PCI_DEVICE_ID_INTEL_Tolapai_0	0x5031
-> > +#define PCI_DEVICE_ID_INTEL_Tolapai_1	0x5032
-> >  #define PCI_DEVICE_ID_INTEL_82371SB_0	0x7000
-> >  #define PCI_DEVICE_ID_INTEL_82371SB_1	0x7010
-> >  #define PCI_DEVICE_ID_INTEL_82371SB_2	0x7020
-> 
-> I agree with Matthew that the lower-case shouldn't be in there, so I queued
-> a patch to fix that up.
-> 
-> Given that your I2C patch (and potentially others?) depend upon this one, I
-> shall plan on getting this patch into mainline this week to make everyone's
-> life simpler.
+On Mon, 10 Sep 2007, Peter Zijlstra wrote:
 
-I agree, that's why it's in my queue to go to Linus in a day or so :)
+> >  Peter's approach establishes the 
+> > limit by failing PF_MEMALLOC allocations. 
+> 
+> I'm not failing PF_MEMALLOC allocations. I'm more stringent in failing !
+> PF_MEMALLOC allocations.
 
-thanks,
+Right you are failing other allocations.
 
-greg k-h
+> > If that occurs then other 
+> > subsystems (like the disk, or even fork/exec or memory management 
+> > allocation) will no longer operate since their allocations no longer 
+> > succeed which will make the system even more fragile and may lead to 
+> > subsequent failures.
+> 
+> Failing allocations should never be a stability problem, we have the
+> fault-injection framework which allows allocations to fail randomly -
+> this should never crash the kernel - if it does its a BUG.
+
+Allright maybe you can get the kernel to be stable in the face of having 
+no memory and debug all the fallback paths in the kernel when an OOM 
+condition occurs.
+
+But system calls will fail? Like fork/exec? etc? There may be daemons 
+running that are essential for the system to survive and that cannot 
+easily take an OOM condition? Various reclaim paths also need memory and 
+if the allocation fails then reclaim cannot continue.
+
