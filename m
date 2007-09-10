@@ -1,106 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965269AbXIJQCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965348AbXIJQD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965269AbXIJQCE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 12:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756400AbXIJQBy
+	id S965348AbXIJQD6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 12:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964847AbXIJQDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 12:01:54 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:45827 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750985AbXIJQBx (ORCPT
+	Mon, 10 Sep 2007 12:03:47 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42964 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964836AbXIJQDp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 12:01:53 -0400
-Message-ID: <46E56A5E.20209@bull.net>
-Date: Mon, 10 Sep 2007 18:01:34 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND 2][PATCH 3/4] modify account_system_time() to update
- guest time in cpustat and task_struct
-References: <46E550EA.1030809@bull.net> <20070910085331.84dc1fb5.randy.dunlap@oracle.com>
-In-Reply-To: <20070910085331.84dc1fb5.randy.dunlap@oracle.com>
-X-Enigmail-Version: 0.94.0.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 10/09/2007 18:07:33,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 10/09/2007 18:07:34,
-	Serialize complete at 10/09/2007 18:07:34
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6B587C2B6FC41441AB9E628C"
+	Mon, 10 Sep 2007 12:03:45 -0400
+Date: Mon, 10 Sep 2007 18:02:17 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <piggin@cyberone.com.au>,
+       Satyam Sharma <satyam@infradead.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
+       Chris Snook <csnook@redhat.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+Message-ID: <20070910180217.7cc9878b@laptopd505.fenrus.org>
+In-Reply-To: <200709101538.25132.vda.linux@googlemail.com>
+References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
+	<200709101156.30010.vda.linux@googlemail.com>
+	<20070910155156.2c1453fc@laptopd505.fenrus.org>
+	<200709101538.25132.vda.linux@googlemail.com>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6B587C2B6FC41441AB9E628C
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, 10 Sep 2007 15:38:23 +0100
+Denys Vlasenko <vda.linux@googlemail.com> wrote:
 
-Randy Dunlap wrote:
-> On Mon, 10 Sep 2007 16:12:58 +0200 Laurent Vivier wrote:
->=20
->> [PATCH 3/4] modify account_system_time() to add cputime to cpustat->gu=
-est if we
->> are running a VCPU. We add this cputime to  cpustat->user instead of
->> cpustat->system because this part of KVM code is in fact user code alt=
-hough it
->> is executed in the kernel. We duplicate VCPU time between guest and us=
-er to
->> allow an unmodified "top(1)" to display correct value. A modified "top=
-(1)" is
->> able to display good cpu user time and cpu guest time by subtracting c=
-pu guest
->> time from cpu user time. Update "gtime" in task_struct accordingly.
->>
->> Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
->=20
->=20
-> Hi,
-> Please use kernel-doc notation here:
-> (see Documentation/kernel-doc-nano-HOWTO.txt or source file examples
-> or ask)
->=20
-> easy fix:
->=20
->  /*
-> + * Account guest cpu time to a process.
->=20
-> /**
->  * account_guest_time - Account guest cpu time to a process.
->=20
-> + * @p: the process that the cpu time gets accounted to
-> + * @cputime: the cpu time spent in virtual machine since the last upda=
-te
-> + */
-> +void account_guest_time(struct task_struct *p, cputime_t cputime)
-> +{
+> On Monday 10 September 2007 15:51, Arjan van de Ven wrote:
+> > On Mon, 10 Sep 2007 11:56:29 +0100
+> > Denys Vlasenko <vda.linux@googlemail.com> wrote:
+> > 
+> > > 
+> > > Well, if you insist on having it again:
+> > > 
+> > > Waiting for atomic value to be zero:
+> > > 
+> > >         while (atomic_read(&x))
+> > >                 continue;
+> > > 
+> > 
+> > and this I would say is buggy code all the way.
+> >
+> > Not from a pure C level semantics, but from a "busy waiting is
+> > buggy" semantics level and a "I'm inventing my own locking"
+> > semantics level.
+> 
+> After inspecting arch/*, I cannot agree with you.
 
-thank you for the comment.
-
-But I just made a cut&past of the comment of the function above.
-
-Should I be consistent with the doc or with the source ?
-
-Laurent
---=20
-------------- Laurent.Vivier@bull.net  --------------
-          "Software is hard" - Donald Knuth
+the arch/ people obviously are allowed to do their own locking stuff...
+BECAUSE THEY HAVE TO IMPLEMENT THAT!
 
 
---------------enig6B587C2B6FC41441AB9E628C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.7 (GNU/Linux)
-
-iD8DBQFG5Wpi9Kffa9pFVzwRApZBAJwPbbL2quNUMGAAe87dEyMQDxCgxQCgx1bh
-kO+4N1neavWkNbD2ziS5Mw0=
-=sVd5
------END PGP SIGNATURE-----
-
---------------enig6B587C2B6FC41441AB9E628C--
+the arch maintainers know EXACTLY how their hw behaves (well, we hope)
+so they tend to be the exception to many rules in the kernel....
