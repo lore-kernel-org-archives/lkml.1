@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965800AbXIJTgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965762AbXIJThi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965800AbXIJTgf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 15:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965245AbXIJTf6
+	id S965762AbXIJThi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 15:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932710AbXIJThV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 15:35:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57909 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965125AbXIJTf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 15:35:56 -0400
-Date: Mon, 10 Sep 2007 21:35:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: arnd@arndb.de
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Mon, 10 Sep 2007 15:37:21 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:11924 "EHLO
+	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932169AbXIJThS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 15:37:18 -0400
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Daniel Phillips <phillips@phunq.net>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
        David Miller <davem@davemloft.net>
-Subject: Re: [patch 3/3] futex_compat: update to match native version
-Message-ID: <20070910193552.GC4964@elte.hu>
-References: <20070910191324.847651727@arndb.de> <20070910191648.868241883@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070910191648.868241883@arndb.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0709101225350.24735@schroedinger.engr.sgi.com>
+References: <20070814142103.204771292@sgi.com>
+	 <200709050220.53801.phillips@phunq.net>
+	 <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
+	 <20070905114242.GA19938@wotan.suse.de>
+	 <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
+	 <20070905121937.GA9246@wotan.suse.de>
+	 <Pine.LNX.4.64.0709101225350.24735@schroedinger.engr.sgi.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-vZgxFaUnD3pN0yohNHoy"
+Date: Mon, 10 Sep 2007 21:37:11 +0200
+Message-Id: <1189453031.21778.28.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* arnd@arndb.de <arnd@arndb.de> wrote:
+--=-vZgxFaUnD3pN0yohNHoy
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> A few changes have gone into the futex code but not into the 
-> futex_compat code, the most significant one being a fix for 
-> FUTEX_WAKE_OP in commit f54f098612d7f86463b5fb4763d03533d634de73.
-> 
-> This brings both versions in sync again.
+On Mon, 2007-09-10 at 12:29 -0700, Christoph Lameter wrote:
+> On Wed, 5 Sep 2007, Nick Piggin wrote:
+>=20
+> > Implementation issues aside, the problem is there and I would like to
+> > see it fixed regardless if some/most/or all users in practice don't
+> > hit it.
+>=20
+> I am all for fixing the problem but the solution can be much simpler and=20
+> more universal. F.e. the amount of tcp data in flight may be controlled=20
+> via some limit so that other subsystems can continue to function even if=20
+> we are overwhelmed by network traffic.
 
-> -	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE)
-> -		val2 = (int) (unsigned long) utime;
-> +	/*
-> +	 * requeue parameter in 'utime' if cmd == FUTEX_REQUEUE.
-> +	 * number of waiters to wake in 'utime' if cmd == FUTEX_WAKE_OP.
-> +	 */
-> +	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE ||
-> +	    cmd == FUTEX_WAKE_OP)
-> +		val2 = (u32) (unsigned long) utime;
+With swap over network you need not only protect other subsystems from
+networking, but you also have to guarantee networking will in some form
+stay functional, otherwise you'll never receive the writeout completion.
 
-thanks.
+>  Peter's approach establishes the=20
+> limit by failing PF_MEMALLOC allocations.=20
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+I'm not failing PF_MEMALLOC allocations. I'm more stringent in failing !
+PF_MEMALLOC allocations.
 
-	Ingo
+> If that occurs then other=20
+> subsystems (like the disk, or even fork/exec or memory management=20
+> allocation) will no longer operate since their allocations no longer=20
+> succeed which will make the system even more fragile and may lead to=20
+> subsequent failures.
+
+Failing allocations should never be a stability problem, we have the
+fault-injection framework which allows allocations to fail randomly -
+this should never crash the kernel - if it does its a BUG.
+
+--=-vZgxFaUnD3pN0yohNHoy
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBG5ZznXA2jU0ANEf4RArjEAJ9f1xNJBfypM0uf/kA40IPOIyGD2QCgi19D
+B8toeZ/ycbmdXVVKUQ7HxOI=
+=xOmX
+-----END PGP SIGNATURE-----
+
+--=-vZgxFaUnD3pN0yohNHoy--
+
