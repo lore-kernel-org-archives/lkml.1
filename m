@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932614AbXIJKcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbXIJKef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932614AbXIJKcO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 06:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbXIJKb7
+	id S932284AbXIJKef (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 06:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbXIJKe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 06:31:59 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60701 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753137AbXIJKb5 (ORCPT
+	Mon, 10 Sep 2007 06:34:27 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36493 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754567AbXIJKe1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 06:31:57 -0400
-Date: Mon, 10 Sep 2007 19:33:20 +0900
+	Mon, 10 Sep 2007 06:34:27 -0400
+Date: Mon, 10 Sep 2007 19:35:39 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: dushistov@mail.ru, LKML <linux-kernel@vger.kernel.org>,
+Cc: ezk@cs.sunysb.edu, LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH] add page->mapping handling interface [33/35] changes in UFS
-Message-Id: <20070910193320.b46c99f0.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH] add page->mapping handling interface [34/35] changes in
+ UNIONFS
+Message-Id: <20070910193539.8af2bb55.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20070910184048.286dfc6e.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20070910184048.286dfc6e.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: Fujitsu
@@ -29,75 +30,52 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes  page->mapping handling in UFS
+Changes page->mapping handling in UNIONFS
 
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
 ---
- fs/ufs/dir.c  |   10 +++++-----
- fs/ufs/util.c |    2 +-
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ fs/unionfs/mmap.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Index: test-2.6.23-rc4-mm1/fs/ufs/dir.c
+Index: test-2.6.23-rc4-mm1/fs/unionfs/mmap.c
 ===================================================================
---- test-2.6.23-rc4-mm1.orig/fs/ufs/dir.c
-+++ test-2.6.23-rc4-mm1/fs/ufs/dir.c
-@@ -42,7 +42,7 @@ static inline int ufs_match(struct super
+--- test-2.6.23-rc4-mm1.orig/fs/unionfs/mmap.c
++++ test-2.6.23-rc4-mm1/fs/unionfs/mmap.c
+@@ -61,7 +61,7 @@ static int unionfs_writepage(struct page
+ 	char *kaddr, *lower_kaddr;
+ 	int saved_for_writepages = wbc->for_writepages;
  
- static int ufs_commit_chunk(struct page *page, loff_t pos, unsigned len)
- {
--	struct address_space *mapping = page->mapping;
-+	struct address_space *mapping = page_mapping_cache(page);
- 	struct inode *dir = mapping->host;
- 	int err = 0;
+-	inode = page->mapping->host;
++	inode = page_inode(page);
+ 	lower_inode = unionfs_lower_inode(inode);
  
-@@ -95,7 +95,7 @@ void ufs_set_link(struct inode *dir, str
- 	int err;
+ 	/* find lower page (returns a locked page) */
+@@ -225,7 +225,7 @@ static int unionfs_commit_write(struct f
+ 	if ((err = unionfs_file_revalidate(file, 1)))
+ 		goto out;
  
- 	lock_page(page);
--	err = __ufs_write_begin(NULL, page->mapping, pos, len,
-+	err = __ufs_write_begin(NULL, page_mapping_cache(page), pos, len,
- 				AOP_FLAG_UNINTERRUPTIBLE, &page, NULL);
- 	BUG_ON(err);
+-	inode = page->mapping->host;
++	inode = page_inode(page);
+ 	lower_inode = unionfs_lower_inode(inode);
  
-@@ -111,7 +111,7 @@ void ufs_set_link(struct inode *dir, str
+ 	if (UNIONFS_F(file) != NULL)
+@@ -283,7 +283,7 @@ static void unionfs_sync_page(struct pag
+ 	struct page *lower_page;
+ 	struct address_space *mapping;
  
- static void ufs_check_page(struct page *page)
- {
--	struct inode *dir = page->mapping->host;
-+	struct inode *dir = page_inode(page);
- 	struct super_block *sb = dir->i_sb;
- 	char *kaddr = page_address(page);
- 	unsigned offs, rec_len;
-@@ -381,7 +381,7 @@ int ufs_add_link(struct dentry *dentry, 
- got_it:
- 	pos = page_offset(page) +
- 			(char*)de - (char*)page_address(page);
--	err = __ufs_write_begin(NULL, page->mapping, pos, rec_len,
-+	err = __ufs_write_begin(NULL, page_mapping_cache(page), pos, rec_len,
- 				AOP_FLAG_UNINTERRUPTIBLE, &page, NULL);
- 	if (err)
- 		goto out_unlock;
-@@ -518,7 +518,7 @@ int ufs_delete_entry(struct inode *inode
- 		     struct page * page)
- {
- 	struct super_block *sb = inode->i_sb;
--	struct address_space *mapping = page->mapping;
-+	struct address_space *mapping = page_mapping_cache(page);
- 	char *kaddr = page_address(page);
- 	unsigned from = ((char*)dir - kaddr) & ~(UFS_SB(sb)->s_uspi->s_dirblksize - 1);
- 	unsigned to = ((char*)dir - kaddr) + fs16_to_cpu(sb, dir->d_reclen);
-Index: test-2.6.23-rc4-mm1/fs/ufs/util.c
-===================================================================
---- test-2.6.23-rc4-mm1.orig/fs/ufs/util.c
-+++ test-2.6.23-rc4-mm1/fs/ufs/util.c
-@@ -263,7 +263,7 @@ struct page *ufs_get_locked_page(struct 
+-	inode = page->mapping->host;
++	inode = page_inode(page);
+ 	lower_inode = unionfs_lower_inode(inode);
  
- 		lock_page(page);
+ 	/* find lower page (returns a locked page) */
+@@ -292,7 +292,7 @@ static void unionfs_sync_page(struct pag
+ 		goto out;
  
--		if (unlikely(page->mapping == NULL)) {
-+		if (unlikely(!page_is_pagecache(page))) {
- 			/* Truncate got there first */
- 			unlock_page(page);
- 			page_cache_release(page);
+ 	/* do the actual sync */
+-	mapping = lower_page->mapping;
++	mapping = page_mapping_cache(lower_page);
+ 	/*
+ 	 * XXX: can we optimize ala RAIF and set the lower page to be
+ 	 * discarded after a successful sync_page?
 
