@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbXIJH6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbXIJIDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbXIJH6n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 03:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755306AbXIJH6f
+	id S1756302AbXIJIDf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 04:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbXIJIDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 03:58:35 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3681 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755370AbXIJH6e (ORCPT
+	Mon, 10 Sep 2007 04:03:21 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55676 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754901AbXIJIDU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 03:58:34 -0400
-Date: Mon, 10 Sep 2007 15:58:29 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Bob Gilligan <gilligan@vyatta.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: [PATCH] crypto: blkcipher_get_spot() handling of buffer at end of page
-Message-ID: <20070910075829.GA25851@gondor.apana.org.au>
-References: <5562608.649291189210157514.JavaMail.root@tahiti.vyatta.com> <20070908041423.GA8961@gondor.apana.org.au>
+	Mon, 10 Sep 2007 04:03:20 -0400
+Date: Mon, 10 Sep 2007 01:03:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PTR_ALIGN
+Message-Id: <20070910010318.971bcfff.akpm@linux-foundation.org>
+In-Reply-To: <20070823114703.GQ9163@parisc-linux.org>
+References: <20070823114703.GQ9163@parisc-linux.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070908041423.GA8961@gondor.apana.org.au>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 08, 2007 at 12:14:23PM +0800, Herbert Xu wrote:
+On Thu, 23 Aug 2007 05:47:03 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
+
 > 
-> [CRYPTO] blkcipher: Fix handling of kmalloc page straddling
+> The AdvanSys driver wants to align some pointers, and the ALIGN macro
+> doesn't work for pointers.  Rather than try to make it work, add a new
+> PTR_ALIGN macro which is typesafe.
+> 
+> Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+> 
+> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> index f592df7..47160fe 100644
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -34,6 +34,7 @@ extern const char linux_proc_banner[];
+>  
+>  #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
+>  #define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
+> +#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
+>  
+>  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
+>  
 
-As Bob correctly noted, I had the boolean test inverted.
-Here is the correction:
+I'll plan on getting this thing of beauty into mainline in the next week or
+so, so you can get those advansys changes into James's tree.
 
-[CRYPTO] blkcipher: Fix inverted test in blkcipher_get_spot
-
-The previous patch had the conditional inverted.  This patch fixes it
-so that we return the original position if it does not straddle a page.
-
-Thanks to Bob Gilligan for spotting this.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/crypto/blkcipher.c b/crypto/blkcipher.c
---- a/crypto/blkcipher.c
-+++ b/crypto/blkcipher.c
-@@ -65,7 +65,7 @@ static inline void blkcipher_unmap_dst(s
- static inline u8 *blkcipher_get_spot(u8 *start, unsigned int len)
- {
- 	u8 *end_page = (u8 *)(((unsigned long)(start + len - 1)) & PAGE_MASK);
--	return start < end_page ? start : end_page;
-+	return start > end_page ? start : end_page;
- }
- 
- static inline unsigned int blkcipher_done_slow(struct crypto_blkcipher *tfm,
