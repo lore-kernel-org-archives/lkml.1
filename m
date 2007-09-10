@@ -1,99 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933170AbXIJT4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbXIJT6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933170AbXIJT4J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 15:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbXIJTzy
+	id S1760867AbXIJT6Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 15:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932890AbXIJT6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 15:55:54 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:55659 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755564AbXIJTzx (ORCPT
+	Mon, 10 Sep 2007 15:58:16 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56432 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932715AbXIJT6P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 15:55:53 -0400
-Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Daniel Phillips <phillips@phunq.net>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dkegel@google.com, David Miller <davem@davemloft.net>,
-       Nick Piggin <npiggin@suse.de>
-In-Reply-To: <Pine.LNX.4.64.0709101220001.24735@schroedinger.engr.sgi.com>
-References: <20070814142103.204771292@sgi.com>
-	 <200709050220.53801.phillips@phunq.net>
-	 <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
-	 <200709050916.04477.phillips@phunq.net>
-	 <Pine.LNX.4.64.0709101220001.24735@schroedinger.engr.sgi.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-KcKGPNb8Im/xV24HK7cc"
-Date: Mon, 10 Sep 2007 21:55:45 +0200
-Message-Id: <1189454145.21778.48.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 10 Sep 2007 15:58:15 -0400
+Date: Mon, 10 Sep 2007 21:58:21 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Christoph Hellwig <hch@infradead.org>,
+       perex@suse.cz, linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] unexport sys_{open,read}
+Message-ID: <20070910195821.GH3563@stusta.de>
+References: <20070909202527.GT3563@stusta.de> <20070909203920.GA11764@infradead.org> <20070909145940.0b41c8a5.akpm@linux-foundation.org> <20070910090808.GA31204@infradead.org> <20070910022324.c69e1897.akpm@linux-foundation.org> <20070910124358.GB21089@ftp.linux.org.uk> <20070910102556.de35e825.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070910102556.de35e825.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Sep 10, 2007 at 10:25:56AM -0700, Andrew Morton wrote:
+>...
+> Also, Adrian goes on and on with weird theories about how I'm picking on
+> him.  But other patches (such as 7d12e780e003f93433d49ce78c) DO OTHER
+> STUFF.  Like simplify the code, and make it smaller, faster or more
+> maintainable or more reliable.
 
---=-KcKGPNb8Im/xV24HK7cc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+The unexport of sys_{open,read} actually makes the kernel smaller...
 
-On Mon, 2007-09-10 at 12:25 -0700, Christoph Lameter wrote:
+> So the tradeoff is quite different from a
+> one-liner which does nothing but kill an export.  And, contrary to his
+> claims, we _do_ put temporary back-compat wrappers in there when we
+> change interfaces on those relatively rare occasions when it is possible,
+> and when we remember to do it.
 
-> Of course boundless allocations from interrupt / reclaim context will=20
-> ultimately crash the system. To fix that you need to stop the networking=20
-> layer from performing these.
+Your tradeoff misses the impact on external modules.
 
-Trouble is, I don't only need a network layer to not endlessly consume
-memory, I need it to 'fully' function so that we can receive the
-writeout completion.
+The unexport of sys_open will not break many modules, while
+commit 7d12e780e003f93433d49ce78c most likely broke the majority of 
+external modules.
 
-Let us define a strict meaning for a few phrases:
+Do we guarantee some API stability to module authors or do we not 
+guarantee this?
 
- use memory - an alloc / free cycle where the free is unconditional
- consume memory - an alloc / free cycle where the free is conditional
-and or might be delayed for some unspecified time.
+Emphasizing on API stability in the cases that don't matter much while 
+breaking the API in cases that affect most modules doesn't make any 
+sense at all.
 
-Currently networking has two states:
+And your "remember to do it" is an important point. As an example, every 
+change to a struct that is part of the signature of one or exportted 
+functions does change the API of all of these functions. If we offer any 
+API stability for external modules we need to review all patches that 
+touch include/ because many of them contain changes to the modules API 
+that might otherwise get missed.
 
-  1) it receives packets and consumes memory
-  2) it doesn't receive any packets and doesn't use any memory.
+Let's either continue to state that their is no stable API for external 
+modules or define some API stability rules and do whatever is required 
+for implementing them.
 
-In order to use swap over network you need to operate the network stack
-in a bounded memory model (PF_MEMALLOC). So we need a state that:
+cu
+Adrian
 
-  - receives packets
-  - does NOT consume memory
-  - but does use memory - albeit limited.
+-- 
 
-There are two ways to do this:
-
-  - reserve a specified amount of memory per socket
-    (allegedly IRIX has this)
-
-or
-
-  - have a global reserve and selectively serves sockets
-    (what I've been doing)
-
-These two models can be seen as the same. There is no fundamental
-difference between having various small reserves and one larger that is
-carved up using strict accounting.
-
-So, if you will, you can view my approach as a reserve per socket, where
-most sockets get a reserve of 0 and a few (those serving the VM) !0.
-
-What part are you disagreeing with or unclear on?
-
---=-KcKGPNb8Im/xV24HK7cc
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBG5aFBXA2jU0ANEf4RArm7AJ40Vp4cj7gm1cnhm0xDBD9LRFxaHwCcCGqE
-FbXnb3M3tui6xv8ucWjFzaQ=
-=2nRa
------END PGP SIGNATURE-----
-
---=-KcKGPNb8Im/xV24HK7cc--
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
