@@ -1,66 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbXIJDqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbXIJDu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbXIJDqz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 23:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbXIJDqr
+	id S1756038AbXIJDu6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 23:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbXIJDuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 23:46:47 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:60018 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754341AbXIJDqq (ORCPT
+	Sun, 9 Sep 2007 23:50:51 -0400
+Received: from mxsf00.insightbb.com ([74.128.0.70]:42319 "EHLO
+	mxsf00.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754669AbXIJDuu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 23:46:46 -0400
-Date: Mon, 10 Sep 2007 09:16:24 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Cc: hooanon05@yahoo.co.jp, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, hch@infradead.org,
-       Jan Blunck <jblunck@suse.de>
-Subject: Re: [RFC] Union Mount: Readdir approaches
-Message-ID: <20070910034624.GA6415@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20070907054618.GD1692@in.ibm.com> <E1ITYJK-0000xP-8h@jroun> <20070907075855.GG1692@in.ibm.com> <20070907173941.GB20360@filer.fsl.cs.sunysb.edu>
+	Sun, 9 Sep 2007 23:50:50 -0400
+X-IronPort-AV: E=Sophos;i="4.20,229,1186372800"; 
+   d="scan'208";a="28405552"
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAAhc5EZKjlCP/2dsb2JhbACBXQ
+X-IronPort-AV: E=Sophos;i="4.20,229,1186372800"; 
+   d="scan'208";a="114785549"
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Adrian McMenamin <lkmladrian@gmail.com>
+Subject: Re: [PATCH 2/3] Maple bus support for the Sega Dreamcast - keyboard support
+Date: Sun, 9 Sep 2007 23:50:46 -0400
+User-Agent: KMail/1.9.3
+Cc: Arjan van de Ven <arjan@infradead.org>, Paul Mundt <lethal@linux-sh.org>,
+       linux-kernel@vger.kernel.org
+References: <8b67d60709091001l3cd6adf6m2dab8e815f47435d@mail.gmail.com> <20070909214438.79959ace@laptopd505.fenrus.org> <8b67d60709091357k2bc0c673kef5716a97f07bd3a@mail.gmail.com>
+In-Reply-To: <8b67d60709091357k2bc0c673kef5716a97f07bd3a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070907173941.GB20360@filer.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200709092350.47602.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 07, 2007 at 01:39:41PM -0400, Josef 'Jeff' Sipek wrote:
-> On Fri, Sep 07, 2007 at 01:28:55PM +0530, Bharata B Rao wrote:
-> > On Fri, Sep 07, 2007 at 04:31:26PM +0900, hooanon05@yahoo.co.jp wrote:
-> > > 
-> > > When the first readdir is issued:
-> > > - call vfs_readdir for every underlying opened dir (file) object.
-> > > - store every entry to either the hash table for the result or the
-> > >   whiteout, when the same-named entry didn't exist in the tables.
-> > > - to improvement the performance, the allocated memory for the hash
-> > >   tables are managed in a pointer array. and the elements are
-> > >   concatinated logically by the pointer.
-> > > - the pointer for the result-table, the version, and the currect jiffies
-> > >   are set to vdir, which is a cache in an inode.
-> > > - all cache are copied to a member in a file object.
-> > > - the index of the cache memory block and the offset in an array is
-> > >   handled as the seek position.
-> > 
-> > Ok, interesting approach. So you define the seek behaviour on your
-> > directory cache rather than allowing the underlying filesystems to
-> > interpret the seek. I guess we can do something similar with Union
-> > Mounts also.
+Hi Adrian,
+
+On Sunday 09 September 2007 16:57, Adrian McMenamin wrote:
 > 
-> Unless I missunderstood something, Unionfs uses the same approach. Even
+> Add maple bus keyboard support to the kernel.
+> 
+> Signed-off by Adrian McMenamin <adrian@mcmen.demon.co.uk>
+> 
 
-But in the version of unionfs present in -mm, lseek on directories is
-still limited in functionality as it allows seeking to only the
-beginning and to the current position.
+Couple of more things:
 
-> Unionfs's ODF branch does the same thing. The major difference is that we
-> keep the cache in a file on a disk.
+> +
+> +extern int maple_driver_register(struct device_driver *drv);
+> +
 
-And as Erez explained, it is ODF which is allowing you to have a
-complete lseek behaviour.
+No externs in *.c files, please. Isn't this defined in maple.h which is
+being included?
 
-Regards,
-Bharata.
+> +
+> +static void dc_kbd_callback(struct mapleq *mq)
+> +{
+> +	struct maple_device *mapledev = mq->dev;
+> +	struct dc_kbd *kbd = mapledev->private_data;
+> +	unsigned long *buf = mq->recvbuf;
+
+I very much prefer an empty line between variables and the code.
+
+> +	if (!mutex_trylock(&maple_keyb_mutex)) /* Can only be locked if
+> already in cleanup */
+> +		return;
+> +	if (buf[1] == mapledev->function) {
+> +		memcpy(kbd->new, buf + 2, 8);
+> +		dc_scan_kbd(kbd);
+> +	}
+> +	mutex_unlock(&maple_keyb_mutex);
+> +}
+> +
+> +static int dc_kbd_connect(struct maple_device *dev)
+> +{
+> +	int i, retval = 0;
+> +	struct dc_kbd *kbd;
+> +	if (!(dev->function & MAPLE_FUNC_KEYBOARD))
+> +		return -EINVAL;
+> +
+> +	kbd = kzalloc(sizeof(struct dc_kbd), GFP_KERNEL);
+> +	if (unlikely(!kbd))
+> +		return -ENOMEM;
+> +
+> +	dev->private_data = kbd;
+> +	kbd->dev = input_allocate_device();
+> +	if (!kbd->dev){
+> +		retval = -ENODEV;
+> +		goto cleanup_memory;
+> +	}
+> +
+> +	for (i = 0; i < NR_SCANCODES; i++)
+> +		kbd->keycode[i] = dc_kbd_keycode[i];
+
+memcpy?
+
+> +	kbd->dev->evbit[0] = BIT(EV_KEY) | BIT(EV_REP);
+> +	kbd->dev->keycodesize = sizeof (unsigned char);
+> +	kbd->dev->keycodemax = ARRAY_SIZE(kbd->keycode);
+> +	kbd->dev->keycode = kbd->keycode;
+> +
+> +
+> +	for (i = 0; i < 255; i++)
+
+Are you sure it is 255 and not NR_SCANCODES?
+ 
+> +		set_bit(dc_kbd_keycode[i], kbd->dev->keybit);
+> +
+> +	clear_bit(0, kbd->dev->keybit);
+> +
+> +	kbd->dev->private = kbd;
+
+Please use input_set_drvdata() here and input_get_drvdata() when
+accessing it.
+
+> +
+> +	kbd->dev->name = dev->product_name;
+> +	kbd->dev->id.bustype = BUS_HOST;
+> +
+
+maple_device appears to be fully integrated in sysfs, please add:
+	kbd->dev->dev.parent = &dev->dev;
+
+Btw, introducing a temp for kbd->dev should reduce generated code
+somewhat.
+
+> +	retval = input_register_device(kbd->dev);
+> +	if (retval)
+> +		goto cleanup;
+> +	/* Maple polling is locked to VBLANK - which may be just 50/s */
+> +	maple_getcond_callback(dev, dc_kbd_callback, HZ/50,
+> +			       MAPLE_FUNC_KEYBOARD);
+> +	return retval;
+> +
+> +cleanup:
+> +	input_free_device(kbd->dev);
+> +cleanup_memory:
+> +	kfree(kbd);
+> +	return retval;
+> +}
+> +
+> +static void dc_kbd_disconnect(struct maple_device *dev)
+> +{
+> +	struct dc_kbd *kbd;
+> +	mutex_lock(&maple_keyb_mutex);
+> +	kbd = dev->private_data;
+> +
+> +	input_unregister_device(kbd->dev);
+> +	kfree(kbd);
+> +	mutex_unlock(&maple_keyb_mutex);
+> +}
+> +
+> +/* allow the keyboard to be used */
+> +static int probe_maple_kbd(struct device *dev)
+> +{
+> +	struct maple_device *mdev;
+> +	struct maple_driver *mdrv;
+> +	int proberes;
+> +
+> +	mdev = to_maple_dev(dev);
+> +	mdrv = to_maple_driver(dev->driver);
+> +
+> +	proberes = dc_kbd_connect(mdev);
+> +	if (unlikely(proberes))
+> +		return proberes;
+> +	mdev->driver = mdrv;
+> +	mdev->registered = 1;
+> +	return 0;
+> +}
+> +
+> +static struct maple_driver dc_kbd_driver = {
+> +	.function = MAPLE_FUNC_KEYBOARD,
+> +	.connect = dc_kbd_connect,
+> +	.disconnect = dc_kbd_disconnect,
+> +	.drv = {
+> +		.name = "Dreamcast_keyboard",
+> +		.probe = probe_maple_kbd,
+> +		},
+> +};
+> +
+> +static int __init dc_kbd_init(void)
+> +{
+> +	int retval;
+> +	retval = maple_driver_register(&dc_kbd_driver.drv);
+> +	if (retval)
+> +		return retval;
+> +	return 0;
+
+"return maple_driver_register(&dc_kbd_driver.drv);" is much shorter...
+
+> +}
+> +
+> +static void __exit dc_kbd_exit(void)
+> +{
+> +	driver_unregister(&dc_kbd_driver.drv);
+> +}
+> +
+> +module_init(dc_kbd_init);
+> +module_exit(dc_kbd_exit);
+
+If these are fixed you may add:
+
+	 Acked-by: Dmitry Torokhov <dtor@mail.ru>
+
+Thank you.
+
+-- 
+Dmitry
