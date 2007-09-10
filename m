@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965348AbXIJQD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965451AbXIJQGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965348AbXIJQD6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 12:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964847AbXIJQDr
+	id S965451AbXIJQGG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 12:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965004AbXIJQFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 12:03:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42964 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964836AbXIJQDp convert rfc822-to-8bit (ORCPT
+	Mon, 10 Sep 2007 12:05:55 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:59070 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965001AbXIJQFy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 12:03:45 -0400
-Date: Mon, 10 Sep 2007 18:02:17 +0100
-From: Arjan van de Ven <arjan@infradead.org>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <piggin@cyberone.com.au>,
-       Satyam Sharma <satyam@infradead.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
-       Chris Snook <csnook@redhat.com>,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
- architectures
-Message-ID: <20070910180217.7cc9878b@laptopd505.fenrus.org>
-In-Reply-To: <200709101538.25132.vda.linux@googlemail.com>
-References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
-	<200709101156.30010.vda.linux@googlemail.com>
-	<20070910155156.2c1453fc@laptopd505.fenrus.org>
-	<200709101538.25132.vda.linux@googlemail.com>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
+	Mon, 10 Sep 2007 12:05:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=PFwW3Fz5v4UJWksSB848W523BAhgBTWSQXB+hkiZRQjkn4XneX7F3Sr21qp/nGH+DvRCXn2Vw69ivFPkqGgI3u7ihOif4Vwx5RLqFljeWgfDAQvHmvCr9ZHxKw3KWjDWS9o4vFf8DVOzleam++6BdfhQe/1bc0Rl8zJJ6BfMCTo=
+Message-ID: <6bc632150709100905y7c5c2camaa0044cf6fa09ea2@mail.gmail.com>
+Date: Mon, 10 Sep 2007 21:35:52 +0530
+From: "pradeep singh rautela" <rautelap@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [Q]Adding src files to 2.6.18 kernel and build failure query
+MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Sep 2007 15:38:23 +0100
-Denys Vlasenko <vda.linux@googlemail.com> wrote:
+Hi,
 
-> On Monday 10 September 2007 15:51, Arjan van de Ven wrote:
-> > On Mon, 10 Sep 2007 11:56:29 +0100
-> > Denys Vlasenko <vda.linux@googlemail.com> wrote:
-> > 
-> > > 
-> > > Well, if you insist on having it again:
-> > > 
-> > > Waiting for atomic value to be zero:
-> > > 
-> > >         while (atomic_read(&x))
-> > >                 continue;
-> > > 
-> > 
-> > and this I would say is buggy code all the way.
-> >
-> > Not from a pure C level semantics, but from a "busy waiting is
-> > buggy" semantics level and a "I'm inventing my own locking"
-> > semantics level.
-> 
-> After inspecting arch/*, I cannot agree with you.
+I am facing some problem understanding and using the kernel Kbuild
+system. I tried googling but not much of help.
 
-the arch/ people obviously are allowed to do their own locking stuff...
-BECAUSE THEY HAVE TO IMPLEMENT THAT!
+Thanks to a good kbuild documentation in the tree. It looks like $(LD)
+-r is not able to do what it is supposed to do. May be i am doing
+something wrong?
 
+here is a brief summary of what i am doing -
 
-the arch maintainers know EXACTLY how their hw behaves (well, we hope)
-so they tend to be the exception to many rules in the kernel....
+I added some .c files to a new dir under net/foo/ .
+Added corresponding .h files to a new dir under include/foo/
+
+Create a Kconfig and Makefile in net/foo/ directory.
+Added corresponding entries to Makefile and Kconfig in the net/ dir.
+
+I happily executed a make with a beaming face after selecting the foo
+option after doing a
+$make menuconfig.
+
+To my surprise i got this error :-
+
+make[1]: *** No rule to make target `arch/i386/kernel/vmlinux.lds',
+needed by `__build'.  Stop
+
+So , here is the question in short...
+
+What do i need to change and where to make sure this thing vanishes
+away and kernel compiles as usual like it always did earlier?
+
+Any pointers?
+PS:- I am not subscribed to the LKML,please CC me while replying to the list.
+
+thanks
+--pradeep
+
+--
+pradeep singh rautela
+
+"question = ( to ) ? be : ! be;"
+                -- Wm. Shakespeare
