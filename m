@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965562AbXIJT7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760783AbXIJUKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965562AbXIJT7i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 15:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbXIJT70
+	id S1760783AbXIJUKa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 16:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbXIJUKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 15:59:26 -0400
-Received: from smtpoutm.mac.com ([17.148.16.73]:54750 "EHLO smtpoutm.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752722AbXIJT7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 15:59:25 -0400
-In-Reply-To: <200709101746.34513.vda.linux@googlemail.com>
-References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <200709101516.03234.vda.linux@googlemail.com> <alpine.LFD.0.999.0709100807260.16478@woody.linux-foundation.org> <200709101746.34513.vda.linux@googlemail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F5A2B8BD-CD28-44EE-9DB5-5E776279100F@mac.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Nick Piggin <piggin@cyberone.com.au>,
-       Satyam Sharma <satyam@infradead.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
-       Chris Snook <csnook@redhat.com>,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
+	Mon, 10 Sep 2007 16:10:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44919 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753925AbXIJUKN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 16:10:13 -0400
+Date: Mon, 10 Sep 2007 13:08:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nadia.Derbey@bull.net
+Cc: linux-kernel@vger.kernel.org, matthltc@us.ibm.com
+Subject: Re: [RFC][PATCH 1/6] Storing ipcs into IDRs
+Message-Id: <20070910130857.de90d8c5.akpm@linux-foundation.org>
+In-Reply-To: <20070831112613.552219000@bull.net>
+References: <20070831112445.976429000@bull.net>
+	<20070831112613.552219000@bull.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Mon, 10 Sep 2007 15:59:06 -0400
-To: Denys Vlasenko <vda.linux@googlemail.com>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 10, 2007, at 12:46:33, Denys Vlasenko wrote:
-> My point is that people are confused as to what atomic_read()   
-> exactly means, and this is bad. Same for cpu_relax().  First one  
-> says "read", and second one doesn't say "barrier".
+On Fri, 31 Aug 2007 13:24:46 +0200 Nadia.Derbey@bull.net wrote:
 
-Q&A:
+> [PATCH 01/06]
+> 
+> 
+> This patch introduces ipcs storage into IDRs. The main changes are:
+>   . This ipc_ids structure is changed: the entries array is changed into a
+>     root idr structure.
+>   . The grow_ary() routine is removed: it is not needed anymore when adding
+>     an ipc structure, since we are now using the IDR facility.
+>   . The ipc_rmid() routine interface is changed:
+>        . there is no need for this routine to return the pointer passed in as
+>          argument: it is now declared as a void
+>        . since the id is now part of the kern_ipc_perm structure, no need to
+>          have it as an argument to the routine
+> 
+> 
 
-Q:  When is it OK to use atomic_read()?
-A:  You are asking the question, so never.
+This is a large patch, and I have neither the time nor competence to review
+it :(
 
-Q:  But I need to check the value of the atomic at this point in time...
-A:  Your code is buggy if it needs to do that on an atomic_t for  
-anything other than debugging or optimization.  Use either  
-atomic_*_return() or a lock and some normal integers.
+I hope that someone will find the time to do a detailed review-n-test of
+this code, because the IPC code is pretty touchy and isn't well-maintained,
+as I'm sure you have noticed.
 
-Q:  "So why can't the atomic_read DTRT magically?"
-A:  Because "the right thing" depends on the situation and is usually  
-best done with something other than atomic_t.
+Meanwhile I'll queue the patches up for a bit of compile-time and runtime
+testing, thanks.
 
-If somebody can post some non-buggy code which is correctly using  
-atomic_read() *and* depends on the compiler generating extra  
-nonsensical loads due to "volatile" then the issue *might* be  
-reconsidered.  This also includes samples of code which uses  
-atomic_read() and needs memory barriers (so that we can fix the buggy  
-code, not so we can change atomic_read()).  So far the only code  
-samples anybody has posted are buggy regardless of whether or not the  
-value and/or accessors are flagged "volatile" or not.  And hey, maybe  
-the volatile ops *should* be implemented in inline ASM for future- 
-proof-ness, but that's a separate issue.
 
-Cheers,
-Kyle Moffett
+> ...
+>
+> +		msq = (struct msg_queue *) ipc_findkey(&msg_ids(ns), key);
+
+As a separate cleanup: the code casts the ipc_findkey to some outer struct
+in all cases.  It would be nicer to convert this to container_of().  It'll
+generate the same code, but it actually represents what the code is doing
+and perhaps means that the code will continue to work if the `struct
+kern_ipc_perm' is not at the start of the containing struct.
+
 
