@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965603AbXIJQQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbXIJQ0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965603AbXIJQQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 12:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965261AbXIJQP7
+	id S1758877AbXIJQ0R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 12:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbXIJQ0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 12:15:59 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50596 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965241AbXIJQP6 (ORCPT
+	Mon, 10 Sep 2007 12:26:05 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39760 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753390AbXIJQ0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 12:15:58 -0400
-Date: Mon, 10 Sep 2007 18:15:57 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: pradeep singh rautela <rautelap@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [Q]Adding src files to 2.6.18 kernel and build failure query
-In-Reply-To: <6bc632150709100905y7c5c2camaa0044cf6fa09ea2@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0709101812160.5368@fbirervta.pbzchgretzou.qr>
-References: <6bc632150709100905y7c5c2camaa0044cf6fa09ea2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 10 Sep 2007 12:26:04 -0400
+Date: Mon, 10 Sep 2007 17:33:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: PnP driver <mkrameshid@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Calling PnP bios routines like get device node from x86_84 arch
+Message-ID: <20070910173344.4bd2ae9e@the-village.bc.nu>
+In-Reply-To: <12594726.post@talk.nabble.com>
+References: <12594726.post@talk.nabble.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 10 Sep 2007 08:06:20 -0700 (PDT)
+PnP driver <mkrameshid@gmail.com> wrote:
 
-On Sep 10 2007 21:35, pradeep singh rautela wrote:
->
->So , here is the question in short...
->
->What do i need to change and where to make sure this thing vanishes
->away and kernel compiles as usual like it always did earlier?
+> 
+> Hi,    
+>       I am very new to linux kernel driver development. I need to develop a 
+> driver for calling  BIOS routines like get device node. I could  call  it
+> in i386 architecture using the PnP driver. 
 
-Perhaps post a patch that demonstrates the problem in short.
+We use ACPI on AMD64 so you should be parsing the ACPI tables not trying
+to rely on legacy interfaces which if I rememeber the spec rightly aren't
+even guaranteed safe to call when ACPI is active.
 
->Any pointers?
+What are you actually trying to achieve.
 
-void *.
+>      But in x86_64 arch I couldn't see any support. Even I tried to
+> implement it similar to the i386. But there is no API get_cpu_gdt_table().
+> Is there any other way to get the cpu_gdt_table? or any other way to 
+> call the BIOS routines.
 
->pradeep singh rautela
->
->"question = ( to ) ? be : ! be;"
->                -- Wm. Shakespeare
-
-More like
-	$? = (${"2b"} || !${"2b"});
-
-since : does not mean "or", but "else".
-
-
-	Jan
--- 
+Assuming you even have a BIOS - you may have EFI underlying or
+Linuxbios or be a virtual machine.
