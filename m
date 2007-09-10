@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965530AbXIJSkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965550AbXIJSmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965530AbXIJSkB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 14:40:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbXIJSjv
+	id S965550AbXIJSmJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 14:42:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbXIJSlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 14:39:51 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:46883 "EHLO e4.ny.us.ibm.com"
+	Mon, 10 Sep 2007 14:41:55 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:53841 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756007AbXIJSjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 14:39:49 -0400
-Date: Mon, 10 Sep 2007 11:39:46 -0700
+	id S1755418AbXIJSlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 14:41:53 -0400
+Date: Mon, 10 Sep 2007 11:41:49 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-rt-users@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
        dipankar@in.ibm.com, josht@linux.vnet.ibm.com, tytso@us.ibm.com,
        dvhltc@us.ibm.com, tglx@linutronix.de, a.p.zijlstra@chello.nl,
        bunk@kernel.org, ego@in.ibm.com, oleg@tv-sign.ru, srostedt@redhat.com
-Subject: [PATCH RFC 7/9] RCU: rcutorture testing for RCU priority boosting
-Message-ID: <20070910183946.GG3819@linux.vnet.ibm.com>
+Subject: [PATCH RFC 8/9] RCU: Make RCU priority boosting consume less power
+Message-ID: <20070910184148.GH3819@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
 References: <20070910183004.GA3299@linux.vnet.ibm.com>
 MIME-Version: 1.0
@@ -28,224 +28,250 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Work in progress, not for inclusion.  Still uses xtime because this
-patch is still against 2.6.22.
+Work in progress, not for inclusion.
 
-This patch modifies rcutorture to also torture RCU priority boosting.
-The torturing involves forcing RCU read-side critical sections (already
-performed as part of the torturing of RCU) to run for extremely long
-time periods, increasing the probability of their being preempted and
-thus needing priority boosting.  The fact that rcutorture's "nreaders"
-module parameter defaults to twice the number of CPUs helps ensure lots
-of the needed preemption.
-
-To cause the torturing to be fully effective in -mm, run in presence
-of CPU-hotplug operations.
+This patch modified the RCU priority booster to explicitly sleep when
+there are no RCU readers in need of priority boosting.  This should be
+a power-consumption improvement over the one-second polling cycle in
+the underlying RCU priority-boosting patch.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
 
- rcutorture.c |   91 +++++++++++++++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 77 insertions(+), 14 deletions(-)
+ include/linux/rcupreempt.h |   15 ++++++
+ kernel/rcupreempt.c        |  102 ++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 115 insertions(+), 2 deletions(-)
 
-diff -urpNa -X dontdiff linux-2.6.22-f-boostrcu/kernel/rcutorture.c linux-2.6.22-g-boosttorture/kernel/rcutorture.c
---- linux-2.6.22-f-boostrcu/kernel/rcutorture.c	2007-07-08 16:32:17.000000000 -0700
-+++ linux-2.6.22-g-boosttorture/kernel/rcutorture.c	2007-09-09 16:58:35.000000000 -0700
-@@ -58,6 +58,7 @@ static int stat_interval;	/* Interval be
- static int verbose;		/* Print more debug info. */
- static int test_no_idle_hz;	/* Test RCU's support for tickless idle CPUs. */
- static int shuffle_interval = 5; /* Interval between shuffles (in sec)*/
-+static int preempt_torture;	/* Realtime task preempts torture readers. */
- static char *torture_type = "rcu"; /* What RCU implementation to torture. */
+diff -urpNa -X dontdiff linux-2.6.22-G-boosttorture/include/linux/rcupreempt.h linux-2.6.22-H-boostsleep/include/linux/rcupreempt.h
+--- linux-2.6.22-G-boosttorture/include/linux/rcupreempt.h	2007-08-24 11:24:59.000000000 -0700
++++ linux-2.6.22-H-boostsleep/include/linux/rcupreempt.h	2007-08-24 18:12:41.000000000 -0700
+@@ -60,6 +60,21 @@ enum rcu_boost_state {
  
- module_param(nreaders, int, 0444);
-@@ -72,6 +73,8 @@ module_param(test_no_idle_hz, bool, 0444
- MODULE_PARM_DESC(test_no_idle_hz, "Test support for tickless idle CPUs");
- module_param(shuffle_interval, int, 0444);
- MODULE_PARM_DESC(shuffle_interval, "Number of seconds between shuffles");
-+module_param(preempt_torture, bool, 0444);
-+MODULE_PARM_DESC(preempt_torture, "Enable realtime preemption torture");
- module_param(torture_type, charp, 0444);
- MODULE_PARM_DESC(torture_type, "Type of RCU to torture (rcu, rcu_bh, srcu)");
+ #define N_RCU_BOOST_STATE (RCU_BOOST_INVALID + 1)
  
-@@ -194,6 +197,8 @@ struct rcu_torture_ops {
- 	int (*completed)(void);
- 	void (*deferredfree)(struct rcu_torture *p);
- 	void (*sync)(void);
-+	long (*preemptstart)(void);
-+	void (*preemptend)(void);
- 	int (*stats)(char *page);
- 	char *name;
++/*
++ * RCU-booster state with respect to sleeping.  The RCU booster
++ * sleeps when no task has recently been seen sleeping in an RCU
++ * read-side critical section, and is awakened when a new sleeper
++ * appears.
++ */
++enum rcu_booster_state {
++	RCU_BOOSTER_ACTIVE = 0,   /* RCU booster actively scanning. */
++	RCU_BOOSTER_DROWSY = 1,   /* RCU booster is considering sleeping. */
++	RCU_BOOSTER_SLEEPING = 2, /* RCU booster is asleep. */
++	RCU_BOOSTER_INVALID = 3,  /* For bogus state sightings. */
++};
++
++#define N_RCU_BOOSTER_STATE (RCU_BOOSTER_INVALID + 1)
++
+ #endif /* #ifdef CONFIG_PREEMPT_RCU_BOOST */
+ 
+ #define call_rcu_bh(head, rcu) call_rcu(head, rcu)
+diff -urpNa -X dontdiff linux-2.6.22-G-boosttorture/kernel/rcupreempt.c linux-2.6.22-H-boostsleep/kernel/rcupreempt.c
+--- linux-2.6.22-G-boosttorture/kernel/rcupreempt.c	2007-08-27 15:42:57.000000000 -0700
++++ linux-2.6.22-H-boostsleep/kernel/rcupreempt.c	2007-08-27 15:42:37.000000000 -0700
+@@ -108,6 +108,7 @@ struct rcu_boost_dat {
+ 	unsigned long rbs_unboosted;
+ #ifdef CONFIG_PREEMPT_RCU_BOOST_STATS
+ 	unsigned long rbs_stats[N_RCU_BOOST_DAT_EVENTS][N_RCU_BOOST_STATE];
++	unsigned long rbs_qw_stats[N_RCU_BOOSTER_STATE];
+ #endif /* #ifdef CONFIG_PREEMPT_RCU_BOOST_STATS */
  };
-@@ -258,16 +263,75 @@ static void rcu_torture_deferred_free(st
- 	call_rcu(&p->rtort_rcu, rcu_torture_cb);
- }
+ #define RCU_BOOST_ELEMENTS 4
+@@ -115,6 +116,10 @@ struct rcu_boost_dat {
+ static int rcu_boost_idx = -1; /* invalid value for early RCU use. */
+ static DEFINE_PER_CPU(struct rcu_boost_dat, rcu_boost_dat[RCU_BOOST_ELEMENTS]);
+ static struct task_struct *rcu_boost_task;
++static DEFINE_SPINLOCK(rcu_boost_quiesce_lock);
++static enum rcu_booster_state rcu_booster_quiesce_state = RCU_BOOSTER_ACTIVE;
++static unsigned long rbs_qs_stats[2][N_RCU_BOOSTER_STATE];
++wait_queue_head_t rcu_booster_quiesce_wq;
  
-+static struct task_struct *rcu_preeempt_task;
-+static unsigned long rcu_torture_preempt_errors;
+ #ifdef CONFIG_PREEMPT_RCU_BOOST_STATS
+ 
+@@ -171,6 +176,15 @@ static char *rcu_boost_state_error[] = {
+ 	 "?  ?",  /* unlock */
+ };
+ 
++/* Labels for RCU booster state printout. */
 +
-+static int rcu_torture_preempt(void *arg)
-+{
-+	int completedstart;
-+	int err;
-+	time_t gcstart;
-+	struct sched_param sp;
++static char *rcu_booster_state_label[] = {
++	"Active",
++	"Drowsy",
++	"Sleeping",
++	"???",
++};
 +
-+	sp.sched_priority = MAX_RT_PRIO - 1;
-+	err = sched_setscheduler(current, SCHED_RR, &sp);
-+	if (err != 0)
-+		printk(KERN_ALERT "rcu_torture_preempt() priority err: %d\n",
-+		       err);
-+	current->flags |= PF_NOFREEZE;
-+
-+	do {
-+		completedstart = rcu_torture_completed();
-+		gcstart = xtime.tv_sec;
-+		while ((xtime.tv_sec - gcstart < 10) &&
-+		       (rcu_torture_completed() == completedstart))
-+			cond_resched();
-+		if (rcu_torture_completed() == completedstart)
-+			rcu_torture_preempt_errors++;
-+		schedule_timeout_interruptible(1);
-+	} while (!kthread_should_stop());
-+	return 0;
-+}
-+
-+static long rcu_preempt_start(void)
-+{
-+	long retval = 0;
-+
-+	rcu_preeempt_task = kthread_run(rcu_torture_preempt, NULL,
-+					"rcu_torture_preempt");
-+	if (IS_ERR(rcu_preeempt_task)) {
-+		VERBOSE_PRINTK_ERRSTRING("Failed to create preempter");
-+		retval = PTR_ERR(rcu_preeempt_task);
-+		rcu_preeempt_task = NULL;
+ /*
+  * Print out RCU booster task statistics at the specified interval.
+  */
+@@ -221,6 +235,14 @@ static void rcu_boost_dat_stat_print(voi
+ 						       cpu)[i].rbs_stats[event][state];
+ 			}
+ 		}
++	for (state = 0; state < N_RCU_BOOSTER_STATE; state++) {
++		sum.rbs_qw_stats[state] = 0;
++		for_each_possible_cpu(cpu)
++			for (i = 0; i < RCU_BOOST_ELEMENTS; i++)
++				sum.rbs_qw_stats[state] +=
++					per_cpu(rcu_boost_dat,
++						cpu)[i].rbs_qw_stats[state];
 +	}
+ 
+ 	/* Print them out! */
+ 
+@@ -240,6 +262,24 @@ static void rcu_boost_dat_stat_print(voi
+ 		       rcu_boost_state_event[event], buf);
+ 	}
+ 
++	printk(KERN_INFO "RCU booster state: %s\n",
++	       rcu_booster_quiesce_state >= 0 &&
++	       rcu_booster_quiesce_state < N_RCU_BOOSTER_STATE
++		? rcu_booster_state_label[rcu_booster_quiesce_state]
++		: "???");
++	i = 0;
++	for (state = 0; state < N_RCU_BOOSTER_STATE; state++)
++		i += sprintf(&buf[i], " %ld", rbs_qs_stats[0][state]);
++	printk(KERN_INFO "No tasks found: %s\n", buf);
++	i = 0;
++	for (state = 0; state < N_RCU_BOOSTER_STATE; state++)
++		i += sprintf(&buf[i], " %ld", rbs_qs_stats[1][state]);
++	printk(KERN_INFO "Tasks found: %s\n", buf);
++	i = 0;
++	for (state = 0; state < N_RCU_BOOSTER_STATE; state++)
++		i += sprintf(&buf[i], " %ld", sum.rbs_qw_stats[state]);
++	printk(KERN_INFO "Awaken opportunities: %s\n", buf);
++
+ 	/* Go away and don't come back for awhile. */
+ 
+ 	lastprint = xtime.tv_sec;
+@@ -293,6 +333,8 @@ static void init_rcu_boost_early(void)
+ 				for (j = 0; j < N_RCU_BOOST_DAT_EVENTS; j++)
+ 					for (k = 0; k < N_RCU_BOOST_STATE; k++)
+ 						rbdp[i].rbs_stats[j][k] = 0;
++				for (j = 0; j < N_RCU_BOOSTER_STATE; j++)
++					rbdp[i].rbs_qw_stats[j] = 0;
+ 			}
+ #endif /* #ifdef CONFIG_PREEMPT_RCU_BOOST_STATS */
+ 		}
+@@ -378,10 +420,11 @@ static void rcu_unboost_prio(struct task
+ /*
+  * Boost all of the RCU-reader tasks on the specified list.
+  */
+-static void rcu_boost_one_reader_list(struct rcu_boost_dat *rbdp)
++static int rcu_boost_one_reader_list(struct rcu_boost_dat *rbdp)
+ {
+ 	LIST_HEAD(list);
+ 	unsigned long flags;
++	int retval = 0;
+ 	struct task_struct *taskp;
+ 
+ 	/*
+@@ -397,6 +440,7 @@ static void rcu_boost_one_reader_list(st
+ 	list_splice_init(&rbdp->rbs_toboost, &list);
+ 	list_splice_init(&rbdp->rbs_boosted, &list);
+ 	while (!list_empty(&list)) {
++		retval = 1;
+ 
+ 		/*
+ 		 * Pause for a bit before boosting each task.
+@@ -438,6 +482,36 @@ static void rcu_boost_one_reader_list(st
+ 		list_add_tail(&taskp->rcub_entry, &rbdp->rbs_boosted);
+ 	}
+ 	spin_unlock_irqrestore(&rbdp->rbs_lock, flags);
 +	return retval;
 +}
 +
-+static void rcu_preempt_end(void)
++/*
++ * Examine state to see if it is time to sleep.
++ */
++static void rcu_booster_try_sleep(int yo)
 +{
-+	if (rcu_preeempt_task != NULL) {
-+		VERBOSE_PRINTK_STRING("Stopping rcu_preempt task");
-+		kthread_stop(rcu_preeempt_task);
++	spin_lock(&rcu_boost_quiesce_lock);
++	if (rcu_booster_quiesce_state < 0 ||
++	    rcu_booster_quiesce_state >= N_RCU_BOOSTER_STATE)
++		rcu_booster_quiesce_state = RCU_BOOST_INVALID;
++	rbs_qs_stats[yo != 0][rcu_booster_quiesce_state]++;
++	if (yo != 0) {
++		rcu_booster_quiesce_state = RCU_BOOSTER_ACTIVE;
++	} else {
++		if (rcu_booster_quiesce_state == RCU_BOOSTER_ACTIVE) {
++			rcu_booster_quiesce_state = RCU_BOOSTER_DROWSY;
++		} else if (rcu_booster_quiesce_state == RCU_BOOSTER_DROWSY) {
++			rcu_booster_quiesce_state = RCU_BOOSTER_SLEEPING;
++			spin_unlock(&rcu_boost_quiesce_lock);
++			__wait_event(rcu_booster_quiesce_wq,
++				     rcu_booster_quiesce_state ==
++				     RCU_BOOSTER_ACTIVE);
++			spin_lock(&rcu_boost_quiesce_lock);
++		} else {
++			rcu_booster_quiesce_state = RCU_BOOSTER_ACTIVE;
++		}
 +	}
-+	rcu_preeempt_task = NULL;
-+}
-+
-+static int rcu_preempt_stats(char *page)
-+{
-+	return sprintf(page,
-+		       "Preemption stalls: %lu\n", rcu_torture_preempt_errors);
-+}
-+
- static struct rcu_torture_ops rcu_ops = {
--	.init = NULL,
--	.cleanup = NULL,
- 	.readlock = rcu_torture_read_lock,
- 	.readdelay = rcu_read_delay,
- 	.readunlock = rcu_torture_read_unlock,
- 	.completed = rcu_torture_completed,
- 	.deferredfree = rcu_torture_deferred_free,
- 	.sync = synchronize_rcu,
--	.stats = NULL,
-+	.preemptstart = rcu_preempt_start,
-+	.preemptend = rcu_preempt_end,
-+	.stats = rcu_preempt_stats,
- 	.name = "rcu"
- };
- 
-@@ -299,14 +363,12 @@ static void rcu_sync_torture_init(void)
- 
- static struct rcu_torture_ops rcu_sync_ops = {
- 	.init = rcu_sync_torture_init,
--	.cleanup = NULL,
- 	.readlock = rcu_torture_read_lock,
- 	.readdelay = rcu_read_delay,
- 	.readunlock = rcu_torture_read_unlock,
- 	.completed = rcu_torture_completed,
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = synchronize_rcu,
--	.stats = NULL,
- 	.name = "rcu_sync"
- };
- 
-@@ -358,28 +420,23 @@ static void rcu_bh_torture_synchronize(v
++	spin_unlock(&rcu_boost_quiesce_lock);
  }
  
- static struct rcu_torture_ops rcu_bh_ops = {
--	.init = NULL,
--	.cleanup = NULL,
- 	.readlock = rcu_bh_torture_read_lock,
- 	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
- 	.readunlock = rcu_bh_torture_read_unlock,
- 	.completed = rcu_bh_torture_completed,
- 	.deferredfree = rcu_bh_torture_deferred_free,
- 	.sync = rcu_bh_torture_synchronize,
--	.stats = NULL,
- 	.name = "rcu_bh"
- };
+ /*
+@@ -448,15 +522,21 @@ static int rcu_booster(void *arg)
+ {
+ 	int cpu;
+ 	struct sched_param sp = { .sched_priority = PREEMPT_RCU_BOOSTER_PRIO, };
++	int yo = 0;
  
- static struct rcu_torture_ops rcu_bh_sync_ops = {
- 	.init = rcu_sync_torture_init,
--	.cleanup = NULL,
- 	.readlock = rcu_bh_torture_read_lock,
- 	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
- 	.readunlock = rcu_bh_torture_read_unlock,
- 	.completed = rcu_bh_torture_completed,
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = rcu_bh_torture_synchronize,
--	.stats = NULL,
- 	.name = "rcu_bh_sync"
- };
+ 	sched_setscheduler(current, SCHED_RR, &sp);
+ 	current->flags |= PF_NOFREEZE;
++	init_waitqueue_head(&rcu_booster_quiesce_wq);
  
-@@ -491,14 +548,12 @@ static void sched_torture_synchronize(vo
+ 	do {
  
- static struct rcu_torture_ops sched_ops = {
- 	.init = rcu_sync_torture_init,
--	.cleanup = NULL,
- 	.readlock = sched_torture_read_lock,
- 	.readdelay = rcu_read_delay,  /* just reuse rcu's version. */
- 	.readunlock = sched_torture_read_unlock,
- 	.completed = sched_torture_completed,
- 	.deferredfree = rcu_sync_torture_deferred_free,
- 	.sync = sched_torture_synchronize,
--	.stats = NULL,
- 	.name = "sched"
- };
+ 		/* Advance the lists of tasks. */
  
-@@ -793,9 +848,10 @@ rcu_torture_print_module_parms(char *tag
- 	printk(KERN_ALERT "%s" TORTURE_FLAG
- 		"--- %s: nreaders=%d nfakewriters=%d "
- 		"stat_interval=%d verbose=%d test_no_idle_hz=%d "
--		"shuffle_interval = %d\n",
-+		"shuffle_interval=%d preempt_torture=%d\n",
- 		torture_type, tag, nrealreaders, nfakewriters,
--		stat_interval, verbose, test_no_idle_hz, shuffle_interval);
-+		stat_interval, verbose, test_no_idle_hz, shuffle_interval,
-+		preempt_torture);
+ 		rcu_boost_idx = (rcu_boost_idx + 1) % RCU_BOOST_ELEMENTS;
++		if (rcu_boost_idx == 0) {
++			rcu_booster_try_sleep(yo);
++			yo = 0;
++		}
+ 		for_each_possible_cpu(cpu) {
+ 
+ 			/*
+@@ -469,7 +549,7 @@ static int rcu_booster(void *arg)
+ 			 * nothing.
+ 			 */
+ 
+-			rcu_boost_one_reader_list(rcu_rbd_boosting(cpu));
++			yo += rcu_boost_one_reader_list(rcu_rbd_boosting(cpu));
+ 
+ 			/*
+ 			 * Large SMP systems may need to sleep sometimes
+@@ -511,6 +591,23 @@ void init_rcu_boost_late(void)
  }
  
- static void
-@@ -848,6 +904,8 @@ rcu_torture_cleanup(void)
- 		kthread_stop(stats_task);
+ /*
++ * Awaken the RCU priority booster if neecessary.
++ */
++static void rcu_preempt_wake(struct rcu_boost_dat *rbdp)
++{
++	spin_lock(&rcu_boost_quiesce_lock);
++	if (rcu_booster_quiesce_state >= N_RCU_BOOSTER_STATE)
++		rcu_booster_quiesce_state = RCU_BOOSTER_INVALID;
++	rbdp->rbs_qw_stats[rcu_booster_quiesce_state]++;
++	if (rcu_booster_quiesce_state == RCU_BOOSTER_SLEEPING) {
++		rcu_booster_quiesce_state = RCU_BOOSTER_ACTIVE;
++		wake_up(&rcu_booster_quiesce_wq);
++	} else if (rcu_booster_quiesce_state != RCU_BOOSTER_ACTIVE)
++		rcu_booster_quiesce_state = RCU_BOOSTER_ACTIVE;
++	spin_unlock(&rcu_boost_quiesce_lock);
++}
++
++/*
+  * Update task's RCU-boost state to reflect blocking in RCU read-side
+  * critical section, so that the RCU-boost task can find it in case it
+  * later needs its priority boosted.
+@@ -532,6 +629,7 @@ void __rcu_preempt_boost(void)
  	}
- 	stats_task = NULL;
-+	if (preempt_torture && (cur_ops->preemptend != NULL))
-+		cur_ops->preemptend();
+ 	spin_lock(&rbdp->rbs_lock);
+ 	rbdp->rbs_blocked++;
++	rcu_preempt_wake(rbdp);
  
- 	/* Wait for all RCU callbacks to fire.  */
- 	rcu_barrier();
-@@ -990,6 +1048,11 @@ rcu_torture_init(void)
- 			goto unwind;
- 		}
- 	}
-+	if (preempt_torture && (cur_ops->preemptstart != NULL)) {
-+		firsterr = cur_ops->preemptstart();
-+		if (firsterr != 0)
-+			goto unwind;
-+	}
- 	return 0;
- 
- unwind:
+ 	/*
+ 	 * Update state.  We hold the lock and aren't yet on the list,
