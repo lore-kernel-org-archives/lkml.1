@@ -1,112 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760603AbXIJQrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760647AbXIJQzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760603AbXIJQrA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 12:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756136AbXIJQqt
+	id S1760647AbXIJQzw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 12:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756327AbXIJQzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 12:46:49 -0400
-Received: from qb-out-0506.google.com ([72.14.204.239]:4865 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756090AbXIJQqr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 12:46:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=DMb5qzO0yDS7Na1vXo+H35kZmCvIDgy8VsigYOOKHfsDeosqQ2YGMQr8+MGHLr8nDG9Z5y3bgfZlo+t7xWQScqJ0kJOfNJ8/Pkq4aUZmO1VFC7nGVwd8WqM97rt8DrSAa34ekLVovdxQrHSZNOi6KTXfmZM/F9zWKgi/XDPEnqI=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Mon, 10 Sep 2007 17:46:33 +0100
-User-Agent: KMail/1.9.1
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, Arjan van de Ven <arjan@infradead.org>,
-       Nick Piggin <piggin@cyberone.com.au>,
-       Satyam Sharma <satyam@infradead.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
-       Chris Snook <csnook@redhat.com>,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <200709101516.03234.vda.linux@googlemail.com> <alpine.LFD.0.999.0709100807260.16478@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0709100807260.16478@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Mon, 10 Sep 2007 12:55:44 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:46684 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755569AbXIJQzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 12:55:44 -0400
+Date: Mon, 10 Sep 2007 20:58:14 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Nick Piggin <npiggin@suse.de>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [rfc][patch] dynamic data structure switching
+Message-ID: <20070910165814.GA347@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709101746.34513.vda.linux@googlemail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 September 2007 16:09, Linus Torvalds wrote:
-> On Mon, 10 Sep 2007, Denys Vlasenko wrote:
-> > static inline int
-> > qla2x00_wait_for_loop_ready(scsi_qla_host_t *ha)
-> > {
-> >         int      return_status = QLA_SUCCESS;
-> >         unsigned long loop_timeout ;
-> >         scsi_qla_host_t *pha = to_qla_parent(ha);
-> > 
-> >         /* wait for 5 min at the max for loop to be ready */
-> >         loop_timeout = jiffies + (MAX_LOOP_TIMEOUT * HZ);
-> > 
-> >         while ((!atomic_read(&pha->loop_down_timer) &&
-> >             atomic_read(&pha->loop_state) == LOOP_DOWN) ||
-> >             atomic_read(&pha->loop_state) != LOOP_READY) {
-> >                 if (atomic_read(&pha->loop_state) == LOOP_DEAD) {
-> ...
-> > Is above correct or buggy? Correct, because msleep is a barrier.
-> > Is it obvious? No.
-> 
-> It's *buggy*. But it has nothing to do with any msleep() in the loop, or 
-> anything else.
-> 
-> And more importantly, it would be equally buggy even *with* a "volatile" 
-> atomic_read().
+Nick Piggin wrote:
+>
+> +void *dyn_data_replace(struct dyn_data *dd, dd_transfer_fn fn, void *new)
+> +{
+> +	int xfer_done;
+> +	void *old;
+> +
+> +	BUG_ON(!mutex_is_locked(&dd->resize_mutex));
+> +	old = dd->cur;
+> +	BUG_ON(dd->old);
+> +	dd->old = old;
+> +	synchronize_rcu();
+> +	rcu_assign_pointer(dd->cur, new);
 
-I am not saying that this code is okay, this isn't the point.
-(The code is in fact awful for several more reasons).
+I think this all is correct, but I have a somewhat offtopic question, hopefully
+you can help.
 
-My point is that people are confused as to what atomic_read()
-exactly means, and this is bad. Same for cpu_relax().
-First one says "read", and second one doesn't say "barrier".
+Suppose that we have a global "pid_t NR = 0", and another CPU does
 
-This is real code from current kernel which demonstrates this:
+	pid = alloc_pid();
+	wmb();
+	NR = pid->nr;
 
-"I don't know that cpu_relax() is a barrier already":
+Suppose that this CPU sees dd->cur == new, and adds the new item to it.
 
-drivers/kvm/kvm_main.c
-        while (atomic_read(&completed) != needed) {
-                cpu_relax();
-                barrier();
-        }
+Now, yet another CPU does:
 
-"I think that atomic_read() is a read from memory and therefore
-I don't need a barrier":
+	nr = NR;
+	rmb();
+	BUG_ON(nr && !find_pind(nr));
 
-arch/x86_64/kernel/crash.c
-        msecs = 1000; /* Wait at most a second for the other cpus to stop */
-        while ((atomic_read(&waiting_for_crash_ipi) > 0) && msecs) {
-                mdelay(1);
-                msecs--;
-        }
+dyn_data_replace() didn't do synchronize_rcu() yet. The question is: how it is
+possible to "prove" that the BUG_ON() above can't happen? IOW, why find_pind()
+above must also see dd->cur == new if it sees NR != 0 ?
 
-Since neither camp seems to give up, I am proposing renaming
-them to something less confusing, and make everybody happy.
+Once again, I believe this is true, but I can't find a "good" explanation for
+myself. To simplify the example above, consider:
 
-cpu_relax_barrier()
-atomic_value(&x)
-atomic_fetch(&x)
+		A = B = X = 0;
+		P = Q = &A;
 
-I'm not native English speaker, do these sound better?
---
-vda
+CPU_1		CPU_2		CPU_3
+
+P = &B;		*P = 1;		if (X) {
+		wmb();			rmb();
+		X = 1;			BUG_ON(*P != 1 && *Q != 1);
+				}
+
+So, it is not possible that CPU_2 sees P == &B, but CPU_3 sees P == &A in this
+case, yes?
+
+It looks "obvious" that rmb() guarantees that CPU_3 must see the new value if
+any other CPU (CPU_2) already saw it "before", but I can't derive this from the
+"all the LOAD operations specified before the barrier will appear to happen
+ before all the LOAD operations specified after the barrier" definition.
+
+Thanks,
+
+Oleg.
+
