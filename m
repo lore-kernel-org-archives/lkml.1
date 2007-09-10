@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933377AbXIJWhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761614AbXIJWlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933377AbXIJWhx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 18:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932774AbXIJWhp
+	id S1761614AbXIJWlJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 18:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933016AbXIJWk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 18:37:45 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:13826 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932715AbXIJWho (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 18:37:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VjMjtDkXeIAc9AvQWT+0a/HrV4BdhmTu6nwYelklURDtdBNT/bLQcRIxMPZIITVTQK+B0w9qNVhdjSj9XgsRq8ZobFYw0DMpoqY27Jn9XszqjvTQtNn6ZJU7Pzo0B12hVvCZoxO5TsdBzxFOlFVIB3YHB7/vX9MamG5F9/cKBT8=
-Message-ID: <b647ffbd0709101537l9af4dc8x743b25c96e0f5235@mail.gmail.com>
-Date: Tue, 11 Sep 2007 00:37:43 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: vatsa@linux.vnet.ibm.com
-Subject: Re: [PATCH] Hookup group-scheduler with task container infrastructure
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <20070910174649.GA16222@linux.vnet.ibm.com>
+	Mon, 10 Sep 2007 18:40:57 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49829 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933011AbXIJWk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 18:40:56 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [RFC] kbuild - introduce vdir to make life easier for x86_64
+Date: Tue, 11 Sep 2007 00:40:41 +0200
+User-Agent: KMail/1.9.6
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       kbuild devel <kbuild-devel@lists.sourceforge.net>
+References: <20070910191138.GA31541@uranus.ravnborg.org>
+In-Reply-To: <20070910191138.GA31541@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070910171049.GA16048@linux.vnet.ibm.com>
-	 <Pine.LNX.4.64.0709101903220.5368@fbirervta.pbzchgretzou.qr>
-	 <20070910172334.GB19100@linux.vnet.ibm.com>
-	 <20070910102259.dc45a481.akpm@linux-foundation.org>
-	 <20070910174649.GA16222@linux.vnet.ibm.com>
+Message-Id: <200709110040.41605.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/09/2007, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
-> On Mon, Sep 10, 2007 at 10:22:59AM -0700, Andrew Morton wrote:
-> > objection ;)  "cpuctlr" isn't memorable.  Kernel code is write-rarely,
-> > read-often.  "cpu_controller", please.  The extra typing is worth it ;)
->
-> Ok! Here's the modified patch (against 2.6.23-rc4-mm1).
 
-as everyone seems to be in a quest for a better name... I think, the
-obvious one would be just 'group_sched'.
+> The below are the minimal clean-up - a bit more could be done.
+> 
+> Comments?
 
+Looks good in principle. My only suggestion would be to name it something
+differently than vdir. I know that's what GNU make calls it, but it's still
+pretty cryptic. How about just fallback-dir ? 
 
--- 
-Best regards,
-Dmitry Adamushko
+Also what would be nice (I don't know if it's doable in make) would
+be a separate variable (e.g. other-obj-... := ) that contains the fallback
+names and that is double checked against the fallback directory. That
+would document it clearly what's going on. Failing that stuffing 
+them into a comment would be good at least.
+
+-Andi
+
