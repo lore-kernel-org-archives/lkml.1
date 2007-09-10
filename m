@@ -1,70 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbXIJEDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755853AbXIJFPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbXIJEDR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 00:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbXIJEDB
+	id S1755853AbXIJFPa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 01:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbXIJFPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 00:03:01 -0400
-Received: from elasmtp-mealy.atl.sa.earthlink.net ([209.86.89.69]:35280 "EHLO
-	elasmtp-mealy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750799AbXIJEDA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 00:03:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=bleeDCEDaUfzOn4yOZtzZ70/tWydjL68QjFJwP3Kz1xo20pbWi9EWyrqJgtgKTu9;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Mon, 10 Sep 2007 00:02:50 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org,
-       apiszcz@solarrain.com
-Subject: Re: In search of 10gbps cards/shootout in Linux?
-Message-Id: <20070910000250.1a529e33.billfink@mindspring.com>
-In-Reply-To: <Pine.LNX.4.64.0709081241100.22467@p34.internal.lan>
-References: <Pine.LNX.4.64.0709081241100.22467@p34.internal.lan>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4db51764287f83c0be3799f9f8f75786f9350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.55.21.22
+	Mon, 10 Sep 2007 01:15:21 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:53645 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754914AbXIJFPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 01:15:20 -0400
+Date: Mon, 10 Sep 2007 10:45:10 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>, hooanon05@yahoo.co.jp,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org, Jan Blunck <jblunck@suse.de>
+Subject: Re: [RFC] Union Mount: Readdir approaches
+Message-ID: <20070910051510.GB6415@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20070907173941.GB20360@filer.fsl.cs.sunysb.edu> <200709071754.l87HsIpR015803@agora.fsl.cs.sunysb.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709071754.l87HsIpR015803@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Sep 2007, Justin Piszcz wrote:
-
-> There are various agencies/educational institutions doing testing but was 
-> curious if anyone has 'found' a 10 gigabit card shootout measuring the 
-> performance between 10 gigabit cards on the 2.6 kernel?  Most of the 
-> benchmarks are from the vendors themselves Intel/etc-- was wondering if 
-> there were any vendor-independent benchmarks out there?
+On Fri, Sep 07, 2007 at 01:54:18PM -0400, Erez Zadok wrote:
+> In message <20070907173941.GB20360@filer.fsl.cs.sunysb.edu>, "Josef 'Jeff' Sipek" writes:
+> > On Fri, Sep 07, 2007 at 01:28:55PM +0530, Bharata B Rao wrote:
+> > > On Fri, Sep 07, 2007 at 04:31:26PM +0900, hooanon05@yahoo.co.jp wrote:
+> > > > 
+> > > > When the first readdir is issued:
+> > > > - call vfs_readdir for every underlying opened dir (file) object.
+> > > > - store every entry to either the hash table for the result or the
+> > > >   whiteout, when the same-named entry didn't exist in the tables.
+> > > > - to improvement the performance, the allocated memory for the hash
+> > > >   tables are managed in a pointer array. and the elements are
+> > > >   concatinated logically by the pointer.
+> > > > - the pointer for the result-table, the version, and the currect jiffies
+> > > >   are set to vdir, which is a cache in an inode.
+> > > > - all cache are copied to a member in a file object.
+> > > > - the index of the cache memory block and the offset in an array is
+> > > >   handled as the seek position.
+> > > 
+> > > Ok, interesting approach. So you define the seek behaviour on your
+> > directory cache rather than allowing the underlying filesystems to
+> > > interpret the seek. I guess we can do something similar with Union
+> > > Mounts also.
+> > 
+> > Unless I missunderstood something, Unionfs uses the same approach. Even
+> > Unionfs's ODF branch does the same thing. The major difference is that we
+> > keep the cache in a file on a disk.
 > 
-> Until switches come down in price, 10gbps will be most relegated to 
-> business/research use and therefore such benchmarks probably will be hard 
-> to come by but I thought I'd ask..
+> Yup.
+> 
+> Bharata, in the long run, storing a cache of the readdir state on disk, is
+> the best approach by far.  Since you already spend the CPU and memory
+> resources to create a merged view, storing it on disk as a contiguous file
+> isn't that much more effort.  That effort pays off later on esp. if the
+> directories don't change often:
 
-I haven't done any comparisons with other vendor offerings, but I can
-highly recommend the Myricom PCI-Express (8x) 10-GigE NICs.  They only
-cost about $900 and can do full unidirectional 10-GigE line rate.  And
-as a 10-GigE router, they can do full bidirectional 10-GigE line rate
-IP forwarding.  Note the choice of system/motherboard/CPU is as
-important as the choice of NIC in achieving maximum performance.
+Erez, I agree that there are positives in storing the readdir state
+on disk, but ...
 
-Sample nuttcp test:
+> 
+> - you get a compatible behavior with seekdir/telldir (no matter how
+>   braindead that interface is :-)
 
-chance7 -> chance9 10-second TCP test:
+lseek problem can also be solved by defining the seek on the cached (in
+memory) readdir state. (similar to aufs)
 
-[root@chance7 ~]# nuttcp -w10m 192.168.88.16
-11817.8125 MB /  10.00 sec = 9909.8073 Mbps 100 %TX 71 %RX
+> 
+> - for subsequent directory reading, your performance actually improves
+>   because you don't have to repeat the duplicate elimination and whiteout
+>   processing -- just read the cached file from disk as any other file.  You
+>   then benefit from traditional readahead, and from not having to cache the
+>   entire contents of the readdir state file, so it falls under normal
+>   paging/flushing policies.
 
-The system specs are:
+I guess, same performance benefits can be obtained if we leave the
+readdir state in memory for sometime. In the Approach 2 which I
+described in my original post, the readdir state was stored as part of
+the file structure and it remained there until the last close of the
+directory.
 
-Tyan Thunder K8WE S2895ANRF motherboard with Nvidia nForce
-Professional 2200+2050 chipset, 2 AMD Opteron 254 2.8 GHz CPUs,
-4 GB PC3200 ECC REG-DDR 400 memory, and 2 PCI-Express x16 slots
-(2 buses).  The systems are running a 2.6.20.7 kernel.
+> 
+> Any policy which merges the readdir info and keeps it in memory indefinitely
+> is problematic -- you increase average memory pressure on the system over a
+> longer period of time; and when you purge your readdir state from memory,
+> you have to recreate it from scratch, re-consuming the same CPU/memory
+> resources.
 
-Perhaps others can share their experiences with 10-GigE NICs.
+Yes, keeping the state in memory indefinitely is problematic.
+But we can always purge it under memory pressure. If it comes
+to that then it is a tradeoff between recreating the state after purging
+and having the state stored in a separate physical file system.
 
-						-Bill
+Not related directly to readdir, but I had concerns about ODF:
+
+- Creating/Replicating the entire directory tree of the union. So you
+can potentially have a very large tree duplicated (ofcouse with zero
+length files, but still) in ODF.
+
+- Storing whiteouts in ODF might be a feasible solution for unionfs, but for
+union mount it looks like an overhead. You can afford to have an
+extra (whiteout) lookup into ODF from your unionfs lookup code, since
+you do all this from unionfs filesystems code. But doing anything similar
+with union mounts from VFS layer is going to look ugly.
+
+Regards,
+Bharata.
