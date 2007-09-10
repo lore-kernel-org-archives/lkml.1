@@ -1,59 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbXIJFly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbXIJGit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756114AbXIJFly (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 01:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbXIJFlr
+	id S1755489AbXIJGit (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 02:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbXIJGij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 01:41:47 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36271 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755159AbXIJFlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 01:41:46 -0400
-Date: Sun, 9 Sep 2007 22:44:48 -0700
-From: Greg KH <gregkh@suse.de>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Anssi Hannula <anssi.hannula@gmail.com>,
-       linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Subject: Re: sysfs change of input/event devices in 2.6.23rc breaks udev
-Message-ID: <20070910054448.GA3515@suse.de>
-References: <46E2D712.1010402@gmail.com> <3ae72650709091603o57c976d1q8a1b5492ef041186@mail.gmail.com> <200709100128.48595.dtor@insightbb.com>
+	Mon, 10 Sep 2007 02:38:39 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51091 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753861AbXIJGii (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 02:38:38 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46E4E64F.3070005@s5r6.in-berlin.de>
+Date: Mon, 10 Sep 2007 08:38:07 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.6) Gecko/20070807 SeaMonkey/1.1.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709100128.48595.dtor@insightbb.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: Andi Kleen <andi@firstfloor.org>, Jeff Garzik <jeff@garzik.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: sata & scsi suggestion for make menuconfig
+References: <20070907124800.GP16806@vanheusden.com>	 <p73fy1p9m57.fsf@bingen.suse.de>	 <1189371621.3526.28.camel@localhost.localdomain>	 <20070909210329.GE25798@one.firstfloor.org> <46E46190.6080607@garzik.org>	 <20070909212159.GF25798@one.firstfloor.org> <1189373951.3526.37.camel@localhost.localdomain>
+In-Reply-To: <1189373951.3526.37.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 10, 2007 at 01:28:47AM -0400, Dmitry Torokhov wrote:
-> On Sunday 09 September 2007 19:03, Kay Sievers wrote:
-> > On 9/8/07, Anssi Hannula <anssi.hannula@gmail.com> wrote:
-> > >
-> > > However, the change that broke id_path of udev is that
-> > > /sys/class/input/event5/device is now a symlink to the inputX directory
-> > > instead of being the same as the device symlink in inputX directory,
-> > > i.e. to ../../../devices/platform/pcspkr in this case.
-> > >
-> > > Udev id_path uses that directory to construct the ID_PATH variable.
-> > > Should the sysfs structure be reverted or should udev be adapted to
-> > > handle traversing /device symlink twice? I think the former, as there
-> > > should be considerably more time to adapt udev for coming changes in sysfs.
-> > 
-> > Udev's path_id script is too dumb to follow the "device" link of
-> > stacked class devices in the CONFIG_SYSFS_DEPRECATED=y layout. Does
-> > this change fix it for you?
-> >   http://git.kernel.org/?p=linux/hotplug/udev.git;a=commitdiff_plain;h=b1ac36ff5e3756cefc79967a26280056da31bf6f
-> > 
+James Bottomley wrote:
+> On Sun, 2007-09-09 at 23:22 +0200, Andi Kleen wrote:
+>> When it costs 10000 people half an hour to learn and correct this it 
+>> wasted 5000 hours of previous livetime.
+>>
+>> Besides there is no good reason to have ever learned this imho.
 > 
-> Hmm, fixing udev is good but users will not get the change in time. I think we
-> need to adjust SYSFS_DEPRECATED code to produce old results. Something like the
-> patch below. I wonder what Greg would think...
+> The process of becoming an expert in the kernel build system naturally
+> involves making mistakes and learning from them, so this is probably
+> time reasonably well spent.
 
-Hm, I don't understand.  Didn't the original conversion of the input
-layer by Kay not have this kind of problem?  What did your changes do
-differently to cause this driver core change to be needed?
+Nevertheless we should try to arrange the menus in a way that makes
+sense to as many people as possible.  The difficulty is, different
+environments call for different menu layouts, as your previous example
+of SATA DVD-only boxes demonstrates.
 
-thanks,
+However, liberal usage of 'select' is not the ultimate solution to
+create menus that work for more people.  Just one problem with select is
+that it works behind the back of the people configuring kernels (unless
+they use an UI with debug options turned on) --- they have less control,
+they are less informed.  ATA already 'select's SCSI.  What do we gain
+from hiding the fact that Linux' SCSI option is not just for those
+50-wire ribbons (which people still think SCSI stands for) but is a very
+central Linux subsystem for even more than what complies to the SCSI
+family of standards?
 
-greg k-h
+'select' should really be limited to switch on small library-like code
+without further dependencies or requirements.  SCSI, together with its
+upper layer options, is not of this kind of library.
+
+We should think about order and grouping of prompts and the labels of
+prompts (there were already suggestions in this discussion) before we
+resort to 'select' --- or even worse, select options unconditionally
+which are not always necessary to be enabled.
+
+A pro pos grouping of options --- consider how options for another
+central subsystem are laid out:
+
+	Networking
+		Networking options
+			...
+			TCP/IP networking
+			...
+		...
+
+	Device Drivers
+		...
+		Network device support
+			...
+			Ethernet (10 or 100MBit)
+			...
+		...
+
+This also happens to reflect the layout of sources in directories, and
+the current SCSI menu layout is close to source layout too --- but it
+doesn't have to be that way.
+-- 
+Stefan Richter
+-=====-=-=== =--= -=-=-
+http://arcgraph.de/sr/
