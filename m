@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760445AbXIJOwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760106AbXIJOxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760445AbXIJOwr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 10:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759486AbXIJOwe
+	id S1760106AbXIJOxV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 10:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760073AbXIJOwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 10:52:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59912 "EHLO mx1.redhat.com"
+	Mon, 10 Sep 2007 10:52:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59964 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759432AbXIJOwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 10:52:32 -0400
-Date: Mon, 10 Sep 2007 10:52:16 -0400
-Message-Id: <200709101452.l8AEqGFw016262@dantu.rdu.redhat.com>
+	id S1760004AbXIJOwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 10:52:39 -0400
+Date: Mon, 10 Sep 2007 10:52:21 -0400
+Message-Id: <200709101452.l8AEqLSI016267@dantu.rdu.redhat.com>
 From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 0/7] fix setuid/setgid clearing in networked filesystems (take 6)
+Subject: [PATCH 1/7] ecryptfs: allow lower fs to interpret ATTR_KILL_S*ID
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
        ecryptfs-devel@lists.sourceforge.net, reiserfs-devel@vger.kernel.org,
@@ -20,42 +20,33 @@ Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When an unprivileged process attempts to modify a file that has the
-setuid or setgid bits set, the VFS will attempt to clear these bits. The
-VFS will set the ATTR_KILL_SUID or ATTR_KILL_SGID bits in the ia_valid
-mask, and then call notify_change to clear these bits and set the mode
-accordingly.
-
-With a networked filesystem (NFS and CIFS in particular but likely
-others), the client machine or process may not have credentials that
-allow for setting the mode. In some situations, this can lead to file
-corruption, an operation failing outright because the setattr fails, or
-to races that lead to a mode change being reverted.
-
-In this situation, we'd like to just leave the handling of this to the
-server and ignore these bits. The problem is that by the time the
-setattr op is called, the VFS has already reinterpreted the ATTR_KILL_*
-bits into a mode change and the setattr operation has no way to
-know its intent.
-
-The following patchset fixes this by making notify_change no longer
-clear the ATTR_KILL_SUID and ATTR_KILL_SGID bits in the ia_valid before
-handing it off to the setattr inode op. setattr can then check for the
-presence of these bits, and if they're set it can assume that the mode
-change was only for the purposes of clearing these bits.
-
-This means that we now have an implicit assumption that notify_change is
-never called with ATTR_MODE and either ATTR_KILL_S*ID bit set. Nothing
-currently enforces that, so the main patch (5/7) adds a BUG() if that
-occurs.
-
-The first four patches fix up callers of notify_change to make sure that
-they don't trip the new BUG() call. The last two patches change CIFS and
-NFS to ignore the mode change if either ATTR_KILL_S*ID is set.
-
-This patchset should apply cleanly to 2.6.23-rc4-mm1. This is
-basically the same patchset as take 5. The only differences are that
-the patches have been reordered to make the tree cleanly bisectable,
-and the comment in notify_change is now a bit more descriptive.
+Make sure ecryptfs doesn't trip the BUG() in notify_change. This also
+allows the lower filesystem to interpret these bits in their own way.
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/ecryptfs/inode.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
+index 131954b..dac4199 100644
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -959,6 +959,14 @@ static int ecryptfs_setattr(struct dentry *dentry, struct iattr *ia)
+ 		if (rc < 0)
+ 			goto out;
+ 	}
++
++	/*
++	 * mode change is for clearing setuid/setgid bits. Allow lower fs
++	 * to interpret this in its own way.
++	 */
++	if (ia->ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID))
++		ia->ia_valid &= ~ATTR_MODE;
++
+ 	rc = notify_change(lower_dentry, ia);
+ out:
+ 	fsstack_copy_attr_all(inode, lower_inode, NULL);
+-- 
+1.5.2.1
+
