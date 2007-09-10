@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933224AbXIJWwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933449AbXIJWzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933224AbXIJWwW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 18:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965314AbXIJWwL
+	id S933449AbXIJWzZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 18:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932714AbXIJWzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 18:52:11 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:53051 "EHLO
+	Mon, 10 Sep 2007 18:55:15 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:38246 "EHLO
 	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965181AbXIJWwJ (ORCPT
+	by vger.kernel.org with ESMTP id S932710AbXIJWzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 18:52:09 -0400
-X-Sasl-enc: Weip5L979MGUOF/jBSBv/9OHhGHLagCz9WqszJmpFBX2 1189464727
-Date: Mon, 10 Sep 2007 19:52:05 -0300
+	Mon, 10 Sep 2007 18:55:13 -0400
+X-Sasl-enc: MSDPOtEmd4VfFQsRGvjVRHxpdnO7TGZ0xm/voGqBhaFs 1189464918
+Date: Mon, 10 Sep 2007 19:55:09 -0300
 From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, dmitry.torokhov@gmail.com
-Subject: Re: Platform device id
-Message-ID: <20070910225205.GB1408@khazad-dum.debian.net>
-References: <20070907153559.17faf9d1@hyperion.delvare> <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com> <20070907164129.65816B9389@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20070907210029.GB4357@khazad-dum.debian.net> <20070907214116.5051B237214@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20070907220407.GE4357@khazad-dum.debian.net> <20070908001835.C7F721B729B@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <20070908035022.GF4357@khazad-dum.debian.net> <20070908105534.2e8e7d8a@hyperion.delvare>
+To: Yan Burman <burman.yan@gmail.com>
+Cc: Shem Multinymous <multinymous@gmail.com>,
+       hdaps-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Hdaps-devel] [PATCH 2.6.23-rc2] hwmon: HP Mobile Data
+	Protection System 3D ACPI driver (resend)
+Message-ID: <20070910225509.GC1408@khazad-dum.debian.net>
+References: <1186831562.6452.10.camel@localhost> <20070825102512.GA5850@ucw.cz> <46D01420.3070400@gmail.com> <20070827171107.GA15647@khazad-dum.debian.net> <46D5A742.8090201@gmail.com> <20070829233024.GA7433@khazad-dum.debian.net> <41840b750708291731w3fb5e673k3c1283e4a2fa82f0@mail.gmail.com> <46D6E5CD.4060807@gmail.com> <20070830164132.GA21023@khazad-dum.debian.net> <46E5A680.9020706@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070908105534.2e8e7d8a@hyperion.delvare>
+In-Reply-To: <46E5A680.9020706@gmail.com>
 X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
 	1CDB 0FE3
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 08 Sep 2007, Jean Delvare wrote:
-> This more general than just the platform bus. It's how the Linux 2.6
-> device driver model is designed.
+On Mon, 10 Sep 2007, Yan Burman wrote:
+> But, how are you going to make the sysfs attribute look generic so that 
+> application will not have to know whether to go
+> to /sys/.../mdps /sys/.../hdaps/ or /sys/.../whatever?
 
-No issues about that.  It is just that the platform bus sucks a bit if you
-need to "abuse it" (no wonder!) to hang various different devices that are
-provided *or* driven by the same module.
+You use a (new, to be designed and implemented) accelerometer class, and
+userspace hunts down every device that is a member of that class.  Look at
+how hwmon is doing it in 2.6.22+ and lm-sensors CVS.
 
-> There are alternatives to the way hdaps and thinkpad_acpi instantiate
-> their devices:
-> 
+> I'd probably prefer netlink, since this way it's something more generic and 
+> if some more functionality is added, you don't need to start
+> adding more sysfs attributes.
 
-> * These drivers use DMI to find out whether they run on supported
-> hardware. The same detection code could be moved to a separate driver
-
-Actually, DMI is a hint for autoloading, only.  They do probe the
-hardware/firmware for the needed functionality to know for sure.
-
-> (possibly the same one for all DMI-detected devices) and that separate
-> driver would instantiate the devices as needed. Then the usual
-> hotplug/coldplug rules apply.
-
-That could work, yes.
-
-> * Detection could be moved to user-space entirely, then we would only
-> need a way to instantiate these specific devices from user-space. This
-> exists in other areas (scsi, network) for quite some times already so
-> it shouldn't be too difficult.
-
-Don't like that one, sorry.  Detection often needs the kind of access to
-hardware that is better off contained in the kernel.
-
-> > 2. The fact that a module that has a number of different devices has to
-> >    register itself a number of times as a driver, if it wants to name the
-> >    devices something different...
-> 
-> Sounds like you have a design issue here to start with. Supporting
-> several significantly different devices in the same module is not
-> something that we do usually.
-
-I will see what I can do about breaking it up in various modules.  But this
-can be unoptimal. If I took it too seriously, thinkpad-acpi would break into
-at least five different modules, if not more, and at least one or two
-modules would need to be there for the common code.  There has to be a
-middle ground somewhere, I think.
+But you will need to add extra netlink messages, anyway.  I don't know for
+sure what would be the best way.
 
 -- 
   "One disk to rule them all, One disk to find them. One disk to bring
