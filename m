@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759796AbXIJNwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760258AbXIJNx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759796AbXIJNwV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 09:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757616AbXIJNwO
+	id S1760258AbXIJNx0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 09:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758823AbXIJNxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 09:52:14 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:30311 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754235AbXIJNwO (ORCPT
+	Mon, 10 Sep 2007 09:53:11 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34164 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754235AbXIJNxI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 09:52:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=UO5P+ju2oh7F3ziyr3RiufbEBo7i4R2pk/SnUoQLkpqPTJzq9trMIGKA4yQ+A872inxywxwonxEiPydsZObP3wtnlQztivHJOTLVdc2y+G05HyVxzg9m8dN24u1cYpfcvkJHhuOQbmRIipYpeKK0TZidDGWdz8D+AzuWUZ786yo=  ;
-X-YMail-OSG: Yfo0OIoVM1mXDBb_0rBCgbkekRfuUXG8ORNJ05rgzb007bCgCtSDdBFKBQLuWWoKpF9Ay1MB3rqDtnpkREwiwpQ8fO6e
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: tbench regression - Why process scheduler has impact on tbench and why small per-cpu slab (SLUB) cache creates the scenario?
-Date: Mon, 10 Sep 2007 08:10:45 +1000
-User-Agent: KMail/1.9.5
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu
-References: <1188953218.26438.34.camel@ymzhang> <200709081808.42421.nickpiggin@yahoo.com.au> <1189385792.14611.1.camel@ymzhang>
-In-Reply-To: <1189385792.14611.1.camel@ymzhang>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709100810.46341.nickpiggin@yahoo.com.au>
+	Mon, 10 Sep 2007 09:53:08 -0400
+Date: Mon, 10 Sep 2007 15:51:56 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <piggin@cyberone.com.au>,
+       Satyam Sharma <satyam@infradead.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
+       Chris Snook <csnook@redhat.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+Message-ID: <20070910155156.2c1453fc@laptopd505.fenrus.org>
+In-Reply-To: <200709101156.30010.vda.linux@googlemail.com>
+References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
+	<200709091902.55388.vda.linux@googlemail.com>
+	<20070909191839.1fa10e88@laptopd505.fenrus.org>
+	<200709101156.30010.vda.linux@googlemail.com>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 September 2007 10:56, Zhang, Yanmin wrote:
-> On Sat, 2007-09-08 at 18:08 +1000, Nick Piggin wrote:
-> > On Wednesday 05 September 2007 17:07, Christoph Lameter wrote:
-> > > On Wed, 5 Sep 2007, Zhang, Yanmin wrote:
-> > > > > slub_max_order=3 slub_min_objects=8
-> > > >
-> > > > I tried this approach. The testing result showed 2.6.23-rc4 is about
-> > > > 2.5% better than 2.6.22. It really resovles the issue.
-> > >
-> > > Note also that the configuration you tried is the way SLUB is
-> > > configured in Andrew's tree.
-> >
-> > It still doesn't sound like it is competitive with SLAB at the same
-> > sizes. What's the problem?
->
-> Process scheduler and small SLUB per-cpu cache work together to create the
-> tebnch regression.
+On Mon, 10 Sep 2007 11:56:29 +0100
+Denys Vlasenko <vda.linux@googlemail.com> wrote:
 
-OK, so after isolating the scheduler, then SLUB should be as fast as SLAB
-at the same allocation size. That's basically what we need to do before we
-can replace SLAB with it, I think?
+> 
+> Well, if you insist on having it again:
+> 
+> Waiting for atomic value to be zero:
+> 
+>         while (atomic_read(&x))
+>                 continue;
+> 
+
+and this I would say is buggy code all the way.
+
+Not from a pure C level semantics, but from a "busy waiting is buggy"
+semantics level and a "I'm inventing my own locking" semantics level.
+
