@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759625AbXIJNAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932496AbXIJNAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759625AbXIJNAE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 09:00:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758062AbXIJM7y
+	id S932496AbXIJNAz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 09:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbXIJNAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 08:59:54 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:63450 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756481AbXIJM7x (ORCPT
+	Mon, 10 Sep 2007 09:00:43 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2409 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758062AbXIJNAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 08:59:53 -0400
-Date: Mon, 10 Sep 2007 08:59:11 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Markus Armbruster <armbru@redhat.com>
-cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org,
-       Dmitry Torokhov <dtor@mail.ru>, akpm@linux-foundation.org
-Subject: Re: [PATCH] input: Fix interrupt enable in i8042_ctr when enabling
- interrupt fails
-In-Reply-To: <877imy7kw1.fsf@pike.pond.sub.org>
-Message-ID: <Pine.LNX.4.58.0709100853340.24030@gandalf.stny.rr.com>
-References: <877imy7kw1.fsf@pike.pond.sub.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 10 Sep 2007 09:00:42 -0400
+Date: Mon, 10 Sep 2007 21:00:24 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jamal <hadi@cyberus.ca>
+Subject: Re: 2.6.23-rc5: possible irq lock inversion dependency detected
+Message-ID: <20070910130024.GA27939@gondor.apana.org.au>
+References: <alpine.DEB.0.999.0709021455510.7103@sheep.housecafe.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.0.999.0709021455510.7103@sheep.housecafe.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Sep 02, 2007 at 01:11:29PM +0000, Christian Kujau wrote:
+> 
+> after upgrading to 2.6.23-rc5 (and applying davem's fix [0]), lockdep 
+> was quite noisy when I tried to shape my external (wireless) interface:
+> 
+> [ 6400.534545] FahCore_78.exe/3552 just changed the state of lock:
+> [ 6400.534713]  (&dev->ingress_lock){-+..}, at: [<c038d595>] 
+> netif_receive_skb+0x2d5/0x3c0
+> [ 6400.534941] but this lock took another, soft-read-irq-unsafe lock in the 
+> past:
+> [ 6400.535145]  (police_lock){-.--}
 
---
-On Mon, 10 Sep 2007, Markus Armbruster wrote:
->
-> I believe this possible, but unlikely (perhaps not so unlikely on
-> virtual machines).  Scenarios involve enable succeeding the first
-> time, failing the second time, and succeeding the third time.  I can
-> provide details, but the point I'd like to make is not that this is
-> broken (although it is, strictly speaking), but that it is not
-> obviously correct where it easily could be: just clear the interrupt
-> enable bits when writing them to the hardware failed, like the old
-> code did.
->
+This is a genuine dead-lock.  The police lock can be taken
+for reading with softirqs on.  If a second CPU tries to take
+the police lock for writing, while holding the ingress lock,
+then a softirq on the first CPU can dead-lock when it tries
+to get the ingress lock.
 
-I also want to stress that this is more of a clean up for "technically
-correct" code than a bug fix.  This bug probably would never happen on
-baremetal unless it was running on broken hardware.
+The minimal fix would be to make sure that we disable BH on
+the first CPU.  Jamal, could you take a look at this please?
 
-  BUT!!!
-
-With more and more systems going to a virtual environment, having a bug or
-some other anomaly can trigger the error that this patch prevents. The
-patch will also trigger a print in the case of running on a buggy virtual
-machine, which would help out the developers of that virtual machine to
-fix their code.
-
-Please apply.
-
--- Steve
-
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
