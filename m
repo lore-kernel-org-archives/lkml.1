@@ -1,53 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760661AbXIJOPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760747AbXIJOQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760661AbXIJOPg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 10:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759356AbXIJOPS
+	id S1760747AbXIJOQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 10:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759356AbXIJOQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 10:15:18 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60611 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759477AbXIJOPQ (ORCPT
+	Mon, 10 Sep 2007 10:16:17 -0400
+Received: from qb-out-0506.google.com ([72.14.204.228]:43586 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759949AbXIJOQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 10:15:16 -0400
-Date: Mon, 10 Sep 2007 16:14:56 +0100
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Adrian Bunk <bunk@kernel.org>,
-       perex@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] unexport sys_{open,read}
-Message-ID: <20070910161456.7431312c@laptopd505.fenrus.org>
-In-Reply-To: <20070910022324.c69e1897.akpm@linux-foundation.org>
-References: <20070909202527.GT3563@stusta.de>
-	<20070909203920.GA11764@infradead.org>
-	<20070909145940.0b41c8a5.akpm@linux-foundation.org>
-	<20070910090808.GA31204@infradead.org>
-	<20070910022324.c69e1897.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 10 Sep 2007 10:16:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=bbrLooBLDCvZWoGFPLLyDRYZFaQbGoqEriz8o+GaX9b0/AdfY8vMRtQ000RcAvtgq2rrLA4r/Jrke1lRABbLviC9BCMFiZIQZv08uz7EiO5Yd5mkRXW6EFBYwVKVjJeSArdqVvrFum6mVbVNJgXD7VIfrwn7xl1u33nxMxRU48c=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Date: Mon, 10 Sep 2007 15:16:02 +0100
+User-Agent: KMail/1.9.1
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <piggin@cyberone.com.au>,
+       Satyam Sharma <satyam@infradead.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
+       Chris Snook <csnook@redhat.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <6370BBDF-0C79-41EB-BD2A-02AA0D216924@mac.com> <200709101438.36710.vda.linux@googlemail.com>
+In-Reply-To: <200709101438.36710.vda.linux@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200709101516.03234.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Sep 2007 02:23:24 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Monday 10 September 2007 14:38, Denys Vlasenko wrote:
+> You are basically trying to educate me how to use atomic properly.
+> You don't need to do it, as I am (currently) not a driver author.
+> 
+> I am saying that people who are already using atomic_read()
+> (and who unfortunately did not read your explanation above)
+> will still sometimes use atomic_read() as a way to read atomic value
+> *from memory*, and will create nasty heisenbugs for you to debug.
 
-> I would like to see "everyone" explain what we lose by giving
-> developers a bit of warning before we break their stuff.
+static inline int
+qla2x00_wait_for_loop_ready(scsi_qla_host_t *ha)
+{
+        int      return_status = QLA_SUCCESS;
+        unsigned long loop_timeout ;
+        scsi_qla_host_t *pha = to_qla_parent(ha);
 
-here's the skinny: 99% of the external module developers won't notice
-until they're gone, even with the warning. And that's an optimistic
-estimate. Warnings don't work for this.
+        /* wait for 5 min at the max for loop to be ready */
+        loop_timeout = jiffies + (MAX_LOOP_TIMEOUT * HZ);
 
-All this kind of thing buys us is an excuse so that we can say "but we
-warned  you for 3 months". It doesn't actually change anything else.
+        while ((!atomic_read(&pha->loop_down_timer) &&
+            atomic_read(&pha->loop_state) == LOOP_DOWN) ||
+            atomic_read(&pha->loop_state) != LOOP_READY) {
+                if (atomic_read(&pha->loop_state) == LOOP_DEAD) {
+                        return_status = QLA_FUNCTION_FAILED;
+                        break;
+                }
+                msleep(1000);
+                if (time_after_eq(jiffies, loop_timeout)) {
+                        return_status = QLA_FUNCTION_FAILED;
+                        break;
+                }
+        }
+        return (return_status);
+}
 
-Maybe I'm too pessimistic in my assumption that external open module
-writers don't actually follow mainline closely; and maybe part of me
-would love for them to follow it closer, so close that they would even
-consider submitting their driver for it. But sadly from experience...
-warnings dont' work. Only when things break hard people notice.
+Is above correct or buggy? Correct, because msleep is a barrier.
+Is it obvious? No.
+
+static void
+qla2x00_rst_aen(scsi_qla_host_t *ha)
+{
+        if (ha->flags.online && !ha->flags.reset_active &&
+            !atomic_read(&ha->loop_down_timer) &&
+            !(test_bit(ABORT_ISP_ACTIVE, &ha->dpc_flags))) {
+                do {
+                        clear_bit(RESET_MARKER_NEEDED, &ha->dpc_flags);
+
+                        /*
+                         * Issue marker command only when we are going to start
+                         * the I/O.
+                         */
+                        ha->marker_needed = 1;
+                } while (!atomic_read(&ha->loop_down_timer) &&
+                    (test_bit(RESET_MARKER_NEEDED, &ha->dpc_flags)));
+        }
+}
+
+Is above correct? I honestly don't know. Correct, because set_bit is
+a barrier on _all _memory_? Will it break if set_bit will be changed
+to be a barrier only on its operand? Probably yes.
+
+drivers/kvm/kvm_main.c
+
+        while (atomic_read(&completed) != needed) {
+                cpu_relax();
+                barrier();
+        }
+
+Obviously author did not know that cpu_relax is already a barrier.
+See why I think driver authors will be confused?
+
+arch/x86_64/kernel/crash.c
+
+static void nmi_shootdown_cpus(void)
+{
+...
+        msecs = 1000; /* Wait at most a second for the other cpus to stop */
+        while ((atomic_read(&waiting_for_crash_ipi) > 0) && msecs) {
+                mdelay(1);
+                msecs--;
+        }
+...
+}
+
+Is mdelay(1) a barrier? Yes, because it is a function on x86_64.
+Absolutely the same code will be buggy on an arch where
+mdelay(1) == udelay(1000), and udelay is implemented
+as inline busy-wait.
+
+arch/sparc64/kernel/smp.c
+
+        /* Wait for response */
+        while (atomic_read(&data.finished) != cpus)
+                cpu_relax();
+...later in the same file...
+                while (atomic_read(&smp_capture_registry) != ncpus)
+                        rmb();
+
+I'm confused. Do we need cpu_relax() or rmb()? Does cpu_relax() imply rmb()?
+(No it doesn't). Which of those two while loops needs correcting?
+--
+vda
