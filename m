@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761614AbXIJWlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbXIJWl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761614AbXIJWlJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 18:41:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933016AbXIJWk5
+	id S1761910AbXIJWl0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 18:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761626AbXIJWlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 18:40:57 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49829 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933011AbXIJWk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 18:40:56 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [RFC] kbuild - introduce vdir to make life easier for x86_64
-Date: Tue, 11 Sep 2007 00:40:41 +0200
-User-Agent: KMail/1.9.6
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       kbuild devel <kbuild-devel@lists.sourceforge.net>
-References: <20070910191138.GA31541@uranus.ravnborg.org>
-In-Reply-To: <20070910191138.GA31541@uranus.ravnborg.org>
+	Mon, 10 Sep 2007 18:41:10 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35401 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761612AbXIJWlJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 18:41:09 -0400
+Date: Tue, 11 Sep 2007 00:41:12 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Al Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>, perex@suse.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] unexport sys_{open,read}
+Message-ID: <20070910224112.GK3563@stusta.de>
+References: <20070909203920.GA11764@infradead.org> <20070909145940.0b41c8a5.akpm@linux-foundation.org> <20070910090808.GA31204@infradead.org> <20070910022324.c69e1897.akpm@linux-foundation.org> <20070910124358.GB21089@ftp.linux.org.uk> <20070910102556.de35e825.akpm@linux-foundation.org> <20070910195821.GH3563@stusta.de> <20070910131759.a7b2dce7.akpm@linux-foundation.org> <20070910221848.GJ3563@stusta.de> <46E5C21C.8040609@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200709110040.41605.ak@suse.de>
+In-Reply-To: <46E5C21C.8040609@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 11, 2007 at 12:15:56AM +0200, Rene Herman wrote:
+> On 09/11/2007 12:18 AM, Adrian Bunk wrote:
+>
+>> On Mon, Sep 10, 2007 at 01:17:59PM -0700, Andrew Morton wrote:
+>
+>>> There is no benefit in making some rigid set of rules.
+>> Is is considered beneficial to provide API stability for external modules 
+>> or not?
+>
+> If I may...
+>
+> Yes, it is. Just not at any significant cost and Andrew is saying that he 
+> considers the _UNUSED() thing not significant.
 
-> The below are the minimal clean-up - a bit more could be done.
-> 
-> Comments?
+But there is no API stability for external modules this way.
 
-Looks good in principle. My only suggestion would be to name it something
-differently than vdir. I know that's what GNU make calls it, but it's still
-pretty cryptic. How about just fallback-dir ? 
+It simply doesn't make sense to give the few sys_open() abusers even 
+more grace period while changes to the IRQ API affecting nearly everyone 
+are allowed without any requirements of ensuring API stability.
 
-Also what would be nice (I don't know if it's doable in make) would
-be a separate variable (e.g. other-obj-... := ) that contains the fallback
-names and that is double checked against the fallback directory. That
-would document it clearly what's going on. Failing that stuffing 
-them into a comment would be good at least.
+I'm not a fan of API stability for external modules, but if API 
+stability was considered important it should be done consequently and 
+not only for some patches that have the bad fate of having to go through 
+Andrew to Linus.
 
--Andi
+> Rene.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
