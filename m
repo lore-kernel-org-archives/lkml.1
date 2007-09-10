@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761659AbXIJWEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761763AbXIJWGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761659AbXIJWEW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 18:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759539AbXIJWEN
+	id S1761763AbXIJWGe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 18:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761165AbXIJWGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 18:04:13 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:46609 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755331AbXIJWEM (ORCPT
+	Mon, 10 Sep 2007 18:06:25 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:45034 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761105AbXIJWGY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 18:04:12 -0400
-Date: Tue, 11 Sep 2007 00:04:10 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-cc: netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ipconfig.c: De-clutter IP configuration report
-In-Reply-To: <Pine.LNX.4.64N.0709101249230.25038@blysk.ds.pg.gda.pl>
-Message-ID: <Pine.LNX.4.64.0709102351090.5368@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64N.0709101249230.25038@blysk.ds.pg.gda.pl>
+	Mon, 10 Sep 2007 18:06:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=YgLm1BCIuUUN/NHDwYiCjs5Ta4fUw3mvfsuXi2N9P4saR1HSvVEAnEWdmwiPeMI8ki0VljqrmS3r2N4eAOY2BxZuKVmoQnphDH7kn79kqXqkxEm1AhjN1LyY27RHSc7PP9SchNKuK6TbQ9DAg6ZgwxwB73N7MaGooPeRSRZ+tXY=
+Message-ID: <e9e943910709101506p555c6c0co8ce4529f90e814e8@mail.gmail.com>
+Date: Mon, 10 Sep 2007 23:06:23 +0100
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "Eric Sandeen" <sandeen@redhat.com>
+Subject: Re: [RESEND][PATCH] dir_index: error out instead of BUG on corrupt hash dir limit
+Cc: "linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "ext4 development" <linux-ext4@vger.kernel.org>
+In-Reply-To: <46E55BD0.30500@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46D8D30B.6090703@redhat.com>
+	 <20070909131933.GA15229@dastardly.plus.com>
+	 <46E55BD0.30500@redhat.com>
+X-Google-Sender-Auth: a2a368134e08be66
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sep 10 2007 13:09, Maciej W. Rozycki wrote:
-> The new code builds fine; no semantic changes.
+On 10/09/2007, Eric Sandeen <sandeen@redhat.com> wrote:
+> Duane Griffin wrote:
+> > Sorry I missed this first time around. I came up with a very similar
+> > fix recently, following a gentoo bug report.  However there are a few
+> > more asserts later that you aren't currently handling. Below is an
+> > incremental patch on top of yours that converts them too.
 >
-> Please apply,
+> Ah, good point... I focused a bit too much on the single problem at hand
+> didn't I.  :)
+
+Easy to do :)
+
+> > Note that one
+> > of them is in an if (0) block and maybe should be left alone -- what do
+> > you think?
 >
->  Maciej
+> If it's just there for debug, maybe leaving an assert is ok, to get a
+> dump & system state etc.  If it is converted, a printk would probably be
+> good so you know you're falling back, otherwise that extra checking is a
+> bit pointless if it's silent.
+
+Good point. Perhaps best to just back that part out.
+
+> I wonder if
+> we should fix up all the new error condition printk's a bit to be more
+> descriptive of the problem at hand; for example, the one I sent should
+> maybe say:
 >
->patch-mips-2.6.23-rc5-20070904-ipconfig-printk-2
->diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/net/ipv4/ipconfig.c linux-mips-2.6.23-rc5-20070904/net/ipv4/ipconfig.c
->--- linux-mips-2.6.23-rc5-20070904.macro/net/ipv4/ipconfig.c	2007-09-04 04:56:22.000000000 +0000
->+++ linux-mips-2.6.23-rc5-20070904/net/ipv4/ipconfig.c	2007-09-10 11:53:19.000000000 +0000
->@@ -1364,17 +1364,17 @@ static int __init ip_auto_config(void)
-> 	/*
-> 	 * Clue in the operator.
-> 	 */
->-	printk("IP-Config: Complete:");
->-	printk("\n      device=%s", ic_dev->name);
->-	printk(", addr=%u.%u.%u.%u", NIPQUAD(ic_myaddr));
->-	printk(", mask=%u.%u.%u.%u", NIPQUAD(ic_netmask));
->-	printk(", gw=%u.%u.%u.%u", NIPQUAD(ic_gateway));
->-	printk(",\n     host=%s, domain=%s, nis-domain=%s",
->-	       utsname()->nodename, ic_domain, utsname()->domainname);
->-	printk(",\n     bootserver=%u.%u.%u.%u", NIPQUAD(ic_servaddr));
->-	printk(", rootserver=%u.%u.%u.%u", NIPQUAD(root_server_addr));
->-	printk(", rootpath=%s", root_server_path);
->-	printk("\n");
->+	pr_info("IP-Config: Complete:\n");
->+	pr_info("      device=%s, addr=%u.%u.%u.%u, "
->+		"mask=%u.%u.%u.%u, gw=%u.%u.%u.%u,\n",
->+		ic_dev->name, NIPQUAD(ic_myaddr),
->+		NIPQUAD(ic_netmask), NIPQUAD(ic_gateway));
->+	pr_info("      host=%s, domain=%s, nis-domain=%s,\n",
->+		utsname()->nodename, ic_domain, utsname()->domainname);
->+	pr_info("      bootserver=%u.%u.%u.%u, "
->+		"rootserver=%u.%u.%u.%u, rootpath=%s\n",
->+		NIPQUAD(ic_servaddr),
->+		NIPQUAD(root_server_addr), root_server_path);
-> #endif /* !SILENT */
-> 
-> 	return 0;
+> +               ext3_warning(dir->i_sb, __FUNCTION__,
+> +                            "Corrupt root limit in dir inode %ld\n", dir->i_ino);
+>
+> I wanted to leave the word "corrupt" in there, or at least something to
+> clue in the user that maybe fsck is in order...
 
-It should really be done in userspace. And ripped from the kernel.
+I struggled with the wording, too. I originally went with "Invalid dx
+limit/count", but wasn't terribly happy with it. "Corrupt" is more
+accurate and informative. Perhaps the warning should also explicitly
+recommend running fsck:
 
+"Corrupt root limit in dir inode %ld, running e2fsck is recommended\n"
 
+Cheers,
+Duane.
 
-	Jan
 -- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
