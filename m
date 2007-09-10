@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbXIJMGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXIJMIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758604AbXIJMGX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 08:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758339AbXIJMEd
+	id S964934AbXIJMIW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 08:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757386AbXIJMIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 08:04:33 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:41161 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758163AbXIJMEa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 08:04:30 -0400
-Subject: [PATCH] list.h: add list_for_each_entry_continue_rcu
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 10 Sep 2007 14:05:47 +0200
-Message-Id: <1189425947.4506.78.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Sep 2007 08:08:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42674 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757419AbXIJMIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 08:08:04 -0400
+Date: Mon, 10 Sep 2007 14:07:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND][PATCH 0/4] Virtual Machine Time Accounting
+Message-ID: <20070910120758.GA26835@elte.hu>
+References: <46E5325D.1020902@bull.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46E5325D.1020902@bull.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To implement the multicast list callback in mac80211 we need to
-do partial list iteration. Since I want to convert the interface
-list to an RCU list, I need a new list walking primitive:
-list_for_each_entry_continue_rcu().
 
-Additional help text was provided by Paul McKenney.
+* Laurent Vivier <Laurent.Vivier@bull.net> wrote:
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-kernel@vger.kernel.org
-Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Ingo, please, could you have a look to these patches ?
+> 
+> The aim of these four patches is to introduce Virtual Machine time 
+> accounting.
+> 
+> [PATCH 1/4] as recent CPUs introduce a third running state, after 
+> "user" and "system", we need a new field, "guest", in cpustat to store 
+> the time used by the CPU to run virtual CPU. Modify /proc/stat to 
+> display this new field.
 
----
-John, I don't know if you want to merge this or not. There's no clear
-list.h maintainer and this patch is requisite for the bugfix I'm going
-to send in a minute so it'd probably be best if this goes into the tree
-together.
-If you don't want to take it, however, I have no idea how to handle the
-situation :)
+the concept certainly looks sane to me.
 
- include/linux/list.h |   26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+The heavy-handed use of #ifdefs uglifies the code to a large degree, but 
+this is not a fundamental problem: since basically all distros have KVM 
+enabled (and lguest benefits from this too), could you just make all 
+this new code unconditional?
 
---- wireless-dev.orig/include/linux/list.h	2007-09-07 22:00:41.234425862 +0200
-+++ wireless-dev/include/linux/list.h	2007-09-07 22:05:08.184425862 +0200
-@@ -665,6 +665,32 @@ static inline void list_splice_init_rcu(
- 		prefetch(rcu_dereference((pos))->next), (pos) != (head); \
-         	(pos) = (pos)->next)
- 
-+
-+/**
-+ * list_for_each_entry_continue_rcu - continue iteration over rcu list
-+ * @pos:	the type * to use as a loop cursor.
-+ * @head:	the head for your list.
-+ * @member:	the name of the list_struct within the struct.
-+ *
-+ * Continue to iterate over rcu list of given type, continuing after
-+ * the current position.
-+ *
-+ * This list-traversal primitive may safely run concurrently with
-+ * the _rcu list-mutation primitives such as list_add_rcu()
-+ * as long as the traversal is guarded by rcu_read_lock().
-+ *
-+ * Note that the caller is responsible for making sure that
-+ * the element remains in place between the earlier iterator
-+ * and this one.  One way to do this is to ensure that
-+ * both iterators are covered by the same rcu_read_lock(),
-+ * while others involve reference counts, flags, or mutexes.
-+ */
-+#define list_for_each_entry_continue_rcu(pos, head, member) \
-+	for ((pos) = list_entry((pos)->member.next, typeof(*pos), member); \
-+		prefetch(rcu_dereference((pos))->member.next), \
-+			 &pos->member != (head); \
-+        	(pos) = list_entry(pos->member.next, typeof(*pos), member))
-+
- /*
-  * Double linked lists with a single pointer list head.
-  * Mostly useful for hash tables where the two pointer list head is
-
-
+	Ingo
