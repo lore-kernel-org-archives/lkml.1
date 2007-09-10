@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760654AbXIJOyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965035AbXIJOyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760654AbXIJOyQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 10:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760526AbXIJOwu
+	id S965035AbXIJOyp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 10:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760582AbXIJOwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 10:52:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60003 "EHLO mx1.redhat.com"
+	Mon, 10 Sep 2007 10:52:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60036 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760367AbXIJOwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 10:52:45 -0400
-Date: Mon, 10 Sep 2007 10:52:32 -0400
-Message-Id: <200709101452.l8AEqWgZ016277@dantu.rdu.redhat.com>
+	id S1760513AbXIJOwt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 10:52:49 -0400
+Date: Mon, 10 Sep 2007 10:52:42 -0400
+Message-Id: <200709101452.l8AEqg0V016288@dantu.rdu.redhat.com>
 From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 3/7] reiserfs: turn of ATTR_KILL_S*ID at beginning of reiserfs_setattr
+Subject: [PATCH 5/7] VFS: make notify_change pass ATTR_KILL_S*ID to setattr operations
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
        ecryptfs-devel@lists.sourceforge.net, reiserfs-devel@vger.kernel.org,
@@ -20,32 +20,81 @@ Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-reiserfs_setattr can call notify_change recursively using the same
-iattr struct. This could cause it to trip the BUG() in notify_change.
-Fix reiserfs to clear those bits near the beginning of the function.
+Make notify_change not clear the ATTR_KILL_S*ID bits in the ia_vaid that
+gets passed to the setattr inode operation. This allows the filesystems
+to reinterpret whether this mode change is simply intended to clear the
+setuid/setgid bits.
+
+This means that notify_change should never be called with both ATTR_MODE
+and either of the ATTR_KILL_S*ID bits set, since the filesystem would
+have no way to know what part of the mode change was intentional. If
+it is called this way, consider it a BUG().
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
- fs/reiserfs/inode.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+ fs/attr.c |   26 ++++++++++++++++----------
+ 1 files changed, 16 insertions(+), 10 deletions(-)
 
-diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
-index 9ea1200..0804289 100644
---- a/fs/reiserfs/inode.c
-+++ b/fs/reiserfs/inode.c
-@@ -3061,7 +3061,11 @@ int reiserfs_setattr(struct dentry *dentry, struct iattr *attr)
+diff --git a/fs/attr.c b/fs/attr.c
+index ae58bd3..966b73e 100644
+--- a/fs/attr.c
++++ b/fs/attr.c
+@@ -103,12 +103,11 @@ EXPORT_SYMBOL(inode_setattr);
+ int notify_change(struct dentry * dentry, struct iattr * attr)
  {
  	struct inode *inode = dentry->d_inode;
+-	mode_t mode;
++	mode_t mode = inode->i_mode;
  	int error;
--	unsigned int ia_valid = attr->ia_valid;
-+	unsigned int ia_valid;
+ 	struct timespec now;
+ 	unsigned int ia_valid = attr->ia_valid;
+ 
+-	mode = inode->i_mode;
+ 	now = current_fs_time(inode->i_sb);
+ 
+ 	attr->ia_ctime = now;
+@@ -125,18 +124,25 @@ int notify_change(struct dentry * dentry, struct iattr * attr)
+ 		if (error)
+ 			return error;
+ 	}
 +
-+	/* must be turned off for recursive notify_change calls */
-+	ia_valid = attr->ia_valid &= ~(ATTR_KILL_SUID|ATTR_KILL_SGID);
++	/*
++	 * We now pass ATTR_KILL_S*ID to the lower level setattr function so
++	 * that the function has the ability to reinterpret a mode change
++	 * that's due to these bits. This adds an implicit restriction that
++	 * no function will ever call notify_change with both ATTR_MODE and
++	 * ATTR_KILL_S*ID set.
++	 */
++	if ((ia_valid & (ATTR_KILL_SUID|ATTR_KILL_SGID)) &&
++	    (ia_valid & ATTR_MODE))
++		BUG();
 +
- 	reiserfs_write_lock(inode->i_sb);
- 	if (attr->ia_valid & ATTR_SIZE) {
- 		/* version 2 items will be caught by the s_maxbytes check
+ 	if (ia_valid & ATTR_KILL_SUID) {
+-		attr->ia_valid &= ~ATTR_KILL_SUID;
+ 		if (mode & S_ISUID) {
+-			if (!(ia_valid & ATTR_MODE)) {
+-				ia_valid = attr->ia_valid |= ATTR_MODE;
+-				attr->ia_mode = inode->i_mode;
+-			}
+-			attr->ia_mode &= ~S_ISUID;
++			ia_valid = attr->ia_valid |= ATTR_MODE;
++			attr->ia_mode = (inode->i_mode & ~S_ISUID);
+ 		}
+ 	}
+ 	if (ia_valid & ATTR_KILL_SGID) {
+-		attr->ia_valid &= ~ ATTR_KILL_SGID;
+ 		if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
+ 			if (!(ia_valid & ATTR_MODE)) {
+ 				ia_valid = attr->ia_valid |= ATTR_MODE;
+@@ -145,7 +151,7 @@ int notify_change(struct dentry * dentry, struct iattr * attr)
+ 			attr->ia_mode &= ~S_ISGID;
+ 		}
+ 	}
+-	if (!attr->ia_valid)
++	if (!(attr->ia_valid & ~(ATTR_KILL_SUID | ATTR_KILL_SGID)))
+ 		return 0;
+ 
+ 	if (ia_valid & ATTR_SIZE)
 -- 
 1.5.2.1
 
