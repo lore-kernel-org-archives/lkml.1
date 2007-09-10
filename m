@@ -1,23 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbXIJQ0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760301AbXIJQcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758877AbXIJQ0R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 12:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbXIJQ0F
+	id S1760301AbXIJQcA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 12:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbXIJQbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 12:26:05 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39760 "EHLO
+	Mon, 10 Sep 2007 12:31:53 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39714 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753390AbXIJQ0E (ORCPT
+	with ESMTP id S1753763AbXIJQbw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 12:26:04 -0400
-Date: Mon, 10 Sep 2007 17:33:44 +0100
+	Mon, 10 Sep 2007 12:31:52 -0400
+Date: Mon, 10 Sep 2007 17:39:49 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: PnP driver <mkrameshid@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Calling PnP bios routines like get device node from x86_84 arch
-Message-ID: <20070910173344.4bd2ae9e@the-village.bc.nu>
-In-Reply-To: <12594726.post@talk.nabble.com>
-References: <12594726.post@talk.nabble.com>
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Maintainer change
+Message-ID: <20070910173949.28ca860b@the-village.bc.nu>
 X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -28,25 +25,9 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Sep 2007 08:06:20 -0700 (PDT)
-PnP driver <mkrameshid@gmail.com> wrote:
 
-> 
-> Hi,    
->       I am very new to linux kernel driver development. I need to develop a 
-> driver for calling  BIOS routines like get device node. I could  call  it
-> in i386 architecture using the PnP driver. 
+ide-cd needs a new maintainer. I'm now at the point where I simply don't
+have any old-ide systems or interest in working on old IDE bugs at all.
 
-We use ACPI on AMD64 so you should be parsing the ACPI tables not trying
-to rely on legacy interfaces which if I rememeber the spec rightly aren't
-even guaranteed safe to call when ACPI is active.
-
-What are you actually trying to achieve.
-
->      But in x86_64 arch I couldn't see any support. Even I tried to
-> implement it similar to the i386. But there is no API get_cpu_gdt_table().
-> Is there any other way to get the cpu_gdt_table? or any other way to 
-> call the BIOS routines.
-
-Assuming you even have a BIOS - you may have EFI underlying or
-Linuxbios or be a virtual machine.
+So if someone would care to take it over please say otherwise I'll send
+Akpm a patch to mark it unmaintained
