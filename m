@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933449AbXIJWzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761669AbXIJXES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933449AbXIJWzZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 18:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932714AbXIJWzP
+	id S1761669AbXIJXES (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 19:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757935AbXIJXEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 18:55:15 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:38246 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932710AbXIJWzN (ORCPT
+	Mon, 10 Sep 2007 19:04:06 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:50769 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753015AbXIJXEF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 18:55:13 -0400
-X-Sasl-enc: MSDPOtEmd4VfFQsRGvjVRHxpdnO7TGZ0xm/voGqBhaFs 1189464918
-Date: Mon, 10 Sep 2007 19:55:09 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Yan Burman <burman.yan@gmail.com>
-Cc: Shem Multinymous <multinymous@gmail.com>,
-       hdaps-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Hdaps-devel] [PATCH 2.6.23-rc2] hwmon: HP Mobile Data
-	Protection System 3D ACPI driver (resend)
-Message-ID: <20070910225509.GC1408@khazad-dum.debian.net>
-References: <1186831562.6452.10.camel@localhost> <20070825102512.GA5850@ucw.cz> <46D01420.3070400@gmail.com> <20070827171107.GA15647@khazad-dum.debian.net> <46D5A742.8090201@gmail.com> <20070829233024.GA7433@khazad-dum.debian.net> <41840b750708291731w3fb5e673k3c1283e4a2fa82f0@mail.gmail.com> <46D6E5CD.4060807@gmail.com> <20070830164132.GA21023@khazad-dum.debian.net> <46E5A680.9020706@gmail.com>
+	Mon, 10 Sep 2007 19:04:05 -0400
+Message-ID: <46E5CBB5.9030101@gmail.com>
+Date: Tue, 11 Sep 2007 00:56:53 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46E5A680.9020706@gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Al Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>, perex@suse.cz,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] unexport sys_{open,read}
+References: <20070909203920.GA11764@infradead.org> <20070909145940.0b41c8a5.akpm@linux-foundation.org> <20070910090808.GA31204@infradead.org> <20070910022324.c69e1897.akpm@linux-foundation.org> <20070910124358.GB21089@ftp.linux.org.uk> <20070910102556.de35e825.akpm@linux-foundation.org> <20070910195821.GH3563@stusta.de> <20070910131759.a7b2dce7.akpm@linux-foundation.org> <20070910221848.GJ3563@stusta.de> <46E5C21C.8040609@gmail.com> <20070910224112.GK3563@stusta.de>
+In-Reply-To: <20070910224112.GK3563@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Sep 2007, Yan Burman wrote:
-> But, how are you going to make the sysfs attribute look generic so that 
-> application will not have to know whether to go
-> to /sys/.../mdps /sys/.../hdaps/ or /sys/.../whatever?
+On 09/11/2007 12:41 AM, Adrian Bunk wrote:
 
-You use a (new, to be designed and implemented) accelerometer class, and
-userspace hunts down every device that is a member of that class.  Look at
-how hwmon is doing it in 2.6.22+ and lm-sensors CVS.
+> On Tue, Sep 11, 2007 at 12:15:56AM +0200, Rene Herman wrote:
+>> On 09/11/2007 12:18 AM, Adrian Bunk wrote:
+>>
+>>> On Mon, Sep 10, 2007 at 01:17:59PM -0700, Andrew Morton wrote:
+>>>> There is no benefit in making some rigid set of rules.
+>>> Is is considered beneficial to provide API stability for external modules 
+>>> or not?
+>> If I may...
+>>
+>> Yes, it is. Just not at any significant cost and Andrew is saying that he 
+>> considers the _UNUSED() thing not significant.
+> 
+> But there is no API stability for external modules this way.
 
-> I'd probably prefer netlink, since this way it's something more generic and 
-> if some more functionality is added, you don't need to start
-> adding more sysfs attributes.
+I agree that doing things only half is semi-regularly worse than doing them 
+not at all, and this specific case might be the worst example of all, as I 
+read that using sys_open/read is actively harmful, so, well...
 
-But you will need to add extra netlink messages, anyway.  I don't know for
-sure what would be the best way.
+I read the thread since I tend to keep lots of external crap around. Not in 
+any way that would mean I'd have any grounds for complaining about anything; 
+mostly just driver stuff in various states of completeness that I never seem 
+to get around to cleaning up enough to submit to anyone.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+But as such, I can comment on the fact that I'm much more likely to notice 
+the warning than I am to notice a thread on LKML, say. How much more likely 
+I'd be to then also actually do anything about it before it just breaks 
+anyway is another matter, but again, well...
+
+> It simply doesn't make sense to give the few sys_open() abusers even 
+> more grace period while changes to the IRQ API affecting nearly everyone 
+> are allowed without any requirements of ensuring API stability.
+> 
+> I'm not a fan of API stability for external modules, but if API 
+> stability was considered important it should be done consequently and 
+> not only for some patches that have the bad fate of having to go through 
+> Andrew to Linus.
+
+In this case I believe it makes sense to just rip it out, but generally it 
+doesn't need to be such a fully robotic yes/no decision, I'd say.
+
+Rene.
