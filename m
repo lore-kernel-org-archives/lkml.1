@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763165AbXIKKc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966132AbXIKKeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763165AbXIKKc0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 06:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756277AbXIKKcT
+	id S966132AbXIKKeG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 06:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757920AbXIKKdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 06:32:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50252 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750818AbXIKKcS (ORCPT
+	Tue, 11 Sep 2007 06:33:53 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:32008 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753634AbXIKKdw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 06:32:18 -0400
-Date: Tue, 11 Sep 2007 03:31:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: clockevents: fix resume logic
-Message-Id: <20070911033106.91e240df.akpm@linux-foundation.org>
-In-Reply-To: <1189502164.6262.7.camel@chaos>
-References: <200707220159.l6M1xBgH001236@hera.kernel.org>
-	<20070910144740.4eba2fda.akpm@linux-foundation.org>
-	<1189492636.25767.62.camel@chaos>
-	<20070911000001.30f8590b.akpm@linux-foundation.org>
-	<1189495400.25767.81.camel@chaos>
-	<1189496840.22589.1.camel@chaos>
-	<20070911012005.4df3ddf4.akpm@linux-foundation.org>
-	<20070911013512.8d62220e.akpm@linux-foundation.org>
-	<1189502164.6262.7.camel@chaos>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Sep 2007 06:33:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Qv6ma7o5qNyD6l60pP4WaMISHNNJWZ0wKYoJ4BBOOCRREDaDCXlxLpv4JZDb+5pIZ2X3UY3Jl6tgllfoIiMctmREETCjOzispQ86JbJhMrDX+9OYCnFnluC1V498aMZWaawGb77LqXX+46CYNj0IiXVJWmI7rC4af5l+njq6pPQ=  ;
+X-YMail-OSG: Md_2qdMVM1nwDRloapjv5ZD0alzXUI4bK728QbzWUZegF4Ud1OSx_Z8V1eJMOxPENHZ2BBTKfg--
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Lameter <clameter@sgi.com>, andrea@suse.de
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+Date: Tue, 11 Sep 2007 04:52:19 +1000
+User-Agent: KMail/1.9.5
+Cc: torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+References: <20070911060349.993975297@sgi.com>
+In-Reply-To: <20070911060349.993975297@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709110452.20363.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Sep 2007 11:16:04 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+On Tuesday 11 September 2007 16:03, Christoph Lameter wrote:
 
-> On Tue, 2007-09-11 at 01:35 -0700, Andrew Morton wrote:
-> > On Tue, 11 Sep 2007 01:20:05 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Tue, 11 Sep 2007 09:47:20 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
-> > > 
-> > > > On Tue, 2007-09-11 at 09:23 +0200, Thomas Gleixner wrote:
-> > > > > > I went back to the original patch which I sent to Linus and it matches
-> > > > > > 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6.  So all I can think is that there
-> > > > > > must have been something else in the tree which I tested which fixed the
-> > > > > > bug which 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6 introduced.  argh.
-> > > > > > 
-> > > > > > Can you think what would cause the symptoms which I described?  
-> > > > > 
-> > > > > It seems that time is not updated. Timer interrupt not active or some
-> > > > > other odd thing. I figure out what's going on when I find a box which
-> > > > > exposes the problem.
-> > > 
-> > > 2.6.22-rc6-mm1's git-acpi.patch contains something which fixes this bug. 
-> > 
-> > Len's current tree fixes it too.  Maybe we just need to merge the acpi tree?
-> 
-> Did you enable CONFIG_CPU_IDLE after you applied git-acpi to rc6 ?
-> 
+> 5. VM scalability
+>    Large block sizes mean less state keeping for the information being
+>    transferred. For a 1TB file one needs to handle 256 million page
+>    structs in the VM if one uses 4k page size. A 64k page size reduces
+>    that amount to 16 million. If the limitation in existing filesystems
+>    are removed then even higher reductions become possible. For very
+>    large files like that a page size of 2 MB may be beneficial which
+>    will reduce the number of page struct to handle to 512k. The variable
+>    nature of the block size means that the size can be tuned at file
+>    system creation time for the anticipated needs on a volume.
 
-Nope.
+There is a limitation in the VM. Fragmentation. You keep saying this
+is a solved issue and just assuming you'll be able to fix any cases
+that come up as they happen.
 
-Anyway, I've had it.  git seems a bit weird when it's trying to bisect down
-to a point where code started to work correctly, rather than finding when
-it failed (I just reversed "good" and "bad").  The acpi tree is littered
-with build errors at various points and I just don't know which patch fixed
-it - git-bisect seems to keep turning up junk.
+I still don't get the feeling you realise that there is a fundamental
+fragmentation issue that is unsolvable with Mel's approach.
 
-Ho hum.  Maybe tomorrow I'll have a go at turning the acpi tree into a
-series of flat patches and do it sanely.
+The idea that there even _is_ a bug to fail when higher order pages
+cannot be allocated was also brushed aside by some people at the
+vm/fs summit. I don't know if those people had gone through the
+math about this, but it goes somewhat like this: if you use a 64K
+page size, you can "run out of memory" with 93% of your pages free.
+If you use a 2MB page size, you can fail with 99.8% of your pages
+still free. That's 64GB of memory used on a 32TB Altix.
 
+If you don't consider that is a problem because you don't care about
+theoretical issues or nobody has reported it from running -mm
+kernels, then I simply can't argue against that on a technical basis.
+But I'm totally against introducing known big fundamental problems to
+the VM at this stage of the kernel. God knows how long it takes to ever
+fix them in future after they have become pervasive throughout the 
+kernel.
+
+IMO the only thing that higher order pagecache is good for is a quick
+hack for filesystems to support larger block sizes. And after seeing it
+is fairly ugly to support mmap, I'm not even really happy for it to do
+that.
+
+If VM scalability is a problem, then it needs to be addressed in other
+areas anyway for order-0 pages, and if contiguous pages helps IO
+scalability or crappy hardware, then there is nothing stopping us from
+*attempting* to get contiguous memory in the current scheme.
+
+Basically, if you're placing your hopes for VM and IO scalability on this,
+then I think that's a totally broken thing to do and will end up making
+the kernel worse in the years to come (except maybe on some poor
+configurations of bad hardware).
