@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbXIJUnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761125AbXIJUow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760876AbXIJUnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 16:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759829AbXIJUnL
+	id S1761125AbXIJUow (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 16:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759414AbXIJUop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 16:43:11 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:38230 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758007AbXIJUnJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 16:43:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PwgsDbHj4lZ1Xch/SFn4Lf/Bw5nfmD8ZQ/rQdHhhPlQFnnzbczLzvk8r9OCJ6MOG9Veb9nxBhBLnUhQDUjkj+ueSXRCZ3dHj8jIz2KjHxq/nHIyPFQvn0UuDcPqwVS6bcg9SPuuiHNg9GWQaYknbdzRpBA9+/hernWpc2q5JFLY=
-Message-ID: <64bb37e0709101343t2a621239pfc3545263e0b7674@mail.gmail.com>
-Date: Mon, 10 Sep 2007 22:43:07 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "FUJITA Tomonori" <tomof@acm.org>
-Subject: Re: 2.6.23-rc4-mm1
-Cc: akpm@linux-foundation.org, apw@shadowen.org, linux-kernel@vger.kernel.org,
-       mel@csn.ul.ie, jens.axboe@oracle.com, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-In-Reply-To: <20070910045503O.tomof@acm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 10 Sep 2007 16:44:45 -0400
+Received: from www.osadl.org ([213.239.205.134]:46474 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753334AbXIJUoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 16:44:44 -0400
+Subject: Re: [RFC] kbuild - introduce vdir to make life easier for x86_64
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       kbuild devel <kbuild-devel@lists.sourceforge.net>
+In-Reply-To: <20070910203445.GA32047@uranus.ravnborg.org>
+References: <20070910191138.GA31541@uranus.ravnborg.org>
+	 <1189452121.25767.42.camel@chaos> <20070910192920.GA2080@elte.hu>
+	 <20070910203445.GA32047@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Mon, 10 Sep 2007 22:44:42 +0200
+Message-Id: <1189457082.25767.58.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070910111926.9c942358.akpm@linux-foundation.org>
-	 <64bb37e0709101159v47f586aby7f078ef1db5cbc39@mail.gmail.com>
-	 <20070910122038.1f1bb006.akpm@linux-foundation.org>
-	 <20070910045503O.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/10/07, FUJITA Tomonori <tomof@acm.org> wrote:
-> On Mon, 10 Sep 2007 12:20:38 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> > On Mon, 10 Sep 2007 20:59:49 +0200 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-> > > The system boots, reads the partition tables, starts the RAID and then
-> > > kicks one drive out because of errors.
-> >
-> > Andy is using qla1280.  You're using sata.  So it's probably a different
-> > bug, with the same symptoms.
->
-> This might be a sg chaining bug too (probabaly sg chaining libata
-> patch).
->
-> Can you try the following patch that I've just sent:
->
-> http://lkml.org/lkml/2007/9/10/251
->
-> The patch also disables chaining sg list for libata.
->
-With this patch 2.6.23-rc4-mm1 works for me.
-Mainline 2.6.23-rc5-git1 works also without needing any patches.
+Sam,
 
-Torsten
+On Mon, 2007-09-10 at 22:34 +0200, Sam Ravnborg wrote:
+> Partly so. Took a look at the x86 tree.
+> The main Makefile are at least not merged. Neither are pci/Makefile not
+> boot/compressed/Makefile.
+
+Yeah I know. Those are the non trivial ones and the boot/compressed one
+might be split forever. The pci Makefile has link order problems
+(initcall order wreckage) and the main Makefile as well. Needs more
+thought.
+
+> And some of the rest of the Makefiles are not pretty with the huge arch 
+> specific sections ifdeffed out.
+
+I completely agree.
+
+> -ifneq ($(CONFIG_ACPI_PROCESSOR),)
+> -obj-y				+= cstate.o processor.o
+> -endif
+> +obj-$(CONFIG_X86_32)-if-$(CONFIG_ACPI_SLEEP) += sleep_32.o wakeup_32.o
+> +obj-$(CONFIG_X86_64)-if-$(CONFIG_ACPI_SLEEP) += sleep_64.o wakeup_64.o
+> +
+> +obj-y-if-$(CONFIG_ACPI_PROCESSOR) += cstate.o processor.o
+> 
+> 
+> My biggest worry is that we end up with a more compact format
+> but only me (and a very few others) can read it.
+> But I think the above could make the x86 Makefiles more readable
+> as a whole.
+
+It's way better than the ifneq(...) stuff and completely understandable
+at least for me. I'd like to see that change, it is helpful on a bunch
+of other places in the kernel as well.
+
+Thanks,
+
+	tglx
+
+
