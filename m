@@ -1,41 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbXIJHXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbXIJHZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755813AbXIJHXR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 03:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbXIJHXF
+	id S1756054AbXIJHZa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 03:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbXIJHZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 03:23:05 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:58148 "EHLO
+	Mon, 10 Sep 2007 03:25:24 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:59878 "EHLO
 	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754682AbXIJHXE (ORCPT
+	with ESMTP id S1754838AbXIJHZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 03:23:04 -0400
+	Mon, 10 Sep 2007 03:25:23 -0400
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: kexec-ml <kexec@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>,
        "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Subject: [PATCH 0/3] [-mm patch] Cleanup add-vmcoreinfo.patch
-Message-Id: <20070910162305oomichi@mail.jp.nec.com>
+Subject: [PATCH 1/3] [-mm patch] Cleanup the coding style according to Andrew's comments
+In-reply-to: <20070910162305oomichi@mail.jp.nec.com>
+Message-Id: <20070910162520oomichi@mail.jp.nec.com>
+References: <20070910162305oomichi@mail.jp.nec.com>
 Mime-Version: 1.0
 X-Mailer: WeMail32[2.51] ID:5W0000
 From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Date: Mon, 10 Sep 2007 16:23:05 +0900
+Date: Mon, 10 Sep 2007 16:25:20 +0900
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi Andrew,
-
-On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
-> Changes since 2.6.23-rc3-mm1:
-> [snip]
-> +add-vmcoreinfo.patch
->
-
-Thank you for merging add-vmcoreinfo.patch.
-I created the patchset for your comments and some corrections.
-The patchset is for linux-2.6.23-rc4-mm1.
 
 [1/3] Cleanup the coding style according to Andrew's comments:
 http://lists.infradead.org/pipermail/kexec/2007-August/000522.html
@@ -45,16 +35,99 @@ http://lists.infradead.org/pipermail/kexec/2007-August/000522.html
 - Use get_seconds() instead of xtime.tv_sec.
 - Use init_uts_ns.name.release instead of UTS_RELEASE.
 
-[2/3] Add nodemask_t's size and NR_FREE_PAGES's value to vmcoreinfo_data.
-  The dump filetering command 'makedumpfile'(v1.1.6 or before) had assumed
-  the above values, and it was not good from the reliability viewpoint.
-  So makedumpfile v1.2.0 came to need these values and I created the patch
-  to let the kernel output them.
-  makedumpfile site:
-  https://sourceforge.net/projects/makedumpfile/
-
-[3/3] Use the existing ia64_tpa() instead of asm code.
-
 
 Thanks
 Ken'ichi Ohmichi
+
+---
+Signed-off-by: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+---
+diff -rpuN a/include/linux/kexec.h b/include/linux/kexec.h
+--- a/include/linux/kexec.h	2007-09-10 19:37:59.000000000 +0900
++++ b/include/linux/kexec.h	2007-09-10 23:09:37.000000000 +0900
+@@ -123,18 +123,20 @@ int kexec_should_crash(struct task_struc
+ void crash_save_cpu(struct pt_regs *regs, int cpu);
+ void crash_save_vmcoreinfo(void);
+ void arch_crash_save_vmcoreinfo(void);
+-void vmcoreinfo_append_str(const char *fmt, ...);
++void vmcoreinfo_append_str(const char *fmt, ...)
++	__attribute__ ((format (printf, 1, 2)));
+ unsigned long paddr_vmcoreinfo_note(void);
+ 
+ #define SYMBOL(name) \
+ 	vmcoreinfo_append_str("SYMBOL(%s)=%lx\n", #name, (unsigned long)&name)
+ #define SIZE(name) \
+-	vmcoreinfo_append_str("SIZE(%s)=%d\n", #name, sizeof(struct name))
++	vmcoreinfo_append_str("SIZE(%s)=%lu\n", #name, \
++			      (unsigned long)sizeof(struct name))
+ #define OFFSET(name, field) \
+-	vmcoreinfo_append_str("OFFSET(%s.%s)=%d\n", #name, #field, \
+-			      &(((struct name *)0)->field))
++	vmcoreinfo_append_str("OFFSET(%s.%s)=%lu\n", #name, #field, \
++			      (unsigned long)&(((struct name *)0)->field))
+ #define LENGTH(name, value) \
+-	vmcoreinfo_append_str("LENGTH(%s)=%d\n", #name, value)
++	vmcoreinfo_append_str("LENGTH(%s)=%lu\n", #name, (unsigned long)value)
+ #define CONFIG(name) \
+ 	vmcoreinfo_append_str("CONFIG_%s=y\n", #name)
+ 
+@@ -177,8 +179,8 @@ extern struct resource crashk_res;
+ typedef u32 note_buf_t[KEXEC_NOTE_BYTES/4];
+ extern note_buf_t *crash_notes;
+ extern u32 vmcoreinfo_note[VMCOREINFO_NOTE_SIZE/4];
+-extern unsigned int vmcoreinfo_size;
+-extern unsigned int vmcoreinfo_max_size;
++extern size_t vmcoreinfo_size;
++extern size_t vmcoreinfo_max_size;
+ 
+ 
+ #else /* !CONFIG_KEXEC */
+diff -rpuN a/kernel/kexec.c b/kernel/kexec.c
+--- a/kernel/kexec.c	2007-09-10 19:38:00.000000000 +0900
++++ b/kernel/kexec.c	2007-09-10 23:09:58.000000000 +0900
+@@ -38,8 +38,8 @@ note_buf_t* crash_notes;
+ /* vmcoreinfo stuff */
+ unsigned char vmcoreinfo_data[VMCOREINFO_BYTES];
+ u32 vmcoreinfo_note[VMCOREINFO_NOTE_SIZE/4];
+-unsigned int vmcoreinfo_size = 0;
+-unsigned int vmcoreinfo_max_size = sizeof(vmcoreinfo_data);
++size_t vmcoreinfo_size;
++size_t vmcoreinfo_max_size = sizeof(vmcoreinfo_data);
+ 
+ /* Location of the reserved area for the crash kernel */
+ struct resource crashk_res = {
+@@ -1153,7 +1153,7 @@ void crash_save_vmcoreinfo(void)
+ 	if (!vmcoreinfo_size)
+ 		return;
+ 
+-	vmcoreinfo_append_str("CRASHTIME=%d", xtime.tv_sec);
++	vmcoreinfo_append_str("CRASHTIME=%ld", get_seconds());
+ 
+ 	buf = (u32 *)vmcoreinfo_note;
+ 
+@@ -1195,8 +1195,8 @@ unsigned long __attribute__ ((weak)) pad
+ 
+ static int __init crash_save_vmcoreinfo_init(void)
+ {
+-	vmcoreinfo_append_str("OSRELEASE=%s\n", UTS_RELEASE);
+-	vmcoreinfo_append_str("PAGESIZE=%d\n", PAGE_SIZE);
++	vmcoreinfo_append_str("OSRELEASE=%s\n", init_uts_ns.name.release);
++	vmcoreinfo_append_str("PAGESIZE=%ld\n", PAGE_SIZE);
+ 
+ 	SYMBOL(init_uts_ns);
+ 	SYMBOL(node_online_map);
+diff -rpuN a/kernel/ksysfs.c b/kernel/ksysfs.c
+--- a/kernel/ksysfs.c	2007-09-10 19:38:00.000000000 +0900
++++ b/kernel/ksysfs.c	2007-09-10 23:09:07.000000000 +0900
+@@ -65,7 +65,7 @@ static ssize_t vmcoreinfo_show(struct ks
+ {
+ 	return sprintf(page, "%lx %x\n",
+ 		       paddr_vmcoreinfo_note(),
+-		       vmcoreinfo_max_size);
++		       (unsigned int)vmcoreinfo_max_size);
+ }
+ KERNEL_ATTR_RO(vmcoreinfo);
+ 
+_
