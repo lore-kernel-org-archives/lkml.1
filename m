@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965411AbXIJTHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbXIJTIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965411AbXIJTHp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 15:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbXIJTHi
+	id S1757368AbXIJTIG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 15:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756407AbXIJTHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 15:07:38 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34839 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755891AbXIJTHh (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 15:07:37 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andi Kleen <ak@suse.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, jakub@redhat.com,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc3-mm1 - vdso and gettimeofday issues with glibc
-In-Reply-To: Your message of "Sun, 09 Sep 2007 09:27:06 +0200."
-             <200709090927.07069.ak@suse.de>
-From: Valdis.Kletnieks@vt.edu
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46D6EFDE.4020107@redhat.com> <7671.1189297449@turing-police.cc.vt.edu>
-            <200709090927.07069.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1189451250_3507P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 10 Sep 2007 15:07:30 -0400
-Message-ID: <5026.1189451250@turing-police.cc.vt.edu>
+	Mon, 10 Sep 2007 15:07:51 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47357 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756327AbXIJTHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 15:07:50 -0400
+Date: Mon, 10 Sep 2007 12:07:46 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Mel Gorman <mel@skynet.ie>
+Subject: Re: tbench regression - Why process scheduler has impact on tbench
+ and why small per-cpu slab (SLUB) cache creates the scenario?
+In-Reply-To: <200709100810.46341.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0709101201140.24491@schroedinger.engr.sgi.com>
+References: <1188953218.26438.34.camel@ymzhang> <200709081808.42421.nickpiggin@yahoo.com.au>
+ <1189385792.14611.1.camel@ymzhang> <200709100810.46341.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1189451250_3507P
-Content-Type: text/plain; charset=us-ascii
+On Mon, 10 Sep 2007, Nick Piggin wrote:
 
-On Sun, 09 Sep 2007 09:27:06 +0200, Andi Kleen said:
-> > Updating on this issue:   Both myself and another person have reported on
-> > the RedHat bugzilla that it's a clocksource issue - if you are using the
-> > hpet clocksource, the time warps, but booting with clocksource=acpi_pm works.
-> > 
-> > This ring any bells?
-> 
-> Does this patch fix it? 
-> -Andi
-> 
-> Add missing mask operation to vdso
-> 
-> vdso vgetns() didn't mask the time source offset calculation, which could
-> lead to time problems with 32bit HPET. Add the masking.
-> 
-> Thanks to Chuck Ebbert for tracking down.
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
+> OK, so after isolating the scheduler, then SLUB should be as fast as SLAB
+> at the same allocation size. That's basically what we need to do before we
+> can replace SLAB with it, I think?
 
-Confirming that does indeed fix it - booted with hpet clocksource and vdso=1,
-and the time didn't warp at the 5-minute mark.
+The regression is due to the limited number of objects in the per cpu 
+"queue" in SLUB for 4k objects. With the .23 code this is one or two 
+(order 1 slab). So we have to call into the page allocator frequently and 
+do it for order 1 pages which requires the zone locks. Urgh.
 
-Tested-By: Valdis Kletnieks <valdis.kletnieks@vt.edu>
+I think the regression is best addressed by the page allocator pass 
+through patch in mm which makes the page allocator handle these objects. 
+They are single pages so the pcp lists are in use which provide much 
+larger queues than SLUB/SLAB.
 
---==_Exmh_1189451250_3507P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG5ZXycC3lWbTT17ARAg3BAKCtfadk54xhoqXqYKhgJY1Bams+RgCgwo26
-9xMBg+JgWwtKSOAZaj0l/4U=
-=VfYj
------END PGP SIGNATURE-----
-
---==_Exmh_1189451250_3507P--
+IMHO >=4k objects should be handled by the page allocator. From the 
+numbers I have seen there is then still a 1% regression left. If 
+that is still the case after we have fixed the scheduler then maybe 
+we need to slim down the page allocator fast path.
