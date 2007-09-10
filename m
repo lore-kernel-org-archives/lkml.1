@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760832AbXIJT2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761015AbXIJT3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760832AbXIJT2d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 15:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbXIJT2Z
+	id S1761015AbXIJT3m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 15:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbXIJT3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 15:28:25 -0400
-Received: from khc.piap.pl ([195.187.100.11]:56733 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbXIJT2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 15:28:24 -0400
-To: sylvain.meyer@worldonline.fr
-Cc: Andrew Morton <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Intel FB: support for interlaced video modes
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 10 Sep 2007 21:28:23 +0200
-Message-ID: <m3hcm2l3qg.fsf@maximus.localdomain>
+	Mon, 10 Sep 2007 15:29:33 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49240 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750822AbXIJT3c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 15:29:32 -0400
+Date: Mon, 10 Sep 2007 12:29:32 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Daniel Phillips <phillips@phunq.net>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dkegel@google.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+In-Reply-To: <20070905121937.GA9246@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0709101225350.24735@schroedinger.engr.sgi.com>
+References: <20070814142103.204771292@sgi.com> <200709050220.53801.phillips@phunq.net>
+ <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
+ <20070905114242.GA19938@wotan.suse.de> <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
+ <20070905121937.GA9246@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Intel framebuffer now supports interlaced video modes.
+On Wed, 5 Sep 2007, Nick Piggin wrote:
 
-Signed-off-by: Krzysztof Halasa <khc@pm.waw.pl>
+> Implementation issues aside, the problem is there and I would like to
+> see it fixed regardless if some/most/or all users in practice don't
+> hit it.
 
---- a/drivers/video/intelfb/intelfbhw.c
-+++ b/drivers/video/intelfb/intelfbhw.c
-@@ -323,11 +323,7 @@ intelfbhw_validate_mode(struct intelfb_info *dinfo,
- 		return 1;
- 	}
- 
--	/* Check for interlaced/doublescan modes. */
--	if (var->vmode & FB_VMODE_INTERLACED) {
--		WRN_MSG("Mode is interlaced.\n");
--		return 1;
--	}
-+	/* Check for doublescan modes. */
- 	if (var->vmode & FB_VMODE_DOUBLE) {
- 		WRN_MSG("Mode is double-scan.\n");
- 		return 1;
-@@ -1220,6 +1216,12 @@ intelfbhw_mode_to_hw(struct intelfb_info *dinfo, struct intelfb_hwstate *hw,
- 
- 	/* Set the palette to 8-bit mode. */
- 	*pipe_conf &= ~PIPECONF_GAMMA;
-+
-+	if (var->vmode & FB_VMODE_INTERLACED)
-+		*pipe_conf |= PIPECONF_INTERLACE_W_FIELD_INDICATION;
-+	else
-+		*pipe_conf &= ~PIPECONF_INTERLACE_MASK;
-+
- 	return 0;
- }
- 
---- a/drivers/video/intelfb/intelfbhw.h
-+++ b/drivers/video/intelfb/intelfbhw.h
-@@ -286,6 +286,10 @@
- #define PIPECONF_UNLOCKED		0
- #define PIPECONF_GAMMA			(1 << 24)
- #define PIPECONF_PALETTE		0
-+#define PIPECONF_PROGRESSIVE			(0 << 21)
-+#define PIPECONF_INTERLACE_W_FIELD_INDICATION	(6 << 21)
-+#define PIPECONF_INTERLACE_FIELD_0_ONLY		(7 << 21)
-+#define PIPECONF_INTERLACE_MASK			(7 << 21)
- 
- #define DISPARB			0x70030
- #define DISPARB_AEND_MASK		0x1ff
+I am all for fixing the problem but the solution can be much simpler and 
+more universal. F.e. the amount of tcp data in flight may be controlled 
+via some limit so that other subsystems can continue to function even if 
+we are overwhelmed by network traffic. Peter's approach establishes the 
+limit by failing PF_MEMALLOC allocations. If that occurs then other 
+subsystems (like the disk, or even fork/exec or memory management 
+allocation) will no longer operate since their allocations no longer 
+succeed which will make the system even more fragile and may lead to 
+subsequent failures.
+
