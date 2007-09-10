@@ -1,76 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966927AbXIKGnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762755AbXIKGrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966927AbXIKGnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965753AbXIKGlP
+	id S1762755AbXIKGrL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756462AbXIKGqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:41:15 -0400
-Received: from mga11.intel.com ([192.55.52.93]:39683 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965549AbXIKGlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 02:41:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,235,1186383600"; 
-   d="scan'208";a="301894789"
-Subject: Re: [RFC] disable PCIE 'Enable No Snoop' bit by default
-From: Shaohua Li <shaohua.li@intel.com>
-To: Greg KH <greg@kroah.com>
-Cc: David Miller <davem@davemloft.net>, matthew@wil.cx,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       akpm@linux-foundation.org, gregkh@suse.de
-In-Reply-To: <20070911061538.GE27404@kroah.com>
-References: <1189056908.24368.9.camel@sli10-conroe.sh.intel.com>
-	 <20070906115730.GE14130@parisc-linux.org>
-	 <20070906.054038.74750747.davem@davemloft.net>
-	 <20070909164343.GC9199@kroah.com>
-	 <1189474183.3080.0.camel@sli10-conroe.sh.intel.com>
-	 <20070911061538.GE27404@kroah.com>
-Content-Type: text/plain
-Date: Tue, 11 Sep 2007 14:27:02 +0800
-Message-Id: <1189492022.25021.0.camel@sli10-conroe.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Tue, 11 Sep 2007 02:46:55 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:47775 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755809AbXIKGqy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 02:46:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=B30tjrxMbNspOlFh2FeCCGP7Sk6bI0HXWsBsSApMuwV8QAyOL6lFAPGOSMcsITNVanThQELB1GeyU3ZC1OrF2M8ixVLPBQhasQ5/VVrnqrQSGVEvXWSP+o4VkJLCafFaic4A2KCdBKbIW1ZYm9IXtAAUUjGgF963E/R33WfUBXc=  ;
+X-YMail-OSG: 0ygZJhgVM1lwOc_ygj3OHuP53YwOC7tEjgEZ3UlgkUCXlSDwZPiLXoCOBUa_f0fG08VM3tb0DcXdDMAFGlLPj44k1FYO05JphyuYYTsBTHYpL44sVJs-
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 7/13] Drain per-cpu lists when high-order allocations fail
+Date: Tue, 11 Sep 2007 01:05:25 +1000
+User-Agent: KMail/1.9.5
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+References: <20070910112011.3097.8438.sendpatchset@skynet.skynet.ie> <20070910112231.3097.53548.sendpatchset@skynet.skynet.ie>
+In-Reply-To: <20070910112231.3097.53548.sendpatchset@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709110105.25544.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-10 at 23:15 -0700, Greg KH wrote:
-> On Tue, Sep 11, 2007 at 09:29:43AM +0800, Shaohua Li wrote:
-> > On Sun, 2007-09-09 at 09:43 -0700, Greg KH wrote:
-> > > On Thu, Sep 06, 2007 at 05:40:38AM -0700, David Miller wrote:
-> > > > From: Matthew Wilcox <matthew@wil.cx>
-> > > > Date: Thu, 6 Sep 2007 05:57:31 -0600
-> > > > 
-> > > > > I'm not sure your analysis is correct.  Here's what my draft copy of
-> > > > > the pcie 2.0 spec says:
-> > > > > 
-> > > > >   Enble No Snoop ? If this bit is Set, the Function is permitted to
-> > > > >   Set the No Snoop bit in the Requester Attributes of transactions it
-> > > > >   initiates that do not require hardware enforced cache coherency (see
-> > > > >   Section 2.2.6.5). Note that setting this bit to 1b should not cause
-> > > > >   a Function to Set the No Snoop attribute on all transactions that it
-> > > > >   initiates. Even when this bit is Set, a Function is only permitted
-> > > > >   to Set the No Snoop attribute on a transaction when it can guarantee
-> > > > >   that the address of the transaction is not stored in any cache in
-> > > > >   the system.  This bit permitted to be hardwired to 0b if a Function
-> > > > >   would never Set the No Snoop attribute in transactions it initiates.
-> > > > >   Default value of this bit is 1b.
-> > > > > 
-> > > > > That implies that devices are only allowed to set it when it's safe to
-> > > > > do so ... and we don't need to turn it off.
-> > > > 
-> > > > This is my understanding of this area of PCI-E as well, and I
-> > > > also agree that therefore we should not turn this bit off.
-> > > 
-> > > I agree.  But Shaohua, do you see any problems that this patch fixes?
-> > No, I didn't see any breakage, just worry about it's a potential issue.
-> 
-> Hm, well, if you don't mind, I'd like to leave it as is for now, as no
-> one is reporting any problems with this, and there seems to be some
-> disagreement as to if it is really needed or not.
-> 
-> Is that ok?
-Ok.
+On Monday 10 September 2007 21:22, Mel Gorman wrote:
+> Per-cpu pages can accidentally cause fragmentation because they are free,
+> but pinned pages in an otherwise contiguous block.  When this patch is
+> applied, the per-cpu caches are drained after the direct-reclaim is entered
+> if the requested order is greater than 0.  It simply reuses the code used
+> by suspend and hotplug.
 
-Regards,
-Shaohua
+Does this help? I have a more general version which could go in
+instead (independently of the anti fragmentation patches).
+
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>
+>  mm/page_alloc.c |   24 +++++++++++++++++++++++-
+>  1 file changed, 23 insertions(+), 1 deletion(-)
+>
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff
+> linux-2.6.23-rc5-006-group-short-lived-and-reclaimable-kernel-allocations/m
+>m/page_alloc.c
+> linux-2.6.23-rc5-007-drain-per-cpu-lists-when-high-order-allocations-fail/m
+>m/page_alloc.c ---
+> linux-2.6.23-rc5-006-group-short-lived-and-reclaimable-kernel-allocations/m
+>m/page_alloc.c	2007-09-02 16:20:31.000000000 +0100 +++
+> linux-2.6.23-rc5-007-drain-per-cpu-lists-when-high-order-allocations-fail/m
+>m/page_alloc.c	2007-09-02 16:20:48.000000000 +0100 @@ -852,6 +852,7 @@ void
+> mark_free_pages(struct zone *zone)
+>  	}
+>  	spin_unlock_irqrestore(&zone->lock, flags);
+>  }
+> +#endif /* CONFIG_PM */
+>
+>  /*
+>   * Spill all of this CPU's per-cpu pages back into the buddy allocator.
+> @@ -864,7 +865,25 @@ void drain_local_pages(void)
+>  	__drain_pages(smp_processor_id());
+>  	local_irq_restore(flags);
+>  }
+> -#endif /* CONFIG_HIBERNATION */
+> +
+> +void smp_drain_local_pages(void *arg)
+> +{
+> +	drain_local_pages();
+> +}
+> +
+> +/*
+> + * Spill all the per-cpu pages from all CPUs back into the buddy allocator
+> + */
+> +void drain_all_local_pages(void)
+> +{
+> +	unsigned long flags;
+> +
+> +	local_irq_save(flags);
+> +	__drain_pages(smp_processor_id());
+> +	local_irq_restore(flags);
+> +
+> +	smp_call_function(smp_drain_local_pages, NULL, 0, 1);
+> +}
+>
+>  /*
+>   * Free a 0-order page
+> @@ -1452,6 +1471,9 @@ nofail_alloc:
+>
+>  	cond_resched();
+>
+> +	if (order != 0)
+> +		drain_all_local_pages();
+> +
+>  	if (likely(did_some_progress)) {
+>  		page = get_page_from_freelist(gfp_mask, order,
+>  						zonelist, alloc_flags);
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
