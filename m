@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbXIJUud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761503AbXIJUyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761497AbXIJUud (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 16:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760624AbXIJUu0
+	id S1761503AbXIJUyx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 16:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760513AbXIJUyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 16:50:26 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:2953 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760476AbXIJUuZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 16:50:25 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Health monitor of a multi-threaded process
-Date: Mon, 10 Sep 2007 13:50:14 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKGEEIGLAC.davids@webmaster.com>
+	Mon, 10 Sep 2007 16:54:43 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:57119 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759607AbXIJUyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 16:54:41 -0400
+Date: Mon, 10 Sep 2007 13:54:34 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Satyam Sharma <satyam@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
+       Netdev <netdev@vger.kernel.org>, jesper.juhl@gmail.com,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
+Message-ID: <20070910205434.GF11801@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in> <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au> <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au> <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi> <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com> <c298f0e3f9e49c9dd2d326115d156084@kernel.crashing.org> <Pine.LNX.4.64.0709101157060.24491@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-Importance: Normal
-In-Reply-To: <46E5643D.50005@redhat.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Mon, 10 Sep 2007 13:51:02 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Mon, 10 Sep 2007 13:51:02 -0700
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0709101157060.24491@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Sep 10, 2007 at 11:59:29AM -0700, Christoph Lameter wrote:
+> On Fri, 17 Aug 2007, Segher Boessenkool wrote:
+> 
+> > "volatile" has nothing to do with reordering.  atomic_dec() writes
+> > to memory, so it _does_ have "volatile semantics", implicitly, as
+> > long as the compiler cannot optimise the atomic variable away
+> > completely -- any store counts as a side effect.
+> 
+> Stores can be reordered. Only x86 has (mostly) implicit write ordering. So 
+> no atomic_dec has no volatile semantics and may be reordered on a variety 
+> of processors. Writes to memory may not follow code order on several 
+> processors.
 
-> >     4) Threads are not in any infinite loop.
+The one exception to this being the case where process-level code is
+communicating to an interrupt handler running on that same CPU -- on
+all CPUs that I am aware of, a given CPU always sees its own writes
+in order.
 
-> This requires solving the Halting Problem.  If your management is
-> demanding this
-> feature, I suggest informing them that it is mathematically impossible.
-
-Christ, these academics! They take real world problems that engineers
-actually *solve* every day and then "prove" they're impossible.
-
-Actually, it's trivial to solve this. Just wait. If the thread terminates,
-it wasn't in an infinite loop.
-
-If you've got the budget, I believe SGI has a machine that can do an
-infinite loop in less than five seconds. That will save a lot of waiting.
-
-DS
-
-
+							Thanx, Paul
