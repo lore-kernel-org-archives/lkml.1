@@ -1,79 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760438AbXIJPLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760385AbXIJPMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760438AbXIJPLZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 11:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758257AbXIJPLR
+	id S1760385AbXIJPMK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 11:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759462AbXIJPLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 11:11:17 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:54323 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756430AbXIJPLQ (ORCPT
+	Mon, 10 Sep 2007 11:11:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34514 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758697AbXIJPLv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 11:11:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bvOCIrTGEJHJD9evNBMHQ+qI9g2SBi5SPutOSCBRN063Bx+o4borqgb8ftMGQZSp5SMyHM+yjepNS0svTG7y/r1RAs27c5XM118cM8z63YrDyvCje3C/TeBmcbyu5Mqn+A/hRrrJy81U+Ci5Z4ZcUdts59uw/hIcoo0GjdJL+1c=
-Message-ID: <d120d5000709100811r520a7eeew7977739e08da85f9@mail.gmail.com>
-Date: Mon, 10 Sep 2007 11:11:14 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Subject: Re: [PATCH 2/3] Maple bus support for the Sega Dreamcast - keyboard support
-Cc: "Arjan van de Ven" <arjan@infradead.org>,
-       "Paul Mundt" <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <8b67d60709100728o699a7fefkc1cb610939fa12d4@mail.gmail.com>
+	Mon, 10 Sep 2007 11:11:51 -0400
+Date: Mon, 10 Sep 2007 08:09:08 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+cc: Kyle Moffett <mrmacman_g4@mac.com>, Arjan van de Ven <arjan@infradead.org>,
+       Nick Piggin <piggin@cyberone.com.au>,
+       Satyam Sharma <satyam@infradead.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
+       Chris Snook <csnook@redhat.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
+       rpjday@mindspring.com, jesper.juhl@gmail.com,
+       segher@kernel.crashing.org
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <200709101516.03234.vda.linux@googlemail.com>
+Message-ID: <alpine.LFD.0.999.0709100807260.16478@woody.linux-foundation.org>
+References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com>
+ <6370BBDF-0C79-41EB-BD2A-02AA0D216924@mac.com> <200709101438.36710.vda.linux@googlemail.com>
+ <200709101516.03234.vda.linux@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8b67d60709091001l3cd6adf6m2dab8e815f47435d@mail.gmail.com>
-	 <20070909214438.79959ace@laptopd505.fenrus.org>
-	 <8b67d60709091357k2bc0c673kef5716a97f07bd3a@mail.gmail.com>
-	 <200709092350.47602.dtor@insightbb.com>
-	 <8b67d60709100728o699a7fefkc1cb610939fa12d4@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/10/07, Adrian McMenamin <dmitry.torokhov@gmail.com> wrote:
-> On 10/09/2007, Dmitry Torokhov <dtor@insightbb.com> wrote:
-> > Hi Adrian,
-> >
->
-> Thanks for the comments - will get on with this but....
->
->
-> > > +     for (i = 0; i < NR_SCANCODES; i++)
-> > > +             kbd->keycode[i] = dc_kbd_keycode[i];
-> >
-> > memcpy?
-> >
->
-> I see that other drivers use memcpy - and will happily convert over -
-> but, out of interest, is there a reasopn why it is superior?
->
 
-First and foremost it conveys the intent clearly - you are copying a
-chunk of memory (namely a keymap) from one place to another - thus
-memcpy. Plus it may produce smaller/faster code (but since it is not a
-hot path this does not matter much).
+On Mon, 10 Sep 2007, Denys Vlasenko wrote:
+> 
+> static inline int
+> qla2x00_wait_for_loop_ready(scsi_qla_host_t *ha)
+> {
+>         int      return_status = QLA_SUCCESS;
+>         unsigned long loop_timeout ;
+>         scsi_qla_host_t *pha = to_qla_parent(ha);
+> 
+>         /* wait for 5 min at the max for loop to be ready */
+>         loop_timeout = jiffies + (MAX_LOOP_TIMEOUT * HZ);
+> 
+>         while ((!atomic_read(&pha->loop_down_timer) &&
+>             atomic_read(&pha->loop_state) == LOOP_DOWN) ||
+>             atomic_read(&pha->loop_state) != LOOP_READY) {
+>                 if (atomic_read(&pha->loop_state) == LOOP_DEAD) {
+...
+> Is above correct or buggy? Correct, because msleep is a barrier.
+> Is it obvious? No.
 
-> >
-> > maple_device appears to be fully integrated in sysfs, please add:
-> >        kbd->dev->dev.parent = &dev->dev;
-> >
->
-> The bus code already correctly ids the parent device (the above code
-> would appear to assign the device as the device's parent
-> incidentally). Is it wrong to make that assignment in the central bus
-> code as opposed to the driver?
->
+It's *buggy*. But it has nothing to do with any msleep() in the loop, or 
+anything else.
 
-Here I want to set up sysfs relation for the newly created struct
-input_dev which is a child of struct maple_dev. The central bus
-(maple) code has no idea of input device existence, hasn't it? IOW we
-need:
+And more importantly, it would be equally buggy even *with* a "volatile" 
+atomic_read().
 
-     input_dev->dev.parent = &maple_dev->dev;
+Why is this so hard for people to understand? You're all acting like 
+morons.
 
--- 
-Dmitry
+The reason it is buggy has absolutely nothing to do with whether the read 
+is done or not, it has to do with the fact that the CPU may re-order the 
+reads *regardless* of whether the read is done in some specific order by 
+the compiler ot not! In effect, there is zero ordering between all those 
+three reads, and if you don't have memory barriers (or a lock or other 
+serialization), that code is buggy.
+
+So stop this idiotic discussion thread already. The above kind of code 
+needs memory barriers to be non-buggy. The whole "volatile or not" 
+discussion is totally idiotic, and pointless, and anybody who doesn't 
+understand that by now needs to just shut up and think about it more, 
+rather than make this discussion drag out even further.
+
+The fact is, "volatile" *only* makes things worse. It generates worse 
+code, and never fixes any real bugs. This is a *fact*.
+
+			Linus
