@@ -1,75 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbXIJO7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbXIJPG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760631AbXIJO7r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 10:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932666AbXIJO7g
+	id S1760716AbXIJPG2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 11:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759802AbXIJPGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 10:59:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34152 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756380AbXIJO7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 10:59:34 -0400
-Message-ID: <46E55BD0.30500@redhat.com>
-Date: Mon, 10 Sep 2007 09:59:28 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Mon, 10 Sep 2007 11:06:21 -0400
+Received: from kuber.nabble.com ([216.139.236.158]:46338 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756430AbXIJPGV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 11:06:21 -0400
+Message-ID: <12594726.post@talk.nabble.com>
+Date: Mon, 10 Sep 2007 08:06:20 -0700 (PDT)
+From: PnP driver <mkrameshid@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Calling PnP bios routines like get device node from x86_84 arch
 MIME-Version: 1.0
-To: Duane Griffin <duaneg@dghda.com>
-CC: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ext4 development <linux-ext4@vger.kernel.org>
-Subject: Re: [RESEND][PATCH] dir_index: error out instead of BUG on corrupt
- hash dir limit
-References: <46D8D30B.6090703@redhat.com> <20070909131933.GA15229@dastardly.plus.com>
-In-Reply-To: <20070909131933.GA15229@dastardly.plus.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Nabble-From: mkrameshid@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duane Griffin wrote:
-> Hi Eric,
-> 
-> On Fri, Aug 31, 2007 at 09:48:43PM -0500, Eric Sandeen wrote:
->> (resend, this one got lost?  Got an acked-by from Andreas
->> last go-round)
-> 
-> Sorry I missed this first time around. I came up with a very similar
-> fix recently, following a gentoo bug report.  However there are a few
-> more asserts later that you aren't currently handling. Below is an
-> incremental patch on top of yours that converts them too. 
 
-Ah, good point... I focused a bit too much on the single problem at hand
-didn't I.  :)
+Hi,    
+      I am very new to linux kernel driver development. I need to develop a 
+driver for calling  BIOS routines like get device node. I could  call  it
+in i386 architecture using the PnP driver. 
+     But in x86_64 arch I couldn't see any support. Even I tried to
+implement it similar to the i386. But there is no API get_cpu_gdt_table().
+Is there any other way to get the cpu_gdt_table? or any other way to 
+call the BIOS routines.
 
-> Note that one
-> of them is in an if (0) block and maybe should be left alone -- what do
-> you think?
+    Please help me on this.
 
-If it's just there for debug, maybe leaving an assert is ok, to get a
-dump & system state etc.  If it is converted, a printk would probably be
-good so you know you're falling back, otherwise that extra checking is a
-bit pointless if it's silent.
+-mkr
 
-> I tested all the changed code paths, except the if (0) one, using a
-> utility that appropriately corrupts ext3 images. 
-> The source code is
-> attached to the gentoo bug report here:
-> 
-> http://bugs.gentoo.org/show_bug.cgi?id=183207
-> 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
 
-Looks good, thanks for not ignoring the other asserts.  ;-)  I wonder if
-we should fix up all the new error condition printk's a bit to be more
-descriptive of the problem at hand; for example, the one I sent should
-maybe say:
 
-+		ext3_warning(dir->i_sb, __FUNCTION__,
-+			     "Corrupt root limit in dir inode %ld\n", dir->i_ino);
+-- 
+View this message in context: http://www.nabble.com/Calling-PnP-bios-routines-like-get-device-node-from-x86_84-arch-tf4415380.html#a12594726
+Sent from the linux-kernel mailing list archive at Nabble.com.
 
-I wanted to leave the word "corrupt" in there, or at least something to
-clue in the user that maybe fsck is in order...
-
-Thanks,
--Eric
