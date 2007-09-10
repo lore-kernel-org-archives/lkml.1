@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbXIJT6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761294AbXIJT7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760867AbXIJT6Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 15:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932890AbXIJT6Q
+	id S1761294AbXIJT7J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 15:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbXIJT64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 15:58:16 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56432 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932715AbXIJT6P (ORCPT
+	Mon, 10 Sep 2007 15:58:56 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:44934 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756363AbXIJT6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 15:58:15 -0400
-Date: Mon, 10 Sep 2007 21:58:21 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Al Viro <viro@ftp.linux.org.uk>, Christoph Hellwig <hch@infradead.org>,
-       perex@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] unexport sys_{open,read}
-Message-ID: <20070910195821.GH3563@stusta.de>
-References: <20070909202527.GT3563@stusta.de> <20070909203920.GA11764@infradead.org> <20070909145940.0b41c8a5.akpm@linux-foundation.org> <20070910090808.GA31204@infradead.org> <20070910022324.c69e1897.akpm@linux-foundation.org> <20070910124358.GB21089@ftp.linux.org.uk> <20070910102556.de35e825.akpm@linux-foundation.org>
+	Mon, 10 Sep 2007 15:58:55 -0400
+Date: Mon, 10 Sep 2007 21:58:53 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] mm/memcontrol.c: clenups
+In-Reply-To: <46E4FEF7.1090308@linux.vnet.ibm.com>
+Message-ID: <Pine.LNX.4.64.0709102158130.5368@fbirervta.pbzchgretzou.qr>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org>
+ <20070909202548.GW3563@stusta.de> <46E4FEF7.1090308@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070910102556.de35e825.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 10, 2007 at 10:25:56AM -0700, Andrew Morton wrote:
->...
-> Also, Adrian goes on and on with weird theories about how I'm picking on
-> him.  But other patches (such as 7d12e780e003f93433d49ce78c) DO OTHER
-> STUFF.  Like simplify the code, and make it smaller, faster or more
-> maintainable or more reliable.
 
-The unexport of sys_{open,read} actually makes the kernel smaller...
+On Sep 10 2007 13:53, Balbir Singh wrote:
+>> --- a/mm/memcontrol.c
+>> +++ b/mm/memcontrol.c
+>> @@ -91,7 +91,7 @@ enum {
+>>  	MEM_CONTAINER_TYPE_CACHED,
+>>  	MEM_CONTAINER_TYPE_ALL,
+>>  	MEM_CONTAINER_TYPE_MAX,
+>> -} mem_control_type;
+>> +};
+>> 
+>
+>Not sure about this, is this the preferred style?
 
-> So the tradeoff is quite different from a
-> one-liner which does nothing but kill an export.  And, contrary to his
-> claims, we _do_ put temporary back-compat wrappers in there when we
-> change interfaces on those relatively rare occasions when it is possible,
-> and when we remember to do it.
+Yes, typedefs are bad. And because it happens very so often,
+I also have the link: http://lkml.org/lkml/2006/11/21/34
 
-Your tradeoff misses the impact on external modules.
 
-The unexport of sys_open will not break many modules, while
-commit 7d12e780e003f93433d49ce78c most likely broke the majority of 
-external modules.
 
-Do we guarantee some API stability to module authors or do we not 
-guarantee this?
-
-Emphasizing on API stability in the cases that don't matter much while 
-breaking the API in cases that affect most modules doesn't make any 
-sense at all.
-
-And your "remember to do it" is an important point. As an example, every 
-change to a struct that is part of the signature of one or exportted 
-functions does change the API of all of these functions. If we offer any 
-API stability for external modules we need to review all patches that 
-touch include/ because many of them contain changes to the modules API 
-that might otherwise get missed.
-
-Let's either continue to state that their is no stable API for external 
-modules or define some API stability rules and do whatever is required 
-for implementing them.
-
-cu
-Adrian
-
+	Jan
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
