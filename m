@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933159AbXIJKfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbXIJKjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933159AbXIJKfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 06:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbXIJKfI
+	id S932284AbXIJKjc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 06:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbXIJKjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 06:35:08 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36528 "EHLO
+	Mon, 10 Sep 2007 06:39:25 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36829 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756834AbXIJKfF (ORCPT
+	with ESMTP id S1752455AbXIJKjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 06:35:05 -0400
-Date: Mon, 10 Sep 2007 19:36:49 +0900
+	Mon, 10 Sep 2007 06:39:24 -0400
+Date: Mon, 10 Sep 2007 19:41:16 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Woodhouse <dwmw2@infradead.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH] add page->mapping handling interface [35/35] changes in XFS
-Message-Id: <20070910193649.3c3097ee.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070910184048.286dfc6e.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] add page->mapping handling interface [22/35] changes in
+ JFFS2
+Message-Id: <20070910194116.b4bfe271.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1189419591.8320.161.camel@pmac.infradead.org>
 References: <20070910184048.286dfc6e.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070910191622.d18b1aaa.kamezawa.hiroyu@jp.fujitsu.com>
+	<1189419591.8320.161.camel@pmac.infradead.org>
 Organization: Fujitsu
 X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -29,71 +32,21 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change page->mapping handling in XFS
+On Mon, 10 Sep 2007 11:19:51 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> On Mon, 2007-09-10 at 19:16 +0900, KAMEZAWA Hiroyuki wrote:
+> > Changes page->mapping handling in JFFS2
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Looks reasonable to me; I assume it's not intended for me to take it and
+> apply it yet, before the core parts are merged? I'll let you shepherd it
+> upstream...
+> 
+Ah, no. core patches are not merged. This patch's target is -mm, now.
+I just CC:ed to each FS maintainers to show what this patch set does.
 
-
----
- fs/xfs/linux-2.6/xfs_aops.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-Index: test-2.6.23-rc4-mm1/fs/xfs/linux-2.6/xfs_aops.c
-===================================================================
---- test-2.6.23-rc4-mm1.orig/fs/xfs/linux-2.6/xfs_aops.c
-+++ test-2.6.23-rc4-mm1/fs/xfs/linux-2.6/xfs_aops.c
-@@ -595,7 +595,7 @@ xfs_probe_page(
- 	if (PageWriteback(page))
- 		return 0;
- 
--	if (page->mapping && PageDirty(page)) {
-+	if (page_mapping_cache(page) && PageDirty(page)) {
- 		if (page_has_buffers(page)) {
- 			struct buffer_head	*bh, *head;
- 
-@@ -697,7 +697,7 @@ xfs_is_delayed_page(
- 	if (PageWriteback(page))
- 		return 0;
- 
--	if (page->mapping && page_has_buffers(page)) {
-+	if (page_mapping_cache(page) && page_has_buffers(page)) {
- 		struct buffer_head	*bh, *head;
- 		int			acceptable = 0;
- 
-@@ -752,7 +752,7 @@ xfs_convert_page(
- 		goto fail;
- 	if (PageWriteback(page))
- 		goto fail_unlock_page;
--	if (page->mapping != inode->i_mapping)
-+	if (pagecache_consistent(page, inode->i_mapping))
- 		goto fail_unlock_page;
- 	if (!xfs_is_delayed_page(page, (*ioendp)->io_type))
- 		goto fail_unlock_page;
-@@ -1178,7 +1178,7 @@ xfs_vm_writepage(
- 	int			error;
- 	int			need_trans;
- 	int			delalloc, unmapped, unwritten;
--	struct inode		*inode = page->mapping->host;
-+	struct inode		*inode = page_inode(page);
- 
- 	xfs_page_trace(XFS_WRITEPAGE_ENTER, inode, page, 0);
- 
-@@ -1270,7 +1270,7 @@ xfs_vm_releasepage(
- 	struct page		*page,
- 	gfp_t			gfp_mask)
- {
--	struct inode		*inode = page->mapping->host;
-+	struct inode		*inode = page_inode(page);
- 	int			dirty, delalloc, unmapped, unwritten;
- 	struct writeback_control wbc = {
- 		.sync_mode = WB_SYNC_ALL,
-@@ -1562,7 +1562,7 @@ xfs_vm_invalidatepage(
- 	unsigned long		offset)
- {
- 	xfs_page_trace(XFS_INVALIDPAGE_ENTER,
--			page->mapping->host, page, offset);
-+			page_inode(page), page, offset);
- 	block_invalidatepage(page, offset);
- }
- 
+Thanks,
+-Kame
 
