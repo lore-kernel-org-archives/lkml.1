@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbXIJKI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932497AbXIJKJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757515AbXIJKI7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 06:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbXIJKIu
+	id S932497AbXIJKJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 06:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbXIJKJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 06:08:50 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34396 "EHLO
+	Mon, 10 Sep 2007 06:09:21 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34459 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755853AbXIJKIt (ORCPT
+	with ESMTP id S1753874AbXIJKJU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 06:08:49 -0400
-Date: Mon, 10 Sep 2007 19:09:47 +0900
+	Mon, 10 Sep 2007 06:09:20 -0400
+Date: Mon, 10 Sep 2007 19:11:15 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH] add page->mapping handling interface [18/35] changes in
- HFSPLUS
-Message-Id: <20070910190947.64391cfe.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH] add page->mapping handling interface [19/35] changes in
+ HPFS
+Message-Id: <20070910191115.9bdd3a71.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20070910184048.286dfc6e.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20070910184048.286dfc6e.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: Fujitsu
@@ -30,25 +30,25 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes page->mapping handling in HFSPLUS
+Changes page->mapping handling in HPFS
 
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
 ---
- fs/hfsplus/inode.c |    2 +-
+ fs/hpfs/namei.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: test-2.6.23-rc4-mm1/fs/hfsplus/inode.c
+Index: test-2.6.23-rc4-mm1/fs/hpfs/namei.c
 ===================================================================
---- test-2.6.23-rc4-mm1.orig/fs/hfsplus/inode.c
-+++ test-2.6.23-rc4-mm1/fs/hfsplus/inode.c
-@@ -44,7 +44,7 @@ static sector_t hfsplus_bmap(struct addr
- 
- static int hfsplus_releasepage(struct page *page, gfp_t mask)
+--- test-2.6.23-rc4-mm1.orig/fs/hpfs/namei.c
++++ test-2.6.23-rc4-mm1/fs/hpfs/namei.c
+@@ -511,7 +511,7 @@ out:
+ static int hpfs_symlink_readpage(struct file *file, struct page *page)
  {
--	struct inode *inode = page->mapping->host;
-+	struct inode *inode = page_inode(page);
- 	struct super_block *sb = inode->i_sb;
- 	struct hfs_btree *tree;
- 	struct hfs_bnode *node;
+ 	char *link = kmap(page);
+-	struct inode *i = page->mapping->host;
++	struct inode *i = page_inode(page);
+ 	struct fnode *fnode;
+ 	struct buffer_head *bh;
+ 	int err;
 
