@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965550AbXIJSmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965639AbXIJSm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965550AbXIJSmJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 14:42:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbXIJSlz
+	id S965639AbXIJSm5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 14:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932318AbXIJSmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 14:41:55 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:53841 "EHLO e6.ny.us.ibm.com"
+	Mon, 10 Sep 2007 14:42:46 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:54216 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755418AbXIJSlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 14:41:53 -0400
-Date: Mon, 10 Sep 2007 11:41:49 -0700
+	id S932266AbXIJSmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 14:42:44 -0400
+Date: Mon, 10 Sep 2007 11:42:40 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-rt-users@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
        dipankar@in.ibm.com, josht@linux.vnet.ibm.com, tytso@us.ibm.com,
        dvhltc@us.ibm.com, tglx@linutronix.de, a.p.zijlstra@chello.nl,
        bunk@kernel.org, ego@in.ibm.com, oleg@tv-sign.ru, srostedt@redhat.com
-Subject: [PATCH RFC 8/9] RCU: Make RCU priority boosting consume less power
-Message-ID: <20070910184148.GH3819@linux.vnet.ibm.com>
+Subject: [PATCH RFC 9/9] RCU: preemptible documentation and comment cleanups
+Message-ID: <20070910184240.GI3819@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
 References: <20070910183004.GA3299@linux.vnet.ibm.com>
 MIME-Version: 1.0
@@ -30,248 +30,545 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Work in progress, not for inclusion.
 
-This patch modified the RCU priority booster to explicitly sleep when
-there are no RCU readers in need of priority boosting.  This should be
-a power-consumption improvement over the one-second polling cycle in
-the underlying RCU priority-boosting patch.
+This patch updates the RCU documentation to reflect preemptible RCU as
+well as recent publications.  Fix an incorrect comment in the code. 
+Change the name ORDERED_WRT_IRQ() to ACCESS_ONCE() to better describe
+its function.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
 
- include/linux/rcupreempt.h |   15 ++++++
- kernel/rcupreempt.c        |  102 ++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 115 insertions(+), 2 deletions(-)
+ Documentation/RCU/RTFP.txt    |  234 ++++++++++++++++++++++++++++++++++++++++--
+ Documentation/RCU/rcu.txt     |   20 +++
+ Documentation/RCU/torture.txt |   44 ++++++-
+ kernel/Kconfig.preempt        |    1 
+ kernel/rcupreempt.c           |   24 ++--
+ 5 files changed, 292 insertions(+), 31 deletions(-)
 
-diff -urpNa -X dontdiff linux-2.6.22-G-boosttorture/include/linux/rcupreempt.h linux-2.6.22-H-boostsleep/include/linux/rcupreempt.h
---- linux-2.6.22-G-boosttorture/include/linux/rcupreempt.h	2007-08-24 11:24:59.000000000 -0700
-+++ linux-2.6.22-H-boostsleep/include/linux/rcupreempt.h	2007-08-24 18:12:41.000000000 -0700
-@@ -60,6 +60,21 @@ enum rcu_boost_state {
+diff -urpNa -X dontdiff linux-2.6.22-h-boostsleep/Documentation/RCU/rcu.txt linux-2.6.22-i-cleanups/Documentation/RCU/rcu.txt
+--- linux-2.6.22-h-boostsleep/Documentation/RCU/rcu.txt	2007-07-08 16:32:17.000000000 -0700
++++ linux-2.6.22-i-cleanups/Documentation/RCU/rcu.txt	2007-09-08 16:54:17.000000000 -0700
+@@ -36,6 +36,14 @@ o	How can the updater tell when a grace 
+ 	executed in user mode, or executed in the idle loop, we can
+ 	safely free up that item.
  
- #define N_RCU_BOOST_STATE (RCU_BOOST_INVALID + 1)
- 
-+/*
-+ * RCU-booster state with respect to sleeping.  The RCU booster
-+ * sleeps when no task has recently been seen sleeping in an RCU
-+ * read-side critical section, and is awakened when a new sleeper
-+ * appears.
-+ */
-+enum rcu_booster_state {
-+	RCU_BOOSTER_ACTIVE = 0,   /* RCU booster actively scanning. */
-+	RCU_BOOSTER_DROWSY = 1,   /* RCU booster is considering sleeping. */
-+	RCU_BOOSTER_SLEEPING = 2, /* RCU booster is asleep. */
-+	RCU_BOOSTER_INVALID = 3,  /* For bogus state sightings. */
-+};
++	Preemptible variants of RCU (CONFIG_PREEMPT_RCU) get the
++	same effect, but require that the readers manipulate CPU-local
++	counters.  These counters allow limited types of blocking
++	within RCU read-side critical sections.  SRCU also uses
++	CPU-local counters, and permits general blocking within
++	RCU read-side critical sections.  These two variants of
++	RCU detect grace periods by sampling these counters.
 +
-+#define N_RCU_BOOSTER_STATE (RCU_BOOSTER_INVALID + 1)
+ o	If I am running on a uniprocessor kernel, which can only do one
+ 	thing at a time, why should I wait for a grace period?
+ 
+@@ -46,7 +54,10 @@ o	How can I see where RCU is currently u
+ 	Search for "rcu_read_lock", "rcu_read_unlock", "call_rcu",
+ 	"rcu_read_lock_bh", "rcu_read_unlock_bh", "call_rcu_bh",
+ 	"srcu_read_lock", "srcu_read_unlock", "synchronize_rcu",
+-	"synchronize_net", and "synchronize_srcu".
++	"synchronize_net", "synchronize_srcu", and the other RCU
++	primitives.  Or grab one of the cscope databases from:
 +
- #endif /* #ifdef CONFIG_PREEMPT_RCU_BOOST */
++	http://www.rdrop.com/users/paulmck/RCU/linuxusage/rculocktab.html
  
- #define call_rcu_bh(head, rcu) call_rcu(head, rcu)
-diff -urpNa -X dontdiff linux-2.6.22-G-boosttorture/kernel/rcupreempt.c linux-2.6.22-H-boostsleep/kernel/rcupreempt.c
---- linux-2.6.22-G-boosttorture/kernel/rcupreempt.c	2007-08-27 15:42:57.000000000 -0700
-+++ linux-2.6.22-H-boostsleep/kernel/rcupreempt.c	2007-08-27 15:42:37.000000000 -0700
-@@ -108,6 +108,7 @@ struct rcu_boost_dat {
- 	unsigned long rbs_unboosted;
- #ifdef CONFIG_PREEMPT_RCU_BOOST_STATS
- 	unsigned long rbs_stats[N_RCU_BOOST_DAT_EVENTS][N_RCU_BOOST_STATE];
-+	unsigned long rbs_qw_stats[N_RCU_BOOSTER_STATE];
- #endif /* #ifdef CONFIG_PREEMPT_RCU_BOOST_STATS */
- };
- #define RCU_BOOST_ELEMENTS 4
-@@ -115,6 +116,10 @@ struct rcu_boost_dat {
- static int rcu_boost_idx = -1; /* invalid value for early RCU use. */
- static DEFINE_PER_CPU(struct rcu_boost_dat, rcu_boost_dat[RCU_BOOST_ELEMENTS]);
- static struct task_struct *rcu_boost_task;
-+static DEFINE_SPINLOCK(rcu_boost_quiesce_lock);
-+static enum rcu_booster_state rcu_booster_quiesce_state = RCU_BOOSTER_ACTIVE;
-+static unsigned long rbs_qs_stats[2][N_RCU_BOOSTER_STATE];
-+wait_queue_head_t rcu_booster_quiesce_wq;
+ o	What guidelines should I follow when writing code that uses RCU?
  
- #ifdef CONFIG_PREEMPT_RCU_BOOST_STATS
+@@ -67,7 +78,12 @@ o	I hear that RCU is patented?  What is 
  
-@@ -171,6 +176,15 @@ static char *rcu_boost_state_error[] = {
- 	 "?  ?",  /* unlock */
- };
+ o	I hear that RCU needs work in order to support realtime kernels?
  
-+/* Labels for RCU booster state printout. */
+-	Yes, work in progress.
++	This work is largely completed.  Realtime-friendly RCU can be
++	enabled via the CONFIG_PREEMPT_RCU kernel configuration parameter.
++	In addition, the CONFIG_PREEMPT_RCU_BOOST kernel configuration
++	parameter enables priority boosting of preempted RCU read-side
++	critical sections, though this is only needed if you have
++	CPU-bound realtime threads.
+ 
+ o	Where can I find more information on RCU?
+ 
+diff -urpNa -X dontdiff linux-2.6.22-h-boostsleep/Documentation/RCU/RTFP.txt linux-2.6.22-i-cleanups/Documentation/RCU/RTFP.txt
+--- linux-2.6.22-h-boostsleep/Documentation/RCU/RTFP.txt	2007-07-08 16:32:17.000000000 -0700
++++ linux-2.6.22-i-cleanups/Documentation/RCU/RTFP.txt	2007-09-08 16:41:31.000000000 -0700
+@@ -9,8 +9,8 @@ The first thing resembling RCU was publi
+ [Kung80] recommended use of a garbage collector to defer destruction
+ of nodes in a parallel binary search tree in order to simplify its
+ implementation.  This works well in environments that have garbage
+-collectors, but current production garbage collectors incur significant
+-read-side overhead.
++collectors, but most production garbage collectors incur significant
++overhead.
+ 
+ In 1982, Manber and Ladner [Manber82,Manber84] recommended deferring
+ destruction until all threads running at that time have terminated, again
+@@ -99,16 +99,25 @@ locking, reduces contention, reduces mem
+ parallelizes pipeline stalls and memory latency for writers.  However,
+ these techniques still impose significant read-side overhead in the
+ form of memory barriers.  Researchers at Sun worked along similar lines
+-in the same timeframe [HerlihyLM02,HerlihyLMS03].  These techniques
+-can be thought of as inside-out reference counts, where the count is
+-represented by the number of hazard pointers referencing a given data
+-structure (rather than the more conventional counter field within the
+-data structure itself).
++in the same timeframe [HerlihyLM02].  These techniques can be thought
++of as inside-out reference counts, where the count is represented by the
++number of hazard pointers referencing a given data structure (rather than
++the more conventional counter field within the data structure itself).
 +
-+static char *rcu_booster_state_label[] = {
-+	"Active",
-+	"Drowsy",
-+	"Sleeping",
-+	"???",
-+};
++By the same token, RCU can be thought of as a "bulk reference count",
++where some form of reference counter covers all reference by a given CPU
++or thread during a set timeframe.  This timeframe is related to, but
++not necessarily exactly the same as, an RCU grace period.  In classic
++RCU, the reference counter is the per-CPU bit in the "bitmask" field,
++and each such bit covers all references that might have been made by
++the corresponding CPU during the prior grace period.  Of course, RCU
++can be thought of in other terms as well.
+ 
+ In 2003, the K42 group described how RCU could be used to create
+-hot-pluggable implementations of operating-system functions.  Later that
+-year saw a paper describing an RCU implementation of System V IPC
+-[Arcangeli03], and an introduction to RCU in Linux Journal [McKenney03a].
++hot-pluggable implementations of operating-system functions [Appavoo03a].
++Later that year saw a paper describing an RCU implementation of System
++V IPC [Arcangeli03], and an introduction to RCU in Linux Journal
++[McKenney03a].
+ 
+ 2004 has seen a Linux-Journal article on use of RCU in dcache
+ [McKenney04a], a performance comparison of locking to RCU on several
+@@ -117,10 +126,27 @@ number of operating-system kernels [Paul
+ describing how to make RCU safe for soft-realtime applications [Sarma04c],
+ and a paper describing SELinux performance with RCU [JamesMorris04b].
+ 
+-2005 has seen further adaptation of RCU to realtime use, permitting
++2005 brought further adaptation of RCU to realtime use, permitting
+ preemption of RCU realtime critical sections [PaulMcKenney05a,
+ PaulMcKenney05b].
+ 
++2006 saw the first best-paper award for an RCU paper [ThomasEHart2006a],
++as well as further work on efficient implementations of preemptible
++RCU [PaulEMcKenney2006b], but priority-boosting of RCU read-side critical
++sections proved elusive.  An RCU implementation permitting general
++blocking in read-side critical sections appeared [PaulEMcKenney2006c],
++Robert Olsson described an RCU-protected trie-hash combination
++[RobertOlsson2006a].
 +
- /*
-  * Print out RCU booster task statistics at the specified interval.
++In 2007, the RCU priority-boosting problem finally was solved
++[PaulEMcKenney2007BoostRCU], and an RCU paper was first accepted into
++an academic journal [ThomasEHart2007a].  An LWN article on the use of
++Promela and spin to validate parallel algorithms [PaulEMcKenney2007QRCUspin]
++also described Oleg Nesterov's QRCU, the first RCU implementation that
++can boast deep sub-microsecond grace periods (in absence of readers,
++and read-side overhead is roughly that of a global reference count).
++
++
+ Bibtex Entries
+ 
+ @article{Kung80
+@@ -203,6 +229,41 @@ Bibtex Entries
+ ,Address="New Orleans, LA"
+ }
+ 
++@conference{Pu95a,
++Author = "Calton Pu and Tito Autrey and Andrew Black and Charles Consel and
++Crispin Cowan and Jon Inouye and Lakshmi Kethana and Jonathan Walpole and
++Ke Zhang",
++Title = "Optimistic Incremental Specialization: Streamlining a Commercial
++Operating System",
++Booktitle = "15\textsuperscript{th} ACM Symposium on
++Operating Systems Principles (SOSP'95)",
++address = "Copper Mountain, CO",
++month="December",
++year="1995",
++pages="314-321",
++annotation="
++	Uses a replugger, but with a flag to signal when people are
++	using the resource at hand.  Only one reader at a time.
++"
++}
++
++@conference{Cowan96a,
++Author = "Crispin Cowan and Tito Autrey and Charles Krasic and
++Calton Pu and Jonathan Walpole",
++Title = "Fast Concurrent Dynamic Linking for an Adaptive Operating System",
++Booktitle = "International Conference on Configurable Distributed Systems
++(ICCDS'96)",
++address = "Annapolis, MD",
++month="May",
++year="1996",
++pages="108",
++isbn="0-8186-7395-8",
++annotation="
++	Uses a replugger, but with a counter to signal when people are
++	using the resource at hand.  Allows multiple readers.
++"
++}
++
+ @techreport{Slingwine95
+ ,author="John D. Slingwine and Paul E. McKenney"
+ ,title="Apparatus and Method for Achieving Reduced Overhead Mutual
+@@ -312,6 +373,49 @@ Andrea Arcangeli and Andi Kleen and Orra
+ [Viewed June 23, 2004]"
+ }
+ 
++@conference{Michael02a
++,author="Maged M. Michael"
++,title="Safe Memory Reclamation for Dynamic Lock-Free Objects Using Atomic
++Reads and Writes"
++,Year="2002"
++,Month="August"
++,booktitle="{Proceedings of the 21\textsuperscript{st} Annual ACM
++Symposium on Principles of Distributed Computing}"
++,pages="21-30"
++,annotation="
++	Each thread keeps an array of pointers to items that it is
++	currently referencing.	Sort of an inside-out garbage collection
++	mechanism, but one that requires the accessing code to explicitly
++	state its needs.  Also requires read-side memory barriers on
++	most architectures.
++"
++}
++
++@conference{Michael02b
++,author="Maged M. Michael"
++,title="High Performance Dynamic Lock-Free Hash Tables and List-Based Sets"
++,Year="2002"
++,Month="August"
++,booktitle="{Proceedings of the 14\textsuperscript{th} Annual ACM
++Symposium on Parallel
++Algorithms and Architecture}"
++,pages="73-82"
++,annotation="
++	Like the title says...
++"
++}
++
++@InProceedings{HerlihyLM02
++,author={Maurice Herlihy and Victor Luchangco and Mark Moir}
++,title="The Repeat Offender Problem: A Mechanism for Supporting Dynamic-Sized,
++Lock-Free Data Structures"
++,booktitle={Proceedings of 16\textsuperscript{th} International
++Symposium on Distributed Computing}
++,year=2002
++,month="October"
++,pages="339-353"
++}
++
+ @article{Appavoo03a
+ ,author="J. Appavoo and K. Hui and C. A. N. Soules and R. W. Wisniewski and
+ D. M. {Da Silva} and O. Krieger and M. A. Auslander and D. J. Edelsohn and
+@@ -447,3 +551,111 @@ Oregon Health and Sciences University"
+ 	Realtime turns into making RCU yet more realtime friendly.
+ "
+ }
++
++@conference{ThomasEHart2006a
++,Author="Thomas E. Hart and Paul E. McKenney and Angela Demke Brown"
++,Title="Making Lockless Synchronization Fast: Performance Implications
++of Memory Reclamation"
++,Booktitle="20\textsuperscript{th} {IEEE} International Parallel and
++Distributed Processing Symposium"
++,month="April"
++,year="2006"
++,day="25-29"
++,address="Rhodes, Greece"
++,annotation="
++	Compares QSBR (AKA "classic RCU"), HPBR, EBR, and lock-free
++	reference counting.
++"
++}
++
++@Conference{PaulEMcKenney2006b
++,Author="Paul E. McKenney and Dipankar Sarma and Ingo Molnar and
++Suparna Bhattacharya"
++,Title="Extending RCU for Realtime and Embedded Workloads"
++,Booktitle="{Ottawa Linux Symposium}"
++,Month="July"
++,Year="2006"
++,pages="v2 123-138"
++,note="Available:
++\url{http://www.linuxsymposium.org/2006/view_abstract.php?content_key=184}
++\url{http://www.rdrop.com/users/paulmck/RCU/OLSrtRCU.2006.08.11a.pdf}
++[Viewed January 1, 2007]"
++,annotation="
++	Described how to improve the -rt implementation of realtime RCU.
++"
++}
++
++@unpublished{PaulEMcKenney2006c
++,Author="Paul E. McKenney"
++,Title="Sleepable {RCU}"
++,month="October"
++,day="9"
++,year="2006"
++,note="Available:
++\url{http://lwn.net/Articles/202847/}
++Revised:
++\url{http://www.rdrop.com/users/paulmck/RCU/srcu.2007.01.14a.pdf}
++[Viewed August 21, 2006]"
++,annotation="
++	LWN article introducing SRCU.
++"
++}
++
++@unpublished{RobertOlsson2006a
++,Author="Robert Olsson and Stefan Nilsson"
++,Title="{TRASH}: A dynamic {LC}-trie and hash data structure"
++,month="August"
++,day="18"
++,year="2006"
++,note="Available:
++\url{http://www.nada.kth.se/~snilsson/public/papers/trash/trash.pdf}
++[Viewed February 24, 2007]"
++,annotation="
++	RCU-protected dynamic trie-hash combination.
++"
++}
++
++@unpublished{PaulEMcKenney2007BoostRCU
++,Author="Paul E. McKenney"
++,Title="Priority-Boosting {RCU} Read-Side Critical Sections"
++,month="February"
++,day="5"
++,year="2007"
++,note="Available:
++\url{http://lwn.net/Articles/220677/}
++Revised:
++\url{http://www.rdrop.com/users/paulmck/RCU/RCUbooststate.2007.04.16a.pdf}
++[Viewed September 7, 2007]"
++,annotation="
++	LWN article introducing RCU priority boosting.
++"
++}
++
++@unpublished{ThomasEHart2007a
++,Author="Thomas E. Hart and Paul E. McKenney and Angela Demke Brown and Jonathan Walpole"
++,Title="Performance of memory reclamation for lockless synchronization"
++,journal="J. Parallel Distrib. Comput."
++,year="2007"
++,note="To appear in J. Parallel Distrib. Comput.
++       \url{doi=10.1016/j.jpdc.2007.04.010}"
++,annotation={
++	Compares QSBR (AKA "classic RCU"), HPBR, EBR, and lock-free
++	reference counting.  Journal version of ThomasEHart2006a.
++}
++}
++
++@unpublished{PaulEMcKenney2007QRCUspin
++,Author="Paul E. McKenney"
++,Title="Using Promela and Spin to verify parallel algorithms"
++,month="August"
++,day="1"
++,year="2007"
++,note="Available:
++\url{http://lwn.net/Articles/243851/}
++[Viewed September 8, 2007]"
++,annotation="
++	LWN article describing Promela and spin, and also using Oleg
++	Nesterov's QRCU as an example (with Paul McKenney's fastpath).
++"
++}
++
+diff -urpNa -X dontdiff linux-2.6.22-h-boostsleep/Documentation/RCU/torture.txt linux-2.6.22-i-cleanups/Documentation/RCU/torture.txt
+--- linux-2.6.22-h-boostsleep/Documentation/RCU/torture.txt	2007-07-08 16:32:17.000000000 -0700
++++ linux-2.6.22-i-cleanups/Documentation/RCU/torture.txt	2007-09-09 17:02:58.000000000 -0700
+@@ -37,6 +37,24 @@ nfakewriters	This is the number of RCU f
+ 		to trigger special cases caused by multiple writers, such as
+ 		the synchronize_srcu() early return optimization.
+ 
++preempt_torture	Specifies that torturing of preemptible RCU is to be
++		undertaken, defaults to no such testing.  This test
++		creates a kernel thread that runs at the lowest possible
++		realtime priority, alternating between ten seconds
++		of spinning and a short sleep period.  The goal is
++		to preempt lower-priority RCU readers.	Note that this
++		currently does not fail the full test, but instead simply
++		counts the number of times that a ten-second CPU burst
++		coincides with a stall in grace-period detection.
++
++		Of course, if the grace period advances during a CPU burst,
++		that indicates that no RCU reader was preempted, so the
++		burst ends early in that case.
++
++		Note that such stalls are expected behavior in preemptible
++		RCU implementations when RCU priority boosting is not
++		enabled (PREEMPT_RCU_BOOST=n).
++
+ stat_interval	The number of seconds between output of torture
+ 		statistics (via printk()).  Regardless of the interval,
+ 		statistics are printed when the module is unloaded.
+@@ -46,12 +64,13 @@ stat_interval	The number of seconds betw
+ 
+ shuffle_interval
+ 		The number of seconds to keep the test threads affinitied
+-		to a particular subset of the CPUs.  Used in conjunction
+-		with test_no_idle_hz.
++		to a particular subset of the CPUs, defaults to 5 seconds.
++		Used in conjunction with test_no_idle_hz.
+ 
+ test_no_idle_hz	Whether or not to test the ability of RCU to operate in
+ 		a kernel that disables the scheduling-clock interrupt to
+ 		idle CPUs.  Boolean parameter, "1" to test, "0" otherwise.
++		Defaults to omitting this test.
+ 
+ torture_type	The type of RCU to test: "rcu" for the rcu_read_lock() API,
+ 		"rcu_sync" for rcu_read_lock() with synchronous reclamation,
+@@ -82,8 +101,6 @@ be evident.  ;-)
+ 
+ The entries are as follows:
+ 
+-o	"ggp": The number of counter flips (or batches) since boot.
+-
+ o	"rtc": The hexadecimal address of the structure currently visible
+ 	to readers.
+ 
+@@ -117,8 +134,8 @@ o	"Reader Pipe": Histogram of "ages" of 
+ o	"Reader Batch": Another histogram of "ages" of structures seen
+ 	by readers, but in terms of counter flips (or batches) rather
+ 	than in terms of grace periods.  The legal number of non-zero
+-	entries is again two.  The reason for this separate view is
+-	that it is easier to get the third entry to show up in the
++	entries is again two.  The reason for this separate view is that
++	it is sometimes easier to get the third entry to show up in the
+ 	"Reader Batch" list than in the "Reader Pipe" list.
+ 
+ o	"Free-Block Circulation": Shows the number of torture structures
+@@ -145,6 +162,21 @@ of the "old" and "current" counters for 
+ "idx" value maps the "old" and "current" values to the underlying array,
+ and is useful for debugging.
+ 
++In addition, preemptible RCU rcutorture runs will report preemption
++stalls:
++
++rcu-torture: rtc: ffffffff88005a40 ver: 17041 tfle: 1 rta: 17041 rtaf: 7904 rtf: 16941 rtmbe: 0
++rcu-torture: Reader Pipe:  975332139 34406 0 0 0 0 0 0 0 0 0
++rcu-torture: Reader Batch:  975349310 17234 0 0 0 0 0 0 0 0 0
++rcu-torture: Free-Block Circulation:  17040 17030 17028 17022 17009 16994 16982 16969 16955 16941 0
++Preemption stalls: 0
++
++The first four lines are as before, and the last line records the number
++of times that grace-period processing stalled during a realtime CPU burst.
++Note that a non-zero value does not -prove- that RCU priority boosting is
++broken, because there are other things that can stall RCU grace-period
++processing.  Here is hoping that someone comes up with a better test!
++
+ 
+ USAGE
+ 
+diff -urpNa -X dontdiff linux-2.6.22-h-boostsleep/kernel/Kconfig.preempt linux-2.6.22-i-cleanups/kernel/Kconfig.preempt
+--- linux-2.6.22-h-boostsleep/kernel/Kconfig.preempt	2007-09-08 14:02:29.000000000 -0700
++++ linux-2.6.22-i-cleanups/kernel/Kconfig.preempt	2007-09-08 14:08:31.000000000 -0700
+@@ -79,6 +79,7 @@ config CLASSIC_RCU
+ config PREEMPT_RCU
+ 	bool "Preemptible RCU"
+ 	depends on PREEMPT
++	depends on EXPERIMENTAL
+ 	help
+ 	  This option reduces the latency of the kernel by making certain
+ 	  RCU sections preemptible. Normally RCU code is non-preemptible, if
+diff -urpNa -X dontdiff linux-2.6.22-h-boostsleep/kernel/rcupreempt.c linux-2.6.22-i-cleanups/kernel/rcupreempt.c
+--- linux-2.6.22-h-boostsleep/kernel/rcupreempt.c	2007-09-08 14:06:27.000000000 -0700
++++ linux-2.6.22-i-cleanups/kernel/rcupreempt.c	2007-09-08 14:08:31.000000000 -0700
+@@ -59,7 +59,7 @@
+  * only to mediate communication between mainline code and hardware
+  * interrupt and NMI handlers.
   */
-@@ -221,6 +235,14 @@ static void rcu_boost_dat_stat_print(voi
- 						       cpu)[i].rbs_stats[event][state];
- 			}
- 		}
-+	for (state = 0; state < N_RCU_BOOSTER_STATE; state++) {
-+		sum.rbs_qw_stats[state] = 0;
-+		for_each_possible_cpu(cpu)
-+			for (i = 0; i < RCU_BOOST_ELEMENTS; i++)
-+				sum.rbs_qw_stats[state] +=
-+					per_cpu(rcu_boost_dat,
-+						cpu)[i].rbs_qw_stats[state];
-+	}
+-#define ORDERED_WRT_IRQ(x) (*(volatile typeof(x) *)&(x))
++#define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
  
- 	/* Print them out! */
- 
-@@ -240,6 +262,24 @@ static void rcu_boost_dat_stat_print(voi
- 		       rcu_boost_state_event[event], buf);
- 	}
- 
-+	printk(KERN_INFO "RCU booster state: %s\n",
-+	       rcu_booster_quiesce_state >= 0 &&
-+	       rcu_booster_quiesce_state < N_RCU_BOOSTER_STATE
-+		? rcu_booster_state_label[rcu_booster_quiesce_state]
-+		: "???");
-+	i = 0;
-+	for (state = 0; state < N_RCU_BOOSTER_STATE; state++)
-+		i += sprintf(&buf[i], " %ld", rbs_qs_stats[0][state]);
-+	printk(KERN_INFO "No tasks found: %s\n", buf);
-+	i = 0;
-+	for (state = 0; state < N_RCU_BOOSTER_STATE; state++)
-+		i += sprintf(&buf[i], " %ld", rbs_qs_stats[1][state]);
-+	printk(KERN_INFO "Tasks found: %s\n", buf);
-+	i = 0;
-+	for (state = 0; state < N_RCU_BOOSTER_STATE; state++)
-+		i += sprintf(&buf[i], " %ld", sum.rbs_qw_stats[state]);
-+	printk(KERN_INFO "Awaken opportunities: %s\n", buf);
-+
- 	/* Go away and don't come back for awhile. */
- 
- 	lastprint = xtime.tv_sec;
-@@ -293,6 +333,8 @@ static void init_rcu_boost_early(void)
- 				for (j = 0; j < N_RCU_BOOST_DAT_EVENTS; j++)
- 					for (k = 0; k < N_RCU_BOOST_STATE; k++)
- 						rbdp[i].rbs_stats[j][k] = 0;
-+				for (j = 0; j < N_RCU_BOOSTER_STATE; j++)
-+					rbdp[i].rbs_qw_stats[j] = 0;
- 			}
- #endif /* #ifdef CONFIG_PREEMPT_RCU_BOOST_STATS */
- 		}
-@@ -378,10 +420,11 @@ static void rcu_unboost_prio(struct task
  /*
-  * Boost all of the RCU-reader tasks on the specified list.
-  */
--static void rcu_boost_one_reader_list(struct rcu_boost_dat *rbdp)
-+static int rcu_boost_one_reader_list(struct rcu_boost_dat *rbdp)
+  * PREEMPT_RCU data structures.
+@@ -358,7 +358,7 @@ static void init_rcu_boost_early(void)
+ static inline struct rcu_boost_dat *rcu_rbd_new(void)
  {
- 	LIST_HEAD(list);
- 	unsigned long flags;
-+	int retval = 0;
- 	struct task_struct *taskp;
+ 	int cpu = smp_processor_id();  /* locks used, so preemption OK. */
+-	int idx = ORDERED_WRT_IRQ(rcu_boost_idx);
++	int idx = ACCESS_ONCE(rcu_boost_idx);
  
- 	/*
-@@ -397,6 +440,7 @@ static void rcu_boost_one_reader_list(st
- 	list_splice_init(&rbdp->rbs_toboost, &list);
- 	list_splice_init(&rbdp->rbs_boosted, &list);
- 	while (!list_empty(&list)) {
-+		retval = 1;
+ 	if (unlikely(idx < 0))
+ 		return NULL;
+@@ -810,7 +810,7 @@ void __rcu_read_lock(void)
+ 	struct task_struct *me = current;
+ 	int nesting;
+ 
+-	nesting = ORDERED_WRT_IRQ(me->rcu_read_lock_nesting);
++	nesting = ACCESS_ONCE(me->rcu_read_lock_nesting);
+ 	if (nesting != 0) {
+ 
+ 		/* An earlier rcu_read_lock() covers us, just count it. */
+@@ -835,9 +835,9 @@ void __rcu_read_lock(void)
+ 		 * casts to prevent the compiler from reordering.
+ 		 */
+ 
+-		idx = ORDERED_WRT_IRQ(rcu_ctrlblk.completed) & 0x1;
++		idx = ACCESS_ONCE(rcu_ctrlblk.completed) & 0x1;
+ 		smp_read_barrier_depends();  /* @@@@ might be unneeded */
+-		ORDERED_WRT_IRQ(__get_cpu_var(rcu_flipctr)[idx])++;
++		ACCESS_ONCE(__get_cpu_var(rcu_flipctr)[idx])++;
  
  		/*
- 		 * Pause for a bit before boosting each task.
-@@ -438,6 +482,36 @@ static void rcu_boost_one_reader_list(st
- 		list_add_tail(&taskp->rcub_entry, &rbdp->rbs_boosted);
+ 		 * Now that the per-CPU counter has been incremented, we
+@@ -847,7 +847,7 @@ void __rcu_read_lock(void)
+ 		 * of the need to increment the per-CPU counter.
+ 		 */
+ 
+-		ORDERED_WRT_IRQ(me->rcu_read_lock_nesting) = nesting + 1;
++		ACCESS_ONCE(me->rcu_read_lock_nesting) = nesting + 1;
+ 
+ 		/*
+ 		 * Now that we have preventing any NMIs from storing
+@@ -856,7 +856,7 @@ void __rcu_read_lock(void)
+ 		 * rcu_read_unlock().
+ 		 */
+ 
+-		ORDERED_WRT_IRQ(me->rcu_flipctr_idx) = idx;
++		ACCESS_ONCE(me->rcu_flipctr_idx) = idx;
+ 		local_irq_restore(flags);
  	}
- 	spin_unlock_irqrestore(&rbdp->rbs_lock, flags);
-+	return retval;
-+}
-+
-+/*
-+ * Examine state to see if it is time to sleep.
-+ */
-+static void rcu_booster_try_sleep(int yo)
-+{
-+	spin_lock(&rcu_boost_quiesce_lock);
-+	if (rcu_booster_quiesce_state < 0 ||
-+	    rcu_booster_quiesce_state >= N_RCU_BOOSTER_STATE)
-+		rcu_booster_quiesce_state = RCU_BOOST_INVALID;
-+	rbs_qs_stats[yo != 0][rcu_booster_quiesce_state]++;
-+	if (yo != 0) {
-+		rcu_booster_quiesce_state = RCU_BOOSTER_ACTIVE;
-+	} else {
-+		if (rcu_booster_quiesce_state == RCU_BOOSTER_ACTIVE) {
-+			rcu_booster_quiesce_state = RCU_BOOSTER_DROWSY;
-+		} else if (rcu_booster_quiesce_state == RCU_BOOSTER_DROWSY) {
-+			rcu_booster_quiesce_state = RCU_BOOSTER_SLEEPING;
-+			spin_unlock(&rcu_boost_quiesce_lock);
-+			__wait_event(rcu_booster_quiesce_wq,
-+				     rcu_booster_quiesce_state ==
-+				     RCU_BOOSTER_ACTIVE);
-+			spin_lock(&rcu_boost_quiesce_lock);
-+		} else {
-+			rcu_booster_quiesce_state = RCU_BOOSTER_ACTIVE;
-+		}
-+	}
-+	spin_unlock(&rcu_boost_quiesce_lock);
  }
+@@ -868,7 +868,7 @@ void __rcu_read_unlock(void)
+ 	struct task_struct *me = current;
+ 	int nesting;
  
+-	nesting = ORDERED_WRT_IRQ(me->rcu_read_lock_nesting);
++	nesting = ACCESS_ONCE(me->rcu_read_lock_nesting);
+ 	if (nesting > 1) {
+ 
+ 		/*
+@@ -908,7 +908,7 @@ void __rcu_read_unlock(void)
+ 		 * DEC Alpha.
+ 		 */
+ 
+-		idx = ORDERED_WRT_IRQ(me->rcu_flipctr_idx);
++		idx = ACCESS_ONCE(me->rcu_flipctr_idx);
+ 		smp_read_barrier_depends();  /* @@@ Needed??? */
+ 
+ 		/*
+@@ -917,7 +917,7 @@ void __rcu_read_unlock(void)
+ 		 * After this, any interrupts or NMIs will increment and
+ 		 * decrement the per-CPU counters.
+ 		 */
+-		ORDERED_WRT_IRQ(me->rcu_read_lock_nesting) = nesting - 1;
++		ACCESS_ONCE(me->rcu_read_lock_nesting) = nesting - 1;
+ 
+ 		/*
+ 		 * It is now safe to decrement this task's nesting count.
+@@ -928,7 +928,7 @@ void __rcu_read_unlock(void)
+ 		 * but that is OK, since we have already fetched it.
+ 		 */
+ 
+-		ORDERED_WRT_IRQ(__get_cpu_var(rcu_flipctr)[idx])--;
++		ACCESS_ONCE(__get_cpu_var(rcu_flipctr)[idx])--;
+ 
+ 		rcu_read_unlock_unboost();
+ 
+@@ -1123,7 +1123,7 @@ rcu_try_flip_waitmb(void)
  /*
-@@ -448,15 +522,21 @@ static int rcu_booster(void *arg)
- {
- 	int cpu;
- 	struct sched_param sp = { .sched_priority = PREEMPT_RCU_BOOSTER_PRIO, };
-+	int yo = 0;
- 
- 	sched_setscheduler(current, SCHED_RR, &sp);
- 	current->flags |= PF_NOFREEZE;
-+	init_waitqueue_head(&rcu_booster_quiesce_wq);
- 
- 	do {
- 
- 		/* Advance the lists of tasks. */
- 
- 		rcu_boost_idx = (rcu_boost_idx + 1) % RCU_BOOST_ELEMENTS;
-+		if (rcu_boost_idx == 0) {
-+			rcu_booster_try_sleep(yo);
-+			yo = 0;
-+		}
- 		for_each_possible_cpu(cpu) {
- 
- 			/*
-@@ -469,7 +549,7 @@ static int rcu_booster(void *arg)
- 			 * nothing.
- 			 */
- 
--			rcu_boost_one_reader_list(rcu_rbd_boosting(cpu));
-+			yo += rcu_boost_one_reader_list(rcu_rbd_boosting(cpu));
- 
- 			/*
- 			 * Large SMP systems may need to sleep sometimes
-@@ -511,6 +591,23 @@ void init_rcu_boost_late(void)
- }
- 
- /*
-+ * Awaken the RCU priority booster if neecessary.
-+ */
-+static void rcu_preempt_wake(struct rcu_boost_dat *rbdp)
-+{
-+	spin_lock(&rcu_boost_quiesce_lock);
-+	if (rcu_booster_quiesce_state >= N_RCU_BOOSTER_STATE)
-+		rcu_booster_quiesce_state = RCU_BOOSTER_INVALID;
-+	rbdp->rbs_qw_stats[rcu_booster_quiesce_state]++;
-+	if (rcu_booster_quiesce_state == RCU_BOOSTER_SLEEPING) {
-+		rcu_booster_quiesce_state = RCU_BOOSTER_ACTIVE;
-+		wake_up(&rcu_booster_quiesce_wq);
-+	} else if (rcu_booster_quiesce_state != RCU_BOOSTER_ACTIVE)
-+		rcu_booster_quiesce_state = RCU_BOOSTER_ACTIVE;
-+	spin_unlock(&rcu_boost_quiesce_lock);
-+}
-+
-+/*
-  * Update task's RCU-boost state to reflect blocking in RCU read-side
-  * critical section, so that the RCU-boost task can find it in case it
-  * later needs its priority boosted.
-@@ -532,6 +629,7 @@ void __rcu_preempt_boost(void)
- 	}
- 	spin_lock(&rbdp->rbs_lock);
- 	rbdp->rbs_blocked++;
-+	rcu_preempt_wake(rbdp);
- 
- 	/*
- 	 * Update state.  We hold the lock and aren't yet on the list,
+  * Attempt a single flip of the counters.  Remember, a single flip does
+  * -not- constitute a grace period.  Instead, the interval between
+- * at least three consecutive flips is a grace period.
++ * at least GP_STAGES+2 consecutive flips is a grace period.
+  *
+  * If anyone is nuts enough to run this CONFIG_PREEMPT_RCU implementation
+  * on a large SMP, they might want to use a hierarchical organization of
