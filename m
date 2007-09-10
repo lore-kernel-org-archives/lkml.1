@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932266AbXIJTCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965411AbXIJTHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932266AbXIJTCe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 15:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbXIJTC0
+	id S965411AbXIJTHp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 15:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbXIJTHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 15:02:26 -0400
-Received: from qb-out-0506.google.com ([72.14.204.229]:6902 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752821AbXIJTCZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 15:02:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=iBzKUW/jbkIU9nxSNM0BWlnvXAVVAUmQ3+jv38nBLJrAkKtvE4cyfRTuC/uYkiQihWfZXeZ+xqFw1ErzcWYKe0QIWOSxj9Wl6xjah6KWyGtUwlh+Z4iO2hhpNqMvjsL8mMtWTBT7vUSXKjdu6DZ7GiVHekpE52utr1pf9xsF9IM=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 3/3] build system: section garbage collection for vmlinux
-Date: Mon, 10 Sep 2007 20:02:15 +0100
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org
-References: <200709051443.21522.vda.linux@googlemail.com> <200709061155.52661.vda.linux@googlemail.com> <20070910120140.GA29077@uranus.ravnborg.org>
-In-Reply-To: <20070910120140.GA29077@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 10 Sep 2007 15:07:38 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:34839 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755891AbXIJTHh (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 15:07:37 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andi Kleen <ak@suse.de>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, jakub@redhat.com,
+       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc3-mm1 - vdso and gettimeofday issues with glibc
+In-Reply-To: Your message of "Sun, 09 Sep 2007 09:27:06 +0200."
+             <200709090927.07069.ak@suse.de>
+From: Valdis.Kletnieks@vt.edu
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org> <46D6EFDE.4020107@redhat.com> <7671.1189297449@turing-police.cc.vt.edu>
+            <200709090927.07069.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1189451250_3507P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709102002.15383.vda.linux@googlemail.com>
+Date: Mon, 10 Sep 2007 15:07:30 -0400
+Message-ID: <5026.1189451250@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 September 2007 13:01, Sam Ravnborg wrote:
+--==_Exmh_1189451250_3507P
+Content-Type: text/plain; charset=us-ascii
+
+On Sun, 09 Sep 2007 09:27:06 +0200, Andi Kleen said:
+> > Updating on this issue:   Both myself and another person have reported on
+> > the RedHat bugzilla that it's a clocksource issue - if you are using the
+> > hpet clocksource, the time warps, but booting with clocksource=acpi_pm works.
 > > 
-> > > Doing a normal kernel build will link vmlinux three or four times.
-> > > If we introduce --gc-sections we should add a preparational link of
-> > > vmlinux where we use --gc-sections and skip it for the rest of the links
-> > > assuming that --gc-sections takes some time for ld to do.
-> > 
-> > Yes, this will speed up things a bit.
+> > This ring any bells?
 > 
-> If we do the --gc-sections trick during the preparational link then we do
-> not use the arch supplied linker script.
-> Will it be possible to create a dedicated linker script that is valid
-> for all architectures and which only include the KEEP() directives for
-> the diverse sections?
+> Does this patch fix it? 
+> -Andi
+> 
+> Add missing mask operation to vdso
+> 
+> vdso vgetns() didn't mask the time source offset calculation, which could
+> lead to time problems with 32bit HPET. Add the masking.
+> 
+> Thanks to Chuck Ebbert for tracking down.
+> 
+> Signed-off-by: Andi Kleen <ak@suse.de>
 
-Unfortunately, -r and --gc-sections don't mix.
+Confirming that does indeed fix it - booted with hpet clocksource and vdso=1,
+and the time didn't warp at the 5-minute mark.
 
-x86_64-pc-linux-gnu-ld: --gc-sections and -r may not be used together
---
-vda
+Tested-By: Valdis Kletnieks <valdis.kletnieks@vt.edu>
+
+--==_Exmh_1189451250_3507P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFG5ZXycC3lWbTT17ARAg3BAKCtfadk54xhoqXqYKhgJY1Bams+RgCgwo26
+9xMBg+JgWwtKSOAZaj0l/4U=
+=VfYj
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1189451250_3507P--
