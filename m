@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759288AbXIJMoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758751AbXIJMup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759288AbXIJMoT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 08:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbXIJMoL
+	id S1758751AbXIJMup (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 08:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbXIJMuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 08:44:11 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:52617 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757340AbXIJMoK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 08:44:10 -0400
-Date: Mon, 10 Sep 2007 13:43:58 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Adrian Bunk <bunk@kernel.org>,
-       perex@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] unexport sys_{open,read}
-Message-ID: <20070910124358.GB21089@ftp.linux.org.uk>
-References: <20070909202527.GT3563@stusta.de> <20070909203920.GA11764@infradead.org> <20070909145940.0b41c8a5.akpm@linux-foundation.org> <20070910090808.GA31204@infradead.org> <20070910022324.c69e1897.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070910022324.c69e1897.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	Mon, 10 Sep 2007 08:50:37 -0400
+Received: from il.qumranet.com ([82.166.9.18]:57017 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753137AbXIJMuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 08:50:37 -0400
+Message-ID: <46E53D96.4050409@qumranet.com>
+Date: Mon, 10 Sep 2007 15:50:30 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Laurent Vivier <Laurent.Vivier@bull.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND][PATCH 0/4] Virtual Machine Time Accounting
+References: <46E5325D.1020902@bull.net> <20070910120758.GA26835@elte.hu>
+In-Reply-To: <20070910120758.GA26835@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 10, 2007 at 02:23:24AM -0700, Andrew Morton wrote:
-> > And I think almost everyone disagrees with you.  We just carry too much
-> > crap around because of your subborness in this issue, and it gets really
-> > annoying to have some high up on the food chain fighting his longly flight
-> > against the other people.
-> 
-> I would like to see "everyone" explain what we lose by giving developers a
-> bit of warning before we break their stuff.
-> 
-> 
-> And it would need to be a good explanation, Christoph.  A measured one
-> which recognises and then weighs the tradeoffs involved, and the costs.  An
-> inebriated-sounding rant will not impress, sorry.
+Ingo Molnar wrote:
+> * Laurent Vivier <Laurent.Vivier@bull.net> wrote:
+>
+>   
+>> Ingo, please, could you have a look to these patches ?
+>>
+>> The aim of these four patches is to introduce Virtual Machine time 
+>> accounting.
+>>
+>> [PATCH 1/4] as recent CPUs introduce a third running state, after 
+>> "user" and "system", we need a new field, "guest", in cpustat to store 
+>> the time used by the CPU to run virtual CPU. Modify /proc/stat to 
+>> display this new field.
+>>     
+>
+> the concept certainly looks sane to me.
+>
+> The heavy-handed use of #ifdefs uglifies the code to a large degree, but 
+> this is not a fundamental problem: since basically all distros have KVM 
+> enabled (and lguest benefits from this too), could you just make all 
+> this new code unconditional?
+>   
 
-Fine, then.  Just how much of a warning is needed in this particular case?
-Normally I'm the last one to support Adrian's exportectomy binges, but in
-case of sys_open() it's _way_ overdue.  There had been warnings for quite
-a while; moreover, fixing the breakage in any case that is not already
-badly broken is going to take a few minutes.  People who had not found
-spare ten minutes during the last few years have my sincere condolences,
-but they bloody can do that when it hits the fan and I see no reason to
-believe that a warning in build time or modprobe time would do more than
-multiple warnings on maillists.
+I imagine the embedded people will complain... perhaps move all the code 
+to a #ifdef section above with a full implementation and a stub 
+implementation.
+
+-- 
+error compiling committee.c: too many arguments to function
+
