@@ -1,75 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932572AbXIJJ4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbXIJJ4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932572AbXIJJ4U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 05:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXIJJ4F
+	id S1756986AbXIJJ4e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 05:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756914AbXIJJ4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 05:56:05 -0400
-Received: from hu-out-0506.google.com ([72.14.214.233]:50303 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755262AbXIJJ4E (ORCPT
+	Mon, 10 Sep 2007 05:56:07 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57708 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756818AbXIJJ4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 10 Sep 2007 05:56:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
-        b=WcNIlJfj8nIiLmGKoP/xLRqmwMudaPi3j2sEGHDc4qQaWF6sYtA16/nfHPXhq30xgAkYfbiYNcRIUaDwqHw1uXfy+LuKGMiTjQcLvFiMNMW6M4kAluLtiHO6tKeNcSSsZp+FyluMFmvCX0F+wlufEn6B9O1BMUvTnuFVF2OBtqw=
-Date: Mon, 10 Sep 2007 11:55:56 +0200
-From: Nicolas Capit <nicolas.capit@imag.fr>
-To: Simon Derr <Simon.Derr@bull.net>
-Cc: linux-kernel@vger.kernel.org, Paul Jackson <pj@sgi.com>
-Subject: Re: cpuset trouble after hibernate
-Message-ID: <20070910115556.5dd75cd7@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0709101141180.3467@frecb006381.adech.frec.bull.fr>
-References: <20070908204438.3bf03d85@localhost.localdomain>
-	<Pine.LNX.4.64.0709101141180.3467@frecb006381.adech.frec.bull.fr>
-X-Mailer: Claws Mail 3.0.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Date: Mon, 10 Sep 2007 18:57:46 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: [PATCH] add page->mapping handling interface [11/35] changes in
+ EXT2
+Message-Id: <20070910185746.2ebc741f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070910184048.286dfc6e.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070910184048.286dfc6e.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Sep 2007 11:45:10 +0200 (CEST)
-Simon Derr <Simon.Derr@bull.net> wrote:
+Change page->mapping handling in ext2
 
-> On Sat, 8 Sep 2007, Nicolas Capit wrote:
-> 
-> > Hello,
-> > 
-> > This is my situation:
-> >   - I mounted the pseudo cpuset filesystem into /dev/cpuset
-> >   - I created a cpuset named oar with my 2 cpus
-> > 
-> > cat /dev/cpuset/oar/cpus 
-> > 0-1
-> > 
-> >   - Then I hibernate my computer with 'echo -n "disk" >/sys/power/state'
-> >   - After reboot:
-> > 
-> > cat /dev/cpuset/oar/cpus 
-> > 0
-> > 
-> > Why did I lost a cpu?
-> > Is this a normal behavior???
-> 
-> Hi Nicolas,
-> 
-> I believe this is related to the fact that hibernation uses the hotplug 
-> subsystem to disable all CPUs except the boot CPU.
-> 
-> Thus guarantee_online_cpus() is called on each cpuset and removes all 
-> CPUs, except CPU 0, from all cpusets.
-> 
-> I'm not quite sure about if/how this should be fixed in the kernel, 
-> though. Looks like a very simple user-land workaround would be enough.
-> 
-> 	Simon.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Ok, it is not a big deal for me (you don't hibernate computers in a
-cluster...) but I wanted to bring you this issue in case of a similar
-behavior in another case...
+---
+ fs/ext2/dir.c |   20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-Thanks for your response.
+Index: test-2.6.23-rc4-mm1/fs/ext2/dir.c
+===================================================================
+--- test-2.6.23-rc4-mm1.orig/fs/ext2/dir.c
++++ test-2.6.23-rc4-mm1/fs/ext2/dir.c
+@@ -65,7 +65,7 @@ ext2_last_byte(struct inode *inode, unsi
+ 
+ static int ext2_commit_chunk(struct page *page, loff_t pos, unsigned len)
+ {
+-	struct address_space *mapping = page->mapping;
++	struct address_space *mapping = page_mapping_cache(page);
+ 	struct inode *dir = mapping->host;
+ 	int err = 0;
+ 
+@@ -87,7 +87,7 @@ static int ext2_commit_chunk(struct page
+ 
+ static void ext2_check_page(struct page *page)
+ {
+-	struct inode *dir = page->mapping->host;
++	struct inode *dir = page_inode(page);
+ 	struct super_block *sb = dir->i_sb;
+ 	unsigned chunk_size = ext2_chunk_size(dir);
+ 	char *kaddr = page_address(page);
+@@ -429,7 +429,7 @@ void ext2_set_link(struct inode *dir, st
+ 	int err;
+ 
+ 	lock_page(page);
+-	err = __ext2_write_begin(NULL, page->mapping, pos, len,
++	err = __ext2_write_begin(NULL, page_mapping_cache(page), pos, len,
+ 				AOP_FLAG_UNINTERRUPTIBLE, &page, NULL);
+ 	BUG_ON(err);
+ 	de->inode = cpu_to_le32(inode->i_ino);
+@@ -512,8 +512,8 @@ int ext2_add_link (struct dentry *dentry
+ got_it:
+ 	pos = page_offset(page) +
+ 		(char*)de - (char*)page_address(page);
+-	err = __ext2_write_begin(NULL, page->mapping, pos, rec_len, 0,
+-							&page, NULL);
++	err = __ext2_write_begin(NULL, page_mapping_cache(page), pos, rec_len,
++				0, &page, NULL);
+ 	if (err)
+ 		goto out_unlock;
+ 	if (de->inode) {
+@@ -546,7 +546,7 @@ out_unlock:
+  */
+ int ext2_delete_entry (struct ext2_dir_entry_2 * dir, struct page * page )
+ {
+-	struct address_space *mapping = page->mapping;
++	struct address_space *mapping = page_mapping_cache(page);
+ 	struct inode *inode = mapping->host;
+ 	char *kaddr = page_address(page);
+ 	unsigned from = ((char*)dir - kaddr) & ~(ext2_chunk_size(inode)-1);
+@@ -570,8 +570,8 @@ int ext2_delete_entry (struct ext2_dir_e
+ 		from = (char*)pde - (char*)page_address(page);
+ 	pos = page_offset(page) + from;
+ 	lock_page(page);
+-	err = __ext2_write_begin(NULL, page->mapping, pos, to - from, 0,
+-							&page, NULL);
++	err = __ext2_write_begin(NULL, page_mapping_cache(page), pos,
++				to - from, 0, &page, NULL);
+ 	BUG_ON(err);
+ 	if (pde)
+ 		pde->rec_len = cpu_to_le16(to - from);
+@@ -600,8 +600,8 @@ int ext2_make_empty(struct inode *inode,
+ 	if (!page)
+ 		return -ENOMEM;
+ 
+-	err = __ext2_write_begin(NULL, page->mapping, 0, chunk_size, 0,
+-							&page, NULL);
++	err = __ext2_write_begin(NULL, page_mapping_cache(page), 0, chunk_size,
++					0, &page, NULL);
+ 	if (err) {
+ 		unlock_page(page);
+ 		goto fail;
 
-Nicolas Capit.
