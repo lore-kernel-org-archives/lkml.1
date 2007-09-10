@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965725AbXIJWpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965844AbXIJWpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965725AbXIJWpf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 18:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965116AbXIJWp2
+	id S965844AbXIJWpx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 18:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965757AbXIJWpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 18:45:28 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:62380 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965056AbXIJWp1 (ORCPT
+	Mon, 10 Sep 2007 18:45:44 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:57709 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965116AbXIJWpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 18:45:27 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=mTGwpyaw2uI9zYpTHb3f6RGMl96qboZYNUFwAjK4vM7OtIMrhdN7tpvy5EvqzJqIo
-	w3I+xR/oLomhUqOqyK/tg==
-Message-ID: <6599ad830709101545s66fd338dob6932407db4e1002@mail.gmail.com>
-Date: Mon, 10 Sep 2007 15:45:15 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH] Hookup group-scheduler with task container infrastructure
-Cc: vatsa@linux.vnet.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <b647ffbd0709101537l9af4dc8x743b25c96e0f5235@mail.gmail.com>
+	Mon, 10 Sep 2007 18:45:43 -0400
+X-Sasl-enc: NJaxIZTInQs08v8tDKp5Qa2rSsXWVEi4QksEfZDLt/t3 1189464347
+Date: Mon, 10 Sep 2007 19:45:38 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: Platform device id
+Message-ID: <20070910224537.GA1408@khazad-dum.debian.net>
+References: <20070907153559.17faf9d1@hyperion.delvare> <d120d5000709070758i1b54a37o3d3977304a84b2c1@mail.gmail.com> <20070907205659.GA4357@khazad-dum.debian.net> <20070908104041.4d8d1a24@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070910171049.GA16048@linux.vnet.ibm.com>
-	 <Pine.LNX.4.64.0709101903220.5368@fbirervta.pbzchgretzou.qr>
-	 <20070910172334.GB19100@linux.vnet.ibm.com>
-	 <20070910102259.dc45a481.akpm@linux-foundation.org>
-	 <20070910174649.GA16222@linux.vnet.ibm.com>
-	 <b647ffbd0709101537l9af4dc8x743b25c96e0f5235@mail.gmail.com>
+In-Reply-To: <20070908104041.4d8d1a24@hyperion.delvare>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/10/07, Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
-> On 10/09/2007, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
-> > On Mon, Sep 10, 2007 at 10:22:59AM -0700, Andrew Morton wrote:
-> > > objection ;)  "cpuctlr" isn't memorable.  Kernel code is write-rarely,
-> > > read-often.  "cpu_controller", please.  The extra typing is worth it ;)
-> >
-> > Ok! Here's the modified patch (against 2.6.23-rc4-mm1).
->
-> as everyone seems to be in a quest for a better name... I think, the
-> obvious one would be just 'group_sched'.
->
+On Sat, 08 Sep 2007, Jean Delvare wrote:
+> On Fri, 7 Sep 2007 17:56:59 -0300, Henrique de Moraes Holschuh wrote:
+> > On 9/7/07, Jean Delvare <khali@linux-fr.org> wrote:
+> > > To go one step further, I am questioning the real value of this naming
+> > > exception for these "unique" platform devices. On top of the bugs I
+> > > mentioned above, it has potential for compatibility breakage: adding a
+> > 
+> > Agreed.  But the breakage might happen anyway, if you need to move
+> > attributes from foo.0 to foo.1.  After that first time, userspace will learn
+> > to hunt down all foo.* after what it wants, but still...
+> 
+> Moving attributes from one device to another? This doesn't make any
+> sense to me, sorry. foo.0 and foo.1 represent different instances of
+> the same device type, they typically have the same attributes.
 
-But "sched" on its own could refer to CPU scheduling, I/O scheduling,
-network scheduling, ...
+Yeah, I came across that need in an attempt to fix an issue in thinkpad-acpi
+which will be fixed in another way (separate modules, or separate platform
+devices/platform drivers in the same module).  I must have been
+sleep-deprieved and in a weird mind state of sorts (and not in a nice way)
+to come up with it.
 
-And "group" is more or less implied by the fact that it's in the
-containers/control groups filesystem.
-
-So "group_sched" isn't really all that informative. The name should
-definitely contain either "cpu" or "cfs".
-
-Paul
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
