@@ -1,95 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965196AbXIJP43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965269AbXIJQCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965196AbXIJP43 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 11:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933012AbXIJP4W
+	id S965269AbXIJQCE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 12:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756400AbXIJQBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 11:56:22 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:44506 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932942AbXIJP4V (ORCPT
+	Mon, 10 Sep 2007 12:01:54 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:45827 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750985AbXIJQBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 11:56:21 -0400
-Date: Mon, 10 Sep 2007 11:55:46 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>
-Subject: [PATCH] UML - Fix ELF_CORE_COPY_REGS build botch
-Message-ID: <20070910155546.GA14107@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Mon, 10 Sep 2007 12:01:53 -0400
+Message-ID: <46E56A5E.20209@bull.net>
+Date: Mon, 10 Sep 2007 18:01:34 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND 2][PATCH 3/4] modify account_system_time() to update
+ guest time in cpustat and task_struct
+References: <46E550EA.1030809@bull.net> <20070910085331.84dc1fb5.randy.dunlap@oracle.com>
+In-Reply-To: <20070910085331.84dc1fb5.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.94.0.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 10/09/2007 18:07:33,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 10/09/2007 18:07:34,
+	Serialize complete at 10/09/2007 18:07:34
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6B587C2B6FC41441AB9E628C"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ This needs to go into 2.6.23 ]
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6B587C2B6FC41441AB9E628C
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-The earlier crash dump fix on x86_64 depended on patches in -mm which
-are intended for post-2.6.23.  Without those, it broke the build when
-it went into 2.6.23-rc5.
+Randy Dunlap wrote:
+> On Mon, 10 Sep 2007 16:12:58 +0200 Laurent Vivier wrote:
+>=20
+>> [PATCH 3/4] modify account_system_time() to add cputime to cpustat->gu=
+est if we
+>> are running a VCPU. We add this cputime to  cpustat->user instead of
+>> cpustat->system because this part of KVM code is in fact user code alt=
+hough it
+>> is executed in the kernel. We duplicate VCPU time between guest and us=
+er to
+>> allow an unmodified "top(1)" to display correct value. A modified "top=
+(1)" is
+>> able to display good cpu user time and cpu guest time by subtracting c=
+pu guest
+>> time from cpu user time. Update "gtime" in task_struct accordingly.
+>>
+>> Signed-off-by: Laurent Vivier <Laurent.Vivier@bull.net>
+>=20
+>=20
+> Hi,
+> Please use kernel-doc notation here:
+> (see Documentation/kernel-doc-nano-HOWTO.txt or source file examples
+> or ask)
+>=20
+> easy fix:
+>=20
+>  /*
+> + * Account guest cpu time to a process.
+>=20
+> /**
+>  * account_guest_time - Account guest cpu time to a process.
+>=20
+> + * @p: the process that the cpu time gets accounted to
+> + * @cputime: the cpu time spent in virtual machine since the last upda=
+te
+> + */
+> +void account_guest_time(struct task_struct *p, cputime_t cputime)
+> +{
 
-This patch changes the field references in ELF_CORE_COPY_REGS back to
-those still used in mainline.
+thank you for the comment.
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- include/asm-um/elf-x86_64.h |   42 +++++++++++++++++++++---------------------
- 1 file changed, 21 insertions(+), 21 deletions(-)
+But I just made a cut&past of the comment of the function above.
 
-Index: linux-2.6.17/include/asm-um/elf-x86_64.h
-===================================================================
---- linux-2.6.17.orig/include/asm-um/elf-x86_64.h	2007-09-04 18:22:48.000000000 -0400
-+++ linux-2.6.17/include/asm-um/elf-x86_64.h	2007-09-10 11:48:25.000000000 -0400
-@@ -67,27 +67,27 @@ typedef struct { } elf_fpregset_t;
- } while (0)
- 
- #define ELF_CORE_COPY_REGS(pr_reg, regs)		\
--	(pr_reg)[0] = (regs)->regs.gp[0];			\
--	(pr_reg)[1] = (regs)->regs.gp[1];			\
--	(pr_reg)[2] = (regs)->regs.gp[2];			\
--	(pr_reg)[3] = (regs)->regs.gp[3];			\
--	(pr_reg)[4] = (regs)->regs.gp[4];			\
--	(pr_reg)[5] = (regs)->regs.gp[5];			\
--	(pr_reg)[6] = (regs)->regs.gp[6];			\
--	(pr_reg)[7] = (regs)->regs.gp[7];			\
--	(pr_reg)[8] = (regs)->regs.gp[8];			\
--	(pr_reg)[9] = (regs)->regs.gp[9];			\
--	(pr_reg)[10] = (regs)->regs.gp[10];			\
--	(pr_reg)[11] = (regs)->regs.gp[11];			\
--	(pr_reg)[12] = (regs)->regs.gp[12];			\
--	(pr_reg)[13] = (regs)->regs.gp[13];			\
--	(pr_reg)[14] = (regs)->regs.gp[14];			\
--	(pr_reg)[15] = (regs)->regs.gp[15];			\
--	(pr_reg)[16] = (regs)->regs.gp[16];			\
--	(pr_reg)[17] = (regs)->regs.gp[17];			\
--	(pr_reg)[18] = (regs)->regs.gp[18];			\
--	(pr_reg)[19] = (regs)->regs.gp[19];			\
--	(pr_reg)[20] = (regs)->regs.gp[20];			\
-+	(pr_reg)[0] = (regs)->regs.skas.regs[0];			\
-+	(pr_reg)[1] = (regs)->regs.skas.regs[1];			\
-+	(pr_reg)[2] = (regs)->regs.skas.regs[2];			\
-+	(pr_reg)[3] = (regs)->regs.skas.regs[3];			\
-+	(pr_reg)[4] = (regs)->regs.skas.regs[4];			\
-+	(pr_reg)[5] = (regs)->regs.skas.regs[5];			\
-+	(pr_reg)[6] = (regs)->regs.skas.regs[6];			\
-+	(pr_reg)[7] = (regs)->regs.skas.regs[7];			\
-+	(pr_reg)[8] = (regs)->regs.skas.regs[8];			\
-+	(pr_reg)[9] = (regs)->regs.skas.regs[9];			\
-+	(pr_reg)[10] = (regs)->regs.skas.regs[10];			\
-+	(pr_reg)[11] = (regs)->regs.skas.regs[11];			\
-+	(pr_reg)[12] = (regs)->regs.skas.regs[12];			\
-+	(pr_reg)[13] = (regs)->regs.skas.regs[13];			\
-+	(pr_reg)[14] = (regs)->regs.skas.regs[14];			\
-+	(pr_reg)[15] = (regs)->regs.skas.regs[15];			\
-+	(pr_reg)[16] = (regs)->regs.skas.regs[16];			\
-+	(pr_reg)[17] = (regs)->regs.skas.regs[17];			\
-+	(pr_reg)[18] = (regs)->regs.skas.regs[18];			\
-+	(pr_reg)[19] = (regs)->regs.skas.regs[19];			\
-+	(pr_reg)[20] = (regs)->regs.skas.regs[20];			\
- 	(pr_reg)[21] = current->thread.arch.fs;			\
- 	(pr_reg)[22] = 0;					\
- 	(pr_reg)[23] = 0;					\
+Should I be consistent with the doc or with the source ?
+
+Laurent
+--=20
+------------- Laurent.Vivier@bull.net  --------------
+          "Software is hard" - Donald Knuth
+
+
+--------------enig6B587C2B6FC41441AB9E628C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.7 (GNU/Linux)
+
+iD8DBQFG5Wpi9Kffa9pFVzwRApZBAJwPbbL2quNUMGAAe87dEyMQDxCgxQCgx1bh
+kO+4N1neavWkNbD2ziS5Mw0=
+=sVd5
+-----END PGP SIGNATURE-----
+
+--------------enig6B587C2B6FC41441AB9E628C--
