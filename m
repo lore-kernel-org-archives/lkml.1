@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932604AbXIJK46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbXIJLIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932604AbXIJK46 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 06:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbXIJK4t
+	id S1757342AbXIJLIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 07:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbXIJLID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 06:56:49 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:2937 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753822AbXIJK4q convert rfc822-to-8bit (ORCPT
+	Mon, 10 Sep 2007 07:08:03 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:57876 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755391AbXIJLIA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 06:56:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Kanj2O398TPgm0naMcEYRuszK9bpDR8+9CdChTqC6Cbez2mRt32y4hV/T6d5MwvTF9L4pim962AsuA2bOSTIBMs5y4DQzX1k2WUv0pOsPLOSOXjUzciVELI+Wkxt3U6OJQE+d3N2FeGLFdi0QZTH3g1Gw+ud/hgX1ziyFHxx+5c=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all architectures
-Date: Mon, 10 Sep 2007 11:56:29 +0100
-User-Agent: KMail/1.9.1
+	Mon, 10 Sep 2007 07:08:00 -0400
+Subject: Re: [2/2] 2.6.23-rc5: known regressions with patches v2
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <piggin@cyberone.com.au>,
-       Satyam Sharma <satyam@infradead.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mackerras <paulus@samba.org>, Christoph Lameter <clameter@sgi.com>,
-       Chris Snook <csnook@redhat.com>,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
-       heiko.carstens@de.ibm.com, David Miller <davem@davemloft.net>,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com,
-       segher@kernel.crashing.org
-References: <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <200709091902.55388.vda.linux@googlemail.com> <20070909191839.1fa10e88@laptopd505.fenrus.org>
-In-Reply-To: <20070909191839.1fa10e88@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200709101156.30010.vda.linux@googlemail.com>
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       Christian Casteyde <casteyde.christian@free.fr>,
+       Alan Stern <stern@rowland.harvard.edu>, netdev@vger.kernel.org,
+       Florian Lohoff <flo@rfc822.org>, linux-wireless@vger.kernel.org,
+       Martin Langer <martin-langer@gmx.de>, Stefano Brivio <st3@riseup.net>,
+       Michael Buesch <mbuesch@freenet.de>,
+       Danny van Dyk <kugelfang@gentoo.org>,
+       Andreas Jaggi <andreas.jaggi@waterwave.ch>
+In-Reply-To: <46E2836B.60406@googlemail.com>
+References: <46E28149.2090900@googlemail.com>
+	 <46E2836B.60406@googlemail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-RXc8z+5z+ykjplKG/obX"
+Date: Mon, 10 Sep 2007 13:09:22 +0200
+Message-Id: <1189422562.4506.56.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 09 September 2007 19:18, Arjan van de Ven wrote:
-> On Sun, 9 Sep 2007 19:02:54 +0100
-> Denys Vlasenko <vda.linux@googlemail.com> wrote:
-> 
-> > Why is all this fixation on "volatile"? I don't think
-> > people want "volatile" keyword per se, they want atomic_read(&x) to
-> > _always_ compile into an memory-accessing instruction, not register
-> > access.
-> 
-> and ... why is that?
-> is there any valid, non-buggy code sequence that makes that a
-> reasonable requirement?
 
-Well, if you insist on having it again:
+--=-RXc8z+5z+ykjplKG/obX
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Waiting for atomic value to be zero:
+On Sat, 2007-09-08 at 13:11 +0200, Michal Piotrowski wrote:
 
-        while (atomic_read(&x))
-                continue;
+> Subject         : Unable to access memory card reader anymore
+> References      : http://bugzilla.kernel.org/show_bug.cgi?id=3D8885
+> Last known good : ?
+> Submitter       : Christian Casteyde <casteyde.christian@free.fr>
+> Caused-By       : ?
+> Handled-By      : Alan Stern <stern@rowland.harvard.edu>
+> Patch           : http://bugzilla.kernel.org/attachment.cgi?id=3D12438
+> Status          : patch available
 
-gcc may happily convert it into:
+Last known good/caused-by doesn't apply, the bug has been in there ever
+since the mac80211 code was merged into the tree.
 
-        reg = atomic_read(&x);
-        while (reg)
-                continue;
+johannes
 
-Expecting every driver writer to remember that atomic_read is not in fact
-a "read from memory" is naive. That won't happen. Face it, majority of
-driver authors are a bit less talented than Ingo Molnar or Arjan van de Ven ;)
-The name of the macro is saying that it's a read.
-We are confusing users here.
+--=-RXc8z+5z+ykjplKG/obX
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-It's doubly confusing that cpy_relax(), which says _nothing_ about barriers
-in its name, is actually a barrier you need to insert here.
---
-vda
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBG5SXi/ETPhpq3jKURAonYAJ496VbOMMdBmfXcSIAGj7SP8WHOogCgsAIh
+mPIagbcK0ZbIFGjIpzwROos=
+=gxUL
+-----END PGP SIGNATURE-----
+
+--=-RXc8z+5z+ykjplKG/obX--
+
