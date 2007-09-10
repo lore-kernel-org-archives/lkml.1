@@ -1,112 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758802AbXIJMmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759288AbXIJMoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758802AbXIJMmc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 08:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757340AbXIJMmY
+	id S1759288AbXIJMoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 08:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbXIJMoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 08:42:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45322 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755236AbXIJMmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 08:42:23 -0400
-To: linux-input@atrey.karlin.mff.cuni.cz
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       Dmitry Torokhov <dtor@mail.ru>, Steven Rostedt <rostedt@goodmis.org>,
-       akpm@linux-foundation.org
-Subject: [PATCH] input: Fix interrupt enable in i8042_ctr when enabling interrupt fails
-From: Markus Armbruster <armbru@redhat.com>
-Date: Mon, 10 Sep 2007 14:41:34 +0200
-Message-ID: <877imy7kw1.fsf@pike.pond.sub.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
+	Mon, 10 Sep 2007 08:44:11 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52617 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757340AbXIJMoK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 08:44:10 -0400
+Date: Mon, 10 Sep 2007 13:43:58 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Adrian Bunk <bunk@kernel.org>,
+       perex@suse.cz, linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] unexport sys_{open,read}
+Message-ID: <20070910124358.GB21089@ftp.linux.org.uk>
+References: <20070909202527.GT3563@stusta.de> <20070909203920.GA11764@infradead.org> <20070909145940.0b41c8a5.akpm@linux-foundation.org> <20070910090808.GA31204@infradead.org> <20070910022324.c69e1897.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070910022324.c69e1897.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When enabling interrupts fails, the interrupt enable bit remains set
-in i8042_ctr.  Later writes of i8042_ctr to the hardware could
-accidentally retry enabling interrupts.  Clear the bit on failure.
+On Mon, Sep 10, 2007 at 02:23:24AM -0700, Andrew Morton wrote:
+> > And I think almost everyone disagrees with you.  We just carry too much
+> > crap around because of your subborness in this issue, and it gets really
+> > annoying to have some high up on the food chain fighting his longly flight
+> > against the other people.
+> 
+> I would like to see "everyone" explain what we lose by giving developers a
+> bit of warning before we break their stuff.
+> 
+> 
+> And it would need to be a good explanation, Christoph.  A measured one
+> which recognises and then weighs the tradeoffs involved, and the costs.  An
+> inebriated-sounding rant will not impress, sorry.
 
-Signed-off-by: Markus Armbruster <armbru@redhat.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-
----
-Some time ago Steven Rostedt and I went over this changeset:
-
-    commit de9ce703c6b807b1dfef5942df4f2fadd0fdb67a
-    Author: Dmitry Torokhov <dtor@insightbb.com>
-    Date:   Sun Sep 10 21:57:21 2006 -0400
-
-        Input: i8042 - get rid of polling timer
-
-        Remove polling timer that was used to detect keybord/mice hotplug and
-        register both IRQs right away instead of waiting for a driver to
-        attach to a port.
-
-        Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-
-Steven pointed out to me that it changes behavior when enabling IRQ
-fails.
-
-The old code enabled IRQs this way:
-
-	i8042_ctr |= port->irqen;
-
-	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-		i8042_ctr &= ~port->irqen;
-		return -1;
-	}
-
-i8042_ctr shadows the 8042's CTR.  So, when enabling fails, the bit is
-cleared in the shadow.
-
-The new code does not clear the bit on the error path:
-
-static int i8042_enable_kbd_port(void)
-{
-	i8042_ctr &= ~I8042_CTR_KBDDIS;
-	i8042_ctr |= I8042_CTR_KBDINT;
-
-	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-		printk(KERN_ERR "i8042.c: Failed to enable KBD port.\n");
-		return -EIO;
-	}
-
-	return 0;
-}
-
-Same for i8042_enable_aux_port().
-
-This leads to the question whether there are later writes of i8042_ctr
-(possibly with other bits altered) to the hardware, which could
-accidentally retry enabling interrupts.
-
-I believe this possible, but unlikely (perhaps not so unlikely on
-virtual machines).  Scenarios involve enable succeeding the first
-time, failing the second time, and succeeding the third time.  I can
-provide details, but the point I'd like to make is not that this is
-broken (although it is, strictly speaking), but that it is not
-obviously correct where it easily could be: just clear the interrupt
-enable bits when writing them to the hardware failed, like the old
-code did.
-
-diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
-index db9cca3..71a7e39 100644
---- a/drivers/input/serio/i8042.c
-+++ b/drivers/input/serio/i8042.c
-@@ -385,6 +385,7 @@ static int i8042_enable_kbd_port(void)
- 	i8042_ctr |= I8042_CTR_KBDINT;
- 
- 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-+		i8042_ctr &= ~I8042_CTR_KBDINT;
- 		printk(KERN_ERR "i8042.c: Failed to enable KBD port.\n");
- 		return -EIO;
- 	}
-@@ -402,6 +403,7 @@ static int i8042_enable_aux_port(void)
- 	i8042_ctr |= I8042_CTR_AUXINT;
- 
- 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-+		i8042_ctr &= ~I8042_CTR_AUXINT;
- 		printk(KERN_ERR "i8042.c: Failed to enable AUX port.\n");
- 		return -EIO;
- 	}
+Fine, then.  Just how much of a warning is needed in this particular case?
+Normally I'm the last one to support Adrian's exportectomy binges, but in
+case of sys_open() it's _way_ overdue.  There had been warnings for quite
+a while; moreover, fixing the breakage in any case that is not already
+badly broken is going to take a few minutes.  People who had not found
+spare ten minutes during the last few years have my sincere condolences,
+but they bloody can do that when it hits the fan and I see no reason to
+believe that a warning in build time or modprobe time would do more than
+multiple warnings on maillists.
