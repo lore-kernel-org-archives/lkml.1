@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbXIJOJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760216AbXIJOMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760065AbXIJOJo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 10:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757784AbXIJOJh
+	id S1760216AbXIJOMH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 10:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758402AbXIJOLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 10:09:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39055 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753529AbXIJOJh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 10:09:37 -0400
-Date: Mon, 10 Sep 2007 16:09:21 +0100
-From: Arjan van de Ven <arjan@infradead.org>
-To: Dong_Wei@nj.cpsecure.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: dynamically use the irqbalance
-Message-ID: <20070910160921.5f8e2d73@laptopd505.fenrus.org>
-In-Reply-To: <46E4A51D.2050804@nj.cpsecure.com>
-References: <46E4A51D.2050804@nj.cpsecure.com>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 10 Sep 2007 10:11:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45327 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759105AbXIJOLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 10:11:53 -0400
+To: linux-kernel@vger.kernel.org
+Subject: Re: PPC64 AT_IGNOREPPC question
+References: <m3odgehs9e.fsf@dhcp-lab-156.englab.brq.redhat.com>
+	<18148.13191.876031.378696@cargo.ozlabs.ibm.com>
+From: Vitaly Mayatskikh <vmayatsk@redhat.com>
+X-URL: http://people.redhat.com/vmayatsk
+Date: Mon, 10 Sep 2007 08:55:31 +0200
+In-Reply-To: <18148.13191.876031.378696@cargo.ozlabs.ibm.com> (Paul Mackerras's message of "Mon\, 10 Sep 2007 03\:55\:19 +1000")
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+Message-ID: <m3y7fezk2h.fsf@dhcp-lab-143.englab.brq.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Sep 2007 09:59:57 +0800
-Dong_Wei <Dong_Wei@nj.cpsecure.com> wrote:
+Paul Mackerras <paulus@samba.org> writes:
 
-> Hi, all.
->    I want to dynamically use irqbalance on X86 processor. My design
-> is like the following:
->    1) if we boot kernel with "noirqbalance", then irqbalance is
-> always disabled.
->    2) if we boot kernel without "noirqbalance", we can enable/disable 
-> irqbalance in runtime.
+> I'll have to check when that change was done and decide whether we can
+> now take out the AT_IGNOREPPC entries.  If not it sounds like we need
+> to expand AT_VECTOR_SIZE.
 
-Hi,
+I've looked over glibc-2.3 sources (is it old enough? :) and didn't
+notice any specialities for AT_IGNOREPPC.
 
-kernel level irqbalance is not the right thing though (afaik it's in
-feature-deprecation-schedule); please consider using the userland
-irqbalancer instead (www.irqbalance.org). That also makes it entirely
-easy to do what you want; since it's a daemon, starting and stopping it
-follows standard Linux practice.
+-- 
+Vitaly Mayatskikh <vmayatsk@redhat.com>
 
+Kernel development
+Red Hat Czech, Brno
 
-Greetings,
-    Arjan van de Ven
+Phone: +420 532 294 111
+IRC: vitaly on #kernel, #brno
+GPG: 0x4BA2E8FB
