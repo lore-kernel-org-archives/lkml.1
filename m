@@ -1,186 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760193AbXIJNGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964930AbXIJNIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760193AbXIJNGs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 09:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbXIJNGj
+	id S964930AbXIJNIS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 09:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757525AbXIJNIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 09:06:39 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:42628 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755446AbXIJNGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 09:06:37 -0400
-Message-ID: <46E54156.8060706@linux.vnet.ibm.com>
-Date: Mon, 10 Sep 2007 18:36:30 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
-MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, bfields@fieldses.org,
-       neilb@suse.de, nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [NFS] [BUG] 2.6.23-rc5 kernel BUG at fs/nfs/nfs4xdr.c:945
-References: <46E121B8.4080105@linux.vnet.ibm.com> <6bffcb0e0709071656o6881fa17y61818a9733293a4c@mail.gmail.com> <1189289549.13713.4.camel@localhost.localdomain>
-In-Reply-To: <1189289549.13713.4.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Sep 2007 09:08:04 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:43984
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756683AbXIJNIB convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 09:08:01 -0400
+Message-Id: <46E55E01.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Mon, 10 Sep 2007 14:08:49 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andi Kleen" <ak@suse.de>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: multi-byte single instruction NOPs
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> On Sat, 2007-09-08 at 01:56 +0200, Michal Piotrowski wrote:
->   
->> Hi,
->>
->> On 07/09/2007, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->>     
->>> Sep  7 11:42:49 p55lp2 kernel: kernel BUG at fs/nfs/nfs4xdr.c:945!
->>> Sep  7 11:42:49 p55lp2 kernel: Oops: Exception in kernel mode, sig: 5 [#1]
->>> Sep  7 11:42:49 p55lp2 kernel: SMP NR_CPUS=128 NUMA pSeries
->>> Sep  7 11:42:49 p55lp2 kernel: Modules linked in: nfs lockd nfs_acl
->>> sunrpc ipv6 loop dm_mod ibmveth sg ibmvscsic sd_mod scsi_mod
->>> Sep  7 11:42:49 p55lp2 kernel: NIP: d000000000378044 LR:
->>> d000000000378034 CTR: 80000000001c5840
->>> Sep  7 11:42:49 p55lp2 kernel: REGS: c0000000d971b050 TRAP: 0700   Not
->>> tainted  (2.6.23-rc5-ppc64)
->>> Sep  7 11:42:49 p55lp2 kernel: MSR: 8000000000029032 <EE,ME,IR,DR>  CR:
->>> 28000444  XER: 00000014
->>> Sep  7 11:42:49 p55lp2 kernel: TASK = c000000002787740[11508] 'fsstress'
->>> THREAD: c0000000d9718000 CPU: 1
->>> Sep  7 11:42:49 p55lp2 kernel: GPR00: 0000000000000001 c0000000d971b2d0
->>> d0000000003bd648 0000000000000037
->>> Sep  7 11:42:49 p55lp2 kernel: GPR04: 0000000000000000 0000000000000000
->>> 0000000000000000 0000000000000000
->>> Sep  7 11:42:49 p55lp2 kernel: GPR08: 0000000000000002 c000000000616538
->>> c0000000ef7afb58 c000000000616540
->>> Sep  7 11:42:49 p55lp2 kernel: GPR12: 0000000000004000 c0000000005e4a80
->>> 0000000000000000 00000000200b2510
->>> Sep  7 11:42:49 p55lp2 kernel: GPR16: 0000000020105550 00000000200b2534
->>> 000000002008c15c 0000000000000001
->>> Sep  7 11:42:49 p55lp2 kernel: GPR20: 0000000000000000 0000000000000001
->>> fffffffffffff000 c0000000d971ba30
->>> Sep  7 11:42:49 p55lp2 kernel: GPR24: d00000000034f524 c0000000dc4f8054
->>> c0000000d971b7d0 c0000000d9d313f0
->>> Sep  7 11:42:49 p55lp2 kernel: GPR28: 0000000000000276 0000000022000000
->>> d0000000003b8d78 0000000000000000
->>> Sep  7 11:42:49 p55lp2 kernel: NIP [d000000000378044]
->>> .encode_lookup+0x6c/0xbc [nfs]
->>> Sep  7 11:42:49 p55lp2 kernel: LR [d000000000378034]
->>> .encode_lookup+0x5c/0xbc [nfs]
->>> Sep  7 11:42:49 p55lp2 kernel: Call Trace:
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971b2d0] [d000000000378034]
->>> .encode_lookup+0x5c/0xbc [nfs] (unreliable)
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971b370] [d000000000379f8c]
->>> .nfs4_xdr_enc_lookup+0x78/0xbc [nfs]
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971b440] [d000000000314534]
->>> .rpcauth_wrap_req+0xe4/0x124 [sunrpc]
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971b4f0] [d00000000030a790]
->>> .call_transmit+0x218/0x2b8 [sunrpc]
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971b590] [d0000000003124d8]
->>> .__rpc_execute+0xd4/0x368 [sunrpc]
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971b630] [d00000000030b114]
->>> .rpc_do_run_task+0xc8/0x104 [sunrpc]
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971b6e0] [d00000000030b224]
->>> .rpc_call_sync+0x2c/0x64 [sunrpc]
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971b760] [d00000000036ef04]
->>> ._nfs4_proc_lookupfh+0xd4/0x124 [nfs]
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971b850] [d0000000003719a0]
->>> ._nfs4_proc_lookup+0x80/0x21c [nfs]
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971b910] [d000000000371ba4]
->>> .nfs4_proc_lookup+0x68/0xac [nfs]
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971b9c0] [d000000000354bf4]
->>> .nfs_lookup+0x158/0x334 [nfs]
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971bbc0] [c0000000000f3a28]
->>> .lookup_hash+0xfc/0x140
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971bc60] [c0000000000f7b28]
->>> .sys_renameat+0x164/0x228
->>> Sep  7 11:42:49 p55lp2 kernel: [c0000000d971be30] [c000000000008534]
->>> syscall_exit+0x0/0x40
->>> Sep  7 11:42:49 p55lp2 kernel: Instruction dump:
->>> Sep  7 11:42:49 p55lp2 kernel: e8410028 7fa4eb78 7c7f1b79 7fb80026
->>> 40820014 e8be83a8 e87e8350 4800c5f9
->>> Sep  7 11:42:49 p55lp2 kernel: e8410028 7fb80120 7c180026 54001ffe
->>> <0b000000> 3800000f 7b850020 387f0008
->>>       
->> Is this a post 2.6.22 regression? Have you tried 2.6.23-rc5-git1?
->> (There are a few nfs fixes)
->>
->> Regards,
->> Michal
->>     
->
-> It looks like a bug that has been there at least since 2.6.18. Could you
-> see if this fixes it?
->
-> Trond
->
->
->   
->
-> ------------------------------------------------------------------------
->
-> Subject:
-> No Subject
-> From:
-> Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date:
-> Sun, 9 Sep 2007 00:10:51 +0200
->
->
-> It doesn't look as if the NFSv4 name length is being initialised correctly
-> in the struct nfs_server. We need to limit any entry there to
-> NFS4_MAXNAMLEN.
->
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
->
->  fs/nfs/client.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
->
-> diff --git a/fs/nfs/client.c b/fs/nfs/client.c
-> index a49f9fe..54068fb 100644
-> --- a/fs/nfs/client.c
-> +++ b/fs/nfs/client.c
-> @@ -928,6 +928,9 @@ static int nfs4_init_server(struct nfs_server *server,
->
->  	error = nfs_init_server_rpcclient(server, authflavour);
->
-> +	if (server->namelen == 0 || server->namelen > NFS4_MAXNAMLEN)
-> +		server->namelen = NFS4_MAXNAMLEN;
-> +
->  	/* Done */
->  	dprintk("<-- nfs4_init_server() = %d\n", error);
->  	return error;
->   
-Hi Trond,
+Add support for and use the multi-byte NOPs recently documented to be
+available on all PentiumPro and later processors.
 
-After applying the patch, i get the same kernel Bug
+This patch only applies cleanly on top of the "x86: misc.
+constifications" patch sent earlier.
 
-cpu 0x0: Vector: 700 (Program Check) at [c0000000e2d5f050]
-    pc: d000000000841668: .encode_lookup+0x6c/0xbc [nfs]
-    lr: d000000000841658: .encode_lookup+0x5c/0xbc [nfs]
-    sp: c0000000e2d5f2d0
-   msr: 8000000000029032
-  current = 0xc0000000e6358790
-  paca    = 0xc0000000005ead00
-    pid   = 3452, comm = fsstress
-kernel BUG at fs/nfs/nfs4xdr.c:945!
-enter ? for help
-[c0000000e2d5f370] d0000000008435b0 .nfs4_xdr_enc_lookup+0x78/0xbc [nfs]
-[c0000000e2d5f440] d00000000019a2d4 .rpcauth_wrap_req+0xe4/0x124 [sunrpc]
-[c0000000e2d5f4f0] d000000000190774 .call_transmit+0x218/0x2b8 [sunrpc]
-[c0000000e2d5f590] d000000000198308 .__rpc_execute+0xd4/0x34c [sunrpc]
-[c0000000e2d5f630] d0000000001910f8 .rpc_do_run_task+0xc8/0x104 [sunrpc]
-[c0000000e2d5f6e0] d000000000191208 .rpc_call_sync+0x2c/0x64 [sunrpc]
-[c0000000e2d5f760] d0000000008386f0 ._nfs4_proc_lookupfh+0xd4/0x124 [nfs]
-[c0000000e2d5f850] d00000000083b14c ._nfs4_proc_lookup+0x80/0x21c [nfs]
-[c0000000e2d5f910] d00000000083b350 .nfs4_proc_lookup+0x68/0xac [nfs]
-[c0000000e2d5f9c0] d00000000081ea40 .nfs_lookup+0x158/0x314 [nfs]
-[c0000000e2d5fbc0] c0000000000f4ba8 .lookup_hash+0xfc/0x140
-[c0000000e2d5fc60] c0000000000f8a70 .sys_renameat+0x164/0x228
-[c0000000e2d5fe30] c000000000008534 syscall_exit+0x0/0x40
---- Exception: c01 (System Call) at 000000000feeb3d4
-SP (ffe805a0) is in userspace
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+
+ arch/i386/kernel/alternative.c |   23 ++++++++++++++++++++++-
+ include/asm-i386/processor.h   |   22 ++++++++++++++++++++++
+ include/asm-x86_64/processor.h |   22 ++++++++++++++++++++++
+ 3 files changed, 66 insertions(+), 1 deletion(-)
+
+--- linux-2.6.23-rc5/arch/i386/kernel/alternative.c	2007-09-10 13:31:43.000000000 +0200
++++ 2.6.23-rc5-x86-const/arch/i386/kernel/alternative.c	2007-09-10 13:31:57.000000000 +0200
+@@ -115,12 +115,31 @@ static const unsigned char *const k7_nop
+ };
+ #endif
+ 
++#ifdef P6_NOP1
++asm("\t.section .rodata, \"a\"\np6nops: "
++	P6_NOP1 P6_NOP2 P6_NOP3 P6_NOP4 P6_NOP5 P6_NOP6
++	P6_NOP7 P6_NOP8);
++extern const unsigned char p6nops[];
++static const unsigned char *const p6_nops[ASM_NOP_MAX+1] = {
++	NULL,
++	p6nops,
++	p6nops + 1,
++	p6nops + 1 + 2,
++	p6nops + 1 + 2 + 3,
++	p6nops + 1 + 2 + 3 + 4,
++	p6nops + 1 + 2 + 3 + 4 + 5,
++	p6nops + 1 + 2 + 3 + 4 + 5 + 6,
++	p6nops + 1 + 2 + 3 + 4 + 5 + 6 + 7,
++};
++#endif
++
+ #ifdef CONFIG_X86_64
+ 
+ extern char __vsyscall_0;
+ static inline const unsigned char*const * find_nop_table(void)
+ {
+-	return k8_nops;
++	return boot_cpu_data.x86_vendor != X86_VENDOR_INTEL ||
++	       boot_cpu_data.x86 < 6 ? k8_nops : p6_nops;
+ }
+ 
+ #else /* CONFIG_X86_64 */
+@@ -131,6 +150,8 @@ static const struct nop {
+ } noptypes[] = {
+ 	{ X86_FEATURE_K8, k8_nops },
+ 	{ X86_FEATURE_K7, k7_nops },
++	{ X86_FEATURE_P4, p6_nops },
++	{ X86_FEATURE_P3, p6_nops },
+ 	{ -1, NULL }
+ };
+ 
+--- linux-2.6.23-rc5/include/asm-i386/processor.h	2007-09-10 13:31:43.000000000 +0200
++++ 2.6.23-rc5-x86-const/include/asm-i386/processor.h	2007-09-10 13:31:57.000000000 +0200
+@@ -674,6 +674,17 @@ static inline unsigned int cpuid_edx(uns
+ #define K7_NOP7        ".byte 0x8D,0x04,0x05,0,0,0,0\n"
+ #define K7_NOP8        K7_NOP7 ASM_NOP1
+ 
++/* P6 nops */
++/* uses eax dependencies (Intel-recommended choice) */
++#define P6_NOP1	GENERIC_NOP1
++#define P6_NOP2	".byte 0x66,0x90\n"
++#define P6_NOP3	".byte 0x0f,0x1f,0x00\n"
++#define P6_NOP4	".byte 0x0f,0x1f,0x40,0\n"
++#define P6_NOP5	".byte 0x0f,0x1f,0x44,0x00,0\n"
++#define P6_NOP6	".byte 0x66,0x0f,0x1f,0x44,0x00,0\n"
++#define P6_NOP7	".byte 0x0f,0x1f,0x80,0,0,0,0\n"
++#define P6_NOP8	".byte 0x0f,0x1f,0x84,0x00,0,0,0,0\n"
++
+ #ifdef CONFIG_MK8
+ #define ASM_NOP1 K8_NOP1
+ #define ASM_NOP2 K8_NOP2
+@@ -692,6 +703,17 @@ static inline unsigned int cpuid_edx(uns
+ #define ASM_NOP6 K7_NOP6
+ #define ASM_NOP7 K7_NOP7
+ #define ASM_NOP8 K7_NOP8
++#elif defined(CONFIG_M686) || defined(CONFIG_MPENTIUMII) || \
++      defined(CONFIG_MPENTIUMIII) || defined(CONFIG_MPENTIUMM) || \
++      defined(CONFIG_MCORE2) || defined(CONFIG_PENTIUM4)
++#define ASM_NOP1 P6_NOP1
++#define ASM_NOP2 P6_NOP2
++#define ASM_NOP3 P6_NOP3
++#define ASM_NOP4 P6_NOP4
++#define ASM_NOP5 P6_NOP5
++#define ASM_NOP6 P6_NOP6
++#define ASM_NOP7 P6_NOP7
++#define ASM_NOP8 P6_NOP8
+ #else
+ #define ASM_NOP1 GENERIC_NOP1
+ #define ASM_NOP2 GENERIC_NOP2
+--- linux-2.6.23-rc5/include/asm-x86_64/processor.h	2007-09-10 13:31:43.000000000 +0200
++++ 2.6.23-rc5-x86-const/include/asm-x86_64/processor.h	2007-09-10 13:31:57.000000000 +0200
+@@ -334,6 +334,16 @@ struct extended_sigtable {
+ };
+ 
+ 
++#if defined(CONFIG_MPSC) || defined(CONFIG_MCORE2)
++#define ASM_NOP1 P6_NOP1
++#define ASM_NOP2 P6_NOP2
++#define ASM_NOP3 P6_NOP3
++#define ASM_NOP4 P6_NOP4
++#define ASM_NOP5 P6_NOP5
++#define ASM_NOP6 P6_NOP6
++#define ASM_NOP7 P6_NOP7
++#define ASM_NOP8 P6_NOP8
++#else
+ #define ASM_NOP1 K8_NOP1
+ #define ASM_NOP2 K8_NOP2
+ #define ASM_NOP3 K8_NOP3
+@@ -342,6 +352,7 @@ struct extended_sigtable {
+ #define ASM_NOP6 K8_NOP6
+ #define ASM_NOP7 K8_NOP7
+ #define ASM_NOP8 K8_NOP8
++#endif
+ 
+ /* Opteron nops */
+ #define K8_NOP1 ".byte 0x90\n"
+@@ -353,6 +364,17 @@ struct extended_sigtable {
+ #define K8_NOP7	K8_NOP4 K8_NOP3
+ #define K8_NOP8	K8_NOP4 K8_NOP4
+ 
++/* P6 nops */
++/* uses eax dependencies (Intel-recommended choice) */
++#define P6_NOP1	".byte 0x90\n"
++#define P6_NOP2	".byte 0x66,0x90\n"
++#define P6_NOP3	".byte 0x0f,0x1f,0x00\n"
++#define P6_NOP4	".byte 0x0f,0x1f,0x40,0\n"
++#define P6_NOP5	".byte 0x0f,0x1f,0x44,0x00,0\n"
++#define P6_NOP6	".byte 0x66,0x0f,0x1f,0x44,0x00,0\n"
++#define P6_NOP7	".byte 0x0f,0x1f,0x80,0,0,0,0\n"
++#define P6_NOP8	".byte 0x0f,0x1f,0x84,0x00,0,0,0,0\n"
++
+ #define ASM_NOP_MAX 8
+ 
+ /* REP NOP (PAUSE) is a good thing to insert into busy-wait loops. */
 
 
-Thanks & Regards,
-Kamalesh Babulal.
