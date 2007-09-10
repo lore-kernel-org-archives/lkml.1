@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933558AbXIJO4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbXIJO7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933558AbXIJO4l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 10:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760769AbXIJOxx
+	id S1760631AbXIJO7r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 10:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932666AbXIJO7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 10:53:53 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:57665 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760771AbXIJOxv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 10:53:51 -0400
-Message-ID: <46E55A6C.6070106@bull.net>
-Date: Mon, 10 Sep 2007 16:53:32 +0200
-From: Laurent Vivier <Laurent.Vivier@bull.net>
-Organization: Bull S.A.S.
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+	Mon, 10 Sep 2007 10:59:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34152 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756380AbXIJO7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 10:59:34 -0400
+Message-ID: <46E55BD0.30500@redhat.com>
+Date: Mon, 10 Sep 2007 09:59:28 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND][PATCH 1/4] Introduce a new field "guest" in cpustat
-References: <46E53267.3010305@bull.net> <46E55996.8050009@redhat.com>
-In-Reply-To: <46E55996.8050009@redhat.com>
-X-Enigmail-Version: 0.94.0.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 10/09/2007 16:59:30,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 10/09/2007 16:59:31,
-	Serialize complete at 10/09/2007 16:59:31
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig12D0C24DE32420F7B0F5D537"
+To: Duane Griffin <duaneg@dghda.com>
+CC: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       ext4 development <linux-ext4@vger.kernel.org>
+Subject: Re: [RESEND][PATCH] dir_index: error out instead of BUG on corrupt
+ hash dir limit
+References: <46D8D30B.6090703@redhat.com> <20070909131933.GA15229@dastardly.plus.com>
+In-Reply-To: <20070909131933.GA15229@dastardly.plus.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig12D0C24DE32420F7B0F5D537
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Duane Griffin wrote:
+> Hi Eric,
+> 
+> On Fri, Aug 31, 2007 at 09:48:43PM -0500, Eric Sandeen wrote:
+>> (resend, this one got lost?  Got an acked-by from Andreas
+>> last go-round)
+> 
+> Sorry I missed this first time around. I came up with a very similar
+> fix recently, following a gentoo bug report.  However there are a few
+> more asserts later that you aren't currently handling. Below is an
+> incremental patch on top of yours that converts them too. 
 
-Rik van Riel wrote:
-> Laurent Vivier wrote:
->> [PATCH 1/4] as recent CPUs introduce a third running state, after
->> "user" and
->> "system", we need a new field, "guest", in cpustat to store the time
->> used by
->> the CPU to run virtual CPU. Modify /proc/stat to display this new fiel=
-d.
->=20
-> I think it would be good to always print out that number, even if
-> it is zero without the CONFIG option set.
->=20
-> Changing the format of /proc/stat depending on config options is
-> probably worse than changing it when moving kernel versions.
->=20
-> I guess reusing the "steal" field is not a good idea, since your
-> new "guest time" has different semantics than the steal time field.
->=20
+Ah, good point... I focused a bit too much on the single problem at hand
+didn't I.  :)
 
-I agree with all.
+> Note that one
+> of them is in an if (0) block and maybe should be left alone -- what do
+> you think?
 
-Laurent
---=20
-------------- Laurent.Vivier@bull.net  --------------
-          "Software is hard" - Donald Knuth
+If it's just there for debug, maybe leaving an assert is ok, to get a
+dump & system state etc.  If it is converted, a printk would probably be
+good so you know you're falling back, otherwise that extra checking is a
+bit pointless if it's silent.
 
+> I tested all the changed code paths, except the if (0) one, using a
+> utility that appropriately corrupts ext3 images. 
+> The source code is
+> attached to the gentoo bug report here:
+> 
+> http://bugs.gentoo.org/show_bug.cgi?id=183207
+> 
+> Signed-off-by: Duane Griffin <duaneg@dghda.com>
 
---------------enig12D0C24DE32420F7B0F5D537
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Looks good, thanks for not ignoring the other asserts.  ;-)  I wonder if
+we should fix up all the new error condition printk's a bit to be more
+descriptive of the problem at hand; for example, the one I sent should
+maybe say:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.7 (GNU/Linux)
++		ext3_warning(dir->i_sb, __FUNCTION__,
++			     "Corrupt root limit in dir inode %ld\n", dir->i_ino);
 
-iD8DBQFG5Vpw9Kffa9pFVzwRArCsAJ4rfbdF40s6U3lRcvwmCtWCv1knzwCaA7V+
-uomkHAaNoy5Hwpe6aiT1jsY=
-=DvuM
------END PGP SIGNATURE-----
+I wanted to leave the word "corrupt" in there, or at least something to
+clue in the user that maybe fsck is in order...
 
---------------enig12D0C24DE32420F7B0F5D537--
+Thanks,
+-Eric
