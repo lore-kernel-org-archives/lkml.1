@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759202AbXIJSyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758969AbXIJS7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759202AbXIJSyR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 14:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbXIJSyG
+	id S1758969AbXIJS7p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 14:59:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbXIJS7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 14:54:06 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:33913 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751451AbXIJSyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 14:54:05 -0400
-Date: Mon, 10 Sep 2007 14:54:00 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dcache: trivial comment fix
-Message-ID: <20070910185400.GG2947@fieldses.org>
-References: <20070910184632.GF2947@fieldses.org>
+	Mon, 10 Sep 2007 14:59:35 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43833 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751651AbXIJS7d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 14:59:33 -0400
+Date: Mon, 10 Sep 2007 11:59:29 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Segher Boessenkool <segher@kernel.crashing.org>
+cc: Paul Mackerras <paulus@samba.org>, heiko.carstens@de.ibm.com,
+       horms@verge.net.au, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Satyam Sharma <satyam@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       ak@suse.de, cfriesen@nortel.com, rpjday@mindspring.com,
+       Netdev <netdev@vger.kernel.org>, jesper.juhl@gmail.com,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       zlynx@acm.org, schwidefsky@de.ibm.com, Chris Snook <csnook@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>, wensong@linux-vs.org,
+       wjiang@resilience.com
+Subject: Re: [PATCH 0/24] make atomic_read() behave consistently across all
+ architectures
+In-Reply-To: <c298f0e3f9e49c9dd2d326115d156084@kernel.crashing.org>
+Message-ID: <Pine.LNX.4.64.0709101157060.24491@schroedinger.engr.sgi.com>
+References: <20070816003948.GY9645@linux.vnet.ibm.com>
+ <Pine.LNX.4.64.0708151740570.10497@schroedinger.engr.sgi.com>
+ <18115.44462.622801.683446@cargo.ozlabs.ibm.com> <20070816020042.GA30650@gondor.apana.org.au>
+ <18115.45316.702491.681906@cargo.ozlabs.ibm.com>
+ <alpine.LFD.0.999.0708160800130.24380@enigma.security.iitk.ac.in>
+ <alpine.LFD.0.999.0708160815510.24380@enigma.security.iitk.ac.in>
+ <18115.52863.638655.658466@cargo.ozlabs.ibm.com> <20070816053945.GB32442@gondor.apana.org.au>
+ <18115.62741.807704.969977@cargo.ozlabs.ibm.com> <20070816070907.GA964@gondor.apana.org.au>
+ <Pine.LNX.4.64.0708161743500.13267@kivilampi-30.cs.helsinki.fi>
+ <46C4ABA5.9010804@redhat.com> <Pine.LNX.4.64.0708161319000.17777@schroedinger.engr.sgi.com>
+ <c298f0e3f9e49c9dd2d326115d156084@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070910184632.GF2947@fieldses.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 10, 2007 at 02:46:32PM -0400, J. Bruce Fields wrote:
->   * This forceful removal will result in ugly /proc output if
->   * somebody holds a file open that got deleted due to a rename.
->   * We could be nicer about the deleted file, and let it show
-> - * up under the name it got deleted rather than the name that
-> - * deleted it.
-> + * up under the name it had before it was deleted rather than
-> + * under the original name of the file that was moved on top of it.
+On Fri, 17 Aug 2007, Segher Boessenkool wrote:
 
-By the way, on further examination of the code it doesn't actually do
-what's described in the case where the target name is large and the
-moved-from name is small.  Instead, it reports random garbage (usually
-part of a name left over from some other dentry?) as far as I can tell:
+> "volatile" has nothing to do with reordering.  atomic_dec() writes
+> to memory, so it _does_ have "volatile semantics", implicitly, as
+> long as the compiler cannot optimise the atomic variable away
+> completely -- any store counts as a side effect.
 
-from switch_names():
+Stores can be reordered. Only x86 has (mostly) implicit write ordering. So 
+no atomic_dec has no volatile semantics and may be reordered on a variety 
+of processors. Writes to memory may not follow code order on several 
+processors.
 
 
-	if (dname_external(target)) {
-                if (dname_external(dentry)) {
-			...
-                } else {
-                        /*
-                         * dentry:internal, target:external.  Steal target's
-                         * storage and make target internal.
-                         */
-                        dentry->d_name.name = target->d_name.name;
-                        target->d_name.name = target->d_iname;
-
-... but target->d_iname could have anything in it, right?
-
---b.
