@@ -1,48 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbXIJMhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758802AbXIJMmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759358AbXIJMhK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 08:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbXIJMg6
+	id S1758802AbXIJMmc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 08:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757340AbXIJMmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 08:36:58 -0400
-Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:41865
-	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757462AbXIJMg5 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 08:36:57 -0400
-Date: Mon, 10 Sep 2007 05:36:42 -0700 (PDT)
-Message-Id: <20070910.053642.71114977.davem@davemloft.net>
-To: kovedi@gmail.com
-Cc: linux-kernel@vger.kernel.org, stable-bounces@kernel.org,
-       davem@sunset.davemloft.net
-Subject: Re: [Sparc64 BUG] hangup under booting 2.6.22.X whith Sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <406fe6c90709100442j1ae0ef79v3188eb10b8be451b@mail.gmail.com>
-References: <406fe6c90709100442j1ae0ef79v3188eb10b8be451b@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 10 Sep 2007 08:42:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45322 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755236AbXIJMmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 08:42:23 -0400
+To: linux-input@atrey.karlin.mff.cuni.cz
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       Dmitry Torokhov <dtor@mail.ru>, Steven Rostedt <rostedt@goodmis.org>,
+       akpm@linux-foundation.org
+Subject: [PATCH] input: Fix interrupt enable in i8042_ctr when enabling interrupt fails
+From: Markus Armbruster <armbru@redhat.com>
+Date: Mon, 10 Sep 2007 14:41:34 +0200
+Message-ID: <877imy7kw1.fsf@pike.pond.sub.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Kövedi_Krisztián" <kovedi@gmail.com>
-Date: Mon, 10 Sep 2007 13:42:43 +0200
+When enabling interrupts fails, the interrupt enable bit remains set
+in i8042_ctr.  Later writes of i8042_ctr to the hardware could
+accidentally retry enabling interrupts.  Clear the bit on failure.
 
-> Executing last command: boot
-> Boot device: /pci@1f,0/ide@d/disk@0,0:a  File and args:
-> SILO Version 1.4.13
-> boot: teszt
-> Allocated 8 Megs of memory at 0x40000000 for kernel
-> Loaded kernel version 2.6.22
-> 
-> Remapping the kernel... done.
-> Booting Linux...
+Signed-off-by: Markus Armbruster <armbru@redhat.com>
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-Please add "-p" to the boot command line so we can see
-if any other useful messages are printed by the kernel.
+---
+Some time ago Steven Rostedt and I went over this changeset:
 
-There is a period between this last message and the
-console initialization, which can be quite long and the
-"-p" option forces all messages to be printed via the
-firmware.
+    commit de9ce703c6b807b1dfef5942df4f2fadd0fdb67a
+    Author: Dmitry Torokhov <dtor@insightbb.com>
+    Date:   Sun Sep 10 21:57:21 2006 -0400
+
+        Input: i8042 - get rid of polling timer
+
+        Remove polling timer that was used to detect keybord/mice hotplug and
+        register both IRQs right away instead of waiting for a driver to
+        attach to a port.
+
+        Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+
+Steven pointed out to me that it changes behavior when enabling IRQ
+fails.
+
+The old code enabled IRQs this way:
+
+	i8042_ctr |= port->irqen;
+
+	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
+		i8042_ctr &= ~port->irqen;
+		return -1;
+	}
+
+i8042_ctr shadows the 8042's CTR.  So, when enabling fails, the bit is
+cleared in the shadow.
+
+The new code does not clear the bit on the error path:
+
+static int i8042_enable_kbd_port(void)
+{
+	i8042_ctr &= ~I8042_CTR_KBDDIS;
+	i8042_ctr |= I8042_CTR_KBDINT;
+
+	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
+		printk(KERN_ERR "i8042.c: Failed to enable KBD port.\n");
+		return -EIO;
+	}
+
+	return 0;
+}
+
+Same for i8042_enable_aux_port().
+
+This leads to the question whether there are later writes of i8042_ctr
+(possibly with other bits altered) to the hardware, which could
+accidentally retry enabling interrupts.
+
+I believe this possible, but unlikely (perhaps not so unlikely on
+virtual machines).  Scenarios involve enable succeeding the first
+time, failing the second time, and succeeding the third time.  I can
+provide details, but the point I'd like to make is not that this is
+broken (although it is, strictly speaking), but that it is not
+obviously correct where it easily could be: just clear the interrupt
+enable bits when writing them to the hardware failed, like the old
+code did.
+
+diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
+index db9cca3..71a7e39 100644
+--- a/drivers/input/serio/i8042.c
++++ b/drivers/input/serio/i8042.c
+@@ -385,6 +385,7 @@ static int i8042_enable_kbd_port(void)
+ 	i8042_ctr |= I8042_CTR_KBDINT;
+ 
+ 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
++		i8042_ctr &= ~I8042_CTR_KBDINT;
+ 		printk(KERN_ERR "i8042.c: Failed to enable KBD port.\n");
+ 		return -EIO;
+ 	}
+@@ -402,6 +403,7 @@ static int i8042_enable_aux_port(void)
+ 	i8042_ctr |= I8042_CTR_AUXINT;
+ 
+ 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
++		i8042_ctr &= ~I8042_CTR_AUXINT;
+ 		printk(KERN_ERR "i8042.c: Failed to enable AUX port.\n");
+ 		return -EIO;
+ 	}
