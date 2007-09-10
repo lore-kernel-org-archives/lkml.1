@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbXIJMf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbXIJMhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758765AbXIJMf1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 08:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757299AbXIJMfS
+	id S1759358AbXIJMhK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 08:37:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbXIJMg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 08:35:18 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35735 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756785AbXIJMfR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 08:35:17 -0400
-Subject: Re: v2.6.23-rc4-rt1 / new project URL
-From: Peter Zijlstra <peterz@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       RT-Users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1188593944.9647.15.camel@chaos>
-References: <1188593944.9647.15.camel@chaos>
-Content-Type: text/plain
-Date: Mon, 10 Sep 2007 14:35:14 +0200
-Message-Id: <1189427714.21778.15.camel@twins>
+	Mon, 10 Sep 2007 08:36:58 -0400
+Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:41865
+	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757462AbXIJMg5 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 08:36:57 -0400
+Date: Mon, 10 Sep 2007 05:36:42 -0700 (PDT)
+Message-Id: <20070910.053642.71114977.davem@davemloft.net>
+To: kovedi@gmail.com
+Cc: linux-kernel@vger.kernel.org, stable-bounces@kernel.org,
+       davem@sunset.davemloft.net
+Subject: Re: [Sparc64 BUG] hangup under booting 2.6.22.X whith Sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <406fe6c90709100442j1ae0ef79v3188eb10b8be451b@mail.gmail.com>
+References: <406fe6c90709100442j1ae0ef79v3188eb10b8be451b@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-31 at 22:59 +0200, Thomas Gleixner wrote:
-> We're pleased to announce the release of the v2.6.23-rc4-rt1 kernel,
-> which can be downloaded from a new place:
->  
->    http://www.kernel.org/pub/linux/kernel/projects/rt/
->  
-> The move to kernel.org is experimental for now, we'll keep it if it
-> works out fine.
-> 
-> Changes since 2.6.23-rc2-rt2:
-> 
-> - update to -rc4
-> - update to 2.6.23-rc4-hrt1
-> 
-> - UP compile fixes back merged (Kevin Hilman / Steven Rostedt)
-> - various latency tracer fixes (Steven Rostedt)
-> - softirq migration fixes (Steven Rostedt)
-> - ARM futex cmpxchg in atomic support (Khem Raj)
-> - ARM raw lock fix (Kevin Hilman)
-> - loadavgrt fix (Luis Claudio R. Goncalves)
-> - mellanox driver fix (Michael S. Tsirkin)
-> 
-> A bunch of patches are postponed for -rt2 (they are neither ignored
-> nor forgotten):
-> 
-> - simple_irq change (Kevin Hilman): needs more thought
-> - RCU updates (Paul McKenney): needs proper integration
-> - latency tracer changes (Daniel Walker): needs review
-> - PICK_OP changes (Daniel Walker): needs review
+From: "Kövedi_Krisztián" <kovedi@gmail.com>
+Date: Mon, 10 Sep 2007 13:42:43 +0200
 
-This one seems to have slipped through the cracks:
-  http://lkml.org/lkml/2007/8/16/135
+> Executing last command: boot
+> Boot device: /pci@1f,0/ide@d/disk@0,0:a  File and args:
+> SILO Version 1.4.13
+> boot: teszt
+> Allocated 8 Megs of memory at 0x40000000 for kernel
+> Loaded kernel version 2.6.22
+> 
+> Remapping the kernel... done.
+> Booting Linux...
 
+Please add "-p" to the boot command line so we can see
+if any other useful messages are printed by the kernel.
 
+There is a period between this last message and the
+console initialization, which can be quite long and the
+"-p" option forces all messages to be printed via the
+firmware.
