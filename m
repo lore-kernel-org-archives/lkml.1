@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761207AbXIJVEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761402AbXIJVF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761207AbXIJVEb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 17:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbXIJVEX
+	id S1761402AbXIJVF2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 17:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbXIJVFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 17:04:23 -0400
-Received: from pat.uio.no ([129.240.10.15]:58544 "EHLO pat.uio.no"
+	Mon, 10 Sep 2007 17:05:18 -0400
+Received: from mga02.intel.com ([134.134.136.20]:25480 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756848AbXIJVEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 17:04:22 -0400
-Subject: Re: [NFS] [BUG] 2.6.23-rc5 kernel BUG at fs/nfs/nfs4xdr.c:945
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: suzuki <suzuki@in.ibm.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, bfields@fieldses.org,
-       neilb@suse.de, nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       ffilz@us.ibm.com, Poornima <bnpoorni@in.ibm.com>
-In-Reply-To: <46E4FC2F.6040105@in.ibm.com>
-References: <46E121B8.4080105@linux.vnet.ibm.com>
-	 <6bffcb0e0709071656o6881fa17y61818a9733293a4c@mail.gmail.com>
-	 <1189289549.13713.4.camel@localhost.localdomain>
-	 <46E4FC2F.6040105@in.ibm.com>
-Content-Type: text/plain
-Date: Mon, 10 Sep 2007 23:03:48 +0200
-Message-Id: <1189458228.6634.4.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
-X-UiO-Scanned: 5DF4D3080DDE1FBC446F7D8E0EB8C6CB93E9EADF
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 72 total 3781760 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	id S1752169AbXIJVFR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 17:05:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,233,1186383600"; 
+   d="scan'208";a="292062343"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [patch] enable userspace cpu core voltage control withacpi-cpufreq
+Date: Mon, 10 Sep 2007 14:04:05 -0700
+Message-ID: <653FFBB4508B9042B5D43DC9E18836F5015DB050@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <20070903152457.GC21586@redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch] enable userspace cpu core voltage control withacpi-cpufreq
+Thread-Index: AcfuPwNAKmp9HOwORfuMDSYCMW2ALAFrokLA
+References: <200709021441.l82EfWCe022642@mail.mc.o2online.de> <p738x7oaugi.fsf@bingen.suse.de> <20070903152457.GC21586@redhat.com>
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Dave Jones" <davej@redhat.com>, "Andi Kleen" <andi@firstfloor.org>
+Cc: <colin.michael@o2online.de>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 10 Sep 2007 21:05:14.0586 (UTC) FILETIME=[48678BA0:01C7F3EE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-09-10 at 13:41 +0530, suzuki wrote:
-> Hi
-> 
-> I have been trying to debug this issue from my side and could find the 
-> following.
-> 
-> The pathconf() request gets a reply with :
-> 
-> pathinfo.max_namelen = (unsiged int) -1
-> pathinfo.max_link    = 255
-> 
-> Is this really an expected answer from a server for a proper connection 
-> ( for mount requests on an exported dir) ? Is there something that needs 
-> to be fixed at server side ?
+ 
 
-I assume that this is with my patch applied? Yes: as long as the kernel
-sets NAME_MAX to 255, then the above is expected behaviour.
+>-----Original Message-----
+>From: linux-kernel-owner@vger.kernel.org 
+>[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Dave Jones
+>Sent: Monday, September 03, 2007 8:25 AM
+>To: Andi Kleen
+>Cc: colin.michael@o2online.de; linux-kernel@vger.kernel.org
+>Subject: Re: [patch] enable userspace cpu core voltage control 
+>withacpi-cpufreq
+>
+>On Mon, Sep 03, 2007 at 12:56:13PM +0200, Andi Kleen wrote:
+> > <colin.michael@o2online.de> writes:
+> > 
+> > > i want to make a patch known that provides a userspace 
+>interface to control the core voltage of a computer processor(s).
+> > 
+> > That would be essentially linux supported undervolting which 
+> > for stability is as bad as overclocking. The problem is that 
+> > such games tend to generate weird kernel crashes and then
+> > chew up development issues when kernel hackers have to chase
+> > ghost bugs. I don't think we should support it. Developer 
+> > time is too precious.
+> 
+>Seconded.  Exactly the same reasons I've refused to merge patches
+>into cpufreq to allow arbitrary tables to override BIOS tables.
+>Or patches to remove boundary checks.   Even when correctly
+>implemented, this stuff can be fragile as hell, so introducing
+>more things that cast doubt over its stability isn't something
+>I'm keen on at all.
+>
 
-Trond
+And acpi-cpufreq does not seem to be the place to be doing this. I would
+say it should be a new driver or go into speedstep-centrino which has
+similar user defined freq voltage values. Ideally a standalone driver so
+that users do not get confused with single driver working in different
+modes and distributors can choose not to ship it in case where they do
+not like the driver tainting the kernel.
 
+Thanks,
+Venki
