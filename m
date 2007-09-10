@@ -1,91 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbXIJCcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbXIJClQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbXIJCcZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Sep 2007 22:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbXIJCcR
+	id S1755585AbXIJClQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Sep 2007 22:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbXIJClB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Sep 2007 22:32:17 -0400
-Received: from [218.94.60.124] ([218.94.60.124]:52902 "EHLO
-	nj-server.nj.cpsecure.com" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753542AbXIJCcQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Sep 2007 22:32:16 -0400
-X-Greylist: delayed 1974 seconds by postgrey-1.27 at vger.kernel.org; Sun, 09 Sep 2007 22:32:16 EDT
-X-CSG-FAST-BLOCK: Enabled
-Message-ID: <46E4A51D.2050804@nj.cpsecure.com>
-Date: Mon, 10 Sep 2007 09:59:57 +0800
-From: Dong_Wei <Dong_Wei@nj.cpsecure.com>
-Reply-To: Dong_Wei@nj.cpsecure.com
-Organization: CPsecure Inc
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 9 Sep 2007 22:41:01 -0400
+Received: from smtp03.mtu.ru ([62.5.255.50]:65100 "EHLO smtp03.mtu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753390AbXIJClA (ORCPT <rfc822; linux-kernel@vger.kernel.org>);
+	Sun, 9 Sep 2007 22:41:00 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: sysfs change of input/event devices in 2.6.23rc breaks udev
+To: Kay Sievers <kay.sievers@vrfy.org>, anssi.hannula@gmail.com,
+       linux-kernel@vger.kernel.org
+Date: Mon, 10 Sep 2007 06:40:57 +0400
+References: <46E2D712.1010402@gmail.com> <3ae72650709091603o57c976d1q8a1b5492ef041186@mail.gmail.com>
+User-Agent: KNode/0.10.5
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: dynamically use the irqbalance
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <20070910024057.D7D91411ABE@smtp03.mtu.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, all.
-   I want to dynamically use irqbalance on X86 processor. My design is 
-like the following:
-   1) if we boot kernel with "noirqbalance", then irqbalance is always 
-disabled.
-   2) if we boot kernel without "noirqbalance", we can enable/disable 
-irqbalance in runtime.
+Kay Sievers wrote:
 
-I create a proc_fs entry /proc/sys/kernel/irqbalance
-This symbol I adding is in file arch/i386/kernel/io_apic.c
-/proc/sys/kernel/irqbalance = 0 /* disable irqbalance in runtime */
-/proc/sys/kernel/irqbalance = 1 /* enable irqbalance in runtime */
+> On 9/8/07, Anssi Hannula <anssi.hannula@gmail.com> wrote:
+>> There seem to be changes in sysfs input structure between 2.6.22 and
+>> 2.6.23-rc5 which cause some breakage.
+>>
+>> With 2.6.22:
+>>
+>> > # LC_ALL=C ls -l /sys/class/input/input4
+>> > total 0
+>> > drwxr-xr-x 2 root root    0 Sep  8 12:51 capabilities/
+>> > lrwxrwxrwx 1 root root    0 Sep  8 19:48 device ->
+>> > ../../../devices/platform/pcspkr/
+>> > drwxr-xr-x 2 root root    0 Sep  8 12:51 event4/
+>> > drwxr-xr-x 2 root root    0 Sep  8 12:51 id/
+>> > -r--r--r-- 1 root root 4096 Sep  8 19:48 modalias
+>> > -r--r--r-- 1 root root 4096 Sep  8 19:48 name
+>> > -r--r--r-- 1 root root 4096 Sep  8 19:48 phys
+>> > lrwxrwxrwx 1 root root    0 Sep  8 19:48 subsystem ->
+>> > ../../../class/input/
+>> > --w------- 1 root root 4096 Sep  8 19:48 uevent
+>> > -r--r--r-- 1 root root 4096 Sep  8 19:48 uniq
+>>
+>> > # ls -l /sys/class/input/event4
+>> > lrwxrwxrwx 1 root root 0 Sep  8 19:48 /sys/class/input/event4 ->
+>> > ../../class/input/input4/event4/
+>> > # ls -l /sys/class/input/event4/
+>> > total 0
+>> > -r--r--r-- 1 root root 4096 Sep  8 19:58 dev
+>> > lrwxrwxrwx 1 root root    0 Sep  8 19:58 device ->
+>> > ../../../../devices/platform/pcspkr/
+>> > lrwxrwxrwx 1 root root    0 Sep  8 19:58 subsystem ->
+>> > ../../../../class/input/
+>> > --w------- 1 root root 4096 Sep  8 19:58 uevent
+>>
+>> With 2.6.23-rc5:
+>>
+>> > # ls -l /sys/class/input/input5
+>> > total 0
+>> > drwxr-xr-x 2 root root    0 Sep  8 19:47 capabilities/
+>> > lrwxrwxrwx 1 root root    0 Sep  8 19:03 device ->
+>> > ../../../devices/platform/pcspkr/
+>> > drwxr-xr-x 2 root root    0 Sep  8 19:47 id/
+>> > lrwxrwxrwx 1 root root    0 Sep  8 19:47 input:event5 ->
+>> > ../../../class/input/event5/
+>> > -r--r--r-- 1 root root 4096 Sep  8 19:03 modalias
+>> > -r--r--r-- 1 root root 4096 Sep  8 19:03 name
+>> > -r--r--r-- 1 root root 4096 Sep  8 19:47 phys
+>> > drwxr-xr-x 2 root root    0 Sep  8 19:47 power/
+>> > lrwxrwxrwx 1 root root    0 Sep  8 19:03 subsystem ->
+>> > ../../../class/input/
+>> > -rw-r--r-- 1 root root 4096 Sep  8 19:03 uevent
+>> > -r--r--r-- 1 root root 4096 Sep  8 19:47 uniq
+>>
+>> > # ls -l /sys/class/input/event5
+>> > total 0
+>> > -r--r--r-- 1 root root 4096 Sep  8 19:03 dev
+>> > lrwxrwxrwx 1 root root    0 Sep  8 19:03 device ->
+>> > ../../../class/input/input5/
+>> > drwxr-xr-x 2 root root    0 Sep  8 19:48 power/
+>> > lrwxrwxrwx 1 root root    0 Sep  8 19:03 subsystem ->
+>> > ../../../class/input/
+>> > -rw-r--r-- 1 root root 4096 Sep  8 19:03 uevent
+>>
+>> There are a few changes.
+>>
+>> There is no longer:
+>> /sys/class/input/eventX => /sys/class/input/inputX/eventX
+>> instead there is:
+>> /sys/class/inputX/input:eventX => /sys/class/input/eventX
+>> Notice the added "input:". I don't know if any software depends on this,
+>> though.
+>>
+>> However, the change that broke id_path of udev is that
+>> /sys/class/input/event5/device is now a symlink to the inputX directory
+>> instead of being the same as the device symlink in inputX directory,
+>> i.e. to ../../../devices/platform/pcspkr in this case.
+>>
+>> Udev id_path uses that directory to construct the ID_PATH variable.
+>> Should the sysfs structure be reverted or should udev be adapted to
+>> handle traversing /device symlink twice? I think the former, as there
+>> should be considerably more time to adapt udev for coming changes in
+>> sysfs.
+> 
+> Udev's path_id script is too dumb to follow the "device" link of
+> stacked class devices in the CONFIG_SYSFS_DEPRECATED=y layout. Does
+> this change fix it for you?
+>  
+http://git.kernel.org/?p=linux/hotplug/udev.git;a=commitdiff_plain;h=b1ac36ff5e3756cefc79967a26280056da31bf6f
+> 
 
-The core function is like the following:
-irqbalance_irq_flag = -1; /* this is the last time irqbalance used */
-irqbalance_enable = 1; /* set it to enable by default */
-static int balanced_irq(void *unused)
-{
-     int i;
-     unsigned long prev_balance_time = jiffies;
-     long time_remaining = balanced_irq_interval;
-
-     daemonize("kirqd");
-
-     /* push everything to CPU 0 to give us a starting point.  */
-     for (i = 0 ; i < NR_IRQS ; i++) {
-         irq_desc[i].pending_mask = cpumask_of_cpu(0);
-         set_pending_irq(i, cpumask_of_cpu(0));
-     }
-
-     for ( ; ; ) {
-         time_remaining = schedule_timeout_interruptible(time_remaining);
-         try_to_freeze();
-         if(irqbalance_enable) {
-              if (time_after(jiffies, 
-prev_balance_time+balanced_irq_interval)) {
-                  preempt_disable();
-                  do_irq_balance();
-                  prev_balance_time = jiffies;
-                  time_remaining = balanced_irq_interval;
-                  preempt_enable();
-                  irqbalance_irq_flag = 1;
-              }
-          } else if (irqbalance_irq_flag != 0) {
-              /* Is it SAFE to do so? */
-              for (i = 0 ; i < NR_IRQS ; i++)
-                  set_pending_irq(i, cpumask_of_cpu(0));
-              irqbalance_irq_flag = 0;
-          }
-      }
-      return 0;
-}
-
-When we change /proc/sys/kernel/irqbalance from 1 to 0, I move all the 
-irqs to CPU#0, Is it safe to do so? or will lead to some very dangerous 
-thing?
-
-Please help me to review my design, thanks in advance.
-
-BTW: I can't join the linux-kernel maillist, for our mail server now has 
-  some problems. If anyone replies my mail. Pls CC to me.
-
+This just delays the issue until we have 3 levels of indirection :)
 
