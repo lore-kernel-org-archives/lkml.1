@@ -1,115 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbXIJPQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760709AbXIJPWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760716AbXIJPQV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 11:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759956AbXIJPQN
+	id S1760709AbXIJPWM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 11:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759540AbXIJPV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 11:16:13 -0400
-Received: from sacred.ru ([62.205.161.221]:47380 "EHLO sacred.ru"
+	Mon, 10 Sep 2007 11:21:58 -0400
+Received: from mga02.intel.com ([134.134.136.20]:62783 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759886AbXIJPQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 11:16:13 -0400
-X-Greylist: delayed 3423 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Sep 2007 11:16:12 EDT
-Message-ID: <46E551BD.5020404@openvz.org>
-Date: Mon, 10 Sep 2007 18:16:29 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1759475AbXIJPV5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 11:21:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,231,1186383600"; 
+   d="scan'208";a="291857800"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
-Subject: [PATCH] Leases can be hidden by flocks
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 10 Sep 2007 18:18:53 +0400 (MSD)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: FW: [-mm patch] drivers/dma/ioat_dma.c: make 3 functions static
+Date: Mon, 10 Sep 2007 08:21:29 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C030231FA@orsmsx418.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [-mm patch] drivers/dma/ioat_dma.c: make 3 functions static
+thread-index: AcfzH3vInkXCdOkfShOW+WgYGNjOzgAnklpQ
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nelson, Shannon" <shannon.nelson@intel.com>,
+       "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: <linux-kernel@vger.kernel.org>, "Adrian Bunk" <bunk@kernel.org>
+X-OriginalArrivalTime: 10 Sep 2007 15:21:29.0964 (UTC) FILETIME=[432BFAC0:01C7F3BE]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The inode->i_flock list contains the leases, flocks and posix
-locks in the specified order. However, the flocks are added in
-the head of this list thus hiding the leases from F_GETLEASE
-command, from time_out_leases() and other code that expects
-the leases to come first.
+> From: Adrian Bunk [mailto:bunk@kernel.org] 
+> Sent: Sunday, September 09, 2007 1:25 PM
+> To: Andrew Morton; Nelson, Shannon; Williams, Dan J
+> Cc: linux-kernel@vger.kernel.org
+> Subject: [-mm patch] drivers/dma/ioat_dma.c: make 3 functions static
+> 
 
-The following example will demonstrate this:
+Thanks Adrian,
+sln
 
-#define _GNU_SOURCE
+>On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
+>>...
+>> Changes since 2.6.23-rc3-mm1:
+>>...
+>> +i-oat-add-support-for-msi-and-msi-x.patch
+>>...
+>>  ioat tree
+>>...
 
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <sys/file.h>
+This patch makes three needlessly global functions static.
 
-static void show_lease(int fd)
-{
-        int res;
-
-        res = fcntl(fd, F_GETLEASE);
-        switch (res) {
-                case F_RDLCK:
-                        printf("Read lease\n");
-                        break;
-                case F_WRLCK:
-                        printf("Write lease\n");
-                        break;
-                case F_UNLCK:
-                        printf("No leases\n");
-                        break;
-                default:
-                        printf("Some shit\n");
-                        break;
-        }
-}
-
-int main(int argc, char **argv)
-{
-        int fd, res;
-
-        fd = open(argv[1], O_RDONLY);
-        if (fd == -1) {
-                perror("Can't open file");
-                return 1;
-        }
-
-        res = fcntl(fd, F_SETLEASE, F_WRLCK);
-        if (res == -1) {
-                perror("Can't set lease");
-                return 1;
-        }
-
-        show_lease(fd);
-
-        if (flock(fd, LOCK_SH) == -1) {
-                perror("Can't flock shared");
-                return 1;
-        }
-
-        show_lease(fd);
-
-        return 0;
-}
-
-The first call to show_lease() will show the write lease set, but
-the second will show no leases.
-
-Fix the flock adding so that the leases always stay in the head
-of this list.
-
-Found during making the flocks pid-namespaces aware.
-
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
 
 ---
 
-diff --git a/fs/locks.c b/fs/locks.c
-index 6068f82..0db1a14 100644
---- a/fs/locks.c
-+++ b/fs/locks.c
-@@ -781,7 +781,7 @@ find_conflict:
- 	if (request->fl_flags & FL_ACCESS)
- 		goto out;
- 	locks_copy_lock(new_fl, request);
--	locks_insert_lock(&inode->i_flock, new_fl);
-+	locks_insert_lock(before, new_fl);
- 	new_fl = NULL;
- 	error = 0;
+ drivers/dma/ioat_dma.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+c633b44cd60648f456a11bb38fd9193ce4d6acdc 
+diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
+index e4c3afe..66c5bb5 100644
+--- a/drivers/dma/ioat_dma.c
++++ b/drivers/dma/ioat_dma.c
+@@ -47,8 +47,8 @@
+ static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan);
+ static void ioat_dma_memcpy_cleanup(struct ioat_dma_chan *ioat_chan);
  
+-struct ioat_dma_chan *ioat_lookup_chan_by_index(struct ioatdma_device
+*device,
+-						int index)
++static struct ioat_dma_chan *ioat_lookup_chan_by_index(struct
+ioatdma_device *device,
++						       int index)
+ {
+ 	return device->idx[index];
+ }
+@@ -716,7 +716,7 @@ MODULE_PARM_DESC(ioat_interrupt_style,
+  * ioat_dma_setup_interrupts - setup interrupt handler
+  * @device: ioat device
+  */
+-int ioat_dma_setup_interrupts(struct ioatdma_device *device)
++static int ioat_dma_setup_interrupts(struct ioatdma_device *device)
+ {
+ 	struct ioat_dma_chan *ioat_chan;
+ 	int err, i, j, msixcnt;
+@@ -826,7 +826,7 @@ err_no_irq:
+  * ioat_dma_remove_interrupts - remove whatever interrupts were set
+  * @device: ioat device
+  */
+-void ioat_dma_remove_interrupts(struct ioatdma_device *device)
++static void ioat_dma_remove_interrupts(struct ioatdma_device *device)
+ {
+ 	struct ioat_dma_chan *ioat_chan;
+ 	int i;
