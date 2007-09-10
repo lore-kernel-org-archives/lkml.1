@@ -1,100 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933024AbXIJLwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbXIJL4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933024AbXIJLwT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 07:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757017AbXIJLwD
+	id S1757571AbXIJL4O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 07:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbXIJL4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 07:52:03 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:55740 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756814AbXIJLwB (ORCPT
+	Mon, 10 Sep 2007 07:56:03 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48756 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756814AbXIJL4B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 07:52:01 -0400
-Date: Mon, 10 Sep 2007 13:51:59 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Greg K-H <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: regarding sysfs/kobject separation
-Message-ID: <20070910135159.133224eb@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <46DABD6A.2030708@gmail.com>
-References: <46DABD6A.2030708@gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Mon, 10 Sep 2007 07:56:01 -0400
+Subject: Re: [rfc][patch] dynamic data structure switching
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, Paul McKenney <paulmck@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20070902182738.GA13145@wotan.suse.de>
+References: <20070902182738.GA13145@wotan.suse.de>
+Content-Type: text/plain
+Date: Mon, 10 Sep 2007 13:55:52 +0200
+Message-Id: <1189425352.21778.12.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Sep 2007 22:40:58 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
+On Sun, 2007-09-02 at 20:27 +0200, Nick Piggin wrote:
 
-> * Suicidal nodes don't need special treatment.  If a file tries to
-> commit suicide, sysfs will detect the condition and deactivate and drain
-> the node except for the suiciding reference.
+> Index: linux-2.6/lib/dyndata.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/lib/dyndata.c
+> @@ -0,0 +1,80 @@
+> +#include <linux/dyndata.h>
+> +#include <linux/mutex.h>
+> +#include <linux/rcupdate.h>
+> +#include <linux/seqlock.h>
+> +
+> +void dyn_data_init(struct dyn_data *dd, void *cur_data)
+> +{
+> +	dd->cur = cur_data;
+> +	dd->old = NULL;
+> +	seqcount_init(&dd->resize_seq);
+> +	mutex_init(&dd->resize_mutex);
+> +}
+> +
+> +/*
+> + * Slowpath lookup. There is a resize in progress and we weren't able to
+> + * find the item we wanted in dyn_data_lookup: run the full race-free
+> + * lookup protocol.
+> + */
+> +static noinline void *dyn_data_lookup_slow(struct dyn_data *dd, dd_lookup_fn fn, void *arg)
+> +{
+> +	void *ret;
+> +	void *cur, *old;
+> +	unsigned seq;
+> +
+> +	cur = dd->cur;
+> +	old = dd->old;
+> +
+> +	do {
+> +		seq = read_seqcount_begin(&dd->resize_seq);
+> +		ret = fn(cur, arg);
+> +		if (ret)
+> +			return ret;
+> +		if (!old)
+> +			return NULL;
+> +
+> +		ret = fn(old, arg);
+> +		if (ret)
+> +			return ret;
+> +	} while (read_seqcount_retry(&dd->resize_seq, seq));
 
-Excellent. This is so easy to overlook.
+With the seqlock protecting the whole xfer a lookup for a non-existing
+item might spin here for a very long time.
 
-> * Plugged creation and batched error handling.  Sysfs directories can be
-> 'plugged' on creation such that it can be made visible atomically after
-> all its subtrees are constructed.  Also, the user doesn't have to check
-> for failure at every step.  For example, the user can do the following.
-> 
-> 	dir = sysfs_add_dir(parent, "my_dir", SYSFS_PLUGGED | 0777);
-> 	sysfs_add_file(dir, ...);
-> 	...
-> 	dir2 = sysfs_add_dir(dir, ...);
-> 	sysfs_add_link(dir, "link-to-dir2", dir2);
-> 	...
-> 	if (sysfs_check_batch_error(dir) == 0)
-> 		sysfs_unplug(dir);
-> 	else
-> 		sysfs_remove(dir);
-> 
-> And all the nodes under and including @dir will show up atomically if
-> all operations succeeded or removed without ever bothering userland.
+Maybe we should create this sleeping seqlock we talked and provide both
+a sleeping and non sleeping version of this lookup function.
 
-Hm. This sounds like two different things:
+> +	return NULL;
+> +}
+> +
+> +void *dyn_data_lookup(struct dyn_data *dd, dd_lookup_fn fn, void *arg)
+> +{
+> +	void *ret;
+> +
+> +	rcu_read_lock();
+> +	if (likely(!dd->old))
+> +		ret = fn(dd->cur, arg);
+> +	else
+> +		ret = dyn_data_lookup_slow(dd, fn, arg);
+> +	rcu_read_unlock();
+> +
+> +	return ret;
+> +}
+> +
+> +void *dyn_data_replace(struct dyn_data *dd, dd_transfer_fn fn, void *new)
+> +{
+> +	int xfer_done;
+> +	void *old;
+> +
+> +	BUG_ON(!mutex_is_locked(&dd->resize_mutex));
 
-- Eliminate the need to check after each operation. Might be a matter
-of taste; personally, I prefer checking and unwinding on error.
+So its up to the caller to take resize_mutex, but there is no mention of
+this requirement. Why cannot it be taken inside this function?
 
-- Atomic creation/deletion of a bunch of sysfs nodes. This sounds
-like something really worthwile to have.
+> +	old = dd->cur;
+> +	BUG_ON(dd->old);
+> +	dd->old = old;
+> +	synchronize_rcu();
+> +	rcu_assign_pointer(dd->cur, new);
+> +	synchronize_rcu();
+> +	do {
+> +		write_seqcount_begin(&dd->resize_seq);
+> +		xfer_done = fn(old, new);
+> +		write_seqcount_end(&dd->resize_seq);
+> +	} while (!xfer_done);
+> +	dd->old = NULL;
+> +	synchronize_rcu();
+> +
+> +
+> +	return old;
+> +}
+> Index: linux-2.6/include/linux/dyndata.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/include/linux/dyndata.h
+> @@ -0,0 +1,94 @@
+> +#ifndef __DYNDATA_H__
+> +#define __DYNDATA_H__
+> +
 
-> 
-> * Automatic symlink handling.  Symlink names can be formatted with the
-> name of its target.  e.g. if the symlink name is specified as
-> "link-%1:%0" and points to "devices/mybus0/mydev0", its name becomes
-> "link-mybus0-mydev0" && the symlink will be automatically renamed when
-> the target node or one of its ancestor is moved or renamed.  The symlink
-> is also plugged and removed together with its target.  So, once created,
-> the user doesn't have to care about the symlink.  sysfs will take care
-> of it.
+<snip>
 
-Really nice. The need to delete/create symlinks on moving/renaming is
-currently a headache inducer.
+> +
+> +#include <linux/mutex.h>
+> +#include <linux/seqlock.h>
+> +
+> +struct dyn_data {
+> +	void *cur;
+> +	void *old;
+> +	seqcount_t resize_seq;
+> +	struct mutex resize_mutex;
+> +};
+> +
+> +typedef void *(dd_lookup_fn)(void *dstruct, void *arg);
+> +typedef int (dd_transfer_fn)(void *old_ds, void *new_ds);
+> +
+> +void dyn_data_init(struct dyn_data *dd, void *cur_data);
+> +void *dyn_data_lookup(struct dyn_data *dd, dd_lookup_fn fn, void *arg);
+> +void *dyn_data_replace(struct dyn_data *dd, dd_transfer_fn fn, void *new);
+> +
+> +static inline void *dyn_data_current_dstruct(struct dyn_data *dd)
+> +{
+> +	return dd->cur;
+> +}
+> +
+> +#endif
 
-> * Move uevent support over to sysfs and bridging the current users.
-> This makes sense because sysfs hierarchy is all that userland can see
-> and sysfs users which don't use kobject also needs uevent support.
 
-Makes sense.
-
-> 
-> * Convert device model (drivers/base/*) over to the new sysfs_dirent
-> based interface and make device/driver <-> sysfs association flexible.
-> Automatic sysfs association is a good thing.  In most cases, it makes
-> sense and makes drivers simpler but it also needs to be flexible such
-> that drivers with special needs can override how the device and driver
-> are represented to userland.  I think such flexibility can be achieved
-> without too much problem now that sysfs and kobject are separated.
-
-Yes, if we can change internal implementation details without upsetting
-userspace a lot is gained. As long as the default behaviour remains
-easy to implement.
