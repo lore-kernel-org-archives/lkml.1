@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760242AbXIJTM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760117AbXIJTVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760242AbXIJTM6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 15:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760549AbXIJTMl
+	id S1760117AbXIJTVe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 15:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756387AbXIJTV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 15:12:41 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:37302 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760543AbXIJTMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 15:12:40 -0400
-Date: Mon, 10 Sep 2007 21:14:02 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] build system: section garbage collection for vmlinux
-Message-ID: <20070910191402.GB31541@uranus.ravnborg.org>
-References: <200709051443.21522.vda.linux@googlemail.com> <200709061155.52661.vda.linux@googlemail.com> <20070910120140.GA29077@uranus.ravnborg.org> <200709102002.15383.vda.linux@googlemail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709102002.15383.vda.linux@googlemail.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 10 Sep 2007 15:21:26 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:62390 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755900AbXIJTV0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 15:21:26 -0400
+Message-Id: <20070910191324.847651727@arndb.de>
+User-Agent: quilt/0.46-1
+Date: Mon, 10 Sep 2007 21:13:24 +0200
+From: arnd@arndb.de
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: [patch 0/3] futex_compat fixes
+X-Provags-ID: V01U2FsdGVkX18UmFX956R0DAzwUZImI4Xr9UFdZMl+265jEH+
+ pYcCUtU9o9LqJjLDF7lgwRkTjCR1XvG83+/cuu2eKGoMdv1//o
+ mGWaEAcActvW77cJtd6nQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 10, 2007 at 08:02:15PM +0100, Denys Vlasenko wrote:
-> On Monday 10 September 2007 13:01, Sam Ravnborg wrote:
-> > > 
-> > > > Doing a normal kernel build will link vmlinux three or four times.
-> > > > If we introduce --gc-sections we should add a preparational link of
-> > > > vmlinux where we use --gc-sections and skip it for the rest of the links
-> > > > assuming that --gc-sections takes some time for ld to do.
-> > > 
-> > > Yes, this will speed up things a bit.
-> > 
-> > If we do the --gc-sections trick during the preparational link then we do
-> > not use the arch supplied linker script.
-> > Will it be possible to create a dedicated linker script that is valid
-> > for all architectures and which only include the KEEP() directives for
-> > the diverse sections?
-> 
-> Unfortunately, -r and --gc-sections don't mix.
-> 
-> x86_64-pc-linux-gnu-ld: --gc-sections and -r may not be used together
-OK - so much for that optimization :-(
+After looking at the futex_compat code some more, this is what I
+ended up with. Please look closely at the changes, as I have not
+actually tested them, being on a 32 bit machine at the moment.
 
-But then we need to annotate ALL arch linker script before introducing this.
-And that bring me back to that we should put some sanity into these first.
+I'd suggest merging the first patch in 2.6.23 instead of the original
+one from David Miller, and the other two for 2.6.24.
 
-	Sam
+	Arnd <><
+
+-- 
+
