@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964823AbXIJOzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933249AbXIJOzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964823AbXIJOzR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 10:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760390AbXIJOwq
+	id S933249AbXIJOzz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 10:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759826AbXIJOxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 10:52:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59987 "EHLO mx1.redhat.com"
+	Mon, 10 Sep 2007 10:53:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60116 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760197AbXIJOwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 10:52:43 -0400
-Date: Mon, 10 Sep 2007 10:52:37 -0400
-Message-Id: <200709101452.l8AEqbj8016283@dantu.rdu.redhat.com>
+	id S1760643AbXIJOxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 10:53:00 -0400
+Date: Mon, 10 Sep 2007 10:52:52 -0400
+Message-Id: <200709101452.l8AEqqse016299@dantu.rdu.redhat.com>
 From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 4/7] unionfs: fix unionfs_create and unionfs_setattr to handle ATTR_KILL_S*ID
+Subject: [PATCH 7/7] CIFS: ignore mode change if it's just for clearing setuid/setgid bits
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
        ecryptfs-devel@lists.sourceforge.net, reiserfs-devel@vger.kernel.org,
@@ -20,52 +20,31 @@ Cc: linux-cifs-client@lists.samba.org, nfs@lists.sourceforge.net,
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't allow either function to trip the BUG() in notify_change. For
-unionfs_setattr, clear ATTR_MODE if the either ATTR_KILL_S*ID is set.
-
-unionfs_create is setting the mode explicitly already.  Don't set
-ATTR_KILL_S*ID. Just fix up the mode to have the same effect. Also, move
-locking the i_mutex to lower in the function. It's not needed until it
-checks the i_size.
+If the ATTR_KILL_S*ID bits are set then any mode change is only for
+clearing the setuid/setgid bits. For CIFS, skip the mode change and
+let the server handle it.
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
- fs/unionfs/inode.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ fs/cifs/inode.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/fs/unionfs/inode.c b/fs/unionfs/inode.c
-index 59bb418..f2e7f25 100644
---- a/fs/unionfs/inode.c
-+++ b/fs/unionfs/inode.c
-@@ -78,15 +78,14 @@ static int unionfs_create(struct inode *parent, struct dentry *dentry,
- 		struct dentry *lower_dir_dentry;
- 		struct iattr newattrs;
+diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
+index 66436f5..8fa3d63 100644
+--- a/fs/cifs/inode.c
++++ b/fs/cifs/inode.c
+@@ -1547,6 +1547,11 @@ int cifs_setattr(struct dentry *direntry, struct iattr *attrs)
+ 	}
  
--		mutex_lock(&wh_dentry->d_inode->i_mutex);
- 		newattrs.ia_valid = ATTR_CTIME | ATTR_MODE | ATTR_ATIME
--			| ATTR_MTIME | ATTR_UID | ATTR_GID | ATTR_FORCE
--			| ATTR_KILL_SUID | ATTR_KILL_SGID;
-+			| ATTR_MTIME | ATTR_UID | ATTR_GID | ATTR_FORCE;
- 
--		newattrs.ia_mode = mode & ~current->fs->umask;
-+		newattrs.ia_mode = mode & ~(current->fs->umask|S_ISUID|S_ISGID);
- 		newattrs.ia_uid = current->fsuid;
- 		newattrs.ia_gid = current->fsgid;
- 
-+		mutex_lock(&wh_dentry->d_inode->i_mutex);
- 		if (wh_dentry->d_inode->i_size != 0) {
- 			newattrs.ia_valid |= ATTR_SIZE;
- 			newattrs.ia_size = 0;
-@@ -1032,6 +1031,9 @@ static int unionfs_setattr(struct dentry *dentry, struct iattr *ia)
- 	bend = dbend(dentry);
- 	inode = dentry->d_inode;
- 
-+	if (ia->ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID))
-+		ia->ia_valid &= ~ATTR_MODE;
+ 	time_buf.Attributes = 0;
 +
- 	for (bindex = bstart; (bindex <= bend) || (bindex == bstart);
- 	     bindex++) {
- 		lower_dentry = unionfs_lower_dentry_idx(dentry, bindex);
++	/* skip mode change if it's just for clearing setuid/setgid */
++	if (attrs->ia_valid & (ATTR_KILL_SUID|ATTR_KILL_SGID))
++		attrs->ia_valid &= ~ATTR_MODE;
++
+ 	if (attrs->ia_valid & ATTR_MODE) {
+ 		cFYI(1, ("Mode changed to 0x%x", attrs->ia_mode));
+ 		mode = attrs->ia_mode;
 -- 
 1.5.2.1
 
