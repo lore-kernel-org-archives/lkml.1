@@ -1,70 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761125AbXIJUow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761257AbXIJUsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761125AbXIJUow (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 16:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759414AbXIJUop
+	id S1761257AbXIJUsT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 16:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759074AbXIJUsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 16:44:45 -0400
-Received: from www.osadl.org ([213.239.205.134]:46474 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753334AbXIJUoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 16:44:44 -0400
-Subject: Re: [RFC] kbuild - introduce vdir to make life easier for x86_64
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kbuild devel <kbuild-devel@lists.sourceforge.net>
-In-Reply-To: <20070910203445.GA32047@uranus.ravnborg.org>
-References: <20070910191138.GA31541@uranus.ravnborg.org>
-	 <1189452121.25767.42.camel@chaos> <20070910192920.GA2080@elte.hu>
-	 <20070910203445.GA32047@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Mon, 10 Sep 2007 22:44:42 +0200
-Message-Id: <1189457082.25767.58.camel@chaos>
+	Mon, 10 Sep 2007 16:48:09 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:51633 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756848AbXIJUsI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 16:48:08 -0400
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Daniel Phillips <phillips@phunq.net>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0709101315020.25407@schroedinger.engr.sgi.com>
+References: <20070814142103.204771292@sgi.com>
+	 <200709050220.53801.phillips@phunq.net>
+	 <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
+	 <20070905114242.GA19938@wotan.suse.de>
+	 <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
+	 <20070905121937.GA9246@wotan.suse.de>
+	 <Pine.LNX.4.64.0709101225350.24735@schroedinger.engr.sgi.com>
+	 <1189453031.21778.28.camel@twins>
+	 <Pine.LNX.4.64.0709101238510.24941@schroedinger.engr.sgi.com>
+	 <1189454122.21778.47.camel@twins>
+	 <Pine.LNX.4.64.0709101315020.25407@schroedinger.engr.sgi.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-HZnqvUZz3witRkNaYttG"
+Date: Mon, 10 Sep 2007 22:48:01 +0200
+Message-Id: <1189457281.21778.67.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam,
 
-On Mon, 2007-09-10 at 22:34 +0200, Sam Ravnborg wrote:
-> Partly so. Took a look at the x86 tree.
-> The main Makefile are at least not merged. Neither are pci/Makefile not
-> boot/compressed/Makefile.
+--=-HZnqvUZz3witRkNaYttG
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yeah I know. Those are the non trivial ones and the boot/compressed one
-might be split forever. The pci Makefile has link order problems
-(initcall order wreckage) and the main Makefile as well. Needs more
-thought.
+On Mon, 2007-09-10 at 13:17 -0700, Christoph Lameter wrote:
+> On Mon, 10 Sep 2007, Peter Zijlstra wrote:
+>=20
+> > > Allright maybe you can get the kernel to be stable in the face of hav=
+ing=20
+> > > no memory and debug all the fallback paths in the kernel when an OOM=20
+> > > condition occurs.
+> > >=20
+> > > But system calls will fail? Like fork/exec? etc? There may be daemons=
+=20
+> > > running that are essential for the system to survive and that cannot=20
+> > > easily take an OOM condition? Various reclaim paths also need memory =
+and=20
+> > > if the allocation fails then reclaim cannot continue.
+> >=20
+> > I'm not making any of these paths significantly more likely to occur
+> > than they already are. Lots and lots of users run swap heavy loads day
+> > in day out - they don't get funny systems (well sometimes they do, and
+> > theoretically we can easily run out of the PF_MEMALLOC reserves -
+> > HOWEVER in practise it seems to work quite reliably).
+> >=20
+>=20
+> The patchset increases these failures significantly since there will be a=
+=20
+> longer time period where these allocations can fail.
+>=20
+> The swap loads are fine as long as we do not exhaust the reserve pools.
 
-> And some of the rest of the Makefiles are not pretty with the huge arch 
-> specific sections ifdeffed out.
+And I'm working hard to guarantee the additional logic does not exhaust
+said pools by making it strictly bounded.
 
-I completely agree.
+> IMHO the right solution is to throttle the networking layer to not do=20
+> unbounded allocations.
 
-> -ifneq ($(CONFIG_ACPI_PROCESSOR),)
-> -obj-y				+= cstate.o processor.o
-> -endif
-> +obj-$(CONFIG_X86_32)-if-$(CONFIG_ACPI_SLEEP) += sleep_32.o wakeup_32.o
-> +obj-$(CONFIG_X86_64)-if-$(CONFIG_ACPI_SLEEP) += sleep_64.o wakeup_64.o
-> +
-> +obj-y-if-$(CONFIG_ACPI_PROCESSOR) += cstate.o processor.o
-> 
-> 
-> My biggest worry is that we end up with a more compact format
-> but only me (and a very few others) can read it.
-> But I think the above could make the x86 Makefiles more readable
-> as a whole.
+Am I not doing exactly that?
 
-It's way better than the ifneq(...) stuff and completely understandable
-at least for me. I'd like to see that change, it is helpful on a bunch
-of other places in the kernel as well.
+>  You can likely do this by checking certain VM=20
+> counters like SLAB_UNRECLAIMABLE. If need be we can add a new category of=
+=20
+> SLAB_TEMPORARY for temporary allocs and track these. If they get too larg=
+e=20
+> then throttle.
 
-Thanks,
+I'm utterly confused as to why you propose all these heuristics when I
+have a perfectly good solution that is exact.
 
-	tglx
+--=-HZnqvUZz3witRkNaYttG
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBG5a2BXA2jU0ANEf4RAvIKAJ0YhDX8C+sdtO0ALDZN5Cgpp3C3RQCgilAJ
+p9vgDMeT+38YaVyDBNoHCVc=
+=9x+J
+-----END PGP SIGNATURE-----
+
+--=-HZnqvUZz3witRkNaYttG--
 
