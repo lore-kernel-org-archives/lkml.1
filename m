@@ -1,66 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbXIKQoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbXIKQp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbXIKQoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 12:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750750AbXIKQnw
+	id S1756804AbXIKQp4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 12:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbXIKQps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 12:43:52 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:56051 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750702AbXIKQnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 12:43:51 -0400
-Date: Tue, 11 Sep 2007 09:43:49 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] hwmon: Add power meters to Documentation/hwmon/sysfs-interface
-Message-ID: <20070911164348.GD30825@tree.beaverton.ibm.com>
-References: <20070827211446.GG32667@tree.beaverton.ibm.com> <20070828015029.GA10107@khazad-dum.debian.net> <20070828131942.18449886@hyperion.delvare> <20070828164440.GL32667@tree.beaverton.ibm.com> <20070829111052.503a73a5@hyperion.delvare> <20070829145002.GQ32667@tree.beaverton.ibm.com> <20070830115743.4dd8b2d5@hyperion.delvare>
+	Tue, 11 Sep 2007 12:45:48 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:58389 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750AbXIKQps (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 12:45:48 -0400
+Date: Tue, 11 Sep 2007 09:42:54 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: [GIT PATCH] USB fixes for 2.6.23-rc6
+Message-ID: <20070911164254.GA31978@kroah.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="veXX9dWIonWZEC6h"
+Content-Type: text/plain; charset=unknown-8bit
 Content-Disposition: inline
-In-Reply-To: <20070830115743.4dd8b2d5@hyperion.delvare>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here are some USB fixes against your 2.6.23-rc6 git tree.
 
---veXX9dWIonWZEC6h
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+They do the following:
+	- more quirk updates for broken devices.
+	- device id updates
+	- bugfix for dynamic device ids from userspace
 
-On Thu, Aug 30, 2007 at 11:57:43AM +0200, Jean Delvare wrote:
-> OK, that's a bit different then, but I'm still not sure that there is
-> much value in exporting these values in sysfs, in particular if there
-> is no way to reset them.
+All of these have been in the -mm tree for a while.
 
-It turns out there _is_ a way to reset them; the next iteration of the
-driver will have it.
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-> I am also not happy with the names you proposed: power1_max_input and
-> power1_min_input are somewhat confusing IMHO, I'd suggest
-> power1_input_highest and power1_input_lowest to make them clearly
-> different from the min and max limits we have for other sensor types.
-> If we have them at all, of course.
+The full patches will be sent to the linux-usb-devel mailing list, if
+anyone wants to see them.
 
-Agreed and changed.
+thanks,
 
---D
+greg k-h
 
---veXX9dWIonWZEC6h
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+ drivers/usb/core/driver.c           |    2 +-
+ drivers/usb/core/quirks.c           |   25 +++++++++++++++++++++++++
+ drivers/usb/gadget/serial.c         |   25 +++++++++++++++----------
+ drivers/usb/misc/sisusbvga/sisusb.c |    1 +
+ drivers/usb/serial/bus.c            |    2 +-
+ drivers/usb/serial/ftdi_sio.c       |    1 +
+ drivers/usb/serial/ftdi_sio.h       |    8 ++++++++
+ drivers/usb/serial/option.c         |    3 +++
+ drivers/usb/serial/oti6858.c        |   15 ---------------
+ drivers/usb/storage/unusual_devs.h  |   30 ++++++++++++++++++++++++++++++
+ 10 files changed, 85 insertions(+), 27 deletions(-)
 
-iD8DBQFG5sXEa6vRYYgWQuURAqy4AJwNw7mv4nUYd2pGi+u6L1dc5l9uwgCgs6ij
-nFhUr8RHhsPwSHunxbJKWks=
-=Ee3w
------END PGP SIGNATURE-----
+---------------
 
---veXX9dWIonWZEC6h--
+Alan Cox (1):
+      USB: oti6858: Remove broken ioctl code in -mm tree and also the broken fixes
+
+Alan Stern (2):
+      USB: prevent Thomson card reader from autosuspending
+      USB: prevent Genesys USB-IDE from autosuspending
+
+David Brownell (1):
+      USB: fix serial gadget ACM breakage
+
+Greg Kroah-Hartman (1):
+      USB: option: Add Dell HSDPA 5520 to driver
+
+Jaime Velasco Juan (1):
+      USB: option: Add a new device ID for the HUAWEI E220 HSDPA modem.
+
+Lamarque Vieira Souza (1):
+      USB: More USB_QUIRK_RESET_RESUME devices
+
+Massimiliano Ghilardi (1):
+      USB Mass Storage: limit "Rockchip ROCK MP3" device (071b:3203) max I/O to 64 sectors per command
+
+Matt Colyer (1):
+      USB: Add iPhone device id to the quirk list.
+
+Nathael Pajani (1):
+      USB: fix linked list insertion bugfix for usb core
+
+Oliver Neukum (2):
+      USB: quirky flash drive
+      USB: another quirky device (LCD display)
+
+Ortwin Glück (1):
+      USB: Nikon D40 Quirks
+
+Pierre Castella (1):
+      USB: ftdi_sio: add of a new product/manufacturer, TML
+
+Ricardo Barberis (1):
+      USB: Add Sony Ericsson P1i to unusual_devs.h
+
+Satyam Sharma (1):
+      USB: drivers/usb/serial/bus.c: Fix incompatible pointer type warning
+
+samson yeung (1):
+      usb/misc/sisusbvga: add product ID of TARGUS/MCT device
+
