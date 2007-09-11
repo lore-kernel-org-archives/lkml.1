@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762767AbXIKGKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbXIKGLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762767AbXIKGKm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762418AbXIKGFA
+	id S1762801AbXIKGLL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:11:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbXIKGFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:05:00 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50540 "EHLO
+	Tue, 11 Sep 2007 02:05:04 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50548 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761366AbXIKGEb (ORCPT
+	with ESMTP id S1761372AbXIKGEb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Sep 2007 02:04:31 -0400
-Message-Id: <20070911060425.725085949@sgi.com>
+Message-Id: <20070911060426.660778938@sgi.com>
 References: <20070911060349.993975297@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 10 Sep 2007 23:03:52 -0700
+Date: Mon, 10 Sep 2007 23:03:56 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: torvalds@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -24,115 +24,65 @@ Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
        Fengguang Wu <fengguang.wu@gmail.com>
 Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com, hugh@veritas.com
 Cc: joern@lazybastard.org
-Subject: [02/41] Define functions for page cache handling
-Content-Disposition: inline; filename=0002-Define-functions-for-page-cache-handling.patch
+Subject: [06/41] Use page_cache_xxx in mm/rmap.c
+Content-Disposition: inline; filename=0006-Use-page_cache_xxx-in-mm-rmap.c.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We use the macros PAGE_CACHE_SIZE PAGE_CACHE_SHIFT PAGE_CACHE_MASK
-and PAGE_CACHE_ALIGN in various places in the kernel. Many times
-common operations like calculating the offset or the index are coded
-using shifts and adds. This patch provides inline functions to
-get the calculations accomplished without having to explicitly
-shift and add constants.
-
-All functions take an address_space pointer. The address space pointer
-will be used in the future to eventually support a variable size
-page cache. Information reachable via the mapping may then determine
-page size.
-
-New function                    Related base page constant
-====================================================================
-page_cache_shift(a)             PAGE_CACHE_SHIFT
-page_cache_size(a)              PAGE_CACHE_SIZE
-page_cache_mask(a)              PAGE_CACHE_MASK
-page_cache_index(a, pos)        Calculate page number from position
-page_cache_next(addr, pos)      Page number of next page
-page_cache_offset(a, pos)       Calculate offset into a page
-page_cache_pos(a, index, offset)
-                                Form position based on page number
-                                and an offset.
-
-This provides a basis that would allow the conversion of all page cache
-handling in the kernel and ultimately allow the removal of the PAGE_CACHE_*
-constants.
+Use page_cache_xxx in mm/rmap.c
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- include/linux/pagemap.h |   54 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 54 insertions(+), 0 deletions(-)
+ mm/rmap.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index 8a83537..836e9dd 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -52,12 +52,66 @@ static inline void mapping_set_gfp_mask(struct address_space *m, gfp_t mask)
-  * space in smaller chunks for same flexibility).
-  *
-  * Or rather, it _will_ be done in larger chunks.
-+ *
-+ * The following constants can be used if a filesystem only supports a single
-+ * page size.
-  */
- #define PAGE_CACHE_SHIFT	PAGE_SHIFT
- #define PAGE_CACHE_SIZE		PAGE_SIZE
- #define PAGE_CACHE_MASK		PAGE_MASK
- #define PAGE_CACHE_ALIGN(addr)	(((addr)+PAGE_CACHE_SIZE-1)&PAGE_CACHE_MASK)
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 41ac397..d6a1771 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -188,9 +188,14 @@ static void page_unlock_anon_vma(struct anon_vma *anon_vma)
+ static inline unsigned long
+ vma_address(struct page *page, struct vm_area_struct *vma)
+ {
+-	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
++	pgoff_t pgoff;
+ 	unsigned long address;
  
-+/*
-+ * Functions that are currently setup for a fixed PAGE_SIZEd. The use of
-+ * these will allow a variable page size pagecache in the future.
-+ */
-+static inline int mapping_order(struct address_space *a)
-+{
-+	return 0;
-+}
++	if (PageAnon(page))
++		pgoff = page->index;
++	else
++		pgoff = page->index << mapping_order(page->mapping);
 +
-+static inline int page_cache_shift(struct address_space *a)
-+{
-+	return PAGE_SHIFT;
-+}
-+
-+static inline unsigned int page_cache_size(struct address_space *a)
-+{
-+	return PAGE_SIZE;
-+}
-+
-+static inline loff_t page_cache_mask(struct address_space *a)
-+{
-+	return (loff_t)PAGE_MASK;
-+}
-+
-+static inline unsigned int page_cache_offset(struct address_space *a,
-+		loff_t pos)
-+{
-+	return pos & ~PAGE_MASK;
-+}
-+
-+static inline pgoff_t page_cache_index(struct address_space *a,
-+		loff_t pos)
-+{
-+	return pos >> page_cache_shift(a);
-+}
-+
-+/*
-+ * Index of the page starting on or after the given position.
-+ */
-+static inline pgoff_t page_cache_next(struct address_space *a,
-+		loff_t pos)
-+{
-+	return page_cache_index(a, pos + page_cache_size(a) - 1);
-+}
-+
-+static inline loff_t page_cache_pos(struct address_space *a,
-+		pgoff_t index, unsigned long offset)
-+{
-+	return ((loff_t)index << page_cache_shift(a)) + offset;
-+}
-+
- #define page_cache_get(page)		get_page(page)
- #define page_cache_release(page)	put_page(page)
- void release_pages(struct page **pages, int nr, int cold);
+ 	address = vma->vm_start + ((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
+ 	if (unlikely(address < vma->vm_start || address >= vma->vm_end)) {
+ 		/* page should be within any vma from prio_tree_next */
+@@ -335,7 +340,7 @@ static int page_referenced_file(struct page *page)
+ {
+ 	unsigned int mapcount;
+ 	struct address_space *mapping = page->mapping;
+-	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
++	pgoff_t pgoff = page->index << (page_cache_shift(mapping) - PAGE_SHIFT);
+ 	struct vm_area_struct *vma;
+ 	struct prio_tree_iter iter;
+ 	int referenced = 0;
+@@ -447,7 +452,7 @@ out:
+ 
+ static int page_mkclean_file(struct address_space *mapping, struct page *page)
+ {
+-	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
++	pgoff_t pgoff = page->index << (page_cache_shift(mapping) - PAGE_SHIFT);
+ 	struct vm_area_struct *vma;
+ 	struct prio_tree_iter iter;
+ 	int ret = 0;
+@@ -863,7 +868,7 @@ static int try_to_unmap_anon(struct page *page, int migration)
+ static int try_to_unmap_file(struct page *page, int migration)
+ {
+ 	struct address_space *mapping = page->mapping;
+-	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
++	pgoff_t pgoff = page->index << (page_cache_shift(mapping) - PAGE_SHIFT);
+ 	struct vm_area_struct *vma;
+ 	struct prio_tree_iter iter;
+ 	int ret = SWAP_AGAIN;
 -- 
 1.5.2.5
 
