@@ -1,75 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762040AbXIKIFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762239AbXIKIH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762040AbXIKIFb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 04:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbXIKIFP
+	id S1762239AbXIKIH2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 04:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758908AbXIKIHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 04:05:15 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59174 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755962AbXIKIFM (ORCPT
+	Tue, 11 Sep 2007 04:07:15 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37555 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755975AbXIKIHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 04:05:12 -0400
-Date: Tue, 11 Sep 2007 10:05:26 +0200
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Kyle Rose <krose@krose.org>, Bill Davidsen <davidsen@tmr.com>,
-       James Corey <ploversegg@yahoo.com>, Rob Sims <lkml-z@robsims.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: sk98lin for 2.6.23-rc1
-Message-ID: <20070911100526.6aa5d463@oldman>
-In-Reply-To: <20070909111326.GF3563@stusta.de>
-References: <20070905102230.10b0bdcf@oldman>
-	<782111.42803.qm@web90413.mail.mud.yahoo.com>
-	<46E2DF74.7040307@tmr.com>
-	<20070908191132.GD3563@stusta.de>
-	<46E35D8C.1070909@krose.org>
-	<20070909111326.GF3563@stusta.de>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Sep 2007 04:07:13 -0400
+Message-ID: <46E64C9D.2000509@bull.net>
+Date: Tue, 11 Sep 2007 10:06:53 +0200
+From: Laurent Vivier <Laurent.Vivier@bull.net>
+Organization: Bull S.A.S.
+User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
+MIME-Version: 1.0
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND][PATCH 0/4] Virtual Machine Time Accounting
+References: <46E5325D.1020902@bull.net> <46E53D96.4050409@qumranet.com> <46E541DD.4080202@bull.net> <200709101910.36923.alistair@devzero.co.uk>
+In-Reply-To: <200709101910.36923.alistair@devzero.co.uk>
+X-Enigmail-Version: 0.94.0.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 11/09/2007 10:12:51,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 11/09/2007 10:12:53,
+	Serialize complete at 11/09/2007 10:12:53
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigE7F8ECE37E4EFA38186A7FF6"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Sep 2007 13:13:26 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE7F8ECE37E4EFA38186A7FF6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> On Sat, Sep 08, 2007 at 10:42:20PM -0400, Kyle Rose wrote:
-> > 
-> > > You are a regular reader of linux-kernel, and therefore the sk98lin 
-> > > removal can hardly be a surprise for you. If you prefer whining over 
-> > > helping to improve the kernel that's your choice...
-> > >   
-> > In my case the issue is simply one of practicality: I cannot go to the
-> > data center 5 times per day to reboot my colo box.  Therefore, I run
-> > sk98lin.  It's really that simple.
-> 
-> When did you report this bug the first time?
-> 
-> What we need is that people when testing a new kernel they plan to use 
-> test the new drivers *and report the bugs if they run into any*.
-> 
-> What could we have done so that you reported your bug without removing 
-> the sk98lin driver?
-> 
-> > Kyle
-> 
-> cu
-> Adrian
+Alistair John Strachan wrote:
+> On Monday 10 September 2007 14:08:45 Laurent Vivier wrote:
+>> Avi Kivity wrote:
+>>> Ingo Molnar wrote:
+>>>> * Laurent Vivier <Laurent.Vivier@bull.net> wrote:
+>>>>> Ingo, please, could you have a look to these patches ?
+>>>>>
+>>>>> The aim of these four patches is to introduce Virtual Machine time
+>>>>> accounting.
+>>>>>
+>>>>> [PATCH 1/4] as recent CPUs introduce a third running state, after
+>>>>> "user" and "system", we need a new field, "guest", in cpustat to
+>>>>> store the time used by the CPU to run virtual CPU. Modify /proc/sta=
+t
+>>>>> to display this new field.
+>>>> the concept certainly looks sane to me.
+>>>>
+>>>> The heavy-handed use of #ifdefs uglifies the code to a large degree,=
+
+>>>> but this is not a fundamental problem: since basically all distros
+>>>> have KVM enabled (and lguest benefits from this too), could you just=
+
+>>>> make all this new code unconditional?
+>>> I imagine the embedded people will complain... perhaps move all the c=
+ode
+>>> to a #ifdef section above with a full implementation and a stub
+>>> implementation.
+>> I'm going to repost patches without #ifdefs for readability.
+>> Then we could discuss if we should introduce #ifdefs and how.
+>=20
+> If you could provide a summary of the size increase from your latest po=
+st=20
+> (i.e., size of the kernel before and after) that might lay rest to some=
+=20
+> theoretical complaints.
+
+These patches add:
+
+* at data structures level:
+
+- one cputime64_t (8 bytes) per cpu
+- two cputime_t (2 * 4 bytes) per signal_struct and one cputime_t per tas=
+k_struct
+
+* at processing level:
+
+- display and convert one more value in show_stat() (fs/proc/proc_misc.c)=
+
+- display and convert two more values in do_task_stat() (fs/proc/array.c)=
+
+- manage (copy and add) one more value in __exit_signal() (kernel/exit.c)=
+
+- initialize three more fields in copy_signal (kernel/fork.c)
+- add a bit test in account_system_time() and if the bit is set call a ne=
+w
+function (46 bytes on x86_64).
+
+Size of stripped kernel before (on x86_64):
+vmlinux 7305064 bytes (not stripped 52643888 bytes)
+Size of stripped kernel after:
+vmlinux 7305064 bytes (not stripped 52677180 bytes)
+
+means 0 bytes added ????
+
+Laurent
+--=20
+------------- Laurent.Vivier@bull.net  --------------
+          "Software is hard" - Donald Knuth
 
 
-There are several different problems in this thread:
-1. The removal of old sk98lin driver caused some users to be forced to use
-    skge. These users have uncovered issues with the dual port fiber based versions
-    of the board.  
-    Short term: The sk98lin driver should be restored to previous state, 
-       and the PCI table should be used to limit the usage to only fiber systems.
-       If Adrian doesn't do it, I'll do it when I return from Germany.
-    Long term: I have fiber based board (thanks ebay) on the way to resolve
-       skge bug.
+--------------enigE7F8ECE37E4EFA38186A7FF6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-2. Sky2 driver has it's own fiber based problems.  Solve these after skge fiber.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.7 (GNU/Linux)
 
-3. Sky2 doesn't have as many workarounds for hardware problems as vendor sk98lin
-    driver.
+iD8DBQFG5kyh9Kffa9pFVzwRAudfAKCl8p/kMDImi5LL8G4l4QbtpIScSgCgv4ay
+/LH17Qo2QDWOwRe6gTbYg9Y=
+=xEXH
+-----END PGP SIGNATURE-----
+
+--------------enigE7F8ECE37E4EFA38186A7FF6--
