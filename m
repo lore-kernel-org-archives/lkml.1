@@ -1,107 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbXIKQp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759906AbXIKQqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756804AbXIKQp4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 12:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbXIKQps
+	id S1759906AbXIKQqR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 12:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbXIKQpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 12:45:48 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:58389 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbXIKQps (ORCPT
+	Tue, 11 Sep 2007 12:45:50 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42426 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752152AbXIKQpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 12:45:48 -0400
-Date: Tue, 11 Sep 2007 09:42:54 -0700
+	Tue, 11 Sep 2007 12:45:49 -0400
+Date: Tue, 11 Sep 2007 09:43:02 -0700
 From: Greg KH <gregkh@suse.de>
 To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: [GIT PATCH] USB fixes for 2.6.23-rc6
-Message-ID: <20070911164254.GA31978@kroah.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: [GIT PATCH] PCI fixes for 2.6.23-rc6
+Message-ID: <20070911164302.GB31978@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some USB fixes against your 2.6.23-rc6 git tree.
+Here are a some PCI fixes against your 2.6.23-rc6 git tree.
 
-They do the following:
-	- more quirk updates for broken devices.
-	- device id updates
-	- bugfix for dynamic device ids from userspace
+They contain some bugfixes for devinit, compiler warning fixes, some
+quirk updates, and a new device id.
 
 All of these have been in the -mm tree for a while.
 
 Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/pci-2.6.git/
 
-The full patches will be sent to the linux-usb-devel mailing list, if
-anyone wants to see them.
+The full patches will be sent to the linux-pci mailing list, if anyone
+wants to see it
 
 thanks,
 
 greg k-h
 
 
- drivers/usb/core/driver.c           |    2 +-
- drivers/usb/core/quirks.c           |   25 +++++++++++++++++++++++++
- drivers/usb/gadget/serial.c         |   25 +++++++++++++++----------
- drivers/usb/misc/sisusbvga/sisusb.c |    1 +
- drivers/usb/serial/bus.c            |    2 +-
- drivers/usb/serial/ftdi_sio.c       |    1 +
- drivers/usb/serial/ftdi_sio.h       |    8 ++++++++
- drivers/usb/serial/option.c         |    3 +++
- drivers/usb/serial/oti6858.c        |   15 ---------------
- drivers/usb/storage/unusual_devs.h  |   30 ++++++++++++++++++++++++++++++
- 10 files changed, 85 insertions(+), 27 deletions(-)
+ arch/i386/pci/irq.c     |    1 +
+ arch/i386/pci/pcbios.c  |    2 +-
+ drivers/pci/probe.c     |    2 +-
+ drivers/pci/quirks.c    |   16 ++++++++++++++--
+ include/linux/aer.h     |   25 ++++++++++++++++++++-----
+ include/linux/pci_ids.h |    2 ++
+ 6 files changed, 39 insertions(+), 9 deletions(-)
 
 ---------------
 
-Alan Cox (1):
-      USB: oti6858: Remove broken ioctl code in -mm tree and also the broken fixes
+Jason Gaston (1):
+      PCI: irq and pci_ids patch for Intel Tolapai
 
-Alan Stern (2):
-      USB: prevent Thomson card reader from autosuspending
-      USB: prevent Genesys USB-IDE from autosuspending
+Ralf Baechle (2):
+      PCI: remove devinit from pci_read_bridge_bases
+      PCI: Remove __devinit from pcibios_get_irq_routing_table
 
-David Brownell (1):
-      USB: fix serial gadget ACM breakage
+Randy Dunlap (1):
+      PCI AER: fix warnings when PCIEAER=n
 
-Greg Kroah-Hartman (1):
-      USB: option: Add Dell HSDPA 5520 to driver
-
-Jaime Velasco Juan (1):
-      USB: option: Add a new device ID for the HUAWEI E220 HSDPA modem.
-
-Lamarque Vieira Souza (1):
-      USB: More USB_QUIRK_RESET_RESUME devices
-
-Massimiliano Ghilardi (1):
-      USB Mass Storage: limit "Rockchip ROCK MP3" device (071b:3203) max I/O to 64 sectors per command
-
-Matt Colyer (1):
-      USB: Add iPhone device id to the quirk list.
-
-Nathael Pajani (1):
-      USB: fix linked list insertion bugfix for usb core
-
-Oliver Neukum (2):
-      USB: quirky flash drive
-      USB: another quirky device (LCD display)
-
-Ortwin Glück (1):
-      USB: Nikon D40 Quirks
-
-Pierre Castella (1):
-      USB: ftdi_sio: add of a new product/manufacturer, TML
-
-Ricardo Barberis (1):
-      USB: Add Sony Ericsson P1i to unusual_devs.h
-
-Satyam Sharma (1):
-      USB: drivers/usb/serial/bus.c: Fix incompatible pointer type warning
-
-samson yeung (1):
-      usb/misc/sisusbvga: add product ID of TARGUS/MCT device
+gw.kernel@tnode.com (1):
+      PCI: unhide SMBus on Compaq Deskpro EP 401963-001 motherboard
 
