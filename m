@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763263AbXIKIg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763181AbXIKIiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763263AbXIKIg3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 04:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763075AbXIKIgO
+	id S1763181AbXIKIiT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 04:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761988AbXIKIiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 04:36:14 -0400
-Received: from smtp.nokia.com ([131.228.20.171]:22654 "EHLO
-	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762761AbXIKIgL convert rfc822-to-8bit (ORCPT
+	Tue, 11 Sep 2007 04:38:09 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:15514 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761801AbXIKIiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 04:36:11 -0400
-Subject: Re: [PATCH try #2] Blackfin on-chip NAND Flash Controller driver
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: bryan.wu@analog.com
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <1189417837.28956.9.camel@roc-desktop>
-References: <1188885450.7074.7.camel@roc-laptop>
-	 <1189144341.14370.77.camel@sauron>  <1189417837.28956.9.camel@roc-desktop>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 11 Sep 2007 11:35:07 +0300
-Message-Id: <1189499707.14370.107.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 11 Sep 2007 08:35:08.0504 (UTC) FILETIME=[A91A2D80:01C7F44E]
-X-Nokia-AV: Clean
+	Tue, 11 Sep 2007 04:38:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nEdSkzpJeEDcT2GzS+21McWyeGFxA78ffZO2SDlop/mapxsNeU5Dvvi1ji929EdRMv4O0o07OLvXbaXstIarAJX6k03zsWX8wzSHVPhjU5mQhbP0UYBJBjq17RyohkoUeJysWkPSvzeKepKIBufVq7WEcgjUfN4YZpvia1sD5U8=
+Message-ID: <8d33dcd40709110138h1bee46d2x8521f5b8f0d3a955@mail.gmail.com>
+Date: Tue, 11 Sep 2007 16:38:06 +0800
+From: "Alvin Valera" <alvinvalera@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Socket owner problem?
+In-Reply-To: <8d33dcd40709110045v532e062ex7f05ac3ba9386161@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1189496159.849702.82190@50g2000hsm.googlegroups.com>
+	 <8d33dcd40709110045v532e062ex7f05ac3ba9386161@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi David,
 
-On Mon, 2007-09-10 at 17:50 +0800, Bryan Wu wrote:
-> Here is the test log, only 2 errors in oobtest. After digging into the
-> mtd-nand driver code, it should be no relation to my bf5xx_nand driver.
-> Maybe somethings wrong in the mtd-nand code. I intend to get some help
-> from you, please see my test log below:
+Thanks for your quick reply.
 
-> oobtest: Attempting to read past end of device
-> oobtest: An error is expected...
-> oobtest: error: read past end of device
+> If that were true, anyone who could send those packets to your machine would
+> be able to cause the system to hang too.
 
-This means that MTD did not return an error when the test tried to read
-the last NAND page's OOB. Here is the code:
+You're right to say that :)
 
-/* Attempt to write off end of device */
-ops.mode      = MTD_OOB_AUTO;
-ops.ooblen    = mtd->ecclayout->oobavail + 1;
-ops.oobbuf    = writebuf;
-printk(PRINT_PREF "Attempting to write past end of device\n");
-printk(PRINT_PREF "An error is expected...\n");
-err = mtd->write_oob(mtd, mtd->size - mtd->writesize, &ops);
+> Perhaps you are feeding the packets
+> back in at too high a layer.
 
-So we read OOB size + 1 byte from the last NAND page and get no error.
+Not really. In fact, I pass the packet back to the "lower layer" again
+by calling netif_receive_skb(). Note that packets can go in a loop
+here. To avoid queuing the same packets repeatedly, the module "marks"
+them the first time they are queued. Marked packets are simply
+NF_ACCEPT'ed by the module hook and therefore are propagated up the
+netfilter chain.
 
-This test passes for nandsim, so I'm not sure the problem is in the
-generic code. On the other hand, it is generic code which should check
-rages.
+> What object is this queue logically associated with? If the socket, you
+> should probably hook 'release' so you can purge the queue when the socket is
+> removed.
 
-> oobtest: Attempting to write past end of device
-> oobtest: An error is expected...
-> nand_write_oob: Attempt to write past end of page
-> oobtest: Error occurred as expected
-> oobtest: Attempting to read past end of device
-> oobtest: An error is expected...
-> oobtest: error: read past end of device
+The queue is not associated with the socket. It is independent and is
+meant just for the module to use for queuing packets that are supposed
+to be delayed. But for each packet in this queue, there is an
+associated kernel timer. Once this timer expires, the associated
+packet is fed into the netif_receive_skb().
 
-Similar.
 
-> I plan to do the torture test after this oobtest passed. And this
-> nand_test suites are intended to integrated into our Blackfin
-> uClinux-dist testsuites.
-
-We are planning to clean up the tests and submit them for kernel
-inclusion some day, when we have time.
-
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+AV
