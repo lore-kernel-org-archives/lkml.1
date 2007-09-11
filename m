@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966114AbXIKKxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762774AbXIKLMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966114AbXIKKxR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 06:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760575AbXIKKxD
+	id S1762774AbXIKLMd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 07:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbXIKLM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 06:53:03 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35167 "EHLO ogre.sisk.pl"
+	Tue, 11 Sep 2007 07:12:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35201 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760545AbXIKKxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 06:53:01 -0400
+	id S1754634AbXIKLMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 07:12:25 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@suspend2.net
-Subject: Re: [PATCH] Fix failure to resume from initrds.
-Date: Tue, 11 Sep 2007 13:04:22 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: clockevents: fix resume logic
+Date: Tue, 11 Sep 2007 13:23:55 +0200
 User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200709111354.25689.nigel@nigel.suspend2.net>
-In-Reply-To: <200709111354.25689.nigel@nigel.suspend2.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>
+References: <200707220159.l6M1xBgH001236@hera.kernel.org> <1189502164.6262.7.camel@chaos> <20070911033106.91e240df.akpm@linux-foundation.org>
+In-Reply-To: <20070911033106.91e240df.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709111304.23263.rjw@sisk.pl>
+Message-Id: <200709111323.56030.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 11 September 2007 05:54, Nigel Cunningham wrote:
-> Hi all.
+On Tuesday, 11 September 2007 12:31, Andrew Morton wrote:
+> On Tue, 11 Sep 2007 11:16:04 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 > 
-> Commit 831441862956fffa17b9801db37e6ea1650b0f69 (Freezer: make kernel threads
-> nonfreezable by default) breaks freezing when attempting to resume from an
-> initrd, because the init (which is freezeable) spins while waiting for another
-> thread to run /linuxrc, but doesn't check whether it has been told to enter
-> the refrigerator.
+> > On Tue, 2007-09-11 at 01:35 -0700, Andrew Morton wrote:
+> > > On Tue, 11 Sep 2007 01:20:05 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > On Tue, 11 Sep 2007 09:47:20 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > > 
+> > > > > On Tue, 2007-09-11 at 09:23 +0200, Thomas Gleixner wrote:
+> > > > > > > I went back to the original patch which I sent to Linus and it matches
+> > > > > > > 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6.  So all I can think is that there
+> > > > > > > must have been something else in the tree which I tested which fixed the
+> > > > > > > bug which 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6 introduced.  argh.
+> > > > > > > 
+> > > > > > > Can you think what would cause the symptoms which I described?  
+> > > > > > 
+> > > > > > It seems that time is not updated. Timer interrupt not active or some
+> > > > > > other odd thing. I figure out what's going on when I find a box which
+> > > > > > exposes the problem.
+> > > > 
+> > > > 2.6.22-rc6-mm1's git-acpi.patch contains something which fixes this bug. 
+> > > 
+> > > Len's current tree fixes it too.
 
-Hm.
+Do you mean this one:
 
-I use a resume from an initrd on a regular basis and it works without the patch
-below.
-
-I think we need to investigate what happens in your test case a bit.
-
-> The original patch replaced a call to try_to_freeze() with a 
-> call to yield(). I believe a simple reversion is wrong because
-> if !CONFIG_PM_SLEEP, try_to_freeze() is a noop. It should still yield.
-> 
-> Signed-off-by: Nigel Cunningham <nigel@nigel.suspend2.net>
-> 
->  do_mounts_initrd.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> diff -ruNp 952-fix-initrd-resume.patch-old/init/do_mounts_initrd.c 952-fix-initrd-resume.patch-new/init/do_mounts_initrd.c
-> --- 952-fix-initrd-resume.patch-old/init/do_mounts_initrd.c	2007-09-11 13:43:31.000000000 +1000
-> +++ 952-fix-initrd-resume.patch-new/init/do_mounts_initrd.c	2007-09-11 13:19:50.000000000 +1000
-> @@ -58,8 +58,10 @@ static void __init handle_initrd(void)
->  
->  	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
->  	if (pid > 0)
-> -		while (pid != sys_wait4(-1, NULL, 0, NULL))
-> +		while (pid != sys_wait4(-1, NULL, 0, NULL)) {
->  			yield();
-> +			try_to_freeze();
-> +		}
->  
->  	if (!resume_attempted)
->  		printk(KERN_ERR "Suspend2: No attempt was made to resume from "
-> 
-
-Greetings,
-Rafael
+http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git
