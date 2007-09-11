@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762346AbXIKGEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965632AbXIKGF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762346AbXIKGEu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761443AbXIKGEb
+	id S965632AbXIKGF1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761560AbXIKGEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:04:31 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56451 "EHLO
+	Tue, 11 Sep 2007 02:04:32 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56448 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761202AbXIKGEa (ORCPT
+	with ESMTP id S1761172AbXIKGEa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Sep 2007 02:04:30 -0400
-Message-Id: <20070911060426.201526506@sgi.com>
+Message-Id: <20070911060427.375492445@sgi.com>
 References: <20070911060349.993975297@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 10 Sep 2007 23:03:54 -0700
+Date: Mon, 10 Sep 2007 23:03:59 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: torvalds@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -24,42 +24,57 @@ Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
        Fengguang Wu <fengguang.wu@gmail.com>
 Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com, hugh@veritas.com
 Cc: joern@lazybastard.org
-Subject: [04/41] Use page_cache_xxx in mm/page-writeback.c
-Content-Disposition: inline; filename=0004-Use-page_cache_xxx-in-mm-page-writeback.c.patch
+Subject: [09/41] Use page_cache_xxx in fs/libfs.c
+Content-Disposition: inline; filename=0009-Use-page_cache_xxx-in-fs-libfs.c.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use page_cache_xxx in mm/page-writeback.c
+Use page_cache_xxx in fs/libfs.c
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- mm/page-writeback.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ fs/libfs.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 63512a9..ebe76e3 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -624,8 +624,8 @@ int write_cache_pages(struct address_space *mapping,
- 		index = mapping->writeback_index; /* Start from prev offset */
- 		end = -1;
- 	} else {
--		index = wbc->range_start >> PAGE_CACHE_SHIFT;
--		end = wbc->range_end >> PAGE_CACHE_SHIFT;
-+		index = page_cache_index(mapping, wbc->range_start);
-+		end = page_cache_index(mapping, wbc->range_end);
- 		if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
- 			range_whole = 1;
- 		scanned = 1;
-@@ -827,7 +827,7 @@ int __set_page_dirty_nobuffers(struct page *page)
- 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
- 			if (mapping_cap_account_dirty(mapping)) {
- 				__inc_zone_page_state(page, NR_FILE_DIRTY);
--				task_io_account_write(PAGE_CACHE_SIZE);
-+				task_io_account_write(page_cache_size(mapping));
- 			}
- 			radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
+diff --git a/fs/libfs.c b/fs/libfs.c
+index 53b3dc5..e90f894 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -16,7 +16,8 @@ int simple_getattr(struct vfsmount *mnt, struct dentry *dentry,
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	generic_fillattr(inode, stat);
+-	stat->blocks = inode->i_mapping->nrpages << (PAGE_CACHE_SHIFT - 9);
++	stat->blocks = inode->i_mapping->nrpages <<
++				(page_cache_shift(inode->i_mapping) - 9);
+ 	return 0;
+ }
+ 
+@@ -340,10 +341,10 @@ int simple_prepare_write(struct file *file, struct page *page,
+ 			unsigned from, unsigned to)
+ {
+ 	if (!PageUptodate(page)) {
+-		if (to - from != PAGE_CACHE_SIZE)
++		if (to - from != page_cache_size(file->f_mapping))
+ 			zero_user_segments(page,
+ 				0, from,
+-				to, PAGE_CACHE_SIZE);
++				to, page_cache_size(file->f_mapping));
+ 	}
+ 	return 0;
+ }
+@@ -351,8 +352,9 @@ int simple_prepare_write(struct file *file, struct page *page,
+ int simple_commit_write(struct file *file, struct page *page,
+ 			unsigned from, unsigned to)
+ {
+-	struct inode *inode = page->mapping->host;
+-	loff_t pos = ((loff_t)page->index << PAGE_CACHE_SHIFT) + to;
++	struct address_space *mapping = page->mapping;
++	struct inode *inode = mapping->host;
++	loff_t pos = page_cache_pos(mapping, page->index, to);
+ 
+ 	if (!PageUptodate(page))
+ 		SetPageUptodate(page);
 -- 
 1.5.2.5
 
