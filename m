@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933823AbXIKTwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934040AbXIKTwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933823AbXIKTwS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 15:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932298AbXIKTwG
+	id S934040AbXIKTwu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 15:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932513AbXIKTwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 15:52:06 -0400
-Received: from www.osadl.org ([213.239.205.134]:53001 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932376AbXIKTwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 15:52:04 -0400
-Subject: Re: clockevents: fix resume logic
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <20070911114417.3f6e9e1b.akpm@linux-foundation.org>
-References: <200707220159.l6M1xBgH001236@hera.kernel.org>
-	 <200709111323.56030.rjw@sisk.pl>
-	 <20070911042228.1ef690e0.akpm@linux-foundation.org>
-	 <200709111409.13796.rjw@sisk.pl>
-	 <20070911112531.80bac380.akpm@linux-foundation.org>
-	 <1189535883.5235.13.camel@chaos>
-	 <20070911114417.3f6e9e1b.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 11 Sep 2007 21:52:01 +0200
-Message-Id: <1189540321.5235.21.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
+	Tue, 11 Sep 2007 15:52:39 -0400
+Received: from smtprelay12.ispgateway.de ([80.67.29.29]:35509 "EHLO
+	smtprelay12.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932510AbXIKTwh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 15:52:37 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [PATCH] crypto: cleanup: Use max() in blkcipher_get_spot() to state the intention.
+Date: Tue, 11 Sep 2007 21:53:24 +0200
+User-Agent: KMail/1.9.6
+Cc: Bob Gilligan <gilligan@vyatta.com>, linux-kernel@vger.kernel.org,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+References: <5562608.649291189210157514.JavaMail.root@tahiti.vyatta.com> <200709102146.47655.ioe-lkml@rameria.de> <20070911084058.GA4469@gondor.apana.org.au>
+In-Reply-To: <20070911084058.GA4469@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709112153.25959.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-11 at 11:44 -0700, Andrew Morton wrote:
-> > > there doesn't seem to be a lot of difference in the time handling, except
-> > > there are large changes in when things happen in the bootup sequence.
-> > 
-> > The question is whether the system goes into C2 with the patch applied.
-> > 
-> > Can you please provide the output of /proc/acpi/processor/CPU0/power for
-> > both the bad and the good one ?
-> > 
-> 
-> good:
-> 
-> sony:/home/akpm> cat /proc/acpi/processor/CPU0/power
-> active state:            C0
-> max_cstate:              C8
-> bus master activity:     00000000
-> maximum allowed latency: 8000 usec
-> states:
->     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00000000] duration[00000000000000000000]
->     C2:                  type[C2] promotion[--] demotion[--] latency[001] usage[00000000] duration[00000000000000000000]
-> 
-> bad:
-> 
-> sony:/home/akpm> cat /proc/acpi/processor/CPU0/power
-> active state:            C2
-> max_cstate:              C8
-> bus master activity:     00000000
-> maximum allowed latency: 8000 usec
-> states:
->     C1:                  type[C1] promotion[C2] demotion[--] latency[001] usage[00000010] duration[00000000000000000000]
->    *C2:                  type[C2] promotion[--] demotion[C1] latency[001] usage[00008316] duration[00000000000170717293]
+[PATCH] crypto: cleanup: Use max() in blkcipher_get_spot() to state the intention.
 
-Ok, here we are. The bad one uses C2 which stops the local apic on the
-VAIO. I suspect we end up in the suspend/resume with going into C2
-without the broadcast active.
+Signed-off-by: Ingo Oeser <ioe-lkml@rameria.de>
+---
+Hi Herbert,
 
-Can you try to get the output of SysRq-Q during the "it needs help from
-keyboard" period ?
+here is the requested patch against Linus' latest tree. 
+It at least compiles.
 
-	tglx
+Best Regards
 
+Ingo Oeser
+
+ crypto/blkcipher.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/crypto/blkcipher.c b/crypto/blkcipher.c
+index d8f8ec3..1c99d92 100644
+--- a/crypto/blkcipher.c
++++ b/crypto/blkcipher.c
+@@ -65,7 +65,7 @@ static inline void blkcipher_unmap_dst(struct blkcipher_walk *walk)
+ static inline u8 *blkcipher_get_spot(u8 *start, unsigned int len)
+ {
+ 	u8 *end_page = (u8 *)(((unsigned long)(start + len - 1)) & PAGE_MASK);
+-	return start > end_page ? start : end_page;
++	return max(start, end_page);
+ }
+ 
+ static inline unsigned int blkcipher_done_slow(struct crypto_blkcipher *tfm,
+-- 
+1.5.2.5
 
 
 
