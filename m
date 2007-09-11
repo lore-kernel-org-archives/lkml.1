@@ -1,94 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934313AbXIKUDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764635AbXIKUEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934313AbXIKUDx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 16:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934073AbXIKUBy
+	id S1764635AbXIKUEb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 16:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934193AbXIKUBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 16:01:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37503 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934042AbXIKUBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 16:01:52 -0400
-Message-Id: <20070911200015.351703000@chello.nl>
-References: <20070911195350.825778000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Tue, 11 Sep 2007 21:54:08 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
-       torvalds@linux-foundation.org
-Subject: [PATCH 18/23] mm: count writeback pages per BDI
-Content-Disposition: inline; filename=bdi_stat_writeback.patch
+	Tue, 11 Sep 2007 16:01:55 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55152 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934060AbXIKUBx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 16:01:53 -0400
+Date: Tue, 11 Sep 2007 13:01:51 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: andrea@suse.de, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+In-Reply-To: <200709110452.20363.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0709111256250.25781@schroedinger.engr.sgi.com>
+References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Count per BDI writeback pages.
+On Tue, 11 Sep 2007, Nick Piggin wrote:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/backing-dev.h |    1 +
- mm/page-writeback.c         |   12 ++++++++++--
- 2 files changed, 11 insertions(+), 2 deletions(-)
+> There is a limitation in the VM. Fragmentation. You keep saying this
+> is a solved issue and just assuming you'll be able to fix any cases
+> that come up as they happen.
+> 
+> I still don't get the feeling you realise that there is a fundamental
+> fragmentation issue that is unsolvable with Mel's approach.
 
-Index: linux-2.6/mm/page-writeback.c
-===================================================================
---- linux-2.6.orig/mm/page-writeback.c
-+++ linux-2.6/mm/page-writeback.c
-@@ -981,14 +981,18 @@ int test_clear_page_writeback(struct pag
- 	int ret;
- 
- 	if (mapping) {
-+		struct backing_dev_info *bdi = mapping->backing_dev_info;
- 		unsigned long flags;
- 
- 		write_lock_irqsave(&mapping->tree_lock, flags);
- 		ret = TestClearPageWriteback(page);
--		if (ret)
-+		if (ret) {
- 			radix_tree_tag_clear(&mapping->page_tree,
- 						page_index(page),
- 						PAGECACHE_TAG_WRITEBACK);
-+			if (bdi_cap_writeback_dirty(bdi))
-+				__dec_bdi_stat(bdi, BDI_WRITEBACK);
-+		}
- 		write_unlock_irqrestore(&mapping->tree_lock, flags);
- 	} else {
- 		ret = TestClearPageWriteback(page);
-@@ -1004,14 +1008,18 @@ int test_set_page_writeback(struct page 
- 	int ret;
- 
- 	if (mapping) {
-+		struct backing_dev_info *bdi = mapping->backing_dev_info;
- 		unsigned long flags;
- 
- 		write_lock_irqsave(&mapping->tree_lock, flags);
- 		ret = TestSetPageWriteback(page);
--		if (!ret)
-+		if (!ret) {
- 			radix_tree_tag_set(&mapping->page_tree,
- 						page_index(page),
- 						PAGECACHE_TAG_WRITEBACK);
-+			if (bdi_cap_writeback_dirty(bdi))
-+				__inc_bdi_stat(bdi, BDI_WRITEBACK);
-+		}
- 		if (!PageDirty(page))
- 			radix_tree_tag_clear(&mapping->page_tree,
- 						page_index(page),
-Index: linux-2.6/include/linux/backing-dev.h
-===================================================================
---- linux-2.6.orig/include/linux/backing-dev.h
-+++ linux-2.6/include/linux/backing-dev.h
-@@ -28,6 +28,7 @@ typedef int (congested_fn)(void *, int);
- 
- enum bdi_stat_item {
- 	BDI_RECLAIMABLE,
-+	BDI_WRITEBACK,
- 	NR_BDI_STAT_ITEMS
- };
- 
+Well my problem first of all is that you did not read the full message. It 
+discusses that later and provides page pools to address the issue.
 
---
+Secondly you keep FUDding people with lots of theoretical concerns 
+assuming Mel's approaches must fail. If there is an issue (I guess there 
+must be right?) then please give us a concrete case of a failure that we 
+can work against.
 
+> The idea that there even _is_ a bug to fail when higher order pages
+> cannot be allocated was also brushed aside by some people at the
+> vm/fs summit. I don't know if those people had gone through the
+> math about this, but it goes somewhat like this: if you use a 64K
+> page size, you can "run out of memory" with 93% of your pages free.
+> If you use a 2MB page size, you can fail with 99.8% of your pages
+> still free. That's 64GB of memory used on a 32TB Altix.
+
+Allocations can currently fail and all code has the requirement to handle 
+failure cases in one form or another.
+
+Currently we can only handle up to order 3 allocs it seems. 2M pages (and 
+in particular pagesizes > MAX_ORDER) will have to be handled by a separate 
+large page pool facility discussed in the earlier message.
