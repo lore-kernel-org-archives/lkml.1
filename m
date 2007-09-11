@@ -1,116 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764728AbXIKTVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764912AbXIKTXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764728AbXIKTVT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 15:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762433AbXIKTVA
+	id S1764912AbXIKTXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 15:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762833AbXIKTXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 15:21:00 -0400
-Received: from mail.suse.de ([195.135.220.2]:48931 "EHLO mx1.suse.de"
+	Tue, 11 Sep 2007 15:23:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36649 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756604AbXIKTU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 15:20:58 -0400
-Date: Tue, 11 Sep 2007 21:20:52 +0200
-From: Andrea Arcangeli <andrea@suse.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Andrea Arcangeli <andrea@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Message-ID: <20070911192052.GA14675@v2.random>
-References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <1189524967.32731.58.camel@localhost> <20070911164702.GD10831@v2.random> <1189535461.32731.75.camel@localhost>
+	id S1762433AbXIKTXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 15:23:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: clockevents: fix resume logic
+Date: Tue, 11 Sep 2007 21:35:15 +0200
+User-Agent: KMail/1.9.5
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+References: <200707220159.l6M1xBgH001236@hera.kernel.org> <200709111409.13796.rjw@sisk.pl> <20070911112531.80bac380.akpm@linux-foundation.org>
+In-Reply-To: <20070911112531.80bac380.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1189535461.32731.75.camel@localhost>
+Message-Id: <200709112135.16639.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tuesday, 11 September 2007 20:25, Andrew Morton wrote:
+> On Tue, 11 Sep 2007 14:09:12 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > On Tuesday, 11 September 2007 13:22, Andrew Morton wrote:
+> > > On Tue, 11 Sep 2007 13:23:55 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> > > > On Tuesday, 11 September 2007 12:31, Andrew Morton wrote:
+> > > > > On Tue, 11 Sep 2007 11:16:04 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > > > 
+> > > > > > On Tue, 2007-09-11 at 01:35 -0700, Andrew Morton wrote:
+> > > > > > > On Tue, 11 Sep 2007 01:20:05 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > > > > 
+> > > > > > > > On Tue, 11 Sep 2007 09:47:20 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > > > > > > 
+> > > > > > > > > On Tue, 2007-09-11 at 09:23 +0200, Thomas Gleixner wrote:
+> > > > > > > > > > > I went back to the original patch which I sent to Linus and it matches
+> > > > > > > > > > > 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6.  So all I can think is that there
+> > > > > > > > > > > must have been something else in the tree which I tested which fixed the
+> > > > > > > > > > > bug which 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6 introduced.  argh.
+> > > > > > > > > > > 
+> > > > > > > > > > > Can you think what would cause the symptoms which I described?  
+> > > > > > > > > > 
+> > > > > > > > > > It seems that time is not updated. Timer interrupt not active or some
+> > > > > > > > > > other odd thing. I figure out what's going on when I find a box which
+> > > > > > > > > > exposes the problem.
+> > > > > > > > 
+> > > > > > > > 2.6.22-rc6-mm1's git-acpi.patch contains something which fixes this bug. 
+> > > > > > > 
+> > > > > > > Len's current tree fixes it too.
+> > > > 
+> > > > Do you mean this one:
+> > > > 
+> > > > http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git
+> > > 
+> > > Nope.
+> > > 
+> > > Here's the algorthm: go to the latest -mm tree and look at the first line
+> > > of broken-out/git-acpi.patch:
+> > > 
+> > > GIT f94aac9883f9b02700270cf286577a9bccf98f47 git+ssh://master.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git#test
+> > > 
+> > > that gives the URL, the branch and the top-level commit.  All the -mm git
+> > > trees have that first line.
+> > > 
+> > > 
+> > > 
+> > > Anyway, I was able to extract all the diffs and generate a patch series. 
+> > > The below patch fixes current mainline on the Vaio.
+> > 
+> > It evidently assumes cpuidle to be present, which is not in the mainline.
+> 
+> Bear in mind that the cpuidle patch fixes resume-from-ram when cpuidle is
+> disabled in config.
+> 
+> > It seems to me that the total effect of this one and the hackpatch is that
+> > the C states are not handled any more.
+> 
+> hm.
+> 
+> dmesg without the cpuidle patch: http://userweb.kernel.org/~akpm/dmesg-bad.txt
+> dmesg with the cpuidle patch: http://userweb.kernel.org/~akpm/dmesg-good.txt
+> difference: http://userweb.kernel.org/~akpm/dmesg-diff.txt
+> 
+> there doesn't seem to be a lot of difference in the time handling, except
+> there are large changes in when things happen in the bootup sequence.
 
-On Tue, Sep 11, 2007 at 07:31:01PM +0100, Mel Gorman wrote:
-> Now, the worst case scenario for your patch is that a hostile process
-> allocates large amount of memory and mlocks() one 4K page per 64K chunk
-> (this is unlikely in practice I know). The end result is you have many
-> 64KB regions that are now unusable because 4K is pinned in each of them.
+Hm, these things look like they may be related to the suspend/resume problems:
 
-Initially 4k kmalloced tails aren't going to be mapped in
-userland. But let's take the kernel stack that would generate the same
-problem and that is clearly going to pin the whole 64k slab/slub
-page.
++Marking TSC unstable due to: possible TSC halt in C2.
 
-What I think you're missing is that for Nick's worst case to trigger
-with the config_page_shift design, you would need the _whole_ ram to
-be _at_least_once_ allocated completely in kernel stacks. If the whole
-100% of ram wouldn't go allocated in slub as a pure kernel stack, such
-a scenario could never materialize.
-
-With the SGI design + defrag, Nick's scenario can instead happen with
-only total_ram/64k kernel stacks allocated.
-
-The the problem with the slub fragmentation isn't a new problem, it
-happens in today kernels as well and at least the slab by design is
-meant to _defrag_ internally. So it's practically already solved and
-it provides some guarantee unlike the buddy allocator.
-
-> If it's my fault, sorry about that. It wasn't my intention.
-
-It's not the fault of anyone, I simply didn't push too hard towards my
-agenda for the reasons I just said, but I used any given opportunity
-to discuss it.
-
-With on-topic I meant not talking about it during the other topics,
-like mmap_sem or RCU with radix tree lock ;)
-
-> heh. Well we need to come to some sort of conclusion here or this will
-> go around the merri-go-round till we're all bald.
-
-Well, I only meant I'm still free to disagree if I think there's a
-better way. All SGI has provided so far is data to show that their I/O
-subsystem is much faster if the data is physically contiguous in ram
-(ask Linus if you want more details, or better don't ask). That's not
-very interesting data for my usages and with my hardware, and I guess
-it's more likely that config_page_shift will produce interesting
-numbers than their patch on my possible usage cases, but we'll never
-know until both are finished.
-
-> heh, I suggested printing the warning because I knew it had this
-> problem. The purpose in my mind was to see how far the design could be
-> brought before fs-block had to fill in the holes.
-
-Indeed!
-
-> I am still failing to see what happens when there are pagetable pages,
-> slab objects or mlocked 4k pages pinning the 64K pages and you need to
-> allocate another 64K page for the filesystem. I *think* you deadlock in
-> a similar fashion to Christoph's approach but the shape of the problem
-> is different because we are dealing with internal instead of external
-> fragmentation. Am I wrong?
-
-pagetables aren't the issue. They should be still pre-allocated in
-page_size chunks. The 4k entries with 64k page-size are sure not worse
-than a 32byte kmalloc today, the slab by design defragments the
-stuff. There's probably room for improvement in that area even without
-freeing any object by just ordering the list with an rbtree (or better
-an heak like CFS should also use!!) so to always allocate new slabs
-from the most full partial slab, that alone would help a lot probably
-(not sure if slub does anything like that, I'm not fond on slub yet).
-
-> Yes. I just think you have a different worst case that is just as bad.
-
-Disagree here...
-
-> small files (you need something like Shaggy's page tail packing),
-> pagetable pages, pte pages all have to be dealt with. These are the
-> things I think will cause us internal fragmentaiton problems.
-
-Also note that not all users will need to turn on the tail
-packing. We're here talking about features that not all users will
-need anyway.. And we're in the same boat as ppc64, no difference.
-
-Thanks!
++Clocksource tsc unstable (delta = -458965792 ns)
