@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763474AbXIKLl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763553AbXIKLnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763474AbXIKLl7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 07:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbXIKLlw
+	id S1763553AbXIKLnh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 07:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbXIKLn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 07:41:52 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:45688 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752560AbXIKLlv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 07:41:51 -0400
-Message-ID: <46E67EFD.2040902@grupopie.com>
-Date: Tue, 11 Sep 2007 12:41:49 +0100
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Tue, 11 Sep 2007 07:43:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35339 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754210AbXIKLn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 07:43:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [PATCH] Fix failure to resume from initrds.
+Date: Tue, 11 Sep 2007 13:55:06 +0200
+User-Agent: KMail/1.9.5
+Cc: nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200709111354.25689.nigel@nigel.suspend2.net> <200709111304.23263.rjw@sisk.pl> <200709112127.58597.ncunningham@crca.org.au>
+In-Reply-To: <200709112127.58597.ncunningham@crca.org.au>
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] video: uvesafb: Add X86 dependency.
-References: <20070911081752.GA19495@linux-sh.org>
-In-Reply-To: <20070911081752.GA19495@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709111355.07369.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> uvesafb is x86-specific, reflect that in the Kconfig.
+On Tuesday, 11 September 2007 13:27, Nigel Cunningham wrote:
+> Hi.
+> 
+> On Tuesday 11 September 2007 21:04:22 Rafael J. Wysocki wrote:
+> > On Tuesday, 11 September 2007 05:54, Nigel Cunningham wrote:
+> > > Hi all.
+> > > 
+> > > Commit 831441862956fffa17b9801db37e6ea1650b0f69 (Freezer: make kernel 
+> threads
+> > > nonfreezable by default) breaks freezing when attempting to resume from an
+> > > initrd, because the init (which is freezeable) spins while waiting for 
+> another
+> > > thread to run /linuxrc, but doesn't check whether it has been told to 
+> enter
+> > > the refrigerator.
+> > 
+> > Hm.
+> > 
+> > I use a resume from an initrd on a regular basis and it works without the 
+> patch
+> > below.
+> > 
+> > I think we need to investigate what happens in your test case a bit.
+> 
+> Ah. That makes me realise that I see that too - my AMD64 uniprocessor laptop 
+> didn't need the patch (guess that's why I didn't notice the need and ack'd 
+> the patch). But my x86 SMP machine... it needs this. I'll see if they're 
+> running on different processors.
 
-Hummm... uvesafb _shouldn't_ be x86 specific. At least according to 
-their page [1] where it says: "works on non-x86 systems".
+Well, strange.  My x86_64 SMP machines don't need the patch too.
 
-Uvesafb uses a x86 emulator in userspace to run code from the video card 
-ROM, so it should work on any PCI system where we can access the video 
-card ROM and can emulate the hardware used by the ROM code.
-
-Why do you say that it's x86 specific? Am I missing something?
-
--- 
-Paulo Marques - www.grupopie.com
-
-"You're just jealous because the voices only talk to me."
-
-[1] http://dev.gentoo.org/~spock/projects/uvesafb/
+Greetings,
+Rafael
