@@ -1,46 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762984AbXIKIlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965829AbXIKIsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762984AbXIKIlf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 04:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761413AbXIKIl0
+	id S965829AbXIKIsb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 04:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762166AbXIKIsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 04:41:26 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3238 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759348AbXIKIlZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 04:41:25 -0400
-Date: Tue, 11 Sep 2007 16:40:58 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: Bob Gilligan <gilligan@vyatta.com>, linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: [PATCH] crypto: blkcipher_get_spot() handling of buffer at end of page
-Message-ID: <20070911084058.GA4469@gondor.apana.org.au>
-References: <5562608.649291189210157514.JavaMail.root@tahiti.vyatta.com> <20070908041423.GA8961@gondor.apana.org.au> <20070910075829.GA25851@gondor.apana.org.au> <200709102146.47655.ioe-lkml@rameria.de>
+	Tue, 11 Sep 2007 04:48:22 -0400
+Received: from mo32.po.2iij.net ([210.128.50.17]:1310 "EHLO mo32.po.2iij.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762011AbXIKIsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 04:48:22 -0400
+Date: Tue, 11 Sep 2007 17:48:04 +0900
+From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: yoichi_yuasa@tripeaks.co.jp, rpurdie@rpsys.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] leds: add #include <linux/spinlock_types.h> to
+ include/linux/leds.h for rwlock_t
+Message-Id: <20070911174804.2c4949a7.yoichi_yuasa@tripeaks.co.jp>
+In-Reply-To: <20070910220423.43e0a4d9.akpm@linux-foundation.org>
+References: <20070904162345.30e82bc8.yoichi_yuasa@tripeaks.co.jp>
+	<20070910220423.43e0a4d9.akpm@linux-foundation.org>
+Organization: TriPeaks Corporation
+X-Mailer: Sylpheed version 1.0.4 (GTK+ 1.2.10; i386-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709102146.47655.ioe-lkml@rameria.de>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 10, 2007 at 09:46:46PM +0200, Ingo Oeser wrote:
->
-> What about using max() for this to make your intention obvious?
+On Mon, 10 Sep 2007 22:04:23 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Tue, 4 Sep 2007 16:23:45 +0900 Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp> wrote:
 > 
-> static inline u8 *blkcipher_get_spot(u8 *start, unsigned int len)
-> {
-> 	u8 *end_page = (u8 *)(((unsigned long)(start + len - 1)) & PAGE_MASK); 
-> 	return max(start, end_page);
-> }
+> > 
+> > This patch has added #include <linux/spinlock_types.h> to include/linux/leds.h for rwlock_t.
+> > 
+> > Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+> > 
+> > diff -pruN -X generic/Documentation/dontdiff generic-orig/include/linux/leds.h generic/include/linux/leds.h
+> > --- generic-orig/include/linux/leds.h	2007-09-04 14:59:51.334686250 +0900
+> > +++ generic/include/linux/leds.h	2007-09-04 14:56:10.676896000 +0900
+> > @@ -13,6 +13,7 @@
+> >  #define __LINUX_LEDS_H_INCLUDED
+> >  
+> >  #include <linux/list.h>
+> > +#include <linux/spinlock_types.h>
+> >  
+> >  struct device;
+> >  /*
+> 
+> I think spinlock_types.h is more an internal implementation detail, and
+> that leds.h should be including plain old <linux/spinlock.h>.  Does that
+> change also fix whatever build error you were seeing?
 
-Yes that looks sane.  Could you please send a patch?
+Yes it does.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Yoichi
+
+---
+
+This patch has added #include <linux/spinlock.h> to include/linux/leds.h for rwlock_t.
+
+Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+
+diff -pruN -X generic/Documentation/dontdiff generic-orig/include/linux/leds.h generic/include/linux/leds.h
+--- generic-orig/include/linux/leds.h	2007-09-11 15:32:22.723667750 +0900
++++ generic/include/linux/leds.h	2007-09-11 15:28:20.696542000 +0900
+@@ -13,6 +13,7 @@
+ #define __LINUX_LEDS_H_INCLUDED
+ 
+ #include <linux/list.h>
++#include <linux/spinlock.h>
+ 
+ struct device;
+ /*
