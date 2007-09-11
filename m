@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762774AbXIKLMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763044AbXIKLOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762774AbXIKLMd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 07:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbXIKLM0
+	id S1763044AbXIKLOR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 07:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbXIKLOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 07:12:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35201 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754634AbXIKLMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 07:12:25 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: clockevents: fix resume logic
-Date: Tue, 11 Sep 2007 13:23:55 +0200
-User-Agent: KMail/1.9.5
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Len Brown <lenb@kernel.org>
-References: <200707220159.l6M1xBgH001236@hera.kernel.org> <1189502164.6262.7.camel@chaos> <20070911033106.91e240df.akpm@linux-foundation.org>
-In-Reply-To: <20070911033106.91e240df.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709111323.56030.rjw@sisk.pl>
+	Tue, 11 Sep 2007 07:14:05 -0400
+Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:49127
+	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1760713AbXIKLOF convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 07:14:05 -0400
+Date: Tue, 11 Sep 2007 04:13:50 -0700 (PDT)
+Message-Id: <20070911.041350.70219297.davem@davemloft.net>
+To: kovedi@gmail.com
+Cc: linux-kernel@vger.kernel.org, stable-bounces@kernel.org,
+       davem@sunset.davemloft.net
+Subject: Re: [Sparc64 BUG] hangup under booting 2.6.22.X whith Sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <406fe6c90709102233m2472e6c4h7d329a3f64692645@mail.gmail.com>
+References: <406fe6c90709100442j1ae0ef79v3188eb10b8be451b@mail.gmail.com>
+	<20070910.053642.71114977.davem@davemloft.net>
+	<406fe6c90709102233m2472e6c4h7d329a3f64692645@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 11 September 2007 12:31, Andrew Morton wrote:
-> On Tue, 11 Sep 2007 11:16:04 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+From: "Kövedi_Krisztián" <kovedi@gmail.com>
+Date: Tue, 11 Sep 2007 07:33:13 +0200
+
+> thanks, we find one kernel panic under initailizin the pci deveces
 > 
-> > On Tue, 2007-09-11 at 01:35 -0700, Andrew Morton wrote:
-> > > On Tue, 11 Sep 2007 01:20:05 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > On Tue, 11 Sep 2007 09:47:20 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
-> > > > 
-> > > > > On Tue, 2007-09-11 at 09:23 +0200, Thomas Gleixner wrote:
-> > > > > > > I went back to the original patch which I sent to Linus and it matches
-> > > > > > > 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6.  So all I can think is that there
-> > > > > > > must have been something else in the tree which I tested which fixed the
-> > > > > > > bug which 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6 introduced.  argh.
-> > > > > > > 
-> > > > > > > Can you think what would cause the symptoms which I described?  
-> > > > > > 
-> > > > > > It seems that time is not updated. Timer interrupt not active or some
-> > > > > > other odd thing. I figure out what's going on when I find a box which
-> > > > > > exposes the problem.
-> > > > 
-> > > > 2.6.22-rc6-mm1's git-acpi.patch contains something which fixes this bug. 
-> > > 
-> > > Len's current tree fixes it too.
+> hier is the dmesg with -p:
 
-Do you mean this one:
+Thanks, we're getting closer to figuring out the cause,
+but we need some more information.
 
-http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git
+Can you send me the output of "/usr/sbin/prtconf -pv"
+from a working boot?  Thanks!
