@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934118AbXIKVMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764970AbXIKVO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934118AbXIKVMo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 17:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762543AbXIKVMe
+	id S1764970AbXIKVO2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 17:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760660AbXIKVOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 17:12:34 -0400
-Received: from 251.4.221.87.dynamic.jazztel.es ([87.221.4.251]:58208 "EHLO
-	traven.no-ip.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758996AbXIKVMd (ORCPT
+	Tue, 11 Sep 2007 17:14:19 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:55465 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759149AbXIKVOS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 17:12:33 -0400
-Date: Tue, 11 Sep 2007 23:12:36 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: perex@suse.cz, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 4/4] Routines for effect processor FX8010: Use
-	list_for_each_entry
-Message-ID: <20070911211236.GJ8592@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	perex@suse.cz, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20070911205632.GF8592@traven>
+	Tue, 11 Sep 2007 17:14:18 -0400
+Date: Tue, 11 Sep 2007 23:14:22 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: x86 merge - a little feedback
+Message-ID: <20070911211422.GU3563@stusta.de>
+References: <20070911201219.GA9674@uranus.ravnborg.org> <200709112138.11247.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070911205632.GF8592@traven>
+In-Reply-To: <200709112138.11247.ak@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Routines for effect processor FX8010: Use list_for_each_entry instead
-of list_for_each
+On Tue, Sep 11, 2007 at 09:38:10PM +0100, Andi Kleen wrote:
+>...
+> In the end it won't make much difference where the files are located
+> (although I frankly don't see the advantage of this intrusive move).
+> 
+> You always have to at least compile test both if you change one and I doubt 
+> most  people will be able to avoid this no matter how the Makefile looks
+> or where the files are. 
+>...
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+The important point is:
 
---
+People do not expect code under arch/i386/ to be used by code under 
+arch/x86_64/ and vice versa.
 
-diff --git a/include/sound/emu10k1.h b/include/sound/emu10k1.h
-index 529d0a5..24399a0 100644
---- a/include/sound/emu10k1.h
-+++ b/include/sound/emu10k1.h
-@@ -1408,8 +1408,6 @@ struct snd_emu10k1_fx8010 {
- 	struct snd_emu10k1_fx8010_irq *irq_handlers;
- };
- 
--#define emu10k1_gpr_ctl(n) list_entry(n, struct snd_emu10k1_fx8010_ctl, list)
--
- struct snd_emu10k1_midi {
- 	struct snd_emu10k1 *emu;
- 	struct snd_rawmidi *rmidi;
-diff --git a/sound/pci/emu10k1/emufx.c b/sound/pci/emu10k1/emufx.c
-index 7206c0f..bf23c3a 100644
---- a/sound/pci/emu10k1/emufx.c
-+++ b/sound/pci/emu10k1/emufx.c
-@@ -642,10 +642,8 @@ snd_emu10k1_look_for_ctl(struct snd_emu10k1 *emu, struct snd_ctl_elem_id *id)
- {
- 	struct snd_emu10k1_fx8010_ctl *ctl;
- 	struct snd_kcontrol *kcontrol;
--	struct list_head *list;
--	
--	list_for_each(list, &emu->fx8010.gpr_ctl) {
--		ctl = emu10k1_gpr_ctl(list);
-+
-+	list_for_each_entry(ctl, &emu->fx8010.gpr_ctl, list) {
- 		kcontrol = ctl->kcontrol;
- 		if (kcontrol->id.iface == id->iface &&
- 		    !strcmp(kcontrol->id.name, id->name) &&
-@@ -895,14 +893,12 @@ static int snd_emu10k1_list_controls(struct snd_emu10k1 *emu,
- 	struct snd_emu10k1_fx8010_control_gpr *gctl;
- 	struct snd_emu10k1_fx8010_ctl *ctl;
- 	struct snd_ctl_elem_id *id;
--	struct list_head *list;
- 
- 	gctl = kmalloc(sizeof(*gctl), GFP_KERNEL);
- 	if (! gctl)
- 		return -ENOMEM;
- 
--	list_for_each(list, &emu->fx8010.gpr_ctl) {
--		ctl = emu10k1_gpr_ctl(list);
-+	list_for_each_entry(ctl, &emu->fx8010.gpr_ctl, list) {
- 		total++;
- 		if (icode->gpr_list_controls &&
- 		    i < icode->gpr_list_control_count) {
+That regularly results in people sending patches that don't compile on 
+the other architecture.
 
+With one architecture it's much more obvious that the code is shared.
+
+> -Andi
+
+cu
+Adrian
 
 -- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
 
-      El trabajo es el refugio de los que no tienen nada que hacer
-                            (Oscar Wilde)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
