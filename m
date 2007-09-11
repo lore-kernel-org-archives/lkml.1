@@ -1,39 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761770AbXIKWFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759811AbXIKWGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761770AbXIKWFz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 18:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbXIKWFr
+	id S1759811AbXIKWGW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 18:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761702AbXIKWFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 18:05:47 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:32842 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751035AbXIKWFq (ORCPT
+	Tue, 11 Sep 2007 18:05:55 -0400
+Received: from pne-smtpout4-sn1.fre.skanova.net ([81.228.11.168]:56199 "EHLO
+	pne-smtpout4-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761438AbXIKWFx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 18:05:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=sNpEaUOBwdLqhaZScbVCJTA+04OvIPHMcY+pZDS38WnWXgIam5qTU2l6D+3L1yQq+qGi2N9XDMlJb3EF/u6ONrlSfgIeNDxqBnUWD8cH6gHd2V5LRlqw5ryQaGsuctMLWAOEIKB2bMcvkVVi8Ftyd14mVQGStQO1C0tmFY+rybs=
-Message-ID: <8b67d60709111505u61771a1do74c82a55430ec214@mail.gmail.com>
-Date: Tue, 11 Sep 2007 23:05:44 +0100
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net
-Subject: time_after - what on earth???
-Cc: "Paul Mundt" <lethal@linux-sh.org>
+	Tue, 11 Sep 2007 18:05:53 -0400
+Date: Wed, 12 Sep 2007 01:05:46 +0300
+From: Sami Farin <safari-kernel@safari.iki.fi>
+To: Lee Revell <rlrevell@joe-job.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       jgarzik <jgarzik@pobox.com>
+Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
+Message-ID: <20070911220545.stsrosz56s64376n@m.safari.iki.fi>
+Mail-Followup-To: Lee Revell <rlrevell@joe-job.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	lkml <linux-kernel@vger.kernel.org>,
+	akpm <akpm@linux-foundation.org>, jgarzik <jgarzik@pobox.com>
+References: <20070911101644.cd3f641f.randy.dunlap@oracle.com> <1189532202.21778.84.camel@twins> <75b66ecd0709111138xb5f6120qee40345378b188eb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="gwjewavp5n33fiot"
 Content-Disposition: inline
+In-Reply-To: <75b66ecd0709111138xb5f6120qee40345378b188eb@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-09-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK, why does this line occasionally return true:
 
-	if ((maple_dev->interval > 0) && (jiffies >maple_dev->when))
+--gwjewavp5n33fiot
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-while this one never does (no other changes made):
+On Tue, Sep 11, 2007 at 14:38:13 -0400, Lee Revell wrote:
+> You can also diff -Nru old.c new.c | xclip, select Preformat, then
+> paste with the middle button.
 
-if  ((maple_dev->interval > 0) && (time_after(jiffies, maple_dev->when)))
+mutt does not come with text editor, so
+I'd like to add note about vim:
+
+If using xclip, type command
+:set paste
+before middle button or shift-insert or use
+:r filename
+
+=2E..if you want to include patch inline.
+(a)ttach works fine without "set paste".
+
+--=20
+Do what you love because life is too short for anything else.
 
 
-Is this a gcc issue or what?
+--gwjewavp5n33fiot
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
+
+iD8DBQFG5xE5MCYCLUwuV18RApyEAJwJWdwW3nzqWmhOUcSzN4CYmn90awCdGk35
+Cf/aXrnmELduvWXymNS1eOA=
+=6P5Y
+-----END PGP SIGNATURE-----
+
+--gwjewavp5n33fiot--
