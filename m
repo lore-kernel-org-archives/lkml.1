@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762602AbXIKGGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932714AbXIKGGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762602AbXIKGGS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761716AbXIKGEf
+	id S932714AbXIKGGw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761153AbXIKGEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:04:35 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56446 "EHLO
+	Tue, 11 Sep 2007 02:04:38 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56447 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761153AbXIKGEa (ORCPT
+	with ESMTP id S1761180AbXIKGEa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Sep 2007 02:04:30 -0400
-Message-Id: <20070911060426.455185895@sgi.com>
+Message-Id: <20070911060426.889989352@sgi.com>
 References: <20070911060349.993975297@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 10 Sep 2007 23:03:55 -0700
+Date: Mon, 10 Sep 2007 23:03:57 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: torvalds@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -24,122 +24,105 @@ Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
        Fengguang Wu <fengguang.wu@gmail.com>
 Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com, hugh@veritas.com
 Cc: joern@lazybastard.org
-Subject: [05/41] Use page_cache_xxx in mm/truncate.c
-Content-Disposition: inline; filename=0005-Use-page_cache_xxx-in-mm-truncate.c.patch
+Subject: [07/41] Use page_cache_xxx in mm/filemap_xip.c
+Content-Disposition: inline; filename=0007-Use-page_cache_xxx-in-mm-filemap_xip.c.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use page_cache_xxx in mm/truncate.c
+Use page_cache_xxx in mm/filemap_xip.c
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- mm/truncate.c |   35 ++++++++++++++++++-----------------
- 1 files changed, 18 insertions(+), 17 deletions(-)
+ mm/filemap_xip.c |   28 ++++++++++++++--------------
+ 1 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/mm/truncate.c b/mm/truncate.c
-index bf8068d..8c3d32e 100644
---- a/mm/truncate.c
-+++ b/mm/truncate.c
-@@ -45,9 +45,10 @@ void do_invalidatepage(struct page *page, unsigned long offset)
- 		(*invalidatepage)(page, offset);
+diff --git a/mm/filemap_xip.c b/mm/filemap_xip.c
+index ba6892d..5237e53 100644
+--- a/mm/filemap_xip.c
++++ b/mm/filemap_xip.c
+@@ -61,24 +61,24 @@ do_xip_mapping_read(struct address_space *mapping,
+ 
+ 	BUG_ON(!mapping->a_ops->get_xip_page);
+ 
+-	index = *ppos >> PAGE_CACHE_SHIFT;
+-	offset = *ppos & ~PAGE_CACHE_MASK;
++	index = page_cache_index(mapping, *ppos);
++	offset = page_cache_offset(mapping, *ppos);
+ 
+ 	isize = i_size_read(inode);
+ 	if (!isize)
+ 		goto out;
+ 
+-	end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
++	end_index = page_cache_index(mapping, isize - 1);
+ 	for (;;) {
+ 		struct page *page;
+ 		unsigned long nr, ret;
+ 
+ 		/* nr is the maximum number of bytes to copy from this page */
+-		nr = PAGE_CACHE_SIZE;
++		nr = page_cache_size(mapping);
+ 		if (index >= end_index) {
+ 			if (index > end_index)
+ 				goto out;
+-			nr = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
++			nr = page_cache_next(mapping, size - 1) + 1;
+ 			if (nr <= offset) {
+ 				goto out;
+ 			}
+@@ -117,8 +117,8 @@ do_xip_mapping_read(struct address_space *mapping,
+ 		 */
+ 		ret = actor(desc, page, offset, nr);
+ 		offset += ret;
+-		index += offset >> PAGE_CACHE_SHIFT;
+-		offset &= ~PAGE_CACHE_MASK;
++		index += page_cache_index(mapping, offset);
++		offset = page_cache_offset(mapping, offset);
+ 
+ 		if (ret == nr && desc->count)
+ 			continue;
+@@ -131,7 +131,7 @@ no_xip_page:
+ 	}
+ 
+ out:
+-	*ppos = ((loff_t) index << PAGE_CACHE_SHIFT) + offset;
++	*ppos = page_cache_pos(mapping, index, offset);
+ 	if (filp)
+ 		file_accessed(filp);
  }
+@@ -220,7 +220,7 @@ static int xip_file_fault(struct vm_area_struct *area, struct vm_fault *vmf)
  
--static inline void truncate_partial_page(struct page *page, unsigned partial)
-+static inline void truncate_partial_page(struct address_space *mapping,
-+			struct page *page, unsigned partial)
+ 	/* XXX: are VM_FAULT_ codes OK? */
+ 
+-	size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
++	size = page_cache_next(mapping, i_size_read(inode));
+ 	if (vmf->pgoff >= size)
+ 		return VM_FAULT_SIGBUS;
+ 
+@@ -289,9 +289,9 @@ __xip_file_write(struct file *filp, const char __user *buf,
+ 		unsigned long offset;
+ 		size_t copied;
+ 
+-		offset = (pos & (PAGE_CACHE_SIZE -1)); /* Within page */
+-		index = pos >> PAGE_CACHE_SHIFT;
+-		bytes = PAGE_CACHE_SIZE - offset;
++		offset = page_cache_offset(mapping, pos); /* Within page */
++		index = page_cache_index(mapping, pos);
++		bytes = page_cache_size(mapping) - offset;
+ 		if (bytes > count)
+ 			bytes = count;
+ 
+@@ -405,8 +405,8 @@ EXPORT_SYMBOL_GPL(xip_file_write);
+ int
+ xip_truncate_page(struct address_space *mapping, loff_t from)
  {
--	zero_user_segment(page, partial, PAGE_CACHE_SIZE);
-+	zero_user_segment(page, partial, page_cache_size(mapping));
- 	if (PagePrivate(page))
- 		do_invalidatepage(page, partial);
- }
-@@ -95,7 +96,7 @@ truncate_complete_page(struct address_space *mapping, struct page *page)
- 	if (page->mapping != mapping)
- 		return;
- 
--	cancel_dirty_page(page, PAGE_CACHE_SIZE);
-+	cancel_dirty_page(page, page_cache_size(mapping));
- 
- 	if (PagePrivate(page))
- 		do_invalidatepage(page, 0);
-@@ -157,9 +158,9 @@ invalidate_complete_page(struct address_space *mapping, struct page *page)
- void truncate_inode_pages_range(struct address_space *mapping,
- 				loff_t lstart, loff_t lend)
- {
--	const pgoff_t start = (lstart + PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT;
-+	const pgoff_t start = page_cache_next(mapping, lstart);
- 	pgoff_t end;
--	const unsigned partial = lstart & (PAGE_CACHE_SIZE - 1);
-+	const unsigned partial = page_cache_offset(mapping, lstart);
- 	struct pagevec pvec;
- 	pgoff_t next;
- 	int i;
-@@ -167,8 +168,9 @@ void truncate_inode_pages_range(struct address_space *mapping,
- 	if (mapping->nrpages == 0)
- 		return;
- 
--	BUG_ON((lend & (PAGE_CACHE_SIZE - 1)) != (PAGE_CACHE_SIZE - 1));
--	end = (lend >> PAGE_CACHE_SHIFT);
-+	BUG_ON(page_cache_offset(mapping, lend) !=
-+				page_cache_size(mapping) - 1);
-+	end = page_cache_index(mapping, lend);
- 
- 	pagevec_init(&pvec, 0);
- 	next = start;
-@@ -194,8 +196,8 @@ void truncate_inode_pages_range(struct address_space *mapping,
- 			}
- 			if (page_mapped(page)) {
- 				unmap_mapping_range(mapping,
--				  (loff_t)page_index<<PAGE_CACHE_SHIFT,
--				  PAGE_CACHE_SIZE, 0);
-+				  page_cache_pos(mapping, page_index, 0),
-+				  page_cache_size(mapping), 0);
- 			}
- 			truncate_complete_page(mapping, page);
- 			unlock_page(page);
-@@ -208,7 +210,7 @@ void truncate_inode_pages_range(struct address_space *mapping,
- 		struct page *page = find_lock_page(mapping, start - 1);
- 		if (page) {
- 			wait_on_page_writeback(page);
--			truncate_partial_page(page, partial);
-+			truncate_partial_page(mapping, page, partial);
- 			unlock_page(page);
- 			page_cache_release(page);
- 		}
-@@ -236,8 +238,8 @@ void truncate_inode_pages_range(struct address_space *mapping,
- 			wait_on_page_writeback(page);
- 			if (page_mapped(page)) {
- 				unmap_mapping_range(mapping,
--				  (loff_t)page->index<<PAGE_CACHE_SHIFT,
--				  PAGE_CACHE_SIZE, 0);
-+				  page_cache_pos(mapping, page->index, 0),
-+				  page_cache_size(mapping), 0);
- 			}
- 			if (page->index > next)
- 				next = page->index;
-@@ -421,9 +423,8 @@ int invalidate_inode_pages2_range(struct address_space *mapping,
- 					 * Zap the rest of the file in one hit.
- 					 */
- 					unmap_mapping_range(mapping,
--					   (loff_t)page_index<<PAGE_CACHE_SHIFT,
--					   (loff_t)(end - page_index + 1)
--							<< PAGE_CACHE_SHIFT,
-+					   page_cache_pos(mapping, page_index, 0),
-+					   page_cache_pos(mapping, end - page_index + 1, 0),
- 					    0);
- 					did_range_unmap = 1;
- 				} else {
-@@ -431,8 +432,8 @@ int invalidate_inode_pages2_range(struct address_space *mapping,
- 					 * Just zap this page
- 					 */
- 					unmap_mapping_range(mapping,
--					  (loff_t)page_index<<PAGE_CACHE_SHIFT,
--					  PAGE_CACHE_SIZE, 0);
-+					  page_cache_pos(mapping, page_index, 0),
-+					  page_cache_size(mapping), 0);
- 				}
- 			}
- 			BUG_ON(page_mapped(page));
+-	pgoff_t index = from >> PAGE_CACHE_SHIFT;
+-	unsigned offset = from & (PAGE_CACHE_SIZE-1);
++	pgoff_t index = page_cache_index(mapping, from);
++	unsigned offset = page_cache_offset(mapping, from);
+ 	unsigned blocksize;
+ 	unsigned length;
+ 	struct page *page;
 -- 
 1.5.2.5
 
