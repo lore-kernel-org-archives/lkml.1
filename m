@@ -1,106 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763275AbXIKKGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763346AbXIKKHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763275AbXIKKGY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 06:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761548AbXIKKGR
+	id S1763346AbXIKKHe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 06:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761548AbXIKKH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 06:06:17 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:40823 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761497AbXIKKGQ convert rfc822-to-8bit (ORCPT
+	Tue, 11 Sep 2007 06:07:26 -0400
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:57716 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752424AbXIKKHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 06:06:16 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx processors.
-Date: Tue, 11 Sep 2007 18:06:10 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C85D61C@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20070907085845.54dc88f8.randy.dunlap@oracle.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx processors.
-Thread-Index: AcfxaBAjIPEfNwO1SxKoveL8mqtGpQC8tOCA
-References: <11891624582950-git-send-email-wei.zhang@freescale.com> <20070907085845.54dc88f8.randy.dunlap@oracle.com>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Cc: <paulus@samba.org>, <shannon.nelson@intel.com>,
-       <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
-       <galak@kernel.crashing.org>,
-       "Zhu Ebony-r57400" <ebony.zhu@freescale.com>,
-       <dan.j.williams@intel.com>
+	Tue, 11 Sep 2007 06:07:25 -0400
+X-Greylist: delayed 1405 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Sep 2007 06:07:25 EDT
+Message-Id: <6.0.0.20.2.20070907113025.024dfbb8@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Tue, 11 Sep 2007 18:31:12 +0900
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: [PATCH] mm: use pagevec to rotate reclaimable page
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
-> --- /dev/null
-> > +++ b/drivers/dma/fsldma.c
-> > @@ -0,0 +1,995 @@
-> 
-> Thanks for using kernel-doc notation.  However, ...
-> 
-> > +/**
-> > + * fsl_dma_alloc_descriptor - Allocate descriptor from 
-> channel's DMA pool.
-> 
-> Function parameters need to be listed & described here.
-> See Documentation/kernel-doc-nano-HOWTO.txt or other source files
-> for examples.
-> 
-> (Applies to all documented function interfaces here.)
+Hi.
+While running some memory intensive load, system response
+deteriorated just after swap-out started.
 
-All right, I'll add full descriptions here. :P
+The cause of this problem is that when a PG_reclaim page is
+moved to the tail of the inactive LRU list in rotate_reclaimable_page(),
+lru_lock spin lock is acquired every page writeback . This deteriorates
+system performance and makes interrupt hold off time longer when
+swap-out started.
 
-> 
-> > + *
-> > + * Return - The descriptor allocated. NULL for failed.
-> > + */
-> > +static struct fsl_desc_sw *fsl_dma_alloc_descriptor(
-> > +					struct fsl_dma_chan *fsl_chan,
-> > +					gfp_t flags)
-> > +{
-> ...
-> > +}
-> 
-> > +/**
-> > + * fsl_chan_xfer_ld_queue -- Transfer the link descriptors 
-> in channel
-> > + *                           ld_queue.
-> 
-> The function's "short description" (unfortunately) must be on only one
-> line.  E.g.:
-> 
->  * fsl_chan_xfer_ld_queue - Transfer link descriptors in 
-> channel ld_queue.
-> 
+Following patch solves this problem. I use pagevec in rotating reclaimable
+pages to mitigate LRU spin lock contention and reduce interrupt
+hold off time.
 
-How about it's length greater than 80?
+I did a test that allocating and touching pages in multiple processes, and
+pinging to the test machine in flooding mode to measure response under
+memory intensive load.
+The test result is:
 
-> > + */
-> > +static void fsl_chan_xfer_ld_queue(struct fsl_dma_chan *fsl_chan)
-> > +{
-> ...
-> > +}
-> 
-> > diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-> > new file mode 100644
-> > index 0000000..05be9ed
-> > --- /dev/null
-> > +++ b/drivers/dma/fsldma.h
-> > @@ -0,0 +1,188 @@
-> > +struct fsl_dma_chan_regs {
-> > +	__mix32	mr;		/* 0x00 - Mode Register */
-> > +	__mix32	sr;		/* 0x04 - Status Register */
-> > +	__mix64	cdar;		/* 0x08 - Cureent descriptor 
-> address register */
-> 
->                                           Current
-> 
+	-2.6.23-rc5
+	--- testmachine ping statistics ---
+	3000 packets transmitted, 3000 received, 0% packet loss, time 53222ms
+	rtt min/avg/max/mdev = 0.074/0.652/172.228/7.176 ms, pipe 11, ipg/ewma 
+17.746/0.092 ms
 
-I'll fix it.
+	-2.6.23-rc5-patched
+	--- testmachine ping statistics ---
+	3000 packets transmitted, 3000 received, 0% packet loss, time 51924ms
+	rtt min/avg/max/mdev = 0.072/0.108/3.884/0.114 ms, pipe 2, ipg/ewma 
+17.314/0.091 ms
 
-Thanks!
-- zw
+Max round-trip-time was improved.
+
+The test machine spec is that 4CPU(3.16GHz, Hyper-threading enabled)
+8GB memory , 8GB swap.
+
+Thanks.
+
+Signed-off-by :Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+
+diff -Nrup linux-2.6.23-rc5.org/include/linux/swap.h 
+linux-2.6.23-rc5/include/linux/swap.h
+--- linux-2.6.23-rc5.org/include/linux/swap.h	2007-09-06 18:44:06.000000000 +0900
++++ linux-2.6.23-rc5/include/linux/swap.h	2007-09-06 18:45:28.000000000 +0900
+@@ -185,6 +185,7 @@ extern void FASTCALL(mark_page_accessed(
+  extern void lru_add_drain(void);
+  extern int lru_add_drain_all(void);
+  extern int rotate_reclaimable_page(struct page *page);
++extern void move_tail_pages(void);
+  extern void swap_setup(void);
+
+  /* linux/mm/vmscan.c */
+diff -Nrup linux-2.6.23-rc5.org/mm/swap.c linux-2.6.23-rc5/mm/swap.c
+--- linux-2.6.23-rc5.org/mm/swap.c	2007-07-09 08:32:17.000000000 +0900
++++ linux-2.6.23-rc5/mm/swap.c	2007-09-06 18:45:28.000000000 +0900
+@@ -93,25 +93,56 @@ void put_pages_list(struct list_head *pa
+  }
+  EXPORT_SYMBOL(put_pages_list);
+
++static void pagevec_move_tail(struct pagevec *pvec)
++{
++	int i;
++	struct zone *zone = NULL;
++	unsigned long flags = 0;
++
++	for (i = 0; i < pagevec_count(pvec); i++) {
++		struct page *page = pvec->pages[i];
++		struct zone *pagezone = page_zone(page);
++
++		if (!PageLRU(page) || !page_count(page))
++			continue;
++
++		if (pagezone != zone) {
++			if (zone)
++				spin_unlock_irqrestore(&zone->lru_lock, flags);
++			zone = pagezone;
++			spin_lock_irqsave(&zone->lru_lock, flags);
++		}
++		if (PageLRU(page) && !PageActive(page) && page_count(page)) {
++			list_move_tail(&page->lru, &zone->inactive_list);
++			__count_vm_event(PGROTATED);
++		}
++	}
++	if (zone)
++		spin_unlock_irqrestore(&zone->lru_lock, flags);
++	pagevec_reinit(pvec);
++}
++
++static DEFINE_PER_CPU(struct pagevec, rotate_pvecs) = { 0, };
++
++void move_tail_pages()
++{
++	struct pagevec *pvec = &per_cpu(rotate_pvecs, get_cpu());
++
++	if (pagevec_count(pvec))
++		pagevec_move_tail(pvec);
++	put_cpu();
++}
++
+  /*
+   * Writeback is about to end against a page which has been marked for immediate
+   * reclaim.  If it still appears to be reclaimable, move it to the tail of the
+- * inactive list.  The page still has PageWriteback set, which will pin it.
+- *
+- * We don't expect many pages to come through here, so don't bother batching
+- * things up.
+- *
+- * To avoid placing the page at the tail of the LRU while PG_writeback is still
+- * set, this function will clear PG_writeback before performing the page
+- * motion.  Do that inside the lru lock because once PG_writeback is cleared
+- * we may not touch the page.
++ * inactive list.
+   *
+   * Returns zero if it cleared PG_writeback.
+   */
+  int rotate_reclaimable_page(struct page *page)
+  {
+-	struct zone *zone;
+-	unsigned long flags;
++	struct pagevec *pvec;
+
+  	if (PageLocked(page))
+  		return 1;
+@@ -122,15 +153,16 @@ int rotate_reclaimable_page(struct page
+  	if (!PageLRU(page))
+  		return 1;
+
+-	zone = page_zone(page);
+-	spin_lock_irqsave(&zone->lru_lock, flags);
+-	if (PageLRU(page) && !PageActive(page)) {
+-		list_move_tail(&page->lru, &zone->inactive_list);
+-		__count_vm_event(PGROTATED);
+-	}
+  	if (!test_clear_page_writeback(page))
+  		BUG();
+-	spin_unlock_irqrestore(&zone->lru_lock, flags);
++
++	if (PageLRU(page) && !PageActive(page) && page_count(page)) {
++		pvec = &get_cpu_var(rotate_pvecs);
++		if (!pagevec_add(pvec, page))
++			pagevec_move_tail(pvec);
++		put_cpu_var(rotate_pvecs);
++	}
++
+  	return 0;
+  }
+
+@@ -315,6 +347,7 @@ void release_pages(struct page **pages,
+   */
+  void __pagevec_release(struct pagevec *pvec)
+  {
++	move_tail_pages();
+  	lru_add_drain();
+  	release_pages(pvec->pages, pagevec_count(pvec), pvec->cold);
+  	pagevec_reinit(pvec);
+diff -Nrup linux-2.6.23-rc5.org/mm/vmscan.c linux-2.6.23-rc5/mm/vmscan.c
+--- linux-2.6.23-rc5.org/mm/vmscan.c	2007-09-06 18:44:06.000000000 +0900
++++ linux-2.6.23-rc5/mm/vmscan.c	2007-09-06 18:45:28.000000000 +0900
+@@ -792,6 +792,7 @@ static unsigned long shrink_inactive_lis
+
+  	pagevec_init(&pvec, 1);
+
++	move_tail_pages();
+  	lru_add_drain();
+  	spin_lock_irq(&zone->lru_lock);
+  	do { 
+
