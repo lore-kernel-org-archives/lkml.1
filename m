@@ -1,112 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762755AbXIKGrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966228AbXIKGs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762755AbXIKGrL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:47:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756462AbXIKGqz
+	id S966228AbXIKGs2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbXIKGsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:46:55 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:47775 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755809AbXIKGqy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 02:46:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=B30tjrxMbNspOlFh2FeCCGP7Sk6bI0HXWsBsSApMuwV8QAyOL6lFAPGOSMcsITNVanThQELB1GeyU3ZC1OrF2M8ixVLPBQhasQ5/VVrnqrQSGVEvXWSP+o4VkJLCafFaic4A2KCdBKbIW1ZYm9IXtAAUUjGgF963E/R33WfUBXc=  ;
-X-YMail-OSG: 0ygZJhgVM1lwOc_ygj3OHuP53YwOC7tEjgEZ3UlgkUCXlSDwZPiLXoCOBUa_f0fG08VM3tb0DcXdDMAFGlLPj44k1FYO05JphyuYYTsBTHYpL44sVJs-
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 7/13] Drain per-cpu lists when high-order allocations fail
-Date: Tue, 11 Sep 2007 01:05:25 +1000
-User-Agent: KMail/1.9.5
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-References: <20070910112011.3097.8438.sendpatchset@skynet.skynet.ie> <20070910112231.3097.53548.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20070910112231.3097.53548.sendpatchset@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Sep 2007 02:48:19 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60461 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754119AbXIKGsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 02:48:18 -0400
+Date: Tue, 11 Sep 2007 08:49:42 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       kbuild devel <kbuild-devel@lists.sourceforge.net>
+Subject: Re: [RFC] kbuild - introduce vdir to make life easier for x86_64
+Message-ID: <20070911064942.GA3663@uranus.ravnborg.org>
+References: <20070910191138.GA31541@uranus.ravnborg.org> <200709110040.41605.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709110105.25544.nickpiggin@yahoo.com.au>
+In-Reply-To: <200709110040.41605.ak@suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 September 2007 21:22, Mel Gorman wrote:
-> Per-cpu pages can accidentally cause fragmentation because they are free,
-> but pinned pages in an otherwise contiguous block.  When this patch is
-> applied, the per-cpu caches are drained after the direct-reclaim is entered
-> if the requested order is greater than 0.  It simply reuses the code used
-> by suspend and hotplug.
+On Tue, Sep 11, 2007 at 12:40:41AM +0200, Andi Kleen wrote:
+> 
+> > The below are the minimal clean-up - a bit more could be done.
+> > 
+> > Comments?
+> 
+> Looks good in principle. My only suggestion would be to name it something
+> differently than vdir. I know that's what GNU make calls it, but it's still
+> pretty cryptic. How about just fallback-dir ? 
+fallback-dir is better.
+vdir came from make's vpath but then very few knows about vpath anyway so that 
+was not the best source of inspiration.
 
-Does this help? I have a more general version which could go in
-instead (independently of the anti fragmentation patches).
+ 
+> Also what would be nice (I don't know if it's doable in make) would
+> be a separate variable (e.g. other-obj-... := ) that contains the fallback
+> names and that is double checked against the fallback directory.
+My first attempt was along these lines but I dropped it for two reasons:
+1) Mixing obj-y and other-obj-y assinment broke all assumptions on linkorder.
+   It would not be possible to link objexts in order a1.o, a2.o, a3.o if a1.o
+   and a3.o were assigned to obj-y and a2.o was assigned to other-obj-y. 
 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
->
->  mm/page_alloc.c |   24 +++++++++++++++++++++++-
->  1 file changed, 23 insertions(+), 1 deletion(-)
->
-> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff
-> linux-2.6.23-rc5-006-group-short-lived-and-reclaimable-kernel-allocations/m
->m/page_alloc.c
-> linux-2.6.23-rc5-007-drain-per-cpu-lists-when-high-order-allocations-fail/m
->m/page_alloc.c ---
-> linux-2.6.23-rc5-006-group-short-lived-and-reclaimable-kernel-allocations/m
->m/page_alloc.c	2007-09-02 16:20:31.000000000 +0100 +++
-> linux-2.6.23-rc5-007-drain-per-cpu-lists-when-high-order-allocations-fail/m
->m/page_alloc.c	2007-09-02 16:20:48.000000000 +0100 @@ -852,6 +852,7 @@ void
-> mark_free_pages(struct zone *zone)
->  	}
->  	spin_unlock_irqrestore(&zone->lock, flags);
->  }
-> +#endif /* CONFIG_PM */
->
->  /*
->   * Spill all of this CPU's per-cpu pages back into the buddy allocator.
-> @@ -864,7 +865,25 @@ void drain_local_pages(void)
->  	__drain_pages(smp_processor_id());
->  	local_irq_restore(flags);
->  }
-> -#endif /* CONFIG_HIBERNATION */
-> +
-> +void smp_drain_local_pages(void *arg)
-> +{
-> +	drain_local_pages();
-> +}
-> +
-> +/*
-> + * Spill all the per-cpu pages from all CPUs back into the buddy allocator
-> + */
-> +void drain_all_local_pages(void)
-> +{
-> +	unsigned long flags;
-> +
-> +	local_irq_save(flags);
-> +	__drain_pages(smp_processor_id());
-> +	local_irq_restore(flags);
-> +
-> +	smp_call_function(smp_drain_local_pages, NULL, 0, 1);
-> +}
->
->  /*
->   * Free a 0-order page
-> @@ -1452,6 +1471,9 @@ nofail_alloc:
->
->  	cond_resched();
->
-> +	if (order != 0)
-> +		drain_all_local_pages();
-> +
->  	if (likely(did_some_progress)) {
->  		page = get_page_from_freelist(gfp_mask, order,
->  						zonelist, alloc_flags);
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+2) It needed a decent amouth of unreadable gmake-foo to introduce
+   a second variable. And the learning curve for kbuild internals are alreay
+   to steep so I try to avoid additional complexity.
+
+I'm a bit reluctant to just enable the fallback-dir functionality.
+There is no point in adding this for the sake of x86 if we merge
+i386 and x86_64 a few days after.
+
+	Sam
