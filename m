@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbXIKOcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755062AbXIKOdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710AbXIKOcv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 10:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbXIKOcp
+	id S1755062AbXIKOdp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 10:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbXIKOdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 10:32:45 -0400
-Received: from smtp2a.orange.fr ([80.12.242.139]:33527 "EHLO smtp2a.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751451AbXIKOco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 10:32:44 -0400
-X-ME-UUID: 20070911143242514.7DA6C700008A@mwinf2a14.orange.fr
-Subject: Re: r8169: instant reboot and interface renaming
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070911153229.2dc8cc03@laptopd505.fenrus.org>
-References: <1189514631.20015.108.camel@frg-rhel40-em64t-04>
-	 <20070911153229.2dc8cc03@laptopd505.fenrus.org>
-Content-Type: text/plain
-Date: Tue, 11 Sep 2007 16:32:39 +0200
-Message-Id: <1189521159.20015.114.camel@frg-rhel40-em64t-04>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Sep 2007 10:33:38 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:62802 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752241AbXIKOdh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 10:33:37 -0400
+Message-ID: <46E6A737.6080805@anagramm.de>
+Date: Tue, 11 Sep 2007 16:33:27 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Dag-Erling_Sm=F8rgrav?= <des@linpro.no>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFC+PATCH] RTC calibration
+References: <ujrmyvt2tyy.fsf@false.linpro.no>
+In-Reply-To: <ujrmyvt2tyy.fsf@false.linpro.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX19kWxAZpp+FX+Ma9JyuA7ZgsvgBoSzzR5qay0E
+ 8kn2FcxADLAOa2sNiOmKRUnvqMEGg9X+mLmEZN7YpX6odah8WH
+ aEhDx75pI4CpeO0c0RKqw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-11 at 15:32 +0100, Arjan van de Ven wrote:
-> this is userspace doing "eth name by MAC address", your new card has a
-> different MAC address than your old card, the userspace application
-> tries to bind each name uniquely to an ethX name so it keeps eth0 free
-> for your old card.
-> 
-> If you have a RH/Fedora like distribution, you can hack out the mac
-> address from the /etc/sysconfig/network-scripts/ifcfg-eth0 file
+Dag-Erling Smørgrav schrieb:
+ > The STMicroelectronics M41T11 is an RTC chip which is similar in most
+ > ways to the Dallas/Maxim DS1307 or DS1337, except that it supports
+ > software calibration:
+ >
+ > http://www.st.com/stonline/books/pdf/docs/6103.pdf
+ >
+ > I want to use this calibration feature [...]
+ > [...]
+ > In order to access this from userland, I've added two ioctls,
+ > (RTC_SPEED_UP and RTC_SPEED_DOWN) with corresponding functions in
+ > drivers/rtc/interface.c (rtc_speed_up() and rtc_speed_down()) and
+ > corresponding slots in rtc_class_ops (speed_up and speed_down).
 
-Thanks, that was it. For those who are interested, under debian
-it's /etc/udev/rules.d/z25_persistent-net.rules
+It looks odd to me to do only differential up and down adjustments.
+I would prefer read_calibration_register and write_calibration_register
+access and let the userspace decide how much it wants to
+increment/decrement the register.
 
-> > The other problem I have is, as soon as I do
-> > ifconfig eth3 up
-> > the machine is rebooting (like if I pressed the reset button).
-> > Adding "acpi=noirq" to the boot cmdline seems to solve this, but
-> > I wonder if it's the proper
-> > solution ?
-> 
-> it's obviously not the proper solution :)
-> it's odd though; it could entirely be a bios bug. you may want to file
-> a bug at bugzilla.kernel.org against the acpi component, and make sure
-> you include the full dmesg of a boot at least...
+Or - do you adjust your date also after you changed your battery
+with +1567days,7h,34m,12sec instead of telling it's 11th Sept. 2007, 4:33pm ?
 
-OK, filed http://bugzilla.kernel.org/show_bug.cgi?id=9007
+Regards,
 
-Thanks,
-	Xav
-
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
 
