@@ -1,43 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbXIKOlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbXIKOm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523AbXIKOlR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 10:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbXIKOlI
+	id S1755288AbXIKOm6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 10:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbXIKOms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 10:41:08 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43392 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752014AbXIKOlH (ORCPT
+	Tue, 11 Sep 2007 10:42:48 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:9282 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751324AbXIKOmr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 10:41:07 -0400
-Date: Tue, 11 Sep 2007 07:39:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Nigel Cunningham <ncunningham@crca.org.au>, nigel@suspend2.net,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix failure to resume from initrds.
-In-Reply-To: <200709111523.33968.rjw@sisk.pl>
-Message-ID: <alpine.LFD.0.999.0709110736440.16478@woody.linux-foundation.org>
-References: <200709111354.25689.nigel@nigel.suspend2.net> <200709111355.07369.rjw@sisk.pl>
- <200709111512.35348.rjw@sisk.pl> <200709111523.33968.rjw@sisk.pl>
+	Tue, 11 Sep 2007 10:42:47 -0400
+Message-ID: <e6c711510709110742v4d2da644ha63b0a6d47c1230b@mail.gmail.com>
+Date: Tue, 11 Sep 2007 07:42:46 -0700
+From: "Ed Swierk" <eswierk@arastra.com>
+To: netdev@vger.kernel.org, maxk@qualcomm.com
+Subject: [PATCH] Configurable tap interface MTU
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_6287_13624360.1189521766884"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_6287_13624360.1189521766884
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+This patch makes it possible to change the MTU on a tap interface.
+Increasing the MTU beyond the 1500-byte default is useful for
+applications that interoperate with Ethernet devices supporting jumbo
+frames.
 
-On Tue, 11 Sep 2007, Rafael J. Wysocki wrote:
-> > Anyway, yes, init is freezable, but should it be?
-> > 
-> > I mean, shouldn't we rather add PF_NOFREEZE to kernel_init()?
-> 
-> Argh, no.  PF_NOFREEZE is inherited by the children.
+The patch caps the MTU somewhat arbitrarily at 16000 bytes. This is
+slightly lower than the value used by the e1000 driver, so it seems
+like a safe upper limit.
 
-Umm. All of this is __init code - why is freezability even an issue? We 
-shouldn't be suspending at this point anyway afaik..
+Signed-off-by: Ed Swierk <eswierk@arastra.com>
 
-Is suspend2 perhaps doing something different here? 
+---
 
-		Linus
+------=_Part_6287_13624360.1189521766884
+Content-Type: application/octet-stream; name="tap-change-mtu.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="tap-change-mtu.patch"
+X-Attachment-Id: f_f6giijh1
+
+SW5kZXg6IGxpbnV4LTIuNi4yMi42L2RyaXZlcnMvbmV0L3R1bi5jCj09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxp
+bnV4LTIuNi4yMi42Lm9yaWcvZHJpdmVycy9uZXQvdHVuLmMKKysrIGxpbnV4LTIuNi4yMi42L2Ry
+aXZlcnMvbmV0L3R1bi5jCkBAIC0xNzEsNiArMTcxLDE4IEBAIHR1bl9uZXRfbWNsaXN0KHN0cnVj
+dCBuZXRfZGV2aWNlICpkZXYpCiAJfQogfQogCisjZGVmaW5lIE1JTl9NVFUgNjgKKyNkZWZpbmUg
+TUFYX01UVSAxNjAwMAorCitzdGF0aWMgaW50Cit0dW5fbmV0X2NoYW5nZV9tdHUoc3RydWN0IG5l
+dF9kZXZpY2UgKmRldiwgaW50IG5ld19tdHUpCit7CisJaWYgKG5ld19tdHUgPCBNSU5fTVRVIHx8
+IG5ld19tdHUgPiBNQVhfTVRVKQorCQlyZXR1cm4gLUVJTlZBTDsKKwlkZXYtPm10dSA9IG5ld19t
+dHU7CisJcmV0dXJuIDA7Cit9CisKIHN0YXRpYyBzdHJ1Y3QgbmV0X2RldmljZV9zdGF0cyAqdHVu
+X25ldF9zdGF0cyhzdHJ1Y3QgbmV0X2RldmljZSAqZGV2KQogewogCXN0cnVjdCB0dW5fc3RydWN0
+ICp0dW4gPSBuZXRkZXZfcHJpdihkZXYpOwpAQCAtMjAwLDYgKzIxMiw3IEBAIHN0YXRpYyB2b2lk
+IHR1bl9uZXRfaW5pdChzdHJ1Y3QgbmV0X2RldmkKIAkJZGV2LT5zZXRfbXVsdGljYXN0X2xpc3Qg
+PSB0dW5fbmV0X21jbGlzdDsKIAogCQlldGhlcl9zZXR1cChkZXYpOworCQlkZXYtPmNoYW5nZV9t
+dHUgPSB0dW5fbmV0X2NoYW5nZV9tdHU7CiAKIAkJLyogcmFuZG9tIGFkZHJlc3MgYWxyZWFkeSBj
+cmVhdGVkIGZvciB1cyBieSB0dW5fc2V0X2lmZiwgdXNlIGl0ICovCiAJCW1lbWNweShkZXYtPmRl
+dl9hZGRyLCB0dW4tPmRldl9hZGRyLCBtaW4oc2l6ZW9mKHR1bi0+ZGV2X2FkZHIpLCBzaXplb2Yo
+ZGV2LT5kZXZfYWRkcikpICk7Cg==
+------=_Part_6287_13624360.1189521766884--
