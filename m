@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966604AbXIKGVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966659AbXIKGVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966604AbXIKGVT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762399AbXIKGE4
+	id S966659AbXIKGVp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762694AbXIKGGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:04:56 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56492 "EHLO
+	Tue, 11 Sep 2007 02:06:40 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50588 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761362AbXIKGEb (ORCPT
+	with ESMTP id S1762175AbXIKGEh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 02:04:31 -0400
-Message-Id: <20070911060429.711254070@sgi.com>
+	Tue, 11 Sep 2007 02:04:37 -0400
+Message-Id: <20070911060431.829995993@sgi.com>
 References: <20070911060349.993975297@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 10 Sep 2007 23:04:09 -0700
+Date: Mon, 10 Sep 2007 23:04:17 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: torvalds@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -24,196 +24,195 @@ Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
        Fengguang Wu <fengguang.wu@gmail.com>
 Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com, hugh@veritas.com
 Cc: joern@lazybastard.org
-Subject: [19/41] Use page_cache_xxx for fs/xfs
-Content-Disposition: inline; filename=0019-Use-page_cache_xxx-for-fs-xfs.patch
+Subject: [27/41] Large page order operations, zeroing and flushing
+Content-Disposition: inline; filename=0027-Compound-page-zeroing-and-flushing.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use page_cache_xxx for fs/xfs
+We may have to zero and flush higher order pages. Implement
+clear_mapping_page and flush_mapping_page to do that job. Replace
+the flushing and clearing at some key locations for the pagecache.
+
+In some places it is necesssary to determine the page order in use
+from the page struct since no mapping is available. Add a series of
+page_cache_page_xx functions:
+
+page_cache_head(page)		-> Determine head page from a tail page
+page_cache_base_pages(page)		-> Number of base pages of a page
+page_cache_page_order(page)	-> Determine page order of a page
+page_cache_page_size(page)	-> Determine page size of a page
+page_cache_page_shift(page)	-> Determine page shif of a page
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- fs/xfs/linux-2.6/xfs_aops.c |   55 ++++++++++++++++++++++--------------------
- fs/xfs/linux-2.6/xfs_lrw.c  |    6 ++--
- 2 files changed, 32 insertions(+), 29 deletions(-)
+ fs/libfs.c              |    4 +--
+ fs/reiserfs/file.c      |    2 -
+ include/linux/pagemap.h |   58 +++++++++++++++++++++++++++++++++++++++++++++---
+ mm/filemap.c            |    4 +--
+ mm/filemap_xip.c        |    4 +--
+ 5 files changed, 62 insertions(+), 10 deletions(-)
 
-diff --git a/fs/xfs/linux-2.6/xfs_aops.c b/fs/xfs/linux-2.6/xfs_aops.c
-index fd4105d..e48817a 100644
---- a/fs/xfs/linux-2.6/xfs_aops.c
-+++ b/fs/xfs/linux-2.6/xfs_aops.c
-@@ -74,7 +74,7 @@ xfs_page_trace(
- 	xfs_inode_t	*ip;
- 	bhv_vnode_t	*vp = vn_from_inode(inode);
- 	loff_t		isize = i_size_read(inode);
--	loff_t		offset = page_offset(page);
-+	loff_t		offset = page_cache_offset(page->mapping);
- 	int		delalloc = -1, unmapped = -1, unwritten = -1;
+Index: linux-2.6/include/linux/pagemap.h
+===================================================================
+--- linux-2.6.orig/include/linux/pagemap.h	2007-09-10 22:20:33.000000000 -0700
++++ linux-2.6/include/linux/pagemap.h	2007-09-10 22:37:25.000000000 -0700
+@@ -91,6 +91,31 @@ static inline unsigned int page_cache_of
+ 	return pos & ~PAGE_MASK;
+ }
  
- 	if (page_has_buffers(page))
-@@ -610,7 +610,7 @@ xfs_probe_page(
- 					break;
- 			} while ((bh = bh->b_this_page) != head);
- 		} else
--			ret = mapped ? 0 : PAGE_CACHE_SIZE;
-+			ret = mapped ? 0 : page_cache_size(page->mapping);
- 	}
++static inline struct page *page_cache_head(struct page *page)
++{
++	return page;
++}
++
++static inline int page_cache_base_pages(struct page *page)
++{
++	return 1;
++}
++
++static inline unsigned long page_cache_page_order(struct page *page)
++{
++	return 0;
++}
++
++static inline unsigned long page_cache_page_size(struct page *page)
++{
++	return PAGE_SIZE;
++}
++
++static inline unsigned long page_cache_page_shift(struct page *page)
++{
++	return PAGE_SHIFT;
++}
++
+ static inline pgoff_t page_cache_index(struct address_space *a,
+ 		loff_t pos)
+ {
+@@ -263,6 +288,33 @@ static inline void wait_on_page_writebac
+ extern void end_page_writeback(struct page *page);
  
- 	return ret;
-@@ -637,7 +637,7 @@ xfs_probe_cluster(
- 	} while ((bh = bh->b_this_page) != head);
+ /*
++ * Clear a higher order page
++ */
++static inline void clear_mapping_page(struct page *page)
++{
++	int nr_pages = page_cache_base_pages(page);
++	int i;
++
++	for (i = 0; i < nr_pages; i++)
++		clear_highpage(page + i);
++}
++
++/*
++ * Primitive support for flushing higher order pages.
++ *
++ * A bit stupid: On many platforms flushing the first page
++ * will flush any TLB starting there
++ */
++static inline void flush_mapping_page(struct page *page)
++{
++	int nr_pages = page_cache_base_pages(page);
++	int i;
++
++	for (i = 0; i < nr_pages; i++)
++		flush_dcache_page(page + i);
++}
++
++/*
+  * Zeroing of segments of a page
+  */
+ static inline void zero_user_segments(struct page *page,
+@@ -271,8 +323,8 @@ static inline void zero_user_segments(st
+ {
+ 	void *kaddr = kmap_atomic(page, KM_USER0);
  
- 	/* if we reached the end of the page, sum forwards in following pages */
--	tlast = i_size_read(inode) >> PAGE_CACHE_SHIFT;
-+	tlast = page_cache_index(inode->i_mapping, i_size_read(inode));
- 	tindex = startpage->index + 1;
+-	BUG_ON(end1 > PAGE_SIZE ||
+-		end2 > PAGE_SIZE);
++	BUG_ON(end1 > page_cache_page_size(page) ||
++		end2 > page_cache_page_size(page));
  
- 	/* Prune this back to avoid pathological behavior */
-@@ -655,14 +655,14 @@ xfs_probe_cluster(
- 			size_t pg_offset, len = 0;
+ 	if (end1 > start1)
+ 		memset(kaddr + start1, 0, end1 - start1);
+@@ -281,7 +333,7 @@ static inline void zero_user_segments(st
+ 		memset(kaddr + start2, 0, end2 - start2);
  
- 			if (tindex == tlast) {
--				pg_offset =
--				    i_size_read(inode) & (PAGE_CACHE_SIZE - 1);
-+				pg_offset = page_cache_offset(inode->i_mapping,
-+							i_size_read(inode));
- 				if (!pg_offset) {
- 					done = 1;
- 					break;
- 				}
- 			} else
--				pg_offset = PAGE_CACHE_SIZE;
-+				pg_offset = page_cache_size(inode->i_mapping);
+ 	kunmap_atomic(kaddr, KM_USER0);
+-	flush_dcache_page(page);
++	flush_mapping_page(page);
+ }
  
- 			if (page->index == tindex && !TestSetPageLocked(page)) {
- 				len = xfs_probe_page(page, pg_offset, mapped);
-@@ -744,7 +744,8 @@ xfs_convert_page(
- 	int			bbits = inode->i_blkbits;
- 	int			len, page_dirty;
- 	int			count = 0, done = 0, uptodate = 1;
-- 	xfs_off_t		offset = page_offset(page);
-+	struct address_space	*map = inode->i_mapping;
-+	xfs_off_t		offset = page_cache_pos(map, page->index, 0);
+ static inline void zero_user_segment(struct page *page,
+Index: linux-2.6/fs/libfs.c
+===================================================================
+--- linux-2.6.orig/fs/libfs.c	2007-09-10 22:20:33.000000000 -0700
++++ linux-2.6/fs/libfs.c	2007-09-10 22:37:05.000000000 -0700
+@@ -330,8 +330,8 @@ int simple_rename(struct inode *old_dir,
  
- 	if (page->index != tindex)
- 		goto fail;
-@@ -752,7 +753,7 @@ xfs_convert_page(
- 		goto fail;
- 	if (PageWriteback(page))
- 		goto fail_unlock_page;
--	if (page->mapping != inode->i_mapping)
-+	if (page->mapping != map)
- 		goto fail_unlock_page;
- 	if (!xfs_is_delayed_page(page, (*ioendp)->io_type))
- 		goto fail_unlock_page;
-@@ -764,20 +765,20 @@ xfs_convert_page(
- 	 * Derivation:
- 	 *
- 	 * End offset is the highest offset that this page should represent.
--	 * If we are on the last page, (end_offset & (PAGE_CACHE_SIZE - 1))
--	 * will evaluate non-zero and be less than PAGE_CACHE_SIZE and
-+	 * If we are on the last page, (end_offset & page_cache_mask())
-+	 * will evaluate non-zero and be less than page_cache_size() and
- 	 * hence give us the correct page_dirty count. On any other page,
- 	 * it will be zero and in that case we need page_dirty to be the
- 	 * count of buffers on the page.
- 	 */
- 	end_offset = min_t(unsigned long long,
--			(xfs_off_t)(page->index + 1) << PAGE_CACHE_SHIFT,
-+			(xfs_off_t)(page->index + 1) << page_cache_shift(map),
- 			i_size_read(inode));
+ int simple_readpage(struct file *file, struct page *page)
+ {
+-	clear_highpage(page);
+-	flush_dcache_page(page);
++	clear_mapping_page(page);
++	flush_mapping_page(page);
+ 	SetPageUptodate(page);
+ 	unlock_page(page);
+ 	return 0;
+Index: linux-2.6/mm/filemap.c
+===================================================================
+--- linux-2.6.orig/mm/filemap.c	2007-09-10 22:20:33.000000000 -0700
++++ linux-2.6/mm/filemap.c	2007-09-10 22:37:17.000000000 -0700
+@@ -941,7 +941,7 @@ page_ok:
+ 		 * before reading the page on the kernel side.
+ 		 */
+ 		if (mapping_writably_mapped(mapping))
+-			flush_dcache_page(page);
++			flush_mapping_page(page);
  
- 	len = 1 << inode->i_blkbits;
--	p_offset = min_t(unsigned long, end_offset & (PAGE_CACHE_SIZE - 1),
--					PAGE_CACHE_SIZE);
--	p_offset = p_offset ? roundup(p_offset, len) : PAGE_CACHE_SIZE;
-+	p_offset = min_t(unsigned long, page_cache_offset(map, end_offset),
-+					page_cache_size(map));
-+	p_offset = p_offset ? roundup(p_offset, len) : page_cache_size(map);
- 	page_dirty = p_offset / len;
+ 		/*
+ 		 * When a sequential read accesses a page several times,
+@@ -1932,7 +1932,7 @@ generic_file_buffered_write(struct kiocb
+ 		else
+ 			copied = filemap_copy_from_user_iovec(page, offset,
+ 						cur_iov, iov_base, bytes);
+-		flush_dcache_page(page);
++		flush_mapping_page(page);
+ 		status = a_ops->commit_write(file, page, offset, offset+bytes);
+ 		if (status == AOP_TRUNCATED_PAGE) {
+ 			page_cache_release(page);
+Index: linux-2.6/mm/filemap_xip.c
+===================================================================
+--- linux-2.6.orig/mm/filemap_xip.c	2007-09-10 22:20:33.000000000 -0700
++++ linux-2.6/mm/filemap_xip.c	2007-09-10 22:23:32.000000000 -0700
+@@ -104,7 +104,7 @@ do_xip_mapping_read(struct address_space
+ 		 * before reading the page on the kernel side.
+ 		 */
+ 		if (mapping_writably_mapped(mapping))
+-			flush_dcache_page(page);
++			flush_mapping_page(page);
  
- 	bh = head = page_buffers(page);
-@@ -933,6 +934,8 @@ xfs_page_state_convert(
- 	int			page_dirty, count = 0;
- 	int			trylock = 0;
- 	int			all_bh = unmapped;
-+	struct address_space	*map = inode->i_mapping;
-+	int			pagesize = page_cache_size(map);
+ 		/*
+ 		 * Ok, we have the page, so now we can copy it to user space...
+@@ -320,7 +320,7 @@ __xip_file_write(struct file *filp, cons
+ 		}
  
- 	if (startio) {
- 		if (wbc->sync_mode == WB_SYNC_NONE && wbc->nonblocking)
-@@ -941,11 +944,11 @@ xfs_page_state_convert(
+ 		copied = filemap_copy_from_user(page, offset, buf, bytes);
+-		flush_dcache_page(page);
++		flush_mapping_page(page);
+ 		if (likely(copied > 0)) {
+ 			status = copied;
  
- 	/* Is this page beyond the end of the file? */
- 	offset = i_size_read(inode);
--	end_index = offset >> PAGE_CACHE_SHIFT;
--	last_index = (offset - 1) >> PAGE_CACHE_SHIFT;
-+	end_index = page_cache_index(map, offset);
-+	last_index = page_cache_index(map, (offset - 1));
- 	if (page->index >= end_index) {
- 		if ((page->index >= end_index + 1) ||
--		    !(i_size_read(inode) & (PAGE_CACHE_SIZE - 1))) {
-+		    !(page_cache_offset(map, i_size_read(inode)))) {
- 			if (startio)
- 				unlock_page(page);
- 			return 0;
-@@ -959,22 +962,22 @@ xfs_page_state_convert(
- 	 * Derivation:
- 	 *
- 	 * End offset is the highest offset that this page should represent.
--	 * If we are on the last page, (end_offset & (PAGE_CACHE_SIZE - 1))
--	 * will evaluate non-zero and be less than PAGE_CACHE_SIZE and
--	 * hence give us the correct page_dirty count. On any other page,
-+	 * If we are on the last page, (page_cache_offset(mapping, end_offset))
-+	 * will evaluate non-zero and be less than page_cache_size(mapping)
-+	 * and hence give us the correct page_dirty count. On any other page,
- 	 * it will be zero and in that case we need page_dirty to be the
- 	 * count of buffers on the page.
-  	 */
- 	end_offset = min_t(unsigned long long,
--			(xfs_off_t)(page->index + 1) << PAGE_CACHE_SHIFT, offset);
-+			(xfs_off_t)page_cache_pos(map, page->index + 1, 0), offset);
- 	len = 1 << inode->i_blkbits;
--	p_offset = min_t(unsigned long, end_offset & (PAGE_CACHE_SIZE - 1),
--					PAGE_CACHE_SIZE);
--	p_offset = p_offset ? roundup(p_offset, len) : PAGE_CACHE_SIZE;
-+	p_offset = min_t(unsigned long, page_cache_offset(map, end_offset),
-+					pagesize);
-+	p_offset = p_offset ? roundup(p_offset, len) : pagesize;
- 	page_dirty = p_offset / len;
- 
- 	bh = head = page_buffers(page);
--	offset = page_offset(page);
-+	offset = page_cache_pos(map, page->index, 0);
- 	flags = BMAPI_READ;
- 	type = IOMAP_NEW;
- 
-@@ -1122,7 +1125,7 @@ xfs_page_state_convert(
- 
- 	if (ioend && iomap_valid) {
- 		offset = (iomap.iomap_offset + iomap.iomap_bsize - 1) >>
--					PAGE_CACHE_SHIFT;
-+					page_cache_shift(map);
- 		tlast = min_t(pgoff_t, offset, last_index);
- 		xfs_cluster_write(inode, page->index + 1, &iomap, &ioend,
- 					wbc, startio, all_bh, tlast);
-diff --git a/fs/xfs/linux-2.6/xfs_lrw.c b/fs/xfs/linux-2.6/xfs_lrw.c
-index 1614b81..d1f3130 100644
---- a/fs/xfs/linux-2.6/xfs_lrw.c
-+++ b/fs/xfs/linux-2.6/xfs_lrw.c
-@@ -143,9 +143,9 @@ xfs_iozero(
- 	do {
- 		unsigned long index, offset;
- 
--		offset = (pos & (PAGE_CACHE_SIZE -1)); /* Within page */
--		index = pos >> PAGE_CACHE_SHIFT;
--		bytes = PAGE_CACHE_SIZE - offset;
-+		offset = page_cache_offset(mapping, pos); /* Within page */
-+		index = page_cache_index(mapping, pos);
-+		bytes = page_cache_size(mapping) - offset;
- 		if (bytes > count)
- 			bytes = count;
- 
--- 
-1.5.2.5
+Index: linux-2.6/fs/reiserfs/file.c
+===================================================================
+--- linux-2.6.orig/fs/reiserfs/file.c	2007-09-10 22:20:33.000000000 -0700
++++ linux-2.6/fs/reiserfs/file.c	2007-09-10 22:23:32.000000000 -0700
+@@ -748,7 +748,7 @@ static int reiserfs_copy_from_user_to_fi
+ 		page_fault = __copy_from_user(page_address(page) + offset, buf, count);
+ 					// Copy the data.
+ 		/* Flush processor's dcache for this page */
+-		flush_dcache_page(page);
++		flush_mapping_page(page);
+ 		kunmap(page);
+ 		buf += count;
+ 		write_bytes -= count;
 
 -- 
