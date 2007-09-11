@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762930AbXIKGQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762997AbXIKGQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762930AbXIKGQO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762434AbXIKGFt
+	id S1762997AbXIKGQi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762498AbXIKGFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:05:49 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50593 "EHLO
+	Tue, 11 Sep 2007 02:05:55 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50596 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761815AbXIKGEf (ORCPT
+	with ESMTP id S1761924AbXIKGEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 02:04:35 -0400
-Message-Id: <20070911060433.947172893@sgi.com>
+	Tue, 11 Sep 2007 02:04:36 -0400
+Message-Id: <20070911060434.656940014@sgi.com>
 References: <20070911060349.993975297@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 10 Sep 2007 23:04:26 -0700
+Date: Mon, 10 Sep 2007 23:04:29 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: torvalds@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -25,147 +25,303 @@ Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
        Fengguang Wu <fengguang.wu@gmail.com>
 Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com, hugh@veritas.com
 Cc: joern@lazybastard.org
-Subject: [36/41] 64k block size support for Ext2/3/4
-Content-Disposition: inline; filename=0038-Large-Blocksize-support-for-Ext2-3-4.patch
+Subject: [39/41] ext4: fix rec_len overflow for 64KB block size
+Content-Disposition: inline; filename=0041-ext4-fix-rec_len-overflow-with-64KB-block-size.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The next 4 patches support large block size (up to PAGESIZE, max 64KB)
-for ext2/3/4, originally from Takashi Sato.
-http://marc.info/?l=linux-ext4&m=115768873518400&w=2
-
-It's quite simple to support large block size in ext2/3/4, mostly just
-enlarge the block size limit.  But it is NOT possible to have 64kB
-blocksize on ext2/3/4 without some changes to the directory handling
-code.  The reason is that an empty 64kB directory block would have a
-rec_len == (__u16)2^16 == 0, and this would cause an error to be hit in
-the filesystem.  The proposed solution is to put 2 empty records in such
-a directory, or to special-case an impossible value like rec_len =
-0xffff to handle this.
-
-The Patch-set consists of the following 4 patches.
-  [1/4]  ext2/3/4: enlarge blocksize
-         - Allow blocksize up to pagesize
-
-  [2/4]  ext2: fix rec_len overflow
+[4/4]  ext4: fix rec_len overflow
          - prevent rec_len from overflow with 64KB blocksize
-
-  [3/4]  ext3: fix rec_len overflow
-         - prevent rec_len from overflow with 64KB blocksize
-
-  [4/4]  ext4: fix rec_len overflow
-         - prevent rec_len from overflow with 64KB blocksize
-
-Just rebase to 2.6.23-rc4 and against the ext4 patch queue. Compile tested only.
-
-Next steps:
-Need a e2fsprogs changes to able test this feature. As mkfs needs to be
-educated not assuming rec_len to be blocksize all the time.
-Will try it with Christoph Lameter's large block patch next.
 
 Signed-off-by: Takashi Sato <sho@tnes.nec.co.jp>
 Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
 ---
- fs/ext2/super.c         |    2 +-
- fs/ext3/super.c         |    5 ++++-
- fs/ext4/super.c         |    5 +++++
- include/linux/ext2_fs.h |    4 ++--
- include/linux/ext3_fs.h |    4 ++--
- include/linux/ext4_fs.h |    4 ++--
- 6 files changed, 16 insertions(+), 8 deletions(-)
+ fs/ext4/dir.c           |   11 ++++--
+ fs/ext4/namei.c         |   88 +++++++++++++++++++++++++++++++++++++++--------
+ include/linux/ext4_fs.h |    9 +++++
+ 3 files changed, 90 insertions(+), 18 deletions(-)
 
-diff --git a/fs/ext2/super.c b/fs/ext2/super.c
-index 639a32c..c149ded 100644
---- a/fs/ext2/super.c
-+++ b/fs/ext2/super.c
-@@ -775,7 +775,7 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
- 		brelse(bh);
+diff --git a/fs/ext4/dir.c b/fs/ext4/dir.c
+index 93dd56c..8817cf4 100644
+--- a/fs/ext4/dir.c
++++ b/fs/ext4/dir.c
+@@ -100,10 +100,11 @@ static int ext4_readdir(struct file * filp,
+ 	unsigned long offset;
+ 	int i, stored;
+ 	struct ext4_dir_entry_2 *de;
+-	struct super_block *sb;
+ 	int err;
+ 	struct inode *inode = filp->f_path.dentry->d_inode;
++	struct super_block *sb = inode->i_sb;
+ 	int ret = 0;
++	unsigned tail = sb->s_blocksize;
  
- 		if (!sb_set_blocksize(sb, blocksize)) {
--			printk(KERN_ERR "EXT2-fs: blocksize too small for device.\n");
-+			printk(KERN_ERR "EXT2-fs: bad blocksize %d.\n", blocksize);
- 			goto failed_sbi;
- 		}
+ 	sb = inode->i_sb;
  
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index 22cfdd6..8f7d6a1 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -1549,7 +1549,10 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
- 		}
- 
- 		brelse (bh);
--		sb_set_blocksize(sb, blocksize);
-+		if (!sb_set_blocksize(sb, blocksize)) {
-+			printk(KERN_ERR "EXT3-fs: bad blocksize %d.\n", blocksize);
-+			goto out_fail;
+@@ -167,8 +168,11 @@ revalidate:
+ 		 * readdir(2), then we might be pointing to an invalid
+ 		 * dirent right now.  Scan from the start of the block
+ 		 * to make sure. */
++		if (tail >  EXT4_DIR_MAX_REC_LEN) {
++			tail = EXT4_DIR_MAX_REC_LEN;
 +		}
- 		logic_sb_block = (sb_block * EXT3_MIN_BLOCK_SIZE) / blocksize;
- 		offset = (sb_block * EXT3_MIN_BLOCK_SIZE) % blocksize;
- 		bh = sb_bread(sb, logic_sb_block);
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 4550b83..c504022 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -1496,6 +1496,11 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
- 		goto out_fail;
- 	}
+ 		if (filp->f_version != inode->i_version) {
+-			for (i = 0; i < sb->s_blocksize && i < offset; ) {
++			for (i = 0; i < tail && i < offset; ) {
+ 				de = (struct ext4_dir_entry_2 *)
+ 					(bh->b_data + i);
+ 				/* It's too expensive to do a full
+@@ -189,7 +193,7 @@ revalidate:
+ 		}
  
-+	if (!sb_set_blocksize(sb, blocksize)) {
-+		printk(KERN_ERR "EXT4-fs: bad blocksize %d.\n", blocksize);
-+		goto out_fail;
+ 		while (!error && filp->f_pos < inode->i_size
+-		       && offset < sb->s_blocksize) {
++		       && offset < tail) {
+ 			de = (struct ext4_dir_entry_2 *) (bh->b_data + offset);
+ 			if (!ext4_check_dir_entry ("ext4_readdir", inode, de,
+ 						   bh, offset)) {
+@@ -226,6 +230,7 @@ revalidate:
+ 			}
+ 			filp->f_pos += le16_to_cpu(de->rec_len);
+ 		}
++		filp->f_pos = EXT4_DIR_ADJUST_TAIL_OFFS(filp->f_pos, sb->s_blocksize);
+ 		offset = 0;
+ 		brelse (bh);
+ 	}
+diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
+index da22497..e494b1b 100644
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -262,9 +262,13 @@ static struct stats dx_show_leaf(struct dx_hash_info *hinfo, struct ext4_dir_ent
+ 	unsigned names = 0, space = 0;
+ 	char *base = (char *) de;
+ 	struct dx_hash_info h = *hinfo;
++	unsigned tail = size;
+ 
+ 	printk("names: ");
+-	while ((char *) de < base + size)
++	if (tail > EXT4_DIR_MAX_REC_LEN) {
++		tail = EXT4_DIR_MAX_REC_LEN;
 +	}
-+
- 	/*
- 	 * The ext4 superblock will not be buffer aligned for other than 1kB
- 	 * block sizes.  We need to calculate the offset from buffer start.
-diff --git a/include/linux/ext2_fs.h b/include/linux/ext2_fs.h
-index 153d755..910a705 100644
---- a/include/linux/ext2_fs.h
-+++ b/include/linux/ext2_fs.h
-@@ -86,8 +86,8 @@ static inline struct ext2_sb_info *EXT2_SB(struct super_block *sb)
-  * Macro-instructions used to manage several block sizes
-  */
- #define EXT2_MIN_BLOCK_SIZE		1024
--#define	EXT2_MAX_BLOCK_SIZE		4096
--#define EXT2_MIN_BLOCK_LOG_SIZE		  10
-+#define EXT2_MAX_BLOCK_SIZE		65536
-+#define EXT2_MIN_BLOCK_LOG_SIZE		10
- #ifdef __KERNEL__
- # define EXT2_BLOCK_SIZE(s)		((s)->s_blocksize)
- #else
-diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
-index ece49a8..7aa5556 100644
---- a/include/linux/ext3_fs.h
-+++ b/include/linux/ext3_fs.h
-@@ -76,8 +76,8 @@
-  * Macro-instructions used to manage several block sizes
-  */
- #define EXT3_MIN_BLOCK_SIZE		1024
--#define	EXT3_MAX_BLOCK_SIZE		4096
--#define EXT3_MIN_BLOCK_LOG_SIZE		  10
-+#define	EXT3_MAX_BLOCK_SIZE		65536
-+#define EXT3_MIN_BLOCK_LOG_SIZE		10
- #ifdef __KERNEL__
- # define EXT3_BLOCK_SIZE(s)		((s)->s_blocksize)
- #else
++	while ((char *) de < base + tail)
+ 	{
+ 		if (de->inode)
+ 		{
+@@ -677,8 +681,12 @@ static int dx_make_map (struct ext4_dir_entry_2 *de, int size,
+ 	int count = 0;
+ 	char *base = (char *) de;
+ 	struct dx_hash_info h = *hinfo;
++	unsigned tail = size;
+ 
+-	while ((char *) de < base + size)
++	if (tail > EXT4_DIR_MAX_REC_LEN) {
++		tail = EXT4_DIR_MAX_REC_LEN;
++	}
++	while ((char *) de < base + tail)
+ 	{
+ 		if (de->name_len && de->inode) {
+ 			ext4fs_dirhash(de->name, de->name_len, &h);
+@@ -773,9 +781,13 @@ static inline int search_dirblock(struct buffer_head * bh,
+ 	int de_len;
+ 	const char *name = dentry->d_name.name;
+ 	int namelen = dentry->d_name.len;
++	unsigned tail = dir->i_sb->s_blocksize;
+ 
+ 	de = (struct ext4_dir_entry_2 *) bh->b_data;
+-	dlimit = bh->b_data + dir->i_sb->s_blocksize;
++	if (tail > EXT4_DIR_MAX_REC_LEN) {
++		tail = EXT4_DIR_MAX_REC_LEN;
++	}
++	dlimit = bh->b_data + tail;
+ 	while ((char *) de < dlimit) {
+ 		/* this code is executed quadratically often */
+ 		/* do minimal checking `by hand' */
+@@ -1113,6 +1125,9 @@ static struct ext4_dir_entry_2* dx_pack_dirents(char *base, int size)
+ 	unsigned rec_len = 0;
+ 
+ 	prev = to = de;
++	if (size > EXT4_DIR_MAX_REC_LEN) {
++		size = EXT4_DIR_MAX_REC_LEN;
++	}
+ 	while ((char*)de < base + size) {
+ 		next = (struct ext4_dir_entry_2 *) ((char *) de +
+ 						    le16_to_cpu(de->rec_len));
+@@ -1178,8 +1193,15 @@ static struct ext4_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
+ 	/* Fancy dance to stay within two buffers */
+ 	de2 = dx_move_dirents(data1, data2, map + split, count - split);
+ 	de = dx_pack_dirents(data1,blocksize);
+-	de->rec_len = cpu_to_le16(data1 + blocksize - (char *) de);
+-	de2->rec_len = cpu_to_le16(data2 + blocksize - (char *) de2);
++	if (blocksize < EXT4_DIR_MAX_REC_LEN) {
++		de->rec_len = cpu_to_le16(data1 + blocksize - (char *) de);
++		de2->rec_len = cpu_to_le16(data2 + blocksize - (char *) de2);
++	} else {
++		de->rec_len = cpu_to_le16(data1 + EXT4_DIR_MAX_REC_LEN -
++							(char *) de);
++		de2->rec_len = cpu_to_le16(data2 + EXT4_DIR_MAX_REC_LEN -
++							(char *) de2);
++	}
+ 	dxtrace(dx_show_leaf (hinfo, (struct ext4_dir_entry_2 *) data1, blocksize, 1));
+ 	dxtrace(dx_show_leaf (hinfo, (struct ext4_dir_entry_2 *) data2, blocksize, 1));
+ 
+@@ -1234,11 +1256,15 @@ static int add_dirent_to_buf(handle_t *handle, struct dentry *dentry,
+ 	unsigned short	reclen;
+ 	int		nlen, rlen, err;
+ 	char		*top;
++	unsigned        tail = dir->i_sb->s_blocksize;
+ 
++	if (tail > EXT4_DIR_MAX_REC_LEN) {
++		tail = EXT4_DIR_MAX_REC_LEN;
++	}
+ 	reclen = EXT4_DIR_REC_LEN(namelen);
+ 	if (!de) {
+ 		de = (struct ext4_dir_entry_2 *)bh->b_data;
+-		top = bh->b_data + dir->i_sb->s_blocksize - reclen;
++		top = bh->b_data + tail - reclen;
+ 		while ((char *) de <= top) {
+ 			if (!ext4_check_dir_entry("ext4_add_entry", dir, de,
+ 						  bh, offset)) {
+@@ -1352,13 +1378,21 @@ static int make_indexed_dir(handle_t *handle, struct dentry *dentry,
+ 	/* The 0th block becomes the root, move the dirents out */
+ 	fde = &root->dotdot;
+ 	de = (struct ext4_dir_entry_2 *)((char *)fde + le16_to_cpu(fde->rec_len));
+-	len = ((char *) root) + blocksize - (char *) de;
++	if (blocksize < EXT4_DIR_MAX_REC_LEN) {
++		len = ((char *) root) + blocksize - (char *) de;
++	} else {
++		len = ((char *) root) + EXT4_DIR_MAX_REC_LEN - (char *) de;
++	}
+ 	memcpy (data1, de, len);
+ 	de = (struct ext4_dir_entry_2 *) data1;
+ 	top = data1 + len;
+ 	while ((char *)(de2=(void*)de+le16_to_cpu(de->rec_len)) < top)
+ 		de = de2;
+-	de->rec_len = cpu_to_le16(data1 + blocksize - (char *) de);
++	if (blocksize < EXT4_DIR_MAX_REC_LEN) {
++		de->rec_len = cpu_to_le16(data1 + blocksize - (char *) de);
++	} else {
++		de->rec_len = cpu_to_le16(data1 + EXT4_DIR_MAX_REC_LEN - (char *) de);
++	}
+ 	/* Initialize the root; the dot dirents already exist */
+ 	de = (struct ext4_dir_entry_2 *) (&root->dotdot);
+ 	de->rec_len = cpu_to_le16(blocksize - EXT4_DIR_REC_LEN(2));
+@@ -1448,7 +1482,11 @@ static int ext4_add_entry (handle_t *handle, struct dentry *dentry,
+ 		return retval;
+ 	de = (struct ext4_dir_entry_2 *) bh->b_data;
+ 	de->inode = 0;
+-	de->rec_len = cpu_to_le16(blocksize);
++	if (blocksize < EXT4_DIR_MAX_REC_LEN) {
++		de->rec_len = cpu_to_le16(blocksize);
++	} else {
++		de->rec_len = cpu_to_le16(EXT4_DIR_MAX_REC_LEN);
++	}
+ 	return add_dirent_to_buf(handle, dentry, inode, de, bh);
+ }
+ 
+@@ -1512,7 +1550,12 @@ static int ext4_dx_add_entry(handle_t *handle, struct dentry *dentry,
+ 			goto cleanup;
+ 		node2 = (struct dx_node *)(bh2->b_data);
+ 		entries2 = node2->entries;
+-		node2->fake.rec_len = cpu_to_le16(sb->s_blocksize);
++		if (sb->s_blocksize < EXT4_DIR_MAX_REC_LEN) {
++			node2->fake.rec_len = cpu_to_le16(sb->s_blocksize);
++		} else {
++			node2->fake.rec_len =
++				cpu_to_le16(EXT4_DIR_MAX_REC_LEN);
++		}
+ 		node2->fake.inode = 0;
+ 		BUFFER_TRACE(frame->bh, "get_write_access");
+ 		err = ext4_journal_get_write_access(handle, frame->bh);
+@@ -1600,11 +1643,15 @@ static int ext4_delete_entry (handle_t *handle,
+ {
+ 	struct ext4_dir_entry_2 * de, * pde;
+ 	int i;
++	unsigned tail = bh->b_size;
+ 
+ 	i = 0;
+ 	pde = NULL;
+ 	de = (struct ext4_dir_entry_2 *) bh->b_data;
+-	while (i < bh->b_size) {
++	if (tail > EXT4_DIR_MAX_REC_LEN) {
++		tail = EXT4_DIR_MAX_REC_LEN;
++	}
++	while (i < tail) {
+ 		if (!ext4_check_dir_entry("ext4_delete_entry", dir, de, bh, i))
+ 			return -EIO;
+ 		if (de == de_del)  {
+@@ -1793,7 +1840,11 @@ retry:
+ 	de = (struct ext4_dir_entry_2 *)
+ 			((char *) de + le16_to_cpu(de->rec_len));
+ 	de->inode = cpu_to_le32(dir->i_ino);
+-	de->rec_len = cpu_to_le16(inode->i_sb->s_blocksize-EXT4_DIR_REC_LEN(1));
++	if (inode->i_sb->s_blocksize < EXT4_DIR_MAX_REC_LEN) {
++		de->rec_len = cpu_to_le16(inode->i_sb->s_blocksize-EXT4_DIR_REC_LEN(1));
++	} else  {   
++		de->rec_len = cpu_to_le16(EXT4_DIR_MAX_REC_LEN-EXT4_DIR_REC_LEN(1));
++	}
+ 	de->name_len = 2;
+ 	strcpy (de->name, "..");
+ 	ext4_set_de_type(dir->i_sb, de, S_IFDIR);
+@@ -1828,10 +1879,10 @@ static int empty_dir (struct inode * inode)
+ 	unsigned long offset;
+ 	struct buffer_head * bh;
+ 	struct ext4_dir_entry_2 * de, * de1;
+-	struct super_block * sb;
++	struct super_block * sb = inode->i_sb;
+ 	int err = 0;
++	unsigned tail = sb->s_blocksize;
+ 
+-	sb = inode->i_sb;
+ 	if (inode->i_size < EXT4_DIR_REC_LEN(1) + EXT4_DIR_REC_LEN(2) ||
+ 	    !(bh = ext4_bread (NULL, inode, 0, 0, &err))) {
+ 		if (err)
+@@ -1858,11 +1909,17 @@ static int empty_dir (struct inode * inode)
+ 		return 1;
+ 	}
+ 	offset = le16_to_cpu(de->rec_len) + le16_to_cpu(de1->rec_len);
++	if (offset == EXT4_DIR_MAX_REC_LEN) {
++		offset += sb->s_blocksize - EXT4_DIR_MAX_REC_LEN;
++	}
+ 	de = (struct ext4_dir_entry_2 *)
+ 			((char *) de1 + le16_to_cpu(de1->rec_len));
++	if (tail > EXT4_DIR_MAX_REC_LEN) {
++		tail = EXT4_DIR_MAX_REC_LEN;
++	}
+ 	while (offset < inode->i_size ) {
+ 		if (!bh ||
+-			(void *) de >= (void *) (bh->b_data+sb->s_blocksize)) {
++			(void *) de >= (void *) (bh->b_data + tail)) {
+ 			err = 0;
+ 			brelse (bh);
+ 			bh = ext4_bread (NULL, inode,
+@@ -1889,6 +1946,7 @@ static int empty_dir (struct inode * inode)
+ 			return 0;
+ 		}
+ 		offset += le16_to_cpu(de->rec_len);
++		offset = EXT4_DIR_ADJUST_TAIL_OFFS(offset, sb->s_blocksize);
+ 		de = (struct ext4_dir_entry_2 *)
+ 				((char *) de + le16_to_cpu(de->rec_len));
+ 	}
 diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index cdee7aa..9e4518b 100644
+index 9e4518b..52d7554 100644
 --- a/include/linux/ext4_fs.h
 +++ b/include/linux/ext4_fs.h
-@@ -77,8 +77,8 @@
-  * Macro-instructions used to manage several block sizes
-  */
- #define EXT4_MIN_BLOCK_SIZE		1024
--#define	EXT4_MAX_BLOCK_SIZE		4096
--#define EXT4_MIN_BLOCK_LOG_SIZE		  10
-+#define	EXT4_MAX_BLOCK_SIZE		65536
-+#define EXT4_MIN_BLOCK_LOG_SIZE		10
- #ifdef __KERNEL__
- # define EXT4_BLOCK_SIZE(s)		((s)->s_blocksize)
- #else
+@@ -784,6 +784,15 @@ struct ext4_dir_entry_2 {
+ #define EXT4_DIR_ROUND			(EXT4_DIR_PAD - 1)
+ #define EXT4_DIR_REC_LEN(name_len)	(((name_len) + 8 + EXT4_DIR_ROUND) & \
+ 					 ~EXT4_DIR_ROUND)
++#define	EXT4_DIR_MAX_REC_LEN		65532
++
++/*
++ * Align a tail offset to the end of a directory block
++ */
++#define EXT4_DIR_ADJUST_TAIL_OFFS(offs, bsize) \
++	((((offs) & ((bsize) -1)) == EXT4_DIR_MAX_REC_LEN) ? \
++	((offs) + (bsize) - EXT4_DIR_MAX_REC_LEN):(offs))
++
+ /*
+  * Hash Tree Directory indexing
+  * (c) Daniel Phillips, 2001
 -- 
 1.5.2.5
 
