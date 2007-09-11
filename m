@@ -1,46 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbXIKPvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbXIKPxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758285AbXIKPvt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 11:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXIKPvl
+	id S1758394AbXIKPxW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 11:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbXIKPxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 11:51:41 -0400
-Received: from mailhub.linpro.no ([213.236.139.167]:34974 "EHLO
-	mailhub.linpro.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752539AbXIKPvk convert rfc822-to-8bit (ORCPT
+	Tue, 11 Sep 2007 11:53:15 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:39757 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751608AbXIKPxO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 11:51:40 -0400
-From: =?iso-8859-1?Q?Dag-Erling_Sm=F8rgrav?= <des@linpro.no>
-To: mgross@linux.intel.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC+PATCH] RTC calibration
-References: <ujrmyvt2tyy.fsf@false.linpro.no>
-	<20070911152323.GA17650@linux.intel.com>
-Date: Tue, 11 Sep 2007 17:51:36 +0200
-In-Reply-To: <20070911152323.GA17650@linux.intel.com> (Mark Gross's message of
-	"Tue, 11 Sep 2007 08:23:23 -0700")
-Message-ID: <ujr642h2oaf.fsf@false.linpro.no>
-User-Agent: Gnus/5.110004 (No Gnus v0.4) Emacs/21.4 (gnu/linux)
+	Tue, 11 Sep 2007 11:53:14 -0400
+Date: Tue, 11 Sep 2007 17:53:13 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Jun OKAJIMA <okajima@digitalinfra.co.jp>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: MACH BOOT
+In-Reply-To: <200709111507.AA02466@bbb-jz5c7z9hn9y.digitalinfra.co.jp>
+Message-ID: <Pine.LNX.4.64.0709111752540.9962@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0709111516550.5368@fbirervta.pbzchgretzou.qr>
+ <200709111507.AA02466@bbb-jz5c7z9hn9y.digitalinfra.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Gross <mgross@linux.intel.com> writes:
-> Why not use NTP?
 
-Because NTP is a completely different beast.  NTP is used to keep a
-software clock synchronized with a remote source.  This software clock
-is usually implemented as a software PLL on top of a high-resolution
-hardware clock, with the remote clock serving as frequency reference.
+On Sep 12 2007 00:07, Jun OKAJIMA wrote:
+>>>We introduce here that MACH BOOT, which is an experimental CD booting technology
+>>>with the goal of achieving fast booting with x48 CD-ROM drive.
+>>
+>>I am sure it will go through the roof with my x56.
+>
+>I dont think such difference of CD drive affects to boot speed,
+>but, anyway, please try it and report the result.
 
-What I need to do, however, is calibrate a low-resolution hardware
-clock using a trusted reference (which could very well be a software
-clock maintained by NTP).
+Hm yeah. Unfortunately, it does not download as fast as it boots.
 
-DES
+
+	Jan
 -- 
-Dag-Erling Smørgrav
-Senior Software Developer
-Linpro AS - www.linpro.no
