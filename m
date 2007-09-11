@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934040AbXIKTwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933954AbXIKTz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934040AbXIKTwu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 15:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932513AbXIKTwj
+	id S933954AbXIKTz1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 15:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756628AbXIKTzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 15:52:39 -0400
-Received: from smtprelay12.ispgateway.de ([80.67.29.29]:35509 "EHLO
-	smtprelay12.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932510AbXIKTwh (ORCPT
+	Tue, 11 Sep 2007 15:55:19 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:38694 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755310AbXIKTzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 15:52:37 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH] crypto: cleanup: Use max() in blkcipher_get_spot() to state the intention.
-Date: Tue, 11 Sep 2007 21:53:24 +0200
-User-Agent: KMail/1.9.6
-Cc: Bob Gilligan <gilligan@vyatta.com>, linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-References: <5562608.649291189210157514.JavaMail.root@tahiti.vyatta.com> <200709102146.47655.ioe-lkml@rameria.de> <20070911084058.GA4469@gondor.apana.org.au>
-In-Reply-To: <20070911084058.GA4469@gondor.apana.org.au>
+	Tue, 11 Sep 2007 15:55:18 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 11 Sep 2007 21:54:04 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       jgarzik <jgarzik@pobox.com>
+In-Reply-To: <20070911101644.cd3f641f.randy.dunlap@oracle.com>
+Message-ID: <tkrat.51a63f8a69499950@s5r6.in-berlin.de>
+References: <20070911101644.cd3f641f.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709112153.25959.ioe-lkml@rameria.de>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] crypto: cleanup: Use max() in blkcipher_get_spot() to state the intention.
+Randy Dunlap wrote:
+> +Alpine (TUI)
+...
+> +Evolutions (GUI)
+   Evolution_ ?
+...
+> +Kmail (GUI)
+...
+> +Lotus Notes (GUI)
+...
+> +Mutt (TUI)
+...
+> +Pine (TUI)
+...
+> +Sylpheed (GUI)
+...
+> +Thunderbird (GUI)
+...
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++TkRat (GUI)
++
++Works.  Use "Insert file..." or external editor.
 
-Signed-off-by: Ingo Oeser <ioe-lkml@rameria.de>
----
-Hi Herbert,
-
-here is the requested patch against Linus' latest tree. 
-It at least compiles.
-
-Best Regards
-
-Ingo Oeser
-
- crypto/blkcipher.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/crypto/blkcipher.c b/crypto/blkcipher.c
-index d8f8ec3..1c99d92 100644
---- a/crypto/blkcipher.c
-+++ b/crypto/blkcipher.c
-@@ -65,7 +65,7 @@ static inline void blkcipher_unmap_dst(struct blkcipher_walk *walk)
- static inline u8 *blkcipher_get_spot(u8 *start, unsigned int len)
- {
- 	u8 *end_page = (u8 *)(((unsigned long)(start + len - 1)) & PAGE_MASK);
--	return start > end_page ? start : end_page;
-+	return max(start, end_page);
- }
- 
- static inline unsigned int blkcipher_done_slow(struct crypto_blkcipher *tfm,
 -- 
-1.5.2.5
-
-
+Stefan Richter
+-=====-=-=== =--= -=-==
+http://arcgraph.de/sr/
 
