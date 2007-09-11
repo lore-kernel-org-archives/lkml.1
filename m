@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbXIKBpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762148AbXIKBu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762165AbXIKBpM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 21:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761190AbXIKBpA
+	id S1762148AbXIKBu4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 21:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760993AbXIKBus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 21:45:00 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:21923 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760620AbXIKBo7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 21:44:59 -0400
-Date: Mon, 10 Sep 2007 19:44:32 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: PCI: Unable to reserve mem region problem
-In-reply-to: <fa.xf8XcHy8Nla3C3Q0MmArV00z04k@ifi.uio.no>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Karl Bellve <Karl.Bellve@umassmed.edu>, linux-kernel@vger.kernel.org
-Message-id: <46E5F300.20602@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.kIR1dSmxlPM+uRVmi9kPkHkX/W8@ifi.uio.no>
- <fa.mWCFmDlYQmMO/aBFdKFbo8OVII4@ifi.uio.no>
- <fa.xf8XcHy8Nla3C3Q0MmArV00z04k@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 10 Sep 2007 21:50:48 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43236 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756628AbXIKBur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 21:50:47 -0400
+Message-ID: <46E5F471.3040104@garzik.org>
+Date: Mon, 10 Sep 2007 21:50:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Laurent Riffard <laurent.riffard@free.fr>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc4-mm1: broke pata_via cable detection
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <46DB088C.6080907@free.fr>
+In-Reply-To: <46DB088C.6080907@free.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> On 09/05/2007 08:31 PM, Alan Cox wrote:
->> On Wed, 05 Sep 2007 10:32:38 -0400
->> "Karl Bellve" <Karl.Bellve@umassmed.edu> wrote:
->>
->>> Please CC any response. Thanks.
->>>
->>> I am having an issue with a Supermicro h8dce motherboard and failure to 
->>> recognize a 5th SATA drive after upgrading to Fedora 7.
->> Can you send me an lspci -vvxxx so that I can look into this. Might be a
->> few days with the kernel summit but it should give a clue and may be
->> linked to ADMA mode
+Laurent Riffard wrote:
+> Le 01.09.2007 06:58, Andrew Morton a écrit :
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc4/2.6.23-rc4-mm1/
+> [...]
+>> +libata-correct-handling-of-srst-reset-sequences.patch
+> [...]
 > 
-> It's in RH bugzilla:
+> Alan,
 > 
-> https://bugzilla.redhat.com/show_bug.cgi?id=280641
+> libata-correct-handling-of-srst-reset-sequences.patch broke 80-wire
+> cable detection on pata_via driver:
+> 
+>> $ dmesg | grep ata1
+>> ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0xb800 irq 14
+>> ata1.00: ATA-5: ST340016A, 3.75, max UDMA/100
+>> ata1.00: 78165360 sectors, multi 16: LBA 
+>> ata1.01: ATA-7: Maxtor 6Y080L0, YAR41BW0, max UDMA/133
+>> ata1.01: 160086528 sectors, multi 16: LBA 
+>> ata1.00: limited to UDMA/33 due to 40-wire cable
+>> ata1.01: limited to UDMA/33 due to 40-wire cable
+>> ata1.00: configured for UDMA/33
+>> ata1.01: configured for UDMA/33
+> 
+> 2.6.23-rc3-mm1 and 2.6.23-rc4 work fine (ata1 devices are configured
+> for UDMA/100).
+> 
+> Few weeks ago, I wrote a patch to solve a wrong cable detection
+> problem after suspend-to-disk/resume, and it solves this problem
+> too. Is it the right way to go ?
+> 
+> 
+> 
+> via_do_set_mode overwrites 80-wire cable detection bits. Let's
+> preserve them.
+> 
+> Signed-off-by: Laurent Riffard <laurent.riffard@free.fr>
 
-The last BAR on the nForce4 ADMA controllers on this board are at 
-0xdfefe000 and 0xdfefd000. But it looks like PnP ACPI is also reserving 
-those memory ranges:
+applied
 
-Aug 30 14:08:02 alcor kernel: pnp: 00:09: iomem range 
-0xdfefd000-0xdfefd3ff has been reserved
-Aug 30 14:08:02 alcor kernel: pnp: 00:09: iomem range 
-0xdfefe000-0xdfefe3ff has been reserved
-
-Which I very much doubt it should be doing, the BIOS doesn't need to 
-reserve PCI BAR ranges in the ACPI tables. This sounds like a BIOS bug. 
-You might want to check for an update from Supermicro.
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
 
