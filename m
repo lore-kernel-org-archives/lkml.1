@@ -1,60 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763469AbXIKKLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965982AbXIKKLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763469AbXIKKLe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 06:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965829AbXIKKLE
+	id S965982AbXIKKLM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 06:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762696AbXIKKKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 06:11:04 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:46986 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965688AbXIKKLB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 06:11:01 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx processors.
-Date: Tue, 11 Sep 2007 18:10:53 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C85D61E@zch01exm26.fsl.freescale.net>
-In-Reply-To: <BAE9DCEF64577A439B3A37F36F9B691C02FF08A1@orsmsx418.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx processors.
-Thread-Index: AcfxPC/wGi09hKt4R6O5xlS4AldUsgAJWZkgAL6GIGA=
-References: <11891624582950-git-send-email-wei.zhang@freescale.com> <BAE9DCEF64577A439B3A37F36F9B691C02FF08A1@orsmsx418.amr.corp.intel.com>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Nelson, Shannon" <shannon.nelson@intel.com>, <paulus@samba.org>
-Cc: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
-       <galak@kernel.crashing.org>,
-       "Zhu Ebony-r57400" <ebony.zhu@freescale.com>,
-       <dan.j.williams@intel.com>
+	Tue, 11 Sep 2007 06:10:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37264 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757321AbXIKKKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 06:10:43 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070911093510.GA15405@kernel.dk>
+References: <20070911093510.GA15405@kernel.dk> <20070911082307.GB19495@linux-sh.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: dhowells@redhat.com, Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Ungerer <gerg@snapgear.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] splice: Disable vmsplice on nommu.
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Tue, 11 Sep 2007 11:10:19 +0100
+Message-ID: <9949.1189505419@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> If this is experimental, perhaps you should mark the depends line as
-> such
-> 	depends on on DMA_ENGINE && PPC && EXPERIMENTAL
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-I'll add EXPERIMENTAL for MPC83xx only.
+> It's a bit of a sledge hammer... Since get_user_pages() appears to work
+> on nummu, we can just disable the vmsplice-to-userspace bits and leave
+> the (working) vmsplice-from-userspace in place.
 
-> 
-> [...]
-> 
-> >+
-> >+	fsl_dma_memcpy_issue_pending(chan);
-> >+	while (fsl_dma_is_complete(chan, cookie, NULL, NULL)
-> >+			!= DMA_SUCCESS);
-> 
-> Again, is it possible to hang your thread here?
-> 
-> [...]
+That sounds about right.  I don't think you can do the latter without an MMU,
+but I may be wrong about what it does.
 
-I'll add msleep here.
-
-Thanks!
-
-- zw
+David
