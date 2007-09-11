@@ -1,95 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762328AbXIKFxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762346AbXIKGEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762328AbXIKFxB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 01:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761110AbXIKFwv
+	id S1762346AbXIKGEu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761443AbXIKGEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 01:52:51 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:59258 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762248AbXIKFwu (ORCPT
+	Tue, 11 Sep 2007 02:04:31 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56451 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761202AbXIKGEa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 01:52:50 -0400
-Date: Tue, 11 Sep 2007 11:23:27 +0530
-From: Maneesh Soni <maneesh@in.ibm.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>, kexec@lists.infradead.org,
-       Dan Aloni <da-x@monatomic.org>, linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] kernel/kexec.c: make code static
-Message-ID: <20070911055327.GA14117@in.ibm.com>
-Reply-To: maneesh@in.ibm.com
-References: <20070909202516.GQ3563@stusta.de> <20070910115549oomichi@mail.jp.nec.com> <20070910122040.GE3563@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070910122040.GE3563@stusta.de>
-User-Agent: Mutt/1.5.11
+	Tue, 11 Sep 2007 02:04:30 -0400
+Message-Id: <20070911060426.201526506@sgi.com>
+References: <20070911060349.993975297@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 10 Sep 2007 23:03:54 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: torvalds@linux-foundation.org
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
+Cc: William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Badari Pulavarty <pbadari@gmail.com>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>
+Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com, hugh@veritas.com
+Cc: joern@lazybastard.org
+Subject: [04/41] Use page_cache_xxx in mm/page-writeback.c
+Content-Disposition: inline; filename=0004-Use-page_cache_xxx-in-mm-page-writeback.c.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 10, 2007 at 02:20:40PM +0200, Adrian Bunk wrote:
-> On Mon, Sep 10, 2007 at 11:55:49AM +0900, Ken'ichi Ohmichi wrote:
-> > 
-> > Hi Adrian,
-> > 
-> > 
-> > 2007/09/09 22:25:16 +0200, Adrian Bunk <bunk@kernel.org> wrote:
-> > >On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
-> > >>...
-> > >> Changes since 2.6.23-rc3-mm1:
-> > >>...
-> > >> +add-vmcoreinfo.patch
-> > >>...
-> > >>  misc
-> > >>...
-> > >
-> > >This patch makes the following needlessly global code static:
-> > >- vmcoreinfo_data[]
-> > >- vmcoreinfo_size
-> > >- vmcoreinfo_append_str()
-> > 
-> > The kernel compiling fails with your patch because architecture-specific
-> > function should access the above data/function:
-> > 
-> > # make
-> > [snip]
-> > arch/ia64/kernel/machine_kexec.c: In function 'arch_crash_save_vmcoreinfo':
-> > arch/ia64/kernel/machine_kexec.c:134: error: implicit declaration of function 'SYMBOL'
-> > arch/ia64/kernel/machine_kexec.c:135: error: implicit declaration of function 'LENGTH'
-> > arch/ia64/kernel/machine_kexec.c:139: error: implicit declaration of function 'SIZE'
-> > arch/ia64/kernel/machine_kexec.c:139: error: 'node_memblk_s' undeclared (first use in this function)
-> > arch/ia64/kernel/machine_kexec.c:139: error: (Each undeclared identifier is reported only once
-> > arch/ia64/kernel/machine_kexec.c:139: error: for each function it appears in.)
-> > arch/ia64/kernel/machine_kexec.c:140: error: implicit declaration of function 'OFFSET'
-> > arch/ia64/kernel/machine_kexec.c:140: error: 'start_paddr' undeclared (first use in this function)
-> > arch/ia64/kernel/machine_kexec.c:141: error: 'size' undeclared (first use in this function)
-> > arch/ia64/kernel/machine_kexec.c:144: error: implicit declaration of function 'CONFIG'
-> > arch/ia64/kernel/machine_kexec.c:144: error: 'PGTABLE_3' undeclared (first use in this function)
-> > make[1]: *** [arch/ia64/kernel/machine_kexec.o] Error 1
-> > make: *** [arch/ia64/kernel] Error 2
-> > #
-> 
-> Thanks, I missed this.
-> 
-> That's 80% my fault and 20% the fault of the usage of generic names 
-> SYMBOL/SIZE/OFFSET/LENGTH/CONFIG making it impossible to grep for them 
-> (and namespace conflicts quite possible).
-> 
-> Can we get these #define's properly prefixed (e.g. KEXEC_SYMBOL etc.) so 
-> that other people will not repeat my mistake and namespace conflicts 
-> will be prevented?
-> 
+Use page_cache_xxx in mm/page-writeback.c
 
-CRASH_DUMP_ or VMCORE_ should be a better prefix as the dump filtering
-functionality not directly related to kexec.
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+---
+ mm/page-writeback.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Thanks
-Maneesh
-
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 63512a9..ebe76e3 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -624,8 +624,8 @@ int write_cache_pages(struct address_space *mapping,
+ 		index = mapping->writeback_index; /* Start from prev offset */
+ 		end = -1;
+ 	} else {
+-		index = wbc->range_start >> PAGE_CACHE_SHIFT;
+-		end = wbc->range_end >> PAGE_CACHE_SHIFT;
++		index = page_cache_index(mapping, wbc->range_start);
++		end = page_cache_index(mapping, wbc->range_end);
+ 		if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
+ 			range_whole = 1;
+ 		scanned = 1;
+@@ -827,7 +827,7 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+ 			if (mapping_cap_account_dirty(mapping)) {
+ 				__inc_zone_page_state(page, NR_FILE_DIRTY);
+-				task_io_account_write(PAGE_CACHE_SIZE);
++				task_io_account_write(page_cache_size(mapping));
+ 			}
+ 			radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+-- 
+1.5.2.5
 
 -- 
-Maneesh Soni
-Linux Technology Center,
-IBM India Systems and Technology Lab, 
-Bangalore, India
