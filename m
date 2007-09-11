@@ -1,105 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbXIKPRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbXIKPSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbXIKPRp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 11:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbXIKPRi
+	id S1758067AbXIKPSS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 11:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXIKPSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 11:17:38 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:26503 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752475AbXIKPRh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 11:17:37 -0400
-Subject: Re: + net-myri10ge-force-select-inet_lro.patch added to -mm tree
-From: Daniel Walker <dwalker@mvista.com>
-To: linux-kernel@vger.kernel.org
-Cc: mm-commits@vger.kernel.org, brice@myri.com, davem@davemloft.net
-In-Reply-To: <200709110533.l8B5Xb9h027496@imap1.linux-foundation.org>
-References: <200709110533.l8B5Xb9h027496@imap1.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 11 Sep 2007 08:17:35 -0700
-Message-Id: <1189523855.17477.1.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Sep 2007 11:18:06 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:57421 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752507AbXIKPSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 11:18:05 -0400
+Date: Tue, 11 Sep 2007 16:18:03 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: X freezes kernel during exit [Re: 2.6.23-rc3-mm1]
+In-Reply-To: <46E41601.7030600@gmail.com>
+Message-ID: <Pine.LNX.4.64.0709111615310.10340@skynet.skynet.ie>
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
+ <46D17A7A.70609@gmail.com> <46D409FC.1070305@gmail.com> <46E3DCB8.5010709@gmail.com>
+ <20070909054751.cbb27081.akpm@linux-foundation.org> <46E3FE6B.7010209@gmail.com>
+ <20070909141730.GB25798@one.firstfloor.org> <46E4028E.9050007@gmail.com>
+ <20070909143324.GC25798@one.firstfloor.org> <46E40699.7060000@gmail.com>
+ <20070909150158.GD25798@one.firstfloor.org> <46E41601.7030600@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>
+> What other info needed?
 
-Dave Miller committed a patch into git that's just like this a while
-ago .. Should be safe to drop this one.
+I'm seeing this on my 965gm chipset with Andi's clflush patches on x86 
+32-bit, it looks like an interaction with the agp code which does a big 
+bunch of change page attr to allocate the AGP aperture backed memory..
 
-Daniel
+I think the code might have worked in a previous iteration on my 64-bit 
+965G machine at home but I'm on the road and won't be back anytime soon..
 
+I'll see what I can figure out from my laptop...
 
-On Mon, 2007-09-10 at 22:33 -0700, akpm@linux-foundation.org wrote:
-> The patch titled
->      net: myri10ge: force select inet_lro
-> has been added to the -mm tree.  Its filename is
->      net-myri10ge-force-select-inet_lro.patch
-> 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> ------------------------------------------------------
-> Subject: net: myri10ge: force select inet_lro
-> From: Daniel Walker <dwalker@mvista.com>
-> 
-> This driver uses the inet_lro facilities , but it doesn't force it to be
-> enabled ..  Someone would have to know to enable inet_lro if they select
-> the driver ..
-> 
-> Instead, just force INET_LRO if this driver is selected..
-> 
-> Signed-off-by: Daniel Walker <dwalker@mvista.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Brice Goglin <brice@myri.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  drivers/net/Kconfig |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff -puN drivers/net/Kconfig~net-myri10ge-force-select-inet_lro drivers/net/Kconfig
-> --- a/drivers/net/Kconfig~net-myri10ge-force-select-inet_lro
-> +++ a/drivers/net/Kconfig
-> @@ -2084,6 +2084,7 @@ source "drivers/net/ixp2000/Kconfig"
->  config MYRI_SBUS
->  	tristate "MyriCOM Gigabit Ethernet support"
->  	depends on SBUS
-> +	select INET_LRO
->  	help
->  	  This driver supports MyriCOM Sbus gigabit Ethernet cards.
->  
-> _
-> 
-> Patches currently in -mm which might be from dwalker@mvista.com are
-> 
-> net-myri10ge-force-select-inet_lro.patch
-> whitespace-fixes-time-syscalls.patch
-> whitespace-fixes-process-accounting.patch
-> whitespace-fixes-cpuset.patch
-> whitespace-fixes-relayfs.patch
-> whitespace-fixes-audit-filtering.patch
-> whitespace-fixes-dma-channel-allocator.patch
-> whitespace-fixes-fork.patch
-> whitespace-fixes-module-loading.patch
-> whitespace-fixes-panic-handling.patch
-> whitespace-fixes-capability-syscalls.patch
-> whitespace-fixes-syscall-auditing.patch
-> whitespace-fixes-compat-syscalls.patch
-> whitespace-fixes-system-auditing.patch
-> whitespace-fixes-execution-domains.patch
-> whitespace-fixes-interval-timers.patch
-> whitespace-fixes-system-timers.patch
-> whitespace-fixes-task-exit-handling.patch
-> profile-likely-unlikely-macros.patch
-> profile-likely-unlikely-macros-fix.patch
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe mm-commits" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Dave.
