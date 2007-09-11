@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbXIKQ5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762826AbXIKQ7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756137AbXIKQ5y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 12:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762345AbXIKQ5m
+	id S1762826AbXIKQ7x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 12:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbXIKQ7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 12:57:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34061 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762019AbXIKQ5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 12:57:41 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070911112526.GK15405@kernel.dk>
-References: <20070911112526.GK15405@kernel.dk> <20070911093510.GA15405@kernel.dk> <20070911082307.GB19495@linux-sh.org> <9949.1189505419@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: dhowells@redhat.com, Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Ungerer <gerg@snapgear.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] splice: Disable vmsplice on nommu.
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Tue, 11 Sep 2007 17:57:17 +0100
-Message-ID: <13455.1189529837@redhat.com>
+	Tue, 11 Sep 2007 12:59:43 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51850 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755823AbXIKQ7m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 12:59:42 -0400
+Date: Tue, 11 Sep 2007 09:58:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andy Whitcroft <apw@shadowen.org>
+cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie
+Subject: Re: 2.6.23-rc6: hanging ext3 dbench tests
+In-Reply-To: <20070911124202.GI9556@shadowen.org>
+Message-ID: <alpine.LFD.0.999.0709110949250.16478@woody.linux-foundation.org>
+References: <20070911124202.GI9556@shadowen.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> > > It's a bit of a sledge hammer... Since get_user_pages() appears to work
-> > > on nummu, we can just disable the vmsplice-to-userspace bits and leave
-> > > the (working) vmsplice-from-userspace in place.
-> > 
-> > That sounds about right.  I don't think you can do the latter without
-> > an MMU, but I may be wrong about what it does.
-> 
-> You mean the former? The latter is vmsplice() filling a pipe with user
-> pages, using get_user_pages() to set them up. And that looks like it
-> should work on nommu.
-> 
-> The former is vmsplice() using mmap like functionality to map pages into
-> a user vma.
 
-Sorry, yes.  The former.
+On Tue, 11 Sep 2007, Andy Whitcroft wrote:
+>
+> I have a couple of failed test runs against 2.6.23-rc6 where the
+> job timed out while running dbench over ext3.  Both on powerpc,
+> though both significantly different hardware setups.  A failed
+> run like this implies that the machine was still responsive to
+> other processes but the dbench was making no progress.  There is
+> no console diagnostics during the failure.
 
-David
+Since the machine seems to be otherwise alive, can you do a sysrq-W (which 
+is most easily done by just doing a
+
+	echo w > /proc/sysrq-trigger
+
+and you don't actually need any console access or anything like that).
+
+That should give you all the blocked process traces, and if it's a 
+deadlock on some semaphore or other, it should all stand out quite nicely.
+
+In fact, things like the above are probably worth scripting for any 
+automated testing - if you auto-fail after some time, please make the 
+failure case do that sysrq-W by default.
+
+(The other sysrq things can be useful too - "T" shows the same as "W", 
+except for _all_ tasks, which is often so verbose that it hides the 
+problem, but is sometimes the right thing to do).
+
+			Linus
