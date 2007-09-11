@@ -1,175 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762094AbXIKBmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762124AbXIKBn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762094AbXIKBmr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 21:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760835AbXIKBmi
+	id S1762124AbXIKBn7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 21:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761190AbXIKBnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 21:42:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34367 "EHLO mx1.redhat.com"
+	Mon, 10 Sep 2007 21:43:52 -0400
+Received: from mga01.intel.com ([192.55.52.88]:28823 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760614AbXIKBmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 21:42:37 -0400
-Message-ID: <46E5F286.3040205@redhat.com>
-Date: Mon, 10 Sep 2007 20:42:30 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
-MIME-Version: 1.0
-To: Duane Griffin <duaneg@dghda.com>
-CC: linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ext4 development <linux-ext4@vger.kernel.org>
-Subject: [PATCH V3] dir_index: error out instead of BUG on corrupt dx dirs
-References: <46D8D30B.6090703@redhat.com>	 <20070909131933.GA15229@dastardly.plus.com>	 <46E55BD0.30500@redhat.com>	 <e9e943910709101506p555c6c0co8ce4529f90e814e8@mail.gmail.com>	 <46E5C82C.907@redhat.com> <e9e943910709101835t413753d3j3c4b3cf2fa769d72@mail.gmail.com>
-In-Reply-To: <e9e943910709101835t413753d3j3c4b3cf2fa769d72@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1760620AbXIKBnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 21:43:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,234,1186383600"; 
+   d="scan'208";a="301628519"
+Subject: Re: [RFC] disable PCIE 'Enable No Snoop' bit by default
+From: Shaohua Li <shaohua.li@intel.com>
+To: Greg KH <greg@kroah.com>
+Cc: David Miller <davem@davemloft.net>, matthew@wil.cx,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       akpm@linux-foundation.org, gregkh@suse.de
+In-Reply-To: <20070909164343.GC9199@kroah.com>
+References: <1189056908.24368.9.camel@sli10-conroe.sh.intel.com>
+	 <20070906115730.GE14130@parisc-linux.org>
+	 <20070906.054038.74750747.davem@davemloft.net>
+	 <20070909164343.GC9199@kroah.com>
+Content-Type: text/plain
+Date: Tue, 11 Sep 2007 09:29:43 +0800
+Message-Id: <1189474183.3080.0.camel@sli10-conroe.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duane Griffin wrote:
-
-> The warnings shouldn't include explicit newlines
-Urgh, right you are.  Once more, with feeling!  Thanks for running it through
-your utility.
-
--Eric
-
----------------------
-
-Convert asserts (BUGs) in dx_probe from bad on-disk data to recoverable 
-errors with helpful warnings.  With help catching other asserts
-from Duane Griffin <duaneg@dghda.com>
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Acked-by: Duane Griffin <duaneg@dghda.com>
-
-
-Index: linux-2.6.22-rc4/fs/ext3/namei.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext3/namei.c
-+++ linux-2.6.22-rc4/fs/ext3/namei.c
-@@ -379,13 +379,28 @@ dx_probe(struct dentry *dentry, struct i
- 
- 	entries = (struct dx_entry *) (((char *)&root->info) +
- 				       root->info.info_length);
--	assert(dx_get_limit(entries) == dx_root_limit(dir,
--						      root->info.info_length));
-+
-+	if (dx_get_limit(entries) != dx_root_limit(dir,
-+						   root->info.info_length)) {
-+		ext3_warning(dir->i_sb, __FUNCTION__,
-+			     "dx entry: limit != root limit");
-+		brelse(bh);
-+		*err = ERR_BAD_DX_DIR;
-+		goto fail;
-+	}
-+
- 	dxtrace (printk("Look up %x", hash));
- 	while (1)
- 	{
- 		count = dx_get_count(entries);
--		assert (count && count <= dx_get_limit(entries));
-+		if (!count || count > dx_get_limit(entries)) {
-+			ext3_warning(dir->i_sb, __FUNCTION__,
-+				     "dx entry: no count or count > limit");
-+			brelse(bh);
-+			*err = ERR_BAD_DX_DIR;
-+			goto fail2;
-+		}
-+
- 		p = entries + 1;
- 		q = entries + count - 1;
- 		while (p <= q)
-@@ -423,8 +438,15 @@ dx_probe(struct dentry *dentry, struct i
- 		if (!(bh = ext3_bread (NULL,dir, dx_get_block(at), 0, err)))
- 			goto fail2;
- 		at = entries = ((struct dx_node *) bh->b_data)->entries;
--		assert (dx_get_limit(entries) == dx_node_limit (dir));
-+		if (dx_get_limit(entries) != dx_node_limit (dir)) {
-+			ext3_warning(dir->i_sb, __FUNCTION__,
-+				     "dx entry: limit != node limit");
-+			brelse(bh);
-+			*err = ERR_BAD_DX_DIR;
-+			goto fail2;
-+		}
- 		frame++;
-+		frame->bh = NULL;
- 	}
- fail2:
- 	while (frame >= frame_in) {
-@@ -432,6 +454,10 @@ fail2:
- 		frame--;
- 	}
- fail:
-+	if (*err == ERR_BAD_DX_DIR)
-+		ext3_warning(dir->i_sb, __FUNCTION__,
-+			     "Corrupt dir inode %ld, running e2fsck is "
-+			     "recommended.", dir->i_ino);
- 	return NULL;
- }
- 
-Index: linux-2.6.22-rc4/fs/ext4/namei.c
-===================================================================
---- linux-2.6.22-rc4.orig/fs/ext4/namei.c
-+++ linux-2.6.22-rc4/fs/ext4/namei.c
-@@ -379,13 +379,28 @@ dx_probe(struct dentry *dentry, struct i
- 
- 	entries = (struct dx_entry *) (((char *)&root->info) +
- 				       root->info.info_length);
--	assert(dx_get_limit(entries) == dx_root_limit(dir,
--						      root->info.info_length));
-+
-+	if (dx_get_limit(entries) != dx_root_limit(dir,
-+						   root->info.info_length)) {
-+		ext4_warning(dir->i_sb, __FUNCTION__,
-+			     "dx entry: limit != root limit");
-+		brelse(bh);
-+		*err = ERR_BAD_DX_DIR;
-+		goto fail;
-+	}
-+
- 	dxtrace (printk("Look up %x", hash));
- 	while (1)
- 	{
- 		count = dx_get_count(entries);
--		assert (count && count <= dx_get_limit(entries));
-+		if (!count || count > dx_get_limit(entries)) {
-+			ext4_warning(dir->i_sb, __FUNCTION__,
-+				     "dx entry: no count or count > limit");
-+			brelse(bh);
-+			*err = ERR_BAD_DX_DIR;
-+			goto fail2;
-+		}
-+
- 		p = entries + 1;
- 		q = entries + count - 1;
- 		while (p <= q)
-@@ -423,8 +438,15 @@ dx_probe(struct dentry *dentry, struct i
- 		if (!(bh = ext4_bread (NULL,dir, dx_get_block(at), 0, err)))
- 			goto fail2;
- 		at = entries = ((struct dx_node *) bh->b_data)->entries;
--		assert (dx_get_limit(entries) == dx_node_limit (dir));
-+		if (dx_get_limit(entries) != dx_node_limit (dir)) {
-+			ext4_warning(dir->i_sb, __FUNCTION__,
-+				     "dx entry: limit != node limit");
-+			brelse(bh);
-+			*err = ERR_BAD_DX_DIR;
-+			goto fail2;
-+		}
- 		frame++;
-+		frame->bh = NULL;
- 	}
- fail2:
- 	while (frame >= frame_in) {
-@@ -432,6 +454,10 @@ fail2:
- 		frame--;
- 	}
- fail:
-+	if (*err == ERR_BAD_DX_DIR)
-+		ext4_warning(dir->i_sb, __FUNCTION__,
-+			     "Corrupt dir inode %ld, running e2fsck is "
-+			     "recommended.", dir->i_ino);
- 	return NULL;
- }
- 
-
+On Sun, 2007-09-09 at 09:43 -0700, Greg KH wrote:
+> On Thu, Sep 06, 2007 at 05:40:38AM -0700, David Miller wrote:
+> > From: Matthew Wilcox <matthew@wil.cx>
+> > Date: Thu, 6 Sep 2007 05:57:31 -0600
+> > 
+> > > I'm not sure your analysis is correct.  Here's what my draft copy of
+> > > the pcie 2.0 spec says:
+> > > 
+> > >   Enble No Snoop ? If this bit is Set, the Function is permitted to
+> > >   Set the No Snoop bit in the Requester Attributes of transactions it
+> > >   initiates that do not require hardware enforced cache coherency (see
+> > >   Section 2.2.6.5). Note that setting this bit to 1b should not cause
+> > >   a Function to Set the No Snoop attribute on all transactions that it
+> > >   initiates. Even when this bit is Set, a Function is only permitted
+> > >   to Set the No Snoop attribute on a transaction when it can guarantee
+> > >   that the address of the transaction is not stored in any cache in
+> > >   the system.  This bit permitted to be hardwired to 0b if a Function
+> > >   would never Set the No Snoop attribute in transactions it initiates.
+> > >   Default value of this bit is 1b.
+> > > 
+> > > That implies that devices are only allowed to set it when it's safe to
+> > > do so ... and we don't need to turn it off.
+> > 
+> > This is my understanding of this area of PCI-E as well, and I
+> > also agree that therefore we should not turn this bit off.
+> 
+> I agree.  But Shaohua, do you see any problems that this patch fixes?
+No, I didn't see any breakage, just worry about it's a potential issue.
