@@ -1,104 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934268AbXIKUXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967028AbXIKUYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934268AbXIKUXd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 16:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762534AbXIKUXN
+	id S967028AbXIKUYK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 16:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934345AbXIKUXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 16:23:13 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:48146 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762940AbXIKUXL (ORCPT
+	Tue, 11 Sep 2007 16:23:41 -0400
+Received: from lazybastard.de ([212.112.238.170]:41671 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934328AbXIKUXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 16:23:11 -0400
-Date: Tue, 11 Sep 2007 16:22:59 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 3/8] Immediate Values - Kconfig menu in EMBEDDED
-Message-ID: <20070911202259.GB23251@Krystal>
-References: <20070906200228.086651361@polymtl.ca> <20070906200314.692565803@polymtl.ca> <20070907064908.GG31880@one.firstfloor.org> <20070907124648.GC9735@Krystal> <20070907223950.GB22646@one.firstfloor.org>
+	Tue, 11 Sep 2007 16:23:38 -0400
+Date: Tue, 11 Sep 2007 22:19:29 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Andrea Arcangeli <andrea@suse.de>
+Cc: Mel Gorman <mel@csn.ul.ie>, Christoph Lameter <clameter@sgi.com>,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+Message-ID: <20070911201928.GA20688@lazybastard.org>
+References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <1189524967.32731.58.camel@localhost> <20070911164702.GD10831@v2.random> <1189535461.32731.75.camel@localhost> <20070911192052.GA14675@v2.random>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070907223950.GB22646@one.firstfloor.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:00:52 up 43 days, 20:19,  6 users,  load average: 0.34, 0.56, 0.69
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070911192052.GA14675@v2.random>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen (andi@firstfloor.org) wrote:
-> On Fri, Sep 07, 2007 at 08:46:48AM -0400, Mathieu Desnoyers wrote:
-> > * Andi Kleen (andi@firstfloor.org) wrote:
-> > > > +config IMMEDIATE
-> > > > +	default y if !DISABLE_IMMEDIATE
-> > > 
-> > > It's still unclear to me why DISABLE_IMMEDIATE is needed. It would
-> > > be better to make it just the default.
-> > > 
-> > 
-> > It is actually the default on any non embedded configuration. Do you
-> > think we should make it default to on on embedded configs too ?
-> 
-> I would prefer to not have any config options at all and let
-> the non converted architectures always use a asm-generic fallback.
-> 
-> > The idea here is to give embedded system developers incentives to
-> > create an optimized immediate value header for their architecture. I
-> 
-> Sounds like a quite bogus way to do this.
-> 
-> > fear that if it is not trivial to disable when they need to use ROM to
-> > put the kernel code (as kprobes is, meaning, with a single config
-> > option), they will refuse to event think about including an optimized
-> > immediate value header for their architecture.
-> 
-> #ifdef CONFIG_ARCH_SPECIFIC_READONLY
-> #include <asm-generic/generic-immediate.h> 
-> #else
-> /* optimized implementation */
-> #endif
-> 
-> That's trivial.
-> 
+Odd.  I keep arguing against the solution I prefer.
 
-Yeah, but then you would make immediate.o an obj-y (both for
-kernel/Makefile and arch/*/kernel/Makefile) and it would be built
-even on systems that would be configured not to use immediate values.
+On Tue, 11 September 2007 21:20:52 +0200, Andrea Arcangeli wrote:
+> 
+> The the problem with the slub fragmentation isn't a new problem, it
+> happens in today kernels as well and at least the slab by design is
+> meant to _defrag_ internally. So it's practically already solved and
+> it provides some guarantee unlike the buddy allocator.
 
-Therefore, it would compile-in unused code if we do as you propose,
-which I am reluctant to do on embedded systems where code size matters.
+Slab defrag doesn't look like a solved problem.  Basically, slab
+allocator was designed to group similar objects together.  Main reason
+in this context is that similar objects have similar lifetimes.  And it
+is true that one dentry's lifetime is more likely to match another one's
+that, say, a struct bio's.
 
-Mathieu
+But different dentries still have vastly different lifetimes.  And with
+that, fragmentation will continue to occur.  So the problem is not
+solved.  It is a hell of a lot better than pre-slab days, just not
+perfect.
 
-> > And yes, having a CONFIG_READ_ONLY_TEXT makes sense, but it implies
-> > menu dependencies with not only immediate values but also kprobes,
-> > paravirt, alternatives, (am I missing others ?)
-> 
-> paravirt and alternatives are x86 only.
-> 
-> I don't think CONFIG_READ_ONLY_TEXT on x86 makes sense.
-> 
-> On other architectures they have to deal with kprobes, but they
-> presumably do this already. Not really your problem I suspect.
-> 
-> 
-> > As long as we find a way for people to disable _all_ code patching in
-> > their kernel, I'm happy with that. But since every existing code
-> > patching mechanism can currently be disabled one by one, it makes sense
-> > to do the same for the immediate values. Having a global
-> > CONFIG_READ_ONLY_TEXT should IMHO come in a separate effort.
-> 
-> You're clearly deep into overdesign territory here.
-> 
-> -Andi
+> What I think you're missing is that for Nick's worst case to trigger
+> with the config_page_shift design, you would need the _whole_ ram to
+> be _at_least_once_ allocated completely in kernel stacks. If the whole
+> 100% of ram wouldn't go allocated in slub as a pure kernel stack, such
+> a scenario could never materialize.
+
+Things get somewhat worse with multiple attack vectors (whether
+malicious or accidental).  Spending 20% of ram on each of {kernel
+stacks, dentries, inodes, mlocked pages, size-XXX} would be sufficient.
+The system can spend 20% on kernel stacks with 80% free, then spend 20%
+on dentries with 60% free and 20% wasted in almost-free kernel stack
+slabs, etc.
+
+To argue in favor, for a change, the exact same scenario would be
+possible with Christoph's solution as well.  It would even be more
+likely.  Where in your case 20% of all memory has to go to each slab
+cache at one time, only one page per largepage of that would be
+necessary in Christophs case.  The rest could be allocated for other
+purposes.
+
+So overall I prefer your approach, for whatever my two cents of armchair
+oppinion are worth.
+
+Jörn
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+I've never met a human being who would want to read 17,000 pages of
+documentation, and if there was, I'd kill him to get him out of the
+gene pool.
+-- Joseph Costello
