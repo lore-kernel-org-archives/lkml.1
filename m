@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965497AbXIKTL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764610AbXIKTLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965497AbXIKTL0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 15:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764567AbXIKTFv
+	id S1764610AbXIKTLw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 15:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965345AbXIKTGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 15:05:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48515 "EHLO mx1.redhat.com"
+	Tue, 11 Sep 2007 15:06:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48882 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764519AbXIKTFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 15:05:48 -0400
-Date: Tue, 11 Sep 2007 15:05:12 -0400 (EDT)
-Message-Id: <20070911.150512.71159498.k-ueda@ct.jp.nec.com>
+	id S965336AbXIKTGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 15:06:41 -0400
+Date: Tue, 11 Sep 2007 15:06:14 -0400 (EDT)
+Message-Id: <20070911.150614.15401288.k-ueda@ct.jp.nec.com>
 To: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
        linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
        mike.miller@hp.com, grant.likely@secretlab.ca
 Cc: dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: [PATCH 25/27] blk_end_request: changing ide normal caller (take 2)
+Subject: [PATCH 27/27] blk_end_request: remove/unexport end_that_request_*
+ (take 2)
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 X-Mailer: Mew version 3.3 on Emacs 21.3 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -24,86 +25,145 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts "normal" parts of ide to use blk_end_request().
+This patch removes the following functions:
+  o end_that_request_first()
+  o end_that_request_chunk()
+and stops exporting the functions below:
+  o end_that_request_last()
 
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 ---
- drivers/ide/ide-cd.c |    6 +++---
- drivers/ide/ide-io.c |   22 +++++++---------------
- 2 files changed, 10 insertions(+), 18 deletions(-)
+ block/ll_rw_blk.c      |   61 ++++++++++++------------------------------------
+ include/linux/blkdev.h |   15 ++++--------
+ 2 files changed, 21 insertions(+), 55 deletions(-)
 
-diff -rupN 24-cpqarray-caller-change/drivers/ide/ide-cd.c 25-ide-normal-caller-change/drivers/ide/ide-cd.c
---- 24-cpqarray-caller-change/drivers/ide/ide-cd.c	2007-08-27 21:32:35.000000000 -0400
-+++ 25-ide-normal-caller-change/drivers/ide/ide-cd.c	2007-09-10 18:17:38.000000000 -0400
-@@ -655,9 +655,9 @@ static void cdrom_end_request (ide_drive
- 					BUG();
- 			} else {
- 				spin_lock_irqsave(&ide_lock, flags);
--				end_that_request_chunk(failed, 0,
--							failed->data_len);
--				end_that_request_last(failed, 0);
-+				if (__blk_end_request(failed, 0,
-+						      failed->data_len))
-+					BUG();
- 				spin_unlock_irqrestore(&ide_lock, flags);
- 			}
- 		} else
-diff -rupN 24-cpqarray-caller-change/drivers/ide/ide-io.c 25-ide-normal-caller-change/drivers/ide/ide-io.c
---- 24-cpqarray-caller-change/drivers/ide/ide-io.c	2007-09-10 17:32:12.000000000 -0400
-+++ 25-ide-normal-caller-change/drivers/ide/ide-io.c	2007-09-10 18:17:38.000000000 -0400
-@@ -78,12 +78,8 @@ static int __ide_end_request(ide_drive_t
- 		HWGROUP(drive)->hwif->ide_dma_on(drive);
+diff -rupN 26-ide-odd-caller-change/block/ll_rw_blk.c 27-remove-old-interface/block/ll_rw_blk.c
+--- 26-ide-odd-caller-change/block/ll_rw_blk.c	2007-09-10 18:21:27.000000000 -0400
++++ 27-remove-old-interface/block/ll_rw_blk.c	2007-09-10 18:28:47.000000000 -0400
+@@ -3439,6 +3439,20 @@ static void blk_recalc_rq_sectors(struct
  	}
- 
--	if (!end_that_request_chunk(rq, uptodate, nr_bytes)) {
--		add_disk_randomness(rq->rq_disk);
--		if (!list_empty(&rq->queuelist))
--			blkdev_dequeue_request(rq);
-+	if (!__blk_end_request(rq, uptodate, nr_bytes)) {
- 		HWGROUP(drive)->rq = NULL;
--		end_that_request_last(rq, uptodate);
- 		ret = 0;
- 	}
- 
-@@ -280,13 +276,9 @@ int ide_end_dequeued_request(ide_drive_t
- 		HWGROUP(drive)->hwif->ide_dma_on(drive);
- 	}
- 
--	if (!end_that_request_first(rq, uptodate, nr_sectors)) {
--		add_disk_randomness(rq->rq_disk);
--		if (blk_rq_tagged(rq))
--			blk_queue_end_tag(drive->queue, rq);
--		end_that_request_last(rq, uptodate);
-+	if (!__blk_end_request(rq, uptodate, nr_sectors << 9))
- 		ret = 0;
--	}
-+
- 	spin_unlock_irqrestore(&ide_lock, flags);
- 	return ret;
- }
-@@ -316,9 +308,9 @@ static void ide_complete_pm_request (ide
- 		drive->blocked = 0;
- 		blk_start_queue(drive->queue);
- 	}
--	blkdev_dequeue_request(rq);
- 	HWGROUP(drive)->rq = NULL;
--	end_that_request_last(rq, 1);
-+	if (__blk_end_request(rq, 1, 0))
-+		BUG();
- 	spin_unlock_irqrestore(&ide_lock, flags);
  }
  
-@@ -448,10 +440,10 @@ void ide_end_drive_cmd (ide_drive_t *dri
- 	}
- 
- 	spin_lock_irqsave(&ide_lock, flags);
--	blkdev_dequeue_request(rq);
- 	HWGROUP(drive)->rq = NULL;
- 	rq->errors = err;
--	end_that_request_last(rq, !rq->errors);
-+	if (__blk_end_request(rq, !rq->errors, 0))
-+		BUG();
- 	spin_unlock_irqrestore(&ide_lock, flags);
++/**
++ * __end_that_request_first - end I/O on a request
++ * @req:      the request being processed
++ * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
++ * @nr_bytes: number of bytes to complete
++ *
++ * Description:
++ *     Ends I/O on a number of bytes attached to @req, and sets it up
++ *     for the next range of segments (if any) in the cluster.
++ *
++ * Return:
++ *     0 - we are done with this request, call end_that_request_last()
++ *     1 - still buffers pending for this request
++ **/
+ static int __end_that_request_first(struct request *req, int uptodate,
+ 				    int nr_bytes)
+ {
+@@ -3557,49 +3571,6 @@ static int __end_that_request_first(stru
+ 	return 1;
  }
  
+-/**
+- * end_that_request_first - end I/O on a request
+- * @req:      the request being processed
+- * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
+- * @nr_sectors: number of sectors to end I/O on
+- *
+- * Description:
+- *     Ends I/O on a number of sectors attached to @req, and sets it up
+- *     for the next range of segments (if any) in the cluster.
+- *
+- * Return:
+- *     0 - we are done with this request, call end_that_request_last()
+- *     1 - still buffers pending for this request
+- **/
+-int end_that_request_first(struct request *req, int uptodate, int nr_sectors)
+-{
+-	return __end_that_request_first(req, uptodate, nr_sectors << 9);
+-}
+-
+-EXPORT_SYMBOL(end_that_request_first);
+-
+-/**
+- * end_that_request_chunk - end I/O on a request
+- * @req:      the request being processed
+- * @uptodate: 1 for success, 0 for I/O error, < 0 for specific error
+- * @nr_bytes: number of bytes to complete
+- *
+- * Description:
+- *     Ends I/O on a number of bytes attached to @req, and sets it up
+- *     for the next range of segments (if any). Like end_that_request_first(),
+- *     but deals with bytes instead of sectors.
+- *
+- * Return:
+- *     0 - we are done with this request, call end_that_request_last()
+- *     1 - still buffers pending for this request
+- **/
+-int end_that_request_chunk(struct request *req, int uptodate, int nr_bytes)
+-{
+-	return __end_that_request_first(req, uptodate, nr_bytes);
+-}
+-
+-EXPORT_SYMBOL(end_that_request_chunk);
+-
+ /*
+  * splice the completion data to a local structure and hand off to
+  * process_completion_queue() to complete the requests
+@@ -3679,7 +3650,7 @@ EXPORT_SYMBOL(blk_complete_request);
+ /*
+  * queue lock must be held
+  */
+-void end_that_request_last(struct request *req, int uptodate)
++static void end_that_request_last(struct request *req, int uptodate)
+ {
+ 	struct gendisk *disk = req->rq_disk;
+ 	int error;
+@@ -3714,8 +3685,6 @@ void end_that_request_last(struct reques
+ 		__blk_put_request(req->q, req);
+ }
+ 
+-EXPORT_SYMBOL(end_that_request_last);
+-
+ static inline void __end_request(struct request *rq, int uptodate,
+ 				 unsigned int nr_bytes)
+ {
+diff -rupN 26-ide-odd-caller-change/include/linux/blkdev.h 27-remove-old-interface/include/linux/blkdev.h
+--- 26-ide-odd-caller-change/include/linux/blkdev.h	2007-09-10 18:21:27.000000000 -0400
++++ 27-remove-old-interface/include/linux/blkdev.h	2007-09-10 18:28:47.000000000 -0400
+@@ -719,19 +719,16 @@ static inline void blk_run_address_space
+ }
+ 
+ /*
+- * end_request() and friends. Must be called with the request queue spinlock
+- * acquired. All functions called within end_request() _must_be_ atomic.
++ * blk_end_request() and friends.
++ * __blk_end_request() and end_request() must be called with
++ * the request queue spinlock acquired.
+  *
+  * Several drivers define their own end_request and call
+- * end_that_request_first() and end_that_request_last()
+- * for parts of the original function. This prevents
+- * code duplication in drivers.
++ * blk_end_request() for parts of the original function.
++ * This prevents code duplication in drivers.
+  */
+ extern int blk_end_request(struct request *rq, int uptodate, int nr_bytes);
+ extern int __blk_end_request(struct request *rq, int uptodate, int nr_bytes);
+-extern int end_that_request_first(struct request *, int, int);
+-extern int end_that_request_chunk(struct request *, int, int);
+-extern void end_that_request_last(struct request *, int);
+ extern void end_request(struct request *, int);
+ extern void end_queued_request(struct request *, int);
+ extern int blk_end_request_callback(struct request *rq, int uptodate,
+@@ -764,7 +761,7 @@ static inline int blk_rq_cur_size(struct
+ }
+ 
+ /*
+- * end_that_request_first/chunk() takes an uptodate argument. we account
++ * blk_end_request() takes an uptodate argument. we account
+  * any value <= as an io error. 0 means -EIO for compatability reasons,
+  * any other < 0 value is the direct error type. An uptodate value of
+  * 1 indicates successful io completion
