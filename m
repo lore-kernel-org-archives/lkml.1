@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762212AbXIKP5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbXIKQET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762212AbXIKP5f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 11:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbXIKP52
+	id S1757471AbXIKQET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 12:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbXIKQEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 11:57:28 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:34437 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752822AbXIKP51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 11:57:27 -0400
-Date: Tue, 11 Sep 2007 17:57:24 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de>
+	Tue, 11 Sep 2007 12:04:12 -0400
+Received: from mailhub.linpro.no ([213.236.139.167]:55041 "EHLO
+	mailhub.linpro.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753233AbXIKQEK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 12:04:10 -0400
+From: =?iso-8859-1?Q?Dag-Erling_Sm=F8rgrav?= <des@linpro.no>
+To: Clemens Koller <clemens.koller@anagramm.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: Socket-related problem in x86_64 Kernel (2.6.16.53-0.8-smp)?
-Message-Id: <20070911175724.e743febb.dada1@cosmosbay.com>
-In-Reply-To: <46E6CD2F.1142.1554B48D@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-References: <46E67C60.19416.14190936@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-	<46E6CD2F.1142.1554B48D@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: [RFC+PATCH] RTC calibration
+References: <ujrmyvt2tyy.fsf@false.linpro.no> <46E6A737.6080805@anagramm.de>
+	<ujrabrt2qkt.fsf@false.linpro.no> <46E6B617.7030106@anagramm.de>
+Date: Tue, 11 Sep 2007 18:04:06 +0200
+In-Reply-To: <46E6B617.7030106@anagramm.de> (Clemens Koller's message of "Tue,
+	11 Sep 2007 17:36:55 +0200")
+Message-ID: <ujr1wd52npl.fsf@false.linpro.no>
+User-Agent: Gnus/5.110004 (No Gnus v0.4) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Sep 2007 17:15:26 +0200
-"Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de> wrote:
+Clemens Koller <clemens.koller@anagramm.de> writes:
+> Dag-Erling Smørgrav <des@linpro.no> writes:
+> > Without knowing exacly which chip is present, there is no way for the
+> > userland calibration tool to know how big a difference a calibration
+> > step makes.
+> I am not talking about the calibration algorithm and it's quality.
 
-> On 11 Sep 2007 at 15:01, Eric Dumazet wrote:
-> 
-> [...]
-> > > Also note that the i586 (32-bit, non-SMP) kernel does not have that problem.
-> > > Linux version 2.6.16.53-0.8-default (geeko@buildhost) (gcc version 4.1.2 20070115 
-> > > (prerelease) (SUSE Linux)) #1 Fri Aug 31 13:07:27 UTC 2007
-> > 
-> > Are you sure ?
-> 
-> Not any more ;-)
-> 
-> > 
-> > segfaulting are sysloged only on 64bits kernel.
-> > 
-> > Maybe your slapd/hscan processes are doing bad things, that make them 
-> > core dump without notice on a 32bits kernel.
-> 
-> I'm using the senddmail milter library that does the socket communication. So any 
-> bad things should be searched there.
-> 
-> I tend to think that the same program when being compiled as a 32-bit executable 
-> does not cause these segfaults on a 64 bit kernel.
-> 
-> I also tried to use ksymoops to get a disassembly of the corresponding kernel 
-> code, but the result did not look good to me.
-> 
-> Is there a deeper reason why the kernel does not provide more info (like a call 
-> trace) on segfaults?
-> 
-> Will an strace of the program (multi-threaded, unfortunately, just as slapd (most 
-> likely)) be helpful?
-> 
-> When I tried it for slapd, the (rest of the) strace was:
-> 9931  socket(PF_INET, SOCK_STREAM, IPPROTO_IP) = 3
-> 9931  connect(3, {sa_family=AF_INET, sin_port=htons(427), sin_addr=inet_addr("12
-> 7.0.0.1")}, 16) = 0
-> 9931  setsockopt(3, SOL_SOCKET, SO_RCVLOWAT, [18], 4) = 0
-> 9931  setsockopt(3, SOL_SOCKET, SO_SNDLOWAT, [18], 4) = -1 ENOPROTOOPT (Protocol
->  not available)
-> 9931  mmap(NULL, 1434435584, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1
-> , 0) = 0x2aaaaae32000
-> 9931  --- SIGSEGV (Segmentation fault) @ 0 (0) ---
+Neither am I.
 
-Definitly a user mode problem, dereferencing a NULL pointer.
+> I am talking about _how_ the calibration register is addressed from
+> userspace. It's a simple register, some bits at address 7 and I would
+> expect to read/modify/write registers to do all the things you want
+> to do. Register access in userspace doesn't put any limitation
+> to applications.
 
-Try to attach gdb on this process instead of stracing it, then a "bt" command should 
-tell you some usefull things.
+It requires the application to know the hardware intimately.
 
-Strange thing here is that this program wants a huge block of memory (1434435584 bytes),
-so maybe some file is corrupted, maybe you should check database integrity first.
+Calibration of the M41T11 is implemented using the lower 6 bits of
+register 7; this is not necessarily the case for other existing or
+future chips.
 
+Let's say I normalize this to [-128;127]; an application that tried to
+speed up the clock would waste several hours increasing the
+calibration value from 0 to 1, 2, 3 before seeing an effect after
+increasing it to 4.  And how do I normalize the assymetric range of
+the M41T11?
+
+> Having only incs and decs without getting the actual value back seems
+> to be an absolutely unnecessary limitation here.
+> You cannot get the current value back to see if it's i.e. in saturation in
+> a way that it doesn't make sense to inc/decrement it further or in bigger steps
+> or reset it to zero...
+
+The driver will return EINVAL if you try to increment or decrement the
+calibration register beyond its limits.
+
+DES
+-- 
+Dag-Erling Smørgrav
+Senior Software Developer
+Linpro AS - www.linpro.no
