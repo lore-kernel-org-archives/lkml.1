@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965991AbXIKUIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934394AbXIKUIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965991AbXIKUIb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 16:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934298AbXIKUC1
+	id S934394AbXIKUIx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 16:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934048AbXIKUC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 16:02:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37783 "EHLO mx1.redhat.com"
+	Tue, 11 Sep 2007 16:02:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37781 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763898AbXIKUCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S934291AbXIKUCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Sep 2007 16:02:23 -0400
-Message-Id: <20070911200015.098843000@chello.nl>
+Message-Id: <20070911200012.442552000@chello.nl>
 References: <20070911195350.825778000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 11 Sep 2007 21:54:06 +0200
+Date: Tue, 11 Sep 2007 21:53:54 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
@@ -20,173 +20,81 @@ Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
        torvalds@linux-foundation.org
-Subject: [PATCH 16/23] mm: scalable bdi statistics counters.
-Content-Disposition: inline; filename=bdi_stat.patch
+Subject: [PATCH 04/23] lib: percpu_counter variable batch
+Content-Disposition: inline; filename=percpu_counter_batch.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide scalable per backing_dev_info statistics counters.
+Because the current batch setup has an quadric error bound on the counter,
+allow for an alternative setup.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/backing-dev.h |   85 ++++++++++++++++++++++++++++++++++++++++++--
- mm/backing-dev.c            |   27 +++++++++++++
- 2 files changed, 109 insertions(+), 3 deletions(-)
+ include/linux/percpu_counter.h |   10 +++++++++-
+ lib/percpu_counter.c           |    6 +++---
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/include/linux/backing-dev.h
+Index: linux-2.6/include/linux/percpu_counter.h
 ===================================================================
---- linux-2.6.orig/include/linux/backing-dev.h
-+++ linux-2.6/include/linux/backing-dev.h
-@@ -8,6 +8,8 @@
- #ifndef _LINUX_BACKING_DEV_H
- #define _LINUX_BACKING_DEV_H
+--- linux-2.6.orig/include/linux/percpu_counter.h	2007-05-23 20:34:12.000000000 +0200
++++ linux-2.6/include/linux/percpu_counter.h	2007-05-23 20:36:06.000000000 +0200
+@@ -32,9 +32,14 @@ struct percpu_counter {
  
-+#include <linux/percpu_counter.h>
-+#include <linux/log2.h>
- #include <asm/atomic.h>
+ void percpu_counter_init(struct percpu_counter *fbc, s64 amount);
+ void percpu_counter_destroy(struct percpu_counter *fbc);
+-void percpu_counter_add(struct percpu_counter *fbc, s32 amount);
++void __percpu_counter_add(struct percpu_counter *fbc, s32 amount, s32 batch);
+ s64 percpu_counter_sum(struct percpu_counter *fbc);
  
- struct page;
-@@ -24,6 +26,12 @@ enum bdi_state {
- 
- typedef int (congested_fn)(void *, int);
- 
-+enum bdi_stat_item {
-+	NR_BDI_STAT_ITEMS
-+};
++static inline void percpu_counter_add(struct percpu_counter *fbc, s32 amount)
++{
++	__percpu_counter_add(fbc, amount, FBC_BATCH);
++}
 +
-+#define BDI_STAT_BATCH (8*(1+ilog2(nr_cpu_ids)))
-+
- struct backing_dev_info {
- 	unsigned long ra_pages;	/* max readahead in PAGE_CACHE_SIZE units */
- 	unsigned long state;	/* Always use atomic bitops on this */
-@@ -32,15 +40,86 @@ struct backing_dev_info {
- 	void *congested_data;	/* Pointer to aux data for congested func */
- 	void (*unplug_io_fn)(struct backing_dev_info *, struct page *);
- 	void *unplug_io_data;
-+
-+	struct percpu_counter bdi_stat[NR_BDI_STAT_ITEMS];
- };
- 
--static inline int bdi_init(struct backing_dev_info *bdi)
-+int bdi_init(struct backing_dev_info *bdi);
-+void bdi_destroy(struct backing_dev_info *bdi);
-+
-+static inline void __add_bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item, s64 amount)
+ static inline s64 percpu_counter_read(struct percpu_counter *fbc)
  {
--	return 0;
-+	__percpu_counter_add(&bdi->bdi_stat[item], amount, BDI_STAT_BATCH);
+ 	return fbc->count;
+@@ -70,6 +75,9 @@ static inline void percpu_counter_destro
+ {
  }
  
--static inline void bdi_destroy(struct backing_dev_info *bdi)
-+static inline void __inc_bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
++#define __percpu_counter_add(fbc, amount, batch) \
++	percpu_counter_add(fbc, amount)
++
+ static inline void
+ percpu_counter_add(struct percpu_counter *fbc, s32 amount)
  {
-+	__add_bdi_stat(bdi, item, 1);
-+}
-+
-+static inline void inc_bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	__inc_bdi_stat(bdi, item);
-+	local_irq_restore(flags);
-+}
-+
-+static inline void __dec_bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
-+{
-+	__add_bdi_stat(bdi, item, -1);
-+}
-+
-+static inline void dec_bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	__dec_bdi_stat(bdi, item);
-+	local_irq_restore(flags);
-+}
-+
-+static inline s64 bdi_stat(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
-+{
-+	return percpu_counter_read_positive(&bdi->bdi_stat[item]);
-+}
-+
-+static inline s64 __bdi_stat_sum(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
-+{
-+	return percpu_counter_sum_positive(&bdi->bdi_stat[item]);
-+}
-+
-+static inline s64 bdi_stat_sum(struct backing_dev_info *bdi,
-+		enum bdi_stat_item item)
-+{
-+	s64 sum;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	sum = __bdi_stat_sum(bdi, item);
-+	local_irq_restore(flags);
-+
-+	return sum;
-+}
-+
-+/*
-+ * maximal error of a stat counter.
-+ */
-+static inline unsigned long bdi_stat_error(struct backing_dev_info *bdi)
-+{
-+#ifdef CONFIG_SMP
-+	return nr_cpu_ids * BDI_STAT_BATCH;
-+#else
-+	return 1;
-+#endif
+Index: linux-2.6/lib/percpu_counter.c
+===================================================================
+--- linux-2.6.orig/lib/percpu_counter.c	2007-05-23 20:34:12.000000000 +0200
++++ linux-2.6/lib/percpu_counter.c	2007-05-23 20:36:21.000000000 +0200
+@@ -14,7 +14,7 @@ static LIST_HEAD(percpu_counters);
+ static DEFINE_MUTEX(percpu_counters_lock);
+ #endif
+ 
+-void percpu_counter_add(struct percpu_counter *fbc, s32 amount)
++void __percpu_counter_add(struct percpu_counter *fbc, s32 amount, s32 batch)
+ {
+ 	long count;
+ 	s32 *pcount;
+@@ -22,7 +22,7 @@ void percpu_counter_add(struct percpu_co
+ 
+ 	pcount = per_cpu_ptr(fbc->counters, cpu);
+ 	count = *pcount + amount;
+-	if (count >= FBC_BATCH || count <= -FBC_BATCH) {
++	if (count >= batch || count <= -batch) {
+ 		spin_lock(&fbc->lock);
+ 		fbc->count += count;
+ 		*pcount = 0;
+@@ -32,7 +32,7 @@ void percpu_counter_add(struct percpu_co
+ 	}
+ 	put_cpu();
  }
+-EXPORT_SYMBOL(percpu_counter_add);
++EXPORT_SYMBOL(__percpu_counter_add);
  
  /*
-Index: linux-2.6/mm/backing-dev.c
-===================================================================
---- linux-2.6.orig/mm/backing-dev.c
-+++ linux-2.6/mm/backing-dev.c
-@@ -5,6 +5,33 @@
- #include <linux/sched.h>
- #include <linux/module.h>
- 
-+int bdi_init(struct backing_dev_info *bdi)
-+{
-+	int i, j;
-+	int err;
-+
-+	for (i = 0; i < NR_BDI_STAT_ITEMS; i++) {
-+		err = percpu_counter_init_irq(&bdi->bdi_stat[i], 0);
-+		if (err) {
-+			for (j = 0; j < i; j++)
-+				percpu_counter_destroy(&bdi->bdi_stat[i]);
-+			break;
-+		}
-+	}
-+
-+	return err;
-+}
-+EXPORT_SYMBOL(bdi_init);
-+
-+void bdi_destroy(struct backing_dev_info *bdi)
-+{
-+	int i;
-+
-+	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
-+		percpu_counter_destroy(&bdi->bdi_stat[i]);
-+}
-+EXPORT_SYMBOL(bdi_destroy);
-+
- static wait_queue_head_t congestion_wqh[2] = {
- 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[0]),
- 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[1])
+  * Add up all the per-cpu counts, return the result.  This is a more accurate
 
 --
 
