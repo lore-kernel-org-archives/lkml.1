@@ -1,47 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762726AbXIKISR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762805AbXIKITQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762726AbXIKISR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 04:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760614AbXIKISF
+	id S1762805AbXIKITQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 04:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760614AbXIKITA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 04:18:05 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:59844 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759725AbXIKISD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 04:18:03 -0400
-Date: Tue, 11 Sep 2007 17:17:52 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] video: uvesafb: Add X86 dependency.
-Message-ID: <20070911081752.GA19495@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org
+	Tue, 11 Sep 2007 04:19:00 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47014 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759586AbXIKIS7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 04:18:59 -0400
+Date: Tue, 11 Sep 2007 17:18:01 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mm] mm: Fix memory hotplug + sparsemem build.
+In-Reply-To: <20070911072507.GB19260@linux-sh.org>
+References: <20070911072507.GB19260@linux-sh.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070911170921.F137.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-uvesafb is x86-specific, reflect that in the Kconfig.
+>  	if (onlined_pages)
+> -		node_set_state(zone->node, N_HIGH_MEMORY);
+> +		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
+>  
+>  	setup_per_zone_pages_min();
 
+Thanks Paul-san. 
+
+I also have another issue around here.
+(Kswapd doesn't run on memory less node now. It should run when
+ the node has memory.)
+
+I would like to merge them like following if you don't mind.
+
+
+Bye.
+
+---
+
+Fix kswapd doesn't run when memory is added on memory-less-node.
+Fix compile error of zone->node when CONFIG_NUMA is off.
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
---
 
- drivers/video/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+---
+ mm/memory_hotplug.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
---- linux-2.6.23-rc4-mm1.orig/drivers/video/Kconfig	2007-09-11 15:15:52.000000000 +0900
-+++ linux-2.6.23-rc4-mm1/drivers/video/Kconfig	2007-09-11 17:01:04.000000000 +0900
-@@ -593,7 +593,7 @@
+Index: current/mm/memory_hotplug.c
+===================================================================
+--- current.orig/mm/memory_hotplug.c	2007-09-07 18:08:07.000000000 +0900
++++ current/mm/memory_hotplug.c	2007-09-11 17:29:19.000000000 +0900
+@@ -211,10 +211,12 @@ int online_pages(unsigned long pfn, unsi
+ 		online_pages_range);
+ 	zone->present_pages += onlined_pages;
+ 	zone->zone_pgdat->node_present_pages += onlined_pages;
+-	if (onlined_pages)
+-		node_set_state(zone->node, N_HIGH_MEMORY);
  
- config FB_UVESA
- 	tristate "Userspace VESA VGA graphics support"
--	depends on FB && CONNECTOR
-+	depends on FB && CONNECTOR && X86
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+ 	setup_per_zone_pages_min();
++	if (onlined_pages){
++		kswapd_run(zone_to_nid(zone));
++		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
++	}
+ 
+ 	if (need_zonelists_rebuild)
+ 		build_all_zonelists();
+@@ -269,9 +271,6 @@ int add_memory(int nid, u64 start, u64 s
+ 		if (!pgdat)
+ 			return -ENOMEM;
+ 		new_pgdat = 1;
+-		ret = kswapd_run(nid);
+-		if (ret)
+-			goto error;
+ 	}
+ 
+ 	/* call arch's memory hotadd */
+
+
+-- 
+Yasunori Goto 
+
+
