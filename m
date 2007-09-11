@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbXIKPLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755627AbXIKPQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365AbXIKPLS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 11:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbXIKPLL
+	id S1755627AbXIKPQS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 11:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbXIKPQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 11:11:11 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:43307 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752635AbXIKPLK (ORCPT
+	Tue, 11 Sep 2007 11:16:09 -0400
+Received: from rrzmta1.rz.uni-regensburg.de ([194.94.155.51]:23213 "EHLO
+	rrzmta1.rz.uni-regensburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752268AbXIKPQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 11:11:10 -0400
-Date: Tue, 11 Sep 2007 11:11:07 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Pete Zaitcev <zaitcev@redhat.com>, <linux-usb-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: Oops in make_class_name in 2.6.22.1 on Fedora
-In-Reply-To: <20070911061226.GB27404@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0709111106140.3852-100000@iolanthe.rowland.org>
+	Tue, 11 Sep 2007 11:16:08 -0400
+From: "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de>
+Organization: Universitaet Regensburg, Klinikum
+To: Eric Dumazet <dada1@cosmosbay.com>
+Date: Tue, 11 Sep 2007 17:15:26 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: Socket-related problem in x86_64 Kernel (2.6.16.53-0.8-smp)?
+CC: linux-kernel@vger.kernel.org
+Message-ID: <46E6CD2F.1142.1554B48D@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+In-reply-to: <20070911150143.c2bc4cf3.dada1@cosmosbay.com>
+References: <46E67C60.19416.14190936@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+X-mailer: Pegasus Mail for Windows (4.31)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Content-Conformance: HerringScan-0.26/Sophos-P=4.19.0+V=4.19+U=2.07.173+R=02 July 2007+T=260007@20070911.151214Z
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Sep 2007, Greg KH wrote:
+On 11 Sep 2007 at 15:01, Eric Dumazet wrote:
 
-> On Mon, Sep 10, 2007 at 08:26:47PM -0700, Pete Zaitcev wrote:
-> > Hi, Greg (and others):
-> > 
-> > I do not seem to be able to find an answer, sorry.
-> > Do you happen to remember if this was fixed after 2.6.22.1:
-> > 
-> > localhost kernel: EIP is at make_class_name+0x27/0x7a
-> > localhost kernel:  [<c05586f1>] class_device_del+0x97/0x119
-> > localhost kernel:  [<c055877b>] class_device_unregister+0x8/0x10
-> > localhost kernel:  [<e08735f4>] __scsi_remove_device+0x1d/0x60 [scsi_mod]
-> > localhost kernel:  [<e08711ae>] scsi_forget_host+0x2d/0x4a [scsi_mod]
-> > localhost kernel:  [<e086c49c>] scsi_remove_host+0x65/0xd5 [scsi_mod]
-> > localhost kernel:  [<e0e76775>] storage_disconnect+0xe/0x16 [usb_storage]
-> > localhost kernel:  [<c056f8b8>] usb_unbind_interface+0x44/0x85
-> > localhost kernel:  [<c0557df7>] __device_release_driver+0x6e/0x8b
-> > 
-> > Obviously a known bug but all I see is users reporting it. In my case
-> > it's this:
-> >  https://bugzilla.redhat.com/show_bug.cgi?id=253424
-> > I saw Alan giving it a try here:
-> >  http://lkml.org/lkml/2007/7/12/259
+[...]
+> > Also note that the i586 (32-bit, non-SMP) kernel does not have that problem.
+> > Linux version 2.6.16.53-0.8-default (geeko@buildhost) (gcc version 4.1.2 20070115 
+> > (prerelease) (SUSE Linux)) #1 Fri Aug 31 13:07:27 UTC 2007
 > 
-> I think this was a scsi problem that has been fixed, but don't really
-> remember the exact commit.
+> Are you sure ?
 
-Yes.  There are some bugs in the SCSI async-scanning code, and there is
-a patch to fix them:
+Not any more ;-)
 
-http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=a93a091df8232fad60867d41fbc3be855a0b78f2
-
-It is scheduled for 2.6.24.  For now, people can work around the bug by 
-disabling CONFIG_SCSI_SCAN_ASYNC.
-
-> Alan, any ideas?
 > 
-> It would probably be good to get this into the next -stable if we can
-> figure out which patch did fix it.
+> segfaulting are sysloged only on 64bits kernel.
+> 
+> Maybe your slapd/hscan processes are doing bad things, that make them 
+> core dump without notice on a 32bits kernel.
 
-I have urged both James Bottomley and Andrew Morton to apply that patch 
-as soon as possible.  Neither of them paid any attention.
+I'm using the senddmail milter library that does the socket communication. So any 
+bad things should be searched there.
 
-Alan Stern
+I tend to think that the same program when being compiled as a 32-bit executable 
+does not cause these segfaults on a 64 bit kernel.
+
+I also tried to use ksymoops to get a disassembly of the corresponding kernel 
+code, but the result did not look good to me.
+
+Is there a deeper reason why the kernel does not provide more info (like a call 
+trace) on segfaults?
+
+Will an strace of the program (multi-threaded, unfortunately, just as slapd (most 
+likely)) be helpful?
+
+When I tried it for slapd, the (rest of the) strace was:
+9931  socket(PF_INET, SOCK_STREAM, IPPROTO_IP) = 3
+9931  connect(3, {sa_family=AF_INET, sin_port=htons(427), sin_addr=inet_addr("12
+7.0.0.1")}, 16) = 0
+9931  setsockopt(3, SOL_SOCKET, SO_RCVLOWAT, [18], 4) = 0
+9931  setsockopt(3, SOL_SOCKET, SO_SNDLOWAT, [18], 4) = -1 ENOPROTOOPT (Protocol
+ not available)
+9931  mmap(NULL, 1434435584, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1
+, 0) = 0x2aaaaae32000
+9931  --- SIGSEGV (Segmentation fault) @ 0 (0) ---
+
+Regards,
+Ulrich
 
