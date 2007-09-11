@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764133AbXIKS33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932226AbXIKSb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764133AbXIKS33 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 14:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761857AbXIKS3W
+	id S932226AbXIKSb1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 14:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762392AbXIKSbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 14:29:22 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:57661 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761226AbXIKS3V (ORCPT
+	Tue, 11 Sep 2007 14:31:17 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:33317 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762262AbXIKSbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 14:29:21 -0400
-Date: Tue, 11 Sep 2007 20:29:26 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       jgarzik <jgarzik@pobox.com>
+	Tue, 11 Sep 2007 14:31:16 -0400
+Date: Tue, 11 Sep 2007 14:31:16 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
 Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
-Message-ID: <20070911182926.GQ3563@stusta.de>
+In-reply-to: <20070911181700.GP3563@stusta.de>
+X-X-Sender: nico@xanadu.home
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       jgarzik <jgarzik@pobox.com>
+Message-id: <alpine.LFD.0.9999.0709111428490.21186@xanadu.home>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Content-transfer-encoding: 7BIT
 References: <20070911101644.cd3f641f.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070911101644.cd3f641f.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+ <alpine.LFD.0.9999.0709111333050.21186@xanadu.home>
+ <20070911181700.GP3563@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 11, 2007 at 10:16:44AM -0700, Randy Dunlap wrote:
->...
-> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> +Mutt (TUI)
-> +
-> +Plenty of Linux developers use mutt, so it must work pretty well.
-> +
-> +Are there any special config options that are needed??
->...
+On Tue, 11 Sep 2007, Adrian Bunk wrote:
 
-It should work with default settings.
+> On Tue, Sep 11, 2007 at 02:03:34PM -0400, Nicolas Pitre wrote:
+> > On Tue, 11 Sep 2007, Randy Dunlap wrote:
+> >...
+> > > +Alpine (TUI)
+> > > +
+> > > +<I don't know.  Maybe Adrian or Linus can comment.>
+> > > +
+> > > +Are any special config options needed?
+> > 
+> > Alpine is the successor of Pine.  Issues that were found in some earlier 
+> > Pine versions wrt patch sending are now fixed.
+> >...
+> 
+> There were no problems with sending patches in pine.
 
-mutt doesn't come with an editor, so whatever editor you use should be 
-used in a way that there are no automatic linebreaks. Most editors have 
-an "insert file" option that inserts the contents of a file unaltered.
+One old version did have problems with spaces at the end of lines 
+despite the config option, and you had to manually patch it if your 
+distro didn't.
 
-cu
-Adrian
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Nicolas
