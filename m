@@ -1,77 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965829AbXIKIsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933335AbXIKIuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965829AbXIKIsb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 04:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762166AbXIKIsW
+	id S933335AbXIKIuw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 04:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932388AbXIKIuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 04:48:22 -0400
-Received: from mo32.po.2iij.net ([210.128.50.17]:1310 "EHLO mo32.po.2iij.net"
+	Tue, 11 Sep 2007 04:50:44 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:53897 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762011AbXIKIsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 04:48:22 -0400
-Date: Tue, 11 Sep 2007 17:48:04 +0900
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+	id S932311AbXIKIun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 04:50:43 -0400
+Date: Tue, 11 Sep 2007 17:50:27 +0900
+From: Paul Mundt <lethal@linux-sh.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: yoichi_yuasa@tripeaks.co.jp, rpurdie@rpsys.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] leds: add #include <linux/spinlock_types.h> to
- include/linux/leds.h for rwlock_t
-Message-Id: <20070911174804.2c4949a7.yoichi_yuasa@tripeaks.co.jp>
-In-Reply-To: <20070910220423.43e0a4d9.akpm@linux-foundation.org>
-References: <20070904162345.30e82bc8.yoichi_yuasa@tripeaks.co.jp>
-	<20070910220423.43e0a4d9.akpm@linux-foundation.org>
-Organization: TriPeaks Corporation
-X-Mailer: Sylpheed version 1.0.4 (GTK+ 1.2.10; i386-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH -mm] sysctl: Fix syscall disabled build.
+Message-ID: <20070911085027.GA19770@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Sep 2007 22:04:23 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+deprecated_sysctl_warning() is used for sys_sysctl(), whether
+CONFIG_SYSCTL_SYSCALL is enabled or not. When it was added, it was
+added under the CONFIG_SYSCTL section, so it's not defined if we have
+the support disabled completely.
 
-> On Tue, 4 Sep 2007 16:23:45 +0900 Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp> wrote:
-> 
-> > 
-> > This patch has added #include <linux/spinlock_types.h> to include/linux/leds.h for rwlock_t.
-> > 
-> > Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-> > 
-> > diff -pruN -X generic/Documentation/dontdiff generic-orig/include/linux/leds.h generic/include/linux/leds.h
-> > --- generic-orig/include/linux/leds.h	2007-09-04 14:59:51.334686250 +0900
-> > +++ generic/include/linux/leds.h	2007-09-04 14:56:10.676896000 +0900
-> > @@ -13,6 +13,7 @@
-> >  #define __LINUX_LEDS_H_INCLUDED
-> >  
-> >  #include <linux/list.h>
-> > +#include <linux/spinlock_types.h>
-> >  
-> >  struct device;
-> >  /*
-> 
-> I think spinlock_types.h is more an internal implementation detail, and
-> that leds.h should be including plain old <linux/spinlock.h>.  Does that
-> change also fix whatever build error you were seeing?
+  CC      kernel/sysctl.o
+kernel/sysctl.c: In function 'sys_sysctl':
+kernel/sysctl.c:2601: error: implicit declaration of function 'deprecated_sysctl_warning'
+make[1]: *** [kernel/sysctl.o] Error 1
+make: *** [kernel] Error 2
 
-Yes it does.
+This just moves the function past the end of the CONFIG_SYSCTL space
+so both configurations are happy.
 
-Yoichi
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
----
+--
 
-This patch has added #include <linux/spinlock.h> to include/linux/leds.h for rwlock_t.
+ kernel/sysctl.c |   56 +++++++++++++++++++++++++++++---------------------------
+ 1 file changed, 29 insertions(+), 27 deletions(-)
 
-Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-
-diff -pruN -X generic/Documentation/dontdiff generic-orig/include/linux/leds.h generic/include/linux/leds.h
---- generic-orig/include/linux/leds.h	2007-09-11 15:32:22.723667750 +0900
-+++ generic/include/linux/leds.h	2007-09-11 15:28:20.696542000 +0900
-@@ -13,6 +13,7 @@
- #define __LINUX_LEDS_H_INCLUDED
+--- linux-2.6.23-rc4-mm1.orig/kernel/sysctl.c	2007-09-11 15:15:56.000000000 +0900
++++ linux-2.6.23-rc4-mm1/kernel/sysctl.c	2007-09-11 17:43:36.000000000 +0900
+@@ -55,6 +55,8 @@
+ #include <asm/stacktrace.h>
+ #endif
  
- #include <linux/list.h>
-+#include <linux/spinlock.h>
++static int deprecated_sysctl_warning(struct __sysctl_args *args);
++
+ #if defined(CONFIG_SYSCTL)
  
- struct device;
+ /* External variables not in a header file. */
+@@ -1330,33 +1332,6 @@
+ 	return NULL;
+ }
+ 
+-static int deprecated_sysctl_warning(struct __sysctl_args *args)
+-{
+-	static int msg_count;
+-	int name[CTL_MAXNAME];
+-	int i;
+-
+-	/* Read in the sysctl name for better debug message logging */
+-	for (i = 0; i < args->nlen; i++)
+-		if (get_user(name[i], args->name + i))
+-			return -EFAULT;
+-
+-	/* Ignore accesses to kernel.version */
+-	if ((args->nlen == 2) && (name[0] == CTL_KERN) && (name[1] == KERN_VERSION))
+-		return 0;
+-
+-	if (msg_count < 5) {
+-		msg_count++;
+-		printk(KERN_INFO
+-			"warning: process `%s' used the deprecated sysctl "
+-			"system call with ", current->comm);
+-		for (i = 0; i < args->nlen; i++)
+-			printk("%d.", name[i]);
+-		printk("\n");
+-	}
+-	return 0;
+-}
+-
+ #ifdef CONFIG_SYSCTL_SYSCALL
+ int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp,
+ 	       void __user *newval, size_t newlen)
+@@ -2644,6 +2619,33 @@
+ 
+ #endif /* CONFIG_SYSCTL_SYSCALL */
+ 
++static int deprecated_sysctl_warning(struct __sysctl_args *args)
++{
++	static int msg_count;
++	int name[CTL_MAXNAME];
++	int i;
++
++	/* Read in the sysctl name for better debug message logging */
++	for (i = 0; i < args->nlen; i++)
++		if (get_user(name[i], args->name + i))
++			return -EFAULT;
++
++	/* Ignore accesses to kernel.version */
++	if ((args->nlen == 2) && (name[0] == CTL_KERN) && (name[1] == KERN_VERSION))
++		return 0;
++
++	if (msg_count < 5) {
++		msg_count++;
++		printk(KERN_INFO
++			"warning: process `%s' used the deprecated sysctl "
++			"system call with ", current->comm);
++		for (i = 0; i < args->nlen; i++)
++			printk("%d.", name[i]);
++		printk("\n");
++	}
++	return 0;
++}
++
  /*
+  * No sense putting this after each symbol definition, twice,
+  * exception granted :-)
