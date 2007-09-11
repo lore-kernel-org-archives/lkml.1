@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761946AbXIKPyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762364AbXIKPzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761946AbXIKPyh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 11:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbXIKPy3
+	id S1762364AbXIKPzU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 11:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbXIKPzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 11:54:29 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:23212 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753706AbXIKPy2 (ORCPT
+	Tue, 11 Sep 2007 11:55:05 -0400
+Received: from rrzmta1.rz.uni-regensburg.de ([194.94.155.51]:29439 "EHLO
+	rrzmta1.rz.uni-regensburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755278AbXIKPzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 11:54:28 -0400
-Date: Tue, 11 Sep 2007 08:53:01 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: vatsa@linux.vnet.ibm.com
-Cc: Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, Jan Engelhardt <jengelh@computergmbh.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Hookup group-scheduler with task container
- infrastructure
-Message-Id: <20070911085301.ca3a00e4.randy.dunlap@oracle.com>
-In-Reply-To: <20070911155119.GE16222@linux.vnet.ibm.com>
-References: <20070910171049.GA16048@linux.vnet.ibm.com>
-	<Pine.LNX.4.64.0709101903220.5368@fbirervta.pbzchgretzou.qr>
-	<20070910172334.GB19100@linux.vnet.ibm.com>
-	<20070910102259.dc45a481.akpm@linux-foundation.org>
-	<20070910174649.GA16222@linux.vnet.ibm.com>
-	<b647ffbd0709101537l9af4dc8x743b25c96e0f5235@mail.gmail.com>
-	<6599ad830709101545s66fd338dob6932407db4e1002@mail.gmail.com>
-	<46E641C1.8000808@fr.ibm.com>
-	<20070911082243.9433c528.randy.dunlap@oracle.com>
-	<20070911155119.GE16222@linux.vnet.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 11 Sep 2007 11:55:03 -0400
+From: "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de>
+Organization: Universitaet Regensburg, Klinikum
+To: Eric Dumazet <dada1@cosmosbay.com>
+Date: Tue, 11 Sep 2007 17:54:38 +0200
+MIME-Version: 1.0
+Subject: Re: Socket-related problem in x86_64 Kernel (2.6.16.53-0.8-smp)?
+CC: linux-kernel@vger.kernel.org
+Message-ID: <46E6D660.16004.15789926@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+In-reply-to: <20070911150143.c2bc4cf3.dada1@cosmosbay.com>
+References: <46E67C60.19416.14190936@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+X-mailer: Pegasus Mail for Windows (4.31)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Content-Conformance: HerringScan-0.26/Sophos-P=4.19.0+V=4.19+U=2.07.173+R=02 July 2007+T=260007@20070911.155218Z
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Sep 2007 21:21:19 +0530 Srivatsa Vaddagiri wrote:
+On 11 Sep 2007 at 15:01, Eric Dumazet wrote:
 
-> On Tue, Sep 11, 2007 at 08:22:43AM -0700, Randy Dunlap wrote:
-> > That looks odd, like it's a filesystem.
-> > What does cfs really mean?
+> On Tue, 11 Sep 2007 11:30:38 +0200
+> "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de> wrote:
 > 
-> cfs = completely fair scheduler :)
+> > Hi,
+> > 
+> > since upgrading from SLES9 SP3 to SLES10 SP1 I see kernel segfaults which seem 
+> > network-related: Most notably slapd does not run any more, and my sendmail-milter 
+> > based virus scanner terminates now and then with kernel segfault.
+> > 
+> > Current kernel form SLES10 SP1 is: 
+> > 
+> > # cat /proc/version
+> > Linux version 2.6.16.53-0.8-smp (geeko@buildhost) (gcc version 4.1.2 20070115 
+> > (prerelease) (SUSE Linux)) #1 SMP Fri Aug 31 13:07:27 UTC 2007
+> > 
+> > The effects in syslog are:
+> > Aug 31 15:04:40 kgate1 kernel: powersaved[10102]: segfault at 0000000000000008 rip 
+> > 000000000042c17a rsp 00007fffea55de00 error 4
+[...]
+> segfaulting are sysloged only on 64bits kernel.
 > 
-> In this thread, we are talking of hooking the cfs cpu scheduler with the
-> task-container framework in -mm tree, so that the scheduler can deal
-> with groups of tasks rather than just tasks, while handling fairness of
-> cpu allocation.
-> 
-> I agree "cfs" control subsystem does look odd a bit here. "cpu" control
-> subsystem seems better.
+> Maybe your slapd/hscan processes are doing bad things, that make them 
+> core dump without notice on a 32bits kernel.
 
-Thanks.  I agree that using "cpu" is better.  I.e., don't tie it
-to a particular scheduler name.  It would just need to change the
-next time we have a new scheduler.  ;)
+A very wild guess: AFAIK SUSE Distributions are XENified recently, that is they 
+have libraries that treat thread local storage differently from the default. If 
+these programs (powersaved, slapd, hscan) are all multithreaded, could it be that 
+the cause of the problem is in that area?
 
+If not, any clues on debugging/tracing? There's a 
+/usr/src/linux/Documentation/oops-tracing.txt, but no "segfault-tracing".
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+I also learned that the error code is only documented for i386 arch (thanks to 
+Emacs ediff):
+ * error_code:
+ *      bit 0 == 0 means no page found, 1 means protection fault
+ *      bit 1 == 0 means read, 1 means write
+ *      bit 2 == 0 means kernel, 1 means user-mode
+
+So the problem (error 4) looks a bit like a read on a NULL-pointer dereference, 
+right? And the "rip" is user space, correct?
+
+Regards,
+Ulrich
+
