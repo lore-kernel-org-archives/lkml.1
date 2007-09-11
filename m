@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966520AbXIKGYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966834AbXIKGYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966520AbXIKGYO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:24:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964926AbXIKGGz
+	id S966834AbXIKGYn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762513AbXIKGG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:06:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50599 "EHLO
+	Tue, 11 Sep 2007 02:06:56 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56516 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761567AbXIKGEd (ORCPT
+	with ESMTP id S1761561AbXIKGEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 02:04:33 -0400
-Message-Id: <20070911060432.312377033@sgi.com>
+	Tue, 11 Sep 2007 02:04:32 -0400
+Message-Id: <20070911060432.071603646@sgi.com>
 References: <20070911060349.993975297@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 10 Sep 2007 23:04:19 -0700
+Date: Mon, 10 Sep 2007 23:04:18 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: torvalds@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -24,190 +24,29 @@ Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
        Fengguang Wu <fengguang.wu@gmail.com>
 Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com, hugh@veritas.com
 Cc: joern@lazybastard.org
-Subject: [29/41] Fix up reclaim counters
-Content-Disposition: inline; filename=0029-Fix-up-reclaim-counters.patch
+Subject: [28/41] Futex: Fix PAGE SIZE assumption
+Content-Disposition: inline; filename=0028-Fix-PAGE-SIZE-assumption-in-miscellaneous-places.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Compound pages of an arbitrary order may now be on the LRU and may be
-reclaimed.
-
-Adjust the counting in vmscan.c to could the number of base pages.
-
-Also change the active and inactive accounting to do the same.
-
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- include/linux/mm_inline.h |   36 +++++++++++++++++++++++++++---------
- mm/vmscan.c               |   22 ++++++++++++----------
- 2 files changed, 39 insertions(+), 19 deletions(-)
+ kernel/futex.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/mm_inline.h b/include/linux/mm_inline.h
-index 895bc4e..5bf34aa 100644
---- a/include/linux/mm_inline.h
-+++ b/include/linux/mm_inline.h
-@@ -2,39 +2,57 @@ static inline void
- add_page_to_active_list(struct zone *zone, struct page *page)
- {
- 	list_add(&page->lru, &zone->active_list);
--	__inc_zone_state(zone, NR_ACTIVE);
-+	if (!PageHead(page))
-+		__inc_zone_state(zone, NR_ACTIVE);
-+	else
-+		__inc_zone_page_state(page, NR_ACTIVE);
- }
- 
- static inline void
- add_page_to_inactive_list(struct zone *zone, struct page *page)
- {
- 	list_add(&page->lru, &zone->inactive_list);
--	__inc_zone_state(zone, NR_INACTIVE);
-+	if (!PageHead(page))
-+		__inc_zone_state(zone, NR_INACTIVE);
-+	else
-+		__inc_zone_page_state(page, NR_INACTIVE);
- }
- 
- static inline void
- del_page_from_active_list(struct zone *zone, struct page *page)
- {
- 	list_del(&page->lru);
--	__dec_zone_state(zone, NR_ACTIVE);
-+	if (!PageHead(page))
-+		__dec_zone_state(zone, NR_ACTIVE);
-+	else
-+		__dec_zone_page_state(page, NR_ACTIVE);
- }
- 
- static inline void
- del_page_from_inactive_list(struct zone *zone, struct page *page)
- {
- 	list_del(&page->lru);
--	__dec_zone_state(zone, NR_INACTIVE);
-+	if (!PageHead(page))
-+		__dec_zone_state(zone, NR_INACTIVE);
-+	else
-+		__dec_zone_page_state(page, NR_INACTIVE);
- }
- 
- static inline void
- del_page_from_lru(struct zone *zone, struct page *page)
- {
-+	enum zone_stat_item counter = NR_ACTIVE;
-+
- 	list_del(&page->lru);
--	if (PageActive(page)) {
-+	if (PageActive(page))
- 		__ClearPageActive(page);
--		__dec_zone_state(zone, NR_ACTIVE);
--	} else {
--		__dec_zone_state(zone, NR_INACTIVE);
--	}
-+	else
-+		counter = NR_INACTIVE;
-+
-+	if (!PageHead(page))
-+		__dec_zone_state(zone, counter);
-+	else
-+		__dec_zone_page_state(page, counter);
- }
- 
-+
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index a6e65d0..79a6800 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -466,14 +466,14 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 
- 		VM_BUG_ON(PageActive(page));
- 
--		sc->nr_scanned++;
-+		sc->nr_scanned += page_cache_base_pages(page);
- 
- 		if (!sc->may_swap && page_mapped(page))
- 			goto keep_locked;
- 
- 		/* Double the slab pressure for mapped and swapcache pages */
- 		if (page_mapped(page) || PageSwapCache(page))
--			sc->nr_scanned++;
-+			sc->nr_scanned += page_cache_base_pages(page);
- 
- 		may_enter_fs = (sc->gfp_mask & __GFP_FS) ||
- 			(PageSwapCache(page) && (sc->gfp_mask & __GFP_IO));
-@@ -590,7 +590,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 
- free_it:
- 		unlock_page(page);
--		nr_reclaimed++;
-+		nr_reclaimed += page_cache_base_pages(page);
- 		if (!pagevec_add(&freed_pvec, page))
- 			__pagevec_release_nonlru(&freed_pvec);
- 		continue;
-@@ -682,22 +682,23 @@ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
- 	unsigned long nr_taken = 0;
- 	unsigned long scan;
- 
--	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
-+	for (scan = 0; scan < nr_to_scan && !list_empty(src); ) {
- 		struct page *page;
- 		unsigned long pfn;
- 		unsigned long end_pfn;
- 		unsigned long page_pfn;
-+		int pages;
- 		int zone_id;
- 
- 		page = lru_to_page(src);
- 		prefetchw_prev_lru_page(page, src, flags);
--
-+		pages = page_cache_base_pages(page);
- 		VM_BUG_ON(!PageLRU(page));
- 
- 		switch (__isolate_lru_page(page, mode)) {
- 		case 0:
- 			list_move(&page->lru, dst);
--			nr_taken++;
-+			nr_taken += pages;
- 			break;
- 
- 		case -EBUSY:
-@@ -743,8 +744,8 @@ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
- 			switch (__isolate_lru_page(cursor_page, mode)) {
- 			case 0:
- 				list_move(&cursor_page->lru, dst);
--				nr_taken++;
--				scan++;
-+				nr_taken += page_cache_base_pages(cursor_page);
-+				scan += page_cache_base_pages(cursor_page);
- 				break;
- 
- 			case -EBUSY:
-@@ -754,6 +755,7 @@ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
- 				break;
- 			}
- 		}
-+		scan += pages;
+Index: linux-2.6/kernel/futex.c
+===================================================================
+--- linux-2.6.orig/kernel/futex.c	2007-09-05 01:19:50.000000000 -0700
++++ linux-2.6/kernel/futex.c	2007-09-05 01:37:04.000000000 -0700
+@@ -258,7 +258,8 @@ int get_futex_key(u32 __user *uaddr, str
+ 	err = get_user_pages(current, mm, address, 1, 0, 0, &page, NULL);
+ 	if (err >= 0) {
+ 		key->shared.pgoff =
+-			page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
++			page->index <<
++				(page_cache_page_shift(page) - PAGE_SHIFT);
+ 		put_page(page);
+ 		return 0;
  	}
- 
- 	*scanned = scan;
-@@ -1010,7 +1012,7 @@ force_reclaim_mapped:
- 		ClearPageActive(page);
- 
- 		list_move(&page->lru, &zone->inactive_list);
--		pgmoved++;
-+		pgmoved += page_cache_base_pages(page);
- 		if (!pagevec_add(&pvec, page)) {
- 			__mod_zone_page_state(zone, NR_INACTIVE, pgmoved);
- 			spin_unlock_irq(&zone->lru_lock);
-@@ -1038,7 +1040,7 @@ force_reclaim_mapped:
- 		SetPageLRU(page);
- 		VM_BUG_ON(!PageActive(page));
- 		list_move(&page->lru, &zone->active_list);
--		pgmoved++;
-+		pgmoved += page_cache_base_pages(page);
- 		if (!pagevec_add(&pvec, page)) {
- 			__mod_zone_page_state(zone, NR_ACTIVE, pgmoved);
- 			pgmoved = 0;
--- 
-1.5.2.5
 
 -- 
