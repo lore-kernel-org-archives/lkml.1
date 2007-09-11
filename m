@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762828AbXIKGMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762879AbXIKGMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762828AbXIKGMA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762443AbXIKGFP
+	id S1762879AbXIKGMe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762293AbXIKGFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:05:15 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56498 "EHLO
+	Tue, 11 Sep 2007 02:05:19 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50559 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761202AbXIKGEc (ORCPT
+	with ESMTP id S1761424AbXIKGEb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 02:04:32 -0400
-Message-Id: <20070911060429.946061623@sgi.com>
+	Tue, 11 Sep 2007 02:04:31 -0400
+Message-Id: <20070911060428.529635425@sgi.com>
 References: <20070911060349.993975297@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 10 Sep 2007 23:04:10 -0700
+Date: Mon, 10 Sep 2007 23:04:04 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: torvalds@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -24,52 +24,107 @@ Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
        Fengguang Wu <fengguang.wu@gmail.com>
 Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com, hugh@veritas.com
 Cc: joern@lazybastard.org
-Subject: [20/41] Use page_cache_xxx in drivers/block/rd.c
-Content-Disposition: inline; filename=0020-Use-page_cache_xxx-in-drivers-block-rd.c.patch
+Subject: [14/41] Use page_cache_xxx in fs/splice.c
+Content-Disposition: inline; filename=0014-Use-page_cache_xxx-in-fs-splice.c.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use page_cache_xxx in drivers/block/rd.c
+Use page_cache_xxx in fs/splice.c
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- drivers/block/rd.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ fs/splice.c |   27 ++++++++++++++-------------
+ 1 files changed, 14 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/block/rd.c b/drivers/block/rd.c
-index 65150b5..e148b3b 100644
---- a/drivers/block/rd.c
-+++ b/drivers/block/rd.c
-@@ -121,7 +121,7 @@ static void make_page_uptodate(struct page *page)
- 			}
- 		} while ((bh = bh->b_this_page) != head);
- 	} else {
--		memset(page_address(page), 0, PAGE_CACHE_SIZE);
-+		memset(page_address(page), 0, page_cache_size(page_mapping(page)));
- 	}
- 	flush_dcache_page(page);
- 	SetPageUptodate(page);
-@@ -201,9 +201,9 @@ static const struct address_space_operations ramdisk_aops = {
- static int rd_blkdev_pagecache_IO(int rw, struct bio_vec *vec, sector_t sector,
- 				struct address_space *mapping)
- {
--	pgoff_t index = sector >> (PAGE_CACHE_SHIFT - 9);
-+	pgoff_t index = sector >> (page_cache_size(mapping) - 9);
- 	unsigned int vec_offset = vec->bv_offset;
--	int offset = (sector << 9) & ~PAGE_CACHE_MASK;
-+	int offset = page_cache_offset(mapping, (sector << 9));
- 	int size = vec->bv_len;
- 	int err = 0;
+diff --git a/fs/splice.c b/fs/splice.c
+index c010a72..7910f32 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -279,9 +279,9 @@ __generic_file_splice_read(struct file *in, loff_t *ppos,
+ 		.ops = &page_cache_pipe_buf_ops,
+ 	};
  
-@@ -213,7 +213,7 @@ static int rd_blkdev_pagecache_IO(int rw, struct bio_vec *vec, sector_t sector,
- 		char *src;
- 		char *dst;
+-	index = *ppos >> PAGE_CACHE_SHIFT;
+-	loff = *ppos & ~PAGE_CACHE_MASK;
+-	req_pages = (len + loff + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
++	index = page_cache_index(mapping, *ppos);
++	loff = page_cache_offset(mapping, *ppos);
++	req_pages = page_cache_next(mapping, len + loff);
+ 	nr_pages = min(req_pages, (unsigned)PIPE_BUFFERS);
  
--		count = PAGE_CACHE_SIZE - offset;
-+		count = page_cache_size(mapping) - offset;
- 		if (count > size)
- 			count = size;
- 		size -= count;
+ 	/*
+@@ -336,7 +336,7 @@ __generic_file_splice_read(struct file *in, loff_t *ppos,
+ 	 * Now loop over the map and see if we need to start IO on any
+ 	 * pages, fill in the partial map, etc.
+ 	 */
+-	index = *ppos >> PAGE_CACHE_SHIFT;
++	index = page_cache_index(mapping, *ppos);
+ 	nr_pages = spd.nr_pages;
+ 	spd.nr_pages = 0;
+ 	for (page_nr = 0; page_nr < nr_pages; page_nr++) {
+@@ -348,7 +348,8 @@ __generic_file_splice_read(struct file *in, loff_t *ppos,
+ 		/*
+ 		 * this_len is the max we'll use from this page
+ 		 */
+-		this_len = min_t(unsigned long, len, PAGE_CACHE_SIZE - loff);
++		this_len = min_t(unsigned long, len,
++					page_cache_size(mapping) - loff);
+ 		page = pages[page_nr];
+ 
+ 		if (PageReadahead(page))
+@@ -408,7 +409,7 @@ fill_it:
+ 		 * i_size must be checked after PageUptodate.
+ 		 */
+ 		isize = i_size_read(mapping->host);
+-		end_index = (isize - 1) >> PAGE_CACHE_SHIFT;
++		end_index = page_cache_index(mapping, isize - 1);
+ 		if (unlikely(!isize || index > end_index))
+ 			break;
+ 
+@@ -422,7 +423,7 @@ fill_it:
+ 			/*
+ 			 * max good bytes in this page
+ 			 */
+-			plen = ((isize - 1) & ~PAGE_CACHE_MASK) + 1;
++			plen = page_cache_offset(mapping, isize - 1) + 1;
+ 			if (plen <= loff)
+ 				break;
+ 
+@@ -573,12 +574,12 @@ static int pipe_to_file(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
+ 	if (unlikely(ret))
+ 		return ret;
+ 
+-	index = sd->pos >> PAGE_CACHE_SHIFT;
+-	offset = sd->pos & ~PAGE_CACHE_MASK;
++	index = page_cache_index(mapping, sd->pos);
++	offset = page_cache_offset(mapping, sd->pos);
+ 
+ 	this_len = sd->len;
+-	if (this_len + offset > PAGE_CACHE_SIZE)
+-		this_len = PAGE_CACHE_SIZE - offset;
++	if (this_len + offset > page_cache_size(mapping))
++		this_len = page_cache_size(mapping) - offset;
+ 
+ find_page:
+ 	page = find_lock_page(mapping, index);
+@@ -839,7 +840,7 @@ generic_file_splice_write_nolock(struct pipe_inode_info *pipe, struct file *out,
+ 		unsigned long nr_pages;
+ 
+ 		*ppos += ret;
+-		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
++		nr_pages = page_cache_next(mapping, ret);
+ 
+ 		/*
+ 		 * If file or inode is SYNC and we actually wrote some data,
+@@ -896,7 +897,7 @@ generic_file_splice_write(struct pipe_inode_info *pipe, struct file *out,
+ 		unsigned long nr_pages;
+ 
+ 		*ppos += ret;
+-		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
++		nr_pages = page_cache_next(mapping, ret);
+ 
+ 		/*
+ 		 * If file or inode is SYNC and we actually wrote some data,
 -- 
 1.5.2.5
 
