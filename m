@@ -1,327 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762997AbXIKGQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762509AbXIKGRD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762997AbXIKGQi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762498AbXIKGFz
+	id S1762509AbXIKGRD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:17:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762565AbXIKGGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:05:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50596 "EHLO
+	Tue, 11 Sep 2007 02:06:09 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56555 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761924AbXIKGEg (ORCPT
+	with ESMTP id S1761639AbXIKGEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 02:04:36 -0400
-Message-Id: <20070911060434.656940014@sgi.com>
+	Tue, 11 Sep 2007 02:04:34 -0400
+Message-Id: <20070911060433.016521391@sgi.com>
 References: <20070911060349.993975297@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 10 Sep 2007 23:04:29 -0700
+Date: Mon, 10 Sep 2007 23:04:22 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: torvalds@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Takashi Sato <sho@tnes.nec.co.jp>, Mingming Cao <cmm@us.ibm.com>
+       Fengguang Wu <fengguang.wu@gmail.com>
 Cc: Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>
 Cc: William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>, Badari Pulavarty <pbadari@gmail.com>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>
 Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com, hugh@veritas.com
 Cc: joern@lazybastard.org
-Subject: [39/41] ext4: fix rec_len overflow for 64KB block size
-Content-Disposition: inline; filename=0041-ext4-fix-rec_len-overflow-with-64KB-block-size.patch
+Subject: [32/41] Readahead changes to support large blocksize.
+Content-Disposition: inline; filename=0032-Readahead-changes-to-support-large-blocksize.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[4/4]  ext4: fix rec_len overflow
-         - prevent rec_len from overflow with 64KB blocksize
+Fix up readhead for large I/O operations.
 
-Signed-off-by: Takashi Sato <sho@tnes.nec.co.jp>
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Only calculate the readahead until the 2M boundary then fall back to
+one page.
+
+Signed-off-by: Fengguang Wu <fengguang.wu@gmail.com>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+===================================================================
 ---
- fs/ext4/dir.c           |   11 ++++--
- fs/ext4/namei.c         |   88 +++++++++++++++++++++++++++++++++++++++--------
- include/linux/ext4_fs.h |    9 +++++
- 3 files changed, 90 insertions(+), 18 deletions(-)
+ include/linux/mm.h |    2 +-
+ mm/fadvise.c       |    4 ++--
+ mm/filemap.c       |    5 ++---
+ mm/madvise.c       |    2 +-
+ mm/readahead.c     |   22 ++++++++++++++--------
+ 5 files changed, 20 insertions(+), 15 deletions(-)
 
-diff --git a/fs/ext4/dir.c b/fs/ext4/dir.c
-index 93dd56c..8817cf4 100644
---- a/fs/ext4/dir.c
-+++ b/fs/ext4/dir.c
-@@ -100,10 +100,11 @@ static int ext4_readdir(struct file * filp,
- 	unsigned long offset;
- 	int i, stored;
- 	struct ext4_dir_entry_2 *de;
--	struct super_block *sb;
- 	int err;
- 	struct inode *inode = filp->f_path.dentry->d_inode;
-+	struct super_block *sb = inode->i_sb;
- 	int ret = 0;
-+	unsigned tail = sb->s_blocksize;
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index a8a0378..88f5ee3 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1142,7 +1142,7 @@ void page_cache_async_readahead(struct address_space *mapping,
+ 				pgoff_t offset,
+ 				unsigned long size);
  
- 	sb = inode->i_sb;
+-unsigned long max_sane_readahead(unsigned long nr);
++unsigned long max_sane_readahead(unsigned long nr, int order);
  
-@@ -167,8 +168,11 @@ revalidate:
- 		 * readdir(2), then we might be pointing to an invalid
- 		 * dirent right now.  Scan from the start of the block
- 		 * to make sure. */
-+		if (tail >  EXT4_DIR_MAX_REC_LEN) {
-+			tail = EXT4_DIR_MAX_REC_LEN;
-+		}
- 		if (filp->f_version != inode->i_version) {
--			for (i = 0; i < sb->s_blocksize && i < offset; ) {
-+			for (i = 0; i < tail && i < offset; ) {
- 				de = (struct ext4_dir_entry_2 *)
- 					(bh->b_data + i);
- 				/* It's too expensive to do a full
-@@ -189,7 +193,7 @@ revalidate:
- 		}
+ /* Do stack extension */
+ extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
+diff --git a/mm/fadvise.c b/mm/fadvise.c
+index 804c2a9..378dcdc 100644
+--- a/mm/fadvise.c
++++ b/mm/fadvise.c
+@@ -86,10 +86,10 @@ asmlinkage long sys_fadvise64_64(int fd, loff_t offset, loff_t len, int advice)
+ 		nrpages = end_index - start_index + 1;
+ 		if (!nrpages)
+ 			nrpages = ~0UL;
+-		
++
+ 		ret = force_page_cache_readahead(mapping, file,
+ 				start_index,
+-				max_sane_readahead(nrpages));
++				nrpages);
+ 		if (ret > 0)
+ 			ret = 0;
+ 		break;
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 2cc5a8c..d6e1f40 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1237,8 +1237,7 @@ do_readahead(struct address_space *mapping, struct file *filp,
+ 	if (!mapping || !mapping->a_ops || !mapping->a_ops->readpage)
+ 		return -EINVAL;
  
- 		while (!error && filp->f_pos < inode->i_size
--		       && offset < sb->s_blocksize) {
-+		       && offset < tail) {
- 			de = (struct ext4_dir_entry_2 *) (bh->b_data + offset);
- 			if (!ext4_check_dir_entry ("ext4_readdir", inode, de,
- 						   bh, offset)) {
-@@ -226,6 +230,7 @@ revalidate:
- 			}
- 			filp->f_pos += le16_to_cpu(de->rec_len);
- 		}
-+		filp->f_pos = EXT4_DIR_ADJUST_TAIL_OFFS(filp->f_pos, sb->s_blocksize);
- 		offset = 0;
- 		brelse (bh);
- 	}
-diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
-index da22497..e494b1b 100644
---- a/fs/ext4/namei.c
-+++ b/fs/ext4/namei.c
-@@ -262,9 +262,13 @@ static struct stats dx_show_leaf(struct dx_hash_info *hinfo, struct ext4_dir_ent
- 	unsigned names = 0, space = 0;
- 	char *base = (char *) de;
- 	struct dx_hash_info h = *hinfo;
-+	unsigned tail = size;
- 
- 	printk("names: ");
--	while ((char *) de < base + size)
-+	if (tail > EXT4_DIR_MAX_REC_LEN) {
-+		tail = EXT4_DIR_MAX_REC_LEN;
-+	}
-+	while ((char *) de < base + tail)
- 	{
- 		if (de->inode)
- 		{
-@@ -677,8 +681,12 @@ static int dx_make_map (struct ext4_dir_entry_2 *de, int size,
- 	int count = 0;
- 	char *base = (char *) de;
- 	struct dx_hash_info h = *hinfo;
-+	unsigned tail = size;
- 
--	while ((char *) de < base + size)
-+	if (tail > EXT4_DIR_MAX_REC_LEN) {
-+		tail = EXT4_DIR_MAX_REC_LEN;
-+	}
-+	while ((char *) de < base + tail)
- 	{
- 		if (de->name_len && de->inode) {
- 			ext4fs_dirhash(de->name, de->name_len, &h);
-@@ -773,9 +781,13 @@ static inline int search_dirblock(struct buffer_head * bh,
- 	int de_len;
- 	const char *name = dentry->d_name.name;
- 	int namelen = dentry->d_name.len;
-+	unsigned tail = dir->i_sb->s_blocksize;
- 
- 	de = (struct ext4_dir_entry_2 *) bh->b_data;
--	dlimit = bh->b_data + dir->i_sb->s_blocksize;
-+	if (tail > EXT4_DIR_MAX_REC_LEN) {
-+		tail = EXT4_DIR_MAX_REC_LEN;
-+	}
-+	dlimit = bh->b_data + tail;
- 	while ((char *) de < dlimit) {
- 		/* this code is executed quadratically often */
- 		/* do minimal checking `by hand' */
-@@ -1113,6 +1125,9 @@ static struct ext4_dir_entry_2* dx_pack_dirents(char *base, int size)
- 	unsigned rec_len = 0;
- 
- 	prev = to = de;
-+	if (size > EXT4_DIR_MAX_REC_LEN) {
-+		size = EXT4_DIR_MAX_REC_LEN;
-+	}
- 	while ((char*)de < base + size) {
- 		next = (struct ext4_dir_entry_2 *) ((char *) de +
- 						    le16_to_cpu(de->rec_len));
-@@ -1178,8 +1193,15 @@ static struct ext4_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
- 	/* Fancy dance to stay within two buffers */
- 	de2 = dx_move_dirents(data1, data2, map + split, count - split);
- 	de = dx_pack_dirents(data1,blocksize);
--	de->rec_len = cpu_to_le16(data1 + blocksize - (char *) de);
--	de2->rec_len = cpu_to_le16(data2 + blocksize - (char *) de2);
-+	if (blocksize < EXT4_DIR_MAX_REC_LEN) {
-+		de->rec_len = cpu_to_le16(data1 + blocksize - (char *) de);
-+		de2->rec_len = cpu_to_le16(data2 + blocksize - (char *) de2);
-+	} else {
-+		de->rec_len = cpu_to_le16(data1 + EXT4_DIR_MAX_REC_LEN -
-+							(char *) de);
-+		de2->rec_len = cpu_to_le16(data2 + EXT4_DIR_MAX_REC_LEN -
-+							(char *) de2);
-+	}
- 	dxtrace(dx_show_leaf (hinfo, (struct ext4_dir_entry_2 *) data1, blocksize, 1));
- 	dxtrace(dx_show_leaf (hinfo, (struct ext4_dir_entry_2 *) data2, blocksize, 1));
- 
-@@ -1234,11 +1256,15 @@ static int add_dirent_to_buf(handle_t *handle, struct dentry *dentry,
- 	unsigned short	reclen;
- 	int		nlen, rlen, err;
- 	char		*top;
-+	unsigned        tail = dir->i_sb->s_blocksize;
- 
-+	if (tail > EXT4_DIR_MAX_REC_LEN) {
-+		tail = EXT4_DIR_MAX_REC_LEN;
-+	}
- 	reclen = EXT4_DIR_REC_LEN(namelen);
- 	if (!de) {
- 		de = (struct ext4_dir_entry_2 *)bh->b_data;
--		top = bh->b_data + dir->i_sb->s_blocksize - reclen;
-+		top = bh->b_data + tail - reclen;
- 		while ((char *) de <= top) {
- 			if (!ext4_check_dir_entry("ext4_add_entry", dir, de,
- 						  bh, offset)) {
-@@ -1352,13 +1378,21 @@ static int make_indexed_dir(handle_t *handle, struct dentry *dentry,
- 	/* The 0th block becomes the root, move the dirents out */
- 	fde = &root->dotdot;
- 	de = (struct ext4_dir_entry_2 *)((char *)fde + le16_to_cpu(fde->rec_len));
--	len = ((char *) root) + blocksize - (char *) de;
-+	if (blocksize < EXT4_DIR_MAX_REC_LEN) {
-+		len = ((char *) root) + blocksize - (char *) de;
-+	} else {
-+		len = ((char *) root) + EXT4_DIR_MAX_REC_LEN - (char *) de;
-+	}
- 	memcpy (data1, de, len);
- 	de = (struct ext4_dir_entry_2 *) data1;
- 	top = data1 + len;
- 	while ((char *)(de2=(void*)de+le16_to_cpu(de->rec_len)) < top)
- 		de = de2;
--	de->rec_len = cpu_to_le16(data1 + blocksize - (char *) de);
-+	if (blocksize < EXT4_DIR_MAX_REC_LEN) {
-+		de->rec_len = cpu_to_le16(data1 + blocksize - (char *) de);
-+	} else {
-+		de->rec_len = cpu_to_le16(data1 + EXT4_DIR_MAX_REC_LEN - (char *) de);
-+	}
- 	/* Initialize the root; the dot dirents already exist */
- 	de = (struct ext4_dir_entry_2 *) (&root->dotdot);
- 	de->rec_len = cpu_to_le16(blocksize - EXT4_DIR_REC_LEN(2));
-@@ -1448,7 +1482,11 @@ static int ext4_add_entry (handle_t *handle, struct dentry *dentry,
- 		return retval;
- 	de = (struct ext4_dir_entry_2 *) bh->b_data;
- 	de->inode = 0;
--	de->rec_len = cpu_to_le16(blocksize);
-+	if (blocksize < EXT4_DIR_MAX_REC_LEN) {
-+		de->rec_len = cpu_to_le16(blocksize);
-+	} else {
-+		de->rec_len = cpu_to_le16(EXT4_DIR_MAX_REC_LEN);
-+	}
- 	return add_dirent_to_buf(handle, dentry, inode, de, bh);
+-	force_page_cache_readahead(mapping, filp, index,
+-					max_sane_readahead(nr));
++	force_page_cache_readahead(mapping, filp, index, nr);
+ 	return 0;
  }
  
-@@ -1512,7 +1550,12 @@ static int ext4_dx_add_entry(handle_t *handle, struct dentry *dentry,
- 			goto cleanup;
- 		node2 = (struct dx_node *)(bh2->b_data);
- 		entries2 = node2->entries;
--		node2->fake.rec_len = cpu_to_le16(sb->s_blocksize);
-+		if (sb->s_blocksize < EXT4_DIR_MAX_REC_LEN) {
-+			node2->fake.rec_len = cpu_to_le16(sb->s_blocksize);
-+		} else {
-+			node2->fake.rec_len =
-+				cpu_to_le16(EXT4_DIR_MAX_REC_LEN);
-+		}
- 		node2->fake.inode = 0;
- 		BUFFER_TRACE(frame->bh, "get_write_access");
- 		err = ext4_journal_get_write_access(handle, frame->bh);
-@@ -1600,11 +1643,15 @@ static int ext4_delete_entry (handle_t *handle,
- {
- 	struct ext4_dir_entry_2 * de, * pde;
- 	int i;
-+	unsigned tail = bh->b_size;
- 
- 	i = 0;
- 	pde = NULL;
- 	de = (struct ext4_dir_entry_2 *) bh->b_data;
--	while (i < bh->b_size) {
-+	if (tail > EXT4_DIR_MAX_REC_LEN) {
-+		tail = EXT4_DIR_MAX_REC_LEN;
-+	}
-+	while (i < tail) {
- 		if (!ext4_check_dir_entry("ext4_delete_entry", dir, de, bh, i))
- 			return -EIO;
- 		if (de == de_del)  {
-@@ -1793,7 +1840,11 @@ retry:
- 	de = (struct ext4_dir_entry_2 *)
- 			((char *) de + le16_to_cpu(de->rec_len));
- 	de->inode = cpu_to_le32(dir->i_ino);
--	de->rec_len = cpu_to_le16(inode->i_sb->s_blocksize-EXT4_DIR_REC_LEN(1));
-+	if (inode->i_sb->s_blocksize < EXT4_DIR_MAX_REC_LEN) {
-+		de->rec_len = cpu_to_le16(inode->i_sb->s_blocksize-EXT4_DIR_REC_LEN(1));
-+	} else  {   
-+		de->rec_len = cpu_to_le16(EXT4_DIR_MAX_REC_LEN-EXT4_DIR_REC_LEN(1));
-+	}
- 	de->name_len = 2;
- 	strcpy (de->name, "..");
- 	ext4_set_de_type(dir->i_sb, de, S_IFDIR);
-@@ -1828,10 +1879,10 @@ static int empty_dir (struct inode * inode)
- 	unsigned long offset;
- 	struct buffer_head * bh;
- 	struct ext4_dir_entry_2 * de, * de1;
--	struct super_block * sb;
-+	struct super_block * sb = inode->i_sb;
- 	int err = 0;
-+	unsigned tail = sb->s_blocksize;
- 
--	sb = inode->i_sb;
- 	if (inode->i_size < EXT4_DIR_REC_LEN(1) + EXT4_DIR_REC_LEN(2) ||
- 	    !(bh = ext4_bread (NULL, inode, 0, 0, &err))) {
- 		if (err)
-@@ -1858,11 +1909,17 @@ static int empty_dir (struct inode * inode)
- 		return 1;
- 	}
- 	offset = le16_to_cpu(de->rec_len) + le16_to_cpu(de1->rec_len);
-+	if (offset == EXT4_DIR_MAX_REC_LEN) {
-+		offset += sb->s_blocksize - EXT4_DIR_MAX_REC_LEN;
-+	}
- 	de = (struct ext4_dir_entry_2 *)
- 			((char *) de1 + le16_to_cpu(de1->rec_len));
-+	if (tail > EXT4_DIR_MAX_REC_LEN) {
-+		tail = EXT4_DIR_MAX_REC_LEN;
-+	}
- 	while (offset < inode->i_size ) {
- 		if (!bh ||
--			(void *) de >= (void *) (bh->b_data+sb->s_blocksize)) {
-+			(void *) de >= (void *) (bh->b_data + tail)) {
- 			err = 0;
- 			brelse (bh);
- 			bh = ext4_bread (NULL, inode,
-@@ -1889,6 +1946,7 @@ static int empty_dir (struct inode * inode)
- 			return 0;
+@@ -1373,7 +1372,7 @@ retry_find:
+ 			count_vm_event(PGMAJFAULT);
  		}
- 		offset += le16_to_cpu(de->rec_len);
-+		offset = EXT4_DIR_ADJUST_TAIL_OFFS(offset, sb->s_blocksize);
- 		de = (struct ext4_dir_entry_2 *)
- 				((char *) de + le16_to_cpu(de->rec_len));
+ 		did_readaround = 1;
+-		ra_pages = max_sane_readahead(file->f_ra.ra_pages);
++		ra_pages = file->f_ra.ra_pages;
+ 		if (ra_pages) {
+ 			pgoff_t start = 0;
+ 
+diff --git a/mm/madvise.c b/mm/madvise.c
+index 93ee375..f54e179 100644
+--- a/mm/madvise.c
++++ b/mm/madvise.c
+@@ -124,7 +124,7 @@ static long madvise_willneed(struct vm_area_struct * vma,
+ 	end = ((end - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
+ 
+ 	force_page_cache_readahead(file->f_mapping,
+-			file, start, max_sane_readahead(end - start));
++			file, start, end - start);
+ 	return 0;
+ }
+ 
+diff --git a/mm/readahead.c b/mm/readahead.c
+index 39bf45d..2cbda72 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -44,7 +44,8 @@ EXPORT_SYMBOL_GPL(default_backing_dev_info);
+ void
+ file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping)
+ {
+-	ra->ra_pages = mapping->backing_dev_info->ra_pages;
++	ra->ra_pages = DIV_ROUND_UP(mapping->backing_dev_info->ra_pages,
++				    page_cache_size(mapping));
+ 	ra->prev_index = -1;
+ }
+ EXPORT_SYMBOL_GPL(file_ra_state_init);
+@@ -84,7 +85,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
+ 			put_pages_list(pages);
+ 			break;
+ 		}
+-		task_io_account_read(PAGE_CACHE_SIZE);
++		task_io_account_read(page_cache_size(mapping));
  	}
-diff --git a/include/linux/ext4_fs.h b/include/linux/ext4_fs.h
-index 9e4518b..52d7554 100644
---- a/include/linux/ext4_fs.h
-+++ b/include/linux/ext4_fs.h
-@@ -784,6 +784,15 @@ struct ext4_dir_entry_2 {
- #define EXT4_DIR_ROUND			(EXT4_DIR_PAD - 1)
- #define EXT4_DIR_REC_LEN(name_len)	(((name_len) + 8 + EXT4_DIR_ROUND) & \
- 					 ~EXT4_DIR_ROUND)
-+#define	EXT4_DIR_MAX_REC_LEN		65532
-+
-+/*
-+ * Align a tail offset to the end of a directory block
-+ */
-+#define EXT4_DIR_ADJUST_TAIL_OFFS(offs, bsize) \
-+	((((offs) & ((bsize) -1)) == EXT4_DIR_MAX_REC_LEN) ? \
-+	((offs) + (bsize) - EXT4_DIR_MAX_REC_LEN):(offs))
-+
+ 	pagevec_lru_add(&lru_pvec);
+ 	return ret;
+@@ -151,7 +152,7 @@ __do_page_cache_readahead(struct address_space *mapping, struct file *filp,
+ 	if (isize == 0)
+ 		goto out;
+ 
+-	end_index = ((isize - 1) >> PAGE_CACHE_SHIFT);
++	end_index = page_cache_index(mapping, isize - 1);
+ 
+ 	/*
+ 	 * Preallocate as many pages as we will need.
+@@ -204,10 +205,12 @@ int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
+ 	if (unlikely(!mapping->a_ops->readpage && !mapping->a_ops->readpages))
+ 		return -EINVAL;
+ 
++	nr_to_read = max_sane_readahead(nr_to_read, mapping_order(mapping));
+ 	while (nr_to_read) {
+ 		int err;
+ 
+-		unsigned long this_chunk = (2 * 1024 * 1024) / PAGE_CACHE_SIZE;
++		unsigned long this_chunk = DIV_ROUND_UP(2 * 1024 * 1024,
++						page_cache_size(mapping));
+ 
+ 		if (this_chunk > nr_to_read)
+ 			this_chunk = nr_to_read;
+@@ -237,17 +240,20 @@ int do_page_cache_readahead(struct address_space *mapping, struct file *filp,
+ 	if (bdi_read_congested(mapping->backing_dev_info))
+ 		return -1;
+ 
++	nr_to_read = max_sane_readahead(nr_to_read, mapping_order(mapping));
+ 	return __do_page_cache_readahead(mapping, filp, offset, nr_to_read, 0);
+ }
+ 
  /*
-  * Hash Tree Directory indexing
-  * (c) Daniel Phillips, 2001
+- * Given a desired number of PAGE_CACHE_SIZE readahead pages, return a
++ * Given a desired number of page order readahead pages, return a
+  * sensible upper limit.
+  */
+-unsigned long max_sane_readahead(unsigned long nr)
++unsigned long max_sane_readahead(unsigned long nr, int order)
+ {
+-	return min(nr, (node_page_state(numa_node_id(), NR_INACTIVE)
+-		+ node_page_state(numa_node_id(), NR_FREE_PAGES)) / 2);
++	unsigned long base_pages = node_page_state(numa_node_id(), NR_INACTIVE)
++			+ node_page_state(numa_node_id(), NR_FREE_PAGES);
++
++	return min(nr, (base_pages / 2) >> order);
+ }
+ 
+ /*
 -- 
 1.5.2.5
 
