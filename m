@@ -1,65 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764943AbXIKVMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934118AbXIKVMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764943AbXIKVMM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 17:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763804AbXIKVLx
+	id S934118AbXIKVMo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 17:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762543AbXIKVMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 17:11:53 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:23803 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758996AbXIKVLw (ORCPT
+	Tue, 11 Sep 2007 17:12:34 -0400
+Received: from 251.4.221.87.dynamic.jazztel.es ([87.221.4.251]:58208 "EHLO
+	traven.no-ip.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758996AbXIKVMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 17:11:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=cDTlWx4+D8AyRFk0q6JOAKq34eIaMczt7Z7I9lH37woarLhktOu2P/Vu0AjiEBKVsmzlYlftjq4iuAWxAtOTZ4iBZcPIG+/xzx8YbISd4MWv8oehi4LbW4GH5WWG4iGutLJUBoaP9NU1D22SKSfeC0TA1U+n89IOwHxsps4hMkQ=  ;
-X-YMail-OSG: gLSrmLIVM1m6ss1TWe80KZUWbgACDcuYVA1JP1HeomDCNy0dAtOfBWYMeDHJfDv7YlbRLmDGWQ--
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Date: Tue, 11 Sep 2007 15:30:15 +1000
-User-Agent: KMail/1.9.5
-Cc: Mel Gorman <mel@csn.ul.ie>, andrea@suse.de, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-References: <20070911060349.993975297@sgi.com> <200709111453.42650.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709111341130.26598@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0709111341130.26598@schroedinger.engr.sgi.com>
+	Tue, 11 Sep 2007 17:12:33 -0400
+Date: Tue, 11 Sep 2007 23:12:36 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: perex@suse.cz, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 4/4] Routines for effect processor FX8010: Use
+	list_for_each_entry
+Message-ID: <20070911211236.GJ8592@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	perex@suse.cz, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20070911205632.GF8592@traven>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709111530.16136.nickpiggin@yahoo.com.au>
+In-Reply-To: <20070911205632.GF8592@traven>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 September 2007 06:42, Christoph Lameter wrote:
-> On Tue, 11 Sep 2007, Nick Piggin wrote:
-> > > I guess you would have to run that without my targeted slab reclaim
-> > > patchset? Otherwise the slab that are in the way could be reclaimed and
-> > > you could not produce your test case.
-> >
-> > I didn't realise you had patches to move pinned dentries, radix tree
-> > nodes, task structs, page tables etc. Did I miss them in your last
-> > patchset?
->
-> You did not mention that in your earlier text.
+Routines for effect processor FX8010: Use list_for_each_entry instead
+of list_for_each
 
-Actually, I am pretty sure actually everything I mentioned was explicitly
-things that your patches do not handle. This was not a coincidence.
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+
+--
+
+diff --git a/include/sound/emu10k1.h b/include/sound/emu10k1.h
+index 529d0a5..24399a0 100644
+--- a/include/sound/emu10k1.h
++++ b/include/sound/emu10k1.h
+@@ -1408,8 +1408,6 @@ struct snd_emu10k1_fx8010 {
+ 	struct snd_emu10k1_fx8010_irq *irq_handlers;
+ };
+ 
+-#define emu10k1_gpr_ctl(n) list_entry(n, struct snd_emu10k1_fx8010_ctl, list)
+-
+ struct snd_emu10k1_midi {
+ 	struct snd_emu10k1 *emu;
+ 	struct snd_rawmidi *rmidi;
+diff --git a/sound/pci/emu10k1/emufx.c b/sound/pci/emu10k1/emufx.c
+index 7206c0f..bf23c3a 100644
+--- a/sound/pci/emu10k1/emufx.c
++++ b/sound/pci/emu10k1/emufx.c
+@@ -642,10 +642,8 @@ snd_emu10k1_look_for_ctl(struct snd_emu10k1 *emu, struct snd_ctl_elem_id *id)
+ {
+ 	struct snd_emu10k1_fx8010_ctl *ctl;
+ 	struct snd_kcontrol *kcontrol;
+-	struct list_head *list;
+-	
+-	list_for_each(list, &emu->fx8010.gpr_ctl) {
+-		ctl = emu10k1_gpr_ctl(list);
++
++	list_for_each_entry(ctl, &emu->fx8010.gpr_ctl, list) {
+ 		kcontrol = ctl->kcontrol;
+ 		if (kcontrol->id.iface == id->iface &&
+ 		    !strcmp(kcontrol->id.name, id->name) &&
+@@ -895,14 +893,12 @@ static int snd_emu10k1_list_controls(struct snd_emu10k1 *emu,
+ 	struct snd_emu10k1_fx8010_control_gpr *gctl;
+ 	struct snd_emu10k1_fx8010_ctl *ctl;
+ 	struct snd_ctl_elem_id *id;
+-	struct list_head *list;
+ 
+ 	gctl = kmalloc(sizeof(*gctl), GFP_KERNEL);
+ 	if (! gctl)
+ 		return -ENOMEM;
+ 
+-	list_for_each(list, &emu->fx8010.gpr_ctl) {
+-		ctl = emu10k1_gpr_ctl(list);
++	list_for_each_entry(ctl, &emu->fx8010.gpr_ctl, list) {
+ 		total++;
+ 		if (icode->gpr_list_controls &&
+ 		    i < icode->gpr_list_control_count) {
 
 
-> If these are issues then we 
-> certainly can work on that. Could you first provide us some real failure
-> conditions so that we know that these are real problems?
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-I think I would have as good a shot as any to write a fragmentation
-exploit, yes. I think I've given you enough info to do the same, so I'd
-like to hear a reason why it is not a problem.
+      El trabajo es el refugio de los que no tienen nada que hacer
+                            (Oscar Wilde)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
