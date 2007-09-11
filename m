@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763553AbXIKLnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763441AbXIKLvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763553AbXIKLnh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 07:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbXIKLn3
+	id S1763441AbXIKLvx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 07:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbXIKLvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 07:43:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35339 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754210AbXIKLn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 07:43:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [PATCH] Fix failure to resume from initrds.
-Date: Tue, 11 Sep 2007 13:55:06 +0200
-User-Agent: KMail/1.9.5
-Cc: nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200709111354.25689.nigel@nigel.suspend2.net> <200709111304.23263.rjw@sisk.pl> <200709112127.58597.ncunningham@crca.org.au>
-In-Reply-To: <200709112127.58597.ncunningham@crca.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709111355.07369.rjw@sisk.pl>
+	Tue, 11 Sep 2007 07:51:46 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:45839 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752259AbXIKLvp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 07:51:45 -0400
+Subject: Re: build #302 failed for 2.6.23-rc6-g0d4cbb5 in
+	linux/drivers/mtd/chips/chipreg.o
+From: David Woodhouse <dwmw2@infradead.org>
+To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200709111337.05889.toralf.foerster@gmx.de>
+References: <200709111337.05889.toralf.foerster@gmx.de>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 11 Sep 2007 13:51:52 +0200
+Message-Id: <1189511512.28687.10.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-3.fc7.dwmw2.1) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 11 September 2007 13:27, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Tuesday 11 September 2007 21:04:22 Rafael J. Wysocki wrote:
-> > On Tuesday, 11 September 2007 05:54, Nigel Cunningham wrote:
-> > > Hi all.
-> > > 
-> > > Commit 831441862956fffa17b9801db37e6ea1650b0f69 (Freezer: make kernel 
-> threads
-> > > nonfreezable by default) breaks freezing when attempting to resume from an
-> > > initrd, because the init (which is freezeable) spins while waiting for 
-> another
-> > > thread to run /linuxrc, but doesn't check whether it has been told to 
-> enter
-> > > the refrigerator.
-> > 
-> > Hm.
-> > 
-> > I use a resume from an initrd on a regular basis and it works without the 
-> patch
-> > below.
-> > 
-> > I think we need to investigate what happens in your test case a bit.
-> 
-> Ah. That makes me realise that I see that too - my AMD64 uniprocessor laptop 
-> didn't need the patch (guess that's why I didn't notice the need and ack'd 
-> the patch). But my x86 SMP machine... it needs this. I'll see if they're 
-> running on different processors.
+On Tue, 2007-09-11 at 13:37 +0200, Toralf Förster wrote:
+> include/linux/mtd/map.h:128:2: error: #error "No bus width supported. What's the point?"
 
-Well, strange.  My x86_64 SMP machines don't need the patch too.
+http://git.infradead.org/?p=mtd-2.6.git;a=commitdiff;h=241651d04d672fb685b2874707016cbbf95931e5
 
-Greetings,
-Rafael
+-- 
+dwmw2
+
