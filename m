@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762801AbXIKGLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966074AbXIKGLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762801AbXIKGLL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:11:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbXIKGFE
+	id S966074AbXIKGLk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965305AbXIKGFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:05:04 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50548 "EHLO
+	Tue, 11 Sep 2007 02:05:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50554 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761372AbXIKGEb (ORCPT
+	with ESMTP id S1761390AbXIKGEb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Sep 2007 02:04:31 -0400
-Message-Id: <20070911060426.660778938@sgi.com>
+Message-Id: <20070911060427.125710022@sgi.com>
 References: <20070911060349.993975297@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 10 Sep 2007 23:03:56 -0700
+Date: Mon, 10 Sep 2007 23:03:58 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: torvalds@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -24,65 +24,31 @@ Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
        Fengguang Wu <fengguang.wu@gmail.com>
 Cc: swin wang <wangswin@gmail.com>, totty.lu@gmail.com, hugh@veritas.com
 Cc: joern@lazybastard.org
-Subject: [06/41] Use page_cache_xxx in mm/rmap.c
-Content-Disposition: inline; filename=0006-Use-page_cache_xxx-in-mm-rmap.c.patch
+Subject: [08/41] Use page_cache_xxx in mm/migrate.c
+Content-Disposition: inline; filename=0008-Use-page_cache_xxx-in-mm-migrate.c.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use page_cache_xxx in mm/rmap.c
+Use page_cache_xxx in mm/migrate.c
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- mm/rmap.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
+ mm/migrate.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 41ac397..d6a1771 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -188,9 +188,14 @@ static void page_unlock_anon_vma(struct anon_vma *anon_vma)
- static inline unsigned long
- vma_address(struct page *page, struct vm_area_struct *vma)
- {
--	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
-+	pgoff_t pgoff;
- 	unsigned long address;
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 37c73b9..4949927 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -195,7 +195,7 @@ static void remove_file_migration_ptes(struct page *old, struct page *new)
+ 	struct vm_area_struct *vma;
+ 	struct address_space *mapping = page_mapping(new);
+ 	struct prio_tree_iter iter;
+-	pgoff_t pgoff = new->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
++	pgoff_t pgoff = new->index << mapping_order(mapping);
  
-+	if (PageAnon(page))
-+		pgoff = page->index;
-+	else
-+		pgoff = page->index << mapping_order(page->mapping);
-+
- 	address = vma->vm_start + ((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
- 	if (unlikely(address < vma->vm_start || address >= vma->vm_end)) {
- 		/* page should be within any vma from prio_tree_next */
-@@ -335,7 +340,7 @@ static int page_referenced_file(struct page *page)
- {
- 	unsigned int mapcount;
- 	struct address_space *mapping = page->mapping;
--	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
-+	pgoff_t pgoff = page->index << (page_cache_shift(mapping) - PAGE_SHIFT);
- 	struct vm_area_struct *vma;
- 	struct prio_tree_iter iter;
- 	int referenced = 0;
-@@ -447,7 +452,7 @@ out:
- 
- static int page_mkclean_file(struct address_space *mapping, struct page *page)
- {
--	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
-+	pgoff_t pgoff = page->index << (page_cache_shift(mapping) - PAGE_SHIFT);
- 	struct vm_area_struct *vma;
- 	struct prio_tree_iter iter;
- 	int ret = 0;
-@@ -863,7 +868,7 @@ static int try_to_unmap_anon(struct page *page, int migration)
- static int try_to_unmap_file(struct page *page, int migration)
- {
- 	struct address_space *mapping = page->mapping;
--	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
-+	pgoff_t pgoff = page->index << (page_cache_shift(mapping) - PAGE_SHIFT);
- 	struct vm_area_struct *vma;
- 	struct prio_tree_iter iter;
- 	int ret = SWAP_AGAIN;
+ 	if (!mapping)
+ 		return;
 -- 
 1.5.2.5
 
