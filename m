@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759799AbXIKPiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbXIKPlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759799AbXIKPiy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 11:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbXIKPiq
+	id S1759217AbXIKPlQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 11:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbXIKPlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 11:38:46 -0400
-Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:37739
-	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753290AbXIKPip (ORCPT
+	Tue, 11 Sep 2007 11:41:05 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:33798 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753023AbXIKPlE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 11:38:45 -0400
-Date: Tue, 11 Sep 2007 08:38:23 -0700 (PDT)
-Message-Id: <20070911.083823.15264559.davem@davemloft.net>
-To: kovedi@gmail.com
-Cc: linux-kernel@vger.kernel.org, stable-bounces@kernel.org,
-       davem@sunset.davemloft.net
-Subject: Re: [Sparc64 BUG] hangup under booting 2.6.22.X whith Sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <406fe6c90709102233m2472e6c4h7d329a3f64692645@mail.gmail.com>
-References: <406fe6c90709100442j1ae0ef79v3188eb10b8be451b@mail.gmail.com>
-	<20070910.053642.71114977.davem@davemloft.net>
-	<406fe6c90709102233m2472e6c4h7d329a3f64692645@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Tue, 11 Sep 2007 11:41:04 -0400
+Date: Tue, 11 Sep 2007 21:21:19 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Cedric Le Goater <clg@fr.ibm.com>, Paul Menage <menage@google.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, Jan Engelhardt <jengelh@computergmbh.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Hookup group-scheduler with task container infrastructure
+Message-ID: <20070911155119.GE16222@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070910171049.GA16048@linux.vnet.ibm.com> <Pine.LNX.4.64.0709101903220.5368@fbirervta.pbzchgretzou.qr> <20070910172334.GB19100@linux.vnet.ibm.com> <20070910102259.dc45a481.akpm@linux-foundation.org> <20070910174649.GA16222@linux.vnet.ibm.com> <b647ffbd0709101537l9af4dc8x743b25c96e0f5235@mail.gmail.com> <6599ad830709101545s66fd338dob6932407db4e1002@mail.gmail.com> <46E641C1.8000808@fr.ibm.com> <20070911082243.9433c528.randy.dunlap@oracle.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070911082243.9433c528.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 11, 2007 at 08:22:43AM -0700, Randy Dunlap wrote:
+> That looks odd, like it's a filesystem.
+> What does cfs really mean?
 
-I think this patch should fix the problem.
+cfs = completely fair scheduler :)
 
-Please give it a try, thanks.
+In this thread, we are talking of hooking the cfs cpu scheduler with the
+task-container framework in -mm tree, so that the scheduler can deal
+with groups of tasks rather than just tasks, while handling fairness of
+cpu allocation.
 
-diff --git a/arch/sparc64/kernel/pci.c b/arch/sparc64/kernel/pci.c
-index 139b4cf..e8dac81 100644
---- a/arch/sparc64/kernel/pci.c
-+++ b/arch/sparc64/kernel/pci.c
-@@ -744,7 +744,7 @@ static void __devinit pci_of_scan_bus(struct pci_pbm_info *pbm,
- {
- 	struct device_node *child;
- 	const u32 *reg;
--	int reglen, devfn;
-+	int reglen, devfn, prev_devfn;
- 	struct pci_dev *dev;
- 
- 	if (ofpci_verbose)
-@@ -752,14 +752,25 @@ static void __devinit pci_of_scan_bus(struct pci_pbm_info *pbm,
- 		       node->full_name, bus->number);
- 
- 	child = NULL;
-+	prev_devfn = -1;
- 	while ((child = of_get_next_child(node, child)) != NULL) {
- 		if (ofpci_verbose)
- 			printk("  * %s\n", child->full_name);
- 		reg = of_get_property(child, "reg", &reglen);
- 		if (reg == NULL || reglen < 20)
- 			continue;
-+
- 		devfn = (reg[0] >> 8) & 0xff;
- 
-+		/* This is a workaround for some device trees
-+		 * which list PCI devices twice.  On the V100
-+		 * for example, device number 3 is listed twice.
-+		 * Once as "pm" and once again as "lomp".
-+		 */
-+		if (devfn == prev_devfn)
-+			continue;
-+		prev_devfn = devfn;
-+
- 		/* create a new pci_dev for this device */
- 		dev = of_create_pci_dev(pbm, child, bus, devfn, 0);
- 		if (!dev)
+I agree "cfs" control subsystem does look odd a bit here. "cpu" control
+subsystem seems better.
+
+-- 
+Regards,
+vatsa
