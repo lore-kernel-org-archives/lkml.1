@@ -1,40 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933097AbXIKJBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933531AbXIKJCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933097AbXIKJBK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 05:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760079AbXIKJAz
+	id S933531AbXIKJCP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 05:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932272AbXIKJB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 05:00:55 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3353 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759271AbXIKJAy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 05:00:54 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: mark@hindley.org.uk (Mark Hindley)
-Subject: Re: [OOPS] 2.6.23-rc5 in tcp/net/nfsd
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       nfs@lists.sourceforge.net, neilb@suse.de
-Organization: Core
-In-Reply-To: <20070911083200.GA3409@hindley.org.uk>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1IV1bR-0001CT-00@gondolin.me.apana.org.au>
-Date: Tue, 11 Sep 2007 17:00:13 +0800
+	Tue, 11 Sep 2007 05:01:59 -0400
+Received: from www.osadl.org ([213.239.205.134]:47235 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932280AbXIKJB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 05:01:59 -0400
+Subject: Re: clockevents: fix resume logic
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20070911012005.4df3ddf4.akpm@linux-foundation.org>
+References: <200707220159.l6M1xBgH001236@hera.kernel.org>
+	 <20070910144740.4eba2fda.akpm@linux-foundation.org>
+	 <1189492636.25767.62.camel@chaos>
+	 <20070911000001.30f8590b.akpm@linux-foundation.org>
+	 <1189495400.25767.81.camel@chaos> <1189496840.22589.1.camel@chaos>
+	 <20070911012005.4df3ddf4.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 11 Sep 2007 11:01:54 +0200
+Message-Id: <1189501314.6262.4.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Hindley <mark@hindley.org.uk> wrote:
->
-> Code: 01 00 00 03 75 0e 8b 42 18 8b 40 0c 8b 80 c4 00 00 00 eb 0a 8b 4c 24 08 8b 41 18 8b 40 28 0f c8 89 04 24 8b 44 24 08 b9 04 00 00 <00> ba 03 00 00 00 bf a6 ff ff
-> EIP: [<c02625bf>] ip_fragment+0x7f/0x680 SS:ESP 0068:ccb48b3c
+On Tue, 2007-09-11 at 01:20 -0700, Andrew Morton wrote:
+> On Tue, 11 Sep 2007 09:47:20 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > On Tue, 2007-09-11 at 09:23 +0200, Thomas Gleixner wrote:
+> > > > I went back to the original patch which I sent to Linus and it matches
+> > > > 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6.  So all I can think is that there
+> > > > must have been something else in the tree which I tested which fixed the
+> > > > bug which 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6 introduced.  argh.
+> > > > 
+> > > > Can you think what would cause the symptoms which I described?  
+> > > 
+> > > It seems that time is not updated. Timer interrupt not active or some
+> > > other odd thing. I figure out what's going on when I find a box which
+> > > exposes the problem.
+> 
+> 2.6.22-rc6-mm1's git-acpi.patch contains something which fixes this bug. 
+> It's a quarter megabyte :( Presumably clockevents-fix-resume-logic.patch
+> depended on something which was in that git-acpi.patch but which for some
+> reason didn't get merged.  Ho hum, I'll take a look, see if I can spot it.
+> 
+> > Can you please try the following command line options:
+> > 
+> > nolapic_timer
+> 
+> Works
+> 
+> > nohz=off
+> 
+> Fails
+> 
+> 
+> > highres=off
+> 
+> Fails
+> 
+> > nohz=off highres=off
+> 
+> Works
 
-The EIP is off by one byte.  So either a hardware problem or a
-really unlikely result of stack corruption.
+Ah. Adding your observation of the missing bit from the acpi stuff, I
+think this must be related to the broadcast functionality.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Btw, 23-rc6 does not resume the Intel Video card on one of my laptops.
+Sigh !
+
+	tglx
+
+
