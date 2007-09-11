@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbXIKQ0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbXIKQ2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757627AbXIKQ0f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 12:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbXIKQ02
+	id S1758615AbXIKQ2V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 12:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbXIKQ2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 12:26:28 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:46210 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751103AbXIKQ01 (ORCPT
+	Tue, 11 Sep 2007 12:28:14 -0400
+Received: from mailhub.linpro.no ([213.236.139.167]:48829 "EHLO
+	mailhub.linpro.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751130AbXIKQ2N convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 12:26:27 -0400
-Date: Tue, 11 Sep 2007 18:27:19 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Nigel Cunningham <ncunningham@crca.org.au>, nigel@suspend2.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix failure to resume from initrds.
-Message-ID: <20070911162719.GA26206@elf.ucw.cz>
-References: <200709111354.25689.nigel@nigel.suspend2.net> <200709111355.07369.rjw@sisk.pl> <200709111512.35348.rjw@sisk.pl> <200709111523.33968.rjw@sisk.pl> <alpine.LFD.0.999.0709110736440.16478@woody.linux-foundation.org>
+	Tue, 11 Sep 2007 12:28:13 -0400
+From: =?iso-8859-1?Q?Dag-Erling_Sm=F8rgrav?= <des@linpro.no>
+To: mgross@linux.intel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC+PATCH] RTC calibration
+References: <ujrmyvt2tyy.fsf@false.linpro.no>
+	<20070911152323.GA17650@linux.intel.com>
+Date: Tue, 11 Sep 2007 18:28:06 +0200
+In-Reply-To: <20070911152323.GA17650@linux.intel.com> (Mark Gross's message of
+	"Tue, 11 Sep 2007 08:23:23 -0700")
+Message-ID: <ujrwsux1815.fsf@false.linpro.no>
+User-Agent: Gnus/5.110004 (No Gnus v0.4) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709110736440.16478@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Mark Gross <mgross@linux.intel.com> writes:
+> Is it necessary to change the rtc interface?  Can't you detect within
+> your m48t59 driver that you are getting consistent time adjustments up
+> or down from whats in the rtc and infer it needs speeding up or slowing
+> down?
 
-> > > Anyway, yes, init is freezable, but should it be?
-> > > 
-> > > I mean, shouldn't we rather add PF_NOFREEZE to kernel_init()?
-> > 
-> > Argh, no.  PF_NOFREEZE is inherited by the children.
-> 
-> Umm. All of this is __init code - why is freezability even an issue? We 
-> shouldn't be suspending at this point anyway afaik..
+[I didn't notice this when I first replied]
 
-We want to do resume sometime around here, and resume wants to run
-with userspace frozen, as does suspend.
-									Pavel
+Because of the RTC's low resolution and of how the calibration is
+implemented in the chip, you need to sample the clock at intervals of
+several hours in order to determine the direction of the required
+adjustment.  Repeatedly setting the RTC to the correct time will
+actually prevent correct calibration.
+
+DES
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Dag-Erling Smørgrav
+Senior Software Developer
+Linpro AS - www.linpro.no
