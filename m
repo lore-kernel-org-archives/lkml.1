@@ -1,94 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762805AbXIKITQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762859AbXIKIVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762805AbXIKITQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 04:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760614AbXIKITA
+	id S1762859AbXIKIVt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 04:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761600AbXIKIVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 04:19:00 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47014 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759586AbXIKIS7 (ORCPT
+	Tue, 11 Sep 2007 04:21:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41421 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761597AbXIKIVj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 04:18:59 -0400
-Date: Tue, 11 Sep 2007 17:18:01 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mm] mm: Fix memory hotplug + sparsemem build.
-In-Reply-To: <20070911072507.GB19260@linux-sh.org>
-References: <20070911072507.GB19260@linux-sh.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20070911170921.F137.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 11 Sep 2007 04:21:39 -0400
+Date: Tue, 11 Sep 2007 01:20:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: clockevents: fix resume logic
+Message-Id: <20070911012005.4df3ddf4.akpm@linux-foundation.org>
+In-Reply-To: <1189496840.22589.1.camel@chaos>
+References: <200707220159.l6M1xBgH001236@hera.kernel.org>
+	<20070910144740.4eba2fda.akpm@linux-foundation.org>
+	<1189492636.25767.62.camel@chaos>
+	<20070911000001.30f8590b.akpm@linux-foundation.org>
+	<1189495400.25767.81.camel@chaos>
+	<1189496840.22589.1.camel@chaos>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  	if (onlined_pages)
-> -		node_set_state(zone->node, N_HIGH_MEMORY);
-> +		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
->  
->  	setup_per_zone_pages_min();
+On Tue, 11 Sep 2007 09:47:20 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Thanks Paul-san. 
+> On Tue, 2007-09-11 at 09:23 +0200, Thomas Gleixner wrote:
+> > > I went back to the original patch which I sent to Linus and it matches
+> > > 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6.  So all I can think is that there
+> > > must have been something else in the tree which I tested which fixed the
+> > > bug which 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6 introduced.  argh.
+> > > 
+> > > Can you think what would cause the symptoms which I described?  
+> > 
+> > It seems that time is not updated. Timer interrupt not active or some
+> > other odd thing. I figure out what's going on when I find a box which
+> > exposes the problem.
 
-I also have another issue around here.
-(Kswapd doesn't run on memory less node now. It should run when
- the node has memory.)
+2.6.22-rc6-mm1's git-acpi.patch contains something which fixes this bug. 
+It's a quarter megabyte :( Presumably clockevents-fix-resume-logic.patch
+depended on something which was in that git-acpi.patch but which for some
+reason didn't get merged.  Ho hum, I'll take a look, see if I can spot it.
 
-I would like to merge them like following if you don't mind.
+> Can you please try the following command line options:
+> 
+> nolapic_timer
 
+Works
 
-Bye.
+> nohz=off
 
----
-
-Fix kswapd doesn't run when memory is added on memory-less-node.
-Fix compile error of zone->node when CONFIG_NUMA is off.
-
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-
-
----
- mm/memory_hotplug.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
-
-Index: current/mm/memory_hotplug.c
-===================================================================
---- current.orig/mm/memory_hotplug.c	2007-09-07 18:08:07.000000000 +0900
-+++ current/mm/memory_hotplug.c	2007-09-11 17:29:19.000000000 +0900
-@@ -211,10 +211,12 @@ int online_pages(unsigned long pfn, unsi
- 		online_pages_range);
- 	zone->present_pages += onlined_pages;
- 	zone->zone_pgdat->node_present_pages += onlined_pages;
--	if (onlined_pages)
--		node_set_state(zone->node, N_HIGH_MEMORY);
- 
- 	setup_per_zone_pages_min();
-+	if (onlined_pages){
-+		kswapd_run(zone_to_nid(zone));
-+		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
-+	}
- 
- 	if (need_zonelists_rebuild)
- 		build_all_zonelists();
-@@ -269,9 +271,6 @@ int add_memory(int nid, u64 start, u64 s
- 		if (!pgdat)
- 			return -ENOMEM;
- 		new_pgdat = 1;
--		ret = kswapd_run(nid);
--		if (ret)
--			goto error;
- 	}
- 
- 	/* call arch's memory hotadd */
+Fails
 
 
--- 
-Yasunori Goto 
+> highres=off
 
+Fails
 
+> nohz=off highres=off
+
+Works
