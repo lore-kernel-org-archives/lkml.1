@@ -1,91 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762663AbXIKILg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762443AbXIKIPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762663AbXIKILg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 04:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759444AbXIKILT
+	id S1762443AbXIKIPj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 04:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759725AbXIKIP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 04:11:19 -0400
-Received: from s36.avahost.net ([74.53.95.194]:48403 "EHLO s36.avahost.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756732AbXIKILR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 04:11:17 -0400
-Message-ID: <46E64D9F.1010700@katalix.com>
-Date: Tue, 11 Sep 2007 09:11:11 +0100
-From: James Chapman <jchapman@katalix.com>
-Organization: Katalix Systems Ltd
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 11 Sep 2007 04:15:29 -0400
+Received: from zone4.gcu.info ([217.195.17.234]:62819 "EHLO
+	zone4.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759939AbXIKIP1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 04:15:27 -0400
+X-Greylist: delayed 1889 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Sep 2007 04:15:26 EDT
+Date: Tue, 11 Sep 2007 09:43:34 +0200 (CEST)
+To: hmh@hmh.eng.br
+Subject: Re: Platform device id
+X-IlohaMail-Blah: khali@localhost
+X-IlohaMail-Method: mail() [mem]
+X-IlohaMail-Dummy: moo
+X-Mailer: IlohaMail/0.8.14 (On: mail.gcu-squad.org)
+Message-ID: <C5k470vB.1189496614.5481670.khali@localhost>
+In-Reply-To: <20070910225205.GB1408@khazad-dum.debian.net>
+From: "Jean Delvare" <khali@linux-fr.org>
+Bounce-To: "Jean Delvare" <khali@linux-fr.org>
+CC: "David Brownell" <david-b@pacbell.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "dmitry.torokhov@gmail.com" <dmitry.torokhov@gmail.com>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: "Maciej W. Rozycki" <macro@linux-mips.org>, netdev@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ipconfig.c: De-clutter IP configuration report
-References: <Pine.LNX.4.64N.0709101249230.25038@blysk.ds.pg.gda.pl> <Pine.LNX.4.64.0709102351090.5368@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0709102351090.5368@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - s36.avahost.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - katalix.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Sep 10 2007 13:09, Maciej W. Rozycki wrote:
->> The new code builds fine; no semantic changes.
->>
->> Please apply,
->>
->>  Maciej
->>
->> patch-mips-2.6.23-rc5-20070904-ipconfig-printk-2
->> diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/net/ipv4/ipconfig.c linux-mips-2.6.23-rc5-20070904/net/ipv4/ipconfig.c
->> --- linux-mips-2.6.23-rc5-20070904.macro/net/ipv4/ipconfig.c	2007-09-04 04:56:22.000000000 +0000
->> +++ linux-mips-2.6.23-rc5-20070904/net/ipv4/ipconfig.c	2007-09-10 11:53:19.000000000 +0000
->> @@ -1364,17 +1364,17 @@ static int __init ip_auto_config(void)
->> 	/*
->> 	 * Clue in the operator.
->> 	 */
->> -	printk("IP-Config: Complete:");
->> -	printk("\n      device=%s", ic_dev->name);
->> -	printk(", addr=%u.%u.%u.%u", NIPQUAD(ic_myaddr));
->> -	printk(", mask=%u.%u.%u.%u", NIPQUAD(ic_netmask));
->> -	printk(", gw=%u.%u.%u.%u", NIPQUAD(ic_gateway));
->> -	printk(",\n     host=%s, domain=%s, nis-domain=%s",
->> -	       utsname()->nodename, ic_domain, utsname()->domainname);
->> -	printk(",\n     bootserver=%u.%u.%u.%u", NIPQUAD(ic_servaddr));
->> -	printk(", rootserver=%u.%u.%u.%u", NIPQUAD(root_server_addr));
->> -	printk(", rootpath=%s", root_server_path);
->> -	printk("\n");
->> +	pr_info("IP-Config: Complete:\n");
->> +	pr_info("      device=%s, addr=%u.%u.%u.%u, "
->> +		"mask=%u.%u.%u.%u, gw=%u.%u.%u.%u,\n",
->> +		ic_dev->name, NIPQUAD(ic_myaddr),
->> +		NIPQUAD(ic_netmask), NIPQUAD(ic_gateway));
->> +	pr_info("      host=%s, domain=%s, nis-domain=%s,\n",
->> +		utsname()->nodename, ic_domain, utsname()->domainname);
->> +	pr_info("      bootserver=%u.%u.%u.%u, "
->> +		"rootserver=%u.%u.%u.%u, rootpath=%s\n",
->> +		NIPQUAD(ic_servaddr),
->> +		NIPQUAD(root_server_addr), root_server_path);
->> #endif /* !SILENT */
->>
->> 	return 0;
-> 
-> It should really be done in userspace. And ripped from the kernel.
 
-The output is useful when debugging boot problems on systems whose 
-rootfs is on the network. So I think the patch is ok.
+Hi Henrique,
 
-However, it would be useful to make the parameters available to 
-userspace for use by boot scripts etc. A proc file listing variables and 
-values in /bin/sh syntax would be easy to use. I've been meaning to do 
-this for ages so I'll roll a patch.
+On 9/10/2007, "Henrique de Moraes Holschuh" <hmh@hmh.eng.br> wrote:
+>On Sat, 08 Sep 2007, Jean Delvare wrote:
+>> * Detection could be moved to user-space entirely, then we would only
+>> need a way to instantiate these specific devices from user-space. This
+>> exists in other areas (scsi, network) for quite some times already so
+>> it shouldn't be too difficult.
+>
+>Don't like that one, sorry.  Detection often needs the kind of access to
+>hardware that is better off contained in the kernel.
 
--- 
-James Chapman
-Katalix Systems Ltd
-http://www.katalix.com
-Catalysts for your Embedded Linux software development
+Yes, good point.
 
+>(...)
+>I will see what I can do about breaking it up in various modules.  But this
+>can be unoptimal. If I took it too seriously, thinkpad-acpi would break into
+>at least five different modules, if not more, and at least one or two
+>modules would need to be there for the common code.  There has to be a
+>middle ground somewhere, I think.
+
+I don't know your code and I don't really have the time to look at it
+in depth, but I'm a bit surprised. Presumably your driver is
+implementing a number of interfaces (e.g. hwmon) and you create a class
+device for each one. You can have as many class devices hanging of a
+(physical) device, so I fail to see why you would need to register
+several (physical) devices.
+
+--
+Jean Delvare
