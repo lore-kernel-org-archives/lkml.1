@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965973AbXIKDyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbXIKEYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965973AbXIKDyj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 23:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965797AbXIKDyb
+	id S1758084AbXIKEYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 00:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbXIKEYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 23:54:31 -0400
-Received: from home.nigel.suspend2.net ([203.171.70.205]:54910 "EHLO
-	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965750AbXIKDya (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 23:54:30 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@suspend2.net
-To: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rafael Wysocki <rjw@sisk.pl>
-Subject: [PATCH] Fix failure to resume from initrds.
-Date: Tue, 11 Sep 2007 13:54:24 +1000
-User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 11 Sep 2007 00:24:01 -0400
+Received: from smtpoutm.mac.com ([17.148.16.78]:49486 "EHLO smtpoutm.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750818AbXIKEYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 00:24:00 -0400
+In-Reply-To: <20070910153953.GG3563@stusta.de>
+References: <20070905102230.10b0bdcf@oldman> <782111.42803.qm@web90413.mail.mud.yahoo.com> <46E2DF74.7040307@tmr.com> <20070908191132.GD3563@stusta.de> <46E5558D.3030402@tmr.com> <20070910153953.GG3563@stusta.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A5211C44-E353-46B1-9868-CE17B5489289@mac.com>
+Cc: Bill Davidsen <davidsen@tmr.com>, James Corey <ploversegg@yahoo.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Rob Sims <lkml-z@robsims.com>, Kyle Rose <krose@akamai.com>,
+       linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709111354.25689.nigel@nigel.suspend2.net>
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: sk98lin for 2.6.23-rc1
+Date: Tue, 11 Sep 2007 00:23:28 -0400
+To: Adrian Bunk <bunk@kernel.org>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all.
+On Sep 10, 2007, at 11:39:53, Adrian Bunk wrote:
+> No, it is obsolete because we have more than one driver for this  
+> hardware, and the people responsible for network drivers in the  
+> kernel decided some time ago that sk98lin is the one that is obsolete.
 
-Commit 831441862956fffa17b9801db37e6ea1650b0f69 (Freezer: make kernel threads
-nonfreezable by default) breaks freezing when attempting to resume from an
-initrd, because the init (which is freezeable) spins while waiting for another
-thread to run /linuxrc, but doesn't check whether it has been told to enter
-the refrigerator. The original patch replaced a call to try_to_freeze() with a
-call to yield(). I believe a simple reversion is wrong because
-if !CONFIG_PM_SLEEP, try_to_freeze() is a noop. It should still yield.
+I would like to happily report that the sky2 driver works great in  
+the NIC on my tablet where the sk98lin and skge drivers both fail  
+utterly and hang the kernel.  On another system the sk98lin and skge  
+drivers don't recognize the chipset at all (missing PCI ID?) while  
+the sky2 driver works perfectly for large quantities of data  
+transferred.
 
-Signed-off-by: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cheers,
+Kyle Moffett
 
- do_mounts_initrd.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-diff -ruNp 952-fix-initrd-resume.patch-old/init/do_mounts_initrd.c 952-fix-initrd-resume.patch-new/init/do_mounts_initrd.c
---- 952-fix-initrd-resume.patch-old/init/do_mounts_initrd.c	2007-09-11 13:43:31.000000000 +1000
-+++ 952-fix-initrd-resume.patch-new/init/do_mounts_initrd.c	2007-09-11 13:19:50.000000000 +1000
-@@ -58,8 +58,10 @@ static void __init handle_initrd(void)
- 
- 	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
- 	if (pid > 0)
--		while (pid != sys_wait4(-1, NULL, 0, NULL))
-+		while (pid != sys_wait4(-1, NULL, 0, NULL)) {
- 			yield();
-+			try_to_freeze();
-+		}
- 
- 	if (!resume_attempted)
- 		printk(KERN_ERR "Suspend2: No attempt was made to resume from "
-
--- 
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
