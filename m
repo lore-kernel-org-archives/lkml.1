@@ -1,81 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758477AbXIKP07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbXIKP2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758477AbXIKP07 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 11:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbXIKP0w
+	id S1759784AbXIKP2T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 11:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755083AbXIKP2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 11:26:52 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:59137 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753547AbXIKP0v (ORCPT
+	Tue, 11 Sep 2007 11:28:06 -0400
+Received: from mga10.intel.com ([192.55.52.92]:31542 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755071AbXIKP2D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 11:26:51 -0400
-Date: Tue, 11 Sep 2007 08:22:43 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Paul Menage <menage@google.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>, vatsa@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, Jan Engelhardt <jengelh@computergmbh.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Hookup group-scheduler with task container
- infrastructure
-Message-Id: <20070911082243.9433c528.randy.dunlap@oracle.com>
-In-Reply-To: <46E641C1.8000808@fr.ibm.com>
-References: <20070910171049.GA16048@linux.vnet.ibm.com>
-	<Pine.LNX.4.64.0709101903220.5368@fbirervta.pbzchgretzou.qr>
-	<20070910172334.GB19100@linux.vnet.ibm.com>
-	<20070910102259.dc45a481.akpm@linux-foundation.org>
-	<20070910174649.GA16222@linux.vnet.ibm.com>
-	<b647ffbd0709101537l9af4dc8x743b25c96e0f5235@mail.gmail.com>
-	<6599ad830709101545s66fd338dob6932407db4e1002@mail.gmail.com>
-	<46E641C1.8000808@fr.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Tue, 11 Sep 2007 11:28:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,238,1186383600"; 
+   d="scan'208";a="132861110"
+Date: Tue, 11 Sep 2007 08:32:09 -0700
+From: "Lombard, David N" <dnlombar@ichips.intel.com>
+To: Bernhard Walle <bwalle@suse.de>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [patch 1/5] Extended crashkernel command line
+Message-ID: <20070911153209.GA5054@nlxdcldnl2.cl.intel.com>
+Mail-Followup-To: Bernhard Walle <bwalle@suse.de>,
+	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org
+References: <20070909083914.065380136@strauss.suse.de> <20070909083914.488571169@strauss.suse.de> <20070911131445.GA17460@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070911131445.GA17460@suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Sep 2007 09:20:33 +0200 Cedric Le Goater wrote:
-
-> Paul Menage wrote:
-> > On 9/10/07, Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
-> >> On 10/09/2007, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
-> >>> On Mon, Sep 10, 2007 at 10:22:59AM -0700, Andrew Morton wrote:
-> >>>> objection ;)  "cpuctlr" isn't memorable.  Kernel code is write-rarely,
-> >>>> read-often.  "cpu_controller", please.  The extra typing is worth it ;)
-> >>> Ok! Here's the modified patch (against 2.6.23-rc4-mm1).
-> >> as everyone seems to be in a quest for a better name... I think, the
-> >> obvious one would be just 'group_sched'.
-> >>
-> > 
-> > But "sched" on its own could refer to CPU scheduling, I/O scheduling,
-> > network scheduling, ...
-> > 
-> > And "group" is more or less implied by the fact that it's in the
-> > containers/control groups filesystem.
+On Tue, Sep 11, 2007 at 03:14:45PM +0200, Olaf Dabrunz wrote:
+> On 09-Sep-07, Bernhard Walle wrote:
+> > If there are multiple occurrences, then the last one is taken.  The advantage
+> > is that if you have a bootloader like lilo or elilo which allows you to append
+> > a command line parameter but not to remove one (like in GRUB), then you can add
+> > another crashkernel value for testing at the boot command line and this one
+> > overwrites the command line in the configuration then.
 > 
-> "control groups" is the name of your framework. right ?
+> AFAIK it is the other way round: the lilo configuration-parameter
+> "append" appends the kernel parameters in the configuration to the
+> parameters given by the user on the kernel command line.
 > 
-> > So "group_sched" isn't really all that informative. The name should
-> > definitely contain either "cpu" or "cfs".
-> 
-> "cfs" control group subsystem.
+> So the parameters set by the user during boot appear first on the
+> command line.
 
-That looks odd, like it's a filesystem.
-What does cfs really mean?
+Given the kernel itself processes the cmdline from front to back,
+that suggests the last value is the correct value.
 
 
-> "cfs" looks good enough to identify the subsystem.
+A survey of bootloaders shows differing behaviors:
+
+syslinux et al.:
+  APPEND options...
+    Add one or more options to the kernel command line.  These are
+    added both for automatic and manual boots.  The options are
+    added at the very beginning of the kernel command line,
+    usually permitting explicitly entered kernel options to override
+    them.  This is the equivalent of the LILO "append" option.
+
+lilo:
+  append=<string>
+
+    Appends the options specified to the parameter line passed to
+    the kernel.  This is typically used to specify hardware parameters
+    that can't be entirely auto-detected or for which probing may be
+    dangerous. Multiple kernel parameters are separated by a blank
+    space, and the string must be enclosed in double quotes.  A local
+    append= appearing withing an image= section overrides any
+    global append= appearing in the top section of the configuration file.
+    Append= may be used only once per "image=" section.
+
+    [There's also a local addappend string that's appended to the append string]
+
+elilo:
+  append=string       Append a string of options to kernel command line
+    ...
+    The user can specify a kernel and related kernel options using the image
+    label. Alternatively, the user can also specify a kernel file that is
+    not specified in the config file. In any case, some of the global options
+    (such as append) are always concatenated to whatever the user type.
+
+Grub:
+  Interactive editing of the command line...
+
+kboot
+  Config file entries precede user's values from keyboard
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+
+-- 
+David N. Lombard, Intel, Irvine, CA
+I do not speak for Intel Corporation; all comments are strictly my own.
