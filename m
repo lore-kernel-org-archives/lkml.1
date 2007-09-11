@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763063AbXIKIXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763004AbXIKI0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763063AbXIKIXw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 04:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762958AbXIKIXg
+	id S1763004AbXIKI0U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 04:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbXIKI0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 04:23:36 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:23385 "EHLO kernel.dk"
+	Tue, 11 Sep 2007 04:26:12 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:60838 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762951AbXIKIXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 04:23:34 -0400
-Date: Tue, 11 Sep 2007 10:32:04 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: FUJITA Tomonori <tomof@acm.org>, akpm@linux-foundation.org,
-       apw@shadowen.org, linux-kernel@vger.kernel.org, mel@csn.ul.ie,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp
-Subject: Re: 2.6.23-rc4-mm1
-Message-ID: <20070911083204.GE4187@kernel.dk>
-References: <20070910111926.9c942358.akpm@linux-foundation.org> <64bb37e0709101159v47f586aby7f078ef1db5cbc39@mail.gmail.com> <20070910122038.1f1bb006.akpm@linux-foundation.org> <20070910045503O.tomof@acm.org> <64bb37e0709101343t2a621239pfc3545263e0b7674@mail.gmail.com>
+	id S1755669AbXIKI0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 04:26:11 -0400
+Date: Tue, 11 Sep 2007 17:25:59 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mm] mm: Fix memory hotplug + sparsemem build.
+Message-ID: <20070911082559.GA19732@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Yasunori Goto <y-goto@jp.fujitsu.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20070911072507.GB19260@linux-sh.org> <20070911170921.F137.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <64bb37e0709101343t2a621239pfc3545263e0b7674@mail.gmail.com>
+In-Reply-To: <20070911170921.F137.Y-GOTO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 10 2007, Torsten Kaiser wrote:
-> On 9/10/07, FUJITA Tomonori <tomof@acm.org> wrote:
-> > On Mon, 10 Sep 2007 12:20:38 -0700
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > > On Mon, 10 Sep 2007 20:59:49 +0200 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-> > > > The system boots, reads the partition tables, starts the RAID and then
-> > > > kicks one drive out because of errors.
-> > >
-> > > Andy is using qla1280.  You're using sata.  So it's probably a different
-> > > bug, with the same symptoms.
-> >
-> > This might be a sg chaining bug too (probabaly sg chaining libata
-> > patch).
-> >
-> > Can you try the following patch that I've just sent:
-> >
-> > http://lkml.org/lkml/2007/9/10/251
-> >
-> > The patch also disables chaining sg list for libata.
-> >
-> With this patch 2.6.23-rc4-mm1 works for me.
-> Mainline 2.6.23-rc5-git1 works also without needing any patches.
+Hi Goto-san,
 
-OK, thanks for testing that. I'll merge Tomo's patch so that we can
-selectively enable drivers when we KNOW they work, instead of trying to
-do this (massive) operation whole sale.
-
--- 
-Jens Axboe
-
+On Tue, Sep 11, 2007 at 05:18:01PM +0900, Yasunori Goto wrote:
+> >  	if (onlined_pages)
+> > -		node_set_state(zone->node, N_HIGH_MEMORY);
+> > +		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
+> >  
+> >  	setup_per_zone_pages_min();
+> 
+> Thanks Paul-san. 
+> 
+> I also have another issue around here.
+> (Kswapd doesn't run on memory less node now. It should run when
+>  the node has memory.)
+> 
+> I would like to merge them like following if you don't mind.
+> 
+Looks fine to me!
