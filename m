@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764226AbXIKSqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbXIKSqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764226AbXIKSqT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 14:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758733AbXIKSqI
+	id S932564AbXIKSqe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 14:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758733AbXIKSqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 14:46:08 -0400
-Received: from mga11.intel.com ([192.55.52.93]:26977 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757585AbXIKSqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 14:46:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,239,1186383600"; 
-   d="scan'208";a="302559168"
-Date: Tue, 11 Sep 2007 11:41:59 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: jeff@garzik.org
-Cc: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [patch] ata: increase allowed config flags
-Message-Id: <20070911114159.4854ba4c.kristen.c.accardi@intel.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Sep 2007 14:46:25 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:42522 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764342AbXIKSqY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 14:46:24 -0400
+Date: Tue, 11 Sep 2007 20:46:33 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Nicolas Pitre <nico@cam.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       jgarzik <jgarzik@pobox.com>
+Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
+Message-ID: <20070911184632.GR3563@stusta.de>
+References: <20070911101644.cd3f641f.randy.dunlap@oracle.com> <alpine.LFD.0.9999.0709111333050.21186@xanadu.home> <20070911181700.GP3563@stusta.de> <alpine.LFD.0.9999.0709111428490.21186@xanadu.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.9999.0709111428490.21186@xanadu.home>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In anticipation of more features, increase number of config flags
-allowed, and move the init flags.
+On Tue, Sep 11, 2007 at 02:31:16PM -0400, Nicolas Pitre wrote:
+> On Tue, 11 Sep 2007, Adrian Bunk wrote:
+> 
+> > On Tue, Sep 11, 2007 at 02:03:34PM -0400, Nicolas Pitre wrote:
+> > > On Tue, 11 Sep 2007, Randy Dunlap wrote:
+> > >...
+> > > > +Alpine (TUI)
+> > > > +
+> > > > +<I don't know.  Maybe Adrian or Linus can comment.>
+> > > > +
+> > > > +Are any special config options needed?
+> > > 
+> > > Alpine is the successor of Pine.  Issues that were found in some earlier 
+> > > Pine versions wrt patch sending are now fixed.
+> > >...
+> > 
+> > There were no problems with sending patches in pine.
+> 
+> One old version did have problems with spaces at the end of lines 
+> despite the config option, and you had to manually patch it if your 
+> distro didn't.
 
-Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Hugh Dickens <hugh@veritas.com>
+This could be, but it's not worth documenting that there once was one 
+broken version.
 
-Index: 2.6-mm/include/linux/libata.h
-===================================================================
---- 2.6-mm.orig/include/linux/libata.h
-+++ 2.6-mm/include/linux/libata.h
-@@ -140,11 +140,11 @@ enum {
- 	ATA_DFLAG_ACPI_PENDING	= (1 << 5), /* ACPI resume action pending */
- 	ATA_DFLAG_ACPI_FAILED	= (1 << 6), /* ACPI on devcfg has failed */
- 	ATA_DFLAG_AN		= (1 << 7), /* device supports AN */
--	ATA_DFLAG_CFG_MASK	= (1 << 8) - 1,
-+	ATA_DFLAG_CFG_MASK	= (1 << 12) - 1,
- 
--	ATA_DFLAG_PIO		= (1 << 8), /* device limited to PIO mode */
--	ATA_DFLAG_NCQ_OFF	= (1 << 9), /* device limited to non-NCQ mode */
--	ATA_DFLAG_SPUNDOWN	= (1 << 10), /* XXX: for spindown_compat */
-+	ATA_DFLAG_PIO		= (1 << 12), /* device limited to PIO mode */
-+	ATA_DFLAG_NCQ_OFF	= (1 << 13), /* device limited to non-NCQ mode */
-+	ATA_DFLAG_SPUNDOWN	= (1 << 14), /* XXX: for spindown_compat */
- 	ATA_DFLAG_INIT_MASK	= (1 << 16) - 1,
- 
- 	ATA_DFLAG_DETACH	= (1 << 16),
+Generally, pine doesn't have problems with sending patches.
+
+> Nicolas
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
