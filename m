@@ -1,45 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbXIKPSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbXIKPTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758067AbXIKPSS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 11:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXIKPSG
+	id S1758097AbXIKPTt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 11:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXIKPTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 11:18:06 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:57421 "EHLO gir.skynet.ie"
+	Tue, 11 Sep 2007 11:19:42 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:57475 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752507AbXIKPSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 11:18:05 -0400
-Date: Tue, 11 Sep 2007 16:18:03 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: X freezes kernel during exit [Re: 2.6.23-rc3-mm1]
-In-Reply-To: <46E41601.7030600@gmail.com>
-Message-ID: <Pine.LNX.4.64.0709111615310.10340@skynet.skynet.ie>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
- <46D17A7A.70609@gmail.com> <46D409FC.1070305@gmail.com> <46E3DCB8.5010709@gmail.com>
- <20070909054751.cbb27081.akpm@linux-foundation.org> <46E3FE6B.7010209@gmail.com>
- <20070909141730.GB25798@one.firstfloor.org> <46E4028E.9050007@gmail.com>
- <20070909143324.GC25798@one.firstfloor.org> <46E40699.7060000@gmail.com>
- <20070909150158.GD25798@one.firstfloor.org> <46E41601.7030600@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1752712AbXIKPTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 11:19:41 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: apw@shadowen.org
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Message-Id: <20070911151939.11117.30384.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/6] Use one zonelist per node instead of multiple zonelists v5
+Date: Tue, 11 Sep 2007 16:19:39 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> What other info needed?
+This is the latest version of one-zonelist and it should be solid enough
+for wider testing. To briefly summarise, the patchset replaces multiple
+zonelists-per-node with one zonelist that is filtered based on nodemask and
+GFP flags. I've dropped the patch that replaces inline functions with macros
+from the end as it obscures the code for something that may or may not be a
+performance benefit on older compilers. If we see performance regressions that
+might have something to do with it, the patch is trivially to bring forward.
 
-I'm seeing this on my 965gm chipset with Andi's clflush patches on x86 
-32-bit, it looks like an interaction with the agp code which does a big 
-bunch of change page attr to allocate the AGP aperture backed memory..
+Andrew, please merge to -mm for wider testing and consideration for merging
+to mainline. Minimally, it gets rid of the hack in relation to ZONE_MOVABLE
+and MPOL_BIND.
 
-I think the code might have worked in a previous iteration on my 64-bit 
-965G machine at home but I'm on the road and won't be back anytime soon..
+Changelog since V5
+  o Rebase to 2.6.23-rc4-mm1
+  o Drop patch that replaces inline functions with macros
 
-I'll see what I can figure out from my laptop...
+Changelog since V4
+  o Rebase to -mm kernel. Host of memoryless patches collisions dealt with
+  o Do not call wakeup_kswapd() for every zone in a zonelist
+  o Dropped the FASTCALL removal
+  o Have cursor in iterator advance earlier
+  o Use nodes_and in cpuset_nodes_valid_mems_allowed()
+  o Use defines instead of inlines, noticably better performance on gcc-3.4
+    No difference on later compilers such as gcc 4.1
+  o Dropped gfp_skip patch until it is proven to be of benefit. Tests are
+    currently inconclusive but it definitly consumes at least one cache
+    line
 
-Dave.
+Changelog since V3
+  o Fix compile error in the parisc change
+  o Calculate gfp_zone only once in __alloc_pages
+  o Calculate classzone_idx properly in get_page_from_freelist
+  o Alter check so that zone id embedded may still be used on UP
+  o Use Kamezawa-sans suggestion for skipping zones in zonelist
+  o Add __alloc_pages_nodemask() to filter zonelist based on a nodemask. This
+    removes the need for MPOL_BIND to have a custom zonelist
+  o Move zonelist iterators and helpers to mm.h
+  o Change _zones from struct zone * to unsigned long
+  
+Changelog since V2
+  o shrink_zones() uses zonelist instead of zonelist->zones
+  o hugetlb uses zonelist iterator
+  o zone_idx information is embedded in zonelist pointers
+  o replace NODE_DATA(nid)->node_zonelist with node_zonelist(nid)
+
+Changelog since V1
+  o Break up the patch into 3 patches
+  o Introduce iterators for zonelists
+  o Performance regression test
+
+The following patches replace multiple zonelists per node with one zonelist
+that is filtered based on the GFP flags. The patches as a set fix a bug
+with regard to the use of MPOL_BIND and ZONE_MOVABLE. With this patchset,
+the MPOL_BIND will apply to the two highest zones when the highest zone
+is ZONE_MOVABLE. This should be considered as an alternative fix for the
+MPOL_BIND+ZONE_MOVABLE in 2.6.23 to the previously discussed hack that
+filters only custom zonelists. As a bonus, the patchset reduces the cache
+footprint of the kernel and should improve performance in a number of cases.
+
+The first patch cleans up an inconsitency where direct reclaim uses
+zonelist->zones where other places use zonelist. The second patch introduces
+a helper function node_zonelist() for looking up the appropriate zonelist
+for a GFP mask which simplifies patches later in the set.
+
+The third patch replaces multiple zonelists with two zonelists that are
+filtered. The two zonelists are due to the fact that the memoryless patchset
+introduces a second set of zonelists for __GFP_THISNODE.
+
+The fourth patch introduces filtering of the zonelists based on a nodemask.
+
+The final patch replaces the two zonelists with one zonelist. A nodemask is
+created when __GFP_THISNODE is specified to filter the list. The nodelists
+could be pre-allocated with one-per-node but it's not clear that __GFP_THISNODE
+is used often enough to be worth the effort.
+
+Performance results varied depending on the machine configuration but were
+usually small performance gains. In real workloads the gain/loss will depend
+on how much the userspace portion of the benchmark benefits from having more
+cache available due to reduced referencing of zonelists.
+
+These are the range of performance losses/gains when running against
+2.6.23-rc3-mm1. The set and these machines are a mix of i386, x86_64 and
+ppc64 both NUMA and non-NUMA.
+
+Total CPU time on Kernbench: -0.67% to  3.05%
+Elapsed   time on Kernbench: -0.25% to  2.96%
+page_test from aim9:         -6.98% to  5.60%
+brk_test  from aim9:         -3.94% to  4.11%
+fork_test from aim9:         -5.72% to  4.14%
+exec_test from aim9:         -1.02% to  1.56%
+
+The TBench figures were too variable between runs to draw conclusions from but
+there didn't appear to be any regressions there. The hackbench results for both
+sockets and pipes were within noise.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
