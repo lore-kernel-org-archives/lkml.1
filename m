@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966395AbXIKHBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965576AbXIKHH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966395AbXIKHBe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 03:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760904AbXIKHB0
+	id S965576AbXIKHH2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 03:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761012AbXIKHHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 03:01:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49355 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760959AbXIKHBZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 03:01:25 -0400
-Date: Tue, 11 Sep 2007 00:00:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: clockevents: fix resume logic
-Message-Id: <20070911000001.30f8590b.akpm@linux-foundation.org>
-In-Reply-To: <1189492636.25767.62.camel@chaos>
-References: <200707220159.l6M1xBgH001236@hera.kernel.org>
-	<20070910144740.4eba2fda.akpm@linux-foundation.org>
-	<1189492636.25767.62.camel@chaos>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 11 Sep 2007 03:07:17 -0400
+Received: from ozlabs.org ([203.10.76.45]:57348 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760981AbXIKHHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 03:07:16 -0400
+Subject: [PATCH] lguest: Fix guest crash when CONFIG_X86_USE_3DNOW=y
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Michael Rasenberger <michael.rasenberger@googlemail.com>
+Cc: lguest@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <46E1A7BB.70203@googlemail.com>
+References: <46E18381.9020206@googlemail.com>
+	 <1189179936.10802.321.camel@localhost.localdomain>
+	 <46E1A7BB.70203@googlemail.com>
+Content-Type: text/plain
+Date: Tue, 11 Sep 2007 17:06:37 +1000
+Message-Id: <1189494397.20631.104.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Sep 2007 08:37:16 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+One of the very first things lguest_init() does is a memcpy.  On
+Athlon/Duron/K7 or CyrixIII/VIA-C3 or Geode GX/LX, this tries to use
+MMX.
 
-> On Mon, 2007-09-10 at 14:47 -0700, Andrew Morton wrote:
-> > > 
-> > >     clockevents: fix resume logic
-> > >     
-> > >     We need to make sure, that the clockevent devices are resumed, before
-> > >     the tick is resumed. The current resume logic does not guarantee this.
-> > >     
-> > >     Add CLOCK_EVT_MODE_RESUME and call the set mode functions of the clock
-> > >     event devices before resuming the tick / oneshot functionality.
-> > >     
-> > >     Fixup the existing users.
-> > >     
-> > >     Thanks to Nigel Cunningham for tracking down a long standing thinko,
-> > >     which affected the jinxed VAIO.
-> > >     
-> > 
-> > This patch broke the jinxed vaio.
-> > 
-> > Which is a bit odd, considering that I must have tested it at the time. 
-> > But I bisected it right down to this commit, and the below revert patch
-> > fixed it up.
-> 
-> I just looked up, that you confirmed earlier that the patch does _not_
-> break the VAIO. 
-> 
-> I think, that some other suspend/resume/ACPI or whatever change went in
-> before this patch got merged into Linus tree. Sigh. That's pretty hard
-> to find out.
-> 
+memcpy -> _mmx_memcpy -> kernel_fpu_begin -> clts -> paravirt_ops.clts
 
-I tried just 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6 on top of 2.6.22
-(threw away the lguest and xen hunks).  The same problem occurs.  2.6.22 is
-OK.
+But we haven't set paravirt_ops.clts yet, so we do the native version
+and crash.  The simplest solution is to use __memcpy.
 
-I went back to the original patch which I sent to Linus and it matches
-18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6.  So all I can think is that there
-must have been something else in the tree which I tested which fixed the
-bug which 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6 introduced.  argh.
+Thanks to Michael Rasenberger for the bug report.
 
-Can you think what would cause the symptoms which I described?  
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff -r 1b28730fea64 drivers/lguest/lguest.c
+--- a/drivers/lguest/lguest.c	Tue Sep 11 13:53:31 2007 +1000
++++ b/drivers/lguest/lguest.c	Tue Sep 11 16:28:49 2007 +1000
+@@ -964,11 +964,12 @@ __init void lguest_init(void *boot)
+ {
+ 	/* Copy boot parameters first: the Launcher put the physical location
+ 	 * in %esi, and head.S converted that to a virtual address and handed
+-	 * it to us. */
+-	memcpy(&boot_params, boot, PARAM_SIZE);
++	 * it to us.  We use "__memcpy" because "memcpy" sometimes tries to do
++	 * tricky things to go faster, and we're not ready for that. */
++	__memcpy(&boot_params, boot, PARAM_SIZE);
+ 	/* The boot parameters also tell us where the command-line is: save
+ 	 * that, too. */
+-	memcpy(boot_command_line, __va(boot_params.hdr.cmd_line_ptr),
++	__memcpy(boot_command_line, __va(boot_params.hdr.cmd_line_ptr),
+ 	       COMMAND_LINE_SIZE);
+ 
+ 	/* We're under lguest, paravirt is enabled, and we're running at
+
+
