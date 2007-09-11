@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751664AbXIKNsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbXIKOAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751664AbXIKNsu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 09:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbXIKNsn
+	id S1752005AbXIKOAi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 10:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbXIKOAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 09:48:43 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41636 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750763AbXIKNsm (ORCPT
+	Tue, 11 Sep 2007 10:00:30 -0400
+Received: from zone4.gcu.info ([217.195.17.234]:54945 "EHLO
+	zone4.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750847AbXIKOA3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 09:48:42 -0400
-Date: Tue, 11 Sep 2007 14:56:22 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Matti Linnanvuori <mattilinnanvuori@yahoo.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Do not deprecate binary semaphore or do allow mutex in software
- interrupt contexts
-Message-ID: <20070911145622.0a37bbda@the-village.bc.nu>
-In-Reply-To: <20070911153628.26ca02bc@laptopd505.fenrus.org>
-References: <11531.17274.qm@web52008.mail.re2.yahoo.com>
-	<20070911153628.26ca02bc@laptopd505.fenrus.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
+	Tue, 11 Sep 2007 10:00:29 -0400
+Date: Tue, 11 Sep 2007 15:59:31 +0200 (CEST)
+To: mhoffman@lightlink.com, djwong@us.ibm.com
+Subject: Re: [PATCH] v3 of IBM power meter driver
+X-IlohaMail-Blah: khali@localhost
+X-IlohaMail-Method: mail() [mem]
+X-IlohaMail-Dummy: moo
+X-Mailer: IlohaMail/0.8.14 (On: mail.gcu-squad.org)
+Message-ID: <QsqPsE00.1189519171.8421320.khali@localhost>
+In-Reply-To: <20070911132335.GJ31992@jupiter.solarsys.private>
+From: "Jean Delvare" <khali@linux-fr.org>
+Bounce-To: "Jean Delvare" <khali@linux-fr.org>
+CC: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+       haveblue@us.ibm.com
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> to be honest, the scenario describe really smells of broken locking, in
-> fact it really sounds like it wants to use spinlocks instead 
 
-For polling and timer based code its often simpler to do
+On 9/11/2007, "Mark M. Hoffman" <mhoffman@lightlink.com> wrote:
+>* Darrick J. Wong <djwong@us.ibm.com> [2007-08-28 16:25:05 -0700]:
+>> --- a/drivers/hwmon/Kconfig
+>> +++ b/drivers/hwmon/Kconfig
+>> @@ -275,6 +275,18 @@ config SENSORS_CORETEMP
+>>  	  sensor inside your CPU. Supported all are all known variants
+>>  	  of Intel Core family.
+>>
+>> +config SENSORS_IBMPEX
+>> +	tristate "IBM PowerExecutive temperature/power sensors"
+>> +	depends on IPMI_SI
+>
+> Open question: can we use "select" here?  As written, it took some hunting
+> to even get this driver to show up as an option in menuconfig.
 
-	del_timer_sync(&my_timer);
-	FrobStuff
-	add_timer(&my_timer);
+My 2 cents: I assume that people who have IPMI-capable hardware are aware
+that they do. Thus, if you change the above to "select IPMI_SI", you
+probably want to add "depends on IPMI_HANDLER" (not sure why it's not
+just named CONFIG_IPMI).
 
-especially if "FrobStuff" is likely to change when you next need to poll.
-
-And don't forget regular polling is a good way to really annoy laptop
-users as it burns power
-
-Alan
-
+--
+Jean Delvare
