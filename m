@@ -1,118 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933578AbXIKJId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933578AbXIKJPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933578AbXIKJId (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 05:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933134AbXIKJIZ
+	id S933578AbXIKJPq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 05:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759909AbXIKJPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 05:08:25 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:7177 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932922AbXIKJIY (ORCPT
+	Tue, 11 Sep 2007 05:15:38 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3888 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756853AbXIKJPh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 05:08:24 -0400
-X-IronPort-AV: i="4.20,236,1186372800"; 
-   d="scan'208"; a="51097535:sNHT30789101"
-Subject: Re: [PATCH try #2] Blackfin on-chip NAND Flash Controller driver
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: dedekind@infradead.org
-Cc: bryan.wu@analog.com, David Woodhouse <dwmw2@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <1189499707.14370.107.camel@sauron>
-References: <1188885450.7074.7.camel@roc-laptop>
-	 <1189144341.14370.77.camel@sauron>  <1189417837.28956.9.camel@roc-desktop>
-	 <1189499707.14370.107.camel@sauron>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Tue, 11 Sep 2007 17:04:47 +0800
-Message-Id: <1189501487.12074.11.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 11 Sep 2007 09:08:22.0684 (UTC) FILETIME=[4DB9E5C0:01C7F453]
+	Tue, 11 Sep 2007 05:15:37 -0400
+Date: Tue, 11 Sep 2007 10:15:16 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mm] mm: Fix memory hotplug + sparsemem build.
+Message-ID: <20070911091516.GE6288@shadowen.org>
+References: <20070911072507.GB19260@linux-sh.org> <20070911170921.F137.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070911170921.F137.Y-GOTO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-11 at 11:35 +0300, Artem Bityutskiy wrote:
-> Hi,
+On Tue, Sep 11, 2007 at 05:18:01PM +0900, Yasunori Goto wrote:
+> >  	if (onlined_pages)
+> > -		node_set_state(zone->node, N_HIGH_MEMORY);
+> > +		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
+> >  
+> >  	setup_per_zone_pages_min();
 > 
-> On Mon, 2007-09-10 at 17:50 +0800, Bryan Wu wrote:
-> > Here is the test log, only 2 errors in oobtest. After digging into the
-> > mtd-nand driver code, it should be no relation to my bf5xx_nand driver.
-> > Maybe somethings wrong in the mtd-nand code. I intend to get some help
-> > from you, please see my test log below:
+> Thanks Paul-san. 
 > 
-> > oobtest: Attempting to read past end of device
-> > oobtest: An error is expected...
-> > oobtest: error: read past end of device
+> I also have another issue around here.
+> (Kswapd doesn't run on memory less node now. It should run when
+>  the node has memory.)
 > 
-> This means that MTD did not return an error when the test tried to read
-> the last NAND page's OOB. Here is the code:
+> I would like to merge them like following if you don't mind.
 > 
-> /* Attempt to write off end of device */
-> ops.mode      = MTD_OOB_AUTO;
-> ops.ooblen    = mtd->ecclayout->oobavail + 1;
-> ops.oobbuf    = writebuf;
-> printk(PRINT_PREF "Attempting to write past end of device\n");
-> printk(PRINT_PREF "An error is expected...\n");
-> err = mtd->write_oob(mtd, mtd->size - mtd->writesize, &ops);
 > 
-> So we read OOB size + 1 byte from the last NAND page and get no error.
+> Bye.
 > 
-
-Yes, it makes sense.
-
-> This test passes for nandsim, so I'm not sure the problem is in the
-> generic code. On the other hand, it is generic code which should check
-> rages.
-
-Actually, I debugged both oobtest.c and drivers/mtd/nand/nand_base.c
-
-in the kernel nand_base.c
-mtd->read_oob() --> nand_read_oob() --> nand_do_read_oob() -->
-chip->ecc.read_oob() --> nand_read_oob_std() --> chip->read_buf() -->
-bf5xx_nand.c bf5xx_nand_dma_read_buf().
-
-In the calling path, rage check should not be in my driver code
-bf5xx_nand_dma_read_buf() like other low level nand controller drivers.
-It is already in nand_do_read_oob() as below:
-
----
-	/* Do not allow reads past end of device */
-	if (unlikely(from >= mtd->size ||
-		     ops->ooboffs + readlen > ((mtd->size >> chip->page_shift) -
-					(from >> chip->page_shift)) * len)) {
-		DEBUG(MTD_DEBUG_LEVEL0, "nand_read_oob: "
-			"Attempt read beyond end of device\n");
-		return -EINVAL;
-	}
----
-
-maybe this condition testing does not include your case. I am not sure,
-still busy at other task.
-
-> > oobtest: Attempting to write past end of device
-> > oobtest: An error is expected...
-> > nand_write_oob: Attempt to write past end of page
-> > oobtest: Error occurred as expected
-> > oobtest: Attempting to read past end of device
-> > oobtest: An error is expected...
-> > oobtest: error: read past end of device
+> ---
 > 
-> Similar.
+> Fix kswapd doesn't run when memory is added on memory-less-node.
+> Fix compile error of zone->node when CONFIG_NUMA is off.
 > 
-> > I plan to do the torture test after this oobtest passed. And this
-> > nand_test suites are intended to integrated into our Blackfin
-> > uClinux-dist testsuites.
+> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 > 
-> We are planning to clean up the tests and submit them for kernel
-> inclusion some day, when we have time.
 > 
+> ---
+>  mm/memory_hotplug.c |    9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
+> 
+> Index: current/mm/memory_hotplug.c
+> ===================================================================
+> --- current.orig/mm/memory_hotplug.c	2007-09-07 18:08:07.000000000 +0900
+> +++ current/mm/memory_hotplug.c	2007-09-11 17:29:19.000000000 +0900
+> @@ -211,10 +211,12 @@ int online_pages(unsigned long pfn, unsi
+>  		online_pages_range);
+>  	zone->present_pages += onlined_pages;
+>  	zone->zone_pgdat->node_present_pages += onlined_pages;
+> -	if (onlined_pages)
+> -		node_set_state(zone->node, N_HIGH_MEMORY);
+>  
+>  	setup_per_zone_pages_min();
+> +	if (onlined_pages){
 
-Good news. Thanks
-Best Regards,
-- Bryan Wu
+Nit, needs a space there before the '{'.
 
+> +		kswapd_run(zone_to_nid(zone));
+> +		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
+> +	}
+>  
+>  	if (need_zonelists_rebuild)
+>  		build_all_zonelists();
+> @@ -269,9 +271,6 @@ int add_memory(int nid, u64 start, u64 s
+>  		if (!pgdat)
+>  			return -ENOMEM;
+>  		new_pgdat = 1;
+> -		ret = kswapd_run(nid);
+> -		if (ret)
+> -			goto error;
+>  	}
+>  
+>  	/* call arch's memory hotadd */
+
+The problem as I see it is that when we boot the system we start a
+kswapd on all nodes with memory.  If the hot-add adds memory to a
+pre-existing node with no memory we will not start one and we end up
+with a node with memory and no kswapd.  Bad.
+
+As kswapd_run is a no-op when a kswapd already exists this seems a safe
+way to fix that.  Paul's ->zone conversion is obviously correct also.
+
+Acked-by: Andy Whitcroft <apw@shadowen.org>
+
+-apw
