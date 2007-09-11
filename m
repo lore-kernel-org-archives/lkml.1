@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbXIKOm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbXIKOwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755288AbXIKOm6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 10:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbXIKOms
+	id S1753351AbXIKOwA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 10:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbXIKOvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 10:42:48 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:9282 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751324AbXIKOmr (ORCPT
+	Tue, 11 Sep 2007 10:51:53 -0400
+Received: from sceptre.pobox.com ([207.106.133.20]:49826 "EHLO
+	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751314AbXIKOvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 10:42:47 -0400
-Message-ID: <e6c711510709110742v4d2da644ha63b0a6d47c1230b@mail.gmail.com>
-Date: Tue, 11 Sep 2007 07:42:46 -0700
-From: "Ed Swierk" <eswierk@arastra.com>
-To: netdev@vger.kernel.org, maxk@qualcomm.com
-Subject: [PATCH] Configurable tap interface MTU
-Cc: linux-kernel@vger.kernel.org
+	Tue, 11 Sep 2007 10:51:52 -0400
+Date: Tue, 11 Sep 2007 09:51:31 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       OF-General <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>
+Subject: Re: [PATCH 08/12] IB/ehca: Replace get_paca()->paca_index by the more portable smp_processor_id()
+Message-ID: <20070911145131.GN32388@localdomain>
+References: <200709111518.26276.fenkes@de.ibm.com> <200709111533.14333.fenkes@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_6287_13624360.1189521766884"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200709111533.14333.fenkes@de.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_6287_13624360.1189521766884
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi,
 
-This patch makes it possible to change the MTU on a tap interface.
-Increasing the MTU beyond the 1500-byte default is useful for
-applications that interoperate with Ethernet devices supporting jumbo
-frames.
+Joachim Fenkes wrote:
+> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+> ---
+>  drivers/infiniband/hw/ehca/ehca_tools.h |   14 +++++++-------
+>  1 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/infiniband/hw/ehca/ehca_tools.h b/drivers/infiniband/hw/ehca/ehca_tools.h
+> index f9b264b..863f972 100644
+> --- a/drivers/infiniband/hw/ehca/ehca_tools.h
+> +++ b/drivers/infiniband/hw/ehca/ehca_tools.h
+> @@ -73,37 +73,37 @@ extern int ehca_debug_level;
+>  		if (unlikely(ehca_debug_level)) \
+>  			dev_printk(KERN_DEBUG, (ib_dev)->dma_device, \
+>  				   "PU%04x EHCA_DBG:%s " format "\n", \
+> -				   get_paca()->paca_index, __FUNCTION__, \
+> +				   smp_processor_id(), __FUNCTION__, \
+>  				   ## arg); \
+>  	} while (0)
+>  
+>  #define ehca_info(ib_dev, format, arg...) \
+>  	dev_info((ib_dev)->dma_device, "PU%04x EHCA_INFO:%s " format "\n", \
+> -		 get_paca()->paca_index, __FUNCTION__, ## arg)
+> +		 smp_processor_id(), __FUNCTION__, ## arg)
+>  
+>  #define ehca_warn(ib_dev, format, arg...) \
+>  	dev_warn((ib_dev)->dma_device, "PU%04x EHCA_WARN:%s " format "\n", \
+> -		 get_paca()->paca_index, __FUNCTION__, ## arg)
+> +		 smp_processor_id(), __FUNCTION__, ## arg)
+>  
+>  #define ehca_err(ib_dev, format, arg...) \
+>  	dev_err((ib_dev)->dma_device, "PU%04x EHCA_ERR:%s " format "\n", \
+> -		get_paca()->paca_index, __FUNCTION__, ## arg)
+> +		smp_processor_id(), __FUNCTION__, ## arg)
 
-The patch caps the MTU somewhat arbitrarily at 16000 bytes. This is
-slightly lower than the value used by the e1000 driver, so it seems
-like a safe upper limit.
+I think I see these macros used in preemptible code (e.g. ehca_probe),
+where smp_processor_id() will print a warning when
+CONFIG_DEBUG_PREEMPT=y.  Probably better to use raw_smp_processor_id.
 
-Signed-off-by: Ed Swierk <eswierk@arastra.com>
-
----
-
-------=_Part_6287_13624360.1189521766884
-Content-Type: application/octet-stream; name="tap-change-mtu.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="tap-change-mtu.patch"
-X-Attachment-Id: f_f6giijh1
-
-SW5kZXg6IGxpbnV4LTIuNi4yMi42L2RyaXZlcnMvbmV0L3R1bi5jCj09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxp
-bnV4LTIuNi4yMi42Lm9yaWcvZHJpdmVycy9uZXQvdHVuLmMKKysrIGxpbnV4LTIuNi4yMi42L2Ry
-aXZlcnMvbmV0L3R1bi5jCkBAIC0xNzEsNiArMTcxLDE4IEBAIHR1bl9uZXRfbWNsaXN0KHN0cnVj
-dCBuZXRfZGV2aWNlICpkZXYpCiAJfQogfQogCisjZGVmaW5lIE1JTl9NVFUgNjgKKyNkZWZpbmUg
-TUFYX01UVSAxNjAwMAorCitzdGF0aWMgaW50Cit0dW5fbmV0X2NoYW5nZV9tdHUoc3RydWN0IG5l
-dF9kZXZpY2UgKmRldiwgaW50IG5ld19tdHUpCit7CisJaWYgKG5ld19tdHUgPCBNSU5fTVRVIHx8
-IG5ld19tdHUgPiBNQVhfTVRVKQorCQlyZXR1cm4gLUVJTlZBTDsKKwlkZXYtPm10dSA9IG5ld19t
-dHU7CisJcmV0dXJuIDA7Cit9CisKIHN0YXRpYyBzdHJ1Y3QgbmV0X2RldmljZV9zdGF0cyAqdHVu
-X25ldF9zdGF0cyhzdHJ1Y3QgbmV0X2RldmljZSAqZGV2KQogewogCXN0cnVjdCB0dW5fc3RydWN0
-ICp0dW4gPSBuZXRkZXZfcHJpdihkZXYpOwpAQCAtMjAwLDYgKzIxMiw3IEBAIHN0YXRpYyB2b2lk
-IHR1bl9uZXRfaW5pdChzdHJ1Y3QgbmV0X2RldmkKIAkJZGV2LT5zZXRfbXVsdGljYXN0X2xpc3Qg
-PSB0dW5fbmV0X21jbGlzdDsKIAogCQlldGhlcl9zZXR1cChkZXYpOworCQlkZXYtPmNoYW5nZV9t
-dHUgPSB0dW5fbmV0X2NoYW5nZV9tdHU7CiAKIAkJLyogcmFuZG9tIGFkZHJlc3MgYWxyZWFkeSBj
-cmVhdGVkIGZvciB1cyBieSB0dW5fc2V0X2lmZiwgdXNlIGl0ICovCiAJCW1lbWNweShkZXYtPmRl
-dl9hZGRyLCB0dW4tPmRldl9hZGRyLCBtaW4oc2l6ZW9mKHR1bi0+ZGV2X2FkZHIpLCBzaXplb2Yo
-ZGV2LT5kZXZfYWRkcikpICk7Cg==
-------=_Part_6287_13624360.1189521766884--
