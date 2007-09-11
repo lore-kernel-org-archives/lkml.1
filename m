@@ -1,65 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764635AbXIKUEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964896AbXIKUEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764635AbXIKUEb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 16:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934193AbXIKUBz
+	id S964896AbXIKUEw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 16:04:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934226AbXIKUB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 16:01:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55152 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934060AbXIKUBx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 16:01:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37507 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934064AbXIKUBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Sep 2007 16:01:53 -0400
-Date: Tue, 11 Sep 2007 13:01:51 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: andrea@suse.de, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-In-Reply-To: <200709110452.20363.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0709111256250.25781@schroedinger.engr.sgi.com>
-References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <20070911200015.225075000@chello.nl>
+References: <20070911195350.825778000@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Tue, 11 Sep 2007 21:54:07 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
+       torvalds@linux-foundation.org
+Subject: [PATCH 17/23] mm: count reclaimable pages per BDI
+Content-Disposition: inline; filename=bdi_stat_reclaimable.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Sep 2007, Nick Piggin wrote:
+Count per BDI reclaimable pages; nr_reclaimable = nr_dirty + nr_unstable.
 
-> There is a limitation in the VM. Fragmentation. You keep saying this
-> is a solved issue and just assuming you'll be able to fix any cases
-> that come up as they happen.
-> 
-> I still don't get the feeling you realise that there is a fundamental
-> fragmentation issue that is unsolvable with Mel's approach.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ fs/buffer.c                 |    2 ++
+ fs/nfs/write.c              |    7 +++++++
+ include/linux/backing-dev.h |    1 +
+ mm/page-writeback.c         |    4 ++++
+ mm/truncate.c               |    2 ++
+ 5 files changed, 16 insertions(+)
 
-Well my problem first of all is that you did not read the full message. It 
-discusses that later and provides page pools to address the issue.
+Index: linux-2.6/fs/buffer.c
+===================================================================
+--- linux-2.6.orig/fs/buffer.c
++++ linux-2.6/fs/buffer.c
+@@ -697,6 +697,8 @@ static int __set_page_dirty(struct page 
+ 
+ 		if (mapping_cap_account_dirty(mapping)) {
+ 			__inc_zone_page_state(page, NR_FILE_DIRTY);
++			__inc_bdi_stat(mapping->backing_dev_info,
++					BDI_RECLAIMABLE);
+ 			task_io_account_write(PAGE_CACHE_SIZE);
+ 		}
+ 		radix_tree_tag_set(&mapping->page_tree,
+Index: linux-2.6/mm/page-writeback.c
+===================================================================
+--- linux-2.6.orig/mm/page-writeback.c
++++ linux-2.6/mm/page-writeback.c
+@@ -827,6 +827,8 @@ int __set_page_dirty_nobuffers(struct pa
+ 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+ 			if (mapping_cap_account_dirty(mapping)) {
+ 				__inc_zone_page_state(page, NR_FILE_DIRTY);
++				__inc_bdi_stat(mapping->backing_dev_info,
++						BDI_RECLAIMABLE);
+ 				task_io_account_write(PAGE_CACHE_SIZE);
+ 			}
+ 			radix_tree_tag_set(&mapping->page_tree,
+@@ -961,6 +963,8 @@ int clear_page_dirty_for_io(struct page 
+ 		 */
+ 		if (TestClearPageDirty(page)) {
+ 			dec_zone_page_state(page, NR_FILE_DIRTY);
++			dec_bdi_stat(mapping->backing_dev_info,
++					BDI_RECLAIMABLE);
+ 			return 1;
+ 		}
+ 		return 0;
+Index: linux-2.6/mm/truncate.c
+===================================================================
+--- linux-2.6.orig/mm/truncate.c
++++ linux-2.6/mm/truncate.c
+@@ -72,6 +72,8 @@ void cancel_dirty_page(struct page *page
+ 		struct address_space *mapping = page->mapping;
+ 		if (mapping && mapping_cap_account_dirty(mapping)) {
+ 			dec_zone_page_state(page, NR_FILE_DIRTY);
++			dec_bdi_stat(mapping->backing_dev_info,
++					BDI_RECLAIMABLE);
+ 			if (account_size)
+ 				task_io_account_cancelled_write(account_size);
+ 		}
+Index: linux-2.6/fs/nfs/write.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/write.c
++++ linux-2.6/fs/nfs/write.c
+@@ -464,6 +464,7 @@ nfs_mark_request_commit(struct nfs_page 
+ 			NFS_PAGE_TAG_COMMIT);
+ 	spin_unlock(&inode->i_lock);
+ 	inc_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
++	inc_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_RECLAIMABLE);
+ 	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
+ }
+ 
+@@ -550,6 +551,8 @@ static void nfs_cancel_commit_list(struc
+ 	while(!list_empty(head)) {
+ 		req = nfs_list_entry(head->next);
+ 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
++		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
++				BDI_RECLAIMABLE);
+ 		nfs_list_remove_request(req);
+ 		clear_bit(PG_NEED_COMMIT, &(req)->wb_flags);
+ 		nfs_inode_remove_request(req);
+@@ -1210,6 +1213,8 @@ nfs_commit_list(struct inode *inode, str
+ 		nfs_list_remove_request(req);
+ 		nfs_mark_request_commit(req);
+ 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
++		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
++				BDI_RECLAIMABLE);
+ 		nfs_clear_page_tag_locked(req);
+ 	}
+ 	return -ENOMEM;
+@@ -1235,6 +1240,8 @@ static void nfs_commit_done(struct rpc_t
+ 		nfs_list_remove_request(req);
+ 		clear_bit(PG_NEED_COMMIT, &(req)->wb_flags);
+ 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
++		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
++				BDI_RECLAIMABLE);
+ 
+ 		dprintk("NFS: commit (%s/%Ld %d@%Ld)",
+ 			req->wb_context->path.dentry->d_inode->i_sb->s_id,
+Index: linux-2.6/include/linux/backing-dev.h
+===================================================================
+--- linux-2.6.orig/include/linux/backing-dev.h
++++ linux-2.6/include/linux/backing-dev.h
+@@ -27,6 +27,7 @@ enum bdi_state {
+ typedef int (congested_fn)(void *, int);
+ 
+ enum bdi_stat_item {
++	BDI_RECLAIMABLE,
+ 	NR_BDI_STAT_ITEMS
+ };
+ 
 
-Secondly you keep FUDding people with lots of theoretical concerns 
-assuming Mel's approaches must fail. If there is an issue (I guess there 
-must be right?) then please give us a concrete case of a failure that we 
-can work against.
+--
 
-> The idea that there even _is_ a bug to fail when higher order pages
-> cannot be allocated was also brushed aside by some people at the
-> vm/fs summit. I don't know if those people had gone through the
-> math about this, but it goes somewhat like this: if you use a 64K
-> page size, you can "run out of memory" with 93% of your pages free.
-> If you use a 2MB page size, you can fail with 99.8% of your pages
-> still free. That's 64GB of memory used on a 32TB Altix.
-
-Allocations can currently fail and all code has the requirement to handle 
-failure cases in one form or another.
-
-Currently we can only handle up to order 3 allocs it seems. 2M pages (and 
-in particular pagesizes > MAX_ORDER) will have to be handled by a separate 
-large page pool facility discussed in the earlier message.
