@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762381AbXIKUD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934313AbXIKUDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762381AbXIKUD3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 16:03:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933844AbXIKUBu
+	id S934313AbXIKUDx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 16:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934073AbXIKUBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 16:01:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37474 "EHLO mx1.redhat.com"
+	Tue, 11 Sep 2007 16:01:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37503 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933292AbXIKUBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 16:01:49 -0400
-Message-Id: <20070911200013.438759000@chello.nl>
+	id S934042AbXIKUBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 16:01:52 -0400
+Message-Id: <20070911200015.351703000@chello.nl>
 References: <20070911195350.825778000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 11 Sep 2007 21:53:58 +0200
+Date: Tue, 11 Sep 2007 21:54:08 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
@@ -20,86 +20,75 @@ Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
        torvalds@linux-foundation.org
-Subject: [PATCH 08/23] lib: percpu_count_sum()
-Content-Disposition: inline; filename=percpu_counter_sum.patch
+Subject: [PATCH 18/23] mm: count writeback pages per BDI
+Content-Disposition: inline; filename=bdi_stat_writeback.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide an accurate version of percpu_counter_read.
+Count per BDI writeback pages.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/percpu_counter.h |   18 +++++++++++++++++-
- lib/percpu_counter.c           |    6 +++---
- 2 files changed, 20 insertions(+), 4 deletions(-)
+ include/linux/backing-dev.h |    1 +
+ mm/page-writeback.c         |   12 ++++++++++--
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/include/linux/percpu_counter.h
+Index: linux-2.6/mm/page-writeback.c
 ===================================================================
---- linux-2.6.orig/include/linux/percpu_counter.h
-+++ linux-2.6/include/linux/percpu_counter.h
-@@ -34,13 +34,24 @@ void percpu_counter_init(struct percpu_c
- void percpu_counter_destroy(struct percpu_counter *fbc);
- void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
- void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
--s64 percpu_counter_sum_positive(struct percpu_counter *fbc);
-+s64 __percpu_counter_sum(struct percpu_counter *fbc);
+--- linux-2.6.orig/mm/page-writeback.c
++++ linux-2.6/mm/page-writeback.c
+@@ -981,14 +981,18 @@ int test_clear_page_writeback(struct pag
+ 	int ret;
  
- static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
- {
- 	__percpu_counter_add(fbc, amount, FBC_BATCH);
- }
+ 	if (mapping) {
++		struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 		unsigned long flags;
  
-+static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
-+{
-+	s64 ret = __percpu_counter_sum(fbc);
-+	return ret < 0 ? 0 : ret;
-+}
-+
-+static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
-+{
-+	return __percpu_counter_sum(fbc);
-+}
-+
- static inline s64 percpu_counter_read(struct percpu_counter *fbc)
- {
- 	return fbc->count;
-@@ -107,6 +118,11 @@ static inline s64 percpu_counter_sum_pos
- 	return percpu_counter_read_positive(fbc);
- }
+ 		write_lock_irqsave(&mapping->tree_lock, flags);
+ 		ret = TestClearPageWriteback(page);
+-		if (ret)
++		if (ret) {
+ 			radix_tree_tag_clear(&mapping->page_tree,
+ 						page_index(page),
+ 						PAGECACHE_TAG_WRITEBACK);
++			if (bdi_cap_writeback_dirty(bdi))
++				__dec_bdi_stat(bdi, BDI_WRITEBACK);
++		}
+ 		write_unlock_irqrestore(&mapping->tree_lock, flags);
+ 	} else {
+ 		ret = TestClearPageWriteback(page);
+@@ -1004,14 +1008,18 @@ int test_set_page_writeback(struct page 
+ 	int ret;
  
-+static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
-+{
-+	return percpu_counter_read(fbc);
-+}
-+
- #endif	/* CONFIG_SMP */
+ 	if (mapping) {
++		struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 		unsigned long flags;
  
- static inline void percpu_counter_inc(struct percpu_counter *fbc)
-Index: linux-2.6/lib/percpu_counter.c
+ 		write_lock_irqsave(&mapping->tree_lock, flags);
+ 		ret = TestSetPageWriteback(page);
+-		if (!ret)
++		if (!ret) {
+ 			radix_tree_tag_set(&mapping->page_tree,
+ 						page_index(page),
+ 						PAGECACHE_TAG_WRITEBACK);
++			if (bdi_cap_writeback_dirty(bdi))
++				__inc_bdi_stat(bdi, BDI_WRITEBACK);
++		}
+ 		if (!PageDirty(page))
+ 			radix_tree_tag_clear(&mapping->page_tree,
+ 						page_index(page),
+Index: linux-2.6/include/linux/backing-dev.h
 ===================================================================
---- linux-2.6.orig/lib/percpu_counter.c
-+++ linux-2.6/lib/percpu_counter.c
-@@ -52,7 +52,7 @@ EXPORT_SYMBOL(__percpu_counter_add);
-  * Add up all the per-cpu counts, return the result.  This is a more accurate
-  * but much slower version of percpu_counter_read_positive()
-  */
--s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
-+s64 __percpu_counter_sum(struct percpu_counter *fbc)
- {
- 	s64 ret;
- 	int cpu;
-@@ -64,9 +64,9 @@ s64 percpu_counter_sum_positive(struct p
- 		ret += *pcount;
- 	}
- 	spin_unlock(&fbc->lock);
--	return ret < 0 ? 0 : ret;
-+	return ret;
- }
--EXPORT_SYMBOL(percpu_counter_sum_positive);
-+EXPORT_SYMBOL(__percpu_counter_sum);
+--- linux-2.6.orig/include/linux/backing-dev.h
++++ linux-2.6/include/linux/backing-dev.h
+@@ -28,6 +28,7 @@ typedef int (congested_fn)(void *, int);
  
- void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
- {
+ enum bdi_stat_item {
+ 	BDI_RECLAIMABLE,
++	BDI_WRITEBACK,
+ 	NR_BDI_STAT_ITEMS
+ };
+ 
 
 --
 
