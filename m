@@ -1,98 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966200AbXIKV1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966412AbXIKVa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966200AbXIKV1d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 17:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbXIKV1X
+	id S966412AbXIKVa0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 17:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760263AbXIKVaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 17:27:23 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41886 "EHLO gir.skynet.ie"
+	Tue, 11 Sep 2007 17:30:16 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:41992 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760263AbXIKV1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 17:27:21 -0400
-Date: Tue, 11 Sep 2007 22:27:17 +0100
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Lameter <clameter@sgi.com>, andrea@suse.de,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Message-ID: <20070911212717.GC18127@skynet.ie>
-References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0709111256250.25781@schroedinger.engr.sgi.com> <200709111517.52520.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <200709111517.52520.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	id S965184AbXIKVaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 17:30:14 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org, ak@suse.de,
+       clameter@sgi.com
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Message-Id: <20070911213006.23507.19569.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/6] Use one zonelist per node instead of multiple zonelists v5 (resend)
+Date: Tue, 11 Sep 2007 22:30:06 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (11/09/07 15:17), Nick Piggin didst pronounce:
-> On Wednesday 12 September 2007 06:01, Christoph Lameter wrote:
-> > On Tue, 11 Sep 2007, Nick Piggin wrote:
-> > > There is a limitation in the VM. Fragmentation. You keep saying this
-> > > is a solved issue and just assuming you'll be able to fix any cases
-> > > that come up as they happen.
-> > >
-> > > I still don't get the feeling you realise that there is a fundamental
-> > > fragmentation issue that is unsolvable with Mel's approach.
-> >
-> > Well my problem first of all is that you did not read the full message. It
-> > discusses that later and provides page pools to address the issue.
-> >
-> > Secondly you keep FUDding people with lots of theoretical concerns
-> > assuming Mel's approaches must fail. If there is an issue (I guess there
-> > must be right?) then please give us a concrete case of a failure that we
-> > can work against.
-> 
-> And BTW, before you accuse me of FUD, I'm actually talking about the
-> fragmentation issues on which Mel I think mostly agrees with me at this
-> point.
-> 
+(Sorry for the resend, I mucked up the TO: line in the earlier sending)
 
-I'm half way between you two on this one. I agree with Christoph in that
-it's currently very difficult to trigger a failure scenario and today we
-don't have a way of dealing with it. I agree with Nick in that conceivably a
-failure scenario does exist somewhere and the careful person (or paranoid if
-you prefer) would deal with it pre-emptively. The fact is that no one knows
-what a large block workload is going to look like to the allocator so we're
-all hand-waving.
+This is the latest version of one-zonelist and it should be solid enough
+for wider testing. To briefly summarise, the patchset replaces multiple
+zonelists-per-node with one zonelist that is filtered based on nodemask and
+GFP flags. I've dropped the patch that replaces inline functions with macros
+from the end as it obscures the code for something that may or may not be a
+performance benefit on older compilers. If we see performance regressions that
+might have something to do with it, the patch is trivially to bring forward.
 
-Right now, I can't trigger the worst failure scenarious that cannot be
-dealt with for fragmentation but that might change with large blocks. The
-worst situation I can think is a process that continously dirties large
-amounts of data on a large block filesystem while another set of processes
-works with large amounts of anonymous data without any swap space configured
-with slub_min_order set somewhere between order-0 and the large block size.
-Fragmentation wise, that's just a kick in the pants and might produce
-the failure scenario being looked for.
+Andrew, please merge to -mm for wider testing and consideration for merging
+to mainline. Minimally, it gets rid of the hack in relation to ZONE_MOVABLE
+and MPOL_BIND.
 
-If it does fail, I don't think it should be used to beat Christoph with as
-such because it was meant to be a #2 solution. What hits it is if the mmap()
-change is unacceptable.
+Changelog since V5
+  o Rebase to 2.6.23-rc4-mm1
+  o Drop patch that replaces inline functions with macros
 
-> Also have you really a rational reason why we should just up and accept
-> all these big changes happening just because that, while there are lots
-> of theoretical issues, the person pointing them out to you hasn't happened
-> to give you a concrete failure case. Oh, and the actual performance
-> benefit is actually not really even quantified yet, crappy hardware not
-> withstanding, and neither has a proper evaluation of the alternatives.
-> 
+Changelog since V4
+  o Rebase to -mm kernel. Host of memoryless patches collisions dealt with
+  o Do not call wakeup_kswapd() for every zone in a zonelist
+  o Dropped the FASTCALL removal
+  o Have cursor in iterator advance earlier
+  o Use nodes_and in cpuset_nodes_valid_mems_allowed()
+  o Use defines instead of inlines, noticably better performance on gcc-3.4
+    No difference on later compilers such as gcc 4.1
+  o Dropped gfp_skip patch until it is proven to be of benefit. Tests are
+    currently inconclusive but it definitly consumes at least one cache
+    line
 
-Performance figures would be nice. dbench is flaky as hell but can
-comparison figures be generated on one filesystem with 4K blocks and one
-with 64K? I guess we can do it ourselves too because this should work on
-normal machines.
+Changelog since V3
+  o Fix compile error in the parisc change
+  o Calculate gfp_zone only once in __alloc_pages
+  o Calculate classzone_idx properly in get_page_from_freelist
+  o Alter check so that zone id embedded may still be used on UP
+  o Use Kamezawa-sans suggestion for skipping zones in zonelist
+  o Add __alloc_pages_nodemask() to filter zonelist based on a nodemask. This
+    removes the need for MPOL_BIND to have a custom zonelist
+  o Move zonelist iterators and helpers to mm.h
+  o Change _zones from struct zone * to unsigned long
+  
+Changelog since V2
+  o shrink_zones() uses zonelist instead of zonelist->zones
+  o hugetlb uses zonelist iterator
+  o zone_idx information is embedded in zonelist pointers
+  o replace NODE_DATA(nid)->node_zonelist with node_zonelist(nid)
 
-> So... would you drive over a bridge if the engineer had this mindset?
-> 
+Changelog since V1
+  o Break up the patch into 3 patches
+  o Introduce iterators for zonelists
+  o Performance regression test
 
-If I had this bus that couldn't go below 50MPH, right...... never mind.
+The following patches replace multiple zonelists per node with one zonelist
+that is filtered based on the GFP flags. The patches as a set fix a bug
+with regard to the use of MPOL_BIND and ZONE_MOVABLE. With this patchset,
+the MPOL_BIND will apply to the two highest zones when the highest zone
+is ZONE_MOVABLE. This should be considered as an alternative fix for the
+MPOL_BIND+ZONE_MOVABLE in 2.6.23 to the previously discussed hack that
+filters only custom zonelists. As a bonus, the patchset reduces the cache
+footprint of the kernel and should improve performance in a number of cases.
+
+The first patch cleans up an inconsitency where direct reclaim uses
+zonelist->zones where other places use zonelist. The second patch introduces
+a helper function node_zonelist() for looking up the appropriate zonelist
+for a GFP mask which simplifies patches later in the set.
+
+The third patch replaces multiple zonelists with two zonelists that are
+filtered. The two zonelists are due to the fact that the memoryless patchset
+introduces a second set of zonelists for __GFP_THISNODE.
+
+The fourth patch introduces filtering of the zonelists based on a nodemask.
+
+The final patch replaces the two zonelists with one zonelist. A nodemask is
+created when __GFP_THISNODE is specified to filter the list. The nodelists
+could be pre-allocated with one-per-node but it's not clear that __GFP_THISNODE
+is used often enough to be worth the effort.
+
+Performance results varied depending on the machine configuration but were
+usually small performance gains. In real workloads the gain/loss will depend
+on how much the userspace portion of the benchmark benefits from having more
+cache available due to reduced referencing of zonelists.
+
+These are the range of performance losses/gains when running against
+2.6.23-rc3-mm1. The set and these machines are a mix of i386, x86_64 and
+ppc64 both NUMA and non-NUMA.
+
+Total CPU time on Kernbench: -0.67% to  3.05%
+Elapsed   time on Kernbench: -0.25% to  2.96%
+page_test from aim9:         -6.98% to  5.60%
+brk_test  from aim9:         -3.94% to  4.11%
+fork_test from aim9:         -5.72% to  4.14%
+exec_test from aim9:         -1.02% to  1.56%
+
+The TBench figures were too variable between runs to draw conclusions from but
+there didn't appear to be any regressions there. The hackbench results for both
+sockets and pipes were within noise.
 
 -- 
 Mel Gorman
