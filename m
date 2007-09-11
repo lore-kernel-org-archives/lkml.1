@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966060AbXIKKTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965784AbXIKKUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966060AbXIKKTb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 06:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762332AbXIKKTY
+	id S965784AbXIKKUE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 06:20:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761978AbXIKKTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 06:19:24 -0400
-Received: from smtpauth01.prod.mesa1.secureserver.net ([64.202.165.181]:54085
-	"HELO smtpauth01.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761748AbXIKKTX (ORCPT
+	Tue, 11 Sep 2007 06:19:51 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58531 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761832AbXIKKTu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 06:19:23 -0400
-Message-ID: <46E6B8E5.2030405@gmail.com>
-Date: Tue, 11 Sep 2007 21:18:53 +0530
-From: mkrameshid <mkrameshid@gmail.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Tue, 11 Sep 2007 06:19:50 -0400
+Date: Tue, 11 Sep 2007 19:19:15 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [Patch] Fix panic of cpu online with memory less node
+Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070911191152.F13B.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Calling PnP bios routines like get device node from x86_84 arch
-References: <12594726.post@talk.nabble.com>	<20070910173344.4bd2ae9e@the-village.bc.nu>	<46E675E6.1040105@gmail.com> <20070911105108.6d68a347@the-village.bc.nu>
-In-Reply-To: <20070911105108.6d68a347@the-village.bc.nu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can I call the BIOS function using ACPI . I didn't work on it.
-If I asked a silly question please for give me. I am very new to this.
 
--MKR
-Alan Cox wrote:
->> Actually I want to call the BIOS run time functions as per the 
->> PNPBIOSSpecification-v1.0a (attached).
->>     
->
-> We use ACPI for x86_64, which means you need to use the ACPI methods not
-> the PnPBIOS ones. PnPBIOS isn't valid when ACPI is in use.
->
-> Alan
->
->   
+When a cpu is onlined on memory-less-node box, kernel panics due to
+touch NULL pointer of pgdat->kswapd. Current kswapd runs only
+nodes which have memory. So, calling of set_cpus_allowed()
+is not necessary for memory-less node.
+
+This is fix for it.
+
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+---
+ mm/vmscan.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: current/mm/vmscan.c
+===================================================================
+--- current.orig/mm/vmscan.c	2007-09-03 16:36:18.000000000 +0900
++++ current/mm/vmscan.c	2007-09-11 13:02:20.000000000 +0900
+@@ -1843,9 +1843,11 @@ static int __devinit cpu_callback(struct
+ {
+ 	pg_data_t *pgdat;
+ 	cpumask_t mask;
++	int nid;
+ 
+ 	if (action == CPU_ONLINE || action == CPU_ONLINE_FROZEN) {
+-		for_each_online_pgdat(pgdat) {
++		for_each_node_state(nid, N_HIGH_MEMORY) {
++			pgdat = NODE_DATA(nid);
+ 			mask = node_to_cpumask(pgdat->node_id);
+ 			if (any_online_cpu(mask) != NR_CPUS)
+ 				/* One of our CPUs online: restore mask */
+
+-- 
+Yasunori Goto 
+
 
