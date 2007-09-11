@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751447AbXIKNoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751664AbXIKNsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751447AbXIKNoT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 09:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbXIKNoL
+	id S1751664AbXIKNsu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 09:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbXIKNsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 09:44:11 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:44778 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750708AbXIKNoJ (ORCPT
+	Tue, 11 Sep 2007 09:48:43 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41636 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750763AbXIKNsm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 09:44:09 -0400
-X-Sasl-enc: hxrua6vaDchFdduC88jkM1DXepBps1CFeIIWt6vMDOIU 1189518258
-Date: Tue, 11 Sep 2007 10:44:05 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: David Brownell <david-b@pacbell.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "dmitry.torokhov@gmail.com" <dmitry.torokhov@gmail.com>
-Subject: Re: Platform device id
-Message-ID: <20070911134405.GA18443@khazad-dum.debian.net>
-References: <20070910225205.GB1408@khazad-dum.debian.net> <C5k470vB.1189496614.5481670.khali@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <C5k470vB.1189496614.5481670.khali@localhost>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 11 Sep 2007 09:48:42 -0400
+Date: Tue, 11 Sep 2007 14:56:22 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Matti Linnanvuori <mattilinnanvuori@yahoo.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Do not deprecate binary semaphore or do allow mutex in software
+ interrupt contexts
+Message-ID: <20070911145622.0a37bbda@the-village.bc.nu>
+In-Reply-To: <20070911153628.26ca02bc@laptopd505.fenrus.org>
+References: <11531.17274.qm@web52008.mail.re2.yahoo.com>
+	<20070911153628.26ca02bc@laptopd505.fenrus.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Sep 2007, Jean Delvare wrote:
-> >I will see what I can do about breaking it up in various modules.  But this
-> >can be unoptimal. If I took it too seriously, thinkpad-acpi would break into
-> >at least five different modules, if not more, and at least one or two
-> >modules would need to be there for the common code.  There has to be a
-> >middle ground somewhere, I think.
-> 
-> I don't know your code and I don't really have the time to look at it
-> in depth, but I'm a bit surprised. Presumably your driver is
-> implementing a number of interfaces (e.g. hwmon) and you create a class
-> device for each one. You can have as many class devices hanging of a
-> (physical) device, so I fail to see why you would need to register
-> several (physical) devices.
+> to be honest, the scenario describe really smells of broken locking, in
+> fact it really sounds like it wants to use spinlocks instead 
 
-Namespace clashes.  Now that class attributes are gone (or going, whatever),
-everything lives in one namespace: the device.  I dread the day I find out
-one class I need has attribute name clashes with another, or (more likely)
-one of my driver-specific attributes clash with one from a generic class.
+For polling and timer based code its often simpler to do
 
-Even if clashes never happen, it can make quite a mess when you have four or
-more classes in the same device. And you can have semanthic clashes, if one
-looks at various attributes (from different classes or driver-specific) and
-think they are related in some obvious way (only, it is not obvious at all,
-and the user didn't read the docs to know it).
+	del_timer_sync(&my_timer);
+	FrobStuff
+	add_timer(&my_timer);
 
-It is nothing too serious, but something to keep in mind when deciding what
-to do with a big driver.
+especially if "FrobStuff" is likely to change when you next need to poll.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+And don't forget regular polling is a good way to really annoy laptop
+users as it burns power
+
+Alan
+
