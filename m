@@ -1,65 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762568AbXIKKB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763275AbXIKKGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762568AbXIKKB4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 06:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762578AbXIKKBs
+	id S1763275AbXIKKGY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 06:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761548AbXIKKGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 06:01:48 -0400
-Received: from mx2.suse.de ([195.135.220.15]:59351 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761495AbXIKKBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 06:01:46 -0400
-Date: Tue, 11 Sep 2007 12:01:45 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, linux-arch@vger.kernel.org,
-       discuss@x86-64.org, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [discuss] [patch 3/5] Use extended crashkernel command line on
-	x86_64
-Message-ID: <20070911100145.GC31038@suse.de>
-Mail-Followup-To: Vivek Goyal <vgoyal@in.ibm.com>,
-	Yinghai Lu <yhlu.kernel@gmail.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	linux-arch@vger.kernel.org, discuss@x86-64.org,
-	kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20070909083914.065380136@strauss.suse.de> <20070909083914.951336895@strauss.suse.de> <86802c440709091027o32a63d11w629bad87abcc19c2@mail.gmail.com> <20070909185257.GA10600@suse.de> <20070911051453.GB5053@in.ibm.com>
+	Tue, 11 Sep 2007 06:06:17 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:40823 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761497AbXIKKGQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 06:06:16 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070911051453.GB5053@in.ibm.com>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx processors.
+Date: Tue, 11 Sep 2007 18:06:10 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C85D61C@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20070907085845.54dc88f8.randy.dunlap@oracle.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx processors.
+Thread-Index: AcfxaBAjIPEfNwO1SxKoveL8mqtGpQC8tOCA
+References: <11891624582950-git-send-email-wei.zhang@freescale.com> <20070907085845.54dc88f8.randy.dunlap@oracle.com>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Cc: <paulus@samba.org>, <shannon.nelson@intel.com>,
+       <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
+       <galak@kernel.crashing.org>,
+       "Zhu Ebony-r57400" <ebony.zhu@freescale.com>,
+       <dan.j.williams@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vivek Goyal <vgoyal@in.ibm.com> [2007-09-11 07:14]:
-> On Sun, Sep 09, 2007 at 08:52:58PM +0200, Bernhard Walle wrote:
-> > * Yinghai Lu <yhlu.kernel@gmail.com> [2007-09-09 19:27]:
-> > > >
-> > > > +#ifdef CONFIG_KEXEC
-> > > ...
-> > > 
-> > > CONFIG_KEXEC or CONFIG_CRASH_DUMP?
-> > 
-> > Good question. The crashkernel parameter was CONFIG_KEXEC before, and
-> > I also wondered why, but I didn't change this because maybe there's
-> > some reason I don't know.
-> > 
-> > Vivek, do you know why this was CONFIG_KEXEC?
+Hi, 
+> --- /dev/null
+> > +++ b/drivers/dma/fsldma.c
+> > @@ -0,0 +1,995 @@
 > 
-> As Eric mentioned, CONFIG_CRASH_DUMP has been used for all dump capturing
-> infrastructure and rest of the kexec and kexec on panic functionality
-> has been put under CONFIG_KEXEC. 
+> Thanks for using kernel-doc notation.  However, ...
 > 
-> Keeping memory reservation under CONFIG_KEXEC helps in a sense when
-> somebody is not using a relocatable kernel and uses a custom kernel for dump
-> capture. In that case he does not have to enable CONFIG_CRASH_DUMP in the
-> first kernel.
+> > +/**
+> > + * fsl_dma_alloc_descriptor - Allocate descriptor from 
+> channel's DMA pool.
+> 
+> Function parameters need to be listed & described here.
+> See Documentation/kernel-doc-nano-HOWTO.txt or other source files
+> for examples.
+> 
+> (Applies to all documented function interfaces here.)
 
-Yes, you all are right ... sorry for the noise ;)
+All right, I'll add full descriptions here. :P
 
+> 
+> > + *
+> > + * Return - The descriptor allocated. NULL for failed.
+> > + */
+> > +static struct fsl_desc_sw *fsl_dma_alloc_descriptor(
+> > +					struct fsl_dma_chan *fsl_chan,
+> > +					gfp_t flags)
+> > +{
+> ...
+> > +}
+> 
+> > +/**
+> > + * fsl_chan_xfer_ld_queue -- Transfer the link descriptors 
+> in channel
+> > + *                           ld_queue.
+> 
+> The function's "short description" (unfortunately) must be on only one
+> line.  E.g.:
+> 
+>  * fsl_chan_xfer_ld_queue - Transfer link descriptors in 
+> channel ld_queue.
+> 
 
-Thanks,
-   Bernhard
+How about it's length greater than 80?
+
+> > + */
+> > +static void fsl_chan_xfer_ld_queue(struct fsl_dma_chan *fsl_chan)
+> > +{
+> ...
+> > +}
+> 
+> > diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+> > new file mode 100644
+> > index 0000000..05be9ed
+> > --- /dev/null
+> > +++ b/drivers/dma/fsldma.h
+> > @@ -0,0 +1,188 @@
+> > +struct fsl_dma_chan_regs {
+> > +	__mix32	mr;		/* 0x00 - Mode Register */
+> > +	__mix32	sr;		/* 0x04 - Status Register */
+> > +	__mix64	cdar;		/* 0x08 - Cureent descriptor 
+> address register */
+> 
+>                                           Current
+> 
+
+I'll fix it.
+
+Thanks!
+- zw
