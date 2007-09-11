@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964896AbXIKTBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933889AbXIKTBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964896AbXIKTBV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 15:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932613AbXIKS7u
+	id S933889AbXIKTBs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 15:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933762AbXIKTAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 14:59:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46581 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932952AbXIKS7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 14:59:45 -0400
-Date: Tue, 11 Sep 2007 14:59:24 -0400 (EDT)
-Message-Id: <20070911.145924.85814380.k-ueda@ct.jp.nec.com>
-To: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       mike.miller@hp.com, grant.likely@secretlab.ca
-Cc: dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: [PATCH 09/27] blk_end_request: changing nbd (take 2)
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-X-Mailer: Mew version 3.3 on Emacs 21.3 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Sep 2007 15:00:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:34145 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933753AbXIKS76 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 14:59:58 -0400
+Date: Tue, 11 Sep 2007 21:00:43 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, ben.collins@ubuntu.com,
+       stefanr@s5r6.in-berlin.de, linux1394-devel@lists.sourceforge.net
+Subject: regression: fireware causes oops during system
+Message-ID: <20070911190043.GA1577@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts nbd to use blk_end_request().
+Hi!
 
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
----
- drivers/block/nbd.c |    4 +---
- 1 files changed, 1 insertion(+), 3 deletions(-)
+I noticed empty suspend stopped working around 2.6.23-rc4, and it is
+still present in 2.6.23-rc6. To reproduce
 
-diff -rupN 08-lguest-caller-change/drivers/block/nbd.c 09-nbd-caller-change/drivers/block/nbd.c
---- 08-lguest-caller-change/drivers/block/nbd.c	2007-09-10 17:32:11.000000000 -0400
-+++ 09-nbd-caller-change/drivers/block/nbd.c	2007-09-10 18:02:30.000000000 -0400
-@@ -107,9 +107,7 @@ static void nbd_end_request(struct reque
- 			req, uptodate? "done": "failed");
- 
- 	spin_lock_irqsave(q->queue_lock, flags);
--	if (!end_that_request_first(req, uptodate, req->nr_sectors)) {
--		end_that_request_last(req, uptodate);
--	}
-+	__blk_end_request(req, uptodate, req->nr_sectors << 9);
- 	spin_unlock_irqrestore(q->queue_lock, flags);
- }
- 
+swapoff -a 
+echo disk > /sys/power/state
+echo disk > /sys/power/state
+
+Unsetting
+
+CONFIG_IEEE1394=y
+
+solves the problem.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
