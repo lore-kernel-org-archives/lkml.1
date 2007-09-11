@@ -1,119 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966860AbXIKG05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762353AbXIKG1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966860AbXIKG05 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966271AbXIKGPT
+	id S1762353AbXIKG1e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966151AbXIKGSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:15:19 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:51001 "EHLO e4.ny.us.ibm.com"
+	Tue, 11 Sep 2007 02:18:31 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51802 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966265AbXIKGPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 02:15:16 -0400
-Date: Tue, 11 Sep 2007 11:45:22 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: kexec@lists.infradead.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/5] Extended crashkernel command line
-Message-ID: <20070911061522.GD5053@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070909083914.065380136@strauss.suse.de> <20070909083914.488571169@strauss.suse.de>
+	id S966382AbXIKGS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 02:18:29 -0400
+Date: Tue, 11 Sep 2007 08:19:52 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: pradeep singh rautela <rautelap@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [Q]Adding src files to 2.6.18 kernel and build failure query
+Message-ID: <20070911061952.GA3429@uranus.ravnborg.org>
+References: <6bc632150709100905y7c5c2camaa0044cf6fa09ea2@mail.gmail.com> <20070910163847.GA30699@uranus.ravnborg.org> <6bc632150709102247s3071c60jcddf8f88c8f2bc10@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070909083914.488571169@strauss.suse.de>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <6bc632150709102247s3071c60jcddf8f88c8f2bc10@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 09, 2007 at 10:39:15AM +0200, Bernhard Walle wrote:
+On Tue, Sep 11, 2007 at 11:17:48AM +0530, pradeep singh rautela wrote:
+> On 9/10/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+> [...]
+> > > I added some .c files to a new dir under net/foo/ .
+> > > Added corresponding .h files to a new dir under include/foo/
+> > >
+> > > Create a Kconfig and Makefile in net/foo/ directory.
+> > > Added corresponding entries to Makefile and Kconfig in the net/ dir.
+> > >
+> > > I happily executed a make with a beaming face after selecting the foo
+> > > option after doing a
+> > > $make menuconfig.
+> > >
+> > > To my surprise i got this error :-
+> > >
+> > > make[1]: *** No rule to make target `arch/i386/kernel/vmlinux.lds',
+> > > needed by `__build'.  Stop
+> >
+> > Did the kernel build before you started adding your stuff?
+> > It looks like you broke something non-obvious when adding your stuff since the
+> > above failure should not happen just by adding a new directory under net/
+> 
+> Went home and tried again. It builds fine in git repo, but again
+> whenever i make an archive using git-archive --format=tar
+> --prefix=linux-2.6.18/ HEAD | bzip2 > linux-2.6.18.tar.bz2 , i get the
+> problem with this bzipped tree.
+> 
+> I removed .gitignore file from the my git repo and added manually
+> rules to .git/info/exclude instead. This did the trick and
+> git-archiv'ing did not result in a broken bzipped tree.
+> 
+> Perhaps i did something silly or may be something to do with git. ??
 
-[..]
-> +
-> +/*
-> + * parsing the "crashkernel" commandline
-> + *
-> + * this code is intended to be called from architecture specific code
-> + */
-> +
-> +
-> +/*
-> + * This function parses command lines in the format
-> + *
-> + *   crashkernel=<ramsize-range>:<size>[,...][@<base>]
-> + *
-> + * The function returns 0 on success and -EINVAL on failure.
-> + */
-> +static int parse_crashkernel_mem(char 			*cmdline,
-> +				 unsigned long long 	*crash_size,
-> +				 unsigned long long 	*crash_base,
-> +				 unsigned long 		system_ram)
-> +{
-> +	char *cur = cmdline;
-> +
-> +	*crash_size = 0;
-> +	*crash_base = 0;
-> +
-> +	/* for each entry of the comma-separated list */
-> +	do {
-> +		unsigned long long start = 0, end = ULLONG_MAX;
-> +		unsigned long long size = -1;
-> +
-> +		/* get the start of the range */
-> +		start = memparse(cur, &cur);
-> +		if (*cur != '-') {
-> +			printk(KERN_WARNING "crashkernel: '-' expected\n");
-> +			return -EINVAL;
-> +		}
-> +		cur++;
-> +
-> +		/* if no ':' is here, than we read the end */
-> +		if (*cur != ':') {
-> +			end = memparse(cur, &cur);
-> +			if (end <= start) {
-> +				printk(KERN_WARNING "crashkernel: end <= start\n");
-> +				return -EINVAL;
-> +			}
-> +		}
-> +
-> +		if (*cur != ':') {
-> +			printk(KERN_WARNING "crashkernel: ':' expected\n");
-> +			return -EINVAL;
-> +		}
-> +		cur++;
-> +
-> +		size = memparse(cur, &cur);
-> +		if (size < 0) {
-> +			printk(KERN_WARNING "crashkernel: invalid size\n");
-> +			return -EINVAL;
-> +		}
-> +
-> +		/* match ? */
-> +		if (system_ram >= start  && system_ram <= end) {
-> +			*crash_size = size;
-> +			break;
-> +		}
-> +	} while (*cur++ == ',');
-> +
-> +	if (*crash_size > 0) {
-> +		while (*cur != ' ' && *cur != '@')
-> +			cur++;
-> +		if (*cur == '@')
-> +			*crash_base = memparse(cur+1, &cur);
+You where hit by a problem in the top-level .gitignore.
+See commit: eaf729c8a8bfc9c7a5ff5659e3b2584bf2ef22e1
 
-"offset" seems to be optional in the new syntax. What happens if user does
-not specify offset. I think crash_base will be set to zero and system will
-try to reserve x amount of memory start at zero? That would fail?
+Use: git show eaf729c8a8bfc9c7a5ff5659e3b2584bf2ef22e1
 
-I think we should add some intelligence for automatic selection of "offset"
-if user has not specified one. Automatically choose a chunk of free memory.
-This takes away the headache from user for selecting a right place. In fact
-one "offset" might not be valid for all the systems. I remember, somebody
-had reported that ACPI tables were mapped lower in the address space and
-reserving memory for kdump had failed.
+This commit is most likely not in your tree.
+It just do:
+diff --git a/.gitignore b/.gitignore
+index 8d15830..a232295 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -22,6 +22,7 @@
+ tags
+ TAGS
+ vmlinux*
++!vmlinux.lds.S
+ System.map
+ Module.symvers
 
-Choosing the "offset" automatically should help distributions where one
-command line is supposed to work on all the systems.
 
-Thanks
-Vivek
+	Sam
