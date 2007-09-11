@@ -1,135 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966889AbXIKUSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967037AbXIKUSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966889AbXIKUSN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 16:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934091AbXIKUK1
+	id S967037AbXIKUSp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 16:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966011AbXIKUK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 16:10:27 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:53548 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764253AbXIKUKY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 16:10:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:message-id;
-        b=Z4b+jxSXZVZqJ2uFcRdRKj/epU3MqJjQS9ph0NMdkOqu8149eawLCnijPGMDw65F5WXNNdKxdAsKkV9hDZEFSL2OL7XPV+TCZ5DvORIQuZmMugKXaj5RR6g+Iv3ZtydvZ33FddTFtVU5Wp3jy3Yml/AbMu6pjl61Sm23v/Vj21k=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 2/4] build system: section garbage collection for vmlinux
-Date: Tue, 11 Sep 2007 21:10:14 +0100
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org
-References: <200709112105.34301.vda.linux@googlemail.com> <200709112107.53155.vda.linux@googlemail.com>
-In-Reply-To: <200709112107.53155.vda.linux@googlemail.com>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_mYv5GsLW+Px+OPm"
-Message-Id: <200709112110.14270.vda.linux@googlemail.com>
+	Tue, 11 Sep 2007 16:10:58 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:43854 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965991AbXIKUK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 16:10:56 -0400
+Date: Tue, 11 Sep 2007 22:12:19 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: x86 merge - a little feedback
+Message-ID: <20070911201219.GA9674@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_mYv5GsLW+Px+OPm
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi Thomas et al.
 
-This patch fixes x86_64 vdso image so that it builds with --gc-sections.
+After spending several hours fiddeling with and improving
+the current Makefile for x86_64 I decided to take a closer look
+at the x86 merge og i386 and x86_64.
 
-Then it fixes comment in arch/i386/kernel/vmlinux.lds.S
-and adds comments to other linker scripts about .bss.
+I took a closer look at x86/pci. There are 16 C files.
 
-Please apply.
+>From the mails and discussions I expected it be be
+obvious what was i386 only, what was shared and what was x86_64 only.
 
-Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
---
-vda
+But see following table
 
---Boundary-00=_mYv5GsLW+Px+OPm
-Content-Type: text/x-diff;
-  charset="iso-8859-15";
-  name="linux-2.6.23-rc4.2.lds.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="linux-2.6.23-rc4.2.lds.patch"
+Filename		i386	x86_64
+acpi.c			X	X
+common.c		X	X
+direct.c		X	X
+early.c			X	X
+fixup.c			X	X
+i386.c			X	X
+init.c			X	X
+irq.c			X
+k8-bus.c			X
+legacy.c		X	X
+mmconfig_32.c		X
+mmconfig_64.c			X
+mmconfig-shared.c	X	X
+numa.c			X
+pcbios.c		X
+visws.c			X
 
---- linux-2.6.23-rc4.gc1/arch/x86_64/vdso/vdso.lds.S	Sat Sep  8 22:06:52 2007
-+++ linux-2.6.23-rc4.gc2/arch/x86_64/vdso/vdso.lds.S	Sat Sep  8 22:07:05 2007
-@@ -26,11 +26,11 @@
-      is insufficient, ld -shared will barf.  Just increase it here.  */
-   . = VDSO_PRELINK + VDSO_TEXT_OFFSET;
- 
--  .text           : { *(.text) }		:text
-+  .text           : { *(.text) *(.text.*) }	:text
-   .ptr.text       : { *(.ptr.text) }		:text
-   . = VDSO_PRELINK + 0x900;
--  .data           : { *(.data) }		:text
--  .bss            : { *(.bss) }			:text
-+  .data           : { *(.data) *(.data.*) }	:text
-+  .bss            : { *(.bss) *(.bss.*) }	:text
- 
-   .altinstructions : { *(.altinstructions) }			:text
-   .altinstr_replacement  : { *(.altinstr_replacement) }	:text
-diff -urpN linux-2.6.23-rc4.gc1/arch/i386/kernel/vmlinux.lds.S linux-2.6.23-rc4.gc2/arch/i386/kernel/vmlinux.lds.S
---- linux-2.6.23-rc4.gc1/arch/i386/kernel/vmlinux.lds.S	2007-09-10 18:54:38.000000000 +0100
-+++ linux-2.6.23-rc4.gc2/arch/i386/kernel/vmlinux.lds.S	2007-09-10 19:09:24.000000000 +0100
-@@ -2,17 +2,10 @@
-  * Written by Martin Mares <mj@atrey.karlin.mff.cuni.cz>;
-  *
-  * Don't define absolute symbols until and unless you know that symbol
-- * value is should remain constant even if kernel image is relocated
-+ * value should remain constant even if kernel image is relocated
-  * at run time. Absolute symbols are not relocated. If symbol value should
-- * change if kernel is relocated, make the symbol section relative and
-- * put it inside the section definition.
-- */
--
--/* Don't define absolute symbols until and unless you know that symbol
-- * value is should remain constant even if kernel image is relocated
-- * at run time. Absolute symbols are not relocated. If symbol value should
-- * change if kernel is relocated, make the symbol section relative and
-- * put it inside the section definition.
-+ * change if kernel is relocated, make the symbol section relative
-+ * by putting it inside the section definition.
-  */
- #define LOAD_OFFSET __PAGE_OFFSET
- 
-@@ -192,6 +185,9 @@ SECTIONS
-   .bss : AT(ADDR(.bss) - LOAD_OFFSET) {
- 	__init_end = .;
- 	__bss_start = .;		/* BSS */
-+        /* We must use .bss.xxx section names for zero-initialized sections
-+         * we want to combine into bss, otherwise gcc does not set
-+         * 'nobits' flag for the section, and it cannot be merged into bss. */
- 	*(.bss.k.page_aligned)
- 	*(.bss)
- 	. = ALIGN(4);
-diff -urpN linux-2.6.23-rc4.gc1/arch/sh/kernel/vmlinux.lds.S linux-2.6.23-rc4.gc2/arch/sh/kernel/vmlinux.lds.S
---- linux-2.6.23-rc4.gc1/arch/sh/kernel/vmlinux.lds.S	2007-09-10 18:54:38.000000000 +0100
-+++ linux-2.6.23-rc4.gc2/arch/sh/kernel/vmlinux.lds.S	2007-09-10 19:09:24.000000000 +0100
-@@ -104,6 +104,9 @@ SECTIONS
-   .bss : {
- 	__init_end = .;
- 	__bss_start = .;		/* BSS */
-+        /* We must use .bss.xxx section names for zero-initialized sections
-+         * we want to combine into bss, otherwise gcc does not set
-+         * 'nobits' flag for the section, and it cannot be merged into bss. */
-   	*(.bss.k.page_aligned)
-   	*(.bss)
- 	. = ALIGN(4);
-diff -urpN linux-2.6.23-rc4.gc1/arch/xtensa/kernel/vmlinux.lds.S linux-2.6.23-rc4.gc2/arch/xtensa/kernel/vmlinux.lds.S
---- linux-2.6.23-rc4.gc1/arch/xtensa/kernel/vmlinux.lds.S	2007-09-10 18:54:38.000000000 +0100
-+++ linux-2.6.23-rc4.gc2/arch/xtensa/kernel/vmlinux.lds.S	2007-09-10 19:09:24.000000000 +0100
-@@ -255,6 +255,9 @@ SECTIONS
- 
-   /* BSS section */
-   _bss_start = .;
-+  /* We must use .bss.xxx section names for zero-initialized sections
-+   * we want to combine into bss, otherwise gcc does not set
-+   * 'nobits' flag for the section, and it cannot be merged into bss. */
-   .bss : { *(.bss.k.page_aligned) *(.bss) }
-   _bss_end = .;
- 
+In the filename there is NOTHING for most of
+the non-shared code that tell that this file is
+used by only i386 or x86_64.
 
---Boundary-00=_mYv5GsLW+Px+OPm--
+The exception is mmconfig that is prefixed with _32 versus _64.
+But as I have understood the mails floating around using _32,_64
+is a way to say here are a potential candidate for futher merging.
+
+In a meged x86 tree it would be very beneficial to either include
+in the filename that a specific file is i386 or x86_64 specific or
+stuff them in a separate subdirectory.
+
+If legacy.c numa.c, pcibios.c and visws.c placed in a directory named i386
+then it would be obvious that this is i386 only.
+Or they could be named filename_32 (or the uglier filename_i386).
+As it stands out today the filename are kept but thier relationship are lost.
+
+I dunno if this will address the concern of Andi about mixing i386 and x86_64
+but to me at least things would be so much more obvious if the original
+relationship are spelled out.
+
+	Sam
