@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934448AbXIKUJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966263AbXIKUJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934448AbXIKUJc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 16:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764091AbXIKUC3
+	id S966263AbXIKUJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 16:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764157AbXIKUCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 16:02:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37796 "EHLO mx1.redhat.com"
+	Tue, 11 Sep 2007 16:02:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37797 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764118AbXIKUCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S934292AbXIKUCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Sep 2007 16:02:25 -0400
-Message-Id: <20070911200013.235255000@chello.nl>
+Message-Id: <20070911200013.690534000@chello.nl>
 References: <20070911195350.825778000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 11 Sep 2007 21:53:57 +0200
+Date: Tue, 11 Sep 2007 21:53:59 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
@@ -20,156 +20,194 @@ Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
        torvalds@linux-foundation.org
-Subject: [PATCH 07/23] lib: percpu_counter_sum_positive
-Content-Disposition: inline; filename=percpu_counter_sum_positive.patch
+Subject: [PATCH 09/23] lib: percpu_counter_init error handling
+Content-Disposition: inline; filename=percpu_counter_init.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- s/percpu_counter_sum/&_positive/
-
-Because its consitent with percpu_counter_read*
+alloc_percpu can fail, propagate that error.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- fs/ext2/super.c                |    4 ++--
- fs/ext3/super.c                |    4 ++--
- fs/ext4/balloc.c               |    2 +-
- fs/ext4/super.c                |    4 ++--
- fs/file_table.c                |    2 +-
- include/linux/percpu_counter.h |    4 ++--
- lib/percpu_counter.c           |    4 ++--
- 7 files changed, 12 insertions(+), 12 deletions(-)
+ fs/ext2/super.c                |   15 ++++++++++++---
+ fs/ext3/super.c                |   21 +++++++++++++++------
+ fs/ext4/super.c                |   21 +++++++++++++++------
+ include/linux/percpu_counter.h |    5 +++--
+ lib/percpu_counter.c           |    8 +++++++-
+ 5 files changed, 52 insertions(+), 18 deletions(-)
 
-Index: linux-2.6/fs/ext3/super.c
-===================================================================
---- linux-2.6.orig/fs/ext3/super.c
-+++ linux-2.6/fs/ext3/super.c
-@@ -2542,13 +2542,13 @@ static int ext3_statfs (struct dentry * 
- 	buf->f_type = EXT3_SUPER_MAGIC;
- 	buf->f_bsize = sb->s_blocksize;
- 	buf->f_blocks = le32_to_cpu(es->s_blocks_count) - sbi->s_overhead_last;
--	buf->f_bfree = percpu_counter_sum(&sbi->s_freeblocks_counter);
-+	buf->f_bfree = percpu_counter_sum_positive(&sbi->s_freeblocks_counter);
- 	es->s_free_blocks_count = cpu_to_le32(buf->f_bfree);
- 	buf->f_bavail = buf->f_bfree - le32_to_cpu(es->s_r_blocks_count);
- 	if (buf->f_bfree < le32_to_cpu(es->s_r_blocks_count))
- 		buf->f_bavail = 0;
- 	buf->f_files = le32_to_cpu(es->s_inodes_count);
--	buf->f_ffree = percpu_counter_sum(&sbi->s_freeinodes_counter);
-+	buf->f_ffree = percpu_counter_sum_positive(&sbi->s_freeinodes_counter);
- 	es->s_free_inodes_count = cpu_to_le32(buf->f_ffree);
- 	buf->f_namelen = EXT3_NAME_LEN;
- 	fsid = le64_to_cpup((void *)es->s_uuid) ^
-Index: linux-2.6/fs/ext4/super.c
-===================================================================
---- linux-2.6.orig/fs/ext4/super.c
-+++ linux-2.6/fs/ext4/super.c
-@@ -2692,13 +2692,13 @@ static int ext4_statfs (struct dentry * 
- 	buf->f_type = EXT4_SUPER_MAGIC;
- 	buf->f_bsize = sb->s_blocksize;
- 	buf->f_blocks = ext4_blocks_count(es) - sbi->s_overhead_last;
--	buf->f_bfree = percpu_counter_sum(&sbi->s_freeblocks_counter);
-+	buf->f_bfree = percpu_counter_sum_positive(&sbi->s_freeblocks_counter);
- 	es->s_free_blocks_count = cpu_to_le32(buf->f_bfree);
- 	buf->f_bavail = buf->f_bfree - ext4_r_blocks_count(es);
- 	if (buf->f_bfree < ext4_r_blocks_count(es))
- 		buf->f_bavail = 0;
- 	buf->f_files = le32_to_cpu(es->s_inodes_count);
--	buf->f_ffree = percpu_counter_sum(&sbi->s_freeinodes_counter);
-+	buf->f_ffree = percpu_counter_sum_positive(&sbi->s_freeinodes_counter);
- 	es->s_free_inodes_count = cpu_to_le32(buf->f_ffree);
- 	buf->f_namelen = EXT4_NAME_LEN;
- 	fsid = le64_to_cpup((void *)es->s_uuid) ^
-Index: linux-2.6/fs/file_table.c
-===================================================================
---- linux-2.6.orig/fs/file_table.c
-+++ linux-2.6/fs/file_table.c
-@@ -98,7 +98,7 @@ struct file *get_empty_filp(void)
- 		 * percpu_counters are inaccurate.  Do an expensive check before
- 		 * we go and fail.
- 		 */
--		if (percpu_counter_sum(&nr_files) >= files_stat.max_files)
-+		if (percpu_counter_sum_positive(&nr_files) >= files_stat.max_files)
- 			goto over;
- 	}
- 
-Index: linux-2.6/include/linux/percpu_counter.h
-===================================================================
---- linux-2.6.orig/include/linux/percpu_counter.h
-+++ linux-2.6/include/linux/percpu_counter.h
-@@ -34,7 +34,7 @@ void percpu_counter_init(struct percpu_c
- void percpu_counter_destroy(struct percpu_counter *fbc);
- void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
- void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
--s64 percpu_counter_sum(struct percpu_counter *fbc);
-+s64 percpu_counter_sum_positive(struct percpu_counter *fbc);
- 
- static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
- {
-@@ -102,7 +102,7 @@ static inline s64 percpu_counter_read_po
- 	return fbc->count;
- }
- 
--static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
-+static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
- {
- 	return percpu_counter_read_positive(fbc);
- }
-Index: linux-2.6/lib/percpu_counter.c
-===================================================================
---- linux-2.6.orig/lib/percpu_counter.c
-+++ linux-2.6/lib/percpu_counter.c
-@@ -52,7 +52,7 @@ EXPORT_SYMBOL(__percpu_counter_add);
-  * Add up all the per-cpu counts, return the result.  This is a more accurate
-  * but much slower version of percpu_counter_read_positive()
-  */
--s64 percpu_counter_sum(struct percpu_counter *fbc)
-+s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
- {
- 	s64 ret;
- 	int cpu;
-@@ -66,7 +66,7 @@ s64 percpu_counter_sum(struct percpu_cou
- 	spin_unlock(&fbc->lock);
- 	return ret < 0 ? 0 : ret;
- }
--EXPORT_SYMBOL(percpu_counter_sum);
-+EXPORT_SYMBOL(percpu_counter_sum_positive);
- 
- void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
- {
 Index: linux-2.6/fs/ext2/super.c
 ===================================================================
 --- linux-2.6.orig/fs/ext2/super.c
 +++ linux-2.6/fs/ext2/super.c
-@@ -1232,13 +1232,13 @@ static int ext2_statfs (struct dentry * 
- 	buf->f_type = EXT2_SUPER_MAGIC;
- 	buf->f_bsize = sb->s_blocksize;
- 	buf->f_blocks = le32_to_cpu(es->s_blocks_count) - sbi->s_overhead_last;
--	buf->f_bfree = percpu_counter_sum(&sbi->s_freeblocks_counter);
-+	buf->f_bfree = percpu_counter_sum_positive(&sbi->s_freeblocks_counter);
- 	es->s_free_blocks_count = cpu_to_le32(buf->f_bfree);
- 	buf->f_bavail = buf->f_bfree - le32_to_cpu(es->s_r_blocks_count);
- 	if (buf->f_bfree < le32_to_cpu(es->s_r_blocks_count))
- 		buf->f_bavail = 0;
- 	buf->f_files = le32_to_cpu(es->s_inodes_count);
--	buf->f_ffree = percpu_counter_sum(&sbi->s_freeinodes_counter);
-+	buf->f_ffree = percpu_counter_sum_positive(&sbi->s_freeinodes_counter);
- 	es->s_free_inodes_count = cpu_to_le32(buf->f_ffree);
- 	buf->f_namelen = EXT2_NAME_LEN;
- 	fsid = le64_to_cpup((void *)es->s_uuid) ^
-Index: linux-2.6/fs/ext4/balloc.c
-===================================================================
---- linux-2.6.orig/fs/ext4/balloc.c
-+++ linux-2.6/fs/ext4/balloc.c
-@@ -2020,7 +2020,7 @@ int ext4_reserve_init(struct super_block
- 		spin_lock_init(&rs[i].rs_lock);
- 		rs[i].rs_reserved = 0;
- 	}
--	rs[0].rs_reserved = percpu_counter_sum(&sbi->s_freeblocks_counter);
-+	rs[0].rs_reserved = percpu_counter_sum_positive(&sbi->s_freeblocks_counter);
+@@ -725,6 +725,7 @@ static int ext2_fill_super(struct super_
+ 	int db_count;
+ 	int i, j;
+ 	__le32 features;
++	int err;
  
- 	return 0;
+ 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	if (!sbi)
+@@ -996,12 +997,20 @@ static int ext2_fill_super(struct super_
+ 	sbi->s_rsv_window_head.rsv_goal_size = 0;
+ 	ext2_rsv_window_add(sb, &sbi->s_rsv_window_head);
+ 
+-	percpu_counter_init(&sbi->s_freeblocks_counter,
++	err = percpu_counter_init(&sbi->s_freeblocks_counter,
+ 				ext2_count_free_blocks(sb));
+-	percpu_counter_init(&sbi->s_freeinodes_counter,
++	if (!err) {
++		err = percpu_counter_init(&sbi->s_freeinodes_counter,
+ 				ext2_count_free_inodes(sb));
+-	percpu_counter_init(&sbi->s_dirs_counter,
++	}
++	if (!err) {
++		err = percpu_counter_init(&sbi->s_dirs_counter,
+ 				ext2_count_dirs(sb));
++	}
++	if (err) {
++		printk(KERN_ERR "EXT2-fs: insufficient memory\n");
++		goto failed_mount3;
++	}
+ 	/*
+ 	 * set up enough so that it can read an inode
+ 	 */
+Index: linux-2.6/fs/ext3/super.c
+===================================================================
+--- linux-2.6.orig/fs/ext3/super.c
++++ linux-2.6/fs/ext3/super.c
+@@ -1485,6 +1485,7 @@ static int ext3_fill_super (struct super
+ 	int i;
+ 	int needs_recovery;
+ 	__le32 features;
++	int err;
+ 
+ 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	if (!sbi)
+@@ -1745,12 +1746,20 @@ static int ext3_fill_super (struct super
+ 	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
+ 	spin_lock_init(&sbi->s_next_gen_lock);
+ 
+-	percpu_counter_init(&sbi->s_freeblocks_counter,
+-		ext3_count_free_blocks(sb));
+-	percpu_counter_init(&sbi->s_freeinodes_counter,
+-		ext3_count_free_inodes(sb));
+-	percpu_counter_init(&sbi->s_dirs_counter,
+-		ext3_count_dirs(sb));
++	err = percpu_counter_init(&sbi->s_freeblocks_counter,
++			ext3_count_free_blocks(sb));
++	if (!err) {
++		err = percpu_counter_init(&sbi->s_freeinodes_counter,
++				ext3_count_free_inodes(sb));
++	}
++	if (!err) {
++		err = percpu_counter_init(&sbi->s_dirs_counter,
++				ext3_count_dirs(sb));
++	}
++	if (err) {
++		printk(KERN_ERR "EXT3-fs: insufficient memory\n");
++		goto failed_mount3;
++	}
+ 
+ 	/* per fileystem reservation list head & lock */
+ 	spin_lock_init(&sbi->s_rsv_window_lock);
+Index: linux-2.6/fs/ext4/super.c
+===================================================================
+--- linux-2.6.orig/fs/ext4/super.c
++++ linux-2.6/fs/ext4/super.c
+@@ -1576,6 +1576,7 @@ static int ext4_fill_super (struct super
+ 	int needs_recovery;
+ 	__le32 features;
+ 	__u64 blocks_count;
++	int err;
+ 
+ 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	if (!sbi)
+@@ -1857,12 +1858,20 @@ static int ext4_fill_super (struct super
+ 	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
+ 	spin_lock_init(&sbi->s_next_gen_lock);
+ 
+-	percpu_counter_init(&sbi->s_freeblocks_counter,
+-		ext4_count_free_blocks(sb));
+-	percpu_counter_init(&sbi->s_freeinodes_counter,
+-		ext4_count_free_inodes(sb));
+-	percpu_counter_init(&sbi->s_dirs_counter,
+-		ext4_count_dirs(sb));
++	err = percpu_counter_init(&sbi->s_freeblocks_counter,
++			ext4_count_free_blocks(sb));
++	if (!err) {
++		err = percpu_counter_init(&sbi->s_freeinodes_counter,
++				ext4_count_free_inodes(sb));
++	}
++	if (!err) {
++		err = percpu_counter_init(&sbi->s_dirs_counter,
++				ext4_count_dirs(sb));
++	}
++	if (err) {
++		printk(KERN_ERR "EXT4-fs: insufficient memory\n");
++		goto failed_mount3;
++	}
+ 
+ 	/* per fileystem reservation list head & lock */
+ 	spin_lock_init(&sbi->s_rsv_window_lock);
+Index: linux-2.6/include/linux/percpu_counter.h
+===================================================================
+--- linux-2.6.orig/include/linux/percpu_counter.h
++++ linux-2.6/include/linux/percpu_counter.h
+@@ -30,7 +30,7 @@ struct percpu_counter {
+ #define FBC_BATCH	(NR_CPUS*4)
+ #endif
+ 
+-void percpu_counter_init(struct percpu_counter *fbc, s64 amount);
++int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
+ void percpu_counter_destroy(struct percpu_counter *fbc);
+ void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
+ void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
+@@ -78,9 +78,10 @@ struct percpu_counter {
+ 	s64 count;
+ };
+ 
+-static inline void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
++static inline int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+ {
+ 	fbc->count = amount;
++	return 0;
  }
+ 
+ static inline void percpu_counter_destroy(struct percpu_counter *fbc)
+Index: linux-2.6/lib/percpu_counter.c
+===================================================================
+--- linux-2.6.orig/lib/percpu_counter.c
++++ linux-2.6/lib/percpu_counter.c
+@@ -68,21 +68,27 @@ s64 __percpu_counter_sum(struct percpu_c
+ }
+ EXPORT_SYMBOL(__percpu_counter_sum);
+ 
+-void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
++int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+ {
+ 	spin_lock_init(&fbc->lock);
+ 	fbc->count = amount;
+ 	fbc->counters = alloc_percpu(s32);
++	if (!fbc->counters)
++		return -ENOMEM;
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	mutex_lock(&percpu_counters_lock);
+ 	list_add(&fbc->list, &percpu_counters);
+ 	mutex_unlock(&percpu_counters_lock);
+ #endif
++	return 0;
+ }
+ EXPORT_SYMBOL(percpu_counter_init);
+ 
+ void percpu_counter_destroy(struct percpu_counter *fbc)
+ {
++	if (!fbc->counters)
++		return;
++
+ 	free_percpu(fbc->counters);
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	mutex_lock(&percpu_counters_lock);
 
 --
 
