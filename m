@@ -1,51 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761003AbXIKVwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934214AbXIKVxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761003AbXIKVwY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 17:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbXIKVwJ
+	id S934214AbXIKVxG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 17:53:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756993AbXIKVws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 17:52:09 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34450 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756769AbXIKVwH (ORCPT
+	Tue, 11 Sep 2007 17:52:48 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36171 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755883AbXIKVwr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 17:52:07 -0400
-Date: Tue, 11 Sep 2007 14:51:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-cc: Adrian Bunk <bunk@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: x86 merge - a little feedback
-In-Reply-To: <200709112234.24155.ak@suse.de>
-Message-ID: <alpine.LFD.0.999.0709111448520.16478@woody.linux-foundation.org>
-References: <20070911201219.GA9674@uranus.ravnborg.org> <200709112138.11247.ak@suse.de>
- <20070911211422.GU3563@stusta.de> <200709112234.24155.ak@suse.de>
+	Tue, 11 Sep 2007 17:52:47 -0400
+Date: Tue, 11 Sep 2007 14:52:45 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Mel Gorman <mel@csn.ul.ie>, andrea@suse.de, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+In-Reply-To: <200709111606.10873.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0709111448430.27023@schroedinger.engr.sgi.com>
+References: <20070911060349.993975297@sgi.com> <200709111530.16136.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0709111439280.27023@schroedinger.engr.sgi.com>
+ <200709111606.10873.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 11 Sep 2007, Nick Piggin wrote:
 
-
-On Tue, 11 Sep 2007, Andi Kleen wrote:
+> > No you have not explained why the theoretical issues continue to exist
+> > given even just considering Lumpy Reclaim in .23 nor what effect the
+> > antifrag patchset would have.
 > 
-> Will that cause people to compile test both? I have my doubts that 
-> will really work.
+> So how does lumpy reclaim, your slab patches, or anti-frag have
+> much effect on the worst case situation? Or help much against a
+> targetted fragmentation attack?
 
-If people don't compile-test both now, then why would they compile-test 
-things when merged?
+F.e. Lumpy reclaim reclaim neighboring pages and thus works against 
+fragmentation. So your formulae no longer works.
 
-So no, that's not the point.
+> > And you have used a 2M pagesize which is 
+> > irrelevant to this patchset that deals with blocksizes up to 64k. In my
+> > experience the use of blocksize < PAGE_COSTLY_ORDER (32k) is reasonably
+> > safe.
+> 
+> I used EXACTLY the page sizes that you brought up in your patch
+> description (ie. 64K and 2MB).
 
-But at least things like "grep" will work sanely, and people will be 
-*aware* that "Oh, this touches a file that may be used by the other 
-word-size".
+The patch currently only supports 64k. There is hope that it will support 
+2M at some point and as mentioned also a special large page pool facility 
+may be required.
 
-Right now, we have people changing "i386-only" files that turn out to be 
-used by x86-64 too - through very subtle Makefile things that the person 
-who only looks into the i386 Makefile will never even *see*.
+Quoting from the post:
 
-THAT is the problem (well, at least part of it).
+I would like to increase the supported blocksize to very large pages in 
+the future so that device drives will be capable of providing large 
+contiguous mapping. For that purpose I think that we need a mechanism to 
+reserve pools of varying large sizes at boot time. Such a mechanism can 
+also be used to compensate in situations where one wants to use larger 
+buffers but defragmentation support is not (yet?) capable to reliably 
+provide pages of the desired sizes.
 
-		Linus
+
