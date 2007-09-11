@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763575AbXIKNBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933345AbXIKNB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763575AbXIKNBW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 09:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932488AbXIKNBO
+	id S933345AbXIKNB5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 09:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbXIKNBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 09:01:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35598 "EHLO ogre.sisk.pl"
+	Tue, 11 Sep 2007 09:01:45 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:56989 "EHLO pfx2.jmh.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932484AbXIKNBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 09:01:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [PATCH] Fix failure to resume from initrds.
-Date: Tue, 11 Sep 2007 15:12:34 +0200
-User-Agent: KMail/1.9.5
-Cc: nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <200709111354.25689.nigel@nigel.suspend2.net> <200709112127.58597.ncunningham@crca.org.au> <200709111355.07369.rjw@sisk.pl>
-In-Reply-To: <200709111355.07369.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1755621AbXIKNBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 09:01:44 -0400
+Date: Tue, 11 Sep 2007 15:01:43 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Socket-related problem in x86_64 Kernel (2.6.16.53-0.8-smp)?
+Message-Id: <20070911150143.c2bc4cf3.dada1@cosmosbay.com>
+In-Reply-To: <46E67C60.19416.14190936@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+References: <46E67C60.19416.14190936@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.10.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709111512.35348.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 11 September 2007 13:55, Rafael J. Wysocki wrote:
-> On Tuesday, 11 September 2007 13:27, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Tuesday 11 September 2007 21:04:22 Rafael J. Wysocki wrote:
-> > > On Tuesday, 11 September 2007 05:54, Nigel Cunningham wrote:
-> > > > Hi all.
-> > > > 
-> > > > Commit 831441862956fffa17b9801db37e6ea1650b0f69 (Freezer: make kernel 
-> > threads
-> > > > nonfreezable by default) breaks freezing when attempting to resume from an
-> > > > initrd, because the init (which is freezeable) spins while waiting for 
-> > another
-> > > > thread to run /linuxrc, but doesn't check whether it has been told to 
-> > enter
-> > > > the refrigerator.
-> > > 
-> > > Hm.
-> > > 
-> > > I use a resume from an initrd on a regular basis and it works without the 
-> > patch
-> > > below.
-> > > 
-> > > I think we need to investigate what happens in your test case a bit.
-> > 
-> > Ah. That makes me realise that I see that too - my AMD64 uniprocessor laptop 
-> > didn't need the patch (guess that's why I didn't notice the need and ack'd 
-> > the patch). But my x86 SMP machine... it needs this. I'll see if they're 
-> > running on different processors.
+On Tue, 11 Sep 2007 11:30:38 +0200
+"Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de> wrote:
+
+> Hi,
 > 
-> Well, strange.  My x86_64 SMP machines don't need the patch too.
+> since upgrading from SLES9 SP3 to SLES10 SP1 I see kernel segfaults which seem 
+> network-related: Most notably slapd does not run any more, and my sendmail-milter 
+> based virus scanner terminates now and then with kernel segfault.
+> 
+> Current kernel form SLES10 SP1 is: 
+> 
+> # cat /proc/version
+> Linux version 2.6.16.53-0.8-smp (geeko@buildhost) (gcc version 4.1.2 20070115 
+> (prerelease) (SUSE Linux)) #1 SMP Fri Aug 31 13:07:27 UTC 2007
+> 
+> The effects in syslog are:
+> Aug 31 15:04:40 kgate1 kernel: powersaved[10102]: segfault at 0000000000000008 rip 
+> 000000000042c17a rsp 00007fffea55de00 error 4
+> Aug 31 15:14:57 kgate1 kernel: slapd[5296]: segfault at 0000555555981000 rip 
+> 00002ad35ffee46b rsp 00007fff4bf58c28 error 4
+> Aug 31 15:17:13 kgate1 kernel: powersaved[4747]: segfault at 0000000000000008 rip 
+> 000000000042c17a rsp 00007ffff434e260 error 4
+> Aug 31 17:50:48 kgate1 kernel: slapd[5561]: segfault at 0000555555986000 rip 
+> 00002b8fa3cf3483 rsp 00007fff08252808 error 4
+> Sep  3 09:02:04 kgate1 kernel: slapd[22654]: segfault at 0000555555992000 rip 
+> 00002afd6f7b4483 rsp 00007fff3c790458 error 4
+> Sep  3 13:14:45 kgate1 kernel: slapd[28324]: segfault at 0000555555962000 rip 
+> 00002b5c0ae00483 rsp 00007fffa1144e58 error 4
+> Sep  7 07:48:26 kgate1 kernel: hscan[1142]: segfault at 0000000000000003 rip 
+> 00002afac0581650 rsp 0000000041000928 error 4
+> Sep  7 09:12:24 kgate1 kernel: slapd[6022]: segfault at 00005555559b3000 rip 
+> 00002b1c15539483 rsp 00007fff96a0c978 error 4
+> Sep 10 17:02:35 kgate1 kernel: hscan[6795]: segfault at 0000000000000004 rip 
+> 00002b59c0300650 rsp 0000000042002928 error 4
+> Sep 11 08:43:43 kgate1 kernel: hscan[3456]: segfault at 0000000000000004 rip 
+> 00002adcd625d650 rsp 0000000043004928 error 4
+> Sep 11 10:45:38 kgate1 kernel: hscan[28343]: segfault at 0000000000000003 rip 
+> 00002b17020de650 rsp 0000000042803928 error 4
+> 
+> I know that this kind of report is not very helpful to you guys, but Novell does 
+> not allow me to report a kernel bug directly. (I've told the person who may to do 
+> so, but I'm unsure whether something is in progress already).
+> 
+> Also note that the i586 (32-bit, non-SMP) kernel does not have that problem.
+> Linux version 2.6.16.53-0.8-default (geeko@buildhost) (gcc version 4.1.2 20070115 
+> (prerelease) (SUSE Linux)) #1 Fri Aug 31 13:07:27 UTC 2007
 
-Anyway, yes, init is freezable, but should it be?
+Are you sure ?
 
-I mean, shouldn't we rather add PF_NOFREEZE to kernel_init()?
+segfaulting are sysloged only on 64bits kernel.
 
-Greetings,
-Rafael
+Maybe your slapd/hscan processes are doing bad things, that make them 
+core dump without notice on a 32bits kernel.
+
+Eric
