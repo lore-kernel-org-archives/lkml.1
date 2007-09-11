@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763984AbXIKNCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933046AbXIKNEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763984AbXIKNCY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 09:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933522AbXIKNB7
+	id S933046AbXIKNEY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 09:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbXIKNEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 09:01:59 -0400
-Received: from home.nigel.suspend2.net ([203.171.70.205]:53111 "EHLO
-	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933343AbXIKNB6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 09:01:58 -0400
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Fix failure to resume from initrds.
-Date: Tue, 11 Sep 2007 23:01:51 +1000
-User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
-Cc: nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200709111354.25689.nigel@nigel.suspend2.net> <200709112127.58597.ncunningham@crca.org.au> <200709111355.07369.rjw@sisk.pl>
-In-Reply-To: <200709111355.07369.rjw@sisk.pl>
+	Tue, 11 Sep 2007 09:04:14 -0400
+Received: from s93.xrea.com ([218.216.67.44]:48545 "HELO s93.xrea.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751218AbXIKNEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 09:04:13 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Sep 2007 09:04:13 EDT
+Message-Id: <200709111257.AA02450@bbb-jz5c7z9hn9y.digitalinfra.co.jp>
+Date: Tue, 11 Sep 2007 21:57:42 +0900
+To: linux-kernel@vger.kernel.org
+Subject: MACH BOOT
+From: Jun OKAJIMA <okajima@digitalinfra.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709112301.52724.nigel@nigel.suspend2.net>
+X-Mailer: AL-Mail32 Version 1.13
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again.
 
-On Tuesday 11 September 2007 21:55:06 Rafael J. Wysocki wrote:
-> On Tuesday, 11 September 2007 13:27, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Tuesday 11 September 2007 21:04:22 Rafael J. Wysocki wrote:
-> > > On Tuesday, 11 September 2007 05:54, Nigel Cunningham wrote:
-> > > > Hi all.
-> > > > 
-> > > > Commit 831441862956fffa17b9801db37e6ea1650b0f69 (Freezer: make kernel 
-> > threads
-> > > > nonfreezable by default) breaks freezing when attempting to resume 
-from an
-> > > > initrd, because the init (which is freezeable) spins while waiting for 
-> > another
-> > > > thread to run /linuxrc, but doesn't check whether it has been told to 
-> > enter
-> > > > the refrigerator.
-> > > 
-> > > Hm.
-> > > 
-> > > I use a resume from an initrd on a regular basis and it works without 
-the 
-> > patch
-> > > below.
-> > > 
-> > > I think we need to investigate what happens in your test case a bit.
-> > 
-> > Ah. That makes me realise that I see that too - my AMD64 uniprocessor 
-laptop 
-> > didn't need the patch (guess that's why I didn't notice the need and ack'd 
-> > the patch). But my x86 SMP machine... it needs this. I'll see if they're 
-> > running on different processors.
-> 
-> Well, strange.  My x86_64 SMP machines don't need the patch too.
 
-Oh well. I'm probably doing something wrong then and haven't clicked yet.
+The ISO image is finally released. Check it out please.
 
-Regards,
+                     --- Okajima.
 
-Nigel
--- 
-See http://www.tuxonice.net for Howtos, FAQs, mailing
-lists, wiki and bugzilla info.
+
+--------
+We introduce here that MACH BOOT, which is an experimental CD booting technology
+with the goal of achieving fast booting with x48 CD-ROM drive.
+
+Check this out, please.
+http://www.machboot.com/
+
+
+Features:
+
+    1.  Booting fast, usually within 10 secs from x48 CD-ROM drive.
+    2.  Launching apps is also fast. Almost same as from HDD.
+    3.  Customizable. You can make it "MACH" with any distribution,
+        including your original one.
+    4.  (Hopefully) Better PnP than KNOPPIX.
+        This feature is not sure for now --- I just have tested on only a few PCs.
+
+
+Credits:
+
+Concept and Programming :  Okajima, Jun.
+Special Thanks : All people of LazyFS and tmpfs, Especially Dr. Thomas Leonard.
+
+
+                 --- Okajima, Jun. Tokyo, Japan.
+                        President, Digital Infra, Inc.
+                        http://www.digitalinfra.co.jp/
+                        http://www.colinux.org/
+                        http://www.machboot.com/
+
+
