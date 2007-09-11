@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761081AbXIKEeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760958AbXIKE6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761081AbXIKEeR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 00:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbXIKEeH
+	id S1760958AbXIKE6T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 00:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbXIKE6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 00:34:07 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:41511 "EHLO e6.ny.us.ibm.com"
+	Tue, 11 Sep 2007 00:58:09 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:46037 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752339AbXIKEeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 00:34:06 -0400
-Date: Tue, 11 Sep 2007 10:14:43 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: "Jan Engelhardt" <jengelh@computergmbh.de>, containers@lists.osdl.org,
-       "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, ckrm-tech@lists.sourceforge.net
-Subject: Re: [Devel] Re: [PATCH] Hookup group-scheduler with task container infrastructure
-Message-ID: <20070911044443.GD16222@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20070910171049.GA16048@linux.vnet.ibm.com> <Pine.LNX.4.64.0709101903220.5368@fbirervta.pbzchgretzou.qr> <20070910172334.GB19100@linux.vnet.ibm.com> <6599ad830709101138q7528eba7ia4fb618b8fe158cc@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830709101138q7528eba7ia4fb618b8fe158cc@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	id S1752870AbXIKE6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 00:58:08 -0400
+Message-ID: <46E61FEA.9010800@in.ibm.com>
+Date: Tue, 11 Sep 2007 10:26:10 +0530
+From: suzuki <suzuki@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, bfields@fieldses.org,
+       neilb@suse.de, nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       ffilz@us.ibm.com, Poornima <bnpoorni@in.ibm.com>
+Subject: Re: [NFS] [BUG] 2.6.23-rc5 kernel BUG at fs/nfs/nfs4xdr.c:945
+References: <46E121B8.4080105@linux.vnet.ibm.com> <6bffcb0e0709071656o6881fa17y61818a9733293a4c@mail.gmail.com> <1189289549.13713.4.camel@localhost.localdomain> <46E4FC2F.6040105@in.ibm.com> <1189458228.6634.4.camel@heimdal.trondhjem.org>
+In-Reply-To: <1189458228.6634.4.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 10, 2007 at 11:38:10AM -0700, Paul Menage wrote:
-> By definition any container (about to be renamed control group)
-> subsystem is some kind of "controller" so that bit seems a bit
-> redundant.
+Trond Myklebust wrote:
+> On Mon, 2007-09-10 at 13:41 +0530, suzuki wrote:
+>> Hi
+>>
+>> I have been trying to debug this issue from my side and could find the 
+>> following.
+>>
+>> The pathconf() request gets a reply with :
+>>
+>> pathinfo.max_namelen = (unsiged int) -1
+>> pathinfo.max_link    = 255
+>>
+>> Is this really an expected answer from a server for a proper connection 
+>> ( for mount requests on an exported dir) ? Is there something that needs 
+>> to be fixed at server side ?
 > 
-> Any reason not to just call it "cpu" or "cpu_sched"
+> I assume that this is with my patch applied? 
 
-Done (in the latest patch I sent a while back)!
+No. This is without your patch. So I am trying to debug why the server 
+is sending a -1 ! (which sounds like an error ?)
 
--- 
-Regards,
-vatsa
+Thanks
+
+Suzuki K P
+IBM Linux Technology Centre
+
+Yes: as long as the kernel
+> sets NAME_MAX to 255, then the above is expected behaviour.
+> 
+> Trond
+> 
+
