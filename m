@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbXIKOAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752215AbXIKOF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752005AbXIKOAi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 10:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbXIKOAa
+	id S1752215AbXIKOF6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 10:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbXIKOFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 10:00:30 -0400
-Received: from zone4.gcu.info ([217.195.17.234]:54945 "EHLO
+	Tue, 11 Sep 2007 10:05:51 -0400
+Received: from zone4.gcu.info ([217.195.17.234]:54814 "EHLO
 	zone4.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbXIKOA3 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1750936AbXIKOFu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 10:00:29 -0400
-Date: Tue, 11 Sep 2007 15:59:31 +0200 (CEST)
-To: mhoffman@lightlink.com, djwong@us.ibm.com
-Subject: Re: [PATCH] v3 of IBM power meter driver
+	Tue, 11 Sep 2007 10:05:50 -0400
+Date: Tue, 11 Sep 2007 16:05:33 +0200 (CEST)
+To: hmh@hmh.eng.br
+Subject: Re: Platform device id
 X-IlohaMail-Blah: khali@localhost
 X-IlohaMail-Method: mail() [mem]
 X-IlohaMail-Dummy: moo
 X-Mailer: IlohaMail/0.8.14 (On: mail.gcu-squad.org)
-Message-ID: <QsqPsE00.1189519171.8421320.khali@localhost>
-In-Reply-To: <20070911132335.GJ31992@jupiter.solarsys.private>
+Message-ID: <fk7FYVmE.1189519533.5546870.khali@localhost>
+In-Reply-To: <20070911134405.GA18443@khazad-dum.debian.net>
 From: "Jean Delvare" <khali@linux-fr.org>
 Bounce-To: "Jean Delvare" <khali@linux-fr.org>
-CC: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       haveblue@us.ibm.com
+CC: "David Brownell" <david-b@pacbell.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "dmitry.torokhov@gmail.com" <dmitry.torokhov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
@@ -31,25 +32,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On 9/11/2007, "Mark M. Hoffman" <mhoffman@lightlink.com> wrote:
->* Darrick J. Wong <djwong@us.ibm.com> [2007-08-28 16:25:05 -0700]:
->> --- a/drivers/hwmon/Kconfig
->> +++ b/drivers/hwmon/Kconfig
->> @@ -275,6 +275,18 @@ config SENSORS_CORETEMP
->>  	  sensor inside your CPU. Supported all are all known variants
->>  	  of Intel Core family.
->>
->> +config SENSORS_IBMPEX
->> +	tristate "IBM PowerExecutive temperature/power sensors"
->> +	depends on IPMI_SI
+On 9/11/2007, "Henrique de Moraes Holschuh" <hmh@hmh.eng.br> wrote:
+>On Tue, 11 Sep 2007, Jean Delvare wrote:
+>> I don't know your code and I don't really have the time to look at it
+>> in depth, but I'm a bit surprised. Presumably your driver is
+>> implementing a number of interfaces (e.g. hwmon) and you create a class
+>> device for each one. You can have as many class devices hanging of a
+>> (physical) device, so I fail to see why you would need to register
+>> several (physical) devices.
 >
-> Open question: can we use "select" here?  As written, it took some hunting
-> to even get this driver to show up as an option in menuconfig.
+>Namespace clashes.  Now that class attributes are gone (or going, whatever),
+>everything lives in one namespace: the device.  I dread the day I find out
+>one class I need has attribute name clashes with another, or (more likely)
+>one of my driver-specific attributes clash with one from a generic class.
 
-My 2 cents: I assume that people who have IPMI-capable hardware are aware
-that they do. Thus, if you change the above to "select IPMI_SI", you
-probably want to add "depends on IPMI_HANDLER" (not sure why it's not
-just named CONFIG_IPMI).
+This shouldn't be the case. Ex-class devices still have their own
+directory in sysfs. For example, the radeonfb driver spawns 4 i2c buses
+(i2c-adapter class), each gets its own directory.
+
+One problem at the moment is the hwmon subsystem, because we create the
+attributes in the physical device rather than in the hwmon class device.
+This is for historical reasons, but I presume that we'll have to change
+this someday to work around the name space collision issue you
+mentioned. If other subsystems are doing the same mistake, this can
+explain your problem, but this is a subsystem implementation issue, not
+a problem with class devices themselves.
+
+>Even if clashes never happen, it can make quite a mess when you have four or
+>more classes in the same device.
+
+I don't agree. This is how things were designed.
+
+>And you can have semanthic clashes, if one
+>looks at various attributes (from different classes or driver-specific) and
+>think they are related in some obvious way (only, it is not obvious at all,
+>and the user didn't read the docs to know it).
+
+There's really no reason why you would be randomly poking at attributes
+without knowing which class device they belong to.
 
 --
 Jean Delvare
