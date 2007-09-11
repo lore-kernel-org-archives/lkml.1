@@ -1,356 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761736AbXIKAm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762047AbXIKApw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761736AbXIKAm6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 20:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbXIKAmu
+	id S1762047AbXIKApw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 20:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756846AbXIKApp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 20:42:50 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:48588 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbXIKAmt (ORCPT
+	Mon, 10 Sep 2007 20:45:45 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:48032 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756345AbXIKApo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 20:42:49 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=h/UuhLMgV0N+hwDP2bnjCw7RXpXBFNVSfwrT0FIv4y83tgUJJV26voOjIxMBra0AU
-	ShXbgaea6JTARXBqi7qQQ==
-Message-ID: <6599ad830709101742k658234b4of59f14ef27e40d14@mail.gmail.com>
-Date: Mon, 10 Sep 2007 17:42:20 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [-mm PATCH 1/9] Memory controller resource counters (v6)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Eric W Biederman" <ebiederm@xmission.com>,
-       "Linux MM Mailing List" <linux-mm@kvack.org>,
-       "Nick Piggin" <npiggin@suse.de>,
-       "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>,
-       "Pavel Emelianov" <xemul@openvz.org>,
-       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       "Dave Hansen" <haveblue@us.ibm.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070817084238.26003.7733.sendpatchset@balbir-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 10 Sep 2007 20:45:44 -0400
+Date: Mon, 10 Sep 2007 20:45:41 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch 1/8] Immediate Values - Global Modules List and Module Mutex
+Message-ID: <20070911004541.GA4360@Krystal>
+References: <20070906200228.086651361@polymtl.ca> <20070906200314.079453533@polymtl.ca> <20070908072811.GB1819@martell.zuzino.mipt.ru> <1189468414.8023.66.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070817084228.26003.12568.sendpatchset@balbir-laptop>
-	 <20070817084238.26003.7733.sendpatchset@balbir-laptop>
+In-Reply-To: <1189468414.8023.66.camel@localhost.localdomain>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:20:36 up 43 days, 39 min,  3 users,  load average: 2.15, 1.27, 1.07
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Balbir/Pavel,
+* Rusty Russell (rusty@rustcorp.com.au) wrote:
+> On Sat, 2007-09-08 at 11:28 +0400, Alexey Dobriyan wrote:
+> > On Thu, Sep 06, 2007 at 04:02:29PM -0400, Mathieu Desnoyers wrote:
+> > > Remove "static" from module_mutex and the modules list so it can be used by
+> > > other builtin objects in the kernel. Otherwise, every code depending on the
+> > > module list would have to be put in kernel/module.c. Since the immediate values
+> > > depends on the module list but can be considered as logically different, it
+> > > makes sense to implement them in their own file.
+> 
+> If I understand this code correctly, then changing immediate values
+> needs some exclusion to avoid patching live code.  You leave this to the
+> user with some very unclear rules.
+> 
 
-As I mentioned to you directly at the kernel summit, I think it might
-be cleaner to integrate resource counters more closely with control
-groups. So rather than controllers such as the memory controller
-having to create their own boilerplate cf_type structures and
-read/write functions, it should be possible to just call a function
-something like
+I think you really misunderstood some major features of these patches
+then. Doing an immediate_set on a variable has the same semantic as
+setting a normal static variable. If the write to the equivalent
+variable would be performed atomically (e.g. 32 bits or less variable on
+a 32 bits architecture), it will also be done atomically on an
+immediate value reference.
 
-control_group_add_rescounter(struct cgroup *cg, struct cgroup_subsys *ss,
-                                             struct res_counter *res,
-const char *name)
+Code patching of _live_ SMP code is allowed. This is why I went through
+all this trouble on i386.
 
-and have it handle all the userspace API. This would simplify the task
-of keeping a consistent userspace API between different controllers
-using the resource counter abstraction.
+So the locking is the same for an immediate value that it would be for a
+static variable. If you are concerned about the fact that we have to
+iterate on multiple load immediate sites to enable the variable (which
+is done non atomically when there are multiple references), we end up in
+a moment where references may be in a different state at a given time.
+But this is no different from out of order read/writes of/from a static
+variable and how older copies may be seen by another CPU : if you hope
+that multiple CPUs will see a coherent copy of a static variable at a
+given point in time, you clearly have to use the proper locking that
+will order read/writes.
 
-Paul
+Immediate values are mostly meant to be used in contexts where we can
+allow this time window where, during the update, some references will
+have one value and others won't. Therefore, doing :
+
+immediate_int_t var;
+in function:
+BUG_ON(immediate_read(&var) != immediate_read(&var));
+
+might fail if it is executed while an immediate_set is done on var. But
+if we would have:
+
+volatile int var;
+in function:
+BUG_ON(var != var);
+
+and, in another thread:
+var++;
+
+We _might_ race and see a different value. What is do different about
+it?
+
+When we activate a feature that is protected by a boolean, we currently
+have to accept that we will, at some point, be in a state where code
+paths will see the enabled value and others will see the disabled one.
+(this is the choice we do in tracing, and the choice that has to be done
+when using atomic updates without locking).
+
+The only guarantee you get is that once the immediate_set is over, all
+further references to the variable in memory will see the new variable.
+
+> The result is a real mess that has nothing to do with the module mutex
+> and list.  These patches need a lot more work 8(
+> 
+
+module mutex is only there to allow coherent iteration on the module
+list so we can patch each module's code.
+
+> 1) The immediate types are just kind of silly.  See per-cpu for how it
+> handles this already.  DECLARE_IMMEDIATE(type, var) is probably enough.
+> 
+
+I would be ok with that.
+
+> 2) immediate_if() needs an implementation before you introduce it.  Your
+> assumption that it's always unlikely seems non-orthogonal.
+> 
+
+I could remove the unlikely(), no problem with that. Your point about
+this is valid. However, I would like to leave the immediate_if() there
+because it may become very useful if someday gcc permits to extract the
+address of a branch instruction (and to generate assembly that would not
+be reached without doing code patching).
+
+Quoting my discussion with H. Peter Anvin:
+
+<quote>
+Mathieu Desnoyers wrote:
+>
+> If we can change the compiler, here is what we could do:
+>
+> Tell GCC to put NOPs that could be altered by a branch alternative to
+> some specified code. We should be able to get the instruction pointers
+> (think of inlines) to these nop/branch instructions so we can change
+> them dynamically.
+>
+
+Changing the compiler should be perfectly feasible, *BUT* I think we
+need a transitional solution that works on existing compilers.
+
+> I suspect this would be inherently tricky. If someone is ready to do
+> this and tells me "yes, it will be there in 1 month", I am more than
+> ready to switch my markers to this and help, but since the core of my
+> work is kernel tracing, I don't have the time nor the ressources to
+> tackle this problem.
+>
+> In the event that someone answers "we'll do this in the following 3
+> years", I might consider to change the if (immediate(var)) into an
+> immediate_if (var) so we can later proceed to the change with simple
+> ifdefs without rewriting all the kernel code that would use it.
+
+This is much more of "we'll do that in the following 1-2 years", since
+we have to deal with a full gcc development cycle.  However, I really
+want to see this being implemented in a way that would let us DTRT in
+the long run."
+</quote>
 
 
-On 8/17/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> From: Pavel Emelianov <xemul@openvz.org>
->
-> Introduce generic structures and routines for resource accounting.
->
-> Each resource accounting container is supposed to aggregate it,
-> container_subsystem_state and its resource-specific members within.
->
-> Signed-off-by: Pavel Emelianov <xemul@openvz.org>
-> Signed-off-by: <balbir@linux.vnet.ibm.com>
-> ---
->
->  include/linux/res_counter.h |  102 +++++++++++++++++++++++++++++++++++++
->  init/Kconfig                |    7 ++
->  kernel/Makefile             |    1
->  kernel/res_counter.c        |  120 ++++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 230 insertions(+)
->
-> diff -puN /dev/null include/linux/res_counter.h
-> --- /dev/null   2007-06-01 20:42:04.000000000 +0530
-> +++ linux-2.6.23-rc2-mm2-balbir/include/linux/res_counter.h     2007-08-17 13:14:18.000000000 +0530
-> @@ -0,0 +1,102 @@
-> +#ifndef __RES_COUNTER_H__
-> +#define __RES_COUNTER_H__
-> +
-> +/*
-> + * Resource Counters
-> + * Contain common data types and routines for resource accounting
-> + *
-> + * Copyright 2007 OpenVZ SWsoft Inc
-> + *
-> + * Author: Pavel Emelianov <xemul@openvz.org>
-> + *
-> + */
-> +
-> +#include <linux/container.h>
-> +
-> +/*
-> + * The core object. the container that wishes to account for some
-> + * resource may include this counter into its structures and use
-> + * the helpers described beyond
-> + */
-> +
-> +struct res_counter {
-> +       /*
-> +        * the current resource consumption level
-> +        */
-> +       unsigned long usage;
-> +       /*
-> +        * the limit that usage cannot exceed
-> +        */
-> +       unsigned long limit;
-> +       /*
-> +        * the number of unsuccessful attempts to consume the resource
-> +        */
-> +       unsigned long failcnt;
-> +       /*
-> +        * the lock to protect all of the above.
-> +        * the routines below consider this to be IRQ-safe
-> +        */
-> +       spinlock_t lock;
-> +};
-> +
-> +/*
-> + * Helpers to interact with userspace
-> + * res_counter_read/_write - put/get the specified fields from the
-> + * res_counter struct to/from the user
-> + *
-> + * @counter:     the counter in question
-> + * @member:  the field to work with (see RES_xxx below)
-> + * @buf:     the buffer to opeate on,...
-> + * @nbytes:  its size...
-> + * @pos:     and the offset.
-> + */
-> +
-> +ssize_t res_counter_read(struct res_counter *counter, int member,
-> +               const char __user *buf, size_t nbytes, loff_t *pos);
-> +ssize_t res_counter_write(struct res_counter *counter, int member,
-> +               const char __user *buf, size_t nbytes, loff_t *pos);
-> +
-> +/*
-> + * the field descriptors. one for each member of res_counter
-> + */
-> +
-> +enum {
-> +       RES_USAGE,
-> +       RES_LIMIT,
-> +       RES_FAILCNT,
-> +};
-> +
-> +/*
-> + * helpers for accounting
-> + */
-> +
-> +void res_counter_init(struct res_counter *counter);
-> +
-> +/*
-> + * charge - try to consume more resource.
-> + *
-> + * @counter: the counter
-> + * @val: the amount of the resource. each controller defines its own
-> + *       units, e.g. numbers, bytes, Kbytes, etc
-> + *
-> + * returns 0 on success and <0 if the counter->usage will exceed the
-> + * counter->limit _locked call expects the counter->lock to be taken
-> + */
-> +
-> +int res_counter_charge_locked(struct res_counter *counter, unsigned long val);
-> +int res_counter_charge(struct res_counter *counter, unsigned long val);
-> +
-> +/*
-> + * uncharge - tell that some portion of the resource is released
-> + *
-> + * @counter: the counter
-> + * @val: the amount of the resource
-> + *
-> + * these calls check for usage underflow and show a warning on the console
-> + * _locked call expects the counter->lock to be taken
-> + */
-> +
-> +void res_counter_uncharge_locked(struct res_counter *counter, unsigned long val);
-> +void res_counter_uncharge(struct res_counter *counter, unsigned long val);
-> +
-> +#endif
-> diff -puN init/Kconfig~res_counters_infra init/Kconfig
-> --- linux-2.6.23-rc2-mm2/init/Kconfig~res_counters_infra        2007-08-17 13:14:18.000000000 +0530
-> +++ linux-2.6.23-rc2-mm2-balbir/init/Kconfig    2007-08-17 13:14:18.000000000 +0530
-> @@ -337,6 +337,13 @@ config CPUSETS
->
->           Say N if unsure.
->
-> +config RESOURCE_COUNTERS
-> +       bool "Resource counters"
-> +       help
-> +         This option enables controller independent resource accounting
-> +          infrastructure that works with containers
-> +       depends on CONTAINERS
-> +
->  config SYSFS_DEPRECATED
->         bool "Create deprecated sysfs files"
->         default y
-> diff -puN kernel/Makefile~res_counters_infra kernel/Makefile
-> --- linux-2.6.23-rc2-mm2/kernel/Makefile~res_counters_infra     2007-08-17 13:14:18.000000000 +0530
-> +++ linux-2.6.23-rc2-mm2-balbir/kernel/Makefile 2007-08-17 13:14:18.000000000 +0530
-> @@ -58,6 +58,7 @@ obj-$(CONFIG_RELAY) += relay.o
->  obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
->  obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
->  obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
-> +obj-$(CONFIG_RESOURCE_COUNTERS) += res_counter.o
->
->  ifneq ($(CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER),y)
->  # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-> diff -puN /dev/null kernel/res_counter.c
-> --- /dev/null   2007-06-01 20:42:04.000000000 +0530
-> +++ linux-2.6.23-rc2-mm2-balbir/kernel/res_counter.c    2007-08-17 13:14:18.000000000 +0530
-> @@ -0,0 +1,120 @@
-> +/*
-> + * resource containers
-> + *
-> + * Copyright 2007 OpenVZ SWsoft Inc
-> + *
-> + * Author: Pavel Emelianov <xemul@openvz.org>
-> + *
-> + */
-> +
-> +#include <linux/types.h>
-> +#include <linux/parser.h>
-> +#include <linux/fs.h>
-> +#include <linux/res_counter.h>
-> +#include <linux/uaccess.h>
-> +
-> +void res_counter_init(struct res_counter *counter)
-> +{
-> +       spin_lock_init(&counter->lock);
-> +       counter->limit = (unsigned long)LONG_MAX;
-> +}
-> +
-> +int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
-> +{
-> +       if (counter->usage > (counter->limit - val)) {
-> +               counter->failcnt++;
-> +               return -ENOMEM;
-> +       }
-> +
-> +       counter->usage += val;
-> +       return 0;
-> +}
-> +
-> +int res_counter_charge(struct res_counter *counter, unsigned long val)
-> +{
-> +       int ret;
-> +       unsigned long flags;
-> +
-> +       spin_lock_irqsave(&counter->lock, flags);
-> +       ret = res_counter_charge_locked(counter, val);
-> +       spin_unlock_irqrestore(&counter->lock, flags);
-> +       return ret;
-> +}
-> +
-> +void res_counter_uncharge_locked(struct res_counter *counter, unsigned long val)
-> +{
-> +       if (WARN_ON(counter->usage < val))
-> +               val = counter->usage;
-> +
-> +       counter->usage -= val;
-> +}
-> +
-> +void res_counter_uncharge(struct res_counter *counter, unsigned long val)
-> +{
-> +       unsigned long flags;
-> +
-> +       spin_lock_irqsave(&counter->lock, flags);
-> +       res_counter_uncharge_locked(counter, val);
-> +       spin_unlock_irqrestore(&counter->lock, flags);
-> +}
-> +
-> +
-> +static inline unsigned long *res_counter_member(struct res_counter *counter,
-> +                                               int member)
-> +{
-> +       switch (member) {
-> +       case RES_USAGE:
-> +               return &counter->usage;
-> +       case RES_LIMIT:
-> +               return &counter->limit;
-> +       case RES_FAILCNT:
-> +               return &counter->failcnt;
-> +       };
-> +
-> +       BUG();
-> +       return NULL;
-> +}
-> +
-> +ssize_t res_counter_read(struct res_counter *counter, int member,
-> +               const char __user *userbuf, size_t nbytes, loff_t *pos)
-> +{
-> +       unsigned long *val;
-> +       char buf[64], *s;
-> +
-> +       s = buf;
-> +       val = res_counter_member(counter, member);
-> +       s += sprintf(s, "%lu\n", *val);
-> +       return simple_read_from_buffer((void __user *)userbuf, nbytes,
-> +                       pos, buf, s - buf);
-> +}
-> +
-> +ssize_t res_counter_write(struct res_counter *counter, int member,
-> +               const char __user *userbuf, size_t nbytes, loff_t *pos)
-> +{
-> +       int ret;
-> +       char *buf, *end;
-> +       unsigned long tmp, *val;
-> +
-> +       buf = kmalloc(nbytes + 1, GFP_KERNEL);
-> +       ret = -ENOMEM;
-> +       if (buf == NULL)
-> +               goto out;
-> +
-> +       buf[nbytes] = '\0';
-> +       ret = -EFAULT;
-> +       if (copy_from_user(buf, userbuf, nbytes))
-> +               goto out_free;
-> +
-> +       ret = -EINVAL;
-> +       tmp = simple_strtoul(buf, &end, 10);
-> +       if (*end != '\0')
-> +               goto out_free;
-> +
-> +       val = res_counter_member(counter, member);
-> +       *val = tmp;
-> +       ret = nbytes;
-> +out_free:
-> +       kfree(buf);
-> +out:
-> +       return ret;
-> +}
-> _
->
-> --
->         Warm Regards,
->         Balbir Singh
->         Linux Technology Center
->         IBM, ISTL
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
+
+> 3) immediate_set(), _immediate_set() and immediate_set_early()?  No
+> thanks!  AFAICT you really want an "init_immediate(var, val)".  This
+> means "you can patch all the references now, they're not executing".
+> Later on we could possibly have a super-stop-machine version which
+> ensures noone's preempted and handles the concurrent case.  Maybe.
+> 
+> 4) With an "init" interface not a "set" interface, you don't need
+> locking.  Simpler.
+> 
+
+We don't need to stop execution of references at all. Not needed. (as
+explained above). I wouldn't want that anyway, since I want to use this
+for tracing which must be as non-intrusive as possible.
+
+No locking, live update, is imho much simpler :)
+
+
+> Hope that helps,
+> Rusty.
+> 
+
+Thanks for the review,
+
+Mathieu
+
+> 
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
