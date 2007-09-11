@@ -1,59 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763804AbXIKMUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763812AbXIKMVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763804AbXIKMUM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 08:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbXIKMT7
+	id S1763812AbXIKMVg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 08:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbXIKMV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 08:19:59 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:54965 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753722AbXIKMT7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 08:19:59 -0400
-Message-ID: <46E687ED.9000802@grupopie.com>
-Date: Tue, 11 Sep 2007 13:19:57 +0100
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Tue, 11 Sep 2007 08:21:28 -0400
+Received: from styx.suse.cz ([82.119.242.94]:47307 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757526AbXIKMV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 08:21:28 -0400
+Date: Tue, 11 Sep 2007 14:17:24 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] [RESEND] i386 and x86_64: randomize brk()
+Message-ID: <Pine.LNX.4.64.0709111416390.7343@jikos.suse.cz>
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>, Paulo Marques <pmarques@grupopie.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] video: uvesafb: Add X86 dependency.
-References: <20070911081752.GA19495@linux-sh.org> <46E67EFD.2040902@grupopie.com> <20070911115346.GA23493@linux-sh.org>
-In-Reply-To: <20070911115346.GA23493@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> On Tue, Sep 11, 2007 at 12:41:49PM +0100, Paulo Marques wrote:
->>[...]
->> Why do you say that it's x86 specific? Am I missing something?
->>
-> The emulator it uses only runs on x86 and x86_64. Thus, it's x86
-> specific. The v86d and uvesafb pages seem to be in disagremeent, unless
-> by 'non-x86' it's only implying x86_64.
-> 
-> Additionally, it needs the vga I/O routines, as per vgacon. Most
-> platforms don't define these.
+From: Jiri Kosina <jkosina@suse.cz>
 
-I just saw the v86d emulator code, and you're right. It mmaps /dev/mem 
-and assumes the video BIOS is mapped there.
+i386 and x86_64: randomize brk()
 
-We should try to change that to mmap something like 
-"/sys/bus/pci/devices/0000:01:00.0/rom" instead so that it can work on 
-any system with a video card plugged on a PCI bus.
+This patch randomizes the location of the heap (brk) for i386 and x86_64.
+The range is randomized in the range starting at current brk location up
+to 0x02000000 offset for both architectures. This, together with
+pie-executable-randomization.patch and
+pie-executable-randomization-fix.patch, should make the address space
+randomization on i386 and x86_64 complete.
 
-It should also be possible for the emulator to translate in/out 
-instructions to appropriate memory mapped I/O equivalents, no?
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-Anyway, I think it is up to Michal to decide if we should remove the 
-kernel support for other archs, or let it stay a bit more while working 
-on solving the v86d side of things. So I'll just step aside now....
+diff --git a/arch/i386/kernel/process.c b/arch/i386/kernel/process.c
+index 8466471..8e0624d 100644
+--- a/arch/i386/kernel/process.c
++++ b/arch/i386/kernel/process.c
+@@ -949,3 +949,17 @@ unsigned long arch_align_stack(unsigned long sp)
+ 		sp -= get_random_int() % 8192;
+ 	return sp & ~0xf;
+ }
++
++unsigned long arch_randomize_brk(unsigned long brk)
++{
++	unsigned long new_brk;
++	unsigned long range_end;
++
++	range_end = brk + 0x02000000;
++	new_brk = randomize_range(brk, range_end, 0);
++	if (new_brk)
++		return new_brk;
++	else
++		return brk;
++}
++
+diff --git a/arch/x86_64/kernel/process.c b/arch/x86_64/kernel/process.c
+index 2842f50..b20f0eb 100644
+--- a/arch/x86_64/kernel/process.c
++++ b/arch/x86_64/kernel/process.c
+@@ -902,3 +902,17 @@ unsigned long arch_align_stack(unsigned long sp)
+ 		sp -= get_random_int() % 8192;
+ 	return sp & ~0xf;
+ }
++
++unsigned long arch_randomize_brk(unsigned long brk)
++{
++	unsigned long new_brk;
++	unsigned long range_end;
++
++	range_end = brk + 0x02000000;
++	new_brk = randomize_range(brk, range_end, 0);
++	if (new_brk)
++		return new_brk;
++	else
++		return brk;
++}
++
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index d65f1d9..7afec71 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -47,6 +47,9 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs);
+ static int load_elf_library(struct file *);
+ static unsigned long elf_map (struct file *, unsigned long, struct elf_phdr *, int, int, unsigned long);
+ 
++/* overriden by architectures supporting brk randomization */
++unsigned long __weak arch_randomize_brk(unsigned long brk) { return brk; }
++
+ /*
+  * If we don't support core dumping, then supply a NULL so we
+  * don't even try.
+@@ -1073,6 +1076,10 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	current->mm->end_data = end_data;
+ 	current->mm->start_stack = bprm->p;
+ 
++	if (current->flags & PF_RANDOMIZE)
++		current->mm->brk = current->mm->start_brk = 
++			arch_randomize_brk(current->mm->brk);
++
+ 	if (current->personality & MMAP_PAGE_ZERO) {
+ 		/* Why this, you ask???  Well SVr4 maps page 0 as read-only,
+ 		   and some applications "depend" upon this behavior.
 
--- 
-Paulo Marques - www.grupopie.com
-
-"667: The neighbor of the beast."
