@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965980AbXIKHUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966099AbXIKHXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965980AbXIKHUw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 03:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbXIKHUo
+	id S966099AbXIKHXe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 03:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761283AbXIKHX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 03:20:44 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:59376 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759295AbXIKHUo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 03:20:44 -0400
-Message-ID: <46E641C1.8000808@fr.ibm.com>
-Date: Tue, 11 Sep 2007 09:20:33 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>, vatsa@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, Jan Engelhardt <jengelh@computergmbh.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Hookup group-scheduler with task container infrastructure
-References: <20070910171049.GA16048@linux.vnet.ibm.com> <Pine.LNX.4.64.0709101903220.5368@fbirervta.pbzchgretzou.qr> <20070910172334.GB19100@linux.vnet.ibm.com> <20070910102259.dc45a481.akpm@linux-foundation.org> <20070910174649.GA16222@linux.vnet.ibm.com> <b647ffbd0709101537l9af4dc8x743b25c96e0f5235@mail.gmail.com> <6599ad830709101545s66fd338dob6932407db4e1002@mail.gmail.com>
-In-Reply-To: <6599ad830709101545s66fd338dob6932407db4e1002@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 11 Sep 2007 03:23:26 -0400
+Received: from www.osadl.org ([213.239.205.134]:48557 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761006AbXIKHXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 03:23:25 -0400
+Subject: Re: clockevents: fix resume logic
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20070911000001.30f8590b.akpm@linux-foundation.org>
+References: <200707220159.l6M1xBgH001236@hera.kernel.org>
+	 <20070910144740.4eba2fda.akpm@linux-foundation.org>
+	 <1189492636.25767.62.camel@chaos>
+	 <20070911000001.30f8590b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 11 Sep 2007 09:23:20 +0200
+Message-Id: <1189495400.25767.81.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On 9/10/07, Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
->> On 10/09/2007, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
->>> On Mon, Sep 10, 2007 at 10:22:59AM -0700, Andrew Morton wrote:
->>>> objection ;)  "cpuctlr" isn't memorable.  Kernel code is write-rarely,
->>>> read-often.  "cpu_controller", please.  The extra typing is worth it ;)
->>> Ok! Here's the modified patch (against 2.6.23-rc4-mm1).
->> as everyone seems to be in a quest for a better name... I think, the
->> obvious one would be just 'group_sched'.
->>
+On Tue, 2007-09-11 at 00:00 -0700, Andrew Morton wrote:
+> > > This patch broke the jinxed vaio.
+> > > 
+> > > Which is a bit odd, considering that I must have tested it at the time. 
+> > > But I bisected it right down to this commit, and the below revert patch
+> > > fixed it up.
+> > 
+> > I just looked up, that you confirmed earlier that the patch does _not_
+> > break the VAIO. 
+> > 
+> > I think, that some other suspend/resume/ACPI or whatever change went in
+> > before this patch got merged into Linus tree. Sigh. That's pretty hard
+> > to find out.
+> > 
 > 
-> But "sched" on its own could refer to CPU scheduling, I/O scheduling,
-> network scheduling, ...
+> I tried just 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6 on top of 2.6.22
+> (threw away the lguest and xen hunks).  The same problem occurs.  2.6.22 is
+> OK.
+
+Hmm.
+
+> I went back to the original patch which I sent to Linus and it matches
+> 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6.  So all I can think is that there
+> must have been something else in the tree which I tested which fixed the
+> bug which 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6 introduced.  argh.
 > 
-> And "group" is more or less implied by the fact that it's in the
-> containers/control groups filesystem.
+> Can you think what would cause the symptoms which I described?  
 
-"control groups" is the name of your framework. right ?
+It seems that time is not updated. Timer interrupt not active or some
+other odd thing. I figure out what's going on when I find a box which
+exposes the problem.
 
-> So "group_sched" isn't really all that informative. The name should
-> definitely contain either "cpu" or "cfs".
+	tglx
 
-"cfs" control group subsystem.
 
-"cfs" looks good enough to identify the subsystem.
-
-C. 
