@@ -1,213 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966263AbXIKUJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934443AbXIKUKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966263AbXIKUJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 16:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764157AbXIKUCa
+	id S934443AbXIKUKm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 16:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764188AbXIKUCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 16:02:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37797 "EHLO mx1.redhat.com"
+	Tue, 11 Sep 2007 16:02:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37816 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934292AbXIKUCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 16:02:25 -0400
-Message-Id: <20070911200013.690534000@chello.nl>
+	id S933996AbXIKUC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 16:02:28 -0400
+Message-Id: <20070911200014.972473000@chello.nl>
 References: <20070911195350.825778000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 11 Sep 2007 21:53:59 +0200
+Date: Tue, 11 Sep 2007 21:54:05 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
-       torvalds@linux-foundation.org
-Subject: [PATCH 09/23] lib: percpu_counter_init error handling
-Content-Disposition: inline; filename=percpu_counter_init.patch
+       torvalds@linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
+       Robert Kaiser <rkaiser@sysgo.de>
+Subject: [PATCH 15/23] mtd: give mtdconcat devices their own backing_dev_info
+Content-Disposition: inline; filename=bdi_mtdconcat.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-alloc_percpu can fail, propagate that error.
+These are actual devices, give them their own BDI.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Robert Kaiser <rkaiser@sysgo.de>
 ---
- fs/ext2/super.c                |   15 ++++++++++++---
- fs/ext3/super.c                |   21 +++++++++++++++------
- fs/ext4/super.c                |   21 +++++++++++++++------
- include/linux/percpu_counter.h |    5 +++--
- lib/percpu_counter.c           |    8 +++++++-
- 5 files changed, 52 insertions(+), 18 deletions(-)
+ drivers/mtd/mtdconcat.c |   28 ++++++++++++++++++----------
+ 1 file changed, 18 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/fs/ext2/super.c
+Index: linux-2.6/drivers/mtd/mtdconcat.c
 ===================================================================
---- linux-2.6.orig/fs/ext2/super.c
-+++ linux-2.6/fs/ext2/super.c
-@@ -725,6 +725,7 @@ static int ext2_fill_super(struct super_
- 	int db_count;
- 	int i, j;
- 	__le32 features;
-+	int err;
- 
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
- 	if (!sbi)
-@@ -996,12 +997,20 @@ static int ext2_fill_super(struct super_
- 	sbi->s_rsv_window_head.rsv_goal_size = 0;
- 	ext2_rsv_window_add(sb, &sbi->s_rsv_window_head);
- 
--	percpu_counter_init(&sbi->s_freeblocks_counter,
-+	err = percpu_counter_init(&sbi->s_freeblocks_counter,
- 				ext2_count_free_blocks(sb));
--	percpu_counter_init(&sbi->s_freeinodes_counter,
-+	if (!err) {
-+		err = percpu_counter_init(&sbi->s_freeinodes_counter,
- 				ext2_count_free_inodes(sb));
--	percpu_counter_init(&sbi->s_dirs_counter,
-+	}
-+	if (!err) {
-+		err = percpu_counter_init(&sbi->s_dirs_counter,
- 				ext2_count_dirs(sb));
-+	}
-+	if (err) {
-+		printk(KERN_ERR "EXT2-fs: insufficient memory\n");
-+		goto failed_mount3;
-+	}
- 	/*
- 	 * set up enough so that it can read an inode
- 	 */
-Index: linux-2.6/fs/ext3/super.c
-===================================================================
---- linux-2.6.orig/fs/ext3/super.c
-+++ linux-2.6/fs/ext3/super.c
-@@ -1485,6 +1485,7 @@ static int ext3_fill_super (struct super
- 	int i;
- 	int needs_recovery;
- 	__le32 features;
-+	int err;
- 
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
- 	if (!sbi)
-@@ -1745,12 +1746,20 @@ static int ext3_fill_super (struct super
- 	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
- 	spin_lock_init(&sbi->s_next_gen_lock);
- 
--	percpu_counter_init(&sbi->s_freeblocks_counter,
--		ext3_count_free_blocks(sb));
--	percpu_counter_init(&sbi->s_freeinodes_counter,
--		ext3_count_free_inodes(sb));
--	percpu_counter_init(&sbi->s_dirs_counter,
--		ext3_count_dirs(sb));
-+	err = percpu_counter_init(&sbi->s_freeblocks_counter,
-+			ext3_count_free_blocks(sb));
-+	if (!err) {
-+		err = percpu_counter_init(&sbi->s_freeinodes_counter,
-+				ext3_count_free_inodes(sb));
-+	}
-+	if (!err) {
-+		err = percpu_counter_init(&sbi->s_dirs_counter,
-+				ext3_count_dirs(sb));
-+	}
-+	if (err) {
-+		printk(KERN_ERR "EXT3-fs: insufficient memory\n");
-+		goto failed_mount3;
-+	}
- 
- 	/* per fileystem reservation list head & lock */
- 	spin_lock_init(&sbi->s_rsv_window_lock);
-Index: linux-2.6/fs/ext4/super.c
-===================================================================
---- linux-2.6.orig/fs/ext4/super.c
-+++ linux-2.6/fs/ext4/super.c
-@@ -1576,6 +1576,7 @@ static int ext4_fill_super (struct super
- 	int needs_recovery;
- 	__le32 features;
- 	__u64 blocks_count;
-+	int err;
- 
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
- 	if (!sbi)
-@@ -1857,12 +1858,20 @@ static int ext4_fill_super (struct super
- 	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
- 	spin_lock_init(&sbi->s_next_gen_lock);
- 
--	percpu_counter_init(&sbi->s_freeblocks_counter,
--		ext4_count_free_blocks(sb));
--	percpu_counter_init(&sbi->s_freeinodes_counter,
--		ext4_count_free_inodes(sb));
--	percpu_counter_init(&sbi->s_dirs_counter,
--		ext4_count_dirs(sb));
-+	err = percpu_counter_init(&sbi->s_freeblocks_counter,
-+			ext4_count_free_blocks(sb));
-+	if (!err) {
-+		err = percpu_counter_init(&sbi->s_freeinodes_counter,
-+				ext4_count_free_inodes(sb));
-+	}
-+	if (!err) {
-+		err = percpu_counter_init(&sbi->s_dirs_counter,
-+				ext4_count_dirs(sb));
-+	}
-+	if (err) {
-+		printk(KERN_ERR "EXT4-fs: insufficient memory\n");
-+		goto failed_mount3;
-+	}
- 
- 	/* per fileystem reservation list head & lock */
- 	spin_lock_init(&sbi->s_rsv_window_lock);
-Index: linux-2.6/include/linux/percpu_counter.h
-===================================================================
---- linux-2.6.orig/include/linux/percpu_counter.h
-+++ linux-2.6/include/linux/percpu_counter.h
-@@ -30,7 +30,7 @@ struct percpu_counter {
- #define FBC_BATCH	(NR_CPUS*4)
- #endif
- 
--void percpu_counter_init(struct percpu_counter *fbc, s64 amount);
-+int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
- void percpu_counter_destroy(struct percpu_counter *fbc);
- void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
- void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
-@@ -78,9 +78,10 @@ struct percpu_counter {
- 	s64 count;
+--- linux-2.6.orig/drivers/mtd/mtdconcat.c	2007-04-22 18:55:17.000000000 +0200
++++ linux-2.6/drivers/mtd/mtdconcat.c	2007-04-22 19:01:42.000000000 +0200
+@@ -32,6 +32,7 @@ struct mtd_concat {
+ 	struct mtd_info mtd;
+ 	int num_subdev;
+ 	struct mtd_info **subdev;
++	struct backing_dev_info backing_dev_info;
  };
  
--static inline void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
-+static inline int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
- {
- 	fbc->count = amount;
-+	return 0;
- }
+ /*
+@@ -782,10 +783,9 @@ struct mtd_info *mtd_concat_create(struc
  
- static inline void percpu_counter_destroy(struct percpu_counter *fbc)
-Index: linux-2.6/lib/percpu_counter.c
-===================================================================
---- linux-2.6.orig/lib/percpu_counter.c
-+++ linux-2.6/lib/percpu_counter.c
-@@ -68,21 +68,27 @@ s64 __percpu_counter_sum(struct percpu_c
- }
- EXPORT_SYMBOL(__percpu_counter_sum);
+ 	for (i = 1; i < num_devs; i++) {
+ 		if (concat->mtd.type != subdev[i]->type) {
+-			kfree(concat);
+ 			printk("Incompatible device type on \"%s\"\n",
+ 			       subdev[i]->name);
+-			return NULL;
++			goto error;
+ 		}
+ 		if (concat->mtd.flags != subdev[i]->flags) {
+ 			/*
+@@ -794,10 +794,9 @@ struct mtd_info *mtd_concat_create(struc
+ 			 */
+ 			if ((concat->mtd.flags ^ subdev[i]->
+ 			     flags) & ~MTD_WRITEABLE) {
+-				kfree(concat);
+ 				printk("Incompatible device flags on \"%s\"\n",
+ 				       subdev[i]->name);
+-				return NULL;
++				goto error;
+ 			} else
+ 				/* if writeable attribute differs,
+ 				   make super device writeable */
+@@ -809,9 +808,12 @@ struct mtd_info *mtd_concat_create(struc
+ 		 * - copy-mapping is still permitted
+ 		 */
+ 		if (concat->mtd.backing_dev_info !=
+-		    subdev[i]->backing_dev_info)
++		    subdev[i]->backing_dev_info) {
++			concat->backing_dev_info = default_backing_dev_info;
++			bdi_init(&concat->backing_dev_info);
+ 			concat->mtd.backing_dev_info =
+-				&default_backing_dev_info;
++				&concat->backing_dev_info;
++		}
  
--void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
-+int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
- {
- 	spin_lock_init(&fbc->lock);
- 	fbc->count = amount;
- 	fbc->counters = alloc_percpu(s32);
-+	if (!fbc->counters)
-+		return -ENOMEM;
- #ifdef CONFIG_HOTPLUG_CPU
- 	mutex_lock(&percpu_counters_lock);
- 	list_add(&fbc->list, &percpu_counters);
- 	mutex_unlock(&percpu_counters_lock);
- #endif
-+	return 0;
- }
- EXPORT_SYMBOL(percpu_counter_init);
+ 		concat->mtd.size += subdev[i]->size;
+ 		concat->mtd.ecc_stats.badblocks +=
+@@ -821,10 +823,9 @@ struct mtd_info *mtd_concat_create(struc
+ 		    concat->mtd.oobsize    !=  subdev[i]->oobsize ||
+ 		    !concat->mtd.read_oob  != !subdev[i]->read_oob ||
+ 		    !concat->mtd.write_oob != !subdev[i]->write_oob) {
+-			kfree(concat);
+ 			printk("Incompatible OOB or ECC data on \"%s\"\n",
+ 			       subdev[i]->name);
+-			return NULL;
++			goto error;
+ 		}
+ 		concat->subdev[i] = subdev[i];
  
- void percpu_counter_destroy(struct percpu_counter *fbc)
- {
-+	if (!fbc->counters)
-+		return;
+@@ -903,11 +904,10 @@ struct mtd_info *mtd_concat_create(struc
+ 		    kmalloc(num_erase_region *
+ 			    sizeof (struct mtd_erase_region_info), GFP_KERNEL);
+ 		if (!erase_region_p) {
+-			kfree(concat);
+ 			printk
+ 			    ("memory allocation error while creating erase region list"
+ 			     " for device \"%s\"\n", name);
+-			return NULL;
++			goto error;
+ 		}
+ 
+ 		/*
+@@ -968,6 +968,12 @@ struct mtd_info *mtd_concat_create(struc
+ 	}
+ 
+ 	return &concat->mtd;
 +
- 	free_percpu(fbc->counters);
- #ifdef CONFIG_HOTPLUG_CPU
- 	mutex_lock(&percpu_counters_lock);
++error:
++	if (concat->mtd.backing_dev_info == &concat->backing_dev_info)
++		bdi_destroy(&concat->backing_dev_info);
++	kfree(concat);
++	return NULL;
+ }
+ 
+ /*
+@@ -977,6 +983,8 @@ struct mtd_info *mtd_concat_create(struc
+ void mtd_concat_destroy(struct mtd_info *mtd)
+ {
+ 	struct mtd_concat *concat = CONCAT(mtd);
++	if (concat->mtd.backing_dev_info == &concat->backing_dev_info)
++		bdi_destroy(&concat->backing_dev_info);
+ 	if (concat->mtd.numeraseregions)
+ 		kfree(concat->mtd.eraseregions);
+ 	kfree(concat);
 
 --
 
