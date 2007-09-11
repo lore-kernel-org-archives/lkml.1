@@ -1,86 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967028AbXIKUYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967309AbXIKUZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967028AbXIKUYK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 16:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934345AbXIKUXl
+	id S967309AbXIKUZa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 16:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760481AbXIKUZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 16:23:41 -0400
-Received: from lazybastard.de ([212.112.238.170]:41671 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934328AbXIKUXi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 16:23:38 -0400
-Date: Tue, 11 Sep 2007 22:19:29 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Andrea Arcangeli <andrea@suse.de>
-Cc: Mel Gorman <mel@csn.ul.ie>, Christoph Lameter <clameter@sgi.com>,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Message-ID: <20070911201928.GA20688@lazybastard.org>
-References: <20070911060349.993975297@sgi.com> <200709110452.20363.nickpiggin@yahoo.com.au> <1189524967.32731.58.camel@localhost> <20070911164702.GD10831@v2.random> <1189535461.32731.75.camel@localhost> <20070911192052.GA14675@v2.random>
+	Tue, 11 Sep 2007 16:25:19 -0400
+Received: from www.osadl.org ([213.239.205.134]:39274 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758780AbXIKUZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 16:25:17 -0400
+Subject: Re: x86 merge - a little feedback
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070911201219.GA9674@uranus.ravnborg.org>
+References: <20070911201219.GA9674@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Tue, 11 Sep 2007 22:25:14 +0200
+Message-Id: <1189542314.5235.48.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070911192052.GA14675@v2.random>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Odd.  I keep arguing against the solution I prefer.
+Sam,
 
-On Tue, 11 September 2007 21:20:52 +0200, Andrea Arcangeli wrote:
+On Tue, 2007-09-11 at 22:12 +0200, Sam Ravnborg wrote:
+> Hi Thomas et al.
 > 
-> The the problem with the slub fragmentation isn't a new problem, it
-> happens in today kernels as well and at least the slab by design is
-> meant to _defrag_ internally. So it's practically already solved and
-> it provides some guarantee unlike the buddy allocator.
+> After spending several hours fiddeling with and improving
+> the current Makefile for x86_64 I decided to take a closer look
+> at the x86 merge og i386 and x86_64.
+> 
+> I took a closer look at x86/pci. There are 16 C files.
+> 
+> From the mails and discussions I expected it be be
+> obvious what was i386 only, what was shared and what was x86_64 only.
+> 
+> But see following table
+> 
+> Filename		i386	x86_64
+> acpi.c			X	X
+> common.c		X	X
+> direct.c		X	X
+> early.c			X	X
+> fixup.c			X	X
+> i386.c			X	X
+> init.c			X	X
+> irq.c			X
+> k8-bus.c			X
+> legacy.c		X	X
+> mmconfig_32.c		X
+> mmconfig_64.c			X
+> mmconfig-shared.c	X	X
+> numa.c			X
+> pcbios.c		X
+> visws.c			X
+> 
+> In the filename there is NOTHING for most of
+> the non-shared code that tell that this file is
+> used by only i386 or x86_64.
 
-Slab defrag doesn't look like a solved problem.  Basically, slab
-allocator was designed to group similar objects together.  Main reason
-in this context is that similar objects have similar lifetimes.  And it
-is true that one dentry's lifetime is more likely to match another one's
-that, say, a struct bio's.
+True. I tried to unify the Makefile by using 
 
-But different dentries still have vastly different lifetimes.  And with
-that, fragmentation will continue to occur.  So the problem is not
-solved.  It is a hell of a lot better than pre-slab days, just not
-perfect.
+obj-$(CONFIG_X86_32) += ....
+and
+obj-$(CONFIG_X86_64) += ....
 
-> What I think you're missing is that for Nick's worst case to trigger
-> with the config_page_shift design, you would need the _whole_ ram to
-> be _at_least_once_ allocated completely in kernel stacks. If the whole
-> 100% of ram wouldn't go allocated in slub as a pure kernel stack, such
-> a scenario could never materialize.
+but I did fail due to link order problems in that code. I had not yet
+time to go down and figure that out yet, but it is on my todo list.
 
-Things get somewhat worse with multiple attack vectors (whether
-malicious or accidental).  Spending 20% of ram on each of {kernel
-stacks, dentries, inodes, mlocked pages, size-XXX} would be sufficient.
-The system can spend 20% on kernel stacks with 80% free, then spend 20%
-on dentries with 60% free and 20% wasted in almost-free kernel stack
-slabs, etc.
+> The exception is mmconfig that is prefixed with _32 versus _64.
+> But as I have understood the mails floating around using _32,_64
+> is a way to say here are a potential candidate for futher merging.
 
-To argue in favor, for a change, the exact same scenario would be
-possible with Christoph's solution as well.  It would even be more
-likely.  Where in your case 20% of all memory has to go to each slab
-cache at one time, only one page per largepage of that would be
-necessary in Christophs case.  The rest could be allocated for other
-purposes.
+Yes, if it is possible and makes sense.
 
-So overall I prefer your approach, for whatever my two cents of armchair
-oppinion are worth.
+> In a meged x86 tree it would be very beneficial to either include
+> in the filename that a specific file is i386 or x86_64 specific or
+> stuff them in a separate subdirectory.
+> 
+> If legacy.c numa.c, pcibios.c and visws.c placed in a directory named i386
+> then it would be obvious that this is i386 only.
+> Or they could be named filename_32 (or the uglier filename_i386).
+> As it stands out today the filename are kept but thier relationship are lost.
 
-Jörn
+We concentrated first on the move to make it simple and binary
+equivalent. The cleanup of code (merging, location, makefile updates)
+are definitely on our todo list.
 
--- 
-I've never met a human being who would want to read 17,000 pages of
-documentation, and if there was, I'd kill him to get him out of the
-gene pool.
--- Joseph Costello
+> I dunno if this will address the concern of Andi about mixing i386 and x86_64
+> but to me at least things would be so much more obvious if the original
+> relationship are spelled out.
+
+Good point.
+
+	tglx
+
+
