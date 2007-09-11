@@ -1,106 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763344AbXIKNMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763554AbXIKNOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763344AbXIKNMW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 09:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbXIKNMN
+	id S1763554AbXIKNOz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 09:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbXIKNOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 09:12:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35661 "EHLO ogre.sisk.pl"
+	Tue, 11 Sep 2007 09:14:47 -0400
+Received: from ns2.suse.de ([195.135.220.15]:42635 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751595AbXIKNMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 09:12:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [PATCH] Fix failure to resume from initrds.
-Date: Tue, 11 Sep 2007 15:23:32 +0200
-User-Agent: KMail/1.9.5
-Cc: nigel@suspend2.net, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
-References: <200709111354.25689.nigel@nigel.suspend2.net> <200709111355.07369.rjw@sisk.pl> <200709111512.35348.rjw@sisk.pl>
-In-Reply-To: <200709111512.35348.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1751595AbXIKNOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 09:14:46 -0400
+Date: Tue, 11 Sep 2007 15:14:45 +0200
+From: Olaf Dabrunz <od@suse.de>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [patch 1/5] Extended crashkernel command line
+Message-ID: <20070911131445.GA17460@suse.de>
+Mail-Followup-To: Bernhard Walle <bwalle@suse.de>,
+	kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linux-arch@vger.kernel.org
+References: <20070909083914.065380136@strauss.suse.de> <20070909083914.488571169@strauss.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200709111523.33968.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070909083914.488571169@strauss.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 11 September 2007 15:12, Rafael J. Wysocki wrote:
-> On Tuesday, 11 September 2007 13:55, Rafael J. Wysocki wrote:
-> > On Tuesday, 11 September 2007 13:27, Nigel Cunningham wrote:
-> > > Hi.
-> > > 
-> > > On Tuesday 11 September 2007 21:04:22 Rafael J. Wysocki wrote:
-> > > > On Tuesday, 11 September 2007 05:54, Nigel Cunningham wrote:
-> > > > > Hi all.
-> > > > > 
-> > > > > Commit 831441862956fffa17b9801db37e6ea1650b0f69 (Freezer: make kernel 
-> > > threads
-> > > > > nonfreezable by default) breaks freezing when attempting to resume from an
-> > > > > initrd, because the init (which is freezeable) spins while waiting for 
-> > > another
-> > > > > thread to run /linuxrc, but doesn't check whether it has been told to 
-> > > enter
-> > > > > the refrigerator.
-> > > > 
-> > > > Hm.
-> > > > 
-> > > > I use a resume from an initrd on a regular basis and it works without the 
-> > > patch
-> > > > below.
-> > > > 
-> > > > I think we need to investigate what happens in your test case a bit.
-> > > 
-> > > Ah. That makes me realise that I see that too - my AMD64 uniprocessor laptop 
-> > > didn't need the patch (guess that's why I didn't notice the need and ack'd 
-> > > the patch). But my x86 SMP machine... it needs this. I'll see if they're 
-> > > running on different processors.
-> > 
-> > Well, strange.  My x86_64 SMP machines don't need the patch too.
+On 09-Sep-07, Bernhard Walle wrote:
+> If there are multiple occurrences, then the last one is taken.  The advantage
+> is that if you have a bootloader like lilo or elilo which allows you to append
+> a command line parameter but not to remove one (like in GRUB), then you can add
+> another crashkernel value for testing at the boot command line and this one
+> overwrites the command line in the configuration then.
+
+AFAIK it is the other way round: the lilo configuration-parameter
+"append" appends the kernel parameters in the configuration to the
+parameters given by the user on the kernel command line.
+
+So the parameters set by the user during boot appear first on the
+command line.
+
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
 > 
-> Anyway, yes, init is freezable, but should it be?
+> ---
+>  include/linux/kexec.h |    2 
+>  kernel/kexec.c        |  139 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 141 insertions(+)
 > 
-> I mean, shouldn't we rather add PF_NOFREEZE to kernel_init()?
+> --- a/include/linux/kexec.h
+> +++ b/include/linux/kexec.h
+> @@ -179,6 +179,8 @@ extern note_buf_t *crash_notes;
+>  extern u32 vmcoreinfo_note[VMCOREINFO_NOTE_SIZE/4];
+>  extern unsigned int vmcoreinfo_size;
+>  extern unsigned int vmcoreinfo_max_size;
+> +int parse_crashkernel(char *cmdline, unsigned long long system_ram,
+> +		unsigned long long *crash_size, unsigned long long *crash_base);
+>  
+>  [...]
+>  
+> +int parse_crashkernel(char 		 *cmdline,
+> +		      unsigned long long system_ram,
+> +		      unsigned long long *crash_size,
+> +		      unsigned long long *crash_base)
+> +{
+> +	char 	*p = cmdline, *ck_cmdline = NULL;
+> +	char	*first_colon, *first_space;
+> +
+> +	/* find crashkernel and use the last one if there are more */
+> +	p = strstr(p, "crashkernel=");
+> +	while (p) {
+> +		ck_cmdline = p;
+> +		p = strstr(p+1, "crashkernel=");
+> +	}
+> +
 
-Argh, no.  PF_NOFREEZE is inherited by the children.
+So perhaps something like this instead:
 
-So, I think that your patch is correct, but there's some suspend2-specific
-stuff in it.  I've rediffed it against 2.6.23-rc6 and moved try_to_freeze()
-before yield().
++	/* find crashkernel and use the first one if there are more */
++	p = strstr(p, "crashkernel=");
++	ck_cmdline = p;
 
----
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
+> +	if (!ck_cmdline)
+> +		return -EINVAL;
+> +
+> +	ck_cmdline += 12; /* strlen("crashkernel=") */
+> +
+> +	/*
+> +	 * if the commandline contains a ':', then that's the extended
+> +	 * syntax -- if not, it must be the classic syntax
+> +	 */
+> +	first_colon = strchr(ck_cmdline, ':');
+> +	first_space = strchr(ck_cmdline, ' ');
+> +	if (first_colon && (!first_space || first_colon < first_space))
+> 
+> [...]
 
-Commit 831441862956fffa17b9801db37e6ea1650b0f69 (Freezer: make kernel threads
-nonfreezable by default) breaks freezing when attempting to resume from an
-initrd, because the init (which is freezeable) spins while waiting for another
-thread to run /linuxrc, but doesn't check whether it has been told to enter
-the refrigerator. The original patch replaced a call to try_to_freeze() with a
-call to yield(). I believe a simple reversion is wrong because
-if !CONFIG_PM_SLEEP, try_to_freeze() is a noop. It should still yield.
+-- 
+Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
 
-Signed-off-by: Nigel Cunningham <nigel@nigel.suspend2.net>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- init/do_mounts_initrd.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.23-rc6/init/do_mounts_initrd.c
-===================================================================
---- linux-2.6.23-rc6.orig/init/do_mounts_initrd.c
-+++ linux-2.6.23-rc6/init/do_mounts_initrd.c
-@@ -57,8 +57,10 @@ static void __init handle_initrd(void)
- 
- 	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
- 	if (pid > 0)
--		while (pid != sys_wait4(-1, NULL, 0, NULL))
-+		while (pid != sys_wait4(-1, NULL, 0, NULL)) {
-+			try_to_freeze();
- 			yield();
-+		}
- 
- 	/* move initrd to rootfs' /old */
- 	sys_fchdir(old_fd);
