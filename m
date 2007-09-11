@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933679AbXIKJWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933510AbXIKJ0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933679AbXIKJWz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 05:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762223AbXIKJWn
+	id S933510AbXIKJ0r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 05:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762225AbXIKJ0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 05:22:43 -0400
-Received: from mx1.suse.de ([195.135.220.2]:53313 "EHLO mx1.suse.de"
+	Tue, 11 Sep 2007 05:26:40 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:17234 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762067AbXIKJWm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 05:22:42 -0400
-Message-ID: <20070911112240.pe40oufzz4k8wsg8@imap.suse.de>
-X-Priority: 3 (Normal)
-Date: Tue, 11 Sep 2007 11:22:40 +0200
-From: Hannes Reinecke <hare@suse.de>
-To: device-mapper development <dm-devel@redhat.com>,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, jens.axboe@oracle.com, mike.miller@hp.com,
-       grant.likely@secretlab.ca, dm-devel@redhat.com
-Subject: Re: [dm-devel] [PATCH 7/7] blk_end_request: change rq->end_io to
-	cover request completion as a whole
-References: <20070831.184357.125900174.k-ueda@ct.jp.nec.com>
-In-Reply-To: <20070831.184357.125900174.k-ueda@ct.jp.nec.com>
+	id S1759490AbXIKJ0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 05:26:39 -0400
+Date: Tue, 11 Sep 2007 11:35:11 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, Greg Ungerer <gerg@snapgear.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] splice: Disable vmsplice on nommu.
+Message-ID: <20070911093510.GA15405@kernel.dk>
+References: <20070911082307.GB19495@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=UTF-8;
-	DelSp="Yes";
-	format="flowed"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
+In-Reply-To: <20070911082307.GB19495@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sat 01 Sep 2007 12:43:57 AM CEST schrieb Kiyoshi Ueda  
-<k-ueda@ct.jp.nec.com>:
+On Tue, Sep 11 2007, Paul Mundt wrote:
+> The vmsplice rework in -mm breaks nommu:
+> 
+> fs/built-in.o: In function `splice_setup_vma':
+> fs/splice.c:1272: undefined reference to `may_expand_vm'
+> fs/splice.c:1272: undefined reference to `protection_map'
+> fs/splice.c:1272: undefined reference to `insert_vm_struct'
+> fs/splice.c:1272: undefined reference to `vm_stat_account'
+> 
+> This is going to be non-trivial to wire up properly on nommu, and
+> it's debateable whether there's even any point in trying. For now,
+> disable vmsplice if CONFIG_MMU=n and wire it up as a cond syscall
+> for the platforms that support both.
 
-> This patch moves the rq->end_io() calling point to the top of
-> blk_end_request() from the last of end_that_request_last().
-> This means that whole request completion can be hooked by rq->end_io()
-> because all device drivers call blk_end_request() to complete request.
->
-> Because the meaning of rq->end_io() is changed, existing rq->end_io()
-> users are changed as below:
->   o Create a new end_io handler using blk_end_io().
->     blk_end_io() is a default rq->end_io() handler and can take
->     a callback function, which is called after end_that_request_last().
->     So the old end_io() handler can be used as the callback.
->   o Set the new end_io handler to rq->end_io.
->
-Hmm. I must say I don't really like it.
-Defining a callback function which itself takes a callback as an argument
-looks like a conceptual weakness.
+It's a bit of a sledge hammer... Since get_user_pages() appears to work
+on nummu, we can just disable the vmsplice-to-userspace bits and leave
+the (working) vmsplice-from-userspace in place.
 
-It's actually possible to solve it differently: We could insert a bio in
-front of the bio list of the cloned request, which can take a pointer to
-the request in it's ->bi_endio callback. This way, the bio can serve as
-a meta-callback for the request and everything can be done there.
+I'm reworking this code anyway in the block branches, so I'll update and
+take CONFIG_MMU into consideration.
 
-This way we don't have to change the interface at all and everything
-works as expected.
-
-I'll post a patch shortly.
-
-Cheers,
-
-Hannes
----
-No .sig today, my .message went away ...
+-- 
+Jens Axboe
 
