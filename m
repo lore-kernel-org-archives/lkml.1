@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763576AbXIKLyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763649AbXIKLyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763576AbXIKLyM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 07:54:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbXIKLx7
+	id S1763649AbXIKLyh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 07:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbXIKLy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 07:53:59 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:43474 "EHLO smtp.ocgnet.org"
+	Tue, 11 Sep 2007 07:54:28 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51299 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752259AbXIKLx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 07:53:58 -0400
-Date: Tue, 11 Sep 2007 20:53:46 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Paulo Marques <pmarques@grupopie.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] video: uvesafb: Add X86 dependency.
-Message-ID: <20070911115346.GA23493@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Paulo Marques <pmarques@grupopie.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org
-References: <20070911081752.GA19495@linux-sh.org> <46E67EFD.2040902@grupopie.com>
-MIME-Version: 1.0
+	id S1750882AbXIKLy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 07:54:27 -0400
+Date: Tue, 11 Sep 2007 13:55:51 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] build system: section garbage collection for vmlinux
+Message-ID: <20070911115551.GA5544@uranus.ravnborg.org>
+References: <200709051443.21522.vda.linux@googlemail.com> <200709102002.15383.vda.linux@googlemail.com> <20070910191402.GB31541@uranus.ravnborg.org> <200709111223.04724.vda.linux@googlemail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46E67EFD.2040902@grupopie.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200709111223.04724.vda.linux@googlemail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 11, 2007 at 12:41:49PM +0100, Paulo Marques wrote:
-> Paul Mundt wrote:
-> >uvesafb is x86-specific, reflect that in the Kconfig.
+> > But then we need to annotate ALL arch linker script before introducing this.
+> > And that bring me back to that we should put some sanity into these first.
 > 
-> Hummm... uvesafb _shouldn't_ be x86 specific. At least according to 
-> their page [1] where it says: "works on non-x86 systems".
+> I was working with x86_64 ld script and am willing to clean it up a bit.
 > 
-> Uvesafb uses a x86 emulator in userspace to run code from the video card 
-> ROM, so it should work on any PCI system where we can access the video 
-> card ROM and can emulate the hardware used by the ROM code.
+> I can impelment and test DISCARD_UNUSED_SECTIONS for x86_64 and later
+> for i386.
 > 
-> Why do you say that it's x86 specific? Am I missing something?
+> Other arches can follow when they find it interesting/worthwhile.
 > 
-The emulator it uses only runs on x86 and x86_64. Thus, it's x86
-specific. The v86d and uvesafb pages seem to be in disagremeent, unless
-by 'non-x86' it's only implying x86_64.
+> At first, big scary warning under "config DISCARD_UNUSED_SECTIONS"
+> should be enough to make people avoid it for production boxes, I hope.
+> 
+> Should I send next round of patches to you or to Andrew?
 
-Additionally, it needs the vga I/O routines, as per vgacon. Most
-platforms don't define these.
+Please send them to me with appropriate cc's.
+
+	Sam
