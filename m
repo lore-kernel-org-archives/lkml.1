@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965576AbXIKHH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965980AbXIKHUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965576AbXIKHH2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 03:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761012AbXIKHHR
+	id S965980AbXIKHUw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 03:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbXIKHUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 03:07:17 -0400
-Received: from ozlabs.org ([203.10.76.45]:57348 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760981AbXIKHHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 03:07:16 -0400
-Subject: [PATCH] lguest: Fix guest crash when CONFIG_X86_USE_3DNOW=y
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Michael Rasenberger <michael.rasenberger@googlemail.com>
-Cc: lguest@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	Tue, 11 Sep 2007 03:20:44 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:59376 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759295AbXIKHUo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 03:20:44 -0400
+Message-ID: <46E641C1.8000808@fr.ibm.com>
+Date: Tue, 11 Sep 2007 09:20:33 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>, vatsa@linux.vnet.ibm.com,
        Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <46E1A7BB.70203@googlemail.com>
-References: <46E18381.9020206@googlemail.com>
-	 <1189179936.10802.321.camel@localhost.localdomain>
-	 <46E1A7BB.70203@googlemail.com>
-Content-Type: text/plain
-Date: Tue, 11 Sep 2007 17:06:37 +1000
-Message-Id: <1189494397.20631.104.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, Jan Engelhardt <jengelh@computergmbh.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Hookup group-scheduler with task container infrastructure
+References: <20070910171049.GA16048@linux.vnet.ibm.com> <Pine.LNX.4.64.0709101903220.5368@fbirervta.pbzchgretzou.qr> <20070910172334.GB19100@linux.vnet.ibm.com> <20070910102259.dc45a481.akpm@linux-foundation.org> <20070910174649.GA16222@linux.vnet.ibm.com> <b647ffbd0709101537l9af4dc8x743b25c96e0f5235@mail.gmail.com> <6599ad830709101545s66fd338dob6932407db4e1002@mail.gmail.com>
+In-Reply-To: <6599ad830709101545s66fd338dob6932407db4e1002@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One of the very first things lguest_init() does is a memcpy.  On
-Athlon/Duron/K7 or CyrixIII/VIA-C3 or Geode GX/LX, this tries to use
-MMX.
+Paul Menage wrote:
+> On 9/10/07, Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
+>> On 10/09/2007, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com> wrote:
+>>> On Mon, Sep 10, 2007 at 10:22:59AM -0700, Andrew Morton wrote:
+>>>> objection ;)  "cpuctlr" isn't memorable.  Kernel code is write-rarely,
+>>>> read-often.  "cpu_controller", please.  The extra typing is worth it ;)
+>>> Ok! Here's the modified patch (against 2.6.23-rc4-mm1).
+>> as everyone seems to be in a quest for a better name... I think, the
+>> obvious one would be just 'group_sched'.
+>>
+> 
+> But "sched" on its own could refer to CPU scheduling, I/O scheduling,
+> network scheduling, ...
+> 
+> And "group" is more or less implied by the fact that it's in the
+> containers/control groups filesystem.
 
-memcpy -> _mmx_memcpy -> kernel_fpu_begin -> clts -> paravirt_ops.clts
+"control groups" is the name of your framework. right ?
 
-But we haven't set paravirt_ops.clts yet, so we do the native version
-and crash.  The simplest solution is to use __memcpy.
+> So "group_sched" isn't really all that informative. The name should
+> definitely contain either "cpu" or "cfs".
 
-Thanks to Michael Rasenberger for the bug report.
+"cfs" control group subsystem.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+"cfs" looks good enough to identify the subsystem.
 
-diff -r 1b28730fea64 drivers/lguest/lguest.c
---- a/drivers/lguest/lguest.c	Tue Sep 11 13:53:31 2007 +1000
-+++ b/drivers/lguest/lguest.c	Tue Sep 11 16:28:49 2007 +1000
-@@ -964,11 +964,12 @@ __init void lguest_init(void *boot)
- {
- 	/* Copy boot parameters first: the Launcher put the physical location
- 	 * in %esi, and head.S converted that to a virtual address and handed
--	 * it to us. */
--	memcpy(&boot_params, boot, PARAM_SIZE);
-+	 * it to us.  We use "__memcpy" because "memcpy" sometimes tries to do
-+	 * tricky things to go faster, and we're not ready for that. */
-+	__memcpy(&boot_params, boot, PARAM_SIZE);
- 	/* The boot parameters also tell us where the command-line is: save
- 	 * that, too. */
--	memcpy(boot_command_line, __va(boot_params.hdr.cmd_line_ptr),
-+	__memcpy(boot_command_line, __va(boot_params.hdr.cmd_line_ptr),
- 	       COMMAND_LINE_SIZE);
- 
- 	/* We're under lguest, paravirt is enabled, and we're running at
-
-
+C. 
