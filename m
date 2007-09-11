@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966128AbXIKGk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966452AbXIKGl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966128AbXIKGk5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761823AbXIKGjR
+	id S966452AbXIKGl1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762180AbXIKGjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:39:17 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:55159 "EHLO
+	Tue, 11 Sep 2007 02:39:23 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:55170 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761726AbXIKGjP (ORCPT
+	with ESMTP id S1762016AbXIKGjW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 02:39:15 -0400
-Date: Mon, 10 Sep 2007 23:15:38 -0700
+	Tue, 11 Sep 2007 02:39:22 -0400
+Date: Mon, 10 Sep 2007 23:24:29 -0700
 From: Greg KH <greg@kroah.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: David Miller <davem@davemloft.net>, matthew@wil.cx,
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jason Gaston <jason.d.gaston@intel.com>, gregkh@suse.de,
        linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       akpm@linux-foundation.org, gregkh@suse.de
-Subject: Re: [RFC] disable PCIE 'Enable No Snoop' bit by default
-Message-ID: <20070911061538.GE27404@kroah.com>
-References: <1189056908.24368.9.camel@sli10-conroe.sh.intel.com> <20070906115730.GE14130@parisc-linux.org> <20070906.054038.74750747.davem@davemloft.net> <20070909164343.GC9199@kroah.com> <1189474183.3080.0.camel@sli10-conroe.sh.intel.com>
+       khali@linux-fr.org, i2c@lm-sensors.nu
+Subject: Re: [PATCH 2.6.23-rc4][RESEND] irq: irq and pci_ids patch for
+	Intel Tolapai
+Message-ID: <20070911062429.GG27404@kroah.com>
+References: <200708301750.57189.jason.d.gaston@intel.com> <20070910024525.4e90b29d.akpm@linux-foundation.org> <20070910140913.GC6171@kroah.com> <20070910124841.4a6c66d0.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1189474183.3080.0.camel@sli10-conroe.sh.intel.com>
+In-Reply-To: <20070910124841.4a6c66d0.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 11, 2007 at 09:29:43AM +0800, Shaohua Li wrote:
-> On Sun, 2007-09-09 at 09:43 -0700, Greg KH wrote:
-> > On Thu, Sep 06, 2007 at 05:40:38AM -0700, David Miller wrote:
-> > > From: Matthew Wilcox <matthew@wil.cx>
-> > > Date: Thu, 6 Sep 2007 05:57:31 -0600
+On Mon, Sep 10, 2007 at 12:48:41PM -0700, Andrew Morton wrote:
+> On Mon, 10 Sep 2007 07:09:13 -0700 Greg KH <greg@kroah.com> wrote:
+> 
+> > On Mon, Sep 10, 2007 at 02:45:25AM -0700, Andrew Morton wrote:
+> > > On Thu, 30 Aug 2007 17:50:56 -0700 Jason Gaston <jason.d.gaston@intel.com> wrote:
 > > > 
-> > > > I'm not sure your analysis is correct.  Here's what my draft copy of
-> > > > the pcie 2.0 spec says:
+> > > > Resend without wordwrap.
 > > > > 
-> > > >   Enble No Snoop ? If this bit is Set, the Function is permitted to
-> > > >   Set the No Snoop bit in the Requester Attributes of transactions it
-> > > >   initiates that do not require hardware enforced cache coherency (see
-> > > >   Section 2.2.6.5). Note that setting this bit to 1b should not cause
-> > > >   a Function to Set the No Snoop attribute on all transactions that it
-> > > >   initiates. Even when this bit is Set, a Function is only permitted
-> > > >   to Set the No Snoop attribute on a transaction when it can guarantee
-> > > >   that the address of the transaction is not stored in any cache in
-> > > >   the system.  This bit permitted to be hardwired to 0b if a Function
-> > > >   would never Set the No Snoop attribute in transactions it initiates.
-> > > >   Default value of this bit is 1b.
+> > > > This updated patch adds the Intel Tolapai LPC and SMBus Controller DID's.
 > > > > 
-> > > > That implies that devices are only allowed to set it when it's safe to
-> > > > do so ... and we don't need to turn it off.
+> > > > Signed-off-by: ?Jason Gaston <jason.d.gaston@intel.com>
+> > > > 
+> > > > --- linux-2.6.23-rc4/arch/i386/pci/irq.c.orig	2007-08-27 18:32:35.000000000 -0700
+> > > > +++ linux-2.6.23-rc4/arch/i386/pci/irq.c	2007-08-28 16:58:31.000000000 -0700
+> > > > @@ -550,6 +550,7 @@
+> > > >  		case PCI_DEVICE_ID_INTEL_ICH9_3:
+> > > >  		case PCI_DEVICE_ID_INTEL_ICH9_4:
+> > > >  		case PCI_DEVICE_ID_INTEL_ICH9_5:
+> > > > +		case PCI_DEVICE_ID_INTEL_Tolapai_0:
+> > > >  			r->name = "PIIX/ICH";
+> > > >  			r->get = pirq_piix_get;
+> > > >  			r->set = pirq_piix_set;
+> > > > --- linux-2.6.23-rc4/include/linux/pci_ids.h.orig	2007-08-27 18:32:35.000000000 -0700
+> > > > +++ linux-2.6.23-rc4/include/linux/pci_ids.h	2007-08-28 16:58:31.000000000 -0700
+> > > > @@ -2293,6 +2293,8 @@
+> > > >  #define PCI_DEVICE_ID_INTEL_MCH_PC	0x3599
+> > > >  #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
+> > > >  #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
+> > > > +#define PCI_DEVICE_ID_INTEL_Tolapai_0	0x5031
+> > > > +#define PCI_DEVICE_ID_INTEL_Tolapai_1	0x5032
+> > > >  #define PCI_DEVICE_ID_INTEL_82371SB_0	0x7000
+> > > >  #define PCI_DEVICE_ID_INTEL_82371SB_1	0x7010
+> > > >  #define PCI_DEVICE_ID_INTEL_82371SB_2	0x7020
 > > > 
-> > > This is my understanding of this area of PCI-E as well, and I
-> > > also agree that therefore we should not turn this bit off.
+> > > I agree with Matthew that the lower-case shouldn't be in there, so I queued
+> > > a patch to fix that up.
+> > > 
+> > > Given that your I2C patch (and potentially others?) depend upon this one, I
+> > > shall plan on getting this patch into mainline this week to make everyone's
+> > > life simpler.
 > > 
-> > I agree.  But Shaohua, do you see any problems that this patch fixes?
-> No, I didn't see any breakage, just worry about it's a potential issue.
+> > I agree, that's why it's in my queue to go to Linus in a day or so :)
+> > 
+> 
+> I can't find it.  Did you queue the all-caps version or the above version?
 
-Hm, well, if you don't mind, I'd like to leave it as is for now, as no
-one is reporting any problems with this, and there seems to be some
-disagreement as to if it is really needed or not.
-
-Is that ok?
-
-thanks,
+The all-caps version.  But I realized that I hadn't pushed out my tree
+to kernel.org due to doing this work on the train without network
+support, so it should be there now.  Sorry about that.
 
 greg k-h
