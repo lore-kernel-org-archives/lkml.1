@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762234AbXIKQwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760584AbXIKQzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762234AbXIKQwA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 12:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbXIKQvy
+	id S1760584AbXIKQzq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 12:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbXIKQzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 12:51:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40218 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753656AbXIKQvx (ORCPT
+	Tue, 11 Sep 2007 12:55:37 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:59775 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633AbXIKQzg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 12:51:53 -0400
-Subject: Re: Do not deprecate binary semaphore or do allow mutex in
-	software interrupt contexts
-From: Peter Zijlstra <peterz@infradead.org>
-To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       arjan <arjan@infradead.org>
-In-Reply-To: <36061.50670.qm@web52002.mail.re2.yahoo.com>
-References: <36061.50670.qm@web52002.mail.re2.yahoo.com>
-Content-Type: text/plain
-Date: Tue, 11 Sep 2007 18:50:54 +0200
-Message-Id: <1189529454.21778.78.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Sep 2007 12:55:36 -0400
+Date: Tue, 11 Sep 2007 18:55:35 +0200
+From: Jan Kara <jack@suse.cz>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, mel@csn.ul.ie
+Subject: Re: 2.6.23-rc6: hanging ext3 dbench tests
+Message-ID: <20070911165535.GA23520@atrey.karlin.mff.cuni.cz>
+References: <20070911124202.GI9556@shadowen.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070911124202.GI9556@shadowen.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[re-adding CCs, please do not drop these]
-
-On Tue, 2007-09-11 at 09:20 -0700, Matti Linnanvuori wrote:
-> Arjan van de Ven:
-> > what do you do if the trylock fails?
+> I have a couple of failed test runs against 2.6.23-rc6 where the
+> job timed out while running dbench over ext3.  Both on powerpc,
+> though both significantly different hardware setups.  A failed
+> run like this implies that the machine was still responsive to
+> other processes but the dbench was making no progress.  There is
+> no console diagnostics during the failure.
 > 
-> Just do not read the status variable now but modify the timer to run later.
+> beavis was lost during a plain ext3 dbench run, having just
+> successfully run a complete ext2 run.  elm3b19 was lost during an
+> ext3 "data=writeback" dbench run, having already completed an plain
+> ext2, and ext3 runs.
+  OK, thanks for report.
+
+> A quick poke at the dbench logs on the second machine shows this
+> for the working ext3 dbench run:
 > 
-> > to be honest, the scenario describe really smells of broken locking, in
-> > fact it really sounds like it wants to use spinlocks instead 
+>   4 clients started
+>   4     35288  814.49 MB/sec
+>   0     62477  822.99 MB/sec
+>   Throughput 822.954 MB/sec 4 procs
 > 
-> No, I don't think it is broken.
-
-Yes it is.
-
-> Spinlocks can be used, but I don't see them being obviously better in all cases.
-> If access takes a long time, it is better to sleep during it.
-> And if you sleep, you might just end up creating a new mutex
-> implementation with a spinlock.
-
-If you have to wait a long time in an atomic context you've done
-something wrong. If you're only reading it from an atomic context you
-might consider storing a copy that can be quickly updated and protect
-that using a spinlock.
-
-do_update ()
-{
-  mutex_lock(&my_device_mutex);
-  my_device_frob_state(&my_state); /* <-- this takes a _long_ while */
-  spin_lock_irq(&my_shadow_state_lock);
-  my_shadow_state = state; /* <-- this is a quick memcopy */
-  spin_unlock_irq(&my_shadow_state_lock);
-  mutex_unlock(&my_device_mutex);
-}
-
-do_read()
-{
-  spin_lock_irq(&my_shadow_state);
-  do_something_with_shadow_state(&mt_shadow_state);
-  spin_unlock_irq(&my_shadow_state);
-
-  return foo;
-}
-
-> Alan Cox:
-> > For polling and timer based code its often simpler to do
-> >
-> >    del_timer_sync(&my_timer);
-> >    FrobStuff
-> >    add_timer(&my_timer);
-> >
-> > especially if "FrobStuff" is likely to change when you next need to poll.
+> Whereas the hanging run shows the following continuing until the
+> machine is reset, which confirms that the machine as a whole was
+> still with us:
 > 
-> In the scenario I presented, the timer modifies itself to run later.
-> Therefore, simply calling del_timer_sync is not enough but you have to
-> set an atomic variable to prevent the timer from adding itself again.
+>   4 clients started
+>   4     36479  824.92 MB/sec
+>   1     46857  519.98 MB/sec
+>   1     46857  346.65 MB/sec
+>   1     46857  259.99 MB/sec
+>   1     46857  207.99 MB/sec
+>   1     46857  173.32 MB/sec
+>   1     46857  148.56 MB/sec
+>   1     46857  129.99 MB/sec
+>   1     46857  115.55 MB/sec
+>   1     46857  103.99 MB/sec
+>   1     46857  94.54 MB/sec
+>   1     46857  86.66 MB/sec
+>   1     46857  80.00 MB/sec
+>   [...]
+  So the process doing IO is hung. Could you dump stack of all the tasks
+(Alt-Sysrq-t) and send the output? We've probably deadlocked
+somewhere...
 
-Not being too familiar with the timer stuff, it smells wrong what you
-say.
+> The first machine is very similar:
+> 
+>   4 clients started
+>   4     18468  445.29 MB/sec
+>   4     41945  469.36 MB/sec
+>   1     46857  346.68 MB/sec
+>   1     46857  260.00 MB/sec
+>   1     46857  208.00 MB/sec
+>   [...]
+> 
+> Not sure if there is any significance to the 46857.  Though it feels
+> like we may be at the end of the run when it fails.
+> 
+> I will try and reproduce this on one of the machines and see if I
+> can get any further info.
 
-As for the whole polling method, consider what Alan said, don't do it if
-you don't need to. You'll annoy people at no end. Try to push state
-changes where possible.
-
+								Honza
