@@ -1,67 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbXIMRKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761488AbXIMRKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbXIMRKL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 13:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760425AbXIMRJw
+	id S1761488AbXIMRKk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 13:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762278AbXIMRKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 13:09:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34576 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760138AbXIMRJv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 13:09:51 -0400
-Subject: Re: [announce] CFS-devel, performance improvements
-From: Peter Zijlstra <peterz@infradead.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>
-In-Reply-To: <1189703165.21778.258.camel@twins>
-References: <20070911200459.GA6974@elte.hu>
-	 <Pine.LNX.4.64.0709120242040.1817@scrub.home>
-	 <20070913075258.GA9173@elte.hu>
-	 <Pine.LNX.4.64.0709131419170.1817@scrub.home>
-	 <20070913142842.GA26016@elte.hu>
-	 <Pine.LNX.4.64.0709131706100.1817@scrub.home>
-	 <1189703165.21778.258.camel@twins>
+	Thu, 13 Sep 2007 13:10:10 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:35256 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755639AbXIMRKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 13:10:07 -0400
+Subject: PATCH 2/4] scsi: megaraid_sas -- add module param fast_load
+From: linux-box <bo.yang@lsi.com>
+To: linux-scsi@vger.kernel.org
+Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       bo.yang@lsi.com, sumant.patro@lsi.com
 Content-Type: text/plain
-Date: Thu, 13 Sep 2007 19:09:42 +0200
-Message-Id: <1189703382.21778.260.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+Date: Tue, 11 Sep 2007 08:28:14 -0400
+Message-Id: <1189513694.6082.9.camel@dhcp-75-534.se.lsil.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+X-OriginalArrivalTime: 13 Sep 2007 17:09:56.0373 (UTC) FILETIME=[E8887450:01C7F628]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-13 at 19:06 +0200, Peter Zijlstra wrote:
-> On Thu, 2007-09-13 at 18:50 +0200, Roman Zippel wrote:
-> 
-> > I never claimed to understand every detail of CFS, I can _guess_ what 
-> > _might_ have been intended, but from that it's impossible to know for 
-> > certain how important they are. Let's take this patch fragment:
-> > 
-> 
-> 	delta_fair = se->delta_fair_sleep;
-> 
-> we slept that much
-> 
-> > -       /*
-> > -        * Fix up delta_fair with the effect of us running
-> > -        * during the whole sleep period:
-> > -        */
-> > -       if (sched_feat(SLEEPER_AVG))
-> > -               delta_fair = div64_likely32((u64)delta_fair * load,
-> > -                                               load + se->load.weight);
-> 
-> if we would have ran we would not have been removed from the rq and the
-> weight would have been: rq_weight + weight
-> 
-> so compensate for us having been removed from the rq by scaling the
-> delta with: rq_weight/(rq_weight + weight)
-> 
-> > -       delta_fair = calc_weighted(delta_fair, se);
-> 
-> scale for nice levels
-> 
+Driver will skip physical devices scan for the first time if the fast_load is set
 
-Or at least, I think that is how to read it :-)
+Signed-off-by: Bo Yang <bo.yang@lsi.com>
+
+---
+ drivers/scsi/megaraid/megaraid_sas.c |   69 +++++++++++++++++++------
+ 1 files changed, 55 insertions(+), 14 deletions(-)
+
+diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-07-23 23:02:18.000000000 -0400
++++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-08-14 21:48:00.075930672 -0400
+@@ -46,6 +46,22 @@
+ #include <scsi/scsi_host.h>
+ #include "megaraid_sas.h"
+ 
++/*
++ * Module parameters
++ */
++
++/*
++ * Fast driver load option, skip scanning for physical devices during
++ * load.  This would result in physical devices being skipped during
++ * driver load time. These can be later added though,
++ * using /proc/scsi/scsi
++ */
++static unsigned int fast_load;
++module_param_named(fast_load, fast_load, int, 0);
++MODULE_PARM_DESC(fast_load,
++	"megasas: Faster loading of the driver, skips physical devices! \
++	 (default = 0)");
++
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(MEGASAS_VERSION);
+ MODULE_AUTHOR("megaraidlinux@lsi.com");
+@@ -1094,6 +1110,44 @@ megasas_service_aen(struct megasas_insta
+ 	megasas_return_cmd(instance, cmd);
+ }
+ 
++static struct megasas_instance *megasas_lookup_instance(u16 host_no)
++{
++	int i;
++
++	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
++		if ((megasas_mgmt_info.instance[i]) &&
++			(megasas_mgmt_info.instance[i]->host->host_no
++			== host_no))
++			return megasas_mgmt_info.instance[i];
++	}
++
++	return NULL;
++}
++
++static int megasas_slave_alloc(struct scsi_device *sdev)
++{
++	struct megasas_instance *instance;
++	int tmp_fastload = fast_load;
++
++	instance = megasas_lookup_instance(sdev->host->host_no);
++
++	if (tmp_fastload && sdev->channel < MEGASAS_MAX_PD_CHANNELS) {
++		if ((sdev->id == MEGASAS_MAX_DEV_PER_CHANNEL -1) &&
++			(sdev->channel == MEGASAS_MAX_PD_CHANNELS - 1)) {
++
++		/*
++		 * If fast load option was set and scan for last device is
++		 * over, reset the fast_load flag so that during a possible
++		 * next scan, devices can be made available
++		 */
++			fast_load = 0;
++		}
++		return -ENXIO;
++	}
++
++	return 0;
++}
++
+ /*
+  * Scsi host template for megaraid_sas driver
+  */
+@@ -1103,6 +1157,7 @@ static struct scsi_host_template megasas
+ 	.name = "LSI Logic SAS based MegaRAID driver",
+ 	.proc_name = "megaraid_sas",
+ 	.slave_configure = megasas_slave_configure,
++	.slave_alloc = megasas_slave_alloc,
+ 	.queuecommand = megasas_queue_command,
+ 	.eh_device_reset_handler = megasas_reset_device,
+ 	.eh_bus_reset_handler = megasas_reset_bus_host,
+@@ -2970,20 +3025,6 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 	return error;
+ }
+ 
+-static struct megasas_instance *megasas_lookup_instance(u16 host_no)
+-{
+-	int i;
+-
+-	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
+-
+-		if ((megasas_mgmt_info.instance[i]) &&
+-		    (megasas_mgmt_info.instance[i]->host->host_no == host_no))
+-			return megasas_mgmt_info.instance[i];
+-	}
+-
+-	return NULL;
+-}
+-
+ static int megasas_mgmt_ioctl_fw(struct file *file, unsigned long arg)
+ {
+ 	struct megasas_iocpacket __user *user_ioc =
+
 
