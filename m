@@ -1,120 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966419AbXIKGm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933429AbXIKGmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966419AbXIKGm2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 02:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933345AbXIKGju
+	id S933429AbXIKGmt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 02:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933395AbXIKGj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 02:39:50 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:41378 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933104AbXIKGjs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 02:39:48 -0400
-X-Trace: 605051038-mk-filter-4.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
-X-SBRS: None
-X-RemoteIP: 81.1.76.66
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAJbV5UZRAUxC/2dsb2JhbACBXQ
-Subject: Re: [PATCH 1/2] Maple Bus support for SEGA Dreamcast
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Adrian McMenamin <lkmladrian@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20070911042716.GA18367@linux-sh.org>
-References: <8b67d60709101616p7430a572w3ed0921a846805@mail.gmail.com>
-	 <20070911042716.GA18367@linux-sh.org>
-Content-Type: text/plain
-Date: Tue, 11 Sep 2007 07:39:26 +0100
-Message-Id: <1189492766.6129.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Sep 2007 02:39:59 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:44385 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933375AbXIKGj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 02:39:57 -0400
+Date: Tue, 11 Sep 2007 15:39:47 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH -mm] hrtimer: Build fix for !KTIME_SCALAR on 32bit.
+Message-ID: <20070911063947.GA18918@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-11 at 13:27 +0900, Paul Mundt wrote:
-> (Adding GregKH to the CC, he needs to Ack this before I can merge it).
-> 
+On BITS_PER_LONG < 64 and !CONFIG_KTIME_SCALAR we get this:
 
-> > diff --git a/drivers/sh/maple/maplebus.c b/drivers/sh/maple/maplebus.c
-> > new file mode 100644
-> > index 0000000..4662463
-> > --- /dev/null
-> > +++ b/drivers/sh/maple/maplebus.c
-> > @@ -0,0 +1,747 @@
-> > +/* maplebus.c
-> > + * Core maple bus functionality
-> > + * Original 2.4 code used here copyright
-> > + * YAEGASHI Takeshi, Paul Mundt, M. R. Brown and others
-> > + * Porting to 2.6 Copyright Adrian McMenamin, 2007
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License as published by
-> > + * the Free Software Foundation; either version 2 of the License, or
-> > + * (at your option) any later version.
-> > + *
-> I don't believe the 'or any later version' thing was intended by any of
-> the original authors, this should probably be dropped. The original file
-> lacked explicit terms, so the default behaviour there is to fall back to
-> what the top-level COPYING says, which has the 'or any later version'
-> garbage removed.
+  CC      kernel/hrtimer.o
+kernel/hrtimer.c:303: error: redefinition of '__kstrtab_ktime_add_ns'
+kernel/hrtimer.c:279: error: previous definition of '__kstrtab_ktime_add_ns' was here
+kernel/hrtimer.c:303: error: redefinition of '__ksymtab_ktime_add_ns'
+kernel/hrtimer.c:279: error: previous definition of '__ksymtab_ktime_add_ns' was here
+kernel/hrtimer.c:313: error: redefinition of 'ktime_sub_ns'
+kernel/hrtimer.c:289: error: previous definition of 'ktime_sub_ns' was here
+make[1]: *** [kernel/hrtimer.o] Error 1
+make: *** [kernel] Error 2
 
-On 30th of August you wrote this in an email to the linuxsh list:
+For some reason the ktime_sub_ns() addition was duplicated, and someone
+forgot to change the name of the ktime_add_ns() symbol export they lifted.
 
-"Both Marcus and I intended all of our code to be v2 only, so that
-should probably be statically defined here. However, I believe
-Yaegashi-san wrote a lot of this initial version, and I'm sure there
-were others that hacked on it as well. So we may simply have to leave it
-as GPLv2 with the unfortunate + any later version garbage."
+Get it building again.
 
-I think you were right the first time.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
+--
 
+ kernel/hrtimer.c |   24 ------------------------
+ 1 file changed, 24 deletions(-)
 
-> 
-> > +static DEFINE_MUTEX(maple_list_lock);
-> > +
-> > +DEFINE_MUTEX(maple_dma_lock);
-> > +EXPORT_SYMBOL_GPL(maple_dma_lock);
-> > +
-> It would be better to have accessors for this rather than exporting the
-> mutex globally.
-
-
-Actually the mutex is accessed in the aica code so it, or any wrappers
-need to be exported
-> 
-
-
-> 
-> > +/* use init call to ensure bus is registered ahead of devices */
-> > +fs_initcall(maple_bus_init);
-> 
-> Please use subsys_initcall() or something like that, this isn't a file
-> system. The comment is also pointless, it's obvious what the initcall is
-> for if you use the proper one.
-> 
-
-Except performance of the driver is very poor when I use subsys_initcall
-- detecting devices on a phase-of-the-noon related basis. Not an issue
-when I use the later call.
-
-
-> > index 0000000..8a37c7e
-> > --- /dev/null
-> > +++ b/include/linux/maple.h
-> > @@ -0,0 +1,126 @@
-> > +/**
-> > + * maple.h
-
-
-> 
-> > +void maple_setup_port_rescan(struct maple_device *mdev);
-> > +
-> > +void maplebus_init_hardware(void);
-> > +
-> Why would these ever be accessible to drivers?
-> 
-You are right about the rescan - a relic of an earlier iteration but the
-maplebus_init_hardware is used to control the DMA in the aica code
+--- linux-2.6.23-rc4-mm1.orig/kernel/hrtimer.c	2007-09-11 15:15:56.000000000 +0900
++++ linux-2.6.23-rc4-mm1/kernel/hrtimer.c	2007-09-11 15:30:20.000000000 +0900
+@@ -300,30 +300,6 @@
+ 	return ktime_sub(kt, tmp);
+ }
+ 
+-EXPORT_SYMBOL_GPL(ktime_add_ns);
+-
+-/**
+- * ktime_sub_ns - Subtract a scalar nanoseconds value from a ktime_t variable
+- * @kt:		minuend
+- * @nsec:	the scalar nsec value to subtract
+- *
+- * Returns the subtraction of @nsec from @kt in ktime_t format
+- */
+-ktime_t ktime_sub_ns(const ktime_t kt, u64 nsec)
+-{
+-	ktime_t tmp;
+-
+-	if (likely(nsec < NSEC_PER_SEC)) {
+-		tmp.tv64 = nsec;
+-	} else {
+-		unsigned long rem = do_div(nsec, NSEC_PER_SEC);
+-
+-		tmp = ktime_set((long)nsec, rem);
+-	}
+-
+-	return ktime_sub(kt, tmp);
+-}
+-
+ EXPORT_SYMBOL_GPL(ktime_sub_ns);
+ # endif /* !CONFIG_KTIME_SCALAR */
+ 
