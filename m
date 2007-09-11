@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763329AbXIKSVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763609AbXIKSWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763329AbXIKSVU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 14:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758302AbXIKSVM
+	id S1763609AbXIKSWo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 14:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759239AbXIKSWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 14:21:12 -0400
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:59339 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757817AbXIKSVL (ORCPT
+	Tue, 11 Sep 2007 14:22:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55116 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758302AbXIKSWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 14:21:11 -0400
-Date: Tue, 11 Sep 2007 20:22:28 +0200
-From: aherrman@arcor.de
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] radeonfb: fix setting of PPLL_REF_DIV for RV370 5B60
-Message-ID: <20070911182228.GA5404@devil>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: mutt-ng/devel-r804 (Linux)
+	Tue, 11 Sep 2007 14:22:37 -0400
+Date: Tue, 11 Sep 2007 20:22:14 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: Matti Linnanvuori <mattilinnanvuori@yahoo.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Do not deprecate binary semaphore or do allow mutex in software
+ interrupt contexts
+Message-ID: <20070911202214.5c3c28d2@laptopd505.fenrus.org>
+In-Reply-To: <432622.65445.qm@web52004.mail.re2.yahoo.com>
+References: <432622.65445.qm@web52004.mail.re2.yahoo.com>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IMHO this is 2.6.23 material. Please apply.
-Thanks a lot.
+On Tue, 11 Sep 2007 10:29:19 -0700 (PDT)
+Matti Linnanvuori <mattilinnanvuori@yahoo.com> wrote:
 
+> > Not being too familiar with the timer stuff, it smells wrong what
+> > you say.
+> 
+> Why?
 
-Regards,
+timers and sleeping locks really shouldn't be mixed.
+It ends up in general as more complex, fragile and weird...
 
-Andreas
-
---
-radeonfb: fix setting of PPLL_REF_DIV for RV370 5B60.
-
-As observed with various Radeon X300 cards console goes blank
-without that fix.
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Andreas Herrmann <aherrman@arcor.de>
----
- drivers/video/aty/radeon_base.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index 47ca62f..5a8af4d 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -1285,7 +1285,8 @@ static void radeon_write_pll_regs(struct radeonfb_info *rinfo, struct radeon_reg
- 	if (rinfo->family == CHIP_FAMILY_R300 ||
- 	    rinfo->family == CHIP_FAMILY_RS300 ||
- 	    rinfo->family == CHIP_FAMILY_R350 ||
--	    rinfo->family == CHIP_FAMILY_RV350) {
-+	    rinfo->family == CHIP_FAMILY_RV350 ||
-+	    rinfo->family == CHIP_FAMILY_RV380 ) {
- 		if (mode->ppll_ref_div & R300_PPLL_REF_DIV_ACC_MASK) {
- 			/* When restoring console mode, use saved PPLL_REF_DIV
- 			 * setting.
--- 
-1.5.1.6
-
-
+But feel free to prove us otherwise with real code...
