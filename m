@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759795AbXIKFOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762034AbXIKFPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759795AbXIKFOx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 01:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761315AbXIKFOm
+	id S1762034AbXIKFPn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 01:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbXIKFPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 01:14:42 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:32841 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756650AbXIKFOl (ORCPT
+	Tue, 11 Sep 2007 01:15:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50663 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757585AbXIKFPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 01:14:41 -0400
-Date: Tue, 11 Sep 2007 10:44:53 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, linux-arch@vger.kernel.org,
-       discuss@x86-64.org, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Bernhard Walle <bwalle@suse.de>
-Subject: Re: [discuss] [patch 3/5] Use extended crashkernel command line on x86_64
-Message-ID: <20070911051453.GB5053@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070909083914.065380136@strauss.suse.de> <20070909083914.951336895@strauss.suse.de> <86802c440709091027o32a63d11w629bad87abcc19c2@mail.gmail.com> <20070909185257.GA10600@suse.de>
+	Tue, 11 Sep 2007 01:15:34 -0400
+Date: Mon, 10 Sep 2007 22:15:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zhenyu Wang <zhenyu.z.wang@intel.com>
+Cc: Dave Airlie <airlied@linux.ie>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [AGPGART] intel_agp: fix GTT map size on G33
+Message-Id: <20070910221502.dba1d5ce.akpm@linux-foundation.org>
+In-Reply-To: <20070905071307.GB5817@zhen-devel.sh.intel.com>
+References: <20070905071307.GB5817@zhen-devel.sh.intel.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070909185257.GA10600@suse.de>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 09, 2007 at 08:52:58PM +0200, Bernhard Walle wrote:
-> * Yinghai Lu <yhlu.kernel@gmail.com> [2007-09-09 19:27]:
-> > >
-> > > +#ifdef CONFIG_KEXEC
-> > ...
-> > 
-> > CONFIG_KEXEC or CONFIG_CRASH_DUMP?
-> 
-> Good question. The crashkernel parameter was CONFIG_KEXEC before, and
-> I also wondered why, but I didn't change this because maybe there's
-> some reason I don't know.
-> 
-> Vivek, do you know why this was CONFIG_KEXEC?
-> 
-> 
+On Wed, 5 Sep 2007 15:13:07 +0800 Zhenyu Wang <zhenyu.z.wang@intel.com> wrote:
 
-Bernhard,
+> 
+> Subject: [PATCH] [AGPGART] intel_agp: fix GTT map size on G33
+> 
+> G33 has 1MB GTT table range. Fix GTT mapping
+> in case like 512MB aperture size.
+> 
+> Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
+> ---
+>  drivers/char/agp/intel-agp.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+> index 20d50d0..6a5c555 100644
+> --- a/drivers/char/agp/intel-agp.c
+> +++ b/drivers/char/agp/intel-agp.c
+> @@ -919,6 +919,7 @@ static int intel_i915_create_gatt_table(struct agp_bridge_data *bridge)
+>  	struct aper_size_info_fixed *size;
+>  	int num_entries;
+>  	u32 temp, temp2;
+> +	int gtt_map_size = 256 * 1024;
+>  
+>  	size = agp_bridge->current_size;
+>  	page_order = size->page_order;
+> @@ -928,7 +929,9 @@ static int intel_i915_create_gatt_table(struct agp_bridge_data *bridge)
+>  	pci_read_config_dword(intel_private.pcidev, I915_MMADDR, &temp);
+>  	pci_read_config_dword(intel_private.pcidev, I915_PTEADDR,&temp2);
+>  
+> -	intel_private.gtt = ioremap(temp2, 256 * 1024);
+> +	if (IS_G33)
+> +	    gtt_map_size = 1024 * 1024; /* 1M on G33 */
+> +	intel_private.gtt = ioremap(temp2, gtt_map_size);
+>  	if (!intel_private.gtt)
+>  		return -ENOMEM;
+>  
 
-As Eric mentioned, CONFIG_CRASH_DUMP has been used for all dump capturing
-infrastructure and rest of the kexec and kexec on panic functionality
-has been put under CONFIG_KEXEC. 
-
-Keeping memory reservation under CONFIG_KEXEC helps in a sense when
-somebody is not using a relocatable kernel and uses a custom kernel for dump
-capture. In that case he does not have to enable CONFIG_CRASH_DUMP in the
-first kernel.
-
-Thanks
-Vivek
+Ditto.  What happens if this patch isn't in 2.6.23?  And is it applicable to
+and needed in 2.6.22?
