@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762123AbXIKDYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965973AbXIKDyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762123AbXIKDYX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 23:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbXIKDYQ
+	id S965973AbXIKDyj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 23:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965797AbXIKDyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 23:24:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53216 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751230AbXIKDYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 23:24:15 -0400
-Date: Mon, 10 Sep 2007 20:26:47 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: greg@kroah.com
-Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       zaitcev@redhat.com
-Subject: Oops in make_class_name in 2.6.22.1 on Fedora
-Message-Id: <20070910202647.24094d57.zaitcev@redhat.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.11.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 10 Sep 2007 23:54:31 -0400
+Received: from home.nigel.suspend2.net ([203.171.70.205]:54910 "EHLO
+	home.nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965750AbXIKDya (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 23:54:30 -0400
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@suspend2.net
+To: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rafael Wysocki <rjw@sisk.pl>
+Subject: [PATCH] Fix failure to resume from initrds.
+Date: Tue, 11 Sep 2007 13:54:24 +1000
+User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709111354.25689.nigel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Greg (and others):
+Hi all.
 
-I do not seem to be able to find an answer, sorry.
-Do you happen to remember if this was fixed after 2.6.22.1:
+Commit 831441862956fffa17b9801db37e6ea1650b0f69 (Freezer: make kernel threads
+nonfreezable by default) breaks freezing when attempting to resume from an
+initrd, because the init (which is freezeable) spins while waiting for another
+thread to run /linuxrc, but doesn't check whether it has been told to enter
+the refrigerator. The original patch replaced a call to try_to_freeze() with a
+call to yield(). I believe a simple reversion is wrong because
+if !CONFIG_PM_SLEEP, try_to_freeze() is a noop. It should still yield.
 
-localhost kernel: EIP is at make_class_name+0x27/0x7a
-localhost kernel:  [<c05586f1>] class_device_del+0x97/0x119
-localhost kernel:  [<c055877b>] class_device_unregister+0x8/0x10
-localhost kernel:  [<e08735f4>] __scsi_remove_device+0x1d/0x60 [scsi_mod]
-localhost kernel:  [<e08711ae>] scsi_forget_host+0x2d/0x4a [scsi_mod]
-localhost kernel:  [<e086c49c>] scsi_remove_host+0x65/0xd5 [scsi_mod]
-localhost kernel:  [<e0e76775>] storage_disconnect+0xe/0x16 [usb_storage]
-localhost kernel:  [<c056f8b8>] usb_unbind_interface+0x44/0x85
-localhost kernel:  [<c0557df7>] __device_release_driver+0x6e/0x8b
+Signed-off-by: Nigel Cunningham <nigel@nigel.suspend2.net>
 
-Obviously a known bug but all I see is users reporting it. In my case
-it's this:
- https://bugzilla.redhat.com/show_bug.cgi?id=253424
-I saw Alan giving it a try here:
- http://lkml.org/lkml/2007/7/12/259
+ do_mounts_initrd.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+diff -ruNp 952-fix-initrd-resume.patch-old/init/do_mounts_initrd.c 952-fix-initrd-resume.patch-new/init/do_mounts_initrd.c
+--- 952-fix-initrd-resume.patch-old/init/do_mounts_initrd.c	2007-09-11 13:43:31.000000000 +1000
++++ 952-fix-initrd-resume.patch-new/init/do_mounts_initrd.c	2007-09-11 13:19:50.000000000 +1000
+@@ -58,8 +58,10 @@ static void __init handle_initrd(void)
+ 
+ 	pid = kernel_thread(do_linuxrc, "/linuxrc", SIGCHLD);
+ 	if (pid > 0)
+-		while (pid != sys_wait4(-1, NULL, 0, NULL))
++		while (pid != sys_wait4(-1, NULL, 0, NULL)) {
+ 			yield();
++			try_to_freeze();
++		}
+ 
+ 	if (!resume_attempted)
+ 		printk(KERN_ERR "Suspend2: No attempt was made to resume from "
 
-Yours,
--- Pete
+-- 
+See http://www.tuxonice.net for Howtos, FAQs, mailing
+lists, wiki and bugzilla info.
