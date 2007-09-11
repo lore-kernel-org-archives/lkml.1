@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933213AbXIKMTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763804AbXIKMUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933213AbXIKMTS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 08:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbXIKMTC
+	id S1763804AbXIKMUM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 08:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbXIKMT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 08:19:02 -0400
-Received: from khc.piap.pl ([195.187.100.11]:56115 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752954AbXIKMTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 08:19:00 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: sylvain.meyer@worldonline.fr, <linux-kernel@vger.kernel.org>,
-       "Antonino A. Daplas" <adaplas@pol.net>,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH] Intel FB pixel clock calculation fix
-References: <m3ir6il3wl.fsf@maximus.localdomain>
-	<20070910225221.f0eaf22c.akpm@linux-foundation.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 11 Sep 2007 14:18:57 +0200
-In-Reply-To: <20070910225221.f0eaf22c.akpm@linux-foundation.org> (Andrew Morton's message of "Mon, 10 Sep 2007 22:52:21 -0700")
-Message-ID: <m3veah75u6.fsf@maximus.localdomain>
+	Tue, 11 Sep 2007 08:19:59 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:54965 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753722AbXIKMT7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 08:19:59 -0400
+Message-ID: <46E687ED.9000802@grupopie.com>
+Date: Tue, 11 Sep 2007 13:19:57 +0100
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Paul Mundt <lethal@linux-sh.org>, Paulo Marques <pmarques@grupopie.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] video: uvesafb: Add X86 dependency.
+References: <20070911081752.GA19495@linux-sh.org> <46E67EFD.2040902@grupopie.com> <20070911115346.GA23493@linux-sh.org>
+In-Reply-To: <20070911115346.GA23493@linux-sh.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Paul Mundt wrote:
+> On Tue, Sep 11, 2007 at 12:41:49PM +0100, Paulo Marques wrote:
+>>[...]
+>> Why do you say that it's x86 specific? Am I missing something?
+>>
+> The emulator it uses only runs on x86 and x86_64. Thus, it's x86
+> specific. The v86d and uvesafb pages seem to be in disagremeent, unless
+> by 'non-x86' it's only implying x86_64.
+> 
+> Additionally, it needs the vga I/O routines, as per vgacon. Most
+> platforms don't define these.
 
->> Intel framebuffer mis-calculated pixel clocks.
+I just saw the v86d emulator code, and you're right. It mmaps /dev/mem 
+and assumes the video BIOS is mapped there.
 
-> and... what are the consequences of this miscalculation?  I need to know
-> such things so that I can decide whether a change is needed in 2.6.23.  And
-> 2.6.22.
+We should try to change that to mmap something like 
+"/sys/bus/pci/devices/0000:01:00.0/rom" instead so that it can work on 
+any system with a video card plugged on a PCI bus.
 
-The pixel clock (and thus both H and V sync) will be slower than
-requested, so if you set the minimum allowed the display may not
-sync. In case of really old CRT display it could theoretically
-damage it.
+It should also be possible for the emulator to translate in/out 
+instructions to appropriate memory mapped I/O equivalents, no?
 
-I'm using it with PAL TV (using RGB input - SCART connector) and
-the bug prevented it from working at all (TV requirements are more
-strict and made the bug visible).
+Anyway, I think it is up to Michal to decide if we should remove the 
+kernel support for other archs, or let it stay a bit more while working 
+on solving the v86d side of things. So I'll just step aside now....
 
-I think 2.6.22 would be overkill, .23 - not sure.
 -- 
-Krzysztof Halasa
+Paulo Marques - www.grupopie.com
+
+"667: The neighbor of the beast."
