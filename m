@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbXIKOUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753021AbXIKOVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752675AbXIKOUn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 10:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbXIKOUf
+	id S1753021AbXIKOVx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 10:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbXIKOVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 10:20:35 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:45215 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750720AbXIKOUe (ORCPT
+	Tue, 11 Sep 2007 10:21:44 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:39852 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751179AbXIKOVn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 10:20:34 -0400
-Date: Tue, 11 Sep 2007 09:20:14 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Tue, 11 Sep 2007 10:21:43 -0400
+Message-ID: <46E6A419.9070101@oracle.com>
+Date: Tue, 11 Sep 2007 07:20:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
 To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
-Cc: "Nelson, Shannon" <shannon.nelson@intel.com>, paulus@samba.org,
-       linuxppc-dev@ozlabs.org, dan.j.williams@intel.com,
-       linux-kernel@vger.kernel.org
+CC: paulus@samba.org, shannon.nelson@intel.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
+       Zhu Ebony-r57400 <ebony.zhu@freescale.com>, dan.j.williams@intel.com
 Subject: Re: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx processors.
-Message-ID: <20070911142014.GG1932@ld0162-tx32.am.freescale.net>
-References: <11891624582950-git-send-email-wei.zhang@freescale.com> <BAE9DCEF64577A439B3A37F36F9B691C02FF08A1@orsmsx418.amr.corp.intel.com> <46B96294322F7D458F9648B60E15112C85D61E@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B96294322F7D458F9648B60E15112C85D61E@zch01exm26.fsl.freescale.net>
-User-Agent: Mutt/1.4.1i
+References: <11891624582950-git-send-email-wei.zhang@freescale.com> <20070907085845.54dc88f8.randy.dunlap@oracle.com> <46B96294322F7D458F9648B60E15112C85D61C@zch01exm26.fsl.freescale.net>
+In-Reply-To: <46B96294322F7D458F9648B60E15112C85D61C@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 11, 2007 at 06:10:53PM +0800, Zhang Wei-r63237 wrote:
-> > >+
-> > >+	fsl_dma_memcpy_issue_pending(chan);
-> > >+	while (fsl_dma_is_complete(chan, cookie, NULL, NULL)
-> > >+			!= DMA_SUCCESS);
-> > 
-> > Again, is it possible to hang your thread here?
-> > 
-> > [...]
+Zhang Wei-r63237 wrote:
+
+>>> +/**
+>>> + * fsl_chan_xfer_ld_queue -- Transfer the link descriptors 
+>> in channel
+>>> + *                           ld_queue.
+>> The function's "short description" (unfortunately) must be on only one
+>> line.  E.g.:
+>>
+>>  * fsl_chan_xfer_ld_queue - Transfer link descriptors in 
+>> channel ld_queue.
+>>
 > 
-> I'll add msleep here.
+> How about it's length greater than 80?
 
-I think what was being sought was a timout, causing the test to return
-failure.
+If it's close to 80+, you can just leave it like that.
+If it's much longer, you can use this format:
 
--Scott
+/**
+ * function_name - short description
+ * @parameters: prm description
+ *
+ * Longer
+ *      function
+ *             description.
+ */
+
+
+
+Thanks,
+~Randy
