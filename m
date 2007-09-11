@@ -1,83 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760885AbXIJRGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbXIJRK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760885AbXIJRGl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 13:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757165AbXIJRGe
+	id S1760908AbXIJRK6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 13:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759508AbXIJRKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 13:06:34 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:40431 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757152AbXIJRGd (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 13:06:33 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Sami Farin <safari-kernel@safari.iki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: Broken mail setup
-In-Reply-To: Your message of "Mon, 10 Sep 2007 14:39:34 BST."
-             <20070910143934.1a695d54@the-village.bc.nu>
-From: Valdis.Kletnieks@vt.edu
-References: <20070910135912.29ad26e8@the-village.bc.nu> <20070910132042.33g4fhsgra4bzysh@m.safari.iki.fi>
-            <20070910143934.1a695d54@the-village.bc.nu>
+	Mon, 10 Sep 2007 13:10:50 -0400
+Received: from mga02.intel.com ([134.134.136.20]:23618 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758072AbXIJRKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 13:10:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,232,1186383600"; 
+   d="scan'208";a="291929528"
+Date: Tue, 11 Sep 2007 10:22:57 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>, akpm@osdl.org,
+       Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       kristen.c.accardi@intel.com
+Subject: Re: [RFC][Intel-IOMMU] Fix for IOMMU early crash
+Message-ID: <20070911172257.GB24627@askeshav-devel.jf.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <20070908200523.GA16204@askeshav-devel.jf.intel.com> <20070909111619.GF31099@rhun.haifa.ibm.com> <20070910154358.GA24627@askeshav-devel.jf.intel.com> <20070909175140.GG4357@rhun.haifa.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1189443970_3022P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 10 Sep 2007 13:06:10 -0400
-Message-ID: <7375.1189443970@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070909175140.GG4357@rhun.haifa.ibm.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1189443970_3022P
-Content-Type: text/plain; charset=us-ascii
-
-On Mon, 10 Sep 2007 14:39:34 BST, Alan Cox said:
-> On Mon, 10 Sep 2007 16:20:42 +0300
-> Sami Farin <safari-kernel@safari.iki.fi> wrote:
-> 
-> > On Mon, Sep 10, 2007 at 13:59:12 +0100, Alan Cox wrote:
-> > > Will RMK (rmk@arm.linux.org.uk) please fix his email setup otherwise I
-> > > can't send serial/tty/arm stuff to him.
+On Sun, Sep 09, 2007 at 08:51:40PM +0300, Muli Ben-Yehuda wrote:
+> On Mon, Sep 10, 2007 at 08:43:59AM -0700, Keshavamurthy, Anil S wrote:
+> > On Sun, Sep 09, 2007 at 02:16:19PM +0300, Muli Ben-Yehuda wrote:
+> > > On Sat, Sep 08, 2007 at 01:05:24PM -0700, Keshavamurthy, Anil S wrote:
 > > > 
-> > > "<<< 550 You have no reverse DNS; please try again when you have resolved
-> > 
-> > Well, outpipe-village-512-1.bc.nu is NXDOMAIN.
-> > It should have A record 81.2.110.250.
+> > > > Subject: [RFC][Intel-IOMMU] Fix for IOMMU early crash
+> > > 
+> > > This patch feels like a huge hack. See below.
+> >
+> > You seem to be jumping to conclusion without going in detail. The
+> > pci_dev struct contains pointer to sysdata, which in turn points to
+> > the copy of its parent's bus sysdata.  So technically speaking we
+> > can eliminate sysdata pointer from pci_dev struct which is what one
+> > portion of this patch does.
 > 
-> I've yet to see a specification which requires this.
+> ... provided nothing relies on this relationship or the existence of
+> the pci_dev's sysdata. Have you audited every architecture's use of
+> the sysdata pointers?
+> 
+> > > > This patch removes sysdata from pci_dev struct and creates a new
+> > > > field called sys_data which is exclusively used by IOMMU driver to
+> > > > keep its per device context pointer.
+> > > 
+> > > Hmpf, why is this needed? with the pci_sysdata work that recently went
+> > > into mainline we have a void *iommu member in pci_sysdata which should
+> > > be all that's needed. Please elaborate if it's not enough for your
+> > > needs.
+> 
+> > I looked at your patch and it was not suitable because I need to
+> > store iommu private pointer in pci_dev
+> 
+> Could you elaborate on why you need this? I'm assuming it's for the
+> per-device IOMMU page tables?
+Yes, it is for per-device IOMMU domain information which internally holds
+info about the page tables.
+> 
+> > and not in the pci_bus. So I have added a new member sys_data in the
+> > pci_dev struct. I can change the name from sys_dev to iomu_priv to
+> > clear the confusion. Do let me know.
+> 
+> Well, you should be able to just use the pci_dev's ->sysdata (that's
+> what it's there for after all!) but you might need to make it point to
+> a structure if it's shared, the same way we did with the bus's
+> ->sysdata. 
+How about adding a new field as I don't care about KABI for mainline?
 
-RFC1912 is admittedly "Informational" status. However, it *does* say:
+>I agree that just having it point to the bus's ->sysdata is
+> not very useful *but* there may be code in the kernel that relies on
+> it (Calgary did until very recently...) so it would have to be audited
+> first.
+I still wonder copying bus's->sysdata to pci_dev's-> sysdata is any useful?
 
-2.1 Inconsistent, Missing, or Bad Data
-
-   Every Internet-reachable host should have a name.  The consequences
-   of this are becoming more and more obvious.  Many services available
-   on the Internet will not talk to you if you aren't correctly
-   registered in the DNS.
-
-   Make sure your PTR and A records match.  For every IP address, there
-   should be a matching PTR record in the in-addr.arpa domain.  If a
-   host is multi-homed, (more than one IP address) make sure that all IP
-   addresses have a corresponding PTR record (not just the first one).
-   Failure to have matching PTR and A records can cause loss of Internet
-   services similar to not being registered in the DNS at all.  Also,
-   PTR records must point back to a valid A record, not a alias defined
-   by a CNAME.  It is highly recommended that you use some software
-   which automates this checking, or generate your DNS data from a
-   database which automatically creates consistent data.
-
-That advice came out in Feb 1996.  You're being bit by the 3rd sentence.
-
---==_Exmh_1189443970_3022P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFG5XmCcC3lWbTT17ARAk/lAKCao1c4fPX6b79nJd/qRz61Cgq2/QCeMFww
-zQFOYJKqTKYHTCmql31NuD8=
-=LOSK
------END PGP SIGNATURE-----
-
---==_Exmh_1189443970_3022P--
+-Anil
