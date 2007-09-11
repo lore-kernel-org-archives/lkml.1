@@ -1,226 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933662AbXIKTsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933823AbXIKTwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933662AbXIKTsp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 15:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758291AbXIKTsd
+	id S933823AbXIKTwS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 15:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932298AbXIKTwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 15:48:33 -0400
-Received: from mga03.intel.com ([143.182.124.21]:12750 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760773AbXIKTsc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 15:48:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,240,1186383600"; 
-   d="scan'208";a="276816285"
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [PATCH v2] Move the definition of pr_err() into kernel.h
-Date: Tue, 11 Sep 2007 12:48:11 -0700
-Message-ID: <D5C1322C3E673F459512FB59E0DDC32903925779@orsmsx414.amr.corp.intel.com>
-In-Reply-To: <11895344211267-git-send-email-Emilian.Medve@Freescale.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH v2] Move the definition of pr_err() into kernel.h
-Thread-Index: Acf0o+IJcZoyIfxdRoOPM9Z+IKvA6AACHs8g
-References: <11895344211267-git-send-email-Emilian.Medve@Freescale.com>
-From: "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>
-To: "Emil Medve" <Emilian.Medve@Freescale.com>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>, <i2c@lm-sensors.org>,
-       <linux-omap-open-source@linux.omap.com>
-X-OriginalArrivalTime: 11 Sep 2007 19:48:11.0718 (UTC) FILETIME=[AF5F9E60:01C7F4AC]
+	Tue, 11 Sep 2007 15:52:06 -0400
+Received: from www.osadl.org ([213.239.205.134]:53001 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932376AbXIKTwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 15:52:04 -0400
+Subject: Re: clockevents: fix resume logic
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Len Brown <lenb@kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+In-Reply-To: <20070911114417.3f6e9e1b.akpm@linux-foundation.org>
+References: <200707220159.l6M1xBgH001236@hera.kernel.org>
+	 <200709111323.56030.rjw@sisk.pl>
+	 <20070911042228.1ef690e0.akpm@linux-foundation.org>
+	 <200709111409.13796.rjw@sisk.pl>
+	 <20070911112531.80bac380.akpm@linux-foundation.org>
+	 <1189535883.5235.13.camel@chaos>
+	 <20070911114417.3f6e9e1b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 11 Sep 2007 21:52:01 +0200
+Message-Id: <1189540321.5235.21.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Other pr_*() macros are already defined in kernel.h, but 
-> pr_err() was defined multiple times in several other places
+On Tue, 2007-09-11 at 11:44 -0700, Andrew Morton wrote:
+> > > there doesn't seem to be a lot of difference in the time handling, except
+> > > there are large changes in when things happen in the bootup sequence.
+> > 
+> > The question is whether the system goes into C2 with the patch applied.
+> > 
+> > Can you please provide the output of /proc/acpi/processor/CPU0/power for
+> > both the bad and the good one ?
+> > 
 > 
-> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-> ---
+> good:
 > 
-> I'm writing a driver and I've been using the pr_*() macros 
-> from kernel.h and I was surprised not to find there pr_err() 
-> but defined multiple times (in four different files). I 
-> didn't want to define it yet one more time so I did this cleanup
+> sony:/home/akpm> cat /proc/acpi/processor/CPU0/power
+> active state:            C0
+> max_cstate:              C8
+> bus master activity:     00000000
+> maximum allowed latency: 8000 usec
+> states:
+>     C1:                  type[C1] promotion[--] demotion[--] latency[001] usage[00000000] duration[00000000000000000000]
+>     C2:                  type[C2] promotion[--] demotion[--] latency[001] usage[00000000] duration[00000000000000000000]
 > 
-> This patch is against Linus' tree v2.6.23-rc6 
-> (0d4cbb5e7f60b2f1a4d8b7f6ea4cc264262c7a01)
+> bad:
 > 
-> linux-2.6> scripts/checkpatch.pl 
-> 0001-Move-the-definition-of-pr_err-into-kernel.h.patch
-> Your patch has no obvious style problems and is ready for submission.
+> sony:/home/akpm> cat /proc/acpi/processor/CPU0/power
+> active state:            C2
+> max_cstate:              C8
+> bus master activity:     00000000
+> maximum allowed latency: 8000 usec
+> states:
+>     C1:                  type[C1] promotion[C2] demotion[--] latency[001] usage[00000010] duration[00000000000000000000]
+>    *C2:                  type[C2] promotion[--] demotion[C1] latency[001] usage[00008316] duration[00000000000170717293]
 
-Almost.  :-)
+Ok, here we are. The bad one uses C2 which stops the local apic on the
+VAIO. I suspect we end up in the suspend/resume with going into C2
+without the broadcast active.
 
-> 
->  drivers/i2c/chips/menelaus.c     |   10 ++++------
->  drivers/net/spider_net.h         |    3 ---
->  drivers/video/omap/lcd_h3.c      |    6 ++----
->  drivers/video/omap/lcd_inn1610.c |    6 ++----
->  include/linux/kernel.h           |    2 ++
->  5 files changed, 10 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/i2c/chips/menelaus.c 
-> b/drivers/i2c/chips/menelaus.c index d9c92c5..66436ba 100644
-> --- a/drivers/i2c/chips/menelaus.c
-> +++ b/drivers/i2c/chips/menelaus.c
-> @@ -49,8 +49,6 @@
->  
->  #define DRIVER_NAME			"menelaus"
->  
-> -#define pr_err(fmt, arg...)	printk(KERN_ERR DRIVER_NAME ": 
-> ", ## arg);
-> -
+Can you try to get the output of SysRq-Q during the "it needs help from
+keyboard" period ?
 
-Unnecessary whitespace removal.
+	tglx
 
->  #define MENELAUS_I2C_ADDRESS		0x72
->  
->  #define MENELAUS_REV			0x01
-> @@ -155,7 +153,7 @@ static int menelaus_write_reg(int reg, u8 value)
->  	int val = 
-> i2c_smbus_write_byte_data(the_menelaus->client, reg, value);
->  
->  	if (val < 0) {
-> -		pr_err("write error");
-> +		pr_err(DRIVER_NAME ": write error");
->  		return val;
->  	}
->  
-> @@ -167,7 +165,7 @@ static int menelaus_read_reg(int reg)
->  	int val = i2c_smbus_read_byte_data(the_menelaus->client, reg);
->  
->  	if (val < 0)
-> -		pr_err("read error");
-> +		pr_err(DRIVER_NAME ": read error");
->  
->  	return val;
->  }
-> @@ -1177,7 +1175,7 @@ static int menelaus_probe(struct 
-> i2c_client *client)
->  	/* If a true probe check the device */
->  	rev = menelaus_read_reg(MENELAUS_REV);
->  	if (rev < 0) {
-> -		pr_err("device not found");
-> +		pr_err(DRIVER_NAME ": device not found");
->  		err = -ENODEV;
->  		goto fail1;
->  	}
-> @@ -1258,7 +1256,7 @@ static int __init menelaus_init(void)
->  
->  	res = i2c_add_driver(&menelaus_i2c_driver);
->  	if (res < 0) {
-> -		pr_err("driver registration failed\n");
-> +		pr_err(DRIVER_NAME ": driver registration failed\n");
->  		return res;
->  	}
->  
-> diff --git a/drivers/net/spider_net.h 
-> b/drivers/net/spider_net.h index dbbdb8c..c67b11d 100644
-> --- a/drivers/net/spider_net.h
-> +++ b/drivers/net/spider_net.h
-> @@ -493,7 +493,4 @@ struct spider_net_card {
->  	struct spider_net_descr darray[0];
->  };
->  
-> -#define pr_err(fmt,arg...) \
-> -	printk(KERN_ERR fmt ,##arg)
-> -
 
-Unnecessary whitespace removal.
 
->  #endif
-> diff --git a/drivers/video/omap/lcd_h3.c 
-> b/drivers/video/omap/lcd_h3.c index 51807b4..c604d93 100644
-> --- a/drivers/video/omap/lcd_h3.c
-> +++ b/drivers/video/omap/lcd_h3.c
-> @@ -28,8 +28,6 @@
->  
->  #define MODULE_NAME	"omapfb-lcd_h3"
->  
-> -#define pr_err(fmt, args...) printk(KERN_ERR MODULE_NAME ": 
-> " fmt, ## args)
-> -
 
-Unnecessary whitespace removal.
-
->  static int h3_panel_init(struct lcd_panel *panel, struct 
-> omapfb_device *fbdev)  {
->  	return 0;
-> @@ -48,7 +46,7 @@ static int h3_panel_enable(struct lcd_panel *panel)
->  	if (!r)
->  		r = tps65010_set_gpio_out_value(GPIO2, HIGH);
->  	if (r)
-> -		pr_err("Unable to turn on LCD panel\n");
-> +		pr_err(MODULE_NAME ": Unable to turn on LCD panel\n");
->  
->  	return r;
->  }
-> @@ -62,7 +60,7 @@ static void h3_panel_disable(struct 
-> lcd_panel *panel)
->  	if (!r)
->  		tps65010_set_gpio_out_value(GPIO2, LOW);
->  	if (r)
-> -		pr_err("Unable to turn off LCD panel\n");
-> +		pr_err(MODULE_NAME ": Unable to turn off LCD panel\n");
->  }
->  
->  static unsigned long h3_panel_get_caps(struct lcd_panel 
-> *panel) diff --git a/drivers/video/omap/lcd_inn1610.c 
-> b/drivers/video/omap/lcd_inn1610.c
-> index 95604ca..5ef119c 100644
-> --- a/drivers/video/omap/lcd_inn1610.c
-> +++ b/drivers/video/omap/lcd_inn1610.c
-> @@ -27,20 +27,18 @@
->  
->  #define MODULE_NAME	"omapfb-lcd_h3"
->  
-> -#define pr_err(fmt, args...) printk(KERN_ERR MODULE_NAME ": 
-> " fmt, ## args)
-> -
-
-Unnecessary whitespace removal.
-
->  static int innovator1610_panel_init(struct lcd_panel *panel,
->  				    struct omapfb_device *fbdev)
->  {
->  	int r = 0;
->  
->  	if (omap_request_gpio(14)) {
-> -		pr_err("can't request GPIO 14\n");
-> +		pr_err(MODULE_NAME ": can't request GPIO 14\n");
->  		r = -1;
->  		goto exit;
->  	}
->  	if (omap_request_gpio(15)) {
-> -		pr_err("can't request GPIO 15\n");
-> +		pr_err(MODULE_NAME ": can't request GPIO 15\n");
->  		omap_free_gpio(14);
->  		r = -1;
->  		goto exit;
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h 
-> index f592df7..c51936a 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -242,6 +242,8 @@ static inline int __attribute__ ((format 
-> (printf, 1, 2))) pr_debug(const char *
->  
->  #define pr_info(fmt,arg...) \
->  	printk(KERN_INFO fmt,##arg)
-> +#define pr_err(fmt, arg...) \
-> +	printk(KERN_ERR fmt, ##arg)
->  
->  /*
->   *      Display an IP address in readable format.
-> --
-> 1.5.3.GIT
-
-Cheers,
-
--PJ Waskiewicz
-Intel Corp.
-peter.p.waskiewicz.jr@intel.com
