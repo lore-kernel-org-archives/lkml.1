@@ -1,104 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966653AbXIKUNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966353AbXIKUNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966653AbXIKUNA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 16:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934349AbXIKUCr
+	id S966353AbXIKUNl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 16:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934352AbXIKUCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 16:02:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37986 "EHLO mx1.redhat.com"
+	Tue, 11 Sep 2007 16:02:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37990 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934344AbXIKUCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 16:02:45 -0400
-Message-Id: <20070911200012.216056000@chello.nl>
+	id S933894AbXIKUCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 16:02:46 -0400
+Message-Id: <20070911200015.858159000@chello.nl>
 References: <20070911195350.825778000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Tue, 11 Sep 2007 21:53:53 +0200
+Date: Tue, 11 Sep 2007 21:54:12 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
-       torvalds@linux-foundation.org, Hugh Dickins <hugh@veritas.com>
-Subject: [PATCH 03/23] lib: percpu_counter_sub
-Content-Disposition: inline; filename=percpu_counter_sub.patch
+       torvalds@linux-foundation.org
+Subject: [PATCH 22/23] mm: dirty balancing for tasks
+Content-Disposition: inline; filename=dirty_pages2.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh spotted that some code does:
-  percpu_counter_add(&counter, -unsignedlong)
+Based on ideas of Andrew:
+  http://marc.info/?l=linux-kernel&m=102912915020543&w=2
 
-which, when the amount argument is of type s32, sort-of works thanks to
-two's-complement. However when we'd change the type to s64 this breaks on 32bit
-machines, because the promotion rules zero extend the unsigned number.
+Scale the bdi dirty limit inversly with the tasks dirty rate.
+This makes heavy writers have a lower dirty limit than the occasional writer. 
 
-Provide percpu_counter_sub() to hide the s64 cast. That is:
-  percpu_counter_sub(&counter, foo)
-is equal to:
-  percpu_counter_add(&counter, -(s64)foo);
+Andrea proposed something similar:
+  http://lwn.net/Articles/152277/
+
+The main disadvantage to his patch is that he uses an unrelated quantity to
+measure time, which leaves him with a workload dependant tunable. Other than
+that the two approaches appear quite similar.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Hugh Dickins <hugh@veritas.com>
 ---
- fs/ext2/balloc.c               |    2 +-
- fs/ext3/balloc.c               |    2 +-
- fs/ext4/balloc.c               |    2 +-
- include/linux/percpu_counter.h |    5 +++++
- 4 files changed, 8 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/fs/ext2/balloc.c
+Changes since -v8:
+
+ - initialized init_task
+ - moved the prop_local init after the task_struct copy
+ - changed the per task ratio to 1/8 (from 1/2).
+ - explicit usage of prop_local_single
+
+ include/linux/init_task.h |    1 
+ include/linux/sched.h     |    2 +
+ kernel/fork.c             |   10 +++++++++
+ mm/page-writeback.c       |   50 +++++++++++++++++++++++++++++++++++++++++++++-
+ 4 files changed, 62 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/include/linux/sched.h
 ===================================================================
---- linux-2.6.orig/fs/ext2/balloc.c
-+++ linux-2.6/fs/ext2/balloc.c
-@@ -1367,7 +1367,7 @@ allocated:
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -84,6 +84,7 @@ struct sched_param {
+ #include <linux/timer.h>
+ #include <linux/hrtimer.h>
+ #include <linux/task_io_accounting.h>
++#include <linux/proportions.h>
+ 
+ #include <asm/processor.h>
+ 
+@@ -1125,6 +1126,7 @@ struct task_struct {
+ #ifdef CONFIG_FAULT_INJECTION
+ 	int make_it_fail;
+ #endif
++	struct prop_local_single dirties;
+ };
+ 
+ /*
+Index: linux-2.6/kernel/fork.c
+===================================================================
+--- linux-2.6.orig/kernel/fork.c
++++ linux-2.6/kernel/fork.c
+@@ -107,6 +107,7 @@ static struct kmem_cache *mm_cachep;
+ 
+ void free_task(struct task_struct *tsk)
+ {
++	prop_local_destroy_single(&tsk->dirties);
+ 	free_thread_info(tsk->stack);
+ 	rt_mutex_debug_task_free(tsk);
+ 	free_task_struct(tsk);
+@@ -163,6 +164,7 @@ static struct task_struct *dup_task_stru
+ {
+ 	struct task_struct *tsk;
+ 	struct thread_info *ti;
++	int err;
+ 
+ 	prepare_to_copy(orig);
+ 
+@@ -178,6 +180,14 @@ static struct task_struct *dup_task_stru
+ 
+ 	*tsk = *orig;
+ 	tsk->stack = ti;
++
++	err = prop_local_init_single(&tsk->dirties);
++	if (err) {
++		free_thread_info(ti);
++		free_task_struct(tsk);
++		return NULL;
++	}
++
+ 	setup_thread_stack(tsk, orig);
+ 
+ #ifdef CONFIG_CC_STACKPROTECTOR
+Index: linux-2.6/mm/page-writeback.c
+===================================================================
+--- linux-2.6.orig/mm/page-writeback.c
++++ linux-2.6/mm/page-writeback.c
+@@ -118,6 +118,7 @@ static void background_writeout(unsigned
+  *
+  */
+ static struct prop_descriptor vm_completions;
++static struct prop_descriptor vm_dirties;
+ 
+ static unsigned long determine_dirtyable_memory(void);
+ 
+@@ -146,6 +147,7 @@ int dirty_ratio_handler(ctl_table *table
+ 	if (ret == 0 && write && vm_dirty_ratio != old_ratio) {
+ 		int shift = calc_period_shift();
+ 		prop_change_shift(&vm_completions, shift);
++		prop_change_shift(&vm_dirties, shift);
  	}
- 
- 	group_adjust_blocks(sb, group_no, gdp, gdp_bh, -num);
--	percpu_counter_add(&sbi->s_freeblocks_counter, -num);
-+	percpu_counter_sub(&sbi->s_freeblocks_counter, num);
- 
- 	mark_buffer_dirty(bitmap_bh);
- 	if (sb->s_flags & MS_SYNCHRONOUS)
-Index: linux-2.6/fs/ext3/balloc.c
-===================================================================
---- linux-2.6.orig/fs/ext3/balloc.c
-+++ linux-2.6/fs/ext3/balloc.c
-@@ -1672,7 +1672,7 @@ allocated:
- 	gdp->bg_free_blocks_count =
- 			cpu_to_le16(le16_to_cpu(gdp->bg_free_blocks_count)-num);
- 	spin_unlock(sb_bgl_lock(sbi, group_no));
--	percpu_counter_add(&sbi->s_freeblocks_counter, -num);
-+	percpu_counter_sub(&sbi->s_freeblocks_counter, num);
- 
- 	BUFFER_TRACE(gdp_bh, "journal_dirty_metadata for group descriptor");
- 	err = ext3_journal_dirty_metadata(handle, gdp_bh);
-Index: linux-2.6/fs/ext4/balloc.c
-===================================================================
---- linux-2.6.orig/fs/ext4/balloc.c
-+++ linux-2.6/fs/ext4/balloc.c
-@@ -1697,7 +1697,7 @@ allocated:
- 	gdp->bg_free_blocks_count =
- 			cpu_to_le16(le16_to_cpu(gdp->bg_free_blocks_count)-num);
- 	spin_unlock(sb_bgl_lock(sbi, group_no));
--	percpu_counter_add(&sbi->s_freeblocks_counter, -num);
-+	percpu_counter_sub(&sbi->s_freeblocks_counter, num);
- 
- 	BUFFER_TRACE(gdp_bh, "journal_dirty_metadata for group descriptor");
- 	err = ext4_journal_dirty_metadata(handle, gdp_bh);
-Index: linux-2.6/include/linux/percpu_counter.h
-===================================================================
---- linux-2.6.orig/include/linux/percpu_counter.h
-+++ linux-2.6/include/linux/percpu_counter.h
-@@ -105,4 +105,9 @@ static inline void percpu_counter_dec(st
- 	percpu_counter_add(fbc, -1);
+ 	return ret;
+ }
+@@ -159,6 +161,11 @@ static inline void __bdi_writeout_inc(st
+ 	__prop_inc_percpu(&vm_completions, &bdi->completions);
  }
  
-+static inline void percpu_counter_sub(struct percpu_counter *fbc, s64 amount)
++static inline void task_dirty_inc(struct task_struct *tsk)
 +{
-+	percpu_counter_add(fbc, -amount);
++	prop_inc_single(&vm_dirties, &tsk->dirties);
 +}
 +
- #endif /* _LINUX_PERCPU_COUNTER_H */
+ /*
+  * Obtain an accurate fraction of the BDI's portion.
+  */
+@@ -198,6 +205,37 @@ clip_bdi_dirty_limit(struct backing_dev_
+ 	*pbdi_dirty = min(*pbdi_dirty, avail_dirty);
+ }
+ 
++static inline void task_dirties_fraction(struct task_struct *tsk,
++		long *numerator, long *denominator)
++{
++	prop_fraction_single(&vm_dirties, &tsk->dirties,
++				numerator, denominator);
++}
++
++/*
++ * scale the dirty limit
++ *
++ * task specific dirty limit:
++ *
++ *   dirty -= (dirty/8) * p_{t}
++ */
++void task_dirty_limit(struct task_struct *tsk, long *pdirty)
++{
++	long numerator, denominator;
++	long dirty = *pdirty;
++	long long inv = dirty >> 3;
++
++	task_dirties_fraction(tsk, &numerator, &denominator);
++	inv *= numerator;
++	do_div(inv, denominator);
++
++	dirty -= inv;
++	if (dirty < *pdirty/2)
++		dirty = *pdirty/2;
++
++	*pdirty = dirty;
++}
++
+ /*
+  * Work out the current dirty-memory clamping and background writeout
+  * thresholds.
+@@ -304,6 +342,7 @@ get_dirty_limits(long *pbackground, long
+ 
+ 		*pbdi_dirty = bdi_dirty;
+ 		clip_bdi_dirty_limit(bdi, dirty, pbdi_dirty);
++		task_dirty_limit(current, pbdi_dirty);
+ 	}
+ }
+ 
+@@ -725,6 +764,7 @@ void __init page_writeback_init(void)
+ 
+ 	shift = calc_period_shift();
+ 	prop_descriptor_init(&vm_completions, shift);
++	prop_descriptor_init(&vm_dirties, shift);
+ }
+ 
+ /**
+@@ -1003,7 +1043,7 @@ EXPORT_SYMBOL(redirty_page_for_writepage
+  * If the mapping doesn't provide a set_page_dirty a_op, then
+  * just fall through and assume that it wants buffer_heads.
+  */
+-int fastcall set_page_dirty(struct page *page)
++static int __set_page_dirty(struct page *page)
+ {
+ 	struct address_space *mapping = page_mapping(page);
+ 
+@@ -1021,6 +1061,14 @@ int fastcall set_page_dirty(struct page 
+ 	}
+ 	return 0;
+ }
++
++int fastcall set_page_dirty(struct page *page)
++{
++	int ret = __set_page_dirty(page);
++	if (ret)
++		task_dirty_inc(current);
++	return ret;
++}
+ EXPORT_SYMBOL(set_page_dirty);
+ 
+ /*
+Index: linux-2.6/include/linux/init_task.h
+===================================================================
+--- linux-2.6.orig/include/linux/init_task.h
++++ linux-2.6/include/linux/init_task.h
+@@ -169,6 +169,7 @@ extern struct group_info init_groups;
+ 		[PIDTYPE_PGID] = INIT_PID_LINK(PIDTYPE_PGID),		\
+ 		[PIDTYPE_SID]  = INIT_PID_LINK(PIDTYPE_SID),		\
+ 	},								\
++	.dirties = INIT_PROP_LOCAL_SINGLE(dirties),			\
+ 	INIT_TRACE_IRQFLAGS						\
+ 	INIT_LOCKDEP							\
+ }
 
 --
 
