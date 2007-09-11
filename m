@@ -1,41 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760945AbXIKVuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933696AbXIKVvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760945AbXIKVuk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 17:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933072AbXIKVuD
+	id S933696AbXIKVvo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 17:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbXIKVve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 17:50:03 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:37663 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757836AbXIKVuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 17:50:00 -0400
-X-Greylist: delayed 1127 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Sep 2007 17:49:59 EDT
-Subject: Re: [PATCH] leds: add #include <linux/spinlock_types.h> to
-	include/linux/leds.h for rwlock_t
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070911174804.2c4949a7.yoichi_yuasa@tripeaks.co.jp>
-References: <20070904162345.30e82bc8.yoichi_yuasa@tripeaks.co.jp>
-	 <20070910220423.43e0a4d9.akpm@linux-foundation.org>
-	 <20070911174804.2c4949a7.yoichi_yuasa@tripeaks.co.jp>
-Content-Type: text/plain
-Date: Tue, 11 Sep 2007 22:30:47 +0100
-Message-Id: <1189546247.6163.68.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Sep 2007 17:51:34 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37615 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753232AbXIKVvd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 17:51:33 -0400
+Date: Tue, 11 Sep 2007 23:51:40 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: x86 merge - a little feedback
+Message-ID: <20070911215140.GV3563@stusta.de>
+References: <20070911201219.GA9674@uranus.ravnborg.org> <200709112138.11247.ak@suse.de> <20070911211422.GU3563@stusta.de> <200709112234.24155.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200709112234.24155.ak@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-11 at 17:48 +0900, Yoichi Yuasa wrote:
-> This patch has added #include <linux/spinlock.h> to include/linux/leds.h for rwlock_t.
+On Tue, Sep 11, 2007 at 10:34:23PM +0100, Andi Kleen wrote:
 > 
-> Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+> >
+> > People do not expect code under arch/i386/ to be used by code under
+> > arch/x86_64/ and vice versa.
+> >
+> > That regularly results in people sending patches that don't compile on
+> > the other architecture.
+> >
+> > With one architecture it's much more obvious that the code is shared.
+> 
+> Will that cause people to compile test both? I have my doubts that 
+> will really work.
+>...
 
-Added to the leds tree[1], thanks.
+You will see that it could be shared, and it'll be much easier to see 
+all configurations it's used in.
 
-http://git.o-hand.com/?p=linux-rpurdie-leds;a=shortlog;h=for-mm
+Currently, there are 6 or 7 different ways how a function under 
+arch/i386/ could be used by a function under arch/x86_64/ (and vice 
+versa) and it's non-trivial to figure out all usages when grep'ing for 
+users.
 
-Richard
+> -Andi
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
