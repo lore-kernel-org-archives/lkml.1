@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbXIKH6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761624AbXIKIBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760050AbXIKH6R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 03:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbXIKH6D
+	id S1761624AbXIKIBd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 04:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbXIKIBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 03:58:03 -0400
-Received: from www.osadl.org ([213.239.205.134]:59008 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753492AbXIKH6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 03:58:01 -0400
-Subject: Re: Fix "no_sync_cmos_clock"  logic inversion in kernel/time/ntp.c
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, Gabriel Paubert <paubert@iram.es>,
-       zach@vmware.com, John Stultz <johnstul@us.ibm.com>
-In-Reply-To: <20070911074608.GD9814@bakeyournoodle.com>
-References: <20070911074608.GD9814@bakeyournoodle.com>
-Content-Type: text/plain
-Date: Tue, 11 Sep 2007 09:57:50 +0200
-Message-Id: <1189497470.22589.3.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Tue, 11 Sep 2007 04:01:25 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3389 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753634AbXIKIBY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 04:01:24 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: RE: Socket owner problem?
+Date: Tue, 11 Sep 2007 01:01:07 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKGEHAGLAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <8d33dcd40709110045v532e062ex7f05ac3ba9386161@mail.gmail.com>
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Tue, 11 Sep 2007 01:01:50 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Tue, 11 Sep 2007 01:01:51 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-11 at 17:46 +1000, Tony Breeds wrote:
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-> 
-> ---
-> 
-> Seems to me that this timer will only get started on platforms that say
-> they don't want it?
 
-Hell, yes. Good catch !
+> The problem happens like this:
+> Once the socket is closed by the user-space application, there are
+> still packets left in the module's queue. Now, the moment the kernel
+> timer expires and the module propagates those packets up into the
+> higher layer, the system hangs.
 
-	tglx
+If that were true, anyone who could send those packets to your machine would
+be able to cause the system to hang too. Perhaps you are feeding the packets
+back in at too high a layer.
 
->  kernel/time/ntp.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: working/kernel/time/ntp.c
-> ===================================================================
-> --- working.orig/kernel/time/ntp.c	2007-09-11 17:34:44.000000000 +1000
-> +++ working/kernel/time/ntp.c	2007-09-11 17:34:55.000000000 +1000
-> @@ -226,7 +226,7 @@ static void sync_cmos_clock(unsigned lon
->  
->  static void notify_cmos_timer(void)
->  {
-> -	if (no_sync_cmos_clock)
-> +	if (!no_sync_cmos_clock)
->  		mod_timer(&sync_cmos_timer, jiffies + 1);
->  }
->  
-> 
-> Yours Tony
-> 
->   linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
->   Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
-> 
+> I've been searching for ways to determine if associated socket is
+> closed. This way, if my module knows that the user-space already
+> closed the socket, it will not propagate the packet up. Does anyone
+> have a solution for this problem?
+
+What object is this queue logically associated with? If the socket, you
+should probably hook 'release' so you can purge the queue when the socket is
+removed.
+
+DS
+
 
