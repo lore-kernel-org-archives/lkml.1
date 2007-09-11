@@ -1,49 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932569AbXIKTzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934114AbXIKT4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932569AbXIKTzn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 15:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933981AbXIKTz3
+	id S934114AbXIKT4b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 15:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932935AbXIKT4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 15:55:29 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44390 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933964AbXIKTz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 15:55:27 -0400
-Message-ID: <46E6F2A8.2020104@pobox.com>
-Date: Tue, 11 Sep 2007 15:55:20 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Tue, 11 Sep 2007 15:56:10 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:62943 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932752AbXIKT4I convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 15:56:08 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
-References: <20070911101644.cd3f641f.randy.dunlap@oracle.com> <46E6EE96.9060309@nortel.com>
-In-Reply-To: <46E6EE96.9060309@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH v2] Move the definition of pr_err() into kernel.h
+Date: Tue, 11 Sep 2007 12:56:01 -0700
+Message-ID: <598D5675D34BE349929AF5EDE9B03E27014F9D9F@az33exm24.fsl.freescale.net>
+In-Reply-To: <D5C1322C3E673F459512FB59E0DDC32903925779@orsmsx414.amr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH v2] Move the definition of pr_err() into kernel.h
+Thread-Index: Acf0o+IJcZoyIfxdRoOPM9Z+IKvA6AACHs8gAAA/5rA=
+References: <11895344211267-git-send-email-Emilian.Medve@Freescale.com> <D5C1322C3E673F459512FB59E0DDC32903925779@orsmsx414.amr.corp.intel.com>
+From: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>
+To: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       <i2c@lm-sensors.org>, <linux-omap-open-source@linux.omap.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> Randy Dunlap wrote:
+> -----Original Message-----
+> From: Waskiewicz Jr, Peter P [mailto:peter.p.waskiewicz.jr@intel.com] 
+> Sent: Tuesday, September 11, 2007 2:48 PM
+> To: Medve Emilian-EMMEDVE1; linux-kernel@vger.kernel.org; 
+> netdev@vger.kernel.org; i2c@lm-sensors.org; 
+> linux-omap-open-source@linux.omap.com
+> Subject: RE: [PATCH v2] Move the definition of pr_err() into kernel.h
 > 
->> +Thunderbird (GUI)
->> +
->> +By default, thunderbird likes to mangle text, but there are ways to
->> +coerce it into being nice.
+> > Other pr_*() macros are already defined in kernel.h, but 
+> > pr_err() was defined multiple times in several other places
+> > 
+> > Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+> > ---
+> > 
+> > I'm writing a driver and I've been using the pr_*() macros 
+> > from kernel.h and I was surprised not to find there pr_err() 
+> > but defined multiple times (in four different files). I 
+> > didn't want to define it yet one more time so I did this cleanup
+> > 
+> > This patch is against Linus' tree v2.6.23-rc6 
+> > (0d4cbb5e7f60b2f1a4d8b7f6ea4cc264262c7a01)
+> > 
+> > linux-2.6> scripts/checkpatch.pl 
+> > 0001-Move-the-definition-of-pr_err-into-kernel.h.patch
+> > Your patch has no obvious style problems and is ready for 
+> submission.
 > 
-> Can someone describe the problems with just attaching the patch in 
-> Thunderbird?  It's what Martin says he does on the linked document...
+> Almost.  :-)
+> 
+> > 
+> >  drivers/i2c/chips/menelaus.c     |   10 ++++------
+> >  drivers/net/spider_net.h         |    3 ---
+> >  drivers/video/omap/lcd_h3.c      |    6 ++----
+> >  drivers/video/omap/lcd_inn1610.c |    6 ++----
+> >  include/linux/kernel.h           |    2 ++
+> >  5 files changed, 10 insertions(+), 17 deletions(-)
+> > 
+> > diff --git a/drivers/i2c/chips/menelaus.c 
+> > b/drivers/i2c/chips/menelaus.c index d9c92c5..66436ba 100644
+> > --- a/drivers/i2c/chips/menelaus.c
+> > +++ b/drivers/i2c/chips/menelaus.c
+> > @@ -49,8 +49,6 @@
+> >  
+> >  #define DRIVER_NAME			"menelaus"
+> >  
+> > -#define pr_err(fmt, arg...)	printk(KERN_ERR DRIVER_NAME ": 
+> > ", ## arg);
+> > -
+> 
+> Unnecessary whitespace removal.
 
-Email clients don't like to quote attachments, even text/plain ones, 
-which then makes attached patches much more difficult to review and 
-comment on (i.e. you greatly reduce the number of reviewers).
+You mean the empty line after the macro definition? If I leave it then
+there will be two empty lines in the final file: the one you don't want
+me to remove and the one before the macro definition.
 
-	Jeff
+> 
+> >  #define MENELAUS_I2C_ADDRESS		0x72
+> >  
+> >  #define MENELAUS_REV			0x01
+> > @@ -155,7 +153,7 @@ static int menelaus_write_reg(int reg, u8 value)
+> >  	int val = 
+> > i2c_smbus_write_byte_data(the_menelaus->client, reg, value);
+> >  
+> >  	if (val < 0) {
+> > -		pr_err("write error");
+> > +		pr_err(DRIVER_NAME ": write error");
+> >  		return val;
+> >  	}
+> >  
+> > @@ -167,7 +165,7 @@ static int menelaus_read_reg(int reg)
+> >  	int val = i2c_smbus_read_byte_data(the_menelaus->client, reg);
+> >  
+> >  	if (val < 0)
+> > -		pr_err("read error");
+> > +		pr_err(DRIVER_NAME ": read error");
+> >  
+> >  	return val;
+> >  }
+> > @@ -1177,7 +1175,7 @@ static int menelaus_probe(struct 
+> > i2c_client *client)
+> >  	/* If a true probe check the device */
+> >  	rev = menelaus_read_reg(MENELAUS_REV);
+> >  	if (rev < 0) {
+> > -		pr_err("device not found");
+> > +		pr_err(DRIVER_NAME ": device not found");
+> >  		err = -ENODEV;
+> >  		goto fail1;
+> >  	}
+> > @@ -1258,7 +1256,7 @@ static int __init menelaus_init(void)
+> >  
+> >  	res = i2c_add_driver(&menelaus_i2c_driver);
+> >  	if (res < 0) {
+> > -		pr_err("driver registration failed\n");
+> > +		pr_err(DRIVER_NAME ": driver registration failed\n");
+> >  		return res;
+> >  	}
+> >  
+> > diff --git a/drivers/net/spider_net.h 
+> > b/drivers/net/spider_net.h index dbbdb8c..c67b11d 100644
+> > --- a/drivers/net/spider_net.h
+> > +++ b/drivers/net/spider_net.h
+> > @@ -493,7 +493,4 @@ struct spider_net_card {
+> >  	struct spider_net_descr darray[0];
+> >  };
+> >  
+> > -#define pr_err(fmt,arg...) \
+> > -	printk(KERN_ERR fmt ,##arg)
+> > -
+> 
+> Unnecessary whitespace removal.
+> 
+> >  #endif
+> > diff --git a/drivers/video/omap/lcd_h3.c 
+> > b/drivers/video/omap/lcd_h3.c index 51807b4..c604d93 100644
+> > --- a/drivers/video/omap/lcd_h3.c
+> > +++ b/drivers/video/omap/lcd_h3.c
+> > @@ -28,8 +28,6 @@
+> >  
+> >  #define MODULE_NAME	"omapfb-lcd_h3"
+> >  
+> > -#define pr_err(fmt, args...) printk(KERN_ERR MODULE_NAME ": 
+> > " fmt, ## args)
+> > -
+> 
+> Unnecessary whitespace removal.
+> 
+> >  static int h3_panel_init(struct lcd_panel *panel, struct 
+> > omapfb_device *fbdev)  {
+> >  	return 0;
+> > @@ -48,7 +46,7 @@ static int h3_panel_enable(struct 
+> lcd_panel *panel)
+> >  	if (!r)
+> >  		r = tps65010_set_gpio_out_value(GPIO2, HIGH);
+> >  	if (r)
+> > -		pr_err("Unable to turn on LCD panel\n");
+> > +		pr_err(MODULE_NAME ": Unable to turn on LCD panel\n");
+> >  
+> >  	return r;
+> >  }
+> > @@ -62,7 +60,7 @@ static void h3_panel_disable(struct 
+> > lcd_panel *panel)
+> >  	if (!r)
+> >  		tps65010_set_gpio_out_value(GPIO2, LOW);
+> >  	if (r)
+> > -		pr_err("Unable to turn off LCD panel\n");
+> > +		pr_err(MODULE_NAME ": Unable to turn off LCD panel\n");
+> >  }
+> >  
+> >  static unsigned long h3_panel_get_caps(struct lcd_panel 
+> > *panel) diff --git a/drivers/video/omap/lcd_inn1610.c 
+> > b/drivers/video/omap/lcd_inn1610.c
+> > index 95604ca..5ef119c 100644
+> > --- a/drivers/video/omap/lcd_inn1610.c
+> > +++ b/drivers/video/omap/lcd_inn1610.c
+> > @@ -27,20 +27,18 @@
+> >  
+> >  #define MODULE_NAME	"omapfb-lcd_h3"
+> >  
+> > -#define pr_err(fmt, args...) printk(KERN_ERR MODULE_NAME ": 
+> > " fmt, ## args)
+> > -
+> 
+> Unnecessary whitespace removal.
+> 
+> >  static int innovator1610_panel_init(struct lcd_panel *panel,
+> >  				    struct omapfb_device *fbdev)
+> >  {
+> >  	int r = 0;
+> >  
+> >  	if (omap_request_gpio(14)) {
+> > -		pr_err("can't request GPIO 14\n");
+> > +		pr_err(MODULE_NAME ": can't request GPIO 14\n");
+> >  		r = -1;
+> >  		goto exit;
+> >  	}
+> >  	if (omap_request_gpio(15)) {
+> > -		pr_err("can't request GPIO 15\n");
+> > +		pr_err(MODULE_NAME ": can't request GPIO 15\n");
+> >  		omap_free_gpio(14);
+> >  		r = -1;
+> >  		goto exit;
+> > diff --git a/include/linux/kernel.h b/include/linux/kernel.h 
+> > index f592df7..c51936a 100644
+> > --- a/include/linux/kernel.h
+> > +++ b/include/linux/kernel.h
+> > @@ -242,6 +242,8 @@ static inline int __attribute__ ((format 
+> > (printf, 1, 2))) pr_debug(const char *
+> >  
+> >  #define pr_info(fmt,arg...) \
+> >  	printk(KERN_INFO fmt,##arg)
+> > +#define pr_err(fmt, arg...) \
+> > +	printk(KERN_ERR fmt, ##arg)
+> >  
+> >  /*
+> >   *      Display an IP address in readable format.
+> > --
+> > 1.5.3.GIT
+> 
+> Cheers,
+> 
+> -PJ Waskiewicz
+> Intel Corp.
+> peter.p.waskiewicz.jr@intel.com
 
 
-
+Thanks,
+Emil.
