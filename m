@@ -1,42 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762586AbXIKIJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762663AbXIKILg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762586AbXIKIJl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 04:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759141AbXIKIJ2
+	id S1762663AbXIKILg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 04:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759444AbXIKILT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 04:09:28 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56379 "EHLO gir.skynet.ie"
+	Tue, 11 Sep 2007 04:11:19 -0400
+Received: from s36.avahost.net ([74.53.95.194]:48403 "EHLO s36.avahost.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759056AbXIKIJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 04:09:27 -0400
-Date: Tue, 11 Sep 2007 09:09:26 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Zhenyu Wang <zhenyu.z.wang@intel.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [AGPGART] intel_agp: fix GTT map size on G33
-In-Reply-To: <20070910221502.dba1d5ce.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0709110908120.11816@skynet.skynet.ie>
-References: <20070905071307.GB5817@zhen-devel.sh.intel.com>
- <20070910221502.dba1d5ce.akpm@linux-foundation.org>
+	id S1756732AbXIKILR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 04:11:17 -0400
+Message-ID: <46E64D9F.1010700@katalix.com>
+Date: Tue, 11 Sep 2007 09:11:11 +0100
+From: James Chapman <jchapman@katalix.com>
+Organization: Katalix Systems Ltd
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: "Maciej W. Rozycki" <macro@linux-mips.org>, netdev@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ipconfig.c: De-clutter IP configuration report
+References: <Pine.LNX.4.64N.0709101249230.25038@blysk.ds.pg.gda.pl> <Pine.LNX.4.64.0709102351090.5368@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0709102351090.5368@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - s36.avahost.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - katalix.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Subject: [PATCH] [AGPGART] intel_agp: fix GTT map size on G33
+Jan Engelhardt wrote:
+> On Sep 10 2007 13:09, Maciej W. Rozycki wrote:
+>> The new code builds fine; no semantic changes.
 >>
->> G33 has 1MB GTT table range. Fix GTT mapping
->> in case like 512MB aperture size.
+>> Please apply,
 >>
->> Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
+>>  Maciej
+>>
+>> patch-mips-2.6.23-rc5-20070904-ipconfig-printk-2
+>> diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/net/ipv4/ipconfig.c linux-mips-2.6.23-rc5-20070904/net/ipv4/ipconfig.c
+>> --- linux-mips-2.6.23-rc5-20070904.macro/net/ipv4/ipconfig.c	2007-09-04 04:56:22.000000000 +0000
+>> +++ linux-mips-2.6.23-rc5-20070904/net/ipv4/ipconfig.c	2007-09-10 11:53:19.000000000 +0000
+>> @@ -1364,17 +1364,17 @@ static int __init ip_auto_config(void)
+>> 	/*
+>> 	 * Clue in the operator.
+>> 	 */
+>> -	printk("IP-Config: Complete:");
+>> -	printk("\n      device=%s", ic_dev->name);
+>> -	printk(", addr=%u.%u.%u.%u", NIPQUAD(ic_myaddr));
+>> -	printk(", mask=%u.%u.%u.%u", NIPQUAD(ic_netmask));
+>> -	printk(", gw=%u.%u.%u.%u", NIPQUAD(ic_gateway));
+>> -	printk(",\n     host=%s, domain=%s, nis-domain=%s",
+>> -	       utsname()->nodename, ic_domain, utsname()->domainname);
+>> -	printk(",\n     bootserver=%u.%u.%u.%u", NIPQUAD(ic_servaddr));
+>> -	printk(", rootserver=%u.%u.%u.%u", NIPQUAD(root_server_addr));
+>> -	printk(", rootpath=%s", root_server_path);
+>> -	printk("\n");
+>> +	pr_info("IP-Config: Complete:\n");
+>> +	pr_info("      device=%s, addr=%u.%u.%u.%u, "
+>> +		"mask=%u.%u.%u.%u, gw=%u.%u.%u.%u,\n",
+>> +		ic_dev->name, NIPQUAD(ic_myaddr),
+>> +		NIPQUAD(ic_netmask), NIPQUAD(ic_gateway));
+>> +	pr_info("      host=%s, domain=%s, nis-domain=%s,\n",
+>> +		utsname()->nodename, ic_domain, utsname()->domainname);
+>> +	pr_info("      bootserver=%u.%u.%u.%u, "
+>> +		"rootserver=%u.%u.%u.%u, rootpath=%s\n",
+>> +		NIPQUAD(ic_servaddr),
+>> +		NIPQUAD(root_server_addr), root_server_path);
+>> #endif /* !SILENT */
+>>
+>> 	return 0;
+> 
+> It should really be done in userspace. And ripped from the kernel.
 
-Acked-by: Dave Airlie <airlied@linux.ie>
+The output is useful when debugging boot problems on systems whose 
+rootfs is on the network. So I think the patch is ok.
 
-> Ditto.  What happens if this patch isn't in 2.6.23?  And is it applicable to
-> and needed in 2.6.22?
+However, it would be useful to make the parameters available to 
+userspace for use by boot scripts etc. A proc file listing variables and 
+values in /bin/sh syntax would be easy to use. I've been meaning to do 
+this for ages so I'll roll a patch.
 
-It's support for new hardware enablement, so maybe stable requires it, but 
-I'm not sure how widespread this hw is yet..
+-- 
+James Chapman
+Katalix Systems Ltd
+http://www.katalix.com
+Catalysts for your Embedded Linux software development
 
-Dave.
