@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933578AbXIKJPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933457AbXIKJQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933578AbXIKJPq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 05:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759909AbXIKJPi
+	id S933457AbXIKJQV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 05:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762049AbXIKJQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 05:15:38 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3888 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756853AbXIKJPh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 05:15:37 -0400
-Date: Tue, 11 Sep 2007 10:15:16 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mm] mm: Fix memory hotplug + sparsemem build.
-Message-ID: <20070911091516.GE6288@shadowen.org>
-References: <20070911072507.GB19260@linux-sh.org> <20070911170921.F137.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070911170921.F137.Y-GOTO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SPF-Guess: neutral
+	Tue, 11 Sep 2007 05:16:09 -0400
+Received: from www.osadl.org ([213.239.205.134]:51475 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759909AbXIKJQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 05:16:07 -0400
+Subject: Re: clockevents: fix resume logic
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20070911013512.8d62220e.akpm@linux-foundation.org>
+References: <200707220159.l6M1xBgH001236@hera.kernel.org>
+	 <20070910144740.4eba2fda.akpm@linux-foundation.org>
+	 <1189492636.25767.62.camel@chaos>
+	 <20070911000001.30f8590b.akpm@linux-foundation.org>
+	 <1189495400.25767.81.camel@chaos> <1189496840.22589.1.camel@chaos>
+	 <20070911012005.4df3ddf4.akpm@linux-foundation.org>
+	 <20070911013512.8d62220e.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 11 Sep 2007 11:16:04 +0200
+Message-Id: <1189502164.6262.7.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 11, 2007 at 05:18:01PM +0900, Yasunori Goto wrote:
-> >  	if (onlined_pages)
-> > -		node_set_state(zone->node, N_HIGH_MEMORY);
-> > +		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
-> >  
-> >  	setup_per_zone_pages_min();
+On Tue, 2007-09-11 at 01:35 -0700, Andrew Morton wrote:
+> On Tue, 11 Sep 2007 01:20:05 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Thanks Paul-san. 
+> > On Tue, 11 Sep 2007 09:47:20 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+> > 
+> > > On Tue, 2007-09-11 at 09:23 +0200, Thomas Gleixner wrote:
+> > > > > I went back to the original patch which I sent to Linus and it matches
+> > > > > 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6.  So all I can think is that there
+> > > > > must have been something else in the tree which I tested which fixed the
+> > > > > bug which 18de5bc4c1f1f1fa5e14f354a7603bd6e9d4e3b6 introduced.  argh.
+> > > > > 
+> > > > > Can you think what would cause the symptoms which I described?  
+> > > > 
+> > > > It seems that time is not updated. Timer interrupt not active or some
+> > > > other odd thing. I figure out what's going on when I find a box which
+> > > > exposes the problem.
+> > 
+> > 2.6.22-rc6-mm1's git-acpi.patch contains something which fixes this bug. 
 > 
-> I also have another issue around here.
-> (Kswapd doesn't run on memory less node now. It should run when
->  the node has memory.)
-> 
-> I would like to merge them like following if you don't mind.
-> 
-> 
-> Bye.
-> 
-> ---
-> 
-> Fix kswapd doesn't run when memory is added on memory-less-node.
-> Fix compile error of zone->node when CONFIG_NUMA is off.
-> 
-> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> 
-> 
-> ---
->  mm/memory_hotplug.c |    9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
-> 
-> Index: current/mm/memory_hotplug.c
-> ===================================================================
-> --- current.orig/mm/memory_hotplug.c	2007-09-07 18:08:07.000000000 +0900
-> +++ current/mm/memory_hotplug.c	2007-09-11 17:29:19.000000000 +0900
-> @@ -211,10 +211,12 @@ int online_pages(unsigned long pfn, unsi
->  		online_pages_range);
->  	zone->present_pages += onlined_pages;
->  	zone->zone_pgdat->node_present_pages += onlined_pages;
-> -	if (onlined_pages)
-> -		node_set_state(zone->node, N_HIGH_MEMORY);
->  
->  	setup_per_zone_pages_min();
-> +	if (onlined_pages){
+> Len's current tree fixes it too.  Maybe we just need to merge the acpi tree?
 
-Nit, needs a space there before the '{'.
+Did you enable CONFIG_CPU_IDLE after you applied git-acpi to rc6 ?
 
-> +		kswapd_run(zone_to_nid(zone));
-> +		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
-> +	}
->  
->  	if (need_zonelists_rebuild)
->  		build_all_zonelists();
-> @@ -269,9 +271,6 @@ int add_memory(int nid, u64 start, u64 s
->  		if (!pgdat)
->  			return -ENOMEM;
->  		new_pgdat = 1;
-> -		ret = kswapd_run(nid);
-> -		if (ret)
-> -			goto error;
->  	}
->  
->  	/* call arch's memory hotadd */
+	tglx
 
-The problem as I see it is that when we boot the system we start a
-kswapd on all nodes with memory.  If the hot-add adds memory to a
-pre-existing node with no memory we will not start one and we end up
-with a node with memory and no kswapd.  Bad.
 
-As kswapd_run is a no-op when a kswapd already exists this seems a safe
-way to fix that.  Paul's ->zone conversion is obviously correct also.
-
-Acked-by: Andy Whitcroft <apw@shadowen.org>
-
--apw
