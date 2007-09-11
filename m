@@ -1,172 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757087AbXIKPIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbXIKPLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757087AbXIKPIe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 11:08:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbXIKPIW
+	id S1753365AbXIKPLS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 11:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbXIKPLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 11:08:22 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:41501 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751314AbXIKPIU (ORCPT
+	Tue, 11 Sep 2007 11:11:11 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:43307 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752635AbXIKPLK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 11:08:20 -0400
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, i2c@lm-sensors.org,
-       linux-omap-open-source@linux.omap.com
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
-Subject: [PATCH] Move the definition of pr_err() into kernel.h
-Date: Tue, 11 Sep 2007 09:56:05 -0500
-Message-Id: <11895225651521-git-send-email-Emilian.Medve@Freescale.com>
-X-Mailer: git-send-email 1.5.3.GIT
-X-Brightmail-Tracker: AAAAAQAAAAQ=
-X-Whitelist: TRUE
+	Tue, 11 Sep 2007 11:11:10 -0400
+Date: Tue, 11 Sep 2007 11:11:07 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Pete Zaitcev <zaitcev@redhat.com>, <linux-usb-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: Oops in make_class_name in 2.6.22.1 on Fedora
+In-Reply-To: <20070911061226.GB27404@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0709111106140.3852-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Other pr_*() macros are already defined in kernel.h, but pr_err() was defined
-multiple times in several other places
+On Mon, 10 Sep 2007, Greg KH wrote:
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
- drivers/i2c/chips/menelaus.c     |   10 ++++------
- drivers/net/spider_net.h         |    3 ---
- drivers/video/omap/lcd_h3.c      |    6 ++----
- drivers/video/omap/lcd_inn1610.c |    6 ++----
- include/linux/kernel.h           |    2 ++
- 5 files changed, 10 insertions(+), 17 deletions(-)
+> On Mon, Sep 10, 2007 at 08:26:47PM -0700, Pete Zaitcev wrote:
+> > Hi, Greg (and others):
+> > 
+> > I do not seem to be able to find an answer, sorry.
+> > Do you happen to remember if this was fixed after 2.6.22.1:
+> > 
+> > localhost kernel: EIP is at make_class_name+0x27/0x7a
+> > localhost kernel:  [<c05586f1>] class_device_del+0x97/0x119
+> > localhost kernel:  [<c055877b>] class_device_unregister+0x8/0x10
+> > localhost kernel:  [<e08735f4>] __scsi_remove_device+0x1d/0x60 [scsi_mod]
+> > localhost kernel:  [<e08711ae>] scsi_forget_host+0x2d/0x4a [scsi_mod]
+> > localhost kernel:  [<e086c49c>] scsi_remove_host+0x65/0xd5 [scsi_mod]
+> > localhost kernel:  [<e0e76775>] storage_disconnect+0xe/0x16 [usb_storage]
+> > localhost kernel:  [<c056f8b8>] usb_unbind_interface+0x44/0x85
+> > localhost kernel:  [<c0557df7>] __device_release_driver+0x6e/0x8b
+> > 
+> > Obviously a known bug but all I see is users reporting it. In my case
+> > it's this:
+> >  https://bugzilla.redhat.com/show_bug.cgi?id=253424
+> > I saw Alan giving it a try here:
+> >  http://lkml.org/lkml/2007/7/12/259
+> 
+> I think this was a scsi problem that has been fixed, but don't really
+> remember the exact commit.
 
-diff --git a/drivers/i2c/chips/menelaus.c b/drivers/i2c/chips/menelaus.c
-index d9c92c5..fc5eed4 100644
---- a/drivers/i2c/chips/menelaus.c
-+++ b/drivers/i2c/chips/menelaus.c
-@@ -49,8 +49,6 @@
- 
- #define DRIVER_NAME			"menelaus"
- 
--#define pr_err(fmt, arg...)	printk(KERN_ERR DRIVER_NAME ": ", ## arg);
--
- #define MENELAUS_I2C_ADDRESS		0x72
- 
- #define MENELAUS_REV			0x01
-@@ -155,7 +153,7 @@ static int menelaus_write_reg(int reg, u8 value)
- 	int val = i2c_smbus_write_byte_data(the_menelaus->client, reg, value);
- 
- 	if (val < 0) {
--		pr_err("write error");
-+		pr_err(DRIVER_NAME ":write error");
- 		return val;
- 	}
- 
-@@ -167,7 +165,7 @@ static int menelaus_read_reg(int reg)
- 	int val = i2c_smbus_read_byte_data(the_menelaus->client, reg);
- 
- 	if (val < 0)
--		pr_err("read error");
-+		pr_err(DRIVER_NAME ":read error");
- 
- 	return val;
- }
-@@ -1177,7 +1175,7 @@ static int menelaus_probe(struct i2c_client *client)
- 	/* If a true probe check the device */
- 	rev = menelaus_read_reg(MENELAUS_REV);
- 	if (rev < 0) {
--		pr_err("device not found");
-+		pr_err(DRIVER_NAME ":device not found");
- 		err = -ENODEV;
- 		goto fail1;
- 	}
-@@ -1258,7 +1256,7 @@ static int __init menelaus_init(void)
- 
- 	res = i2c_add_driver(&menelaus_i2c_driver);
- 	if (res < 0) {
--		pr_err("driver registration failed\n");
-+		pr_err(DRIVER_NAME ":driver registration failed\n");
- 		return res;
- 	}
- 
-diff --git a/drivers/net/spider_net.h b/drivers/net/spider_net.h
-index dbbdb8c..c67b11d 100644
---- a/drivers/net/spider_net.h
-+++ b/drivers/net/spider_net.h
-@@ -493,7 +493,4 @@ struct spider_net_card {
- 	struct spider_net_descr darray[0];
- };
- 
--#define pr_err(fmt,arg...) \
--	printk(KERN_ERR fmt ,##arg)
--
- #endif
-diff --git a/drivers/video/omap/lcd_h3.c b/drivers/video/omap/lcd_h3.c
-index 51807b4..c81271d 100644
---- a/drivers/video/omap/lcd_h3.c
-+++ b/drivers/video/omap/lcd_h3.c
-@@ -28,8 +28,6 @@
- 
- #define MODULE_NAME	"omapfb-lcd_h3"
- 
--#define pr_err(fmt, args...) printk(KERN_ERR MODULE_NAME ": " fmt, ## args)
--
- static int h3_panel_init(struct lcd_panel *panel, struct omapfb_device *fbdev)
- {
- 	return 0;
-@@ -48,7 +46,7 @@ static int h3_panel_enable(struct lcd_panel *panel)
- 	if (!r)
- 		r = tps65010_set_gpio_out_value(GPIO2, HIGH);
- 	if (r)
--		pr_err("Unable to turn on LCD panel\n");
-+		pr_err(MODULE_NAME ":Unable to turn on LCD panel\n");
- 
- 	return r;
- }
-@@ -62,7 +60,7 @@ static void h3_panel_disable(struct lcd_panel *panel)
- 	if (!r)
- 		tps65010_set_gpio_out_value(GPIO2, LOW);
- 	if (r)
--		pr_err("Unable to turn off LCD panel\n");
-+		pr_err(MODULE_NAME ":Unable to turn off LCD panel\n");
- }
- 
- static unsigned long h3_panel_get_caps(struct lcd_panel *panel)
-diff --git a/drivers/video/omap/lcd_inn1610.c b/drivers/video/omap/lcd_inn1610.c
-index 95604ca..ea85cb9 100644
---- a/drivers/video/omap/lcd_inn1610.c
-+++ b/drivers/video/omap/lcd_inn1610.c
-@@ -27,20 +27,18 @@
- 
- #define MODULE_NAME	"omapfb-lcd_h3"
- 
--#define pr_err(fmt, args...) printk(KERN_ERR MODULE_NAME ": " fmt, ## args)
--
- static int innovator1610_panel_init(struct lcd_panel *panel,
- 				    struct omapfb_device *fbdev)
- {
- 	int r = 0;
- 
- 	if (omap_request_gpio(14)) {
--		pr_err("can't request GPIO 14\n");
-+		pr_err(MODULE_NAME ":can't request GPIO 14\n");
- 		r = -1;
- 		goto exit;
- 	}
- 	if (omap_request_gpio(15)) {
--		pr_err("can't request GPIO 15\n");
-+		pr_err(MODULE_NAME ":can't request GPIO 15\n");
- 		omap_free_gpio(14);
- 		r = -1;
- 		goto exit;
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index f592df7..c51936a 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -242,6 +242,8 @@ static inline int __attribute__ ((format (printf, 1, 2))) pr_debug(const char *
- 
- #define pr_info(fmt,arg...) \
- 	printk(KERN_INFO fmt,##arg)
-+#define pr_err(fmt, arg...) \
-+	printk(KERN_ERR fmt, ##arg)
- 
- /*
-  *      Display an IP address in readable format.
--- 
-1.5.3.GIT
+Yes.  There are some bugs in the SCSI async-scanning code, and there is
+a patch to fix them:
+
+http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=a93a091df8232fad60867d41fbc3be855a0b78f2
+
+It is scheduled for 2.6.24.  For now, people can work around the bug by 
+disabling CONFIG_SCSI_SCAN_ASYNC.
+
+> Alan, any ideas?
+> 
+> It would probably be good to get this into the next -stable if we can
+> figure out which patch did fix it.
+
+I have urged both James Bottomley and Andrew Morton to apply that patch 
+as soon as possible.  Neither of them paid any attention.
+
+Alan Stern
 
