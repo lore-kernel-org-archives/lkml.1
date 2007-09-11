@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762124AbXIKBn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbXIKBpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762124AbXIKBn7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Sep 2007 21:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761190AbXIKBnw
+	id S1762165AbXIKBpM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Sep 2007 21:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761190AbXIKBpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Sep 2007 21:43:52 -0400
-Received: from mga01.intel.com ([192.55.52.88]:28823 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760620AbXIKBnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Sep 2007 21:43:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,234,1186383600"; 
-   d="scan'208";a="301628519"
-Subject: Re: [RFC] disable PCIE 'Enable No Snoop' bit by default
-From: Shaohua Li <shaohua.li@intel.com>
-To: Greg KH <greg@kroah.com>
-Cc: David Miller <davem@davemloft.net>, matthew@wil.cx,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       akpm@linux-foundation.org, gregkh@suse.de
-In-Reply-To: <20070909164343.GC9199@kroah.com>
-References: <1189056908.24368.9.camel@sli10-conroe.sh.intel.com>
-	 <20070906115730.GE14130@parisc-linux.org>
-	 <20070906.054038.74750747.davem@davemloft.net>
-	 <20070909164343.GC9199@kroah.com>
-Content-Type: text/plain
-Date: Tue, 11 Sep 2007 09:29:43 +0800
-Message-Id: <1189474183.3080.0.camel@sli10-conroe.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Sep 2007 21:45:00 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:21923 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760620AbXIKBo7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Sep 2007 21:44:59 -0400
+Date: Mon, 10 Sep 2007 19:44:32 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PCI: Unable to reserve mem region problem
+In-reply-to: <fa.xf8XcHy8Nla3C3Q0MmArV00z04k@ifi.uio.no>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Karl Bellve <Karl.Bellve@umassmed.edu>, linux-kernel@vger.kernel.org
+Message-id: <46E5F300.20602@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.kIR1dSmxlPM+uRVmi9kPkHkX/W8@ifi.uio.no>
+ <fa.mWCFmDlYQmMO/aBFdKFbo8OVII4@ifi.uio.no>
+ <fa.xf8XcHy8Nla3C3Q0MmArV00z04k@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-09-09 at 09:43 -0700, Greg KH wrote:
-> On Thu, Sep 06, 2007 at 05:40:38AM -0700, David Miller wrote:
-> > From: Matthew Wilcox <matthew@wil.cx>
-> > Date: Thu, 6 Sep 2007 05:57:31 -0600
-> > 
-> > > I'm not sure your analysis is correct.  Here's what my draft copy of
-> > > the pcie 2.0 spec says:
-> > > 
-> > >   Enble No Snoop ? If this bit is Set, the Function is permitted to
-> > >   Set the No Snoop bit in the Requester Attributes of transactions it
-> > >   initiates that do not require hardware enforced cache coherency (see
-> > >   Section 2.2.6.5). Note that setting this bit to 1b should not cause
-> > >   a Function to Set the No Snoop attribute on all transactions that it
-> > >   initiates. Even when this bit is Set, a Function is only permitted
-> > >   to Set the No Snoop attribute on a transaction when it can guarantee
-> > >   that the address of the transaction is not stored in any cache in
-> > >   the system.  This bit permitted to be hardwired to 0b if a Function
-> > >   would never Set the No Snoop attribute in transactions it initiates.
-> > >   Default value of this bit is 1b.
-> > > 
-> > > That implies that devices are only allowed to set it when it's safe to
-> > > do so ... and we don't need to turn it off.
-> > 
-> > This is my understanding of this area of PCI-E as well, and I
-> > also agree that therefore we should not turn this bit off.
+Chuck Ebbert wrote:
+> On 09/05/2007 08:31 PM, Alan Cox wrote:
+>> On Wed, 05 Sep 2007 10:32:38 -0400
+>> "Karl Bellve" <Karl.Bellve@umassmed.edu> wrote:
+>>
+>>> Please CC any response. Thanks.
+>>>
+>>> I am having an issue with a Supermicro h8dce motherboard and failure to 
+>>> recognize a 5th SATA drive after upgrading to Fedora 7.
+>> Can you send me an lspci -vvxxx so that I can look into this. Might be a
+>> few days with the kernel summit but it should give a clue and may be
+>> linked to ADMA mode
 > 
-> I agree.  But Shaohua, do you see any problems that this patch fixes?
-No, I didn't see any breakage, just worry about it's a potential issue.
+> It's in RH bugzilla:
+> 
+> https://bugzilla.redhat.com/show_bug.cgi?id=280641
+
+The last BAR on the nForce4 ADMA controllers on this board are at 
+0xdfefe000 and 0xdfefd000. But it looks like PnP ACPI is also reserving 
+those memory ranges:
+
+Aug 30 14:08:02 alcor kernel: pnp: 00:09: iomem range 
+0xdfefd000-0xdfefd3ff has been reserved
+Aug 30 14:08:02 alcor kernel: pnp: 00:09: iomem range 
+0xdfefe000-0xdfefe3ff has been reserved
+
+Which I very much doubt it should be doing, the BIOS doesn't need to 
+reserve PCI BAR ranges in the ACPI tables. This sounds like a BIOS bug. 
+You might want to check for an update from Supermicro.
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
