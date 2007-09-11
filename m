@@ -1,203 +1,454 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbXIKE1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbXIKEba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761502AbXIKE1f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 00:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbXIKE12
+	id S1760713AbXIKEba (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 00:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbXIKEbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 00:27:28 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:39419 "EHLO smtp.ocgnet.org"
+	Tue, 11 Sep 2007 00:31:22 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:34052 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751440AbXIKE10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 00:27:26 -0400
-Date: Tue, 11 Sep 2007 13:27:16 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian McMenamin <lkmladrian@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 1/2] Maple Bus support for SEGA Dreamcast
-Message-ID: <20070911042716.GA18367@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian McMenamin <lkmladrian@gmail.com>,
-	linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net,
-	Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>
-References: <8b67d60709101616p7430a572w3ed0921a846805@mail.gmail.com>
-MIME-Version: 1.0
+	id S1751461AbXIKEbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 00:31:21 -0400
+Date: Tue, 11 Sep 2007 10:11:45 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Ingo Molnar" <mingo@elte.hu>, dhaval@linux.vnet.ibm.com,
+       menage@google.com
+Subject: Re: [PATCH] Hookup group-scheduler with task container infrastructure
+Message-ID: <20070911044145.GC16222@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20070910171049.GA16048@linux.vnet.ibm.com> <Pine.LNX.4.64.0709101903220.5368@fbirervta.pbzchgretzou.qr> <20070910172334.GB19100@linux.vnet.ibm.com> <20070910102259.dc45a481.akpm@linux-foundation.org> <20070910174649.GA16222@linux.vnet.ibm.com> <b647ffbd0709101528i7440a0f9m9837065a43e4a720@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8b67d60709101616p7430a572w3ed0921a846805@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <b647ffbd0709101528i7440a0f9m9837065a43e4a720@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Adding GregKH to the CC, he needs to Ack this before I can merge it).
+On Tue, Sep 11, 2007 at 12:28:51AM +0200, Dmitry Adamushko wrote:
+> > +       rq = task_rq_lock(tsk, &flags);
+> > +
+> 
+> I guess, update_rq_clock(rq) should be placed here.
+> 
+> humm... do you really need deactivate/activate_task() here? 'rq' and
+> p->se.load.weight stay unchanged so enqueue/dequeue_task() would do a
+> job, no?
 
-On Tue, Sep 11, 2007 at 12:16:48AM +0100, Adrian McMenamin wrote:
-> diff --git a/drivers/sh/maple/Makefile b/drivers/sh/maple/Makefile
-> new file mode 100644
-> index 0000000..f8c39f2
-> --- /dev/null
-> +++ b/drivers/sh/maple/Makefile
-> @@ -0,0 +1,3 @@
-> +#Makefile for Maple Bus
-> +
-> +obj-y	:= maplebus.o
+Good catch. Here's the updated patch.
 
-Please use obj-$(CONFIG_MAPLE) here, too.
 
-> diff --git a/drivers/sh/maple/maplebus.c b/drivers/sh/maple/maplebus.c
-> new file mode 100644
-> index 0000000..4662463
-> --- /dev/null
-> +++ b/drivers/sh/maple/maplebus.c
-> @@ -0,0 +1,747 @@
-> +/* maplebus.c
-> + * Core maple bus functionality
-> + * Original 2.4 code used here copyright
-> + * YAEGASHI Takeshi, Paul Mundt, M. R. Brown and others
-> + * Porting to 2.6 Copyright Adrian McMenamin, 2007
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-I don't believe the 'or any later version' thing was intended by any of
-the original authors, this should probably be dropped. The original file
-lacked explicit terms, so the default behaviour there is to fall back to
-what the top-level COPYING says, which has the 'or any later version'
-garbage removed.
+Signed-off-by : Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Signed-off-by : Dhaval Giani <dhaval@linux.vnet.ibm.com>
 
-> +static DEFINE_MUTEX(maple_list_lock);
-> +
-> +DEFINE_MUTEX(maple_dma_lock);
-> +EXPORT_SYMBOL_GPL(maple_dma_lock);
-> +
-It would be better to have accessors for this rather than exporting the
-mutex globally.
 
-> +static void maple_add_packet(struct mapleq *mq)
-> +{
-> +	mutex_lock(&maple_list_lock);
-> +	list_add((struct list_head *) mq, &maple_waitq);
-> +	mutex_unlock(&maple_list_lock);
-> +}
-> +
-Please use the mapleq list_head directly. Yes, it happens to exist at the
-beginning of the structure, but casting outright rather than just using
-mq->list is ridiculous.
+---
+ include/linux/container_subsys.h |    6 
+ init/Kconfig                     |    9 +
+ kernel/sched.c                   |  312 +++++++++++++++++++++++++++++++++++++--
+ kernel/sched_fair.c              |    3 
+ 4 files changed, 315 insertions(+), 15 deletions(-)
 
-> +static void maple_free_dev(struct maple_device *mdev)
-> +{
-> +	if (!mdev)
-> +		return;
-> +	kmem_cache_free(maple_cache, mdev->mq->recvbuf);
-
-Is !mdev->mq possible?
-
-> +	if (maple_packets > 0) {
-> +		for (i = 0; i < (1 << MAPLE_DMA_PAGES); i++)
-> +			dma_cache_wback_inv(maple_sendbuf + i * PAGE_SIZE,
-> +					    PAGE_SIZE);
-
-Use dma_cache_sync() for this. Ralf is currently trying to get rid of
-these other dma_cache_xxx() functions.
-
-> +static int setup_maple_commands(struct device *device, void *ignored)
-> +{
-> +	struct maple_device *maple_dev = to_maple_dev(device);
-> +
-> +	if  ((maple_dev->interval > 0) && (jiffies >maple_dev->when)) {
-> +			maple_dev->when = jiffies + maple_dev->interval;
-> +			maple_dev->mq->command = MAPLE_COMMAND_GETCOND;
-> +			maple_dev->mq->sendbuf = &maple_dev->function;
-> +			maple_dev->mq->length = 1;
-> +			maple_add_packet(maple_dev->mq);
-> +			liststatus++;
-> +	} else {
-> +		if (jiffies >= maple_pnp_time) {
-> +			maple_dev->mq->command = MAPLE_COMMAND_DEVINFO;
-> +			maple_dev->mq->length = 0;
-> +			maple_add_packet(maple_dev->mq);
-> +			liststatus++;
-> +		}
-> +	}
-> +
-You should be using time_before()/time_after() to guard against wraparound.
-
-> +static struct maple_driver maple_null_driver = {
-> +	.drv = {
-> +		.name = "Maple_bus_basic_driver",
-> +		.bus = 	&maple_bus_type,
-> +		},
-
-Please use a less visually offensive driver name. Also, why has the },
-moved over a few levels for no reason?
-
-> +	maple_cache =
-> +	    kmem_cache_create("Maplebus_cache", 0x400, 0,
-> +			      SLAB_HWCACHE_ALIGN, NULL);
-> +
-You don't need fancy caps in slab caches unless you're ACPI, please also
-use a more descriptive name (maple_queue_cache or something like that).
-
-> +      cleanup_cache:
-> +	kmem_cache_destroy(maple_cache);
-> +
-Goto labels should be on the margin at the beginning of the line, not at
-an arbitrary location.
-
-> +/* use init call to ensure bus is registered ahead of devices */
-> +fs_initcall(maple_bus_init);
-
-Please use subsys_initcall() or something like that, this isn't a file
-system. The comment is also pointless, it's obvious what the initcall is
-for if you use the proper one.
-
-> index 0000000..8a37c7e
-> --- /dev/null
-> +++ b/include/linux/maple.h
-> @@ -0,0 +1,126 @@
-> +/**
-> + * maple.h
-> + *
-> + * porting to 2.6 driver model
-> + * copyright Adrian McMenamin, 2007
-> + *
-> + */
-> +
-Please use the
-
-#ifndef __LINUX_MAPLE_H
-#define __LINUX_MAPLE_H
-
-...
-
-#endif /* __LINUX_MAPLE_H */
-
-convention. And create an asm/maple.h that gets dragged in. Things like
-the base address for the bus, ports/packets/dma setup and things like
-that should be platform-specific properties, not things that are
-hardcoded in a linux/ header. Only thing like the bus API, data
-structures, and response codes are generic.
-
-> +struct maple_driver {
-> +	unsigned long function;
-> +	int (*connect) (struct maple_device * dev);
-> +	void (*disconnect) (struct maple_device * dev);
-> +	struct device_driver drv;
-> +};
-> +
-> +struct device_specify {
-> +	int port;
-> +	int unit;
-> +};
-> +
-Namespace pollution.  You also seem to only use this as a convenience
-accessor in certain places in the bus code itself, and it's never visible
-to the API. Move the structure definition in to the .c code in that case.
-
-> +void maple_setup_port_rescan(struct maple_device *mdev);
-> +
-> +void maplebus_init_hardware(void);
-> +
-Why would these ever be accessible to drivers?
+Index: current/include/linux/container_subsys.h
+===================================================================
+--- current.orig/include/linux/container_subsys.h
++++ current/include/linux/container_subsys.h
+@@ -36,3 +36,9 @@ SUBSYS(mem_container)
+ #endif
+ 
+ /* */
++
++#ifdef CONFIG_FAIR_GROUP_SCHED
++SUBSYS(cpu)
++#endif
++
++/* */
+Index: current/init/Kconfig
+===================================================================
+--- current.orig/init/Kconfig
++++ current/init/Kconfig
+@@ -326,6 +326,15 @@ config RESOURCE_COUNTERS
+           infrastructure that works with containers
+ 	depends on CONTAINERS
+ 
++config FAIR_GROUP_SCHED
++	bool "Fair group scheduler"
++	depends on EXPERIMENTAL && CONTAINERS
++	help
++	  This option enables you to group tasks and control CPU resource
++	  allocation to such groups.
++
++	  Say N if unsure.
++
+ config SYSFS_DEPRECATED
+ 	bool "Create deprecated sysfs files"
+ 	default y
+Index: current/kernel/sched.c
+===================================================================
+--- current.orig/kernel/sched.c
++++ current/kernel/sched.c
+@@ -179,6 +179,58 @@ struct load_stat {
+ 	unsigned long delta_fair, delta_exec, delta_stat;
+ };
+ 
++#ifdef CONFIG_FAIR_GROUP_SCHED
++
++#include <linux/container.h>
++
++struct cfs_rq;
++
++/* task group related information */
++struct task_grp {
++	struct container_subsys_state css;
++	/* schedulable entities of this group on each cpu */
++	struct sched_entity **se;
++	/* runqueue "owned" by this group on each cpu */
++	struct cfs_rq **cfs_rq;
++	unsigned long shares;
++};
++
++/* Default task group's sched entity on each cpu */
++static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
++/* Default task group's cfs_rq on each cpu */
++static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
++
++static struct sched_entity *init_sched_entity_p[CONFIG_NR_CPUS];
++static struct cfs_rq *init_cfs_rq_p[CONFIG_NR_CPUS];
++
++/* Default task group.
++ * 	Every task in system belong to this group at bootup.
++ */
++static struct task_grp init_task_grp =  {
++					.se     = init_sched_entity_p,
++					.cfs_rq = init_cfs_rq_p,
++					};
++
++/* return group to which a task belongs */
++static inline struct task_grp *task_grp(struct task_struct *p)
++{
++	return container_of(task_subsys_state(p, cpu_subsys_id),
++				struct task_grp, css);
++}
++
++/* Change a task's cfs_rq and parent entity if it moves across CPUs/groups */
++static inline void set_task_cfs_rq(struct task_struct *p)
++{
++	p->se.cfs_rq = task_grp(p)->cfs_rq[task_cpu(p)];
++	p->se.parent = task_grp(p)->se[task_cpu(p)];
++}
++
++#else
++
++static inline void set_task_cfs_rq(struct task_struct *p) { }
++
++#endif	/* CONFIG_FAIR_GROUP_SCHED */
++
+ /* CFS-related fields in a runqueue */
+ struct cfs_rq {
+ 	struct load_weight load;
+@@ -208,6 +260,7 @@ struct cfs_rq {
+ 	 * list is used during load balance.
+ 	 */
+ 	struct list_head leaf_cfs_rq_list; /* Better name : task_cfs_rq_list? */
++	struct task_grp *tg;    /* group that "owns" this runqueue */
+ #endif
+ };
+ 
+@@ -405,18 +458,6 @@ unsigned long long cpu_clock(int cpu)
+ 
+ EXPORT_SYMBOL_GPL(cpu_clock);
+ 
+-#ifdef CONFIG_FAIR_GROUP_SCHED
+-/* Change a task's ->cfs_rq if it moves across CPUs */
+-static inline void set_task_cfs_rq(struct task_struct *p)
+-{
+-	p->se.cfs_rq = &task_rq(p)->cfs;
+-}
+-#else
+-static inline void set_task_cfs_rq(struct task_struct *p)
+-{
+-}
+-#endif
+-
+ #ifndef prepare_arch_switch
+ # define prepare_arch_switch(next)	do { } while (0)
+ #endif
+@@ -6567,7 +6608,25 @@ void __init sched_init(void)
+ 		init_cfs_rq(&rq->cfs, rq);
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
+-		list_add(&rq->cfs.leaf_cfs_rq_list, &rq->leaf_cfs_rq_list);
++	 	{
++ 			struct cfs_rq *cfs_rq = &per_cpu(init_cfs_rq, i);
++ 			struct sched_entity *se =
++ 					 &per_cpu(init_sched_entity, i);
++
++ 			init_cfs_rq_p[i] = cfs_rq;
++ 			init_cfs_rq(cfs_rq, rq);
++ 			cfs_rq->tg = &init_task_grp;
++ 			list_add(&cfs_rq->leaf_cfs_rq_list,
++							 &rq->leaf_cfs_rq_list);
++
++ 			init_sched_entity_p[i] = se;
++ 			se->cfs_rq = &rq->cfs;
++ 			se->my_q = cfs_rq;
++ 			se->load.weight = NICE_0_LOAD;
++			se->load.inv_weight = div64_64(1ULL<<32, NICE_0_LOAD);
++ 			se->parent = NULL;
++ 		}
++		init_task_grp.shares = NICE_0_LOAD;
+ #endif
+ 		rq->ls.load_update_last = now;
+ 		rq->ls.load_update_start = now;
+@@ -6764,3 +6823,230 @@ void set_curr_task(int cpu, struct task_
+ }
+ 
+ #endif
++
++#ifdef CONFIG_FAIR_GROUP_SCHED
++
++/* return corresponding task_grp object of a container */
++static inline struct task_grp *container_tg(struct container *cont)
++{
++	return container_of(container_subsys_state(cont, cpu_subsys_id),
++					 struct task_grp, css);
++}
++
++/* allocate runqueue etc for a new task group */
++static struct container_subsys_state *
++sched_create_group(struct container_subsys *ss, struct container *cont)
++{
++	struct task_grp *tg;
++	struct cfs_rq *cfs_rq;
++	struct sched_entity *se;
++	int i;
++
++	if (!cont->parent) {
++		/* This is early initialization for the top container */
++		init_task_grp.css.container = cont;
++		return &init_task_grp.css;
++	}
++
++	/* we support only 1-level deep hierarchical scheduler atm */
++	if (cont->parent->parent)
++		return ERR_PTR(-EINVAL);
++
++	tg = kzalloc(sizeof(*tg), GFP_KERNEL);
++	if (!tg)
++		return ERR_PTR(-ENOMEM);
++
++	tg->cfs_rq = kzalloc(sizeof(cfs_rq) * num_possible_cpus(), GFP_KERNEL);
++	if (!tg->cfs_rq)
++		goto err;
++	tg->se = kzalloc(sizeof(se) * num_possible_cpus(), GFP_KERNEL);
++	if (!tg->se)
++		goto err;
++
++	for_each_possible_cpu(i) {
++		struct rq *rq = cpu_rq(i);
++
++		cfs_rq = kmalloc_node(sizeof(struct cfs_rq), GFP_KERNEL,
++							 cpu_to_node(i));
++		if (!cfs_rq)
++			goto err;
++
++		se = kmalloc_node(sizeof(struct sched_entity), GFP_KERNEL,
++							cpu_to_node(i));
++		if (!se)
++			goto err;
++
++		memset(cfs_rq, 0, sizeof(struct cfs_rq));
++		memset(se, 0, sizeof(struct sched_entity));
++
++		tg->cfs_rq[i] = cfs_rq;
++		init_cfs_rq(cfs_rq, rq);
++		cfs_rq->tg = tg;
++		list_add_rcu(&cfs_rq->leaf_cfs_rq_list, &rq->leaf_cfs_rq_list);
++
++		tg->se[i] = se;
++		se->cfs_rq = &rq->cfs;
++		se->my_q = cfs_rq;
++		se->load.weight = NICE_0_LOAD;
++		se->load.inv_weight = div64_64(1ULL<<32, NICE_0_LOAD);
++		se->parent = NULL;
++	}
++
++	tg->shares = NICE_0_LOAD;
++
++	/* Bind the container to task_grp object we just created */
++	tg->css.container = cont;
++
++	return &tg->css;
++
++err:
++	for_each_possible_cpu(i) {
++		if (tg->cfs_rq && tg->cfs_rq[i])
++			kfree(tg->cfs_rq[i]);
++		if (tg->se && tg->se[i])
++			kfree(tg->se[i]);
++	}
++	if (tg->cfs_rq)
++		kfree(tg->cfs_rq);
++	if (tg->se)
++		kfree(tg->se);
++	if (tg)
++		kfree(tg);
++
++	return ERR_PTR(-ENOMEM);
++}
++
++
++/* destroy runqueue etc associated with a task group */
++static void sched_destroy_group(struct container_subsys *ss,
++					struct container *cont)
++{
++	struct task_grp *tg = container_tg(cont);
++	struct cfs_rq *cfs_rq;
++	struct sched_entity *se;
++	int i;
++
++	for_each_possible_cpu(i) {
++		cfs_rq = tg->cfs_rq[i];
++		list_del_rcu(&cfs_rq->leaf_cfs_rq_list);
++	}
++
++	/* wait for possible concurrent references to cfs_rqs complete */
++	synchronize_sched();
++
++	/* now it should be safe to free those cfs_rqs */
++	for_each_possible_cpu(i) {
++		cfs_rq = tg->cfs_rq[i];
++		kfree(cfs_rq);
++
++		se = tg->se[i];
++		kfree(se);
++	}
++
++	kfree(tg);
++}
++
++/* change task's runqueue when it moves between groups */
++static void sched_move_task(struct container_subsys *ss, struct container *cont,
++			struct container *old_cont, struct task_struct *tsk)
++{
++	int on_rq;
++	unsigned long flags;
++	struct rq *rq;
++
++	rq = task_rq_lock(tsk, &flags);
++	update_rq_clock(rq);
++
++	on_rq = tsk->se.on_rq;
++	if (on_rq)
++		dequeue_task(rq, tsk, 0);
++
++	if (unlikely(rq->curr == tsk) && tsk->sched_class == &fair_sched_class)
++		tsk->sched_class->put_prev_task(rq, tsk);
++
++	set_task_cfs_rq(tsk);
++
++	if (on_rq)
++		 enqueue_task(rq, tsk, 0);
++
++	if (unlikely(rq->curr == tsk) && tsk->sched_class == &fair_sched_class)
++		tsk->sched_class->set_curr_task(rq);
++
++	task_rq_unlock(rq, &flags);
++}
++
++static void set_se_shares(struct sched_entity *se, unsigned long shares)
++{
++	struct cfs_rq *cfs_rq = se->cfs_rq;
++	struct rq *rq = cfs_rq->rq;
++	int on_rq;
++
++	spin_lock_irq(&rq->lock);
++
++	on_rq = se->on_rq;
++	if (on_rq)
++		__dequeue_entity(cfs_rq, se);
++
++	se->load.weight = shares;
++	se->load.inv_weight = div64_64((1ULL<<32), shares);
++
++	if (on_rq)
++		__enqueue_entity(cfs_rq, se);
++
++	spin_unlock_irq(&rq->lock);
++}
++
++static ssize_t cpu_shares_write(struct container *cont, struct cftype *cftype,
++				struct file *file, const char __user *userbuf,
++				size_t nbytes, loff_t *ppos)
++{
++	int i;
++	unsigned long shareval;
++	struct task_grp *tg = container_tg(cont);
++	char buffer[2*sizeof(unsigned long) + 1];
++
++	if (nbytes > 2*sizeof(unsigned long))	/* safety check */
++		return -E2BIG;
++
++	if (copy_from_user(buffer, userbuf, nbytes))
++		return -EFAULT;
++
++	buffer[nbytes] = 0;	/* nul-terminate */
++	shareval = simple_strtoul(buffer, NULL, 10);
++
++	tg->shares = shareval;
++	for_each_possible_cpu(i)
++		set_se_shares(tg->se[i], shareval);
++
++	return nbytes;
++}
++
++static u64 cpu_shares_read_uint(struct container *cont, struct cftype *cft)
++{
++	struct task_grp *tg = container_tg(cont);
++
++	return (u64) tg->shares;
++}
++
++struct cftype cpuctl_share = {
++	.name = "shares",
++	.read_uint = cpu_shares_read_uint,
++	.write = cpu_shares_write,
++};
++
++static int sched_populate(struct container_subsys *ss, struct container *cont)
++{
++	return container_add_file(cont, ss, &cpuctl_share);
++}
++
++struct container_subsys cpu_subsys = {
++	.name = "cpu",
++	.create = sched_create_group,
++	.destroy  = sched_destroy_group,
++	.attach = sched_move_task,
++	.populate = sched_populate,
++	.subsys_id = cpu_subsys_id,
++	.early_init = 1,
++};
++
++#endif	/* CONFIG_FAIR_GROUP_SCHED */
+Index: current/kernel/sched_fair.c
+===================================================================
+--- current.orig/kernel/sched_fair.c
++++ current/kernel/sched_fair.c
+@@ -798,8 +798,7 @@ static inline struct cfs_rq *group_cfs_r
+  */
+ static inline struct cfs_rq *cpu_cfs_rq(struct cfs_rq *cfs_rq, int this_cpu)
+ {
+-	/* A later patch will take group into account */
+-	return &cpu_rq(this_cpu)->cfs;
++	return cfs_rq->tg->cfs_rq[this_cpu];
+ }
+ 
+ /* Iterate thr' all leaf cfs_rq's on a runqueue */
+-- 
+Regards,
+vatsa
