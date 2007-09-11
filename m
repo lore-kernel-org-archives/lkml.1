@@ -1,70 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbXIKQET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758924AbXIKQEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471AbXIKQET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 12:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbXIKQEM
+	id S1758924AbXIKQEq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 12:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbXIKQEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 12:04:12 -0400
-Received: from mailhub.linpro.no ([213.236.139.167]:55041 "EHLO
-	mailhub.linpro.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753233AbXIKQEK convert rfc822-to-8bit (ORCPT
+	Tue, 11 Sep 2007 12:04:37 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45448 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753697AbXIKQEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 12:04:10 -0400
-From: =?iso-8859-1?Q?Dag-Erling_Sm=F8rgrav?= <des@linpro.no>
-To: Clemens Koller <clemens.koller@anagramm.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC+PATCH] RTC calibration
-References: <ujrmyvt2tyy.fsf@false.linpro.no> <46E6A737.6080805@anagramm.de>
-	<ujrabrt2qkt.fsf@false.linpro.no> <46E6B617.7030106@anagramm.de>
-Date: Tue, 11 Sep 2007 18:04:06 +0200
-In-Reply-To: <46E6B617.7030106@anagramm.de> (Clemens Koller's message of "Tue,
-	11 Sep 2007 17:36:55 +0200")
-Message-ID: <ujr1wd52npl.fsf@false.linpro.no>
-User-Agent: Gnus/5.110004 (No Gnus v0.4) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 11 Sep 2007 12:04:36 -0400
+Date: Tue, 11 Sep 2007 17:04:32 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Ulrich Windl <ulrich.windl@rz.uni-regensburg.de>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
+Subject: Re: Socket-related problem in x86_64 Kernel (2.6.16.53-0.8-smp)?
+Message-ID: <20070911160432.GA8181@ftp.linux.org.uk>
+References: <46E67C60.19416.14190936@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de> <46E6D660.16004.15789926@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46E6D660.16004.15789926@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clemens Koller <clemens.koller@anagramm.de> writes:
-> Dag-Erling Smørgrav <des@linpro.no> writes:
-> > Without knowing exacly which chip is present, there is no way for the
-> > userland calibration tool to know how big a difference a calibration
-> > step makes.
-> I am not talking about the calibration algorithm and it's quality.
+On Tue, Sep 11, 2007 at 05:54:38PM +0200, Ulrich Windl wrote:
 
-Neither am I.
+> If not, any clues on debugging/tracing? There's a 
+> /usr/src/linux/Documentation/oops-tracing.txt, but no "segfault-tracing".
 
-> I am talking about _how_ the calibration register is addressed from
-> userspace. It's a simple register, some bits at address 7 and I would
-> expect to read/modify/write registers to do all the things you want
-> to do. Register access in userspace doesn't put any limitation
-> to applications.
-
-It requires the application to know the hardware intimately.
-
-Calibration of the M41T11 is implemented using the lower 6 bits of
-register 7; this is not necessarily the case for other existing or
-future chips.
-
-Let's say I normalize this to [-128;127]; an application that tried to
-speed up the clock would waste several hours increasing the
-calibration value from 0 to 1, 2, 3 before seeing an effect after
-increasing it to 4.  And how do I normalize the assymetric range of
-the M41T11?
-
-> Having only incs and decs without getting the actual value back seems
-> to be an absolutely unnecessary limitation here.
-> You cannot get the current value back to see if it's i.e. in saturation in
-> a way that it doesn't make sense to inc/decrement it further or in bigger steps
-> or reset it to zero...
-
-The driver will return EINVAL if you try to increment or decrement the
-calibration register beyond its limits.
-
-DES
--- 
-Dag-Erling Smørgrav
-Senior Software Developer
-Linpro AS - www.linpro.no
+That would be because it has fsck-all to do with the kernel.  Get the
+coredump, then use gdb to deal with it.
