@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762696AbXIKJ1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762896AbXIKJ2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762696AbXIKJ1N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 05:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933668AbXIKJ0w
+	id S1762896AbXIKJ2U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 05:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761662AbXIKJ2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 05:26:52 -0400
-Received: from mx2.suse.de ([195.135.220.15]:57727 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933638AbXIKJ0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 05:26:49 -0400
-From: Neil Brown <neilb@suse.de>
-To: Mark Hindley <mark@hindley.org.uk>
-Date: Tue, 11 Sep 2007 11:26:52 +0200
+	Tue, 11 Sep 2007 05:28:07 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3154 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760575AbXIKJ2F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 05:28:05 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: RE: Socket owner problem?
+Date: Tue, 11 Sep 2007 02:27:24 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKCEHGGLAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18150.24412.855004.90148@notabene.brown>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       nfs@lists.sourceforge.net
-Subject: Re: [OOPS] 2.6.23-rc5 in tcp/net/nfsd
-In-Reply-To: message from Mark Hindley on Tuesday September 11
-References: <20070911083200.GA3409@hindley.org.uk>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <8d33dcd40709110138h1bee46d2x8521f5b8f0d3a955@mail.gmail.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Tue, 11 Sep 2007 02:28:11 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Tue, 11 Sep 2007 02:28:13 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday September 11, mark@hindley.org.uk wrote:
-> This oops appeared over night on a box running 2.6.23-rc5 (recent with the
-> tcp_input.c fix).
-> 
-> I can't find a similar one reported.
+
+> Hi David,
+>
+> Thanks for your quick reply.
+>
+> > If that were true, anyone who could send those packets to your
+> > machine would
+> > be able to cause the system to hang too.
+>
+> You're right to say that :)
+>
+> > Perhaps you are feeding the packets
+> > back in at too high a layer.
+>
+> Not really. In fact, I pass the packet back to the "lower layer" again
+> by calling netif_receive_skb(). Note that packets can go in a loop
+> here. To avoid queuing the same packets repeatedly, the module "marks"
+> them the first time they are queued. Marked packets are simply
+> NF_ACCEPT'ed by the module hook and therefore are propagated up the
+> netfilter chain.
+
+So then there is no reason there should be any problem if the packets are
+fed after the socket is destroyed. I would try to figure out why something
+that should not give you a problem is giving you a problem.
+
+> > What object is this queue logically associated with? If the socket, you
+> > should probably hook 'release' so you can purge the queue when
+> > the socket is
+> > removed.
+
+> The queue is not associated with the socket. It is independent and is
+> meant just for the module to use for queuing packets that are supposed
+> to be delayed. But for each packet in this queue, there is an
+> associated kernel timer. Once this timer expires, the associated
+> packet is fed into the netif_receive_skb().
+
+So what exactly goes wrong then? This approach sounds bulletproof.
+
+DS
 
 
-Okay..... this is weird.
-> 
-> Mark
-> 
-> 
-> BUG: unable to handle kernel NULL pointer dereference at virtual address 0000007e 
-                                                                           ^^^^^^^^
-
-That is the bad address,
-
-> EFLAGS: 00010246   (2.6.23-rc5-2-mcyrixiii #1)
-> EIP is at ip_fragment+0x7f/0x680
-> eax: c3c09c00   ebx: 00000000   ecx: b524d006   edx: 0000007b
-                                                  ^^^^^^^^^^^^^
-
-It looks like an offset of 3 from edx.  I got that from decoding:
-
-> Code: .... <00> ba 03 00 00 00 bf a6 ff ff
-
-which is 
-   0:   00 ba 03 00 00 00         add    %bh,0x3(%rdx)
-
-However that instruction doesn't appear in ip_fragment.
-The code in ip_fragment reads:
-  27:   b9 04 00 00 00            mov    $0x4,%ecx
-                    ^^
-  2c:   ba 03 00 00 00            mov    $0x3,%edx
-        ^^^^^^^^^^^^^^
-
-which contains the bytes of the offending instruction.
-Note that $0x4 is ICMP_FRAG_NEEDED and $0x3 is ICMP_DEST_UNREACH:
-these are args to icmp_send.  So the latter is the correct disassembly
-based on the C code.
-
-So somehow the kernel is jumping to a bad address.  I don't know how
-that would happening.... maybe a single bit error in memory or a
-register???
-
-NeilBrown
