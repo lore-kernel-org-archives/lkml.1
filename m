@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764944AbXILLXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765245AbXILLXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764944AbXILLXS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 07:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764723AbXILLXE
+	id S1765245AbXILLXf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 07:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764723AbXILLXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 07:23:04 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:53239 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764577AbXILLXB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 07:23:01 -0400
-Date: Wed, 12 Sep 2007 16:53:08 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: linux-arch@vger.kernel.org, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/5] Extended crashkernel command line
-Message-ID: <20070912112308.GA17436@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070909083914.065380136@strauss.suse.de> <20070909083914.488571169@strauss.suse.de> <20070911061522.GD5053@in.ibm.com> <20070911100110.GB31038@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070911100110.GB31038@suse.de>
-User-Agent: Mutt/1.5.11
+	Wed, 12 Sep 2007 07:23:24 -0400
+Received: from sacred.ru ([62.205.161.221]:44422 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764990AbXILLXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 07:23:23 -0400
+Message-ID: <46E7CB8B.4080205@openvz.org>
+Date: Wed, 12 Sep 2007 15:20:43 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+CC: Steven Whitehouse <swhiteho@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [PATCH 2/5][GFS2] Use macro instead of explicit check for mandatory
+ locks
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 12 Sep 2007 15:23:00 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 11, 2007 at 12:01:10PM +0200, Bernhard Walle wrote:
-> * Vivek Goyal <vgoyal@in.ibm.com> [2007-09-11 08:15]:
-> > 
-> > "offset" seems to be optional in the new syntax. What happens if user does
-> > not specify offset. I think crash_base will be set to zero and system will
-> > try to reserve x amount of memory start at zero? That would fail?
-> 
-> That's handled in the architecture specific code -- because it's
-> different on each architecture and the architecture specific code does
-> memory reservation. IA64 already can handle this case (on IA64,
-> specifying 0 is the same than leaving out the base address, and that's
-> why I wanted to keep that semantics). I think it doesn't also make
-> sense on i386/x86_64 to choose 0 as real base address, because the
-> value below 1 MB is special for booting ...
-> 
+The __MANDATORY_LOCK(inode) macro makes the same check, but
+makes the code more readable.
 
-Ok. I see IA64 is handling this case. But in current patchset, i386 and
-x86_64 will try to reserve memory starting at zero?  So we still got
-to handle this case in i386 and x86_64?
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
 
-Thanks
-Vivek
+---
+
+ fs/gfs2/ops_file.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/gfs2/ops_file.c b/fs/gfs2/ops_file.c
+index 94d76ac..7e814f4 100644
+--- a/fs/gfs2/ops_file.c
++++ b/fs/gfs2/ops_file.c
+@@ -535,7 +535,7 @@ static int gfs2_lock(struct file *file, 
+ 
+ 	if (!(fl->fl_flags & FL_POSIX))
+ 		return -ENOLCK;
+-	if ((ip->i_inode.i_mode & (S_ISGID | S_IXGRP)) == S_ISGID)
++	if (__MANDATORY_LOCK(ip->i_inode))
+ 		return -ENOLCK;
+ 
+ 	if (sdp->sd_args.ar_localflocks) {
+@@ -637,7 +637,7 @@ static int gfs2_flock(struct file *file,
+ 
+ 	if (!(fl->fl_flags & FL_FLOCK))
+ 		return -ENOLCK;
+-	if ((ip->i_inode.i_mode & (S_ISGID | S_IXGRP)) == S_ISGID)
++	if (__MANDATORY_LOCK(ip->i_inode))
+ 		return -ENOLCK;
+ 
+ 	if (sdp->sd_args.ar_localflocks)
+
