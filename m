@@ -1,87 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765067AbXILUhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764285AbXILUmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765067AbXILUhx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 16:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758610AbXILUhq
+	id S1764285AbXILUmf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 16:42:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbXILUmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 16:37:46 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60472 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757866AbXILUhp (ORCPT
+	Wed, 12 Sep 2007 16:42:25 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:46193 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757518AbXILUmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 16:37:45 -0400
-Date: Wed, 12 Sep 2007 15:37:44 -0500 (CDT)
-From: Brent Casavant <bcasavan@sgi.com>
-Reply-To: Brent Casavant <bcasavan@sgi.com>
-To: linux-kernel@vger.kernel.org
-Subject: O_NOLINK for open()
-Message-ID: <20070912144128.D5573@pkunk.americas.sgi.com>
-Organization: Silicon Graphics, Inc.
+	Wed, 12 Sep 2007 16:42:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=YfPG1xmqLkLHRM/PJS234YBTdIutsK8DHXWajDAtr0WaYtdeQf5T3Ac4m80VUmo6CxNWZvz8zZ5kMz/cSsvqhTXm3agFuhvPTueI3gsuLpCO3C1TErnvXT8pENYR1v4Kdk4wDOg6gTRzMy+Z3r2V0ewYqKMc3Yc8JjIwY/rE588=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: patrizio.bassi@gmail.com
+Subject: Re: libata not working for sis5533
+Date: Wed, 12 Sep 2007 22:44:54 +0200
+User-Agent: KMail/1.9.6
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       "Kernel," <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>, Andi Kleen <ak@suse.de>,
+       linux-acpi@vger.kernel.org
+References: <46D132C5.5000803@gmail.com> <Pine.LNX.4.64.0709122018400.22467@fbirervta.pbzchgretzou.qr> <46E834A2.2020205@gmail.com>
+In-Reply-To: <46E834A2.2020205@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200709122244.54702.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bear with me, I present the problem I'm trying to solve first,
-and then propose O_NOLINK as a solution.  Responses to either my
-shared memory problem or the O_NOLINK idea would be most appreciated.
 
-I've run into a rather unusual set of circumstances calling for
-use of shared memory, but haven't found a bulletproof solution
-which can be used under Linux.
+Hi,
 
-I have a need to share memory between two unrelated processes,
-but without the ability for any other process to attach to it,
-for security reasons (e.g. encryption keys and plaintext will
-be exchanged via this shared memory area).  These unrelated
-processes will in all likelihood not be owned by the same user
-(i.e. one of them is a daemon).
+On Wednesday 12 September 2007, Patrizio Bassi wrote:
+> Jan Engelhardt ha scritto:
+> > On Sep 11 2007 15:46, Andrew Morton wrote:
+> >   
+> >> Patrizio Bassi <patrizio.bassi@gmail.com> wrote:
+> >>     
+> >>> Jan Engelhardt ha scritto:
+> >>>       
+> >>>> On Sep 8 2007 11:38, Patrizio Bassi wrote:
+> >>>>         
+> >>>>> Jan Engelhardt wrote:
+> >>>>>    
+> >>>>>           
+> >>>>>> I shall give this a spin too, since I happen to have sis5513. Just
+> >>>>>> booted this fresh ata-enabled system (a matter of mkinitrd). It has not
+> >>>>>> exploded yet.
+> >>>>>>      
+> >>>>>>             
+> >>>>> don't you have the "irq 14" issue?
+> >>>>>    
+> >>>>>           
+> >>>> No, does not seem so.
+> >>>>         
+> >>> For Alan, libata devs...hope can help debug...
+> >>> this is http://www.patriziobassi.it/downloads/libata_issue.jpg
+> >>>       
+> >> Looks more like a platform irq routing issue than an ata issue.
+> >>
+> >> Perhaps an x86 or an acpi person can help out with this.
+> >>     
+> >
+> > Patrizio, have you tried with the old IDE? (And without suspend at that...)
+> >
+> >
+> >   
+> 
+> yes yes old IDE works ok, but the suspend functionality is broken....
+> so, as i compile scsi subsystem for usb-storage i wanted to move to the
+> new libata, but i found this issue...
 
-System V shmem is right out because the IPC key is publicly
-visible and there is no combination of permissions which
-will allow sharing the segment with just one other process
-(or at least just one other user).  To my knowledge Linux's
-implementation doesn't provide ACLs for SysV shmem.  SGI's
-proposed XPMEM suffers from the same problems for my purposes.
+w.r.t. to suspend problem (http://bugzilla.kernel.org/show_bug.cgi?id=7077):
+please try latest -mm kernel, it contains many fixes for sis5513 host driver.
 
-I had a mistaken notion that multiple mmap's of /dev/zero using
-a common file descriptor (which could be passed between the
-processes via an AF_UNIX socket) would result in shared memory,
-but apparently my understanding of /dev/zero mmap's was subtlely
-wrong, so it appears this won't work.
-
-I could mmap a temporary tmpfs file (tmpfs so that if there is a
-machine crash no sensitive data persists) which is created with
-permissions of 0, immediately unlink it, and pass the file
-descriptor through an AF_UNIX socket.  This does open up a very
-small window of vulnerability if another process is able to chmod
-the file and open it before the unlink.
-
-However, it occurs to me that this problem goes away if there were
-a method create a file in an unlinked state to begin with.  However
-there does not appear to be any such mechanism in Linux's open()
-interface.  A bit of Googling indicates that Hurd has an O_NOLINK
-flag which seems to accomplish what I'd need, but Linux doesn't
-implement such a flag.  There was some discussion of this in various
-lkml threads in the past, but none that went anywhere.  Perhaps
-the best an explaining why other mechanisms (i.e. directories
-with particular permissions aren't a solution) is:
-
-	http://marc.info/?l=linux-kernel&m=93032806224160&w=2
-
-Of course it is reasonable to take the stance that if root or the
-daemon's user are malicious, all bets are off anyway.
-
-Fully understanding this, it was suggested to me that I could fire
-this problem off to lkml to see if anyone has a solution I haven't
-already dismissed, or as a trial balloon for considering adding
-O_NOLINK to open().
-
-Thoughts?
-
-Brent
-
--- 
-Brent Casavant                          All music is folk music.  I ain't
-bcasavan@sgi.com                        never heard a horse sing a song.
-Silicon Graphics, Inc.                    -- Louis Armstrong
+Thanks,
+Bart
