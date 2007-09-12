@@ -1,90 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbXILHie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbXILHiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758352AbXILHie (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 03:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbXILHiZ
+	id S1754095AbXILHiu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 03:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbXILHij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 03:38:25 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57280 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753576AbXILHiZ (ORCPT
+	Wed, 12 Sep 2007 03:38:39 -0400
+Received: from mylar.outflux.net ([69.93.193.226]:33825 "EHLO
+	mylar.outflux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759432AbXILHig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 03:38:25 -0400
-Message-Id: <46E7972A.7000107@mxs.nes.nec.co.jp>
-Date: Wed, 12 Sep 2007 16:37:14 +0900
-From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 12 Sep 2007 03:38:36 -0400
+X-Greylist: delayed 1838 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Sep 2007 03:38:36 EDT
+Date: Tue, 11 Sep 2007 23:41:34 -0700
+From: Kees Cook <kees@ubuntu.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ben Collins <bcollins@ubuntu.com>, Michael Wu <flamingice@sourmilk.net>
+Subject: [PATCH] pci: fix unterminated pci_device_id lists
+Message-ID: <20070912064134.GO7910@outflux.net>
 MIME-Version: 1.0
-To: maneesh@in.ibm.com
-CC: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       kexec@lists.infradead.org, Dan Aloni <da-x@monatomic.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] kernel/kexec.c: make code static
-References: <20070909202516.GQ3563@stusta.de> <20070910115549oomichi@mail.jp.nec.com> <20070910122040.GE3563@stusta.de> <20070911055327.GA14117@in.ibm.com>
-In-Reply-To: <20070911055327.GA14117@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: Outflux
+X-HELO: gorgon.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch against 2.6.23-rc6 fixes a couple drivers that do not
+correctly terminate their pci_device_id lists.  This results in garbage
+being spewed into modules.pcimap when the module happens to not have
+28 NULL bytes following the table, and/or the last PCI ID is actually
+truncated from the table when calculating the modules.alias PCI aliases,
+cause those unfortunate device IDs to not auto-load.
 
-Hi Adrian, Maneesh,
+Signed-off-by: Kees Cook <kees@ubuntu.com>
+---
+For example, cafe_nand...
 
-Maneesh Soni wrote:
- > On Mon, Sep 10, 2007 at 02:20:40PM +0200, Adrian Bunk wrote:
- >> On Mon, Sep 10, 2007 at 11:55:49AM +0900, Ken'ichi Ohmichi wrote:
- >>> Hi Adrian,
- >>>
- >>>
- >>> 2007/09/09 22:25:16 +0200, Adrian Bunk <bunk@kernel.org> wrote:
- >>>> On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
- >>>>> ...
- >>>>> Changes since 2.6.23-rc3-mm1:
- >>>>> ...
- >>>>> +add-vmcoreinfo.patch
- >>>>> ...
- >>>>>  misc
- >>>>> ...
- >>>> This patch makes the following needlessly global code static:
- >>>> - vmcoreinfo_data[]
- >>>> - vmcoreinfo_size
- >>>> - vmcoreinfo_append_str()
- >>> The kernel compiling fails with your patch because architecture-specific
- >>> function should access the above data/function:
- >>>
- >>> # make
- >>> [snip]
- >>> arch/ia64/kernel/machine_kexec.c: In function 'arch_crash_save_vmcoreinfo':
- >>> arch/ia64/kernel/machine_kexec.c:134: error: implicit declaration of function 'SYMBOL'
- >>> arch/ia64/kernel/machine_kexec.c:135: error: implicit declaration of function 'LENGTH'
- >>> arch/ia64/kernel/machine_kexec.c:139: error: implicit declaration of function 'SIZE'
- >>> arch/ia64/kernel/machine_kexec.c:139: error: 'node_memblk_s' undeclared (first use in this function)
- >>> arch/ia64/kernel/machine_kexec.c:139: error: (Each undeclared identifier is reported only once
- >>> arch/ia64/kernel/machine_kexec.c:139: error: for each function it appears in.)
- >>> arch/ia64/kernel/machine_kexec.c:140: error: implicit declaration of function 'OFFSET'
- >>> arch/ia64/kernel/machine_kexec.c:140: error: 'start_paddr' undeclared (first use in this function)
- >>> arch/ia64/kernel/machine_kexec.c:141: error: 'size' undeclared (first use in this function)
- >>> arch/ia64/kernel/machine_kexec.c:144: error: implicit declaration of function 'CONFIG'
- >>> arch/ia64/kernel/machine_kexec.c:144: error: 'PGTABLE_3' undeclared (first use in this function)
- >>> make[1]: *** [arch/ia64/kernel/machine_kexec.o] Error 1
- >>> make: *** [arch/ia64/kernel] Error 2
- >>> #
- >> Thanks, I missed this.
- >>
- >> That's 80% my fault and 20% the fault of the usage of generic names SYMBOL/SIZE/OFFSET/LENGTH/CONFIG making it impossible to grep for them (and namespace conflicts quite possible).
+drivers/mtd/nand/cafe_nand.c:
+static struct pci_device_id cafe_nand_tbl[] = {
+        { 0x11ab, 0x4100, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_MEMORY_FLASH << 8, 0xFFFF0 }
+};
 
-I understand your motivation. It is better to change these names as you said.
+# should have 1 PCI alias, but we have none
+$ modinfo cafe_nand | grep alias | wc -l
+0
+
+# should have 1 PCI map, but we have lots of trash
+$ grep cafe_nand /lib/modules/$(uname -r)/modules.pcimap
+modules.pcimap:cafe_nand            0x000011ab 0x00004100 0xffffffff 0xffffffff 0x00050100 0x000ffff0 0x0
+modules.pcimap:cafe_nand            0x696d6974 0x0000676e 0x00000000 0x00000000 0x00000000 0x00000000 0x0
+modules.pcimap:cafe_nand            0x00000003 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x0
+modules.pcimap:cafe_nand            0x00000004 0x00000000 0x00000000 0x00000000 0x63656863 0x6363656b 0x0
+modules.pcimap:cafe_nand            0x65640067 0x00677562 0x70696b73 0x00746262 0x64657375 0x4200616d 0x0
+modules.pcimap:cafe_nand            0x000000bc 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x0
+
+It may make sense to patch module-init-tools to correctly yell about
+mismatches, as it has all the details when examining the ELF.
+
+Note also, then p54 driver (in p54/prism54pci.c, not in mainline yet) suffers
+from the same problem.
 
 
- >> Can we get these #define's properly prefixed (e.g. KEXEC_SYMBOL etc.) so that other people will not repeat my mistake and namespace conflicts will be prevented?
- >>
- >
- > CRASH_DUMP_ or VMCORE_ should be a better prefix as the dump filtering
- > functionality not directly related to kexec.
+ linux-2.6.23-rc6/drivers/char/ipmi/ipmi_si_intf.c |    3 ++-
+ linux-2.6.23-rc6/drivers/mtd/nand/cafe_nand.c     |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+---
+diff -uNrp linux-2.6.23-rc6~/drivers/char/ipmi/ipmi_si_intf.c linux-2.6.23-rc6/drivers/char/ipmi/ipmi_si_intf.c
+--- linux-2.6.23-rc6~/drivers/char/ipmi/ipmi_si_intf.c	2007-09-11 23:17:13.000000000 -0700
++++ linux-2.6.23-rc6/drivers/char/ipmi/ipmi_si_intf.c	2007-09-11 23:21:51.000000000 -0700
+@@ -2215,7 +2215,8 @@ static int ipmi_pci_resume(struct pci_de
+ 
+ static struct pci_device_id ipmi_pci_devices[] = {
+ 	{ PCI_DEVICE(PCI_HP_VENDOR_ID, PCI_MMC_DEVICE_ID) },
+-	{ PCI_DEVICE_CLASS(PCI_ERMC_CLASSCODE, PCI_ERMC_CLASSCODE_MASK) }
++	{ PCI_DEVICE_CLASS(PCI_ERMC_CLASSCODE, PCI_ERMC_CLASSCODE_MASK) },
++	{ 0, }
+ };
+ MODULE_DEVICE_TABLE(pci, ipmi_pci_devices);
+ 
+diff -uNrp linux-2.6.23-rc6~/drivers/mtd/nand/cafe_nand.c linux-2.6.23-rc6/drivers/mtd/nand/cafe_nand.c
+--- linux-2.6.23-rc6~/drivers/mtd/nand/cafe_nand.c	2007-07-08 16:32:17.000000000 -0700
++++ linux-2.6.23-rc6/drivers/mtd/nand/cafe_nand.c	2007-09-11 23:22:11.000000000 -0700
+@@ -816,7 +816,8 @@ static void __devexit cafe_nand_remove(s
+ }
+ 
+ static struct pci_device_id cafe_nand_tbl[] = {
+-	{ 0x11ab, 0x4100, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_MEMORY_FLASH << 8, 0xFFFF0 }
++	{ 0x11ab, 0x4100, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_MEMORY_FLASH << 8, 0xFFFF0 },
++	{ 0, }
+ };
+ 
+ MODULE_DEVICE_TABLE(pci, cafe_nand_tbl);
 
-I think that VMCOREINFO_ is a better prefix, because these macros are for
-writing the information to the vmcoreinfo data.
 
 
-Thanks
-Ken'ichi Ohmichi
+
+-- 
+Kees Cook
