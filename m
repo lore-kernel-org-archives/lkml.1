@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967505AbXILMIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967574AbXILMKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967505AbXILMIH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 08:08:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967336AbXILMHg
+	id S967574AbXILMKx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 08:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765469AbXILMKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 08:07:36 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:57979 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967330AbXILMHf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 08:07:35 -0400
-Date: Wed, 12 Sep 2007 05:07:26 -0700
-From: Greg KH <greg@kroah.com>
-To: Andre Haupt <andre@finow14.de>, torvalds@osdl.org
-Cc: marcel@holtmann.org, linux-kernel@vger.kernel.org
+	Wed, 12 Sep 2007 08:10:45 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:45039 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765273AbXILMKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 08:10:44 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Greg KH <greg@kroah.com>
 Subject: Re: hci_sock.c build failure
-Message-ID: <20070912120726.GA13170@kroah.com>
-References: <20070912092929.GA2878@ahaupt-debian-vm.localdomain> <20070912120253.GA13003@kroah.com> <20070912120407.GB13003@kroah.com>
+Date: Wed, 12 Sep 2007 15:10:02 +0300
+User-Agent: KMail/1.9.7
+Cc: Andre Haupt <andre@finow14.de>, torvalds@osdl.org, marcel@holtmann.org,
+       linux-kernel@vger.kernel.org
+References: <20070912092929.GA2878@ahaupt-debian-vm.localdomain> <20070912120407.GB13003@kroah.com> <20070912120726.GA13170@kroah.com>
+In-Reply-To: <20070912120726.GA13170@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20070912120407.GB13003@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200709121510.03653.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 05:04:07AM -0700, Greg KH wrote:
-> On Wed, Sep 12, 2007 at 05:02:53AM -0700, Greg KH wrote:
-> > On Wed, Sep 12, 2007 at 11:29:29AM +0200, Andre Haupt wrote:
-> > > Hi,
-> > > 
-> > > I did a make randconfig and then make C=1.
-> > > 
-> > > hci_sock.c fails to build because it doesnt know compat_timeval (i
-> > > guess).
-> > > 
-> > > find the error message and the config attached.
-> > 
-> > It's not even a randconfig issue, my build dies too (this is Linus's
-> > current tree.)
-> > 
-> > Time to poke through the 10 bluetooth patches that were just added...
+12 Eyl 2007 Çar tarihinde, Greg KH şunları yazmıştı: 
+> No, this is worse, i386 doesn't have a compat_timeval structure defined,
+> nor does any other 32 bit platform.
 > 
-> It was 767c5eb5d35aeb85987143f0a730bc21d3ecfb3d that caused it.  It
-> needs a .h file added to the file, patch forthcoming...
+> Marcel, I think you need to use a different structure, care to fix this
+> up?
 
-No, this is worse, i386 doesn't have a compat_timeval structure defined,
-nor does any other 32 bit platform.
+I sent a patch for this problem about ~4 hours ago :), see "[PATCH] Fix hci_sock build with CONFIG_COMPAT=n"
 
-Marcel, I think you need to use a different structure, care to fix this
-up?
+Cheers
+-- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
-thanks,
-
-greg k-h
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
