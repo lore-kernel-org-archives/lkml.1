@@ -1,115 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933827AbXILCBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933177AbXILCEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933827AbXILCBw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 22:01:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbXILB5O
+	id S933177AbXILCEu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 22:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbXILCEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 21:57:14 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48667 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761474AbXILB4t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 21:56:49 -0400
-Message-Id: <20070912015647.486500682@sgi.com>
-References: <20070912015644.927677070@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 11 Sep 2007 18:56:53 -0700
-From: travis@sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org
-Subject: [PATCH 09/10] ppc64: Convert cpu_sibling_map to a per_cpu data array (v3)
-Content-Disposition: inline; filename=convert-ppc64-cpu_sibling_map-to-per_cpu_data
+	Tue, 11 Sep 2007 22:04:43 -0400
+Received: from ozlabs.org ([203.10.76.45]:45584 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751451AbXILCEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 22:04:42 -0400
+From: Michael Neuling <mikey@neuling.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       paulus@samba.org, Alan Cox <alan@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>
+cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+X-GPG-Fingerprint: 9B25 DC2A C58D 2C8D 47C2  457E 0887 E86F 32E6 BE16
+MIME-Version: 1.0
+Subject: [PATCH] powerpc: add new required termio functions
+X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 21.4.1
+Date: Wed, 12 Sep 2007 12:04:39 +1000
+Message-ID: <8018.1189562679@neuling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert cpu_sibling_map to a per_cpu cpumask_t array for the ppc64
-architecture.  This fixes build errors in block/blktrace.c and
-kernel/sched.c when CONFIG_SCHED_SMT is defined.
+The "tty: termios locking functions break with new termios type" patch
+(f629307c857c030d5a3dd777fee37c8bb395e171) breaks the powerpc compile.
+This adds the required API to asm-powerpc.
 
-Note: these changes have not been built nor tested.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+--
+This needs to go up for 2.6.23.
 
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/powerpc/kernel/setup-common.c        |    4 ++--
- arch/powerpc/kernel/smp.c                 |    4 ++--
- arch/powerpc/platforms/cell/cbe_cpufreq.c |    2 +-
- include/asm-powerpc/smp.h                 |    4 +++-
- include/asm-powerpc/topology.h            |    2 +-
- 5 files changed, 9 insertions(+), 7 deletions(-)
+Should we really put these definitions in asm-generic/termios.h as I'm
+guessing other architectures are broken too?
 
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -415,9 +415,9 @@
- 	 * Do the sibling map; assume only two threads per processor.
- 	 */
- 	for_each_possible_cpu(cpu) {
--		cpu_set(cpu, cpu_sibling_map[cpu]);
-+		cpu_set(cpu, cpu_sibling_map(cpu));
- 		if (cpu_has_feature(CPU_FTR_SMT))
--			cpu_set(cpu ^ 0x1, cpu_sibling_map[cpu]);
-+			cpu_set(cpu ^ 0x1, cpu_sibling_map(cpu));
- 	}
- 
- 	vdso_data->processorCount = num_present_cpus();
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -61,11 +61,11 @@
- 
- cpumask_t cpu_possible_map = CPU_MASK_NONE;
- cpumask_t cpu_online_map = CPU_MASK_NONE;
--cpumask_t cpu_sibling_map[NR_CPUS] = { [0 ... NR_CPUS-1] = CPU_MASK_NONE };
-+DEFINE_PER_CPU(cpumask_t, cpu_sibling_map) = CPU_MASK_NONE;
- 
- EXPORT_SYMBOL(cpu_online_map);
- EXPORT_SYMBOL(cpu_possible_map);
--EXPORT_SYMBOL(cpu_sibling_map);
-+EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
- 
- /* SMP operations for this machine */
- struct smp_ops_t *smp_ops;
---- a/arch/powerpc/platforms/cell/cbe_cpufreq.c
-+++ b/arch/powerpc/platforms/cell/cbe_cpufreq.c
-@@ -119,7 +119,7 @@
- 	policy->cur = cbe_freqs[cur_pmode].frequency;
- 
- #ifdef CONFIG_SMP
--	policy->cpus = cpu_sibling_map[policy->cpu];
-+	policy->cpus = cpu_sibling_map(policy->cpu);
- #endif
- 
- 	cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
---- a/include/asm-powerpc/smp.h
-+++ b/include/asm-powerpc/smp.h
-@@ -25,6 +25,7 @@
- 
- #ifdef CONFIG_PPC64
- #include <asm/paca.h>
-+#include <asm/percpu.h>
- #endif
- 
- extern int boot_cpuid;
-@@ -58,7 +59,8 @@
- 					(smp_hw_index[(cpu)] = (phys))
- #endif
- 
--extern cpumask_t cpu_sibling_map[NR_CPUS];
-+DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
-+#define cpu_sibling_map(cpu) per_cpu(cpu_sibling_map, cpu)
- 
- /* Since OpenPIC has only 4 IPIs, we use slightly different message numbers.
-  *
---- a/include/asm-powerpc/topology.h
-+++ b/include/asm-powerpc/topology.h
-@@ -108,7 +108,7 @@
- #ifdef CONFIG_PPC64
- #include <asm/smp.h>
- 
--#define topology_thread_siblings(cpu)	(cpu_sibling_map[cpu])
-+#define topology_thread_siblings(cpu)	(cpu_sibling_map(cpu))
- #endif
- #endif
- 
+coopers@include/ % git grep kernel_termios_to_user_termios_1
+asm-arm/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-cris/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-h8300/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-i386/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-ia64/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-m32r/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-m68k/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-mips/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-v850/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-x86_64/termios.h:#define kernel_termios_to_user_termios_1(u, k)
 
--- 
+ include/asm-powerpc/termios.h |    3 +++
+ 1 file changed, 3 insertions(+)
+
+Index: linux-2.6-ozlabs/include/asm-powerpc/termios.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/termios.h
++++ linux-2.6-ozlabs/include/asm-powerpc/termios.h
+@@ -80,6 +80,9 @@ struct termio {
+ 
+ #include <asm-generic/termios.h>
+ 
++#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
++#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
++
+ #endif	/* __KERNEL__ */
+ 
+ #endif	/* _ASM_POWERPC_TERMIOS_H */
+
