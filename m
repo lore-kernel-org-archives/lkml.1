@@ -1,92 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971732AbXILSQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971766AbXILSSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971732AbXILSQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 14:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761782AbXILSQV
+	id S971766AbXILSSA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 14:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765249AbXILSRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 14:16:21 -0400
-Received: from waste.org ([66.93.16.53]:54230 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761346AbXILSQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 14:16:20 -0400
-Date: Wed, 12 Sep 2007 13:15:12 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
-       jason.wessel@windriver.com,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm] 2.6.23-rc4-mm1: kgdboe link errors
-Message-ID: <20070912181512.GQ4219@waste.org>
-References: <46E7B1EA.2040009@gmail.com> <20070912101537.129d10c7.randy.dunlap@oracle.com>
+	Wed, 12 Sep 2007 14:17:50 -0400
+Received: from zrtps0kn.nortel.com ([47.140.192.55]:33820 "EHLO
+	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764995AbXILSRu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 14:17:50 -0400
+Message-ID: <46E82D44.5030100@nortel.com>
+Date: Wed, 12 Sep 2007 12:17:40 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070912101537.129d10c7.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Jeff Garzik <jgarzik@pobox.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
+References: <20070911101644.cd3f641f.randy.dunlap@oracle.com> <46E6EE96.9060309@nortel.com> <46E6F2A8.2020104@pobox.com> <46E75C6A.3000705@nortel.com> <Pine.LNX.4.64.0709122007530.22467@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0709122007530.22467@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Sep 2007 18:17:44.0140 (UTC) FILETIME=[36B2B0C0:01C7F569]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 10:15:37AM -0700, Randy Dunlap wrote:
-> On Wed, 12 Sep 2007 11:31:22 +0200 Jiri Slaby wrote:
-> 
-> > randconfig [1] causes this link errors:
-> > ERROR: "netpoll_cleanup" [drivers/net/kgdboe.ko] undefined!
-> > ERROR: "netpoll_setup" [drivers/net/kgdboe.ko] undefined!
-> > ERROR: "netpoll_parse_options" [drivers/net/kgdboe.ko] undefined!
-> > ERROR: "netpoll_poll" [drivers/net/kgdboe.ko] undefined!
-> > ERROR: "netpoll_send_udp" [drivers/net/kgdboe.ko] undefined!
-> > ERROR: "netpoll_set_trap" [drivers/net/kgdboe.ko] undefined!
-> > make[2]: *** [__modpost] Error 1
-> > make[1]: *** [modules] Error 2
-> > make: *** [all] Error 2
-> > 
-> > [1] http://www.fi.muni.cz/~xslaby/sklad/1.config
-> 
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix kgdb build problems:
->   Building modules, stage 2.
-> ERROR: "netpoll_cleanup" [drivers/net/kgdboe.ko] undefined!
-> ERROR: "netpoll_setup" [drivers/net/kgdboe.ko] undefined!
-> ERROR: "netpoll_parse_options" [drivers/net/kgdboe.ko] undefined!
-> ERROR: "netpoll_poll" [drivers/net/kgdboe.ko] undefined!
-> ERROR: "netpoll_send_udp" [drivers/net/kgdboe.ko] undefined!
-> ERROR: "netpoll_set_trap" [drivers/net/kgdboe.ko] undefined!
-> make[1]: *** [__modpost] Error 1
-> 
-> 
-> Add 'select' for net-poll/console related config symbols, but
-> make KGDBOE 'depend on' NET.  We don't want to 'select' CONFIG_NET,
-> but if it is already enabled, the 'select's will enable the rest
-> of the needed interfaces.
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  lib/Kconfig.kgdb |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.23-rc4-mm1.orig/lib/Kconfig.kgdb
-> +++ linux-2.6.23-rc4-mm1/lib/Kconfig.kgdb
-> @@ -174,9 +174,11 @@ endchoice
->  
->  config KGDBOE
->  	tristate "KGDB: On ethernet" if !KGDBOE_NOMODULE
-> -	depends on m && KGDB
-> +	depends on m && KGDB && NET
-> +	select NETCONSOLE
+Jan Engelhardt wrote:
+> On Sep 11 2007 21:26, Chris Friesen wrote:
 
-NETCONSOLE shouldn't be necessary. Otherwise this looks ok to my
-kconfig-addled brain.
+>>Thunderbird, at least, will automatically inline a single text/plain attachment
+>>when replying. (At least with my current settings, it does.)
 
->  	select NETPOLL
->  	select NETPOLL_TRAP
-> +	select NET_POLL_CONTROLLER
->  	help
->  	  Uses the NETPOLL API to communicate with the host GDB via UDP.
->  	  In order for this to work, the ethernet interface specified must
+> No, the thing is: you send it attached with Thunderbird,
+> and my PINE strips it on reply _because_ it is an attachment.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+There's no setting to tell it to quote plaintext attachments on reply? 
+If someone with thunderbird replies to it the patch is automatically quoted.
+
+Guess I need to get the external_editor extension.
+
+Chris
