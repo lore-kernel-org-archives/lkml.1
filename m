@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762121AbXILX2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763086AbXILX2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762121AbXILX2B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 19:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbXILX1y
+	id S1763086AbXILX2X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 19:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762232AbXILX2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 19:27:54 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41041 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755272AbXILX1x (ORCPT
+	Wed, 12 Sep 2007 19:28:04 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:32852 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762094AbXILX2B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 19:27:53 -0400
-Date: Wed, 12 Sep 2007 18:27:52 -0500 (CDT)
-From: Brent Casavant <bcasavan@sgi.com>
-Reply-To: Brent Casavant <bcasavan@sgi.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: O_NOLINK for open()
-In-Reply-To: <20070912224955.GC8181@ftp.linux.org.uk>
-Message-ID: <20070912180937.Y5573@pkunk.americas.sgi.com>
-References: <20070912144128.D5573@pkunk.americas.sgi.com> <jetzpza7ci.fsf@sykes.suse.de>
- <20070912172519.N5573@pkunk.americas.sgi.com> <20070912224955.GC8181@ftp.linux.org.uk>
-Organization: Silicon Graphics, Inc.
+	Wed, 12 Sep 2007 19:28:01 -0400
+Date: Wed, 12 Sep 2007 19:27:16 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Christoph Hellwig <hch@infradead.org>, Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] fs: define file_fsync() even for CONFIG_BLOCK=n
+Message-ID: <20070912232716.GB21341@filer.fsl.cs.sunysb.edu>
+References: <20070912020610.GA26827@linux-sh.org> <20070912093020.GB32511@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070912093020.GB32511@infradead.org>
+User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Sep 2007, Al Viro wrote:
-
-> On Wed, Sep 12, 2007 at 05:44:30PM -0500, Brent Casavant wrote:
+On Wed, Sep 12, 2007 at 10:30:20AM +0100, Christoph Hellwig wrote:
+> On Wed, Sep 12, 2007 at 11:06:10AM +0900, Paul Mundt wrote:
+> > There's nothing that is problematic for file_fsync() with CONFIG_BLOCK=n,
+> > and it's built in unconditionally anyways, so move the prototype out to
+> > reflect that. Without this, the unionfs build bails out.
 > 
-> > P.S. By the way, there doesn't seem to be a way to remove /proc/#/mem
-> >      files.  That might be an additional nicety -- programs worried about
-> >      being snooped could unlink their own entry.  /dev/mem and /dev/kmem
-> >      can simply be removed by the sysadmin of such a system.  If all of
-> >      that were done you'd have to resort to attacking crash dumps, core
-> >      dumps, or via something like kdb to extract "hidden" data.
-> 
-> Give me a break.  And learn about ptrace(2).  This "unlinking" bullshit
-> buys you zero additional security, both for /proc/*/mem and for /dev/mem
-> (see mknod(2)).
+> Unionfs should stop using it instead.
+ 
+We did stop.
 
-Yes, I fully understand that mknod can recreate the nodes -- however
-only the superuser can do so, and if the superuser is attacking a
-process all bets are off anyway.  OK, so /dev/*mem isn't to worry
-about, since it's already owned by root.  Still, /proc/#/mem is owned
-by the user, not root, leaving it potentially open to inspection by
-third party processes.
-
-I'm thinking out loud.  Sorry to cause any grief.
-
-My (limited) understanding of ptrace is that a parent-child
-relationship is needed between the tracing process and the traced
-process (at least that's what I gather from the man page).  This
-does give cause for concern, and I might have to see what can be
-done to alleviate this concern.  I fully realize that making this
-design completely unassilable is a fools errand, but closing off
-as many attack vectors as possible seems prudent.
+Josef 'Jeff' Sipek.
 
 -- 
-Brent Casavant                          All music is folk music.  I ain't
-bcasavan@sgi.com                        never heard a horse sing a song.
-Silicon Graphics, Inc.                    -- Louis Armstrong
+NT is to UNIX what a doughnut is to a particle accelerator.
