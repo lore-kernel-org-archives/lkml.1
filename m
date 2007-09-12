@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966442AbXILVSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765634AbXILVSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966442AbXILVSQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 17:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763736AbXILVRA
+	id S1765634AbXILVSj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 17:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764440AbXILVRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 17:17:00 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:55968 "EHLO
+	Wed, 12 Sep 2007 17:17:01 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:55971 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759604AbXILVQ5 (ORCPT
+	with ESMTP id S1761627AbXILVQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 12 Sep 2007 17:16:57 -0400
 Date: Wed, 12 Sep 2007 17:16:47 -0400
@@ -15,8 +15,8 @@ From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 6/11] UML - GENERIC_CLOCKEVENTS support
-Message-ID: <20070912211647.GA10277@c2.user-mode-linux.org>
+Subject: [PATCH 5/11] UML - GENERIC_TIME support
+Message-ID: <20070912211647.GA10282@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,224 +24,104 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable CONFIG_GENERIC_CLOCKEVENTS.
+Enable CONFIG_GENERIC_TIME.
 
-timer_irq gets its name changed to timer_handler, and becomes the
-recipient of timer signals.
-
-The clock_event_device is set up to imitate the current ticking clock,
-i.e. CLOCK_EVT_FEAT_ONESHOT is not enabled yet.
-
-disable_timer now doesn't ignore SIGALRM and SIGVTALRM because that
-breaks delay calibration.
+As a side-effect of this, the UML implementations of do_gettimeofday
+and do_settimeofday go away, as these are provided by generic code.
+set_time also goes away since it was only used by do_settimeofday.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/Kconfig         |    4 +
- arch/um/defconfig       |    3 +
- arch/um/kernel/time.c   |   99 ++++++++++++++++++++++--------------------------
- arch/um/os-Linux/time.c |    4 -
- 4 files changed, 54 insertions(+), 56 deletions(-)
+ arch/um/Kconfig        |    5 +++++
+ arch/um/kernel/ksyms.c |    3 ---
+ arch/um/kernel/time.c  |   40 ----------------------------------------
+ 3 files changed, 5 insertions(+), 43 deletions(-)
 
 Index: linux-2.6.22/arch/um/Kconfig
 ===================================================================
---- linux-2.6.22.orig/arch/um/Kconfig	2007-09-12 16:03:44.000000000 -0400
-+++ linux-2.6.22/arch/um/Kconfig	2007-09-12 16:04:24.000000000 -0400
-@@ -59,6 +59,10 @@ config GENERIC_TIME
- 	bool
+--- linux-2.6.22.orig/arch/um/Kconfig	2007-09-12 14:53:25.000000000 -0400
++++ linux-2.6.22/arch/um/Kconfig	2007-09-12 14:58:02.000000000 -0400
+@@ -55,6 +55,10 @@ config GENERIC_BUG
  	default y
+ 	depends on BUG
  
-+config GENERIC_CLOCKEVENTS
++config GENERIC_TIME
 +	bool
 +	default y
 +
  # Used in kernel/irq/manage.c and include/linux/irq.h
  config IRQ_RELEASE_METHOD
  	bool
+@@ -75,6 +79,7 @@ config STATIC_LINK
+ 
+ source "arch/um/Kconfig.arch"
+ source "mm/Kconfig"
++source "kernel/time/Kconfig"
+ 
+ config LD_SCRIPT_STATIC
+ 	bool
+Index: linux-2.6.22/arch/um/kernel/ksyms.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/ksyms.c	2007-09-12 14:53:25.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/ksyms.c	2007-09-12 14:58:02.000000000 -0400
+@@ -67,9 +67,6 @@ EXPORT_SYMBOL(run_helper);
+ EXPORT_SYMBOL(start_thread);
+ EXPORT_SYMBOL(dump_thread);
+ 
+-EXPORT_SYMBOL(do_gettimeofday);
+-EXPORT_SYMBOL(do_settimeofday);
+-
+ #ifdef CONFIG_SMP
+ 
+ /* required for SMP */
 Index: linux-2.6.22/arch/um/kernel/time.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/kernel/time.c	2007-09-12 16:03:44.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/time.c	2007-09-12 16:14:08.000000000 -0400
-@@ -3,6 +3,7 @@
-  * Licensed under the GPL
-  */
- 
-+#include "linux/clockchips.h"
- #include "linux/interrupt.h"
- #include "linux/jiffies.h"
- #include "linux/threads.h"
-@@ -24,9 +25,10 @@ static unsigned long long prev_nsecs[NR_
- static long long delta[NR_CPUS];		/* Deviation per interval */
- #endif
- 
--void timer_irq(struct uml_pt_regs *regs)
-+void timer_handler(int sig, struct uml_pt_regs *regs)
- {
- 	unsigned long long ticks = 0;
-+	unsigned long flags;
- #ifdef CONFIG_UML_REAL_TIME_CLOCK
- 	int c = cpu();
- 	if (prev_nsecs[c]) {
-@@ -47,89 +49,82 @@ void timer_irq(struct uml_pt_regs *regs)
- #else
- 	ticks = 1;
- #endif
-+
-+	local_irq_save(flags);
- 	while (ticks > 0) {
- 		do_IRQ(TIMER_IRQ, regs);
- 		ticks--;
- 	}
-+	local_irq_restore(flags);
+--- linux-2.6.22.orig/arch/um/kernel/time.c	2007-09-12 14:55:39.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/time.c	2007-09-12 14:58:02.000000000 -0400
+@@ -123,46 +123,6 @@ void time_init(void)
+ 	late_time_init = register_timer;
  }
  
--/* Protects local_offset */
--static DEFINE_SPINLOCK(timer_spinlock);
--static unsigned long long local_offset = 0;
+-void do_gettimeofday(struct timeval *tv)
+-{
+-#ifdef CONFIG_UML_REAL_TIME_CLOCK
+-	unsigned long long nsecs = get_time();
+-#else
+-	unsigned long long nsecs = (unsigned long long) xtime.tv_sec * BILLION +
+-		xtime.tv_nsec;
+-#endif
+-	tv->tv_sec = nsecs / NSEC_PER_SEC;
+-	/*
+-	 * Careful about calculations here - this was originally done as
+-	 * (nsecs - tv->tv_sec * NSEC_PER_SEC) / NSEC_PER_USEC
+-	 * which gave bogus (> 1000000) values.  Dunno why, suspect gcc
+-	 * (4.0.0) miscompiled it, or there's a subtle 64/32-bit conversion
+-	 * problem that I missed.
+-	 */
+-	nsecs -= tv->tv_sec * NSEC_PER_SEC;
+-	tv->tv_usec = (unsigned long) nsecs / NSEC_PER_USEC;
+-}
 -
--static inline unsigned long long get_time(void)
-+static void itimer_set_mode(enum clock_event_mode mode,
-+			    struct clock_event_device *evt)
- {
--	unsigned long long nsecs;
+-static inline void set_time(unsigned long long nsecs)
+-{
+-	unsigned long long now;
 -	unsigned long flags;
 -
 -	spin_lock_irqsave(&timer_spinlock, flags);
--	nsecs = os_nsecs();
--	nsecs += local_offset;
+-	now = os_nsecs();
+-	local_offset = nsecs - now;
 -	spin_unlock_irqrestore(&timer_spinlock, flags);
-+	switch(mode) {
-+	case CLOCK_EVT_MODE_PERIODIC:
-+		set_interval();
-+		break;
-+
-+	case CLOCK_EVT_MODE_SHUTDOWN:
-+	case CLOCK_EVT_MODE_UNUSED:
-+		disable_timer();
-+		break;
-+	case CLOCK_EVT_MODE_ONESHOT:
-+		BUG();
-+		break;
- 
--	return nsecs;
-+	case CLOCK_EVT_MODE_RESUME:
-+		break;
-+	}
- }
- 
--irqreturn_t um_timer(int irq, void *dev)
--{
--	unsigned long long nsecs;
--	unsigned long flags;
 -
--	write_seqlock_irqsave(&xtime_lock, flags);
-+static struct clock_event_device itimer_clockevent = {
-+	.name		= "itimer",
-+	.rating		= 250,
-+	.cpumask	= CPU_MASK_ALL,
-+	.features	= CLOCK_EVT_FEAT_PERIODIC,
-+	.set_mode	= itimer_set_mode,
-+	.set_next_event = NULL,
-+	.shift		= 32,
-+	.irq		= 0,
-+};
- 
--	do_timer(1);
--
--#ifdef CONFIG_UML_REAL_TIME_CLOCK
--	nsecs = get_time();
--#else
--	nsecs = (unsigned long long) xtime.tv_sec * BILLION + xtime.tv_nsec +
--		BILLION / HZ;
--#endif
--	xtime.tv_sec = nsecs / NSEC_PER_SEC;
--	xtime.tv_nsec = nsecs - xtime.tv_sec * NSEC_PER_SEC;
--
--	write_sequnlock_irqrestore(&xtime_lock, flags);
-+static irqreturn_t um_timer(int irq, void *dev)
-+{
-+	(*itimer_clockevent.event_handler)(&itimer_clockevent);
- 
- 	return IRQ_HANDLED;
- }
- 
--static void register_timer(void)
-+static void __init setup_itimer(void)
- {
- 	int err;
- 
--	timer_init();
--
- 	err = request_irq(TIMER_IRQ, um_timer, IRQF_DISABLED, "timer", NULL);
- 	if (err != 0)
- 		printk(KERN_ERR "register_timer : request_irq failed - "
- 		       "errno = %d\n", -err);
- 
--	err = set_interval();
--	if (err != 0)
--		printk(KERN_ERR "register_timer : set_interval failed - "
--		       "errno = %d\n", -err);
-+	itimer_clockevent.mult = div_sc(HZ, NSEC_PER_SEC, 32);
-+	itimer_clockevent.max_delta_ns =
-+		clockevent_delta2ns(60 * HZ, &itimer_clockevent);
-+	itimer_clockevent.min_delta_ns =
-+		clockevent_delta2ns(1, &itimer_clockevent);
-+	clockevents_register_device(&itimer_clockevent);
- }
- 
- extern void (*late_time_init)(void);
- 
--void time_init(void)
-+void __init time_init(void)
- {
- 	long long nsecs;
- 
-+	timer_init();
-+
- 	nsecs = os_nsecs();
- 	set_normalized_timespec(&wall_to_monotonic, -nsecs / BILLION,
- 				-nsecs % BILLION);
- 	set_normalized_timespec(&xtime, nsecs / BILLION, nsecs % BILLION);
--	late_time_init = register_timer;
+-	clock_was_set();
 -}
 -
--void timer_handler(int sig, struct uml_pt_regs *regs)
+-int do_settimeofday(struct timespec *tv)
 -{
--	if (current_thread->cpu == 0)
--		timer_irq(regs);
--	local_irq_disable();
--	irq_enter();
--	update_process_times(regs->is_user);
--	irq_exit();
--	local_irq_enable();
-+	late_time_init = setup_itimer;
- }
-Index: linux-2.6.22/arch/um/defconfig
-===================================================================
---- linux-2.6.22.orig/arch/um/defconfig	2007-09-12 15:56:26.000000000 -0400
-+++ linux-2.6.22/arch/um/defconfig	2007-09-12 16:04:24.000000000 -0400
-@@ -73,6 +73,9 @@ CONFIG_FLATMEM=y
- CONFIG_FLAT_NODE_MEM_MAP=y
- # CONFIG_SPARSEMEM_STATIC is not set
- CONFIG_SPLIT_PTLOCK_CPUS=4
-+# CONFIG_TICK_ONESHOT is not set
-+# CONFIG_NO_HZ is not set
-+CONFIG_HIGH_RES_TIMERS=y
- CONFIG_LD_SCRIPT_DYN=y
- CONFIG_NET=y
- CONFIG_BINFMT_ELF=y
-Index: linux-2.6.22/arch/um/os-Linux/time.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/time.c	2007-09-12 16:02:03.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/time.c	2007-09-12 16:25:24.000000000 -0400
-@@ -34,10 +34,6 @@ void disable_timer(void)
- 	    (setitimer(ITIMER_REAL, &disable, NULL) < 0))
- 		printk(UM_KERN_ERR "disable_timer - setitimer failed, "
- 		       "errno = %d\n", errno);
+-	set_time((unsigned long long) tv->tv_sec * NSEC_PER_SEC + tv->tv_nsec);
 -
--	/* If there are signals already queued, after unblocking ignore them */
--	signal(SIGALRM, SIG_IGN);
--	signal(SIGVTALRM, SIG_IGN);
- }
- 
- int switch_timers(int to_real)
+-	return 0;
+-}
+-
+ void timer_handler(int sig, struct uml_pt_regs *regs)
+ {
+ 	if (current_thread->cpu == 0)
