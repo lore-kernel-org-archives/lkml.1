@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933858AbXILJae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933724AbXILJbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933858AbXILJae (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 05:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763465AbXILJaZ
+	id S933724AbXILJbc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 05:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763454AbXILJbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 05:30:25 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58794 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764110AbXILJaY (ORCPT
+	Wed, 12 Sep 2007 05:31:23 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:48658 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763465AbXILJbW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 05:30:24 -0400
-Date: Wed, 12 Sep 2007 10:30:20 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] fs: define file_fsync() even for CONFIG_BLOCK=n
-Message-ID: <20070912093020.GB32511@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Paul Mundt <lethal@linux-sh.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <20070912020610.GA26827@linux-sh.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070912020610.GA26827@linux-sh.org>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 12 Sep 2007 05:31:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding;
+        b=LFA5mFJ7CWDSAj4fhSu3sLbStEXcuIWOzZOdA9QZW5p3Qc/9xszgciDF/5jmGrZVfPALIwobdt8QSCsxlgdBFatJwqghTMXPlBlKPV/tsdmbk4F9lr76QMDWxUXvQK3ZiPpX1M9vJwTNkvKyLOXhSlMH4sq0jtvOpUaBWrdc8CM=
+Message-ID: <46E7B1EA.2040009@gmail.com>
+Date: Wed, 12 Sep 2007 11:31:22 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Matt Mackall <mpm@selenic.com>, jason.wessel@windriver.com,
+       amitkale@linsyssoft.com, kgdb-bugreport@lists.sourceforge.net,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: 2.6.23-rc4-mm1: kgdboe link errors
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 11:06:10AM +0900, Paul Mundt wrote:
-> There's nothing that is problematic for file_fsync() with CONFIG_BLOCK=n,
-> and it's built in unconditionally anyways, so move the prototype out to
-> reflect that. Without this, the unionfs build bails out.
+Hi,
 
-Unionfs should stop using it instead.
+randconfig [1] causes this link errors:
+ERROR: "netpoll_cleanup" [drivers/net/kgdboe.ko] undefined!
+ERROR: "netpoll_setup" [drivers/net/kgdboe.ko] undefined!
+ERROR: "netpoll_parse_options" [drivers/net/kgdboe.ko] undefined!
+ERROR: "netpoll_poll" [drivers/net/kgdboe.ko] undefined!
+ERROR: "netpoll_send_udp" [drivers/net/kgdboe.ko] undefined!
+ERROR: "netpoll_set_trap" [drivers/net/kgdboe.ko] undefined!
+make[2]: *** [__modpost] Error 1
+make[1]: *** [modules] Error 2
+make: *** [all] Error 2
 
+[1] http://www.fi.muni.cz/~xslaby/sklad/1.config
+
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
