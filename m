@@ -1,600 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765671AbXILVG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765913AbXILVHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765671AbXILVG4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 17:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765465AbXILVGL
+	id S1765913AbXILVHk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 17:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933123AbXILVG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 17:06:11 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:40177 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765022AbXILVGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 17:06:09 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Lee.Schermerhorn@hp.com, kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Message-Id: <20070912210605.31625.85794.sendpatchset@skynet.skynet.ie>
-In-Reply-To: <20070912210444.31625.65810.sendpatchset@skynet.skynet.ie>
-References: <20070912210444.31625.65810.sendpatchset@skynet.skynet.ie>
-Subject: [PATCH 4/6] Have zonelist contains structs with both a zone pointer and zone_idx
-Date: Wed, 12 Sep 2007 22:06:05 +0100 (IST)
+	Wed, 12 Sep 2007 17:06:26 -0400
+Received: from spirit.analogic.com ([204.178.40.4]:3873 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932640AbXILVGV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 17:06:21 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 12 Sep 2007 21:05:22.0017 (UTC) FILETIME=[A1A8ED10:01C7F580]
+Content-class: urn:content-classes:message
+Subject: Re: Building a kernel-source RPM (not a kernel RPM)?
+Date: Wed, 12 Sep 2007 17:05:58 -0400
+Message-ID: <Pine.LNX.4.61.0709121659410.8879@chaos.analogic.com>
+In-Reply-To: <Pine.LNX.4.64.0709122222010.32380@fbirervta.pbzchgretzou.qr>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Building a kernel-source RPM (not a kernel RPM)?
+Thread-Index: Acf1gKGyL7QX++57RRyEssrSQQgAOQ==
+References: <pan.2007.09.12.16.13.41.195991@gmail.com>  <20070912170529.GA18311@uranus.ravnborg.org>  <1189617081.31502.78.camel@tara.firmix.at>  <20070912175116.GB18311@uranus.ravnborg.org>  <1189620642.31502.104.camel@tara.firmix.at>  <20070912181621.GA18688@uranus.ravnborg.org> <1189621385.31502.111.camel@tara.firmix.at> <Pine.LNX.4.64.0709122222010.32380@fbirervta.pbzchgretzou.qr>
+From: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Cc: "Bernd Petrovitsch" <bernd@firmix.at>, "Sam Ravnborg" <sam@ravnborg.org>,
+       "Dan Stromberg" <dstromberglists@gmail.com>,
+       <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os \(Dick Johnson\)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Using two zonelists per node requires very frequent use of zone_idx(). This
-is costly as it involves a lookup of another structure and a substraction
-operation. As the zone_idx is often required, it should be quickly accessible.
-The node idx could also be stored here if it was found that accessing
-zone->node is significant which may be the case on workloads where nodemasks
-are heavily used.
+On Wed, 12 Sep 2007, Jan Engelhardt wrote:
 
-This patch introduces a struct zoneref to store a zone pointer and a zone
-index.  The zonelist then consists of an array of this struct zonerefs which
-are looked up as necessary. Helpers are given for accessing the zone index
-as well as the node index.
+>
+> On Sep 12 2007 20:23, Bernd Petrovitsch wrote:
+>> On Wed, 2007-09-12 at 20:16 +0200, Sam Ravnborg wrote:
+>>>>
+>>>> But we are talking[0] about a kernel-source-$VERSION.$ARCH.rpm's
+>>>> which contain the kernel sources (read: lots of .c and .h files,
+>>>> etc.) - including a matching .config and after `make oldconfig` - so
+>>>> that one can build out-of-tree modules after installing it with
+>>>> "KSRC=" (or whatever the Makefile parameter is usually called).
+>>>
+>>> You need certain things of the kernel built before you can build
+>>> external modules (if they use a sane build approach). Just including
+>>> the .config with the kernel source is far from enough.
+>>
+>> ACK. That all must be done/prepared correctly for the
+>> kernel-source-*.rpm. And nobody said it is trivial or easy.
+>
+> Trivial as far as SUSE goes. Install the binary package and you get all
+> the symvers, modvers, and everything of the O= part that is needed. That
+> is because symvers are per-binary image and not per-source.
+>
+> Remain the Makefiles, which are in (the big) kernel-source rpm :-/
+>
+>
+>
+> 	Jan
 
-[kamezawa.hiroyu@jp.fujitsu.com: Suggested struct zoneref instead of embedding information in pointers]
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Acked-by: Christoph Lameter <clameter@sgi.com>
----
+If his base package was RedHat, he can just download the sources
+he wants, from ftp.kernel.org, un-tar the *.gz file into /usr/src,
+then copy the .config used to build the existing kernel from /boot.
+It is called /boot/config-`uname -r`. Copy that to the new
+kernel tree as ".config" then chdir to that tree and execute
+`make oldconfig`. Some questions will have to be answered because
+the newer kernel will have additional drivers.
 
- arch/parisc/mm/init.c  |    2 -
- fs/buffer.c            |    6 ++--
- include/linux/mmzone.h |   64 +++++++++++++++++++++++++++++++++++++-------
- kernel/cpuset.c        |    4 +-
- mm/hugetlb.c           |    3 +-
- mm/mempolicy.c         |   35 ++++++++++++++----------
- mm/oom_kill.c          |    2 -
- mm/page_alloc.c        |   51 +++++++++++++++++------------------
- mm/slab.c              |    2 -
- mm/slub.c              |    2 -
- mm/vmscan.c            |    5 +--
- mm/vmstat.c            |    5 ++-
- 12 files changed, 117 insertions(+), 64 deletions(-)
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.30 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/arch/parisc/mm/init.c linux-2.6.23-rc4-mm1-020_zoneid_zonelist/arch/parisc/mm/init.c
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/arch/parisc/mm/init.c	2007-09-12 16:05:27.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/arch/parisc/mm/init.c	2007-09-12 16:05:35.000000000 +0100
-@@ -604,7 +604,7 @@ void show_mem(void)
- 		for (i = 0; i < npmem_ranges; i++) {
- 			zl = node_zonelist(i);
- 			for (j = 0; j < MAX_NR_ZONES; j++) {
--				struct zone **z;
-+				struct zoneref *z;
- 				struct zone *zone;
- 
- 				printk("Zone list for zone %d on node %d: ", j, i);
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/fs/buffer.c linux-2.6.23-rc4-mm1-020_zoneid_zonelist/fs/buffer.c
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/fs/buffer.c	2007-09-12 16:05:27.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/fs/buffer.c	2007-09-12 16:05:35.000000000 +0100
-@@ -368,16 +368,16 @@ void invalidate_bdev(struct block_device
-  */
- static void free_more_memory(void)
- {
--	struct zone **zones;
-+	struct zoneref *zrefs;
- 	int nid;
- 
- 	wakeup_pdflush(1024);
- 	yield();
- 
- 	for_each_online_node(nid) {
--		zones = first_zones_zonelist(node_zonelist(nid, GFP_NOFS),
-+		zrefs = first_zones_zonelist(node_zonelist(nid, GFP_NOFS),
- 						gfp_zone(GFP_NOFS));
--		if (*zones)
-+		if (zrefs->zone)
- 			try_to_free_pages(node_zonelist(nid, GFP_NOFS), 0,
- 						GFP_NOFS);
- 	}
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/include/linux/mmzone.h linux-2.6.23-rc4-mm1-020_zoneid_zonelist/include/linux/mmzone.h
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/include/linux/mmzone.h	2007-09-12 16:05:27.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/include/linux/mmzone.h	2007-09-12 16:05:35.000000000 +0100
-@@ -437,6 +437,15 @@ struct zonelist_cache;
- #endif
- 
- /*
-+ * This struct contains information about a zone in a zonelist. It is stored
-+ * here to avoid dereferences into large structures and lookups of tables
-+ */
-+struct zoneref {
-+	struct zone *zone;	/* Pointer to actual zone */
-+	int zone_idx;		/* zone_idx(zoneref->zone) */
-+};
-+
-+/*
-  * One allocation request operates on a zonelist. A zonelist
-  * is a list of zones, the first one is the 'goal' of the
-  * allocation, the other zones are fallback zones, in decreasing
-@@ -444,11 +453,18 @@ struct zonelist_cache;
-  *
-  * If zlcache_ptr is not NULL, then it is just the address of zlcache,
-  * as explained above.  If zlcache_ptr is NULL, there is no zlcache.
-+ * *
-+ * To speed the reading of the zonelist, the zonerefs contain the zone index
-+ * of the entry being read. Helper functions to access information given
-+ * a struct zoneref are
-+ *
-+ * zonelist_zone()	- Return the struct zone * for an entry in _zonerefs
-+ * zonelist_zone_idx()	- Return the index of the zone for an entry
-+ * zonelist_node_idx()	- Return the index of the node for an entry
-  */
--
- struct zonelist {
- 	struct zonelist_cache *zlcache_ptr;		     // NULL or &zlcache
--	struct zone *zones[MAX_ZONES_PER_ZONELIST + 1];      // NULL delimited
-+	struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1];
- #ifdef CONFIG_NUMA
- 	struct zonelist_cache zlcache;			     // optional ...
- #endif
-@@ -682,14 +698,40 @@ extern struct zone *next_zone(struct zon
- 	     zone;					\
- 	     zone = next_zone(zone))
- 
-+static inline struct zone *zonelist_zone(struct zoneref *zoneref)
-+{
-+	return zoneref->zone;
-+}
-+
-+static inline int zonelist_zone_idx(struct zoneref *zoneref)
-+{
-+	return zoneref->zone_idx;
-+}
-+
-+static inline int zonelist_node_idx(struct zoneref *zoneref)
-+{
-+#ifdef CONFIG_NUMA
-+	/* zone_to_nid not available in this context */
-+	return zoneref->zone->node;
-+#else
-+	return 0;
-+#endif /* CONFIG_NUMA */
-+}
-+
-+static inline void encode_zoneref(struct zone *zone, struct zoneref *zoneref)
-+{
-+	zoneref->zone = zone;
-+	zoneref->zone_idx = zone_idx(zone);
-+}
-+
- /* Returns the first zone at or below highest_zoneidx in a zonelist */
--static inline struct zone **first_zones_zonelist(struct zonelist *zonelist,
-+static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
- 					enum zone_type highest_zoneidx)
- {
--	struct zone **z;
-+	struct zoneref *z;
- 
--	for (z = zonelist->zones;
--			*z && zone_idx(*z) > highest_zoneidx;
-+	for (z = zonelist->_zonerefs;
-+			zonelist_zone_idx(z) > highest_zoneidx;
- 			z++)
- 		;
- 
-@@ -697,11 +739,11 @@ static inline struct zone **first_zones_
- }
- 
- /* Returns the next zone at or below highest_zoneidx in a zonelist */
--static inline struct zone **next_zones_zonelist(struct zone **z,
-+static inline struct zoneref *next_zones_zonelist(struct zoneref *z,
- 					enum zone_type highest_zoneidx)
- {
- 	/* Find the next suitable zone to use for the allocation */
--	for (; *z && zone_idx(*z) > highest_zoneidx; z++)
-+	for (; zonelist_zone_idx(z) > highest_zoneidx; z++)
- 		;
- 
- 	return z;
-@@ -717,9 +759,11 @@ static inline struct zone **next_zones_z
-  * This iterator iterates though all zones at or below a given zone index.
-  */
- #define for_each_zone_zonelist(zone, z, zlist, highidx) \
--	for (z = first_zones_zonelist(zlist, highidx), zone = *z++;	\
-+	for (z = first_zones_zonelist(zlist, highidx),			\
-+					zone = zonelist_zone(z++);	\
- 		zone;							\
--		z = next_zones_zonelist(z, highidx), zone = *z++)
-+		z = next_zones_zonelist(z, highidx),			\
-+					zone = zonelist_zone(z++))
- 
- #ifdef CONFIG_SPARSEMEM
- #include <asm/sparsemem.h>
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/kernel/cpuset.c linux-2.6.23-rc4-mm1-020_zoneid_zonelist/kernel/cpuset.c
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/kernel/cpuset.c	2007-09-10 09:29:14.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/kernel/cpuset.c	2007-09-12 16:05:35.000000000 +0100
-@@ -1525,8 +1525,8 @@ int cpuset_zonelist_valid_mems_allowed(s
- {
- 	int i;
- 
--	for (i = 0; zl->zones[i]; i++) {
--		int nid = zone_to_nid(zl->zones[i]);
-+	for (i = 0; zl->_zonerefs[i].zone; i++) {
-+		int nid = zonelist_node_idx(zl->_zonerefs[i]);
- 
- 		if (node_isset(nid, current->mems_allowed))
- 			return 1;
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/hugetlb.c linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/hugetlb.c
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/hugetlb.c	2007-09-12 16:05:27.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/hugetlb.c	2007-09-12 16:05:35.000000000 +0100
-@@ -73,7 +73,8 @@ static struct page *dequeue_huge_page(st
- 	struct page *page = NULL;
- 	struct zonelist *zonelist = huge_zonelist(vma, address,
- 						htlb_alloc_mask);
--	struct zone *zone, **z;
-+	struct zone *zone;
-+	struct zoneref *z;
- 
- 	for_each_zone_zonelist(zone, z, zonelist, MAX_NR_ZONES - 1) {
- 		nid = zone_to_nid(zone);
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/mempolicy.c linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/mempolicy.c
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/mempolicy.c	2007-09-12 16:05:18.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/mempolicy.c	2007-09-12 16:05:35.000000000 +0100
-@@ -157,7 +157,7 @@ static struct zonelist *bind_zonelist(no
- 		for_each_node_mask(nd, *nodes) { 
- 			struct zone *z = &NODE_DATA(nd)->node_zones[k];
- 			if (z->present_pages > 0) 
--				zl->zones[num++] = z;
-+				encode_zoneref(z, &zl->_zonerefs[num++]);
- 		}
- 		if (k == 0)
- 			break;
-@@ -167,7 +167,7 @@ static struct zonelist *bind_zonelist(no
- 		kfree(zl);
- 		return ERR_PTR(-EINVAL);
- 	}
--	zl->zones[num] = NULL;
-+	zl->_zonerefs[num].zone = NULL;
- 	return zl;
- }
- 
-@@ -489,9 +489,11 @@ static void get_zonemask(struct mempolic
- 	nodes_clear(*nodes);
- 	switch (p->policy) {
- 	case MPOL_BIND:
--		for (i = 0; p->v.zonelist->zones[i]; i++)
--			node_set(zone_to_nid(p->v.zonelist->zones[i]),
--				*nodes);
-+		for (i = 0; p->v.zonelist->_zonerefs[i].zone; i++) {
-+			struct zoneref *zref;
-+			zref = &p->v.zonelist->_zonerefs[i];
-+			node_set(zonelist_node_idx(zref), *nodes);
-+		}
- 		break;
- 	case MPOL_DEFAULT:
- 		break;
-@@ -1159,12 +1161,13 @@ unsigned slab_node(struct mempolicy *pol
- 	case MPOL_INTERLEAVE:
- 		return interleave_nodes(policy);
- 
--	case MPOL_BIND:
-+	case MPOL_BIND: {
- 		/*
- 		 * Follow bind policy behavior and start allocation at the
- 		 * first node.
- 		 */
--		return zone_to_nid(policy->v.zonelist->zones[0]);
-+		return zonelist_node_idx(policy->v.zonelist->_zonerefs);
-+	}
- 
- 	case MPOL_PREFERRED:
- 		if (policy->v.preferred_node >= 0)
-@@ -1242,7 +1245,7 @@ static struct page *alloc_page_interleav
- 
- 	zl = node_zonelist(nid, gfp);
- 	page = __alloc_pages(gfp, order, zl);
--	if (page && page_zone(page) == zl->zones[0])
-+	if (page && page_zone(page) == zonelist_zone(&zl->_zonerefs[0]))
- 		inc_zone_page_state(page, NUMA_INTERLEAVE_HIT);
- 	return page;
- }
-@@ -1366,10 +1369,14 @@ int __mpol_equal(struct mempolicy *a, st
- 		return a->v.preferred_node == b->v.preferred_node;
- 	case MPOL_BIND: {
- 		int i;
--		for (i = 0; a->v.zonelist->zones[i]; i++)
--			if (a->v.zonelist->zones[i] != b->v.zonelist->zones[i])
-+		for (i = 0; a->v.zonelist->_zonerefs[i].zone; i++) {
-+			struct zone *za, *zb;
-+			za = zonelist_zone(&a->v.zonelist->_zonerefs[i]);
-+			zb = zonelist_zone(&b->v.zonelist->_zonerefs[i]);
-+			if (za != zb)
- 				return 0;
--		return b->v.zonelist->zones[i] == NULL;
-+		}
-+		return b->v.zonelist->_zonerefs[i].zone == NULL;
- 	}
- 	default:
- 		BUG();
-@@ -1688,12 +1695,12 @@ static void mpol_rebind_policy(struct me
- 		break;
- 	case MPOL_BIND: {
- 		nodemask_t nodes;
--		struct zone **z;
-+		struct zoneref *z;
- 		struct zonelist *zonelist;
- 
- 		nodes_clear(nodes);
--		for (z = pol->v.zonelist->zones; *z; z++)
--			node_set(zone_to_nid(*z), nodes);
-+		for (z = pol->v.zonelist->_zonerefs; z->zone; z++)
-+			node_set(zonelist_node_idx(z), nodes);
- 		nodes_remap(tmp, nodes, *mpolmask, *newmask);
- 		nodes = tmp;
- 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/oom_kill.c linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/oom_kill.c
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/oom_kill.c	2007-09-12 16:05:27.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/oom_kill.c	2007-09-12 16:05:35.000000000 +0100
-@@ -186,7 +186,7 @@ static inline int constrained_alloc(stru
- {
- #ifdef CONFIG_NUMA
- 	struct zone *zone;
--	struct zone **z;
-+	struct zoneref *z;
- 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
- 	nodemask_t nodes = node_states[N_HIGH_MEMORY];
- 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/page_alloc.c linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/page_alloc.c
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/page_alloc.c	2007-09-12 16:05:27.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/page_alloc.c	2007-09-12 16:05:35.000000000 +0100
-@@ -1359,7 +1359,7 @@ static nodemask_t *zlc_setup(struct zone
-  * We are low on memory in the second scan, and should leave no stone
-  * unturned looking for a free page.
-  */
--static int zlc_zone_worth_trying(struct zonelist *zonelist, struct zone **z,
-+static int zlc_zone_worth_trying(struct zonelist *zonelist, struct zoneref *z,
- 						nodemask_t *allowednodes)
- {
- 	struct zonelist_cache *zlc;	/* cached zonelist speedup info */
-@@ -1370,7 +1370,7 @@ static int zlc_zone_worth_trying(struct 
- 	if (!zlc)
- 		return 1;
- 
--	i = z - zonelist->zones;
-+	i = z - zonelist->_zonerefs;
- 	n = zlc->z_to_n[i];
- 
- 	/* This zone is worth trying if it is allowed but not full */
-@@ -1382,7 +1382,7 @@ static int zlc_zone_worth_trying(struct 
-  * zlc->fullzones, so that subsequent attempts to allocate a page
-  * from that zone don't waste time re-examining it.
-  */
--static void zlc_mark_zone_full(struct zonelist *zonelist, struct zone **z)
-+static void zlc_mark_zone_full(struct zonelist *zonelist, struct zoneref *z)
- {
- 	struct zonelist_cache *zlc;	/* cached zonelist speedup info */
- 	int i;				/* index of *z in zonelist zones */
-@@ -1391,7 +1391,7 @@ static void zlc_mark_zone_full(struct zo
- 	if (!zlc)
- 		return;
- 
--	i = z - zonelist->zones;
-+	i = z - zonelist->_zonerefs;
- 
- 	set_bit(i, zlc->fullzones);
- }
-@@ -1403,13 +1403,13 @@ static nodemask_t *zlc_setup(struct zone
- 	return NULL;
- }
- 
--static int zlc_zone_worth_trying(struct zonelist *zonelist, struct zone **z,
-+static int zlc_zone_worth_trying(struct zonelist *zonelist, struct zoneref *z,
- 				nodemask_t *allowednodes)
- {
- 	return 1;
- }
- 
--static void zlc_mark_zone_full(struct zonelist *zonelist, struct zone **z)
-+static void zlc_mark_zone_full(struct zonelist *zonelist, struct zoneref *z)
- {
- }
- #endif	/* CONFIG_NUMA */
-@@ -1422,7 +1422,7 @@ static struct page *
- get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
- 		struct zonelist *zonelist, int high_zoneidx, int alloc_flags)
- {
--	struct zone **z;
-+	struct zoneref *z;
- 	struct page *page = NULL;
- 	int classzone_idx;
- 	struct zone *zone;
-@@ -1431,7 +1431,7 @@ get_page_from_freelist(gfp_t gfp_mask, u
- 	int did_zlc_setup = 0;		/* just call zlc_setup() one time */
- 
- 	z = first_zones_zonelist(zonelist, high_zoneidx);
--	classzone_idx = zone_idx(*z);
-+	classzone_idx = zonelist_zone_idx(z);
- 
- zonelist_scan:
- 	/*
-@@ -1550,7 +1550,8 @@ __alloc_pages(gfp_t gfp_mask, unsigned i
- {
- 	const gfp_t wait = gfp_mask & __GFP_WAIT;
- 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
--	struct zone **z;
-+	struct zoneref *z;
-+	struct zone *zone;
- 	struct page *page;
- 	struct reclaim_state reclaim_state;
- 	struct task_struct *p = current;
-@@ -1564,9 +1565,9 @@ __alloc_pages(gfp_t gfp_mask, unsigned i
- 		return NULL;
- 
- restart:
--	z = zonelist->zones;  /* the list of zones suitable for gfp_mask */
-+	z = zonelist->_zonerefs;  /* the list of zones suitable for gfp_mask */
- 
--	if (unlikely(*z == NULL)) {
-+	if (unlikely(!z)) {
- 		/*
- 		 * Happens if we have an empty zonelist as a result of
- 		 * GFP_THISNODE being used on a memoryless node
-@@ -1590,8 +1591,8 @@ restart:
- 	if (NUMA_BUILD && (gfp_mask & GFP_THISNODE) == GFP_THISNODE)
- 		goto nopage;
- 
--	for (z = zonelist->zones; *z; z++)
--		wakeup_kswapd(*z, order);
-+	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
-+		wakeup_kswapd(zone, order);
- 
- 	/*
- 	 * OK, we're below the kswapd watermark and have kicked background
-@@ -1794,7 +1795,7 @@ EXPORT_SYMBOL(free_pages);
- static unsigned int nr_free_zone_pages(int offset)
- {
- 	enum zone_type high_zoneidx = MAX_NR_ZONES - 1;
--	struct zone **z;
-+	struct zoneref *z;
- 	struct zone *zone;
- 
- 	/* Just pick one node, since fallback list is circular */
-@@ -1989,7 +1990,7 @@ static int build_zonelists_node(pg_data_
- 		zone_type--;
- 		zone = pgdat->node_zones + zone_type;
- 		if (populated_zone(zone)) {
--			zonelist->zones[nr_zones++] = zone;
-+			encode_zoneref(zone, &zonelist->_zonerefs[nr_zones++]);
- 			check_highest_zone(zone_type);
- 		}
- 
-@@ -2166,11 +2167,11 @@ static void build_zonelists_in_node_orde
- 	struct zonelist *zonelist;
- 
- 	zonelist = &pgdat->node_zonelists[0];
--	for (j = 0; zonelist->zones[j] != NULL; j++)
-+	for (j = 0; zonelist->_zonerefs[j].zone != NULL; j++)
- 		;
- 	j = build_zonelists_node(NODE_DATA(node), zonelist, j,
- 							MAX_NR_ZONES - 1);
--	zonelist->zones[j] = NULL;
-+	zonelist->_zonerefs[j].zone = NULL;
- }
- 
- /*
-@@ -2183,7 +2184,7 @@ static void build_thisnode_zonelists(pg_
- 
- 	zonelist = &pgdat->node_zonelists[1];
- 	j = build_zonelists_node(pgdat, zonelist, 0, MAX_NR_ZONES - 1);
--	zonelist->zones[j] = NULL;
-+	zonelist->_zonerefs[j].zone = NULL;
- }
- 
- /*
-@@ -2208,12 +2209,12 @@ static void build_zonelists_in_zone_orde
- 			node = node_order[j];
- 			z = &NODE_DATA(node)->node_zones[zone_type];
- 			if (populated_zone(z)) {
--				zonelist->zones[pos++] = z;
-+				encode_zoneref(z, &zonelist->_zonerefs[pos++]);
- 				check_highest_zone(zone_type);
- 			}
- 		}
- 	}
--	zonelist->zones[pos] = NULL;
-+	zonelist->_zonerefs[pos].zone = NULL;
- }
- 
- static int default_zonelist_order(void)
-@@ -2290,7 +2291,7 @@ static void build_zonelists(pg_data_t *p
- 	/* initialize zonelists */
- 	for (i = 0; i < MAX_ZONELISTS; i++) {
- 		zonelist = pgdat->node_zonelists + i;
--		zonelist->zones[0] = NULL;
-+		zonelist->_zonerefs[0].zone = NULL;
- 	}
- 
- 	/* NUMA-aware ordering of nodes */
-@@ -2342,13 +2343,13 @@ static void build_zonelist_cache(pg_data
- {
- 	struct zonelist *zonelist;
- 	struct zonelist_cache *zlc;
--	struct zone **z;
-+	struct zoneref *z;
- 
- 	zonelist = &pgdat->node_zonelists[0];
- 	zonelist->zlcache_ptr = zlc = &zonelist->zlcache;
- 	bitmap_zero(zlc->fullzones, MAX_ZONES_PER_ZONELIST);
--	for (z = zonelist->zones; *z; z++)
--		zlc->z_to_n[z - zonelist->zones] = zone_to_nid(*z);
-+	for (z = zonelist->_zonerefs; z->zone; z++)
-+		zlc->z_to_n[z - zonelist->_zonerefs] = zonelist_node_idx(z);
- }
- 
- 
-@@ -2391,7 +2392,7 @@ static void build_zonelists(pg_data_t *p
- 							MAX_NR_ZONES - 1);
- 	}
- 
--	zonelist->zones[j] = NULL;
-+	zonelist->_zonerefs[j].zone = NULL;
- }
- 
- /* non-NUMA variant of zonelist performance cache - just NULL zlcache_ptr */
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/slab.c linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/slab.c
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/slab.c	2007-09-12 16:05:27.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/slab.c	2007-09-12 16:05:35.000000000 +0100
-@@ -3241,7 +3241,7 @@ static void *fallback_alloc(struct kmem_
- {
- 	struct zonelist *zonelist;
- 	gfp_t local_flags;
--	struct zone **z;
-+	struct zoneref *z;
- 	struct zone *zone;
- 	enum zone_type high_zoneidx = gfp_zone(flags);
- 	void *obj = NULL;
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/slub.c linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/slub.c
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/slub.c	2007-09-12 16:05:27.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/slub.c	2007-09-12 16:05:35.000000000 +0100
-@@ -1257,7 +1257,7 @@ static struct page *get_any_partial(stru
- {
- #ifdef CONFIG_NUMA
- 	struct zonelist *zonelist;
--	struct zone **z;
-+	struct zoneref *z;
- 	struct zone *zone;
- 	enum zone_type high_zoneidx = gfp_zone(flags);
- 	struct page *page;
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/vmscan.c linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/vmscan.c
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/vmscan.c	2007-09-12 16:05:27.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/vmscan.c	2007-09-12 16:05:35.000000000 +0100
-@@ -1211,7 +1211,7 @@ static unsigned long shrink_zones(int pr
- 					struct scan_control *sc)
- {
- 	unsigned long nr_reclaimed = 0;
--	struct zone **z;
-+	struct zoneref *z;
- 	struct zone *zone;
- 
- 	sc->all_unreclaimable = 1;
-@@ -1256,10 +1256,9 @@ unsigned long do_try_to_free_pages(struc
- 	unsigned long nr_reclaimed = 0;
- 	struct reclaim_state *reclaim_state = current->reclaim_state;
- 	unsigned long lru_pages = 0;
--	struct zone **z;
-+	struct zoneref *z;
- 	struct zone *zone;
- 	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
--	int i;
- 
- 	count_vm_event(ALLOCSTALL);
- 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/vmstat.c linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/vmstat.c
---- linux-2.6.23-rc4-mm1-010_use_two_zonelists/mm/vmstat.c	2007-09-10 09:29:14.000000000 +0100
-+++ linux-2.6.23-rc4-mm1-020_zoneid_zonelist/mm/vmstat.c	2007-09-12 16:05:35.000000000 +0100
-@@ -365,11 +365,12 @@ void refresh_cpu_vm_stats(int cpu)
-  */
- void zone_statistics(struct zonelist *zonelist, struct zone *z)
- {
--	if (z->zone_pgdat == zonelist->zones[0]->zone_pgdat) {
-+	if (z->zone_pgdat == zonelist_zone(&zonelist->_zonerefs[0])->zone_pgdat) {
- 		__inc_zone_state(z, NUMA_HIT);
- 	} else {
- 		__inc_zone_state(z, NUMA_MISS);
--		__inc_zone_state(zonelist->zones[0], NUMA_FOREIGN);
-+		__inc_zone_state(zonelist_zone(&zonelist->_zonerefs[0]),
-+								NUMA_FOREIGN);
- 	}
- 	if (z->node == numa_node_id())
- 		__inc_zone_state(z, NUMA_LOCAL);
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
