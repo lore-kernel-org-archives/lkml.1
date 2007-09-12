@@ -1,139 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966882AbXILLC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966636AbXILLIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966882AbXILLC2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 07:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966091AbXILLCN
+	id S966636AbXILLIf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 07:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764391AbXILLI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 07:02:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39061 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964778AbXILLCL convert rfc822-to-8bit (ORCPT
+	Wed, 12 Sep 2007 07:08:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:63059 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763595AbXILLI1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 07:02:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [Resend][PATCH -mm] Hibernation: Enter platform hibernation state in a consistent way (rev. 4)
-Date: Wed, 12 Sep 2007 13:14:08 +0200
-User-Agent: KMail/1.9.5
-Cc: David Brownell <david-b@pacbell.net>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Stefan Becker <Stefan.Becker@nokia.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+	Wed, 12 Sep 2007 07:08:27 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 07/15] Don't return -ENOSYS as extra notes size if spufs is not loaded
+Date: Wed, 12 Sep 2007 13:04:57 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
+Cc: Michael Ellerman <michael@ellerman.id.au>, Jeremy Kerr <jk@ozlabs.org>,
+       linux-kernel@vger.kernel.org
+References: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au> <628a383203480c3ce59125feccc32168de919014.1189583010.git.michael@ellerman.id.au>
+In-Reply-To: <628a383203480c3ce59125feccc32168de919014.1189583010.git.michael@ellerman.id.au>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200709121314.09676.rjw@sisk.pl>
+Message-Id: <200709121304.58140.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/Aklu0QdxAiGmyK2nybsO9XISDL9ncePgXvRr
+ agAF486fUfCPjeIuJgtRGs1G4xB3fIVUe52kbFB2v5Q6vm4Jlw
+ IZGGH84zjI0xLFu2mfJPA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Wednesday 12 September 2007, Michael Ellerman wrote:
+> Because the SPU coredump code might be built as part of a module (spufs),
+> we have a stub which is called by the coredump code, this routine then calls
+> into spufs if it's loaded.
+> 
+> Unfortunately the stub returns -ENOSYS if spufs is not loaded, which is
+> interpreted by the coredump code as an extra note size of -38 bytes. This
+> leads to a corrupt core dump.
+> 
+> If spufs is not loaded there will be no SPU ELF notes to write, and so the
+> extra notes size will be == 0.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Make hibernation_platform_enter() execute the enter-a-sleep-state sequence
-instead of the mixed shutdown-with-entering-S4 thing.
-
-Replace the shutting down of devices done by kernel_shutdown_prepare(), before
-entering the ACPI S4 sleep state, with suspending them and the shutting down of
-sysdevs with calling device_power_down(PMSG_SUSPEND) (just like before entering
-S1 or S3, but the target state is now S4).  Also, disable the nonboot CPUs
-before entering the sleep state (S4), which generally always is a good idea.
-
-This is known to fix the "double disk spin down during hibernation" on some
-machines, eg. HPC nx6325 (ref. http://lkml.org/lkml/2007/8/7/316 and the
-following thread).  Moreover, it has been reported to make
-/sys/class/rtc/rtc0/wakealarm work correctly with hibernation for some users.
-It also generally causes the hibernation state (ACPI S4) to be entered faster.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
- kernel/power/disk.c |   61 +++++++++++++++++++++++++++++++++++++---------------
- 1 file changed, 44 insertions(+), 17 deletions(-)
-
-Index: linux-2.6.23-rc6/kernel/power/disk.c
-===================================================================
---- linux-2.6.23-rc6.orig/kernel/power/disk.c
-+++ linux-2.6.23-rc6/kernel/power/disk.c
-@@ -222,21 +222,48 @@ int hibernation_platform_enter(void)
- {
- 	int error;
- 
--	if (hibernation_ops) {
--		kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
--		/*
--		 * We have cancelled the power transition by running
--		 * hibernation_ops->finish() before saving the image, so we
--		 * should let the firmware know that we're going to enter the
--		 * sleep state after all
--		 */
--		error = hibernation_ops->prepare();
--		sysdev_shutdown();
--		if (!error)
--			error = hibernation_ops->enter();
--	} else {
--		error = -ENOSYS;
-+	if (!hibernation_ops)
-+		return -ENOSYS;
-+
-+	/*
-+	 * We have cancelled the power transition by running
-+	 * hibernation_ops->finish() before saving the image, so we should let
-+	 * the firmware know that we're going to enter the sleep state after all
-+	 */
-+	error = hibernation_ops->start();
-+	if (error)
-+		return error;
-+
-+	suspend_console();
-+	error = device_suspend(PMSG_SUSPEND);
-+	if (error)
-+		return error;
-+
-+	error = hibernation_ops->prepare();
-+	if (error)
-+		goto Resume_devices;
-+
-+	error = disable_nonboot_cpus();
-+	if (error)
-+		goto Finish;
-+
-+	local_irq_disable();
-+	error = device_power_down(PMSG_SUSPEND);
-+	if (!error) {
-+		hibernation_ops->enter();
-+		/* We should never get here */
-+		while (1);
- 	}
-+	local_irq_enable();
-+
-+	/*
-+	 * We don't need to reenable the nonboot CPUs or resume consoles, since
-+	 * the system is going to be halted anyway.
-+	 */
-+ Finish:
-+	hibernation_ops->finish();
-+ Resume_devices:
-+	device_resume();
- 	return error;
- }
- 
-@@ -253,14 +280,14 @@ static void power_down(void)
- 	case HIBERNATION_TEST:
- 	case HIBERNATION_TESTPROC:
- 		break;
--	case HIBERNATION_SHUTDOWN:
--		kernel_power_off();
--		break;
- 	case HIBERNATION_REBOOT:
- 		kernel_restart(NULL);
- 		break;
- 	case HIBERNATION_PLATFORM:
- 		hibernation_platform_enter();
-+	case HIBERNATION_SHUTDOWN:
-+		kernel_power_off();
-+		break;
- 	}
- 	kernel_halt();
- 	/*
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
