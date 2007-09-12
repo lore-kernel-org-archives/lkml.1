@@ -1,46 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934485AbXILPkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969891AbXILPn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934485AbXILPkk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 11:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764519AbXILPkc
+	id S969891AbXILPn3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 11:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933509AbXILPnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 11:40:32 -0400
-Received: from outbound-mail-76.bluehost.com ([69.89.22.25]:56579 "HELO
-	outbound-mail-76.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1764060AbXILPkb (ORCPT
+	Wed, 12 Sep 2007 11:43:20 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:50942 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932645AbXILPnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 11:40:31 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Sep 2007 11:40:31 EDT
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Lossy interrupts on x86_64
-Date: Wed, 12 Sep 2007 08:33:15 -0700
-User-Agent: KMail/1.9.7
+	Wed, 12 Sep 2007 11:43:20 -0400
+Date: Wed, 12 Sep 2007 17:43:28 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, jgarzik <jgarzik@pobox.com>
+Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
+Message-ID: <20070912154328.GZ3563@stusta.de>
+References: <20070911101644.cd3f641f.randy.dunlap@oracle.com> <20070911182926.GQ3563@stusta.de> <20070912052413.GH2579@hacking> <20070912055533.GX3563@stusta.de> <46E7FF85.1090806@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200709120833.15980.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 131.111.214.99 authed with jbarnes@virtuousgeek.org}
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - box128.bluehost.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - virtuousgeek.org
+In-Reply-To: <46E7FF85.1090806@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just narrowed down a weird problem where I was losing more than 50% of 
-my vblank interrupts to what seems to be the hires timers patch.  Stock 
-2.6.23-rc5 works fine, but the latest (171) kernel from rawhide drops 
-most of my interrupts unless I also have another interrupt source 
-running (e.g. if I hold down a key or move the mouse I get the expected 
-number of vblank interrupts, otherwise I get between 3 and 30 instead 
-of the expected 60 per second).
+On Wed, Sep 12, 2007 at 08:02:29AM -0700, Randy Dunlap wrote:
+> Adrian Bunk wrote:
+>> On Wed, Sep 12, 2007 at 01:24:13PM +0800, WANG Cong wrote:
+>>> On Tue, Sep 11, 2007 at 08:29:26PM +0200, Adrian Bunk wrote:
+>>>> On Tue, Sep 11, 2007 at 10:16:44AM -0700, Randy Dunlap wrote:
+>>>>> ...
+>>>>> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>>>>> +Mutt (TUI)
+>>>>> +
+>>>>> +Plenty of Linux developers use mutt, so it must work pretty well.
+>>>>> +
+>>>>> +Are there any special config options that are needed??
+>>>>> ...
+>>>> It should work with default settings.
+>>>
+>>> I can't agree with this.
+>>>
+>>> It took me lots of time to configure mutt to work well for me in the 
+>>> first
+>>> time. Just default settings are far _not_ enough, especially for us
+>>> non-english-speakers. One common setting is the encoding, of course, lkml
+>>> prefers UTF-8, so I must set my mutt with `set 
+>>> send_charset="us-ascii:utf-8"`.
+>> This makes sense, but it's not really a mutt specific issue and problems 
+>> because mutt prefers iso-8859-1 over UTF-8 by default are
+>> quite rare.
+>>> Manuals of mutt told me to add "subscribe linux-kernel@vger.kernel.org" 
+>>> if I
+>>> subscribed lkml, but in fact, we'd better _not_ add this, or it will drop
+>>> myself from cc list.
+>>>
+>>> Or other things like these.
+>>> ...
+>> Whether or not people want to get personal copies of answers to mailing
+>> list posts is a religious issue being second only to the vi<->emacs 
+>> wars...
+>> But as far as I understand it, this documentation is intended to help 
+>> people to get sending patches right (no line wrap etc.), not as a generic 
+>> documentation for mail clients.
+>
+> Definitely.
+> and to reduce the amount of repetition that we have to do.
+>
+> I'll add a bit about it not being complete s/w package config info.
 
-Any ideas?  It seems like it might be bad APIC programming, but I 
-haven't gone through those mods to look for suspects...
+One point from this email that might be appropriate for the
+"General Preferences" section of your document would be to suggest 
+configuring the MUA to send text encoded as UTF-8, something like:
 
-Thanks,
-Jesse
+The kernel source code is encoded in UTF-8, and if you configure your 
+email client to send emails UTF-8 encoded you avoid some possible 
+charset problems.
+
+> thanks,
+> ~Randy
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
