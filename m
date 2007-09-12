@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933996AbXILLs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934207AbXILLvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933996AbXILLs7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 07:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764676AbXILLsv
+	id S934207AbXILLvh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 07:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932259AbXILLv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 07:48:51 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:31745 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764052AbXILLsu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 07:48:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CvP93YXMP3dL/obZHz78Lkm1nZIBI4Ba/jc6sPNim7xWeRGaEanTUftNSl5iPMDONQCrQrwqaGReeQmhCaQFbe3S5+UVGLp4h3veGh8mpZ7HE3bBIQCt2rHaL/wq/j0EKbkREzc/7qXGimUdQhUZfdricZFYguYczdz8HJAB6FA=
-Message-ID: <b6fcc0a0709120448s69528fc9reed593229124a4fa@mail.gmail.com>
-Date: Wed, 12 Sep 2007 15:48:49 +0400
-From: "Alexey Dobriyan" <adobriyan@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [PATCH] pci: fix unterminated pci_device_id lists
-Cc: "Kees Cook" <kees@ubuntu.com>, linux-kernel@vger.kernel.org,
-       "Ben Collins" <bcollins@ubuntu.com>,
-       "Michael Wu" <flamingice@sourmilk.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <46E7C91D.3070001@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 12 Sep 2007 07:51:29 -0400
+Received: from main.gmane.org ([80.91.229.2]:49691 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933194AbXILLv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 07:51:28 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: irq load balancing
+Date: Wed, 12 Sep 2007 13:51:56 +0200
+Organization: Linux Foundation
+Message-ID: <20070912135156.09e47d50@oldman>
+References: <3641F7C576757E49AE23AD0D820D72C4232DEA@mailnode1.cranite.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070912064134.GO7910@outflux.net> <46E7C91D.3070001@garzik.org>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 213.144.15.9
+In-Reply-To: <3641F7C576757E49AE23AD0D820D72C4232DEA@mailnode1.cranite.com>
+X-Newsreader: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/12/07, Jeff Garzik <jeff@garzik.org> wrote:
-> Kees Cook wrote:
-> > This patch against 2.6.23-rc6 fixes a couple drivers that do not
-> > correctly terminate their pci_device_id lists.  This results in garbage
-> > being spewed into modules.pcimap when the module happens to not have
-> > 28 NULL bytes following the table, and/or the last PCI ID is actually
-> > truncated from the table when calculating the modules.alias PCI aliases,
-> > cause those unfortunate device IDs to not auto-load.
-> >
-> > Signed-off-by: Kees Cook <kees@ubuntu.com>
->
-> ACK
+On Tue, 11 Sep 2007 16:18:15 -0700
+"Venkat Subbiah" <venkats@cranite.com> wrote:
 
-I mut say, non-terminated PCI ids lists are constant PITA. There should be
-a way to a) put it in macro[1], so that terminator automatically added, and
-b) still allow #ifdef inside table like, e.g. 8139too does.
+> Most of the load in my system is triggered by a single ethernet IRQ. Essentially the IRQ schedules a tasklet and most of the work is done in the taskelet which is scheduled in the IRQ. From what I read looks like the tasklet would be executed on the same CPU on which it was scheduled. So this means even in an SMP system it will be one processor which is overloaded.
 
-[1] or not macro, because #ifdef inside macros aren't allowed.
+The network device should use NAPI and process many packets per IRQ.
+What device driver is it?
+
+> So will using the user space IRQ loadbalancer really help? What I am doubtful about is that the user space load balance comes along and changes the affinity once in a while. But really what I need is every interrupt to go to a different CPU in a round robin fashion.
+
+Userspace IRQ balancer detects network devices and intentionally does
+not balance them. See: http://irqbalance.org/documentation.php
+
+> Looks like the APIC  can distribute IRQ's dynamically? Is this supported in the kernel and any config or proc interface to turn this on/off.
+
+Network device IRQ distribution usually is bad, because it causes cache
+thrashing.
+> 
+> Thx,
+> Venkat
+> 
+
