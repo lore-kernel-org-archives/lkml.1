@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969534AbXILOdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969617AbXILOeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969534AbXILOdZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 10:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967176AbXILOdR
+	id S969617AbXILOeR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 10:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967753AbXILOd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 10:33:17 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:6803 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967091AbXILOdQ (ORCPT
+	Wed, 12 Sep 2007 10:33:58 -0400
+Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:57420
+	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S967691AbXILOd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 10:33:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FQLuX6iJkMlHmsjKVQuSYCpsj0wSlQ5PIAXJpKOy8lfSk2NecM48ajDTKa+VkbJZCM6lnI/cDZhNQmzsFGwwQX1zkOfKC2J5d/y/p+8aUJ0ilA9ulJe/qPOVMb1jOLgofcdLxE2GkA7X05VzUp9T8+TTEIsyqf0ASwNEjs3401g=
-Message-ID: <625fc13d0709120733w32878f94oca2034f12f47c30c@mail.gmail.com>
-Date: Wed, 12 Sep 2007 09:33:12 -0500
-From: "Josh Boyer" <jwboyer@gmail.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: 2.6.23-rc6-git1 -- termios *_1 compile failures on powerpc
-Cc: "Alan Cox" <alan@redhat.com>, "David Miller" <davem@davemloft.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Mel Gorman" <mel@csn.ul.ie>
-In-Reply-To: <20070912115823.GG4835@shadowen.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 12 Sep 2007 10:33:57 -0400
+Date: Wed, 12 Sep 2007 07:33:44 -0700 (PDT)
+Message-Id: <20070912.073344.27797445.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: hadi@cyberus.ca, lists@nerdbynature.de, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.23-rc5: possible irq lock inversion dependency detected
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070911124327.GA6183@gondor.apana.org.au>
+References: <20070911021812.GA1544@gondor.apana.org.au>
+	<1189512106.4231.6.camel@localhost>
+	<20070911124327.GA6183@gondor.apana.org.au>
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070912115823.GG4835@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/12/07, Andy Whitcroft <apw@shadowen.org> wrote:
-> The following commit just hit mainline and all my powerpc test boxes are
-> failing during compilation:
->
->         commit f629307c857c030d5a3dd777fee37c8bb395e171
->         tty: termios locking functions break with new termios type
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Tue, 11 Sep 2007 20:43:27 +0800
 
-I think this is already being discussed on the linuxppc-dev list.
+> On Tue, Sep 11, 2007 at 08:01:46AM -0400, jamal wrote:
+> >
+> > [NET_SCHED] protect action config/dump from irqs
+> 
+> Looks good! Thanks Jamal.
 
-josh
+Applied, I'll try to push this in some time soon.
