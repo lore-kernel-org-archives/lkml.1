@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761714AbXILTYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764141AbXILTZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761714AbXILTYq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 15:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbXILTYj
+	id S1764141AbXILTZA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 15:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbXILTYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 12 Sep 2007 15:24:39 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:57638 "EHLO
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:57639 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752286AbXILTYi (ORCPT
+	with ESMTP id S1752279AbXILTYi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 12 Sep 2007 15:24:38 -0400
-Date: Wed, 12 Sep 2007 12:31:22 -0700
+Date: Wed, 12 Sep 2007 12:33:38 -0700
 From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86_64: check MSR to get MMCONFIG for AMD Family 10h Opteron
+Subject: [PATCH] x86_64: check and enable MMCONFIG for AMD Family 10h Opteron
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>
+       Jeff Garzik <jeff@garzik.org>, Greg KH <greg@kroah.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200709121231.23345.yinghai.lu@sun.com>
+Message-id: <200709121233.39218.yinghai.lu@sun.com>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Content-transfer-encoding: 7BIT
@@ -26,99 +26,54 @@ User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86_64: check MSR to get MMCONFIG for AMD Family 10h Opteron
-
-So even MCFG is not there, we still can use MMCONFIG.
+[PATCH] x86_64: check and enable MMCONFIG for AMD Family 10h Opteron
 
 Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-Index: linux-2.6/arch/i386/pci/mmconfig-shared.c
+Index: linux-2.6/arch/x86_64/kernel/setup.c
 ===================================================================
---- linux-2.6.orig/arch/i386/pci/mmconfig-shared.c	2007-09-12 10:18:09.000000000 -0700
-+++ linux-2.6/arch/i386/pci/mmconfig-shared.c	2007-09-12 11:25:11.000000000 -0700
-@@ -133,33 +133,79 @@
- 	return "Intel Corporation 945G/GZ/P/PL Express Memory Controller Hub";
+--- linux-2.6.orig/arch/x86_64/kernel/setup.c	2007-09-12 11:28:08.000000000 -0700
++++ linux-2.6/arch/x86_64/kernel/setup.c	2007-09-12 12:09:32.000000000 -0700
+@@ -507,6 +507,32 @@
  }
+ #endif
  
-+static const char __init *pci_mmcfg_amd_fam10h(void)
++/*[39:8] */
++/* why not using 0xfe000000 ? */
++#define FAM10H_PCI_MMIO_BASE 0xc0000000
++static void fam10h_check_enable_mmcfg(struct cpuinfo_x86 *c)
 +{
 +	u32 low, high, address;
-+	u64 base;
-+	int i;
-+	unsigned segnbits = 0, busnbits;
 +
 +	address = 0xc0010058;
 +	if (rdmsr_safe(address, &low, &high))
-+		return NULL;
++		return;
 +
-+	/* mmconfig is not enable */
-+	if (!(low & 1))
-+		return NULL;
++	if (low & 1)
++		return;
 +
-+	base = high & 0xffff;
-+	base <<= 32;
-+
-+	busnbits = (low >> 2) & 0x0f;
-+	if (busnbits > 8) {
-+		segnbits = busnbits - 8;
-+		busnbits = 8;
-+	}
-+
-+	pci_mmcfg_config_num = (1 << segnbits);
-+	pci_mmcfg_config = kzalloc(sizeof(pci_mmcfg_config[0]) * pci_mmcfg_config_num, GFP_KERNEL);
-+	if (!pci_mmcfg_config)
-+		return NULL;
-+
-+	for (i=0; i < (1 << segnbits); i++) {
-+		pci_mmcfg_config[i].address = base + (1<<28) * i;
-+		pci_mmcfg_config[i].pci_segment = i;
-+		pci_mmcfg_config[i].start_bus_number = 0;
-+		pci_mmcfg_config[i].end_bus_number = (1 << busnbits) - 1;
-+	}
-+
-+	return "AMD Family 10h NB";
++	printk(KERN_INFO "Enable MMCONFIG on AMD Family 10h\n");
++	/*
++	 * if it is not enable, let enable it and assume only one segement
++	 * with 256 buses
++	 */
++	low &= ~(0xfff00000 | (0xf<<2));
++	low |= (8<<2) | (1<<0);
++	high &= ~(0x0000ffff);
++	high |= (FAM10H_PCI_MMIO_BASE>>(32-8));
++	wrmsr_safe(address, low, high);
 +}
 +
- struct pci_mmcfg_hostbridge_probe {
-+	u32 bus;
-+	u32 devfn;
- 	u32 vendor;
- 	u32 device;
- 	const char *(*probe)(void);
- };
- 
- static struct pci_mmcfg_hostbridge_probe pci_mmcfg_probes[] __initdata = {
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_E7520_MCH, pci_mmcfg_e7520 },
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945G_HB, pci_mmcfg_intel_945 },
-+	{ 0, PCI_DEVFN(0, 0), PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_E7520_MCH, pci_mmcfg_e7520 },
-+	{ 0, PCI_DEVFN(0, 0), PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945G_HB, pci_mmcfg_intel_945 },
-+	{ 0, PCI_DEVFN(0x18, 0), PCI_VENDOR_ID_AMD, 0x1200, pci_mmcfg_amd_fam10h },
-+	{ 0xff, PCI_DEVFN(0, 0), PCI_VENDOR_ID_AMD, 0x1200, pci_mmcfg_amd_fam10h },
- };
- 
- static int __init pci_mmcfg_check_hostbridge(void)
- {
- 	u32 l;
-+	u32 bus, devfn;
- 	u16 vendor, device;
- 	int i;
- 	const char *name;
- 
--	pci_conf1_read(0, 0, PCI_DEVFN(0,0), 0, 4, &l);
--	vendor = l & 0xffff;
--	device = (l >> 16) & 0xffff;
--
- 	pci_mmcfg_config_num = 0;
- 	pci_mmcfg_config = NULL;
- 	name = NULL;
- 
- 	for (i = 0; !name && i < ARRAY_SIZE(pci_mmcfg_probes); i++) {
-+		bus =  pci_mmcfg_probes[i].bus;
-+		devfn = pci_mmcfg_probes[i].devfn;
-+		pci_conf1_read(0, bus, devfn, 0, 4, &l);
-+		vendor = l & 0xffff;
-+		device = (l >> 16) & 0xffff;
+ /*
+  * On a AMD dual core setup the lower bits of the APIC id distingush the cores.
+  * Assumes number of cores is a power of two.
+@@ -655,6 +681,9 @@
+ 	/* Family 10 doesn't support C states in MWAIT so don't use it */
+ 	if (c->x86 == 0x10 && !force_mwait)
+ 		clear_bit(X86_FEATURE_MWAIT, &c->x86_capability);
 +
- 		if (pci_mmcfg_probes[i].vendor == vendor &&
- 		    pci_mmcfg_probes[i].device == device)
- 			name = pci_mmcfg_probes[i].probe();
++	if (c->x86 == 0x10)
++		fam10h_check_enable_mmcfg(c);
+ }
+ 
+ static void __cpuinit detect_ht(struct cpuinfo_x86 *c)
