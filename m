@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765844AbXILLee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765986AbXILLfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765844AbXILLee (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 07:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764693AbXILLeZ
+	id S1765986AbXILLfT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 07:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765235AbXILLfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 07:34:25 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41181 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764629AbXILLeY (ORCPT
+	Wed, 12 Sep 2007 07:35:05 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:49649 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765546AbXILLfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 07:34:24 -0400
-Date: Wed, 12 Sep 2007 12:34:09 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Michael Neuling <mikey@neuling.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org,
-       Alan Cox <alan@redhat.com>, "David S. Miller" <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH] powerpc: add new required termio functions
-Message-ID: <20070912113409.GA7253@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Michael Neuling <mikey@neuling.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org,
-	Alan Cox <alan@redhat.com>, "David S. Miller" <davem@davemloft.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>
-References: <8018.1189562679@neuling.org> <20070912102032.GB7858@osiris.boeblingen.de.ibm.com> <20070912040109.3f6a9149.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 12 Sep 2007 07:35:04 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 06/15] Correctly calculate the size of the local-store to dump
+Date: Wed, 12 Sep 2007 13:31:34 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
+Cc: Michael Ellerman <michael@ellerman.id.au>, Jeremy Kerr <jk@ozlabs.org>,
+       linux-kernel@vger.kernel.org
+References: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au> <895526252184eee5548e553d1cfec642b7fc68b8.1189583010.git.michael@ellerman.id.au>
+In-Reply-To: <895526252184eee5548e553d1cfec642b7fc68b8.1189583010.git.michael@ellerman.id.au>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070912040109.3f6a9149.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200709121331.35059.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19IBEQ7T+ndZ7TPXF+1vIanJePmLQuQwjFx6Ds
+ 1qf3GgCYM5EWk7DfB0GxALsiJYxv4cjqMI+jmFQPwykrvVOlmA
+ CBiFPZDrpawpim+FMBI2g==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 04:01:09AM -0700, Andrew Morton wrote:
-> On Wed, 12 Sep 2007 12:20:32 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+On Wednesday 12 September 2007, Michael Ellerman wrote:
+> The routine to dump the local store, __spufs_mem_read(), does not take the
+> spu_lslr_RW value into account - so we shouldn't check it when we're
+> calculating the size either.
 > 
-> > On Wed, Sep 12, 2007 at 12:04:39PM +1000, Michael Neuling wrote:
-> > > The "tty: termios locking functions break with new termios type" patch
-> > > (f629307c857c030d5a3dd777fee37c8bb395e171) breaks the powerpc compile.
-> > > [...]
-> > > I'm guessing other architectures are broken too?
-> > 
-> > FWIW, the above quoted patch breaks s390 as well.
-> 
-> Does this fix it?
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-I might be missing something, but the the right fix is probably to
-apply the arch patches from Alan to powerpc and s390.  We don't want to
-be left over without all the nice termios features on these platforms,
-do we?
-
-
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
