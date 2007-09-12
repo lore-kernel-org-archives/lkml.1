@@ -1,64 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968213AbXILOMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968692AbXILOPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968213AbXILOMS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 10:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758219AbXILOMJ
+	id S968692AbXILOPk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 10:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966534AbXILOPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 10:12:09 -0400
-Received: from hyrule.inforealm.org ([62.58.71.23]:59323 "EHLO
-	hyrule.inforealm.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756027AbXILOMI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 10:12:08 -0400
-Date: Wed, 12 Sep 2007 16:12:07 +0200
-From: Stef Epardaud <stef@epardaud.net>
-To: "Michael B. Trausch" <mike@trausch.us>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [OT] Ubuntu GG 2.6.22 (Was: Re: Filesystem silent crash with EXT3)
-Message-ID: <20070912141206.GA24461@inforealm.org>
-References: <20070912120203.GA23510@inforealm.org> <46E7EF35.5000002@trausch.us>
+	Wed, 12 Sep 2007 10:15:30 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45410 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966331AbXILOP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 10:15:28 -0400
+From: Neil Brown <neilb@suse.de>
+To: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
+Date: Wed, 12 Sep 2007 16:14:06 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46E7EF35.5000002@trausch.us>
-User-Agent: Mutt/1.5.11+cvs20060403
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18151.62510.891210.485277@notabene.brown>
+Cc: trond.myklebust@fys.uio.no, bfields@fieldses.org, netdev@vger.kernel.org,
+       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [patch] sunrpc: make closing of old temporary sockets work (was: problems with lockd in 2.6.22.6)
+In-Reply-To: message from Wolfgang Walter on Wednesday September 12
+References: <200709121407.11151.wolfgang.walter@studentenwerk.mhn.de>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 09:52:53AM -0400, Michael B. Trausch wrote:
-> (I am cc:ing the list so that this person does not get several multiple
-> replies.  Also, I am making the assumption, Stef, that you are not
-> running a vanilla kernel that you built yourself from the kernel sources
-> and that you are running the Ubuntu stock kernel.)
+On Wednesday September 12, wolfgang.walter@studentenwerk.mhn.de wrote:
+> Hello,
+> 
+> as already described old temporary sockets (client is gone) of lockd aren't
+> closed after some time. So, with enough clients and some time gone, there
+> are 80 open dangling sockets and you start getting messages of the form:
+> 
+> lockd: too many open TCP sockets, consider increasing the number of nfsd threads.
+> 
+> If I understand the code then the intention was that the server closes
+> temporary sockets after about 6 to 12 minutes:
+> 
+> 	a timer is started which calls svc_age_temp_sockets every 6 minutes.
+> 
+> 	svc_age_temp_sockets:
+> 		if a socket is marked OLD it gets closed.
+> 		sockets which are not marked as OLD are marked OLD
+> 
+> 	every time the sockets receives something OLD is cleared.
+> 
+> But svc_age_temp_sockets never closes any socket though because it only
+> closes sockets with svsk->sk_inuse == 0. This seems to be a bug.
+> 
+> Here is a patch against 2.6.22.6 which changes the test to
+> svsk->sk_inuse <= 0 which was probably meant. The patched kernel runs fine
+> here. Unused sockets get closed (after 6 to 12 minutes)
+> 
+> Signed-off-by: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
+> 
+> --- ../linux-2.6.22.6/net/sunrpc/svcsock.c	2007-08-27 18:10:14.000000000 +0200
+> +++ net/sunrpc/svcsock.c	2007-09-11 11:07:13.000000000 +0200
+> @@ -1572,7 +1575,7 @@
+>  
+>  		if (!test_and_set_bit(SK_OLD, &svsk->sk_flags))
+>  			continue;
+> -		if (atomic_read(&svsk->sk_inuse) || test_bit(SK_BUSY, &svsk->sk_flags))
+> +		if (atomic_read(&svsk->sk_inuse) <= 0 || test_bit(SK_BUSY, &svsk->sk_flags))
+>  			continue;
+>  		atomic_inc(&svsk->sk_inuse);
+>  		list_move(le, &to_be_aged);
+> 
+> 
+> As svc_age_temp_sockets did not do anything before this change may trigger
+> hidden bugs.
+> 
+> To be true I don't see why this check
+> 
+> (atomic_read(&svsk->sk_inuse) <= 0 || test_bit(SK_BUSY, &svsk->sk_flags))
+> 
+> is needed at all (it can only be an optimation) as this fields change after
+> the check. In svc_tcp_accept there is no such check when a temporary socket
+> is closed.
 
-You're right.
+Thanks for looking into this.
 
-> Please go to #ubuntu+1 on irc.freenode.net for issues with your Ubuntu
-> Gutsy Gibbon prerelease system.  For starters, the kernel that comes
-> with Ubuntu is not the vanilla Linux kernel, it has patches and added
-> and removed things to it---like nearly all distribution kernels.
+I think the correct change is to test
+		if (atomic_read(&svsk->sk_inuse) > 1 || test_bit(SK_BUSY, &svsk->sk_flags))
+or even
+		if (atomic_read(&svsk->sk_inuse) != 1 || test_bit(SK_BUSY, &svsk->sk_flags))
 
-Sorry, I did not realise there was a more appropriate place. It won't
-happen again :)
+sk_inuse contains a bias of '1' until SK_DEAD is set.  So a normal,
+active socket will have an inuse count of 1 or more.  If it is exactly
+1, then either it is SK_DEAD (in which case there is nothing for this
+code to do), or it has no users, in which case it is appropriate to
+close the socket if it is old.
+Note that this test is for "the socket should not be closed", so we
+test if it is *not* 1, or > 1.
 
-> Secondly, the Gutsy Gibbon is not yet released for public consumption.
-> It is in a prerelease state, and as such, if you're running it, and you
-> encounter issues, please file bugs with Ubuntu
-> (http://www.launchpad.net/), where they will be far more receptive to
-> such information.  However, they will not directly support you---you
-> chose to run a prerelease system; they'll tell you that if it breaks
-> your system you get to keep all the pieces.  Once the Gibbon is
-> released, though, you can use it with the backing of the regular Ubuntu
-> community and it will be supported.
-> That having been said, you may not want to run prerelease software that
-> is known to be unstable if you don't have the time (or the ability) to
-> troubleshoot and file a detailed bug report during the prerelease state.
+The tests are needed because we don't want to close a socket that
+might be inuse elsewhere.  The SK_BUSY bit combined with the sk_inuse
+count combine to check if the socket is in use at all or not.
 
-It's not so much that I am complaining, I didn't ask anyone to help me
-recover my data either. I just wanted to see if there was something I
-could do to find an eventual problem, so that it could be fixed.
+You change effectively disabled the test, as sk_inuse is never <= 0
+(except when SK_DEAD is set).
 
-Thanks for your pointers though.
--- 
-Stéphane Epardaud
+This bug has been present since 
+commit aaf68cfbf2241d24d46583423f6bff5c47e088b3
+Author: NeilBrown <neilb@suse.de>
+Date:   Thu Feb 8 14:20:30 2007 -0800
+
+(i.e. it is my fault).
+So it is in 2.6.21 and later and should probably go to .stable for .21
+and .22.
+
+Bruce:  for you :-)
+---------------------------
+Correctly close old nfsd/lockd sockets.
+
+From: NeilBrown <neilb@suse.de>
+
+Commit aaf68cfbf2241d24d46583423f6bff5c47e088b3 added a bias
+to sk_inuse, so this test for an unused socket now fails.  So no
+sockets gets closed because they are old (they might get closed
+if the client closed them).
+
+This bug has existed since 2.6.21-rc1.
+
+Thanks to Wolfgang Walter for finding and reporting the bug.
+
+
+Cc: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./net/sunrpc/svcsock.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
+--- .prev/net/sunrpc/svcsock.c	2007-09-12 16:05:23.000000000 +0200
++++ ./net/sunrpc/svcsock.c	2007-09-12 16:06:01.000000000 +0200
+@@ -1592,7 +1592,8 @@ svc_age_temp_sockets(unsigned long closu
+ 
+ 		if (!test_and_set_bit(SK_OLD, &svsk->sk_flags))
+ 			continue;
+-		if (atomic_read(&svsk->sk_inuse) || test_bit(SK_BUSY, &svsk->sk_flags))
++		if (atomic_read(&svsk->sk_inuse) > 1
++		    || test_bit(SK_BUSY, &svsk->sk_flags))
+ 			continue;
+ 		atomic_inc(&svsk->sk_inuse);
+ 		list_move(le, &to_be_aged);
