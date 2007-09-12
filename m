@@ -1,57 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967734AbXILQ7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934921AbXILRAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967734AbXILQ7n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 12:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933902AbXILQ7d
+	id S934921AbXILRAT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967748AbXILQ7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 12:59:33 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:13493 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933731AbXILQ7b (ORCPT
+	Wed, 12 Sep 2007 12:59:36 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:4369 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933753AbXILQ7d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 12:59:31 -0400
+	Wed, 12 Sep 2007 12:59:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=QVykY8dYCXT1hSjSuSmO3BL4dbLbylJUFA05JVHNsTT1pfvv4hWIAzbsTSah5s4+EzAHhKz5mVI8WYznzINBhlSJiJqUUhMEI6llKMyvZ03N/Dm8X4eGJNwnfvHalgz+FXG/4twTidxCUj7HhigHDi/EGGCuUA/wmAdj3ID0cj4=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Thomas Dahlmann <thomas.dahlmann@amd.com>
-Subject: [PATCH] AMD 5536 UDC - Remove unneeded memset()
-Date: Wed, 12 Sep 2007 18:56:05 +0200
-User-Agent: KMail/1.9.7
-Cc: info-linux@geode.amd.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=UEl5iwLXhgS597JInC3iBZ3nQGIScv0qwtbw88B6OODd1QpZUeQ2WddMou64ZdjJ0lKi3JJ5XWUQgjICtmrp/YrKwwg0ymZkhLgKT5py2QCaTbBJmqIZbPQgpiJjVMguTNkwicu6LdXkMHcRB3Ng033IWIw+uB20SPiHc6JRWRQ=
+Message-ID: <46E81AC6.3000306@googlemail.com>
+Date: Wed, 12 Sep 2007 18:58:46 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, linux-alpha@vger.kernel.org,
+       Stefan Becker <Stefan.Becker@nokia.com>, Andi Kleen <ak@suse.de>,
+       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
+       Pavel Machek <pavel@ucw.cz>, "Thomas Gleixner" <tglx@linutronix.de>,
+       Jakub Jelinek <jakub@redhat.com>, Jeff Dike <jdike@linux.intel.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       "Adrian Bunk \"\"" <bunk@kernel.org>
+Subject: [1/4] 2.6.23-rc6: known regressions
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709121856.05742.jesper.juhl@gmail.com>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-In drivers/usb/gadget/amd5536udc.c::udc_pci_probe() - 
-We allocate storage for 'dev' with kzalloc(), so it is already zero, 
-no need for an extra memset().
+Here is a list of some known regressions in 2.6.23-rc6.
+
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
+
+List of Aces
+
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            10
+Linus Torvalds                         6
+Alan Stern                             5
+Andi Kleen                             5
+Hugh Dickins                           5
+Trond Myklebust                        5
+Andrew Morton                          4
+Al Viro                                3
+Alexey Starikovskiy                    3
+Cornelia Huck                          3
+David S. Miller                        3
+Jens Axboe                             3
+Stephen Hemminger                      3
+Tejun Heo                              3
 
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
 
- drivers/usb/gadget/amd5536udc.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+Unclassified
 
-diff --git a/drivers/usb/gadget/amd5536udc.c b/drivers/usb/gadget/amd5536udc.c
-index 714156c..e95ffc9 100644
---- a/drivers/usb/gadget/amd5536udc.c
-+++ b/drivers/usb/gadget/amd5536udc.c
-@@ -3244,7 +3244,6 @@ static int udc_pci_probe(
- 		retval = -ENOMEM;
- 		goto finished;
- 	}
--	memset(dev, 0, sizeof(struct udc));
- 
- 	/* pci setup */
- 	if (pci_enable_device(pdev) < 0) {
+Subject         : x86_64 vdso patch is broken somehow?
+References      : http://lkml.org/lkml/2007/8/29/136
+Last known good : ?
+Submitter       : Chuck Ebbert <cebbert@redhat.com>
+Caused-By       : Andi Kleen <ak@suse.de>
+                  commit 2aae950b21e4bc789d1fc6668faf67e8748300b7
+Handled-By      : ?
+Status          : unknown
 
+Subject         : cpu hotplug support broken in 2.6.23-rc3/highres timers break cpu hotplug in 2.6.23-rc5
+References      : http://lkml.org/lkml/2007/8/27/58
+                  http://lkml.org/lkml/2007/9/3/65
+Last known good : ?
+Submitter       : Pavel Machek <pavel@ucw.cz>
+Caused-By       : ?
+Handled-By      : ?
+Status          : problem is being debugged
+
+Subject         : 2.6.23-rc3-git1 crash/stuck on VIA CN700 system
+References      : http://lkml.org/lkml/2007/8/20/174
+Last known good : ?
+Submitter       : Stefan Becker <Stefan.Becker@nokia.com>
+Caused-By       : Andi Kleen <ak@suse.de>
+                  commit 19d36ccdc34f5ed444f8a6af0cbfdb6790eb1177
+Handled-By      : Andi Kleen <ak@suse.de>
+                  Dave Jones <davej@redhat.com>
+Workaround      : http://lkml.org/lkml/2007/9/5/221
+Status          : problem is being debugged
+
+Subject         : console is messed up after resume from s2ram or switching to console from X
+References      : http://lkml.org/lkml/2007/8/4/6
+Last known good : ?
+Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+Caused-By       : ?
+Handled-By      : H. Peter Anvin <hpa@zytor.com>
+                  Antonino A. Daplas <adaplas@gmail.com>
+Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
+Status          : problem is being debugged
+
+Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
+References      : http://lkml.org/lkml/2007/7/22/86
+Last known good : ?
+Submitter       : Markus <lists4me@web.de>
+Caused-By       : ?
+Handled-By      : Ingo Molnar <mingo@elte.hu>
+Status          : problem is being debugged
+
+Subject         : uml on x86_64 compile error
+References      : http://lkml.org/lkml/2007/9/3/86
+Last known good : ?
+Submitter       : Adrian Bunk <bunk@kernel.org>
+Caused-By       : Jeff Dike <jdike@linux.intel.com>
+                  commit d1254b12c93e1e586137a2ffef71fd33cf273f35
+Handled-By      : ?
+Status          : unknown
+
+
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
