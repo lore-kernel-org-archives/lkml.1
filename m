@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933739AbXILKJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965812AbXILKMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933739AbXILKJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 06:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761234AbXILKJt
+	id S965812AbXILKMS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 06:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933008AbXILKMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 06:09:49 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:49736 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761159AbXILKJs (ORCPT
+	Wed, 12 Sep 2007 06:12:06 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:59180
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932432AbXILKME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 06:09:48 -0400
-Message-ID: <46E7B9DA.6070404@linux.vnet.ibm.com>
-Date: Wed, 12 Sep 2007 15:35:14 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Wed, 12 Sep 2007 06:12:04 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH -mm] ssb: Make pcmciahost depend on PCMCIA=y
+Date: Wed, 12 Sep 2007 12:09:09 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070912021100.GB26827@linux-sh.org>
+In-Reply-To: <20070912021100.GB26827@linux-sh.org>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Eric W Biederman <ebiederm@xmission.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>
-Subject: Re: [-mm PATCH 1/9] Memory controller resource counters (v6)
-References: <20070817084228.26003.12568.sendpatchset@balbir-laptop> <20070817084238.26003.7733.sendpatchset@balbir-laptop> <6599ad830709101742k658234b4of59f14ef27e40d14@mail.gmail.com>
-In-Reply-To: <6599ad830709101742k658234b4of59f14ef27e40d14@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709121209.10068.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> Hi Balbir/Pavel,
+On Wednesday 12 September 2007 04:11:00 Paul Mundt wrote:
+> SSB uses a bool (SSB_PCMCIAHOST_POSSIBLE) to determine whether to
+> build in PCMCIA support or not, as the PCMCIA host code itself is
+> also only a bool, make SSB_PCMCIAHOST_POSSIBLE depend on PCMCIA=y.
 > 
-> As I mentioned to you directly at the kernel summit, I think it might
-> be cleaner to integrate resource counters more closely with control
-> groups. So rather than controllers such as the memory controller
-> having to create their own boilerplate cf_type structures and
-> read/write functions, it should be possible to just call a function
-> something like
+> Without this, SSB_PCMCIAHOST_POSSIBLE evaluates to y when PCMCIA
+> is built as a module, which results in link errors due to the
+> pcmcia_access_configuration_register() accesses, where the symbol
+> is only defined in a module.
 > 
-> control_group_add_rescounter(struct cgroup *cg, struct cgroup_subsys *ss,
->                                              struct res_counter *res,
-> const char *name)
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 > 
-> and have it handle all the userspace API. This would simplify the task
-> of keeping a consistent userspace API between different controllers
-> using the resource counter abstraction.
+> --
 > 
-> Paul
+>  drivers/ssb/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-2.6.23-rc4-mm1.orig/drivers/ssb/Kconfig	2007-09-11 15:15:52.000000000 +0900
+> +++ linux-2.6.23-rc4-mm1/drivers/ssb/Kconfig	2007-09-12 10:51:53.000000000 +0900
+> @@ -37,7 +37,7 @@
+>  
+>  config SSB_PCMCIAHOST_POSSIBLE
+>  	bool
+> -	depends on SSB && PCMCIA && EXPERIMENTAL
+> +	depends on SSB && PCMCIA=y && EXPERIMENTAL
+>  	default y
+>  
+>  config SSB_PCMCIAHOST
+> 
 > 
 
-Yes, I remember discussing it with you. I would expect res_counters
-definition to be dynamic (to be able to add the guarantee, soft limit,
-etc) for expansion in the future. In the future, I would also like
-to do hierarchical resource groups, the hierarchy would represent
-the current filesystem hierarchy.
+There we go. The usual SELECT dependency hell again...
+Would changing SSB_PCMCIAHOST_POSSIBLE to tristate also fix it?
+What would be the sideeffects?
+
+I think this PCMCIA=y is not good, because it's perfectly
+legal to build PCMCIA as module, while SSB and everything
+that depends on SSB is also a module.
+Would tristate fix that?
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Greetings Michael.
