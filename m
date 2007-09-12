@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970434AbXILRGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764298AbXILTqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970434AbXILRGe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764335AbXILRG0
+	id S1764298AbXILTqb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 15:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXILTqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 13:06:26 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:46367 "EHLO atlrel7.hp.com"
+	Wed, 12 Sep 2007 15:46:22 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:53947 "EHLO atlrel6.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765236AbXILRGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 13:06:25 -0400
-Subject: Re: Kernel Panic - 2.6.23-rc4-mm1 ia64 - was Re: Update: 
+	id S1752031AbXILTqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 15:46:21 -0400
+Subject: [PATCH] Re: Kernel Panic - 2.6.23-rc4-mm1 ia64 - was Re: Update: 
 	[Automatic] NUMA replicated pagecache ...
 From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
+To: Andy Whitcroft <apw@shadowen.org>, balbir@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>,
        Linux Memory Management List <linux-mm@kvack.org>,
        Joachim Deguara <joachim.deguara@amd.com>,
        Christoph Lameter <clameter@sgi.com>, Mel Gorman <mel@csn.ul.ie>,
@@ -29,8 +29,8 @@ References: <20070727084252.GA9347@wotan.suse.de>
 	 <20070912154130.GS4835@shadowen.org>
 Content-Type: text/plain
 Organization: HP/OSLO
-Date: Wed, 12 Sep 2007 13:04:14 -0400
-Message-Id: <1189616655.5004.52.camel@localhost>
+Date: Wed, 12 Sep 2007 15:46:14 -0400
+Message-Id: <1189626374.5004.61.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
@@ -52,33 +52,46 @@ On Wed, 2007-09-12 at 16:41 +0100, Andy Whitcroft wrote:
 > Be interested to know the outcome of any bisect you do.  Given its
 > tripping in reclaim.
 
-FYI:  doesn't seem to fail with 23-rc6.  
-
-> 
-> What size of box is this?  Wondering if we have anything big enough to
-> test with.
-
-This is a 16-cpu, 4-node, 32GB HP rx8620.  The test load that I'm
-running is Dave Anderson's "usex" with a custom test script that runs:
-
-5 built-in usex IO tests to a separate file system on a SCSI disk.
-1 built-in usex IO rate test -- to/from same disk/fs.
-1 POV ray tracing app--just because I had it :-)
-1 script that does "find / -type f | xargs strings >/dev/null" to
-pollute the page cache.
-2 memtoy scripts to allocate various size anon segments--up to 20GB--
-and mlock() them down to force reclaim.
-1 32-way parallel kernel build
-3 1GB random vm tests
-3 1GB sequential vm tests
-9 built-in usex "bin" tests--these run a series of programs
-from /usr/bin to simulate users doing random things.  Not really random,
-tho'.  Just walks a table of commands sequentially.
-
-This load beats up on the system fairly heavily.
-
-I can package up the usex input script and the other associated scripts
-that it invokes, if you're interested.  Let me know...
+Problem isolated to memory controller patches.  This patch seems to fix
+this particular problem.  I've only run the test for a few minutes with
+and without memory controller configured, but I did observe reclaim
+kicking in several times.  W/o this patch, system would panic as soon as
+I entered direct/zone reclaim--less than a minute.
 
 Lee
+--------------------------------
+
+PATCH 2.6.23-rc4-mm1 Memory Controller:  initialize all scan_controls'
+	isolate_pages member.
+
+We need to initialize all scan_controls' isolate_pages member.
+Otherwise, shrink_active_list() attempts to execute at undefined
+location.
+
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+ mm/vmscan.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: Linux/mm/vmscan.c
+===================================================================
+--- Linux.orig/mm/vmscan.c	2007-09-10 13:22:21.000000000 -0400
++++ Linux/mm/vmscan.c	2007-09-12 15:30:27.000000000 -0400
+@@ -1758,6 +1758,7 @@ unsigned long shrink_all_memory(unsigned
+ 		.swap_cluster_max = nr_pages,
+ 		.may_writepage = 1,
+ 		.swappiness = vm_swappiness,
++		.isolate_pages = isolate_pages_global,
+ 	};
+ 
+ 	current->reclaim_state = &reclaim_state;
+@@ -1941,6 +1942,7 @@ static int __zone_reclaim(struct zone *z
+ 					SWAP_CLUSTER_MAX),
+ 		.gfp_mask = gfp_mask,
+ 		.swappiness = vm_swappiness,
++		.isolate_pages = isolate_pages_global,
+ 	};
+ 	unsigned long slab_reclaimable;
+ 
+
 
