@@ -1,58 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971217AbXILRn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971297AbXILRns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971217AbXILRn1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:43:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968397AbXILRmz
+	id S971297AbXILRns (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969217AbXILRm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 13:42:55 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:33560 "HELO
+	Wed, 12 Sep 2007 13:42:56 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:33619 "HELO
 	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1765640AbXILRmt (ORCPT
+	by vger.kernel.org with SMTP id S968016AbXILRmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 13:42:49 -0400
+	Wed, 12 Sep 2007 13:42:52 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=LNxyEdeCi+SWj84FSQs8dNe5Xtm28W9cb4NwwmAX/+kvC1bAGy9O6rFwEQ7hHWPE3IkqmB26l9D9vU7ok0rkrkV5uRT7wYoWIHevfEJPfpHEv39JnX3Y3fF+nKLBTDEtlrUC3kzqTVtHrWbtyr9l26iNWJL0FP9OowgOdFJVYno=  ;
-X-YMail-OSG: rDfRISEVM1klpJNUrxKYjtqIcv0yJ6WOYXqX1ezFReV92jmTQtszaHlw7ywKgkBOPApAFA5ePA--
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=SArH0/p5xxZwYj66lEejafW3cVN8U6NFjP33t4S0MQu+qDuYgOotZfMt5inUfUboi02fyD5I/llSvfKW/sY3ye7QsmwvyKYelaPqpobvuImLixdGB33cW2uiePfA+pHkDq+vMaqQq0hKaqYp2BmqYoffyVZyLFXrLmQqjAaInpE=  ;
+X-YMail-OSG: Bc4n3mcVM1kC1MZZ685tarycTWUYuOGn5tCCSh.JTgMBvQaLO8jDy7Ivj1psnNItDya5VcByvo_kydedeVO3TL2rnNDpMdyR8A7QWweyWhUBf3mAD5I-
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Greg KH <greg@kroah.com>
-Subject: Re: SYSFS: need a noncaching read
-Date: Wed, 12 Sep 2007 05:19:39 +1000
+To: David Chinner <dgc@sgi.com>
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+Date: Wed, 12 Sep 2007 12:01:08 +1000
 User-Agent: KMail/1.9.5
-Cc: Robert Schwebel <r.schwebel@pengutronix.de>, Heiko Schocher <hs@denx.de>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Detlev Zundel <dzu@denx.de>
-References: <1189503798.6674.46.camel@Zeus.EmbLux> <20070912053207.GH23573@pengutronix.de> <20070912100123.GA23182@kroah.com>
-In-Reply-To: <20070912100123.GA23182@kroah.com>
+Cc: Mel Gorman <mel@skynet.ie>, Christoph Lameter <clameter@sgi.com>,
+       andrea@suse.de, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+References: <20070911060349.993975297@sgi.com> <200709111600.18756.nickpiggin@yahoo.com.au> <20070912014917.GJ995458@sgi.com>
+In-Reply-To: <20070912014917.GJ995458@sgi.com>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200709121201.08706.nickpiggin@yahoo.com.au>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709120519.39960.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 September 2007 20:01, Greg KH wrote:
-> On Wed, Sep 12, 2007 at 07:32:07AM +0200, Robert Schwebel wrote:
-> > On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
-> > > I have developed a device driver and use the sysFS to export some
-> > > registers to userspace.
+On Wednesday 12 September 2007 11:49, David Chinner wrote:
+> On Tue, Sep 11, 2007 at 04:00:17PM +1000, Nick Piggin wrote:
+> > > > OTOH, I'm not sure how much buy-in there was from the filesystems
+> > > > guys. Particularly Christoph H and XFS (which is strange because they
+> > > > already do vmapping in places).
+> > >
+> > > I think they use vmapping because they have to, not because they want
+> > > to. They might be a lot happier with fsblock if it used contiguous
+> > > pages for large blocks whenever possible - I don't know for sure. The
+> > > metadata accessors they might be unhappy with because it's inconvenient
+> > > but as Christoph Hellwig pointed out at VM/FS, the filesystems who
+> > > really care will convert.
 > >
-> > Uuuh, uggly. Don't do that. Device drivers are there to abstract things,
-> > not to play around with registers from userspace.
-> >
-> > > I opened the sysFS File for one register and did some reads from this
-> > > File, but I alwas becoming the same value from the register, whats not
-> > > OK, because they are changing. So I found out that the sysFS caches
-> > > the reads ... :-(
-> >
-> > Yes, it does. What you can do is close()ing the file handle between
-> > accesses, which makes it work but is slow.
+> > Sure, they would rather not to. But there are also a lot of ways you can
+> > improve vmap more than what XFS does (or probably what darwin does)
+> > (more persistence for cached objects, and batched invalidates for
+> > example).
 >
-> Do an lseek back to 0 and then re-read, you will get called in your
-> driver again.
+> XFS already has persistence across the object life time (which can be many
+> tens of seconds for a frequently used buffer)
 
-Can you do a pread with offset 0 to avoid the two syscalls? (which some
-people seem to be concerned about)
+But you don't do a very good job. When you go above 64 vmaps cached, you
+purge _all_ of them. fsblock's vmap cache can have a much higher number
+(if you want), and purging will only unmap a smaller batch, decided by a
+simple LRU.
+
+
+> and it also does batched 
+> unmapping of objects as well.
+
+It also could do a lot better at unmapping. Currently you're just calling
+vunmap a lot of times in sequence. That still requires global IPIs and TLB
+flushing every time.
+
+This simple patch should easily be able to reduce that number by 2 or 3
+orders of magnitude on 64-bit systems. Maybe more if you increase the
+batch size.
+http://www.mail-archive.com/linux-arch@vger.kernel.org/msg03956.html
+
+vmap area manipulation scalability and search complexity could also be
+improved quite easily, I suspect.
+
+
+> > There are also a lot of trivial things you can do to make a lot of those
+> > accesses not require vmaps (and less trivial things, but even such things
+> > as binary searches over multiple pages should be quite possible with a
+> > bit of logic).
+>
+> Yes, we already do the many of these things (via xfs_buf_offset()), but
+> that is not good enough for something like a memcpy that spans multiple
+> pages in a large block (think btree block compaction, splits and
+> recombines).
+
+fsblock_memcpy(fsblock *src, int soff, fsblock *dst, int doff, int size); ?
+
+
+> IOWs, we already play these vmap harm-minimisation games in the places
+> where we can, but still the overhead is high and something we'd prefer
+> to be able to avoid.
+
+I don't think you've looked very far with all this low hanging fruit.
+
+The several ways I suggested combined might easily reduce xfs vmap
+overhead by several orders of magnitude, all without changing much
+code at all.
+
+Can you provide a formula to reproduce these workloads where vmap
+overhead in XFS is a problem? (huge IO capacity need not be an issue,
+because I could try reproducing it on a 64-way on ramdisks for example).
+
