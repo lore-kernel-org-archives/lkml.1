@@ -1,153 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933515AbXILB7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933739AbXILCAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933515AbXILB7v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 21:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763319AbXILB5G
+	id S933739AbXILCAc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 22:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933059AbXILB5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 21:57:06 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49821 "EHLO
+	Tue, 11 Sep 2007 21:57:08 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48657 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753841AbXILB4s (ORCPT
+	with ESMTP id S1753864AbXILB4s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Sep 2007 21:56:48 -0400
-Message-Id: <20070912015646.663194236@sgi.com>
+Message-Id: <20070912015647.758716998@sgi.com>
 References: <20070912015644.927677070@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 11 Sep 2007 18:56:50 -0700
+Date: Tue, 11 Sep 2007 18:56:54 -0700
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
        linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org
-Subject: [PATCH 06/10] x86: Convert cpu_llc_id to be a per cpu variable (v3)
-Content-Disposition: inline; filename=convert-cpu_llc_id-to-per_cpu_data
+Subject: [PATCH 10/10] sparc64: Convert cpu_sibling_map to a per_cpu data array (v3)
+Content-Disposition: inline; filename=convert-sparc64-cpu_sibling_map-to-per_cpu_data
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert cpu_llc_id from a static array sized by NR_CPUS to a
-per_cpu variable.  This saves sizeof(cpu_llc_id) * NR unused
-cpus.  Access is mostly from startup and CPU HOTPLUG functions.
+Convert cpu_sibling_map to a per_cpu cpumask_t array for the sparc64
+architecture.  This fixes build errors in block/blktrace.c and
+kernel/sched.c when CONFIG_SCHED_SMT is defined.
 
-Note there's an addtional change of the type of cpu_llc_id
-from int to u8 for ARCH i386 to correspond with the same
-type in ARCH x86_64.
+Note: these changes have not been built nor tested.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/i386/kernel/cpu/intel_cacheinfo.c |    4 ++--
- arch/i386/kernel/smpboot.c             |    6 +++---
- arch/x86_64/kernel/smpboot.c           |    6 +++---
- include/asm-i386/processor.h           |    6 +++++-
- include/asm-x86_64/smp.h               |    9 ++++-----
- 5 files changed, 17 insertions(+), 14 deletions(-)
+ arch/sparc64/kernel/smp.c      |   17 ++++++++---------
+ include/asm-sparc64/smp.h      |    3 ++-
+ include/asm-sparc64/topology.h |    2 +-
+ 3 files changed, 11 insertions(+), 11 deletions(-)
 
---- a/arch/i386/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/i386/kernel/cpu/intel_cacheinfo.c
-@@ -417,14 +417,14 @@
- 	if (new_l2) {
- 		l2 = new_l2;
- #ifdef CONFIG_X86_HT
--		cpu_llc_id[cpu] = l2_id;
-+		per_cpu(cpu_llc_id, cpu) = l2_id;
- #endif
- 	}
+--- a/arch/sparc64/kernel/smp.c
++++ b/arch/sparc64/kernel/smp.c
+@@ -52,14 +52,13 @@
  
- 	if (new_l3) {
- 		l3 = new_l3;
- #ifdef CONFIG_X86_HT
--		cpu_llc_id[cpu] = l3_id;
-+		per_cpu(cpu_llc_id, cpu) = l3_id;
- #endif
- 	}
+ cpumask_t cpu_possible_map __read_mostly = CPU_MASK_NONE;
+ cpumask_t cpu_online_map __read_mostly = CPU_MASK_NONE;
+-cpumask_t cpu_sibling_map[NR_CPUS] __read_mostly =
+-	{ [0 ... NR_CPUS-1] = CPU_MASK_NONE };
++DEFINE_PER_CPU(cpumask_t, cpu_sibling_map) = CPU_MASK_NONE;
+ cpumask_t cpu_core_map[NR_CPUS] __read_mostly =
+ 	{ [0 ... NR_CPUS-1] = CPU_MASK_NONE };
  
---- a/arch/i386/kernel/smpboot.c
-+++ b/arch/i386/kernel/smpboot.c
-@@ -67,7 +67,7 @@
- EXPORT_SYMBOL(smp_num_siblings);
+ EXPORT_SYMBOL(cpu_possible_map);
+ EXPORT_SYMBOL(cpu_online_map);
+-EXPORT_SYMBOL(cpu_sibling_map);
++EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
+ EXPORT_SYMBOL(cpu_core_map);
  
- /* Last level cache ID of each logical CPU */
--int cpu_llc_id[NR_CPUS] __cpuinitdata = {[0 ... NR_CPUS-1] = BAD_APICID};
-+DEFINE_PER_CPU(u8, cpu_llc_id) = BAD_APICID;
+ static cpumask_t smp_commenced_mask;
+@@ -1259,16 +1258,16 @@
+ 	for_each_present_cpu(i) {
+ 		unsigned int j;
  
- /* representing HT siblings of each logical CPU */
- DEFINE_PER_CPU(cpumask_t, cpu_sibling_map);
-@@ -348,8 +348,8 @@
- 	}
- 
- 	for_each_cpu_mask(i, cpu_sibling_setup_map) {
--		if (cpu_llc_id[cpu] != BAD_APICID &&
--		    cpu_llc_id[cpu] == cpu_llc_id[i]) {
-+		if (per_cpu(cpu_llc_id, cpu) != BAD_APICID &&
-+		    per_cpu(cpu_llc_id, cpu) == per_cpu(cpu_llc_id, i)) {
- 			cpu_set(i, c[cpu].llc_shared_map);
- 			cpu_set(cpu, c[i].llc_shared_map);
+-		cpus_clear(cpu_sibling_map[i]);
++		cpus_clear(per_cpu(cpu_sibling_map, i));
+ 		if (cpu_data(i).proc_id == -1) {
+-			cpu_set(i, cpu_sibling_map[i]);
++			cpu_set(i, per_cpu(cpu_sibling_map, i));
+ 			continue;
  		}
---- a/arch/x86_64/kernel/smpboot.c
-+++ b/arch/x86_64/kernel/smpboot.c
-@@ -65,7 +65,7 @@
- EXPORT_SYMBOL(smp_num_siblings);
  
- /* Last level cache ID of each logical CPU */
--u8 cpu_llc_id[NR_CPUS] __cpuinitdata  = {[0 ... NR_CPUS-1] = BAD_APICID};
-+DEFINE_PER_CPU(u8, cpu_llc_id) = BAD_APICID;
- 
- /* Bitmask of currently online CPUs */
- cpumask_t cpu_online_map __read_mostly;
-@@ -285,8 +285,8 @@
- 	}
- 
- 	for_each_cpu_mask(i, cpu_sibling_setup_map) {
--		if (cpu_llc_id[cpu] != BAD_APICID &&
--		    cpu_llc_id[cpu] == cpu_llc_id[i]) {
-+		if (per_cpu(cpu_llc_id, cpu) != BAD_APICID &&
-+		    per_cpu(cpu_llc_id, cpu) == per_cpu(cpu_llc_id, i)) {
- 			cpu_set(i, c[cpu].llc_shared_map);
- 			cpu_set(cpu, c[i].llc_shared_map);
+ 		for_each_present_cpu(j) {
+ 			if (cpu_data(i).proc_id ==
+ 			    cpu_data(j).proc_id)
+-				cpu_set(j, cpu_sibling_map[i]);
++				cpu_set(j, per_cpu(cpu_sibling_map, i));
  		}
---- a/include/asm-i386/processor.h
-+++ b/include/asm-i386/processor.h
-@@ -110,7 +110,11 @@
- #define current_cpu_data boot_cpu_data
- #endif
+ 	}
+ }
+@@ -1340,9 +1339,9 @@
+ 		cpu_clear(cpu, cpu_core_map[i]);
+ 	cpus_clear(cpu_core_map[cpu]);
  
--extern	int cpu_llc_id[NR_CPUS];
-+/*
-+ * the following now lives in the per cpu area:
-+ * extern	int cpu_llc_id[NR_CPUS];
-+ */
-+DECLARE_PER_CPU(u8, cpu_llc_id);
- extern char ignore_fpu_irq;
+-	for_each_cpu_mask(i, cpu_sibling_map[cpu])
+-		cpu_clear(cpu, cpu_sibling_map[i]);
+-	cpus_clear(cpu_sibling_map[cpu]);
++	for_each_cpu_mask(i, per_cpu(cpu_sibling_map, cpu))
++		cpu_clear(cpu, per_cpu(cpu_sibling_map, i));
++	cpus_clear(per_cpu(cpu_sibling_map, cpu));
  
- void __init cpu_detect(struct cpuinfo_x86 *c);
---- a/include/asm-x86_64/smp.h
-+++ b/include/asm-x86_64/smp.h
-@@ -39,16 +39,14 @@
- extern void smp_send_reschedule(int cpu);
+ 	c = &cpu_data(cpu);
  
- /*
-- * cpu_sibling_map and cpu_core_map now live
-- * in the per cpu area
-- *
-+ * the following now live in the per cpu area:
-  * extern cpumask_t cpu_sibling_map[NR_CPUS];
-  * extern cpumask_t cpu_core_map[NR_CPUS];
-+ * extern u8 cpu_llc_id[NR_CPUS];
-  */
- DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
- DECLARE_PER_CPU(cpumask_t, cpu_core_map);
--
--extern u8 cpu_llc_id[NR_CPUS];
-+DECLARE_PER_CPU(u8, cpu_llc_id);
+--- a/include/asm-sparc64/smp.h
++++ b/include/asm-sparc64/smp.h
+@@ -28,8 +28,9 @@
+  
+ #include <asm/bitops.h>
+ #include <asm/atomic.h>
++#include <asm/percpu.h>
  
- #define SMP_TRAMPOLINE_BASE 0x6000
+-extern cpumask_t cpu_sibling_map[NR_CPUS];
++DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
+ extern cpumask_t cpu_core_map[NR_CPUS];
+ extern int sparc64_multi_core;
  
-@@ -120,6 +118,7 @@
- #ifdef CONFIG_SMP
- #define cpu_physical_id(cpu)		per_cpu(x86_cpu_to_apicid, cpu)
- #else
-+extern unsigned int boot_cpu_id;
- #define cpu_physical_id(cpu)		boot_cpu_id
- #endif /* !CONFIG_SMP */
- #endif
+--- a/include/asm-sparc64/topology.h
++++ b/include/asm-sparc64/topology.h
+@@ -5,7 +5,7 @@
+ #define topology_physical_package_id(cpu)	(cpu_data(cpu).proc_id)
+ #define topology_core_id(cpu)			(cpu_data(cpu).core_id)
+ #define topology_core_siblings(cpu)		(cpu_core_map[cpu])
+-#define topology_thread_siblings(cpu)		(cpu_sibling_map[cpu])
++#define topology_thread_siblings(cpu)		(per_cpu(cpu_sibling_map, cpu))
+ #define mc_capable()				(sparc64_multi_core)
+ #define smt_capable()				(sparc64_multi_core)
+ #endif /* CONFIG_SMP */
 
 -- 
