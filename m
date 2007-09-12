@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763622AbXILGUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbXILGgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763622AbXILGUd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 02:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbXILGUZ
+	id S1759354AbXILGgu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 02:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbXILGgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 02:20:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47412 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756011AbXILGUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 02:20:25 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+IZv5kcvCIUm1jHADOpkEwNasOa6qYdYaWYZcCm4
-	LBeFmwt50FfVRz
-Subject: Re: [announce] CFS-devel, performance improvements
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Roman Zippel <zippel@linux-m68k.org>
-In-Reply-To: <20070911200459.GA6974@elte.hu>
-References: <20070911200459.GA6974@elte.hu>
-Content-Type: text/plain
-Date: Wed, 12 Sep 2007 08:20:21 +0200
-Message-Id: <1189578021.6493.15.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Wed, 12 Sep 2007 02:36:42 -0400
+Received: from rrzmta2.rz.uni-regensburg.de ([194.94.155.53]:26363 "EHLO
+	rrzmta2.rz.uni-regensburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751444AbXILGgl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 02:36:41 -0400
+From: "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de>
+Organization: Universitaet Regensburg, Klinikum
+To: Al Viro <viro@ftp.linux.org.uk>
+Date: Wed, 12 Sep 2007 08:35:57 +0200
+MIME-Version: 1.0
+Subject: Re: Socket-related problem in x86_64 Kernel (2.6.16.53-0.8-smp)?
+CC: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
+Message-ID: <46E7A4ED.5971.189F731B@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+In-reply-to: <20070911160432.GA8181@ftp.linux.org.uk>
+References: <46E6D660.16004.15789926@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+X-mailer: Pegasus Mail for Windows (4.31)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Content-Conformance: HerringScan-0.26/Sophos-P=4.19.0+V=4.19+U=2.07.173+R=02 July 2007+T=260027@20070912.063249Z
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-11 at 22:04 +0200, Ingo Molnar wrote:
-> fresh back from the Kernel Summit, Peter Zijlstra and me are pleased to 
-> announce the latest iteration of the CFS scheduler development tree. Our 
-> main focus has been on simplifications and performance - and as part of 
-> that we've also picked up some ideas from Roman Zippel's 'Really Fair 
-> Scheduler' patch as well and integrated them into CFS. We'd like to ask 
-> people go give these patches a good workout, especially with an eye on 
-> any interactivity regressions.
+On 11 Sep 2007 at 17:04, Al Viro wrote:
 
-Initial test-drive looks good here, but I do see a regression.  First
-the good news.
+> On Tue, Sep 11, 2007 at 05:54:38PM +0200, Ulrich Windl wrote:
+> 
+> > If not, any clues on debugging/tracing? There's a 
+> > /usr/src/linux/Documentation/oops-tracing.txt, but no "segfault-tracing".
+> 
+> That would be because it has fsck-all to do with the kernel.  Get the
+> coredump, then use gdb to deal with it.
 
-fairtest2 is perfect, more perfect than ever seen before in fact.  Mixed
-interval sleepers/hog looks fine as well (can't say perfect due to
-startup differences with the various proggies, but cpu% looks perfect).
-Amarok song switch time under hefty kbuild load is fine as well.  I
-haven't done heavy multimedia testing yet, but will give it a more
-thorough workout later (errands).
+Ok, but why is the message there at all? I think in Windows/XP the offending code 
+and the registers are shown in such occasions. I'd say either drop the message, or 
+improve it. It's also difficult to find the code after the program is gone due to 
+mapping of shared libraries. I managed to get a core dump of the application 
+however, and I did modify some code. I'll report once I have results.
 
-The regression:  I see some GUI lurch, easily reproducible by running a
-make -j5 and moving the mouse in a circle... perceptible (100ms or so)
-lurches not present in rc5. 
+Maybe it's "mea culpa" for my program, but powersaved and slapd are still to be 
+examined.
 
-	-Mike
+Regards,
+Ulrich
 
