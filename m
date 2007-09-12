@@ -1,44 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966939AbXILLKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967062AbXILLLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966939AbXILLKb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 07:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764452AbXILLKY
+	id S967062AbXILLLN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 07:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761410AbXILLK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 07:10:24 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49345 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764443AbXILLKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 07:10:23 -0400
-Message-ID: <46E7C91D.3070001@garzik.org>
-Date: Wed, 12 Sep 2007 07:10:21 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Kees Cook <kees@ubuntu.com>
-CC: linux-kernel@vger.kernel.org, Ben Collins <bcollins@ubuntu.com>,
-       Michael Wu <flamingice@sourmilk.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] pci: fix unterminated pci_device_id lists
-References: <20070912064134.GO7910@outflux.net>
-In-Reply-To: <20070912064134.GO7910@outflux.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 12 Sep 2007 07:10:56 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:46561 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756604AbXILLKz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 07:10:55 -0400
+X-Auth-Info: GmBE4z+8KerBOtUmcsmHw7c90IlOFgb/GL1Vb4Wroro=
+X-Auth-Info: GmBE4z+8KerBOtUmcsmHw7c90IlOFgb/GL1Vb4Wroro=
+X-Auth-Info: GmBE4z+8KerBOtUmcsmHw7c90IlOFgb/GL1Vb4Wroro=
+X-Auth-Info: GmBE4z+8KerBOtUmcsmHw7c90IlOFgb/GL1Vb4Wroro=
+X-Auth-Info: GmBE4z+8KerBOtUmcsmHw7c90IlOFgb/GL1Vb4Wroro=
+X-Auth-Info: GmBE4z+8KerBOtUmcsmHw7c90IlOFgb/GL1Vb4Wroro=
+Subject: Re: SYSFS: need a noncaching read
+From: Heiko Schocher <hs@denx.de>
+Reply-To: hs@denx.de
+To: Greg KH <greg@kroah.com>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>
+In-Reply-To: <20070912100123.GA23182@kroah.com>
+References: <1189503798.6674.46.camel@Zeus.EmbLux>
+	 <20070912053207.GH23573@pengutronix.de>  <20070912100123.GA23182@kroah.com>
+Content-Type: text/plain
+Organization: DENX
+Date: Wed, 12 Sep 2007 13:13:32 +0200
+Message-Id: <1189595612.6659.23.camel@Zeus.EmbLux>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kees Cook wrote:
-> This patch against 2.6.23-rc6 fixes a couple drivers that do not
-> correctly terminate their pci_device_id lists.  This results in garbage
-> being spewed into modules.pcimap when the module happens to not have
-> 28 NULL bytes following the table, and/or the last PCI ID is actually
-> truncated from the table when calculating the modules.alias PCI aliases,
-> cause those unfortunate device IDs to not auto-load.
+Hello Greg
+
+Am Mittwoch, den 12.09.2007, 03:01 -0700 schrieb Greg KH:
+> On Wed, Sep 12, 2007 at 07:32:07AM +0200, Robert Schwebel wrote:
+> > On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
+> > > I have developed a device driver and use the sysFS to export some
+> > > registers to userspace.
+> > 
+> > Uuuh, uggly. Don't do that. Device drivers are there to abstract things,
+> > not to play around with registers from userspace.
+> > 
+> > > I opened the sysFS File for one register and did some reads from this
+> > > File, but I alwas becoming the same value from the register, whats not
+> > > OK, because they are changing. So I found out that the sysFS caches
+> > > the reads ... :-(
+> > 
+> > Yes, it does. What you can do is close()ing the file handle between
+> > accesses, which makes it work but is slow.
 > 
-> Signed-off-by: Kees Cook <kees@ubuntu.com>
+> Do an lseek back to 0 and then re-read, you will get called in your
+> driver again.
 
-ACK
+No thats not true. I thought this too, but if I make a:
 
+seek (fd, 0L, SEEK_SET);
+
+in Userspace, there is no retrigger in the sysFS, my driver is *not*
+called again. So I made a own sysfs_seek function, which does retrigger
+the driver ...
+
+Is this really wanted in the sysFS, that there is no way to retrigger a
+read?
+
+thanks
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 
