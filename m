@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932471AbXILW2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXILWdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932471AbXILW2U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 18:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbXILW2M
+	id S964934AbXILWdV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 18:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbXILWdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 18:28:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38420 "EHLO
+	Wed, 12 Sep 2007 18:33:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39161 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753526AbXILW2L (ORCPT
+	with ESMTP id S1752921AbXILWdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 18:28:11 -0400
-Date: Wed, 12 Sep 2007 15:28:10 -0700 (PDT)
+	Wed, 12 Sep 2007 18:33:11 -0400
+Date: Wed, 12 Sep 2007 15:33:10 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
 To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, mingo@redhat.com,
        linux-ia64@vger.kernel.org
-Subject: Re: [PATCH] slub - Use local_t protection
-In-Reply-To: <20070905130612.GC11880@Krystal>
-Message-ID: <Pine.LNX.4.64.0709121522280.3835@schroedinger.engr.sgi.com>
+Subject: Re: [PATCH] local_t protection (critical section)
+In-Reply-To: <20070905130411.GB11880@Krystal>
+Message-ID: <Pine.LNX.4.64.0709121530220.3835@schroedinger.engr.sgi.com>
 References: <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com>
  <20070827211003.GA10627@Krystal> <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com>
  <20070827213845.GB9748@Krystal> <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com>
  <20070827222715.GA16982@Krystal> <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com>
  <20070904200429.GD8157@Krystal> <Pine.LNX.4.64.0709041344040.6376@schroedinger.engr.sgi.com>
- <20070905130612.GC11880@Krystal>
+ <20070905130411.GB11880@Krystal>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,51 +33,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Wed, 5 Sep 2007, Mathieu Desnoyers wrote:
 
-> Use local_enter/local_exit for protection in the fast path.
-
-Sorry that it took some time to get back to this issue. KS interfered.
-
-> @@ -1494,8 +1487,16 @@ new_slab:
->  		c->page = new;
->  		goto load_freelist;
->  	}
-> -
-> +	if (gfpflags & __GFP_WAIT) {
-> +		local_nest_irq_enable();
-> +		local_exit();
-> +	}
->  	new = new_slab(s, gfpflags, node);
-> +	if (gfpflags & __GFP_WAIT) {
-> +		local_enter();
-> +		local_nest_irq_disable();
-> +	}
+> Index: linux-2.6-lttng/include/asm-generic/local.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/asm-generic/local.h	2007-09-04 15:32:02.000000000 -0400
+> +++ linux-2.6-lttng/include/asm-generic/local.h	2007-09-05 08:50:47.000000000 -0400
+> @@ -46,6 +46,15 @@ typedef struct
+>  #define local_add_unless(l, a, u) atomic_long_add_unless((&(l)->a), (a), (u))
+>  #define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
+>  
+> +#define local_enter_save(flags) local_irq_save(flags)
+> +#define local_exit_restore(flags) local_irq_restore(flags)
+> +#define local_enter() local_irq_disable()
+> +#define local_exit() local_irq_enable()
+> +#define local_nest_irq_save(flags) (flags)
+> +#define local_nest_irq_restore(flags) (flags)
+> +#define local_nest_irq_disable()
+> +#define local_nest_irq_enable()
 > +
->  	if (new) {
->  		c = get_cpu_slab(s, smp_processor_id());
->  		if (c->page) {
 
-Hmmmm... Definitely an interesting change to move the interrupt 
-enable/disable to __slab_alloc. But it looks like it is getting a bit 
-messy. All my attempts ended also like this. Sigh.
+This list is going to increase with RT support in SLUB? Argh.
 
-> @@ -2026,8 +2032,11 @@ static struct kmem_cache_node *early_kme
+
+> Index: linux-2.6-lttng/include/asm-i386/local.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/asm-i386/local.h	2007-09-04 15:28:52.000000000 -0400
+> +++ linux-2.6-lttng/include/asm-i386/local.h	2007-09-05 08:49:19.000000000 -0400
+> @@ -194,6 +194,23 @@ static __inline__ long local_sub_return(
+>  })
+>  #define local_inc_not_zero(l) local_add_unless((l), 1, 0)
 >  
->  	BUG_ON(kmalloc_caches->size < sizeof(struct kmem_cache_node));
->  
-> +	if (gfpflags & __GFP_WAIT)
-> +		local_irq_enable();
->  	page = new_slab(kmalloc_caches, gfpflags, node);
-> -
-> +	if (gfpflags & __GFP_WAIT)
-> +		local_irq_disable();
->  	BUG_ON(!page);
->  	if (page_to_nid(page) != node) {
->  		printk(KERN_ERR "SLUB: Unable to allocate memory from "
+> +#define local_enter_save(flags) \
+> +	do { \
+> +		(flags); \
+> +		preempt_disable(); \
+> +	} while (0)
 
-Hmmmm... Actually we could drop the irq disable / enable here since this 
-is boot code. That would also allow the removal of the later 
-local_irq_enable.
 
-Good idea. I think I will do the moving of the interrupt enable/disable 
-independently.
+> +#define local_exit_restore(flags) \
+> +	do { \
+> +		(flags); \
+> +		preempt_enable(); \
+> +	} while (0)
 
+
+This does not result in warnings because a variable is not used or used 
+uninitialized?
