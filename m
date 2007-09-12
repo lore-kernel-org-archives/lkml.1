@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967801AbXILNsI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968162AbXILNt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967801AbXILNsI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 09:48:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764810AbXILNr4
+	id S968162AbXILNt3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 09:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966044AbXILNtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 09:47:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45088 "EHLO
+	Wed, 12 Sep 2007 09:49:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46390 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750843AbXILNrz (ORCPT
+	with ESMTP id S965695AbXILNtU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 09:47:55 -0400
-Date: Wed, 12 Sep 2007 15:47:23 +0100
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Venkat Subbiah" <venkats@cranite.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: irq load balancing
-Message-ID: <20070912154723.3d870787@laptopd505.fenrus.org>
-In-Reply-To: <3641F7C576757E49AE23AD0D820D72C4232DEA@mailnode1.cranite.com>
-References: <3641F7C576757E49AE23AD0D820D72C4232DEA@mailnode1.cranite.com>
-Organization: Intel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+	Wed, 12 Sep 2007 09:49:20 -0400
+Date: Wed, 12 Sep 2007 14:49:10 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Neuling <mikey@neuling.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org,
+       Alan Cox <alan@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] powerpc: add new required termio functions
+Message-ID: <20070912134910.GA12660@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Michael Neuling <mikey@neuling.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org,
+	Alan Cox <alan@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>
+References: <8018.1189562679@neuling.org> <20070912102032.GB7858@osiris.boeblingen.de.ibm.com> <20070912040109.3f6a9149.akpm@linux-foundation.org> <20070912113409.GA7253@infradead.org> <20070912115257.GC7858@osiris.boeblingen.de.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070912115257.GC7858@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Sep 2007 16:18:15 -0700
-"Venkat Subbiah" <venkats@cranite.com> wrote:
-
-> Most of the load in my system is triggered by a single ethernet IRQ.
-> Essentially the IRQ schedules a tasklet and most of the work is done
-> in the taskelet which is scheduled in the IRQ. From what I read looks
-> like the tasklet would be executed on the same CPU on which it was
-> scheduled. So this means even in an SMP system it will be one
-> processor which is overloaded.
+On Wed, Sep 12, 2007 at 01:52:57PM +0200, Heiko Carstens wrote:
+> > I might be missing something, but the the right fix is probably to
+> > apply the arch patches from Alan to powerpc and s390.  We don't want to
+> > be left over without all the nice termios features on these platforms,
+> > do we?
 > 
-> So will using the user space IRQ loadbalancer really help? What I am
-> doubtful about is that the user space load balance comes along and
-> changes the affinity once in a while. But really what I need is every
-> interrupt to go to a different CPU in a round robin fashion.
+> But not in rc6 timeframe, I would guess?
 
-if you round robin network interrupts your performance will be really
-really bad....
+Ask Alan..
