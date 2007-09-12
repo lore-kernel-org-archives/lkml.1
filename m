@@ -1,36 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965753AbXILNck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966432AbXILNhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965753AbXILNck (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 09:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbXILNcb
+	id S966432AbXILNhU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 09:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbXILNhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 09:32:31 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:33225 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754891AbXILNcb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 09:32:31 -0400
-Message-ID: <46E7EA62.5020604@davidnewall.com>
-Date: Wed, 12 Sep 2007 23:02:18 +0930
-From: David Newall <david@davidnewall.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Wed, 12 Sep 2007 09:37:08 -0400
+Received: from ns2.suse.de ([195.135.220.15]:43033 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757846AbXILNhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 09:37:06 -0400
+From: Andi Kleen <ak@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUGFIX] x86_64: NX bit handling in change_page_attr
+Date: Wed, 12 Sep 2007 15:35:31 +0200
+User-Agent: KMail/1.9.1
+Cc: "Huang, Ying" <ying.huang@intel.com>, linux-kernel@vger.kernel.org
+References: <1187328518.28497.6.camel@caritas-dev.intel.com> <20070911202332.c539f1fe.akpm@linux-foundation.org>
+In-Reply-To: <20070911202332.c539f1fe.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: stripping down the kernel-parameters.txt file
-References: <Pine.LNX.4.64.0709120339470.26177@localhost.localdomain> <46E7DEF8.50201@davidnewall.com> <Pine.LNX.4.64.0709120904130.20693@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0709120904130.20693@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709121535.31550.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> if the goal is to simply put all of the basic boot-time kernel parms
-> along with the module-specific ones into a single file, sorted in
-> alphabetical order, then i contend that this is, in fact, "silly".
->   
 
-Or even, "messy".  There's no doubt that it should be maintained with 
-care; perhaps it would if the people who write the code for each 
-parameter also update the documentation.
+> > Index: linux-2.6.23-rc2-mm2/arch/x86_64/mm/pageattr.c
+> > ===================================================================
+> > --- linux-2.6.23-rc2-mm2.orig/arch/x86_64/mm/pageattr.c	2007-08-17
+> > 12:50:25.000000000 +0800 +++
+> > linux-2.6.23-rc2-mm2/arch/x86_64/mm/pageattr.c	2007-08-17
+> > 12:50:48.000000000 +0800 @@ -147,6 +147,7 @@
+> >  			split = split_large_page(address, prot, ref_prot2);
+> >  			if (!split)
+> >  				return -ENOMEM;
+> > +			pgprot_val(ref_prot2) &= ~_PAGE_NX;
+> >  			set_pte(kpte, mk_pte(split, ref_prot2));
+> >  			kpte_page = split;
+> >  		}
+>
+> What happened with this?  Still valid?
+
+The bug is probably latent there, but I don't think it can affect anything
+in the kernel because nothing in the kernel should change NX status
+as far as I know.
+
+Where did you see it? 
+
+Anyways I would prefer to only clear the PMD NX when NX status actually 
+changes on the PTE.Can you do that change? 
+
+Anyways; it's really not very important.
+
+-Andi
