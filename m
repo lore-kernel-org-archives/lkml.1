@@ -1,40 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934611AbXILQA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934671AbXILQER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934611AbXILQA2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 12:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbXILQAU
+	id S934671AbXILQER (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 12:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932502AbXILQEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 12:00:20 -0400
-Received: from frankvm.xs4all.nl ([80.126.170.174]:45408 "EHLO
-	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751274AbXILQAT (ORCPT
+	Wed, 12 Sep 2007 12:04:05 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:42878 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764771AbXILQEE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 12:00:19 -0400
-Date: Wed, 12 Sep 2007 18:00:17 +0200
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.22.6: still seeing section mismatch warnings
-Message-ID: <20070912160017.GA3948@janus>
+	Wed, 12 Sep 2007 12:04:04 -0400
+Date: Wed, 12 Sep 2007 09:01:51 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: Lossy interrupts on x86_64
+Message-Id: <20070912090151.97c9a78e.randy.dunlap@oracle.com>
+In-Reply-To: <200709120833.15980.jbarnes@virtuousgeek.org>
+References: <200709120833.15980.jbarnes@virtuousgeek.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm still seeing the warnings below (2.6.22 started off with lots of
-section mismatch warning) but I have no idea if it is safe to ignore
-these:
+On Wed, 12 Sep 2007 08:33:15 -0700 Jesse Barnes wrote:
 
-WARNING: arch/i386/kernel/built-in.o(.text+0xea62): Section mismatch: reference to .init.data:trampoline_end (between 'setup_trampoline' and 'cpu_coregroup_map')
-WARNING: arch/i386/kernel/built-in.o(.text+0xea67): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
-WARNING: arch/i386/kernel/built-in.o(.text+0xea79): Section mismatch: reference to .init.data:trampoline_data (between 'setup_trampoline' and 'cpu_coregroup_map')
-WARNING: arch/i386/kernel/built-in.o(.exit.text+0x26): Section mismatch: reference to .init.text: (between 'cache_remove_dev' and 'ffh_cstate_exit')
-WARNING: arch/i386/kernel/built-in.o(.data+0xee0): Section mismatch: reference to .init.text: (between 'thermal_throttle_cpu_notifier' and 'mce_work')
-WARNING: kernel/built-in.o(.text+0x1b415): Section mismatch: reference to .init.text: (between 'kthreadd' and 'init_waitqueue_head')
+> I just narrowed down a weird problem where I was losing more than 50% of 
+> my vblank interrupts to what seems to be the hires timers patch.  Stock 
+> 2.6.23-rc5 works fine, but the latest (171) kernel from rawhide drops 
+> most of my interrupts unless I also have another interrupt source 
+> running (e.g. if I hold down a key or move the mouse I get the expected 
+> number of vblank interrupts, otherwise I get between 3 and 30 instead 
+> of the expected 60 per second).
+> 
+> Any ideas?  It seems like it might be bad APIC programming, but I 
+> haven't gone through those mods to look for suspects...
 
+Also tickless?  (NO_HZ ?)
 
-gcc version 3.4.6 (Debian 3.4.6-5)
+I think I've seen some emails about tickless and keystrokes being
+needed to cause interrupts... but I'm not postive about it.
 
--- 
-Frank
+but you said "any ideas"
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
