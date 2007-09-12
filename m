@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762964AbXILTlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765040AbXILTqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762964AbXILTlS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 15:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756982AbXILTlB
+	id S1765040AbXILTqu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 15:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763636AbXILTqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 15:41:01 -0400
-Received: from mailin.studentenwerk.mhn.de ([141.84.225.229]:44334 "EHLO
-	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756520AbXILTlA (ORCPT
+	Wed, 12 Sep 2007 15:46:39 -0400
+Received: from h3mxr01.htp-tel.de ([81.14.243.49]:36890 "EHLO
+	H3MXR01.htp-tel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764038AbXILTqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 15:41:00 -0400
-From: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
-Organization: Studentenwerk =?iso-8859-1?q?M=FCnchen?=
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Subject: Re: [patch] sunrpc: make closing of old temporary sockets work (was: problems with lockd in 2.6.22.6)
-Date: Wed, 12 Sep 2007 21:40:57 +0200
-User-Agent: KMail/1.9.7
-Cc: Neil Brown <neilb@suse.de>, trond.myklebust@fys.uio.no,
-       netdev@vger.kernel.org, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-References: <200709121407.11151.wolfgang.walter@studentenwerk.mhn.de> <18151.62510.891210.485277@notabene.brown> <20070912184222.GG4274@fieldses.org>
-In-Reply-To: <20070912184222.GG4274@fieldses.org>
+	Wed, 12 Sep 2007 15:46:38 -0400
+Message-ID: <46E84208.1050903@leemhuis.info>
+Date: Wed, 12 Sep 2007 21:46:16 +0200
+From: Thorsten Leemhuis <fedora@leemhuis.info>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070910)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200709122140.57783.wolfgang.walter@studentenwerk.mhn.de>
+To: Bernd Petrovitsch <bernd@firmix.at>
+CC: Dan Stromberg <dstromberglists@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Building a kernel-source RPM (not a kernel RPM)?
+References: <pan.2007.09.12.16.13.41.195991@gmail.com>	 <1189616966.31502.75.camel@tara.firmix.at>	 <pan.2007.09.12.17.30.59.597440@gmail.com> <1189620186.31502.96.camel@tara.firmix.at>
+In-Reply-To: <1189620186.31502.96.camel@tara.firmix.at>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 September 2007, J. Bruce Fields wrote:
-> On Wed, Sep 12, 2007 at 04:14:06PM +0200, Neil Brown wrote:
-> > So it is in 2.6.21 and later and should probably go to .stable for .21
-> > and .22.
-> > 
-> > Bruce:  for you :-)
-> 
-> OK, thanks!  But, (as is alas often the case) I'm still confused:
-> 
-> >  		if (!test_and_set_bit(SK_OLD, &svsk->sk_flags))
-> >  			continue;
-> > -		if (atomic_read(&svsk->sk_inuse) || test_bit(SK_BUSY, &svsk->sk_flags))
-> > +		if (atomic_read(&svsk->sk_inuse) > 1
-> > +		    || test_bit(SK_BUSY, &svsk->sk_flags))
-> >  			continue;
-> >  		atomic_inc(&svsk->sk_inuse);
-> >  		list_move(le, &to_be_aged);
-> 
-> What is it that ensures svsk->sk_inuse isn't incremented or SK_BUSY set
-> after that test?  Not all the code that does either of those is under
-> the same serv->sv_lock lock that this code is.
-> 
+On 12.09.2007 20:03, Bernd Petrovitsch wrote:
+> On Wed, 2007-09-12 at 10:31 -0700, Dan Stromberg wrote:
+>> On Wed, 12 Sep 2007 19:09:26 +0200, Bernd Petrovitsch wrote:
+> [...]
+>>> Fedora BTW abandoned kernel-source* and they have now a website with a
+>>> description
+>>> how to produce a configured kernel source tree (e.g. for out-of-tree
+>>> modules).
 
-This should not matter - SK_CLOSED may be set at any time.
+That explanation is IMHO a bit misleading. Fedora ships kernel-devel
+packages for all their kernels. Those contain everything from the
+source-tree that's needed to build out-of-tree modules -- Makefiles for
+example, but no real sources.
 
-svc_age_temp_sockets only detaches the socket, sets SK_CLOSED and then 
-enqueues it. If SK_BUSY is set its already enqueued and svc_sock_enqueue 
-ensures that it is not enqueued twice.
+Well, to be more precise: that is enought for out-of-tree modules that
+get shipped with proper Makefiles/Layout, which is the case for nearly
+every external module these days. The "website with a description how to
+produce a configured kernel source tree" exists as well, for people that
+want to build kernels the way the Fedora builds them, but want to apply
+additional patches/other sources.
 
-Regards,
--- 
-Wolfgang Walter
-Studentenwerk München
-Anstalt des öffentlichen Rechts
+>> So this is as smooth as producing kernel-source RPM's gets?
+> I had no problems with the kernel-source.*.rpm approach.
+
+I think the Fedora approach has many benefits -- I always wondered why
+it never went upstream like a "make install_develstuff" that install all
+the needed bits to
+  /lib/modules/$(uname -r)/build/
+
+CU
+knurd
+
+
