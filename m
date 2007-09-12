@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966432AbXILNhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967274AbXILNiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966432AbXILNhU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 09:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbXILNhI
+	id S967274AbXILNiQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 09:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965613AbXILNh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 09:37:08 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43033 "EHLO mx2.suse.de"
+	Wed, 12 Sep 2007 09:37:56 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:42217 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757846AbXILNhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 09:37:06 -0400
-From: Andi Kleen <ak@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUGFIX] x86_64: NX bit handling in change_page_attr
-Date: Wed, 12 Sep 2007 15:35:31 +0200
-User-Agent: KMail/1.9.1
-Cc: "Huang, Ying" <ying.huang@intel.com>, linux-kernel@vger.kernel.org
-References: <1187328518.28497.6.camel@caritas-dev.intel.com> <20070911202332.c539f1fe.akpm@linux-foundation.org>
-In-Reply-To: <20070911202332.c539f1fe.akpm@linux-foundation.org>
+	id S965753AbXILNhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 09:37:55 -0400
+Date: Wed, 12 Sep 2007 09:37:29 -0400
+To: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
+Cc: trond.myklebust@fys.uio.no, netdev@vger.kernel.org,
+       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [NFS] [patch] sunrpc: make closing of old temporary sockets
+	work (was: problems with lockd in 2.6.22.6)
+Message-ID: <20070912133729.GA24998@fieldses.org>
+References: <200709121407.11151.wolfgang.walter@studentenwerk.mhn.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709121535.31550.ak@suse.de>
+In-Reply-To: <200709121407.11151.wolfgang.walter@studentenwerk.mhn.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 12, 2007 at 02:07:10PM +0200, Wolfgang Walter wrote:
+> as already described old temporary sockets (client is gone) of lockd aren't
+> closed after some time. So, with enough clients and some time gone, there
+> are 80 open dangling sockets and you start getting messages of the form:
+> 
+> lockd: too many open TCP sockets, consider increasing the number of nfsd threads.
 
-> > Index: linux-2.6.23-rc2-mm2/arch/x86_64/mm/pageattr.c
-> > ===================================================================
-> > --- linux-2.6.23-rc2-mm2.orig/arch/x86_64/mm/pageattr.c	2007-08-17
-> > 12:50:25.000000000 +0800 +++
-> > linux-2.6.23-rc2-mm2/arch/x86_64/mm/pageattr.c	2007-08-17
-> > 12:50:48.000000000 +0800 @@ -147,6 +147,7 @@
-> >  			split = split_large_page(address, prot, ref_prot2);
-> >  			if (!split)
-> >  				return -ENOMEM;
-> > +			pgprot_val(ref_prot2) &= ~_PAGE_NX;
-> >  			set_pte(kpte, mk_pte(split, ref_prot2));
-> >  			kpte_page = split;
-> >  		}
->
-> What happened with this?  Still valid?
+Thanks for working on this problem!
 
-The bug is probably latent there, but I don't think it can affect anything
-in the kernel because nothing in the kernel should change NX status
-as far as I know.
+> If I understand the code then the intention was that the server closes
+> temporary sockets after about 6 to 12 minutes:
+> 
+> 	a timer is started which calls svc_age_temp_sockets every 6 minutes.
+> 
+> 	svc_age_temp_sockets:
+> 		if a socket is marked OLD it gets closed.
+> 		sockets which are not marked as OLD are marked OLD
+> 
+> 	every time the sockets receives something OLD is cleared.
+> 
+> But svc_age_temp_sockets never closes any socket though because it only
+> closes sockets with svsk->sk_inuse == 0. This seems to be a bug.
+> 
+> Here is a patch against 2.6.22.6 which changes the test to
+> svsk->sk_inuse <= 0 which was probably meant. The patched kernel runs fine
+> here. Unused sockets get closed (after 6 to 12 minutes)
 
-Where did you see it? 
+So the fact that this changes the behavior means that sk_inuse is taking
+on negative values.  This can't be right--how can something like
+svc_sock_put() (which does an atomic_dec_and_test) work in that case?
 
-Anyways I would prefer to only clear the PMD NX when NX status actually 
-changes on the PTE.Can you do that change? 
+I wish I had time today to figure out what's going on in this case.  But
+from a quick through svsock.c for sk_inuse, it looks odd; I'm suspicious
+of anything without the stereotyped behavior--initializing to one,
+atomic_inc()ing whenever someone takes a reference, and
+atomic_dec_and_test()ing whenever someone drops it....
 
-Anyways; it's really not very important.
-
--Andi
+--b.
