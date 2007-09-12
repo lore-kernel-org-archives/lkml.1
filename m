@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970115AbXILSgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970270AbXILSmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970115AbXILSgU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 14:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXILSgM
+	id S970270AbXILSmk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 14:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbXILSmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 14:36:12 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:54028 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751399AbXILSgL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 14:36:11 -0400
-Message-ID: <46E83191.5070208@nortel.com>
-Date: Wed, 12 Sep 2007 12:36:01 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Wed, 12 Sep 2007 14:42:31 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:41772 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751281AbXILSma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 14:42:30 -0400
+Date: Wed, 12 Sep 2007 14:42:22 -0400
+To: Neil Brown <neilb@suse.de>
+Cc: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>,
+       trond.myklebust@fys.uio.no, netdev@vger.kernel.org,
+       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [patch] sunrpc: make closing of old temporary sockets work
+	(was: problems with lockd in 2.6.22.6)
+Message-ID: <20070912184222.GG4274@fieldses.org>
+References: <200709121407.11151.wolfgang.walter@studentenwerk.mhn.de> <18151.62510.891210.485277@notabene.brown>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@osdl.org>,
-       James Bottomley <James.Bottomley@steeleye.com>, bapper@piratehaven.org,
-       aaw@google.com
-Subject: RFC: bug in load_elf_binary?
-References: <46E5B6FA.7000902@nortel.com>
-In-Reply-To: <46E5B6FA.7000902@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Sep 2007 18:36:04.0698 (UTC) FILETIME=[C6AE83A0:01C7F56B]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18151.62510.891210.485277@notabene.brown>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 12, 2007 at 04:14:06PM +0200, Neil Brown wrote:
+> So it is in 2.6.21 and later and should probably go to .stable for .21
+> and .22.
+> 
+> Bruce:  for you :-)
 
-No responses in a couple days so I'm resending.  I've CC'd a few people 
-who've touched binfmt_elf.c recently.
+OK, thanks!  But, (as is alas often the case) I'm still confused:
 
+>  		if (!test_and_set_bit(SK_OLD, &svsk->sk_flags))
+>  			continue;
+> -		if (atomic_read(&svsk->sk_inuse) || test_bit(SK_BUSY, &svsk->sk_flags))
+> +		if (atomic_read(&svsk->sk_inuse) > 1
+> +		    || test_bit(SK_BUSY, &svsk->sk_flags))
+>  			continue;
+>  		atomic_inc(&svsk->sk_inuse);
+>  		list_move(le, &to_be_aged);
 
-We've got an unusual elf binary and we seem to be running into a bug in 
-the elf loader.  I'm not an elf expert, so my apologies if I get the 
-terminology wrong.
+What is it that ensures svsk->sk_inuse isn't incremented or SK_BUSY set
+after that test?  Not all the code that does either of those is under
+the same serv->sv_lock lock that this code is.
 
-The elf spec says that PT_LOAD segments must be ordered by vaddr.  We 
-want to have a segment at a relatively low fixed vaddr.  The exact 
-address is not important, except that it's lower than the standard elf 
-headers and so it must be the first segment in the elf file.
-
-However, this segment also has no size in the file...it's basically all 
-statically allocated at runtime.
-
-In the kernel elf loader, the p_vaddr and p_offset of the first segment 
-are used to determine the load_addr for use with the rest of the 
-segments.  In the case of this elf file, the first segment does not 
-actually have a valid p_offset.
-
-Anyone have any suggestions on how to deal with this?  One crude hack we 
-considered was to simply not set the load_addr if the first segment 
-doesn't have a valid p_offset, but that doesn't solve the general case.
-
-Thanks,
-
-Chris
+--b.
