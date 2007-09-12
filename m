@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765986AbXILLfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967009AbXILLfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765986AbXILLfT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 07:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765235AbXILLfF
+	id S967009AbXILLfs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 07:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764960AbXILLf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 07:35:05 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:49649 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765546AbXILLfE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 07:35:04 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 06/15] Correctly calculate the size of the local-store to dump
-Date: Wed, 12 Sep 2007 13:31:34 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070831.706792)
-Cc: Michael Ellerman <michael@ellerman.id.au>, Jeremy Kerr <jk@ozlabs.org>,
+	Wed, 12 Sep 2007 07:35:28 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35056 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766004AbXILLfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 07:35:25 -0400
+Date: Wed, 12 Sep 2007 13:35:21 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Vivek Goyal <vgoyal@in.ibm.com>
+Cc: linux-arch@vger.kernel.org, kexec@lists.infradead.org,
        linux-kernel@vger.kernel.org
-References: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au> <895526252184eee5548e553d1cfec642b7fc68b8.1189583010.git.michael@ellerman.id.au>
-In-Reply-To: <895526252184eee5548e553d1cfec642b7fc68b8.1189583010.git.michael@ellerman.id.au>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+Subject: Re: [patch 1/5] Extended crashkernel command line
+Message-ID: <20070912113521.GE26903@suse.de>
+Mail-Followup-To: Vivek Goyal <vgoyal@in.ibm.com>,
+	linux-arch@vger.kernel.org, kexec@lists.infradead.org,
+	linux-kernel@vger.kernel.org
+References: <20070909083914.065380136@strauss.suse.de> <20070909083914.488571169@strauss.suse.de> <20070911061522.GD5053@in.ibm.com> <20070911100110.GB31038@suse.de> <20070912112308.GA17436@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709121331.35059.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19IBEQ7T+ndZ7TPXF+1vIanJePmLQuQwjFx6Ds
- 1qf3GgCYM5EWk7DfB0GxALsiJYxv4cjqMI+jmFQPwykrvVOlmA
- CBiFPZDrpawpim+FMBI2g==
+In-Reply-To: <20070912112308.GA17436@in.ibm.com>
+Organization: SUSE LINUX Products GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 September 2007, Michael Ellerman wrote:
-> The routine to dump the local store, __spufs_mem_read(), does not take the
-> spu_lslr_RW value into account - so we shouldn't check it when we're
-> calculating the size either.
+* Vivek Goyal <vgoyal@in.ibm.com> [2007-09-12 13:23]:
+> On Tue, Sep 11, 2007 at 12:01:10PM +0200, Bernhard Walle wrote:
+> > * Vivek Goyal <vgoyal@in.ibm.com> [2007-09-11 08:15]:
+> > > 
+> > > "offset" seems to be optional in the new syntax. What happens if user does
+> > > not specify offset. I think crash_base will be set to zero and system will
+> > > try to reserve x amount of memory start at zero? That would fail?
+> > 
+> > That's handled in the architecture specific code -- because it's
+> > different on each architecture and the architecture specific code does
+> > memory reservation. IA64 already can handle this case (on IA64,
+> > specifying 0 is the same than leaving out the base address, and that's
+> > why I wanted to keep that semantics). I think it doesn't also make
+> > sense on i386/x86_64 to choose 0 as real base address, because the
+> > value below 1 MB is special for booting ...
+> > 
 > 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> Ok. I see IA64 is handling this case. But in current patchset, i386 and
+> x86_64 will try to reserve memory starting at zero?  So we still got
+> to handle this case in i386 and x86_64?
 
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Yes, my fault. I need to replace
+
++       if (ret == 0 && crash_size > 0) {
+
+with
+
++       if (ret == 0 && crash_size > 0 && crash_base > 0) {
+
+I'll repost the whole patch with all the corrections when I finished
+PPC64 and SH. (I'm not in office this week, that's why I'm a bit slow.)
+
+
+Thanks,
+   Bernhard
