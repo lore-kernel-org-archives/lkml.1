@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932887AbXILVvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbXILWET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932887AbXILVvI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 17:51:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbXILVuz
+	id S1760405AbXILWET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 18:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbXILWEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 17:50:55 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:42684 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753660AbXILVuz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 17:50:55 -0400
-Date: Wed, 12 Sep 2007 14:53:56 -0700
-From: Greg KH <greg@kroah.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Kees Cook <kees@ubuntu.com>,
-       linux-kernel@vger.kernel.org, Ben Collins <bcollins@ubuntu.com>,
-       Michael Wu <flamingice@sourmilk.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] pci: fix unterminated pci_device_id lists
-Message-ID: <20070912215356.GC23294@kroah.com>
-References: <20070912064134.GO7910@outflux.net> <46E7C91D.3070001@garzik.org> <b6fcc0a0709120448s69528fc9reed593229124a4fa@mail.gmail.com>
+	Wed, 12 Sep 2007 18:04:11 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43179 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755108AbXILWEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 18:04:10 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Brent Casavant <bcasavan@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: O_NOLINK for open()
+References: <20070912144128.D5573@pkunk.americas.sgi.com>
+X-Yow: I'm having an emotional outburst!!
+Date: Wed, 12 Sep 2007 23:42:37 +0200
+In-Reply-To: <20070912144128.D5573@pkunk.americas.sgi.com> (Brent Casavant's
+	message of "Wed\, 12 Sep 2007 15\:37\:44 -0500 \(CDT\)")
+Message-ID: <jetzpza7ci.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b6fcc0a0709120448s69528fc9reed593229124a4fa@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 03:48:49PM +0400, Alexey Dobriyan wrote:
-> On 9/12/07, Jeff Garzik <jeff@garzik.org> wrote:
-> > Kees Cook wrote:
-> > > This patch against 2.6.23-rc6 fixes a couple drivers that do not
-> > > correctly terminate their pci_device_id lists.  This results in garbage
-> > > being spewed into modules.pcimap when the module happens to not have
-> > > 28 NULL bytes following the table, and/or the last PCI ID is actually
-> > > truncated from the table when calculating the modules.alias PCI aliases,
-> > > cause those unfortunate device IDs to not auto-load.
-> > >
-> > > Signed-off-by: Kees Cook <kees@ubuntu.com>
-> >
-> > ACK
-> 
-> I mut say, non-terminated PCI ids lists are constant PITA. There should be
-> a way to a) put it in macro[1], so that terminator automatically added, and
-> b) still allow #ifdef inside table like, e.g. 8139too does.
-> 
-> [1] or not macro, because #ifdef inside macros aren't allowed.
+Brent Casavant <bcasavan@sgi.com> writes:
 
-If you know of a way to do this in an easier manner, patches are always
-gladly accepted :)
+> I could mmap a temporary tmpfs file (tmpfs so that if there is a
+> machine crash no sensitive data persists) which is created with
+> permissions of 0, immediately unlink it, and pass the file
+> descriptor through an AF_UNIX socket.  This does open up a very
+> small window of vulnerability if another process is able to chmod
+> the file and open it before the unlink.
 
-thanks,
+Only the owner can chmod a file, so why is that a vulnerability?
 
-greg k-h
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
