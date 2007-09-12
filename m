@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934146AbXILVJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765721AbXILVRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934146AbXILVJh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 17:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933630AbXILVIF
+	id S1765721AbXILVRM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 17:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762051AbXILVQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 17:08:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44101 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933628AbXILVIE (ORCPT
+	Wed, 12 Sep 2007 17:16:58 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:55966 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757670AbXILVQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 17:08:04 -0400
-Message-ID: <46E85528.3010405@zytor.com>
-Date: Wed, 12 Sep 2007 14:07:52 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Brent Casavant <bcasavan@sgi.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: O_NOLINK for open()
-References: <20070912144128.D5573@pkunk.americas.sgi.com>
-In-Reply-To: <20070912144128.D5573@pkunk.americas.sgi.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Sep 2007 17:16:57 -0400
+Date: Wed, 12 Sep 2007 17:16:48 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 7/11] UML - clocksource support
+Message-ID: <20070912211648.GA10272@c2.user-mode-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brent Casavant wrote:
-> 
-> I could mmap a temporary tmpfs file (tmpfs so that if there is a
-> machine crash no sensitive data persists) which is created with
-> permissions of 0, immediately unlink it, and pass the file
-> descriptor through an AF_UNIX socket.  This does open up a very
-> small window of vulnerability if another process is able to chmod
-> the file and open it before the unlink.
-> 
+Add clocksource support.
 
-To avoid this window, typically one creates a temporary directory first,
-with 0700 permissions.  Make sure you verify that you actually created
-the directory, and watch out for symlink attacks.  Then you create the
-file in that directory.
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+--
+ arch/um/kernel/time.c |   21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-This doesn't prevent another process owned by the same user (or root)
-from attaching, but such a process can ptrace you or touch yoour /proc
-spaec just as well, so you're screwed anyway (modulo SELinux-type policies.)
-
-> However, it occurs to me that this problem goes away if there were
-> a method create a file in an unlinked state to begin with.  However
-> there does not appear to be any such mechanism in Linux's open()
-> interface.  A bit of Googling indicates that Hurd has an O_NOLINK
-> flag which seems to accomplish what I'd need, but Linux doesn't
-> implement such a flag.  There was some discussion of this in various
-> lkml threads in the past, but none that went anywhere.  Perhaps
-> the best an explaining why other mechanisms (i.e. directories
-> with particular permissions aren't a solution) is:
-> 
-> 	http://marc.info/?l=linux-kernel&m=93032806224160&w=2
-> 
-
-This link talks about file flags handling.  I don't see the relevance to
-this problem at all.  However, this is a very long thread, so if there
-is anything specific that you want to point to, then please elucidate.
-
-> Of course it is reasonable to take the stance that if root or the
-> daemon's user are malicious, all bets are off anyway.
-
-Yup, see above.
-
-	-hpa
+Index: linux-2.6.22/arch/um/kernel/time.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/kernel/time.c	2007-09-12 15:12:11.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/time.c	2007-09-12 15:12:35.000000000 -0400
+@@ -97,6 +97,21 @@ static irqreturn_t um_timer(int irq, voi
+ 	return IRQ_HANDLED;
+ }
+ 
++static cycle_t itimer_read(void)
++{
++	return os_nsecs();
++}
++
++static struct clocksource itimer_clocksource = {
++	.name		= "itimer",
++	.rating		= 300,
++	.read		= itimer_read,
++	.mask		= CLOCKSOURCE_MASK(64),
++	.mult		= 1,
++	.shift		= 0,
++	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
++};
++
+ static void __init setup_itimer(void)
+ {
+ 	int err;
+@@ -108,6 +123,12 @@ static void __init setup_itimer(void)
+ 		printk(KERN_ERR "register_timer : request_irq failed - "
+ 		       "errno = %d\n", -err);
+ 
++	err = clocksource_register(&itimer_clocksource);
++	if (err) {
++		printk(KERN_ERR "clocksource_register returned %d\n", err);
++		return;
++	}
++
+ 	itimer_clockevent.mult = div_sc(HZ, NSEC_PER_SEC, 32);
+ 	itimer_clockevent.max_delta_ns =
+ 		clockevent_delta2ns(60 * HZ, &itimer_clockevent);
