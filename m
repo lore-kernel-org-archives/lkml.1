@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970132AbXILRAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970223AbXILRBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970132AbXILRAl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969859AbXILQ7s
+	id S970223AbXILRBF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934818AbXILQ7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 12:59:48 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:9741 "EHLO
+	Wed, 12 Sep 2007 12:59:54 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:9283 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934750AbXILQ7n (ORCPT
+	with ESMTP id S969854AbXILQ7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 12:59:43 -0400
+	Wed, 12 Sep 2007 12:59:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=qeDVm3rtcLYbN41p5er5kL4CnmVc9aeFnV+LZIpwUKtPAsDnYh8vSOA/5U0TbJcOrkgOYEC9lH8xinV9Cj0CPFOMQs22ulR+eMMHR3u8Fva63e5Hr+2JC6SoZGmLASR0tzdiXJZgtPgGeQYJ2gAd5deE/JlfX1PnWfpX6lgPF2w=
-Message-ID: <46E81ACE.6030305@googlemail.com>
-Date: Wed, 12 Sep 2007 18:58:54 +0200
+        b=kuH7Y2MbmH3rnCCRGXGbMlvU7qQO4yADyufdIGjWtxMv7207CO1wKypU2HFVAm0uehmGxEnT3PFtLz1MOjAQAw5sizryj0BTk8BBwvUdIRGDz3TNEG84sYvKlKl1Xal48Xvf2lKqrdRnrJF34wnXhEab2yCsvWwNNApmaPBXWUQ=
+Message-ID: <46E81AD4.8000906@googlemail.com>
+Date: Wed, 12 Sep 2007 18:59:00 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       nfs@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Andrew Clayton <andrew@digital-domain.net>,
-       Daniel J Blueman <daniel.blueman@gmail.com>,
-       Dave Kleikamp <shaggy@austin.ibm.com>,
-       jfs-discussion@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
-       sct@redhat.com, adilger@clusterfs.com, linux-ext4@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       Chuck Ebbert <cebbert@redhat.com>, dth <dth@dth.net>
-Subject: Re: [2/4] 2.6.23-rc6: known regressions
+       LKML <linux-kernel@vger.kernel.org>,
+       linux1394-devel@lists.sourceforge.net,
+       Ben Collins <ben.collins@ubuntu.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>,
+       netdev@vger.kernel.org, Shish <shish@shishnet.org>,
+       Karl Meyer <adhocrocker@gmail.com>,
+       Francois Romieu <romieu@fr.zoreil.com>, Daniel Drake <dsd@gentoo.org>,
+       Oliver Neukum <oliver@neukum.org>,
+       linux-usb-devel@lists.sourceforge.net, Florian Lohoff <flo@rfc822.org>,
+       =?ISO-8859-2?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
+Subject: Re: [3/4] 2.6.23-rc6: known regressions
 References: <46E8187E.9000006@googlemail.com>
 In-Reply-To: <46E8187E.9000006@googlemail.com>
 X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -66,64 +67,50 @@ Tejun Heo                              3
 
 
 
-ACPI
+FireWire
 
-Subject         : 2.6.23-rc5 hangs on boot, apparently when initializing the EC
-References      : http://lkml.org/lkml/2007/9/11/369
+Subject         : empty suspend stopped working around 2.6.23-rc4
+References      : http://lkml.org/lkml/2007/9/11/326
 Last known good : ?
-Submitter       : Chuck Ebbert <cebbert@redhat.com>
+Submitter       : Pavel Machek <pavel@ucw.cz>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
 
 
-CPUFREQ
+Networking
 
-Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-References      : http://lkml.org/lkml/2007/7/27/298
-                  http://lkml.org/lkml/2007/7/29/371
+Subject         : build #301 failed for 2.6.23-rc6-g0d4cbb5 in linux/drivers/net/wireless/libertas/
+References      : http://lkml.org/lkml/2007/9/11/150
 Last known good : ?
-Submitter       : dth <dth@dth.net>
-Caused-By       : Len Brown <lenb@kernel.org>
-                  commit f79e3185dd0f8650022518d7624c876d8929061b
-Handled-By      : Len Brown <lenb@kernel.org>
-Status          : problem is being debugged
-
-
-
-FS
-
-Subject         : hanging ext3 dbench tests
-References      : http://lkml.org/lkml/2007/9/11/176
-Last known good : ?
-Submitter       : Andy Whitcroft <apw@shadowen.org>
+Submitter       : Toralf Förster <toralf.foerster@gmx.de>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : umount triggers a warning in jfs and takes almost a minute
-References      : http://lkml.org/lkml/2007/9/4/73
+Subject         : zd1211rw regression, device does not enumerate
+References      : http://marc.info/?l=linux-usb-devel&m=118854967709322&w=2
+                  http://bugzilla.kernel.org/show_bug.cgi?id=8972
 Last known good : ?
 Submitter       : Oliver Neukum <oliver@neukum.org>
-Caused-By       : ?
+Caused-By       : Daniel Drake <dsd@gentoo.org>
+                  commit 74553aedd46b3a2cae986f909cf2a3f99369decc
 Handled-By      : ?
 Status          : unknown
 
-Subject         : [NFSv4] 2.6.23-rc4 oops in nfs4_cb_recall
-References      : http://lkml.org/lkml/2007/9/4/53
-                  http://bugzilla.kernel.org/show_bug.cgi?id=9003
+Subject         : NETDEV WATCHDOG: eth0: transmit timed out
+References      : http://lkml.org/lkml/2007/8/13/737
 Last known good : ?
-Submitter       : Daniel J Blueman <daniel.blueman@gmail.com>
+Submitter       : Karl Meyer <adhocrocker@gmail.com>
 Caused-By       : ?
-Handled-By      : ?
-Workaround      : http://bugzilla.kernel.org/attachment.cgi?id=12797
-Status          : unknown
+Handled-By      : Francois Romieu <romieu@fr.zoreil.com>
+Status          : problem is being debugged
 
-Subject         : [NFSD OOPS] 2.6.23-rc1-git10
-References      : http://lkml.org/lkml/2007/8/2/462
+Subject         : Weird network problems with 2.6.23-rc2
+References      : http://lkml.org/lkml/2007/8/11/40
 Last known good : ?
-Submitter       : Andrew Clayton <andrew@digital-domain.net>
+Submitter       : Shish <shish@shishnet.org>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
