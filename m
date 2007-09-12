@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964934AbXILWdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933803AbXILWdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964934AbXILWdV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 18:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbXILWdM
+	id S933803AbXILWdx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 18:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbXILWdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 18:33:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39161 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752921AbXILWdL (ORCPT
+	Wed, 12 Sep 2007 18:33:43 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:58075 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756645AbXILWdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 18:33:11 -0400
-Date: Wed, 12 Sep 2007 15:33:10 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mingo@redhat.com,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH] local_t protection (critical section)
-In-Reply-To: <20070905130411.GB11880@Krystal>
-Message-ID: <Pine.LNX.4.64.0709121530220.3835@schroedinger.engr.sgi.com>
-References: <20070827203913.GA7416@Krystal> <Pine.LNX.4.64.0708271401070.6435@schroedinger.engr.sgi.com>
- <20070827211003.GA10627@Krystal> <Pine.LNX.4.64.0708271421130.6566@schroedinger.engr.sgi.com>
- <20070827213845.GB9748@Krystal> <Pine.LNX.4.64.0708271510020.8783@schroedinger.engr.sgi.com>
- <20070827222715.GA16982@Krystal> <Pine.LNX.4.64.0708271811200.10344@schroedinger.engr.sgi.com>
- <20070904200429.GD8157@Krystal> <Pine.LNX.4.64.0709041344040.6376@schroedinger.engr.sgi.com>
- <20070905130411.GB11880@Krystal>
+	Wed, 12 Sep 2007 18:33:41 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: O_NOLINK for open()
+To: Brent Casavant <bcasavan@sgi.com>, linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Thu, 13 Sep 2007 00:33:26 +0200
+References: <92Haf-7z7-5@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1IValy-0000fU-Sd@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX19GU7CwaxNAvkpt3FxeGC6jWknj/c0j2QRnxkk
+ L34X9Q4HAIQxTu8hQFWRH7XnbzBNfWDK2iXBFYy0ZdlqVL3y8z
+ uB4eHK/dxM/o4gXfs0/Gg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Sep 2007, Mathieu Desnoyers wrote:
+Brent Casavant <bcasavan@sgi.com> wrote:
 
-> Index: linux-2.6-lttng/include/asm-generic/local.h
-> ===================================================================
-> --- linux-2.6-lttng.orig/include/asm-generic/local.h	2007-09-04 15:32:02.000000000 -0400
-> +++ linux-2.6-lttng/include/asm-generic/local.h	2007-09-05 08:50:47.000000000 -0400
-> @@ -46,6 +46,15 @@ typedef struct
->  #define local_add_unless(l, a, u) atomic_long_add_unless((&(l)->a), (a), (u))
->  #define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
->  
-> +#define local_enter_save(flags) local_irq_save(flags)
-> +#define local_exit_restore(flags) local_irq_restore(flags)
-> +#define local_enter() local_irq_disable()
-> +#define local_exit() local_irq_enable()
-> +#define local_nest_irq_save(flags) (flags)
-> +#define local_nest_irq_restore(flags) (flags)
-> +#define local_nest_irq_disable()
-> +#define local_nest_irq_enable()
-> +
+[...]
+> I could mmap a temporary tmpfs file (tmpfs so that if there is a
+> machine crash no sensitive data persists) which is created with
+> permissions of 0, immediately unlink it, and pass the file
+> descriptor through an AF_UNIX socket.  This does open up a very
+> small window of vulnerability if another process is able to chmod
+> the file and open it before the unlink.
 
-This list is going to increase with RT support in SLUB? Argh.
+If the process can chmod the file, it can ptrace the daemon, too.
+Or, using CAP_DAC_OVERRIDE, it can patch the daemon.
 
+Both will void any security.
 
-> Index: linux-2.6-lttng/include/asm-i386/local.h
-> ===================================================================
-> --- linux-2.6-lttng.orig/include/asm-i386/local.h	2007-09-04 15:28:52.000000000 -0400
-> +++ linux-2.6-lttng/include/asm-i386/local.h	2007-09-05 08:49:19.000000000 -0400
-> @@ -194,6 +194,23 @@ static __inline__ long local_sub_return(
->  })
->  #define local_inc_not_zero(l) local_add_unless((l), 1, 0)
->  
-> +#define local_enter_save(flags) \
-> +	do { \
-> +		(flags); \
-> +		preempt_disable(); \
-> +	} while (0)
+> However, it occurs to me that this problem goes away if there were
+> a method create a file in an unlinked state to begin with.  However
+> there does not appear to be any such mechanism in Linux's open()
+> interface.
 
+Having no window for creating stale temp files is nice to have. We only
+need a clever fool to implement it.-) But since it's hard to get killed
+just in the right moment for having a stale temp file, there is very low
+interest for this feature.
+-- 
+You know you're in trouble when packet floods are competing to flood you.
+        -- grc.com
 
-> +#define local_exit_restore(flags) \
-> +	do { \
-> +		(flags); \
-> +		preempt_enable(); \
-> +	} while (0)
-
-
-This does not result in warnings because a variable is not used or used 
-uninitialized?
+Friﬂ, Spammer: dnLqD2P@t.7eggert.dyndns.org npkrx@imrx.fp6.7eggert.dyndns.org
