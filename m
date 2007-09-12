@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967274AbXILNiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967801AbXILNsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967274AbXILNiQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 09:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965613AbXILNh4
+	id S967801AbXILNsI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 09:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764810AbXILNr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 09:37:56 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:42217 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965753AbXILNhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 09:37:55 -0400
-Date: Wed, 12 Sep 2007 09:37:29 -0400
-To: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
-Cc: trond.myklebust@fys.uio.no, netdev@vger.kernel.org,
-       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [NFS] [patch] sunrpc: make closing of old temporary sockets
-	work (was: problems with lockd in 2.6.22.6)
-Message-ID: <20070912133729.GA24998@fieldses.org>
-References: <200709121407.11151.wolfgang.walter@studentenwerk.mhn.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200709121407.11151.wolfgang.walter@studentenwerk.mhn.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Wed, 12 Sep 2007 09:47:56 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45088 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbXILNrz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 09:47:55 -0400
+Date: Wed, 12 Sep 2007 15:47:23 +0100
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Venkat Subbiah" <venkats@cranite.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: irq load balancing
+Message-ID: <20070912154723.3d870787@laptopd505.fenrus.org>
+In-Reply-To: <3641F7C576757E49AE23AD0D820D72C4232DEA@mailnode1.cranite.com>
+References: <3641F7C576757E49AE23AD0D820D72C4232DEA@mailnode1.cranite.com>
+Organization: Intel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 02:07:10PM +0200, Wolfgang Walter wrote:
-> as already described old temporary sockets (client is gone) of lockd aren't
-> closed after some time. So, with enough clients and some time gone, there
-> are 80 open dangling sockets and you start getting messages of the form:
-> 
-> lockd: too many open TCP sockets, consider increasing the number of nfsd threads.
+On Tue, 11 Sep 2007 16:18:15 -0700
+"Venkat Subbiah" <venkats@cranite.com> wrote:
 
-Thanks for working on this problem!
+> Most of the load in my system is triggered by a single ethernet IRQ.
+> Essentially the IRQ schedules a tasklet and most of the work is done
+> in the taskelet which is scheduled in the IRQ. From what I read looks
+> like the tasklet would be executed on the same CPU on which it was
+> scheduled. So this means even in an SMP system it will be one
+> processor which is overloaded.
+> 
+> So will using the user space IRQ loadbalancer really help? What I am
+> doubtful about is that the user space load balance comes along and
+> changes the affinity once in a while. But really what I need is every
+> interrupt to go to a different CPU in a round robin fashion.
 
-> If I understand the code then the intention was that the server closes
-> temporary sockets after about 6 to 12 minutes:
-> 
-> 	a timer is started which calls svc_age_temp_sockets every 6 minutes.
-> 
-> 	svc_age_temp_sockets:
-> 		if a socket is marked OLD it gets closed.
-> 		sockets which are not marked as OLD are marked OLD
-> 
-> 	every time the sockets receives something OLD is cleared.
-> 
-> But svc_age_temp_sockets never closes any socket though because it only
-> closes sockets with svsk->sk_inuse == 0. This seems to be a bug.
-> 
-> Here is a patch against 2.6.22.6 which changes the test to
-> svsk->sk_inuse <= 0 which was probably meant. The patched kernel runs fine
-> here. Unused sockets get closed (after 6 to 12 minutes)
-
-So the fact that this changes the behavior means that sk_inuse is taking
-on negative values.  This can't be right--how can something like
-svc_sock_put() (which does an atomic_dec_and_test) work in that case?
-
-I wish I had time today to figure out what's going on in this case.  But
-from a quick through svsock.c for sk_inuse, it looks odd; I'm suspicious
-of anything without the stereotyped behavior--initializing to one,
-atomic_inc()ing whenever someone takes a reference, and
-atomic_dec_and_test()ing whenever someone drops it....
-
---b.
+if you round robin network interrupts your performance will be really
+really bad....
