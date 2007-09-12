@@ -1,148 +1,483 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969842AbXILO73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969973AbXILPBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969842AbXILO73 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 10:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965097AbXILO7V
+	id S969973AbXILPBa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 11:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966299AbXILPBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 10:59:21 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:48486 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756644AbXILO7U (ORCPT
+	Wed, 12 Sep 2007 11:01:23 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1586 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965097AbXILPBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 10:59:20 -0400
-Date: Wed, 12 Sep 2007 10:54:08 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [patch 2/6] Linux Kernel Markers - Add kconfig menus for the marker code
-Message-ID: <20070912145408.GB7313@Krystal>
-References: <20070906200733.194442762@polymtl.ca> <20070906200826.196017807@polymtl.ca> <20070906163501.87420a01.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070906163501.87420a01.randy.dunlap@oracle.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:53:53 up 44 days, 15:12,  4 users,  load average: 0.16, 0.14, 0.10
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 12 Sep 2007 11:01:21 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] update checkpatch.pl to version 0.10
+Message-ID: <bf97f66cfc0696c8574921d53eaafcb7@pinky>
+Date: Wed, 12 Sep 2007 16:00:51 +0100
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Randy Dunlap (randy.dunlap@oracle.com) wrote:
-> On Thu, 06 Sep 2007 16:07:35 -0400 Mathieu Desnoyers wrote:
-> 
-> [snip]
-> 
-> > This patch:
-> > 
-> > Add Kconfig menus for the marker code.
-> > 
-> > [bunk@stusta.de: Never ever select MODULES]
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > Reviewed-by: Christoph Hellwig <hch@infradead.org>
-> > Reviewed-by: "Frank Ch. Eigler" <fche@redhat.com>
-> > CC: Adrian Bunk <bunk@stusta.de>
-> > ---
-> > 
-> >  arch/alpha/Kconfig       |    2 ++
-> >  arch/arm/Kconfig         |    2 ++
-> >  arch/avr32/Kconfig.debug |    7 +++++++
-> >  arch/cris/Kconfig        |    2 ++
-> >  arch/frv/Kconfig         |    2 ++
-> >  arch/h8300/Kconfig       |    2 ++
-> >  arch/i386/Kconfig        |    2 ++
-> >  arch/ia64/Kconfig        |    2 ++
-> >  arch/m32r/Kconfig        |    2 ++
-> >  arch/m68k/Kconfig        |    2 ++
-> >  arch/m68knommu/Kconfig   |    2 ++
-> >  arch/mips/Kconfig        |    2 ++
-> >  arch/parisc/Kconfig      |    2 ++
-> >  arch/powerpc/Kconfig     |    2 ++
-> >  arch/ppc/Kconfig         |    2 ++
-> >  arch/s390/Kconfig        |    2 ++
-> >  arch/sh/Kconfig          |    2 ++
-> >  arch/sh64/Kconfig        |    2 ++
-> >  arch/sparc/Kconfig       |    2 ++
-> >  arch/sparc64/Kconfig     |    2 ++
-> >  arch/um/Kconfig          |    2 ++
-> >  arch/v850/Kconfig        |    2 ++
-> >  arch/x86_64/Kconfig      |    2 ++
-> >  arch/xtensa/Kconfig      |    2 ++
-> >  kernel/Kconfig.marker    |    7 +++++++
-> >  kernel/Makefile          |    1 +
-> >  26 files changed, 61 insertions(+)
-> > 
-> > Index: linux-2.6-lttng/arch/alpha/Kconfig
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/arch/alpha/Kconfig	2007-09-04 12:14:48.000000000 -0400
-> > +++ linux-2.6-lttng/arch/alpha/Kconfig	2007-09-04 12:16:57.000000000 -0400
-> > @@ -646,6 +646,8 @@ config SRM_ENV
-> >  
-> >  source "fs/Kconfig.binfmt"
-> >  
-> > +source "kernel/Kconfig.marker"
-> > +
-> >  endmenu
-> >  
-> >  source "net/Kconfig"
-> > Index: linux-2.6-lttng/kernel/Kconfig.marker
-> > ===================================================================
-> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> > +++ linux-2.6-lttng/kernel/Kconfig.marker	2007-09-04 12:16:57.000000000 -0400
-> > @@ -0,0 +1,7 @@
-> > +# Code markers configuration
-> > +
-> > +config MARKERS
-> > +	bool "Activate markers"
-> > +	help
-> > +	  Place an empty function call at each marker site. Can be
-> > +	  dynamically changed for a probe function.
-> > Index: linux-2.6-lttng/arch/avr32/Kconfig.debug
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/arch/avr32/Kconfig.debug	2007-09-04 12:14:49.000000000 -0400
-> > +++ linux-2.6-lttng/arch/avr32/Kconfig.debug	2007-09-04 12:16:57.000000000 -0400
-> > @@ -6,6 +6,9 @@ config TRACE_IRQFLAGS_SUPPORT
-> >  
-> >  source "lib/Kconfig.debug"
-> >  
-> > +menu "Instrumentation Support"
-> > +	depends on EXPERIMENTAL
-> > +
-> >  config KPROBES
-> >  	bool "Kprobes"
-> >  	depends on DEBUG_KERNEL
-> > @@ -16,4 +19,8 @@ config KPROBES
-> >            for kernel debugging, non-intrusive instrumentation and testing.
-> >            If in doubt, say "N".
-> >  
-> > +source "kernel/Kconfig.marker"
-> > +
-> > +endmenu
-> > +
-> >  endmenu
-> 
-> It seems sad that this patch sources Kconfig.marker, a 7-line file,
-> 20-something times.  Yes, you (we) don't want to put those 7 lines
-> into 20-something different files, so sourcing is the right thing.
-> 
-> However, what you did for avr32 seems more on the right track to me:
-> make _one_ Instrumentation support menu that includes PROFILING,
-> OPROFILE, KPROBES, and MARKERS and then use (source) that in all
-> of the arches.
-> 
 
-Ok, it will be in my next post.
+This version brings a number of new checks, and a number of bug
+fixes.  Of note:
 
-Mathieu
+  - better categorisation and space checks for dual use unary/binary
+    operators
+  - warn on deprecated use of {SPIN,RW}_LOCK_UNLOCKED
+  - check if/for/while with trailing ';' for hanging statements
+  - detect DOS line endings
+  - detect redundant casts for kalloc()
 
-> ---
-> ~Randy
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+Andy Whitcroft (18):
+      Version: 0.10
+      asmlinkage is also a storage type
+      pull out inline specifiers
+      allow only some operators before a unary operator
+      parenthesised values may span line ends
+      add additional attribute matching
+      handle sparse annotations within pointer type space checks
+      support alternative function definition syntax for typedefs
+      check if/for/while with trailing ';' for hanging statements
+      fix output format for case checks
+      deprecate SPIN_LOCK_UNLOCKED and RW_LOCK_UNLOCKED
+      allow complex macros with bracketing braces
+      detect and report DOS line endings
+      fastcall is a valid function attribute
+      bracket spacing is ok for 'for'
+      categorise operators into unary/binary/definitions
+      add heuristic to pick up on unannotated types
+      remove spurious warnings from cat_vet
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Dave Jones (1):
+      Make checkpatch warn about pointless casting of kalloc returns.
+
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ scripts/checkpatch.pl |  254 +++++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 196 insertions(+), 58 deletions(-)
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index dae7d30..59ad83c 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -9,7 +9,7 @@ use strict;
+ my $P = $0;
+ $P =~ s@.*/@@g;
+ 
+-my $V = '0.09';
++my $V = '0.10';
+ 
+ use Getopt::Long qw(:config no_auto_abbrev);
+ 
+@@ -212,6 +212,11 @@ sub ctx_block_level {
+ 
+ 	return ctx_block_get($linenr, $remain, 0, '{', '}', 0);
+ }
++sub ctx_statement_level {
++	my ($linenr, $remain, $off) = @_;
++
++	return ctx_block_get($linenr, $remain, 0, '(', ')', $off);
++}
+ 
+ sub ctx_locate_comment {
+ 	my ($first_line, $end_line) = @_;
+@@ -255,13 +260,42 @@ sub ctx_has_comment {
+ 	return ($cmt ne '');
+ }
+ 
++sub ctx_expr_before {
++	my ($line) = @_;
++
++	##print "CHECK<$line>\n";
++
++	my $pos = length($line) - 1;
++	my $count = 0;
++	my $c;
++
++	for (; $pos >= 0; $pos--) {
++		$c = substr($line, $pos, 1);
++		##print "CHECK: c<$c> count<$count>\n";
++		if ($c eq ')') {
++			$count++;
++		} elsif ($c eq '(') {
++			last if (--$count == 0);
++		}
++	}
++
++	##print "CHECK: result<" . substr($line, 0, $pos) . ">\n";
++
++	return substr($line, 0, $pos);
++}
++
+ sub cat_vet {
+ 	my ($vet) = @_;
++	my ($res, $coded);
+ 
+-	$vet =~ s/\t/^I/;
+-	$vet =~ s/$/\$/;
++	$res = '';
++	while ($vet =~ /([^[:cntrl:]]*)([[:cntrl:]])/g) {
++		$coded = sprintf("^%c", unpack('C', $2) + 64);
++		$res .= $1 . $coded;
++	}
++	$res =~ s/$/\$/;
+ 
+-	return $vet;
++	return $res;
+ }
+ 
+ my @report = ();
+@@ -310,8 +344,17 @@ sub process {
+ 	my $first_line = 0;
+ 
+ 	my $Ident	= qr{[A-Za-z\d_]+};
+-	my $Storage	= qr{extern|static};
+-	my $Sparse	= qr{__user|__kernel|__force|__iomem|__must_check|__init_refok};
++	my $Storage	= qr{extern|static|asmlinkage};
++	my $Sparse	= qr{
++				__user|
++				__kernel|
++				__force|
++				__iomem|
++				__must_check|
++				__init_refok|
++				fastcall
++			}x;
++	my $Inline	= qr{inline|__always_inline|noinline};
+ 	my $NonptrType	= qr{
+ 				\b
+ 				(?:const\s+)?
+@@ -345,11 +388,18 @@ sub process {
+ 				(?:\s+$Sparse)*
+ 			  }x;
+ 	my $Declare	= qr{(?:$Storage\s+)?$Type};
+-	my $Attribute	= qr{const|__read_mostly|__init|__initdata|__meminit};
+-
++	my $Attribute	= qr{
++				const|
++				__read_mostly|
++				__(?:mem|cpu|dev|)(?:initdata|init)
++			  }x;
+ 	my $Member	= qr{->$Ident|\.$Ident|\[[^]]*\]};
+ 	my $Lval	= qr{$Ident(?:$Member)*};
+ 
++	# Possible bare types.
++	my @bare = ();
++	my $Bare = $NonptrType;
++
+ 	# Pre-scan the patch looking for any __setup documentation.
+ 	my @setup_docs = ();
+ 	my $setup_docs = 0;
+@@ -477,7 +527,11 @@ sub process {
+ 		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
+ 
+ #trailing whitespace
+-		if ($line =~ /^\+.*\S\s+$/ || $line =~ /^\+\s+$/) {
++		if ($line =~ /^\+.*\015/) {
++			my $herevet = "$here\n" . cat_vet($line) . "\n";
++			ERROR("DOS line endings\n" . $herevet);
++
++		} elsif ($line =~ /^\+.*\S\s+$/ || $line =~ /^\+\s+$/) {
+ 			my $herevet = "$here\n" . cat_vet($line) . "\n";
+ 			ERROR("trailing whitespace\n" . $herevet);
+ 		}
+@@ -509,6 +563,30 @@ sub process {
+ # Standardise the strings and chars within the input to simplify matching.
+ 		$line = sanitise_line($line);
+ 
++# Check for potential 'bare' types
++		if ($realcnt &&
++		    $line !~ /^.\s*(?:$Storage\s+)?(?:$Inline\s+)?$Type\b/ &&
++		    $line !~ /$Ident:\s*$/ &&
++		    $line !~ /^.\s*$Ident\s*\(/ &&
++		    ($line =~ /^.(?:$Storage\s+)?(?:$Inline\s+)?($Ident)\b/ ||
++		     $line =~ /^.\s*(?:$Storage\s+)?($Ident)\b\s*\**\s*$Ident\s*(?:;|=)/)) {
++			my $possible = $1;
++			if ($possible !~ /^(?:$Storage|$Type|DEFINE_\S+)$/ &&
++			    $possible ne 'goto' && $possible ne 'return' &&
++			    $possible ne 'struct' && $possible ne 'enum' &&
++			    $possible ne 'case' && $possible ne 'else' &&
++			    $possible ne 'typedef') {
++				#print "POSSIBLE<$possible>\n";
++				push(@bare, $possible);
++				my $bare = join("|", @bare);
++				$Bare	= qr{
++						\b(?:$bare)\b
++						(?:\s*\*+\s*const|\s*\*+|(?:\s*\[\s*\])+)?
++						(?:\s+$Sparse)*
++					  }x;
++			}
++		}
++
+ #
+ # Checks which may be anchored in the context.
+ #
+@@ -531,18 +609,19 @@ sub process {
+ 				}
+ 			}
+ 			if ($err ne '') {
+-				ERROR("switch and case should be at the same indent\n$hereline\n$err\n");
++				ERROR("switch and case should be at the same indent\n$hereline$err");
+ 			}
+ 		}
+ 
+ # if/while/etc brace do not go on next line, unless defining a do while loop,
+ # or if that brace on the next line is for something else
+ 		if ($line =~ /\b(?:(if|while|for|switch)\s*\(|do\b|else\b)/ && $line !~ /^.#/) {
+-			my @ctx = ctx_statement($linenr, $realcnt, 0);
++			my ($level, @ctx) = ctx_statement_level($linenr, $realcnt, 0);
+ 			my $ctx_ln = $linenr + $#ctx + 1;
+ 			my $ctx_cnt = $realcnt - $#ctx - 1;
+ 			my $ctx = join("\n", @ctx);
+ 
++			# Skip over any removed lines in the context following statement.
+ 			while ($ctx_cnt > 0 && $lines[$ctx_ln - 1] =~ /^-/) {
+ 				$ctx_ln++;
+ 				$ctx_cnt--;
+@@ -553,6 +632,13 @@ sub process {
+ 				ERROR("That open brace { should be on the previous line\n" .
+ 					"$here\n$ctx\n$lines[$ctx_ln - 1]");
+ 			}
++			if ($level == 0 && $ctx =~ /\)\s*\;\s*$/ && defined $lines[$ctx_ln - 1]) {
++				my ($nlength, $nindent) = line_stats($lines[$ctx_ln - 1]);
++				if ($nindent > $indent) {
++					WARN("Trailing semicolon indicates no statements, indent implies otherwise\n" .
++						"$here\n$ctx\n$lines[$ctx_ln - 1]");
++				}
++			}
+ 		}
+ 
+ #ignore lines not being added
+@@ -619,7 +705,7 @@ sub process {
+ # check for new typedefs, only function parameters and sparse annotations
+ # make sense.
+ 		if ($line =~ /\btypedef\s/ &&
+-		    $line !~ /\btypedef\s+$Type\s+\(\s*\*$Ident\s*\)\s*\(/ &&
++		    $line !~ /\btypedef\s+$Type\s+\(\s*\*?$Ident\s*\)\s*\(/ &&
+ 		    $line !~ /\b__bitwise(?:__|)\b/) {
+ 			WARN("do not add new typedefs\n" . $herecurr);
+ 		}
+@@ -633,11 +719,11 @@ sub process {
+ 			ERROR("\"(foo $1 )\" should be \"(foo $1)\"\n" .
+ 				$herecurr);
+ 
+-		} elsif ($line =~ m{$NonptrType(\*+)(?:\s+$Attribute)?\s+[A-Za-z\d_]+}) {
++		} elsif ($line =~ m{$NonptrType(\*+)(?:\s+(?:$Attribute|$Sparse))?\s+[A-Za-z\d_]+}) {
+ 			ERROR("\"foo$1 bar\" should be \"foo $1bar\"\n" .
+ 				$herecurr);
+ 
+-		} elsif ($line =~ m{$NonptrType\s+(\*+)(?!\s+$Attribute)\s+[A-Za-z\d_]+}) {
++		} elsif ($line =~ m{$NonptrType\s+(\*+)(?!\s+(?:$Attribute|$Sparse))\s+[A-Za-z\d_]+}) {
+ 			ERROR("\"foo $1 bar\" should be \"foo $1bar\"\n" .
+ 				$herecurr);
+ 		}
+@@ -693,7 +779,13 @@ sub process {
+ 		$opline = expand_tabs($opline);
+ 		$opline =~ s/^./ /;
+ 		if (!($line=~/\#\s*include/)) {
+-			my @elements = split(/(<<=|>>=|<=|>=|==|!=|\+=|-=|\*=|\/=|%=|\^=|\|=|&=|=>|->|<<|>>|<|>|=|!|~|&&|\|\||,|\^|\+\+|--|;|&|\||\+|-|\*|\/\/|\/)/, $opline);
++			my $ops = qr{
++				<<=|>>=|<=|>=|==|!=|
++				\+=|-=|\*=|\/=|%=|\^=|\|=|&=|
++				=>|->|<<|>>|<|>|=|!|~|
++				&&|\|\||,|\^|\+\+|--|&|\||\+|-|\*|\/
++			}x;
++			my @elements = split(/($ops|;)/, $opline);
+ 			my $off = 0;
+ 			for (my $n = 0; $n < $#elements; $n += 2) {
+ 				$off += length($elements[$n]);
+@@ -733,7 +825,60 @@ sub process {
+ 				my $ptr = (" " x $off) . "^";
+ 				my $hereptr = "$hereline$ptr\n";
+ 
+-				##print "<$s1:$op:$s2> <$elements[$n]:$elements[$n + 1]:$elements[$n + 2]>\n";
++				# Classify operators into binary, unary, or
++				# definitions (* only) where they have more
++				# than one mode.
++				my $unary_ctx = $prevline . $ca;
++				$unary_ctx =~ s/^./ /;
++				my $is_unary = 0;
++				my $Unary = qr{
++					(?:
++						^|;|,|$ops|\(|\?|:|
++						\(\s*$Type\s*\)|
++						$Type|
++						return|case|else|
++						\{|\}|
++						\[|
++						^.\#\s*define\s+$Ident\s*(?:\([^\)]*\))?|
++						^.\#\s*else|
++						^.\#\s*endif|
++						^.\#\s*(?:if|ifndef|ifdef)\b.*
++					)\s*(?:|\\)\s*$
++				}x;
++				my $UnaryFalse = qr{
++					sizeof\s*\(\s*$Type\s*\)\s*$
++				}x;
++				my $UnaryDefine = qr{
++					 (?:$Type|$Bare)\s*|
++					 (?:$Type|$Bare).*,\s*\**
++				}x;
++				if ($op eq '-' || $op eq '&' || $op eq '*') {
++					# An operator is binary if the left hand
++					# side is a value.  Pick out the known
++					# non-values.
++					if ($unary_ctx =~ /$Unary$/s &&
++					    $unary_ctx !~ /$UnaryFalse$/s) {
++						$is_unary = 1;
++
++					# Special handling for ')' check if this
++					# brace represents a conditional, if so
++					# we are unary.
++					} elsif ($unary_ctx =~ /\)\s*$/) {
++						my $before = ctx_expr_before($unary_ctx);
++						if ($before =~ /(?:for|if|while)\s*$/) {
++							$is_unary = 1;
++						}
++					}
++
++					# Check for type definition for of '*'.
++					if ($op eq '*' && $unary_ctx =~ /$UnaryDefine$/) {
++						$is_unary = 2;
++					}
++				}
++
++				#if ($op eq '-' || $op eq '&' || $op eq '*') {
++				#	print "UNARY: <$is_unary $a:$op:$c> <$ca:$op:$cc> <$unary_ctx>\n";
++				#}
+ 
+ 				# ; should have either the end of line or a space or \ after it
+ 				if ($op eq ';') {
+@@ -757,9 +902,16 @@ sub process {
+ 						ERROR("need space after that '$op' $at\n" . $hereptr);
+ 					}
+ 
+-				# unary ! and unary ~ are allowed no space on the right
+-				} elsif ($op eq '!' or $op eq '~') {
+-					if ($ctx !~ /[WOEB]x./) {
++				# '*' as part of a type definition -- reported already.
++				} elsif ($op eq '*' && $is_unary == 2) {
++					#warn "'*' is part of type\n";
++
++				# unary operators should have a space before and
++				# none after.  May be left adjacent to another
++				# unary operator, or a cast
++				} elsif ($op eq '!' || $op eq '~' ||
++				         ($is_unary && ($op eq '*' || $op eq '-' || $op eq '&'))) {
++					if ($ctx !~ /[WEB]x./ && $ca !~ /(?:\)|!|~|\*|-|\&|\||\+\+|\-\-|\{)$/) {
+ 						ERROR("need space before that '$op' $at\n" . $hereptr);
+ 					}
+ 					if ($ctx =~ /.xW/) {
+@@ -775,39 +927,13 @@ sub process {
+ 						ERROR("no space before that '$op' $at\n" . $hereptr);
+ 					}
+ 
+-				# & is both unary and binary
+-				# unary:
+-				# 	a &b
+-				# binary (consistent spacing):
+-				#	a&b		OK
+-				#	a & b		OK
+-				#
+-				# boiling down to: if there is a space on the right then there
+-				# should be one on the left.
+-				#
+-				# - is the same
+-				#
+-				} elsif ($op eq '&' or $op eq '-') {
+-					if ($ctx !~ /VxV|[EW]x[WE]|[EWB]x[VO]/) {
+-						ERROR("need space before that '$op' $at\n" . $hereptr);
+-					}
+-
+-				# * is the same as & only adding:
+-				# type:
+-				# 	(foo *)
+-				#	(foo **)
+-				#
+-				} elsif ($op eq '*') {
+-					if ($ca !~ /$Type$/ && $cb !~ /(\*$;|$;\*)/ &&
+-					    $ctx !~ /VxV|[EW]x[WE]|[EWB]x[VO]|OxV|WxB|BxB/) {
+-						ERROR("need space before that '$op' $at\n" . $hereptr);
+-					}
+-
+ 				# << and >> may either have or not have spaces both sides
+-				} elsif ($op eq '<<' or $op eq '>>' or $op eq '+' or $op eq '/' or
+-					 $op eq '^' or $op eq '|')
++				} elsif ($op eq '<<' or $op eq '>>' or
++					 $op eq '&' or $op eq '^' or $op eq '|' or
++					 $op eq '+' or $op eq '-' or
++					 $op eq '*' or $op eq '/')
+ 				{
+-					if ($ctx !~ /VxV|WxW|VxE|WxE/) {
++					if ($ctx !~ /VxV|WxW|VxE|WxE|VxO/) {
+ 						ERROR("need consistent spacing around '$op' $at\n" .
+ 							$hereptr);
+ 					}
+@@ -865,10 +991,12 @@ sub process {
+ 		}
+ 
+ # check spacing on paretheses
+-		if ($line =~ /\(\s/ && $line !~ /\(\s*$/) {
++		if ($line =~ /\(\s/ && $line !~ /\(\s*(?:\\)?$/ &&
++		    $line !~ /for\s*\(\s+;/) {
+ 			ERROR("no space after that open parenthesis '('\n" . $herecurr);
+ 		}
+-		if ($line =~ /\s\)/) {
++		if ($line =~ /\s\)/ && $line !~ /^.\s*\)/ &&
++		    $line !~ /for\s*\(.*;\s+\)/) {
+ 			ERROR("no space before that close parenthesis ')'\n" . $herecurr);
+ 		}
+ 
+@@ -926,10 +1054,10 @@ sub process {
+ # multi-statement macros should be enclosed in a do while loop, grab the
+ # first statement and ensure its the whole macro if its not enclosed
+ # in a known goot container
+-		if (($prevline=~/\#define.*\\/) and
+-		   !($prevline=~/do\s+{/) and !($prevline=~/\(\{/) and
+-		   !($line=~/do.*{/) and !($line=~/\(\{/) and
+-		   !($line=~/^.\s*$Declare\s/)) {
++		if ($prevline =~ /\#define.*\\/ &&
++		   $prevline !~/(?:do\s+{|\(\{|\{)/ &&
++		   $line !~ /(?:do\s+{|\(\{|\{)/ &&
++		   $line !~ /^.\s*$Declare\s/) {
+ 			# Grab the first statement, if that is the entire macro
+ 			# its ok.  This may start either on the #define line
+ 			# or the one below.
+@@ -1027,6 +1155,11 @@ sub process {
+ 			WARN("Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt\n" . $herecurr);
+ 		}
+ 
++# SPIN_LOCK_UNLOCKED & RW_LOCK_UNLOCKED are deprecated
++		if ($line =~ /\b(SPIN_LOCK_UNLOCKED|RW_LOCK_UNLOCKED)/) {
++			ERROR("Use of $1 is deprecated: see Documentation/spinlocks.txt\n" . $herecurr);
++		}
++
+ # warn about #if 0
+ 		if ($line =~ /^.#\s*if\s+0\b/) {
+ 			CHK("if this code is redundant consider removing it\n" .
+@@ -1073,8 +1206,8 @@ sub process {
+ 
+ # check the location of the inline attribute, that it is between
+ # storage class and type.
+-		if ($line =~ /$Type\s+(?:inline|__always_inline|noinline)\b/ ||
+-		    $line =~ /\b(?:inline|__always_inline|noinline)\s+$Storage/) {
++		if ($line =~ /\b$Type\s+$Inline\b/ ||
++		    $line =~ /\b$Inline\s+$Storage\b/) {
+ 			ERROR("inline keyword should sit between storage class and type\n" . $herecurr);
+ 		}
+ 
+@@ -1091,6 +1224,11 @@ sub process {
+ 				CHK("__setup appears un-documented -- check Documentation/kernel-parameters.txt\n" . $herecurr);
+ 			}
+ 		}
++
++# check for pointless casting of kmalloc return
++		if ($line =~ /\*\s*\)\s*k[czm]alloc\b/) {
++			WARN("unnecessary cast may hide bugs, see http://c-faq.com/malloc/mallocnocast.html\n" . $herecurr);
++		}
+ 	}
+ 
+ 	if ($chk_patch && !$is_patch) {
