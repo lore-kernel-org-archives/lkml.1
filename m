@@ -1,96 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbXILTwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbXILTxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755839AbXILTwy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 15:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXILTwr
+	id S1757430AbXILTxt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 15:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXILTxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 15:52:47 -0400
-Received: from 21.16.78.83.cust.bluewin.ch ([83.78.16.21]:52529 "EHLO
-	spock.one.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751905AbXILTwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 15:52:47 -0400
-X-Greylist: delayed 632 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Sep 2007 15:52:46 EDT
-Date: Wed, 12 Sep 2007 21:41:51 +0200
-From: Michal Januszewski <spock@gentoo.org>
-To: Paul Mundt <lethal@linux-sh.org>, Paulo Marques <pmarques@grupopie.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] uvesafb: Don't access VGA registers directly when
-	running on non-x86
-Message-ID: <20070912194151.GA5410@spock.one.pl>
-Reply-To: spock@gentoo.org
-References: <20070911081752.GA19495@linux-sh.org> <46E67EFD.2040902@grupopie.com> <20070911115346.GA23493@linux-sh.org> <46E687ED.9000802@grupopie.com> <20070911123159.GA23692@linux-sh.org> <20070911230959.GA16406@spock.one.pl> <20070912004437.GA26720@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20070912004437.GA26720@linux-sh.org>
-X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 12 Sep 2007 15:53:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58347 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752519AbXILTxl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 15:53:41 -0400
+Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Rik van Riel <riel@redhat.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, Chris Friesen <cfriesen@nortel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+In-Reply-To: <46E83B16.2070608@redhat.com>
+References: <20070911101644.cd3f641f.randy.dunlap@oracle.com>
+	 <46E6EE96.9060309@nortel.com> <46E6F2A8.2020104@pobox.com>
+	 <46E83B16.2070608@redhat.com>
+Content-Type: text/plain
+Date: Wed, 12 Sep 2007 21:53:00 +0200
+Message-Id: <1189626781.5597.2.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The VGA registers are only available at their legacy IO locations on
-x86. Don't try to access them when running on other arches.
 
-Note that the code accessing them directly is just an optimization
-(limits slow BIOS function calls).  We don't lose any functionality 
-by using BIOS calls instead of it on non-x86.
+On Wed, 2007-09-12 at 15:16 -0400, Rik van Riel wrote:
+> Jeff Garzik wrote:
+> > Chris Friesen wrote:
+> >> Randy Dunlap wrote:
+> >>
+> >>> +Thunderbird (GUI)
+> >>> +
+> >>> +By default, thunderbird likes to mangle text, but there are ways to
+> >>> +coerce it into being nice.
+> >>
+> >> Can someone describe the problems with just attaching the patch in 
+> >> Thunderbird?  It's what Martin says he does on the linked document...
+> > 
+> > Email clients don't like to quote attachments, even text/plain ones, 
+> > which then makes attached patches much more difficult to review and 
+> > comment on (i.e. you greatly reduce the number of reviewers).
+> 
+> Interestingly, Thunderbird does this right and simply
+> adds text/plain attachments to the quoted text.
+> 
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
----
-diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-index 853323e..b983d26 100644
---- a/drivers/video/uvesafb.c
-+++ b/drivers/video/uvesafb.c
-@@ -19,8 +19,10 @@
- #include <linux/io.h>
- #include <linux/mutex.h>
- #include <video/edid.h>
--#include <video/vga.h>
- #include <video/uvesafb.h>
-+#ifdef CONFIG_X86
-+#include <video/vga.h>
-+#endif
- #ifdef CONFIG_MTRR
- #include <asm/mtrr.h>
- #endif
-@@ -935,6 +937,7 @@ static int uvesafb_setpalette(struct uvesafb_pal_entry *entries, int count,
- 	if (start + count > 256)
- 		return -EINVAL;
- 
-+#ifdef CONFIG_X86
- 	/* Use VGA registers if mode is VGA-compatible. */
- 	if (i >= 0 && i < par->vbe_modes_cnt &&
- 	    par->vbe_modes[i].mode_attr & VBE_MODE_VGACOMPAT) {
-@@ -957,8 +960,10 @@ static int uvesafb_setpalette(struct uvesafb_pal_entry *entries, int count,
- 		  "D" (entries),        /* EDI */
- 		  "S" (&par->pmi_pal)); /* ESI */
- 	}
--#endif
--	else {
-+#endif /* CONFIG_X86_32 */
-+	else
-+#endif /* CONFIG_X86 */
-+	{
- 		task = uvesafb_prep();
- 		if (!task)
- 			return -ENOMEM;
-@@ -1102,6 +1107,7 @@ static int uvesafb_blank(int blank, struct fb_info *info)
- 	struct uvesafb_ktask *task;
- 	int err = 1;
- 
-+#ifdef CONFIG_X86
- 	if (par->vbe_ib.capabilities & VBE_CAP_VGACOMPAT) {
- 		int loop = 10000;
- 		u8 seq = 0, crtc17 = 0;
-@@ -1124,7 +1130,9 @@ static int uvesafb_blank(int blank, struct fb_info *info)
- 		while (loop--);
- 		vga_wcrt(NULL, 0x17, crtc17);
- 		vga_wseq(NULL, 0x00, 0x03);
--	} else {
-+	} else
-+#endif /* CONFIG_X86 */
-+	{
- 		task = uvesafb_prep();
- 		if (!task)
- 			return -ENOMEM;
+Devolution allows the same, but most other mailers dont. Esp the text
+based onces which are the majority under the people you want reviews
+from.
 
