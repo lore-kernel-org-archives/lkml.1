@@ -1,39 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934459AbXILVX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934549AbXILVY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934459AbXILVX7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 17:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934349AbXILVVt
+	id S934549AbXILVY3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 17:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763739AbXILVXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 17:21:49 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:39309 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765795AbXILVVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 17:21:47 -0400
-Date: Wed, 12 Sep 2007 23:20:25 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: linux-kernel@vger.kernel.org, shuchen@realtek.com.tw
-Subject: Re: r8169: can't send magic packet for Wake-On-Lan
-Message-ID: <20070912212025.GA30315@electric-eye.fr.zoreil.com>
-References: <1189545366.4403.9.camel@bip.parateam.prv> <20070911213017.GA661@electric-eye.fr.zoreil.com> <1189571526.6098.1.camel@bip.parateam.prv>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1189571526.6098.1.camel@bip.parateam.prv>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+	Wed, 12 Sep 2007 17:23:22 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34491 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934029AbXILVXU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 17:23:20 -0400
+Date: Wed, 12 Sep 2007 14:23:19 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Lee.Schermerhorn@hp.com, kamezawa.hiroyu@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 5/6] Filter based on a nodemask as well as a gfp_mask
+In-Reply-To: <20070912210625.31625.36220.sendpatchset@skynet.skynet.ie>
+Message-ID: <Pine.LNX.4.64.0709121420010.3130@schroedinger.engr.sgi.com>
+References: <20070912210444.31625.65810.sendpatchset@skynet.skynet.ie>
+ <20070912210625.31625.36220.sendpatchset@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xavier Bestel <xavier.bestel@free.fr> :
-[...]
-> Err sorry, I mixed up everything ... I'm using *etherwake* to make the
-> WOL magic packet, and ethtool to check the interface options.
+On Wed, 12 Sep 2007, Mel Gorman wrote:
 
-Weird.
+> -			z++)
+> -		;
+> +	if (likely(nodes == NULL))
+> +		for (; zonelist_zone_idx(z) > highest_zoneidx;
+> +				z++)
+> +			;
+> +	else
+> +		for (; zonelist_zone_idx(z) > highest_zoneidx ||
+> +				(z->zone && !zref_in_nodemask(z, nodes));
+> +				z++)
+> +			;
+>  
 
-Can you capture the traffic from the receiving (live) r8169 whith
-both senders and specify the kernel version of the sender/receiver ?
+Minor nitpick here: "for (;" should become "for ( ;" to have correct 
+whitespace. However, it would be clearer to use a while here.
 
--- 
-Ueimor
+while (zonelist_zone_idx(z)) > highest_zoneidx)
+		z++;
+
+etc.
