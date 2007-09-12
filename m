@@ -1,95 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765533AbXILHue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765299AbXILHu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765533AbXILHue (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 03:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765150AbXILHrs
+	id S1765299AbXILHu6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 03:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765529AbXILHuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 03:47:48 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:34637 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765259AbXILHrq (ORCPT
+	Wed, 12 Sep 2007 03:50:12 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50739 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764688AbXILHuK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 03:47:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tl0q6zi3qYzb3M1KWcH5lZfuIYfqd0SBXe1qM0XvzqSEGzhsS7N1eWDLy1a7AyB3zo8z/VoNHtZCtt+7y/uSN7Q3MnlO0RVi0uFR0mms4IS8UflXzmksbj99ABeX2TOcx9ZOE6AP85osQsqmO/thuG3WuR5wyqtpQ0oCrxEIMVE=
-Message-ID: <406fe6c90709120047g1cf0a995r391e9fe1fbac7101@mail.gmail.com>
-Date: Wed, 12 Sep 2007 09:47:45 +0200
-From: "=?ISO-8859-1?Q?K=F6vedi_Kriszti=E1n?=" <kovedi@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [Sparc64 BUG] hangup under booting 2.6.22.X whith Sparc64
-Cc: linux-kernel@vger.kernel.org, stable-bounces@kernel.org,
-       davem@sunset.davemloft.net
-In-Reply-To: <20070911.083823.15264559.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 12 Sep 2007 03:50:10 -0400
+Date: Wed, 12 Sep 2007 16:51:38 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org, ak@suse.de,
+       clameter@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 4/6] Embed zone_id information within the
+ zonelist->zones pointer
+Message-Id: <20070912165138.5deb4db4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070911213127.23507.34058.sendpatchset@skynet.skynet.ie>
+References: <20070911213006.23507.19569.sendpatchset@skynet.skynet.ie>
+	<20070911213127.23507.34058.sendpatchset@skynet.skynet.ie>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <406fe6c90709100442j1ae0ef79v3188eb10b8be451b@mail.gmail.com>
-	 <20070910.053642.71114977.davem@davemloft.net>
-	 <406fe6c90709102233m2472e6c4h7d329a3f64692645@mail.gmail.com>
-	 <20070911.083823.15264559.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/9/11, David Miller <davem@davemloft.net>:
->
-> I think this patch should fix the problem.
->
-> Please give it a try, thanks.
->
-> diff --git a/arch/sparc64/kernel/pci.c b/arch/sparc64/kernel/pci.c
-> index 139b4cf..e8dac81 100644
-> --- a/arch/sparc64/kernel/pci.c
-> +++ b/arch/sparc64/kernel/pci.c
-> @@ -744,7 +744,7 @@ static void __devinit pci_of_scan_bus(struct pci_pbm_info *pbm,
->  {
->         struct device_node *child;
->         const u32 *reg;
-> -       int reglen, devfn;
-> +       int reglen, devfn, prev_devfn;
->         struct pci_dev *dev;
->
->         if (ofpci_verbose)
-> @@ -752,14 +752,25 @@ static void __devinit pci_of_scan_bus(struct pci_pbm_info *pbm,
->                        node->full_name, bus->number);
->
->         child = NULL;
-> +       prev_devfn = -1;
->         while ((child = of_get_next_child(node, child)) != NULL) {
->                 if (ofpci_verbose)
->                         printk("  * %s\n", child->full_name);
->                 reg = of_get_property(child, "reg", &reglen);
->                 if (reg == NULL || reglen < 20)
->                         continue;
-> +
->                 devfn = (reg[0] >> 8) & 0xff;
->
-> +               /* This is a workaround for some device trees
-> +                * which list PCI devices twice.  On the V100
-> +                * for example, device number 3 is listed twice.
-> +                * Once as "pm" and once again as "lomp".
-> +                */
-> +               if (devfn == prev_devfn)
-> +                       continue;
-> +               prev_devfn = devfn;
-> +
->                 /* create a new pci_dev for this device */
->                 dev = of_create_pci_dev(pbm, child, bus, devfn, 0);
->                 if (!dev)
->
+On Tue, 11 Sep 2007 22:31:27 +0100 (IST)
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-Thanks
-The patch work fine the kernel booting up without error messages.
+> Using two zonelists per node requires very frequent use of zone_idx(). This
+> is costly as it involves a lookup of another structure and a substraction
+> operation. As struct zone is always word aligned and normally cache-line
+> aligned, the pointer values have a number of 0's at the least significant
+> bits of the address.
+> 
+> This patch embeds the zone_id of a zone in the zonelist->zones pointers.
+> The real zone pointer is retrieved using the zonelist_zone() helper function.
+> The ID of the zone is found using zonelist_zone_idx().  To avoid accidental
+> references, the zones field is renamed to _zones and the type changed to
+> unsigned long.
+> 
+At first, I welcome this patch. thanks!.
 
 
-when i patch the kernel become this error message:
+A comment after reading all is, how about defining zonelist as following
+instead of encoding in pointer ?
+==
+struct zone_pointer {
+	struct zone *zone;
+	int	     node_id;  
+	int	     zone_idx;
+};
 
-patch -p1 < ~/2.6.22.6.patch
-patching file arch/sparc64/kernel/pci.c
-Hunk #1 FAILED at 744.
-Hunk #2 FAILED at 752.
-2 out of 2 hunks FAILED -- saving rejects to file arch/sparc64/kernel/pci.c.rej
+struct zonelist {
+	struct zone_pointer	_zones[MAX_ZONES_PER_ZONELIST + 1];
+};
 
-but i add manual this patch the kernel and it works.
+#define zonelist_zone(zl)      (zl)->zone
+#define zonelist_zone_idx(zl)  (zl)->zone_idx
+#ifdef CONFIG_NUMA
+#define zonelist_zone_nid(zl)  (zl)->node_id
+#else
+#define zonelist_zone_nid(zl, i)  (0)
+==
+
+If we really want to avoid unnecessary access to "zone" while walking zonelist,
+above may do something good.  Cons is this makes sizeof zonlist bigger.
+
+Thanks,
+-Kame
+
