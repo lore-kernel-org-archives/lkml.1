@@ -1,61 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765040AbXILTqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbXILTwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765040AbXILTqu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 15:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763636AbXILTqj
+	id S1755839AbXILTwy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 15:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbXILTwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 15:46:39 -0400
-Received: from h3mxr01.htp-tel.de ([81.14.243.49]:36890 "EHLO
-	H3MXR01.htp-tel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764038AbXILTqi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 15:46:38 -0400
-Message-ID: <46E84208.1050903@leemhuis.info>
-Date: Wed, 12 Sep 2007 21:46:16 +0200
-From: Thorsten Leemhuis <fedora@leemhuis.info>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070910)
+	Wed, 12 Sep 2007 15:52:47 -0400
+Received: from 21.16.78.83.cust.bluewin.ch ([83.78.16.21]:52529 "EHLO
+	spock.one.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751905AbXILTwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 15:52:47 -0400
+X-Greylist: delayed 632 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Sep 2007 15:52:46 EDT
+Date: Wed, 12 Sep 2007 21:41:51 +0200
+From: Michal Januszewski <spock@gentoo.org>
+To: Paul Mundt <lethal@linux-sh.org>, Paulo Marques <pmarques@grupopie.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH -mm] uvesafb: Don't access VGA registers directly when
+	running on non-x86
+Message-ID: <20070912194151.GA5410@spock.one.pl>
+Reply-To: spock@gentoo.org
+References: <20070911081752.GA19495@linux-sh.org> <46E67EFD.2040902@grupopie.com> <20070911115346.GA23493@linux-sh.org> <46E687ED.9000802@grupopie.com> <20070911123159.GA23692@linux-sh.org> <20070911230959.GA16406@spock.one.pl> <20070912004437.GA26720@linux-sh.org>
 MIME-Version: 1.0
-To: Bernd Petrovitsch <bernd@firmix.at>
-CC: Dan Stromberg <dstromberglists@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Building a kernel-source RPM (not a kernel RPM)?
-References: <pan.2007.09.12.16.13.41.195991@gmail.com>	 <1189616966.31502.75.camel@tara.firmix.at>	 <pan.2007.09.12.17.30.59.597440@gmail.com> <1189620186.31502.96.camel@tara.firmix.at>
-In-Reply-To: <1189620186.31502.96.camel@tara.firmix.at>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20070912004437.GA26720@linux-sh.org>
+X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12.09.2007 20:03, Bernd Petrovitsch wrote:
-> On Wed, 2007-09-12 at 10:31 -0700, Dan Stromberg wrote:
->> On Wed, 12 Sep 2007 19:09:26 +0200, Bernd Petrovitsch wrote:
-> [...]
->>> Fedora BTW abandoned kernel-source* and they have now a website with a
->>> description
->>> how to produce a configured kernel source tree (e.g. for out-of-tree
->>> modules).
+The VGA registers are only available at their legacy IO locations on
+x86. Don't try to access them when running on other arches.
 
-That explanation is IMHO a bit misleading. Fedora ships kernel-devel
-packages for all their kernels. Those contain everything from the
-source-tree that's needed to build out-of-tree modules -- Makefiles for
-example, but no real sources.
+Note that the code accessing them directly is just an optimization
+(limits slow BIOS function calls).  We don't lose any functionality 
+by using BIOS calls instead of it on non-x86.
 
-Well, to be more precise: that is enought for out-of-tree modules that
-get shipped with proper Makefiles/Layout, which is the case for nearly
-every external module these days. The "website with a description how to
-produce a configured kernel source tree" exists as well, for people that
-want to build kernels the way the Fedora builds them, but want to apply
-additional patches/other sources.
-
->> So this is as smooth as producing kernel-source RPM's gets?
-> I had no problems with the kernel-source.*.rpm approach.
-
-I think the Fedora approach has many benefits -- I always wondered why
-it never went upstream like a "make install_develstuff" that install all
-the needed bits to
-  /lib/modules/$(uname -r)/build/
-
-CU
-knurd
-
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+---
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index 853323e..b983d26 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -19,8 +19,10 @@
+ #include <linux/io.h>
+ #include <linux/mutex.h>
+ #include <video/edid.h>
+-#include <video/vga.h>
+ #include <video/uvesafb.h>
++#ifdef CONFIG_X86
++#include <video/vga.h>
++#endif
+ #ifdef CONFIG_MTRR
+ #include <asm/mtrr.h>
+ #endif
+@@ -935,6 +937,7 @@ static int uvesafb_setpalette(struct uvesafb_pal_entry *entries, int count,
+ 	if (start + count > 256)
+ 		return -EINVAL;
+ 
++#ifdef CONFIG_X86
+ 	/* Use VGA registers if mode is VGA-compatible. */
+ 	if (i >= 0 && i < par->vbe_modes_cnt &&
+ 	    par->vbe_modes[i].mode_attr & VBE_MODE_VGACOMPAT) {
+@@ -957,8 +960,10 @@ static int uvesafb_setpalette(struct uvesafb_pal_entry *entries, int count,
+ 		  "D" (entries),        /* EDI */
+ 		  "S" (&par->pmi_pal)); /* ESI */
+ 	}
+-#endif
+-	else {
++#endif /* CONFIG_X86_32 */
++	else
++#endif /* CONFIG_X86 */
++	{
+ 		task = uvesafb_prep();
+ 		if (!task)
+ 			return -ENOMEM;
+@@ -1102,6 +1107,7 @@ static int uvesafb_blank(int blank, struct fb_info *info)
+ 	struct uvesafb_ktask *task;
+ 	int err = 1;
+ 
++#ifdef CONFIG_X86
+ 	if (par->vbe_ib.capabilities & VBE_CAP_VGACOMPAT) {
+ 		int loop = 10000;
+ 		u8 seq = 0, crtc17 = 0;
+@@ -1124,7 +1130,9 @@ static int uvesafb_blank(int blank, struct fb_info *info)
+ 		while (loop--);
+ 		vga_wcrt(NULL, 0x17, crtc17);
+ 		vga_wseq(NULL, 0x00, 0x03);
+-	} else {
++	} else
++#endif /* CONFIG_X86 */
++	{
+ 		task = uvesafb_prep();
+ 		if (!task)
+ 			return -ENOMEM;
 
