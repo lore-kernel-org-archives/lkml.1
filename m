@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934807AbXILQVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934881AbXILQYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934807AbXILQVl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 12:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764298AbXILQVc
+	id S934881AbXILQYS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 12:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934128AbXILQYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 12:21:32 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:44867 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755174AbXILQVb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 12:21:31 -0400
-Subject: Re: hci_sock.c build failure
-From: Marcel Holtmann <marcel@holtmann.org>
-To: David Miller <davem@davemloft.net>
-Cc: greg@kroah.com, andre@finow14.de, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070912.051212.112608750.davem@davemloft.net>
-References: <20070912092929.GA2878@ahaupt-debian-vm.localdomain>
-	 <20070912120253.GA13003@kroah.com>
-	 <20070912.051212.112608750.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 12 Sep 2007 18:20:19 +0200
-Message-Id: <1189614019.12789.57.camel@aeonflux.holtmann.net>
+	Wed, 12 Sep 2007 12:24:05 -0400
+Received: from main.gmane.org ([80.91.229.2]:41812 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934199AbXILQYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 12:24:04 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Dan Stromberg <dstromberglists@gmail.com>
+Subject: Building a kernel-source RPM (not a kernel RPM)?
+Date: Wed, 12 Sep 2007 09:13:41 -0700
+Message-ID: <pan.2007.09.12.16.13.41.195991@gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: wsip-64-58-157-227.oc.oc.cox.net
+User-Agent: Pan/0.14.2 (This is not a psychotic episode. It's a cleansing moment of clarity.)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
 
-> > It's not even a randconfig issue, my build dies too (this is Linus's
-> > current tree.)
-> > 
-> > Time to poke through the 10 bluetooth patches that were just added...
-> 
-> I'll push the following fix to Linus.
+I sent this to kernel newbies first, and while I got one response there,
+it answered a different question than the one I was asking...
 
-the patch looks absolutely fine to me. You can put an Acked-by line to
-it. Sorry for breaking the build. I tested it on so many architectures,
-but it seems I always had CONFIG_COMPAT enabled. Seems I am running out
-of i386/32-bit only systems.
+I'm on a SuSE system.
 
-Regards
+I'm working on automating the install of said system, but it needs a
+Linus kernel - 2.6.21.7 specifically, and it needs kernel source too so
+that we can build modules in the field as needed.
 
-Marcel
+I see you can make an rpm of a bootable kernel with "make rpm".
+
+Is there a streamlined way of building a corresponding kernel-source
+RPM?  Or do people pretty much all just dump the source in /usr/src, and
+manually update symlinks as needed?  If the latter, what symlinks need
+to be updated?
 
 
