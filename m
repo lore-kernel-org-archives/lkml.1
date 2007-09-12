@@ -1,103 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970537AbXILRRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970958AbXILRST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970537AbXILRRm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764873AbXILRRd
+	id S970958AbXILRST (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969013AbXILRSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 13:17:33 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56843 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764871AbXILRRb (ORCPT
+	Wed, 12 Sep 2007 13:18:07 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:19173 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968679AbXILRSF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 13:17:31 -0400
-Date: Wed, 12 Sep 2007 10:15:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>, linux-alpha@vger.kernel.org,
-       Stefan Becker <Stefan.Becker@nokia.com>, Andi Kleen <ak@suse.de>,
-       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
-       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       Jakub Jelinek <jakub@redhat.com>, Jeff Dike <jdike@linux.intel.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       "Adrian Bunk \"\"" <bunk@kernel.org>
-Subject: Re: [1/4] 2.6.23-rc6: known regressions
-In-Reply-To: <46E81AC6.3000306@googlemail.com>
-Message-ID: <alpine.LFD.0.999.0709121010300.16478@woody.linux-foundation.org>
-References: <46E81AC6.3000306@googlemail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 12 Sep 2007 13:18:05 -0400
+Date: Wed, 12 Sep 2007 10:15:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
+       jason.wessel@windriver.com,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>
+Subject: [PATCH -mm] 2.6.23-rc4-mm1: kgdboe link errors
+Message-Id: <20070912101537.129d10c7.randy.dunlap@oracle.com>
+In-Reply-To: <46E7B1EA.2040009@gmail.com>
+References: <46E7B1EA.2040009@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 12 Sep 2007 11:31:22 +0200 Jiri Slaby wrote:
 
-
-On Wed, 12 Sep 2007, Michal Piotrowski wrote:
+> randconfig [1] causes this link errors:
+> ERROR: "netpoll_cleanup" [drivers/net/kgdboe.ko] undefined!
+> ERROR: "netpoll_setup" [drivers/net/kgdboe.ko] undefined!
+> ERROR: "netpoll_parse_options" [drivers/net/kgdboe.ko] undefined!
+> ERROR: "netpoll_poll" [drivers/net/kgdboe.ko] undefined!
+> ERROR: "netpoll_send_udp" [drivers/net/kgdboe.ko] undefined!
+> ERROR: "netpoll_set_trap" [drivers/net/kgdboe.ko] undefined!
+> make[2]: *** [__modpost] Error 1
+> make[1]: *** [modules] Error 2
+> make: *** [all] Error 2
 > 
-> Subject         : x86_64 vdso patch is broken somehow?
-> References      : http://lkml.org/lkml/2007/8/29/136
-> Last known good : ?
-> Submitter       : Chuck Ebbert <cebbert@redhat.com>
-> Caused-By       : Andi Kleen <ak@suse.de>
->                   commit 2aae950b21e4bc789d1fc6668faf67e8748300b7
-> Handled-By      : ?
-> Status          : unknown
+> [1] http://www.fi.muni.cz/~xslaby/sklad/1.config
 
-This should be fixed now. Just pushed out with commit 
-95b08679963c78ce0d675224a6efdb5169f2bf75 ("x86_64: Add missing mask 
-operation to vdso").
 
-> Subject         : 2.6.23-rc3-git1 crash/stuck on VIA CN700 system
-> References      : http://lkml.org/lkml/2007/8/20/174
-> Last known good : ?
-> Submitter       : Stefan Becker <Stefan.Becker@nokia.com>
-> Caused-By       : Andi Kleen <ak@suse.de>
->                   commit 19d36ccdc34f5ed444f8a6af0cbfdb6790eb1177
-> Handled-By      : Andi Kleen <ak@suse.de>
->                   Dave Jones <davej@redhat.com>
-> Workaround      : http://lkml.org/lkml/2007/9/5/221
-> Status          : problem is being debugged
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-This *seems* to be a VIA bug. Regardless, it should be fixed by commit 
-a534b679180025aa324ebd63c05516e478551cfd ("x86_64: Remove CLFLUSH in 
-text_poke()").
+Fix kgdb build problems:
+  Building modules, stage 2.
+ERROR: "netpoll_cleanup" [drivers/net/kgdboe.ko] undefined!
+ERROR: "netpoll_setup" [drivers/net/kgdboe.ko] undefined!
+ERROR: "netpoll_parse_options" [drivers/net/kgdboe.ko] undefined!
+ERROR: "netpoll_poll" [drivers/net/kgdboe.ko] undefined!
+ERROR: "netpoll_send_udp" [drivers/net/kgdboe.ko] undefined!
+ERROR: "netpoll_set_trap" [drivers/net/kgdboe.ko] undefined!
+make[1]: *** [__modpost] Error 1
 
-> Subject         : console is messed up after resume from s2ram or switching to console from X
-> References      : http://lkml.org/lkml/2007/8/4/6
-> Last known good : ?
-> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-> Caused-By       : ?
-> Handled-By      : H. Peter Anvin <hpa@zytor.com>
->                   Antonino A. Daplas <adaplas@gmail.com>
-> Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
-> Status          : problem is being debugged
 
-This needs to be re-tested (was it the BIOS register overwriting, 
-perhaps?).
+Add 'select' for net-poll/console related config symbols, but
+make KGDBOE 'depend on' NET.  We don't want to 'select' CONFIG_NET,
+but if it is already enabled, the 'select's will enable the rest
+of the needed interfaces.
 
-> Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
-> References      : http://lkml.org/lkml/2007/7/22/86
-> Last known good : ?
-> Submitter       : Markus <lists4me@web.de>
-> Caused-By       : ?
-> Handled-By      : Ingo Molnar <mingo@elte.hu>
-> Status          : problem is being debugged
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ lib/Kconfig.kgdb |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-This should probably be dropped. I don't think we have any new reports on 
-it, and nobody else ever saw it.
-
-> Subject         : uml on x86_64 compile error
-> References      : http://lkml.org/lkml/2007/9/3/86
-> Last known good : ?
-> Submitter       : Adrian Bunk <bunk@kernel.org>
-> Caused-By       : Jeff Dike <jdike@linux.intel.com>
->                   commit d1254b12c93e1e586137a2ffef71fd33cf273f35
-> Handled-By      : ?
-> Status          : unknown
-
-This should be fixed by commit 980abe215b861891c39aba0936817c46f372143b 
-("UML: Fix ELF_CORE_COPY_REGS build botch").
-
-			Linus
+--- linux-2.6.23-rc4-mm1.orig/lib/Kconfig.kgdb
++++ linux-2.6.23-rc4-mm1/lib/Kconfig.kgdb
+@@ -174,9 +174,11 @@ endchoice
+ 
+ config KGDBOE
+ 	tristate "KGDB: On ethernet" if !KGDBOE_NOMODULE
+-	depends on m && KGDB
++	depends on m && KGDB && NET
++	select NETCONSOLE
+ 	select NETPOLL
+ 	select NETPOLL_TRAP
++	select NET_POLL_CONTROLLER
+ 	help
+ 	  Uses the NETPOLL API to communicate with the host GDB via UDP.
+ 	  In order for this to work, the ethernet interface specified must
