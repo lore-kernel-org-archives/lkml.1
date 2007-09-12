@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966118AbXILD1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764052AbXILDaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966118AbXILD1P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 23:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762233AbXILD1A
+	id S1764052AbXILDaP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 23:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932659AbXILD37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 23:27:00 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:43771 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757933AbXILD1A (ORCPT
+	Tue, 11 Sep 2007 23:29:59 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2955 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932656AbXILD36 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 23:27:00 -0400
-Message-ID: <46E75C6A.3000705@nortel.com>
-Date: Tue, 11 Sep 2007 21:26:34 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
-References: <20070911101644.cd3f641f.randy.dunlap@oracle.com> <46E6EE96.9060309@nortel.com> <46E6F2A8.2020104@pobox.com>
-In-Reply-To: <46E6F2A8.2020104@pobox.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Sep 2007 03:26:38.0620 (UTC) FILETIME=[BAC3C5C0:01C7F4EC]
+	Tue, 11 Sep 2007 23:29:58 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: eswierk@arastra.com (Ed Swierk)
+Subject: Re: [PATCH] Configurable tap interface MTU
+Cc: netdev@vger.kernel.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org
+Organization: Core
+In-Reply-To: <e6c711510709110742v4d2da644ha63b0a6d47c1230b@mail.gmail.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1IVIv8-0003Uc-00@gondolin.me.apana.org.au>
+Date: Wed, 12 Sep 2007 11:29:42 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Chris Friesen wrote:
+Ed Swierk <eswierk@arastra.com> wrote:
+> 
+> The patch caps the MTU somewhat arbitrarily at 16000 bytes. This is
+> slightly lower than the value used by the e1000 driver, so it seems
+> like a safe upper limit.
 
->> Can someone describe the problems with just attaching the patch in 
->> Thunderbird?  It's what Martin says he does on the linked document...
+Please make it 65535 without an Ethernet header and 65521
+with an Ethernet header.
 
-> Email clients don't like to quote attachments, even text/plain ones, 
-> which then makes attached patches much more difficult to review and 
-> comment on (i.e. you greatly reduce the number of reviewers).
-
-Thunderbird, at least, will automatically inline a single text/plain 
-attachment when replying. (At least with my current settings, it does.)
-
-Chris
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
