@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765058AbXILVq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765867AbXILVt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765058AbXILVq4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 17:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbXILVqs
+	id S1765867AbXILVt5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 17:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbXILVtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 17:46:48 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45897 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753688AbXILVqs (ORCPT
+	Wed, 12 Sep 2007 17:49:49 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:52007 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755284AbXILVts (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 17:46:48 -0400
-Message-ID: <46E85E41.5000403@zytor.com>
-Date: Wed, 12 Sep 2007 14:46:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 12 Sep 2007 17:49:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=CYVKjiZkkqWvsPRNx6qvXZH1luFy5LjKlvNCbXffuvLjoFgki8q/0pgySFOlzlNrVGW0Cal1xOs+iYa0R8OUjS60/zrt/vZfuSDSG+Ra7DHpPhlSOb/TScJbPymGpESsUb/wWAcAvJ03A82iyD5MiBjMiTT86j4PgCU/jb+ctDY=
+Message-ID: <46E85EF5.7050306@gmail.com>
+Date: Thu, 13 Sep 2007 01:49:41 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Brent Casavant <bcasavan@sgi.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: O_NOLINK for open()
-References: <20070912144128.D5573@pkunk.americas.sgi.com> <46E85528.3010405@zytor.com> <20070912163645.E5573@pkunk.americas.sgi.com>
-In-Reply-To: <20070912163645.E5573@pkunk.americas.sgi.com>
-X-Enigmail-Version: 0.95.0
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23-rc5 hangs on boot, apparently when initializing the EC
+References: <46E6F30C.5040500@redhat.com>
+In-Reply-To: <46E6F30C.5040500@redhat.com>
+X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brent Casavant wrote:
-> On Wed, 12 Sep 2007, H. Peter Anvin wrote:
+Chuck,
+
+Please try last patch from bug 8709 (bugzilla.kernel.org), if it does not help, please open new bug, 
+and submit acpidump and dmesg outputs.
+
+Thanks,
+Alex.
+
+ 
+Chuck Ebbert wrote:
+> 2.6.23-rc5-git1 hangs here, just before EC initialization.
+> Pressing the power button briefly makes it continue, then the
+> EC gets detected twice:
 > 
->> Brent Casavant wrote:
 > 
->>> 	http://marc.info/?l=linux-kernel&m=93032806224160&w=2
->> This link talks about file flags handling.  I don't see the relevance to
->> this problem at all.  However, this is a very long thread, so if there
->> is anything specific that you want to point to, then please elucidate.
+> ACPI: bus type pci registered
+> PCI: Using configuration type 1
 > 
-> Oops, my mistake -- I pasted the wrong URL.  I meant this thread, this
-> post in particular:
+> ------------------ hangs here, press power button --------------------
 > 
-> 	http://marc.info/?l=linux-kernel&m=88937224115435&w=2
+> ACPI: EC: Look up EC in DSDT
+> ACPI: EC: GPE = 0x10, I/O: command/status = 0x66, data = 0x62
+> ACPI: System BIOS is requesting _OSI(Linux)
+> ACPI: If "acpi_osi=Linux" works better,
+> Please send dmidecode to linux-acpi@vger.kernel.org
+> ACPI: Interpreter enabled
+> ACPI: (supports S0 S3)
+> ACPI: Using IOAPIC for interrupt routing
+> ACPI: EC: GPE = 0x10, I/O: command/status = 0x66, data = 0x62
+> ACPI: PCI Root Bridge [PCI0] (0000:00)
+> PCI: Transparent bridge - 0000:00:10.0
+> ...
 > 
-> Still, O_NOLINK would seem to be a valuable addition, and greatly
-> simplify secure temporary file creation.
+> 
+> System is an HP TX1000 notebook with AMD Turion X2 processor,
+> running the x86_64 kernel. (And acpi_osi="Linux" doesn't seem to
+> make any difference.)
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
 
-Avoiding -- or at least detecting -- symlink racing with mkdir() is
-relatively simple: run mkdir(), make sure you don't get EEXIST or
-something like that, lstat() the resulting path -- it should be a
-directory with all the right modes and ownerships.
-
-I believe -- but I'm not certain -- that mkdtemp() in glibc will do all
-this for you.  If not, I would consider that a glibc bug.
-
-	-hpa
