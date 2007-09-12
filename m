@@ -1,80 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970887AbXILRMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970537AbXILRRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970887AbXILRMy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765617AbXILRMq
+	id S970537AbXILRRm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764873AbXILRRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 13:12:46 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:59414 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764493AbXILRMp (ORCPT
+	Wed, 12 Sep 2007 13:17:33 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56843 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764871AbXILRRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 13:12:45 -0400
-Date: Wed, 12 Sep 2007 19:12:53 +0200
-From: Adrian Bunk <bunk@kernel.org>
+	Wed, 12 Sep 2007 13:17:31 -0400
+Date: Wed, 12 Sep 2007 10:15:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, Greg KH <gregkh@suse.de>,
-       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.23-rc6: known regressions with patches
-Message-ID: <20070912171253.GB3563@stusta.de>
-References: <46E81AE2.8030802@googlemail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, linux-alpha@vger.kernel.org,
+       Stefan Becker <Stefan.Becker@nokia.com>, Andi Kleen <ak@suse.de>,
+       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
+       Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       Jakub Jelinek <jakub@redhat.com>, Jeff Dike <jdike@linux.intel.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       "Adrian Bunk \"\"" <bunk@kernel.org>
+Subject: Re: [1/4] 2.6.23-rc6: known regressions
+In-Reply-To: <46E81AC6.3000306@googlemail.com>
+Message-ID: <alpine.LFD.0.999.0709121010300.16478@woody.linux-foundation.org>
+References: <46E81AC6.3000306@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46E81AE2.8030802@googlemail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 06:59:14PM +0200, Michal Piotrowski wrote:
-> Hi all,
+
+
+On Wed, 12 Sep 2007, Michal Piotrowski wrote:
 > 
-> Here is a list of some known regressions in 2.6.23-rc6
-> with patches available.
->...
-> MTD
-> 
-> Subject         : include/linux/mtd/map.h:128:2: error: #error "No bus width supported. What's the point?"
-> References      : http://lkml.org/lkml/2007/9/11/151
+> Subject         : x86_64 vdso patch is broken somehow?
+> References      : http://lkml.org/lkml/2007/8/29/136
 > Last known good : ?
-> Submitter       : Toralf Förster <toralf.foerster@gmx.de>
-> Caused-By       : ?
+> Submitter       : Chuck Ebbert <cebbert@redhat.com>
+> Caused-By       : Andi Kleen <ak@suse.de>
+>                   commit 2aae950b21e4bc789d1fc6668faf67e8748300b7
 > Handled-By      : ?
-> Patch           : http://git.infradead.org/?p=mtd-2.6.git;a=commit;h=241651d04d672fb685b2874707016cbbf95931e5
-> Status          : patch available
+> Status          : unknown
 
-Not a regression, and simply a pointless configuration.
+This should be fixed now. Just pushed out with commit 
+95b08679963c78ce0d675224a6efdb5169f2bf75 ("x86_64: Add missing mask 
+operation to vdso").
 
->...
-> USB
-> 
-> Subject         : build #246 failed for 2.6.23-rc6-g0d4cbb5 in linux/drivers/usb/misc/phidgetservo.ko
-> References      : http://lkml.org/lkml/2007/9/11/211
+> Subject         : 2.6.23-rc3-git1 crash/stuck on VIA CN700 system
+> References      : http://lkml.org/lkml/2007/8/20/174
 > Last known good : ?
-> Submitter       : Toralf Förster <toralf.foerster@gmx.de>
+> Submitter       : Stefan Becker <Stefan.Becker@nokia.com>
+> Caused-By       : Andi Kleen <ak@suse.de>
+>                   commit 19d36ccdc34f5ed444f8a6af0cbfdb6790eb1177
+> Handled-By      : Andi Kleen <ak@suse.de>
+>                   Dave Jones <davej@redhat.com>
+> Workaround      : http://lkml.org/lkml/2007/9/5/221
+> Status          : problem is being debugged
+
+This *seems* to be a VIA bug. Regardless, it should be fixed by commit 
+a534b679180025aa324ebd63c05516e478551cfd ("x86_64: Remove CLFLUSH in 
+text_poke()").
+
+> Subject         : console is messed up after resume from s2ram or switching to console from X
+> References      : http://lkml.org/lkml/2007/8/4/6
+> Last known good : ?
+> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
 > Caused-By       : ?
-> Handled-By      : Adrian Bunk <bunk@kernel.org>
-> Patch           : http://lkml.org/lkml/2007/9/11/284
-> Status          : patch available
+> Handled-By      : H. Peter Anvin <hpa@zytor.com>
+>                   Antonino A. Daplas <adaplas@gmail.com>
+> Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
+> Status          : problem is being debugged
 
-Not a 2.6.23-rc regression (but IMHO the patch should be safe enough 
-for 2.6.23).
+This needs to be re-tested (was it the BIOS register overwriting, 
+perhaps?).
 
-> Regards,
-> Michal
+> Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
+> References      : http://lkml.org/lkml/2007/7/22/86
+> Last known good : ?
+> Submitter       : Markus <lists4me@web.de>
+> Caused-By       : ?
+> Handled-By      : Ingo Molnar <mingo@elte.hu>
+> Status          : problem is being debugged
 
-cu
-Adrian
+This should probably be dropped. I don't think we have any new reports on 
+it, and nobody else ever saw it.
 
--- 
+> Subject         : uml on x86_64 compile error
+> References      : http://lkml.org/lkml/2007/9/3/86
+> Last known good : ?
+> Submitter       : Adrian Bunk <bunk@kernel.org>
+> Caused-By       : Jeff Dike <jdike@linux.intel.com>
+>                   commit d1254b12c93e1e586137a2ffef71fd33cf273f35
+> Handled-By      : ?
+> Status          : unknown
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+This should be fixed by commit 980abe215b861891c39aba0936817c46f372143b 
+("UML: Fix ELF_CORE_COPY_REGS build botch").
 
+			Linus
