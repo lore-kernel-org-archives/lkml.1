@@ -1,35 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934921AbXILRAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970132AbXILRAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934921AbXILRAT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967748AbXILQ7g
+	id S970132AbXILRAl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969859AbXILQ7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 12:59:36 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:4369 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933753AbXILQ7d (ORCPT
+	Wed, 12 Sep 2007 12:59:48 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:9741 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934750AbXILQ7n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 12:59:33 -0400
+	Wed, 12 Sep 2007 12:59:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=UEl5iwLXhgS597JInC3iBZ3nQGIScv0qwtbw88B6OODd1QpZUeQ2WddMou64ZdjJ0lKi3JJ5XWUQgjICtmrp/YrKwwg0ymZkhLgKT5py2QCaTbBJmqIZbPQgpiJjVMguTNkwicu6LdXkMHcRB3Ng033IWIw+uB20SPiHc6JRWRQ=
-Message-ID: <46E81AC6.3000306@googlemail.com>
-Date: Wed, 12 Sep 2007 18:58:46 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=qeDVm3rtcLYbN41p5er5kL4CnmVc9aeFnV+LZIpwUKtPAsDnYh8vSOA/5U0TbJcOrkgOYEC9lH8xinV9Cj0CPFOMQs22ulR+eMMHR3u8Fva63e5Hr+2JC6SoZGmLASR0tzdiXJZgtPgGeQYJ2gAd5deE/JlfX1PnWfpX6lgPF2w=
+Message-ID: <46E81ACE.6030305@googlemail.com>
+Date: Wed, 12 Sep 2007 18:58:54 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>, linux-alpha@vger.kernel.org,
-       Stefan Becker <Stefan.Becker@nokia.com>, Andi Kleen <ak@suse.de>,
-       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
-       Pavel Machek <pavel@ucw.cz>, "Thomas Gleixner" <tglx@linutronix.de>,
-       Jakub Jelinek <jakub@redhat.com>, Jeff Dike <jdike@linux.intel.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       "Adrian Bunk \"\"" <bunk@kernel.org>
-Subject: [1/4] 2.6.23-rc6: known regressions
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       nfs@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Clayton <andrew@digital-domain.net>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Dave Kleikamp <shaggy@austin.ibm.com>,
+       jfs-discussion@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
+       sct@redhat.com, adilger@clusterfs.com, linux-ext4@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Chuck Ebbert <cebbert@redhat.com>, dth <dth@dth.net>
+Subject: Re: [2/4] 2.6.23-rc6: known regressions
+References: <46E8187E.9000006@googlemail.com>
+In-Reply-To: <46E8187E.9000006@googlemail.com>
 X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
@@ -64,61 +66,65 @@ Tejun Heo                              3
 
 
 
-Unclassified
+ACPI
 
-Subject         : x86_64 vdso patch is broken somehow?
-References      : http://lkml.org/lkml/2007/8/29/136
+Subject         : 2.6.23-rc5 hangs on boot, apparently when initializing the EC
+References      : http://lkml.org/lkml/2007/9/11/369
 Last known good : ?
 Submitter       : Chuck Ebbert <cebbert@redhat.com>
-Caused-By       : Andi Kleen <ak@suse.de>
-                  commit 2aae950b21e4bc789d1fc6668faf67e8748300b7
+Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : cpu hotplug support broken in 2.6.23-rc3/highres timers break cpu hotplug in 2.6.23-rc5
-References      : http://lkml.org/lkml/2007/8/27/58
-                  http://lkml.org/lkml/2007/9/3/65
+
+
+CPUFREQ
+
+Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
+References      : http://lkml.org/lkml/2007/7/27/298
+                  http://lkml.org/lkml/2007/7/29/371
 Last known good : ?
-Submitter       : Pavel Machek <pavel@ucw.cz>
+Submitter       : dth <dth@dth.net>
+Caused-By       : Len Brown <lenb@kernel.org>
+                  commit f79e3185dd0f8650022518d7624c876d8929061b
+Handled-By      : Len Brown <lenb@kernel.org>
+Status          : problem is being debugged
+
+
+
+FS
+
+Subject         : hanging ext3 dbench tests
+References      : http://lkml.org/lkml/2007/9/11/176
+Last known good : ?
+Submitter       : Andy Whitcroft <apw@shadowen.org>
 Caused-By       : ?
 Handled-By      : ?
-Status          : problem is being debugged
+Status          : unknown
 
-Subject         : 2.6.23-rc3-git1 crash/stuck on VIA CN700 system
-References      : http://lkml.org/lkml/2007/8/20/174
+Subject         : umount triggers a warning in jfs and takes almost a minute
+References      : http://lkml.org/lkml/2007/9/4/73
 Last known good : ?
-Submitter       : Stefan Becker <Stefan.Becker@nokia.com>
-Caused-By       : Andi Kleen <ak@suse.de>
-                  commit 19d36ccdc34f5ed444f8a6af0cbfdb6790eb1177
-Handled-By      : Andi Kleen <ak@suse.de>
-                  Dave Jones <davej@redhat.com>
-Workaround      : http://lkml.org/lkml/2007/9/5/221
-Status          : problem is being debugged
-
-Subject         : console is messed up after resume from s2ram or switching to console from X
-References      : http://lkml.org/lkml/2007/8/4/6
-Last known good : ?
-Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+Submitter       : Oliver Neukum <oliver@neukum.org>
 Caused-By       : ?
-Handled-By      : H. Peter Anvin <hpa@zytor.com>
-                  Antonino A. Daplas <adaplas@gmail.com>
-Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
-Status          : problem is being debugged
+Handled-By      : ?
+Status          : unknown
 
-Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
-References      : http://lkml.org/lkml/2007/7/22/86
+Subject         : [NFSv4] 2.6.23-rc4 oops in nfs4_cb_recall
+References      : http://lkml.org/lkml/2007/9/4/53
+                  http://bugzilla.kernel.org/show_bug.cgi?id=9003
 Last known good : ?
-Submitter       : Markus <lists4me@web.de>
+Submitter       : Daniel J Blueman <daniel.blueman@gmail.com>
 Caused-By       : ?
-Handled-By      : Ingo Molnar <mingo@elte.hu>
-Status          : problem is being debugged
+Handled-By      : ?
+Workaround      : http://bugzilla.kernel.org/attachment.cgi?id=12797
+Status          : unknown
 
-Subject         : uml on x86_64 compile error
-References      : http://lkml.org/lkml/2007/9/3/86
+Subject         : [NFSD OOPS] 2.6.23-rc1-git10
+References      : http://lkml.org/lkml/2007/8/2/462
 Last known good : ?
-Submitter       : Adrian Bunk <bunk@kernel.org>
-Caused-By       : Jeff Dike <jdike@linux.intel.com>
-                  commit d1254b12c93e1e586137a2ffef71fd33cf273f35
+Submitter       : Andrew Clayton <andrew@digital-domain.net>
+Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
