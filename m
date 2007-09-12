@@ -1,45 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765502AbXILUxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765003AbXILVFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765502AbXILUxx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 16:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760239AbXILUxl
+	id S1765003AbXILVFG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 17:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761715AbXILVEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 16:53:41 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:50486 "EHLO
-	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753762AbXILUxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 16:53:40 -0400
-Date: Wed, 12 Sep 2007 22:50:25 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Karl Meyer <adhocrocker@gmail.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.23-rc "NETDEV WATCHDOG: eth0: transmit timed out"
-Message-ID: <20070912205025.GA31709@electric-eye.fr.zoreil.com>
-References: <be1b757c0708130435y689b9dd8raf9ac9f9c0fcc976@mail.gmail.com> <20070813165821.GA19356@electric-eye.fr.zoreil.com> <be1b757c0708131027v5c57822as2d9bd3190fd19b71@mail.gmail.com> <20070814070901.GA14693@electric-eye.fr.zoreil.com> <be1b757c0708141425qd887581n3922702b84a21758@mail.gmail.com> <20070814224629.GB3495@electric-eye.fr.zoreil.com> <20070816141122.GA6625@electric-eye.fr.zoreil.com> <be1b757c0709011224tafebaaby697d03ab5377e20f@mail.gmail.com> <6bffcb0e0709021515v586f078cjce04f877e2f27aa2@mail.gmail.com> <be1b757c0709021521q850f2bdq3f88c24c02c26b1b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <be1b757c0709021521q850f2bdq3f88c24c02c26b1b@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
-X-Organisation: Land of Sunshine Inc.
+	Wed, 12 Sep 2007 17:04:53 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:40049 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761714AbXILVEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 17:04:51 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Lee.Schermerhorn@hp.com, kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Message-Id: <20070912210444.31625.65810.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/6] Use one zonelist per node instead of multiple zonelists v6
+Date: Wed, 12 Sep 2007 22:04:44 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karl Meyer <adhocrocker@gmail.com> :
-[...]
-> am am looking for this issue for some time now, but there where no
-> errors in 2.6.22-r2 (gentoo speak, I guess this is 2.6.22.2
-> officially), I also ran git-bisect (for more information see the older
-> messages in this thread).
+Kamezawa-san,
 
-2.6.22-r2 in gentoo is based on 2.6.22.1. It is way before
-0e4851502f846b13b29b7f88f1250c980d57e944 that you reported to work.
-Thus it is not surprizing that it works.
+This version implements your idea for storing a zone pointer and zone_idx
+in a structure within the zonelist instead of encoding information in a
+pointer. It has worked out quite well. The performance is comparable on
+the tests I've run with similar gains/losses as I've seen with but pointer
+packing but this code may be easier to understand. However, the zonelist
+has doubled in size and consumes more cache lines.
 
-Any update regarding the patchkit that I sent on 2007/08/16 ?
+I did not put the node_idx into the structure as it was not clear that there
+was a real gain from doing that as the node ID is no rarely used. However,
+it would be trivial to add if it could be demonstrated to be of real benefit
+on workloads that make heavy use of nodemasks. I do not have an appropriate
+test environment for measuring that but prehaps someone else. If they are
+willing to check it out, I'll roll a suitable patch.
 
-It would help to narrow the culprit.
+Any opinions on whether the slight gain in apparent performance in kernbench
+worth the cacheline? It's very difficult to craft a benchmark that notices
+the extra line being used so this could be a hand-waving issue.
+
+Changelog since V6
+  o Instead of encoding zone index information in a pointer, this version
+    introduces a structure that stores a zone pointer and its index 
+
+Changelog since V5
+  o Rebase to 2.6.23-rc4-mm1
+  o Drop patch that replaces inline functions with macros
+
+Changelog since V4
+  o Rebase to -mm kernel. Host of memoryless patches collisions dealt with
+  o Do not call wakeup_kswapd() for every zone in a zonelist
+  o Dropped the FASTCALL removal
+  o Have cursor in iterator advance earlier
+  o Use nodes_and in cpuset_nodes_valid_mems_allowed()
+  o Use defines instead of inlines, noticably better performance on gcc-3.4
+    No difference on later compilers such as gcc 4.1
+  o Dropped gfp_skip patch until it is proven to be of benefit. Tests are
+    currently inconclusive but it definitly consumes at least one cache
+    line
+
+Changelog since V3
+  o Fix compile error in the parisc change
+  o Calculate gfp_zone only once in __alloc_pages
+  o Calculate classzone_idx properly in get_page_from_freelist
+  o Alter check so that zone id embedded may still be used on UP
+  o Use Kamezawa-sans suggestion for skipping zones in zonelist
+  o Add __alloc_pages_nodemask() to filter zonelist based on a nodemask. This
+    removes the need for MPOL_BIND to have a custom zonelist
+  o Move zonelist iterators and helpers to mm.h
+  o Change _zones from struct zone * to unsigned long
+  
+Changelog since V2
+  o shrink_zones() uses zonelist instead of zonelist->zones
+  o hugetlb uses zonelist iterator
+  o zone_idx information is embedded in zonelist pointers
+  o replace NODE_DATA(nid)->node_zonelist with node_zonelist(nid)
+
+Changelog since V1
+  o Break up the patch into 3 patches
+  o Introduce iterators for zonelists
+  o Performance regression test
+
+The following patches replace multiple zonelists per node with one zonelist
+that is filtered based on the GFP flags. The patches as a set fix a bug
+with regard to the use of MPOL_BIND and ZONE_MOVABLE. With this patchset,
+the MPOL_BIND will apply to the two highest zones when the highest zone
+is ZONE_MOVABLE. This should be considered as an alternative fix for the
+MPOL_BIND+ZONE_MOVABLE in 2.6.23 to the previously discussed hack that
+filters only custom zonelists. As a bonus, the patchset reduces the cache
+footprint of the kernel and should improve performance in a number of cases.
+
+The first patch cleans up an inconsitency where direct reclaim uses
+zonelist->zones where other places use zonelist. The second patch introduces
+a helper function node_zonelist() for looking up the appropriate zonelist
+for a GFP mask which simplifies patches later in the set.
+
+The third patch replaces multiple zonelists with two zonelists that are
+filtered. The two zonelists are due to the fact that the memoryless patchset
+introduces a second set of zonelists for __GFP_THISNODE.
+
+The fourth patch introduces filtering of the zonelists based on a nodemask.
+
+The final patch replaces the two zonelists with one zonelist. A nodemask is
+created when __GFP_THISNODE is specified to filter the list. The nodelists
+could be pre-allocated with one-per-node but it's not clear that __GFP_THISNODE
+is used often enough to be worth the effort.
+
+Performance results varied depending on the machine configuration but were
+usually small performance gains. In real workloads the gain/loss will depend
+on how much the userspace portion of the benchmark benefits from having more
+cache available due to reduced referencing of zonelists.
+
+These are the range of performance losses/gains when running against
+2.6.23-rc3-mm1. The set and these machines are a mix of i386, x86_64 and
+ppc64 both NUMA and non-NUMA.
+
+Total CPU time on Kernbench: -0.67% to  3.05%
+Elapsed   time on Kernbench: -0.25% to  2.96%
+page_test from aim9:         -6.98% to  5.60%
+brk_test  from aim9:         -3.94% to  4.11%
+fork_test from aim9:         -5.72% to  4.14%
+exec_test from aim9:         -1.02% to  1.56%
+
+The TBench figures were too variable between runs to draw conclusions from but
+there didn't appear to be any regressions there. The hackbench results for both
+sockets and pipes were within noise.
 
 -- 
-Ueimor
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
