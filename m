@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758231AbXILFLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762236AbXILFQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758231AbXILFLZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 01:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbXILFLR
+	id S1762236AbXILFQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 01:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbXILFQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 01:11:17 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:25275 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751280AbXILFLR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 01:11:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=dGMccIC4CJlOuoann9FaVm3epN7NqkFubYiNpKKdTpjWaL4xiouEbwagCVIj/RC53Hpi8OmvY7r2CglDHzL4iA9P5jp7q9WzgUz/WStQU82LVbTv/tZFu9QuxuyEt5cA7qNCw6uBgye5x9a8xjCSVp/M22jK0kYXKiG3MuHCiYk=
-Date: Wed, 12 Sep 2007 13:07:51 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Lee Revell <rlrevell@joe-job.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       jgarzik <jgarzik@pobox.com>
-Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
-Message-ID: <20070912050751.GG2579@hacking>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20070911101644.cd3f641f.randy.dunlap@oracle.com> <1189532202.21778.84.camel@twins> <75b66ecd0709111138xb5f6120qee40345378b188eb@mail.gmail.com> <1189536734.5739.2.camel@lappy>
+	Wed, 12 Sep 2007 01:16:51 -0400
+Received: from MGW4.Sony.CO.JP ([137.153.0.46]:45781 "EHLO mgw4.sony.co.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751382AbXILFQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 01:16:50 -0400
+X-Greylist: delayed 10630 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Sep 2007 01:16:50 EDT
+Message-ID: <46E74C95.3090402@am.sony.com>
+Date: Tue, 11 Sep 2007 19:19:01 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1189536734.5739.2.camel@lappy>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Michael Neuling <mikey@neuling.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       paulus@samba.org, Alan Cox <alan@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc: add new required termio functions
+References: <8018.1189562679@neuling.org>
+In-Reply-To: <8018.1189562679@neuling.org>
+X-Enigmail-Version: 0.94.3.0
+X-MIMETrack: Itemize by SMTP Server on SCE_MGW01/SCEI(Release 7.0.2FP1|January 10, 2007) at
+ 2007/09/12 11:19:35,
+	Serialize by Router on SCE_MGW01/SCEI(Release 7.0.2FP1|January 10, 2007) at
+ 2007/09/12 11:19:36,
+	Serialize complete at 2007/09/12 11:19:36
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 11, 2007 at 08:52:14PM +0200, Peter Zijlstra wrote:
->
->On Tue, 2007-09-11 at 14:38 -0400, Lee Revell wrote:
->> On 9/11/07, Peter Zijlstra <peterz@infradead.org> wrote:
->> > On Tue, 2007-09-11 at 10:16 -0700, Randy Dunlap wrote:
->> >
->> > > +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->> > > +Evolutions (GUI)
->> >
->> > I take it you mean: Evolution
->> >
->> > > +Some people seem to use this successfully for patches.
->> > > +
->> > > +What config options are needed?
->> >
->> > When composing mail select: Preformat
->> >   from Format->Heading->Preformatted (Ctrl-7)
->> >   or the toolbar
->> >
->> > Then use:
->> >   Insert->Text File... (Alt-n x)
->> >
->> > to insert the patch.
->> 
->> You can also diff -Nru old.c new.c | xclip, select Preformat, then
->> paste with the middle button.
->
->Ah, I shall try:
->
->  cat `quilt top` | xclip
->
->next time I have a single patch to send.
->
+Michael Neuling wrote:
+> The "tty: termios locking functions break with new termios type" patch
+> (f629307c857c030d5a3dd777fee37c8bb395e171) breaks the powerpc compile.
+> This adds the required API to asm-powerpc.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> --
+> This needs to go up for 2.6.23.
+> 
+> Should we really put these definitions in asm-generic/termios.h as I'm
+> guessing other architectures are broken too?
 
-Oh, great! Thank you for this hint.
+I think it would be better to do so, as that is where we pickup the defs for
+the original kernel_termios_to_user_termios and user_termios_to_kernel_termios.
 
--- 
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
-
+-Geoff
