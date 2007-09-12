@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933460AbXILKAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965273AbXILKBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933460AbXILKAh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 06:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932437AbXILKA0
+	id S965273AbXILKBk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 06:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932597AbXILKBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 06:00:26 -0400
-Received: from smtp.opengridcomputing.com ([71.42.183.126]:46887 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753954AbXILKAZ (ORCPT
+	Wed, 12 Sep 2007 06:01:32 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:43447 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932437AbXILKBb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 06:00:25 -0400
-From: Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH] RDMA/CMA: Use neigh_event_send() to initiate neighbour discovery.
-Date: Wed, 12 Sep 2007 05:00:25 -0500
-To: rdreier@cisco.com, sean.hefty@intel.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Message-Id: <20070912100025.3190.89259.stgit@dell3.ogc.int>
-Content-Type: text/plain; charset=utf-8; format=fixed
-Content-Transfer-Encoding: 8bit
-User-Agent: StGIT/0.10
+	Wed, 12 Sep 2007 06:01:31 -0400
+Date: Wed, 12 Sep 2007 03:01:23 -0700
+From: Greg KH <greg@kroah.com>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: Heiko Schocher <hs@denx.de>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>
+Subject: Re: SYSFS: need a noncaching read
+Message-ID: <20070912100123.GA23182@kroah.com>
+References: <1189503798.6674.46.camel@Zeus.EmbLux> <20070912053207.GH23573@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070912053207.GH23573@pengutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 12, 2007 at 07:32:07AM +0200, Robert Schwebel wrote:
+> On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
+> > I have developed a device driver and use the sysFS to export some
+> > registers to userspace.
+> 
+> Uuuh, uggly. Don't do that. Device drivers are there to abstract things,
+> not to play around with registers from userspace.
+> 
+> > I opened the sysFS File for one register and did some reads from this
+> > File, but I alwas becoming the same value from the register, whats not
+> > OK, because they are changing. So I found out that the sysFS caches
+> > the reads ... :-(
+> 
+> Yes, it does. What you can do is close()ing the file handle between
+> accesses, which makes it work but is slow.
 
-RDMA/CMA: Use neigh_event_send() to initiate neighbour discovery.
+Do an lseek back to 0 and then re-read, you will get called in your
+driver again.
 
-Calling arp_send() to initiate neighbour discovery (ND) doesn't do the
-full ND protocol.  Namely, it doesn't handle retransmitting the arp
-request if it is dropped. The function neigh_event_send() does all this.
-Without doing full ND, rdma address resolution fails in the presence of
-dropped arp bcast packets.
+Not that this is a good thing to do for this kind of thing, as others
+have already said.
 
-Signed-off-by: Steve Wise <swise@opengridcomputing.com>
----
+thanks,
 
- drivers/infiniband/core/addr.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/infiniband/core/addr.c b/drivers/infiniband/core/addr.c
-index c5c33d3..5381c80 100644
---- a/drivers/infiniband/core/addr.c
-+++ b/drivers/infiniband/core/addr.c
-@@ -161,8 +161,7 @@ static void addr_send_arp(struct sockadd
- 	if (ip_route_output_key(&rt, &fl))
- 		return;
- 
--	arp_send(ARPOP_REQUEST, ETH_P_ARP, rt->rt_gateway, rt->idev->dev,
--		 rt->rt_src, NULL, rt->idev->dev->dev_addr, NULL);
-+	neigh_event_send(rt->u.dst.neighbour, NULL);
- 	ip_rt_put(rt);
- }
- 
+greg k-h
