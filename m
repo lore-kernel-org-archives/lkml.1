@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765491AbXILHw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764929AbXILH5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765491AbXILHw3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 03:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbXILHwV
+	id S1764929AbXILH5s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 03:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbXILH5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 03:52:21 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:45903 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754134AbXILHwU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 03:52:20 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 12 Sep 2007 03:50:17 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: stripping down the kernel-parameters.txt file
-Message-ID: <Pine.LNX.4.64.0709120339470.26177@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	TW_BT 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 12 Sep 2007 03:57:40 -0400
+Received: from ozlabs.org ([203.10.76.45]:43193 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754077AbXILH5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 03:57:40 -0400
+Subject: Re: [PATCH 15/15] Add DEFINE_SPUFS_ATTRIBUTE()
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: linuxppc-dev@ozlabs.org
+Cc: Jeremy Kerr <jk@ozlabs.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <f5fe712aef37d925902f3f6183f024b916cc89db.1189583010.git.michael@ellerman.id.au>
+References: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au>
+	 <f5fe712aef37d925902f3f6183f024b916cc89db.1189583010.git.michael@ellerman.id.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-IjPtDUXEgszoLTPl93oB"
+Date: Wed, 12 Sep 2007 17:49:13 +1000
+Message-Id: <1189583353.17835.22.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  while killing some time between compiles and ridding the
-kernel-parameters.txt file of out-of-date or incorrect cruft, it
-occurs to me that that file is borderline valueless since it
-apparently tries to document every possible boot-time parameter,
-including those associated with individual modules.  that's just
-silly.
+--=-IjPtDUXEgszoLTPl93oB
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-  it would make far more sense if that file restricted itself to just
-those parameters that you'd consider fundamental or basic -- those
-defined with one of "__setup()" or "early_param()" that would apply to
-most users.
-
-  instead, you find stuff like this (a random example):
-
-  bttv.card=      [HW,V4L] bttv (bt848 + bt878 based grabber cards)
-  bttv.radio=     Most important insmod options are available as
-                  kernel args too.
-  bttv.pll=       See Documentation/video4linux/bttv/Insmod-options
-  bttv.tuner=     and Documentation/video4linux/bttv/CARDLIST
-
-not to belittle the bttv module but, really, is that information
-worthy of being recorded in the top-level parms.txt file?  and if
-you're going to be consistent, you'd want to do that for every single
-module and its respective throughout the tree, at which the parms.txt
-file collapses under its own weight from forever being updated and has
-so much information that it's impossible to find the useful stuff.
-
-  i suggest that that file record only the basic boot-time params, and
-the documentation for module-specific parameters be moved closer to
-the module source itself.  there's no point in that poor file trying
-to keep up with all of the module development in the tree.
-
-rday
-
-p.s.  and, while we're at it, folks might like to start replacing
-the calls to "__setup()" in their driver code with the newer module
-parameters mechanism.  it's just a thought.  :-)
+On Wed, 2007-09-12 at 17:43 +1000, Michael Ellerman wrote:
+> This patch adds DEFINE_SPUFS_ATTRIBUTE(), a wraper around
+> DEFINE_SIMPLE_ATTRIBUTE which does the specified locking for the get
+> routine for us.
+>=20
+> Unfortunately we need two get routines (a locked and unlocked version) to
+> support the coredump code. This patch hides one of those (the locked vers=
+ion)
+> inside the macro foo.
+>=20
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
+>  arch/powerpc/platforms/cell/spufs/file.c |  216 +++++++++++-------------=
+------
+>  1 files changed, 76 insertions(+), 140 deletions(-)
 
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+jk said:
+> "Good god man!"
 
-http://crashcourse.ca
-========================================================================
+Yeah, I'm a bit lukewarm on this one. But the diffstat is nice, 50% code
+reduction ain't bad :)
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-IjPtDUXEgszoLTPl93oB
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBG55n5dSjSd0sB4dIRAi9cAJ9bigA9vyHO4Kvx8pjL08siTbt7rgCfX464
+B7Crsxl1N1UdibUEPQJNCY4=
+=HPfv
+-----END PGP SIGNATURE-----
+
+--=-IjPtDUXEgszoLTPl93oB--
+
