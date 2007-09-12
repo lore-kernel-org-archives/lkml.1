@@ -1,39 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762498AbXILWuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762844AbXILWr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762498AbXILWuT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 18:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbXILWuF
+	id S1762844AbXILWr0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 18:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbXILWrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 18:50:05 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40885 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbXILWuE (ORCPT
+	Wed, 12 Sep 2007 18:47:16 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39311 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752965AbXILWrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 18:50:04 -0400
-Date: Wed, 12 Sep 2007 23:49:55 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Brent Casavant <bcasavan@sgi.com>
-Cc: Andreas Schwab <schwab@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: O_NOLINK for open()
-Message-ID: <20070912224955.GC8181@ftp.linux.org.uk>
-References: <20070912144128.D5573@pkunk.americas.sgi.com> <jetzpza7ci.fsf@sykes.suse.de> <20070912172519.N5573@pkunk.americas.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070912172519.N5573@pkunk.americas.sgi.com>
-User-Agent: Mutt/1.4.1i
+	Wed, 12 Sep 2007 18:47:15 -0400
+Date: Wed, 12 Sep 2007 15:47:14 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Nick Piggin <npiggin@suse.de>, Daniel Phillips <phillips@phunq.net>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+In-Reply-To: <1189594373.21778.114.camel@twins>
+Message-ID: <Pine.LNX.4.64.0709121540370.4067@schroedinger.engr.sgi.com>
+References: <20070814142103.204771292@sgi.com>  <200709050220.53801.phillips@phunq.net>
+  <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com> 
+ <20070905114242.GA19938@wotan.suse.de>  <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
+ <1189594373.21778.114.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 05:44:30PM -0500, Brent Casavant wrote:
+On Wed, 12 Sep 2007, Peter Zijlstra wrote:
 
-> P.S. By the way, there doesn't seem to be a way to remove /proc/#/mem
->      files.  That might be an additional nicety -- programs worried about
->      being snooped could unlink their own entry.  /dev/mem and /dev/kmem
->      can simply be removed by the sysadmin of such a system.  If all of
->      that were done you'd have to resort to attacking crash dumps, core
->      dumps, or via something like kdb to extract "hidden" data.
+> > assumes single critical user of memory. There are other consumers of 
+> > memory and if you have a load that depends on other things than networking 
+> > then you should not kill the other things that want memory.
+> 
+> The VM is a _critical_ user of memory. And I dare say it is the _most_
+> important user. 
 
-Give me a break.  And learn about ptrace(2).  This "unlinking" bullshit
-buys you zero additional security, both for /proc/*/mem and for /dev/mem
-(see mknod(2)).
+The users of memory are various subsystems. The VM itself of course also 
+uses memory to manage memory but the important thing is that the VM 
+provides services to other subsystems
+
+> Every user of memory relies on the VM, and we only get into trouble if
+> the VM in turn relies on one of these users. Traditionally that has only
+> been the block layer, and we special cased that using mempools and
+> PF_MEMALLOC.
+> 
+> Why do you object to me doing a similar thing for networking?
+
+I have not seen you using mempools for the networking layer. I would not 
+object to such a solution. It already exists for other subsystems.
+ 
+> The problem of circular dependancies on and with the VM is rather
+> limited to kernel IO subsystems, and we only have a limited amount of
+> them. 
+
+The kernel has to use the filesystems and other subsystems for I/O. These 
+subsystems compete for memory in order to make progress. I would not 
+consider strictly them part of the VM. The kernel reclaim may trigger I/O 
+in multiple I/O subsystems simultaneously.
+
+> You talk about something generic, do you mean an approach that is
+> generic across all these subsystems?
+
+Yes an approach that is fair and does not allow one single subsystem to 
+hog all of memory.
+
+> If so, my approach would be it, I can replace mempools as we have them
+> with the reserve system I introduce.
+
+Replacing the mempools for the block layer sounds pretty good. But how do 
+these various subsystems that may live in different portions of the system 
+for various devices avoid global serialization and livelock through your 
+system? And how is fairness addresses? I may want to run a fileserver on 
+some nodes and a HPC application that relies on a fiberchannel connection 
+on other nodes. How do we guarantee that the HPC application is not 
+impacted if the network services of the fileserver flood the system with 
+messages and exhaust memory?
+
