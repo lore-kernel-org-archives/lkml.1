@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970997AbXILRT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969259AbXILRZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970997AbXILRT2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968879AbXILRTT
+	id S969259AbXILRZO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764843AbXILRY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 13:19:19 -0400
-Received: from www.osadl.org ([213.239.205.134]:46306 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S968511AbXILRTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 13:19:18 -0400
-Subject: Re: [1/4] 2.6.23-rc6: known regressions
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>, linux-alpha@vger.kernel.org,
-       Stefan Becker <Stefan.Becker@nokia.com>, Andi Kleen <ak@suse.de>,
-       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
-       Pavel Machek <pavel@ucw.cz>, Jakub Jelinek <jakub@redhat.com>,
-       Jeff Dike <jdike@linux.intel.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       "Adrian Bunk \"\"" <bunk@kernel.org>
-In-Reply-To: <46E81AC6.3000306@googlemail.com>
-References: <46E81AC6.3000306@googlemail.com>
-Content-Type: text/plain
-Date: Wed, 12 Sep 2007 19:19:15 +0200
-Message-Id: <1189617555.4513.3.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Sep 2007 13:24:57 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:39261 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756128AbXILRY4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 13:24:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bhOto9KyJZZD2tc3qmNu7VcDdg8Kp7ycs8lVrzw9uTfo0CKouwXTRMU7mzEuUlK5un03UtYnMpRWXyDoeT+zr+DqMYiq+63vGwUNMWzq1ivJ/M6lzbKlgEjPUG6YLlsGL3ZN8BYLcaUTINkUCJNG+NG7j5fPcbaOhJNtQc8EQxw=
+Message-ID: <6bffcb0e0709121024h6b07c4dfl62531c616490082b@mail.gmail.com>
+Date: Wed, 12 Sep 2007 19:24:53 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "David Woodhouse" <dwmw2@infradead.org>
+Subject: Re: 2.6.23-rc6: known regressions with patches
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>,
+       "Vitaly Bordug" <vitb@kernel.crashing.org>,
+       "Kay Sievers" <kay.sievers@vrfy.org>,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "Greg KH" <gregkh@suse.de>, "Anssi Hannula" <anssi.hannula@gmail.com>,
+       "=?ISO-8859-1?Q?Toralf_F=F6rster?=" <toralf.foerster@gmx.de>,
+       netdev@vger.kernel.org, "Christian Kujau" <lists@nerdbynature.de>,
+       jamal <hadi@cyberus.ca>, linux-usb-devel@lists.sourceforge.net,
+       sean@mess.org, "Adrian Bunk" <bunk@kernel.org>
+In-Reply-To: <1189616905.3570.59.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <46E81AE2.8030802@googlemail.com>
+	 <1189616905.3570.59.camel@shinybook.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-09-12 at 18:58 +0200, Michal Piotrowski wrote: 
-> Subject         : x86_64 vdso patch is broken somehow?
-> References      : http://lkml.org/lkml/2007/8/29/136
-> Last known good : ?
-> Submitter       : Chuck Ebbert <cebbert@redhat.com>
-> Caused-By       : Andi Kleen <ak@suse.de>
->                   commit 2aae950b21e4bc789d1fc6668faf67e8748300b7
-> Handled-By      : ?
-> Status          : unknown
+On 12/09/2007, David Woodhouse <dwmw2@infradead.org> wrote:
+> On Wed, 2007-09-12 at 18:59 +0200, Michal Piotrowski wrote:
+> > MTD
+> >
+> > Subject         : include/linux/mtd/map.h:128:2: error: #error "No bus width supported. What's the point?"
+> > References      : http://lkml.org/lkml/2007/9/11/151
+> > Last known good : ?
+> > Submitter       : Toralf Förster <toralf.foerster@gmx.de>
+> > Caused-By       : ?
+> > Handled-By      : ?
+> > Patch           : http://git.infradead.org/?p=mtd-2.6.git;a=commit;h=241651d04d672fb685b2874707016cbbf95931e5
+> > Status          : patch available
+>
+> Didn't you already _drop_ this from your list of regressions once?
 
-Patch available:
-http://lkml.org/lkml/2007/9/11/161
+Yeah :)
 
-> Subject         : cpu hotplug support broken in 2.6.23-rc3/highres timers break cpu hotplug in 2.6.23-rc5
-> References      : http://lkml.org/lkml/2007/8/27/58
->                   http://lkml.org/lkml/2007/9/3/65
-> Last known good : ?
-> Submitter       : Pavel Machek <pavel@ucw.cz>
-> Caused-By       : ?
-> Handled-By      : ?
-> Status          : problem is being debugged
+removed.
 
-This might be the same problem as the jinxed VAIO suspend/resume thingy,
-which is a regression as well.
+>
+> --
+> dwmw2
+>
+>
 
-Please assign the Handled-By to me.
+Regards,
+Michal
 
-Thanks,
-
-	tglx
-
-
-
+-- 
+LOG
+http://www.stardust.webpages.pl/log/
