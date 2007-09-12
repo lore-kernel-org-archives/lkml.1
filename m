@@ -1,113 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971297AbXILRns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970390AbXILRoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971297AbXILRns (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969217AbXILRm4
+	id S970390AbXILRoY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969325AbXILRm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 13:42:56 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:33619 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S968016AbXILRmw (ORCPT
+	Wed, 12 Sep 2007 13:42:57 -0400
+Received: from smtp.nokia.com ([131.228.20.170]:40769 "EHLO
+	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968309AbXILRmz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 13:42:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=SArH0/p5xxZwYj66lEejafW3cVN8U6NFjP33t4S0MQu+qDuYgOotZfMt5inUfUboi02fyD5I/llSvfKW/sY3ye7QsmwvyKYelaPqpobvuImLixdGB33cW2uiePfA+pHkDq+vMaqQq0hKaqYp2BmqYoffyVZyLFXrLmQqjAaInpE=  ;
-X-YMail-OSG: Bc4n3mcVM1kC1MZZ685tarycTWUYuOGn5tCCSh.JTgMBvQaLO8jDy7Ivj1psnNItDya5VcByvo_kydedeVO3TL2rnNDpMdyR8A7QWweyWhUBf3mAD5I-
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: David Chinner <dgc@sgi.com>
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Date: Wed, 12 Sep 2007 12:01:08 +1000
-User-Agent: KMail/1.9.5
-Cc: Mel Gorman <mel@skynet.ie>, Christoph Lameter <clameter@sgi.com>,
-       andrea@suse.de, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-References: <20070911060349.993975297@sgi.com> <200709111600.18756.nickpiggin@yahoo.com.au> <20070912014917.GJ995458@sgi.com>
-In-Reply-To: <20070912014917.GJ995458@sgi.com>
+	Wed, 12 Sep 2007 13:42:55 -0400
+X-Greylist: delayed 2567 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Sep 2007 13:42:54 EDT
+Message-ID: <46E81B06.4010504@nokia.com>
+Date: Wed, 12 Sep 2007 19:59:50 +0300
+From: Stefan Becker <Stefan.Becker@nokia.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200709121201.08706.nickpiggin@yahoo.com.au>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: ext Andi Kleen <andi@firstfloor.org>
+CC: ext Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, davej@codemonkey.org.uk
+Subject: Re: [pre-2.6.23 REGRESSION] 2.6.23-rc3-git1 crash/stuck on VIA CN700
+ system
+References: <46C9D148.5080505@nokia.com> <p734pibbbex.fsf@bingen.suse.de> <46DDA366.8090806@nokia.com> <20070905102525.GB31880@one.firstfloor.org> <46DECDC9.9050407@nokia.com> <20070905163724.GC31880@one.firstfloor.org> <46DF0257.5050303@nokia.com> <20070906053654.GD31880@one.firstfloor.org>
+In-Reply-To: <20070906053654.GD31880@one.firstfloor.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Sep 2007 16:59:52.0005 (UTC) FILETIME=[55E37750:01C7F55E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 September 2007 11:49, David Chinner wrote:
-> On Tue, Sep 11, 2007 at 04:00:17PM +1000, Nick Piggin wrote:
-> > > > OTOH, I'm not sure how much buy-in there was from the filesystems
-> > > > guys. Particularly Christoph H and XFS (which is strange because they
-> > > > already do vmapping in places).
-> > >
-> > > I think they use vmapping because they have to, not because they want
-> > > to. They might be a lot happier with fsblock if it used contiguous
-> > > pages for large blocks whenever possible - I don't know for sure. The
-> > > metadata accessors they might be unhappy with because it's inconvenient
-> > > but as Christoph Hellwig pointed out at VM/FS, the filesystems who
-> > > really care will convert.
-> >
-> > Sure, they would rather not to. But there are also a lot of ways you can
-> > improve vmap more than what XFS does (or probably what darwin does)
-> > (more persistence for cached objects, and batched invalidates for
-> > example).
->
-> XFS already has persistence across the object life time (which can be many
-> tens of seconds for a frequently used buffer)
+Hi,
 
-But you don't do a very good job. When you go above 64 vmaps cached, you
-purge _all_ of them. fsblock's vmap cache can have a much higher number
-(if you want), and purging will only unmap a smaller batch, decided by a
-simple LRU.
+ext Andi Kleen wrote:
+> 
+>> So what can we do about the clflush on this CPU?
+> 
+> I'll just remove that CLFLUSH statement. It was just supposed
+> to be an optimization, but is not strictly needed.
 
+2.6.23-rc6 boots up fine on my box. Regression fixed. Thanks.
 
-> and it also does batched 
-> unmapping of objects as well.
+Regards,
 
-It also could do a lot better at unmapping. Currently you're just calling
-vunmap a lot of times in sequence. That still requires global IPIs and TLB
-flushing every time.
+	Stefan
 
-This simple patch should easily be able to reduce that number by 2 or 3
-orders of magnitude on 64-bit systems. Maybe more if you increase the
-batch size.
-http://www.mail-archive.com/linux-arch@vger.kernel.org/msg03956.html
-
-vmap area manipulation scalability and search complexity could also be
-improved quite easily, I suspect.
-
-
-> > There are also a lot of trivial things you can do to make a lot of those
-> > accesses not require vmaps (and less trivial things, but even such things
-> > as binary searches over multiple pages should be quite possible with a
-> > bit of logic).
->
-> Yes, we already do the many of these things (via xfs_buf_offset()), but
-> that is not good enough for something like a memcpy that spans multiple
-> pages in a large block (think btree block compaction, splits and
-> recombines).
-
-fsblock_memcpy(fsblock *src, int soff, fsblock *dst, int doff, int size); ?
-
-
-> IOWs, we already play these vmap harm-minimisation games in the places
-> where we can, but still the overhead is high and something we'd prefer
-> to be able to avoid.
-
-I don't think you've looked very far with all this low hanging fruit.
-
-The several ways I suggested combined might easily reduce xfs vmap
-overhead by several orders of magnitude, all without changing much
-code at all.
-
-Can you provide a formula to reproduce these workloads where vmap
-overhead in XFS is a problem? (huge IO capacity need not be an issue,
-because I could try reproducing it on a 64-way on ramdisks for example).
-
+---
+Stefan Becker
+E-Mail: Stefan.Becker@nokia.com
