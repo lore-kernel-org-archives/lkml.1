@@ -1,83 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933877AbXILCA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933335AbXILCB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933877AbXILCA6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 22:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933106AbXILB5K
+	id S933335AbXILCB2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 22:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933144AbXILB5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 21:57:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48665 "EHLO
+	Tue, 11 Sep 2007 21:57:12 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48663 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760895AbXILB4s (ORCPT
+	with ESMTP id S1760875AbXILB4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 21:56:48 -0400
-Message-Id: <20070912015646.938985912@sgi.com>
+	Tue, 11 Sep 2007 21:56:49 -0400
+Message-Id: <20070912015647.214306428@sgi.com>
 References: <20070912015644.927677070@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 11 Sep 2007 18:56:51 -0700
+Date: Tue, 11 Sep 2007 18:56:52 -0700
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
        linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org
-Subject: [PATCH 07/10] x86: acpi-use-cpu_physical_id (v3)
-Content-Disposition: inline; filename=acpi-use-cpu_physical_id
+Subject: [PATCH 08/10] ia64: Convert cpu_sibling_map to a per_cpu data array (v3)
+Content-Disposition: inline; filename=convert-ia64-cpu_sibling_map-to-per_cpu_data
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is from an earlier message from Christoph Lameter:
+Convert cpu_sibling_map to a per_cpu cpumask_t array for the ia64
+architecture.  This fixes build errors in block/blktrace.c and
+kernel/sched.c when CONFIG_SCHED_SMT is defined.
 
-    processor_core.c currently tries to determine the apicid by special casing
-    for IA64 and x86. The desired information is readily available via
 
-	    cpu_physical_id()
+There was one access to cpu_sibling_map before the per_cpu data
+area was created, so that step was moved to after the per_cpu
+area is setup.
 
-    on IA64, i386 and x86_64.
-
-    Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Additionally, boot_cpu_id needed to be exported to fix compile errors in
-dma code when !CONFIG_SMP.
+Tested and verified on an A4700.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/x86_64/kernel/mpparse.c  |    2 ++
- drivers/acpi/processor_core.c |    8 +-------
- 2 files changed, 3 insertions(+), 7 deletions(-)
+ arch/ia64/kernel/setup.c    |    4 ----
+ arch/ia64/kernel/smpboot.c  |   18 ++++++++++--------
+ arch/ia64/mm/contig.c       |    6 ++++++
+ include/asm-ia64/smp.h      |    2 +-
+ include/asm-ia64/topology.h |    2 +-
+ 5 files changed, 18 insertions(+), 14 deletions(-)
 
---- a/drivers/acpi/processor_core.c
-+++ b/drivers/acpi/processor_core.c
-@@ -419,12 +419,6 @@
- 	return 0;
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -528,10 +528,6 @@
+ 
+ #ifdef CONFIG_SMP
+ 	cpu_physical_id(0) = hard_smp_processor_id();
+-
+-	cpu_set(0, cpu_sibling_map[0]);
+-	cpu_set(0, cpu_core_map[0]);
+-
+ 	check_for_logical_procs();
+ 	if (smp_num_cpucores > 1)
+ 		printk(KERN_INFO
+--- a/arch/ia64/kernel/smpboot.c
++++ b/arch/ia64/kernel/smpboot.c
+@@ -138,7 +138,9 @@
+ EXPORT_SYMBOL(cpu_possible_map);
+ 
+ cpumask_t cpu_core_map[NR_CPUS] __cacheline_aligned;
+-cpumask_t cpu_sibling_map[NR_CPUS] __cacheline_aligned;
++DEFINE_PER_CPU_SHARED_ALIGNED(cpumask_t, cpu_sibling_map);
++EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
++
+ int smp_num_siblings = 1;
+ int smp_num_cpucores = 1;
+ 
+@@ -650,12 +652,12 @@
+ {
+ 	int i;
+ 
+-	for_each_cpu_mask(i, cpu_sibling_map[cpu])
+-		cpu_clear(cpu, cpu_sibling_map[i]);
++	for_each_cpu_mask(i, per_cpu(cpu_sibling_map, cpu))
++		cpu_clear(cpu, per_cpu(cpu_sibling_map, i));
+ 	for_each_cpu_mask(i, cpu_core_map[cpu])
+ 		cpu_clear(cpu, cpu_core_map[i]);
+ 
+-	cpu_sibling_map[cpu] = cpu_core_map[cpu] = CPU_MASK_NONE;
++	per_cpu(cpu_sibling_map, cpu) = cpu_core_map[cpu] = CPU_MASK_NONE;
  }
  
--#ifdef CONFIG_IA64
--#define arch_cpu_to_apicid 	ia64_cpu_to_sapicid
--#else
--#define arch_cpu_to_apicid 	x86_cpu_to_apicid
--#endif
--
- static int map_madt_entry(u32 acpi_id)
- {
- 	unsigned long madt_end, entry;
-@@ -498,7 +492,7 @@
- 		return apic_id;
- 
- 	for (i = 0; i < NR_CPUS; ++i) {
--		if (arch_cpu_to_apicid[i] == apic_id)
-+		if (cpu_physical_id(i) == apic_id)
- 			return i;
+ static void
+@@ -666,7 +668,7 @@
+ 	if (cpu_data(cpu)->threads_per_core == 1 &&
+ 	    cpu_data(cpu)->cores_per_socket == 1) {
+ 		cpu_clear(cpu, cpu_core_map[cpu]);
+-		cpu_clear(cpu, cpu_sibling_map[cpu]);
++		cpu_clear(cpu, per_cpu(cpu_sibling_map, cpu));
+ 		return;
  	}
- 	return -1;
---- a/arch/x86_64/kernel/mpparse.c
-+++ b/arch/x86_64/kernel/mpparse.c
-@@ -57,6 +57,8 @@
  
- /* Processor that is doing the boot up */
- unsigned int boot_cpu_id = -1U;
-+EXPORT_SYMBOL(boot_cpu_id);
-+
- /* Internal processor count */
- unsigned int num_processors __cpuinitdata = 0;
+@@ -807,8 +809,8 @@
+ 			cpu_set(i, cpu_core_map[cpu]);
+ 			cpu_set(cpu, cpu_core_map[i]);
+ 			if (cpu_data(cpu)->core_id == cpu_data(i)->core_id) {
+-				cpu_set(i, cpu_sibling_map[cpu]);
+-				cpu_set(cpu, cpu_sibling_map[i]);
++				cpu_set(i, per_cpu(cpu_sibling_map, cpu));
++				cpu_set(cpu, per_cpu(cpu_sibling_map, i));
+ 			}
+ 		}
+ 	}
+@@ -839,7 +841,7 @@
  
+ 	if (cpu_data(cpu)->threads_per_core == 1 &&
+ 	    cpu_data(cpu)->cores_per_socket == 1) {
+-		cpu_set(cpu, cpu_sibling_map[cpu]);
++		cpu_set(cpu, per_cpu(cpu_sibling_map, cpu));
+ 		cpu_set(cpu, cpu_core_map[cpu]);
+ 		return 0;
+ 	}
+--- a/include/asm-ia64/smp.h
++++ b/include/asm-ia64/smp.h
+@@ -58,7 +58,7 @@
+ 
+ extern cpumask_t cpu_online_map;
+ extern cpumask_t cpu_core_map[NR_CPUS];
+-extern cpumask_t cpu_sibling_map[NR_CPUS];
++DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
+ extern int smp_num_siblings;
+ extern int smp_num_cpucores;
+ extern void __iomem *ipi_base_addr;
+--- a/include/asm-ia64/topology.h
++++ b/include/asm-ia64/topology.h
+@@ -112,7 +112,7 @@
+ #define topology_physical_package_id(cpu)	(cpu_data(cpu)->socket_id)
+ #define topology_core_id(cpu)			(cpu_data(cpu)->core_id)
+ #define topology_core_siblings(cpu)		(cpu_core_map[cpu])
+-#define topology_thread_siblings(cpu)		(cpu_sibling_map[cpu])
++#define topology_thread_siblings(cpu)		(per_cpu(cpu_sibling_map, cpu))
+ #define smt_capable() 				(smp_num_siblings > 1)
+ #endif
+ 
+--- a/arch/ia64/mm/contig.c
++++ b/arch/ia64/mm/contig.c
+@@ -212,6 +212,12 @@
+ 			cpu_data += PERCPU_PAGE_SIZE;
+ 			per_cpu(local_per_cpu_offset, cpu) = __per_cpu_offset[cpu];
+ 		}
++		/*
++		 * cpu_sibling_map is now a per_cpu variable - it needs to
++		 * be accessed after per_cpu_init() sets up the per_cpu area.
++		 */
++		cpu_set(0, per_cpu(cpu_sibling_map, 0));
++		cpu_set(0, cpu_core_map[0]);
+ 	}
+ 	return __per_cpu_start + __per_cpu_offset[smp_processor_id()];
+ }
 
 -- 
