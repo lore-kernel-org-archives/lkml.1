@@ -1,193 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761041AbXILWRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762257AbXILWTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761041AbXILWRY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 18:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbXILWRQ
+	id S1762257AbXILWTQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 18:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbXILWTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 18:17:16 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:3348 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755771AbXILWRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 18:17:15 -0400
-Date: Thu, 13 Sep 2007 00:17:42 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] CFS-devel, performance improvements
-In-Reply-To: <20070911200459.GA6974@elte.hu>
-Message-ID: <Pine.LNX.4.64.0709121405130.1817@scrub.home>
-References: <20070911200459.GA6974@elte.hu>
+	Wed, 12 Sep 2007 18:19:00 -0400
+Received: from mailin.studentenwerk.mhn.de ([141.84.225.229]:53971 "EHLO
+	email.studentenwerk.mhn.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755963AbXILWS7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 18:18:59 -0400
+From: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
+Organization: Studentenwerk =?iso-8859-1?q?M=FCnchen?=
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Subject: Re: [patch] sunrpc: make closing of old temporary sockets work (was: problems with lockd in 2.6.22.6)
+Date: Thu, 13 Sep 2007 00:18:55 +0200
+User-Agent: KMail/1.9.7
+Cc: Neil Brown <neilb@suse.de>, trond.myklebust@fys.uio.no,
+       netdev@vger.kernel.org, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+References: <200709121407.11151.wolfgang.walter@studentenwerk.mhn.de> <200709122140.57783.wolfgang.walter@studentenwerk.mhn.de> <20070912195512.GC13792@fieldses.org>
+In-Reply-To: <20070912195512.GC13792@fieldses.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200709130018.55728.wolfgang.walter@studentenwerk.mhn.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, 11 Sep 2007, Ingo Molnar wrote:
-
-> fresh back from the Kernel Summit, Peter Zijlstra and me are pleased to 
-> announce the latest iteration of the CFS scheduler development tree. Our 
-> main focus has been on simplifications and performance - and as part of 
-> that we've also picked up some ideas from Roman Zippel's 'Really Fair 
-> Scheduler' patch as well and integrated them into CFS. We'd like to ask 
-> people go give these patches a good workout, especially with an eye on 
-> any interactivity regressions.
-
-I'm must really say, I'm quite impressed by your efforts to give me as 
-little credit as possible.
-On the one hand it's of course positive to see so much sudden activity, on 
-the other hand I'm not sure how much had happened if I hadn't posted my 
-patch, I don't really think it were my complaints about CFS's complexity 
-that finally lead to the improvements in this area. I presented the basic 
-concepts of my patch already with my first CFS review, but at that time 
-you didn't show any interest and instead you were rather quick to simply 
-dismiss it. My patch did not add that much new, it's mostly a conceptual 
-improvement and describes the math in more detail, but it also 
-demonstrated a number of improvements.
-
-> The combo patch against 2.6.23-rc6 can be picked up from:
+On Wednesday 12 September 2007, J. Bruce Fields wrote:
+> On Wed, Sep 12, 2007 at 09:40:57PM +0200, Wolfgang Walter wrote:
+> > On Wednesday 12 September 2007, J. Bruce Fields wrote:
+> > > On Wed, Sep 12, 2007 at 04:14:06PM +0200, Neil Brown wrote:
+> > > > So it is in 2.6.21 and later and should probably go to .stable for .21
+> > > > and .22.
+> > > > 
+> > > > Bruce:  for you :-)
+> > > 
+> > > OK, thanks!  But, (as is alas often the case) I'm still confused:
+> > > 
+> > > >  		if (!test_and_set_bit(SK_OLD, &svsk->sk_flags))
+> > > >  			continue;
+> > > > -		if (atomic_read(&svsk->sk_inuse) || test_bit(SK_BUSY, 
+&svsk->sk_flags))
+> > > > +		if (atomic_read(&svsk->sk_inuse) > 1
+> > > > +		    || test_bit(SK_BUSY, &svsk->sk_flags))
+> > > >  			continue;
+> > > >  		atomic_inc(&svsk->sk_inuse);
+> > > >  		list_move(le, &to_be_aged);
+> > > 
+> > > What is it that ensures svsk->sk_inuse isn't incremented or SK_BUSY set
+> > > after that test?  Not all the code that does either of those is under
+> > > the same serv->sv_lock lock that this code is.
+> > > 
+> > 
+> > This should not matter - SK_CLOSED may be set at any time.
+> > 
+> > svc_age_temp_sockets only detaches the socket, sets SK_CLOSED and then 
+> > enqueues it. If SK_BUSY is set its already enqueued and svc_sock_enqueue 
+> > ensures that it is not enqueued twice.
 > 
->   http://people.redhat.com/mingo/cfs-scheduler/devel/
+> Oh, got it.  And the list manipulation is safe thanks to sv_lock.  Neat,
+> thanks.  Can you verify that this solves your problem?
 > 
-> The sched-devel.git tree can be pulled from:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched-devel.git
 
-Am I the only one who can't clone that thing? So I can't go into much 
-detail about the individual changes here.
-The thing that makes me curious, is that it also includes patches by 
-others. It can't be entirely explained with the Kernel Summit, as this is 
-not the first time patches appear out of the blue in form of a git tree. 
-The funny/sad thing is that at some point Linus complained about Con that 
-his development activity happend on a separate mailing list, but there was 
-at least a place to go to. CFS's development appears to mostly happen in 
-private. Patches may be your primary form of communication, but that isn't 
-true for many other people, with patches a lot of intent and motivation 
-for a change is lost. I know it's rather tempting to immediately try out 
-an idea first, but would it really hurt you so much to formulate an idea 
-in a more conventional manner? Are you afraid it might hurt your 
-ueberhacker status by occasionally screwing up in public? Patches on the 
-other hand have the advantage to more easily cover that up by simply 
-posting a fix - it makes it more difficult to understand what's going on.
-A more conventional way of communication would give more people a chance 
-to participate, they may not understand every detail of the patch, but 
-they can try to understand the general concepts and apply them to their 
-own situation and eventually come up with some ideas/improvements of their 
-own, they would be less dependent on you to come up with a solution to 
-their problem. Unless of course that's exactly what you want - unless you 
-want to be in full control of the situation and you want to be the hero 
-that saves the day.
+I'll test it tomorrow. So friday morning I'll know and mail you for sure.
 
-> There are lots of small performance improvements in form of a 
-> finegrained 29-patch series. We have removed a number of features and 
-> metrics from CFS that might have been needed but ended up being 
-> superfluous - while keeping the things that worked out fine, like 
-> sleeper fairness. On 32-bit x86 there's a ~16% speedup (over -rc6) in 
-> lmbench (lat_ctx -s 0 2) results:
-
-In the patch you really remove _a_lot_ of stuff. You also removed a lot of 
-things I tried to get you to explain them to me. On the one hand I could 
-be happy that these things are gone, as they were the major road block to 
-splitting up my own patch. On the other hand it still leaves me somewhat 
-unsatisfied, as I still don't know what that stuff was good for.
-In a more collaborative development model I would have expected that you 
-tried to explain these features, which could have resulted in a discussion 
-how else things can be implemented or if it's still needed at all. Instead 
-of this you now simply decide unilaterally that these things are not 
-needed anymore.
-
-BTW the old sleeper fairness logic "that worked out fine" is actually 
-completely gone and is now conceptually closer to what I'm already doing 
-in my patch (only the amount of sleeper bonus differs).
-
->                                   (microseconds, lower is better)
->      ------------------------------------------------------------
->         v2.6.22    2.6.23-rc6(CFS)     v2.6.23-rc6-CFS-devel
->      ----------------------------------------------------
->            0.70          0.75                0.65
->            0.62          0.66                0.63
->            0.60          0.72                0.69
->            0.62          0.74                0.61
->            0.69          0.73                0.53
->            0.66          0.73                0.63
->            0.63          0.69                0.61
->            0.63          0.70                0.64
->            0.61          0.76                0.61
->            0.69          0.74                0.63
->      ----------------------------------------------------
->       avg: 0.64          0.72 (+12%)         0.62 (-3%)
-> 
-> there is a similar speedup on 64-bit x86 as well. We are now a bit 
-> faster than the O(1) scheduler was under v2.6.22 - even on 32-bit. The 
-> main speedup comes from the avoidance of divisions (or shifts) in the 
-> wakeup and context-switch fastpaths.
-> 
-> there's also a visible reduction in code size:
-> 
->    text    data     bss     dec     hex filename
->   13369     228    2036   15633    3d11 sched.o.before  (UP, nodebug)
->   11167     224    1988   13379    3443 sched.o.after   (UP, nodebug)
-
-Well, one could say that you used every little trick in the book to get 
-these numbers down. On the other hand at this point it's a little unclear 
-whether you maybe removed it a little too much to get there, so the 
-significance of these numbers is a bit limited.
-
-> Changes: besides the many micro-optimizations, one of the changes is 
-> that se->vruntime (virtual runtime) based scheduling has been introduced 
-> gradually, step by step - while keeping the wait_runtime metric working 
-> too. (so that the two methods are comparable side by side, in the same 
-> scheduler)
-
-I can't quite see that, the wait_runtime metric is relative to fair_clock 
-and this is gone without any replacement, in my patch I at least 
-calculate these values for the debug output, but in your patch even that 
-is simply gone, so I'm not sure what you actually compare "side by side".
-
-> The ->vruntime metric is similar to the ->time_norm metric used by 
-> Roman's patch (and both are losely related to the already existing 
-> sum_exec_runtime metric in CFS), it's in essence the sum of CPU time 
-> executed by a task, in nanoseconds - weighted up or down by their nice 
-> level (or kept the same on the default nice 0 level). Besides this basic 
-> metric our implementation and math differs from RFS.
-
-At this point it gets really interesting - I'm amazed how much you stress 
-the differences. If we take the basic math as I more simply explained it 
-in this example http://lkml.org/lkml/2007/9/3/168, you now also make the 
-step from the relative wait_runtime value to an absolute virtual time 
-value. Basically it's really the same thing, only the resolution differs. 
-This means you already reimplemented a key element of my patch, so would 
-you please give me at least that much credit?
-The rest of the math is indeed different - it's simply missing. What is 
-there is IMO not really adequate. I guess you will see the differences, 
-once you test a bit more with different nice levels. There's a good reason 
-I put that much effort into maintaining a good, but still cheap average, 
-it's needed for a good task placement. There is of course more than one 
-way to implement this, so you'll have good chances to simply reimplement 
-it somewhat differently, but I'd be surprised if it would be something 
-completely different.
-
-To make it very clear to everyone else: this is primarely not about 
-getting some credit, although that's not completely unimportant of course. 
-This is about getting adequate help. I had to push very hard to get any 
-kind of acknowledgment with scheduler issues only to be rewarded with 
-silence, so that I was occassionally wondering myself, whether I'm just 
-hallucinating all this. Only after I provide the prove that further 
-improvements are possible is there some activity. But instead of providing 
-help (e.g. by answering my questions) Ingo just goes ahead and 
-reimplements the damn thing himself and simply throws out all questionable 
-items instead of explaining them.
-The point is that I have no real interest in any stinking competition, I 
-have no interest to be reduced to simply complaining all the time. I'm 
-more interested in a cooperation, but that requires better communication 
-and an actual exchange of ideas, patches are no real communication, they 
-are a supplement and should rather be the end result instead of means to 
-get anything started. A collaboration could bundle the individual 
-strengths, so that this doesn't degenerate into a contest of who's the 
-greatest hacker.
-Is this really too much to expect?
-
-bye, Roman
+Regards,
+-- 
+Wolfgang Walter
+Studentenwerk München
+Anstalt des öffentlichen Rechts
