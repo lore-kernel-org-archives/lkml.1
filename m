@@ -1,35 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764072AbXILILV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764117AbXILITA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764072AbXILILV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 04:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbXILILJ
+	id S1764117AbXILITA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 04:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbXILISr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 04:11:09 -0400
-Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:41738
-	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751773AbXILILI convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 04:11:08 -0400
-Date: Wed, 12 Sep 2007 01:11:03 -0700 (PDT)
-Message-Id: <20070912.011103.41643890.davem@davemloft.net>
-To: kovedi@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Sparc64 BUG] hangup under booting 2.6.22.X whith Sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <406fe6c90709120047g1cf0a995r391e9fe1fbac7101@mail.gmail.com>
-References: <406fe6c90709102233m2472e6c4h7d329a3f64692645@mail.gmail.com>
-	<20070911.083823.15264559.davem@davemloft.net>
-	<406fe6c90709120047g1cf0a995r391e9fe1fbac7101@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 12 Sep 2007 04:18:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:57273 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754035AbXILISq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 04:18:46 -0400
+From: Jeremy Kerr <jk@ozlabs.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 01/15] Extract the file descriptor search logic in SPU coredump code
+Date: Wed, 12 Sep 2007 18:17:42 +1000
+User-Agent: KMail/1.9.6
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au>
+In-Reply-To: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-6"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200709121817.43263.jk@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Kövedi_Krisztián" <kovedi@gmail.com>
-Date: Wed, 12 Sep 2007 09:47:45 +0200
+Hi Michael,
 
-> The patch work fine the kernel booting up without error messages.
+This series looks good to me, thanks for the fixes. I'll do some testing 
+tomorrow but it looks like it'll be fine as-is.
 
-Thanks for testing.
+Andrew - almost all of these are for spufs, the notable exception being:
+
+ [PATCH 12/15] Cleanup ELF coredump extra notes logic
+
+which touches the generic elf/coredump path.
+
+Are you ok for me to merge this to my spufs tree, and upstream via 
+paulus?
+
+Cheers,
+
+
+Jeremy
