@@ -1,102 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969845AbXILOoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969900AbXILOqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969845AbXILOoc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 10:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbXILOoZ
+	id S969900AbXILOqw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 10:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966613AbXILOqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 10:44:25 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:63564 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756330AbXILOoY (ORCPT
+	Wed, 12 Sep 2007 10:46:44 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:33351 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966280AbXILOqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 10:44:24 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH 08/12] IB/ehca: Replace get_paca()->paca_index by the more portable raw_smp_processor_id()
-Date: Wed, 12 Sep 2007 16:44:11 +0200
-User-Agent: KMail/1.8.2
-Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-References: <200709111518.26276.fenkes@de.ibm.com> <200709111533.14333.fenkes@de.ibm.com>
-In-Reply-To: <200709111533.14333.fenkes@de.ibm.com>
+	Wed, 12 Sep 2007 10:46:44 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Wed, 12 Sep 2007 10:44:29 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Rogan Dawes <lists@dawes.za.net>
+cc: David Newall <david@davidnewall.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: stripping down the kernel-parameters.txt file
+In-Reply-To: <46E7F816.9080806@dawes.za.net>
+Message-ID: <Pine.LNX.4.64.0709121034450.25084@localhost.localdomain>
+References: <Pine.LNX.4.64.0709120339470.26177@localhost.localdomain>
+ <46E7DEF8.50201@davidnewall.com> <Pine.LNX.4.64.0709120904130.20693@localhost.localdomain>
+ <46E7F816.9080806@dawes.za.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709121644.12717.fenkes@de.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can use raw_smp_processor_id() here because the processor ID is only used
-for debug output and may therefore be preemption-unsafe.
+On Wed, 12 Sep 2007, Rogan Dawes wrote:
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
+> Robert P. J. Day wrote:
+> > p.s.  by "basic", i mean those boot-time parms defined by either
+> > "__setup()" or "early_param()".  which means that module writers
+> > should, as much as possible, stop using those macros to define
+> > command-line parameters for their modules.  that would go a long
+> > way to restoring some order, and allowing for some decent and
+> > readable documentation.
+>
+> Are you forgetting that modules can often be compiled into the
+> bzImage, too, making them genuine boot-time params?
 
-This is the same patch, but with smp_processor_id() replaced by
-raw_smp_processor_id(), as kindly pointed out to me by Nathan. Thanks!
+<sarcasm>
+really?  no way.  get outta town.
+</sarcasm>
 
- drivers/infiniband/hw/ehca/ehca_tools.h |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+  sorry, but there was no way i could resist that.  :-)  *of course* i
+realize that.  *all* of those things (__setup, early_param, actual
+module params) are potential entries on the kernel line at boot time,
+depending on your particular configuration.
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_tools.h b/drivers/infiniband/hw/ehca/ehca_tools.h
-index f9b264b..4a8346a 100644
---- a/drivers/infiniband/hw/ehca/ehca_tools.h
-+++ b/drivers/infiniband/hw/ehca/ehca_tools.h
-@@ -73,37 +73,37 @@ extern int ehca_debug_level;
- 		if (unlikely(ehca_debug_level)) \
- 			dev_printk(KERN_DEBUG, (ib_dev)->dma_device, \
- 				   "PU%04x EHCA_DBG:%s " format "\n", \
--				   get_paca()->paca_index, __FUNCTION__, \
-+				   raw_smp_processor_id(), __FUNCTION__, \
- 				   ## arg); \
- 	} while (0)
- 
- #define ehca_info(ib_dev, format, arg...) \
- 	dev_info((ib_dev)->dma_device, "PU%04x EHCA_INFO:%s " format "\n", \
--		 get_paca()->paca_index, __FUNCTION__, ## arg)
-+		 raw_smp_processor_id(), __FUNCTION__, ## arg)
- 
- #define ehca_warn(ib_dev, format, arg...) \
- 	dev_warn((ib_dev)->dma_device, "PU%04x EHCA_WARN:%s " format "\n", \
--		 get_paca()->paca_index, __FUNCTION__, ## arg)
-+		 raw_smp_processor_id(), __FUNCTION__, ## arg)
- 
- #define ehca_err(ib_dev, format, arg...) \
- 	dev_err((ib_dev)->dma_device, "PU%04x EHCA_ERR:%s " format "\n", \
--		get_paca()->paca_index, __FUNCTION__, ## arg)
-+		raw_smp_processor_id(), __FUNCTION__, ## arg)
- 
- /* use this one only if no ib_dev available */
- #define ehca_gen_dbg(format, arg...) \
- 	do { \
- 		if (unlikely(ehca_debug_level)) \
- 			printk(KERN_DEBUG "PU%04x EHCA_DBG:%s " format "\n", \
--			       get_paca()->paca_index, __FUNCTION__, ## arg); \
-+			       raw_smp_processor_id(), __FUNCTION__, ## arg); \
- 	} while (0)
- 
- #define ehca_gen_warn(format, arg...) \
- 	printk(KERN_INFO "PU%04x EHCA_WARN:%s " format "\n", \
--	       get_paca()->paca_index, __FUNCTION__, ## arg)
-+	       raw_smp_processor_id(), __FUNCTION__, ## arg)
- 
- #define ehca_gen_err(format, arg...) \
- 	printk(KERN_ERR "PU%04x EHCA_ERR:%s " format "\n", \
--	       get_paca()->paca_index, __FUNCTION__, ## arg)
-+	       raw_smp_processor_id(), __FUNCTION__, ## arg)
- 
- /**
-  * ehca_dmp - printk a memory block, whose length is n*8 bytes.
+  all i'm suggesting is that there is an obvious distinction between
+those that are defined using __setup() or early_param(), and those
+that are actual module parameters.  and that it would make more sense
+to keep them separate, even if only separating them within the same
+text file.
+
+  in the end, there should be a nice, *short* reference for what i
+like to call "basic" kernel parms (defined by __setup() or
+early_param()), while anyone who wants to learn about any
+module-specific parms should then have to go look up the info for that
+given module, that's all.
+
+  as a trivial starting point, this would involve nothing more than
+shifting current content around in kernel-parameters.txt, putting the
+basic stuff at the top, and the module-specific stuff after that.
+heck, that would even give module authors the chance to add a line or
+two of module description if they wanted.  how does life get any
+better than that?
+
+rday
 -- 
-1.5.2
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-
-
-
-
+http://crashcourse.ca
+========================================================================
