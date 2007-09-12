@@ -1,111 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbXILWmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760038AbXILWoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbXILWmr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 18:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbXILWmh
+	id S1760038AbXILWoj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 18:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbXILWoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 18:42:37 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46560 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750900AbXILWmg (ORCPT
+	Wed, 12 Sep 2007 18:44:32 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39153 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751915AbXILWob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 18:42:36 -0400
-Date: Wed, 12 Sep 2007 15:42:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andi Kleen <ak@suse.de>, Jeff Garzik <jeff@garzik.org>,
-       Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: check and enable MMCONFIG for AMD Family 10h
- Opteron
-Message-Id: <20070912154226.312e99fd.akpm@linux-foundation.org>
-In-Reply-To: <200709121233.39218.yinghai.lu@sun.com>
-References: <200709121233.39218.yinghai.lu@sun.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Sep 2007 18:44:31 -0400
+Date: Wed, 12 Sep 2007 17:44:30 -0500 (CDT)
+From: Brent Casavant <bcasavan@sgi.com>
+Reply-To: Brent Casavant <bcasavan@sgi.com>
+To: Andreas Schwab <schwab@suse.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: O_NOLINK for open()
+In-Reply-To: <jetzpza7ci.fsf@sykes.suse.de>
+Message-ID: <20070912172519.N5573@pkunk.americas.sgi.com>
+References: <20070912144128.D5573@pkunk.americas.sgi.com> <jetzpza7ci.fsf@sykes.suse.de>
+Organization: Silicon Graphics, Inc.
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Sep 2007 12:33:38 -0700
-Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+On Wed, 12 Sep 2007, Andreas Schwab wrote:
 
-> [PATCH] x86_64: check and enable MMCONFIG for AMD Family 10h Opteron
+> Brent Casavant <bcasavan@sgi.com> writes:
 > 
-> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+> > I could mmap a temporary tmpfs file (tmpfs so that if there is a
+> > machine crash no sensitive data persists) which is created with
+> > permissions of 0, immediately unlink it, and pass the file
+> > descriptor through an AF_UNIX socket.  This does open up a very
+> > small window of vulnerability if another process is able to chmod
+> > the file and open it before the unlink.
 > 
-> Index: linux-2.6/arch/x86_64/kernel/setup.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86_64/kernel/setup.c	2007-09-12 11:28:08.000000000 -0700
-> +++ linux-2.6/arch/x86_64/kernel/setup.c	2007-09-12 12:09:32.000000000 -0700
-> @@ -507,6 +507,32 @@
->  }
->  #endif
->  
-> +/*[39:8] */
-> +/* why not using 0xfe000000 ? */
-> +#define FAM10H_PCI_MMIO_BASE 0xc0000000
-> +static void fam10h_check_enable_mmcfg(struct cpuinfo_x86 *c)
-> +{
-> +	u32 low, high, address;
-> +
-> +	address = 0xc0010058;
-> +	if (rdmsr_safe(address, &low, &high))
-> +		return;
-> +
-> +	if (low & 1)
-> +		return;
-> +
-> +	printk(KERN_INFO "Enable MMCONFIG on AMD Family 10h\n");
-> +	/*
-> +	 * if it is not enable, let enable it and assume only one segement
-> +	 * with 256 buses
-> +	 */
-> +	low &= ~(0xfff00000 | (0xf<<2));
-> +	low |= (8<<2) | (1<<0);
-> +	high &= ~(0x0000ffff);
-> +	high |= (FAM10H_PCI_MMIO_BASE>>(32-8));
-> +	wrmsr_safe(address, low, high);
-> +}
-> +
->  /*
->   * On a AMD dual core setup the lower bits of the APIC id distingush the cores.
->   * Assumes number of cores is a power of two.
-> @@ -655,6 +681,9 @@
->  	/* Family 10 doesn't support C states in MWAIT so don't use it */
->  	if (c->x86 == 0x10 && !force_mwait)
->  		clear_bit(X86_FEATURE_MWAIT, &c->x86_capability);
-> +
-> +	if (c->x86 == 0x10)
-> +		fam10h_check_enable_mmcfg(c);
->  }
->  
->  static void __cpuinit detect_ht(struct cpuinfo_x86 *c)
+> Only the owner can chmod a file, so why is that a vulnerability?
 
-fixes:
+In this particular case because the user may not normally have direct
+access to some of the data to be contained in that file.
 
---- a/arch/x86_64/kernel/setup.c~x86_64-check-and-enable-mmconfig-for-amd-family-10h-opteron-fix
-+++ a/arch/x86_64/kernel/setup.c
-@@ -494,7 +494,7 @@ static int nearby_node(int apicid)
- /*[39:8] */
- /* why not using 0xfe000000 ? */
- #define FAM10H_PCI_MMIO_BASE 0xc0000000
--static void fam10h_check_enable_mmcfg(struct cpuinfo_x86 *c)
-+static void __cpuinit fam10h_check_enable_mmcfg(struct cpuinfo_x86 *c)
- {
- 	u32 low, high, address;
- 
-@@ -507,8 +507,8 @@ static void fam10h_check_enable_mmcfg(st
- 
- 	printk(KERN_INFO "Enable MMCONFIG on AMD Family 10h\n");
- 	/*
--	 * if it is not enable, let enable it and assume only one segement
--	 * with 256 buses
-+	 * If it is not enabled, enable it and assume only one segment
-+	 * with 256 busses.
- 	 */
- 	low &= ~(0xfff00000 | (0xf<<2));
- 	low |= (8<<2) | (1<<0);
-_
+Decryption keys in a key management system, in particular.  If the
+keys are passed over secure network links such that they only ever
+exist in system RAM, and are not reachable via the filesystem, these
+keys can be protected from disclosure to the user (short of /proc/#/mem
+type of tricks).  However, if there is even a brief window when the
+user can gain access to the file, these keys are at risk of disclosure.
 
+The problem can be addressed, in this case, by having the daemon half
+of the design create these files, however it would provide a bit more
+flexibility if the client side was also capable of creating them.  It's
+not a make-or-break problem, by any means, but does somewhat motivate
+an O_NOLINK flag for open().
+
+Brent
+
+P.S. By the way, there doesn't seem to be a way to remove /proc/#/mem
+     files.  That might be an additional nicety -- programs worried about
+     being snooped could unlink their own entry.  /dev/mem and /dev/kmem
+     can simply be removed by the sysadmin of such a system.  If all of
+     that were done you'd have to resort to attacking crash dumps, core
+     dumps, or via something like kdb to extract "hidden" data.
+
+-- 
+Brent Casavant                          All music is folk music.  I ain't
+bcasavan@sgi.com                        never heard a horse sing a song.
+Silicon Graphics, Inc.                    -- Louis Armstrong
