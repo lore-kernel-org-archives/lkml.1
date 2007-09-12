@@ -1,57 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762959AbXILBSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762686AbXILBc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762959AbXILBSR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 21:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755000AbXILBSE
+	id S1762686AbXILBc7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 21:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbXILBcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 21:18:04 -0400
-Received: from mga11.intel.com ([192.55.52.93]:11711 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754875AbXILBSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 21:18:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,240,1186383600"; 
-   d="scan'208";a="133320038"
-Date: Wed, 12 Sep 2007 18:29:53 -0700
-From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>, akpm@osdl.org,
-       Greg KH <greg@kroah.com>, muli@il.ibm.com,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       kristen.c.accardi@intel.com
-Subject: Re: [patch][Intel-IOMMU] Fix for IOMMU early crash
-Message-ID: <20070913012952.GA958@askeshav-devel.jf.intel.com>
-Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-References: <20070908200523.GA16204@askeshav-devel.jf.intel.com> <18148.12140.21118.252581@cargo.ozlabs.ibm.com> <20070911174231.GC24627@askeshav-devel.jf.intel.com> <20070912192854.GA32610@askeshav-devel.jf.intel.com> <18150.61732.490669.269794@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18150.61732.490669.269794@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 11 Sep 2007 21:32:51 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:26436 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750720AbXILBcv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 21:32:51 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:references:in-reply-to:content-type:content-transfer-encoding;
+	b=j+OVMLeLCx1OFozM5dkivjIPn8CcyDOqTW1uSkldAC3lVH07vWAy8A+aEJyFbhx5g
+	dOXbXA4z9+hYzPlhN2K2Q==
+Message-ID: <46E741B1.4030100@google.com>
+Date: Tue, 11 Sep 2007 18:32:33 -0700
+From: Ethan Solomita <solo@google.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 0/6] cpuset aware writeback
+References: <469D3342.3080405@google.com>
+In-Reply-To: <469D3342.3080405@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 05:48:52AM +1000, Paul Mackerras wrote:
-> Keshavamurthy, Anil S writes:
-> 
-> > Subject: Fix IOMMU early crash
-> > 
-> > This patch avoids copying pci_bus's->sysdata to
-> > pci_dev's->sysdata as one can easily obtain
-> > the same through pci_dev->bus->sysdata.
-> 
-> At the moment this will cause ppc64 to crash, since we rely on
-> pci_dev->sysdata pointing to some node in the firmware device tree,
-> either the device's node or the node for a parent bus.
-> 
-> We could change the ppc64 code to use pci_dev->bus->sysdata in the
-> case when pci_dev->sysdata is NULL, which would fix the problem.  I
-> think that change should be incorporated as part of this patch so that
-> we don't break git bisection.
-Can I expect the ppc64 code changes from you? 
-Once I get your, I will merge with mine and post it again.
-> 
-> In other words I don't want to see this patch applied as it stands.
-Yup, I agree with you.
+Perform writeback and dirty throttling with awareness of cpuset mem_allowed.
 
--Anil
+The theory of operation has two primary elements:
+
+1. Add a nodemask per mapping which indicates the nodes
+   which have set PageDirty on any page of the mappings.
+
+2. Add a nodemask argument to wakeup_pdflush() which is
+   propagated down to sync_sb_inodes.
+
+This leaves sync_sb_inodes() with two nodemasks. One is passed to it and
+specifies the nodes the caller is interested in syncing, and will either
+be null (i.e. all nodes) or will be cpuset_current_mems_allowed in the
+caller's context.
+
+The second nodemask is attached to the inode's mapping and shows who has
+modified data in the inode. sync_sb_inodes() will then skip syncing of
+inodes if the nodemask argument does not intersect with the mapping
+nodemask.
+
+cpuset_current_mems_allowed will be passed in to pdflush
+background_writeout by try_to_free_pages and balance_dirty_pages.
+balance_dirty_pages also passes the nodemask in to writeback_inodes
+directly when doing active reclaim.
+
+Other callers do not limit inode writeback, passing in a NULL nodemask
+pointer.
+
+A final change is to get_dirty_limits. It takes a nodemask argument, and
+when it is null there is no change in behavior. If the nodemask is set,
+page statistics are accumulated only for specified nodes, and the
+background and throttle dirty ratios will be read from a new per-cpuset
+ratio feature.
+
+For testing I did a variety of basic tests, verifying individual
+features of the test. To verify that it fixes the core problem, I
+created a stress test which involved using cpusets and mems_allowed
+to split memory so that all daemons had memory set aside for them, and
+my memory stress test had a separate set of memory. The stress test was
+mmaping 7GB of a very large file on disk. It then scans the entire 7GB
+of memory reading and modifying each byte. 7GB is more than the amount
+of physical memory made available to the stress test.
+
+Using iostat I can see the initial period of reading from disk, followed
+by a period of simultaneous reads and writes as dirty bytes are pushed
+to make room for new reads.
+
+In a separate log-in, in the other cpuset, I am running:
+
+while `true`; do date | tee -a date.txt; sleep 5; done
+
+date.txt resides on the same disk as the large file mentioned above. The
+above while-loop serves the dual purpose of providing me visual clues of
+progress along with the opportunity for the "tee" command to become
+throttled writing to the disk.
+
+The effect of this patchset is straightforward. Without it there are
+long hangs between appearances of the date. With it the dates are all 5
+(or sometimes 6) seconds apart.
+
+I also added printks to the kernel to verify that, without these
+patches, the tee was being throttled (along with lots of other things),
+and with the patch only pdflush is being throttled.
+
+These patches are mostly unchanged from Chris Lameter's original
+changelist posted previously to linux-mm.
+
