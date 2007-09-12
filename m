@@ -1,205 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967864AbXILQnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968353AbXILQrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967864AbXILQnu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 12:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbXILQnn
+	id S968353AbXILQrA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 12:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXILQqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 12:43:43 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43379 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751973AbXILQnl (ORCPT
+	Wed, 12 Sep 2007 12:46:53 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:30234 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752420AbXILQqw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 12:43:41 -0400
-Date: Wed, 12 Sep 2007 11:43:40 -0500
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][REVISED] mspec: handle shrinking virtual memory areas
-User-Agent: nail 11.25 7/29/05
+	Wed, 12 Sep 2007 12:46:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rjdmW9WOLYQDij3jWHdDFN7DRy0bHG/sduD74kJTvK54zYbToknf7zlBnKtTttB3tAlaF9kQYSfyuTwPYiwobI4CP7aE/f7lccKhwriMsQ2I6GjQC3ucCESsrlkj7KSBuTYLlY5J2PqlmwYVIvYYMYbL2zb9nOSTeTna4tL8SSc=
+Message-ID: <64bb37e0709120946x7513fd6bg3a1c5ffee8ab64cf@mail.gmail.com>
+Date: Wed, 12 Sep 2007 18:46:48 +0200
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Stephen Hemminger" <shemminger@linux-foundation.org>
+Subject: Re: sk98lin for 2.6.23-rc1
+Cc: "Rob Sims" <lkml-z@robsims.com>, "Adrian Bunk" <bunk@stusta.de>,
+       "Kyle Rose" <krose@akamai.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070905102230.10b0bdcf@oldman>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070912164340.8E79E304FD8@attica.americas.sgi.com>
-From: cpw@sgi.com (Cliff Wickman)
+Content-Disposition: inline
+References: <46A8BAD4.8020004@akamai.com> <20070726165701.GM3572@stusta.de>
+	 <20070730030130.GA6893@robsims.com> <20070905102230.10b0bdcf@oldman>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 9/5/07, Stephen Hemminger <shemminger@linux-foundation.org> wrote:
+>
+> The only known outstanding problems on 2.62.22.6 of sky2 are:
+>  * problems with fibre PHY based systems
+>  * suspend/resume issues, missing multicast reinitalization, etc.
+> The previous stability problems have been addressed.
 
-Version 2: refcount maintained as atomic_t (as before the version 1 patch)
+Sorry to disappoint you, but it just hung for me again.
+After seeing the backport of commit  c59697e06058fc2361da8cefcfa3de85ac107582 as
+"sky2: restore workarounds for lost interrupts" going into 2.6.22.5 I
+decided to give it another try.
 
-The shrinking of a virtual memory area that is mmap(2)'d to a memory
-special file (device drivers/char/mspec.c) can cause a panic.
+First tests worked and for two days I had no trouble, but today the
+network hung again, until I removed and reinserted the sky2 module.
 
-If the mapped size of the vma (vm_area_struct) is very large, mspec allocates
-a large vma_data structure with vmalloc(). But such a vma can be shrunk by
-an munmap(2).  The current driver uses the current size of each vma to
-deduce whether its vma_data structure was allocated by kmalloc() or vmalloc().
-So if the vma was shrunk it appears to have been allocated by kmalloc(),
-and mspec attempts to free it with kfree().  This results in a panic.
+I'm using the Gentoo kernel 2.6.22-gentoo-r6 which is based on
+2.6.22.6. (All patches at
+http://dev.gentoo.org/~dsd/genpatches/patches-2.6.22-7.htm )
+This is as x86_64 kernel but with a 32bit userland.
 
-This patch avoids the panic (by preserving the type of the allocation) and
-also makes mspec work correctly as the vma is split into pieces by the
-munmap(2)'s.
+My hardware:
+00:00.0 Host bridge: Intel Corporation 82915G/P/GV/GL/PL/910GL Memory
+Controller Hub (rev 04)
+00:02.0 VGA compatible controller: Intel Corporation 82915G/GV/910GL
+Integrated Graphics Controller (rev 04)
+00:02.1 Display controller: Intel Corporation 82915G Integrated
+Graphics Controller (rev 04)
+00:1b.0 Audio device: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) High Definition Audio Controller (rev 03)
+00:1c.0 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) PCI Express Port 1 (rev 03)
+00:1d.0 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) USB UHCI #1 (rev 03)
+00:1d.1 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) USB UHCI #2 (rev 03)
+00:1d.2 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) USB UHCI #3 (rev 03)
+00:1d.3 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) USB UHCI #4 (rev 03)
+00:1d.7 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) USB2 EHCI Controller (rev 03)
+00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev d3)
+00:1f.0 ISA bridge: Intel Corporation 82801FB/FR (ICH6/ICH6R) LPC
+Interface Bridge (rev 03)
+00:1f.1 IDE interface: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) IDE Controller (rev 03)
+00:1f.2 IDE interface: Intel Corporation 82801FB/FW (ICH6/ICH6W) SATA
+Controller (rev 03)
+00:1f.3 SMBus: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family)
+SMBus Controller (rev 03)
+01:04.0 FireWire (IEEE 1394): Texas Instruments TSB43AB22/A
+IEEE-1394a-2000 Controller (PHY/Link)
+01:0b.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+RTL-8139/8139C/8139C+ (rev 10)
+02:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8053
+PCI-E Gigabit Ethernet Controller (rev 19)
 
-All vma's derived from such a split vma share the same vma_data structure that
-represents all the pages mapped into this set of vma's.  The mpec driver
-must be made capable of using the right portion of the structure for each
-member vma.  In other words, it must index into the array of page addresses
-using the portion of the array that represents the current vma. This is
-enabled by storing the vma group's vm_start in the vma_data structure.
+The Marvell controller is onboard, more info:
+linux ~ # lspci -vxxx -s 02:00.0
+02:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8053
+PCI-E Gigabit Ethernet Controller (rev 19)
+        Subsystem: ASUSTeK Computer Inc. Marvell 88E8053 Gigabit
+Ethernet controller PCIe (Asus)
+        Flags: bus master, fast devsel, latency 0, IRQ 318
+        Memory at cfffc000 (64-bit, non-prefetchable) [size=16K]
+        I/O ports at e800 [size=256]
+        Expansion ROM at cffc0000 [disabled] [size=128K]
+        Capabilities: [48] Power Management version 2
+        Capabilities: [50] Vital Product Data
+        Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+
+Queue=0/1 Enable+
+        Capabilities: [e0] Express Legacy Endpoint IRQ 0
+00: ab 11 62 43 07 04 10 00 19 00 00 02 04 00 00 00
+10: 04 c0 ff cf 00 00 00 00 01 e8 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 42 81
+30: 00 00 fc cf 48 00 00 00 00 00 00 00 0a 01 00 00
+40: 00 00 f0 01 00 80 a0 01 01 50 02 fe 00 20 00 13
+50: 03 5c 00 80 00 00 00 01 00 00 00 01 05 e0 83 00
+60: 0c 30 e0 fe 00 00 00 00 89 41 00 00 00 00 00 00
+70: 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 10 00 11 00 c0 0f 00 00 00 20 1b 00 11 a4 03 00
+f0: 08 00 11 10 00 00 00 00 00 00 00 00 00 00 00 00
 
-The shared vma_data's are not protected by mm->mmap_sem in the fork() case
-so the reference count is left as atomic_t.
+>From /proc/interrupts
+318:     230462          0   PCI-MSI-edge      eth2
 
-Diffed against 2.6.13-rc5
+>From syslog:
+Sep 12 11:01:27 linux [ 9580.538373]  CIFS VFS: server not responding
+Sep 12 11:01:27 linux [ 9580.538385]  CIFS VFS: No response for cmd 50 mid 34863
 
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-Acked-by: Jes Sorensen <jes@sgi.com>
--
----
- drivers/char/mspec.c |   61 ++++++++++++++++++++++++++++++++++-----------------
- 1 file changed, 41 insertions(+), 20 deletions(-)
+Now the network was dead, I tried to restart it with ifconfig down &&
+ifconfig up
 
-Index: mspec_community/drivers/char/mspec.c
-===================================================================
---- mspec_community.orig/drivers/char/mspec.c
-+++ mspec_community/drivers/char/mspec.c
-@@ -67,7 +67,7 @@
- /*
-  * Page types allocated by the device.
-  */
--enum {
-+enum mspec_page_type {
- 	MSPEC_FETCHOP = 1,
- 	MSPEC_CACHED,
- 	MSPEC_UNCACHED
-@@ -83,15 +83,25 @@ static int is_sn2;
-  * One of these structures is allocated when an mspec region is mmaped. The
-  * structure is pointed to by the vma->vm_private_data field in the vma struct.
-  * This structure is used to record the addresses of the mspec pages.
-+ * This structure is shared by all vma's that are split off from the
-+ * original vma when split_vma()'s are done.
-+ *
-+ * The refcnt is incremented atomically because mm->mmap_sem does not
-+ * protect in fork case where multiple tasks share the vma_data.
-  */
- struct vma_data {
- 	atomic_t refcnt;	/* Number of vmas sharing the data. */
- 	spinlock_t lock;	/* Serialize access to the vma. */
- 	int count;		/* Number of pages allocated. */
--	int type;		/* Type of pages allocated. */
-+	enum mspec_page_type type; /* Type of pages allocated. */
-+	int flags;		/* See VMD_xxx below. */
-+	unsigned long vm_start;	/* Original (unsplit) base. */
-+	unsigned long vm_end;	/* Original (unsplit) end. */
- 	unsigned long maddr[0];	/* Array of MSPEC addresses. */
- };
- 
-+#define VMD_VMALLOCED 0x1	/* vmalloc'd rather than kmalloc'd */
-+
- /* used on shub2 to clear FOP cache in the HUB */
- static unsigned long scratch_page[MAX_NUMNODES];
- #define SH2_AMO_CACHE_ENTRIES	4
-@@ -129,8 +139,8 @@ mspec_zero_block(unsigned long addr, int
-  * mspec_open
-  *
-  * Called when a device mapping is created by a means other than mmap
-- * (via fork, etc.).  Increments the reference count on the underlying
-- * mspec data so it is not freed prematurely.
-+ * (via fork, munmap, etc.).  Increments the reference count on the
-+ * underlying mspec data so it is not freed prematurely.
-  */
- static void
- mspec_open(struct vm_area_struct *vma)
-@@ -151,34 +161,38 @@ static void
- mspec_close(struct vm_area_struct *vma)
- {
- 	struct vma_data *vdata;
--	int i, pages, result, vdata_size;
-+	int index, last_index, result;
- 
- 	vdata = vma->vm_private_data;
--	if (!atomic_dec_and_test(&vdata->refcnt))
--		return;
- 
--	pages = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
--	vdata_size = sizeof(struct vma_data) + pages * sizeof(long);
--	for (i = 0; i < pages; i++) {
--		if (vdata->maddr[i] == 0)
-+	BUG_ON(vma->vm_start < vdata->vm_start || vma->vm_end > vdata->vm_end);
-+
-+	index = (vma->vm_start - vdata->vm_start) >> PAGE_SHIFT;
-+	last_index = (vma->vm_end - vdata->vm_start) >> PAGE_SHIFT;
-+	for (; index < last_index; index++) {
-+		if (vdata->maddr[index] == 0)
- 			continue;
- 		/*
- 		 * Clear the page before sticking it back
- 		 * into the pool.
- 		 */
--		result = mspec_zero_block(vdata->maddr[i], PAGE_SIZE);
-+		result = mspec_zero_block(vdata->maddr[index], PAGE_SIZE);
- 		if (!result)
--			uncached_free_page(vdata->maddr[i]);
-+			uncached_free_page(vdata->maddr[index]);
- 		else
- 			printk(KERN_WARNING "mspec_close(): "
- 			       "failed to zero page %i\n",
- 			       result);
-+		vdata->maddr[index] = 0;
- 	}
- 
--	if (vdata_size <= PAGE_SIZE)
--		kfree(vdata);
--	else
-+	if (!atomic_dec_and_test(&vdata->refcnt))
-+		return;
-+
-+	if (vdata->flags & VMD_VMALLOCED)
- 		vfree(vdata);
-+	else
-+		kfree(vdata);
- }
- 
- 
-@@ -195,7 +209,8 @@ mspec_nopfn(struct vm_area_struct *vma, 
- 	int index;
- 	struct vma_data *vdata = vma->vm_private_data;
- 
--	index = (address - vma->vm_start) >> PAGE_SHIFT;
-+	BUG_ON(address < vdata->vm_start || address >= vdata->vm_end);
-+	index = (address - vdata->vm_start) >> PAGE_SHIFT;
- 	maddr = (volatile unsigned long) vdata->maddr[index];
- 	if (maddr == 0) {
- 		maddr = uncached_alloc_page(numa_node_id());
-@@ -237,10 +252,11 @@ static struct vm_operations_struct mspec
-  * underlying pages.
-  */
- static int
--mspec_mmap(struct file *file, struct vm_area_struct *vma, int type)
-+mspec_mmap(struct file *file, struct vm_area_struct *vma,
-+					enum mspec_page_type type)
- {
- 	struct vma_data *vdata;
--	int pages, vdata_size;
-+	int pages, vdata_size, flags = 0;
- 
- 	if (vma->vm_pgoff != 0)
- 		return -EINVAL;
-@@ -255,12 +271,17 @@ mspec_mmap(struct file *file, struct vm_
- 	vdata_size = sizeof(struct vma_data) + pages * sizeof(long);
- 	if (vdata_size <= PAGE_SIZE)
- 		vdata = kmalloc(vdata_size, GFP_KERNEL);
--	else
-+	else {
- 		vdata = vmalloc(vdata_size);
-+		flags = VMD_VMALLOCED;
-+	}
- 	if (!vdata)
- 		return -ENOMEM;
- 	memset(vdata, 0, vdata_size);
- 
-+	vdata->vm_start = vma->vm_start;
-+	vdata->vm_end = vma->vm_end;
-+	vdata->flags = flags;
- 	vdata->type = type;
- 	spin_lock_init(&vdata->lock);
- 	vdata->refcnt = ATOMIC_INIT(1);
+Sep 12 11:03:54 linux [ 9727.917997] sky2 eth2: disabling interface
+Sep 12 11:03:55 linux [ 9728.270436] sky2 eth2: enabling interface
+Sep 12 11:03:55 linux [ 9728.272401] sky2 eth2: ram buffer 48K
+Sep 12 11:03:56 linux [ 9730.016797] sky2 eth2: Link is up at 100
+Mbps, full duplex, flow control both
+
+As that did not help, I removed the sky2 module and reinserted it:
+
+Sep 12 11:04:12 linux [ 9745.832197] sky2 eth2: disabling interface
+Sep 12 11:04:18 linux [ 9751.197733] ACPI: PCI interrupt for device
+0000:02:00.0 disabled
+Sep 12 11:04:25 linux [ 9758.264714] ACPI: PCI Interrupt
+0000:02:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+Sep 12 11:04:25 linux [ 9758.264736] PCI: Setting latency timer of
+device 0000:02:00.0 to 64
+Sep 12 11:04:25 linux [ 9758.265409] sky2 0000:02:00.0: v1.14 addr
+0xcfffc000 irq 16 Yukon-EC (0xb6) rev 2
+Sep 12 11:04:25 linux [ 9758.265910] sky2 eth0: addr 00:15:f2:55:ce:f9
+Sep 12 11:04:25 linux [ 9758.267754] udev: renamed network interface
+eth0 to eth2
+Sep 12 11:04:25 linux [ 9758.705240] sky2 eth2: enabling interface
+Sep 12 11:04:25 linux [ 9758.707076] sky2 eth2: ram buffer 48K
+Sep 12 11:04:27 linux [ 9760.592061] sky2 eth2: Link is up at 100
+Mbps, full duplex, flow control both
+
+Now the network was up again, but around one hour later it hung again.
+Again after removing and reinserting the module it started to work
+again, this time until I went home.
+
+I switched back to the Realtek 8139, as that card works.
+
+I can provide more info about the hardware, but I can't test any
+patches, as this server is needed for work and random hangs after
+hours of working are not really the nicest things to debug.
+
+Torsten
