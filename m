@@ -1,56 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764750AbXILUXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765044AbXILUYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764750AbXILUXm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 16:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbXILUXe
+	id S1765044AbXILUYh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 16:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbXILUY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 16:23:34 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:49547 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755994AbXILUXe (ORCPT
+	Wed, 12 Sep 2007 16:24:29 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:16220 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756218AbXILUY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 16:23:34 -0400
-Date: Wed, 12 Sep 2007 22:23:33 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Bernd Petrovitsch <bernd@firmix.at>
-cc: Sam Ravnborg <sam@ravnborg.org>, Dan Stromberg <dstromberglists@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Building a kernel-source RPM (not a kernel RPM)?
-In-Reply-To: <1189621385.31502.111.camel@tara.firmix.at>
-Message-ID: <Pine.LNX.4.64.0709122222010.32380@fbirervta.pbzchgretzou.qr>
-References: <pan.2007.09.12.16.13.41.195991@gmail.com> 
- <20070912170529.GA18311@uranus.ravnborg.org>  <1189617081.31502.78.camel@tara.firmix.at>
-  <20070912175116.GB18311@uranus.ravnborg.org>  <1189620642.31502.104.camel@tara.firmix.at>
-  <20070912181621.GA18688@uranus.ravnborg.org> <1189621385.31502.111.camel@tara.firmix.at>
+	Wed, 12 Sep 2007 16:24:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:message-id;
+        b=FRvgmrDuPqo1ex9mISgHvlwSkfukfa1xdwDvXxWtp6pDf/+gfijRJUv1YLnm4fmuMKWYZLccD76hoeC77/Mgiow9invj7sRdfhojJmirfChrvINrGPAR5pgGU/mJ3RaXJJumsxV7MwKMtQSE/zqr4Uxr8dH50okV26RPjVlZcwQ=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 1/2] section garbage collection for i386
+Date: Wed, 12 Sep 2007 21:24:20 +0100
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_1rE6GA8rYQ/087t"
+Message-Id: <200709122124.21164.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Boundary-00=_1rE6GA8rYQ/087t
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Sep 12 2007 20:23, Bernd Petrovitsch wrote:
->On Wed, 2007-09-12 at 20:16 +0200, Sam Ravnborg wrote:
->>> 
->>> But we are talking[0] about a kernel-source-$VERSION.$ARCH.rpm's 
->>> which contain the kernel sources (read: lots of .c and .h files, 
->>> etc.) - including a matching .config and after `make oldconfig` - so 
->>> that one can build out-of-tree modules after installing it with 
->>> "KSRC=" (or whatever the Makefile parameter is usually called).
->>
->> You need certain things of the kernel built before you can build 
->> external modules (if they use a sane build approach). Just including 
->> the .config with the kernel source is far from enough.
->
->ACK. That all must be done/prepared correctly for the 
->kernel-source-*.rpm. And nobody said it is trivial or easy.
+Hi Sam,
 
-Trivial as far as SUSE goes. Install the binary package and you get all 
-the symvers, modvers, and everything of the O= part that is needed. That 
-is because symvers are per-binary image and not per-source.
+This patch is preparatory: it adds a few KEEP() directives where
+I forgot them in previous patch set, adds comments which explains
+places where KEEP() is definitely not needed, and fixes i386 vdso generation
+in an "obviously safe" way.
 
-Remain the Makefiles, which are in (the big) kernel-source rpm :-/
+Please apply.
 
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+--
+vda
 
+--Boundary-00=_1rE6GA8rYQ/087t
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="linux-2.6.23-rc4.5.fixes.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="linux-2.6.23-rc4.5.fixes.patch"
 
-	Jan
--- 
+diff -urpN linux-2.6.23-rc4.gc4/arch/i386/kernel/vsyscall.lds.S linux-2.6.23-rc4.gc5/arch/i386/kernel/vsyscall.lds.S
+--- linux-2.6.23-rc4.gc4/arch/i386/kernel/vsyscall.lds.S	2007-07-09 00:32:17.000000000 +0100
++++ linux-2.6.23-rc4.gc5/arch/i386/kernel/vsyscall.lds.S	2007-09-12 19:47:17.000000000 +0100
+@@ -23,10 +23,10 @@ SECTIONS
+      is insufficient, ld -shared will barf.  Just increase it here.  */
+   . = VDSO_PRELINK_asm + 0x400;
+ 
+-  .text           : { *(.text) }		:text =0x90909090
++  .text           : { *(.text) *(.text.*) }	:text =0x90909090
+   .note		  : { *(.note.*) }		:text :note
+   .eh_frame_hdr   : { *(.eh_frame_hdr) }	:text :eh_frame_hdr
+-  .eh_frame       : { KEEP (*(.eh_frame)) }	:text
++  .eh_frame       : { KEEP(*(.eh_frame)) }	:text
+   .dynamic        : { *(.dynamic) }		:text :dynamic
+   .useless        : {
+   	*(.got.plt) *(.got)
+diff -urpN linux-2.6.23-rc4.gc4/include/asm-generic/vmlinux.lds.h linux-2.6.23-rc4.gc5/include/asm-generic/vmlinux.lds.h
+--- linux-2.6.23-rc4.gc4/include/asm-generic/vmlinux.lds.h	2007-09-12 19:46:32.000000000 +0100
++++ linux-2.6.23-rc4.gc5/include/asm-generic/vmlinux.lds.h	2007-09-12 19:47:17.000000000 +0100
+@@ -169,6 +169,7 @@
+ #define SCHED_TEXT							\
+ 		ALIGN_FUNCTION();					\
+ 		VMLINUX_SYMBOL(__sched_text_start) = .;			\
++		/* No need to KEEP */					\
+ 		*(.sched.text)						\
+ 		VMLINUX_SYMBOL(__sched_text_end) = .;
+ 
+@@ -177,12 +178,14 @@
+ #define LOCK_TEXT							\
+ 		ALIGN_FUNCTION();					\
+ 		VMLINUX_SYMBOL(__lock_text_start) = .;			\
++		/* No need to KEEP */					\
+ 		*(.spinlock.text)					\
+ 		VMLINUX_SYMBOL(__lock_text_end) = .;
+ 
+ #define KPROBES_TEXT							\
+ 		ALIGN_FUNCTION();					\
+ 		VMLINUX_SYMBOL(__kprobes_text_start) = .;		\
++		/* No need to KEEP */					\
+ 		*(.kprobes.text)					\
+ 		VMLINUX_SYMBOL(__kprobes_text_end) = .;
+ 
+@@ -228,14 +231,16 @@
+ 	. = ALIGN(8);							\
+ 	__bug_table : AT(ADDR(__bug_table) - LOAD_OFFSET) {		\
+ 		__start___bug_table = .;				\
+-		*(__bug_table)						\
++		/* Support for BUG() */					\
++		KEEP(*(__bug_table))					\
+ 		__stop___bug_table = .;					\
+ 	}
+ 
+ #define NOTES								\
+ 	.notes : AT(ADDR(.notes) - LOAD_OFFSET) {			\
+ 		VMLINUX_SYMBOL(__start_notes) = .;			\
+-		*(.note.*)						\
++		/* For /sys/kernel/notes */				\
++		KEEP(*(.note.*))					\
+ 		VMLINUX_SYMBOL(__stop_notes) = .;			\
+ 	}
+ 
+
+--Boundary-00=_1rE6GA8rYQ/087t--
