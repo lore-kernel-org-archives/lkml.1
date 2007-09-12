@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764052AbXILDaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764260AbXILDlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764052AbXILDaP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 23:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932659AbXILD37
+	id S1764260AbXILDlS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 23:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758939AbXILDlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 23:29:59 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2955 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932656AbXILD36 (ORCPT
+	Tue, 11 Sep 2007 23:41:10 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:59572 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756017AbXILDlJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 23:29:58 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: eswierk@arastra.com (Ed Swierk)
-Subject: Re: [PATCH] Configurable tap interface MTU
-Cc: netdev@vger.kernel.org, maxk@qualcomm.com, linux-kernel@vger.kernel.org
-Organization: Core
-In-Reply-To: <e6c711510709110742v4d2da644ha63b0a6d47c1230b@mail.gmail.com>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1IVIv8-0003Uc-00@gondolin.me.apana.org.au>
-Date: Wed, 12 Sep 2007 11:29:42 +0800
+	Tue, 11 Sep 2007 23:41:09 -0400
+Date: Tue, 11 Sep 2007 20:40:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       jgarzik <jgarzik@pobox.com>
+Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
+Message-Id: <20070911204037.699d0c2d.randy.dunlap@oracle.com>
+In-Reply-To: <1189532202.21778.84.camel@twins>
+References: <20070911101644.cd3f641f.randy.dunlap@oracle.com>
+	<1189532202.21778.84.camel@twins>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ed Swierk <eswierk@arastra.com> wrote:
+On Tue, 11 Sep 2007 19:36:42 +0200 Peter Zijlstra wrote:
+
+> On Tue, 2007-09-11 at 10:16 -0700, Randy Dunlap wrote:
 > 
-> The patch caps the MTU somewhat arbitrarily at 16000 bytes. This is
-> slightly lower than the value used by the e1000 driver, so it seems
-> like a safe upper limit.
+> > +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> > +Evolutions (GUI)
+> 
+> I take it you mean: Evolution
 
-Please make it 65535 without an Ethernet header and 65521
-with an Ethernet header.
+Yep, lousy keyboard.  ;)
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+I've updated the text file and will resend it shortly.
+
+Thanks for everyone's comments.
+(not replying to each one indiviually)
+
+---
+~Randy
