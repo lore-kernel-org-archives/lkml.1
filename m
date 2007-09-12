@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971766AbXILSSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971567AbXILSWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971766AbXILSSA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 14:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765249AbXILSRu
+	id S971567AbXILSWE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 14:22:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765667AbXILSVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 14:17:50 -0400
-Received: from zrtps0kn.nortel.com ([47.140.192.55]:33820 "EHLO
-	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764995AbXILSRu (ORCPT
+	Wed, 12 Sep 2007 14:21:51 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:58226 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765168AbXILSVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 14:17:50 -0400
-Message-ID: <46E82D44.5030100@nortel.com>
-Date: Wed, 12 Sep 2007 12:17:40 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Wed, 12 Sep 2007 14:21:49 -0400
+Date: Wed, 12 Sep 2007 20:21:48 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: patrizio.bassi@gmail.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       "Kernel," <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Andi Kleen <ak@suse.de>,
+       linux-acpi@vger.kernel.org
+Subject: Re: libata not working for sis5533
+In-Reply-To: <20070911154658.ab1fe162.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0709122018400.22467@fbirervta.pbzchgretzou.qr>
+References: <46D132C5.5000803@gmail.com> <6bffcb0e0708261627s12e5a9acqef92d0261264a40c@mail.gmail.com>
+ <46D8921E.3010304@gmail.com> <46D89429.7080802@gmail.com>
+ <20070902114032.7dbfb21a@the-village.bc.nu>
+ <Pine.LNX.4.64.0709031957390.24179@fbirervta.pbzchgretzou.qr>
+ <Pine.LNX.4.64.0709061156220.25942@fbirervta.pbzchgretzou.qr>
+ <46E26DAF.9020906@gmail.com> <Pine.LNX.4.64.0709081243050.25942@fbirervta.pbzchgretzou.qr>
+ <46E3DA7E.7060709@gmail.com> <20070911154658.ab1fe162.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Jeff Garzik <jgarzik@pobox.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
-References: <20070911101644.cd3f641f.randy.dunlap@oracle.com> <46E6EE96.9060309@nortel.com> <46E6F2A8.2020104@pobox.com> <46E75C6A.3000705@nortel.com> <Pine.LNX.4.64.0709122007530.22467@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0709122007530.22467@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Sep 2007 18:17:44.0140 (UTC) FILETIME=[36B2B0C0:01C7F569]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Sep 11 2007 21:26, Chris Friesen wrote:
 
->>Thunderbird, at least, will automatically inline a single text/plain attachment
->>when replying. (At least with my current settings, it does.)
+On Sep 11 2007 15:46, Andrew Morton wrote:
+>Patrizio Bassi <patrizio.bassi@gmail.com> wrote:
+>>Jan Engelhardt ha scritto:
+>>>On Sep 8 2007 11:38, Patrizio Bassi wrote:
+>>>>Jan Engelhardt wrote:
+>>>>    
+>>>>> I shall give this a spin too, since I happen to have sis5513. Just
+>>>>> booted this fresh ata-enabled system (a matter of mkinitrd). It has not
+>>>>> exploded yet.
+>>>>>      
+>>>> don't you have the "irq 14" issue?
+>>>>    
+>>> No, does not seem so.
+>>
+>> For Alan, libata devs...hope can help debug...
+>> this is http://www.patriziobassi.it/downloads/libata_issue.jpg
+>
+>Looks more like a platform irq routing issue than an ata issue.
+>
+>Perhaps an x86 or an acpi person can help out with this.
 
-> No, the thing is: you send it attached with Thunderbird,
-> and my PINE strips it on reply _because_ it is an attachment.
+Patrizio, have you tried with the old IDE? (And without suspend at that...)
 
-There's no setting to tell it to quote plaintext attachments on reply? 
-If someone with thunderbird replies to it the patch is automatically quoted.
 
-Guess I need to get the external_editor extension.
-
-Chris
+	Jan
+-- 
