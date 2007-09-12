@@ -1,64 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967153AbXILLSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764632AbXILLUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967153AbXILLSV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 07:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965842AbXILLSK
+	id S1764632AbXILLUn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 07:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966163AbXILLUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 07:18:10 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:40238 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965366AbXILLSJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 07:18:09 -0400
-Date: Wed, 12 Sep 2007 12:17:58 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] free_irq(): Actually handle DEBUG_SHIRQ
-Message-ID: <Pine.LNX.4.64N.0709121122120.24030@blysk.ds.pg.gda.pl>
+	Wed, 12 Sep 2007 07:20:36 -0400
+Received: from sacred.ru ([62.205.161.221]:44331 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965842AbXILLUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 07:20:35 -0400
+Message-ID: <46E7CAE6.8040803@openvz.org>
+Date: Wed, 12 Sep 2007 15:17:58 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@osdl.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
+Subject: [PATCH 1/5] Use existing macros for distinguishing mandatory locks
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 12 Sep 2007 15:20:11 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Code used for DEBUG_SHIRQ in free_irq() is unreachable -- the for() loop 
-within never terminates otherwise than by return.  This is an obvious fix.
+The combination of S_ISGID bit set and S_IXGRP bit unset is 
+used to mark the inode as "mandatory lockable" and there's a 
+macro for this check called MANDATORY_LOCK(inode). However, 
+fs/locks.c and some filesystems still perform the explicit 
+i_mode checking. 
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+Switch the fs/locks.c to macro making the code shorter and 
+more readable.
+
+The __MANDATORY_LOCK() macro is to be used in places where
+the IS_MANDLOCK() for superblock is already known to be true.
+
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+
 ---
- Please apply.
 
- While at it, I have a question about the complementary code within 
-request_irq(): when the option in question is enabled, a spurious IRQ is 
-posted before internal setup is done by setup_irq().  This includes the 
-->depth counter.  Now if the interrupt handler of some driver calls
-disable_irq_nosync(), then code in setup_irq() will mess up the state of 
-->depth afterwards if this is the first handler being installed (i.e. 
-within the "if (!shared)" block).  This is reported later on when 
-enable_irq() called by the driver, by means of a message like this:
+ fs/locks.c         |   14 ++++----------
+ include/linux/fs.h |    4 ++--
+ 2 files changed, 6 insertions(+), 12 deletions(-)
 
-Unbalanced enable for IRQ 34
-WARNING: at kernel/irq/manage.c:158 enable_irq()
-
-Now given DEBUG_SHIRQ is a debug facility, not to be normally used for 
-production, is the phenomenon as described considered a design limitation 
-we can live with, or is it a bug that qualifies for a fix?
-
- I can reproduce this problem easily with phylib.
-
-  Maciej
-
-patch-mips-2.6.23-rc5-20070904-debug-shirq-0
-diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/kernel/irq/manage.c linux-mips-2.6.23-rc5-20070904/kernel/irq/manage.c
---- linux-mips-2.6.23-rc5-20070904.macro/kernel/irq/manage.c	2007-09-04 04:56:21.000000000 +0000
-+++ linux-mips-2.6.23-rc5-20070904/kernel/irq/manage.c	2007-09-11 23:58:59.000000000 +0000
-@@ -448,7 +448,7 @@ void free_irq(unsigned int irq, void *de
- 			if (action->flags & IRQF_SHARED)
- 				handler = action->handler;
- 			kfree(action);
--			return;
-+			break;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 291d40b..035ffda 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1488,8 +1488,8 @@ extern int locks_mandatory_area(int, str
+  * Candidates for mandatory locking have the setgid bit set
+  * but no group execute bit -  an otherwise meaningless combination.
+  */
+-#define MANDATORY_LOCK(inode) \
+-	(IS_MANDLOCK(inode) && ((inode)->i_mode & (S_ISGID | S_IXGRP)) == S_ISGID)
++#define __MANDATORY_LOCK(ino) (((ino)->i_mode & (S_ISGID | S_IXGRP)) == S_ISGID)
++#define MANDATORY_LOCK(inode) (IS_MANDLOCK(inode) && __MANDATORY_LOCK(inode))
+ 
+ static inline int locks_verify_locked(struct inode *inode)
+ {
+diff --git a/fs/locks.c b/fs/locks.c
+index 0db1a14..f90fe6d 100644
+--- a/fs/locks.c
++++ b/fs/locks.c
+@@ -1112,7 +1112,7 @@ int locks_mandatory_area(int read_write,
+ 			 * If we've been sleeping someone might have
+ 			 * changed the permissions behind our back.
+ 			 */
+-			if ((inode->i_mode & (S_ISGID | S_IXGRP)) == S_ISGID)
++			if (__MANDATORY_LOCK(inode))
+ 				continue;
  		}
- 		printk(KERN_ERR "Trying to free already-free IRQ %d\n", irq);
- 		spin_unlock_irqrestore(&desc->lock, flags);
+ 
+@@ -1751,9 +1751,7 @@ int fcntl_setlk(unsigned int fd, struct 
+ 	/* Don't allow mandatory locks on files that may be memory mapped
+ 	 * and shared.
+ 	 */
+-	if (IS_MANDLOCK(inode) &&
+-	    (inode->i_mode & (S_ISGID | S_IXGRP)) == S_ISGID &&
+-	    mapping_writably_mapped(filp->f_mapping)) {
++	if (MANDATORY_LOCK(inode) && mapping_writably_mapped(filp->f_mapping)) {
+ 		error = -EAGAIN;
+ 		goto out;
+ 	}
+@@ -1877,9 +1875,7 @@ int fcntl_setlk64(unsigned int fd, struc
+ 	/* Don't allow mandatory locks on files that may be memory mapped
+ 	 * and shared.
+ 	 */
+-	if (IS_MANDLOCK(inode) &&
+-	    (inode->i_mode & (S_ISGID | S_IXGRP)) == S_ISGID &&
+-	    mapping_writably_mapped(filp->f_mapping)) {
++	if (MANDATORY_LOCK(inode) && mapping_writably_mapped(filp->f_mapping)) {
+ 		error = -EAGAIN;
+ 		goto out;
+ 	}
+@@ -2073,9 +2069,7 @@ static void lock_get_status(char* out, s
+ 		out += sprintf(out, "%6s %s ",
+ 			     (fl->fl_flags & FL_ACCESS) ? "ACCESS" : "POSIX ",
+ 			     (inode == NULL) ? "*NOINODE*" :
+-			     (IS_MANDLOCK(inode) &&
+-			      (inode->i_mode & (S_IXGRP | S_ISGID)) == S_ISGID) ?
+-			     "MANDATORY" : "ADVISORY ");
++			     MANDATORY_LOCK(inode) ? "MANDATORY" : "ADVISORY ");
+ 	} else if (IS_FLOCK(fl)) {
+ 		if (fl->fl_type & LOCK_MAND) {
+ 			out += sprintf(out, "FLOCK  MSNFS     ");
+
