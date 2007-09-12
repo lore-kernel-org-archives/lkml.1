@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970390AbXILRoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970197AbXILRpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970390AbXILRoY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969325AbXILRm5
+	id S970197AbXILRpM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966759AbXILRou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 13:42:57 -0400
-Received: from smtp.nokia.com ([131.228.20.170]:40769 "EHLO
-	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968309AbXILRmz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 13:42:55 -0400
-X-Greylist: delayed 2567 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Sep 2007 13:42:54 EDT
-Message-ID: <46E81B06.4010504@nokia.com>
-Date: Wed, 12 Sep 2007 19:59:50 +0300
-From: Stefan Becker <Stefan.Becker@nokia.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 12 Sep 2007 13:44:50 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:28206 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968606AbXILRot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 13:44:49 -0400
+Date: Wed, 12 Sep 2007 19:44:25 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: David Miller <davem@davemloft.net>
+Cc: bunk@kernel.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [-mm patch] make tcp_splice_data_recv() static
+Message-ID: <20070912174424.GU25592@kernel.dk>
+References: <20070831215822.26e1432b.akpm@linux-foundation.org> <20070909202558.GZ3563@stusta.de> <20070912.062102.116370922.davem@davemloft.net>
 MIME-Version: 1.0
-To: ext Andi Kleen <andi@firstfloor.org>
-CC: ext Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, davej@codemonkey.org.uk
-Subject: Re: [pre-2.6.23 REGRESSION] 2.6.23-rc3-git1 crash/stuck on VIA CN700
- system
-References: <46C9D148.5080505@nokia.com> <p734pibbbex.fsf@bingen.suse.de> <46DDA366.8090806@nokia.com> <20070905102525.GB31880@one.firstfloor.org> <46DECDC9.9050407@nokia.com> <20070905163724.GC31880@one.firstfloor.org> <46DF0257.5050303@nokia.com> <20070906053654.GD31880@one.firstfloor.org>
-In-Reply-To: <20070906053654.GD31880@one.firstfloor.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Sep 2007 16:59:52.0005 (UTC) FILETIME=[55E37750:01C7F55E]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070912.062102.116370922.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-ext Andi Kleen wrote:
+On Wed, Sep 12 2007, David Miller wrote:
+> From: Adrian Bunk <bunk@kernel.org>
+> Date: Sun, 9 Sep 2007 22:25:58 +0200
 > 
->> So what can we do about the clflush on this CPU?
+> > On Fri, Aug 31, 2007 at 09:58:22PM -0700, Andrew Morton wrote:
+> > >...
+> > > Changes since 2.6.23-rc3-mm1:
+> > >...
+> > >  git-block.patch
+> > >...
+> > >  git trees
+> > >...
+> > 
+> > tcp_splice_data_recv() can become static.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
-> I'll just remove that CLFLUSH statement. It was just supposed
-> to be an optimization, but is not strictly needed.
+> I'll let Jens or similar pick this one up since it
+> obviously won't apply to my tree.
 
-2.6.23-rc6 boots up fine on my box. Regression fixed. Thanks.
+I'll shove it in my #splice-net branch, where it originates from.
 
-Regards,
+-- 
+Jens Axboe
 
-	Stefan
-
----
-Stefan Becker
-E-Mail: Stefan.Becker@nokia.com
