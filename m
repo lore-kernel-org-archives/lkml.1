@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761572AbXILGRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763622AbXILGUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761572AbXILGRR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 02:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbXILGRF
+	id S1763622AbXILGUd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 02:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbXILGUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 02:17:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:41701 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755929AbXILGRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 02:17:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.20,242,1186383600"; 
-   d="scan'208";a="277173608"
-Subject: Re: [BUGFIX] x86_64: NX bit handling in change_page_attr
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070911202332.c539f1fe.akpm@linux-foundation.org>
-References: <1187328518.28497.6.camel@caritas-dev.intel.com>
-	 <20070911202332.c539f1fe.akpm@linux-foundation.org>
+	Wed, 12 Sep 2007 02:20:25 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47412 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756011AbXILGUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 02:20:25 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+IZv5kcvCIUm1jHADOpkEwNasOa6qYdYaWYZcCm4
+	LBeFmwt50FfVRz
+Subject: Re: [announce] CFS-devel, performance improvements
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <20070911200459.GA6974@elte.hu>
+References: <20070911200459.GA6974@elte.hu>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 12 Sep 2007 14:18:43 +0800
-Message-Id: <1189577923.23838.6.camel@caritas-dev.intel.com>
+Date: Wed, 12 Sep 2007 08:20:21 +0200
+Message-Id: <1189578021.6493.15.camel@Homer.simpson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-X-OriginalArrivalTime: 12 Sep 2007 06:17:00.0303 (UTC) FILETIME=[875CD1F0:01C7F504]
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-09-11 at 20:23 -0700, Andrew Morton wrote:
-> On Fri, 17 Aug 2007 13:28:38 +0800 "Huang, Ying" <ying.huang@intel.com> wrote:
-> 
-> > This patch fixes a bug of change_page_attr/change_page_attr_addr on
-> > Intel x86_64 CPU. After changing page attribute to be executable with
-> > these functions, the page remains un-executable on Intel x86_64
-> > CPU. Because on Intel x86_64 CPU, only if the "NX" bits of all four
-> > level page tables are cleared, the corresponding page is executable
-> > (refer to section 4.13.2 of Intel 64 and IA-32 Architectures Software
-> > Developer's Manual). So, the bug is fixed through clearing the "NX"
-> > bit of PMD when splitting the huge PMD.
-> > 
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> > 
-> > ---
-> > 
-> > Index: linux-2.6.23-rc2-mm2/arch/x86_64/mm/pageattr.c
-> > ===================================================================
-> > --- linux-2.6.23-rc2-mm2.orig/arch/x86_64/mm/pageattr.c	2007-08-17 12:50:25.000000000 +0800
-> > +++ linux-2.6.23-rc2-mm2/arch/x86_64/mm/pageattr.c	2007-08-17 12:50:48.000000000 +0800
-> > @@ -147,6 +147,7 @@
-> >  			split = split_large_page(address, prot, ref_prot2);
-> >  			if (!split)
-> >  				return -ENOMEM;
-> > +			pgprot_val(ref_prot2) &= ~_PAGE_NX;
-> >  			set_pte(kpte, mk_pte(split, ref_prot2));
-> >  			kpte_page = split;
-> >  		}
-> 
-> What happened with this?  Still valid?
+On Tue, 2007-09-11 at 22:04 +0200, Ingo Molnar wrote:
+> fresh back from the Kernel Summit, Peter Zijlstra and me are pleased to 
+> announce the latest iteration of the CFS scheduler development tree. Our 
+> main focus has been on simplifications and performance - and as part of 
+> that we've also picked up some ideas from Roman Zippel's 'Really Fair 
+> Scheduler' patch as well and integrated them into CFS. We'd like to ask 
+> people go give these patches a good workout, especially with an eye on 
+> any interactivity regressions.
 
-I am waiting for reviewing or merging. And I think it is still valid.
+Initial test-drive looks good here, but I do see a regression.  First
+the good news.
 
-Best Regards,
-Huang Ying
+fairtest2 is perfect, more perfect than ever seen before in fact.  Mixed
+interval sleepers/hog looks fine as well (can't say perfect due to
+startup differences with the various proggies, but cpu% looks perfect).
+Amarok song switch time under hefty kbuild load is fine as well.  I
+haven't done heavy multimedia testing yet, but will give it a more
+thorough workout later (errands).
+
+The regression:  I see some GUI lurch, easily reproducible by running a
+make -j5 and moving the mouse in a circle... perceptible (100ms or so)
+lurches not present in rc5. 
+
+	-Mike
+
