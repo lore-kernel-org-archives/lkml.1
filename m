@@ -1,206 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934990AbXILRuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969850AbXILR6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934990AbXILRuo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933778AbXILRug
+	id S969850AbXILR6E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:58:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765995AbXILR5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 13:50:36 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46310 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933767AbXILRuf (ORCPT
+	Wed, 12 Sep 2007 13:57:54 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:37352 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765600AbXILR5x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 13:50:35 -0400
-Date: Wed, 12 Sep 2007 12:50:34 -0500
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][REVISED] mspec: handle shrinking virtual memory areas
-User-Agent: nail 11.25 7/29/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20070912175034.2A7F3304FD8@attica.americas.sgi.com>
-From: cpw@sgi.com (Cliff Wickman)
+	Wed, 12 Sep 2007 13:57:53 -0400
+Date: Wed, 12 Sep 2007 10:56:24 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Rogan Dawes <lists@dawes.za.net>, David Newall <david@davidnewall.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: stripping down the kernel-parameters.txt file
+Message-Id: <20070912105624.36b74f17.randy.dunlap@oracle.com>
+In-Reply-To: <3E869809-EA55-4F90-B364-788081ACEC00@mac.com>
+References: <Pine.LNX.4.64.0709120339470.26177@localhost.localdomain>
+	<46E7DEF8.50201@davidnewall.com>
+	<Pine.LNX.4.64.0709120904130.20693@localhost.localdomain>
+	<46E7F816.9080806@dawes.za.net>
+	<Pine.LNX.4.64.0709121034450.25084@localhost.localdomain>
+	<3E869809-EA55-4F90-B364-788081ACEC00@mac.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Wed__12_Sep_2007_10_56_24_-0700_JEFqUOcJCOgehd=p"
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
 
-Version 2: refcount maintained as atomic_t (as before the version 1 patch)
-           (Diffed against 2.6.23-rc5, not "2.6.13-rc5" !)
+--Multipart=_Wed__12_Sep_2007_10_56_24_-0700_JEFqUOcJCOgehd=p
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-The shrinking of a virtual memory area that is mmap(2)'d to a memory
-special file (device drivers/char/mspec.c) can cause a panic.
+On Wed, 12 Sep 2007 13:47:38 -0400 Kyle Moffett wrote:
 
-If the mapped size of the vma (vm_area_struct) is very large, mspec allocates
-a large vma_data structure with vmalloc(). But such a vma can be shrunk by
-an munmap(2).  The current driver uses the current size of each vma to
-deduce whether its vma_data structure was allocated by kmalloc() or vmalloc().
-So if the vma was shrunk it appears to have been allocated by kmalloc(),
-and mspec attempts to free it with kfree().  This results in a panic.
+> On Sep 12, 2007, at 10:44:29, Robert P. J. Day wrote:
+> > in the end, there should be a nice, *short* reference for what i  
+> > like to call "basic" kernel parms (defined by __setup() or  
+> > early_param()), while anyone who wants to learn about any module- 
+> > specific parms should then have to go look up the info for that  
+> > given module, that's all.
+> >
+> > as a trivial starting point, this would involve nothing more than  
+> > shifting current content around in kernel-parameters.txt, putting  
+> > the basic stuff at the top, and the module-specific stuff after  
+> > that.  heck, that would even give module authors the chance to add  
+> > a line or two of module description if they wanted.  how does life  
+> > get any better than that?
+> 
+> Well, maybe if modules could be used similarly to: "modprobe  
+> my_module --help" to give a description of the available module  
+> parameters.  That information might be merged into modules from text  
 
-This patch avoids the panic (by preserving the type of the allocation) and
-also makes mspec work correctly as the vma is split into pieces by the
-munmap(2)'s.
+modinfo prints out all MODULE_PARM_DESC() strings.
 
-All vma's derived from such a split vma share the same vma_data structure that
-represents all the pages mapped into this set of vma's.  The mpec driver
-must be made capable of using the right portion of the structure for each
-member vma.  In other words, it must index into the array of page addresses
-using the portion of the array that represents the current vma. This is
-enabled by storing the vma group's vm_start in the vma_data structure.
+> file(s) or vice-versa, but I can see it being significantly more  
+> useful.  Another mildly-useful feature would be to stick the basic  
+> boot params and those for built-in modules into a little text file  
+> which could optionally be embedded in the initramfs along with the  
+> "less" binary, so that a "vmlinuz --help" could be made to work  
+> usefully from your bootloader.
 
-The shared vma_data's are not protected by mm->mmap_sem in the fork() case
-so the reference count is left as atomic_t.
+This has come up before.  I wrote the attached 'module-params'
+script last October (2006).  It can search .c files or .ko files
+for module parameters...
 
-Diffed against 2.6.23-rc5
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-Acked-by: Jes Sorensen <jes@sgi.com>
--
 ---
- drivers/char/mspec.c |   61 ++++++++++++++++++++++++++++++++++-----------------
- 1 file changed, 41 insertions(+), 20 deletions(-)
+~Randy
 
-Index: mspec_community/drivers/char/mspec.c
-===================================================================
---- mspec_community.orig/drivers/char/mspec.c
-+++ mspec_community/drivers/char/mspec.c
-@@ -67,7 +67,7 @@
- /*
-  * Page types allocated by the device.
-  */
--enum {
-+enum mspec_page_type {
- 	MSPEC_FETCHOP = 1,
- 	MSPEC_CACHED,
- 	MSPEC_UNCACHED
-@@ -83,15 +83,25 @@ static int is_sn2;
-  * One of these structures is allocated when an mspec region is mmaped. The
-  * structure is pointed to by the vma->vm_private_data field in the vma struct.
-  * This structure is used to record the addresses of the mspec pages.
-+ * This structure is shared by all vma's that are split off from the
-+ * original vma when split_vma()'s are done.
-+ *
-+ * The refcnt is incremented atomically because mm->mmap_sem does not
-+ * protect in fork case where multiple tasks share the vma_data.
-  */
- struct vma_data {
- 	atomic_t refcnt;	/* Number of vmas sharing the data. */
- 	spinlock_t lock;	/* Serialize access to the vma. */
- 	int count;		/* Number of pages allocated. */
--	int type;		/* Type of pages allocated. */
-+	enum mspec_page_type type; /* Type of pages allocated. */
-+	int flags;		/* See VMD_xxx below. */
-+	unsigned long vm_start;	/* Original (unsplit) base. */
-+	unsigned long vm_end;	/* Original (unsplit) end. */
- 	unsigned long maddr[0];	/* Array of MSPEC addresses. */
- };
- 
-+#define VMD_VMALLOCED 0x1	/* vmalloc'd rather than kmalloc'd */
-+
- /* used on shub2 to clear FOP cache in the HUB */
- static unsigned long scratch_page[MAX_NUMNODES];
- #define SH2_AMO_CACHE_ENTRIES	4
-@@ -129,8 +139,8 @@ mspec_zero_block(unsigned long addr, int
-  * mspec_open
-  *
-  * Called when a device mapping is created by a means other than mmap
-- * (via fork, etc.).  Increments the reference count on the underlying
-- * mspec data so it is not freed prematurely.
-+ * (via fork, munmap, etc.).  Increments the reference count on the
-+ * underlying mspec data so it is not freed prematurely.
-  */
- static void
- mspec_open(struct vm_area_struct *vma)
-@@ -151,34 +161,38 @@ static void
- mspec_close(struct vm_area_struct *vma)
- {
- 	struct vma_data *vdata;
--	int i, pages, result, vdata_size;
-+	int index, last_index, result;
- 
- 	vdata = vma->vm_private_data;
--	if (!atomic_dec_and_test(&vdata->refcnt))
--		return;
- 
--	pages = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
--	vdata_size = sizeof(struct vma_data) + pages * sizeof(long);
--	for (i = 0; i < pages; i++) {
--		if (vdata->maddr[i] == 0)
-+	BUG_ON(vma->vm_start < vdata->vm_start || vma->vm_end > vdata->vm_end);
-+
-+	index = (vma->vm_start - vdata->vm_start) >> PAGE_SHIFT;
-+	last_index = (vma->vm_end - vdata->vm_start) >> PAGE_SHIFT;
-+	for (; index < last_index; index++) {
-+		if (vdata->maddr[index] == 0)
- 			continue;
- 		/*
- 		 * Clear the page before sticking it back
- 		 * into the pool.
- 		 */
--		result = mspec_zero_block(vdata->maddr[i], PAGE_SIZE);
-+		result = mspec_zero_block(vdata->maddr[index], PAGE_SIZE);
- 		if (!result)
--			uncached_free_page(vdata->maddr[i]);
-+			uncached_free_page(vdata->maddr[index]);
- 		else
- 			printk(KERN_WARNING "mspec_close(): "
- 			       "failed to zero page %i\n",
- 			       result);
-+		vdata->maddr[index] = 0;
- 	}
- 
--	if (vdata_size <= PAGE_SIZE)
--		kfree(vdata);
--	else
-+	if (!atomic_dec_and_test(&vdata->refcnt))
-+		return;
-+
-+	if (vdata->flags & VMD_VMALLOCED)
- 		vfree(vdata);
-+	else
-+		kfree(vdata);
- }
- 
- 
-@@ -195,7 +209,8 @@ mspec_nopfn(struct vm_area_struct *vma, 
- 	int index;
- 	struct vma_data *vdata = vma->vm_private_data;
- 
--	index = (address - vma->vm_start) >> PAGE_SHIFT;
-+	BUG_ON(address < vdata->vm_start || address >= vdata->vm_end);
-+	index = (address - vdata->vm_start) >> PAGE_SHIFT;
- 	maddr = (volatile unsigned long) vdata->maddr[index];
- 	if (maddr == 0) {
- 		maddr = uncached_alloc_page(numa_node_id());
-@@ -237,10 +252,11 @@ static struct vm_operations_struct mspec
-  * underlying pages.
-  */
- static int
--mspec_mmap(struct file *file, struct vm_area_struct *vma, int type)
-+mspec_mmap(struct file *file, struct vm_area_struct *vma,
-+					enum mspec_page_type type)
- {
- 	struct vma_data *vdata;
--	int pages, vdata_size;
-+	int pages, vdata_size, flags = 0;
- 
- 	if (vma->vm_pgoff != 0)
- 		return -EINVAL;
-@@ -255,12 +271,17 @@ mspec_mmap(struct file *file, struct vm_
- 	vdata_size = sizeof(struct vma_data) + pages * sizeof(long);
- 	if (vdata_size <= PAGE_SIZE)
- 		vdata = kmalloc(vdata_size, GFP_KERNEL);
--	else
-+	else {
- 		vdata = vmalloc(vdata_size);
-+		flags = VMD_VMALLOCED;
-+	}
- 	if (!vdata)
- 		return -ENOMEM;
- 	memset(vdata, 0, vdata_size);
- 
-+	vdata->vm_start = vma->vm_start;
-+	vdata->vm_end = vma->vm_end;
-+	vdata->flags = flags;
- 	vdata->type = type;
- 	spin_lock_init(&vdata->lock);
- 	vdata->refcnt = ATOMIC_INIT(1);
+--Multipart=_Wed__12_Sep_2007_10_56_24_-0700_JEFqUOcJCOgehd=p
+Content-Type: application/octet-stream;
+ name="module-params"
+Content-Disposition: attachment;
+ filename="module-params"
+Content-Transfer-Encoding: base64
+
+IyEgL2Jpbi9zaAojIENvcHlyaWdodCAoQykgMjAwNiBSYW5keSBEdW5sYXAKIyBHUEwgdmVyc2lv
+biAyIGxpY2Vuc2UuCiMgcHJpbnRzICdtb2RpbmZvIC1wJyBmb3IgYWxsIGZvdW5kICoua28gZmls
+ZXMKIyBwcmludHMgJ21vZGluZm8nIChhbGwpIGZvciBhbGwgZm91bmQgKi5rbyBmaWxlcyBpZiAt
+YSBpcyBzcGVjaWZpZWQ7CiMgcHJpbnRzIGFsbCBNT0RVTEVfUEFSTV9ERVNDIGxpbmVzIGZvciBh
+bGwgKi5jIGZpbGVzIGlmIC1zIGlzIHNwZWNpZmllZDsKCmFsbGluZm89IiIKc291cmNlcz0iIgoK
+d2hpbGUgZ2V0b3B0cyAiYW9zaCIgT3B0aW9uIDsgZG8KCWNhc2UgJE9wdGlvbiBpbgoJYSkKCQlh
+bGxpbmZvPSIxIgoJCTs7CglzKQoJCXNvdXJjZXM9IjEiCgkJOzsKCW8pCgkJc291cmNlcz0iIgoJ
+CTs7CglofCopCgkJZWNobyAidXNhZ2U6IG1vZHVsZS1wYXJhbXMgWy1hXSBbLXNdIFstb10gWy1o
+XSIKCQllY2hvICJsaXN0cyBtb2R1bGUgcGFyYW1ldGVyIGluZm8gZm9yIGFsbCBmb3VuZCBmaWxl
+czoiCgkJZWNobyAiICAtcyBzZWFyY2hlcyBzb3VyY2UgKC5jKSBmaWxlcyIKCQllY2hvICIgIC1v
+IHNlYXJjaGVzIGJpbmFyeSAoLmtvKSBmaWxlcyBbZGVmYXVsdF0iCgkJZWNobyAiICAtYSBsaXN0
+cyBhbGwgbW9kaW5mbyBvdXRwdXQgZnJvbSAua28gZmlsZXMiCgkJZWNobyAiICAgICAoZWxzZSBq
+dXN0IC1wOiBtb2R1bGUgcGFyYW1ldGVycyBvdXRwdXQpIgoJCWVjaG8gIiAgLWggcHJpbnRzIHRo
+aXMgaGVscCB0ZXh0IgoJCWV4aXQKCQk7OwoJZXNhYwpkb25lCiMjZWNobyBzaGlmdGluZyBhcmdz
+IGJ5OiAkKCgkT1BUSU5EIC0gMSkpCnNoaWZ0ICQoKCRPUFRJTkQgLSAxKSkKCmlmIFsgIiRhbGxp
+bmZvIiA9PSAiMSIgXTsgdGhlbgoJbW9kaW5mb19wYXJhbT0iIgplbHNlCgltb2RpbmZvX3BhcmFt
+PSItcCIJIyBtb2R1bGUgcGFyYW1ldGVycyBvbmx5CmZpCgppZiBbICIkc291cmNlcyIgPT0gIjEi
+IF07IHRoZW4KCWZpbGVuYW1lcz0kKGZpbmQgLiAtbmFtZSBcKlwuYykKZWxzZQoJZmlsZW5hbWVz
+PSQoZmluZCAuIC1uYW1lIFwqXC5rbykKZmkKCmZvciBmaWxlIGluICRmaWxlbmFtZXMgOyBkbwoK
+CWlmIFsgIiRzb3VyY2VzIiA9PSAiMSIgXTsgdGhlbgoJCWdyZXAgLXNxIC13IE1PRFVMRV9QQVJN
+X0RFU0MgJGZpbGUKCQlzdHM9JD8KCgkJaWYgWyAkc3RzIC1lcSAwIF07IHRoZW4KCQkJaWYgWyAk
+e2ZpbGU6MDoyfSA9PSAiLi8iIF07IHRoZW4KCQkJCWZpbGU9JHtmaWxlOjJ9CgkJCWZpCgkJCWVj
+aG8gIiRmaWxlOiIKCQkJZ3JlcCAtdyBNT0RVTEVfUEFSTV9ERVNDICRmaWxlIHwgXAoJCQkJc2Vk
+IC1lIHMvTU9EVUxFX1BBUk1fREVTQ1tbOnNwYWNlOl1dKlwoLy8gfCBcCgkJCQlzZWQgLWUgcy8i
+XCJbWzpzcGFjZTpdXSopW1s6c3BhY2U6XV0qO1tbOnNwYWNlOl1dKiQiLy8gfAoJCQkJc2VkIC1l
+IHMvIiwiLyI6ICIvIHwKCQkJCXNlZCAtZSBzLyciJCcvJycvIHwKCQkJCXNlZCAtZSBzLydcXCQn
+LycnLyB8CgkJCQlzZWQgLWUgcy8nXFxuJCcvJycvIHwKCQkJCXNlZCAtZSBzLydcXHQnLycgJy9n
+IHwKCQkJCXNlZCAtZSBzLydcXG4nLyc6ICcvZyB8CgkJCQlzZWQgLWUgcy8nXFwnLycnL2cgfAoJ
+CQkJc2VkIC1lIHMvJ19fTU9EVUxFX1NUUklORycvJycvZyB8CgkJCQlzZWQgLWUgcy8iOltbOnNw
+YWNlOl1dKlwiIi8iOiAiLwoJCQllY2hvICItLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tIgoJCWZpCgoJZWxzZQkjIG9iamVjdCBtb2R1bGVzCgkJaW5mbz1g
+bW9kaW5mbyAkbW9kaW5mb19wYXJhbSAkZmlsZWAKCQlpZiBbICIkaW5mbyIgIT0gIiIgXTsgdGhl
+bgoJCQkjIGRvbid0IHJlcGVhdCBmaWxlbmFtZQoJCQlpZiBbICIkYWxsaW5mbyIgIT0gIjEiIF07
+IHRoZW4KCQkJCWVjaG8gIiRmaWxlOiIKCQkJZmkKCQkJbW9kaW5mbyAkbW9kaW5mb19wYXJhbSAk
+ZmlsZSB8IHNlZCAtZSBzLyI6Ii8iOiAiL2cKCQkJZWNobyAiLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSIKCQlmaQoKCWZpCgpkb25lCg==
+
+--Multipart=_Wed__12_Sep_2007_10_56_24_-0700_JEFqUOcJCOgehd=p--
