@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934746AbXILQKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934807AbXILQVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934746AbXILQKI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 12:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764705AbXILQJ5
+	id S934807AbXILQVl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 12:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764298AbXILQVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 12:09:57 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59936 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758263AbXILQJ4 (ORCPT
+	Wed, 12 Sep 2007 12:21:32 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:44867 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755174AbXILQVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 12:09:56 -0400
-Date: Wed, 12 Sep 2007 09:09:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Paul Mackerras <paulus@samba.org>
-cc: akpm@linux-foundation.org, Tony Breeds <tony@bakeyournoodle.com>,
-       Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Alan Cox <alan@redhat.com>,
-       davem@davemloft.net, heiko.carstens@de.ibm.com, hskinnemoen@atmel.com,
-       dhowells@redhat.com
-Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
-In-Reply-To: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
-Message-ID: <alpine.LFD.0.999.0709120908090.16478@woody.linux-foundation.org>
-References: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 12 Sep 2007 12:21:31 -0400
+Subject: Re: hci_sock.c build failure
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Miller <davem@davemloft.net>
+Cc: greg@kroah.com, andre@finow14.de, torvalds@osdl.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070912.051212.112608750.davem@davemloft.net>
+References: <20070912092929.GA2878@ahaupt-debian-vm.localdomain>
+	 <20070912120253.GA13003@kroah.com>
+	 <20070912.051212.112608750.davem@davemloft.net>
+Content-Type: text/plain
+Date: Wed, 12 Sep 2007 18:20:19 +0200
+Message-Id: <1189614019.12789.57.camel@aeonflux.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Dave,
 
-
-On Thu, 13 Sep 2007, Paul Mackerras wrote:
+> > It's not even a randconfig issue, my build dies too (this is Linus's
+> > current tree.)
+> > 
+> > Time to poke through the 10 bluetooth patches that were just added...
 > 
-> Linus, this seems a bit cleaner than putting ifdefs in
-> drivers/char/tty_ioctl.c, and it fixes the compile error on powerpc.
-> Your choice whether to use this patch or Tony's.
+> I'll push the following fix to Linus.
 
-Yeah, I'll take this one. I just wanted to understand why it triggered at 
-all.
+the patch looks absolutely fine to me. You can put an Acked-by line to
+it. Sorry for breaking the build. I tested it on so many architectures,
+but it seems I always had CONFIG_COMPAT enabled. Seems I am running out
+of i386/32-bit only systems.
 
-Andrew - I'm dropping Tony's patch you forwarded, but since it will still 
-apply cleanly, you should drop it manually from your queues.
+Regards
 
-		Linus
+Marcel
+
+
