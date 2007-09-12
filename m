@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764840AbXIKTPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764880AbXIKTRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764840AbXIKTPg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 15:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763355AbXIKTPS
+	id S1764880AbXIKTRQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 15:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764131AbXIKTRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 15:15:18 -0400
-Received: from qb-out-0506.google.com ([72.14.204.235]:40650 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761316AbXIKTPP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 15:15:15 -0400
-Message-ID: <fa686aa40709111215o14cc485fhfb8edf393ea3b559@mail.gmail.com>
-Date: Tue, 11 Sep 2007 13:15:13 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>
-Subject: Re: [PATCH 22/27] blk_end_request: changing xsysace (take 2)
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       mike.miller@hp.com, dm-devel@redhat.com, j-nomura@ce.jp.nec.com
-In-Reply-To: <20070911.150349.43387432.k-ueda@ct.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Sep 2007 15:17:00 -0400
+Received: from mga09.intel.com ([134.134.136.24]:44039 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763979AbXIKTQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 15:16:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.20,239,1186383600"; 
+   d="scan'208";a="133083506"
+Date: Wed, 12 Sep 2007 12:28:54 -0700
+From: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+To: akpm@osdl.org, Greg KH <greg@kroah.com>
+Cc: Paul Mackerras <paulus@samba.org>, muli@il.ibm.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       kristen.c.accardi@intel.com, anil.s.keshavamurthy@intel.com
+Subject: [patch][Intel-IOMMU] Fix for IOMMU early crash
+Message-ID: <20070912192854.GA32610@askeshav-devel.jf.intel.com>
+Reply-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+References: <20070908200523.GA16204@askeshav-devel.jf.intel.com> <18148.12140.21118.252581@cargo.ozlabs.ibm.com> <20070911174231.GC24627@askeshav-devel.jf.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070911.150349.43387432.k-ueda@ct.jp.nec.com>
-X-Google-Sender-Auth: 1d77927d7a536f5e
+In-Reply-To: <20070911174231.GC24627@askeshav-devel.jf.intel.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/11/07, Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote:
-> This patch converts xsysace to use blk_end_request().
->
-> xsysace is a little bit different from "normal" drivers.
-> xsysace driver has a state machine in it.
-> It calls end_that_request_first() and end_that_request_last()
-> from different states. (ACE_FSM_STATE_REQ_TRANSFER and
-> ACE_FSM_STATE_REQ_COMPLETE, respectively.)
->
-> However, those states are consecutive and without any interruption
-> inbetween.
-> So we can just follow the standard conversion rule (b) mentioned in
-> the patch subject "[PATCH 01/27] blk_end_request: add new request
-> completion interface".
->
-> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Subject: Fix IOMMU early crash
 
-> ---
->  drivers/block/xsysace.c |    5 +----
->  1 files changed, 1 insertion(+), 4 deletions(-)
->
-> diff -rupN 21-ide-scsi-caller-change/drivers/block/xsysace.c 22-xsysace-caller-change/drivers/block/xsysace.c
-> --- 21-ide-scsi-caller-change/drivers/block/xsysace.c   2007-09-10 17:32:11.000000000 -0400
-> +++ 22-xsysace-caller-change/drivers/block/xsysace.c    2007-09-10 18:14:20.000000000 -0400
-> @@ -696,7 +696,7 @@ static void ace_fsm_dostate(struct ace_d
->
->                 /* bio finished; is there another one? */
->                 i = ace->req->current_nr_sectors;
-> -               if (end_that_request_first(ace->req, 1, i)) {
-> +               if (__blk_end_request(ace->req, 1, i)) {
->                         /* dev_dbg(ace->dev, "next block; h=%li c=%i\n",
->                          *      ace->req->hard_nr_sectors,
->                          *      ace->req->current_nr_sectors);
-> @@ -711,9 +711,6 @@ static void ace_fsm_dostate(struct ace_d
->                 break;
->
->         case ACE_FSM_STATE_REQ_COMPLETE:
-> -               /* Complete the block request */
-> -               blkdev_dequeue_request(ace->req);
-> -               end_that_request_last(ace->req, 1);
->                 ace->req = NULL;
->
->                 /* Finished request; go to idle state */
->
+This patch avoids copying pci_bus's->sysdata to
+pci_dev's->sysdata as one can easily obtain
+the same through pci_dev->bus->sysdata.
 
+Now with some recent pci_sysdata patches,
+the bus's->sysdata gets populated way early
+and a value of non-NULL gets copied from
+bus's->sysdata to pci_dev's->sysdata
+which causes IOMMU to crash way early in the
+boot time as IOMMU depends on this field for its
+per device IOMMU context.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Hence this patch not only makes pci_dev's->sysdata
+useful and but also fixes the IOMMU early crash.
+
+This patch needs to be applied before IOMMU patches,
+so that git bisect will not fail on IOMMU code :-)
+
+Tested on x86_64.
+
+Please apply.
+
+Signed-off-by: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+
+---
+ drivers/pci/hotplug/fakephp.c |    1 -
+ drivers/pci/probe.c           |    1 -
+ 2 files changed, 2 deletions(-)
+
+Index: work/drivers/pci/hotplug/fakephp.c
+===================================================================
+--- work.orig/drivers/pci/hotplug/fakephp.c	2007-09-11 10:29:30.000000000 -0700
++++ work/drivers/pci/hotplug/fakephp.c	2007-09-11 10:35:22.000000000 -0700
+@@ -243,7 +243,6 @@
+ 		return;
+ 
+ 	dev->bus = (struct pci_bus*)bus;
+-	dev->sysdata = bus->sysdata;
+ 	for (devfn = 0; devfn < 0x100; devfn += 8) {
+ 		dev->devfn = devfn;
+ 		pci_rescan_slot(dev);
+Index: work/drivers/pci/probe.c
+===================================================================
+--- work.orig/drivers/pci/probe.c	2007-09-11 10:29:30.000000000 -0700
++++ work/drivers/pci/probe.c	2007-09-11 10:35:22.000000000 -0700
+@@ -994,7 +994,6 @@
+ 		return NULL;
+ 
+ 	dev->bus = bus;
+-	dev->sysdata = bus->sysdata;
+ 	dev->dev.parent = bus->bridge;
+ 	dev->dev.bus = &pci_bus_type;
+ 	dev->devfn = devfn;
