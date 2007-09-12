@@ -1,87 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761589AbXILWq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762498AbXILWuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761589AbXILWq5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 18:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbXILWqs
+	id S1762498AbXILWuT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 18:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbXILWuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 18:46:48 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:60527 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751974AbXILWqr (ORCPT
+	Wed, 12 Sep 2007 18:50:05 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40885 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbXILWuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 18:46:47 -0400
-Date: Thu, 13 Sep 2007 00:46:55 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: sata & scsi suggestion for make menuconfig
-Message-ID: <20070912224655.GC3563@stusta.de>
-References: <20070907124800.GP16806@vanheusden.com> <p73fy1p9m57.fsf@bingen.suse.de> <1189371621.3526.28.camel@localhost.localdomain> <20070909210329.GE25798@one.firstfloor.org> <46E46190.6080607@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 12 Sep 2007 18:50:04 -0400
+Date: Wed, 12 Sep 2007 23:49:55 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Brent Casavant <bcasavan@sgi.com>
+Cc: Andreas Schwab <schwab@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: O_NOLINK for open()
+Message-ID: <20070912224955.GC8181@ftp.linux.org.uk>
+References: <20070912144128.D5573@pkunk.americas.sgi.com> <jetzpza7ci.fsf@sykes.suse.de> <20070912172519.N5573@pkunk.americas.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46E46190.6080607@garzik.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20070912172519.N5573@pkunk.americas.sgi.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 09, 2007 at 05:11:44PM -0400, Jeff Garzik wrote:
-> Andi Kleen wrote:
->>> I can see where you're coming from, but logically, this is wrong.
->>> There's a huge slew of enterprise machines that only have DVD on SATA.
->> ... and enterprise systems don't really care about a few KB more of code.
->> In fact you definitely want to have SATA compiled in in case you need
->> to recover the machine later when the SAN is down.
->>> On the other hand, all of these machines will have SCSI disk devices on
->>> various other transports, so no harm is done, it's just an inelegant
->>> solution.
->> Do you know of a better one?
->
-> Let's step back a moment and consider the actual scale and impact of the 
-> problem at hand.
->
-> The vast majority of users are consumers of pre-compiled kernels, built by 
-> People With Clue(tm), who figured this stuff out as soon as it was 
-> introduced.
+On Wed, Sep 12, 2007 at 05:44:30PM -0500, Brent Casavant wrote:
 
-We are talking about a patch to kconfig, and the users using 
-pre-compiled kernels are not kconfig users.
+> P.S. By the way, there doesn't seem to be a way to remove /proc/#/mem
+>      files.  That might be an additional nicety -- programs worried about
+>      being snooped could unlink their own entry.  /dev/mem and /dev/kmem
+>      can simply be removed by the sysadmin of such a system.  If all of
+>      that were done you'd have to resort to attacking crash dumps, core
+>      dumps, or via something like kdb to extract "hidden" data.
 
-> The current setup expresses the dependencies as they exist -- OPTIONAL 
-> extras, and that is a problem once a year or so, when someone builds their 
-> own kernel but must learn this fact anew.
->
-> There is simply no compelling need at all to change things from the current 
-> setup.
->
-> Our Kconfig system is for people who already know the kernel, not Aunt 
-> Tillie.
-
-Couldn't we just remove kconfig and assume that all "people who already 
-know the kernel" anyway prefer to edit their .config using vi?  ;-)
-
-In my experience, the vast majority of kconfig users are not the few 
-people working on distribution kernels, most of the kconfig userbase 
-could be better described by the use case "sysadmin who knows about the 
-hardware in his machine and which filesystems he uses".
-
-And there must have been a reason why a leading kernel developer has 
-written a complete book covering only configuration and building of the
-kernel - the target audience of this book are most likely not "people 
-who already know the kernel".
-
-> 	Jeff
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Give me a break.  And learn about ptrace(2).  This "unlinking" bullshit
+buys you zero additional security, both for /proc/*/mem and for /dev/mem
+(see mknod(2)).
