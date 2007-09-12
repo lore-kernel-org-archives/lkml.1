@@ -1,70 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932729AbXILCcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933648AbXILCde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932729AbXILCcw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 22:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbXILCcp
+	id S933648AbXILCde (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 22:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbXILCdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 22:32:45 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:55109 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752827AbXILCco (ORCPT
+	Tue, 11 Sep 2007 22:33:22 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:57451 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757765AbXILCdV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 22:32:44 -0400
+	Tue, 11 Sep 2007 22:33:21 -0400
+Date: Wed, 12 Sep 2007 12:33:19 +1000
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, paulus@samba.org, Alan Cox <alan@redhat.com>,
+       akpm@linux-foundation.org, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] powerpc: add new required termio functions
+Message-ID: <20070912023319.GG9814@bakeyournoodle.com>
+References: <8018.1189562679@neuling.org> <alpine.LFD.0.999.0709111915350.16478@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18151.20356.862163.430265@stoffel.org>
-Date: Tue, 11 Sep 2007 22:31:32 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, torvalds@linux-foundation.org
-Subject: Re: [PATCH 00/23] per device dirty throttling -v10
-In-Reply-To: <20070911195350.825778000@chello.nl>
-References: <20070911195350.825778000@chello.nl>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0709111915350.16478@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 11, 2007 at 07:17:42PM -0700, Linus Torvalds wrote:
+ 
+> Really?
+> 
+> It shouldn't. The use of kernel_termios_to_user_termios_1() is conditional 
+> on the architecture having a define for TCGETS2, and I think they match 
+> up. I see:
+> 
+> 	[torvalds@woody linux]$ git grep -l kernel_termios_to_user_termios_1 include | wc -l
+> 	10
+> 	[torvalds@woody linux]$ git grep -l TCGETS2 include | wc -l
+> 	10
+> 
+> and in neither case is ppc in that list of architecures.
+> 
+> So maybe you just read the patch without actually testing whether it 
+> actually broke powerpc?
+> 
+> Or is something subtler going on?
 
-Peter> Per device dirty throttling patches These patches aim to
-Peter> improve balance_dirty_pages() and directly address three
-Peter> issues:
+As far as I can see TIOCSLCKTRMIOS and TIOCGLCKTRMIOS aren't protected
+by TCGETS2 guards.  Do they need to be ...  Perhaps
 
-Peter>   1) inter device starvation
-Peter>   2) stacked device deadlocks
-Peter>   3) inter process starvation
 
-Peter> 1 and 2 are a direct result from removing the global dirty
-Peter> limit and using per device dirty limits. By giving each device
-Peter> its own dirty limit is will no longer starve another device,
-Peter> and the cyclic dependancy on the dirty limit is broken.
+From: Tony Breeds <tony@bakeyournoodle.com>
 
-Ye haa!  This should be a big improvement.  
+Add Guards around TIOCSLCKTRMIOS and TIOCGLCKTRMIOS.
 
-Peter> In order to efficiently distribute the dirty limit across the
-Peter> independant devices a floating proportion is used, this will
-Peter> allocate a share of the total limit proportional to the
-Peter> device's recent activity.
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
-I'm not sure I like or agree with this.  Shouldn't we be limiting
-based on the device's capability to sustain traffic?  So if I have a
-RAID device which can read/write a total of 100Mb/sec, while at the
-same time I've got a CF device which can do 5Mb/sec, shouldn't we be
-more strongly limiting the CF device, even if it is the only device
-being written to?  
+---
 
-Of course, I haven't read the patches yet, nor am I qualified to
-comment on them in any meanginful way I think.  Hopefully I'm just
-missing something key here in the explanation.
+ drivers/char/tty_ioctl.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-Peter> 3 is done by also scaling the dirty limit proportional to the
-Peter> current task's recent dirty rate.
+diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
+index 4a8969c..3ee73cf 100644
+--- a/drivers/char/tty_ioctl.c
++++ b/drivers/char/tty_ioctl.c
+@@ -795,6 +795,19 @@ int n_tty_ioctl(struct tty_struct * tty, struct file * file,
+ 			if (L_ICANON(tty))
+ 				retval = inq_canon(tty);
+ 			return put_user(retval, (unsigned int __user *) arg);
++#ifndef TCGETS2
++		case TIOCGLCKTRMIOS:
++			if (kernel_termios_to_user_termios((struct termios __user *)arg, real_tty->termios_locked))
++				return -EFAULT;
++			return 0;
++
++		case TIOCSLCKTRMIOS:
++			if (!capable(CAP_SYS_ADMIN))
++				return -EPERM;
++			if (user_termios_to_kernel_termios(real_tty->termios_locked, (struct termios __user *) arg))
++				return -EFAULT;
++			return 0;
++#else
+ 		case TIOCGLCKTRMIOS:
+ 			if (kernel_termios_to_user_termios_1((struct termios __user *)arg, real_tty->termios_locked))
+ 				return -EFAULT;
+@@ -806,6 +819,7 @@ int n_tty_ioctl(struct tty_struct * tty, struct file * file,
+ 			if (user_termios_to_kernel_termios_1(real_tty->termios_locked, (struct termios __user *) arg))
+ 				return -EFAULT;
+ 			return 0;
++#endif
+ 
+ 		case TIOCPKT:
+ 		{
 
-Do you mean task or device here?  I'm just wondering how well this
-works with a bunch of devices with wildly varying speeds.  
+Yours Tony
 
-John
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+
