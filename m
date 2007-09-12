@@ -1,90 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970958AbXILRST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970997AbXILRT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970958AbXILRST (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969013AbXILRSH
+	id S970997AbXILRT2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968879AbXILRTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 13:18:07 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:19173 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968679AbXILRSF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 13:18:05 -0400
-Date: Wed, 12 Sep 2007 10:15:37 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
-       jason.wessel@windriver.com,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>
-Subject: [PATCH -mm] 2.6.23-rc4-mm1: kgdboe link errors
-Message-Id: <20070912101537.129d10c7.randy.dunlap@oracle.com>
-In-Reply-To: <46E7B1EA.2040009@gmail.com>
-References: <46E7B1EA.2040009@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 12 Sep 2007 13:19:19 -0400
+Received: from www.osadl.org ([213.239.205.134]:46306 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S968511AbXILRTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 13:19:18 -0400
+Subject: Re: [1/4] 2.6.23-rc6: known regressions
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, linux-alpha@vger.kernel.org,
+       Stefan Becker <Stefan.Becker@nokia.com>, Andi Kleen <ak@suse.de>,
+       Dave Jones <davej@redhat.com>, Len Brown <len.brown@intel.com>,
+       Pavel Machek <pavel@ucw.cz>, Jakub Jelinek <jakub@redhat.com>,
+       Jeff Dike <jdike@linux.intel.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       "Adrian Bunk \"\"" <bunk@kernel.org>
+In-Reply-To: <46E81AC6.3000306@googlemail.com>
+References: <46E81AC6.3000306@googlemail.com>
+Content-Type: text/plain
+Date: Wed, 12 Sep 2007 19:19:15 +0200
+Message-Id: <1189617555.4513.3.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.11.92 (2.11.92-1.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Sep 2007 11:31:22 +0200 Jiri Slaby wrote:
+On Wed, 2007-09-12 at 18:58 +0200, Michal Piotrowski wrote: 
+> Subject         : x86_64 vdso patch is broken somehow?
+> References      : http://lkml.org/lkml/2007/8/29/136
+> Last known good : ?
+> Submitter       : Chuck Ebbert <cebbert@redhat.com>
+> Caused-By       : Andi Kleen <ak@suse.de>
+>                   commit 2aae950b21e4bc789d1fc6668faf67e8748300b7
+> Handled-By      : ?
+> Status          : unknown
 
-> randconfig [1] causes this link errors:
-> ERROR: "netpoll_cleanup" [drivers/net/kgdboe.ko] undefined!
-> ERROR: "netpoll_setup" [drivers/net/kgdboe.ko] undefined!
-> ERROR: "netpoll_parse_options" [drivers/net/kgdboe.ko] undefined!
-> ERROR: "netpoll_poll" [drivers/net/kgdboe.ko] undefined!
-> ERROR: "netpoll_send_udp" [drivers/net/kgdboe.ko] undefined!
-> ERROR: "netpoll_set_trap" [drivers/net/kgdboe.ko] undefined!
-> make[2]: *** [__modpost] Error 1
-> make[1]: *** [modules] Error 2
-> make: *** [all] Error 2
-> 
-> [1] http://www.fi.muni.cz/~xslaby/sklad/1.config
+Patch available:
+http://lkml.org/lkml/2007/9/11/161
+
+> Subject         : cpu hotplug support broken in 2.6.23-rc3/highres timers break cpu hotplug in 2.6.23-rc5
+> References      : http://lkml.org/lkml/2007/8/27/58
+>                   http://lkml.org/lkml/2007/9/3/65
+> Last known good : ?
+> Submitter       : Pavel Machek <pavel@ucw.cz>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : problem is being debugged
+
+This might be the same problem as the jinxed VAIO suspend/resume thingy,
+which is a regression as well.
+
+Please assign the Handled-By to me.
+
+Thanks,
+
+	tglx
 
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix kgdb build problems:
-  Building modules, stage 2.
-ERROR: "netpoll_cleanup" [drivers/net/kgdboe.ko] undefined!
-ERROR: "netpoll_setup" [drivers/net/kgdboe.ko] undefined!
-ERROR: "netpoll_parse_options" [drivers/net/kgdboe.ko] undefined!
-ERROR: "netpoll_poll" [drivers/net/kgdboe.ko] undefined!
-ERROR: "netpoll_send_udp" [drivers/net/kgdboe.ko] undefined!
-ERROR: "netpoll_set_trap" [drivers/net/kgdboe.ko] undefined!
-make[1]: *** [__modpost] Error 1
-
-
-Add 'select' for net-poll/console related config symbols, but
-make KGDBOE 'depend on' NET.  We don't want to 'select' CONFIG_NET,
-but if it is already enabled, the 'select's will enable the rest
-of the needed interfaces.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- lib/Kconfig.kgdb |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
---- linux-2.6.23-rc4-mm1.orig/lib/Kconfig.kgdb
-+++ linux-2.6.23-rc4-mm1/lib/Kconfig.kgdb
-@@ -174,9 +174,11 @@ endchoice
- 
- config KGDBOE
- 	tristate "KGDB: On ethernet" if !KGDBOE_NOMODULE
--	depends on m && KGDB
-+	depends on m && KGDB && NET
-+	select NETCONSOLE
- 	select NETPOLL
- 	select NETPOLL_TRAP
-+	select NET_POLL_CONTROLLER
- 	help
- 	  Uses the NETPOLL API to communicate with the host GDB via UDP.
- 	  In order for this to work, the ethernet interface specified must
