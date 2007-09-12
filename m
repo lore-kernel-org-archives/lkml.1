@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765706AbXILLcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765844AbXILLee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765706AbXILLcW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 07:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764629AbXILLcE
+	id S1765844AbXILLee (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 07:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764693AbXILLeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 07:32:04 -0400
-Received: from sacred.ru ([62.205.161.221]:51685 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765426AbXILLcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 07:32:03 -0400
-Message-ID: <46E7CD6C.7090105@openvz.org>
-Date: Wed, 12 Sep 2007 15:28:44 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: [PATCH 5/5][NFS] Use macro instead of explicit check for mandatory
- locks
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 12 Sep 2007 15:30:57 +0400 (MSD)
+	Wed, 12 Sep 2007 07:34:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41181 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764629AbXILLeY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 07:34:24 -0400
+Date: Wed, 12 Sep 2007 12:34:09 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Michael Neuling <mikey@neuling.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org,
+       Alan Cox <alan@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] powerpc: add new required termio functions
+Message-ID: <20070912113409.GA7253@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Michael Neuling <mikey@neuling.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org,
+	Alan Cox <alan@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>
+References: <8018.1189562679@neuling.org> <20070912102032.GB7858@osiris.boeblingen.de.ibm.com> <20070912040109.3f6a9149.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070912040109.3f6a9149.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The __MANDATORY_LOCK(inode) macro makes the same check, but
-makes the code more readable.
+On Wed, Sep 12, 2007 at 04:01:09AM -0700, Andrew Morton wrote:
+> On Wed, 12 Sep 2007 12:20:32 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> 
+> > On Wed, Sep 12, 2007 at 12:04:39PM +1000, Michael Neuling wrote:
+> > > The "tty: termios locking functions break with new termios type" patch
+> > > (f629307c857c030d5a3dd777fee37c8bb395e171) breaks the powerpc compile.
+> > > [...]
+> > > I'm guessing other architectures are broken too?
+> > 
+> > FWIW, the above quoted patch breaks s390 as well.
+> 
+> Does this fix it?
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+I might be missing something, but the the right fix is probably to
+apply the arch patches from Alan to powerpc and s390.  We don't want to
+be left over without all the nice termios features on these platforms,
+do we?
 
----
-
- fs/nfs/file.c |    3 +--
- 1 files changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-index 73ddd2e..8dc2cde 100644
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -605,8 +605,7 @@ static int nfs_lock(struct file *filp, i
- 	nfs_inc_stats(inode, NFSIOS_VFSLOCK);
- 
- 	/* No mandatory locks over NFS */
--	if ((inode->i_mode & (S_ISGID | S_IXGRP)) == S_ISGID &&
--	    fl->fl_type != F_UNLCK)
-+	if (__MANDATORY_LOCK(inode) && fl->fl_type != F_UNLCK)
- 		return -ENOLCK;
- 
- 	if (IS_GETLK(cmd))
 
