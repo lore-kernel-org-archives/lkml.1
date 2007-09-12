@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969807AbXILPRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934311AbXILPeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969807AbXILPRB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 11:17:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759396AbXILPQx
+	id S934311AbXILPeZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 11:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933573AbXILPeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 11:16:53 -0400
-Received: from ozlabs.org ([203.10.76.45]:60867 "EHLO ozlabs.org"
+	Wed, 12 Sep 2007 11:34:17 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:46545 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755310AbXILPQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 11:16:53 -0400
+	id S933510AbXILPeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 11:34:16 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
-Date: Thu, 13 Sep 2007 01:16:31 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org
-CC: tony@bakeyournoodle.com (Tony Breeds), Michael Neuling <mikey@neuling.org>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Alan Cox <alan@redhat.com>, davem@davemloft.net,
-       heiko.carstens@de.ibm.com, hskinnemoen@atmel.com, dhowells@redhat.com
-Subject: Define termios_1 functions for powerpc, s390, avr32 and frv
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Message-ID: <18152.1758.872864.7897@alkaid.it.uu.se>
+Date: Wed, 12 Sep 2007 17:33:50 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Robin Holt <holt@sgi.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: Possible hang inside interrupt handler on sata_promise.
+In-Reply-To: <20070912131904.GW14474@lnx-holt.americas.sgi.com>
+References: <20070912131904.GW14474@lnx-holt.americas.sgi.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit f629307c857c030d5a3dd777fee37c8bb395e171 introduced uses of
-kernel_termios_to_user_termios_1 and user_termios_to_kernel_termios_1
-on all architectures.  However, powerpc, s390, avr32 and frv don't
-currently define those functions since their termios struct didn't
-need to be changed when the arbitrary baud rate stuff was added, and
-thus the kernel won't currently build on those architectures.
+Robin Holt writes:
+ > 
+ > I have been experiencing hangs on a newly setup machine.  Unfortunately,
+ > it appears to be hanging inside the interrupt handler as sysrq and
+ > caps-lock led seem to stop working when the event occurs.  I am guessing
+ > it is related to the sata_promise driver, but that is only a guess as
+ > I don't get much for output.  I am running the debian unstable kernel
+ > (2.6.22-1-686), but the problem also occurs with the debian stable kernel
+ > (2.6.18-4-686).  I do need to boot with the acpi=off option, but am
+ > not sure if that is related.  Unfortunately, I do not know much about
+ > troubleshooting i386 when problems occur inside the interrupt handlers.
 
-This adds definitions of kernel_termios_to_user_termios_1 and
-user_termios_to_kernel_termios_1 to include/asm-generic/termios.h
-which are identical to kernel_termios_to_user_termios and
-user_termios_to_kernel_termios respectively.  The definitions are the
-same because the "old" termios and "new" termios are in fact the same
-on these architectures (which are the same ones that use
-asm-generic/termios.h).
+This is the first I've heard of a problem like this.
+Since you boot with acpi=off and sysrq stops working,
+I really have to suspect a mainboard interrupt problem.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
+ > What can I do to help troubleshoot this problem.
 
-Linus, this seems a bit cleaner than putting ifdefs in
-drivers/char/tty_ioctl.c, and it fixes the compile error on powerpc.
-Your choice whether to use this patch or Tony's.
+Unless the mainboard in question is known to be a totally
+lost cause for ACPI, the first step should be to get ACPI
+working.
 
-diff --git a/include/asm-generic/termios.h b/include/asm-generic/termios.h
-index 3769e6b..33dca30 100644
---- a/include/asm-generic/termios.h
-+++ b/include/asm-generic/termios.h
-@@ -63,6 +63,8 @@ static inline int kernel_termios_to_user_termio(struct termio __user *termio,
- 
- #define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
- #define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
-+#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
-+#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
- 
- #endif	/* __ARCH_TERMIO_GETPUT */
- 
+If it's an older mainboard it might not need ACPI,
+but then you should build and boot an ACPI-free kernel.
+(I wouldn't trust acpi=off to be equivalent to CONFIG_ACPI=n.)
+
+If the mainboard has an I/O-APIC then you should make sure
+that the kernel can find and use it.
+
+/Mikael
