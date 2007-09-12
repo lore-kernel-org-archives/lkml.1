@@ -1,87 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969900AbXILOqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968811AbXILO4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969900AbXILOqw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 10:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966613AbXILOqo
+	id S968811AbXILO4J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 10:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967329AbXILOzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 10:46:44 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:33351 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966280AbXILOqo (ORCPT
+	Wed, 12 Sep 2007 10:55:54 -0400
+Received: from 74-93-104-98-Washington.hfc.comcastbusiness.net ([74.93.104.98]:57294
+	"EHLO picasso.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S966391AbXILOzx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 10:46:44 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Wed, 12 Sep 2007 10:44:29 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Rogan Dawes <lists@dawes.za.net>
-cc: David Newall <david@davidnewall.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: stripping down the kernel-parameters.txt file
-In-Reply-To: <46E7F816.9080806@dawes.za.net>
-Message-ID: <Pine.LNX.4.64.0709121034450.25084@localhost.localdomain>
-References: <Pine.LNX.4.64.0709120339470.26177@localhost.localdomain>
- <46E7DEF8.50201@davidnewall.com> <Pine.LNX.4.64.0709120904130.20693@localhost.localdomain>
- <46E7F816.9080806@dawes.za.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 12 Sep 2007 10:55:53 -0400
+Date: Wed, 12 Sep 2007 07:55:41 -0700 (PDT)
+Message-Id: <20070912.075541.26980120.davem@davemloft.net>
+To: divy@chelsio.com
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH net-2.6.24] cxgb3 - napi update
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070909070917.27016.76853.stgit@speedy5>
+References: <20070909070917.27016.76853.stgit@speedy5>
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Sep 2007, Rogan Dawes wrote:
+From: Divy Le Ray <divy@chelsio.com>
+Date: Sun, 09 Sep 2007 00:09:17 -0700
 
-> Robert P. J. Day wrote:
-> > p.s.  by "basic", i mean those boot-time parms defined by either
-> > "__setup()" or "early_param()".  which means that module writers
-> > should, as much as possible, stop using those macros to define
-> > command-line parameters for their modules.  that would go a long
-> > way to restoring some order, and allowing for some decent and
-> > readable documentation.
->
-> Are you forgetting that modules can often be compiled into the
-> bzImage, too, making them genuine boot-time params?
+> From: Divy Le Ray <divy@chelsio.com>
+> 
+> Embed napi_struct directly into sge_qset.
+> Use napi_schedule/napi_complete.
+> 
+> Signed-off-by: Divy Le Ray <divy@chelsio.com>
 
-<sarcasm>
-really?  no way.  get outta town.
-</sarcasm>
-
-  sorry, but there was no way i could resist that.  :-)  *of course* i
-realize that.  *all* of those things (__setup, early_param, actual
-module params) are potential entries on the kernel line at boot time,
-depending on your particular configuration.
-
-  all i'm suggesting is that there is an obvious distinction between
-those that are defined using __setup() or early_param(), and those
-that are actual module parameters.  and that it would make more sense
-to keep them separate, even if only separating them within the same
-text file.
-
-  in the end, there should be a nice, *short* reference for what i
-like to call "basic" kernel parms (defined by __setup() or
-early_param()), while anyone who wants to learn about any
-module-specific parms should then have to go look up the info for that
-given module, that's all.
-
-  as a trivial starting point, this would involve nothing more than
-shifting current content around in kernel-parameters.txt, putting the
-basic stuff at the top, and the module-specific stuff after that.
-heck, that would even give module authors the chance to add a line or
-two of module description if they wanted.  how does life get any
-better than that?
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+Patch applied, thanks a lot!
