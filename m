@@ -1,82 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763438AbXILIcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764117AbXILIfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763438AbXILIcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 04:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbXILIcH
+	id S1764117AbXILIfb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 04:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXILIfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 04:32:07 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:46332 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752663AbXILIcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 04:32:06 -0400
-Date: Wed, 12 Sep 2007 09:32:04 +0100
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org, ak@suse.de,
-       clameter@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 4/6] Embed zone_id information within the zonelist->zones pointer
-Message-ID: <20070912083203.GA5005@skynet.ie>
-References: <20070911213006.23507.19569.sendpatchset@skynet.skynet.ie> <20070911213127.23507.34058.sendpatchset@skynet.skynet.ie> <20070912165138.5deb4db4.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070912165138.5deb4db4.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	Wed, 12 Sep 2007 04:35:24 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60008 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753008AbXILIfX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 04:35:23 -0400
+Date: Wed, 12 Sep 2007 01:35:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeremy Kerr <jk@ozlabs.org>
+Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/15] Extract the file descriptor search logic in SPU
+ coredump code
+Message-Id: <20070912013513.08678a30.akpm@linux-foundation.org>
+In-Reply-To: <200709121817.43263.jk@ozlabs.org>
+References: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au>
+	<200709121817.43263.jk@ozlabs.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (12/09/07 16:51), KAMEZAWA Hiroyuki didst pronounce:
-> On Tue, 11 Sep 2007 22:31:27 +0100 (IST)
-> Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > Using two zonelists per node requires very frequent use of zone_idx(). This
-> > is costly as it involves a lookup of another structure and a substraction
-> > operation. As struct zone is always word aligned and normally cache-line
-> > aligned, the pointer values have a number of 0's at the least significant
-> > bits of the address.
-> > 
-> > This patch embeds the zone_id of a zone in the zonelist->zones pointers.
-> > The real zone pointer is retrieved using the zonelist_zone() helper function.
-> > The ID of the zone is found using zonelist_zone_idx().  To avoid accidental
-> > references, the zones field is renamed to _zones and the type changed to
-> > unsigned long.
-> > 
-> At first, I welcome this patch. thanks!.
-> 
-> 
-> A comment after reading all is, how about defining zonelist as following
-> instead of encoding in pointer ?
-> ==
-> struct zone_pointer {
-> 	struct zone *zone;
-> 	int	     node_id;  
-> 	int	     zone_idx;
-> };
-> 
-> struct zonelist {
-> 	struct zone_pointer	_zones[MAX_ZONES_PER_ZONELIST + 1];
-> };
-> 
-> #define zonelist_zone(zl)      (zl)->zone
-> #define zonelist_zone_idx(zl)  (zl)->zone_idx
-> #ifdef CONFIG_NUMA
-> #define zonelist_zone_nid(zl)  (zl)->node_id
-> #else
-> #define zonelist_zone_nid(zl, i)  (0)
-> ==
-> 
+On Wed, 12 Sep 2007 18:17:42 +1000 Jeremy Kerr <jk@ozlabs.org> wrote:
 
-That is an interesting idea. I'll try it out and see what happens.
-Thanks
-
-> If we really want to avoid unnecessary access to "zone" while walking zonelist,
-> above may do something good.  Cons is this makes sizeof zonlist bigger.
+> This series looks good to me, thanks for the fixes. I'll do some testing 
+> tomorrow but it looks like it'll be fine as-is.
 > 
+> Andrew - almost all of these are for spufs, the notable exception being:
+> 
+>  [PATCH 12/15] Cleanup ELF coredump extra notes logic
+> 
+> which touches the generic elf/coredump path.
+> 
+> Are you ok for me to merge this to my spufs tree, and upstream via 
+> paulus?
 
-While this is true, it might not affect the size of struct zone because
-of padding. One way to find out
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Sure.  I'd only get in the way with spufs stuff.
