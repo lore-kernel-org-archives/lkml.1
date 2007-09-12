@@ -1,79 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965738AbXILChY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965394AbXILDSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965738AbXILChY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 22:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbXILChM
+	id S965394AbXILDSW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 23:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbXILDSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 22:37:12 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:55127 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753100AbXILChK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 22:37:10 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18151.20636.425784.226044@stoffel.org>
-Date: Tue, 11 Sep 2007 22:36:12 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, torvalds@linux-foundation.org
-Subject: Re: [PATCH 21/23] mm: per device dirty threshold
-In-Reply-To: <20070911200015.732492000@chello.nl>
-References: <20070911195350.825778000@chello.nl>
-	<20070911200015.732492000@chello.nl>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	Tue, 11 Sep 2007 23:18:15 -0400
+Received: from ozlabs.org ([203.10.76.45]:39571 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753838AbXILDSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 23:18:14 -0400
+Subject: Re: SYSFS: need a noncaching read
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Heiko Schocher <hs@denx.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Detlev Zundel <dzu@denx.de>
+In-Reply-To: <20070912020526.GD16001@localhost.localdomain>
+References: <1189503798.6674.46.camel@Zeus.EmbLux>
+	 <20070912020526.GD16001@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-yL/TQX95aW0JgamhmoYK"
+Date: Wed, 12 Sep 2007 13:18:11 +1000
+Message-Id: <1189567091.17835.3.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Peter> Scale writeback cache per backing device, proportional to its
-Peter> writeout speed.  By decoupling the BDI dirty thresholds a
-Peter> number of problems we currently have will go away, namely:
+--=-yL/TQX95aW0JgamhmoYK
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Ah, this clarifies my questions!  Thanks!
+On Wed, 2007-09-12 at 12:05 +1000, David Gibson wrote:
+> On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
+> > Hello,
+> >=20
+> > I have developed a device driver and use the sysFS to export some
+> > registers to userspace. I opened the sysFS File for one register and di=
+d
+> > some reads from this File, but I alwas becoming the same value from the
+> > register, whats not OK, because they are changing. So I found out that
+> > the sysFS caches the reads ... :-(
+> >=20
+> > Is there a way to retrigger the reads (in that way, that the sysFS
+> > rereads the values from the driver), without closing and opening the
+> > sysFS Files? Or must I better use the ioctl () Driver-interface for
+> > exporting these registers?
+> >=20
+> > I am asking this, because I must read every 10 ms 2 registers, so
+> > doing a open/read/close for reading one registers is a little bit too
+> > much overhead.
+> >=20
+> > I made a sysFS seek function, which retriggers the read, and that works
+> > fine, but I have again 2 syscalls, whats also is not optimal.
+> >=20
+> > Or can we make a open () with a (new?)Flag, that informs the sysFS to
+> > always reread the values from the underlying driver?
+> >=20
+> > Or a new flag in the "struct attribute_group" in include/linux/sysfs.h,
+> > which let the sysfs rereading the values?
+>=20
+> This sounds more like sysfs is really not the right interface for
+> polling your registers.  You would probably be better off having your
+> driver export a character device from which the register values could
+> be read.
 
-Peter>  - mutual interference starvation (for any number of BDIs);
-Peter>  - deadlocks with stacked BDIs (loop, FUSE and local NFS mounts).
+I thought relay(fs) was the trendy way to do this these days?
 
-Peter> It might be that all dirty pages are for a single BDI while
-Peter> other BDIs are idling. By giving each BDI a 'fair' share of the
-Peter> dirty limit, each one can have dirty pages outstanding and make
-Peter> progress.
+Documentation/filesystems/relay.txt
 
-Question, can you change (shrink) the limit on a BDI while it has IO
-in flight?  And what will that do to the system?  I.e. if you have one
-device doing IO, so that it has a majority of the dirty limit.  Then
-another device starts IO, and it's a *faster* device, how
-quickly/slowly does the BDI dirty limits change for both the old and
-new device?  
+cheers
 
-Peter> A global threshold also creates a deadlock for stacked BDIs;
-Peter> when A writes to B, and A generates enough dirty pages to get
-Peter> throttled, B will never start writeback until the dirty pages
-Peter> go away. Again, by giving each BDI its own 'independent' dirty
-Peter> limit, this problem is avoided.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-Peter> So the problem is to determine how to distribute the total
-Peter> dirty limit across the BDIs fairly and efficiently. A DBI that
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-You mean BDI here, not DBI.  
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-Peter> has a large dirty limit but does not have any dirty pages
-Peter> outstanding is a waste.
+--=-yL/TQX95aW0JgamhmoYK
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Peter> What is done is to keep a floating proportion between the DBIs
-Peter> based on writeback completions. This way faster/more active
-Peter> devices get a larger share than slower/idle devices.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Does a slower device get a BDI which is calculated to keep it's limit
-under a certain number of seconds of outstanding IO?  This way no
-device can build up more than say 15 seconds of outstanding IO to
-flush at any one time.  
+iD8DBQBG51pzdSjSd0sB4dIRAj6kAKCcrXZQQyYF3CuRR5ecgN2GJJ3u1wCglpsb
+sxLP+sBnwApo7sSmM1K17sg=
+=M5UB
+-----END PGP SIGNATURE-----
 
-Thanks!
-John
+--=-yL/TQX95aW0JgamhmoYK--
+
