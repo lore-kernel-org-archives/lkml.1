@@ -1,65 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934455AbXILL5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934544AbXILL66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934455AbXILL5P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 07:57:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765769AbXILL5A
+	id S934544AbXILL66 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 07:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764676AbXILL6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 07:57:00 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:55180 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765640AbXILL5A (ORCPT
+	Wed, 12 Sep 2007 07:58:50 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1374 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764597AbXILL6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 07:57:00 -0400
-X-Auth-Info: ePAFGOS3DRqgAy5MDjd6QFAmK8luteI51EJ434uQ3no=
-X-Auth-Info: ePAFGOS3DRqgAy5MDjd6QFAmK8luteI51EJ434uQ3no=
-X-Auth-Info: ePAFGOS3DRqgAy5MDjd6QFAmK8luteI51EJ434uQ3no=
-X-Auth-Info: ePAFGOS3DRqgAy5MDjd6QFAmK8luteI51EJ434uQ3no=
-X-Auth-Info: NgyqaZY5AVTbVLigvZ8lY6JEtPu/a1yc26XEJ8ovkqs=
-X-Auth-Info: NgyqaZY5AVTbVLigvZ8lY6JEtPu/a1yc26XEJ8ovkqs=
-Subject: Re: SYSFS: need a noncaching read
-From: Heiko Schocher <hs@denx.de>
-Reply-To: hs@denx.de
-To: Greg KH <greg@kroah.com>
-Cc: Robert Schwebel <r.schwebel@pengutronix.de>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>
-In-Reply-To: <20070912113907.GA24087@kroah.com>
-References: <1189503798.6674.46.camel@Zeus.EmbLux>
-	 <20070912053207.GH23573@pengutronix.de> <20070912100123.GA23182@kroah.com>
-	 <1189595612.6659.23.camel@Zeus.EmbLux>  <20070912113907.GA24087@kroah.com>
-Content-Type: text/plain
-Organization: DENX
-Date: Wed, 12 Sep 2007 13:59:40 +0200
-Message-Id: <1189598380.6659.28.camel@Zeus.EmbLux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Sep 2007 07:58:49 -0400
+Date: Wed, 12 Sep 2007 12:58:23 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Alan Cox <alan@redhat.com>, David Miller <davem@davemloft.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
+Subject: 2.6.23-rc6-git1 -- termios *_1 compile failures on powerpc
+Message-ID: <20070912115823.GG4835@shadowen.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Greg,
+The following commit just hit mainline and all my powerpc test boxes are
+failing during compilation:
 
-Am Mittwoch, den 12.09.2007, 04:39 -0700 schrieb Greg KH:
-> > > Do an lseek back to 0 and then re-read, you will get called in your
-> > > driver again.
-> > 
-> > No thats not true. I thought this too, but if I make a:
-> > 
-> > seek (fd, 0L, SEEK_SET);
-> > 
-> > in Userspace, there is no retrigger in the sysFS, my driver is *not*
-> > called again. So I made a own sysfs_seek function, which does retrigger
-> > the driver ...
-> 
-> Hm, are you sure?  Otherwise the poll() stuff would not work at all.
+	commit f629307c857c030d5a3dd777fee37c8bb395e171
+	tty: termios locking functions break with new termios type
 
-Yes.
-Sysfs uses generic_file_llseek (). And in sysfs_read_file ()
-buffer->needs_read_fill must be 1, to reread from the driver.
-generic_file_llseek () doesnt change this variable.
+Failing as follows:
 
-Best regards
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+  drivers/char/tty_ioctl.c: In function `n_tty_ioctl':
+  drivers/char/tty_ioctl.c:799: error: implicit declaration of function
+				`kernel_termios_to_user_termios_1'
+  drivers/char/tty_ioctl.c:806: error: implicit declaration of function
+				`user_termios_to_kernel_termios_1'
+  make[2]: *** [drivers/char/tty_ioctl.o] Error 1
 
+It seems that a lot of architectures already have these varients, but not
+powerpc:
+
+	include/asm-arm/termios.h
+	include/asm-blackfin/termios.h
+	include/asm-cris/termios.h
+	include/asm-h8300/termios.h
+	include/asm-i386/termios.h
+	include/asm-ia64/termios.h
+	include/asm-m32r/termios.h
+	include/asm-m68k/termios.h
+	include/asm-mips/termios.h
+	include/asm-v850/termios.h
+	include/asm-x86_64/termios.h
+	include/asm-xtensa/termios.h
+
+Looking closer there seems to be a generic implementation of the non _1
+variants, which seem out of step with the architecture specific
+variants?  Seems bad.
+
+>From i386 we have the following (wrapped for clarity), and they seem
+typical:
+
+  #define user_termios_to_kernel_termios(k, u) 
+  	copy_from_user(k, u, sizeof(struct termios2))
+  #define kernel_termios_to_user_termios(u, k)
+	copy_to_user(u, k, sizeof(struct termios2))
+  #define user_termios_to_kernel_termios_1(k, u)
+	copy_from_user(k, u, sizeof(struct termios))
+  #define kernel_termios_to_user_termios_1(u, k)
+	copy_to_user(u, k, sizeof(struct termios))
+
+Generic versions from asm-generic/termios.h seem to be:
+
+  #define user_termios_to_kernel_termios(k, u)
+	copy_from_user(k, u, sizeof(struct termios))
+  #define kernel_termios_to_user_termios(u, k)
+	copy_to_user(u, k, sizeof(struct termios))
+
+So I'd say we've missed a trick on this in the conversion.  Alan seems
+to be the main source of these changes.  From the various commits which
+update these defines in the architectures I get the implication that you
+should be able to convert an architecture at a time as we go.  However,
+the commit above seems to fly in the face of that.  It is therefore not
+obvious if this commit is in error, or if the generic code needs fixing
+to match?
+
+Alan?
+
+-apw
