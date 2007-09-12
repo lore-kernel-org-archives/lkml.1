@@ -1,53 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763447AbXILDnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764630AbXILDw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763447AbXILDnd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 23:43:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764580AbXILDnT
+	id S1764630AbXILDw0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 23:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759407AbXILDwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 23:43:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33573 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764551AbXILDnR (ORCPT
+	Tue, 11 Sep 2007 23:52:17 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:10955 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758090AbXILDwQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 23:43:17 -0400
-Date: Tue, 11 Sep 2007 20:43:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: Robert Day <rpjday@mindspring.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm] add-a-rounddown_pow_of_two-routine-to-log2h.patch
- fix
-Message-Id: <20070911204310.3d5c9312.akpm@linux-foundation.org>
-In-Reply-To: <200709010755.37838.m.kozlowski@tuxland.pl>
-References: <200709010755.37838.m.kozlowski@tuxland.pl>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Sep 2007 23:52:16 -0400
+X-IronPort-AV: i="4.20,242,1186372800"; 
+   d="scan'208"; a="39417951:sNHT28954408"
+Subject: [PATCH] bfin_twi: Remove useless twi_lock mutex
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Francis Moreau <francis.moro@gmail.com>,
+       Sonic Zhang <sonic.zhang@analog.com>, Jean Delvare <khali@linux-fr.org>,
+       i2c@lm-sensors.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Wed, 12 Sep 2007 11:48:34 +0800
+Message-Id: <1189568914.6150.7.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 12 Sep 2007 03:52:15.0254 (UTC) FILETIME=[4EAB8360:01C7F4F0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Sep 2007 07:55:36 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-> Hello,
-> 
-> 	This patch fixes the unbalanced parenthesis inroduced by
-> add-a-rounddown_pow_of_two-routine-to-log2h.patch.
-> 
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> 
->  include/linux/log2.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-2.6.23-rc4-mm1-a/include/linux/log2.h	2007-09-01 07:23:28.000000000 +0200
-> +++ linux-2.6.23-rc4-mm1-b/include/linux/log2.h	2007-09-01 07:29:27.000000000 +0200
-> @@ -186,7 +186,7 @@ unsigned long __rounddown_pow_of_two(uns
->  (						\
->  	__builtin_constant_p(n) ? (		\
->  		(n == 1) ? 0 :			\
-> -		(1UL << ilog2(n)) :		\
-> +		(1UL << ilog2(n))) :		\
->  	__rounddown_pow_of_two(n)		\
->   )
+This patch removes this unneeded mutex. Indeed it was used
+to serialized access to the hardware, but this is already
+done by the i2c-core layer, see 'bus_lock' mutex used by
+i2c_transfer().
 
-umm, could we get some users of this thing, preferably in some code
-path which people use?
+Signed-off-by: Francis Moreau <francis.moro@gmail.com>
+Acked-by: Bryan Wu <bryan.wu@analog.com>
+Acked-by: Sonic Zhang <sonic.zhang@analog.com>
+---
+ drivers/i2c/busses/i2c-bfin-twi.c |   16 ----------------
+ 1 files changed, 0 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-bfin-twi.c b/drivers/i2c/busses/i2c-bfin-twi.c
+index 6311039..67224a4 100644
+--- a/drivers/i2c/busses/i2c-bfin-twi.c
++++ b/drivers/i2c/busses/i2c-bfin-twi.c
+@@ -44,7 +44,6 @@
+ #define TWI_I2C_MODE_COMBINED		0x04
+ 
+ struct bfin_twi_iface {
+-	struct mutex		twi_lock;
+ 	int			irq;
+ 	spinlock_t		lock;
+ 	char			read_write;
+@@ -228,12 +227,8 @@ static int bfin_twi_master_xfer(struct i2c_adapter *adap,
+ 	if (!(bfin_read_TWI_CONTROL() & TWI_ENA))
+ 		return -ENXIO;
+ 
+-	mutex_lock(&iface->twi_lock);
+-
+ 	while (bfin_read_TWI_MASTER_STAT() & BUSBUSY) {
+-		mutex_unlock(&iface->twi_lock);
+ 		yield();
+-		mutex_lock(&iface->twi_lock);
+ 	}
+ 
+ 	ret = 0;
+@@ -310,9 +305,6 @@ static int bfin_twi_master_xfer(struct i2c_adapter *adap,
+ 			break;
+ 	}
+ 
+-	/* Release mutex */
+-	mutex_unlock(&iface->twi_lock);
+-
+ 	return ret;
+ }
+ 
+@@ -330,12 +322,8 @@ int bfin_twi_smbus_xfer(struct i2c_adapter *adap, u16 addr,
+ 	if (!(bfin_read_TWI_CONTROL() & TWI_ENA))
+ 		return -ENXIO;
+ 
+-	mutex_lock(&iface->twi_lock);
+-
+ 	while (bfin_read_TWI_MASTER_STAT() & BUSBUSY) {
+-		mutex_unlock(&iface->twi_lock);
+ 		yield();
+-		mutex_lock(&iface->twi_lock);
+ 	}
+ 
+ 	iface->writeNum = 0;
+@@ -502,9 +490,6 @@ int bfin_twi_smbus_xfer(struct i2c_adapter *adap, u16 addr,
+ 
+ 	rc = (iface->result >= 0) ? 0 : -1;
+ 
+-	/* Release mutex */
+-	mutex_unlock(&iface->twi_lock);
+-
+ 	return rc;
+ }
+ 
+@@ -555,7 +540,6 @@ static int i2c_bfin_twi_probe(struct platform_device *dev)
+ 	struct i2c_adapter *p_adap;
+ 	int rc;
+ 
+-	mutex_init(&(iface->twi_lock));
+ 	spin_lock_init(&(iface->lock));
+ 	init_completion(&(iface->complete));
+ 	iface->irq = IRQ_TWI;
