@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030302AbXILR6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970623AbXILSDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030302AbXILR6p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968370AbXILR6g
+	id S970623AbXILSDZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 14:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967318AbXILSDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 13:58:36 -0400
-Received: from ns2.suse.de ([195.135.220.15]:60350 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765995AbXILR6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 13:58:35 -0400
-From: Neil Brown <neilb@suse.de>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Wed, 12 Sep 2007 19:57:13 +0200
+	Wed, 12 Sep 2007 14:03:09 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:54581 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967204AbXILSDH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 14:03:07 -0400
+Date: Wed, 12 Sep 2007 20:03:06 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Dan Stromberg <dstromberglists@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Building a kernel-source RPM (not a kernel RPM)?
+In-Reply-To: <pan.2007.09.12.17.30.59.597440@gmail.com>
+Message-ID: <Pine.LNX.4.64.0709121957400.22467@fbirervta.pbzchgretzou.qr>
+References: <pan.2007.09.12.16.13.41.195991@gmail.com>
+ <1189616966.31502.75.camel@tara.firmix.at> <pan.2007.09.12.17.30.59.597440@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18152.10361.790323.494668@notabene.brown>
-Cc: Greg KH <greg@kroah.com>, Robert Schwebel <r.schwebel@pengutronix.de>,
-       Heiko Schocher <hs@denx.de>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>
-Subject: Re: SYSFS: need a noncaching read
-In-Reply-To: message from Nick Piggin on Wednesday September 12
-References: <1189503798.6674.46.camel@Zeus.EmbLux>
-	<20070912053207.GH23573@pengutronix.de>
-	<20070912100123.GA23182@kroah.com>
-	<200709120519.39960.nickpiggin@yahoo.com.au>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday September 12, nickpiggin@yahoo.com.au wrote:
-> On Wednesday 12 September 2007 20:01, Greg KH wrote:
-> > On Wed, Sep 12, 2007 at 07:32:07AM +0200, Robert Schwebel wrote:
-> > > On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
-> > > > I have developed a device driver and use the sysFS to export some
-> > > > registers to userspace.
-> > >
-> > > Uuuh, uggly. Don't do that. Device drivers are there to abstract things,
-> > > not to play around with registers from userspace.
-> > >
-> > > > I opened the sysFS File for one register and did some reads from this
-> > > > File, but I alwas becoming the same value from the register, whats not
-> > > > OK, because they are changing. So I found out that the sysFS caches
-> > > > the reads ... :-(
-> > >
-> > > Yes, it does. What you can do is close()ing the file handle between
-> > > accesses, which makes it work but is slow.
-> >
-> > Do an lseek back to 0 and then re-read, you will get called in your
-> > driver again.
-> 
-> Can you do a pread with offset 0 to avoid the two syscalls? (which some
-> people seem to be concerned about)
 
-No.
-Looking in fs/sysfs/file.c, we notice the field "needs_read_fill" in
-struct sysfs_buffer.
+On Sep 12 2007 10:31, Dan Stromberg wrote:
+>
+>>> I'm on a SuSE system.
+>>> 
+>>> I'm working on automating the install of said system, but it needs a
+>>> Linus kernel - 2.6.21.7 specifically, and it needs kernel source too so
+>>> that we can build modules in the field as needed.
+>> 
+>> Find a kernel-source.*.src.rpm or kernel-*.src.rpm or whatever SuSE 
+>> uses for nameing convention and reverse engineer the .spec file. 
+>> Fedora BTW abandoned kernel-source* and they have now a website with 
+>> a description how to produce a configured kernel source tree (e.g. 
+>> for out-of-tree modules).
+>
+>So this is as smooth as producing kernel-source RPM's gets?
+>
+>I might be better off sticking with a .tar.bz2 and repointing symlinks.
 
-sysfs_read_file will only call fill_read_buffer  (which calls the
-->show routine) if this is 1;
+Do that for a handful of machines and it gets tiresome.
 
-It is cleared by fill_read_buffer and set to 1:
- - at open
- - by fill_write_buffer (i.e. if you write to the file descriptor)
- - by sysfs_poll when an event was detected.
+>>> I see you can make an rpm of a bootable kernel with "make rpm".
+>> 
+>> Well, then there must be a .spec file somewhere which just wants to be
+>> extended.
+>
+>I'm not sure this is going to be any easier to automate, if that's what's
+>required.
 
-So currently you cannot simply open a sysfs file an read multiple
-times.
+The 'proper' (though this is not an authoritative answer) way is to 
+build the rpm the same way SUSE did. This ensures best compatibility and 
+the fewest surprises. I am not saying it is easy, though.
 
-One option would be to call fill_read_buffer if *ppos == 0.
-I cannot see that being a problem in practice, but maybe there is a
-reason why it wasn't done that way.
-Another option might be to call fill_read_buffer also if 
-	buffer->event != atomic_read(&attr_sd->s_event)
-and require drivers to call sysfs_notify when they make a change that
-should be noticed.  But I doubt that is really important.
+>>> Is there a streamlined way of building a corresponding kernel-source
+>>> RPM?  Or do people pretty much all just dump the source in /usr/src, and
+>> 
+>> Yes, you put all the steps you do by hand into the .spec file. That's
+>> it.
+>
+>I may just stick them in a bash script and forget about the RPM.  Or are
+>there other packages that are going to be cranky, dependencywise, if I
+>ignore the RPM?
 
-NeilBrown
+Somewhat. The kernel rpm and 3rd party kernel module rpms share symbols 
+so that upgrading will upgrade all the necessary things. (Instead of 
+having to go through it all manually.)
+
+>>> manually update symlinks as needed?  If the latter, what symlinks need
+>>> to be updated?
+>> 
+>> Actually nowadays usually there no "sym-link updating" anymore necessary
+>
+>On OpenSuSE 10.2, there appears to be:
+
+It is not necessary. rpm -Uhv'ing the kernel-source rpm will repoint the 
+symlink to the version you just installed.
+
+>> just put the correct ones in /lib/modules/$(uname -r)/ and the full 
+>> name in /boot/grub/menu.lst.
+>
+>Which correct "ones"?  Sometimes pronouns aren't shortcuts :)
+
+
+Use http://benjiweber.co.uk:8080/webpin/ , and be happy.
+
+
+
+
+	Jan
+-- 
