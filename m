@@ -1,150 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968692AbXILOPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968791AbXILOQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968692AbXILOPk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 10:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966534AbXILOPa
+	id S968791AbXILOQU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 10:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968525AbXILOQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 10:15:30 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45410 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966331AbXILOP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 10:15:28 -0400
-From: Neil Brown <neilb@suse.de>
-To: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
-Date: Wed, 12 Sep 2007 16:14:06 +0200
+	Wed, 12 Sep 2007 10:16:07 -0400
+Received: from hyrule.inforealm.org ([62.58.71.23]:46329 "EHLO
+	hyrule.inforealm.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966534AbXILOQG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 10:16:06 -0400
+Date: Wed, 12 Sep 2007 16:16:05 +0200
+From: Stef Epardaud <stef@epardaud.net>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: [Resolved: bad RAM] Filesystem silent crash with EXT3
+Message-ID: <20070912141604.GB24461@inforealm.org>
+References: <20070912120203.GA23510@inforealm.org> <m3hcm0dm6z.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18151.62510.891210.485277@notabene.brown>
-Cc: trond.myklebust@fys.uio.no, bfields@fieldses.org, netdev@vger.kernel.org,
-       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [patch] sunrpc: make closing of old temporary sockets work (was: problems with lockd in 2.6.22.6)
-In-Reply-To: message from Wolfgang Walter on Wednesday September 12
-References: <200709121407.11151.wolfgang.walter@studentenwerk.mhn.de>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <m3hcm0dm6z.fsf@maximus.localdomain>
+User-Agent: Mutt/1.5.11+cvs20060403
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday September 12, wolfgang.walter@studentenwerk.mhn.de wrote:
-> Hello,
-> 
-> as already described old temporary sockets (client is gone) of lockd aren't
-> closed after some time. So, with enough clients and some time gone, there
-> are 80 open dangling sockets and you start getting messages of the form:
-> 
-> lockd: too many open TCP sockets, consider increasing the number of nfsd threads.
-> 
-> If I understand the code then the intention was that the server closes
-> temporary sockets after about 6 to 12 minutes:
-> 
-> 	a timer is started which calls svc_age_temp_sockets every 6 minutes.
-> 
-> 	svc_age_temp_sockets:
-> 		if a socket is marked OLD it gets closed.
-> 		sockets which are not marked as OLD are marked OLD
-> 
-> 	every time the sockets receives something OLD is cleared.
-> 
-> But svc_age_temp_sockets never closes any socket though because it only
-> closes sockets with svsk->sk_inuse == 0. This seems to be a bug.
-> 
-> Here is a patch against 2.6.22.6 which changes the test to
-> svsk->sk_inuse <= 0 which was probably meant. The patched kernel runs fine
-> here. Unused sockets get closed (after 6 to 12 minutes)
-> 
-> Signed-off-by: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
-> 
-> --- ../linux-2.6.22.6/net/sunrpc/svcsock.c	2007-08-27 18:10:14.000000000 +0200
-> +++ net/sunrpc/svcsock.c	2007-09-11 11:07:13.000000000 +0200
-> @@ -1572,7 +1575,7 @@
->  
->  		if (!test_and_set_bit(SK_OLD, &svsk->sk_flags))
->  			continue;
-> -		if (atomic_read(&svsk->sk_inuse) || test_bit(SK_BUSY, &svsk->sk_flags))
-> +		if (atomic_read(&svsk->sk_inuse) <= 0 || test_bit(SK_BUSY, &svsk->sk_flags))
->  			continue;
->  		atomic_inc(&svsk->sk_inuse);
->  		list_move(le, &to_be_aged);
-> 
-> 
-> As svc_age_temp_sockets did not do anything before this change may trigger
-> hidden bugs.
-> 
-> To be true I don't see why this check
-> 
-> (atomic_read(&svsk->sk_inuse) <= 0 || test_bit(SK_BUSY, &svsk->sk_flags))
-> 
-> is needed at all (it can only be an optimation) as this fields change after
-> the check. In svc_tcp_accept there is no such check when a temporary socket
-> is closed.
+On Wed, Sep 12, 2007 at 03:53:40PM +0200, Krzysztof Halasa wrote:
+> Filesystem clean = the "dirty" flag is not set. With journaling
+> fs it basically means the kernel didn't found errors during
+> operation.
+> It doesn't mean there are no errors.
 
-Thanks for looking into this.
+That's what I assumed, and that's why I forced fsck.
 
-I think the correct change is to test
-		if (atomic_read(&svsk->sk_inuse) > 1 || test_bit(SK_BUSY, &svsk->sk_flags))
-or even
-		if (atomic_read(&svsk->sk_inuse) != 1 || test_bit(SK_BUSY, &svsk->sk_flags))
+> > If not, what can I do to figure out what went wrong ?
+> I'd check with memtest86. Silent fs corruption is usually caused
+> by faulty hardware such as RAM.
 
-sk_inuse contains a bias of '1' until SK_DEAD is set.  So a normal,
-active socket will have an inuse count of 1 or more.  If it is exactly
-1, then either it is SK_DEAD (in which case there is nothing for this
-code to do), or it has no users, in which case it is appropriate to
-close the socket if it is old.
-Note that this test is for "the socket should not be closed", so we
-test if it is *not* 1, or > 1.
+I feel like a fool now. You're absolutely right, my RAM is corrupted.
+Sorry for the trouble folks, I'm very happy to come to the conclusion I
+can rely on EXT3. Now I have to start worrying about how to detect RAM
+corruption before it screws up my data next time.
 
-The tests are needed because we don't want to close a socket that
-might be inuse elsewhere.  The SK_BUSY bit combined with the sk_inuse
-count combine to check if the socket is in use at all or not.
+> A system crash or especially power failure shouldn't damage ext3fs.
 
-You change effectively disabled the test, as sk_inuse is never <= 0
-(except when SK_DEAD is set).
+That's what I assumed, and I'm glad to see it's still true.
 
-This bug has been present since 
-commit aaf68cfbf2241d24d46583423f6bff5c47e088b3
-Author: NeilBrown <neilb@suse.de>
-Date:   Thu Feb 8 14:20:30 2007 -0800
-
-(i.e. it is my fault).
-So it is in 2.6.21 and later and should probably go to .stable for .21
-and .22.
-
-Bruce:  for you :-)
----------------------------
-Correctly close old nfsd/lockd sockets.
-
-From: NeilBrown <neilb@suse.de>
-
-Commit aaf68cfbf2241d24d46583423f6bff5c47e088b3 added a bias
-to sk_inuse, so this test for an unused socket now fails.  So no
-sockets gets closed because they are old (they might get closed
-if the client closed them).
-
-This bug has existed since 2.6.21-rc1.
-
-Thanks to Wolfgang Walter for finding and reporting the bug.
-
-
-Cc: Wolfgang Walter <wolfgang.walter@studentenwerk.mhn.de>
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./net/sunrpc/svcsock.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff .prev/net/sunrpc/svcsock.c ./net/sunrpc/svcsock.c
---- .prev/net/sunrpc/svcsock.c	2007-09-12 16:05:23.000000000 +0200
-+++ ./net/sunrpc/svcsock.c	2007-09-12 16:06:01.000000000 +0200
-@@ -1592,7 +1592,8 @@ svc_age_temp_sockets(unsigned long closu
- 
- 		if (!test_and_set_bit(SK_OLD, &svsk->sk_flags))
- 			continue;
--		if (atomic_read(&svsk->sk_inuse) || test_bit(SK_BUSY, &svsk->sk_flags))
-+		if (atomic_read(&svsk->sk_inuse) > 1
-+		    || test_bit(SK_BUSY, &svsk->sk_flags))
- 			continue;
- 		atomic_inc(&svsk->sk_inuse);
- 		list_move(le, &to_be_aged);
+Once again, sorry for the trouble.
+-- 
+Stéphane Epardaud
