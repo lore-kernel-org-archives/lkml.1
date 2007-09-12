@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763753AbXILUWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764750AbXILUXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763753AbXILUWS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 16:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbXILUWI
+	id S1764750AbXILUXm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 16:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbXILUXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 16:22:08 -0400
-Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:12029 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755278AbXILUWH (ORCPT
+	Wed, 12 Sep 2007 16:23:34 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:49547 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755994AbXILUXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 16:22:07 -0400
-X-IronPort-AV: E=Sophos;i="4.20,246,1186383600"; 
-   d="scan'208";a="398627348"
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH 02/12] IB/ehca: Add 1 is not longer needed because of firmware interface change
-X-Message-Flag: Warning: May contain useful information
-References: <200709111518.26276.fenkes@de.ibm.com>
-	<200709111529.07935.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 12 Sep 2007 13:21:54 -0700
-In-Reply-To: <200709111529.07935.fenkes@de.ibm.com> (Joachim Fenkes's message of "Tue, 11 Sep 2007 15:29:07 +0200")
-Message-ID: <adaodg7ocrh.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.20 (linux)
+	Wed, 12 Sep 2007 16:23:34 -0400
+Date: Wed, 12 Sep 2007 22:23:33 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Bernd Petrovitsch <bernd@firmix.at>
+cc: Sam Ravnborg <sam@ravnborg.org>, Dan Stromberg <dstromberglists@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Building a kernel-source RPM (not a kernel RPM)?
+In-Reply-To: <1189621385.31502.111.camel@tara.firmix.at>
+Message-ID: <Pine.LNX.4.64.0709122222010.32380@fbirervta.pbzchgretzou.qr>
+References: <pan.2007.09.12.16.13.41.195991@gmail.com> 
+ <20070912170529.GA18311@uranus.ravnborg.org>  <1189617081.31502.78.camel@tara.firmix.at>
+  <20070912175116.GB18311@uranus.ravnborg.org>  <1189620642.31502.104.camel@tara.firmix.at>
+  <20070912181621.GA18688@uranus.ravnborg.org> <1189621385.31502.111.camel@tara.firmix.at>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 12 Sep 2007 20:21:54.0649 (UTC) FILETIME=[8F8C2490:01C7F57A]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What happens if someone runs the new driver with older firmware?  Or
-what if someone upgrades the firmware without updating the driver?
 
- - R.
+On Sep 12 2007 20:23, Bernd Petrovitsch wrote:
+>On Wed, 2007-09-12 at 20:16 +0200, Sam Ravnborg wrote:
+>>> 
+>>> But we are talking[0] about a kernel-source-$VERSION.$ARCH.rpm's 
+>>> which contain the kernel sources (read: lots of .c and .h files, 
+>>> etc.) - including a matching .config and after `make oldconfig` - so 
+>>> that one can build out-of-tree modules after installing it with 
+>>> "KSRC=" (or whatever the Makefile parameter is usually called).
+>>
+>> You need certain things of the kernel built before you can build 
+>> external modules (if they use a sane build approach). Just including 
+>> the .config with the kernel source is far from enough.
+>
+>ACK. That all must be done/prepared correctly for the 
+>kernel-source-*.rpm. And nobody said it is trivial or easy.
+
+Trivial as far as SUSE goes. Install the binary package and you get all 
+the symvers, modvers, and everything of the O= part that is needed. That 
+is because symvers are per-binary image and not per-source.
+
+Remain the Makefiles, which are in (the big) kernel-source rpm :-/
+
+
+
+	Jan
+-- 
