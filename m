@@ -1,156 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967224AbXILVXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934298AbXILVXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967224AbXILVXA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 17:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934007AbXILVRj
+	id S934298AbXILVXg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 17:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966846AbXILVUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 17:17:39 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:56019 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933919AbXILVRi (ORCPT
+	Wed, 12 Sep 2007 17:20:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:12068 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966759AbXILVUi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 17:17:38 -0400
-Date: Wed, 12 Sep 2007 17:17:18 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 11/11] UML - Use *_PER_* definitions
-Message-ID: <20070912211718.GA10262@c2.user-mode-linux.org>
-Mime-Version: 1.0
+	Wed, 12 Sep 2007 17:20:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=jMG3HkgvmbaCyauhtBFxdih4P6xweSIO4HaoKCDy5ZqMwTe2brzWMW2JRitYwZdhXBOXEFOpq9DMv50EFs2+jhOv05AV142J2Q8Ky2QSsuYpb8o0ugAbM069h1eG2LAJ3WPzyZDVCW4D5BTN7SprHKAf9nBhEI8e6suzw2we68s=
+Date: Thu, 13 Sep 2007 01:20:25 +0400
+From: Sergey Dolgov <dolgovs@gmail.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: ata_piix, laptop cdrom, ICH7: EH, limiting speed to PIO
+Message-ID: <20070912212025.GB2620@slk.laptop>
+References: <20070911212030.GA2817@slk.laptop> <6bffcb0e0709120933p6d58127fv3c85076fe41daaca@mail.gmail.com> <20070912200706.GA2620@slk.laptop> <46E849B7.9040402@googlemail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <46E849B7.9040402@googlemail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are various uses of powers of 1000, plus the odd BILLION
-constant in the time code.  However, there are perfectly good definitions of
-*SEC_PER_*SEC in linux/time.h which can be used instaed.
+On Wed, Sep 12, 2007 at 10:19:03PM +0200, Michal Piotrowski wrote:
+> Sergey Dolgov pisze:
+> > Hi Michal,
+> > 
+> > On Wed, Sep 12, 2007 at 06:33:20PM +0200, Michal Piotrowski wrote:
+> >> Hi Sergey,
+> >>
+> >> On 11/09/2007, Sergey Dolgov <dolgovs@gmail.com> wrote:
+> >>> Hi!
+> >>>
+> >>> On my hp nx7300 laptop, 2 following scenarios can happen during bootup
+> >>> (see attachments for the full logs): the "good" one [1] and the one
+> >>> where multiple EHs lead to limiting the speed [2].
+> >>>
+> >>> [1] one is more rare, but it seems to be persistent over reboots: once
+> >>> it happened, just rebooting the machine always results in behaviour
+> >>> like [1].
+> >>>
+> >>> [1] results in a working cdrom from the start. An attempt to use cdrom
+> >>> after [2] happened results in even more EHs, resulting in "configured
+> >>> for PIO4", after which the cdrom is finaly working.
+> >>>
+> >>> The version I'm using is 2.6.23-rc6, but the same used to happen with
+> >>> the previous rc's, and probably with 2.6.22 too (I can check).
+> >> It would be great if you could check it.
+> > 
+> > I've just built 2.6.22.6 with basically the same configuration, and
+> > the behaviour is just the same, i.e. both [1] and [2] still can
+> > happen.
+> 
+> Ok, thanks.
+> 
+> BTW please check cables and PCU.
 
-These are replaced directly in kernel code.  Userspace code imports
-those constants as UM_*SEC_PER_*SEC and uses these.
+What's a PCU? BTW, this only happens when using libata of course. The
+old CONFIG_IDE stuff works fine every time.
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+> 
+> > 
+> >>> [1]:
+> >>>
+> >>>    [   13.026676] ata_piix 0000:00:1f.1: version 2.12
+> >>>    [   13.026701] ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 16 (level, low) -> IRQ 16
+> >>>    [   13.026898] PCI: Setting latency timer of device 0000:00:1f.1 to 64
+> >>>    [   13.026994] scsi4 : ata_piix
+> >>>    [   13.027209] scsi5 : ata_piix
+> >>>    [   13.027385] ata5: PATA max UDMA/133 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x000140a0 irq 14
+> >>>    [   13.027484] ata6: PATA max UDMA/133 cmd 0x00010170 ctl 0x00010376 bmdma 0x000140a8 irq 15
+> >>>    [   13.339308] ata5.00: ATAPI: HL-DT-ST DVDRAM GSA-T10N, PC05, max MWDMA2
+> >>>    [   13.505922] ata5.00: configured for MWDMA2
+> >>>    [   13.506026] ata6: port disabled. ignoring.
+> >>>    [   13.509916] scsi 4:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-T10N  PC05 PQ: 0 ANSI: 5
+> >>>
+> >>> [2]:
+> >>>
+> >>>    [   10.007152] ata_piix 0000:00:1f.1: version 2.12
+> >>>    [   10.007178] ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 16 (level, low) -> IRQ 16
+> >>>    [   10.007369] PCI: Setting latency timer of device 0000:00:1f.1 to 64
+> >>>    [   10.007464] scsi4 : ata_piix
+> >>>    [   10.007680] scsi5 : ata_piix
+> >>>    [   10.007856] ata5: PATA max UDMA/133 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x000140a0 irq 14
+> >>>    [   10.007956] ata6: PATA max UDMA/133 cmd 0x00010170 ctl 0x00010376 bmdma 0x000140a8 irq 15
+> >>>    [   10.320462] ata5.00: ATAPI: HL-DT-ST DVDRAM GSA-T10N, PC05, max MWDMA2
+> >>>    [   10.487077] ata5.00: configured for MWDMA2
+> >>>    [   10.487181] ata6: port disabled. ignoring.
+> >>>    [   15.985240] ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> >>>    [   15.985325] ata5.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x12 data 96 in
+> >>>    [   15.985327]          res 40/00:02:00:24:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+> >>>    [   15.985532] ata5: soft resetting port
+> >>>    [   16.465489] ata5.00: configured for MWDMA2
+> >>>    [   16.465571] ata5: EH complete
+> >>>    [   21.963643] ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> >>>    [   21.963725] ata5.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x12 data 96 in
+> >>>    [   21.963727]          res 40/00:02:00:24:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+> >>>    [   21.963930] ata5: soft resetting port
+> >>>    [   22.443900] ata5.00: configured for MWDMA2
+> >>>    [   22.443979] ata5: EH complete
+> >>>    [   27.942051] ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> >>>    [   27.942134] ata5.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x12 data 96 in
+> >>>    [   27.942136]          res 40/00:02:00:24:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+> >>>    [   27.942341] ata5: soft resetting port
+> >>>    [   28.422309] ata5.00: configured for MWDMA2
+> >>>    [   28.422389] ata5: EH complete
+> >>>    [   33.920457] ata5.00: limiting speed to MWDMA1:PIO4
+> >>>    [   33.920532] ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> >>>    [   33.920614] ata5.00: cmd a0/01:00:00:00:00/00:00:00:00:00/a0 tag 0 cdb 0x12 data 96 in
+> >>>    [   33.920616]          res 40/00:02:00:24:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+> >>>    [   33.920820] ata5: soft resetting port
+> >>>    [   34.400708] ata5.00: configured for MWDMA1
+> >>>    [   34.400790] ata5: EH complete
+> >>>    [   34.400869] scsi scan: 96 byte inquiry failed.  Consider BLIST_INQUIRY_36 for this device
+> >>>    [   34.402855] scsi 4:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-T10N  PC05 PQ: 0 ANSI: 5
+> >>>
+> >>>
+> > 
+> > --
+> > Sergey
+> > 
+> 
+> Regards,
+> Michal
+> 
+> -- 
+> LOG
+> http://www.stardust.webpages.pl/log/
+
 --
- arch/um/include/common-offsets.h |    4 ++++
- arch/um/include/os.h             |    2 --
- arch/um/kernel/time.c            |    9 +++++----
- arch/um/os-Linux/skas/process.c  |    2 +-
- arch/um/os-Linux/time.c          |   16 ++++++++--------
- 5 files changed, 18 insertions(+), 15 deletions(-)
-
-Index: linux-2.6.22/arch/um/kernel/time.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/time.c	2007-09-12 15:47:42.000000000 -0400
-+++ linux-2.6.22/arch/um/kernel/time.c	2007-09-12 15:51:25.000000000 -0400
-@@ -17,7 +17,7 @@
-  */
- unsigned long long sched_clock(void)
- {
--	return (unsigned long long)jiffies_64 * (1000000000 / HZ);
-+	return (unsigned long long)jiffies_64 * (NSEC_PER_SEC / HZ);
- }
- 
- void timer_handler(int sig, struct uml_pt_regs *regs)
-@@ -119,8 +119,9 @@ void __init time_init(void)
- 	long long nsecs;
- 
- 	nsecs = os_nsecs();
--	set_normalized_timespec(&wall_to_monotonic, -nsecs / BILLION,
--				-nsecs % BILLION);
--	set_normalized_timespec(&xtime, nsecs / BILLION, nsecs % BILLION);
-+	set_normalized_timespec(&wall_to_monotonic, -nsecs / NSEC_PER_SEC,
-+				-nsecs % NSEC_PER_SEC);
-+	set_normalized_timespec(&xtime, nsecs / NSEC_PER_SEC,
-+				nsecs % NSEC_PER_SEC);
- 	late_time_init = setup_itimer;
- }
-Index: linux-2.6.22/arch/um/os-Linux/time.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/time.c	2007-09-12 15:41:43.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/time.c	2007-09-12 15:52:19.000000000 -0400
-@@ -14,7 +14,7 @@
- 
- int set_interval(void)
- {
--	int usec = 1000000/UM_HZ;
-+	int usec = UM_USEC_PER_SEC / UM_HZ;
- 	struct itimerval interval = ((struct itimerval) { { 0, usec },
- 							  { 0, usec } });
- 
-@@ -26,11 +26,11 @@ int set_interval(void)
- 
- int timer_one_shot(int ticks)
- {
--	unsigned long usec = ticks * 1000000 / UM_HZ;
--	unsigned long sec = usec / 1000000;
-+	unsigned long usec = ticks * UM_USEC_PER_SEC / UM_HZ;
-+	unsigned long sec = usec / UM_USEC_PER_SEC;
- 	struct itimerval interval;
- 
--	usec %= 1000000;
-+	usec %= UM_USEC_PER_SEC;
- 	interval = ((struct itimerval) { { 0, 0 }, { sec, usec } });
- 
- 	if (setitimer(ITIMER_VIRTUAL, &interval, NULL) == -1)
-@@ -47,8 +47,8 @@ static inline unsigned long long tv_to_n
- 	 * return.
- 	 */
- 
--	return ((unsigned long long) tv->tv_sec) * BILLION +
--		tv->tv_usec * 1000;
-+	return ((unsigned long long) tv->tv_sec) * UM_NSEC_PER_SEC +
-+		tv->tv_usec * UM_NSEC_PER_SEC;
- }
- 
- unsigned long long disable_timer(void)
-@@ -74,8 +74,8 @@ extern void alarm_handler(int sig, struc
- 
- void idle_sleep(unsigned long long nsecs)
- {
--	struct timespec ts = { .tv_sec	= nsecs / BILLION,
--			       .tv_nsec = nsecs % BILLION };
-+	struct timespec ts = { .tv_sec	= nsecs / UM_NSEC_PER_SEC,
-+			       .tv_nsec = nsecs % UM_NSEC_PER_SEC };
- 
- 	if (nanosleep(&ts, &ts) == 0)
- 		alarm_handler(SIGVTALRM, NULL);
-Index: linux-2.6.22/arch/um/os-Linux/skas/process.c
-===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/skas/process.c	2007-09-12 15:47:42.000000000 -0400
-+++ linux-2.6.22/arch/um/os-Linux/skas/process.c	2007-09-12 15:52:57.000000000 -0400
-@@ -378,7 +378,7 @@ __initcall(init_thread_regs);
- 
- int copy_context_skas0(unsigned long new_stack, int pid)
- {
--	struct timeval tv = { .tv_sec = 0, .tv_usec = 1000000 / UM_HZ };
-+	struct timeval tv = { .tv_sec = 0, .tv_usec = UM_USEC_PER_SEC / UM_HZ };
- 	int err;
- 	unsigned long current_stack = current_stub_stack();
- 	struct stub_data *data = (struct stub_data *) current_stack;
-Index: linux-2.6.22/arch/um/include/common-offsets.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/common-offsets.h	2007-09-11 13:36:15.000000000 -0400
-+++ linux-2.6.22/arch/um/include/common-offsets.h	2007-09-12 15:51:25.000000000 -0400
-@@ -34,3 +34,7 @@ DEFINE(crypto_tfm_ctx_offset, offsetof(s
- DEFINE(UM_THREAD_SIZE, THREAD_SIZE);
- 
- DEFINE(UM_HZ, HZ);
-+
-+DEFINE(UM_USEC_PER_SEC, USEC_PER_SEC);
-+DEFINE(UM_NSEC_PER_SEC, NSEC_PER_SEC);
-+DEFINE(UM_NSEC_PER_USEC, NSEC_PER_USEC);
-Index: linux-2.6.22/arch/um/include/os.h
-===================================================================
---- linux-2.6.22.orig/arch/um/include/os.h	2007-09-12 15:41:04.000000000 -0400
-+++ linux-2.6.22/arch/um/include/os.h	2007-09-12 15:51:25.000000000 -0400
-@@ -250,8 +250,6 @@ extern void os_dump_core(void);
- extern void os_log_info(char *fmt, va_list ap);
- 
- /* time.c */
--#define BILLION (1000 * 1000 * 1000)
--
- extern void idle_sleep(unsigned long long nsecs);
- extern int set_interval(void);
- extern int timer_one_shot(int ticks);
+Sergey
