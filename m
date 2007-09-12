@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765299AbXILHu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765491AbXILHw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765299AbXILHu6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 03:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765529AbXILHuM
+	id S1765491AbXILHw3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 03:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbXILHwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 03:50:12 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50739 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764688AbXILHuK (ORCPT
+	Wed, 12 Sep 2007 03:52:21 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:45903 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754134AbXILHwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 03:50:10 -0400
-Date: Wed, 12 Sep 2007 16:51:38 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org, ak@suse.de,
-       clameter@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 4/6] Embed zone_id information within the
- zonelist->zones pointer
-Message-Id: <20070912165138.5deb4db4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070911213127.23507.34058.sendpatchset@skynet.skynet.ie>
-References: <20070911213006.23507.19569.sendpatchset@skynet.skynet.ie>
-	<20070911213127.23507.34058.sendpatchset@skynet.skynet.ie>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Sep 2007 03:52:20 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Wed, 12 Sep 2007 03:50:17 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: stripping down the kernel-parameters.txt file
+Message-ID: <Pine.LNX.4.64.0709120339470.26177@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	TW_BT 0.08)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Sep 2007 22:31:27 +0100 (IST)
-Mel Gorman <mel@csn.ul.ie> wrote:
 
-> Using two zonelists per node requires very frequent use of zone_idx(). This
-> is costly as it involves a lookup of another structure and a substraction
-> operation. As struct zone is always word aligned and normally cache-line
-> aligned, the pointer values have a number of 0's at the least significant
-> bits of the address.
-> 
-> This patch embeds the zone_id of a zone in the zonelist->zones pointers.
-> The real zone pointer is retrieved using the zonelist_zone() helper function.
-> The ID of the zone is found using zonelist_zone_idx().  To avoid accidental
-> references, the zones field is renamed to _zones and the type changed to
-> unsigned long.
-> 
-At first, I welcome this patch. thanks!.
+  while killing some time between compiles and ridding the
+kernel-parameters.txt file of out-of-date or incorrect cruft, it
+occurs to me that that file is borderline valueless since it
+apparently tries to document every possible boot-time parameter,
+including those associated with individual modules.  that's just
+silly.
+
+  it would make far more sense if that file restricted itself to just
+those parameters that you'd consider fundamental or basic -- those
+defined with one of "__setup()" or "early_param()" that would apply to
+most users.
+
+  instead, you find stuff like this (a random example):
+
+  bttv.card=      [HW,V4L] bttv (bt848 + bt878 based grabber cards)
+  bttv.radio=     Most important insmod options are available as
+                  kernel args too.
+  bttv.pll=       See Documentation/video4linux/bttv/Insmod-options
+  bttv.tuner=     and Documentation/video4linux/bttv/CARDLIST
+
+not to belittle the bttv module but, really, is that information
+worthy of being recorded in the top-level parms.txt file?  and if
+you're going to be consistent, you'd want to do that for every single
+module and its respective throughout the tree, at which the parms.txt
+file collapses under its own weight from forever being updated and has
+so much information that it's impossible to find the useful stuff.
+
+  i suggest that that file record only the basic boot-time params, and
+the documentation for module-specific parameters be moved closer to
+the module source itself.  there's no point in that poor file trying
+to keep up with all of the module development in the tree.
+
+rday
+
+p.s.  and, while we're at it, folks might like to start replacing
+the calls to "__setup()" in their driver code with the newer module
+parameters mechanism.  it's just a thought.  :-)
 
 
-A comment after reading all is, how about defining zonelist as following
-instead of encoding in pointer ?
-==
-struct zone_pointer {
-	struct zone *zone;
-	int	     node_id;  
-	int	     zone_idx;
-};
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-struct zonelist {
-	struct zone_pointer	_zones[MAX_ZONES_PER_ZONELIST + 1];
-};
-
-#define zonelist_zone(zl)      (zl)->zone
-#define zonelist_zone_idx(zl)  (zl)->zone_idx
-#ifdef CONFIG_NUMA
-#define zonelist_zone_nid(zl)  (zl)->node_id
-#else
-#define zonelist_zone_nid(zl, i)  (0)
-==
-
-If we really want to avoid unnecessary access to "zone" while walking zonelist,
-above may do something good.  Cons is this makes sizeof zonlist bigger.
-
-Thanks,
--Kame
-
+http://crashcourse.ca
+========================================================================
