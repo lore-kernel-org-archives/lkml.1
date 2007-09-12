@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934671AbXILQER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934746AbXILQKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934671AbXILQER (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 12:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932502AbXILQEF
+	id S934746AbXILQKI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 12:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764705AbXILQJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 12:04:05 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:42878 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764771AbXILQEE (ORCPT
+	Wed, 12 Sep 2007 12:09:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59936 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758263AbXILQJ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 12:04:04 -0400
-Date: Wed, 12 Sep 2007 09:01:51 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: Lossy interrupts on x86_64
-Message-Id: <20070912090151.97c9a78e.randy.dunlap@oracle.com>
-In-Reply-To: <200709120833.15980.jbarnes@virtuousgeek.org>
-References: <200709120833.15980.jbarnes@virtuousgeek.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 12 Sep 2007 12:09:56 -0400
+Date: Wed, 12 Sep 2007 09:09:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Paul Mackerras <paulus@samba.org>
+cc: akpm@linux-foundation.org, Tony Breeds <tony@bakeyournoodle.com>,
+       Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Alan Cox <alan@redhat.com>,
+       davem@davemloft.net, heiko.carstens@de.ibm.com, hskinnemoen@atmel.com,
+       dhowells@redhat.com
+Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
+In-Reply-To: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
+Message-ID: <alpine.LFD.0.999.0709120908090.16478@woody.linux-foundation.org>
+References: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Sep 2007 08:33:15 -0700 Jesse Barnes wrote:
 
-> I just narrowed down a weird problem where I was losing more than 50% of 
-> my vblank interrupts to what seems to be the hires timers patch.  Stock 
-> 2.6.23-rc5 works fine, but the latest (171) kernel from rawhide drops 
-> most of my interrupts unless I also have another interrupt source 
-> running (e.g. if I hold down a key or move the mouse I get the expected 
-> number of vblank interrupts, otherwise I get between 3 and 30 instead 
-> of the expected 60 per second).
+
+On Thu, 13 Sep 2007, Paul Mackerras wrote:
 > 
-> Any ideas?  It seems like it might be bad APIC programming, but I 
-> haven't gone through those mods to look for suspects...
+> Linus, this seems a bit cleaner than putting ifdefs in
+> drivers/char/tty_ioctl.c, and it fixes the compile error on powerpc.
+> Your choice whether to use this patch or Tony's.
 
-Also tickless?  (NO_HZ ?)
+Yeah, I'll take this one. I just wanted to understand why it triggered at 
+all.
 
-I think I've seen some emails about tickless and keystrokes being
-needed to cause interrupts... but I'm not postive about it.
+Andrew - I'm dropping Tony's patch you forwarded, but since it will still 
+apply cleanly, you should drop it manually from your queues.
 
-but you said "any ideas"
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+		Linus
