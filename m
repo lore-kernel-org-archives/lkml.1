@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970649AbXILRfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971103AbXILRiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970649AbXILRfb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 13:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966903AbXILRfX
+	id S971103AbXILRiN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 13:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967503AbXILRhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 13:35:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:61015 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764733AbXILRfW convert rfc822-to-8bit (ORCPT
+	Wed, 12 Sep 2007 13:37:55 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1789 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967230AbXILRhx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 13:35:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FfO4JCfTtork8HA0Cso5kii5J52a+fQqiC8zNTf6nFfLkbzeAhPr4Y7ky/xP2mAKoJfmbt7lXwZRpKAdBNxJ99vvNwOX1Q18fVp1CO5nC4xcbr4n9t8bpHqI0J6gm992FAJoWjbdLww+2LErPnp2DpljUWiq4+e5fj9xQMWs0H4=
-Message-ID: <6bffcb0e0709121035t2e498273r1367074da8dce76@mail.gmail.com>
-Date: Wed, 12 Sep 2007 19:35:21 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: 2.6.23-rc6: known regressions with patches
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "David Woodhouse" <dwmw2@infradead.org>, "Greg KH" <gregkh@suse.de>,
-       "=?ISO-8859-1?Q?Toralf_F=F6rster?=" <toralf.foerster@gmx.de>,
-       linux-usb-devel@lists.sourceforge.net
-In-Reply-To: <20070912171253.GB3563@stusta.de>
+	Wed, 12 Sep 2007 13:37:53 -0400
+Date: Wed, 12 Sep 2007 18:36:33 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       nfs@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Clayton <andrew@digital-domain.net>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Dave Kleikamp <shaggy@austin.ibm.com>,
+       jfs-discussion@lists.sourceforge.net, sct@redhat.com,
+       adilger@clusterfs.com, linux-ext4@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       Chuck Ebbert <cebbert@redhat.com>, dth <dth@dth.net>
+Subject: Re: [2/4] 2.6.23-rc6: known regressions
+Message-ID: <20070912173633.GG25604@shadowen.org>
+References: <46E8187E.9000006@googlemail.com> <46E81ACE.6030305@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46E81AE2.8030802@googlemail.com> <20070912171253.GB3563@stusta.de>
+In-Reply-To: <46E81ACE.6030305@googlemail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/09/2007, Adrian Bunk <bunk@kernel.org> wrote:
-> On Wed, Sep 12, 2007 at 06:59:14PM +0200, Michal Piotrowski wrote:
-[..]
-> > USB
-> >
-> > Subject         : build #246 failed for 2.6.23-rc6-g0d4cbb5 in linux/drivers/usb/misc/phidgetservo.ko
-> > References      : http://lkml.org/lkml/2007/9/11/211
-> > Last known good : ?
-> > Submitter       : Toralf Förster <toralf.foerster@gmx.de>
-> > Caused-By       : ?
-> > Handled-By      : Adrian Bunk <bunk@kernel.org>
-> > Patch           : http://lkml.org/lkml/2007/9/11/284
-> > Status          : patch available
->
-> Not a 2.6.23-rc regression
+On Wed, Sep 12, 2007 at 06:58:54PM +0200, Michal Piotrowski wrote:
 
-Ok, I removed it from the list.
+> FS
+> 
+> Subject         : hanging ext3 dbench tests
+> References      : http://lkml.org/lkml/2007/9/11/176
+> Last known good : ?
+> Submitter       : Andy Whitcroft <apw@shadowen.org>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : unknown
 
-> (but IMHO the patch should be safe enough
-> for 2.6.23).
->
-> cu
-> Adrian
->
+A number of attempts to reproduce this on these machines has yet to
+re-trigger it.  I guess the Status is therefore "under test --
+unreproducible at present"
 
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+-apw
