@@ -1,103 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933247AbXILB5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbXILB5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933247AbXILB5b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 21:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762281AbXILB4v
+	id S1753341AbXILB5w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 21:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763006AbXILB4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 21:56:51 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49806 "EHLO
+	Tue, 11 Sep 2007 21:56:53 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48643 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751172AbXILB4r (ORCPT
+	with ESMTP id S1752079AbXILB4r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Sep 2007 21:56:47 -0400
-Message-Id: <20070912015644.927677070@sgi.com>
+Message-Id: <20070912015645.566522143@sgi.com>
+References: <20070912015644.927677070@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 11 Sep 2007 18:56:44 -0700
+Date: Tue, 11 Sep 2007 18:56:46 -0700
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
        linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org
-Subject: [PATCH 00/10] x86: Reduce Memory Usage and Inter-Node message traffic (v3)
+Subject: [PATCH 02/10] x86: fix cpu_to_node references (v3)
+Content-Disposition: inline; filename=fix-cpu_to_node-refs
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix four instances where cpu_to_node is referenced
+by array instead of via the cpu_to_node macro.  This
+is preparation to moving it to the per_cpu data area.
 
-Note:
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86_64/kernel/vsyscall.c |    2 +-
+ arch/x86_64/mm/numa.c         |    4 ++--
+ arch/x86_64/mm/srat.c         |    4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-This patch consolidates all the previous patches regarding
-the conversion of static arrays sized by NR_CPUS into per_cpu
-data arrays and is referenced against 2.6.23-rc6 .
-
-
-v1 Intro:
-
-In x86_64 and i386 architectures most arrays that are sized
-using NR_CPUS lay in local memory on node 0.  Not only will most
-(99%?) of the systems not use all the slots in these arrays,
-particularly when NR_CPUS is increased to accommodate future
-very high cpu count systems, but a number of cache lines are
-passed unnecessarily on the system bus when these arrays are
-referenced by cpus on other nodes.
-
-Typically, the values in these arrays are referenced by the cpu
-accessing it's own values, though when passing IPI interrupts,
-the cpu does access the data relevant to the targeted cpu/node.
-Of course, if the referencing cpu is not on node 0, then the
-reference will still require cross node exchanges of cache
-lines.  A common use of this is for an interrupt service
-routine to pass the interrupt to other cpus local to that node.
-
-Ideally, all the elements in these arrays should be moved to the
-per_cpu data area.  In some cases (such as x86_cpu_to_apicid)
-the array is referenced before the per_cpu data areas are setup.
-In this case, a static array is declared in the __initdata
-area and initialized by the booting cpu (BSP).  The values are
-then moved to the per_cpu area after it is initialized and the
-original static array is freed with the rest of the __initdata.
-This patch is referenced against 2.6.23-rc6.
---
-
-Changes for version v2:
-
-> > Note the addtional change of the cpu_llc_id type from u8
-> > to int for ARCH x86_64 to correspond with ARCH i386.
-
-> At least currently it cannot be more than 8 bit. So why
-> waste memory? It would be better to change i386
-
-Done.  (x86_64 type => u8).
-
-> > Fix four instances where cpu_to_node is referenced
-> > > by array instead of via the cpu_to_node macro.  This
-> > > is preparation to moving it to the per_cpu data area.
-
-> Shouldn't this patch be logically before the per cpu 
-> conversion (which is 3). This way the result would
-> be git bisectable.
-
-Done.  (Moved to PATCH 1).
-
-> >     processor_core.c currently tries to determine the apicid by special casing
-> > >     for IA64 and x86. The desired information is readily available via
-> > > 
-> > > 	    cpu_physical_id()
-> > > 
-> > >     on IA64, i386 and x86_64.
-> 
-> Have you tried this with a !CONFIG_SMP build? The drivers/dma code was doing
-> the same and running into problems because it wasn't defined there.
-
-Fixed. (New export in PATCH 1).
---
-
-Changes for version v3:
-
-cpu_sibling_map has been converted to a per_cpu data array to fix
-build errors on ia64, ppc64 and sparc64 to accomodate references in
-block/blktrace.c and kernel/sched.c when CONFIG_SCHED_SMT is defined.
-
-Warning: ppc64 and sparc64 have not yet been built nor tested.
---
+--- a/arch/x86_64/kernel/vsyscall.c
++++ b/arch/x86_64/kernel/vsyscall.c
+@@ -291,7 +291,7 @@
+ 	unsigned long *d;
+ 	unsigned long node = 0;
+ #ifdef CONFIG_NUMA
+-	node = cpu_to_node[cpu];
++	node = cpu_to_node(cpu);
+ #endif
+ 	if (cpu_has(&cpu_data[cpu], X86_FEATURE_RDTSCP))
+ 		write_rdtscp_aux((node << 12) | cpu);
+--- a/arch/x86_64/mm/numa.c
++++ b/arch/x86_64/mm/numa.c
+@@ -261,7 +261,7 @@
+ 	   We round robin the existing nodes. */
+ 	rr = first_node(node_online_map);
+ 	for (i = 0; i < NR_CPUS; i++) {
+-		if (cpu_to_node[i] != NUMA_NO_NODE)
++		if (cpu_to_node(i) != NUMA_NO_NODE)
+ 			continue;
+  		numa_set_node(i, rr);
+ 		rr = next_node(rr, node_online_map);
+@@ -543,7 +543,7 @@
+ void __cpuinit numa_set_node(int cpu, int node)
+ {
+ 	cpu_pda(cpu)->nodenumber = node;
+-	cpu_to_node[cpu] = node;
++	cpu_to_node(cpu) = node;
+ }
+ 
+ unsigned long __init numa_free_all_bootmem(void) 
+--- a/arch/x86_64/mm/srat.c
++++ b/arch/x86_64/mm/srat.c
+@@ -431,9 +431,9 @@
+ 			setup_node_bootmem(i, nodes[i].start, nodes[i].end);
+ 
+ 	for (i = 0; i < NR_CPUS; i++) {
+-		if (cpu_to_node[i] == NUMA_NO_NODE)
++		if (cpu_to_node(i) == NUMA_NO_NODE)
+ 			continue;
+-		if (!node_isset(cpu_to_node[i], node_possible_map))
++		if (!node_isset(cpu_to_node(i), node_possible_map))
+ 			numa_set_node(i, NUMA_NO_NODE);
+ 	}
+ 	numa_init_array();
 
 -- 
