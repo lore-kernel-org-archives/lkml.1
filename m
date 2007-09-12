@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbXILFze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761924AbXILGAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759481AbXILFze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 01:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXILFz1
+	id S1761924AbXILGAu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 02:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbXILGAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 01:55:27 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:41664 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752152AbXILFz0 (ORCPT
+	Wed, 12 Sep 2007 02:00:42 -0400
+Received: from mail3.cyberdogtech.com ([209.40.194.40]:41843 "EHLO
+	mail3.cyberdogtech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754623AbXILGAl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 01:55:26 -0400
-Date: Wed, 12 Sep 2007 07:55:34 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       jgarzik <jgarzik@pobox.com>
-Subject: Re: [PATCH/RFC] doc: about email clients for Linux kernel patches
-Message-ID: <20070912055533.GX3563@stusta.de>
-References: <20070911101644.cd3f641f.randy.dunlap@oracle.com> <20070911182926.GQ3563@stusta.de> <20070912052413.GH2579@hacking>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070912052413.GH2579@hacking>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 12 Sep 2007 02:00:41 -0400
+Date: Wed, 12 Sep 2007 02:00:35 -0400
+From: Matt LaPlante <kernel1@cyberdogtech.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: Problem charging blackberry 8700c with berry_charge (2.6.22.6)
+Message-Id: <20070912020035.b581c167.kernel1@cyberdogtech.com>
+In-Reply-To: <20070911063502.GK27404@kroah.com>
+References: <20070908220229.6e669e62.kernel1@cyberdogtech.com>
+	<20070909105212.GA14929@kroah.com>
+	<20070909144356.cdf6a5b3.kernel1@cyberdogtech.com>
+	<20070911063502.GK27404@kroah.com>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 12, 2007 at 01:24:13PM +0800, WANG Cong wrote:
-> On Tue, Sep 11, 2007 at 08:29:26PM +0200, Adrian Bunk wrote:
-> >On Tue, Sep 11, 2007 at 10:16:44AM -0700, Randy Dunlap wrote:
-> >>...
-> >> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> >> +Mutt (TUI)
-> >> +
-> >> +Plenty of Linux developers use mutt, so it must work pretty well.
-> >> +
-> >> +Are there any special config options that are needed??
-> >>...
-> >
-> >It should work with default settings.
+On Mon, 10 Sep 2007 23:35:02 -0700
+Greg KH <greg@kroah.com> wrote:
+
 > 
+> > Sep  9 13:49:01 prizm kernel: [  584.407498] drivers/usb/core/inode.c: creating file '003'
+> > Sep  9 13:49:01 prizm kernel: [  584.407509] hub 5-0:1.0: state 7 ports 8 chg 0000 evt 0004
+> > Sep  9 13:49:01 prizm kernel: [  584.407520] hub 1-0:1.0: state 7 ports 2 chg 0000 evt 0004
+> > Sep  9 13:49:03 prizm kernel: [  586.405512] usb 1-2: usb auto-suspend
+> > Sep  9 13:49:03 prizm kernel: [  586.421471] hub 5-0:1.0: hub_suspend
+> > Sep  9 13:49:03 prizm kernel: [  586.421481] ehci_hcd 0000:00:10.4: suspend root hub
+> > Sep  9 13:49:03 prizm kernel: [  586.421496] usb usb5: usb auto-suspend
+> > Sep  9 13:49:05 prizm kernel: [  588.421351] hub 1-0:1.0: hub_suspend
+> > Sep  9 13:49:05 prizm kernel: [  588.421361] usb usb1: suspend_rh
+> > Sep  9 13:49:05 prizm kernel: [  588.421481] usb usb1: usb auto-suspend
 > 
-> I can't agree with this.
+> Ah, oh wait, now we just turned the power off.
 > 
-> It took me lots of time to configure mutt to work well for me in the first
-> time. Just default settings are far _not_ enough, especially for us
-> non-english-speakers. One common setting is the encoding, of course, lkml
-> prefers UTF-8, so I must set my mutt with `set send_charset="us-ascii:utf-8"`.
-
-This makes sense, but it's not really a mutt specific issue and 
-problems because mutt prefers iso-8859-1 over UTF-8 by default are
-quite rare.
-
-> Manuals of mutt told me to add "subscribe linux-kernel@vger.kernel.org" if I
-> subscribed lkml, but in fact, we'd better _not_ add this, or it will drop
-> myself from cc list.
+> Try disabling CONFIG_USB_SUSPEND and see if that fixes this issue.  Or
+> you can manually turn the power back on to your blackberry by writing to
+> the autosuspend file for the usb device in sysfs, but that can be a
+> pain.
 > 
-> Or other things like these.
->...
+> Let me know if just changing that config option works for you.
+> 
 
-Whether or not people want to get personal copies of answers to mailing
-list posts is a religious issue being second only to the vi<->emacs wars...
+And now for the dramatic conclusion...
 
-But as far as I understand it, this documentation is intended to help 
-people to get sending patches right (no line wrap etc.), not as a 
-generic documentation for mail clients.
+To begin, I have no access to the original machine at the moment, as I'm now out of that area for a couple weeks.  I built a similar kernel (same version) on another box that I have at my current location.  The new machine is different hardware, so some kernel re-configuring was required, but I kept with the same USB settings (and similar overall design).  Interestingly, this machine didn't reproduce the "magic command failed" error, but it did fail very similarly to the original at charging the device.  I disabled CONFIG_USB_SUSPEND as suggested, and lo and behold, it now charges the berry.  Looks like an excellent diagnosis to me, doctor.  
 
-> Regards.
+Thanks! :)
 
-cu
-Adrian
+> thanks,
+> 
+> greg k-h
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Matt
