@@ -1,82 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbXILXQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760069AbXILXR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758250AbXILXQk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 19:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbXILXQd
+	id S1760069AbXILXR6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 19:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbXILXRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 19:16:33 -0400
-Received: from mail.nagafix.co.uk ([194.145.196.85]:40334 "EHLO
-	mail.nagafix.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbXILXQc (ORCPT
+	Wed, 12 Sep 2007 19:17:49 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42463 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752864AbXILXRs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 19:16:32 -0400
-X-Greylist: delayed 335 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Sep 2007 19:16:31 EDT
-Message-ID: <46E871FE.9010908@nagafix.co.uk>
-Date: Thu, 13 Sep 2007 00:10:54 +0100
-From: Antoine Martin <antoine@nagafix.co.uk>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070806)
+	Wed, 12 Sep 2007 19:17:48 -0400
+Date: Wed, 12 Sep 2007 16:17:46 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Mel Gorman <mel@skynet.ie>, andrea@suse.de, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
+       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
+Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
+In-Reply-To: <200709121246.08833.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0709121607140.4204@schroedinger.engr.sgi.com>
+References: <20070911060349.993975297@sgi.com> <200709111617.03586.nickpiggin@yahoo.com.au>
+ <Pine.LNX.4.64.0709111644240.29413@schroedinger.engr.sgi.com>
+ <200709121246.08833.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: CFS: some bad numbers with Java/database threading
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=F18AD6BB;
-	url=http://users.nagafix.co.uk/~antoine/antoine.asc
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA512
+On Wed, 12 Sep 2007, Nick Piggin wrote:
 
-Hi list,
+> I will still argue that my approach is the better technical solution for large
+> block support than yours, I don't think we made progress on that. And I'm
+> quite sure we agreed at the VM summit not to rely on your patches for
+> VM or IO scalability.
 
-I was working on some unit tests and thought I'd give CFS a whirl to see
-if it had any impact on my workloads (to see what the fuss was about),
-and I came up with some pretty disturbing numbers:
-http://devloop.org.uk/documentation/database-performance/Linux-Kernels/Kernels-ManyThreads-CombinedTests-noload2.png
-As above but also showing the load average:
-http://devloop.org.uk/documentation/database-performance/Linux-Kernels/Kernels-ManyThreads-CombinedTests2.png
-Looks like a regression to me...
+The approach has already been tried (see the XFS layer) and found lacking. 
 
-Basically, all the previous kernels are pretty close (2.6.16 through to
-2.6.20 performed almost identically to 2.6.22 and are not shown here to
-avoid cluttering the graphs)
+Having a fake linear block through vmalloc means that a special software 
+layer must be introduced and we may face special casing in the block / fs 
+layer to check if we have one of these strange vmalloc blocks.
 
-All the 2.6.23-rc kernels performed poorly (except -rc3!): much more
-erratically and with a sharp performance drop above 800 threads. The
-load starts to go up and the performance takes a nosedive.
+> But you just showed in two emails that you don't understand what the
+> problem is. To reiterate: lumpy reclaim does *not* invalidate my formulae;
+> and antifrag does *not* isolate the issue.
 
-With fewer threads (less than 50) there is hardly any difference at all
-between all the kernels.
+I do understand what the problem is. I just do not get what your problem 
+with this is and why you have this drive to demand perfection. We are 
+working a variety of approaches on the (potential) issue but you 
+categorically state that it cannot be solved.
 
-Notes about the tests and setup:
-* environment is:
-Dual Opteron 252 with 3GB ram, scsi disk, etc..
-Sun Java 1.6
-MySQL 5.0.44
-Junit + ant + my test code (devloop.org.uk)
-* java threads are created first and the data is prepared, then all the
-threads are started in a tight loop. Each thread runs multiple queries
-with a 10ms pause (to allow the other threads to get scheduled)
-* load average is divided by the number of cpus (2)
-* more general information (which also covers some irrelevant
-information about some other tests I have published) is here:
-http://devloop.org.uk/documentation/database-performance/Setup/
+> But what do you say about viable alternatives that do not have to
+> worry about these "unlikely scenarios", full stop? So, why should we
+> not use fs block for higher order page support?
 
-Don't shoot the messenger!
-I can run some more tests if needed (bearing in mind that a full test
-run takes a few hours) or you can run the tests yourself: instructions
-on running the tests are included.
-I am now re-testing with sched-cfs-v2.6.23-rc6-v21-combo-2.patch
-but feel free to send some other patches.
+Because it has already been rejected in another form and adds more 
+layering to the filesystem and more checking for special cases in which 
+we only have virtual linearity? It does not reduce the number of page 
+structs that have to be handled by the lower layers etc.
 
-Antoine
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Maybe we coud get to something like a hybrid that avoids some of these 
+issues? Add support so something like a virtual compound page can be 
+handled transparently in the filesystem layer with special casing if 
+such a beast reaches the block layer?
 
-iD8DBQFG6HH+GK2zHPGK1rsRCl3oAJ9c4crCtNQfGs9gWO7Y5CvcIno8TACbBPTw
-0TEHkqLMGAfH0ILwWVKc0oo=
-=1iBA
------END PGP SIGNATURE-----
+> I didn't skip that. We have large page pools today. How does that give
+> first class of support to those allocations if you have to have memory
+> reserves?
+
+See my other mail. That portion is not complete yet. Sorry.
