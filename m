@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765752AbXILL4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934455AbXILL5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765752AbXILL4O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 07:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933778AbXILLz7
+	id S934455AbXILL5P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 07:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765769AbXILL5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 07:55:59 -0400
-Received: from hu-out-0506.google.com ([72.14.214.239]:64814 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933775AbXILLz6 (ORCPT
+	Wed, 12 Sep 2007 07:57:00 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:55180 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765640AbXILL5A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 07:55:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NkEbySNgyIZSSN63TzUD8u3v8+pcXE5Dx0u6gPV/zgC3YdqThsokHEDAYx8gSByMn6n2O8LOEn40brdfKwaK6ng4Xn1PIw6gCIRVsm42g09ls2j7sv13d4CWCqDo4z0nkLp+YMWCDrphCwf+JFD5sQM/z+16ixvIUeKGbbo5gPI=
-Message-ID: <416aa1ad0709120455l341f1079g9187c13798d310c1@mail.gmail.com>
-Date: Wed, 12 Sep 2007 17:25:57 +0530
-From: "kalash nainwal" <kalash.nainwal@gmail.com>
-To: "Venkat Subbiah" <venkats@cranite.com>
-Subject: Re: irq load balancing
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <3641F7C576757E49AE23AD0D820D72C4232DEA@mailnode1.cranite.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 12 Sep 2007 07:57:00 -0400
+X-Auth-Info: ePAFGOS3DRqgAy5MDjd6QFAmK8luteI51EJ434uQ3no=
+X-Auth-Info: ePAFGOS3DRqgAy5MDjd6QFAmK8luteI51EJ434uQ3no=
+X-Auth-Info: ePAFGOS3DRqgAy5MDjd6QFAmK8luteI51EJ434uQ3no=
+X-Auth-Info: ePAFGOS3DRqgAy5MDjd6QFAmK8luteI51EJ434uQ3no=
+X-Auth-Info: NgyqaZY5AVTbVLigvZ8lY6JEtPu/a1yc26XEJ8ovkqs=
+X-Auth-Info: NgyqaZY5AVTbVLigvZ8lY6JEtPu/a1yc26XEJ8ovkqs=
+Subject: Re: SYSFS: need a noncaching read
+From: Heiko Schocher <hs@denx.de>
+Reply-To: hs@denx.de
+To: Greg KH <greg@kroah.com>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>
+In-Reply-To: <20070912113907.GA24087@kroah.com>
+References: <1189503798.6674.46.camel@Zeus.EmbLux>
+	 <20070912053207.GH23573@pengutronix.de> <20070912100123.GA23182@kroah.com>
+	 <1189595612.6659.23.camel@Zeus.EmbLux>  <20070912113907.GA24087@kroah.com>
+Content-Type: text/plain
+Organization: DENX
+Date: Wed, 12 Sep 2007 13:59:40 +0200
+Message-Id: <1189598380.6659.28.camel@Zeus.EmbLux>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3641F7C576757E49AE23AD0D820D72C4232DEA@mailnode1.cranite.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/12/07, Venkat Subbiah <venkats@cranite.com> wrote:
-> Most of the load in my system is triggered by a single ethernet IRQ. Essentially the IRQ schedules a tasklet and most of the work is done in the taskelet which is scheduled in the IRQ. From what I read looks like the tasklet would be executed on the same CPU on which it was scheduled. So this means even in an SMP system it will be one processor which is overloaded.
->
-> So will using the user space IRQ loadbalancer really help? What I am doubtful about is that the user space load balance comes along and changes the affinity once in a while. But really what I need is every interrupt to go to a different CPU in a round robin fashion.
->
-> Looks like the APIC  can distribute IRQ's dynamically? Is this supported in the kernel and any config or proc interface to turn this on/off.
->
+Hello Greg,
 
-/proc/irq/<irq#>/smp_affinity. But this is not generally suggested for
-performance reasons (cache issues etc).
+Am Mittwoch, den 12.09.2007, 04:39 -0700 schrieb Greg KH:
+> > > Do an lseek back to 0 and then re-read, you will get called in your
+> > > driver again.
+> > 
+> > No thats not true. I thought this too, but if I make a:
+> > 
+> > seek (fd, 0L, SEEK_SET);
+> > 
+> > in Userspace, there is no retrigger in the sysFS, my driver is *not*
+> > called again. So I made a own sysfs_seek function, which does retrigger
+> > the driver ...
+> 
+> Hm, are you sure?  Otherwise the poll() stuff would not work at all.
 
->
-> Thx,
-> Venkat
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Yes.
+Sysfs uses generic_file_llseek (). And in sysfs_read_file ()
+buffer->needs_read_fill must be 1, to reread from the driver.
+generic_file_llseek () doesnt change this variable.
+
+Best regards
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+
