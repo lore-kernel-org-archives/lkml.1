@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933999AbXILCFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934115AbXILCGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933999AbXILCFj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 22:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbXILCFb
+	id S934115AbXILCGc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 22:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbXILCGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 22:05:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:46201 "EHLO ozlabs.org"
+	Tue, 11 Sep 2007 22:06:22 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:59620 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751749AbXILCFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 22:05:30 -0400
-Date: Wed, 12 Sep 2007 12:05:26 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Heiko Schocher <hs@denx.de>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Detlev Zundel <dzu@denx.de>
-Subject: Re: SYSFS: need a noncaching read
-Message-ID: <20070912020526.GD16001@localhost.localdomain>
-Mail-Followup-To: Heiko Schocher <hs@denx.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Detlev Zundel <dzu@denx.de>
-References: <1189503798.6674.46.camel@Zeus.EmbLux>
+	id S1753859AbXILCGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 22:06:21 -0400
+Date: Wed, 12 Sep 2007 11:06:10 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH -mm] fs: define file_fsync() even for CONFIG_BLOCK=n
+Message-ID: <20070912020610.GA26827@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1189503798.6674.46.camel@Zeus.EmbLux>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
-> Hello,
-> 
-> I have developed a device driver and use the sysFS to export some
-> registers to userspace. I opened the sysFS File for one register and did
-> some reads from this File, but I alwas becoming the same value from the
-> register, whats not OK, because they are changing. So I found out that
-> the sysFS caches the reads ... :-(
-> 
-> Is there a way to retrigger the reads (in that way, that the sysFS
-> rereads the values from the driver), without closing and opening the
-> sysFS Files? Or must I better use the ioctl () Driver-interface for
-> exporting these registers?
-> 
-> I am asking this, because I must read every 10 ms 2 registers, so
-> doing a open/read/close for reading one registers is a little bit too
-> much overhead.
-> 
-> I made a sysFS seek function, which retriggers the read, and that works
-> fine, but I have again 2 syscalls, whats also is not optimal.
-> 
-> Or can we make a open () with a (new?)Flag, that informs the sysFS to
-> always reread the values from the underlying driver?
-> 
-> Or a new flag in the "struct attribute_group" in include/linux/sysfs.h,
-> which let the sysfs rereading the values?
+There's nothing that is problematic for file_fsync() with CONFIG_BLOCK=n,
+and it's built in unconditionally anyways, so move the prototype out to
+reflect that. Without this, the unionfs build bails out.
 
-This sounds more like sysfs is really not the right interface for
-polling your registers.  You would probably be better off having your
-driver export a character device from which the register values could
-be read.
+  CC      fs/unionfs/file.o
+fs/unionfs/file.c:148: error: 'file_fsync' undeclared here (not in a function)
+make[2]: *** [fs/unionfs/file.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [fs/unionfs] Error 2
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+
+--
+
+ include/linux/buffer_head.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- linux-2.6.23-rc4-mm1.orig/include/linux/buffer_head.h	2007-09-11 15:15:56.000000000 +0900
++++ linux-2.6.23-rc4-mm1/include/linux/buffer_head.h	2007-09-12 10:18:57.000000000 +0900
+@@ -14,6 +14,8 @@
+ #include <linux/wait.h>
+ #include <asm/atomic.h>
+ 
++int file_fsync(struct file *, struct dentry *, int);
++
+ #ifdef CONFIG_BLOCK
+ 
+ enum bh_state_bits {
+@@ -225,7 +227,6 @@
+ sector_t generic_block_bmap(struct address_space *, sector_t, get_block_t *);
+ int generic_commit_write(struct file *, struct page *, unsigned, unsigned);
+ int block_truncate_page(struct address_space *, loff_t, get_block_t *);
+-int file_fsync(struct file *, struct dentry *, int);
+ int nobh_prepare_write(struct page*, unsigned, unsigned, get_block_t*);
+ int nobh_commit_write(struct file *, struct page *, unsigned, unsigned);
+ int nobh_truncate_page(struct address_space *, loff_t);
