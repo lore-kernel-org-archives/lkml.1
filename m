@@ -1,80 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933046AbXILB5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933247AbXILB5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933046AbXILB5K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 21:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761568AbXILB4t
+	id S933247AbXILB5b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 21:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762281AbXILB4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 21:56:49 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48642 "EHLO
+	Tue, 11 Sep 2007 21:56:51 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49806 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753115AbXILB4r (ORCPT
+	with ESMTP id S1751172AbXILB4r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Sep 2007 21:56:47 -0400
-Message-Id: <20070912015645.290833956@sgi.com>
-References: <20070912015644.927677070@sgi.com>
+Message-Id: <20070912015644.927677070@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 11 Sep 2007 18:56:45 -0700
+Date: Tue, 11 Sep 2007 18:56:44 -0700
 From: travis@sgi.com
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
        linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org
-Subject: [PATCH 01/10] x86: remove x86_cpu_to_log_apicid array (v3)
-Content-Disposition: inline; filename=remove-x86_cpu_to_log_apicid
+Subject: [PATCH 00/10] x86: Reduce Memory Usage and Inter-Node message traffic (v3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a copy of an older patch that is in rc3-mm1.  It's needed
-to allow the remaining patches to integrate correctly.
 
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86_64/kernel/genapic.c      |    2 --
- arch/x86_64/kernel/genapic_flat.c |    1 -
- arch/x86_64/kernel/smpboot.c      |    1 -
- include/asm-x86_64/smp.h          |    1 -
- 4 files changed, 5 deletions(-)
+Note:
 
---- a/arch/x86_64/kernel/genapic.c
-+++ b/arch/x86_64/kernel/genapic.c
-@@ -29,8 +29,6 @@
- 					= { [0 ... NR_CPUS-1] = BAD_APICID };
- EXPORT_SYMBOL(x86_cpu_to_apicid);
- 
--u8 x86_cpu_to_log_apicid[NR_CPUS]	= { [0 ... NR_CPUS-1] = BAD_APICID };
--
- struct genapic __read_mostly *genapic = &apic_flat;
- 
- /*
---- a/arch/x86_64/kernel/genapic_flat.c
-+++ b/arch/x86_64/kernel/genapic_flat.c
-@@ -52,7 +52,6 @@
- 
- 	num = smp_processor_id();
- 	id = 1UL << num;
--	x86_cpu_to_log_apicid[num] = id;
- 	apic_write(APIC_DFR, APIC_DFR_FLAT);
- 	val = apic_read(APIC_LDR) & ~APIC_LDR_MASK;
- 	val |= SET_APIC_LOGICAL_ID(id);
---- a/arch/x86_64/kernel/smpboot.c
-+++ b/arch/x86_64/kernel/smpboot.c
-@@ -702,7 +702,6 @@
- 		cpu_clear(cpu, cpu_present_map);
- 		cpu_clear(cpu, cpu_possible_map);
- 		x86_cpu_to_apicid[cpu] = BAD_APICID;
--		x86_cpu_to_log_apicid[cpu] = BAD_APICID;
- 		return -EIO;
- 	}
- 
---- a/include/asm-x86_64/smp.h
-+++ b/include/asm-x86_64/smp.h
-@@ -78,7 +78,6 @@
-  * the real APIC ID <-> CPU # mapping.
-  */
- extern u8 x86_cpu_to_apicid[NR_CPUS];	/* physical ID */
--extern u8 x86_cpu_to_log_apicid[NR_CPUS];
- extern u8 bios_cpu_apicid[];
- 
- static inline int cpu_present_to_apicid(int mps_cpu)
+This patch consolidates all the previous patches regarding
+the conversion of static arrays sized by NR_CPUS into per_cpu
+data arrays and is referenced against 2.6.23-rc6 .
+
+
+v1 Intro:
+
+In x86_64 and i386 architectures most arrays that are sized
+using NR_CPUS lay in local memory on node 0.  Not only will most
+(99%?) of the systems not use all the slots in these arrays,
+particularly when NR_CPUS is increased to accommodate future
+very high cpu count systems, but a number of cache lines are
+passed unnecessarily on the system bus when these arrays are
+referenced by cpus on other nodes.
+
+Typically, the values in these arrays are referenced by the cpu
+accessing it's own values, though when passing IPI interrupts,
+the cpu does access the data relevant to the targeted cpu/node.
+Of course, if the referencing cpu is not on node 0, then the
+reference will still require cross node exchanges of cache
+lines.  A common use of this is for an interrupt service
+routine to pass the interrupt to other cpus local to that node.
+
+Ideally, all the elements in these arrays should be moved to the
+per_cpu data area.  In some cases (such as x86_cpu_to_apicid)
+the array is referenced before the per_cpu data areas are setup.
+In this case, a static array is declared in the __initdata
+area and initialized by the booting cpu (BSP).  The values are
+then moved to the per_cpu area after it is initialized and the
+original static array is freed with the rest of the __initdata.
+This patch is referenced against 2.6.23-rc6.
+--
+
+Changes for version v2:
+
+> > Note the addtional change of the cpu_llc_id type from u8
+> > to int for ARCH x86_64 to correspond with ARCH i386.
+
+> At least currently it cannot be more than 8 bit. So why
+> waste memory? It would be better to change i386
+
+Done.  (x86_64 type => u8).
+
+> > Fix four instances where cpu_to_node is referenced
+> > > by array instead of via the cpu_to_node macro.  This
+> > > is preparation to moving it to the per_cpu data area.
+
+> Shouldn't this patch be logically before the per cpu 
+> conversion (which is 3). This way the result would
+> be git bisectable.
+
+Done.  (Moved to PATCH 1).
+
+> >     processor_core.c currently tries to determine the apicid by special casing
+> > >     for IA64 and x86. The desired information is readily available via
+> > > 
+> > > 	    cpu_physical_id()
+> > > 
+> > >     on IA64, i386 and x86_64.
+> 
+> Have you tried this with a !CONFIG_SMP build? The drivers/dma code was doing
+> the same and running into problems because it wasn't defined there.
+
+Fixed. (New export in PATCH 1).
+--
+
+Changes for version v3:
+
+cpu_sibling_map has been converted to a per_cpu data array to fix
+build errors on ia64, ppc64 and sparc64 to accomodate references in
+block/blktrace.c and kernel/sched.c when CONFIG_SCHED_SMT is defined.
+
+Warning: ppc64 and sparc64 have not yet been built nor tested.
+--
 
 -- 
