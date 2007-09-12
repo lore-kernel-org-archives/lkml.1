@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934009AbXILCeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965738AbXILChY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934009AbXILCeU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Sep 2007 22:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbXILCeL
+	id S965738AbXILChY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Sep 2007 22:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbXILChM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Sep 2007 22:34:11 -0400
-Received: from ozlabs.org ([203.10.76.45]:43072 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752827AbXILCeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Sep 2007 22:34:09 -0400
-From: Michael Neuling <mikey@neuling.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: akpm@linux-foundation.org, paulus@samba.org, Alan Cox <alan@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: add new required termio functions 
-In-reply-to: <alpine.LFD.0.999.0709111915350.16478@woody.linux-foundation.org> 
-References: <8018.1189562679@neuling.org> <alpine.LFD.0.999.0709111915350.16478@woody.linux-foundation.org>
-Comments: In-reply-to Linus Torvalds <torvalds@linux-foundation.org>
-   message dated "Tue, 11 Sep 2007 19:17:42 -0700."
-X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 21.4.1
-Date: Wed, 12 Sep 2007 12:34:08 +1000
-Message-ID: <10146.1189564448@neuling.org>
+	Tue, 11 Sep 2007 22:37:12 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:55127 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753100AbXILChK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Sep 2007 22:37:10 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18151.20636.425784.226044@stoffel.org>
+Date: Tue, 11 Sep 2007 22:36:12 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, torvalds@linux-foundation.org
+Subject: Re: [PATCH 21/23] mm: per device dirty threshold
+In-Reply-To: <20070911200015.732492000@chello.nl>
+References: <20070911195350.825778000@chello.nl>
+	<20070911200015.732492000@chello.nl>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 12 Sep 2007, Michael Neuling wrote:
-> >
-> > The "tty: termios locking functions break with new termios type" patch
-> > (f629307c857c030d5a3dd777fee37c8bb395e171) breaks the powerpc compile.
-> 
-> Really?
-> 
-> It shouldn't. The use of kernel_termios_to_user_termios_1() is conditional 
-> on the architecture having a define for TCGETS2, and I think they match 
-> up. I see:
-> 
-> 	[torvalds@woody linux]$ git grep -l kernel_termios_to_user_termios_1 in
-clude | wc -l
-> 	10
-> 	[torvalds@woody linux]$ git grep -l TCGETS2 include | wc -l
-> 	10
-> 
-> and in neither case is ppc in that list of architecures.
-> 
-> So maybe you just read the patch without actually testing whether it 
-> actually broke powerpc?
 
-Not, I actually compiled it.
+Peter> Scale writeback cache per backing device, proportional to its
+Peter> writeout speed.  By decoupling the BDI dirty thresholds a
+Peter> number of problems we currently have will go away, namely:
 
-> Or is something subtler going on?
+Ah, this clarifies my questions!  Thanks!
 
-Looks like those new calls are not protected by the TCGETS2 define.
-Adding those ifdefs seems like the correct fix.  
+Peter>  - mutual interference starvation (for any number of BDIs);
+Peter>  - deadlocks with stacked BDIs (loop, FUSE and local NFS mounts).
 
-Mikey
+Peter> It might be that all dirty pages are for a single BDI while
+Peter> other BDIs are idling. By giving each BDI a 'fair' share of the
+Peter> dirty limit, each one can have dirty pages outstanding and make
+Peter> progress.
 
+Question, can you change (shrink) the limit on a BDI while it has IO
+in flight?  And what will that do to the system?  I.e. if you have one
+device doing IO, so that it has a majority of the dirty limit.  Then
+another device starts IO, and it's a *faster* device, how
+quickly/slowly does the BDI dirty limits change for both the old and
+new device?  
 
+Peter> A global threshold also creates a deadlock for stacked BDIs;
+Peter> when A writes to B, and A generates enough dirty pages to get
+Peter> throttled, B will never start writeback until the dirty pages
+Peter> go away. Again, by giving each BDI its own 'independent' dirty
+Peter> limit, this problem is avoided.
+
+Peter> So the problem is to determine how to distribute the total
+Peter> dirty limit across the BDIs fairly and efficiently. A DBI that
+
+You mean BDI here, not DBI.  
+
+Peter> has a large dirty limit but does not have any dirty pages
+Peter> outstanding is a waste.
+
+Peter> What is done is to keep a floating proportion between the DBIs
+Peter> based on writeback completions. This way faster/more active
+Peter> devices get a larger share than slower/idle devices.
+
+Does a slower device get a BDI which is calculated to keep it's limit
+under a certain number of seconds of outstanding IO?  This way no
+device can build up more than say 15 seconds of outstanding IO to
+flush at any one time.  
+
+Thanks!
+John
