@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXILVUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933581AbXILVUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932785AbXILVUM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 17:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765502AbXILVRI
+	id S933581AbXILVUu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 17:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765541AbXILVRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 17:17:08 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:55979 "EHLO
+	Wed, 12 Sep 2007 17:17:09 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:55962 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764830AbXILVRE (ORCPT
+	with ESMTP id S1764862AbXILVRE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 12 Sep 2007 17:17:04 -0400
-Date: Wed, 12 Sep 2007 17:16:44 -0400
+Date: Wed, 12 Sep 2007 17:16:45 -0400
 From: Jeff Dike <jdike@addtoit.com>
 To: Andrew Morton <akpm@osdl.org>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 1/11] UML - Eliminate hz()
-Message-ID: <20070912211644.GA10231@c2.user-mode-linux.org>
+Subject: [PATCH 2/11] UML - Clean up switching between virtual and real timers
+Message-ID: <20070912211645.GA10237@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,101 +24,165 @@ User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eliminate hz() since its only purpose was to provide a kernel-space
-constant to userspace code.  This can be done instead by providing the
-constant directly through kernel_constants.h.
+Fix up the switching between virtual and real timers.  The idle loop
+sleeps, the timer at that point must be real time.  At all other
+times, the timer must be virtual.  Even when userspace is running, and
+the kernel is asleep, the virtual timer is correct because the process
+timer will be running.
+
+The timer switch used to be in the context switch and in the timer
+handler code.  This is moved to the idle loop and the signal handler,
+making it much more clear why it is happening.
+
+switch_timers now returns the old timer type so that it may be
+restored.  The signal handler uses this in order to restore the
+previous timer type when it returns.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- arch/um/include/common-offsets.h |    2 ++
- arch/um/include/kern_util.h      |    1 -
- arch/um/kernel/time.c            |    5 -----
- arch/um/os-Linux/skas/process.c  |    5 +++--
- arch/um/os-Linux/time.c          |    7 +++----
- 5 files changed, 8 insertions(+), 12 deletions(-)
+ arch/um/include/os.h      |    2 +-
+ arch/um/kernel/process.c  |    9 ++-------
+ arch/um/os-Linux/signal.c |    9 +++------
+ arch/um/os-Linux/time.c   |   27 ++++++++++++++++++++-------
+ 4 files changed, 26 insertions(+), 21 deletions(-)
 
-Index: linux-2.6.22/arch/um/include/common-offsets.h
+Index: linux-2.6.22/arch/um/include/os.h
 ===================================================================
---- linux-2.6.22.orig/arch/um/include/common-offsets.h	2007-08-30 21:27:32.000000000 +0100
-+++ linux-2.6.22/arch/um/include/common-offsets.h	2007-08-30 21:30:13.000000000 +0100
-@@ -32,3 +32,5 @@ DEFINE(UM_GFP_ATOMIC, GFP_ATOMIC);
- DEFINE(crypto_tfm_ctx_offset, offsetof(struct crypto_tfm, __crt_ctx));
+--- linux-2.6.22.orig/arch/um/include/os.h	2007-08-30 16:27:33.000000000 -0400
++++ linux-2.6.22/arch/um/include/os.h	2007-08-30 16:30:49.000000000 -0400
+@@ -250,7 +250,7 @@ extern void os_dump_core(void);
+ /* time.c */
+ #define BILLION (1000 * 1000 * 1000)
  
- DEFINE(UM_THREAD_SIZE, THREAD_SIZE);
-+
-+DEFINE(UM_HZ, HZ);
-Index: linux-2.6.22/arch/um/include/kern_util.h
+-extern void switch_timers(int to_real);
++extern int switch_timers(int to_real);
+ extern void idle_sleep(int secs);
+ extern int set_interval(int is_virtual);
+ extern void disable_timer(void);
+Index: linux-2.6.22/arch/um/kernel/process.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/include/kern_util.h	2007-08-30 21:27:33.000000000 +0100
-+++ linux-2.6.22/arch/um/include/kern_util.h	2007-08-30 21:30:13.000000000 +0100
-@@ -64,7 +64,6 @@ extern void paging_init(void);
- extern void init_flush_vm(void);
- extern void *syscall_sp(void *t);
- extern void syscall_trace(struct uml_pt_regs *regs, int entryexit);
--extern int hz(void);
- extern unsigned int do_IRQ(int irq, struct uml_pt_regs *regs);
- extern void interrupt_end(void);
- extern void initial_thread_cb(void (*proc)(void *), void *arg);
-Index: linux-2.6.22/arch/um/kernel/time.c
-===================================================================
---- linux-2.6.22.orig/arch/um/kernel/time.c	2007-08-30 21:27:32.000000000 +0100
-+++ linux-2.6.22/arch/um/kernel/time.c	2007-09-02 19:01:28.000000000 +0100
-@@ -11,11 +11,6 @@
- #include "kern_util.h"
- #include "os.h"
+--- linux-2.6.22.orig/arch/um/kernel/process.c	2007-08-30 16:27:32.000000000 -0400
++++ linux-2.6.22/arch/um/kernel/process.c	2007-08-30 16:30:49.000000000 -0400
+@@ -95,18 +95,11 @@ void *_switch_to(void *prev, void *next,
+ 	do {
+ 		current->thread.saved_task = NULL;
  
--int hz(void)
--{
--	return HZ;
--}
+-		/* XXX need to check runqueues[cpu].idle */
+-		if (current->pid == 0)
+-			switch_timers(0);
 -
- /*
-  * Scheduler clock - returns current time in nanosec units.
-  */
-Index: linux-2.6.22/arch/um/os-Linux/skas/process.c
+ 		switch_threads(&from->thread.switch_buf,
+ 			       &to->thread.switch_buf);
+ 
+ 		arch_switch_to(current->thread.prev_sched, current);
+ 
+-		if (current->pid == 0)
+-			switch_timers(1);
+-
+ 		if (current->thread.saved_task)
+ 			show_regs(&(current->thread.regs));
+ 		next= current->thread.saved_task;
+@@ -251,7 +244,9 @@ void default_idle(void)
+ 		if (need_resched())
+ 			schedule();
+ 
++		switch_timers(1);
+ 		idle_sleep(10);
++		switch_timers(0);
+ 	}
+ }
+ 
+Index: linux-2.6.22/arch/um/os-Linux/signal.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/skas/process.c	2007-08-30 21:27:32.000000000 +0100
-+++ linux-2.6.22/arch/um/os-Linux/skas/process.c	2007-09-02 19:01:28.000000000 +0100
-@@ -392,8 +392,9 @@ int copy_context_skas0(unsigned long new
- 	*data = ((struct stub_data) { .offset	= MMAP_OFFSET(new_offset),
- 				      .fd	= new_fd,
- 				      .timer    = ((struct itimerval)
--					            { { 0, 1000000 / hz() },
--						      { 0, 1000000 / hz() }})});
-+					            { { 0, 1000000 / UM_HZ },
-+						      { 0, 1000000 / UM_HZ }})
-+				 });
- 	err = ptrace_setregs(pid, thread_regs);
- 	if (err < 0)
- 		panic("copy_context_skas0 : PTRACE_SETREGS failed, "
+--- linux-2.6.22.orig/arch/um/os-Linux/signal.c	2007-08-30 16:27:32.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/signal.c	2007-08-30 16:30:49.000000000 -0400
+@@ -59,17 +59,11 @@ static void real_alarm_handler(int sig, 
+ {
+ 	struct uml_pt_regs regs;
+ 
+-	if (sig == SIGALRM)
+-		switch_timers(0);
+-
+ 	if (sc != NULL)
+ 		copy_sc(&regs, sc);
+ 	regs.is_user = 0;
+ 	unblock_signals();
+ 	timer_handler(sig, &regs);
+-
+-	if (sig == SIGALRM)
+-		switch_timers(1);
+ }
+ 
+ void alarm_handler(int sig, struct sigcontext *sc)
+@@ -116,6 +110,7 @@ void (*handlers[_NSIG])(int sig, struct 
+ void handle_signal(int sig, struct sigcontext *sc)
+ {
+ 	unsigned long pending = 0;
++	int timer = switch_timers(0);
+ 
+ 	do {
+ 		int nested, bail;
+@@ -152,6 +147,8 @@ void handle_signal(int sig, struct sigco
+ 		if (!nested)
+ 			pending = from_irq_stack(nested);
+ 	} while (pending);
++
++	switch_timers(timer);
+ }
+ 
+ extern void hard_handler(int sig);
 Index: linux-2.6.22/arch/um/os-Linux/time.c
 ===================================================================
---- linux-2.6.22.orig/arch/um/os-Linux/time.c	2007-08-30 21:27:32.000000000 +0100
-+++ linux-2.6.22/arch/um/os-Linux/time.c	2007-09-02 19:01:28.000000000 +0100
-@@ -8,14 +8,13 @@
- #include <signal.h>
- #include <time.h>
- #include <sys/time.h>
--#include "kern_util.h"
- #include "kern_constants.h"
+--- linux-2.6.22.orig/arch/um/os-Linux/time.c	2007-08-30 16:30:13.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/time.c	2007-08-30 16:30:49.000000000 -0400
+@@ -12,6 +12,8 @@
  #include "os.h"
  #include "user.h"
  
++static int is_real_timer = 0;
++
  int set_interval(int is_virtual)
  {
--	int usec = 1000000/hz();
-+	int usec = 1000000/UM_HZ;
- 	int timer_type = is_virtual ? ITIMER_VIRTUAL : ITIMER_REAL;
- 	struct itimerval interval = ((struct itimerval) { { 0, usec },
- 							  { 0, usec } });
-@@ -43,8 +42,8 @@ void disable_timer(void)
- void switch_timers(int to_real)
+ 	int usec = 1000000/UM_HZ;
+@@ -39,12 +41,14 @@ void disable_timer(void)
+ 	signal(SIGVTALRM, SIG_IGN);
+ }
+ 
+-void switch_timers(int to_real)
++int switch_timers(int to_real)
  {
  	struct itimerval disable = ((struct itimerval) { { 0, 0 }, { 0, 0 }});
--	struct itimerval enable = ((struct itimerval) { { 0, 1000000/hz() },
--							{ 0, 1000000/hz() }});
-+	struct itimerval enable = ((struct itimerval) { { 0, 1000000/UM_HZ },
-+							{ 0, 1000000/UM_HZ }});
- 	int old, new;
+-	struct itimerval enable = ((struct itimerval) { { 0, 1000000/UM_HZ },
+-							{ 0, 1000000/UM_HZ }});
+-	int old, new;
++	struct itimerval enable;
++	int old, new, old_type = is_real_timer;
++
++	if(to_real == old_type)
++		return to_real;
  
  	if (to_real) {
+ 		old = ITIMER_VIRTUAL;
+@@ -55,10 +59,19 @@ void switch_timers(int to_real)
+ 		new = ITIMER_VIRTUAL;
+ 	}
+ 
+-	if ((setitimer(old, &disable, NULL) < 0) ||
+-	    (setitimer(new, &enable, NULL)))
+-		printk(UM_KERN_ERR "switch_timers - setitimer failed, "
++	if (setitimer(old, &disable, &enable) < 0)
++		printk(UM_KERN_ERR "switch_timers - setitimer disable failed, "
++		       "errno = %d\n", errno);
++
++	if((enable.it_value.tv_sec == 0) && (enable.it_value.tv_usec == 0))
++		enable.it_value = enable.it_interval;
++
++	if (setitimer(new, &enable, NULL))
++		printk(UM_KERN_ERR "switch_timers - setitimer enable failed, "
+ 		       "errno = %d\n", errno);
++
++	is_real_timer = to_real;
++	return old_type;
+ }
+ 
+ unsigned long long os_nsecs(void)
