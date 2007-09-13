@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbXIMTSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765610AbXIMTXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932089AbXIMTSX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 15:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762090AbXIMTSP
+	id S1765610AbXIMTXB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 15:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbXIMTWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 15:18:15 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50202 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755451AbXIMTSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 15:18:14 -0400
-Date: Thu, 13 Sep 2007 21:19:38 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Chris Wedgwood <cw@f00f.org>, Oleg Verych <olecom@flower.upol.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, davej@redhat.com,
-       Eric Sandeen <sandeen@sandeen.net>
-Subject: Re: [RFC PATCH] Add a 'minimal tree install' target
-Message-ID: <20070913191938.GD27146@uranus.ravnborg.org>
-References: <20070912232534.GA26868@puku.stupidest.org> <20070913183359.GA27146@uranus.ravnborg.org> <20070913185753.GA9259@puku.stupidest.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 13 Sep 2007 15:22:53 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:62454 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753997AbXIMTWw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 15:22:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OxI6/l9ppvLOM3p0kf0A6YAXTgJ35juNFFKCgRBTWmoLsytojRVz15aRxnyvmyFLMaWU2xFz9M7dEDuV8kwJNOFfx86NAyRHTlQsxr8vRRZGaztis6YmnK1AjtVdrUCls+RjbX1lcUfQeJJuGoRehjhVzQ4z3p9RjqoemG5opOQ=
+Message-ID: <86802c440709131222v6e819e4ayed27430ba4e61154@mail.gmail.com>
+Date: Thu, 13 Sep 2007 12:22:51 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used
+Cc: "Andi Kleen" <ak@suse.de>, "Greg KH" <greg@kroah.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jeff Garzik" <jeff@garzik.org>, "Martin Mares" <mj@ucw.cz>,
+       "dean gaudet" <dean@arctic.org>,
+       "Robert Richter" <robert.richter@amd.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <46E97178.2040903@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070913185753.GA9259@puku.stupidest.org>
-User-Agent: Mutt/1.4.2.1i
+References: <200709121921.43950.yinghai.lu@sun.com>
+	 <200709131147.43446.ak@suse.de> <20070913104704.GA3878@kroah.com>
+	 <200709131353.15752.ak@suse.de>
+	 <86802c440709131001w4b758921r52a23f1732a6e9c8@mail.gmail.com>
+	 <46E97178.2040903@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Chris.
+On 9/13/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+> >
+> > BIOS guys also said that fam 10h need mmconfig via eax accessing, may
+> > need OS do sth, so it is safe to stay with MCFG entry for SB like
+> > mcp55...
+> >
+> > but latest kernel already have that workaround to make mmconfig via eax...
+> >
+>
+> This is actually a good point.  Since the CPU vendor managed to
+> completely fuck up the operation of MMCONFIG itself on this CPU (it's a
+> *MEMORY REFERENCE*, guys!), it is actually to be expected and prudent
+> that BIOS vendors will drop the MCFG entry.  MMCONFIG doesn't actually
+> work on this CPU for any system software which doesn't already know to
+> work around this particular piece of severe braindamage;
+> standards-complicant MMCONFIG isn't supported at all.
 
-Thanks for working on this.
- 
-> > > +if [ "$srctree" != "$objtree" ] ; then
-> > > +    cp --parents $(find -type f -name "Makefile*" -o -name "Kconfig*" -not -ipath "$objtree/*Makefile" ) ${tgtdir}
-> >                                                                                                ^
-> > Why this wildcard??? (objtree/>*<Makefile)
-> > Seems to be a typing error.
-> 
-> no, it's so we catch things like
-> 
-> linux/build/Makefile
-> 
->  *and*
-> 
-> linux/build/foo/bar/Makefile
-Obviously - I missed the find when I looked.
-Thanks for the explanation. And no comments needed in the script -
-I should just have read the full command line.
+if other mmconfig device on x86 is sick of accessing via eax, may need
+to provide one fam10h_pci_mmcfg to be assigned to raw_pci_ops instead
+and leave pci_mmcfg to default behavior ( *MEMORY REFERENCE*).
 
-> 
-> > > +#rm -rf ${tgtdir}/Documentation
-> > Remove this line since it is commented out
-> 
-> right, actually, it can be uncommented but the 'make help' fails; i'm
-> not sure if we need make help to work since most of the other targets
-> won't anyhow
-> 
-> so should i remove it (leaving 'make help' as usable) or remove it?
-Un-comment it so we do not break make help.
-
-> > Something less hardcoded are preferred. Maybe like:
-> > cp -a `ls | grep -v ^asm` asm-generic $(tgtdir}/include
-> 
-> ok (though i'm not a big fan of ls | grep as a rule, it tends to be
-> fragile when people do dumb things)
-
-find . -maxdepth 1 -! -name 'asm*'
-seems to do the trick and it is better than ls.
-
-> 
->     sed -n "s/^ALTARCH[[:space:]]:=[[:space:]]\(.*$\)\+/\1/p"
-> 
-> (i'm sure there is a better way though)
-
-Oleg (added to mail) - you are quite confident in sed et al.
-Let us know if there is a simpler way.
-
-(We want to pick i386 from include/asm-x86_64/Kbuild
-and similar for the architectures that uses ARCHDEF).
-
-	Sam
+YH
