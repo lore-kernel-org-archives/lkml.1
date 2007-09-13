@@ -1,91 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762400AbXIMXQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764130AbXIMXRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762400AbXIMXQO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbXIMXP6
+	id S1764130AbXIMXRT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755814AbXIMXRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:15:58 -0400
-Received: from ozlabs.org ([203.10.76.45]:57535 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750812AbXIMXP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:15:58 -0400
-Subject: Re: [patch 1/8] Immediate Values - Global Modules List and Module
-	Mutex
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20070913212107.GA15826@Krystal>
-References: <20070906200228.086651361@polymtl.ca>
-	 <20070906200314.079453533@polymtl.ca>
-	 <20070908072811.GB1819@martell.zuzino.mipt.ru>
-	 <1189468414.8023.66.camel@localhost.localdomain>
-	 <20070911004541.GA4360@Krystal>
-	 <1189487938.20631.53.camel@localhost.localdomain>
-	 <20070911142733.GA7850@Krystal>
-	 <1189662432.32322.1.camel@localhost.localdomain>
-	 <20070913212107.GA15826@Krystal>
-Content-Type: text/plain
-Date: Fri, 14 Sep 2007 09:15:17 +1000
-Message-Id: <1189725317.7262.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 13 Sep 2007 19:17:09 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:49347 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752936AbXIMXRI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 19:17:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZiBEmsoJmlhfzuuYE/F9Re1QIk2XYEjmw2gVYYLU3bCj9mwO9A9yW/3iBFD3Pla6hOui23KQBOP2VmeVe1a8bW3Q5Yp4TOz/rn1UZrR4c1ZPbGdP7g7Qz0uXGNTFiNSRJSxjUtPa9uRoMti4uup+aLN+fSBak4bzi5oZYUAX3bk=
+Message-ID: <d9def9db0709131617l14495fecp5e15f91aa5dd9474@mail.gmail.com>
+Date: Fri, 14 Sep 2007 01:17:05 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Steven Toth" <stoth@hauppauge.com>
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+Cc: "Manu Abraham" <abraham.manu@gmail.com>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+In-Reply-To: <46E99F36.8090809@hauppauge.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46C1BCC5.9090709@amd.com> <1189626560.5160.57.camel@gaivota>
+	 <d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com>
+	 <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>
+	 <20070913131353.GB26972@linuxtv.org>
+	 <d9def9db0709130712h108c7c1obfe24833f5dc27a1@mail.gmail.com>
+	 <46E95C54.4060502@gmail.com>
+	 <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
+	 <46E99F36.8090809@hauppauge.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-09-13 at 17:21 -0400, Mathieu Desnoyers wrote:
-> * Rusty Russell (rusty@rustcorp.com.au) wrote:
-> > Sure, but why is that the caller's problem?  immediate_set() isn't
-> > fastpath, so why not make it do an "if (early_boot)" internally?
-> 
-> I see two reasons:
-> 1 - early_boot, or anything that looks like this, does not exist
-> currently (and the following reason might show why).
-> 2 - If we use this, we cannot declare the early code with __init, so it
-> will have to stay there forever insteaf of being removable once boot is
-> over.
-> 
-> Therefore, I think it's better to stick to an immediate_set_early
-> version.
+On 9/13/07, Steven Toth <stoth@hauppauge.com> wrote:
+>
+> >
+> >> Also there is to consider a non technical aspect, whether vendors will
+> >> misuse this interface for binary only, undermining the efforts put in
+> >> for OSS drivers.
+> >>
+> >>
+> >
+> > What holds companies for using the current available code putting it
+> > into an rpm or deb package and releasing such code now?
+> >
+> > The Avermedia example I pointed out to is a good example already.
+> > As from my side I won't release binary drivers.
+> > Although on the other side:
+> > * are drivers from vendors which work through several kernel versions
+> > that bad?
+> > * Why did someone duallicense videodev2 with BSD/GPL?
+> >
+> > I would appreciate if someone else on the list could also comment
+> > the reason that drivers should all be included in the linuxkernel just
+> > because forcing the companies to release binary drivers because
+> > of that. My opinion about that is if a company wants to go opensource
+> > they will do so, if not they will either not release a driver or release
+> > nothing.
+> >
+> >
+>
+>
+> I know for certain that adding a userland API tuner/demod interface to
+> the kernel, allowing non-caring opportunistic silicon or board vendors
+> to developer closed source proprietary drivers, will have a negative
+> effect on the community and we'd set back linuxtv 3-5 years.
+>
+> I know for certain that it would happen. Trust me.
+>
+> I've told you this countless times and you're not hearing me.
+>
+> Hauppauge have some leverage with Conexant and NXP to release public
+> datasheets. If they just have to release a demod.so (or similar)
+> loadable, they'll defer to the board vendors and we'll see the certain
+> board vendors 'locking other board vendors' out of their drivers. We'll
+> see embedded firmware, not shared between drivers.
+>
+> Except, it won't stop at demod.so. It will extend into unfixable bugs
+> for VendorB's board, because VendorA doesn't want to release a new
+> demod.so, and VendorB has no linux resources. What happens next? For
+> financial reasons - demod.so will begin to include checks to see if
+> specific PCI or USB devices are present in the system, and will fail to
+> work properly (if at all) when they're not being used with the preferred
+> products.
+>
+Steven,
 
-My problem is that I don't know when to use immediate_set_early!  You
-say "early boot": what does that mean?  Is it arch-specific?  And why is
-it my problem anyway?
+what stops vendors of using the current existing code to achieve that
+goal. They could provide binary drivers with the existing API.
 
-Since arch_immediate_update_early() is a memcpy, I don't really buy the
-bloat argument (it has some silly-looking optimization, but that should
-be removed anyway).  I'd really rather see arch_immediate_update()
-examine an internal flag and do the memcpy if it's too early for the
-full algorithm.  That's the only place which really knows, after all.
-You may need some external hook to update that internal "too early"
-flag, of course.
+What stops companies to intercept the ioctl calls and overriding some
+I2C commands?
 
-Alternatively, if you called it "immediate_init" then the semantics
-change slightly, but are more obvious (ie. only use this when the value
-isn't being accessed yet).  But it can't be __init then anyway.
+Since you know about windows drivers (at least I think that you know
+about it) you might know about the limitations of the v4l/dvb API
+in general the reason just put as much code as possible into the
+kernel just for forcing companies to release code under GPL doesn't
+seem to be valid.
+How about proprietary video formats, would you also place the decoding
+algorithms in kernel  just to force companies to release their code
+for it?
+What do you think about the existing usbfs implementation, which
+allows to implement usb drivers completly in userspace?
+What do you think about IOMMU?
 
-On an unrelated note, did you consider simply IPI-ing and doing the
-substitution with all CPUs stopped?  If you only updated the immediate
-references to this particular var, it should be fast enough not to upset
-the RT guys, even.
+please answer those questions.
 
-> > I was thinking that we might find useful specific cases before we get
-> > GCC support, which archs can override with tricky asm if they wish.
-> > 
-> 
-> The first useful case is the Linux Kernel Markers, which really needs a
-> completely boolean if: active or inactive. That would be a good test
-> case to get gcc support.
-
-Well, you can do that in asm without gcc support.  It's a little nasty:
-since gcc will know nothing about the function call, it can't have side
-effects which are visible in this function, and you'll have to save and
-restore *all* regs if you decide to do the function call.  But it's
-possible (a 5-byte nop gets changed to a call, the call does the pushes
-and sets the args regs, calls the function, then pops everything and
-rets).
-
-Cheers,
-Rusty.
-
+thanks,
+Markus
