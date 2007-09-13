@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbXIMNEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbXIMNOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757451AbXIMNEe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 09:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXIMNEZ
+	id S1755168AbXIMNOa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 09:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbXIMNOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 09:04:25 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53348 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753034AbXIMNEY (ORCPT
+	Thu, 13 Sep 2007 09:14:22 -0400
+Received: from allen.werkleitz.de ([80.190.251.108]:43614 "EHLO
+	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753238AbXIMNOV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 09:04:24 -0400
-Date: Thu, 13 Sep 2007 23:03:42 +1000
-From: David Chinner <dgc@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: David Chinner <dgc@sgi.com>, Mel Gorman <mel@skynet.ie>,
-       Christoph Lameter <clameter@sgi.com>, andrea@suse.de,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Fengguang Wu <fengguang.wu@gmail.com>, swin wang <wangswin@gmail.com>,
-       totty.lu@gmail.com, hugh@veritas.com, joern@lazybastard.org
-Subject: Re: [00/41] Large Blocksize Support V7 (adds memmap support)
-Message-ID: <20070913130342.GT734179@sgi.com>
-References: <20070911060349.993975297@sgi.com> <200709120127.33832.nickpiggin@yahoo.com.au> <20070913014905.GV995458@sgi.com> <200709130323.22534.nickpiggin@yahoo.com.au>
-Mime-Version: 1.0
+	Thu, 13 Sep 2007 09:14:21 -0400
+X-Greylist: delayed 2002 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Sep 2007 09:14:21 EDT
+Date: Thu, 13 Sep 2007 15:13:53 +0200
+From: Johannes Stezenbach <js@linuxtv.org>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
+       video4linux-list@redhat.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Message-ID: <20070913131353.GB26972@linuxtv.org>
+References: <46C1BCC5.9090709@amd.com> <1189626560.5160.57.camel@gaivota> <d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com> <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200709130323.22534.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 84.190.150.24
+Subject: Re: [linux-dvb] [PATCH] Userspace tuner
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 03:23:21AM +1000, Nick Piggin wrote:
-> On Thursday 13 September 2007 11:49, David Chinner wrote:
-> > On Wed, Sep 12, 2007 at 01:27:33AM +1000, Nick Piggin wrote:
+On Thu, Sep 13, 2007, Markus Rechberger wrote:
+> Let's add the LKML to this.
 > 
-> > > I just gave 4 things which combined might easily reduce xfs vmap overhead
-> > > by several orders of magnitude, all without changing much code at all.
+> On 9/13/07, Markus Rechberger <mrechberger@gmail.com> wrote:
+> > On 9/12/07, Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
+> > > I don't see any technical reason why tuner drivers should be moved to
+> > > userspace. Looking at xc3028 device, the driver is very simple and
+> > > doesn't require any special treatment that it isn't possible to be done
+> > > at kernel. There are already some implementations on kernelspace that
+> > > works fine.
 > >
-> > Patches would be greatly appreciately. You obviously understand this
-> > vm code much better than I do, so if it's easy to fix by adding some
-> > generic vmap cache thingy, please do.
-> 
-> Well, it may not be easy to _fix_, but it's easy to try a few improvements ;)
-> 
-> How do I make an image and run a workload that will coerce XFS into
-> doing a significant number of vmaps?
+> > As from my side to support the xceive driver properly it needs a
+> > rewrite and a proper API description. Since it's not possible to
+> > discuss any API changes
 
-# mkfs.xfs -n size=16384 <dev>
+Not possible? We're doing it all the time...
 
-to create a filesystem with a 16k directory block size on a 4k page
-machine.
+However, your ideas were rejected in this discussion,
+and you can't seem to get over it.
 
-Then just do operations on directories with lots of files in them
-(tens of thousands). Every directory operation will require at
-least one vmap in this situation - e.g. a traversal will result in
-lots and lots of blocks being read that will require vmap() for every
-directory block read from disk and an unmap almost immediately
-afterwards when the reference is dropped....
+> > don't get me wrong but the existing community is rather small and
+> > kicking off people who are interested in changing things.
 
-Cheers,
+IMHO there is a lack of openness caused by people being burned
+in past flamewars. This makes it a bit difficult to see through
+what happens and why, and to participate.  However, I think it
+is completely wrong to say that the community is "kicking off people".
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+> > I'm against how the project works out at the moment and how it worked
+> > out in history. Exactly this way will kick off companies to be
+> > interested in future like Avermedia. A driver can easily be written
+> > within a few weeks and I've been struggling with it for 2 years(!!!)
+> > now just for nothing finally telling me that some guys want to steal
+> > my code and move it to kernelspace although it would raise more
+> > complications with upcoming and current devices which have even more
+> > requirements.
+
+Oh dear, there we go again... more flame bait...
+
+I reality, 95% of your driver code could have been merged
+without problems, but you refused to take the small, objectionable
+part out of the picture.
+
+(For those interested:
+http://mcentral.de/~mrec/patches/v4l-dvb/hg_v4l-dvb-experimental_01.patch
+The patch changed the internal tuner API and required changes
+to all tuner drivers.)
+
+Your all-or-nothing approach didn't work out.
+
+Out of curiosity: How does your userspace approach solve
+the hybrid (analog/digital TV) tuner problem which was the
+only objectionable part of your work? And why are the kernel
+parts of your new interface now less objectionable? What changed?
+
+
+Johannes
