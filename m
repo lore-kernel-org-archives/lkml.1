@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765072AbXIMXrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933619AbXIMXrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765072AbXIMXrO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 19:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758513AbXIMXpD
+	id S933619AbXIMXrj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 19:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbXIMXpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 19:45:03 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57149 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932384AbXIMXpA (ORCPT
+	Thu, 13 Sep 2007 19:45:05 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:41161 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765186AbXIMXpD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 19:45:00 -0400
-Date: Thu, 13 Sep 2007 16:40:12 -0700
+	Thu, 13 Sep 2007 19:45:03 -0400
+Date: Thu, 13 Sep 2007 16:40:32 -0700
 From: Greg KH <greg@kroah.com>
 To: linux-kernel@vger.kernel.org
-Subject: Driver core: remove subsys_get()
-Message-ID: <20070913234012.GE10856@kroah.com>
+Subject: Driver core: remove subsys_put()
+Message-ID: <20070913234032.GF10856@kroah.com>
 References: <20070913233751.GA10856@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -33,43 +33,41 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
  drivers/base/bus.c      |    2 +-
  drivers/base/class.c    |    2 +-
- include/linux/kobject.h |    7 -------
+ include/linux/kobject.h |    5 -----
  lib/kobject.c           |    2 +-
- 4 files changed, 3 insertions(+), 10 deletions(-)
+ 4 files changed, 3 insertions(+), 8 deletions(-)
 
 --- a/drivers/base/bus.c
 +++ b/drivers/base/bus.c
-@@ -728,7 +728,7 @@ EXPORT_SYMBOL_GPL(device_reprobe);
+@@ -734,7 +734,7 @@ struct bus_type *get_bus(struct bus_type
  
- struct bus_type *get_bus(struct bus_type *bus)
+ void put_bus(struct bus_type * bus)
  {
--	return bus ? container_of(subsys_get(&bus->subsys),
-+	return bus ? container_of(kset_get(&bus->subsys),
- 				struct bus_type, subsys) : NULL;
+-	subsys_put(&bus->subsys);
++	kset_put(&bus->subsys);
  }
+ 
  
 --- a/drivers/base/class.c
 +++ b/drivers/base/class.c
-@@ -93,7 +93,7 @@ void class_remove_file(struct class * cl
- static struct class *class_get(struct class *cls)
+@@ -100,7 +100,7 @@ static struct class *class_get(struct cl
+ static void class_put(struct class * cls)
  {
  	if (cls)
--		return container_of(subsys_get(&cls->subsys), struct class, subsys);
-+		return container_of(kset_get(&cls->subsys), struct class, subsys);
- 	return NULL;
+-		subsys_put(&cls->subsys);
++		kset_put(&cls->subsys);
  }
+ 
  
 --- a/include/linux/kobject.h
 +++ b/include/linux/kobject.h
-@@ -231,13 +231,6 @@ extern void subsystem_init(struct kset *
- extern int __must_check subsystem_register(struct kset *);
- extern void subsystem_unregister(struct kset *);
+@@ -238,11 +238,6 @@ static inline struct kset *subsys_get(st
+ 	return NULL;
+ }
  
--static inline struct kset *subsys_get(struct kset *s)
+-static inline void subsys_put(struct kset *s)
 -{
--	if (s)
--		return kset_get(s);
--	return NULL;
+-	kset_put(s);
 -}
 -
  struct subsys_attribute {
@@ -77,12 +75,12 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
  	ssize_t (*show)(struct kset *, char *);
 --- a/lib/kobject.c
 +++ b/lib/kobject.c
-@@ -679,7 +679,7 @@ int subsys_create_file(struct kset *s, s
- 	if (!s || !a)
- 		return -EINVAL;
+@@ -681,7 +681,7 @@ int subsys_create_file(struct kset *s, s
  
--	if (subsys_get(s)) {
-+	if (kset_get(s)) {
+ 	if (subsys_get(s)) {
  		error = sysfs_create_file(&s->kobj, &a->attr);
- 		kset_put(s);
+-		subsys_put(s);
++		kset_put(s);
  	}
+ 	return error;
+ }
