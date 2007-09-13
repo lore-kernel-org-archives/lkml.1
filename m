@@ -1,127 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760683AbXIMQnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761159AbXIMQtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760683AbXIMQnz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 12:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbXIMQnr
+	id S1761159AbXIMQtw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 12:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbXIMQto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 12:43:47 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37297 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751268AbXIMQnq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 12:43:46 -0400
-Date: Thu, 13 Sep 2007 09:43:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: Adrian Bunk <bunk@stusta.de>, Adrian Bunk <bunk@kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
-       Oliver Neukum <oneukum@suse.de>
-Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
-In-Reply-To: <Pine.LNX.4.44L0.0709131154240.7406-100000@iolanthe.rowland.org>
-Message-ID: <alpine.LFD.0.999.0709130912060.16478@woody.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0709131154240.7406-100000@iolanthe.rowland.org
- >
+	Thu, 13 Sep 2007 12:49:44 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1652 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751282AbXIMQtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 12:49:43 -0400
+Date: Thu, 13 Sep 2007 18:50:12 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] CFS-devel, performance improvements
+In-Reply-To: <20070913142842.GA26016@elte.hu>
+Message-ID: <Pine.LNX.4.64.0709131706100.1817@scrub.home>
+References: <20070911200459.GA6974@elte.hu> <Pine.LNX.4.64.0709120242040.1817@scrub.home>
+ <20070913075258.GA9173@elte.hu> <Pine.LNX.4.64.0709131419170.1817@scrub.home>
+ <20070913142842.GA26016@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+On Thu, 13 Sep 2007, Ingo Molnar wrote:
 
-On Thu, 13 Sep 2007, Alan Stern wrote:
+> > Then you had the time to reimplement the very things you've just asked 
+> > me about and what do I get credit for - "two cleanups from RFS".
 > 
-> But mainly it's a question of maintenance and modification.  Kernel
-> developers don't really enjoy maintaining black- or whitelists of
-> devices, together with all the work involved in sorting through the
-> issues when somebody posts an email saying "My device doesn't work!".
+> i'm sorry to say this, but you must be reading some other email list and 
+> a different git tree than what i am reading.
+> 
+> Firstly, about communications - in the past 3 months i've written you 40 
+> emails regarding CFS - and that's more emails than my wife (or any 
+> member of my family) got in that timeframe :-( I just ran a quick 
+> script: i sent more CFS related emails to you than to any other person 
+> on this planet. I bent backwards trying to somehow get you to cooperate 
+> with us (and i still havent given up on that!) - instead of you 
+> disparaging CFS and me frequently :-(
+> 
+> Secondly, i prominently credited you as early as in the second sentence 
+> of our announcement:
+> 
+>  | fresh back from the Kernel Summit, Peter Zijlstra and me are pleased 
+>  | to announce the latest iteration of the CFS scheduler development 
+>  | tree. Our main focus has been on simplifications and performance - 
+>  | and as part of that we've also picked up some ideas from Roman 
+>  | Zippel's 'Really Fair Scheduler' patch as well and integrated them 
+>  | into CFS. We'd like to ask people go give these patches a good 
+>  | workout, especially with an eye on any interactivity regressions.
+> 
+>    http://lkml.org/lkml/2007/9/11/395
+> 
+> And you are duly credited in 3 patches:
 
-Yeah.
+This needs a little perspective, as I couldn't clone the repository (and 
+you know that), all I had was this announcement, so using the patch 
+descriptions now as defense is unfair by you.
+In this announcement you make relatively few references how this relates 
+to my work. Maybe someone else can show me how to read that announcement 
+differently, but IMO the casual reader is likely to get the impression, 
+that you only picked some minor cleanups from my patch, but it's rather 
+unclear that you already reimplemented key aspects of my patch. Don't 
+blame me for your own ambiguity.
 
-In general, I think the USB blacklist/whitelists are generally a sign of 
-some deeper bug.
+>    ------------------->
+> 
+>    Subject: sched: introduce se->vruntime
+> 
+>    introduce se->vruntime as a sum of weighted delta-exec's, and use 
+>    that as the key into the tree.
+> 
+>    the idea to use absolute virtual time as the basic metric of 
+>    scheduling has been first raised by William Lee Irwin, advanced by 
+>    Tong Li and first prototyped by Roman Zippel in the "Really Fair 
+>    Scheduler" (RFS) patchset.
+> 
+>    also see:
+> 
+>       http://lkml.org/lkml/2007/9/2/76
+> 
+>    for a simpler variant of this patch.
 
-We used to have a lot of those things due to simply incorrect SCSI 
-probing, causing devices to lock up because Linux probed them with bad or 
-unexpected modepages etc. I suspect we still have old blacklist entries 
-from those days that just never got cleaned up, because nobody ever dared 
-remove the blacklist entry.
+Let's compare this to the relevant part of the announcement:
 
-We should strive to make the default behaviour be so safe that we never 
-need a black-list (or a whitelist), and basically consider blacklists to 
-be not a way to "fix up a device", but a way to avoid some really serious 
-AND *RARE* error.
+| The ->vruntime metric is similar to the ->time_norm metric used by
+| Roman's patch (and both are losely related to the already existing
+| sum_exec_runtime metric in CFS), it's in essence the sum of CPU time
+| executed by a task, in nanoseconds - weighted up or down by their nice
+| level (or kept the same on the default nice 0 level). Besides this basic
+| metric our implementation and math differs from RFS.
 
-The moment you have lots of devices having the same blacklist entry, 
-that's a sign that the blacklist is wrong, and the subsystem itself is 
-likely doing something bad!
+In the patch you are more explicit about the virtual time aspect, in the 
+announcement you're less clear that it's all based on the same idea and 
+somehow it's important to stress the point that "implementation and math 
+differs", which is not untrue, but your forget to mention that the 
+differences are rather small.
 
-So, I would seriously suggest:
- - look at USB quirks that have more than ten entries (and the entries 
-   aren't just the exact same device in various guises)
- - start considering that feature to be something that is known broken, 
-   and shouldn't be done AT ALL by default.
- - have some way to enable some extension on a device-by-device basis from 
-   the /sysfs interface, and then users can enable those things on their 
-   own with a graphical interface or something (or using whitelists in 
-   user space saying "ok, this device can actually do this")
- - REMOVE THE DAMN QUIRK
+> You never directly replied to these pretty explicit requests, all you 
+> did was this side remark 5 days later in one of your patch 
+> announcements:
 
-It looks like the current situation now is that the latest autosuspend 
-patches did basically everything but the last point.
+This is ridiculous, I asked you multiple times to explain to me some of 
+the differences relative to CFS as response to the splitup requests. Not 
+once did you react, you didn't even ask what I'd like to know 
+specifically.
 
-Btw, this is in no way just an AUTOSUSPEND issue. The USB layer has a 
-*lot* of these quirks. They are often called "UNUSUAL_DEV()", but the 
-thing is, some of those things seem to be so usual that the naming is 
-dubious, and thus calling it a "quirk" or "unusual" is pretty dubious too. 
+> 
+>    " For a split version I'm still waiting for some more explanation
+>      about the CFS tuning parameter. "
+> 
+>      http://lkml.org/lkml/2007/9/7/87
+> 
+> You are an experienced kernel hacker. How you can credibly claim that 
+> while you were capable of writing a new scheduler along with a series of 
+> 25 complex mathematical equations that few if any lkml readers are able 
+> to understand (and which scheduler came in one intermixed patch that 
+> added no new comments at all!), and that you are able to maintain the 
+> m68k Linux architecture code, but that at the same time some supposed 
+> missing explanation from _me_ makes you magically incapable to split up 
+> _your own fine code_? This is really beyond me.
 
-For example, why do we have that US_FL_MAX_SECTORS_64 at all? The fact 
-that some USB device is broken with more than 64 sectors would seem to 
-indicate that Windows *never* does more than 64 sectors, and that in turn 
-means that pretty much *no* devices have ever been tested with anything 
-bigger.
+I never claimed to understand every detail of CFS, I can _guess_ what 
+_might_ have been intended, but from that it's impossible to know for 
+certain how important they are. Let's take this patch fragment:
 
-So why not make the 64 sector limit be the default? Get rid of the quirk: 
-we already allow people to override it in /sys if they really want to, but 
-realistically, it's probably not going to make any difference what-so-ever 
-for *any* normal load. So we seem to have a quirk that really doesn't buy 
-us anything but headache.
+-       /*
+-        * Fix up delta_fair with the effect of us running
+-        * during the whole sleep period:
+-        */
+-       if (sched_feat(SLEEPER_AVG))
+-               delta_fair = div64_likely32((u64)delta_fair * load,
+-                                               load + se->load.weight);
+-
+-       delta_fair = calc_weighted(delta_fair, se);
 
-Other quirks worth looking at (but likely unfixable) are:
- - US_FL_IGNORE_RESIDUE:
-	Does this really matter? Can we not just always do the 
-	US_FL_IGNORE_RESIDUE thing? Windows must not be doing what we're 
-	doing.
- - US_FL_FIX_CAPACITY: 
-	This is a generic SCSI issue, not a USB one, and maybe there are 
-	better solutions to it. Are we perhaps doing something wrong? Is 
-	there some patterns we haven't seen? Why do we need this, when 
-	presumably Windows does not?
- - US_FL_SINGLE_LUN:
-	At least a few of these seem to indicate that the real problem 
-	could be detected dynamically ("device reports Sub=ff") rather 
-	than with a quirk. Quirks are unmaintainable (and change), but 
-	noticing when devices return impossible values and going into a 
-	"safe mode" is just defensive programming.
 
-> Maybe you're concerned about propagating updates as painlessly as 
-> possible -- if the whitelist is in the kernel then every kernel release 
-> would include an update.  But in userspace it's possible to do updates 
-> even more quickly and painlessly.  For example, there could be a 
-> network server available for both interactive lookups and automatic 
-> queries from HAL.
+You simply remove this logic, without ever explaining what it was really 
+good for. There is no indication how it has been replaced. AFAICT the 
+comment refers to the calc_weighted() call, which is not the problem.
+I can _guess_ that it was meant to scale the bonus based on cpu load, what 
+I can't guess from this is why this logic was added in first place, _why_ 
+it was neccessary.
 
-For a lot of these things, you probably do not need a whitelist *at*all*!
+It had been easy for me to simply remove this as well, but I had preferred 
+to _know_ what the motivation for this logic was, so I can take it into 
+account in my patch.
 
-IOW, just default to something safe (the 64 sector example), and then 
-perhaps allow people to explicitly play with their settings in a hardware 
-manager. People actually tend to *like* being able to tweak meaningless 
-things, and it makes them feel in control. So you'd have the Gentoo people 
-who want to optimize their iPod access times by 0.2% by raising the 
-maximum sector number - good for them! They'll feel empowered, and if it 
-stops working, they know it was because of something *they* did.
-
-So at least in some cases, I think we should "default to stupid, but give 
-users rope".
-
-		Linus
+bye, Roman
