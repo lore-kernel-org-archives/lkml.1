@@ -1,76 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763205AbXIMELU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbXIMENO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763205AbXIMELU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 00:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbXIMELI
+	id S1759307AbXIMENO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 00:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbXIMEM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 00:11:08 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46635 "EHLO mail.dvmed.net"
+	Thu, 13 Sep 2007 00:12:57 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46649 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751352AbXIMELG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 00:11:06 -0400
-Message-ID: <46E8B851.7080107@garzik.org>
-Date: Thu, 13 Sep 2007 00:10:57 -0400
+	id S1751411AbXIMEM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 00:12:56 -0400
+Message-ID: <46E8B8C4.5010203@garzik.org>
+Date: Thu, 13 Sep 2007 00:12:52 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Denis Cheng <crquan@gmail.com>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, cr_quan@163.com
-Subject: Re: [PATCH 2/2] drivers/net/: all drivers/net/ cleanup with ARRAY_SIZE
-References: <Pine.LNX.4.64.0709020235420.22012@localhost.localdomain> <11887290181154-git-send-email-crquan@gmail.com> <11887290302449-git-send-email-crquan@gmail.com>
-In-Reply-To: <11887290302449-git-send-email-crquan@gmail.com>
+To: =?ISO-8859-1?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       afleming@freescale.com
+Subject: Re: [PATCH] Fix a lock problem in generic phy code
+References: <200708311430.09590.hjk@linutronix.de>
+In-Reply-To: <200708311430.09590.hjk@linutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-Spam-Score: -4.4 (----)
 X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
 	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis Cheng wrote:
-> Signed-off-by: Denis Cheng <crquan@gmail.com>
-> ---
->  drivers/net/apne.c                         |    2 +-
->  drivers/net/arm/am79c961a.c                |    2 +-
->  drivers/net/atarilance.c                   |    2 +-
->  drivers/net/atl1/atl1_hw.c                 |    2 +-
->  drivers/net/bnx2.c                         |    2 +-
->  drivers/net/cs89x0.c                       |    6 +++---
->  drivers/net/e1000/e1000_ethtool.c          |    3 +--
->  drivers/net/fec_8xx/fec_mii.c              |    5 ++---
->  drivers/net/ibm_emac/ibm_emac_debug.c      |    8 ++++----
->  drivers/net/irda/actisys-sir.c             |    2 +-
->  drivers/net/ixgb/ixgb_ethtool.c            |    3 +--
->  drivers/net/lp486e.c                       |    4 +---
->  drivers/net/mv643xx_eth.c                  |    3 +--
->  drivers/net/ne-h8300.c                     |    2 +-
->  drivers/net/ne.c                           |    2 +-
->  drivers/net/ne2.c                          |    2 +-
->  drivers/net/ne2k-pci.c                     |    2 +-
->  drivers/net/netxen/netxen_nic.h            |    2 +-
->  drivers/net/netxen/netxen_nic_hw.c         |    2 +-
->  drivers/net/pcmcia/axnet_cs.c              |    2 +-
->  drivers/net/pcmcia/pcnet_cs.c              |    4 ++--
->  drivers/net/phy/phy.c                      |    2 +-
->  drivers/net/skfp/smt.c                     |    2 +-
->  drivers/net/skfp/srf.c                     |    4 ++--
->  drivers/net/tulip/de4x5.c                  |    6 +++---
->  drivers/net/wireless/airo.c                |    6 +++---
->  drivers/net/wireless/hostap/hostap_ioctl.c |    6 +++---
->  drivers/net/wireless/ipw2100.c             |    7 +++----
->  drivers/net/wireless/libertas/fw.c         |    3 +--
->  drivers/net/wireless/libertas/main.c       |   14 +++++++-------
->  drivers/net/wireless/libertas/wext.c       |    4 ++--
->  drivers/net/wireless/netwave_cs.c          |    6 +++---
->  drivers/net/wireless/prism54/isl_ioctl.c   |    7 +++----
->  drivers/net/wireless/ray_cs.c              |    6 +++---
->  drivers/net/wireless/wavelan.c             |    6 +++---
->  drivers/net/wireless/wavelan_cs.c          |    6 +++---
->  drivers/net/wireless/wl3501_cs.c           |    2 +-
->  drivers/net/zorro8390.c                    |    2 +-
->  38 files changed, 71 insertions(+), 80 deletions(-)
+Hans-Jürgen Koch wrote:
+> Lock debugging finds a problem in phy.c and phy_device.c,
+> this patch fixes it. Tested on an AT91SAM9263-EK board, 
+> kernel 2.6.23-rc4.
+> 
+> Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 
 applied
 
