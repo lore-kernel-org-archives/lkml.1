@@ -1,42 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbXIMNl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755066AbXIMOMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbXIMNl0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 09:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbXIMNlS
+	id S1755066AbXIMOMW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 10:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbXIMOMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 09:41:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59990 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753042AbXIMNlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 09:41:18 -0400
-Message-ID: <46E93DDC.7090207@redhat.com>
-Date: Thu, 13 Sep 2007 09:40:44 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 13 Sep 2007 10:12:14 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35087 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751787AbXIMOMN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 10:12:13 -0400
+Date: Thu, 13 Sep 2007 10:12:11 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Mark Lord <lkml@rtr.ca>
+cc: Chuck Ebbert <cebbert@redhat.com>, Niels <zorglub_olsen@hotmail.com>,
+       <linux-kernel@vger.kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] Problems with USB disk [solved]
+In-Reply-To: <46E863EA.4060806@rtr.ca>
+Message-ID: <Pine.LNX.4.44L0.0709131008360.3619-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: Lossy interrupts on x86_64
-References: <200709120833.15980.jbarnes@virtuousgeek.org>
-In-Reply-To: <200709120833.15980.jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> I just narrowed down a weird problem where I was losing more than 50% of 
-> my vblank interrupts to what seems to be the hires timers patch.  Stock 
-> 2.6.23-rc5 works fine, but the latest (171) kernel from rawhide drops 
-> most of my interrupts unless I also have another interrupt source 
-> running (e.g. if I hold down a key or move the mouse I get the expected 
-> number of vblank interrupts, otherwise I get between 3 and 30 instead 
-> of the expected 60 per second).
+On Wed, 12 Sep 2007, Mark Lord wrote:
+
+> Chuck Ebbert wrote:
+
+> >>> =========
+> >>> sd 1:0:0:0: Device not ready: <6>: Current: sense key=0x2
+> >>>     ASC=0x4 ASCQ=0x2
+> >>> end_request: I/O error, dev sda, sector 126693711
+> >>> sd 1:0:0:0: Device not ready: <6>: Current: sense key=0x2
+> >>>     ASC=0x4 ASCQ=0x2
+> >>> end_request: I/O error, dev sda, sector 126693711
+> >>> sd 1:0:0:0: Device not ready: <6>: Current: sense key=0x2
+> >>>     ASC=0x4 ASCQ=0x2
+> >>> end_request: I/O error, dev sda, sector 126693711
+> >>> =========
+> >>>
+> >> Using a new PSU and a powered hub made no difference. But I found a solution
+> >> here:
+> >>
+> >> http://alienghic.livejournal.com/382903.html
+> >>
+> >> Basically, the problem is, as suspected, that the drive spins down / goes to
+> >> suspend. This can be disabled with "sdparm --clear STANDBY -6 /dev/sda".
+> >>
+> >> It seems to me to be an error that the kernel reports this as something like
+> >> a hardware failure. Or at least very misleading.
+> >>
+> > 
+> > Oh, nice. The usb-storage (SCSI) disk spins itself down and we can't handle that.
+> > Should we be disabling auto-spindown when we connect the device, or be able to
+> > handle this by sending the start command when needed?
 > 
-> Any ideas?  It seems like it might be bad APIC programming, but I 
-> haven't gone through those mods to look for suspects...
+> There's more to this.
+> 
+> My Sandisk Cruzer Micro 1GB USB sticks suffer from this regression.
 
-What happens if you boot with 'noapic' or 'pci=nomsi'?  Please post dmesg as 
-well so we can see how the kernel is initializing the relevant hardware.
+I seriously doubt that.  Are you claiming that your USB stick spins 
+itself down during a suspend?  And then requires to be spun back up 
+before it will resume proper operation?
 
-	-- Chris
+(Hint: Flash memory devices don't contain rotating media...)
+
+Alan Stern
+
