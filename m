@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759943AbXIMJHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbXIMJNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759943AbXIMJHN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 05:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbXIMJHB
+	id S1758139AbXIMJNy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 05:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbXIMJNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 05:07:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40373 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753581AbXIMJHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 05:07:00 -0400
-Date: Thu, 13 Sep 2007 11:06:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rob Hussey <robjhussey@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>, Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [announce] CFS-devel, performance improvements
-Message-ID: <20070913090655.GA28505@elte.hu>
-References: <20070911200459.GA6974@elte.hu> <6b8cef970709111816l2e421bf3s55e63274e87fd5e1@mail.gmail.com> <6b8cef970709130142h7be591f7ja5ffd8976faef09c@mail.gmail.com>
+	Thu, 13 Sep 2007 05:13:46 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:32895 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754229AbXIMJNp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 05:13:45 -0400
+Date: Thu, 13 Sep 2007 11:13:45 +0200
+From: Jan Kara <jack@suse.cz>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Brent Casavant <bcasavan@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: O_NOLINK for open()
+Message-ID: <20070913091345.GB5125@atrey.karlin.mff.cuni.cz>
+References: <92Haf-7z7-5@gated-at.bofh.it> <E1IValy-0000fU-Sd@be1.lrz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6b8cef970709130142h7be591f7ja5ffd8976faef09c@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <E1IValy-0000fU-Sd@be1.lrz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rob Hussey <robjhussey@gmail.com> wrote:
-
-> On 9/11/07, Rob Hussey <robjhussey@gmail.com> wrote:
-> > Hi Ingo,
-> >
-> > When compiling, I get:
+> > However, it occurs to me that this problem goes away if there were
+> > a method create a file in an unlinked state to begin with.  However
+> > there does not appear to be any such mechanism in Linux's open()
+> > interface.
 > 
-> Yeah, this was my fault :(
-> 
-> I've had a chance to test this now, and everything feels great. I did
-> some benchmarks for 2.6.23-rc1, 2.6.23-rc6-cfs, and
-> 2.6.23-rc6-cfs-devel:
+> Having no window for creating stale temp files is nice to have. We only
+> need a clever fool to implement it.-) But since it's hard to get killed
+> just in the right moment for having a stale temp file, there is very low
+> interest for this feature.
+  I don't think this is a problem. The file is simply created with link
+count 0. As soon as the process closes the file, it gets deleted. So
+there would be no stale files... Or did you mean anything else?
 
-thanks for the numbers! Could you please also post the .config you used? 
-Thx,
-
-	Ingo
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
