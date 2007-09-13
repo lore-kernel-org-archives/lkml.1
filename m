@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763788AbXIMV2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932077AbXIMVaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763788AbXIMV2n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 17:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbXIMV2f
+	id S932077AbXIMVaz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 17:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbXIMVar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 17:28:35 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42479 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754274AbXIMV2e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 17:28:34 -0400
-Date: Thu, 13 Sep 2007 23:28:42 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net, Oliver Neukum <oneukum@suse.de>
-Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
-Message-ID: <20070913212842.GI3563@stusta.de>
-References: <20070913154019.GG3563@stusta.de> <Pine.LNX.4.44L0.0709131154240.7406-100000@iolanthe.rowland.org> <20070913201910.GH3563@stusta.de> <alpine.LFD.0.999.0709131341300.16478@woody.linux-foundation.org>
+	Thu, 13 Sep 2007 17:30:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38899 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757797AbXIMVap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 17:30:45 -0400
+Message-ID: <46E9ABFF.7080200@redhat.com>
+Date: Thu, 13 Sep 2007 17:30:39 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0709131341300.16478@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Venkat Subbiah <venkats@cranite.com>
+CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: irq load balancing
+References: <3641F7C576757E49AE23AD0D820D72C434DCB8@mailnode1.cranite.com>
+In-Reply-To: <3641F7C576757E49AE23AD0D820D72C434DCB8@mailnode1.cranite.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 01:44:23PM -0700, Linus Torvalds wrote:
+Venkat Subbiah wrote:
+> Since most network devices have a single status register for both
+> receiver and transmit (and errors and the like), which needs a lock to
+> protect access, you will likely end up with serious thrashing of moving
+> the lock between cpus.
+>> Any ways to measure the trashing of locks?
 > 
-> 
-> On Thu, 13 Sep 2007, Adrian Bunk wrote:
-> > 
-> > No, what I'm concerned about is that this would require userspace for 
-> > something that is completely in-kernel.
-> 
-> If done right (and autosuspend now is), there is no "required" userspace.
-> 
-> If you want autosuspend, you just say so. The kernel doesn't do it by 
-> default. This is not about "user space required" - it's about "user space 
-> can ask for it if it wants to".
-> 
-> Notice? There doesn't even have to be any blacklists/whitelists at all. It 
-> really can be just an application that allows the user to check or uncheck 
-> the capability (with a warning saying something like: "Some USB devices 
-> may disconnect when suspended - if this affects you, uncheck this").
-> 
-> That's why the kernel shouldn't set policy. It's a *good* thing to just 
-> expose the capabilities, but not necessarily use them! 
+> Since most network devices have a single status register for both
+> receiver and transmit (and errors and the like)
+>> These register accesses will be mostly within the irq handler which I
+> plan on keeping on the same processor. The network driver is actually
+> tg3. Will looks closely into the driver.
 
-What is not policy is the blacklist or whitelist information.
+Why are you trying to do this, anyway?  This is a classic example of fairness 
+hurting both performance and efficiency.  Unbalanced distribution of a single 
+IRQ gives superior performance.  There are cases when this is a worthwhile 
+tradeoff, but the network stack is not one of them.  In the HPC world, people 
+generally want to squeeze maximum performance out of CPU/cache/RAM so they just 
+accept the imbalance because it performs better than balancing it, and 
+irqbalance can keep things fair over longer intervals if that's important.  In 
+the realtime world, people generally bind everything they can to one or two 
+CPUs, and bind their realtime applications to the remaining ones to minimize 
+contention.
 
-And I'm also a bit concerned why "is policy" is that much a reason 
-against setting *reasonable default policies* without requiring the user 
-to do various things in userspace.
+Distributing your network interrupts in a round-robin fashion will make your 
+computer do exactly one thing faster: heat up the room.
 
-Especially since this creates some nasty interdependencies between the 
-kernel and userspace.
-
-And as an example, couldn't you equally say it's wrong that the kernel
-enables DMA on disks instead of leaving it to userspace?
-
-We've already seen the udev disaster where upgrading from Debian 3.1 to 
-Debian 4.0 means upgrading from kernel 2.6.8 to 2.6.18 with the udev 
-version in Debian 3.1 not supporting kernel 2.6.18 and the udev version 
-in Debian 4.0 not supporting kernel 2.6.8, and I don't have a good 
-feeling about outsourcing more and more things to userspace tools not 
-distributed with the kernel.
-
-> 		Linus
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	-- Chris
