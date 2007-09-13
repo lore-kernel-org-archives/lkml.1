@@ -1,136 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761488AbXIMRKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760396AbXIMROF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761488AbXIMRKk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 13:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762278AbXIMRKK
+	id S1760396AbXIMROF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 13:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbXIMRNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 13:10:10 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:35256 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755639AbXIMRKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 13:10:07 -0400
-Subject: PATCH 2/4] scsi: megaraid_sas -- add module param fast_load
-From: linux-box <bo.yang@lsi.com>
-To: linux-scsi@vger.kernel.org
-Cc: James.Bottomley@SteelEye.com, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       bo.yang@lsi.com, sumant.patro@lsi.com
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 11 Sep 2007 08:28:14 -0400
-Message-Id: <1189513694.6082.9.camel@dhcp-75-534.se.lsil.com>
+	Thu, 13 Sep 2007 13:13:55 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47266 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752654AbXIMRNy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 13:13:54 -0400
+Date: Thu, 13 Sep 2007 12:13:49 -0500
+From: Robin Holt <holt@sgi.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Robin Holt <holt@sgi.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: Possible hang inside interrupt handler on sata_promise.
+Message-ID: <20070913171349.GD26213@lnx-holt.americas.sgi.com>
+References: <20070912131904.GW14474@lnx-holt.americas.sgi.com> <46E95E5D.2050305@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
-X-OriginalArrivalTime: 13 Sep 2007 17:09:56.0373 (UTC) FILETIME=[E8887450:01C7F628]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46E95E5D.2050305@redhat.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Driver will skip physical devices scan for the first time if the fast_load is set
+Is there any way on typical motherboards to send an NMI?  On Altix boxes,
+we can use the system controller to send an NMI.  I have found some
+motherboards appear to have an NMI line.  Is there anything like that
+on i386?  Maybe I am missing the issue entirely.  Does deadlock inside
+an IRQ handler seem plausible?
 
-Signed-off-by: Bo Yang <bo.yang@lsi.com>
+On a side note, I have reproduced the hang with a different storage device
+(ide).  At the time, I have deactivated the volume group, stopped the
+raid device and unloaded the sata_promise module.  I also noticed that
+uhci_hcd and eth1 (3com 3c59x module) are sharing IRQ 5 so I had unloaded
+the uhci_hcd and usbcore before the last test.
 
----
- drivers/scsi/megaraid/megaraid_sas.c |   69 +++++++++++++++++++------
- 1 files changed, 55 insertions(+), 14 deletions(-)
+On Thu, Sep 13, 2007 at 11:59:25AM -0400, Chuck Ebbert wrote:
+> There is a list of kernel options you can try, including:
+> 
+>   noapic
+>   nolapic
+>   pci=nomsi,nommconf
+>   pci=noacpi
 
-diff -rupN linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.22_orig/drivers/scsi/megaraid/megaraid_sas.c	2007-07-23 23:02:18.000000000 -0400
-+++ linux-2.6.22_new/drivers/scsi/megaraid/megaraid_sas.c	2007-08-14 21:48:00.075930672 -0400
-@@ -46,6 +46,22 @@
- #include <scsi/scsi_host.h>
- #include "megaraid_sas.h"
- 
-+/*
-+ * Module parameters
-+ */
-+
-+/*
-+ * Fast driver load option, skip scanning for physical devices during
-+ * load.  This would result in physical devices being skipped during
-+ * driver load time. These can be later added though,
-+ * using /proc/scsi/scsi
-+ */
-+static unsigned int fast_load;
-+module_param_named(fast_load, fast_load, int, 0);
-+MODULE_PARM_DESC(fast_load,
-+	"megasas: Faster loading of the driver, skips physical devices! \
-+	 (default = 0)");
-+
- MODULE_LICENSE("GPL");
- MODULE_VERSION(MEGASAS_VERSION);
- MODULE_AUTHOR("megaraidlinux@lsi.com");
-@@ -1094,6 +1110,44 @@ megasas_service_aen(struct megasas_insta
- 	megasas_return_cmd(instance, cmd);
- }
- 
-+static struct megasas_instance *megasas_lookup_instance(u16 host_no)
-+{
-+	int i;
-+
-+	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
-+		if ((megasas_mgmt_info.instance[i]) &&
-+			(megasas_mgmt_info.instance[i]->host->host_no
-+			== host_no))
-+			return megasas_mgmt_info.instance[i];
-+	}
-+
-+	return NULL;
-+}
-+
-+static int megasas_slave_alloc(struct scsi_device *sdev)
-+{
-+	struct megasas_instance *instance;
-+	int tmp_fastload = fast_load;
-+
-+	instance = megasas_lookup_instance(sdev->host->host_no);
-+
-+	if (tmp_fastload && sdev->channel < MEGASAS_MAX_PD_CHANNELS) {
-+		if ((sdev->id == MEGASAS_MAX_DEV_PER_CHANNEL -1) &&
-+			(sdev->channel == MEGASAS_MAX_PD_CHANNELS - 1)) {
-+
-+		/*
-+		 * If fast load option was set and scan for last device is
-+		 * over, reset the fast_load flag so that during a possible
-+		 * next scan, devices can be made available
-+		 */
-+			fast_load = 0;
-+		}
-+		return -ENXIO;
-+	}
-+
-+	return 0;
-+}
-+
- /*
-  * Scsi host template for megaraid_sas driver
-  */
-@@ -1103,6 +1157,7 @@ static struct scsi_host_template megasas
- 	.name = "LSI Logic SAS based MegaRAID driver",
- 	.proc_name = "megaraid_sas",
- 	.slave_configure = megasas_slave_configure,
-+	.slave_alloc = megasas_slave_alloc,
- 	.queuecommand = megasas_queue_command,
- 	.eh_device_reset_handler = megasas_reset_device,
- 	.eh_bus_reset_handler = megasas_reset_bus_host,
-@@ -2970,20 +3025,6 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
- 	return error;
- }
- 
--static struct megasas_instance *megasas_lookup_instance(u16 host_no)
--{
--	int i;
--
--	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
--
--		if ((megasas_mgmt_info.instance[i]) &&
--		    (megasas_mgmt_info.instance[i]->host->host_no == host_no))
--			return megasas_mgmt_info.instance[i];
--	}
--
--	return NULL;
--}
--
- static int megasas_mgmt_ioctl_fw(struct file *file, unsigned long arg)
- {
- 	struct megasas_iocpacket __user *user_ioc =
+I will try these this evening.
 
-
+Thanks,
+Robin
