@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759040AbXIMOUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbXIMO1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759040AbXIMOUs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 10:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbXIMOUa
+	id S1757956AbXIMO1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 10:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbXIMO1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 10:20:30 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48480 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754684AbXIMOU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 10:20:28 -0400
-Message-ID: <46E94728.9050509@garzik.org>
-Date: Thu, 13 Sep 2007 10:20:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 13 Sep 2007 10:27:08 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:5058 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751662AbXIMO1H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 10:27:07 -0400
+In-Reply-To: <adaps0nmbfa.fsf@cisco.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Christoph Raisch <raisch@de.ibm.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
 MIME-Version: 1.0
-To: Jon Ivar Rykkelid <jonry@pvv.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: sata_nv issues with MCP51 SATA controller
-References: <46E8EABF.3060409@pvv.org>
-In-Reply-To: <46E8EABF.3060409@pvv.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Subject: Re: [PATCH] IB/ehca: Make sure user pages are from hugetlb before using MR
+ large pages
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OF2FF112E2.22D1AA53-ONC1257355.00360D85-C1257355.004F61C6@de.ibm.com>
+Date: Thu, 13 Sep 2007 16:27:03 +0200
+X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 13/09/2007 16:27:04,
+	Serialize complete at 13/09/2007 16:27:04
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Ivar Rykkelid wrote:
-> 
-> Hi, I'm resending (didn't see my first attempt appear on the maillist):
-> 
-> 
-> 
-> I'm having serious disk-issues when using the on-board nvidia controller
-> for my HDDs (My motherboard is a Gigabyte GA-N650SLI-DS4 with nvidia
-> chipset, cpu is intel Core2Quad)
-> 
-> excerpt from "lspci":
-> 00:0d.0 IDE interface: nVidia Corporation MCP51 IDE (rev a1)
-> 00:0e.0 IDE interface: nVidia Corporation MCP51 Serial ATA Controller
-> (rev a1)
-> 00:0f.0 IDE interface: nVidia Corporation MCP51 Serial ATA Controller
-> (rev a1)
-> 
-> I have a normal IDE/P-ATA-disk attached to the "IDE"-controller and that
-> works fine (/dev/hda)
-> 
-> However, any number of disks (I have tried 2 and 4) connected to the
-> SATA-controller(s), will eventually fail. - See attached log (excerpt /
-> anything relevant from /var/log/messages)
-> 
-> At first, disks were REALLY unstable, but then I disabled S.M.A.R.T.
-> (both in BIOS and Linux), and I updated from the CentOS5 (equivalent of
-> RHEL5) kernel (2.6.18) to the latest (at that time) official kernel from
-> kernel.org:
-> 
->  > uname -a
-> Linux mirakel 2.6.22.5-custom_jir #2 SMP Thu Aug 30 22:06:21 CEST 2007
-> i686 i686 i386 GNU/Linux
-> 
-> Now it will normally take a day or two before SATA crashes, so things
-> are better, but still rather useless.
-> 
-> First error when sata_nv get into problems is always:
-> "exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen"
-> (as shown in the attached log-file.) - when this happens to one device,
-> it'll almost instantly happen to the other disk attached to that
-> controller as well. A couple of minutes (or so) later, the disk(s)
-> connected to the other controller will start acting up as well (in the
-> same manner). - I/O freezes, and nothing helps except a reboot...
-> 
-> As I run a rather large (software / md) RAID-5 disk array on this server
-> (I'm doing a bit of video editing), every crash means a time-consuming
-> rebuild of the disk-array...
-> 
-> I have given up on the sata_nv / nvidia-controllers for the time being.
-> I now resort to some old PCI-connected sata-controllers which work fine
-> (but slow, as they are outdated and "overloaded").
-> 
-> So, if anyone has a good solution / suggestion / improved driver (over
-> the one supplied with the official 2.6.22.5-kernel) I am eager to give
-> it a go and see if the situation can be resolved.
+Roland Dreier <rdreier@cisco.com> wrote on 13.09.2007 06:33:45:
 
-does adma=0 module option do anything?
+>  > -#define HCA_CAP_MR_PGSIZE_4K  1
+>  > -#define HCA_CAP_MR_PGSIZE_64K 2
+>  > -#define HCA_CAP_MR_PGSIZE_1M  4
+>  > -#define HCA_CAP_MR_PGSIZE_16M 8
+>  > +#define HCA_CAP_MR_PGSIZE_4K  0x80000000
+>  > +#define HCA_CAP_MR_PGSIZE_64K 0x40000000
+>  > +#define HCA_CAP_MR_PGSIZE_1M  0x20000000
+>  > +#define HCA_CAP_MR_PGSIZE_16M 0x10000000
+> 
+> Not sure I understand what this has to do with things... is this an
+> unrelated fix?
 
-	Jeff
+Kinda. I can put it into its own patch if you want.
+ 
+> I would suggest extending ib_umem_get() to check the vmas and adding a
+> member to struct ib_umem to say whether the memory is entirely covered
+> by hugetlb pages or not.
 
+I like that approach - one patch coming right up! =)
+ 
+>  > +      default: /* out of mem */
+>  > +         ib_mr = ERR_PTR(-ENOMEM);
+>  > +         goto reg_user_mr_exit1;
+> 
+> It seems like it would be better to just assume the memory is not from
+> a hugetlb is ehca_is_mem_hugetlb() fails its memory allocation and
+> fall back to the PAGE_SIZE case rather than failing entirely.
 
+If ehca_is_mem_hugetlb() runs out of memory, ehca_reg_mr() is rather 
+unlikely to get the memory, but it's worth a try, I'll give you that. I'll 
+make the umem patch work that way.
 
+Joachim
