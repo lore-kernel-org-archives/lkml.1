@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761047AbXIMJuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbXIMJwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761047AbXIMJuk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 05:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbXIMJu3
+	id S1759234AbXIMJwO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 05:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXIMJv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 05:50:29 -0400
-Received: from www.osadl.org ([213.239.205.134]:55351 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752383AbXIMJu2 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 05:50:28 -0400
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Organization: Linutronix
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] Fix a lock problem in generic phy code
-Date: Thu, 13 Sep 2007 11:50:29 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       afleming@freescale.com
-References: <200708311430.09590.hjk@linutronix.de> <46E8B8C4.5010203@garzik.org>
-In-Reply-To: <46E8B8C4.5010203@garzik.org>
+	Thu, 13 Sep 2007 05:51:58 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50224 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750713AbXIMJv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 05:51:58 -0400
+Date: Thu, 13 Sep 2007 02:53:13 -0700
+From: Greg KH <gregkh@suse.de>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH]PCI:disable resource decode in PCI BAR detection
+Message-ID: <20070913095313.GA745@suse.de>
+References: <1189664467.17835.1.camel@sli10-conroe.sh.intel.com> <20070913073140.GA17367@parisc-linux.org> <1189668286.18361.3.camel@sli10-conroe.sh.intel.com> <20070913075536.GB17367@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200709131150.30609.hjk@linutronix.de>
+In-Reply-To: <20070913075536.GB17367@parisc-linux.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 13 September 2007 schrieb Jeff Garzik:
-> Hans-Jürgen Koch wrote:
-> > Lock debugging finds a problem in phy.c and phy_device.c,
-> > this patch fixes it. Tested on an AT91SAM9263-EK board,
-> > kernel 2.6.23-rc4.
-> >
-> > Signed-off-by: Hans J. Koch <hjk@linutronix.de>
->
-> applied
+On Thu, Sep 13, 2007 at 01:55:36AM -0600, Matthew Wilcox wrote:
+> On Thu, Sep 13, 2007 at 03:24:46PM +0800, Shaohua Li wrote:
+> > On Thu, 2007-09-13 at 01:31 -0600, Matthew Wilcox wrote:
+> > > You missed the part where we have to avoid doing this for host bridges ...
+> > > 
+> > > http://marc.info/?l=linux-kernel&m=118809338631160&w=2
+> > > 
+> > > (I believe it's now queued in Greg's tree, and possibly Andrew's tree
+> > > too)
+> > Hmm, I don't know there is already a fix for this, so waste a whole
+> > morning :(. yes, your patch looks better.
+> 
+> Yes, this bug is causing a lot of people to waste time.  I fielded an
+> internal request for this patch this afternoon.  I appreciate we're
+> post-rc6 at this point, but it does rather suck to be releasing a kernel
+> which freezes on boot on this class of machines.
 
-Thanks! Andrew applied it to -mm, too.
+But it's not like the kernel every worked on this class of machines,
+right?  This is not something that was a regression from what I can see.
 
-Hans
+> Unfortunately if this patch does cause any machine to break, these will
+> be machines that worked fine up until this point, so that would be a
+> regression, which is worse.  Life sucks.
 
+If, after a while, you think the change should go into the -stable tree,
+I have no objection.
+
+thanks,
+
+greg k-h
