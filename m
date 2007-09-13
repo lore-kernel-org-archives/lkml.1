@@ -1,105 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbXIMCFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761454AbXIMCM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761533AbXIMCFx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Sep 2007 22:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbXIMCFq
+	id S1761454AbXIMCM7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Sep 2007 22:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbXIMCMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Sep 2007 22:05:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:33013 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750922AbXIMCFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Sep 2007 22:05:45 -0400
-Subject: Re: [PATCH 15/15] Add DEFINE_SPUFS_ATTRIBUTE()
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200709121047.05471.arnd@arndb.de>
-References: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au>
-	 <f5fe712aef37d925902f3f6183f024b916cc89db.1189583010.git.michael@ellerman.id.au>
-	 <1189583353.17835.22.camel@concordia.ozlabs.ibm.com>
-	 <200709121047.05471.arnd@arndb.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-oYh9g2k3bx1l2wvBffuN"
-Date: Thu, 13 Sep 2007 12:05:41 +1000
-Message-Id: <1189649141.19087.13.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 12 Sep 2007 22:12:51 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:38853 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752003AbXIMCMu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Sep 2007 22:12:50 -0400
+Date: Wed, 12 Sep 2007 19:21:43 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is
+ used
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Jeff Garzik <jeff@garzik.org>, Greg KH <greg@kroah.com>,
+       Martin Mares <mj@ucw.cz>, dean gaudet <dean@arctic.org>,
+       Robert Richter <robert.richter@amd.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Message-id: <200709121921.43950.yinghai.lu@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.8.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used.
 
---=-oYh9g2k3bx1l2wvBffuN
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
 
-On Wed, 2007-09-12 at 10:47 +0200, Arnd Bergmann wrote:
-> On Wednesday 12 September 2007, Michael Ellerman wrote:
-> > On Wed, 2007-09-12 at 17:43 +1000, Michael Ellerman wrote:
-> > > This patch adds DEFINE_SPUFS_ATTRIBUTE(), a wraper around
-> > > DEFINE_SIMPLE_ATTRIBUTE which does the specified locking for the get
-> > > routine for us.
-> > >=20
-> > > Unfortunately we need two get routines (a locked and unlocked version=
-) to
-> > > support the coredump code. This patch hides one of those (the locked =
-version)
-> > > inside the macro foo.
->=20
-> >=20
-> > jk said:
-> > > "Good god man!"
-> >=20
-> > Yeah, I'm a bit lukewarm on this one. But the diffstat is nice, 50% cod=
-e
-> > reduction ain't bad :)
->=20
-> Have you looked at the change in object code size? I would expect the
-> object code to actually become bigger. I also think that it hurts
-> readability rather than help it.
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-Yeah I did, it's smaller actually:
+ arch/i386/pci/fixup.c |   13 +++++++++++++
+ drivers/pci/probe.c   |   11 ++++++++++-
+ include/linux/pci.h   |    1 +
+ 3 files changed, 24 insertions(+), 1 deletion(-)
 
-   text    data     bss     dec     hex filename
-  44898   17804     120   62822    f566 spufs-before.o
-  44886   17804     120   62810    f55a spufs-after.o
-
-> Maybe a better solution is to change the core dump code to not
-> require the mutex to be held in the first place. By the time
-> we get to call the get functions, it should already be in
-> saved state and no longer be able to get scheduled, so we might
-> not actually need all the extra tricks with avoiding the
-> mutex to be taken again.
-
-Well that'd be nice, but I don't see anywhere that that happens. AFAICT
-the acquire we do in the first coredump callback is the first the SPU
-contexts know about their PPE process dying. And spufs is still live, so
-I think we definitely need to grab the mutex, or we might race with
-userspace accessing spufs files.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-oYh9g2k3bx1l2wvBffuN
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBG6Jr1dSjSd0sB4dIRAmdjAKCI23oMOPJddZy9CBS8dLfeLMmH7QCgnpLf
-AGfWajn6wu1RqSSRhoAvRRs=
-=W2xN
------END PGP SIGNATURE-----
-
---=-oYh9g2k3bx1l2wvBffuN--
-
+===================================================================
+Index: linux-2.6/arch/i386/pci/fixup.c
+===================================================================
+--- linux-2.6.orig/arch/i386/pci/fixup.c	2007-09-12 19:00:56.000000000 -0700
++++ linux-2.6/arch/i386/pci/fixup.c	2007-09-12 19:01:32.000000000 -0700
+@@ -444,3 +444,16 @@
+ }
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_SIEMENS, 0x0015,
+ 			  pci_siemens_interrupt_controller);
++
++/**
++ * Regular PCI devices have 256 bytes, but AMD Family 10h Opteron ext config
++ * have 4096 bytes.  Even if the device is capable, that doesn't mean we can
++ * access it.  Maybe we don't have a way to generate extended config space
++ * accesses.   So check it
++ */
++static void fam10h_pci_cfg_space_size(struct pci_dev *dev)
++{
++        dev->cfg_size = pci_cfg_space_size_ext(dev, 0);
++}
++
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_ANY_ID, fam10h_pci_cfg_space_size);
+Index: linux-2.6/drivers/pci/probe.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/probe.c	2007-09-12 19:00:56.000000000 -0700
++++ linux-2.6/drivers/pci/probe.c	2007-09-12 19:01:32.000000000 -0700
+@@ -831,11 +831,14 @@
+  * reading the dword at 0x100 which must either be 0 or a valid extended
+  * capability header.
+  */
+-int pci_cfg_space_size(struct pci_dev *dev)
++int pci_cfg_space_size_ext(struct pci_dev *dev, unsigned check_exp_pcix)
+ {
+ 	int pos;
+ 	u32 status;
+ 
++	if (!check_exp_pcix)
++		goto skip;
++
+ 	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
+ 	if (!pos) {
+ 		pos = pci_find_capability(dev, PCI_CAP_ID_PCIX);
+@@ -847,6 +850,7 @@
+ 			goto fail;
+ 	}
+ 
++ skip:
+ 	if (pci_read_config_dword(dev, 256, &status) != PCIBIOS_SUCCESSFUL)
+ 		goto fail;
+ 	if (status == 0xffffffff)
+@@ -858,6 +862,11 @@
+ 	return PCI_CFG_SPACE_SIZE;
+ }
+ 
++int pci_cfg_space_size(struct pci_dev *dev)
++{
++	return pci_cfg_space_size_ext(dev, 1);
++}
++
+ static void pci_release_bus_bridge_dev(struct device *dev)
+ {
+ 	kfree(dev);
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h	2007-09-12 19:00:56.000000000 -0700
++++ linux-2.6/include/linux/pci.h	2007-09-12 19:01:32.000000000 -0700
+@@ -626,6 +626,7 @@
+ 
+ void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
+ 		  void *userdata);
++int pci_cfg_space_size_ext(struct pci_dev *dev, unsigned check_exp_pcix);
+ int pci_cfg_space_size(struct pci_dev *dev);
+ unsigned char pci_bus_max_busnr(struct pci_bus* bus);
+ 
