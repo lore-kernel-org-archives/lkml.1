@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763129AbXIMQOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763599AbXIMQOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763129AbXIMQOZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 12:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758362AbXIMQOR
+	id S1763599AbXIMQOr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 12:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758362AbXIMQOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 12:14:17 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:39471 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbXIMQOQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 12:14:16 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH 0/3] IB/ehca: MR/MW fixes
-User-Agent: KMail/1.8.2
-Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 2328
-Date: Thu, 13 Sep 2007 18:14:13 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200709131814.13937.fenkes@de.ibm.com>
+	Thu, 13 Sep 2007 12:14:30 -0400
+Received: from ns.suse.de ([195.135.220.2]:47266 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763275AbXIMQO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 12:14:29 -0400
+Message-Id: <20070913161428.343951643@strauss.suse.de>
+User-Agent: quilt/0.46-57
+Date: Thu, 13 Sep 2007 18:14:28 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: kexec@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: [patch 0/7] Add extended crashkernel command line syntax
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset replaces Nam's previous MR/MW patch (posted by me). I split
-the #define fixes into a separate patch and moved the "is the memory from
-hugetlbfs?" code into ib_umem_get().
+This patch adds a extended crashkernel syntax that makes the value of reserved
+system RAM dependent on the system RAM itself:
 
-[1/3] fixes the page size HW cap defines
-[2/3] adds the hugetlb test to ib_umem_get()
-[3/3] finally uses the hugetlb flag in ehca_reg_user_mr()
+    crashkernel=<range1>:<size1>[,<range2>:<size2>,...][@offset]
+    range=start-[end]
 
-The patches should apply cleanly, in order, on top of my previous 12-patch
-set. Please review the changes and apply the patches for 2.6.24 if they are
-okay.
+For example:
 
-Regards,
-  Joachim
+    crashkernel=512M-2G:64M,2G-:128M
+
+The motivation comes from distributors that configure their crashkernel command
+line automatically with some configuration tool (YaST, you know ;)). Of course
+that tool knows the value of System RAM, but if the user removes RAM, then
+the system becomes unbootable or at least unusable and error handling
+is very difficult.
+
+This series implements this change for i386, x86_64, ia64, ppc64 and sh. That
+should be all platforms that support kdump in current mainline. I tested all
+platforms except sh due to the lack of a sh processor.
+
+The patch series is against 2.6.23-rc4-mm1.
+
+
+
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
 -- 
-Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
-IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
-Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
-eMail: fenkes@de.ibm.com
-
-
-
