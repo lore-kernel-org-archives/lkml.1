@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765445AbXIMS7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765836AbXIMTAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765445AbXIMS7c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 14:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbXIMS7X
+	id S1765836AbXIMTAR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 15:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760894AbXIMTAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 14:59:23 -0400
-Received: from smtp.opengridcomputing.com ([71.42.183.126]:58826 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754189AbXIMS7W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 14:59:22 -0400
-Message-ID: <46E98889.1080706@opengridcomputing.com>
-Date: Thu, 13 Sep 2007 13:59:21 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Roland Dreier <rdreier@cisco.com>, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.24
-References: <adahclymos8.fsf@cisco.com> <46E97BB0.9030106@opengridcomputing.com> <46E987E0.2010605@garzik.org>
-In-Reply-To: <46E987E0.2010605@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Sep 2007 15:00:04 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39092 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760813AbXIMTAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 15:00:01 -0400
+Date: Thu, 13 Sep 2007 21:01:25 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] CFS-devel, performance improvements
+Message-ID: <20070913190125.GC27146@uranus.ravnborg.org>
+References: <20070911200459.GA6974@elte.hu> <Pine.LNX.4.64.0709120242040.1817@scrub.home> <20070913075258.GA9173@elte.hu> <Pine.LNX.4.64.0709131419170.1817@scrub.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0709131419170.1817@scrub.home>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Roman.
 
-
-Jeff Garzik wrote:
-> Steve Wise wrote:
->> I was about to post v2 of my patch to avoid port space collisions with 
->> the native stack.  Can we get that 2.6.24?  It is high priority IMO. 
->> I've tried to solicit review on it, but I think folks are reluctant... 
->> ;-)
+On Thu, Sep 13, 2007 at 02:35:35PM +0200, Roman Zippel wrote:
+> Hi,
 > 
-> Well, if it involves /sharing/ port space with the native stack, i.e. 
-> where port 1234 is IB but 1235 is Linux, pretty much all the networking 
-> devs have NAK'd that approach AFAICS.
+> On Thu, 13 Sep 2007, Ingo Molnar wrote:
 > 
+> > > Out of curiousity: will I ever get answers to my questions?
+> > 
+> > the last few weeks/months have been pretty hectic - i get more than 50 
+> > non-list emails a day so i could easily have missed some.
+> 
+> Well, let's just take the recent "Really Simple Really Fair Scheduler" 
+> thread. You had the time to ask me questions about my scheduler, I even 
+> explained to you how the sleeping bonus works in my model. At the end I 
+> was sort of hoping you would start answering my questions and explaining 
+> things how the same things work in CFS - but nothing.
+> Then you had the time to reimplement the very things you've just asked me 
+> about and what do I get credit for - "two cleanups from RFS".
 
-Jeff, I posted a fix that doesn't do this.  No port sharing.  The iwarp 
-device will use its own ip address and subnet to avoid collisions.  You 
-should review the patch when I post v2.
+I have read the announcement from Ingo and after reading it I concluded
+that it was good to see that Ingo had taken in consideration the feedback
+from you and improved the schduler based on this.
+And when I read that he removed a lot of stuff I smiled. This reminded
+me of countless monkey aka code review sessions where I repeatedly do
+like my childred and asks why so many times that the author realize that
+something is not needed or no longer used.
 
-Thanks,
 
-Steve.
+The above were my impression after reading the announcement with
+respect to your influence and that goes far beyond "two cleanups".
+I bet many others read it roughly like I did.
+
+And no - I did not go back and re-read it. So do not answering
+by quoting the announcement or stuff like this.
+Because that will NOT change what my first impression was.
+
+So keep up the review - we get a better scheduler this way.
+
+	Sam
