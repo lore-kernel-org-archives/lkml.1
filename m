@@ -1,95 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933212AbXIMUqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765342AbXIMUuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933212AbXIMUqy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 16:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763195AbXIMUqq
+	id S1765342AbXIMUuJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 16:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbXIMUt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 16:46:46 -0400
-Received: from mail.hauppauge.com ([167.206.143.4]:3982 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756890AbXIMUqp (ORCPT
+	Thu, 13 Sep 2007 16:49:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56207 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753997AbXIMUt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 16:46:45 -0400
-X-Greylist: delayed 930 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Sep 2007 16:46:45 EDT
-Message-ID: <46E99F36.8090809@hauppauge.com>
-Date: Thu, 13 Sep 2007 16:36:06 -0400
-From: Steven Toth <stoth@hauppauge.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+	Thu, 13 Sep 2007 16:49:56 -0400
+Date: Thu, 13 Sep 2007 13:44:23 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net, Oliver Neukum <oneukum@suse.de>
+Subject: Re: [GIT PATCH] USB autosuspend fixes for 2.6.23-rc6
+In-Reply-To: <20070913201910.GH3563@stusta.de>
+Message-ID: <alpine.LFD.0.999.0709131341300.16478@woody.linux-foundation.org>
+References: <20070913154019.GG3563@stusta.de>
+ <Pine.LNX.4.44L0.0709131154240.7406-100000@iolanthe.rowland.org>
+ <20070913201910.GH3563@stusta.de>
 MIME-Version: 1.0
-To: Markus Rechberger <mrechberger@gmail.com>
-CC: Manu Abraham <abraham.manu@gmail.com>,
-       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
-       "linux-dvb@linuxtv.org" <linux-dvb@linuxtv.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [linux-dvb] [PATCH] Userspace tuner
-References: <46C1BCC5.9090709@amd.com> <1189626560.5160.57.camel@gaivota>	<d9def9db0709121546h67d3d1ceuf001ab1d798fde92@mail.gmail.com>	<d9def9db0709121610n1a78225cs26380b7ca586344a@mail.gmail.com>	<20070913131353.GB26972@linuxtv.org>	<d9def9db0709130712h108c7c1obfe24833f5dc27a1@mail.gmail.com>	<46E95C54.4060502@gmail.com> <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
-In-Reply-To: <d9def9db0709130908r6e383c51wd115dd56cfe2beef@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->   
->> Also there is to consider a non technical aspect, whether vendors will
->> misuse this interface for binary only, undermining the efforts put in
->> for OSS drivers.
->>
->>     
->
-> What holds companies for using the current available code putting it
-> into an rpm or deb package and releasing such code now?
->
-> The Avermedia example I pointed out to is a good example already.
-> As from my side I won't release binary drivers.
-> Although on the other side:
-> * are drivers from vendors which work through several kernel versions
-> that bad?
-> * Why did someone duallicense videodev2 with BSD/GPL?
->
-> I would appreciate if someone else on the list could also comment
-> the reason that drivers should all be included in the linuxkernel just
-> because forcing the companies to release binary drivers because
-> of that. My opinion about that is if a company wants to go opensource
-> they will do so, if not they will either not release a driver or release
-> nothing.
->
->   
 
+On Thu, 13 Sep 2007, Adrian Bunk wrote:
+> 
+> No, what I'm concerned about is that this would require userspace for 
+> something that is completely in-kernel.
 
-I know for certain that adding a userland API tuner/demod interface to 
-the kernel, allowing non-caring opportunistic silicon or board vendors 
-to developer closed source proprietary drivers, will have a negative 
-effect on the community and we'd set back linuxtv 3-5 years.
+If done right (and autosuspend now is), there is no "required" userspace.
 
-I know for certain that it would happen. Trust me.
+If you want autosuspend, you just say so. The kernel doesn't do it by 
+default. This is not about "user space required" - it's about "user space 
+can ask for it if it wants to".
 
-I've told you this countless times and you're not hearing me.
+Notice? There doesn't even have to be any blacklists/whitelists at all. It 
+really can be just an application that allows the user to check or uncheck 
+the capability (with a warning saying something like: "Some USB devices 
+may disconnect when suspended - if this affects you, uncheck this").
 
-Hauppauge have some leverage with Conexant and NXP to release public 
-datasheets. If they just have to release a demod.so (or similar) 
-loadable, they'll defer to the board vendors and we'll see the certain 
-board vendors 'locking other board vendors' out of their drivers. We'll 
-see embedded firmware, not shared between drivers.
+That's why the kernel shouldn't set policy. It's a *good* thing to just 
+expose the capabilities, but not necessarily use them! 
 
-Except, it won't stop at demod.so. It will extend into unfixable bugs 
-for VendorB's board, because VendorA doesn't want to release a new 
-demod.so, and VendorB has no linux resources. What happens next? For 
-financial reasons - demod.so will begin to include checks to see if 
-specific PCI or USB devices are present in the system, and will fail to 
-work properly (if at all) when they're not being used with the preferred 
-products.
-
-Read my lips: For commercial reasons, this enables driver components 
-that only work if specific boards are present.
-
-- Steve
-
-
-
-
-
-
-
-
+		Linus
