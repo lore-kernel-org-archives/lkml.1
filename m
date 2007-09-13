@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764881AbXIMWM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764226AbXIMWR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764881AbXIMWM2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 18:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbXIMWMS
+	id S1764226AbXIMWR5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 18:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbXIMWRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 18:12:18 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:40960 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756904AbXIMWMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 18:12:17 -0400
-Date: Fri, 14 Sep 2007 00:13:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Dan Aloni <da-x@monatomic.org>, Bernhard Walle <bwalle@suse.de>
-Subject: Re: [PATCH] Add ELF note with Linux version
-Message-ID: <20070913221340.GA29181@uranus.ravnborg.org>
-References: <20070904150018.GA4357@suse.de> <46DFD825.2020109@goop.org> <20070913144228.2efcd5d9.akpm@linux-foundation.org>
+	Thu, 13 Sep 2007 18:17:50 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53963 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753177AbXIMWRt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 18:17:49 -0400
+Date: Thu, 13 Sep 2007 15:17:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc4-mm1 compile error for ppc 32
+Message-Id: <20070913151738.4462fdf2.akpm@linux-foundation.org>
+In-Reply-To: <1189269730.5972.163.camel@localhost.localdomain>
+References: <20070906184011.GA1776@Krystal>
+	<20070906160009.fa52e8d2.akpm@linux-foundation.org>
+	<200709081136.46605.nickpiggin@yahoo.com.au>
+	<1189269730.5972.163.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070913144228.2efcd5d9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 13, 2007 at 02:42:28PM -0700, Andrew Morton wrote:
-> On Thu, 06 Sep 2007 11:36:21 +0100
-> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Sat, 08 Sep 2007 18:42:10 +0200
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
 > 
-> > Bernhard Walle wrote:
-> > > This patch adds version information to the ELF kernel file. Together
-> > > with the bzImage version information, this allows distributions to
-> > > identify the kernel version based on the file name.
-> > >   
+> > > If so, the finger points at this:
+> > >
+> > > static __inline__ void __clear_bit_unlock(int nr, volatile unsigned long
+> > > *addr) {
+> > > 	__asm__ __volatile__(LWSYNC_ON_SMP ::: "memory");
+> > > 	__clear_bit(nr, addr);
+> > > }
+> > >
+> > > which was added by Nick's powerpc-lock-bitops.patch.  I am suspecting that
+> > > this isn't pp32 code?
 > > 
-> > Seems reasonable to me, but I think the macro could be just called
-> > "ELFNOTE".
-> > 
+> > Hmm, when LWSYNC_ON_SMP is a noop, it seems like it should probably
+> > be an empty string instead of nothing? ("") That should make behaviour
+> > more consistent I think.
 > 
-> You removed Bernhard from the cc list.
+> The wormhole is arch/ppc's hack to get to include/asm-powerpc...
 > 
-> I'd like to know a little bit more about why this is needed, how it will be
-> used, etc.  And given that this feature is intended to improve life for
-> distributors, it would be nice to get some feedback from the appropriate
-> persons.
+> As for having LWSYNC_ON_SMP be "" ... that might be the best way but I'd
+> rather not take chances right now and go for the quick fix of making
+> __clear_bit_unlock() do
 > 
-> So could you please redo the patch as Jermey suggests (if you agree),
-> revamp the description and then cc suitable people at suitable distros so
-> we can get their input?
+> 	LWSYNC_ON_SMP ""
+> 
+> instead.
+> 
 
-I would rather see allt this ELFNOTE stuff reverted.
-It causes troubles for several archs and is at the moment
-being discussed at arm-kernel for example.
+Like this?
 
-Having it reverted and then applied when it is ready for all archs would
-be preferred.
+--- a/include/asm-powerpc/bitops.h~powerpc-lock-bitops-fix
++++ a/include/asm-powerpc/bitops.h
+@@ -226,7 +226,7 @@ static __inline__ void set_bits(unsigned
+ 
+ static __inline__ void __clear_bit_unlock(int nr, volatile unsigned long *addr)
+ {
+-	__asm__ __volatile__(LWSYNC_ON_SMP ::: "memory");
++	__asm__ __volatile__(LWSYNC_ON_SMP "" ::: "memory");
+ 	__clear_bit(nr, addr);
+ }
+ 
+_
 
-On top of this I never understood the actual purpose of it...
-
-	Sam
