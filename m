@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762134AbXIMGm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763478AbXIMGxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762134AbXIMGm7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 02:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbXIMGmv
+	id S1763478AbXIMGxx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 02:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757547AbXIMGxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 02:42:51 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46384 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753883AbXIMGmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 02:42:51 -0400
-Message-ID: <46E8DBE3.7040204@garzik.org>
-Date: Thu, 13 Sep 2007 02:42:43 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Thu, 13 Sep 2007 02:53:45 -0400
+Received: from rzcomm22.rz.tu-bs.de ([134.169.9.68]:60570 "EHLO
+	rzcomm22.rz.tu-bs.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757296AbXIMGxp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 02:53:45 -0400
+Message-ID: <46E8DE8B.8070405@l4x.org>
+Date: Thu, 13 Sep 2007 08:54:03 +0200
+From: Jan Dittmer <jdi@l4x.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070828)
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Kees Cook <kees@ubuntu.com>, linux-kernel@vger.kernel.org,
-       Ben Collins <bcollins@ubuntu.com>, Michael Wu <flamingice@sourmilk.net>
-Subject: Re: [PATCH] pci: fix unterminated pci_device_id lists
-References: <20070912064134.GO7910@outflux.net> <46E7C91D.3070001@garzik.org>	 <b6fcc0a0709120448s69528fc9reed593229124a4fa@mail.gmail.com>	 <20070912215356.GC23294@kroah.com>	 <20070912160827.e359a53b.akpm@linux-foundation.org> <b6fcc0a0709122334qa31fffby4afbf857c92efb89@mail.gmail.com>
-In-Reply-To: <b6fcc0a0709122334qa31fffby4afbf857c92efb89@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+To: bryan.wu@analog.com
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] Blackfin arch bug fixing for 2.6.23-rc6
+References: <1189662509.24063.2.camel@roc-laptop>
+In-Reply-To: <1189662509.24063.2.camel@roc-laptop>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> -static struct pci_device_id rtl8139_pci_tbl[] = {
-> +PCI_MODULE_DEVICE_TABLE_BEGIN(rtl8139_pci_tbl)
->  	{0x10ec, 0x8139, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
->  	{0x10ec, 0x8138, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
->  	{0x1113, 0x1211, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
-> @@ -273,10 +273,7 @@ static struct pci_device_id rtl8139_pci_tbl[] = {
->  	{PCI_ANY_ID, 0x8139, 0x10ec, 0x8139, 0, 0, RTL8139 },
->  	{PCI_ANY_ID, 0x8139, 0x1186, 0x1300, 0, 0, RTL8139 },
->  	{PCI_ANY_ID, 0x8139, 0x13d1, 0xab06, 0, 0, RTL8139 },
-> -
-> -	{0,}
-> -};
-> -MODULE_DEVICE_TABLE (pci, rtl8139_pci_tbl);
-> +PCI_MODULE_DEVICE_TABLE_END
+Bryan Wu wrote:
+> Hi Linus,
+> 
+> Please pull from 'for-linus' branch of
+> 
+> master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git for-linus
+> 
+> to receive the following updates:
+> 
+>  arch/blackfin/mach-common/pm.c              |    6 ++
+>  include/asm-blackfin/mach-bf561/cdefBF561.h |    4 +-
+>  include/asm-blackfin/string.h               |  129 +++++++++++++++++----------
 
+btw. what about this error?
 
-I think the previous version looks better.
+fs/binfmt_flat.c:760:50: error: macro "flat_get_addr_from_rp" requires 4 
+arguments, but only 3 given
+fs/binfmt_flat.c:760: error: ‘flat_get_addr_from_rp’ undeclared (first use in 
+this function)
+fs/binfmt_flat.c:760: error: (Each undeclared identifier is reported only once
+fs/binfmt_flat.c:760: error: for each function it appears in.)
+make[2]: *** [fs/binfmt_flat.o] Error 1
+make[1]: *** [fs] Error 2
+make: *** [_all] Error 2
 
-	Jeff
+any chance to get that fixed prior to .23? (not a regression, but
+happens approx. since blackfin was merged)
 
+Thanks,
 
+Jan
+
+Full build log: http://l4x.org/k/?d=34032
