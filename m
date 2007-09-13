@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbXIMMOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbXIMMTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753531AbXIMMOA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 08:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbXIMMNw
+	id S1754152AbXIMMTI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 08:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbXIMMSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 08:13:52 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4654 "EHLO scrub.xs4all.nl"
+	Thu, 13 Sep 2007 08:18:55 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:60991 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752149AbXIMMNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 08:13:52 -0400
-Date: Thu, 13 Sep 2007 14:14:25 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] CFS-devel, performance improvements
-In-Reply-To: <1189683320.21778.213.camel@twins>
-Message-ID: <Pine.LNX.4.64.0709131354220.1817@scrub.home>
-References: <20070911200459.GA6974@elte.hu>  <Pine.LNX.4.64.0709121405130.1817@scrub.home>
- <1189683320.21778.213.camel@twins>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752249AbXIMMSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 08:18:53 -0400
+Subject: Re: [Jfs-discussion] [2/4] 2.6.23-rc6: known regressions
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       jfs-discussion@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oliver Neukum <oliver@neukum.org>
+In-Reply-To: <46E81ACE.6030305@googlemail.com>
+References: <46E8187E.9000006@googlemail.com>
+	 <46E81ACE.6030305@googlemail.com>
+Content-Type: text/plain
+Date: Thu, 13 Sep 2007 07:18:37 -0500
+Message-Id: <1189685917.26427.10.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2007-09-12 at 18:58 +0200, Michal Piotrowski wrote:
 
-On Thu, 13 Sep 2007, Peter Zijlstra wrote:
+> Subject         : umount triggers a warning in jfs and takes almost a minute
+> References      : http://lkml.org/lkml/2007/9/4/73
+> Last known good : ?
+> Submitter       : Oliver Neukum <oliver@neukum.org>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : unknown
 
-> >  There's a good reason 
-> > I put that much effort into maintaining a good, but still cheap average, 
-> > it's needed for a good task placement.
-> 
-> While I agree that having this average is nice, your particular
-> implementation has the problem that it quickly overflows u64 at which
-> point it becomes a huge problem (a CPU hog could basically lock up your
-> box when that happens).
+I'm still waiting to hear from Oliver whether or not this is actually a
+regression.
 
-If you look at the math, you'll see that I took the overflow into account, 
-I even expected it. If you see this effect in my implementation, it would 
-be a bug.
+Thanks,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
-> >  There is of course more than one 
-> > way to implement this, so you'll have good chances to simply reimplement 
-> > it somewhat differently, but I'd be surprised if it would be something 
-> > completely different.
-> 
-> Currently we have 2 approximations in place:
-> 
->   (leftmost + rightmost) / 2
-> 
-> and
-> 
->   leftmost + period/2   (where period should match the span of the tree)
-> 
-> neither are perfect but they seem to work quite well.
-
-You need more than two busy loops. 
-There's a reason I implemented a simple simulator first, so I could 
-actually study the scheduling behaviour of different load situations. That 
-doesn't protect from all surprises of course, but it gives me the 
-necessary confidence the scheduler will work reasonably even in weird 
-situations.
->From these tests I already know that your approximations only work with 
-rather simple loads.
-
-bye, Roman
