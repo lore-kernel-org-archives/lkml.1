@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbXIMLg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746AbXIMLjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbXIMLg4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 07:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbXIMLgt
+	id S1753746AbXIMLjc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 07:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbXIMLjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 07:36:49 -0400
-Received: from mailout03.sul.t-online.de ([194.25.134.81]:60185 "EHLO
-	mailout03.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751594AbXIMLgs (ORCPT
+	Thu, 13 Sep 2007 07:39:25 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:60387 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752249AbXIMLjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 07:36:48 -0400
-Message-ID: <46E920B2.40907@t-online.de>
-Date: Thu, 13 Sep 2007 13:36:18 +0200
-From: Bernd Schmidt <bernds_cb1@t-online.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070810)
+	Thu, 13 Sep 2007 07:39:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=PQJAkJxhfE1n/zhYBSGwHPOcqciC9+U+7UpX+5CeIWtwLqok48GgzAPz5TpSJVDbW2s8ltqnELF8cXhTT+RI4TgNwVWEvg99QYkvJ/UTXvCrCEen8Kw2AEVg7cWS9E9ysE1c/K04ysZlWxr7sM72DzKUcLkgoFBjKcySISr2L9M=
+Message-ID: <46E92137.8020700@googlemail.com>
+Date: Thu, 13 Sep 2007 13:38:31 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: bryan.wu@analog.com
-CC: Jan Dittmer <jdi@l4x.org>, LKML <linux-kernel@vger.kernel.org>,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [GIT PULL] Blackfin arch bug fixing for 2.6.23-rc6
-References: <1189662509.24063.2.camel@roc-laptop> <46E8DE8B.8070405@l4x.org> <1189666738.30686.6.camel@roc-desktop>
-In-Reply-To: <1189666738.30686.6.camel@roc-desktop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.23-rc6-git3-krf1
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-X-ID: GoJAX-ZpZeaCqHAHP4D97hLYBoUxW78KgFWzMjUWJxC-bknb7VnMc8
-X-TOI-MSGID: ef6e921a-f6aa-4923-8b2c-e47b43d55e78
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan Wu wrote:
-> This is because a binfmt_flat hacking patch for Blackfin arch is not
-> accept by the mainline.
+Hi,
 
-Did you see someone reject it, or did it just get lost?
+There are a few regression fixes in -krf tree
+
+http://www.stardust.webpages.pl/files/patches/krf/2.6.23-rc6-git3/2.6.23-rc6-git3-krf1.patch.bz2
+http://www.stardust.webpages.pl/files/patches/krf/2.6.23-rc6-git3/2.6.23-rc6-git3-krf1.tar.bz2
+
+Vitaly Bordug:
+	oops-while-modprobing-phy-fixed-module-fix.patch
+
+Dmitry Torokhov:
+	sysfs-change-of-input-event-devices-in-2.6.23rc-breaks-udev-fix.patch
+
+J. Bruce Fields:
+	oops-in-nfs4_cb_recall-fix.patch
+
+Jamal:
+	possible-irq-lock-inversion-dependency-fix.patch
+
+ drivers/base/core.c       |   29 +++-
+ drivers/net/phy/Kconfig   |   14 ++
+ drivers/net/phy/fixed.c   |  310 +++++++++++++++++++++++-----------------------
+ fs/nfsd/nfs4callback.c    |    1
+ fs/nfsd/nfs4state.c       |   37 +++--
+ include/linux/phy_fixed.h |   38 +++++
+ net/sched/act_api.c       |    8 -
+ net/sched/act_police.c    |    4
+ 8 files changed, 258 insertions(+), 183 deletions(-)
 
 
-Bernd
--- 
-This footer brought to you by insane German lawmakers.
-Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
-Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
-Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
