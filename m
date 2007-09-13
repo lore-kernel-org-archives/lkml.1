@@ -1,105 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764055AbXIMFkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764998AbXIMFsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764055AbXIMFkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 01:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbXIMFkH
+	id S1764998AbXIMFsT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 01:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbXIMFsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 01:40:07 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:24857 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849AbXIMFkF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 01:40:05 -0400
-Date: Wed, 12 Sep 2007 22:21:51 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: crashme fault
-Message-Id: <20070912222151.70d1fc7d.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 13 Sep 2007 01:48:10 -0400
+Received: from ozlabs.org ([203.10.76.45]:46596 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751166AbXIMFsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 01:48:09 -0400
+Subject: Re: [patch 1/8] Immediate Values - Global Modules List and Module
+	Mutex
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20070911142733.GA7850@Krystal>
+References: <20070906200228.086651361@polymtl.ca>
+	 <20070906200314.079453533@polymtl.ca>
+	 <20070908072811.GB1819@martell.zuzino.mipt.ru>
+	 <1189468414.8023.66.camel@localhost.localdomain>
+	 <20070911004541.GA4360@Krystal>
+	 <1189487938.20631.53.camel@localhost.localdomain>
+	 <20070911142733.GA7850@Krystal>
+Content-Type: text/plain
+Date: Thu, 13 Sep 2007 15:47:11 +1000
+Message-Id: <1189662432.32322.1.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I run almost-daily kernel testing.  I haven't seen 'crashme' cause a
-kernel fault until today, and now I've seen it twice on 2.6.23-rc6-git2,
-x86_64.  After the first fault, I ran 'crashme' about 10 more times
-to get the second fault (usually for 10 minutes, one time for 30
-minutes).
+On Tue, 2007-09-11 at 10:27 -0400, Mathieu Desnoyers wrote: 
+> * Rusty Russell (rusty@rustcorp.com.au) wrote:
+> > On Mon, 2007-09-10 at 20:45 -0400, Mathieu Desnoyers wrote:
+> > > Code patching of _live_ SMP code is allowed. This is why I went through
+> > > all this trouble on i386.
+> > 
+> > Oh, I was pretty sure it wasn't.  OK.
+> > 
+> > So now why three versions of immediate_set()?  And why are you using my
+> > lock for exclusion?  Against what?
+> > 
+> 
+> If we need to patch code at boot time, when interrupts are still
+> disabled (it happens when we parse the kernel arguments for instance),
+> we cannot afford to use IPIs to call sync_core() on each cpu, using
+> breakpoints/notifier chains could be tricky (because we are very early
+> at boot and alternatives or paravirt may not have been applied yet).
 
-[This is gjc-crashme, not Dave's scrashme replacement:
-http://people.delphiforums.com/gjc/crashme.html]
+Hi Mathieu,
 
-There is very little helpful info.  RIP is strange, e.g.: 000000000051b446
-The call stack is not printed.  No kernel symbols are printed,
-even though I have CONFIG_KALLSYMS{_ALL}=y.
+Sure, but why is that the caller's problem?  immediate_set() isn't
+fastpath, so why not make it do an "if (early_boot)" internally?
 
-Here are the 2 kernel message logs of the faults.
-Any ideas/suggestions?  I suppose I will try to log the syscall
-parameters that crashme is using.
+> _immediate_set() has been introduced because of the way immediate values
+> are used by markers: the linux kernel markers already hold the module
+> mutex when they need to update the immediate values. Taking the mutex
+> twice makes no sence, so _immediate_set() is used when the caller
+> already holds the module mutex.
 
-~~~~~~~~~~~~~~~~~~~~ 1. ~~~~~~~~~~~~~~~~~~~~~~~
+> Why not just have one immediate_set() which iterates through and fixes
+> > up all the references?
+> 
+> (reasons explained above)
+> 
+> > It can use an internal lock if you want to avoid
+> > concurrent immediate_set() calls.
+> > 
+> 
+> An internal lock won't protect against modules load/unload race. We have
+> to iterate on the module list.
 
-[ 7487.208128] Unable to handle kernel paging request at 00000000ff019b53 RIP:
-[ 7487.212752]  [<0000000000510eea>]
-[ 7487.218537] PGD 10c1a2067 PUD 0
-[ 7487.221811] Oops: 0000 [1] SMP
-[ 7487.224989] CPU 2
-[ 7487.227024] Modules linked in: loop
-[ 7487.230550] Pid: 19139, comm: crashme Not tainted 2.6.23-rc6-git2 #1
-[ 7487.236896] RIP: 0033:[<0000000000510eea>]  [<0000000000510eea>]
-[ 7487.242925] RSP: 002b:00007fffc9a8ec10  EFLAGS: 00010e83
-[ 7487.248234] RAX: 00000000ffff8c4a RBX: 00000000004014f1 RCX: 00002b20e11c8b37
-[ 7487.255361] RDX: 0000000000510ee0 RSI: 0000000000000000 RDI: 000000000000000a
-[ 7487.262489] RBP: 00007fffc9a8ec10 R08: 00007fffc9a8eb60 R09: 0000000000000000
-[ 7487.269616] R10: 0000000000000008 R11: 0000000000000612 R12: 0000000000000000
-[ 7487.276743] R13: 00007fffc9a8ee00 R14: 0000000000000000 R15: 0000000000000000
-[ 7487.283871] FS:  00002b20e13676d0(0000) GS:ffff81011fc75840(0000) knlGS:0000000000000000
-[ 7487.291952] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-[ 7487.297693] CR2: 00000000ff019b53 CR3: 000000005be6b000 CR4: 00000000000006e0
-[ 7487.304821] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[ 7487.311949] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[ 7487.319076] Process crashme (pid: 19139, threadinfo ffff810106830000, task ffff810102cf5040)
-[ 7487.327511]
-[ 7487.329009] RIP  [<0000000000510eea>]
-[ 7487.332690]  RSP <00007fffc9a8ec10>
-[ 7487.336180] CR2: 00000000ff019b53
-[ 7487.339810] Kernel panic - not syncing: Fatal exception
+Sure, but it seems like that's fairly easy to do within module.c:
 
-~~~~~~~~~~~~~~~~~~~ 2. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/* This updates all the immediates even though only one might have
+* changed.  But it's so rare it's not worth optimizing. */
+void module_update_immediates(void)
+{
+mutex_lock(&module_mutex);
+list_for_each_entry(mod, &modules, list)
+update_immediates(mod->immediate, mod->num_immediate);
+mutex_unlock(&module_mutex);
+}
 
-[16625.590976] Unable to handle kernel paging request at 00000000ff019f05 RIP: 
-[16625.595604]  [<000000000051b446>]
-[16625.601397] PGD d9af2067 PUD 0 
-[16625.604577] Oops: 0000 [1] SMP 
-[16625.607754] CPU 1 
-[16625.609789] Modules linked in: loop
-[16625.613315] Pid: 23057, comm: crashme Not tainted 2.6.23-rc6-git2 #1
-[16625.619662] RIP: 0033:[<000000000051b446>]  [<000000000051b446>]
-[16625.625689] RSP: 002b:00007fff7b5851f0  EFLAGS: 00010603
-[16625.630998] RAX: 0000000000000000 RBX: 00002b672f63ec00 RCX: 00002b672f6d1b37
-[16625.638127] RDX: 0000000000401476 RSI: 0000000000000000 RDI: 000000000000000a
-[16625.645254] RBP: 00007fff7b5851f0 R08: 00007fff7b585140 R09: 0000000000000000
-[16625.652381] R10: 0000000000000008 R11: 0000000000000612 R12: 0000000000000000
-[16625.659508] R13: 00007fff7b5853e0 R14: 0000000000000000 R15: 0000000000000000
-[16625.666637] FS:  00002b672f8706d0(0000) GS:ffff81011fc75e40(0000) knlGS:0000000000000000
-[16625.674717] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[16625.680458] CR2: 00000000ff019f05 CR3: 00000000d942b000 CR4: 00000000000006e0
-[16625.687587] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[16625.694714] DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 0000000000000400
-[16625.701841] Process crashme (pid: 23057, threadinfo ffff8100d9bfe000, task ffff81011e83a040)
-[16625.710267] 
-[16625.711765] RIP  [<000000000051b446>]
-[16625.715446]  RSP <00007fff7b5851f0>
-[16625.718937] CR2: 00000000ff019f05
-[16625.722553] Kernel panic - not syncing: Fatal exception
+Then during module load you do:
+
+update_immediates(mod->immediate, mod->num_immediate);
+
+Your immediate_update() just becomes:
+
+update_immediates(__start___immediate,
+		  __stop___immediate - __start___immediate);
+module_update_immediates();
+
+update_immediates() can grab the immediate_mutex if you want.
+
+> > Why is it easier to patch the sites now than later?  Currently it's just
+> > churn.  You could go back and find them when this mythical patch gets
+> > merged into this mythical future gcc version.  It could well need a
+> > completely different macro style, like "cond_imm(var, code)".
+> 
+> Maybe you're right. My though was that if we have a way to express a
+> strictly boolean if() statement that can later be optimized further by
+> gcc using a jump rather than a conditionnal branch and currently emulate
+> it by using a load immediate/test/branch, we might want to do so right
+> now so we don't have to do a second code transition from
+> if (immediate_read(&var)) to immediate_if (&var) later. But you might be
+> right in that the form could potentially change anyway when the
+> implementation would come, although I don't see how.
+
+I was thinking that we might find useful specific cases before we get
+GCC support, which archs can override with tricky asm if they wish.
+
+Cheers,
+Rusty.
 
 
----
-~Randy
