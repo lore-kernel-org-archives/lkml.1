@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbXIMONb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757248AbXIMORA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757956AbXIMONb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 10:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756712AbXIMONS
+	id S1757248AbXIMORA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 10:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbXIMOQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 10:13:18 -0400
-Received: from cerber.ds.pg.gda.pl ([153.19.208.18]:33830 "EHLO
-	cerber.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756419AbXIMONQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 10:13:16 -0400
-Date: Thu, 13 Sep 2007 15:13:06 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jeff Garzik <jgarzik@pobox.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sb1250-mac.c: De-typedef, de-volatile, de-etc...
-In-Reply-To: <46E8B56E.7060705@pobox.com>
-Message-ID: <Pine.LNX.4.64N.0709131506040.31069@blysk.ds.pg.gda.pl>
-References: <Pine.LNX.4.64N.0709101310030.25038@blysk.ds.pg.gda.pl>
- <46E8B56E.7060705@pobox.com>
+	Thu, 13 Sep 2007 10:16:51 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50493 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753302AbXIMOQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 10:16:50 -0400
+Message-ID: <46E9464A.2020905@pobox.com>
+Date: Thu, 13 Sep 2007 10:16:42 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Micah Gruber <micah.gruber@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Grant Grundler <grundler@parisc-linux.org>
+Subject: Re: [CORRECTION][PATCH] Fix a potential NULL pointer dereference
+ in uli526x_interrupt() in drivers/net/tulip/uli526x.c
+References: <46DD13CE.6010905@gmail.com> <20070913020346.979647c1.akpm@linux-foundation.org>
+In-Reply-To: <20070913020346.979647c1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Sep 2007, Jeff Garzik wrote:
+Andrew Morton wrote:
+> --- a/drivers/net/tulip/uli526x.c~fix-a-potential-null-pointer-dereference-in-uli526x_interrupt
+> +++ a/drivers/net/tulip/uli526x.c
+> @@ -666,11 +666,6 @@ static irqreturn_t uli526x_interrupt(int
+>  	unsigned long ioaddr = dev->base_addr;
+>  	unsigned long flags;
+>  
+> -	if (!dev) {
+> -		ULI526X_DBUG(1, "uli526x_interrupt() without DEVICE arg", 0);
+> -		return IRQ_NONE;
+> -	}
+> -
 
-> > Remove typedefs, volatiles and convert kmalloc()/memset() pairs to
-> > kcalloc().  Also reformat the surrounding clutter.
-> > 
-> > Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-> > ---
-> 
-> ACK, but patch does not apply cleanly to netdev-2.6.git#upstream (nor -mm)
 
- Hmm, works fine with linux-2.6.git#master.  I do not recall any recent 
-activity with this driver -- I wonder what the difference is.  Let me 
-see...
+correct / ACK
 
-  Maciej
