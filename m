@@ -1,63 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765610AbXIMTXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932115AbXIMTZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765610AbXIMTXB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 15:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbXIMTWx
+	id S932115AbXIMTZU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 15:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbXIMTZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 15:22:53 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:62454 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753997AbXIMTWw (ORCPT
+	Thu, 13 Sep 2007 15:25:08 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41985 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753997AbXIMTZG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 15:22:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OxI6/l9ppvLOM3p0kf0A6YAXTgJ35juNFFKCgRBTWmoLsytojRVz15aRxnyvmyFLMaWU2xFz9M7dEDuV8kwJNOFfx86NAyRHTlQsxr8vRRZGaztis6YmnK1AjtVdrUCls+RjbX1lcUfQeJJuGoRehjhVzQ4z3p9RjqoemG5opOQ=
-Message-ID: <86802c440709131222v6e819e4ayed27430ba4e61154@mail.gmail.com>
-Date: Thu, 13 Sep 2007 12:22:51 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used
-Cc: "Andi Kleen" <ak@suse.de>, "Greg KH" <greg@kroah.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jeff Garzik" <jeff@garzik.org>, "Martin Mares" <mj@ucw.cz>,
-       "dean gaudet" <dean@arctic.org>,
-       "Robert Richter" <robert.richter@amd.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <46E97178.2040903@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 13 Sep 2007 15:25:06 -0400
+Subject: Re: [RFC 0/3] Recursive reclaim (on __PF_MEMALLOC)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, Daniel Phillips <phillips@phunq.net>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dkegel@google.com,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0709131128050.9546@schroedinger.engr.sgi.com>
+References: <20070814142103.204771292@sgi.com>
+	 <200709050220.53801.phillips@phunq.net>
+	 <Pine.LNX.4.64.0709050334020.8127@schroedinger.engr.sgi.com>
+	 <20070905114242.GA19938@wotan.suse.de>
+	 <Pine.LNX.4.64.0709050507050.9141@schroedinger.engr.sgi.com>
+	 <1189594373.21778.114.camel@twins>
+	 <Pine.LNX.4.64.0709121540370.4067@schroedinger.engr.sgi.com>
+	 <1189671552.21778.158.camel@twins>
+	 <Pine.LNX.4.64.0709131128050.9546@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Thu, 13 Sep 2007 21:24:33 +0200
+Message-Id: <1189711473.5643.18.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.92 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200709121921.43950.yinghai.lu@sun.com>
-	 <200709131147.43446.ak@suse.de> <20070913104704.GA3878@kroah.com>
-	 <200709131353.15752.ak@suse.de>
-	 <86802c440709131001w4b758921r52a23f1732a6e9c8@mail.gmail.com>
-	 <46E97178.2040903@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/13/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> Yinghai Lu wrote:
-> >
-> > BIOS guys also said that fam 10h need mmconfig via eax accessing, may
-> > need OS do sth, so it is safe to stay with MCFG entry for SB like
-> > mcp55...
-> >
-> > but latest kernel already have that workaround to make mmconfig via eax...
-> >
->
-> This is actually a good point.  Since the CPU vendor managed to
-> completely fuck up the operation of MMCONFIG itself on this CPU (it's a
-> *MEMORY REFERENCE*, guys!), it is actually to be expected and prudent
-> that BIOS vendors will drop the MCFG entry.  MMCONFIG doesn't actually
-> work on this CPU for any system software which doesn't already know to
-> work around this particular piece of severe braindamage;
-> standards-complicant MMCONFIG isn't supported at all.
 
-if other mmconfig device on x86 is sick of accessing via eax, may need
-to provide one fam10h_pci_mmcfg to be assigned to raw_pci_ops instead
-and leave pci_mmcfg to default behavior ( *MEMORY REFERENCE*).
+On Thu, 2007-09-13 at 11:32 -0700, Christoph Lameter wrote:
+> On Thu, 13 Sep 2007, Peter Zijlstra wrote:
+> 
+> > 
+> > > > Every user of memory relies on the VM, and we only get into trouble if
+> > > > the VM in turn relies on one of these users. Traditionally that has only
+> > > > been the block layer, and we special cased that using mempools and
+> > > > PF_MEMALLOC.
+> > > > 
+> > > > Why do you object to me doing a similar thing for networking?
+> > > 
+> > > I have not seen you using mempools for the networking layer. I would not 
+> > > object to such a solution. It already exists for other subsystems.
+> > 
+> > Dude, listen, how often do I have to say this: I cannot use mempools for
+> > the network subsystem because its build on kmalloc! What I've done is
+> > build a replacement for mempools - a reserve system - that does work
+> > similar to mempools but also provides the flexibility of kmalloc.
+> > 
+> > That is all, no more, no less.
+> 
+> Its different since it becomes a privileged player that can suck all 
+> the available memory out of the page allocator.
 
-YH
+No, each reserve user comes with a bean-counter that will limit the
+usage.
+
+> > I'm confused by this, I've never claimed part of, or such a thing. All
+> > I'm saying is that because of the circular dependency between the VM and
+> > the IO subsystem used for swap (not file backed paging [*], just swap)
+> > you have to do something special to avoid deadlocks.
+> 
+> How are dirty file backed pages different? They may also be written out 
+> by the VM during reclaim.
+
+when you have dirty file backed pages, the rest of the memory can only
+consists of clean file pages and or anonymous pages - due to the dirty
+limit. If you can guarantee that swap doesn't use memory (well, it does,
+but its PF_MEMALLOC memory that cannot be used by others) then you can
+always free memory by dropping clean pages or swapping out. And thus
+make progress for file based writeback.
+
+This is why the dirty page tracking made mmap over NFS useable.
+
+> > > Replacing the mempools for the block layer sounds pretty good. But how do 
+> > > these various subsystems that may live in different portions of the system 
+> > > for various devices avoid global serialization and livelock through your 
+> > > system? 
+> > 
+> > The reserves are spread over all kernel mapped zones, the slab allocator
+> > is still per cpu, the page allocator tries to get pages from the nearest
+> > node.
+> 
+> But it seems that you have unbounded allocations with PF_MEMALLOC now for 
+> the networking case? So networking can exhaust all reserves?
+
+No, networking will beancount all PF_MEMALLOC memory it receives, and
+stop allocating once it hits it limit. It knows that when it has than
+much memory outstanding its guaranteed memory will be freed soon.
+
+> > > And how is fairness addresses? I may want to run a fileserver on 
+> > > some nodes and a HPC application that relies on a fiberchannel connection 
+> > > on other nodes. How do we guarantee that the HPC application is not 
+> > > impacted if the network services of the fileserver flood the system with 
+> > > messages and exhaust memory?
+> > 
+> > The network system reserves A pages, the block layer reserves B pages,
+> > once they start getting pages from the reserves they go bean counting,
+> > once they reach their respective limit they stop.
+> 
+> That sounds good.
+
+Ok, so next time I'll post the whole series again - I know some people
+found it too much - but that way you can see the bean counter.
+
