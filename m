@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763260AbXIMVBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761887AbXIMVC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763260AbXIMVBa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 17:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbXIMVBU
+	id S1761887AbXIMVC3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 17:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbXIMVCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 17:01:20 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:41244 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754274AbXIMVBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 17:01:19 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Subject: Re: [patch] update CFI URI n mtd kconfig
-Date: Thu, 13 Sep 2007 17:01:16 -0400
-User-Agent: KMail/1.9.7
-Cc: "Josh Boyer" <jwboyer@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
-References: <200709122339.55267.vapier@gentoo.org> <625fc13d0709131128m5a606b6ewe729c1e72f73f9d9@mail.gmail.com> <200709131631.56867.rgetz@blackfin.uclinux.org>
-In-Reply-To: <200709131631.56867.rgetz@blackfin.uclinux.org>
+	Thu, 13 Sep 2007 17:02:21 -0400
+Received: from 0006b10c8258.cranite.com ([63.81.170.2]:52657 "EHLO
+	mailnode1.cranite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754065AbXIMVCU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 17:02:20 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart8223427.xa7bFni5AE";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200709131701.17572.vapier@gentoo.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: irq load balancing
+Date: Thu, 13 Sep 2007 14:02:15 -0700
+Message-ID: <3641F7C576757E49AE23AD0D820D72C434DCB8@mailnode1.cranite.com>
+In-Reply-To: <20070913204443.GB5386@csclub.uwaterloo.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: irq load balancing
+Thread-Index: Acf2RvENEOSCUc1AS4+n/bm4QPv1GwAAfLCw
+From: "Venkat Subbiah" <venkats@cranite.com>
+To: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
+Cc: "Chris Snook" <csnook@redhat.com>, <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart8223427.xa7bFni5AE
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Since most network devices have a single status register for both
+receiver and transmit (and errors and the like), which needs a lock to
+protect access, you will likely end up with serious thrashing of moving
+the lock between cpus.
+> Any ways to measure the trashing of locks?
 
-On Thursday 13 September 2007, Robin Getz wrote:
-> Why not from the place that you can get the standard? http://jedec.org/
+Since most network devices have a single status register for both
+receiver and transmit (and errors and the like)
+> These register accesses will be mostly within the irq handler which I
+plan on keeping on the same processor. The network driver is actually
+tg3. Will looks closely into the driver.
 
-i found jedec.org a nightmare to navigate
+Thx,
+Venkat
 
-> or http://www.jedec.org/download/search/jesd68-01.pdf
 
-i'll add that to wikipedia ;)
--mike
+-----Original Message-----
+From: Lennart Sorensen [mailto:lsorense@csclub.uwaterloo.ca] 
+Sent: Thursday, September 13, 2007 1:45 PM
+To: Venkat Subbiah
+Cc: Chris Snook; linux-kernel@vger.kernel.org
+Subject: Re: irq load balancing
 
---nextPart8223427.xa7bFni5AE
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+On Thu, Sep 13, 2007 at 01:31:39PM -0700, Venkat Subbiah wrote:
+> Doing it in a round-robin fashion will be disastrous for performance.
+> Your cache miss rate will go through the roof and you'll hit the slow
+> paths in the network stack most of the time.
+> > Most of the work in my system is spent in enrypt/decrypting traffic.
+> Right now all this is done in a tasklet within the softirqd and hence
+> all landing up on the same CPU.
+> On the receive side it'a packet handler that handles the traffic. On
+the
+> tx side it's done within the transmit path of the packet. So would
+> re-architecting this to move the rx packet handler to a different
+kernel
+> thread(with smp affinity to one CPU) and tx to a different kernel
+> thread(with SMP affinity to a different CPU) be advisable. 
+> What's the impact on cache miss and slowpath/fastpath in network
+stack.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.6 (GNU/Linux)
+Since most network devices have a single status register for both
+receiver and transmit (and errors and the like), which needs a lock to
+protect access, you will likely end up with serious thrashing of moving
+the lock between cpus.
 
-iQIVAwUARumlHUFjO5/oN/WBAQJ98hAAtkvXTRNMHIaqFWaDEDmqoO904UXwY9K8
-hyGZZy/+SUXhySN3vZzgcnV4amGxBJEKAJyeUAchCG/DSZOKWEOu5M3WO2K4Q9yW
-NgtbcDyJPlsWwtOlftwWVYA8fmXxbN57U8w+80PVFlkqCmFHOF01dJtM9pCx71Rq
-CoiQXjsxKTnE0wB0WEFFrj0Nj/gMiHJId5/LUowtNDWsCCv2iVw1bRTxg0MZRWS2
-OkIhTz0BtsXpxq3BfgtxSo0m92DWwq8uWZFxkNy23Xd60V9oSKerE6h7LcxKeEUo
-MjMeS/BAVkZ8l6Iq75YyCH3I33Sra4y1csK/+8VMOJVhU0CY7v6BsR1b0/Wa3Fwf
-YdzvQZkBW0Zx2PoCsT8NQZe31KUn8jHSyw3fGJJt1HMsM3ewfVUhlF7LjsaEeQFK
-bjZw/Q4yhKgl5+7eUzPB10YYphtTyZKuNq5kQ+nRwhdOJNHy7FH4HgUrNssASE5z
-5SdR8ohWYbjcPNcmC8nbfa19pvmJK29qq40L0YRocxb6kQUxYKvzN7a9gSBVNm7i
-E3amlUyl+IwFpVUU0lawCIVf7XEoGwKpHZ0MpSBRzMlncTVWDNxQddojUxzcPbL/
-hvsxNIEAVeDtjaOM2V9vgOMP+mO+U+sGhBztBRvqcDXWBqMPi77ps4ihERCZ+JUz
-au1kSZe08Xw=
-=unV2
------END PGP SIGNATURE-----
-
---nextPart8223427.xa7bFni5AE--
+--
+Len Sorensen
