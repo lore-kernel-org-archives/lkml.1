@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbXIMJtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbXIMJtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757486AbXIMJtS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 05:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbXIMJtK
+	id S1759586AbXIMJtq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 05:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbXIMJtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 05:49:10 -0400
-Received: from mx2.suse.de ([195.135.220.15]:48838 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbXIMJtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 05:49:07 -0400
-From: Andi Kleen <ak@suse.de>
-To: Yinghai Lu <Yinghai.Lu@sun.com>
-Subject: Re: [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used
-Date: Thu, 13 Sep 2007 11:47:42 +0200
-User-Agent: KMail/1.9.1
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
-       Greg KH <greg@kroah.com>, Martin Mares <mj@ucw.cz>,
-       dean gaudet <dean@arctic.org>, Robert Richter <robert.richter@amd.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200709121921.43950.yinghai.lu@sun.com>
-In-Reply-To: <200709121921.43950.yinghai.lu@sun.com>
+	Thu, 13 Sep 2007 05:49:36 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:55532 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750766AbXIMJtf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 05:49:35 -0400
+In-Reply-To: <adaps0nmbfa.fsf@cisco.com>
+References: <200709121439.32641.fenkes@de.ibm.com> <adaps0nmbfa.fsf@cisco.com>
+Subject: Re: [PATCH] IB/ehca: Make sure user pages are from hugetlb before using MR
+ large pages
+To: Roland Dreier <rdreier@cisco.com>
+Cc: "OF-EWG" <ewg@lists.openfabrics.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
+       Joachim Fenkes <FENKES@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+X-Mailer: Lotus Notes Release 8.0 August 02, 2007
+Message-ID: <OF2700619C.27B6141C-ONC1257355.00353BC8-C1257355.0035DE00@de.ibm.com>
+From: Christoph Raisch <RAISCH@de.ibm.com>
+Date: Thu, 13 Sep 2007 11:49:19 +0200
+X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 13/09/2007 11:49:32
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200709131147.43446.ak@suse.de>
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 13 September 2007 04:21, Yinghai Lu wrote:
-> [PATCH] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG is used.
+Roland Dreier wrote on 13.09.2007 06:33:45:
+
 >
-> reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
+> Also if someone runs a kernel with 64K pages on a machine where they
+> end up being simulated from 4K pages, do you have the same issue with
+> the hypervisor ganging together non-contiguous pages?
+With todays hypervisor and todays pagesizes and todays MMUs
+we don't have this problem if eHCA is enabled.
 
-I just rejected a similar patch -- this should be done using MMCONFIG
+It is difficult to make predictions about the future,
+but that's not specific to driver development. ;-)
 
--Andi
+>
+>  - R.
+
+ - Christoph R.
+
