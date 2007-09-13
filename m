@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760395AbXIMPqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759043AbXIMPuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760395AbXIMPqQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Sep 2007 11:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757559AbXIMPqF
+	id S1759043AbXIMPuX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Sep 2007 11:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbXIMPuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Sep 2007 11:46:05 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:29179 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753412AbXIMPqD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Sep 2007 11:46:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=caWu70mhNWSw4wxVEGPGHX23Kd+myZEpze+PknBMgwXxm5caSczV16YWOotUlOL3Skw1UY2sDPjTc+UOkEtlvG2YaX6Mp2kC7uG/Wq1GBWN5bW07YZ4ej3FOH23rc7blUbVReEByb+HRTHYseREemT+QiGk8lBo+NBM2+2eYKtA=
-Message-ID: <9a8748490709130846n4074b295r4893bef259734c9e@mail.gmail.com>
-Date: Thu, 13 Sep 2007 17:46:00 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [linux-kernel]how to get the latest kernel source tree?
-Cc: "Frank Liu" <frank.liu64@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <6bffcb0e0709130541t364e5b83q48d4711347c7fd0b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 13 Sep 2007 11:50:11 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:57875 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752618AbXIMPuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Sep 2007 11:50:09 -0400
+Subject: Re: [PATCH 5/6] Filter based on a nodemask as well as a gfp_mask
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20070912210625.31625.36220.sendpatchset@skynet.skynet.ie>
+References: <20070912210444.31625.65810.sendpatchset@skynet.skynet.ie>
+	 <20070912210625.31625.36220.sendpatchset@skynet.skynet.ie>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 13 Sep 2007 11:49:40 -0400
+Message-Id: <1189698581.5013.74.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f405816b0709130534k11fc5ca0r4f9ac1f0ea9725e@mail.gmail.com>
-	 <f405816b0709130537u2e038053tca1a96f6711952f8@mail.gmail.com>
-	 <6bffcb0e0709130541t364e5b83q48d4711347c7fd0b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13/09/2007, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> Hi Frank,
->
-> On 13/09/2007, Frank Liu <frank.liu64@gmail.com> wrote:
-> > For some reason I was not able to use git, but I still wanna get the
-> > latest kernel source tree as I hope to submit a patch, hence I am now
-> > about to do the things like this:
-> >
-> > -download kernel 2.6.22.6 as this is the latest stable version
-> > -and download patch-2.6.23-rc6.bz2 and decompressed it
->
-> This patch is against 2.6.22, not 2.6.22.6
->
-It's all explained in Documentation/applying-patches.txt btw.
-http://lxr.linux.no/source/Documentation/applying-patches.txt
+On Wed, 2007-09-12 at 22:06 +0100, Mel Gorman wrote:
+> The MPOL_BIND policy creates a zonelist that is used for allocations belonging
+> to that thread that can use the policy_zone. As the per-node zonelist is
+> already being filtered based on a zone id, this patch adds a version of
+> __alloc_pages() that takes a nodemask for further filtering. This eliminates
+> the need for MPOL_BIND to create a custom zonelist. A positive benefit of
+> this is that allocations using MPOL_BIND now use the local-node-ordered
+> zonelist instead of a custom node-id-ordered zonelist.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+> 
+>  fs/buffer.c               |    2 
+>  include/linux/cpuset.h    |    4 -
+>  include/linux/gfp.h       |    4 +
+>  include/linux/mempolicy.h |    3 
+>  include/linux/mmzone.h    |   65 ++++++++++++++----
+>  kernel/cpuset.c           |   18 +----
+>  mm/mempolicy.c            |  145 ++++++++++++-----------------------------
+>  mm/page_alloc.c           |   40 +++++++----
+>  8 files changed, 136 insertions(+), 145 deletions(-)
+<snip>
+> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc4-mm1-020_zoneid_zonelist/kernel/cpuset.c linux-2.6.23-rc4-mm1-030_filter_nodemask/kernel/cpuset.c
+> --- linux-2.6.23-rc4-mm1-020_zoneid_zonelist/kernel/cpuset.c	2007-09-12 16:05:35.000000000 +0100
+> +++ linux-2.6.23-rc4-mm1-030_filter_nodemask/kernel/cpuset.c	2007-09-12 16:05:44.000000000 +0100
+> @@ -1516,22 +1516,14 @@ nodemask_t cpuset_mems_allowed(struct ta
+>  }
+>  
+>  /**
+> - * cpuset_zonelist_valid_mems_allowed - check zonelist vs. curremt mems_allowed
+> - * @zl: the zonelist to be checked
+> + * cpuset_nodemask_valid_mems_allowed - check nodemask vs. curremt mems_allowed
+> + * @nodemask: the nodemask to be checked
+>   *
+> - * Are any of the nodes on zonelist zl allowed in current->mems_allowed?
+> + * Are any of the nodes in the nodemask allowed in current->mems_allowed?
+>   */
+> -int cpuset_zonelist_valid_mems_allowed(struct zonelist *zl)
+> +int cpuset_nodemask_valid_mems_allowed(nodemask_t *nodemask)
+>  {
+> -	int i;
+> -
+> -	for (i = 0; zl->_zonerefs[i].zone; i++) {
+> -		int nid = zonelist_node_idx(zl->_zonerefs[i]);
+> -
+> -		if (node_isset(nid, current->mems_allowed))
+> -			return 1;
+> -	}
+> -	return 0;
+> +	return nodes_intersect(nodemask, current->mems_allowed);
+                 nodes_intersects(*nodemask, ... 
+>  }
+>  
+>  /*
+<snip>
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Still preping for test.
+
+Lee
+
